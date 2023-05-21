@@ -31,7 +31,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
-            searchContext: new SearchContext({includeNoteContent: false, excludeArchived: true})
+            searchContext: new SearchContext({excludeArchived: true})
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -45,7 +45,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
-            searchContext: new SearchContext({includeNoteContent: true})
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");

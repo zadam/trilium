@@ -1,18 +1,25 @@
 import TypeWidget from "./type_widget.js";
-import server from "../../services/server.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
 import linkService from "../../services/link.js";
+import froca from "../../services/froca.js";
 
 const TPL = `
 <div class="attachment-detail note-detail-printable">
     <style>
         .attachment-detail {
             padding: 15px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .attachment-detail .links-wrapper {
             padding: 16px;
             font-size: larger;
+        }
+        
+        .attachment-detail .attachment-wrapper {
+            flex-grow: 1;
         }
     </style>
 
@@ -50,7 +57,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
             })
         );
 
-        const attachment = await server.get(`attachments/${this.attachmentId}`);
+        const attachment = await froca.getAttachment(this.attachmentId);
 
         if (!attachment) {
             this.$wrapper.html("<strong>This attachment has been deleted.</strong>");

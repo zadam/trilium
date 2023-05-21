@@ -26,7 +26,7 @@ async function getRenderedContent(entity, options = {}) {
     const type = getRenderingType(entity);
     // attachment supports only image and file/pdf/audio/video
 
-    const $renderedContent = $('<div class="rendered-note-content">');
+    const $renderedContent = $('<div class="rendered-content">');
 
     if (type === 'text') {
         await renderText(entity, options, $renderedContent);
@@ -118,9 +118,17 @@ async function renderCode(note, options, $renderedContent) {
 function renderImage(entity, $renderedContent) {
     const sanitizedTitle = entity.title.replace(/[^a-z0-9-.]/gi, "");
 
+    let url;
+
+    if (entity instanceof FNote) {
+        url = `api/images/${entity.noteId}/${sanitizedTitle}?${entity.utcDateModified}`;
+    } else if (entity instanceof FAttachment) {
+        url = `api/attachments/${entity.attachmentId}/image/${sanitizedTitle}?${entity.utcDateModified}">`;
+    }
+
     $renderedContent.append(
         $("<img>")
-            .attr("src", `api/images/${entity.noteId}/${sanitizedTitle}`)
+            .attr("src", url)
             .css("max-width", "100%")
     );
 }

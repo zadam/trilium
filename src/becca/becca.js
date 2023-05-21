@@ -153,16 +153,25 @@ class Becca {
     }
 
     /** @returns {BAttachment|null} */
-    getAttachment(attachmentId) {
-        const row = sql.getRow("SELECT * FROM attachments WHERE attachmentId = ? AND isDeleted = 0", [attachmentId]);
+    getAttachment(attachmentId, opts = {}) {
+        opts.includeContentLength = !!opts.includeContentLength;
+
+        const query = opts.includeContentLength
+            ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
+               FROM attachments 
+               JOIN blobs USING (blobId) 
+               WHERE attachmentId = ? AND isDeleted = 0`
+            : `SELECT * FROM attachments WHERE attachmentId = ? AND isDeleted = 0`;
 
         const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
-        return row ? new BAttachment(row) : null;
+
+        return sql.getRows(query, [attachmentId])
+            .map(row => new BAttachment(row))[0];
     }
 
     /** @returns {BAttachment} */
-    getAttachmentOrThrow(attachmentId) {
-        const attachment = this.getAttachment(attachmentId);
+    getAttachmentOrThrow(attachmentId, opts = {}) {
+        const attachment = this.getAttachment(attachmentId, opts);
         if (!attachment) {
             throw new NotFoundError(`Attachment '${attachmentId}' has not been found.`);
         }

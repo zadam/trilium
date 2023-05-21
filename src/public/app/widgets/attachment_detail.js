@@ -8,10 +8,16 @@ import linkService from "../services/link.js";
 import contentRenderer from "../services/content_renderer.js";
 
 const TPL = `
-<div class="attachment-detail">
+<div class="attachment-detail-widget">
     <style>
+        .attachment-detail-widget {
+            height: 100%;
+        }
+    
         .attachment-detail-wrapper {
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
         }
         
         .attachment-title-line {
@@ -24,33 +30,53 @@ const TPL = `
             margin-left: 10px;
         }
         
-        .attachment-content pre {
+        .attachment-content-wrapper {
+            flex-grow: 1;
+        }
+        
+        .attachment-content-wrapper .rendered-content {
+            height: 100%;
+        }
+        
+        .attachment-content-wrapper pre {
             background: var(--accented-background-color);
             padding: 10px;
             margin-top: 10px;
             margin-bottom: 10px;
         }
         
-        .attachment-detail-wrapper.list-view .attachment-content pre {
+        .attachment-detail-wrapper.list-view .attachment-content-wrapper {
+            max-height: 300px;
+        }
+
+        .attachment-detail-wrapper.full-detail {
+            height: 100%;
+        }
+
+        .attachment-detail-wrapper.full-detail .attachment-content-wrapper {
+            height: 100%;
+        }
+        
+        .attachment-detail-wrapper.list-view .attachment-content-wrapper pre {
             max-height: 400px;
         }
         
-        .attachment-content img {
+        .attachment-content-wrapper img {
             margin: 10px;
         }
         
-        .attachment-detail-wrapper.list-view .attachment-content img {
+        .attachment-detail-wrapper.list-view .attachment-content-wrapper img {
             max-height: 300px; 
             max-width: 90%; 
             object-fit: contain;
         }
         
-        .attachment-detail-wrapper.full-detail .attachment-content img {
+        .attachment-detail-wrapper.full-detail .attachment-content-wrapper img {
             max-width: 90%; 
             object-fit: contain;
         }
         
-        .attachment-detail-wrapper.scheduled-for-deletion .attachment-content img {
+        .attachment-detail-wrapper.scheduled-for-deletion .attachment-content-wrapper img {
             filter: contrast(10%);
         }
     </style>
@@ -65,7 +91,7 @@ const TPL = `
         
         <div class="attachment-deletion-warning alert alert-info"></div>
         
-        <div class="attachment-content"></div>
+        <div class="attachment-content-wrapper"></div>
     </div>
 </div>`;
 
@@ -141,11 +167,11 @@ export default class AttachmentDetailWidget extends BasicWidget {
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
-        this.$wrapper.find('.attachment-content').append(contentRenderer.getRenderedContent(this.attachment));
+        this.$wrapper.find('.attachment-content-wrapper').append((await contentRenderer.getRenderedContent(this.attachment)).$renderedContent);
     }
 
     copyAttachmentReferenceToClipboard() {
-        imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content'));
+        imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content-wrapper'));
     }
 
     async entitiesReloadedEvent({loadResults}) {

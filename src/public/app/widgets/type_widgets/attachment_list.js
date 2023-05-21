@@ -51,7 +51,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
         this.children = [];
         this.renderedAttachmentIds = new Set();
 
-        const attachments = await server.get(`notes/${this.noteId}/attachments`);
+        const attachments = await note.getAttachments();
 
         if (attachments.length === 0) {
             this.$list.html('<div class="alert alert-info">This note has no attachments.</div>');

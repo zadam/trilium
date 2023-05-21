@@ -1114,24 +1114,33 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /** @returns {BAttachment[]} */
-    getAttachments() {
-        return sql.getRows(`
-                SELECT attachments.*
-                FROM attachments 
-                WHERE parentId = ? 
-                  AND isDeleted = 0
-                ORDER BY position`, [this.noteId])
+    getAttachments(opts = {}) {
+        opts.includeContentLength = !!opts.includeContentLength;
+
+        const query = opts.includeContentLength
+            ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
+               FROM attachments 
+               JOIN blobs USING (blobId) 
+               WHERE parentId = ? AND isDeleted = 0 
+               ORDER BY position`
+            : `SELECT * FROM attachments WHERE parentId = ? AND isDeleted = 0 ORDER BY position`;
+
+        return sql.getRows(query, [this.noteId])
             .map(row => new BAttachment(row));
     }
 
     /** @returns {BAttachment|null} */
-    getAttachmentById(attachmentId) {
-        return sql.getRows(`
-                SELECT attachments.*
-                FROM attachments 
-                WHERE parentId = ? 
-                  AND attachmentId = ?
-                  AND isDeleted = 0`, [this.noteId, attachmentId])
+    getAttachmentById(attachmentId, opts = {}) {
+        opts.includeContentLength = !!opts.includeContentLength;
+
+        const query = opts.includeContentLength
+            ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
+               FROM attachments 
+               JOIN blobs USING (blobId) 
+               WHERE parentId = ? AND attachmentId = ? AND isDeleted = 0`
+            : `SELECT * FROM attachments WHERE parentId = ? AND attachmentId = ? AND isDeleted = 0`;
+
+        return sql.getRows(query, [this.noteId, attachmentId])
             .map(row => new BAttachment(row))[0];
     }
 

@@ -10,13 +10,13 @@ function getAttachmentBlob(req) {
 function getAttachments(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    return note.getAttachments();
+    return note.getAttachments({includeContentLength: true});
 }
 
 function getAttachment(req) {
     const {attachmentId} = req.params;
 
-    return becca.getAttachmentOrThrow(attachmentId);
+    return becca.getAttachmentOrThrow(attachmentId, {includeContentLength: true});
 }
 
 function saveAttachment(req) {

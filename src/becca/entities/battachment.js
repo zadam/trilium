@@ -59,6 +59,9 @@ class BAttachment extends AbstractBeccaEntity {
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
+        /** @type {integer} optionally added to the entity */
+        this.contentLength = row.contentLength;
+
         this.decrypt();
     }
 
@@ -206,12 +209,14 @@ class BAttachment extends AbstractBeccaEntity {
             isDeleted: false,
             dateModified: this.dateModified,
             utcDateModified: this.utcDateModified,
-            utcDateScheduledForErasureSince: this.utcDateScheduledForErasureSince
+            utcDateScheduledForErasureSince: this.utcDateScheduledForErasureSince,
+            contentLength: this.contentLength
         };
     }
 
     getPojoToSave() {
         const pojo = this.getPojo();
+        delete pojo.contentLength;
 
         if (pojo.isProtected) {
             if (this.isDecrypted) {
