@@ -52,7 +52,14 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         const $minimizeBtn = this.$widget.find(".minimize-btn");
         const $maximizeBtn = this.$widget.find(".maximize-btn");
         const $closeBtn = this.$widget.find(".close-btn");
-
+        
+        //When the window is restarted, the window will not be reset when it is set to the top, so get the window status and set the icon background
+        (function() {
+            const remote = utils.dynamicRequire('@electron/remote');
+            if (remote.BrowserWindow.getFocusedWindow().isAlwaysOnTop()) {
+                $topBtn.css("background-color", "var(--accented-background-color)");
+            }
+        }());
         $topBtn.on('click', () => {
             $topBtn.trigger('blur');
             const remote = utils.dynamicRequire('@electron/remote');
@@ -66,6 +73,7 @@ export default class TitleBarButtonsWidget extends BasicWidget {
                 $topBtn.css("background-color", "var(--accented-background-color)");
             }
         });
+        
         $minimizeBtn.on('click', () => {
             $minimizeBtn.trigger('blur');
             const remote = utils.dynamicRequire('@electron/remote');
