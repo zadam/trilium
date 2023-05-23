@@ -30,6 +30,9 @@ const TPL = `
         height: 40px;
         width: 40px;
     }
+    .title-bar-buttons .top-btn.active{
+        background-color:var(--accented-background-color);
+    }
     </style>
 
     <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
@@ -52,12 +55,12 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         const $minimizeBtn = this.$widget.find(".minimize-btn");
         const $maximizeBtn = this.$widget.find(".maximize-btn");
         const $closeBtn = this.$widget.find(".close-btn");
-        
+
         //When the window is restarted, the window will not be reset when it is set to the top, so get the window status and set the icon background
-        (function() {
+        (function () {
             const remote = utils.dynamicRequire('@electron/remote');
             if (remote.BrowserWindow.getFocusedWindow().isAlwaysOnTop()) {
-                $topBtn.css("background-color", "var(--accented-background-color)");
+                $topBtn.addClass('active');
             }
         }());
         $topBtn.on('click', () => {
@@ -67,13 +70,13 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             const isAlwaysOnTop = focusedWindow.isAlwaysOnTop()
             if (isAlwaysOnTop) {
                 focusedWindow.setAlwaysOnTop(false)
-                $topBtn.css("background-color", "");
+                $topBtn.removeClass('active');
             } else {
                 focusedWindow.setAlwaysOnTop(true);
-                $topBtn.css("background-color", "var(--accented-background-color)");
+                $topBtn.addClass('active');
             }
         });
-        
+
         $minimizeBtn.on('click', () => {
             $minimizeBtn.trigger('blur');
             const remote = utils.dynamicRequire('@electron/remote');
