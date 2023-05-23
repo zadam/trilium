@@ -33,7 +33,7 @@ const TPL = `
     </style>
 
     <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
-    <div class="top-btn" title="Put this window top. "><button class="btn bx bx-pin"></button></div>
+    <div class="top-btn" title="Bring this window to the top. "><button class="btn bx bx-pin"></button></div>
     <div class="minimize-btn"><button class="btn bx bx-minus"></button></div>
     <div class="maximize-btn"><button class="btn bx bx-checkbox"></button></div>
     <div class="close-btn"><button class="btn bx bx-x"></button></div>
@@ -58,7 +58,7 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             const remote = utils.dynamicRequire('@electron/remote');
             if (remote.BrowserWindow.getFocusedWindow().isAlwaysOnTop()) {
                 $topBtn.css("background-color", "var(--accented-background-color)");
-                $topBtn.attr("title","The window has been pinned. ");
+                $topBtn.attr("title","The window is already on top. ");
             }
         }());
         $topBtn.on('click', () => {
@@ -69,11 +69,11 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             if (isAlwaysOnTop) {
                 focusedWindow.setAlwaysOnTop(false)
                 $topBtn.css("background-color", "");
-                $topBtn.attr("title","Put this window top. ");
+                $topBtn.attr("title","Bring this window to the top. ");
             } else {
                 focusedWindow.setAlwaysOnTop(true);
                 $topBtn.css("background-color", "var(--accented-background-color)");
-                $topBtn.attr("title","The window has been pinned. ");
+                $topBtn.attr("title","The window is already on top. ");
             }
         });
         
