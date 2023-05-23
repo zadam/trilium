@@ -33,6 +33,7 @@ const TPL = `
     </style>
 
     <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
+    <div class="top-btn"><button class="btn bx bx-pin"></button></div>
     <div class="minimize-btn"><button class="btn bx bx-minus"></button></div>
     <div class="maximize-btn"><button class="btn bx bx-checkbox"></button></div>
     <div class="close-btn"><button class="btn bx bx-x"></button></div>
@@ -47,10 +48,24 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         this.$widget = $(TPL);
         this.contentSized();
 
+        const $topBtn = this.$widget.find(".top-btn");
         const $minimizeBtn = this.$widget.find(".minimize-btn");
         const $maximizeBtn = this.$widget.find(".maximize-btn");
         const $closeBtn = this.$widget.find(".close-btn");
 
+        $topBtn.on('click', () => {
+            $topBtn.trigger('blur');
+            const remote = utils.dynamicRequire('@electron/remote');
+            const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+            const isAlwaysOnTop = focusedWindow.isAlwaysOnTop()
+            if (isAlwaysOnTop) {
+                focusedWindow.setAlwaysOnTop(false)
+                $topBtn.css("background-color", "");
+            } else {
+                focusedWindow.setAlwaysOnTop(true);
+                $topBtn.css("background-color", "var(--accented-background-color)");
+            }
+        });
         $minimizeBtn.on('click', () => {
             $minimizeBtn.trigger('blur');
             const remote = utils.dynamicRequire('@electron/remote');
