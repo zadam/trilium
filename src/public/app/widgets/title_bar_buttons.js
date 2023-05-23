@@ -58,7 +58,6 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             const remote = utils.dynamicRequire('@electron/remote');
             if (remote.BrowserWindow.getFocusedWindow().isAlwaysOnTop()) {
                 $topBtn.css("background-color", "var(--accented-background-color)");
-                $topBtn.attr("title","The window is already on top. ");
             }
         }());
         $topBtn.on('click', () => {
@@ -69,11 +68,9 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             if (isAlwaysOnTop) {
                 focusedWindow.setAlwaysOnTop(false)
                 $topBtn.css("background-color", "");
-                $topBtn.attr("title","Bring this window to the top. ");
             } else {
                 focusedWindow.setAlwaysOnTop(true);
                 $topBtn.css("background-color", "var(--accented-background-color)");
-                $topBtn.attr("title","The window is already on top. ");
             }
         });
         
