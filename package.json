@@ -28,7 +28,7 @@
     "test": "npm run test-jasmine && npm run test-es6",
     "postinstall": "rimraf ./node_modules/canvas",
     "lint": "eslint .  --cache",
-    "prepare": "husky install"
+    "prepare": "husky install || echo 'Husky install failed, expected on flatpak build'"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
