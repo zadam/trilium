@@ -132,17 +132,15 @@ function getEditedNotesOnDate(req) {
         notes = notes.filter(note => note.hasAncestor(hoistedNoteId));
     }
 
-    const notePojos = notes.map(note => note.getPojo());
-
-    notes.forEach((note, index) => {
+    return notes.map(note => {
         const notePath = note.isDeleted ? null : getNotePathData(note);
 
-        notePojos[index].notePath = notePath ? notePath.notePath : null;
+        const notePojo = note.getPojo();
+        notePojo.notePath = notePath ? notePath.notePath : null;
+
+        return notePojo;
     });
 
-
-
-    return notePojos;
 }
 
 function getNotePathData(note) {
