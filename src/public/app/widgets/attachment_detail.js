@@ -170,8 +170,20 @@ export default class AttachmentDetailWidget extends BasicWidget {
         this.$wrapper.find('.attachment-content-wrapper').append((await contentRenderer.getRenderedContent(this.attachment)).$renderedContent);
     }
 
-    copyAttachmentReferenceToClipboard() {
-        imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content-wrapper'));
+    async copyAttachmentLinkToClipboard() {
+        if (this.attachment.role === 'image') {
+            imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content-wrapper'));
+        } else if (this.attachment.role === 'file') {
+            const $link = await linkService.createNoteLink(this.attachment.parentId, {
+                referenceLink: true,
+                viewScope: {
+                    viewMode: 'attachments',
+                    attachmentId: this.attachment.attachmentId
+                }
+            });
+        } else {
+            throw new Error(`Unrecognized attachment role '${this.attachment.role}'.`);
+        }
     }
 
     async entitiesReloadedEvent({loadResults}) {

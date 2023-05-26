@@ -33,7 +33,7 @@ const TPL = `
             title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">Open externally</a>
         <a data-trigger-command="downloadAttachment" class="dropdown-item">Download</a>
         <a data-trigger-command="uploadNewAttachmentRevision" class="dropdown-item">Upload new revision</a>
-        <a data-trigger-command="copyAttachmentReferenceToClipboard" class="dropdown-item">Copy reference to clipboard</a>
+        <a data-trigger-command="copyAttachmentLinkToClipboard" class="dropdown-item">Copy link to clipboard</a>
         <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item">Convert attachment into note</a>
         <a data-trigger-command="deleteAttachment" class="dropdown-item">Delete attachment</a>
     </div>
@@ -56,7 +56,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
-        this.$widget.find("[data-trigger-command='copyAttachmentReferenceToClipboard']").toggle(this.attachment.role === 'image');
+        this.$widget.find("[data-trigger-command='copyAttachmentLinkToClipboard']").toggle(this.attachment.role === 'image');
 
         this.$uploadNewRevisionInput = this.$widget.find(".attachment-upload-new-revision-input");
         this.$uploadNewRevisionInput.on('change', async () => {
@@ -107,8 +107,8 @@ export default class AttachmentActionsWidget extends BasicWidget {
         this.$uploadNewRevisionInput.trigger('click');
     }
 
-    async copyAttachmentReferenceToClipboardCommand() {
-        this.parent.copyAttachmentReferenceToClipboard();
+    async copyAttachmentLinkToClipboardCommand() {
+        this.parent.copyAttachmentLinkToClipboard();
     }
 
     async deleteAttachmentCommand() {
