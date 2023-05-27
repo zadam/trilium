@@ -105,11 +105,14 @@ function goToLink(evt) {
 
     const ctrlKey = utils.isCtrlKey(evt);
 
+    const leftClick = evt.which === 1;
+    const middleClick = evt.which === 2;
+
     if (notePath) {
-        if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
+        if ((leftClick && ctrlKey) || middleClick) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
-        else if (evt.which === 1) {
+        else if (leftClick) {
             const ntxId = $(evt.target).closest("[data-ntx-id]").attr("data-ntx-id");
 
             const noteContext = ntxId
@@ -124,9 +127,12 @@ function goToLink(evt) {
         }
     }
     else {
-        if ((evt.which === 1 && ctrlKey) || evt.which === 2
-            || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
-            || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
+        const withinEditLink = $link.hasClass("ck-link-actions__preview");
+        const outsideOfCKEditor = $link.closest("[contenteditable]").length === 0;
+
+        if ((leftClick && ctrlKey) || middleClick
+            || (withinEditLink && (leftClick || middleClick))
+            || (outsideOfCKEditor && (leftClick || middleClick))
         ) {
             if (address) {
                 if (address.toLowerCase().startsWith('http')) {
