@@ -36,7 +36,7 @@ const TPL = `
     </style>
 
     <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
-    <div class="top-btn" title="Bring this window to the top. "><button class="btn bx bx-pin"></button></div>
+    <div class="top-btn" title="Keep this window on top. "><button class="btn bx bx-pin"></button></div>
     <div class="minimize-btn"><button class="btn bx bx-minus"></button></div>
     <div class="maximize-btn"><button class="btn bx bx-checkbox"></button></div>
     <div class="close-btn"><button class="btn bx bx-x"></button></div>
