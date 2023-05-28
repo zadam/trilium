@@ -357,7 +357,7 @@ class FNote {
             return [['root']];
         }
 
-        const parentNotes = this.getParentNotes();
+        const parentNotes = this.getParentNotes().filter(note => note.type !== 'search');
 
         const notePaths = parentNotes.length === 1
             ? parentNotes[0].getAllNotePaths() // optimization for the most common case

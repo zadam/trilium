@@ -170,6 +170,9 @@ function goToLink(evt) {
     const isMiddleClick = evt.which === 2;
     const openInNewTab = (isLeftClick && ctrlKey) || isMiddleClick;
 
+    const leftClick = evt.which === 1;
+    const middleClick = evt.which === 2;
+
     if (notePath) {
         if (openInNewTab) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath, { viewScope });
@@ -189,11 +192,13 @@ function goToLink(evt) {
         }
     }
     else if (hrefLink) {
-        // this branch handles external links
-        const isWithinCKLinkDialog = $link.hasClass("ck-link-actions__preview");
-        const isOutsideCKEditor = $link.closest("[contenteditable]").length === 0;
+        const withinEditLink = $link.hasClass("ck-link-actions__preview");
+        const outsideOfCKEditor = $link.closest("[contenteditable]").length === 0;
 
-        if (openInNewTab || isWithinCKLinkDialog || isOutsideCKEditor) {
+        if (openInNewTab
+            || (withinEditLink && (leftClick || middleClick))
+            || (outsideOfCKEditor && (leftClick || middleClick))
+        ) {
             if (hrefLink.toLowerCase().startsWith('http')) {
                 window.open(hrefLink, '_blank');
             }

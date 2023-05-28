@@ -30,6 +30,11 @@ const TPL = `
     .note-list.grid-view .note-book-card {
         max-height: 300px;
     }
+    
+    .note-list.grid-view .note-book-card img {
+        max-height: 220px;
+        object-fit: contain;
+    }
 
     .note-list.grid-view .note-book-card:hover {
         cursor: pointer;
