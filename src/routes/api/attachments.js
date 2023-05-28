@@ -19,6 +19,14 @@ function getAttachment(req) {
     return becca.getAttachmentOrThrow(attachmentId, {includeContentLength: true});
 }
 
+function getAllAttachments(req) {
+    const {attachmentId} = req.params;
+    // one particular attachment is requested, but return all note's attachments
+
+    const attachment = becca.getAttachmentOrThrow(attachmentId);
+    return attachment.getNote()?.getAttachments({includeContentLength: true}) || [];
+}
+
 function saveAttachment(req) {
     const {noteId} = req.params;
     const {attachmentId, role, mime, title, content} = req.body;
@@ -48,6 +56,7 @@ module.exports = {
     getAttachmentBlob,
     getAttachments,
     getAttachment,
+    getAllAttachments,
     saveAttachment,
     deleteAttachment,
     convertAttachmentToNote

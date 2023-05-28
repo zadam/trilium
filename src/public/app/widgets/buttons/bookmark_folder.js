@@ -66,7 +66,7 @@ export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
         };
 
         this.$parentNote.append(
-            (await linkService.createNoteLink(this.note.noteId, linkOptions))
+            (await linkService.createLink(this.note.noteId, linkOptions))
                 .addClass("note-link")
         );
 
@@ -74,7 +74,7 @@ export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
             this.$childrenNotes.append(
                 $("<li>")
                     .append(
-                        (await linkService.createNoteLink(childNote.noteId, linkOptions))
+                        (await linkService.createLink(childNote.noteId, linkOptions))
                             .addClass("note-link")
                     )
             );

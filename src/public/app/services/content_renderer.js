@@ -100,9 +100,7 @@ async function renderText(note, options, $renderedContent) {
         await froca.getNotes(noteIdsToPrefetch);
 
         for (const el of referenceLinks) {
-            const noteId = getNoteIdFromLink(el);
-
-            await linkService.loadReferenceLinkTitle(noteId, $(el));
+            await linkService.loadReferenceLinkTitle($(el));
         }
     } else {
         await renderChildrenList($renderedContent, note);
@@ -146,15 +144,6 @@ function renderFile(entity, type, $renderedContent) {
         throw new Error(`Can't recognize entity type of '${entity}'`);
     }
 
-    const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
-    const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
-
-    $downloadButton.on('click', () => openService.downloadFileNote(entity.noteId));
-    $openButton.on('click', () => openService.openNoteExternally(entity.noteId, entity.mime));
-
-    // open doesn't work for protected notes since it works through a browser which isn't in protected session
-    $openButton.toggle(!entity.isProtected);
-
     const $content = $('<div style="display: flex; flex-direction: column; height: 100%;">');
 
     if (type === 'pdf') {
@@ -178,11 +167,23 @@ function renderFile(entity, type, $renderedContent) {
         $content.append($videoPreview);
     }
 
-    $content.append(
-        $('<div style="display: flex; justify-content: space-evenly; margin-top: 5px;">')
-            .append($downloadButton)
-            .append($openButton)
-    );
+    if (entityType === 'notes') {
+        // TODO: we should make this available also for attachments, but there's a problem with "Open externally" support
+        //       in attachment list
+        const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
+        const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
+
+        $downloadButton.on('click', () => openService.downloadFileNote(entity.noteId));
+        $openButton.on('click', () => openService.openNoteExternally(entity.noteId, entity.mime));
+        // open doesn't work for protected notes since it works through a browser which isn't in protected session
+        $openButton.toggle(!entity.isProtected);
+
+        $content.append(
+            $('<div style="display: flex; justify-content: space-evenly; margin-top: 5px;">')
+                .append($downloadButton)
+                .append($openButton)
+        );
+    }
 
     $renderedContent.append($content);
 }
@@ -253,7 +254,7 @@ async function renderChildrenList($renderedContent, note) {
     const childNotes = await froca.getNotes(childNoteIds);
 
     for (const childNote of childNotes) {
-        $renderedContent.append(await linkService.createNoteLink(`${note.noteId}/${childNote.noteId}`, {
+        $renderedContent.append(await linkService.createLink(`${note.noteId}/${childNote.noteId}`, {
             showTooltip: false,
             showNoteIcon: true
         }));

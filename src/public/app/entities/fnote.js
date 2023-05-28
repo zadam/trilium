@@ -231,8 +231,7 @@ class FNote {
     /** @returns {Promise<FAttachment[]>} */
     async getAttachments() {
         if (!this.attachments) {
-            this.attachments = (await server.get(`notes/${this.noteId}/attachments`))
-                .map(row => new FAttachment(froca, row));
+            this.attachments = await this.froca.getAttachmentsForNote(this.noteId);
         }
 
         return this.attachments;

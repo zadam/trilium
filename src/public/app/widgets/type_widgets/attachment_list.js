@@ -40,7 +40,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
         this.$linksWrapper.append(
             $('<div>').append(
                 "Owning note: ",
-                await linkService.createNoteLink(this.noteId),
+                await linkService.createLink(this.noteId),
             ),
             $('<button class="btn btn-xs">')
                 .text("Upload attachments")

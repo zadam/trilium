@@ -217,7 +217,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Returns list of notes. If note is missing from the cache, it's loaded.
      *
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
-     * otherwise (by e.g. createNoteLink())
+     * otherwise (by e.g. createLink())
      *
      * @method
      * @param {string[]} noteIds
@@ -302,7 +302,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {boolean} [params.showNoteIcon=false] - show also note icon before the title
      * @param {string} [params.title=] - custom link tile with note's title as default
      */
-    this.createNoteLink = linkService.createNoteLink;
+    this.createLink = linkService.createLink;
 
     /**
      * Adds given text to the editor cursor

@@ -85,7 +85,7 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
                 continue;
             }
 
-            const $item = (await linkService.createNoteLink(similarNote.notePath.join("/")))
+            const $item = (await linkService.createLink(similarNote.notePath.join("/")))
                 .css("font-size", 24 * (1 - 1 / (1 +  similarNote.score)));
 
             $list.append($item);

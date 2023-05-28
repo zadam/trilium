@@ -56,7 +56,6 @@ export default class AttachmentActionsWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
-        this.$widget.find("[data-trigger-command='copyAttachmentLinkToClipboard']").toggle(this.attachment.role === 'image');
 
         this.$uploadNewRevisionInput = this.$widget.find(".attachment-upload-new-revision-input");
         this.$uploadNewRevisionInput.on('change', async () => {

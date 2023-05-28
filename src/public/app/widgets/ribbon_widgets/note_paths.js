@@ -96,7 +96,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
     async getRenderedPath(notePath, notePathRecord = null) {
         const title = await treeService.getNotePathTitle(notePath);
 
-        const $noteLink = await linkService.createNoteLink(notePath, {title});
+        const $noteLink = await linkService.createLink(notePath, {title});
 
         $noteLink
             .find('a')

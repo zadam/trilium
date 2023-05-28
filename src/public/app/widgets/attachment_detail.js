@@ -6,6 +6,7 @@ import options from "../services/options.js";
 import imageService from "../services/image.js";
 import linkService from "../services/link.js";
 import contentRenderer from "../services/content_renderer.js";
+import toastService from "../services/toast.js";
 
 const TPL = `
 <div class="attachment-detail-widget">
@@ -126,7 +127,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
 
         if (!this.isFullDetail) {
             this.$wrapper.find('.attachment-title').append(
-                await linkService.createNoteLink(this.attachment.parentId, {
+                await linkService.createLink(this.attachment.parentId, {
                     title: this.attachment.title,
                     viewScope: {
                         viewMode: 'attachments',
@@ -174,16 +175,20 @@ export default class AttachmentDetailWidget extends BasicWidget {
         if (this.attachment.role === 'image') {
             imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content-wrapper'));
         } else if (this.attachment.role === 'file') {
-            const $link = await linkService.createNoteLink(this.attachment.parentId, {
+            const $link = await linkService.createLink(this.attachment.parentId, {
                 referenceLink: true,
                 viewScope: {
                     viewMode: 'attachments',
                     attachmentId: this.attachment.attachmentId
                 }
             });
+
+            utils.copyHtmlToClipboard($link[0].outerHTML);
         } else {
             throw new Error(`Unrecognized attachment role '${this.attachment.role}'.`);
         }
+
+        toastService.showMessage("Attachment link copied to clipboard.");
     }
 
     async entitiesReloadedEvent({loadResults}) {

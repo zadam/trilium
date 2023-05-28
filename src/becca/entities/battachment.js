@@ -77,6 +77,7 @@ class BAttachment extends AbstractBeccaEntity {
         });
     }
 
+    /** @returns {BNote} */
     getNote() {
         return this.becca.notes[this.parentId];
     }

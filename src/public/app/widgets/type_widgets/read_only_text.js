@@ -97,10 +97,7 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         this.$content.html(blob.content);
 
         this.$content.find("a.reference-link").each(async (_, el) => {
-            const notePath = $(el).attr('href');
-            const noteId = treeService.getNoteIdFromNotePath(notePath);
-
-            this.loadReferenceLinkTitle(noteId, $(el));
+            this.loadReferenceLinkTitle($(el));
         });
 
         this.$content.find("section").each(async (_, el) => {

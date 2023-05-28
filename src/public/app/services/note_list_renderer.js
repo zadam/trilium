@@ -284,7 +284,7 @@ class NoteListRenderer {
                     .append($('<span class="note-icon">').addClass(note.getIcon()))
                     .append(this.viewType === 'grid'
                         ? $('<span class="note-book-title">').text(note.title)
-                        : (await linkService.createNoteLink(notePath, {showTooltip: false, showNotePath: this.showNotePath}))
+                        : (await linkService.createLink(notePath, {showTooltip: false, showNotePath: this.showNotePath}))
                             .addClass("note-book-title")
                     )
                     .append($renderedAttributes)

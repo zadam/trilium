@@ -78,7 +78,7 @@ export default class EditedNotesWidget extends NoteContextAwareWidget {
             }
             else {
                 $item.append(editedNote.notePath
-                    ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true})
+                    ? await linkService.createLink(editedNote.notePath.join("/"), {showNotePath: true})
                     : $("<span>").text(editedNote.title));
             }
 

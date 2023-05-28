@@ -10,7 +10,7 @@ function getNotePathFromUrl(url) {
     return notePathMatch === null ? null : notePathMatch[1];
 }
 
-async function createNoteLink(notePath, options = {}) {
+async function createLink(notePath, options = {}) {
     if (!notePath || !notePath.trim()) {
         logError("Missing note path");
 
@@ -29,26 +29,50 @@ async function createNoteLink(notePath, options = {}) {
     const referenceLink = options.referenceLink === undefined ? false : options.referenceLink;
 
     const { noteId, parentNoteId } = treeService.getNoteIdAndParentIdFromNotePath(notePath);
-    const noteTitle = options.title || await treeService.getNoteTitle(noteId, parentNoteId);
+    const viewScope = options.viewScope || {};
+    const viewMode = viewScope.viewMode || 'default';
+    let linkTitle = options.title;
+
+    if (!linkTitle) {
+        if (viewMode === 'attachments' && viewScope.attachmentId) {
+            const attachment = await froca.getAttachment(viewScope.attachmentId);
+
+            linkTitle = attachment ? attachment.title : '[missing attachment]';
+        } else {
+            linkTitle = await treeService.getNoteTitle(noteId, parentNoteId);
+        }
+    }
 
     const $container = $("<span>");
 
     if (showNoteIcon) {
-        const note = await froca.getNote(noteId);
+        let icon;
 
-        $container
-            .append($("<span>").addClass(`bx ${note.getIcon()}`))
-            .append(" ");
+        if (viewMode === 'default') {
+            const note = await froca.getNote(noteId);
+
+            icon = note.getIcon();
+        } else if (viewMode === 'source') {
+            icon = 'bx-code-curly';
+        } else if (viewMode === 'attachments') {
+            icon = 'bx-file';
+        }
+
+        if (icon) {
+            $container
+                .append($("<span>").addClass(`bx ${icon}`))
+                .append(" ");
+        }
     }
 
     const hash = calculateHash({
         notePath,
-        viewScope: options.viewScope
+        viewScope: viewScope
     });
 
     const $noteLink = $("<a>", {
         href: hash,
-        text: noteTitle
+        text: linkTitle
     });
 
     if (!showTooltip) {
@@ -228,7 +252,14 @@ function linkContextMenu(e) {
     linkContextMenuService.openContextMenu(notePath, e, viewScope, null);
 }
 
-async function loadReferenceLinkTitle(noteId, $el) {
+async function loadReferenceLinkTitle($el) {
+    const url = $el.attr("href");
+    if (!url) {
+        console.warn("Empty URL for parsing");
+        return;
+    }
+
+    const {noteId} = parseNavigationStateFromUrl(url);
     const note = await froca.getNote(noteId, true);
 
     let title;
@@ -279,7 +310,7 @@ $(document).on('mousedown', 'a', e => {
 
 export default {
     getNotePathFromUrl,
-    createNoteLink,
+    createLink,
     goToLink,
     loadReferenceLinkTitle,
     calculateHash,

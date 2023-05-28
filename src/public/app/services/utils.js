@@ -513,6 +513,15 @@ function areObjectsEqual () {
     return true;
 }
 
+function copyHtmlToClipboard(content) {
+    const clipboardItem = new ClipboardItem({
+        'text/html': new Blob([content], {type: 'text/html'}),
+        'text/plain': new Blob([content], {type: 'text/plain'})
+    });
+
+    navigator.clipboard.write([clipboardItem]);
+}
+
 export default {
     reloadFrontendApp,
     parseDate,
@@ -558,5 +567,6 @@ export default {
     isValidAttributeName,
     sleep,
     escapeRegExp,
-    areObjectsEqual
+    areObjectsEqual,
+    copyHtmlToClipboard
 };

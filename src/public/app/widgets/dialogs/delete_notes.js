@@ -120,7 +120,7 @@ export default class DeleteNotesDialog extends BasicWidget {
         for (const note of await froca.getNotes(response.noteIdsToBeDeleted)) {
             this.$deleteNotesList.append(
                 $("<li>").append(
-                    await linkService.createNoteLink(note.noteId, {showNotePath: true})
+                    await linkService.createLink(note.noteId, {showNotePath: true})
                 )
             );
         }
@@ -136,9 +136,9 @@ export default class DeleteNotesDialog extends BasicWidget {
             this.$brokenRelationsList.append(
                 $("<li>")
                     .append(`Note `)
-                    .append(await linkService.createNoteLink(attr.value))
+                    .append(await linkService.createLink(attr.value))
                     .append(` (to be deleted) is referenced by relation <code>${attr.name}</code> originating from `)
-                    .append(await linkService.createNoteLink(attr.noteId))
+                    .append(await linkService.createLink(attr.noteId))
             );
         }
     }

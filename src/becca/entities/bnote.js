@@ -1116,6 +1116,8 @@ class BNote extends AbstractBeccaEntity {
     /** @returns {BAttachment[]} */
     getAttachments(opts = {}) {
         opts.includeContentLength = !!opts.includeContentLength;
+        // from testing it looks like calculating length does not make a difference in performance even on large-ish DB
+        // given that we're always fetching attachments only for a specific note, we might just do it always
 
         const query = opts.includeContentLength
             ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength

@@ -47,9 +47,9 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
 
         this.$linksWrapper.append(
             "Owning note: ",
-            await linkService.createNoteLink(this.noteId),
+            await linkService.createLink(this.noteId),
             ", you can also open the ",
-            await linkService.createNoteLink(this.noteId, {
+            await linkService.createLink(this.noteId, {
                 title: 'List of all attachments',
                 viewScope: {
                     viewMode: 'attachments'

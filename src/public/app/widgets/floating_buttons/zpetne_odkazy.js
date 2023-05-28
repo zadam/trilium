@@ -131,7 +131,7 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
         for (const backlink of backlinks) {
             const $item = $("<div>");
 
-            $item.append(await linkService.createNoteLink(backlink.noteId, {
+            $item.append(await linkService.createLink(backlink.noteId, {
                 showNoteIcon: true,
                 showNotePath: true,
                 showTooltip: false

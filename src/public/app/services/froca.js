@@ -314,10 +314,45 @@ class Froca {
         return child.parentToBranch[parentNoteId];
     }
 
+    /** @returns {Promise<FAttachment>} */
     async getAttachment(attachmentId) {
-        const attachmentRow = await server.get(`attachments/${attachmentId}`);
+        const attachment = this.attachments[attachmentId];
+        if (attachment) {
+            return attachment;
+        }
 
-        return attachmentRow ? new FAttachment(this, attachmentRow) : null;
+        // load all attachments for the given note even if one is requested, don't load one by one
+        const attachmentRows = await server.get(`attachments/${attachmentId}/all`);
+        const attachments = this.processAttachmentRows(attachmentRows);
+
+        if (attachments.length) {
+            attachments[0].getNote().attachments = attachments;
+        }
+
+        return this.attachments[attachmentId];
+    }
+
+    /** @returns {Promise<FAttachment[]>} */
+    async getAttachmentsForNote(noteId) {
+        const attachmentRows = await server.get(`notes/${noteId}/attachments`);
+        return this.processAttachmentRows(attachmentRows);
+    }
+
+    /** @returns {FAttachment[]} */
+    processAttachmentRows(attachmentRows) {
+        return attachmentRows.map(attachmentRow => {
+            let attachment;
+
+            if (attachmentRow.attachmentId in this.attachments) {
+                attachment = this.attachments[attachmentRow.attachmentId];
+                attachment.update(attachmentRow);
+            } else {
+                attachment = new FAttachment(this, attachmentRow);
+                this.attachments[attachment.attachmentId] = attachment;
+            }
+
+            return attachment;
+        });
     }
 
     /** @returns {Promise<FBlob>} */

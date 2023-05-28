@@ -437,7 +437,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
                 .empty()
                 .append(attribute.type === 'label' ? 'Label' : 'Relation')
                 .append(' is owned by note ')
-                .append(await linkService.createNoteLink(attribute.noteId))
+                .append(await linkService.createLink(attribute.noteId))
         }
 
         this.$inputName
@@ -602,7 +602,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
             for (const note of displayedNotes) {
                 const notePath = note.getBestNotePathString(hoistedNoteId);
-                const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
+                const $noteLink = await linkService.createLink(notePath, {showNotePath: true});
 
                 this.$relatedNotesList.append(
                     $("<li>").append($noteLink)
@@ -699,7 +699,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.toggleInt(false);
     }
 
-    createNoteLink(noteId) {
+    createLink(noteId) {
         return $("<a>", {
             href: `#root/${noteId}`,
             class: 'reference-link'

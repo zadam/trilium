@@ -2,12 +2,13 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import server from "../../services/server.js";
 import contextMenuService from "../../menus/context_menu.js";
-import attributesParser from "../../services/attribute_parser.js";
+import attributeParser from "../../services/attribute_parser.js";
 import libraryLoader from "../../services/library_loader.js";
 import froca from "../../services/froca.js";
 import attributeRenderer from "../../services/attribute_renderer.js";
 import noteCreateService from "../../services/note_create.js";
 import attributeService from "../../services/attributes.js";
+import linkService from "../../services/link.js";
 
 const HELP_TEXT = `
 <p>To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code></p> 
@@ -321,7 +322,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     parseAttributes() {
         try {
-            return attributesParser.lexAndParse(this.getPreprocessedData());
+            return attributeParser.lexAndParse(this.getPreprocessedData());
         }
         catch (e) {
             this.$errors.text(e.message).slideDown();
@@ -385,7 +386,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
             let parsedAttrs;
 
             try {
-                parsedAttrs = attributesParser.lexAndParse(this.getPreprocessedData(), true);
+                parsedAttrs = attributeParser.lexAndParse(this.getPreprocessedData(), true);
             }
             catch (e) {
                 // the input is incorrect because user messed up with it and now needs to fix it manually
@@ -455,7 +456,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         return clickIndex;
     }
 
-    async loadReferenceLinkTitle(noteId, $el) {
+    async loadReferenceLinkTitle($el) {
+        const {noteId} = linkService.parseNavigationStateFromUrl($el.attr("href"));
         const note = await froca.getNote(noteId, true);
 
         let title;

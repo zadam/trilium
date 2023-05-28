@@ -110,7 +110,7 @@ export default class RecentChangesDialog extends BasicWidget {
                     const notePath = note.getBestNotePathString();
 
                     if (notePath) {
-                        $noteLink = await linkService.createNoteLink(notePath, {
+                        $noteLink = await linkService.createLink(notePath, {
                             title: change.title,
                             showNotePath: true
                         });

@@ -121,7 +121,7 @@ export default class QuickSearchWidget extends BasicWidget {
         }
 
         for (const note of await froca.getNotes(displayedNoteIds)) {
-            const $link = await linkService.createNoteLink(note.noteId, {showNotePath: true});
+            const $link = await linkService.createLink(note.noteId, {showNotePath: true});
             $link.addClass('dropdown-item');
             $link.attr("tabIndex", "0");
             $link.on('click', e => {
