@@ -41,7 +41,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     async searchInSubtreeCommand({notePath}) {
-        const noteId = treeService.getNoteIdFromNotePath(notePath);
+        const noteId = treeService.getNoteIdFromUrl(notePath);
 
         this.searchNotesCommand({ancestorNoteId: noteId});
     }

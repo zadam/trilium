@@ -45,7 +45,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
         this.$wrapper.empty();
         this.children = [];
 
-        this.$linksWrapper.append(
+        this.$linksWrapper.empty().append(
             "Owning note: ",
             await linkService.createLink(this.noteId),
             ", you can also open the ",

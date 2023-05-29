@@ -59,7 +59,7 @@ export default class MoveToDialog extends BasicWidget {
             if (notePath) {
                 this.$widget.modal('hide');
 
-                const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+                const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromUrl(notePath);
                 froca.getBranchId(parentNoteId, noteId).then(branchId => this.moveNotesTo(branchId));
             }
             else {

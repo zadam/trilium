@@ -210,7 +210,7 @@ export default class ExportDialog extends BasicWidget {
 
         utils.openDialog(this.$widget);
 
-        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromUrl(notePath);
 
         this.branchId = await froca.getBranchId(parentNoteId, noteId);
         this.$noteTitle.text(await treeService.getNoteTitle(noteId));

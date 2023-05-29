@@ -103,7 +103,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
         return effectivePathSegments;
     }
     else {
-        const note = await froca.getNote(getNoteIdFromNotePath(notePath));
+        const note = await froca.getNote(getNoteIdFromUrl(notePath));
 
         const bestNotePath = note.getBestNotePath(hoistedNoteId);
 
@@ -132,26 +132,30 @@ function getParentProtectedStatus(node) {
     return hoistedNoteService.isHoistedNode(node) ? false : node.getParent().data.isProtected;
 }
 
-function getNoteIdFromNotePath(notePath) {
-    if (!notePath) {
+function getNoteIdFromUrl(url) {
+    if (!url) {
         return null;
     }
 
-    const path = notePath.split("/");
+    const [notePath] = url.split("?");
+    const segments = notePath.split("/");
 
-    const lastSegment = path[path.length - 1];
-
-    // path could have also params suffix
-    return lastSegment.split("?")[0];
+    return segments[segments.length - 1];
 }
 
-async function getBranchIdFromNotePath(notePath) {
-    const {noteId, parentNoteId} = getNoteIdAndParentIdFromNotePath(notePath);
+async function getBranchIdFromUrl(url) {
+    const {noteId, parentNoteId} = getNoteIdAndParentIdFromUrl(url);
 
     return await froca.getBranchId(parentNoteId, noteId);
 }
 
-function getNoteIdAndParentIdFromNotePath(notePath) {
+function getNoteIdAndParentIdFromUrl(url) {
+    if (!url) {
+        return {};
+    }
+
+    const [notePath] = url.split("?");
+
     if (notePath === 'root') {
         return {
             noteId: 'root',
@@ -163,15 +167,12 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
     let noteId = '';
 
     if (notePath) {
-        const path = notePath.split("/");
+        const segments = notePath.split("/");
 
-        const lastSegment = path[path.length - 1];
+        noteId = segments[segments.length - 1];
 
-        // path could have also params suffix
-        noteId = lastSegment.split("?")[0];
-
-        if (path.length > 1) {
-            parentNoteId = path[path.length - 2];
+        if (segments.length > 1) {
+            parentNoteId = segments[segments.length - 2];
         }
     }
 
@@ -288,9 +289,9 @@ export default {
     resolveNotePathToSegments,
     getParentProtectedStatus,
     getNotePath,
-    getNoteIdFromNotePath,
-    getNoteIdAndParentIdFromNotePath,
-    getBranchIdFromNotePath,
+    getNoteIdFromUrl,
+    getNoteIdAndParentIdFromUrl,
+    getBranchIdFromUrl,
     getNoteTitle,
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,

@@ -43,7 +43,7 @@ async function createLink(notePath, options = {}) {
     const showNoteIcon = options.showNoteIcon === undefined ? false : options.showNoteIcon;
     const referenceLink = options.referenceLink === undefined ? false : options.referenceLink;
 
-    const { noteId, parentNoteId } = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+    const { noteId, parentNoteId } = treeService.getNoteIdAndParentIdFromUrl(notePath);
     const viewScope = options.viewScope || {};
     const viewMode = viewScope.viewMode || 'default';
     let linkTitle = options.title;
@@ -174,7 +174,7 @@ function parseNavigationStateFromUrl(url) {
 
     return {
         notePath,
-        noteId: treeService.getNoteIdFromNotePath(notePath),
+        noteId: treeService.getNoteIdFromUrl(notePath),
         ntxId,
         hoistedNoteId,
         viewScope

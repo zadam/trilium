@@ -297,7 +297,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
         else if ($attr.attr("data-attribute-type") === "relation") {
             const selectedPath = $attr.getSelectedNotePath();
 
-            value = selectedPath ? treeService.getNoteIdFromNotePath(selectedPath) : "";
+            value = selectedPath ? treeService.getNoteIdFromUrl(selectedPath) : "";
         }
         else {
             value = $attr.val();

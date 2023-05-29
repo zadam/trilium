@@ -110,7 +110,7 @@ export default class CloneToDialog extends BasicWidget {
     }
 
     async cloneNotesTo(notePath) {
-        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromUrl(notePath);
         const targetBranchId = await froca.getBranchId(parentNoteId, noteId);
 
         for (const cloneNoteId of this.clonedNoteIds) {

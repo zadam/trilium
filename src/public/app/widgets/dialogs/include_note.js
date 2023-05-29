@@ -92,7 +92,7 @@ export default class IncludeNoteDialog extends BasicWidget {
     }
 
     async includeNote(notePath) {
-        const noteId = treeService.getNoteIdFromNotePath(notePath);
+        const noteId = treeService.getNoteIdFromUrl(notePath);
         const note = await froca.getNote(noteId);
 
         const boxSize = $("input[name='include-note-box-size']:checked").val();

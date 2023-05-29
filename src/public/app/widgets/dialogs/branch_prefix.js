@@ -59,7 +59,7 @@ export default class BranchPrefixDialog extends BasicWidget {
     }
 
     async refresh(notePath) {
-        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromUrl(notePath);
 
         if (!noteId || !parentNoteId) {
             return;

@@ -37,7 +37,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.$linksWrapper.append(
+        this.$linksWrapper.empty().append(
             $('<div>').append(
                 "Owning note: ",
                 await linkService.createLink(this.noteId),

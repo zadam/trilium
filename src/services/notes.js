@@ -366,17 +366,32 @@ function checkImageAttachments(note, content) {
     const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
     for (const unknownAttachment of unknownAttachments) {
-        // the attachment belongs to a different note (was copy pasted), we need to make a copy for this note.
-        const newAttachment = unknownAttachment.copy();
-        newAttachment.parentId = note.noteId;
-        newAttachment.setContent(unknownAttachment.getContent(), { forceSave: true });
+        // the attachment belongs to a different note (was copy pasted). Attachments can be linked only from the note
+        // which owns it, so either find an existing attachment having the same content or make a copy.
+        let localAttachment = note.getAttachments().find(att => att.role === unknownAttachment.role && att.blobId === unknownAttachment.blobId);
 
-        content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${newAttachment.attachmentId}/image`);
-        content = content.replace(`attachmentId=${unknownAttachment.attachmentId}`, `attachmentId=${newAttachment.attachmentId}`);
+        if (localAttachment) {
+            if (localAttachment.utcDateScheduledForErasureSince) {
+                // the attachment is for sure linked now, so reset the scheduled deletion
+                localAttachment.utcDateScheduledForErasureSince = null;
+                localAttachment.save();
+            }
 
-        ws.sendMessageToAllClients({ type: 'toast', message: `Attachment '${newAttachment.title}' has been copied to note '${note.title}'.`});
+            log.info(`Found equivalent attachment '${localAttachment.attachmentId}' of note '${note.noteId}' for the linked foreign attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.parentId}'`);
+        } else {
+            localAttachment = unknownAttachment.copy();
+            localAttachment.parentId = note.noteId;
+            localAttachment.setContent(unknownAttachment.getContent(), {forceSave: true});
 
-        log.info(`Copied attachment '${unknownAttachment.attachmentId}' to new '${newAttachment.attachmentId}'`);
+            ws.sendMessageToAllClients({ type: 'toast', message: `Attachment '${localAttachment.title}' has been copied to note '${note.title}'.`});
+            log.info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.parentId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
+        }
+
+        // replace image links
+        content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${localAttachment.attachmentId}/image`);
+        // replace reference links
+        content = content.replace(new RegExp(`href="[^"]+attachmentId=${unknownAttachment.attachmentId}[^"]*"`, "g"),
+            `href="#root/${localAttachment.parentId}?viewMode=attachments&amp;attachmentId=${localAttachment.attachmentId}"`);
     }
 
     return {

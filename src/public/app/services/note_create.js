@@ -27,7 +27,7 @@ async function createNote(parentNotePath, options = {}) {
         [options.title, options.content] = parseSelectedHtml(options.textEditor.getSelectedHtml());
     }
 
-    const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
+    const parentNoteId = treeService.getNoteIdFromUrl(parentNotePath);
 
     if (options.type === 'mermaid' && !options.content) {
         options.content = `graph TD;
@@ -110,7 +110,7 @@ function parseSelectedHtml(selectedHtml) {
 }
 
 async function duplicateSubtree(noteId, parentNotePath) {
-    const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
+    const parentNoteId = treeService.getNoteIdFromUrl(parentNotePath);
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
     await ws.waitForMaxKnownEntityChangeId();

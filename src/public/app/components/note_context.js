@@ -62,7 +62,7 @@ class NoteContext extends Component {
 
         this.notePath = resolvedNotePath;
         this.viewScope = opts.viewScope;
-        ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
+        ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromUrl(resolvedNotePath));
 
         this.saveToRecentNotes(resolvedNotePath);
 
