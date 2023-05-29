@@ -97,48 +97,16 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         }
     }
 
-    async loadReferenceLinkTitle($el) {
-        await linkService.loadReferenceLinkTitle($el);
+    async loadReferenceLinkTitle($el, href = null) {
+        await linkService.loadReferenceLinkTitle($el, href);
     }
 
     async getReferenceLinkTitle(href) {
-        const {noteId, viewScope} = linkService.parseNavigationStateFromUrl(href);
-        if (!noteId) {
-            return "[missing note]";
-        }
-
-        const note = await froca.getNote(noteId);
-        if (!note) {
-            return "[missing note]";
-        }
-
-        if (viewScope?.viewMode === 'attachments' && viewScope?.attachmentId) {
-            const attachment = await note.getAttachmentById(viewScope.attachmentId);
-
-            return attachment ? attachment.title : "[missing attachment]";
-        } else {
-            return note.title;
-        }
+        return await linkService.getReferenceLinkTitle(href);
     }
 
     getReferenceLinkTitleSync(href) {
-        const {noteId, viewScope} = linkService.parseNavigationStateFromUrl(href);
-        if (!noteId) {
-            return "[missing note]";
-        }
-
-        const note = froca.getNoteFromCache(noteId);
-        if (!note) {
-            return "[missing note]";
-        }
-
-        if (viewScope?.viewMode === 'attachments' && viewScope?.attachmentId) {
-            const attachment = note.attachments[viewScope.attachmentId];
-
-            return attachment ? attachment.title : "[missing attachment]";
-        } else {
-            return note.title;
-        }
+        return linkService.getReferenceLinkTitleSync(href);
     }
 
     refreshIncludedNote($container, noteId) {

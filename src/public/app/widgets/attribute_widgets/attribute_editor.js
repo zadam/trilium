@@ -457,7 +457,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async loadReferenceLinkTitle($el) {
-        const {noteId} = linkService.parseNavigationStateFromUrl($el.attr("href"));
+        const {noteId} = linkService.parseNavigationStateFromUrl($el.find("a").attr("href"));
         const note = await froca.getNote(noteId, true);
 
         let title;

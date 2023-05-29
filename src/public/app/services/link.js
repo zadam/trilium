@@ -10,6 +10,21 @@ function getNotePathFromUrl(url) {
     return notePathMatch === null ? null : notePathMatch[1];
 }
 
+async function getLinkIcon(noteId, viewMode) {
+    let icon;
+
+    if (viewMode === 'default') {
+        const note = await froca.getNote(noteId);
+
+        icon = note.getIcon();
+    } else if (viewMode === 'source') {
+        icon = 'bx bx-code-curly';
+    } else if (viewMode === 'attachments') {
+        icon = 'bx bx-file';
+    }
+    return icon;
+}
+
 async function createLink(notePath, options = {}) {
     if (!notePath || !notePath.trim()) {
         logError("Missing note path");
@@ -46,17 +61,7 @@ async function createLink(notePath, options = {}) {
     const $container = $("<span>");
 
     if (showNoteIcon) {
-        let icon;
-
-        if (viewMode === 'default') {
-            const note = await froca.getNote(noteId);
-
-            icon = note.getIcon();
-        } else if (viewMode === 'source') {
-            icon = 'bx-code-curly';
-        } else if (viewMode === 'attachments') {
-            icon = 'bx-file';
-        }
+        let icon = await getLinkIcon(noteId, viewMode);
 
         if (icon) {
             $container
@@ -252,33 +257,71 @@ function linkContextMenu(e) {
     linkContextMenuService.openContextMenu(notePath, e, viewScope, null);
 }
 
-async function loadReferenceLinkTitle($el) {
-    const url = $el.attr("href");
-    if (!url) {
-        console.warn("Empty URL for parsing");
+async function loadReferenceLinkTitle($el, href = null) {
+    href = href || $el.find("a").attr("href");
+    if (!href) {
+        console.warn("Empty URL for parsing: " + $el[0].outerHTML);
         return;
     }
 
-    const {noteId} = parseNavigationStateFromUrl(url);
+    const {noteId, viewScope} = parseNavigationStateFromUrl(href);
     const note = await froca.getNote(noteId, true);
-
-    let title;
-
-    if (!note) {
-        title = '[missing]';
-    }
-    else {
-        title = note.isDeleted ? `${note.title} (deleted)` : note.title;
-    }
 
     if (note) {
         $el.addClass(note.getColorClass());
     }
 
+    const title = await getReferenceLinkTitle(href);
     $el.text(title);
 
     if (note) {
-        $el.prepend($("<span>").addClass(note.getIcon()));
+        const icon = await getLinkIcon(noteId, viewScope.viewMode);
+
+        $el.prepend($("<span>").addClass(icon));
+    }
+}
+
+async function getReferenceLinkTitle(href) {
+    const {noteId, viewScope} = parseNavigationStateFromUrl(href);
+    if (!noteId) {
+        return "[missing note]";
+    }
+
+    const note = await froca.getNote(noteId);
+    if (!note) {
+        return "[missing note]";
+    }
+
+    if (viewScope?.viewMode === 'attachments' && viewScope?.attachmentId) {
+        const attachment = await note.getAttachmentById(viewScope.attachmentId);
+
+        return attachment ? attachment.title : "[missing attachment]";
+    } else {
+        return note.title;
+    }
+}
+
+function getReferenceLinkTitleSync(href) {
+    const {noteId, viewScope} = parseNavigationStateFromUrl(href);
+    if (!noteId) {
+        return "[missing note]";
+    }
+
+    const note = froca.getNoteFromCache(noteId);
+    if (!note) {
+        return "[missing note]";
+    }
+
+    if (viewScope?.viewMode === 'attachments' && viewScope?.attachmentId) {
+        if (!note.attachments) {
+            return "[loading title...]";
+        }
+
+        const attachment = note.attachments.find(att => att.attachmentId === viewScope.attachmentId);
+
+        return attachment ? attachment.title : "[missing attachment]";
+    } else {
+        return note.title;
     }
 }
 
@@ -313,6 +356,8 @@ export default {
     createLink,
     goToLink,
     loadReferenceLinkTitle,
+    getReferenceLinkTitle,
+    getReferenceLinkTitleSync,
     calculateHash,
     parseNavigationStateFromUrl
 };
