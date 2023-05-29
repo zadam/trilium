@@ -1,5 +1,6 @@
 import FlexContainer from "./flex_container.js";
 import appContext from "../../components/app_context.js";
+import NoteContext from "../../components/note_context.js";
 
 export default class SplitNoteContainer extends FlexContainer {
     constructor(widgetFactory) {
@@ -72,6 +73,43 @@ export default class SplitNoteContainer extends FlexContainer {
 
     closeThisNoteSplitCommand({ntxId}) {
         appContext.tabManager.removeNoteContext(ntxId);
+    }
+
+    async moveThisNoteSplitCommand({ntxId, isMovingLeft}) {
+        if (!ntxId) {
+            logError("empty ntxId!");
+            return;
+        }
+
+        const contexts = appContext.tabManager.noteContexts;
+
+        const currentIndex = contexts.findIndex(c => c.ntxId === ntxId);
+        const otherIndex = currentIndex + (isMovingLeft ? -1 : 1);
+
+        if (currentIndex === -1 || otherIndex < 0 || otherIndex >= contexts.length) {
+            logError("invalid context!");
+            return;
+        }
+
+        if (contexts[currentIndex].isEmpty() && contexts[otherIndex].isEmpty())
+            // no op
+            return;
+
+        const currentId = contexts[currentIndex].ntxId;
+        const currentPath = contexts[currentIndex].notePath;
+        
+        const otherId = contexts[otherIndex].ntxId;
+        const otherPath = contexts[otherIndex].notePath;
+        
+        if (!!currentPath)
+            await appContext.tabManager.switchToNoteContext(otherId, currentPath);
+        if (!!otherPath)
+            await appContext.tabManager.switchToNoteContext(currentId, otherPath);
+
+        // activate context that now contains the original note
+        await appContext.tabManager.activateNoteContext(otherId);
+
+        this.triggerEvent('noteContextSwitch');
     }
 
     activeContextChangedEvent() {
