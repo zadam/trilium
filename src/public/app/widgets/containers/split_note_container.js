@@ -1,6 +1,5 @@
 import FlexContainer from "./flex_container.js";
 import appContext from "../../components/app_context.js";
-import NoteContext from "../../components/note_context.js";
 
 export default class SplitNoteContainer extends FlexContainer {
     constructor(widgetFactory) {
