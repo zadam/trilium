@@ -147,7 +147,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
             this.$wrapper.addClass("scheduled-for-deletion");
 
             const scheduledSinceTimestamp = utils.parseDate(utcDateScheduledForErasureSince)?.getTime();
-            const intervalMs = options.getInt('eraseUnusedImageAttachmentsAfterSeconds') * 1000;
+            const intervalMs = options.getInt('eraseUnusedAttachmentsAfterSeconds') * 1000;
             const deletionTimestamp = scheduledSinceTimestamp + intervalMs;
             const willBeDeletedInMs = deletionTimestamp - Date.now();
 
@@ -159,7 +159,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
                 $deletionWarning.text(`This attachment will be deleted soon`);
             }
 
-            $deletionWarning.append(", because the image attachment is not used. To prevent deletion, add the image back into the note.");
+            $deletionWarning.append(", because the attachment is not linked in the note's content. To prevent deletion, add the attachment link back into the content.");
         } else {
             this.$wrapper.removeClass("scheduled-for-deletion");
             $deletionWarning.hide();
@@ -198,8 +198,6 @@ export default class AttachmentDetailWidget extends BasicWidget {
             if (attachmentChange.isDeleted) {
                 this.toggleInt(false);
             } else {
-                this.attachment = await server.get(`attachments/${this.attachment.attachmentId}`);
-
                 this.refresh();
             }
         }

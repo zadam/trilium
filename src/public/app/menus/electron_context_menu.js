@@ -99,7 +99,7 @@ function setupContextMenu() {
                 searchEngineName = customSearchEngineName;
                 searchEngineUrl = customSearchEngineUrl;
             } else {
-                searchEngineName = "Duckduckgo";
+                searchEngineName = "DuckDuckGo";
                 searchEngineUrl = "https://duckduckgo.com/?q={keyword}";
             }
 

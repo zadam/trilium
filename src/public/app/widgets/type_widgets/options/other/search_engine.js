@@ -15,7 +15,7 @@ const TPL = `
             <select class="predefined-search-engine-select form-control">
                 <option value="Bing">Bing</option>
                 <option value="Baidu">Baidu</option>
-                <option value="Duckduckgo">Duckduckgo</option>
+                <option value="DuckDuckGo">Duckduckgo</option>
                 <option value="Google">Google</option>
             </select>
         </div>
@@ -39,7 +39,7 @@ const TPL = `
 const SEARCH_ENGINES = {
     "Bing": "https://www.bing.com/search?q={keyword}",
     "Baidu": "https://www.baidu.com/s?wd={keyword}",
-    "Duckduckgo": "https://duckduckgo.com/?q={keyword}",
+    "DuckDuckGo": "https://duckduckgo.com/?q={keyword}",
     "Google": "https://www.google.com/search?q={keyword}",
 }
 

@@ -88,9 +88,9 @@ const defaultOptions = [
     { name: 'minTocHeadings', value: '5', isSynced: true },
     { name: 'checkForUpdates', value: 'true', isSynced: true },
     { name: 'disableTray', value: 'false', isSynced: false },
-    { name: 'eraseUnusedImageAttachmentsAfterSeconds', value: '86400', isSynced: false },
-    { name: 'customSearchEngineName', value: 'Duckduckgo', isSynced: false },
-    { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: false },
+    { name: 'eraseUnusedAttachmentsAfterSeconds', value: '2592000', isSynced: true },
+    { name: 'customSearchEngineName', value: 'DuckDuckGo', isSynced: true },
+    { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: true },
 ];
 
 function initStartupOptions() {

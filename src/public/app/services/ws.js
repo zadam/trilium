@@ -122,6 +122,9 @@ async function handleMessage(event) {
     else if (message.type === 'api-log-messages') {
         appContext.triggerEvent("apiLogMessages", {noteId: message.noteId, messages: message.messages});
     }
+    else if (message.type === 'toast') {
+        toastService.showMessage(message.message);
+    }
 }
 
 let entityChangeIdReachedListeners = [];

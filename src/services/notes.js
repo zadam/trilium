@@ -21,6 +21,7 @@ const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const fs = require("fs");
+const ws = require("./ws.js");
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {
@@ -333,29 +334,34 @@ function protectNote(note, protect) {
 }
 
 function checkImageAttachments(note, content) {
-    const re = /src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image/g;
     const foundAttachmentIds = new Set();
     let match;
 
-    while (match = re.exec(content)) {
+    const imgRegExp = /src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image/g;
+    while (match = imgRegExp.exec(content)) {
         foundAttachmentIds.add(match[1]);
     }
 
-    const imageAttachments = note.getAttachmentByRole('image');
+    const linkRegExp = /href="[^"]+attachmentId=([a-zA-Z0-9_]+)/g;
+    while (match = linkRegExp.exec(content)) {
+        foundAttachmentIds.add(match[1]);
+    }
 
-    for (const attachment of imageAttachments) {
-        const imageInContent = foundAttachmentIds.has(attachment.attachmentId);
+    const attachments = note.getAttachments();
 
-        if (attachment.utcDateScheduledForErasureSince && imageInContent) {
+    for (const attachment of attachments) {
+        const attachmentInContent = foundAttachmentIds.has(attachment.attachmentId);
+
+        if (attachment.utcDateScheduledForErasureSince && attachmentInContent) {
             attachment.utcDateScheduledForErasureSince = null;
             attachment.save();
-        } else if (!attachment.utcDateScheduledForErasureSince && !imageInContent) {
+        } else if (!attachment.utcDateScheduledForErasureSince && !attachmentInContent) {
             attachment.utcDateScheduledForErasureSince = dateUtils.utcNowDateTime();
             attachment.save();
         }
     }
 
-    const existingAttachmentIds = new Set(imageAttachments.map(att => att.attachmentId));
+    const existingAttachmentIds = new Set(attachments.map(att => att.attachmentId));
     const unknownAttachmentIds = Array.from(foundAttachmentIds).filter(foundAttId => !existingAttachmentIds.has(foundAttId));
     const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
@@ -366,6 +372,9 @@ function checkImageAttachments(note, content) {
         newAttachment.setContent(unknownAttachment.getContent(), { forceSave: true });
 
         content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${newAttachment.attachmentId}/image`);
+        content = content.replace(`attachmentId=${unknownAttachment.attachmentId}`, `attachmentId=${newAttachment.attachmentId}`);
+
+        ws.sendMessageToAllClients({ type: 'toast', message: `Attachment '${newAttachment.title}' has been copied to note '${note.title}'.`});
 
         log.info(`Copied attachment '${unknownAttachment.attachmentId}' to new '${newAttachment.attachmentId}'`);
     }
@@ -1077,12 +1086,12 @@ function getNoteIdMapping(origNote) {
     return noteIdMapping;
 }
 
-function eraseScheduledAttachments(eraseUnusedImageAttachmentsAfterSeconds = null) {
-    if (eraseUnusedImageAttachmentsAfterSeconds === null) {
-        eraseUnusedImageAttachmentsAfterSeconds = optionService.getOptionInt('eraseUnusedImageAttachmentsAfterSeconds');
+function eraseScheduledAttachments(eraseUnusedAttachmentsAfterSeconds = null) {
+    if (eraseUnusedAttachmentsAfterSeconds === null) {
+        eraseUnusedAttachmentsAfterSeconds = optionService.getOptionInt('eraseUnusedAttachmentsAfterSeconds');
     }
 
-    const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseUnusedImageAttachmentsAfterSeconds * 1000)));
+    const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseUnusedAttachmentsAfterSeconds * 1000)));
     const attachmentIdsToErase = sql.getColumn('SELECT attachmentId FROM attachments WHERE utcDateScheduledForErasureSince < ?', [cutOffDate]);
 
     eraseAttachments(attachmentIdsToErase);
