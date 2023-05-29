@@ -360,8 +360,6 @@ class Froca {
         opts.preview = !!opts.preview;
         const key = `${entityType}-${entityId}-${opts.preview}`;
 
-        console.log(key);
-
         if (!this.blobPromises[key]) {
             this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob?preview=${opts.preview}`)
                 .then(row => new FBlob(row))

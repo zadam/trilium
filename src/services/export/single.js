@@ -23,13 +23,16 @@ function exportSingleNote(taskContext, branch, format, res) {
 
     if (note.type === 'text') {
         if (format === 'html') {
-            content = inlineAttachmentImages(content);
+            content = inlineAttachments(content);
 
             if (!content.toLowerCase().includes("<html")) {
                 content = `<html><head><meta charset="utf-8"></head><body>${content}</body></html>`;
             }
 
-            payload = html.prettyPrint(content, {indent_size: 2});
+            payload = content.length < 100_000
+                ? html.prettyPrint(content, {indent_size: 2})
+                : content;
+
             extension = 'html';
             mime = 'text/html';
         }
@@ -61,30 +64,40 @@ function exportSingleNote(taskContext, branch, format, res) {
     taskContext.taskSucceeded();
 }
 
-function inlineAttachmentImages(content) {
-    const re = /src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image\/?[^"]+"/g;
-    let match;
-
-    while (match = re.exec(content)) {
-        const attachment = becca.getAttachment(match[1]);
-        if (!attachment) {
-            continue;
-        }
-
-        if (!attachment.mime.startsWith('image/')) {
-            continue;
+function inlineAttachments(content) {
+    content = content.replace(/src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image\/?[^"]+"/g, (match, attachmentId) => {
+        const attachment = becca.getAttachment(attachmentId);
+        if (!attachment || !attachment.mime.startsWith('image/')) {
+            return match;
         }
 
         const attachmentContent = attachment.getContent();
         if (!Buffer.isBuffer(attachmentContent)) {
-            continue;
+            return match;
         }
 
         const base64Content = attachmentContent.toString('base64');
         const srcValue = `data:${attachment.mime};base64,${base64Content}`;
 
-        content = content.replaceAll(match[0], `src="${srcValue}"`);
-    }
+        return `src="${srcValue}"`;
+    });
+
+    content = content.replace(/href="[^"]*#root[^"]*attachmentId=([a-zA-Z0-9_]+)\/?"/g, (match, attachmentId) => {
+        const attachment = becca.getAttachment(attachmentId);
+        if (!attachment) {
+            return match;
+        }
+
+        const attachmentContent = attachment.getContent();
+        if (!Buffer.isBuffer(attachmentContent)) {
+            return match;
+        }
+
+        const base64Content = attachmentContent.toString('base64');
+        const hrefValue = `data:${attachment.mime};base64,${base64Content}`;
+
+        return `href="${hrefValue}" download="${utils.escapeHtml(attachment.title)}"`;
+    });
 
     return content;
 }

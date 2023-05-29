@@ -280,6 +280,26 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         });
 
         content = content.replace(/src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image\/[^"]*"/g, (match, targetAttachmentId) => {
+            const url = findAttachment(targetAttachmentId);
+
+            return url ? `src="${url}"` : match;
+        });
+
+        content = content.replace(/href="[^"]*#root[^"]*attachmentId=([a-zA-Z0-9_]+)\/?"/g, (match, targetAttachmentId) => {
+            const url = findAttachment(targetAttachmentId);
+
+            return url ? `href="${url}"` : match;
+        });
+
+        content = content.replace(/href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)[^"]*"/g, (match, targetNoteId) => {
+            const url = getNoteTargetUrl(targetNoteId, noteMeta);
+
+            return url ? `href="${url}"` : match;
+        });
+
+        return content;
+
+        function findAttachment(targetAttachmentId) {
             let url;
 
             const attachmentMeta = noteMeta.attachments.find(attMeta => attMeta.attachmentId === targetAttachmentId);
@@ -289,17 +309,8 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             } else {
                 log.info(`Could not find attachment meta object for attachmentId '${targetAttachmentId}'`);
             }
-
-            return url ? `src="${url}"` : match;
-        });
-
-        content = content.replace(/href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g, (match, targetNoteId) => {
-            const url = getNoteTargetUrl(targetNoteId, noteMeta);
-
-            return url ? `href="${url}"` : match;
-        });
-
-        return content;
+            return url;
+        }
     }
 
     /**
@@ -339,7 +350,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 </html>`;
             }
 
-            return content.length < 100000
+            return content.length < 100_000
                 ? html.prettyPrint(content, {indent_size: 2})
                 : content;
         } else if (noteMeta.format === 'markdown') {
@@ -451,7 +462,9 @@ ${markdownContent}`;
     <ul>${saveNavigationInner(rootMeta)}</ul>
 </body>
 </html>`;
-        const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
+        const prettyHtml = fullHtml.length < 100_000
+            ? html.prettyPrint(fullHtml, {indent_size: 2})
+            : fullHtml;
 
         archive.append(prettyHtml, { name: navigationMeta.dataFileName });
     }

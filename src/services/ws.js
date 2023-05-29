@@ -103,8 +103,8 @@ function fillInAdditionalProperties(entityChange) {
     }
 
     // fill in some extra data needed by the frontend
-    // first try to use becca which works for non-deleted entities
-    // only when that fails try to load from database
+    // first try to use becca, which works for non-deleted entities
+    // only when that fails, try to load from the database
     if (entityChange.entityName === 'attributes') {
         entityChange.entity = becca.getAttribute(entityChange.entityId);
 
@@ -150,11 +150,7 @@ function fillInAdditionalProperties(entityChange) {
     } else if (entityChange.entityName === 'blobs') {
         entityChange.noteIds = sql.getColumn("SELECT noteId FROM notes WHERE blobId = ? AND isDeleted = 0", [entityChange.entityId]);
     } else if (entityChange.entityName === 'attachments') {
-        entityChange.entity = sql.getRow(`
-            SELECT attachments.*, LENGTH(blobs.content) 
-            FROM attachments 
-            JOIN blobs ON blobs.blobId = attachments.blobId
-            WHERE attachmentId = ?`, [entityChange.entityId]);
+        entityChange.entity = becca.getAttachment(entityChange.entityId, {includeContentLength: true});
     }
 
     if (entityChange.entity instanceof AbstractBeccaEntity) {
