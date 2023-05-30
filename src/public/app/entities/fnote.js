@@ -392,7 +392,7 @@ class FNote {
         for (const parentNote of this.getParentNotes()) {
             if (parentNote.noteId === 'root') {
                 return false;
-            } else if (parentNote.noteId === '_hidden') {
+            } else if (parentNote.noteId === '_hidden' || parentNote.type === 'search') {
                 continue;
             }
 
