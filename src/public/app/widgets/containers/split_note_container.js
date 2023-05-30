@@ -83,32 +83,36 @@ export default class SplitNoteContainer extends FlexContainer {
         const contexts = appContext.tabManager.noteContexts;
 
         const currentIndex = contexts.findIndex(c => c.ntxId === ntxId);
-        const otherIndex = currentIndex + (isMovingLeft ? -1 : 1);
+        const leftIndex = isMovingLeft ? currentIndex - 1 : currentIndex;
 
-        if (currentIndex === -1 || otherIndex < 0 || otherIndex >= contexts.length) {
+        if (currentIndex === -1 || leftIndex < 0 || leftIndex + 1 >= contexts.length) {
             logError("invalid context!");
             return;
         }
 
-        if (contexts[currentIndex].isEmpty() && contexts[otherIndex].isEmpty())
+        if (contexts[leftIndex].isEmpty() && contexts[leftIndex + 1].isEmpty())
             // no op
             return;
 
-        const currentId = contexts[currentIndex].ntxId;
-        const currentPath = contexts[currentIndex].notePath;
-        
-        const otherId = contexts[otherIndex].ntxId;
-        const otherPath = contexts[otherIndex].notePath;
-        
-        if (!!currentPath)
-            await appContext.tabManager.switchToNoteContext(otherId, currentPath);
-        if (!!otherPath)
-            await appContext.tabManager.switchToNoteContext(currentId, otherPath);
+        const ntxIds = contexts.map(c => c.ntxId);
+        const mainNtxIds = contexts.map(c => c.mainNtxId);
+
+        this.triggerCommand("noteContextReorder", {
+            ntxIdsInOrder: [
+                ...ntxIds.slice(0, leftIndex),
+                ntxIds[leftIndex + 1],
+                ntxIds[leftIndex],
+                ...ntxIds.slice(leftIndex + 2),
+            ],
+            oldNtxIdsInOrder: ntxIds,
+            mainNtxIdsInOrder: mainNtxIds.map(id => id === ntxIds[leftIndex] ? ntxIds[leftIndex + 1] : id)
+        });
+
+        this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex]}"]`)
+            .insertAfter(this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex + 1]}"]`));
 
         // activate context that now contains the original note
-        await appContext.tabManager.activateNoteContext(otherId);
-
-        this.triggerEvent('noteContextSwitch');
+        await appContext.tabManager.activateNoteContext(isMovingLeft ? ntxIds[leftIndex + 1] : ntxIds[leftIndex]);
     }
 
     activeContextChangedEvent() {
