@@ -60,6 +60,8 @@ const ALLOWED_OPTIONS = new Set([
     'compressImages',
     'downloadImagesAutomatically',
     'minTocHeadings',
+    'highlightedTextColors',
+    'highlightedTextBgColors',
     'checkForUpdates',
     'disableTray',
     'customSearchEngineName',
