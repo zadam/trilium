@@ -12,6 +12,7 @@ const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
 const eventService = require("../../services/events");
+const cls = require("../../services/cls.js");
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -316,10 +317,12 @@ class BNote extends AbstractBeccaEntity {
             isSynced: true
         });
 
-        eventService.emit(eventService.ENTITY_CHANGED, {
-            entityName: 'note_contents',
-            entity: this
-        });
+        if (!cls.isEntityEventsDisabled()) {
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: 'note_contents',
+                entity: this
+            });
+        }
     }
 
     setJsonContent(content) {
