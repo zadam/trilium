@@ -108,7 +108,7 @@ class BNote extends AbstractBeccaEntity {
         this.__attributeCache = null;
         /** @type {BAttribute[]|null}
          * @private */
-        this.inheritableAttributeCache = null;
+        this.__inheritableAttributeCache = null;
 
         /** @type {BAttribute[]}
          * @private */
@@ -454,11 +454,11 @@ class BNote extends AbstractBeccaEntity {
                 }
             }
 
-            this.inheritableAttributeCache = [];
+            this.__inheritableAttributeCache = [];
 
             for (const attr of this.__attributeCache) {
                 if (attr.isInheritable) {
-                    this.inheritableAttributeCache.push(attr);
+                    this.__inheritableAttributeCache.push(attr);
                 }
             }
         }
@@ -475,11 +475,11 @@ class BNote extends AbstractBeccaEntity {
             return [];
         }
 
-        if (!this.inheritableAttributeCache) {
-            this.__getAttributes(path); // will refresh also this.inheritableAttributeCache
+        if (!this.__inheritableAttributeCache) {
+            this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
 
-        return this.inheritableAttributeCache;
+        return this.__inheritableAttributeCache;
     }
 
     __validateTypeName(type, name) {
@@ -845,7 +845,7 @@ class BNote extends AbstractBeccaEntity {
         this.flatTextCache = null;
 
         this.__attributeCache = null;
-        this.inheritableAttributeCache = null;
+        this.__inheritableAttributeCache = null;
         this.ancestorCache = null;
     }
 
