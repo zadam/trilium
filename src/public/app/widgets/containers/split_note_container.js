@@ -86,28 +86,31 @@ export default class SplitNoteContainer extends FlexContainer {
         const leftIndex = isMovingLeft ? currentIndex - 1 : currentIndex;
 
         if (currentIndex === -1 || leftIndex < 0 || leftIndex + 1 >= contexts.length) {
-            logError("invalid context!");
+            logError(`invalid context! currentIndex: ${currentIndex}, leftIndex: ${leftIndex}, contexts.length: ${contexts.length}`);
             return;
         }
 
-        if (contexts[leftIndex].isEmpty() && contexts[leftIndex + 1].isEmpty())
+        if (contexts[leftIndex].isEmpty() && contexts[leftIndex + 1].isEmpty()) {
             // no op
             return;
+        }
 
         const ntxIds = contexts.map(c => c.ntxId);
-        const mainNtxIds = contexts.map(c => c.mainNtxId);
+        const newNtxIds = [
+            ...ntxIds.slice(0, leftIndex),
+            ntxIds[leftIndex + 1],
+            ntxIds[leftIndex],
+            ...ntxIds.slice(leftIndex + 2),
+        ];
+        const isChangingMainContext = !contexts[leftIndex].mainNtxId;
 
         this.triggerCommand("noteContextReorder", {
-            ntxIdsInOrder: [
-                ...ntxIds.slice(0, leftIndex),
-                ntxIds[leftIndex + 1],
-                ntxIds[leftIndex],
-                ...ntxIds.slice(leftIndex + 2),
-            ],
-            oldNtxIdsInOrder: ntxIds,
-            mainNtxIdsInOrder: mainNtxIds.map(id => id === ntxIds[leftIndex] ? ntxIds[leftIndex + 1] : id)
+            ntxIdsInOrder: newNtxIds,
+            oldMainNtxId: isChangingMainContext ? ntxIds[leftIndex] : null,
+            newMainNtxId: isChangingMainContext ? ntxIds[leftIndex + 1]: null,
         });
 
+        // reorder the note context widgets
         this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex]}"]`)
             .insertAfter(this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex + 1]}"]`));
 

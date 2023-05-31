@@ -609,20 +609,15 @@ export default class TabRowWidget extends BasicWidget {
         this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    noteContextReorderEvent({ntxIdsInOrder, oldNtxIdsInOrder, mainNtxIdsInOrder}) {
-        if (!oldNtxIdsInOrder || !mainNtxIdsInOrder
-            || ntxIdsInOrder.length !== oldNtxIdsInOrder.length
-            || ntxIdsInOrder.length !== mainNtxIdsInOrder.length
-        )
+    noteContextReorderEvent({oldMainNtxId, newMainNtxId}) {
+        if (!oldMainNtxId || !newMainNtxId) {
+            // no need to update tab row
             return;
+        }
 
-        ntxIdsInOrder.forEach((id, i) => {
-            // update main context that is not a tab
-            if (!mainNtxIdsInOrder[i] && this.getTabById(id).length === 0) {
-                this.getTabById(oldNtxIdsInOrder[i]).attr("data-ntx-id", id);
-                this.updateTabById(id);
-            }
-        });
+        // update tab id for the new main context
+        this.getTabById(oldMainNtxId).attr("data-ntx-id", newMainNtxId);
+        this.updateTabById(newMainNtxId);        
     }
 
     updateTabById(ntxId) {
