@@ -10,41 +10,41 @@ import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
 import OnClickButtonWidget from "./buttons/onclick_button.js";
 
-const TPL = `<div class="hlt-widget">
+const TPL = `<div class="highlighted-text-widget">
     <style>
-        .hlt-widget {
+        .highlighted-text-widget {
             padding: 10px;
             contain: none; 
             overflow: auto;
             position: relative;
         }
         
-        .hlt > ol {
+        .highlighted-text > ol {
             padding-left: 20px;
         }
         
-        .hlt li {
+        .highlighted-text li {
             cursor: pointer;
             margin-bottom: 3px;
             text-align: justify;
             text-justify: distribute;
         }
         
-        .hlt li:hover {
+        .highlighted-text li:hover {
             font-weight: bold;
         }
         
-        .close-hlt {
+        .close-highlighted-text {
             position: absolute;
             top: 2px;
             right: 2px;
         }
     </style>
 
-    <span class="hlt"></span>
+    <span class="highlighted-text"></span>
 </div>`;
 
-export default class HltWidget extends RightPanelWidget {
+export default class HighlightTextWidget extends RightPanelWidget {
     constructor() {
         super();
 
@@ -59,20 +59,20 @@ export default class HltWidget extends RightPanelWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-            && !this.noteContext.viewScope.hltTemporarilyHidden
+            && !this.noteContext.viewScope.highlightedTextTemporarilyHidden
             && this.noteContext.viewScope.viewMode === 'default';
     }
 
     async doRenderBody() {
         this.$body.empty().append($(TPL));
-        this.$hlt = this.$body.find('.hlt');
-        this.$body.find('.hlt-widget').append(this.closeHltButton.render());
+        this.$hlt = this.$body.find('.highlighted-text');
+        this.$body.find('.highlighted-text-widget').append(this.closeHltButton.render());
     }
 
     async refreshWithNote(note) {
-        const hltLabel = note.getLabel('hlt');
+        const hltLabel = note.getLabel('hideHighlightWidget');
 
-        if (hltLabel?.value === 'hide') {
+        if (hltLabel?.value=="" || hltLabel?.value=== "true") {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
@@ -90,7 +90,7 @@ export default class HltWidget extends RightPanelWidget {
         }
         this.$hlt.html($hlt);
         this.toggleInt(
-            ["", "show"].includes(hltLabel?.value)
+            [undefined, "false"].includes(hltLabel?.value)
             || hltColors!="" 
             || hltBgColors!=""
         );
@@ -200,7 +200,7 @@ export default class HltWidget extends RightPanelWidget {
                 $li.css("display","none");
             }
             //The font color and background color may be nested or adjacent to each other. At this time, connect the front and back li to avoid interruption
-            if(hltIndex!=0 && hltBCs[hltIndex-1].nextSibling ===hltBCs[hltIndex] && $hlt.children().last().css("display")!="none"){
+            if(hltIndex!=0 && hltBCs[hltIndex-1].nextSibling === hltBCs[hltIndex] && $hlt.children().last().css("display")!="none"){
                 $hlt.children().last().append($li.html());
             }else{
                 $li.on("click", () => this.jumpToHlt(hltIndex));
@@ -233,7 +233,7 @@ export default class HltWidget extends RightPanelWidget {
     }
 
     async closeHltCommand() {
-        this.noteContext.viewScope.hltTemporarilyHidden = true;
+        this.noteContext.viewScope.highlightedTextTemporarilyHidden = true;
         await this.refresh();
         this.triggerCommand('reEvaluateRightPaneVisibility');
     }
@@ -255,13 +255,13 @@ class CloseHltButton extends OnClickButtonWidget {
         super();
 
         this.icon("bx-x")
-            .title("Close HLT")
+            .title("Close HighlightTextWidget")
             .titlePlacement("bottom")
             .onClick((widget, e) => {
                 e.stopPropagation();
 
                 widget.triggerCommand("closeHlt");
             })
-            .class("icon-action close-hlt");
+            .class("icon-action close-highlighted-text");
     }
 }
