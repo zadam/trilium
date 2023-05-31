@@ -56,13 +56,15 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         const $maximizeBtn = this.$widget.find(".maximize-btn");
         const $closeBtn = this.$widget.find(".close-btn");
 
-        //When the window is restarted, the window will not be reset when it is set to the top, so get the window status and set the icon background
-        (function () {
+        // When the window is restarted, the window will not be reset when it is set to the top,
+        // so get the window status and set the icon background
+        setTimeout(() => {
             const remote = utils.dynamicRequire('@electron/remote');
-            if (remote.BrowserWindow.getFocusedWindow().isAlwaysOnTop()) {
+            if (remote.BrowserWindow.getFocusedWindow()?.isAlwaysOnTop()) {
                 $topBtn.addClass('active');
             }
-        }());
+        }, 1000);
+
         $topBtn.on('click', () => {
             $topBtn.trigger('blur');
             const remote = utils.dynamicRequire('@electron/remote');

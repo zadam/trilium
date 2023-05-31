@@ -69,15 +69,22 @@ function reload() {
     require('../services/ws').reloadFrontend();
 }
 
-function postProcessEntityUpdate(entityName, entity) {
+/**
+ * This gets run on entity being created or updated.
+ *
+ * @param entityName
+ * @param entityRow - can be a becca entity (change comes from this trilium instance) or just a row (from sync).
+ *                    Should be therefore treated as a row.
+ */
+function postProcessEntityUpdate(entityName, entityRow) {
     if (entityName === 'notes') {
-        noteUpdated(entity);
+        noteUpdated(entityRow);
     } else if (entityName === 'branches') {
-        branchUpdated(entity);
+        branchUpdated(entityRow);
     } else if (entityName === 'attributes') {
-        attributeUpdated(entity);
+        attributeUpdated(entityRow);
     } else if (entityName === 'note_reordering') {
-        noteReorderingUpdated(entity);
+        noteReorderingUpdated(entityRow);
     }
 }
 
@@ -163,8 +170,8 @@ function branchDeleted(branchId) {
     delete becca.branches[branch.branchId];
 }
 
-function noteUpdated(entity) {
-    const note = becca.notes[entity.noteId];
+function noteUpdated(entityRow) {
+    const note = becca.notes[entityRow.noteId];
 
     if (note) {
         // type / mime could have been changed, and they are present in flatTextCache
@@ -172,15 +179,15 @@ function noteUpdated(entity) {
     }
 }
 
-function branchUpdated(branch) {
-    const childNote = becca.notes[branch.noteId];
+function branchUpdated(branchRow) {
+    const childNote = becca.notes[branchRow.noteId];
 
     if (childNote) {
         childNote.flatTextCache = null;
         childNote.sortParents();
     }
 
-    const parentNote = becca.notes[branch.parentNoteId];
+    const parentNote = becca.notes[branchRow.parentNoteId];
 
     if (parentNote) {
         parentNote.sortChildren();
@@ -222,8 +229,10 @@ function attributeDeleted(attributeId) {
     }
 }
 
-function attributeUpdated(attribute) {
-    const note = becca.notes[attribute.noteId];
+/** @param {BAttribute} attributeRow */
+function attributeUpdated(attributeRow) {
+    const attribute = becca.attributes[attributeRow.attributeId];
+    const note = becca.notes[attributeRow.noteId];
 
     if (note) {
         if (attribute.isAffectingSubtree || note.isInherited()) {
