@@ -82,11 +82,14 @@ export default class HighlightTextWidget extends RightPanelWidget {
 
         let optionsHltColors = JSON.parse(options.get('highlightedTextColors'));
         let optionsHltBgColors = JSON.parse(options.get('highlightedTextBgColors'));
+        const colorToValDic={"Dark": "#000000", "Dim grey": "#4d4d4d", "Grey": "#999999", "Light grey": "#e6e6e6", "White": "#ffffff", "Red": "#e64c4c", "Orange": "#e6994c", "Yellow": "#e6e64c", "Light green": "#99e64c", "Green": "#4ce64c", "Aquamarine": "#4ce699", "Turquoise": "#4ce6e6", "Light blue": "#4c99e6", "Blue": "#4c4ce6", "Purple": "#994ce6"}
+        const optionsHltColorsVal = optionsHltColors.map(color => colorToValDic[color]);
+        const optionsHltBgColorsVal = optionsHltBgColors.map(color => colorToValDic[color]);
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const { content } = await note.getNoteComplement();
             //hltColors/hltBgColors are the colors/background-color that appear in notes and in options 
-            ({ $hlt, hltColors, hltBgColors } = await this.getHlt(content, optionsHltColors, optionsHltBgColors));
+            ({ $hlt, hltColors, hltBgColors } = await this.getHlt(content, optionsHltColorsVal, optionsHltBgColorsVal));
         }
         this.$hlt.html($hlt);
         this.toggleInt(
@@ -167,7 +170,7 @@ export default class HighlightTextWidget extends RightPanelWidget {
     /**
      * Builds a jquery table of helight text.      
      */
-    getHlt(html, optionsHltColors, optionsHltBgColors) {
+    getHlt(html, optionsHltColorsVal, optionsHltBgColorsVal) {
         const hltBCs = $(html).find(`span[style*="background-color"],span[style*="color"]`)
         const $hlt = $("<ol>");
         let hltColors = [];
@@ -181,7 +184,7 @@ export default class HighlightTextWidget extends RightPanelWidget {
             
             if (color != "") {
                 var hexColor = this.colorToHex(color);
-                if (this.hexIsInOptionHexs(hexColor,optionsHltColors)) {                   
+                if (this.hexIsInOptionHexs(hexColor,optionsHltColorsVal)) {                   
                     $li.html(hltText)
                     hltColors.push(hexColor);
                     liDisplay=true;
@@ -189,7 +192,7 @@ export default class HighlightTextWidget extends RightPanelWidget {
             }
             if (bgColor != "") {
                 var hexBgColor = this.colorToHex(bgColor);
-                if (this.hexIsInOptionHexs(hexBgColor,optionsHltBgColors)) {
+                if (this.hexIsInOptionHexs(hexBgColor,optionsHltBgColorsVal)) {
                     //When you need to add a background color, in order to make the display more comfortable, change the background color to transparent
                     $li.html(hltText.css("background-color", hexBgColor+"80"))
                     hltBgColors.push(hexBgColor);

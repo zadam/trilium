@@ -3,7 +3,7 @@ import OptionsWidget from "../options_widget.js";
 const TPL = `
 <div class="options-section" style='max-width: 46em;'>
     <style>
-        .highlighted-text-checkbox-label {
+        .highlighted-text-label {
             display: inline-block;
             min-width: 8em;
         }
@@ -12,37 +12,37 @@ const TPL = `
     
     Displays highlighted text in the right panel. You can customize the highlighted text displayed in the right panel:
     <br><strong>Text color:</strong><br>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#000000"> Dark &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4d4d4d"> Dim grey &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#999999"> Grey &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#e6e6e6"> Light grey &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#ffffff"> White &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#e64c4c"> Red &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#e6994c"> Orange &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#e6e64c"> Yellow &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#99e64c"> Light green &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4ce64c"> Green &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4ce699"> Aquamarine &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4ce6e6"> Turquoise &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4c99e6"> Light blue &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#4c4ce6"> Blue &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-color" value="#994ce6"> Purple &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Dark"> Dark &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Dim grey"> Dim grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Grey"> Grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Light grey"> Light grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="White"> White &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Red"> Red &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Orange"> Orange &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Yellow"> Yellow &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Light green"> Light green &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Green"> Green &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Aquamarine"> Aquamarine &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Turquoise"> Turquoise &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Light blue"> Light blue &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Blue"> Blue &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Purple"> Purple &nbsp;</label>
 <br><strong>Background color:</strong><br>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#000000"> Dark&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4d4d4d"> Dim grey&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#999999"> Grey&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#e6e6e6"> Light grey&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#ffffff"> White&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#e64c4c"> Red &nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#e6994c"> Orange&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#e6e64c"> Yellow&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#99e64c"> Light green&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4ce64c"> Green&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4ce699"> Aquamarine&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4ce6e6"> Turquoise&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4c99e6"> Light blue&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#4c4ce6"> Blue&nbsp;</label>
-<label class='highlighted-text-checkbox-label'><input type="checkbox" class="highlighted-text-background-color" value="#994ce6"> Purple&nbsp;</label>  
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Dark"> Dark &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Dim grey"> Dim grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Grey"> Grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Light grey"> Light grey &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="White"> White &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Red"> Red &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Orange"> Orange &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Yellow"> Yellow &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Light green"> Light green &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Green"> Green &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Aquamarine"> Aquamarine &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Turquoise"> Turquoise &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Light blue"> Light blue &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Blue"> Blue &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Purple"> Purple &nbsp;</label>  
 </div>`;
 
 export default class HighlightedTextOptions extends OptionsWidget {
