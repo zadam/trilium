@@ -81,16 +81,16 @@ export default class HighlightTextWidget extends RightPanelWidget {
         }
         const hltLabel = note.getLabel('hideHighlightWidget');
 
-        if (hltLabel?.value == "" || hltLabel?.value === "true") {
+        let optionsHltColors = JSON.parse(options.get('highlightedTextColors'));
+        let optionsHltBgColors = JSON.parse(options.get('highlightedTextBgColors'));
+
+        if (hltLabel?.value == "" || hltLabel?.value === "true" || (optionsHltColors=="" && optionsHltBgColors=="")) {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
         }
 
         let $hlt = "", hltLiCount = -1;
-
-        let optionsHltColors = JSON.parse(options.get('highlightedTextColors'));
-        let optionsHltBgColors = JSON.parse(options.get('highlightedTextBgColors'));
         //Obtained by `textEditor.config.get('fontColor.colors'), but this command can only be used in edit mode, so it is directly saved here
         const colorToValDic = { "Black": "hsl(0,0%,0%)", "Dim grey": "hsl(0,0%,30%)", "Grey": "hsl(0,0%,60%)", "Light grey": "hsl(0,0%,90%)", "White": "hsl(0,0%,100%)", "Red": "hsl(0,75%,60%)", "Orange": "hsl(30,75%,60%)", "Yellow": "hsl(60,75%,60%)", "Light green": "hsl(90,75%,60%)", "Green": "hsl(120,75%,60%)", "Aquamarine": "hsl(150,75%,60%)", "Turquoise": "hsl(180,75%,60%)", "Light blue": "hsl(210,75%,60%)", "Blue": "hsl(240,75%,60%)", "Purple": "hsl(270,75%,60%)" }
         const optionsHltColorsVal = optionsHltColors.map(color => colorToValDic[color]);
