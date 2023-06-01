@@ -69,25 +69,6 @@ function reload() {
     require('../services/ws').reloadFrontend();
 }
 
-/**
- * This gets run on entity being created or updated.
- *
- * @param entityName
- * @param entityRow - can be a becca entity (change comes from this trilium instance) or just a row (from sync).
- *                    Should be therefore treated as a row.
- */
-function postProcessEntityUpdate(entityName, entityRow) {
-    if (entityName === 'notes') {
-        noteUpdated(entityRow);
-    } else if (entityName === 'branches') {
-        branchUpdated(entityRow);
-    } else if (entityName === 'attributes') {
-        attributeUpdated(entityRow);
-    } else if (entityName === 'note_reordering') {
-        noteReorderingUpdated(entityRow);
-    }
-}
-
 eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
     if (!becca.loaded) {
         return;
@@ -118,6 +99,25 @@ eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED,  ({entityName, en
 
     postProcessEntityUpdate(entityName, entity);
 });
+
+/**
+ * This gets run on entity being created or updated.
+ *
+ * @param entityName
+ * @param entityRow - can be a becca entity (change comes from this trilium instance) or just a row (from sync).
+ *                    Should be therefore treated as a row.
+ */
+function postProcessEntityUpdate(entityName, entityRow) {
+    if (entityName === 'notes') {
+        noteUpdated(entityRow);
+    } else if (entityName === 'branches') {
+        branchUpdated(entityRow);
+    } else if (entityName === 'attributes') {
+        attributeUpdated(entityRow);
+    } else if (entityName === 'note_reordering') {
+        noteReorderingUpdated(entityRow);
+    }
+}
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
     if (!becca.loaded) {
@@ -156,6 +156,7 @@ function branchDeleted(branchId) {
             .filter(parentBranch => parentBranch.branchId !== branch.branchId);
 
         if (childNote.parents.length > 0) {
+            // subtree notes might lose some inherited attributes
             childNote.invalidateSubTree();
         }
     }
@@ -185,6 +186,10 @@ function branchUpdated(branchRow) {
     if (childNote) {
         childNote.flatTextCache = null;
         childNote.sortParents();
+
+        // notes in the subtree can get new inherited attributes
+        // this is in theory needed upon branch creation, but there's no create event for sync changes
+        childNote.invalidateSubTree();
     }
 
     const parentNote = becca.notes[branchRow.parentNoteId];
