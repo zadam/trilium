@@ -70,151 +70,112 @@ export default class HighlightTextWidget extends RightPanelWidget {
     }
 
     async refreshWithNote(note) {
+        /*The reason for adding highlightedTextTemporarilyHiddenPrevious is to record whether the previous state of the highlightedText is hidden or displayed, 
+        * and then let it be displayed/hidden at the initial time. 
+        * If there is no such value, when the right panel needs to display toc but not highlighttext, every time the note content is changed, 
+        * highlighttext Widget will appear and then close immediately, because getHlt function will consume time*/
+        if (this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious == true) {
+            this.toggleInt(true);
+        } else {
+            this.toggleInt(false);
+        }
         const hltLabel = note.getLabel('hideHighlightWidget');
 
-        if (hltLabel?.value=="" || hltLabel?.value=== "true") {
+        if (hltLabel?.value == "" || hltLabel?.value === "true") {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
         }
 
-        let $hlt = "", hltColors = [], hltBgColors = [];
+        let $hlt = "", hltLiCount = -1;
 
         let optionsHltColors = JSON.parse(options.get('highlightedTextColors'));
         let optionsHltBgColors = JSON.parse(options.get('highlightedTextBgColors'));
-        const colorToValDic={"Dark": "#000000", "Dim grey": "#4d4d4d", "Grey": "#999999", "Light grey": "#e6e6e6", "White": "#ffffff", "Red": "#e64c4c", "Orange": "#e6994c", "Yellow": "#e6e64c", "Light green": "#99e64c", "Green": "#4ce64c", "Aquamarine": "#4ce699", "Turquoise": "#4ce6e6", "Light blue": "#4c99e6", "Blue": "#4c4ce6", "Purple": "#994ce6"}
+        //Obtained by `textEditor.config.get('fontColor.colors'), but this command can only be used in edit mode, so it is directly saved here
+        const colorToValDic = { "Black": "hsl(0,0%,0%)", "Dim grey": "hsl(0,0%,30%)", "Grey": "hsl(0,0%,60%)", "Light grey": "hsl(0,0%,90%)", "White": "hsl(0,0%,100%)", "Red": "hsl(0,75%,60%)", "Orange": "hsl(30,75%,60%)", "Yellow": "hsl(60,75%,60%)", "Light green": "hsl(90,75%,60%)", "Green": "hsl(120,75%,60%)", "Aquamarine": "hsl(150,75%,60%)", "Turquoise": "hsl(180,75%,60%)", "Light blue": "hsl(210,75%,60%)", "Blue": "hsl(240,75%,60%)", "Purple": "hsl(270,75%,60%)" }
         const optionsHltColorsVal = optionsHltColors.map(color => colorToValDic[color]);
         const optionsHltBgColorsVal = optionsHltBgColors.map(color => colorToValDic[color]);
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const { content } = await note.getNoteComplement();
             //hltColors/hltBgColors are the colors/background-color that appear in notes and in options 
-            ({ $hlt, hltColors, hltBgColors } = await this.getHlt(content, optionsHltColorsVal, optionsHltBgColorsVal));
+            ({ $hlt, hltLiCount } = await this.getHlt(content, optionsHltColorsVal, optionsHltBgColorsVal));
         }
         this.$hlt.html($hlt);
-        this.toggleInt(
-            [undefined, "false"].includes(hltLabel?.value)
-            || hltColors!="" 
-            || hltBgColors!=""
-        );
+        if ([undefined, "false"].includes(hltLabel?.value) && hltLiCount > 0) {
+            this.toggleInt(true);
+            this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious = true;
+        } else {
+            this.toggleInt(false);
+            this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious = false;
+        }
+
 
         this.triggerCommand("reEvaluateRightPaneVisibility");
     }
-    //Converts color values in RGB, RGBA, or HSL format to hexadecimal format, removing transparency
-    colorToHex(color) {
-        function rgbToHex(rgb) {
-            // Converts color values in RGB or RGBA format to hexadecimal format
-            var rgba = rgb.match(/\d+/g);
-            var r = parseInt(rgba[0]);
-            var g = parseInt(rgba[1]);
-            var b = parseInt(rgba[2]);
-            var hex = "#";
-            hex += (r < 16 ? "0" : "") + r.toString(16);
-            hex += (g < 16 ? "0" : "") + g.toString(16);
-            hex += (b < 16 ? "0" : "") + b.toString(16);
-            return hex;
-        }
 
-        function hslToHex(hsl) {
-            // Convert color values in HSL format to RGB format and then to hexadecimal format
-            var hslValues = hsl.match(/\d+(\.\d+)?/g);
-            var h = parseFloat(hslValues[0]) / 360;
-            var s = parseFloat(hslValues[1]) / 100;
-            var l = parseFloat(hslValues[2]) / 100;
-            var r, g, b;
-
-            if (s === 0) {
-                r = g = b = l; // achromatic
-            } else {
-                function hueToRgb(p, q, t) {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
-                    if (t < 1 / 6) return p + (q - p) * 6 * t;
-                    if (t < 1 / 2) return q;
-                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-                    return p;
-                }
-
-                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                var p = 2 * l - q;
-                r = hueToRgb(p, q, h + 1 / 3);
-                g = hueToRgb(p, q, h);
-                b = hueToRgb(p, q, h - 1 / 3);
-            }
-
-            var hex = "#";
-            hex += (Math.round(r * 255) < 16 ? "0" : "") + Math.round(r * 255).toString(16);
-            hex += (Math.round(g * 255) < 16 ? "0" : "") + Math.round(g * 255).toString(16);
-            hex += (Math.round(b * 255) < 16 ? "0" : "") + Math.round(b * 255).toString(16);
-            return hex;
-        }
-        if (color.indexOf("rgb") !== -1) {
-            return rgbToHex(color);
-        } else if (color.indexOf("hsl") !== -1) {
-            return hslToHex(color);
-        } else {
-            return "";
-        }
-    }
-    // Determine whether the highlighted color is in the options, avoid errors caused by errors in color conversion, 
-    // and the error of each value is acceptable within 2
-    hexIsInOptionHexs(targetColor, optionColors){
-        for (let i = 0; i < optionColors.length; i++) {
-            if (Math.abs(parseInt(optionColors[i].slice(1, 3), 16) - parseInt(targetColor.slice(1, 3), 16)) > 2) { continue; }
-            if (Math.abs(parseInt(optionColors[i].slice(3, 5), 16) - parseInt(targetColor.slice(3, 5), 16)) > 2) { continue; }
-            if (Math.abs(parseInt(optionColors[i].slice(5, 7), 16) - parseInt(targetColor.slice(5, 7), 16)) > 2) { continue; }
-            return true;
-        }
-        return false;
-    }
     /**
      * Builds a jquery table of helight text.      
      */
     getHlt(html, optionsHltColorsVal, optionsHltBgColorsVal) {
-        const hltBCs = $(html).find(`span[style*="background-color"],span[style*="color"]`)
+        const hltTagsRegex = /<span[^>]*(?:background-color|color):[^;>]+;[^>]*>(.*?)<\/span>/gi;
+        let prevEndIndex = -1;
+        let prevLiDisplay = false;
         const $hlt = $("<ol>");
-        let hltColors = [];
-        let hltBgColors = [];
-        for (let hltIndex = 0; hltIndex<hltBCs.length; hltIndex++){
-            const hltText = $(hltBCs[hltIndex]).clone();
-            const color = $(hltBCs[hltIndex]).css("color");
-            const bgColor =$(hltBCs[hltIndex]).css("background-color");
-            let liDisplay = false;
+        let hltLiCount = 0;
+        for (let match = null, hltIndex = 0; ((match = hltTagsRegex.exec(html)) !== null); hltIndex++) {
+            var spanHtml = match[0];
+            const styleString = match[0].match(/style="(.*?)"/)[1];
+            const text = match[1];
+            const startIndex = match.index;
+            const endIndex = hltTagsRegex.lastIndex - 1;
             var $li = $('<li>');
-            
-            if (color != "") {
-                var hexColor = this.colorToHex(color);
-                if (this.hexIsInOptionHexs(hexColor,optionsHltColorsVal)) {                   
-                    $li.html(hltText)
-                    hltColors.push(hexColor);
-                    liDisplay=true;
+
+            const styles = styleString
+                .split(';')
+                .filter(item => item.includes('background-color') || item.includes('color'))
+                .map(item => item.trim());
+
+            for (let stylesIndex = 0; stylesIndex < styles.length; stylesIndex++) {
+                var [color, colorVal] = styles[stylesIndex].split(':');
+                colorVal = colorVal.replace(/\s+/g, '');
+                if (color == "color" && optionsHltColorsVal.indexOf(colorVal) >= 0) {
+                    $li.html(spanHtml)
+                    hltLiCount++;
+
+                }
+                else if (color == "background-color" && optionsHltBgColorsVal.indexOf(colorVal) >= 0) {
+
+                    //When you need to add a background color, in order to make the display more comfortable, change the background color to Translucent
+                    const spanHtmlRegex = /background-color:\s*(hsl|rgb)\((\d{1,3}),(\d{1,3}%?),(\d{1,3}%?)\)/i;
+                    let spanHtmlMatch = spanHtml.match(spanHtmlRegex);
+                    if (spanHtmlMatch && spanHtmlMatch.length > 4) {
+                        let newColorValue = `${spanHtmlMatch[1]}a(${spanHtmlMatch[2]},${spanHtmlMatch[3]},${spanHtmlMatch[4]},0.5)`;
+                        spanHtml = spanHtml.replace(spanHtmlRegex, `background-color: ${newColorValue}`);
+                    }
+                    $li.html(spanHtml)
+                    hltLiCount++;
+
+                } else {
+                    $li.css("display", "none");
                 }
             }
-            if (bgColor != "") {
-                var hexBgColor = this.colorToHex(bgColor);
-                if (this.hexIsInOptionHexs(hexBgColor,optionsHltBgColorsVal)) {
-                    //When you need to add a background color, in order to make the display more comfortable, change the background color to transparent
-                    $li.html(hltText.css("background-color", hexBgColor+"80"))
-                    hltBgColors.push(hexBgColor);
-                    liDisplay=true;
-                }              
+            if ($li.css("display")!="none"){
+                if (prevEndIndex != -1 && startIndex === prevEndIndex + 1 && prevLiDisplay == true) {
+                    $hlt.children().last().append($li.html());
+                } else {
+                    if ($li.text().trim() == "") { $li.css("display", "none"); }
+                    $li.on("click", () => this.jumpToHlt(hltIndex));
+                    $hlt.append($li);
+                }
             }
-            if(!liDisplay){
-                $li.css("display","none");
-            }
-            //The font color and background color may be nested or adjacent to each other. At this time, connect the front and back li to avoid interruption
-            if(hltIndex!=0 && hltBCs[hltIndex-1].nextSibling === hltBCs[hltIndex] && $hlt.children().last().css("display")!="none"){
-                $hlt.children().last().append($li.html());
-            }else{
-                $li.on("click", () => this.jumpToHlt(hltIndex));
-                $hlt.append($li);
-            }
-            
-        };
+
+            prevEndIndex = endIndex;
+            prevLiDisplay = $li.css("display")!="none";
+        }
         return {
             $hlt,
-            hltColors,
-            hltBgColors
+            hltLiCount
         };
     }
 
@@ -245,7 +206,7 @@ export default class HighlightTextWidget extends RightPanelWidget {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
         } else if (loadResults.getAttributes().find(attr => attr.type === 'label'
-            && (attr.name.toLowerCase().includes('readonly') || attr.name === 'hlt')
+            && (attr.name.toLowerCase().includes('readonly') || attr.name === 'hideHighlightWidget')
             && attributeService.isAffecting(attr, this.note))) {
             await this.refresh();
         }

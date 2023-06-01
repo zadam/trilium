@@ -10,9 +10,9 @@ const TPL = `
     </style>
     <h4>Highlighted Text</h4>
     
-    Displays highlighted text in the right panel. You can customize the highlighted text displayed in the right panel:
+    You can customize the highlighted text displayed in the right panel:
     <br><strong>Text color:</strong><br>
-<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Dark"> Dark &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Black"> Black &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Dim grey"> Dim grey &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Grey"> Grey &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Light grey"> Light grey &nbsp;</label>
@@ -28,7 +28,7 @@ const TPL = `
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Blue"> Blue &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-color" value="Purple"> Purple &nbsp;</label>
 <br><strong>Background color:</strong><br>
-<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Dark"> Dark &nbsp;</label>
+<label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Black"> Black &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Dim grey"> Dim grey &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Grey"> Grey &nbsp;</label>
 <label class='highlighted-text-label'><input type="checkbox" class="highlighted-text-background-color" value="Light grey"> Light grey &nbsp;</label>
