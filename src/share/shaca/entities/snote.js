@@ -40,7 +40,7 @@ class SNote extends AbstractShacaEntity {
         /** @param {SAttribute[]|null} */
         this.__attributeCache = null;
         /** @param {SAttribute[]|null} */
-        this.inheritableAttributeCache = null;
+        this.__inheritableAttributeCache = null;
 
         /** @param {SAttribute[]} */
         this.targetRelations = [];
@@ -190,11 +190,11 @@ class SNote extends AbstractShacaEntity {
                 }
             }
 
-            this.inheritableAttributeCache = [];
+            this.__inheritableAttributeCache = [];
 
             for (const attr of this.__attributeCache) {
                 if (attr.isInheritable) {
-                    this.inheritableAttributeCache.push(attr);
+                    this.__inheritableAttributeCache.push(attr);
                 }
             }
         }
@@ -208,11 +208,11 @@ class SNote extends AbstractShacaEntity {
             return [];
         }
 
-        if (!this.inheritableAttributeCache) {
-            this.__getAttributes(path); // will refresh also this.inheritableAttributeCache
+        if (!this.__inheritableAttributeCache) {
+            this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
 
-        return this.inheritableAttributeCache;
+        return this.__inheritableAttributeCache;
     }
 
     /** @returns {boolean} */
