@@ -17,7 +17,7 @@ export default class TabManager extends Component {
 
         this.activeNtxId = null;
 
-        // elements are arrays of note contexts for each tab (one main context + subcontexts [splits])
+        // elements are arrays of {contexts, position}, storing note contexts for each tab (one main context + subcontexts [splits]), and the original position of the tab
         this.recentlyClosedTabs = [];
 
         this.tabsUpdate = new SpacedUpdate(async () => {
@@ -418,21 +418,23 @@ export default class TabManager extends Component {
     removeNoteContexts(noteContextsToRemove) {
         const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
+        const position = this.noteContexts.findIndex(nc => ntxIdsToRemove.includes(nc.ntxId));
+
         this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
 
-        this.addToRecentlyClosedTabs(noteContextsToRemove);
+        this.addToRecentlyClosedTabs(noteContextsToRemove, position);
 
         this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
 
         this.tabsUpdate.scheduleUpdate();
     }
 
-    addToRecentlyClosedTabs(noteContexts) {
+    addToRecentlyClosedTabs(noteContexts, position) {
         if (noteContexts.length === 1 && noteContexts[0].isEmpty()) {
             return;
         }
 
-        this.recentlyClosedTabs.push(noteContexts);
+        this.recentlyClosedTabs.push({contexts: noteContexts, position: position});
     }
 
     tabReorderEvent({ntxIdsInOrder}) {
@@ -544,12 +546,37 @@ export default class TabManager extends Component {
                 closeLastEmptyTab = this.noteContexts[0];
             }
 
-            const noteContexts = this.recentlyClosedTabs.pop();
+            const lastClosedTab = this.recentlyClosedTabs.pop();
+            const noteContexts = lastClosedTab.contexts;
 
             for (const noteContext of noteContexts) {
                 this.child(noteContext);
 
                 await this.triggerEvent('newNoteContextCreated', {noteContext});
+            }
+
+            //  restore last position of contexts stored in tab manager
+            const ntxsInOrder = [
+                ...this.noteContexts.slice(0, lastClosedTab.position),
+                ...this.noteContexts.slice(-noteContexts.length),
+                ...this.noteContexts.slice(lastClosedTab.position, -noteContexts.length),
+            ]
+            await this.noteContextReorderEvent({ntxIdsInOrder: ntxsInOrder.map(nc => nc.ntxId)});
+
+            let mainNtx = noteContexts.find(nc => nc.isMainContext());
+            if (mainNtx) {
+                // reopened a tab, need to reorder new tab widget in tab row
+                await this.triggerEvent('contextsReopened', {
+                    mainNtxId: mainNtx.ntxId,
+                    tabPosition: ntxsInOrder.filter(nc => nc.isMainContext()).findIndex(nc => nc.ntxId === mainNtx.ntxId)
+                });
+            } else {
+                // reopened a single split, need to reorder the pane widget in split note container
+                await this.triggerEvent('contextsReopened', {
+                    ntxId: ntxsInOrder[lastClosedTab.position].ntxId,
+                    // this is safe since lastClosedTab.position can never be 0 in this case
+                    afterNtxId: ntxsInOrder[lastClosedTab.position - 1].ntxId
+                });
             }
 
             const noteContextToActivate = noteContexts.length === 1
