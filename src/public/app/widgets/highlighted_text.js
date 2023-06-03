@@ -95,7 +95,6 @@ export default class HighlightedTextWidget extends RightPanelWidget {
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const { content } = await note.getNoteComplement();
-            //hltColors/hltBgColors are the colors/background-color that appear in notes and in options 
             ({ $hlt, hltLiCount } = await this.getHlt(content, optionsHlt));
         }
         this.$hlt.html($hlt);
