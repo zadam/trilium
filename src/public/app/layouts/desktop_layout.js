@@ -76,6 +76,7 @@ import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
 import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
+import MovePaneButton from "../widgets/buttons/move_pane_button.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -124,6 +125,8 @@ export default class DesktopLayout {
                                         .child(new NoteIconWidget())
                                         .child(new NoteTitleWidget())
                                         .child(new SpacerWidget(0, 1))
+                                        .child(new MovePaneButton(true))
+                                        .child(new MovePaneButton(false))
                                         .child(new ClosePaneButton())
                                         .child(new CreatePaneButton())
                                     )

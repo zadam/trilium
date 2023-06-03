@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import server from "../../services/server.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="note-info-widget">
@@ -105,12 +106,12 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
             this.$subTreeSize.empty().append($('<span class="bx bx-loader bx-spin"></span>'));
 
             const noteSizeResp = await server.get(`stats/note-size/${this.noteId}`);
-            this.$noteSize.text(this.formatSize(noteSizeResp.noteSize));
+            this.$noteSize.text(utils.formatNoteSize(noteSizeResp.noteSize));
 
             const subTreeResp = await server.get(`stats/subtree-size/${this.noteId}`);
 
             if (subTreeResp.subTreeNoteCount > 1) {
-                this.$subTreeSize.text(`(subtree size: ${this.formatSize(subTreeResp.subTreeSize)} in ${subTreeResp.subTreeNoteCount} notes)`);
+                this.$subTreeSize.text(`(subtree size: ${utils.formatNoteSize(subTreeResp.subTreeSize)} in ${subTreeResp.subTreeNoteCount} notes)`);
             }
             else {
                 this.$subTreeSize.text("");
@@ -142,18 +143,7 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
         this.$calculateButton.show();
         this.$noteSizesWrapper.hide();
     }
-
-    formatSize(size) {
-        size = Math.max(Math.round(size / 1024), 1);
-
-        if (size < 1024) {
-            return `${size} KiB`;
-        }
-        else {
-            return `${Math.round(size / 102.4) / 10} MiB`;
-        }
-    }
-
+    
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId) || loadResults.isNoteContentReloaded(this.noteId)) {
             this.refresh();

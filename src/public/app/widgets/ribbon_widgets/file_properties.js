@@ -136,7 +136,7 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
 
         const noteComplement = await this.noteContext.getNoteComplement();
 
-        this.$fileSize.text(`${noteComplement.contentLength} bytes`);
+        this.$fileSize.text(utils.formatNoteSize(noteComplement.contentLength));
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         this.$openButton.toggle(!note.isProtected);
