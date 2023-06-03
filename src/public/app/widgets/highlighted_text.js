@@ -46,7 +46,7 @@ const TPL = `<div class="highlighted-text-widget">
     <span class="highlighted-text"></span>
 </div>`;
 
-export default class HighlightTextWidget extends RightPanelWidget {
+export default class HighlightedTextWidget extends RightPanelWidget {
     constructor() {
         super();
 
@@ -242,7 +242,7 @@ class CloseHltButton extends OnClickButtonWidget {
         super();
 
         this.icon("bx-x")
-            .title("Close HighlightTextWidget")
+            .title("Close HighlightedTextWidget")
             .titlePlacement("bottom")
             .onClick((widget, e) => {
                 e.stopPropagation();
