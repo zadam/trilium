@@ -81,25 +81,20 @@ export default class HighlightTextWidget extends RightPanelWidget {
         }
         const hltLabel = note.getLabel('hideHighlightWidget');
 
-        let optionsHltColors = JSON.parse(options.get('highlightedTextColors'));
-        let optionsHltBgColors = JSON.parse(options.get('highlightedTextBgColors'));
+        const optionsHlt = JSON.parse(options.get('highlightedText'));
 
-        if (hltLabel?.value == "" || hltLabel?.value === "true" || (optionsHltColors=="" && optionsHltBgColors=="")) {
+        if (hltLabel?.value == "" || hltLabel?.value === "true" || optionsHlt == "") {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
         }
 
         let $hlt = "", hltLiCount = -1;
-        //Obtained by `textEditor.config.get('fontColor.colors'), but this command can only be used in edit mode, so it is directly saved here
-        const colorToValDic = { "Black": "hsl(0,0%,0%)", "Dim grey": "hsl(0,0%,30%)", "Grey": "hsl(0,0%,60%)", "Light grey": "hsl(0,0%,90%)", "White": "hsl(0,0%,100%)", "Red": "hsl(0,75%,60%)", "Orange": "hsl(30,75%,60%)", "Yellow": "hsl(60,75%,60%)", "Light green": "hsl(90,75%,60%)", "Green": "hsl(120,75%,60%)", "Aquamarine": "hsl(150,75%,60%)", "Turquoise": "hsl(180,75%,60%)", "Light blue": "hsl(210,75%,60%)", "Blue": "hsl(240,75%,60%)", "Purple": "hsl(270,75%,60%)" }
-        const optionsHltColorsVal = optionsHltColors.map(color => colorToValDic[color]);
-        const optionsHltBgColorsVal = optionsHltBgColors.map(color => colorToValDic[color]);
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const { content } = await note.getNoteComplement();
             //hltColors/hltBgColors are the colors/background-color that appear in notes and in options 
-            ({ $hlt, hltLiCount } = await this.getHlt(content, optionsHltColorsVal, optionsHltBgColorsVal));
+            ({ $hlt, hltLiCount } = await this.getHlt(content, optionsHlt));
         }
         this.$hlt.html($hlt);
         if ([undefined, "false"].includes(hltLabel?.value) && hltLiCount > 0) {
@@ -110,90 +105,115 @@ export default class HighlightTextWidget extends RightPanelWidget {
             this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious = false;
         }
 
-
         this.triggerCommand("reEvaluateRightPaneVisibility");
     }
 
     /**
      * Builds a jquery table of helight text.      
      */
-    getHlt(html, optionsHltColorsVal, optionsHltBgColorsVal) {
-        const hltTagsRegex = /<span[^>]*(?:background-color|color):[^;>]+;[^>]*>(.*?)<\/span>/gi;
-        let prevEndIndex = -1;
-        let prevLiDisplay = false;
-        const $hlt = $("<ol>");
-        let hltLiCount = 0;
-        for (let match = null, hltIndex = 0; ((match = hltTagsRegex.exec(html)) !== null); hltIndex++) {
-            var spanHtml = match[0];
-            const styleString = match[0].match(/style="(.*?)"/)[1];
-            const text = match[1];
-            const startIndex = match.index;
-            const endIndex = hltTagsRegex.lastIndex - 1;
-            var $li = $('<li>');
-
-            const styles = styleString
-                .split(';')
-                .filter(item => item.includes('background-color') || item.includes('color'))
-                .map(item => item.trim());
-
-            for (let stylesIndex = 0; stylesIndex < styles.length; stylesIndex++) {
-                var [color, colorVal] = styles[stylesIndex].split(':');
-                colorVal = colorVal.replace(/\s+/g, '');
-                if (color == "color" && optionsHltColorsVal.indexOf(colorVal) >= 0) {
-                    $li.html(spanHtml)
-                    hltLiCount++;
-
-                }
-                else if (color == "background-color" && optionsHltBgColorsVal.indexOf(colorVal) >= 0) {
-
-                    //When you need to add a background color, in order to make the display more comfortable, change the background color to Translucent
-                    const spanHtmlRegex = /background-color:\s*(hsl|rgb)\((\d{1,3}),(\d{1,3}%?),(\d{1,3}%?)\)/i;
-                    let spanHtmlMatch = spanHtml.match(spanHtmlRegex);
-                    if (spanHtmlMatch && spanHtmlMatch.length > 4) {
-                        let newColorValue = `${spanHtmlMatch[1]}a(${spanHtmlMatch[2]},${spanHtmlMatch[3]},${spanHtmlMatch[4]},0.5)`;
-                        spanHtml = spanHtml.replace(spanHtmlRegex, `background-color: ${newColorValue}`);
-                    }
-                    $li.html(spanHtml)
-                    hltLiCount++;
-
-                } else {
-                    $li.css("display", "none");
-                }
-            }
-            if ($li.css("display")!="none"){
-                if (prevEndIndex != -1 && startIndex === prevEndIndex + 1 && prevLiDisplay == true) {
-                    $hlt.children().last().append($li.html());
-                } else {
-                    if ($li.text().trim() == "") { $li.css("display", "none"); }
-                    $li.on("click", () => this.jumpToHlt(hltIndex));
-                    $hlt.append($li);
-                }
-            }
-
-            prevEndIndex = endIndex;
-            prevLiDisplay = $li.css("display")!="none";
+    getHlt(html, optionsHlt) {
+        // element priority： span>i>strong>u
+        // matches a span containing background-color
+        const regex1 = /<span[^>]*style\s*=\s*[^>]*background-color:[^>]*?>[\s\S]*?<\/span>/gi; 
+        // matches a span containing color
+        const regex2 = /<span[^>]*style\s*=\s*[^>]*[^-]color:[^>]*?>[\s\S]*?<\/span>/gi;
+        // match italics
+        const regex3 = /<i>[\s\S]*?<\/i>/gi;
+        // match bold
+        const regex4 = /<strong>[\s\S]*?<\/strong>/gi;
+        // match underline
+        const regex5 = /<u>[\s\S]*?<\/u>/g;
+        // Possible values in optionsHlt： '["bold","italic","underline","color","bgColor"]'
+        let findSubStr="", combinedRegexStr = "";
+        if (optionsHlt.indexOf("bgColor") >= 0){
+            findSubStr+=`,span[style*="background-color"]`;
+            combinedRegexStr+=`|${regex1.source}`;
         }
+        if (optionsHlt.indexOf("color") >= 0){
+            findSubStr+=`,span[style*="color"]`;
+            combinedRegexStr+=`|${regex2.source}`;
+        }
+        if (optionsHlt.indexOf("italic") >= 0){
+            findSubStr+=`,i`;
+            combinedRegexStr+=`|${regex3.source}`;
+        }
+        if (optionsHlt.indexOf("bold") >= 0){
+            findSubStr+=`,strong`;
+            combinedRegexStr+=`|${regex4.source}`;
+        }
+        if (optionsHlt.indexOf("underline") >= 0){
+            findSubStr+=`,u`;
+            combinedRegexStr+=`|${regex5.source}`;
+        }
+
+        findSubStr = findSubStr.substring(1)
+        combinedRegexStr = `(` + combinedRegexStr.substring(1) + `)`;
+        const combinedRegex = new RegExp(combinedRegexStr, 'gi');
+        var $hlt = $("<ol>");
+        var hltLiCount = 0;
+        let prevEndIndex = -1;
+        for (let match = null, hltIndex = 0; ((match = combinedRegex.exec(html)) !== null); hltIndex++) {
+            var subHtml = match[0];
+            const startIndex = match.index;
+            const endIndex = combinedRegex.lastIndex;
+            hltLiCount++;
+            if (prevEndIndex != -1 && startIndex === prevEndIndex) {
+                $hlt.children().last().append(subHtml);
+            } else {
+                var $li = $('<li>');
+                $li.html(subHtml);
+                if ($li.text().trim() == "") { $li.css("display", "none"); }
+                $li.on("click", () => this.jumpToHlt(findSubStr,hltIndex));
+                $hlt.append($li);
+            }
+            prevEndIndex = endIndex;
+        }
+
         return {
             $hlt,
             hltLiCount
         };
     }
-
-    async jumpToHlt(hltIndex) {
+    async jumpToHlt(findSubStr,hltIndex) {
         const isReadOnly = await this.noteContext.isReadOnly();
+        let targetElement;
         if (isReadOnly) {
             const $container = await this.noteContext.getContentElement();
-            const hltElement = $container.find(`span[style*="background-color"],span[style*="color"]`)[hltIndex];
-
-            if (hltElement != null) {
-                hltElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
+            targetElement=$container.find(findSubStr).filter(function() {
+                if (findSubStr.indexOf("color")>=0 &&  findSubStr.indexOf("background-color")<0){
+                    let color = this.style.color;
+                    return $(this).prop('tagName')=="SPAN" && color==""?false:true;
+                }else{
+                    return true;
+                }                
+            }).filter(function() {
+                return $(this).parent(findSubStr).length === 0 
+                && $(this).parent().parent(findSubStr).length === 0
+                && $(this).parent().parent().parent(findSubStr).length === 0
+                && $(this).parent().parent().parent().parent(findSubStr).length === 0;
+            })
         } else {
             const textEditor = await this.noteContext.getTextEditor();
-            $(textEditor.editing.view.domRoots.values().next().value).find(`span[style*="background-color"],span[style*="color"]`)[hltIndex].scrollIntoView({
-                behavior: "smooth", block: "center"
-            });
+            targetElement=$(textEditor.editing.view.domRoots.values().next().value).find(findSubStr).filter(function() {
+                // When finding span[style*="color"] but not looking for span[style*="background-color"], 
+                // the background-color error will be regarded as color, so it needs to be filtered
+                if (findSubStr.indexOf("color")>=0 &&  findSubStr.indexOf("background-color")<0){
+                    let color = this.style.color;
+                    return $(this).prop('tagName')=="SPAN" && color==""?false:true;
+                }else{
+                    return true;
+                }                
+            }).filter(function() {
+                //Need to filter out the child elements of the element that has been found
+                return $(this).parent(findSubStr).length === 0 
+                && $(this).parent().parent(findSubStr).length === 0
+                && $(this).parent().parent().parent(findSubStr).length === 0
+                && $(this).parent().parent().parent().parent(findSubStr).length === 0;
+            })
         }
+        targetElement[hltIndex].scrollIntoView({
+            behavior: "smooth", block: "center"
+        });
     }
 
     async closeHltCommand() {
