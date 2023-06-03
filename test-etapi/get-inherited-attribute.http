@@ -1,0 +1,44 @@
+POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "root",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": true
+}
+
+> {% client.global.set("createdAttributeId", response.body.attributeId); %}
+
+###
+
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+client.global.set("createdNoteId", response.body.note.noteId);
+client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {%
+client.assert(response.status === 200);
+client.assert(response.body.noteId == client.global.get("createdNoteId"));
+client.assert(response.body.attributes.length == 1);
+client.assert(response.body.attributes[0].attributeId == 
+  client.global.get("createdAttributeId"));
+%}

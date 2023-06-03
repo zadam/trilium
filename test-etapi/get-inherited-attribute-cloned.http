@@ -1,0 +1,116 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello parent",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+client.assert(response.status === 201);
+client.global.set("parentNoteId", response.body.note.noteId);
+client.global.set("parentBranchId", response.body.branch.branchId);
+%}
+
+### Create inheritable parent attribute
+
+POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{parentNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "",
+  "isInheritable": true,
+  "position": 10
+}
+
+> {%
+client.assert(response.status === 201);
+client.global.set("parentAttributeId", response.body.attributeId);
+%}
+
+### Create child note under root
+
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello child",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+client.assert(response.status === 201);
+client.global.set("childNoteId", response.body.note.noteId);
+client.global.set("childBranchId", response.body.branch.branchId);
+%}
+
+### Create child attribute
+
+POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{childNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": false,
+  "position": 10
+}
+
+> {%
+client.assert(response.status === 201);
+client.global.set("childAttributeId", response.body.attributeId);
+%}
+
+### Clone child to parent
+
+POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{childNoteId}}",
+  "parentNoteId": "{{parentNoteId}}"
+}
+
+> {%
+client.assert(response.status === 201);
+client.assert(response.body.parentNoteId == client.global.get("parentNoteId"));
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{childNoteId}}
+Authorization: {{authToken}}
+
+> {%
+
+function hasAttribute(list, attributeId) {
+  for (let i = 0; i < list.length; i++) {
+    if (list[i]["attributeId"] === attributeId) {
+      return true;
+    }
+  }
+  return false;
+}
+
+client.assert(response.status === 200);
+client.assert(response.body.noteId == client.global.get("childNoteId"));
+client.assert(response.body.attributes.length == 2);
+client.assert(hasAttribute(response.body.attributes, 
+  client.global.get("parentAttributeId")));
+client.assert(hasAttribute(response.body.attributes, 
+  client.global.get("childAttributeId")));
+%}
