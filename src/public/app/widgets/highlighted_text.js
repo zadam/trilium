@@ -28,6 +28,8 @@ const TPL = `<div class="highlighted-text-widget">
             margin-bottom: 3px;
             text-align: justify;
             text-justify: distribute;
+            word-wrap: break-word;
+            hyphens: auto;
         }
         
         .highlighted-text li:hover {
@@ -149,26 +151,27 @@ export default class HighlightTextWidget extends RightPanelWidget {
         findSubStr = findSubStr.substring(1)
         combinedRegexStr = `(` + combinedRegexStr.substring(1) + `)`;
         const combinedRegex = new RegExp(combinedRegexStr, 'gi');
-        var $hlt = $("<ol>");
-        var hltLiCount = 0;
-        let prevEndIndex = -1;
-        for (let match = null, hltIndex = 0; ((match = combinedRegex.exec(html)) !== null); hltIndex++) {
+        let $hlt = $("<ol>");
+        let prevEndIndex = -1, hltLiCount = 0;
+        for (let match = null, hltIndex=0; ((match = combinedRegex.exec(html)) !== null); hltIndex++) {
             var subHtml = match[0];
             const startIndex = match.index;
             const endIndex = combinedRegex.lastIndex;
-            hltLiCount++;
             if (prevEndIndex != -1 && startIndex === prevEndIndex) {
                 $hlt.children().last().append(subHtml);
             } else {
-                var $li = $('<li>');
-                $li.html(subHtml);
-                if ($li.text().trim() == "") { $li.css("display", "none"); }
-                $li.on("click", () => this.jumpToHlt(findSubStr,hltIndex));
-                $hlt.append($li);
+                if ([...subHtml.matchAll(/(?<=^|>)[^><]+?(?=<|$)/g)].map(matchTmp => matchTmp[0]).join('').trim() != ""){
+                    var $li = $('<li>');
+                    $li.html(subHtml);
+                    $li.on("click", () => this.jumpToHlt(findSubStr,hltIndex));
+                    $hlt.append($li);
+                    hltLiCount++;
+                }else{
+                    continue
+                }
             }
             prevEndIndex = endIndex;
         }
-
         return {
             $hlt,
             hltLiCount

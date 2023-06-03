@@ -38,6 +38,10 @@ const TPL = `<div class="toc-widget">
         
         .toc li {
             cursor: pointer;
+            text-align: justify;
+            text-justify: distribute;
+            word-wrap: break-word;
+            hyphens: auto;
         }
         
         .toc li:hover {
