@@ -53,9 +53,6 @@ async function getRenderedContent(entity, options = {}) {
     else if (type === 'canvas') {
         await renderCanvas(entity, $renderedContent);
     }
-    else if (type === 'book') {
-        // nothing, a book doesn't have its own content
-    }
     else if (!options.tooltip && type === 'protectedSession') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
@@ -67,8 +64,13 @@ async function getRenderedContent(entity, options = {}) {
                 .append($button)
         );
     }
-    else {
-        $renderedContent.append($("<p><em>Content of this note cannot be displayed</em></p>"));
+    else if (entity instanceof FNote) {
+        $renderedContent.append(
+            $("<div>")
+                .css("text-align", "center")
+                .css("font-size", "500%")
+                .append($("<span>").addClass(entity.getIcon()))
+        );
     }
 
     if (entity instanceof FNote) {
