@@ -9,9 +9,9 @@ import BasicWidget from "../basic_widget.js";
 import dialogService from "../../services/dialog.js";
 
 const TPL = `
-<div class="note-revisions-dialog modal fade mx-auto" tabindex="-1" role="dialog">
+<div class="revisions-dialog modal fade mx-auto" tabindex="-1" role="dialog">
     <style>
-        .note-revisions-dialog .note-revision-content-wrapper {
+        .revisions-dialog .revision-content-wrapper {
             flex-grow: 1;
             margin-left: 20px;
             display: flex;
@@ -19,17 +19,17 @@ const TPL = `
             min-width: 0;
         }
 
-        .note-revisions-dialog .note-revision-content {
+        .revisions-dialog .revision-content {
             overflow: auto;
             word-break: break-word;
         }
 
-        .note-revisions-dialog .note-revision-content img {
+        .revisions-dialog .revision-content img {
             max-width: 100%;
             object-fit: contain;
         }
 
-        .note-revisions-dialog .note-revision-content pre {
+        .revisions-dialog .revision-content pre {
             max-width: 100%;
             word-break: break-all;
             white-space: pre-wrap;
@@ -41,7 +41,7 @@ const TPL = `
             <div class="modal-header">
                 <h5 class="modal-title mr-auto">Note revisions</h5>
 
-                <button class="note-revisions-erase-all-revisions-button btn btn-xs"
+                <button class="revisions-erase-all-revisions-button btn btn-xs"
                         title="Delete all revisions of this note"
                         style="padding: 0 10px 0 10px;" type="button">Delete all revisions</button>
 
@@ -53,19 +53,19 @@ const TPL = `
             </div>
             <div class="modal-body" style="display: flex; height: 80vh;">
                 <div class="dropdown">
-                    <button class="note-revision-list-dropdown" type="button" style="display: none;" data-toggle="dropdown">Dropdown trigger</button>
+                    <button class="revision-list-dropdown" type="button" style="display: none;" data-toggle="dropdown">Dropdown trigger</button>
 
-                    <div class="note-revision-list dropdown-menu" style="position: static; height: 100%; overflow: auto;"></div>
+                    <div class="revision-list dropdown-menu" style="position: static; height: 100%; overflow: auto;"></div>
                 </div>
 
-                <div class="note-revision-content-wrapper">
+                <div class="revision-content-wrapper">
                     <div style="flex-grow: 0; display: flex; justify-content: space-between;">
-                        <h3 class="note-revision-title" style="margin: 3px; flex-grow: 100;"></h3>
+                        <h3 class="revision-title" style="margin: 3px; flex-grow: 100;"></h3>
 
-                        <div class="note-revision-title-buttons"></div>
+                        <div class="revision-title-buttons"></div>
                     </div>
 
-                    <div class="note-revision-content"></div>
+                    <div class="revision-content"></div>
                 </div>
             </div>
         </div>
@@ -83,12 +83,12 @@ export default class RevisionsDialog extends BasicWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$list = this.$widget.find(".note-revision-list");
-        this.$listDropdown = this.$widget.find(".note-revision-list-dropdown");
-        this.$content = this.$widget.find(".note-revision-content");
-        this.$title = this.$widget.find(".note-revision-title");
-        this.$titleButtons = this.$widget.find(".note-revision-title-buttons");
-        this.$eraseAllRevisionsButton = this.$widget.find(".note-revisions-erase-all-revisions-button");
+        this.$list = this.$widget.find(".revision-list");
+        this.$listDropdown = this.$widget.find(".revision-list-dropdown");
+        this.$content = this.$widget.find(".revision-content");
+        this.$title = this.$widget.find(".revision-title");
+        this.$titleButtons = this.$widget.find(".revision-title-buttons");
+        this.$eraseAllRevisionsButton = this.$widget.find(".revisions-erase-all-revisions-button");
 
         this.$listDropdown.dropdown();
 
@@ -100,7 +100,7 @@ export default class RevisionsDialog extends BasicWidget {
         });
 
         this.$widget.on('shown.bs.modal', () => {
-            this.$list.find(`[data-note-revision-id="${this.revisionId}"]`)
+            this.$list.find(`[data-revision-id="${this.revisionId}"]`)
                 .trigger('focus');
         });
 
@@ -148,7 +148,7 @@ export default class RevisionsDialog extends BasicWidget {
             this.$list.append(
                 $('<a class="dropdown-item" tabindex="0">')
                     .text(`${item.dateLastEdited.substr(0, 16)} (${item.contentLength} bytes)`)
-                    .attr('data-note-revision-id', item.revisionId)
+                    .attr('data-revision-id', item.revisionId)
                     .attr('title', `This revision was last edited on ${item.dateLastEdited}`)
             );
         }
@@ -168,7 +168,7 @@ export default class RevisionsDialog extends BasicWidget {
     }
 
     async setContentPane() {
-        const revisionId = this.$list.find(".active").attr('data-note-revision-id');
+        const revisionId = this.$list.find(".active").attr('data-revision-id');
 
         const revisionItem = this.revisionItems.find(r => r.revisionId === revisionId);
 

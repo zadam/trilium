@@ -146,7 +146,7 @@ function register(router) {
         zipExportService.exportToZip(taskContext, branch, format, res);
     });
 
-    eu.route(router, 'post' ,'/etapi/notes/:noteId/note-revision', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/notes/:noteId/revision', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
 
         note.saveRevision();

@@ -291,7 +291,7 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Error'
-  /notes/{noteId}/note-revision:
+  /notes/{noteId}/revision:
     parameters:
       - name: noteId
         in: path

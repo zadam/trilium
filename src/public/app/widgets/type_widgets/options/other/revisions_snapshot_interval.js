@@ -8,14 +8,14 @@ const TPL = `
 
     <div class="form-group">
         <label>Note revision snapshot time interval (in seconds)</label>
-        <input class="note-revision-snapshot-time-interval-in-seconds form-control" type="number" min="10">
+        <input class="revision-snapshot-time-interval-in-seconds form-control" type="number" min="10">
     </div>
 </div>`;
 
 export default class RevisionsSnapshotIntervalOptions extends OptionsWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.$revisionsTimeInterval = this.$widget.find(".note-revision-snapshot-time-interval-in-seconds");
+        this.$revisionsTimeInterval = this.$widget.find(".revision-snapshot-time-interval-in-seconds");
         this.$revisionsTimeInterval.on('change', () =>
             this.updateOption('revisionSnapshotTimeInterval', this.$revisionsTimeInterval.val()));
     }

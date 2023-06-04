@@ -14,7 +14,7 @@ Content-Type: application/json
 
 ###
 
-POST {{triliumHost}}/etapi/notes/{{createdNoteId}}/note-revision
+POST {{triliumHost}}/etapi/notes/{{createdNoteId}}/revision
 Authorization: {{authToken}}
 Content-Type: text/plain
 
