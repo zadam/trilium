@@ -16,7 +16,7 @@ const TPL = `
 export default class HighlightedTextOptions extends OptionsWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.$hlt = this.$widget.find(".highlighted-text-check");
+        this.$hlt = this.$widget.find("input.highlighted-text-check");
         this.$hlt.on('change', () => {
             const hltVals=this.$widget.find('input.highlighted-text-check[type="checkbox"]:checked').map(function() {
                 return this.value;

@@ -84,11 +84,11 @@ export default class TocWidget extends RightPanelWidget {
     }
 
     async refreshWithNote(note) {
-        /*The reason for adding tocTemporarilyHiddenPrevious is to record whether the previous state of the toc is hidden or displayed, 
+        /*The reason for adding tocPreviousVisible is to record whether the previous state of the toc is hidden or displayed, 
         * and then let it be displayed/hidden at the initial time. If there is no such value, 
         * when the right panel needs to display highlighttext but not toc, every time the note content is changed, 
         * toc will appear and then close immediately, because getToc(html) function will consume time*/
-        if (this.noteContext.viewScope.tocTemporarilyHiddenPrevious ==true){
+        if (this.noteContext.viewScope.tocPreviousVisible ==true){
             this.toggleInt(true);
         }else{
             this.toggleInt(false);
@@ -112,10 +112,10 @@ export default class TocWidget extends RightPanelWidget {
         this.$toc.html($toc);
         if (["", "show"].includes(tocLabel?.value) || headingCount >= options.getInt('minTocHeadings')){
             this.toggleInt(true);
-            this.noteContext.viewScope.tocTemporarilyHiddenPrevious=true;  
+            this.noteContext.viewScope.tocPreviousVisible=true;  
         }else{
             this.toggleInt(false);
-            this.noteContext.viewScope.tocTemporarilyHiddenPrevious=false;  
+            this.noteContext.viewScope.tocPreviousVisible=false;  
         }
 
         this.triggerCommand("reEvaluateRightPaneVisibility");

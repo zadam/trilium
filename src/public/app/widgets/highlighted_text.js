@@ -72,11 +72,11 @@ export default class HighlightedTextWidget extends RightPanelWidget {
     }
 
     async refreshWithNote(note) {
-        /*The reason for adding highlightedTextTemporarilyHiddenPrevious is to record whether the previous state of the highlightedText is hidden or displayed, 
+        /*The reason for adding highlightedTextPreviousVisible is to record whether the previous state of the highlightedText is hidden or displayed, 
         * and then let it be displayed/hidden at the initial time. 
         * If there is no such value, when the right panel needs to display toc but not highlighttext, every time the note content is changed, 
         * highlighttext Widget will appear and then close immediately, because getHlt function will consume time*/
-        if (this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious == true) {
+        if (this.noteContext.viewScope.highlightedTextPreviousVisible == true) {
             this.toggleInt(true);
         } else {
             this.toggleInt(false);
@@ -100,20 +100,19 @@ export default class HighlightedTextWidget extends RightPanelWidget {
         this.$hlt.html($hlt);
         if ([undefined, "false"].includes(hltLabel?.value) && hltLiCount > 0) {
             this.toggleInt(true);
-            this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious = true;
+            this.noteContext.viewScope.highlightedTextPreviousVisible = true;
         } else {
             this.toggleInt(false);
-            this.noteContext.viewScope.highlightedTextTemporarilyHiddenPrevious = false;
+            this.noteContext.viewScope.highlightedTextPreviousVisible = false;
         }
 
         this.triggerCommand("reEvaluateRightPaneVisibility");
     }
 
     /**
-     * Builds a jquery table of helight text.      
+     * Builds a table of helight text.      
      */
     getHlt(html, optionsHlt) {
-        // element priority： span>i>strong>u
         // matches a span containing background-color
         const regex1 = /<span[^>]*style\s*=\s*[^>]*background-color:[^>]*?>[\s\S]*?<\/span>/gi; 
         // matches a span containing color
@@ -125,6 +124,7 @@ export default class HighlightedTextWidget extends RightPanelWidget {
         // match underline
         const regex5 = /<u>[\s\S]*?<\/u>/g;
         // Possible values in optionsHlt： '["bold","italic","underline","color","bgColor"]'
+        // element priority： span>i>strong>u
         let findSubStr="", combinedRegexStr = "";
         if (optionsHlt.indexOf("bgColor") >= 0){
             findSubStr+=`,span[style*="background-color"]`;
@@ -157,8 +157,10 @@ export default class HighlightedTextWidget extends RightPanelWidget {
             const startIndex = match.index;
             const endIndex = combinedRegex.lastIndex;
             if (prevEndIndex != -1 && startIndex === prevEndIndex) {
+                //If the previous element is connected to this element in HTML, then concatenate them into one.
                 $hlt.children().last().append(subHtml);
             } else {
+                //hide li if its text content is empty
                 if ([...subHtml.matchAll(/(?<=^|>)[^><]+?(?=<|$)/g)].map(matchTmp => matchTmp[0]).join('').trim() != ""){
                     var $li = $('<li>');
                     $li.html(subHtml);
