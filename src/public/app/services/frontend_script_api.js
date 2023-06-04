@@ -483,6 +483,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
     this.randomString = utils.randomString;
 
+    /**
+     * @method
+     * @param {int} size in bytes
+     * @return {string} formatted string
+     */
+    this.formatNoteSize = utils.formatNoteSize;
+
     this.logMessages = {};
     this.logSpacedUpdates = {};
 

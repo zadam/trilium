@@ -171,9 +171,12 @@ class NoteContext extends Component {
     }
 
     getPojoState() {
-        if (!this.notePath && this.hoistedNoteId === 'root') {
-            // keeping empty hoisted tab is esp. important for mobile (e.g., opened launcher config)
-            return null;
+        if (this.hoistedNoteId !== 'root') {
+            // keeping empty hoisted tab is esp. important for mobile (e.g. opened launcher config)
+
+            if (!this.notePath && this.getSubContexts().length === 0) {
+                return null;
+            }
         }
 
         return {

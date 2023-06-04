@@ -60,11 +60,10 @@ function deriveMime(type, mime) {
  * @param {BNote} childNote
  */
 function copyChildAttributes(parentNote, childNote) {
-    const hasAlreadyTemplate = childNote.hasRelation('template');
-
     for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
             const name = attr.name.substr(6);
+            const hasAlreadyTemplate = childNote.hasRelation('template');
 
             if (hasAlreadyTemplate && attr.type === 'relation' && name === 'template') {
                 // if the note already has a template, it means the template was chosen by the user explicitly
@@ -181,7 +180,7 @@ function createNewNote(params) {
 
             // TODO: think about what can happen if the note already exists with the forced ID
             //       I guess on DB it's going to be fine, but becca references between entities
-            //       might get messed up (two Note instance for the same ID existing in the references)
+            //       might get messed up (two note instances for the same ID existing in the references)
             note = new BNote({
                 noteId: params.noteId, // optionally can force specific noteId
                 title: params.title,
@@ -202,7 +201,7 @@ function createNewNote(params) {
         }
         finally {
             if (!isEntityEventsDisabled) {
-                // re-enable entity events only if there were previously enabled
+                // re-enable entity events only if they were previously enabled
                 // (they can be disabled in case of import)
                 cls.enableEntityEvents();
             }
@@ -222,22 +221,14 @@ function createNewNote(params) {
 
         copyChildAttributes(parentNote, note);
 
+        eventService.emit(eventService.ENTITY_CREATED, { entityName: 'notes', entity: note });
+        eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'notes', entity: note });
         triggerNoteTitleChanged(note);
-
-        eventService.emit(eventService.ENTITY_CREATED, {
-            entityName: 'notes',
-            entity: note
-        });
-
-        eventService.emit(eventService.ENTITY_CREATED, {
-            entityName: 'branches',
-            entity: branch
-        });
-
-        eventService.emit(eventService.CHILD_NOTE_CREATED, {
-            childNote: note,
-            parentNote: parentNote
-        });
+        // blobs doesn't use "created" event
+        eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'blobs', entity: note });
+        eventService.emit(eventService.ENTITY_CREATED, { entityName: 'branches', entity: branch });
+        eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'branches', entity: branch });
+        eventService.emit(eventService.CHILD_NOTE_CREATED, { childNote: note, parentNote: parentNote });
 
         log.info(`Created new note '${note.noteId}', branch '${branch.branchId}' of type '${note.type}', mime '${note.mime}'`);
 

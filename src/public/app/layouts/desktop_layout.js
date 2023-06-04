@@ -44,6 +44,7 @@ import BacklinksWidget from "../widgets/floating_buttons/zpetne_odkazy.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
+import HighlightsListWidget from "../widgets/highlights_list.js";
 import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 import AboutDialog from "../widgets/dialogs/about.js";
 import HelpDialog from "../widgets/dialogs/help.js";
@@ -75,6 +76,7 @@ import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
 import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
+import MovePaneButton from "../widgets/buttons/move_pane_button.js";
 import UploadAttachmentsDialog from "../widgets/dialogs/upload_attachments.js";
 
 export default class DesktopLayout {
@@ -124,6 +126,8 @@ export default class DesktopLayout {
                                         .child(new NoteIconWidget())
                                         .child(new NoteTitleWidget())
                                         .child(new SpacerWidget(0, 1))
+                                        .child(new MovePaneButton(true))
+                                        .child(new MovePaneButton(false))
                                         .child(new ClosePaneButton())
                                         .child(new CreatePaneButton())
                                     )
@@ -182,6 +186,7 @@ export default class DesktopLayout {
                     )
                     .child(new RightPaneContainer()
                         .child(new TocWidget())
+                        .child(new HighlightsListWidget())
                         .child(...this.customWidgets.get('right-pane'))
                     )
                 )

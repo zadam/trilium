@@ -106,12 +106,12 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
             this.$subTreeSize.empty().append($('<span class="bx bx-loader bx-spin"></span>'));
 
             const noteSizeResp = await server.get(`stats/note-size/${this.noteId}`);
-            this.$noteSize.text(utils.formatSize(noteSizeResp.noteSize));
+            this.$noteSize.text(utils.formatNoteSize(noteSizeResp.noteSize));
 
             const subTreeResp = await server.get(`stats/subtree-size/${this.noteId}`);
 
             if (subTreeResp.subTreeNoteCount > 1) {
-                this.$subTreeSize.text(`(subtree size: ${utils.formatSize(subTreeResp.subTreeSize)} in ${subTreeResp.subTreeNoteCount} notes)`);
+                this.$subTreeSize.text(`(subtree size: ${utils.formatNoteSize(subTreeResp.subTreeSize)} in ${subTreeResp.subTreeNoteCount} notes)`);
             }
             else {
                 this.$subTreeSize.text("");

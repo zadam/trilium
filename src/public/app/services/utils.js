@@ -522,6 +522,17 @@ function copyHtmlToClipboard(content) {
     navigator.clipboard.write([clipboardItem]);
 }
 
+function formatNoteSize(size) {
+    size = Math.max(Math.round(size / 1024), 1);
+
+    if (size < 1024) {
+        return `${size} KiB`;
+    }
+    else {
+        return `${Math.round(size / 102.4) / 10} MiB`;
+    }
+}
+
 export default {
     reloadFrontendApp,
     parseDate,
@@ -566,6 +577,8 @@ export default {
     filterAttributeName,
     isValidAttributeName,
     sleep,
+    escapeRegExp,
+    formatNoteSize,
     escapeRegExp,
     areObjectsEqual,
     copyHtmlToClipboard

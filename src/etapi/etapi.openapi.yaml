@@ -374,7 +374,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
-      description: patch a branch identified by the branchId with changes in the body
+      description: patch a branch identified by the branchId with changes in the body. Only prefix and notePosition can be updated. If you want to update other properties, you need to delete the old branch and create a new one.
       operationId: patchBranchById
       requestBody:
         required: true
@@ -456,7 +456,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
-      description: patch a attribute identified by the attributeId with changes in the body
+      description: patch a attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
       operationId: patchAttributeById
       requestBody:
         required: true

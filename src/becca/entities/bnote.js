@@ -6,12 +6,12 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
-const BRevision = require("./brevision.js");
+const BRevision = require("./brevision");
 const BAttachment = require("./battachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
-const eventService = require("../../services/events.js");
+const eventService = require("../../services/events");
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -87,7 +87,7 @@ class BNote extends AbstractBeccaEntity {
         this.decrypt();
 
         /** @type {string|null} */
-        this.flatTextCache = null;
+        this.__flatTextCache = null;
 
         return this;
     }
@@ -111,7 +111,7 @@ class BNote extends AbstractBeccaEntity {
         this.__attributeCache = null;
         /** @type {BAttribute[]|null}
          * @private */
-        this.inheritableAttributeCache = null;
+        this.__inheritableAttributeCache = null;
 
         /** @type {BAttribute[]}
          * @private */
@@ -121,7 +121,7 @@ class BNote extends AbstractBeccaEntity {
 
         /** @type {BNote[]|null}
          * @private */
-        this.ancestorCache = null;
+        this.__ancestorCache = null;
 
         // following attributes are filled during searching from database
 
@@ -392,11 +392,11 @@ class BNote extends AbstractBeccaEntity {
                 }
             }
 
-            this.inheritableAttributeCache = [];
+            this.__inheritableAttributeCache = [];
 
             for (const attr of this.__attributeCache) {
                 if (attr.isInheritable) {
-                    this.inheritableAttributeCache.push(attr);
+                    this.__inheritableAttributeCache.push(attr);
                 }
             }
         }
@@ -413,11 +413,11 @@ class BNote extends AbstractBeccaEntity {
             return [];
         }
 
-        if (!this.inheritableAttributeCache) {
-            this.__getAttributes(path); // will refresh also this.inheritableAttributeCache
+        if (!this.__inheritableAttributeCache) {
+            this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
 
-        return this.inheritableAttributeCache;
+        return this.__inheritableAttributeCache;
     }
 
     __validateTypeName(type, name) {
@@ -751,40 +751,40 @@ class BNote extends AbstractBeccaEntity {
      * @returns {string} - returns flattened textual representation of note, prefixes and attributes
      */
     getFlatText() {
-        if (!this.flatTextCache) {
-            this.flatTextCache = `${this.noteId} ${this.type} ${this.mime} `;
+        if (!this.__flatTextCache) {
+            this.__flatTextCache = `${this.noteId} ${this.type} ${this.mime} `;
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
-                    this.flatTextCache += `${branch.prefix} `;
+                    this.__flatTextCache += `${branch.prefix} `;
                 }
             }
 
-            this.flatTextCache += `${this.title} `;
+            this.__flatTextCache += `${this.title} `;
 
             for (const attr of this.getAttributes()) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.flatTextCache += `${attr.type === 'label' ? '#' : '~'}${attr.name}`;
+                this.__flatTextCache += `${attr.type === 'label' ? '#' : '~'}${attr.name}`;
 
                 if (attr.value) {
-                    this.flatTextCache += `=${attr.value}`;
+                    this.__flatTextCache += `=${attr.value}`;
                 }
 
-                this.flatTextCache += ' ';
+                this.__flatTextCache += ' ';
             }
 
-            this.flatTextCache = utils.normalize(this.flatTextCache);
+            this.__flatTextCache = utils.normalize(this.__flatTextCache);
         }
 
-        return this.flatTextCache;
+        return this.__flatTextCache;
     }
 
     invalidateThisCache() {
-        this.flatTextCache = null;
+        this.__flatTextCache = null;
 
         this.__attributeCache = null;
-        this.inheritableAttributeCache = null;
-        this.ancestorCache = null;
+        this.__inheritableAttributeCache = null;
+        this.__ancestorCache = null;
     }
 
     invalidateSubTree(path = []) {
@@ -808,24 +808,6 @@ class BNote extends AbstractBeccaEntity {
 
                 if (note) {
                     note.invalidateSubTree(path);
-                }
-            }
-        }
-    }
-
-    invalidateSubtreeFlatText() {
-        this.flatTextCache = null;
-
-        for (const childNote of this.children) {
-            childNote.invalidateSubtreeFlatText();
-        }
-
-        for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template' || targetRelation.name === 'inherit') {
-                const note = targetRelation.note;
-
-                if (note) {
-                    note.invalidateSubtreeFlatText();
                 }
             }
         }
@@ -1021,28 +1003,28 @@ class BNote extends AbstractBeccaEntity {
 
     /** @returns {BNote[]} */
     getAncestors() {
-        if (!this.ancestorCache) {
+        if (!this.__ancestorCache) {
             const noteIds = new Set();
-            this.ancestorCache = [];
+            this.__ancestorCache = [];
 
             for (const parent of this.parents) {
                 if (noteIds.has(parent.noteId)) {
                     continue;
                 }
 
-                this.ancestorCache.push(parent);
+                this.__ancestorCache.push(parent);
                 noteIds.add(parent.noteId);
 
                 for (const ancestorNote of parent.getAncestors()) {
                     if (!noteIds.has(ancestorNote.noteId)) {
-                        this.ancestorCache.push(ancestorNote);
+                        this.__ancestorCache.push(ancestorNote);
                         noteIds.add(ancestorNote.noteId);
                     }
                 }
             }
         }
 
-        return this.ancestorCache;
+        return this.__ancestorCache;
     }
 
     /** @returns {string[]} */
@@ -1178,7 +1160,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {{isArchived: boolean, isInHoistedSubTree: boolean, notePath: string[], isHidden: boolean}[]}
+     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array<string>, isHidden: boolean}>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -1548,7 +1530,7 @@ class BNote extends AbstractBeccaEntity {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
                 this.title = protectedSessionService.decryptString(this.title);
-                this.flatTextCache = null;
+                this.__flatTextCache = null;
 
                 this.isDecrypted = true;
             }
