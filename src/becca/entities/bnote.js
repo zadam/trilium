@@ -6,7 +6,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
-const BNoteRevision = require("./bnote_revision");
+const BRevision = require("./brevision.js");
 const BAttachment = require("./battachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
@@ -1102,10 +1102,10 @@ class BNote extends AbstractBeccaEntity {
         return minDistance;
     }
 
-    /** @returns {BNoteRevision[]} */
-    getNoteRevisions() {
-        return sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId])
-            .map(row => new BNoteRevision(row));
+    /** @returns {BRevision[]} */
+    getRevisions() {
+        return sql.getRows("SELECT * FROM revisions WHERE noteId = ?", [this.noteId])
+            .map(row => new BRevision(row));
     }
 
     /** @returns {BAttachment[]} */
@@ -1571,14 +1571,14 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @returns {BNoteRevision|null}
+     * @returns {BRevision|null}
      */
-    saveNoteRevision() {
+    saveRevision() {
         return sql.transactional(() => {
             let noteContent = this.getContent();
             const contentMetadata = this.getContentMetadata();
 
-            const noteRevision = new BNoteRevision({
+            const revision = new BRevision({
                 noteId: this.noteId,
                 // title and text should be decrypted now
                 title: this.title,
@@ -1596,7 +1596,7 @@ class BNote extends AbstractBeccaEntity {
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 
-            noteRevision.save(); // to generate noteRevisionId which is then used to save attachments
+            revision.save(); // to generate revisionId which is then used to save attachments
 
             for (const noteAttachment of this.getAttachments()) {
                 if (noteAttachment.utcDateScheduledForErasureSince) {
@@ -1604,16 +1604,16 @@ class BNote extends AbstractBeccaEntity {
                 }
 
                 const revisionAttachment = noteAttachment.copy();
-                revisionAttachment.parentId = noteRevision.noteRevisionId;
+                revisionAttachment.parentId = revision.revisionId;
                 revisionAttachment.setContent(noteAttachment.getContent(), { forceSave: true });
 
                 // content is rewritten to point to the revision attachments
                 noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
             }
 
-            noteRevision.setContent(noteContent, { forceSave: true });
+            revision.setContent(noteContent, { forceSave: true });
 
-            return noteRevision;
+            return revision;
         });
     }
 

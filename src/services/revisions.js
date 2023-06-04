@@ -7,12 +7,12 @@ const protectedSessionService = require("./protected_session");
 /**
  * @param {BNote} note
  */
-function protectNoteRevisions(note) {
+function protectRevisions(note) {
     if (!protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot (un)protect revisions of note '${note.noteId}' without active protected session`);
     }
 
-    for (const revision of note.getNoteRevisions()) {
+    for (const revision of note.getRevisions()) {
         if (note.isProtected === revision.isProtected) {
             continue;
         }
@@ -25,25 +25,25 @@ function protectNoteRevisions(note) {
             // this will force de/encryption
             revision.setContent(content, {forceSave: true});
         } catch (e) {
-            log.error(`Could not un/protect note revision '${revision.noteRevisionId}'`);
+            log.error(`Could not un/protect note revision '${revision.revisionId}'`);
 
             throw e;
         }
     }
 }
 
-function eraseNoteRevisions(noteRevisionIdsToErase) {
-    if (noteRevisionIdsToErase.length === 0) {
+function eraseRevisions(revisionIdsToErase) {
+    if (revisionIdsToErase.length === 0) {
         return;
     }
 
-    log.info(`Removing note revisions: ${JSON.stringify(noteRevisionIdsToErase)}`);
+    log.info(`Removing note revisions: ${JSON.stringify(revisionIdsToErase)}`);
 
-    sql.executeMany(`DELETE FROM note_revisions WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revisions' AND entityId IN (???)`, noteRevisionIdsToErase);
+    sql.executeMany(`DELETE FROM revisions WHERE revisionId IN (???)`, revisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);
 }
 
 module.exports = {
-    protectNoteRevisions,
-    eraseNoteRevisions
+    protectRevisions,
+    eraseRevisions
 };

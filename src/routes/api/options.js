@@ -9,7 +9,7 @@ const ValidationError = require("../../errors/validation_error");
 const ALLOWED_OPTIONS = new Set([
     'eraseEntitiesAfterTimeInSeconds',
     'protectedSessionTimeout',
-    'noteRevisionSnapshotTimeInterval',
+    'revisionSnapshotTimeInterval',
     'zoomFactor',
     'theme',
     'syncServerHost',
@@ -28,7 +28,7 @@ const ALLOWED_OPTIONS = new Set([
     'noteInfoWidget',
     'attributesWidget',
     'linkMapWidget',
-    'noteRevisionsWidget',
+    'revisionsWidget',
     'whatLinksHereWidget',
     'similarNotesWidget',
     'editedNotesWidget',

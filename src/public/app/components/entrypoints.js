@@ -197,7 +197,7 @@ export default class Entrypoints extends Component {
         this.hideAllPopups();
     }
 
-    async forceSaveNoteRevisionCommand() {
+    async forceSaveRevisionCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
 
         await server.post(`notes/${noteId}/revision`);

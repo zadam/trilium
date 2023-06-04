@@ -44,7 +44,7 @@ function initNotSyncedOptions(initialized, opts = {}) {
 }
 
 const defaultOptions = [
-    { name: 'noteRevisionSnapshotTimeInterval', value: '600', isSynced: true },
+    { name: 'revisionSnapshotTimeInterval', value: '600', isSynced: true },
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
     { name: 'zoomFactor', value: process.platform === "win32" ? '0.9' : '1.0', isSynced: false },
     { name: 'overrideThemeFonts', value: 'false', isSynced: false },

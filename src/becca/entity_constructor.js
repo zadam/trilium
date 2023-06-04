@@ -1,5 +1,5 @@
 const BNote = require('./entities/bnote');
-const BNoteRevision = require('./entities/bnote_revision');
+const BRevision = require('./entities/brevision.js');
 const BAttachment = require("./entities/battachment");
 const BBranch = require('./entities/bbranch');
 const BAttribute = require('./entities/battribute');
@@ -11,7 +11,7 @@ const ENTITY_NAME_TO_ENTITY = {
     "attributes": BAttribute,
     "branches": BBranch,
     "notes": BNote,
-    "note_revisions": BNoteRevision,
+    "revisions": BRevision,
     "attachments": BAttachment,
     "recent_notes": BRecentNote,
     "etapi_tokens": BEtapiToken,

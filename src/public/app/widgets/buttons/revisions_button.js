@@ -1,12 +1,12 @@
 import CommandButtonWidget from "./command_button.js";
 
-export default class NoteRevisionsButton extends CommandButtonWidget {
+export default class RevisionsButton extends CommandButtonWidget {
     constructor() {
         super();
 
         this.icon('bx-history')
             .title("Note Revisions")
-            .command("showNoteRevisions")
+            .command("showRevisions")
             .titlePlacement("bottom")
             .class("icon-action");
     }

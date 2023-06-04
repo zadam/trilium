@@ -70,7 +70,7 @@ function updateImage(noteId, uploadBuffer, originalName) {
 
     const note = becca.getNote(noteId);
 
-    note.saveNoteRevision();
+    note.saveRevision();
 
     note.setLabel('originalFileName', originalName);
 

@@ -1,5 +1,5 @@
 const log = require("./log");
-const noteRevisionService = require("./note_revisions");
+const revisionService = require("./revisions.js");
 const becca = require("../becca/becca");
 const cloningService = require("./cloning");
 const branchService = require("./branches");
@@ -17,8 +17,8 @@ const ACTION_HANDLERS = {
 
         note.deleteNote(deleteId);
     },
-    deleteNoteRevisions: (action, note) => {
-        noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
+    deleteRevisions: (action, note) => {
+        revisionService.eraseRevisions(note.getRevisions().map(rev => rev.revisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {

@@ -19,8 +19,8 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class DeleteNoteRevisionsBulkAction extends AbstractBulkAction {
-    static get actionName() { return "deleteNoteRevisions"; }
+export default class DeleteRevisionsBulkAction extends AbstractBulkAction {
+    static get actionName() { return "deleteRevisions"; }
     static get actionTitle() { return "Delete note revisions"; }
 
     doRender() {

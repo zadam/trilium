@@ -38,7 +38,7 @@ class BAttachment extends AbstractBeccaEntity {
 
         /** @type {string} */
         this.attachmentId = row.attachmentId;
-        /** @type {string} either noteId or noteRevisionId to which this attachment belongs */
+        /** @type {string} either noteId or revisionId to which this attachment belongs */
         this.parentId = row.parentId;
         /** @type {string} */
         this.role = row.role;

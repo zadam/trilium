@@ -149,7 +149,7 @@ function register(router) {
     eu.route(router, 'post' ,'/etapi/notes/:noteId/note-revision', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
 
-        note.saveNoteRevision();
+        note.saveRevision();
 
         return res.sendStatus(204);
     });

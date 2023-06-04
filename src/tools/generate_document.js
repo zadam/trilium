@@ -82,7 +82,7 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        note.saveNoteRevision();
+        note.saveRevision();
 
         notes.push(note.noteId);
     }

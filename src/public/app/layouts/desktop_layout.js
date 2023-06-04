@@ -61,7 +61,7 @@ import ImportDialog from "../widgets/dialogs/import.js";
 import ExportDialog from "../widgets/dialogs/export.js";
 import MarkdownImportDialog from "../widgets/dialogs/markdown_import.js";
 import ProtectedSessionPasswordDialog from "../widgets/dialogs/protected_session_password.js";
-import NoteRevisionsDialog from "../widgets/dialogs/note_revisions.js";
+import RevisionsDialog from "../widgets/dialogs/revisions.js";
 import DeleteNotesDialog from "../widgets/dialogs/delete_notes.js";
 import InfoDialog from "../widgets/dialogs/info.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
@@ -70,7 +70,7 @@ import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
 import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
 import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
 import LauncherContainer from "../widgets/containers/launcher_container.js";
-import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
+import RevisionsButton from "../widgets/buttons/revisions_button.js";
 import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
@@ -147,7 +147,7 @@ export default class DesktopLayout {
                                             .ribbon(new NoteMapRibbonWidget())
                                             .ribbon(new SimilarNotesWidget())
                                             .ribbon(new NoteInfoWidget())
-                                            .button(new NoteRevisionsButton())
+                                            .button(new RevisionsButton())
                                             .button(new NoteActionsWidget())
                                     )
                                     .child(new SharedInfoWidget())
@@ -204,7 +204,7 @@ export default class DesktopLayout {
             .child(new UploadAttachmentsDialog())
             .child(new MarkdownImportDialog())
             .child(new ProtectedSessionPasswordDialog())
-            .child(new NoteRevisionsDialog())
+            .child(new RevisionsDialog())
             .child(new DeleteNotesDialog())
             .child(new InfoDialog())
             .child(new ConfirmDialog())

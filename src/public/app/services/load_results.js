@@ -18,7 +18,7 @@ export default class LoadResults {
 
         this.noteReorderings = [];
 
-        this.noteRevisions = [];
+        this.revisions = [];
 
         this.contentNoteIdToComponentId = [];
 
@@ -75,12 +75,12 @@ export default class LoadResults {
             .filter(attr => !!attr);
     }
 
-    addNoteRevision(noteRevisionId, noteId, componentId) {
-        this.noteRevisions.push({noteRevisionId, noteId, componentId});
+    addRevision(revisionId, noteId, componentId) {
+        this.revisions.push({revisionId, noteId, componentId});
     }
 
-    hasNoteRevisionForNote(noteId) {
-        return !!this.noteRevisions.find(nr => nr.noteId === noteId);
+    hasRevisionForNote(noteId) {
+        return !!this.revisions.find(nr => nr.noteId === noteId);
     }
 
     getNoteIds() {
@@ -140,7 +140,7 @@ export default class LoadResults {
             && this.branches.length === 0
             && this.attributes.length === 0
             && this.noteReorderings.length === 0
-            && this.noteRevisions.length === 0
+            && this.revisions.length === 0
             && this.contentNoteIdToComponentId.length === 0
             && this.options.length === 0
             && this.attachments.length === 0;

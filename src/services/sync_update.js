@@ -113,7 +113,7 @@ function eraseEntity(entityChange, instanceId) {
         "notes",
         "branches",
         "attributes",
-        "note_revisions",
+        "revisions",
         "attachments",
         "blobs",
     ];

@@ -131,7 +131,7 @@ function changeTitle(req) {
     const noteTitleChanged = note.title !== title;
 
     if (noteTitleChanged) {
-        noteService.saveNoteRevisionIfNeeded(note);
+        noteService.saveRevisionIfNeeded(note);
     }
 
     note.title = title;
@@ -216,7 +216,7 @@ function getDeleteNotesPreview(req) {
     };
 }
 
-function forceSaveNoteRevision(req) {
+function forceSaveRevision(req) {
     const {noteId} = req.params;
     const note = becca.getNoteOrThrow(noteId);
 
@@ -224,7 +224,7 @@ function forceSaveNoteRevision(req) {
         throw new ValidationError(`Note revision of a protected note cannot be created outside of a protected session.`);
     }
 
-    note.saveNoteRevision();
+    note.saveRevision();
 }
 
 function convertNoteToAttachment(req) {
@@ -252,6 +252,6 @@ module.exports = {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     getDeleteNotesPreview,
-    forceSaveNoteRevision,
+    forceSaveRevision,
     convertNoteToAttachment
 };

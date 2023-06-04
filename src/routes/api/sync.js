@@ -108,9 +108,9 @@ function forceNoteSync(req) {
         entityChangesService.moveEntityChangeToTop('attributes', attributeId);
     }
 
-    for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
-        sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.moveEntityChangeToTop('note_revisions', noteRevisionId);
+    for (const revisionId of sql.getColumn("SELECT revisionId FROM revisions WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE revisions SET utcDateModified = ? WHERE revisionId = ?`, [now, revisionId]);
+        entityChangesService.moveEntityChangeToTop('revisions', revisionId);
     }
 
     for (const attachmentId of sql.getColumn("SELECT attachmentId FROM attachments WHERE noteId = ?", [noteId])) {

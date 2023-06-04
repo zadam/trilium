@@ -102,8 +102,8 @@ async function openNoteCustom(noteId) {
     }
 }
 
-function downloadNoteRevision(noteId, noteRevisionId) {
-    const url = getUrlForDownload(`api/revisions/${noteRevisionId}/download`);
+function downloadRevision(noteId, revisionId) {
+    const url = getUrlForDownload(`api/revisions/${revisionId}/download`);
 
     download(url);
 }
@@ -164,7 +164,7 @@ function getHost() {
 export default {
     download,
     downloadFileNote,
-    downloadNoteRevision,
+    downloadRevision,
     downloadAttachment,
     getUrlForDownload,
     openNoteExternally,

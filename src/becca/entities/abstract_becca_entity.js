@@ -170,7 +170,7 @@ class AbstractBeccaEntity {
             return;
         }
 
-        if (sql.getValue("SELECT 1 FROM note_revisions WHERE blobId = ? LIMIT 1", [blobId])) {
+        if (sql.getValue("SELECT 1 FROM revisions WHERE blobId = ? LIMIT 1", [blobId])) {
             return;
         }
 

@@ -16,7 +16,7 @@ function updateFile(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     const file = req.file;
-    note.saveNoteRevision();
+    note.saveRevision();
 
     note.mime = file.mimetype.toLowerCase();
     note.save();
@@ -35,7 +35,7 @@ function updateFile(req) {
 function updateAttachment(req) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const file = req.file;
-    attachment.getNote().saveNoteRevision();
+    attachment.getNote().saveRevision();
 
     attachment.mime = file.mimetype.toLowerCase();
     attachment.setContent(file.buffer, {forceSave: true});
@@ -186,7 +186,7 @@ function uploadModifiedFileToNote(req) {
 
     log.info(`Updating note '${noteId}' with content from '${filePath}'`);
 
-    note.saveNoteRevision();
+    note.saveRevision();
 
     const fileContent = fs.readFileSync(filePath);
 
@@ -205,7 +205,7 @@ function uploadModifiedFileToAttachment(req) {
 
     log.info(`Updating attachment '${attachmentId}' with content from '${filePath}'`);
 
-    attachment.getNote().saveNoteRevision();
+    attachment.getNote().saveRevision();
 
     const fileContent = fs.readFileSync(filePath);
 

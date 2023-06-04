@@ -308,7 +308,7 @@ paths:
           default: html
     post:
       description: Create a note revision for the given note
-      operationId: createNoteRevision
+      operationId: createRevision
       responses:
         '204':
           description: revision has been created

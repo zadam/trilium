@@ -116,16 +116,16 @@ function loadNeededInfoFromDatabase() {
         becca.notes[noteId].noteSize = length;
     }
 
-    const noteRevisionContentLengths = sql.getRows(`
+    const revisionContentLengths = sql.getRows(`
         SELECT 
             noteId, 
             LENGTH(content) AS length 
         FROM notes
-             JOIN note_revisions USING(noteId) 
+             JOIN revisions USING(noteId) 
              JOIN blobs USING(blobId) 
         WHERE notes.isDeleted = 0`);
 
-    for (const {noteId, length} of noteRevisionContentLengths) {
+    for (const {noteId, length} of revisionContentLengths) {
         if (!(noteId in becca.notes)) {
             log.error(`Note ${noteId} not found in becca.`);
             continue;

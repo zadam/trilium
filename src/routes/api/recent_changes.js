@@ -10,25 +10,25 @@ function getRecentChanges(req) {
 
     let recentChanges = [];
 
-    const noteRevisionRows = sql.getRows(`
+    const revisionRows = sql.getRows(`
         SELECT 
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
             notes.deleteId AS current_deleteId,
             notes.title AS current_title,
             notes.isProtected AS current_isProtected,
-            note_revisions.title,
-            note_revisions.utcDateCreated AS utcDate,
-            note_revisions.dateCreated AS date
+            revisions.title,
+            revisions.utcDateCreated AS utcDate,
+            revisions.dateCreated AS date
         FROM 
-            note_revisions
+            revisions
             JOIN notes USING(noteId)`);
 
-    for (const noteRevisionRow of noteRevisionRows) {
-        const note = becca.getNote(noteRevisionRow.noteId);
+    for (const revisionRow of revisionRows) {
+        const note = becca.getNote(revisionRow.noteId);
 
         if (note?.hasAncestor(ancestorNoteId)) {
-            recentChanges.push(noteRevisionRow);
+            recentChanges.push(revisionRow);
         }
     }
 

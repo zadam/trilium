@@ -30,8 +30,8 @@ async function processEntityChanges(entityChanges) {
                 }
 
                 loadResults.addNoteContent(ec.noteIds, ec.componentId);
-            } else if (ec.entityName === 'note_revisions') {
-                loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.componentId);
+            } else if (ec.entityName === 'revisions') {
+                loadResults.addRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'options') {
                 if (ec.entity.name === 'openNoteContexts') {
                     continue; // only noise

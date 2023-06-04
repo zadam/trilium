@@ -9,21 +9,21 @@ const sql = require("../../services/sql");
 const BAttachment = require("./battachment");
 
 /**
- * NoteRevision represents a snapshot of note's title and content at some point in the past.
+ * Revision represents a snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
  *
  * @extends AbstractBeccaEntity
  */
-class BNoteRevision extends AbstractBeccaEntity {
-    static get entityName() { return "note_revisions"; }
-    static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+class BRevision extends AbstractBeccaEntity {
+    static get entityName() { return "revisions"; }
+    static get primaryKeyName() { return "revisionId"; }
+    static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row, titleDecrypted = false) {
         super();
 
         /** @type {string} */
-        this.noteRevisionId = row.noteRevisionId;
+        this.revisionId = row.revisionId;
         /** @type {string} */
         this.noteId = row.noteId;
         /** @type {string} */
@@ -66,14 +66,14 @@ class BNoteRevision extends AbstractBeccaEntity {
     }
 
     isContentAvailable() {
-        return !this.noteRevisionId // new note which was not encrypted yet
+        return !this.revisionId // new note which was not encrypted yet
             || !this.isProtected
             || protectedSessionService.isProtectedSessionAvailable()
     }
 
     /*
      * Note revision content has quite special handling - it's not a separate entity, but a lazily loaded
-     * part of NoteRevision entity with its own sync. The reason behind this hybrid design is that
+     * part of Revision entity with its own sync. The reason behind this hybrid design is that
      * content can be quite large, and it's not necessary to load it / fill memory for any note access even
      * if we don't need a content, especially for bulk operations like search.
      *
@@ -88,7 +88,7 @@ class BNoteRevision extends AbstractBeccaEntity {
     /**
      * @param content
      * @param {object} [opts]
-     * @param {object} [opts.forceSave=false] - will also save this BNoteRevision entity
+     * @param {object} [opts.forceSave=false] - will also save this BRevision entity
      */
     setContent(content, opts) {
         this._setContent(content, opts);
@@ -100,7 +100,7 @@ class BNoteRevision extends AbstractBeccaEntity {
                 SELECT attachments.*
                 FROM attachments 
                 WHERE parentId = ? 
-                  AND isDeleted = 0`, [this.noteRevisionId])
+                  AND isDeleted = 0`, [this.revisionId])
             .map(row => new BAttachment(row));
     }
 
@@ -112,7 +112,7 @@ class BNoteRevision extends AbstractBeccaEntity {
 
     getPojo() {
         return {
-            noteRevisionId: this.noteRevisionId,
+            revisionId: this.revisionId,
             noteId: this.noteId,
             type: this.type,
             mime: this.mime,
@@ -148,4 +148,4 @@ class BNoteRevision extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BNoteRevision;
+module.exports = BRevision;

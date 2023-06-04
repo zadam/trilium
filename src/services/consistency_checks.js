@@ -9,7 +9,7 @@ const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
 const BBranch = require('../becca/entities/bbranch');
-const noteRevisionService = require('./note_revisions');
+const revisionService = require('./revisions.js');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
 const {sanitizeAttributeName} = require("./sanitize_attribute_name");
@@ -221,7 +221,7 @@ class ConsistencyChecks {
                     WHERE attachments.parentId NOT IN (
                             SELECT noteId FROM notes
                             UNION ALL
-                            SELECT noteRevisionId FROM note_revisions
+                            SELECT revisionId FROM revisions
                         )
                       AND attachments.isDeleted = 0`,
             ({attachmentId, parentId}) => {
@@ -461,19 +461,19 @@ class ConsistencyChecks {
         }
 
         this.findAndFixIssues(`
-                    SELECT note_revisions.noteRevisionId
-                    FROM note_revisions
+                    SELECT revisions.revisionId
+                    FROM revisions
                       LEFT JOIN blobs USING (blobId)
                     WHERE blobs.blobId IS NULL`,
-            ({noteRevisionId}) => {
+            ({revisionId}) => {
                 if (this.autoFix) {
-                    noteRevisionService.eraseNoteRevisions([noteRevisionId]);
+                    revisionService.eraseRevisions([revisionId]);
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note revision content '${noteRevisionId}' was set to erased since its content did not exist.`);
+                    logFix(`Note revision content '${revisionId}' was set to erased since its content did not exist.`);
                 } else {
-                    logError(`Note revision content '${noteRevisionId}' does not exist`);
+                    logError(`Note revision content '${revisionId}' does not exist`);
                 }
             });
 
@@ -669,7 +669,7 @@ class ConsistencyChecks {
 
     findEntityChangeIssues() {
         this.runEntityChangeChecks("notes", "noteId");
-        this.runEntityChangeChecks("note_revisions", "noteRevisionId");
+        this.runEntityChangeChecks("revisions", "revisionId");
         this.runEntityChangeChecks("attachments", "attachmentId");
         this.runEntityChangeChecks("blobs", "blobId");
         this.runEntityChangeChecks("branches", "branchId");
@@ -767,7 +767,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "note_revisions", "attachments", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }

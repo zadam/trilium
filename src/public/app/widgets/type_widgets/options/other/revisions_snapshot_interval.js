@@ -12,15 +12,15 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteRevisionsSnapshotIntervalOptions extends OptionsWidget {
+export default class RevisionsSnapshotIntervalOptions extends OptionsWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.$noteRevisionsTimeInterval = this.$widget.find(".note-revision-snapshot-time-interval-in-seconds");
-        this.$noteRevisionsTimeInterval.on('change', () =>
-            this.updateOption('noteRevisionSnapshotTimeInterval', this.$noteRevisionsTimeInterval.val()));
+        this.$revisionsTimeInterval = this.$widget.find(".note-revision-snapshot-time-interval-in-seconds");
+        this.$revisionsTimeInterval.on('change', () =>
+            this.updateOption('revisionSnapshotTimeInterval', this.$revisionsTimeInterval.val()));
     }
 
     async optionsLoaded(options) {
-        this.$noteRevisionsTimeInterval.val(options.noteRevisionSnapshotTimeInterval);
+        this.$revisionsTimeInterval.val(options.revisionSnapshotTimeInterval);
     }
 }

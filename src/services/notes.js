@@ -8,7 +8,7 @@ const cls = require('../services/cls');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
-const noteRevisionService = require('../services/note_revisions');
+const revisionService = require('./revisions.js');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
@@ -315,7 +315,7 @@ function protectNote(note, protect) {
             note.setContent(content, { forceSave: true });
         }
 
-        noteRevisionService.protectNoteRevisions(note);
+        revisionService.protectRevisions(note);
 
         for (const attachment of note.getAttachments()) {
             if (protect !== attachment.isProtected) {
@@ -666,24 +666,24 @@ function saveLinks(note, content) {
 }
 
 /** @param {BNote} note */
-function saveNoteRevisionIfNeeded(note) {
+function saveRevisionIfNeeded(note) {
     // files and images are versioned separately
     if (note.type === 'file' || note.type === 'image' || note.hasLabel('disableVersioning')) {
         return;
     }
 
     const now = new Date();
-    const noteRevisionSnapshotTimeInterval = parseInt(optionService.getOption('noteRevisionSnapshotTimeInterval'));
+    const revisionSnapshotTimeInterval = parseInt(optionService.getOption('revisionSnapshotTimeInterval'));
 
-    const revisionCutoff = dateUtils.utcDateTimeStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
+    const revisionCutoff = dateUtils.utcDateTimeStr(new Date(now.getTime() - revisionSnapshotTimeInterval * 1000));
 
-    const existingNoteRevisionId = sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
+    const existingRevisionId = sql.getValue(
+        "SELECT revisionId FROM revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
-    if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-        note.saveNoteRevision();
+    if (!existingRevisionId && msSinceDateCreated >= revisionSnapshotTimeInterval * 1000) {
+        note.saveRevision();
     }
 }
 
@@ -694,7 +694,7 @@ function updateNoteData(noteId, content) {
         throw new Error(`Note '${noteId}' is not available for change!`);
     }
 
-    saveNoteRevisionIfNeeded(note);
+    saveRevisionIfNeeded(note);
 
     const { forceFrontendReload, content: newContent } = saveLinks(note, content);
 
@@ -839,10 +839,10 @@ function eraseNotes(noteIdsToErase) {
 
     eraseAttributes(attributeIdsToErase);
 
-    const noteRevisionIdsToErase = sql.getManyRows(`SELECT noteRevisionId FROM note_revisions WHERE noteId IN (???)`, noteIdsToErase)
-        .map(row => row.noteRevisionId);
+    const revisionIdsToErase = sql.getManyRows(`SELECT revisionId FROM revisions WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.revisionId);
 
-    noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
+    revisionService.eraseRevisions(revisionIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
@@ -899,10 +899,10 @@ function eraseUnusedBlobs() {
         FROM blobs
         LEFT JOIN notes ON notes.blobId = blobs.blobId
         LEFT JOIN attachments ON attachments.blobId = blobs.blobId
-        LEFT JOIN note_revisions ON note_revisions.blobId = blobs.blobId
+        LEFT JOIN revisions ON revisions.blobId = blobs.blobId
         WHERE notes.noteId IS NULL 
           AND attachments.attachmentId IS NULL
-          AND note_revisions.noteRevisionId IS NULL`);
+          AND revisions.revisionId IS NULL`);
 
     if (unusedBlobIds.length === 0) {
         return;
@@ -1136,7 +1136,7 @@ module.exports = {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,
-    saveNoteRevisionIfNeeded,
+    saveRevisionIfNeeded,
     downloadImages,
     asyncPostProcessContent
 };

@@ -1,7 +1,7 @@
 "use strict";
 
 const beccaService = require('../../becca/becca_service');
-const noteRevisionService = require('../../services/note_revisions');
+const revisionService = require('../../services/revisions.js');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const cls = require('../../services/cls');
@@ -9,50 +9,50 @@ const path = require('path');
 const becca = require("../../becca/becca");
 const blobService = require("../../services/blob.js");
 
-function getNoteRevisionBlob(req) {
+function getRevisionBlob(req) {
     const preview = req.query.preview === 'true';
 
-    return blobService.getBlobPojo('note_revisions', req.params.noteRevisionId, { preview });
+    return blobService.getBlobPojo('revisions', req.params.revisionId, { preview });
 }
 
-function getNoteRevisions(req) {
-    return becca.getNoteRevisionsFromQuery(`
-        SELECT note_revisions.*,
+function getRevisions(req) {
+    return becca.getRevisionsFromQuery(`
+        SELECT revisions.*,
                LENGTH(blobs.content) AS contentLength
-        FROM note_revisions
-        JOIN blobs ON note_revisions.blobId = blobs.blobId 
+        FROM revisions
+        JOIN blobs ON revisions.blobId = blobs.blobId 
         WHERE noteId = ?
         ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }
 
-function getNoteRevision(req) {
-    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
+function getRevision(req) {
+    const revision = becca.getRevision(req.params.revisionId);
 
-    if (noteRevision.type === 'file') {
-        if (noteRevision.hasStringContent()) {
-            noteRevision.content = noteRevision.getContent().substr(0, 10000);
+    if (revision.type === 'file') {
+        if (revision.hasStringContent()) {
+            revision.content = revision.getContent().substr(0, 10000);
         }
     }
     else {
-        noteRevision.content = noteRevision.getContent();
+        revision.content = revision.getContent();
 
-        if (noteRevision.content && noteRevision.type === 'image') {
-            noteRevision.content = noteRevision.content.toString('base64');
+        if (revision.content && revision.type === 'image') {
+            revision.content = revision.content.toString('base64');
         }
     }
 
-    return noteRevision;
+    return revision;
 }
 
 /**
- * @param {BNoteRevision} noteRevision
+ * @param {BRevision} revision
  * @returns {string}
  */
-function getRevisionFilename(noteRevision) {
-    let filename = utils.formatDownloadTitle(noteRevision.title, noteRevision.type, noteRevision.mime);
+function getRevisionFilename(revision) {
+    let filename = utils.formatDownloadTitle(revision.title, revision.type, revision.mime);
 
     const extension = path.extname(filename);
-    const date = noteRevision.dateCreated
+    const date = revision.dateCreated
         .substr(0, 19)
         .replace(' ', '_')
         .replace(/[^0-9_]/g, '');
@@ -67,50 +67,50 @@ function getRevisionFilename(noteRevision) {
     return filename;
 }
 
-function downloadNoteRevision(req, res) {
-    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
+function downloadRevision(req, res) {
+    const revision = becca.getRevision(req.params.revisionId);
 
-    if (!noteRevision.isContentAvailable()) {
+    if (!revision.isContentAvailable()) {
         return res.setHeader("Content-Type", "text/plain")
             .status(401)
             .send("Protected session not available");
     }
 
-    const filename = getRevisionFilename(noteRevision);
+    const filename = getRevisionFilename(revision);
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
-    res.setHeader('Content-Type', noteRevision.mime);
+    res.setHeader('Content-Type', revision.mime);
 
-    res.send(noteRevision.getContent());
+    res.send(revision.getContent());
 }
 
-function eraseAllNoteRevisions(req) {
-    const noteRevisionIdsToErase = sql.getColumn('SELECT noteRevisionId FROM note_revisions WHERE noteId = ?',
+function eraseAllRevisions(req) {
+    const revisionIdsToErase = sql.getColumn('SELECT revisionId FROM revisions WHERE noteId = ?',
         [req.params.noteId]);
 
-    noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
+    revisionService.eraseRevisions(revisionIdsToErase);
 }
 
-function eraseNoteRevision(req) {
-    noteRevisionService.eraseNoteRevisions([req.params.noteRevisionId]);
+function eraseRevision(req) {
+    revisionService.eraseRevisions([req.params.revisionId]);
 }
 
-function restoreNoteRevision(req) {
-    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
+function restoreRevision(req) {
+    const revision = becca.getRevision(req.params.revisionId);
 
-    if (noteRevision) {
-        const note = noteRevision.getNote();
+    if (revision) {
+        const note = revision.getNote();
 
         sql.transactional(() => {
-            note.saveNoteRevision();
+            note.saveRevision();
 
             for (const oldNoteAttachment of note.getAttachments()) {
                 oldNoteAttachment.markAsDeleted();
             }
 
-            let revisionContent = noteRevision.getContent();
+            let revisionContent = revision.getContent();
 
-            for (const revisionAttachment of noteRevision.getAttachments()) {
+            for (const revisionAttachment of revision.getAttachments()) {
                 const noteAttachment = revisionAttachment.copy();
                 noteAttachment.parentId = note.noteId;
                 noteAttachment.setContent(revisionAttachment.getContent(), { forceSave: true });
@@ -119,7 +119,7 @@ function restoreNoteRevision(req) {
                 revisionContent = revisionContent.replaceAll(`attachments/${revisionAttachment.attachmentId}`, `attachments/${noteAttachment.attachmentId}`);
             }
 
-            note.title = noteRevision.title;
+            note.title = revision.title;
             note.setContent(revisionContent, { forceSave: true });
         });
     }
@@ -134,8 +134,8 @@ function getEditedNotesOnDate(req) {
                 WHERE notes.dateCreated LIKE :date
                    OR notes.dateModified LIKE :date
             UNION ALL
-                SELECT noteId FROM note_revisions
-                WHERE note_revisions.dateLastEdited LIKE :date
+                SELECT noteId FROM revisions
+                WHERE revisions.dateLastEdited LIKE :date
         )
         ORDER BY isDeleted
         LIMIT 50`, {date: `${req.params.date}%`});
@@ -186,12 +186,12 @@ function getNotePathData(note) {
 }
 
 module.exports = {
-    getNoteRevisionBlob,
-    getNoteRevisions,
-    getNoteRevision,
-    downloadNoteRevision,
+    getRevisionBlob,
+    getRevisions,
+    getRevision,
+    downloadRevision,
     getEditedNotesOnDate,
-    eraseAllNoteRevisions,
-    eraseNoteRevision,
-    restoreNoteRevision
+    eraseAllRevisions,
+    eraseRevision,
+    restoreRevision
 };

@@ -249,7 +249,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "showNoteRevisions",
+        actionName: "showRevisions",
         defaultShortcuts: [],
         description: "Shows Note Revisions dialog",
         scope: "window"
@@ -502,7 +502,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "text-detail"
     },
     {
-        actionName: "forceSaveNoteRevision",
+        actionName: "forceSaveRevision",
         defaultShortcuts: [],
         description: "Force creating / saving new note revision of the active note",
         scope: "window"

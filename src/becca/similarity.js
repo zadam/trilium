@@ -24,7 +24,7 @@ const IGNORED_ATTR_NAMES = [
     "keyboardshortcut",
     "noteinfowidgetdisabled",
     "linkmapwidgetdisabled",
-    "noterevisionswidgetdisabled",
+    "revisionswidgetdisabled",
     "whatlinksherewidgetdisabled",
     "similarnoteswidgetdisabled",
     "disableinclusion",

@@ -127,10 +127,10 @@ function fillInAdditionalProperties(entityChange) {
                 entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
             }
         }
-    } else if (entityChange.entityName === 'note_revisions') {
+    } else if (entityChange.entityName === 'revisions') {
         entityChange.noteId = sql.getValue(`SELECT noteId
-                                          FROM note_revisions
-                                          WHERE noteRevisionId = ?`, [entityChange.entityId]);
+                                          FROM revisions
+                                          WHERE revisionId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'note_reordering') {
         entityChange.positions = {};
 
@@ -165,7 +165,7 @@ const ORDERING = {
     "branches": 2,
     "blobs": 0,
     "note_reordering": 2,
-    "note_revisions": 2,
+    "revisions": 2,
     "attachments": 3,
     "notes": 1,
     "options": 0

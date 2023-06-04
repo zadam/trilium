@@ -2,7 +2,7 @@ import server from "./server.js";
 import ws from "./ws.js";
 import MoveNoteBulkAction from "../widgets/bulk_actions/note/move_note.js";
 import DeleteNoteBulkAction from "../widgets/bulk_actions/note/delete_note.js";
-import DeleteNoteRevisionsBulkAction from "../widgets/bulk_actions/note/delete_note_revisions.js";
+import DeleteRevisionsBulkAction from "../widgets/bulk_actions/note/delete_revisions.js";
 import DeleteLabelBulkAction from "../widgets/bulk_actions/label/delete_label.js";
 import DeleteRelationBulkAction from "../widgets/bulk_actions/relation/delete_relation.js";
 import RenameLabelBulkAction from "../widgets/bulk_actions/label/rename_label.js";
@@ -25,7 +25,7 @@ const ACTION_GROUPS = [
     },
     {
         title: 'Notes',
-        actions: [RenameNoteBulkAction, MoveNoteBulkAction, DeleteNoteBulkAction, DeleteNoteRevisionsBulkAction],
+        actions: [RenameNoteBulkAction, MoveNoteBulkAction, DeleteNoteBulkAction, DeleteRevisionsBulkAction],
     },
     {
         title: 'Other',
@@ -37,7 +37,7 @@ const ACTION_CLASSES = [
     RenameNoteBulkAction,
     MoveNoteBulkAction,
     DeleteNoteBulkAction,
-    DeleteNoteRevisionsBulkAction,
+    DeleteRevisionsBulkAction,
     DeleteLabelBulkAction,
     DeleteRelationBulkAction,
     RenameLabelBulkAction,

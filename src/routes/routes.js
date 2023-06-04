@@ -28,7 +28,7 @@ const branchesApiRoute = require('./api/branches');
 const attachmentsApiRoute = require('./api/attachments');
 const autocompleteApiRoute = require('./api/autocomplete');
 const cloningApiRoute = require('./api/cloning');
-const noteRevisionsApiRoute = require('./api/note_revisions');
+const revisionsApiRoute = require('./api/revisions.js');
 const recentChangesApiRoute = require('./api/recent_changes');
 const optionsApiRoute = require('./api/options');
 const passwordApiRoute = require('./api/password');
@@ -117,7 +117,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/data', notesApiRoute.updateNoteData);
     apiRoute(DEL, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
-    apiRoute(PST, '/api/notes/:noteId/revision', notesApiRoute.forceSaveNoteRevision);
+    apiRoute(PST, '/api/notes/:noteId/revision', notesApiRoute.forceSaveRevision);
     apiRoute(PST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
     apiRoute(PUT, '/api/notes/:noteId/sort-children', notesApiRoute.sortChildNotes);
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectNote);
@@ -171,13 +171,13 @@ function register(app) {
     route(PUT, '/api/attachments/:attachmentId/file', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware],
         filesRoute.updateAttachment, apiResultHandler);
 
-    apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
-    apiRoute(DEL, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.eraseAllNoteRevisions);
-    apiRoute(GET, '/api/revisions/:noteRevisionId', noteRevisionsApiRoute.getNoteRevision);
-    apiRoute(GET, '/api/revisions/:noteRevisionId/blob', noteRevisionsApiRoute.getNoteRevisionBlob);
-    apiRoute(DEL, '/api/revisions/:noteRevisionId', noteRevisionsApiRoute.eraseNoteRevision);
-    apiRoute(PST, '/api/revisions/:noteRevisionId/restore', noteRevisionsApiRoute.restoreNoteRevision);
-    route(GET, '/api/revisions/:noteRevisionId/download', [auth.checkApiAuthOrElectron], noteRevisionsApiRoute.downloadNoteRevision);
+    apiRoute(GET, '/api/notes/:noteId/revisions', revisionsApiRoute.getRevisions);
+    apiRoute(DEL, '/api/notes/:noteId/revisions', revisionsApiRoute.eraseAllRevisions);
+    apiRoute(GET, '/api/revisions/:revisionId', revisionsApiRoute.getRevision);
+    apiRoute(GET, '/api/revisions/:revisionId/blob', revisionsApiRoute.getRevisionBlob);
+    apiRoute(DEL, '/api/revisions/:revisionId', revisionsApiRoute.eraseRevision);
+    apiRoute(PST, '/api/revisions/:revisionId/restore', revisionsApiRoute.restoreRevision);
+    route(GET, '/api/revisions/:revisionId/download', [auth.checkApiAuthOrElectron], revisionsApiRoute.downloadRevision);
 
 
     route(GET, '/api/branches/:branchId/export/:type/:format/:version/:taskId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
@@ -321,7 +321,7 @@ function register(app) {
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
     apiRoute(GET, '/api/other/icon-usage', otherRoute.getIconUsage);
     apiRoute(GET, '/api/recent-changes/:ancestorNoteId', recentChangesApiRoute.getRecentChanges);
-    apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
+    apiRoute(GET, '/api/edited-notes/:date', revisionsApiRoute.getEditedNotesOnDate);
 
     apiRoute(PST, '/api/note-map/:noteId/tree', noteMapRoute.getTreeMap);
     apiRoute(PST, '/api/note-map/:noteId/link', noteMapRoute.getLinkMap);

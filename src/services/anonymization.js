@@ -15,7 +15,7 @@ function getFullAnonymizationScript() {
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
 UPDATE notes SET title = 'title' WHERE title NOT IN ('root', '_hidden', '_share');
 UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
-UPDATE note_revisions SET title = 'title';
+UPDATE revisions SET title = 'title';
 
 UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label' AND name NOT IN(${builtinAttrNames});
 UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrNames});
@@ -36,7 +36,7 @@ function getLightAnonymizationScript() {
     return `UPDATE blobs SET content = 'text' WHERE content IS NOT NULL AND blobId NOT IN (
                 SELECT blobId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
               UNION ALL
-                SELECT blobId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+                SELECT blobId FROM revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
             );`;
 }
 

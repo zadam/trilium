@@ -72,13 +72,13 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteRevisionsDialog extends BasicWidget {
+export default class RevisionsDialog extends BasicWidget {
     constructor() {
         super();
 
         this.revisionItems = [];
         this.note = null;
-        this.noteRevisionId = null;
+        this.revisionId = null;
     }
 
     doRender() {
@@ -100,7 +100,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
         });
 
         this.$widget.on('shown.bs.modal', () => {
-            this.$list.find(`[data-note-revision-id="${this.noteRevisionId}"]`)
+            this.$list.find(`[data-note-revision-id="${this.revisionId}"]`)
                 .trigger('focus');
         });
 
@@ -130,13 +130,13 @@ export default class NoteRevisionsDialog extends BasicWidget {
         });
     }
 
-    async showNoteRevisionsEvent({noteId = appContext.tabManager.getActiveContextNoteId()}) {
+    async showRevisionsEvent({noteId = appContext.tabManager.getActiveContextNoteId()}) {
         utils.openDialog(this.$widget);
 
-        await this.loadNoteRevisions(noteId);
+        await this.loadRevisions(noteId);
     }
 
-    async loadNoteRevisions(noteId) {
+    async loadRevisions(noteId) {
         this.$list.empty();
         this.$content.empty();
         this.$titleButtons.empty();
@@ -148,7 +148,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             this.$list.append(
                 $('<a class="dropdown-item" tabindex="0">')
                     .text(`${item.dateLastEdited.substr(0, 16)} (${item.contentLength} bytes)`)
-                    .attr('data-note-revision-id', item.noteRevisionId)
+                    .attr('data-note-revision-id', item.revisionId)
                     .attr('title', `This revision was last edited on ${item.dateLastEdited}`)
             );
         }
@@ -156,21 +156,21 @@ export default class NoteRevisionsDialog extends BasicWidget {
         this.$listDropdown.dropdown('show');
 
         if (this.revisionItems.length > 0) {
-            if (!this.noteRevisionId) {
-                this.noteRevisionId = this.revisionItems[0].noteRevisionId;
+            if (!this.revisionId) {
+                this.revisionId = this.revisionItems[0].revisionId;
             }
         } else {
             this.$title.text("No revisions for this note yet...");
-            this.noteRevisionId = null;
+            this.revisionId = null;
         }
 
         this.$eraseAllRevisionsButton.toggle(this.revisionItems.length > 0);
     }
 
     async setContentPane() {
-        const noteRevisionId = this.$list.find(".active").attr('data-note-revision-id');
+        const revisionId = this.$list.find(".active").attr('data-note-revision-id');
 
-        const revisionItem = this.revisionItems.find(r => r.noteRevisionId === noteRevisionId);
+        const revisionItem = this.revisionItems.find(r => r.revisionId === revisionId);
 
         this.$title.html(revisionItem.title);
 
@@ -188,7 +188,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             const text = 'Do you want to restore this revision? This will overwrite current title/content of the note with this revision.';
 
             if (await dialogService.confirm(text)) {
-                await server.post(`revisions/${revisionItem.noteRevisionId}/restore`);
+                await server.post(`revisions/${revisionItem.revisionId}/restore`);
 
                 this.$widget.modal('hide');
 
@@ -202,9 +202,9 @@ export default class NoteRevisionsDialog extends BasicWidget {
             const text = 'Do you want to delete this revision? This action will delete revision title and content, but still preserve revision metadata.';
 
             if (await dialogService.confirm(text)) {
-                await server.remove(`revisions/${revisionItem.noteRevisionId}`);
+                await server.remove(`revisions/${revisionItem.revisionId}`);
 
-                this.loadNoteRevisions(revisionItem.noteId);
+                this.loadRevisions(revisionItem.noteId);
 
                 toastService.showMessage('Note revision has been deleted.');
             }
@@ -222,7 +222,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
 
         const $downloadButton = $('<button class="btn btn-sm btn-primary" type="button">Download</button>');
 
-        $downloadButton.on('click', () => openService.downloadNoteRevision(revisionItem.noteId, revisionItem.noteRevisionId));
+        $downloadButton.on('click', () => openService.downloadRevision(revisionItem.noteId, revisionItem.revisionId));
 
         if (!revisionItem.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) {
             this.$titleButtons.append($downloadButton);
@@ -232,10 +232,10 @@ export default class NoteRevisionsDialog extends BasicWidget {
     async renderContent(revisionItem) {
         this.$content.empty();
 
-        const fullNoteRevision = await server.get(`revisions/${revisionItem.noteRevisionId}`);
+        const fullRevision = await server.get(`revisions/${revisionItem.revisionId}`);
 
         if (revisionItem.type === 'text') {
-            this.$content.html(fullNoteRevision.content);
+            this.$content.html(fullRevision.content);
 
             if (this.$content.find('span.math-tex').length > 0) {
                 await libraryLoader.requireLibrary(libraryLoader.KATEX);
@@ -243,12 +243,12 @@ export default class NoteRevisionsDialog extends BasicWidget {
                 renderMathInElement(this.$content[0], {trust: true});
             }
         } else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
-            this.$content.html($("<pre>").text(fullNoteRevision.content));
+            this.$content.html($("<pre>").text(fullRevision.content));
         } else if (revisionItem.type === 'image') {
             this.$content.html($("<img>")
                 // reason why we put this inline as base64 is that we do not want to let user copy this
                 // as a URL to be used in a note. Instead, if they copy and paste it into a note, it will be an uploaded as a new note
-                .attr("src", `data:${fullNoteRevision.mime};base64,${fullNoteRevision.content}`)
+                .attr("src", `data:${fullRevision.mime};base64,${fullRevision.content}`)
                 .css("max-width", "100%")
                 .css("max-height", "100%"));
         } else if (revisionItem.type === 'file') {
@@ -262,12 +262,12 @@ export default class NoteRevisionsDialog extends BasicWidget {
                     $("<td>").text(`${revisionItem.contentLength} bytes`)
                 ));
 
-            if (fullNoteRevision.content) {
+            if (fullRevision.content) {
                 $table.append($("<tr>").append(
                     $('<td colspan="2">').append(
                         $('<div style="font-weight: bold;">').text("Preview:"),
                         $('<pre class="file-preview-content"></pre>')
-                            .text(fullNoteRevision.content)
+                            .text(fullRevision.content)
                     )
                 ));
             }
@@ -278,7 +278,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
              * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
              *        REMOVE external dependency!!!! This is defined in the svg in defs.style
              */
-            const content = fullNoteRevision.content;
+            const content = fullRevision.content;
 
             try {
                 const data = JSON.parse(content)
@@ -291,7 +291,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
                 const $svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
                 this.$content.html($('<div>').append($svgHtml));
             } catch (err) {
-                console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
+                console.error("error parsing fullRevision.content as JSON", fullRevision.content, err);
                 this.$content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
             }
         } else {

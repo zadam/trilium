@@ -2,7 +2,7 @@
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
 UPDATE notes SET title = 'title' WHERE noteId != 'root' AND noteId NOT LIKE '\_%' ESCAPE '\';
 UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
-UPDATE note_revisions SET title = 'title';
+UPDATE revisions SET title = 'title';
 
 UPDATE attributes SET name = 'name', value = 'value'
                   WHERE type = 'label'
@@ -28,7 +28,7 @@ UPDATE attributes SET name = 'name', value = 'value'
                                      'widget',
                                      'noteInfoWidgetDisabled',
                                      'linkMapWidgetDisabled',
-                                     'noteRevisionsWidgetDisabled',
+                                     'revisionsWidgetDisabled',
                                      'whatLinksHereWidgetDisabled',
                                      'similarNotesWidgetDisabled',
                                      'workspace',
@@ -103,7 +103,7 @@ UPDATE attributes SET name = 'name'
                                      'widget',
                                      'noteInfoWidgetDisabled',
                                      'linkMapWidgetDisabled',
-                                     'noteRevisionsWidgetDisabled',
+                                     'revisionsWidgetDisabled',
                                      'whatLinksHereWidgetDisabled',
                                      'similarNotesWidgetDisabled',
                                      'workspace',
