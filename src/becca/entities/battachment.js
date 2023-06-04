@@ -118,7 +118,6 @@ class BAttachment extends AbstractBeccaEntity {
      * @param content
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BAttachment entity
-     * @param {object} [opts.forceCold=false] - blob has to be saved as cold
      * @param {object} [opts.forceFrontendReload=false] - override frontend heuristics on when to reload, instruct to reload
      */
     setContent(content, opts) {

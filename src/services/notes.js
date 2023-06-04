@@ -892,6 +892,8 @@ function eraseAttachments(attachmentIdsToErase) {
 }
 
 function eraseUnusedBlobs() {
+    // this method is rather defense in depth - in normal operation, the unused blobs should be erased immediately
+    // after getting unused (handled in entity._setContent())
     const unusedBlobIds = sql.getColumn(`
         SELECT blobs.blobId
         FROM blobs

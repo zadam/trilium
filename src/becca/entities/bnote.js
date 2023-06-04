@@ -227,15 +227,10 @@ class BNote extends AbstractBeccaEntity {
         return JSON.parse(content);
     }
 
-    _isHot() {
-        return ['text', 'code', 'relationMap', 'canvas', 'mermaid'].includes(this.type);
-    }
-
     /**
      * @param content
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BNote entity
-     * @param {object} [opts.forceCold=false] - blob has to be saved as cold
      * @param {object} [opts.forceFrontendReload=false] - override frontend heuristics on when to reload, instruct to reload
      */
     setContent(content, opts) {
@@ -1610,10 +1605,7 @@ class BNote extends AbstractBeccaEntity {
 
                 const revisionAttachment = noteAttachment.copy();
                 revisionAttachment.parentId = noteRevision.noteRevisionId;
-                revisionAttachment.setContent(noteAttachment.getContent(), {
-                    forceSave: true,
-                    forceCold: true
-                });
+                revisionAttachment.setContent(noteAttachment.getContent(), { forceSave: true });
 
                 // content is rewritten to point to the revision attachments
                 noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
