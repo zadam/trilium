@@ -44,6 +44,7 @@ import BacklinksWidget from "../widgets/floating_buttons/zpetne_odkazy.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
+import HighlightedTextWidget from "../widgets/highlighted_text.js";
 import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 import AboutDialog from "../widgets/dialogs/about.js";
 import HelpDialog from "../widgets/dialogs/help.js";
@@ -184,6 +185,7 @@ export default class DesktopLayout {
                     )
                     .child(new RightPaneContainer()
                         .child(new TocWidget())
+                        .child(new HighlightedTextWidget())
                         .child(...this.customWidgets.get('right-pane'))
                     )
                 )
