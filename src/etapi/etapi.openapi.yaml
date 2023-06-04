@@ -782,6 +782,9 @@ components:
         isProtected:
           type: boolean
           readOnly: true
+        blobId:
+          type: string
+          description: ID of the blob object. For "cold" notes, this is effectively a content hash
         attributes:
           $ref: '#/components/schemas/AttributeList'
           readOnly: true

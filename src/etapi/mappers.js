@@ -5,6 +5,7 @@ function mapNoteToPojo(note) {
         title: note.title,
         type: note.type,
         mime: note.mime,
+        blobId: note.blobId,
         dateCreated: note.dateCreated,
         dateModified: note.dateModified,
         utcDateCreated: note.utcDateCreated,
