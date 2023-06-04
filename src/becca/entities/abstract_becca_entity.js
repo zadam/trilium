@@ -149,20 +149,13 @@ class AbstractBeccaEntity {
             content = Buffer.isBuffer(content) ? content : Buffer.from(content);
         }
 
-        let unencryptedContentForHashCalculation = content;
+        const unencryptedContentForHashCalculation = this.getUnencryptedContentForHashCalculation(content);
 
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
                 content = protectedSessionService.encrypt(content);
-
-                // this is to make sure that the calculated hash/blobId is different for an encrypted note and decrypted
-                const encryptedPrefixSuffix = "ThisIsEncryptedContent&^$#$1%&8*)(^%$5#@";
-                unencryptedContentForHashCalculation = Buffer.isBuffer(unencryptedContentForHashCalculation)
-                    ? Buffer.concat([Buffer.from(encryptedPrefixSuffix), unencryptedContentForHashCalculation, Buffer.from(encryptedPrefixSuffix)])
-                    : `${encryptedPrefixSuffix}${unencryptedContentForHashCalculation}${encryptedPrefixSuffix}`;
-            }
-            else {
-                throw new Error(`Cannot update content of blob since we're out of protected session.`);
+            } else {
+                throw new Error(`Cannot update content of blob since protected session is not available.`);
             }
         }
 
@@ -174,6 +167,18 @@ class AbstractBeccaEntity {
                 this.save();
             }
         });
+    }
+
+    getUnencryptedContentForHashCalculation(unencryptedContent) {
+        if (this.isProtected) {
+            // a "random" prefix make sure that the calculated hash/blobId is different for an encrypted note and decrypted
+            const encryptedPrefixSuffix = "t$[nvQg7q)&_ENCRYPTED_?M:Bf&j3jr_";
+            return Buffer.isBuffer(unencryptedContent)
+                ? Buffer.concat([Buffer.from(encryptedPrefixSuffix), unencryptedContent])
+                : `${encryptedPrefixSuffix}${unencryptedContent}`;
+        } else {
+            return unencryptedContent;
+        }
     }
 
     /** @protected */
