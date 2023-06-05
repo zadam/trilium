@@ -49,8 +49,7 @@ function register(router) {
         'notePosition': [v.notNull, v.isInteger],
         'prefix': [v.notNull, v.isString],
         'isExpanded': [v.notNull, v.isBoolean],
-        'noteId': [v.notNull, v.isValidEntityId],
-        'branchId': [v.notNull, v.isValidEntityId],
+        'noteId': [v.notNull, v.isValidEntityId]
     };
 
     eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {

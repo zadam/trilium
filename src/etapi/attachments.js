@@ -2,8 +2,7 @@ const becca = require("../becca/becca");
 const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const v = require("./validators");
-const utils = require("../services/utils.js");
-const noteService = require("../services/notes.js");
+const utils = require("../services/utils");
 
 function register(router) {
     const ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT = {

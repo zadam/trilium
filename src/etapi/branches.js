@@ -13,7 +13,6 @@ function register(router) {
     });
 
     const ALLOWED_PROPERTIES_FOR_CREATE_BRANCH = {
-        'branchId': [v.mandatory, v.notNull, v.isValidEntityId],
         'noteId': [v.mandatory, v.notNull, v.isNoteId],
         'parentNoteId': [v.mandatory, v.notNull, v.isNoteId],
         'notePosition': [v.notNull, v.isInteger],

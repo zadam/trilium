@@ -4,7 +4,6 @@ Content-Type: application/json
 
 {
   "noteId": "forcedId{{$randomInt}}",
-  "branchId": "forcedId{{$randomInt}}",
   "parentNoteId": "root",
   "title": "Hello",
   "type": "text",
@@ -15,7 +14,6 @@ Content-Type: application/json
     client.assert(response.status === 201);
     client.assert(response.body.note.noteId.startsWith("forcedId"));
     client.assert(response.body.note.title == "Hello");
-    client.assert(response.body.branch.branchId.startsWith("forcedId"));
     client.assert(response.body.branch.parentNoteId == "root");
 
     client.log(`Created note ` + response.body.note.noteId + ` and branch ` + response.body.branch.branchId);
@@ -31,14 +29,13 @@ Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "branchId": "forcedClonedId",
   "noteId": "{{createdNoteId}}",
-  "parentNoteId": '_hidden'
+  "parentNoteId": "_hidden"
 }
 
 > {%
     client.assert(response.status === 201);
-    client.assert(response.body.parentNoteId == '_hidden');
+    client.assert(response.body.parentNoteId == "_hidden");
 
     client.global.set("clonedBranchId", response.body.branchId);
 
@@ -121,4 +118,37 @@ Authorization: {{authToken}}
 > {%
     client.assert(response.status === 200);
     client.assert(response.body.attributeId == client.global.get("createdAttributeId"));
+%}
+
+###
+
+POST {{triliumHost}}/etapi/attachments
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "parentId": "{{createdNoteId}}",
+  "role": "file",
+  "mime": "plain/text",
+  "title": "my attachment",
+  "content": "my text"
+}
+
+> {%
+    client.assert(response.status === 201);
+
+    client.global.set("createdAttachmentId", response.body.attachmentId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.attachmentId == client.global.get("createdAttachmentId"));
+    client.assert(response.body.role == "file");
+    client.assert(response.body.mime == "plain/text");
+    client.assert(response.body.title == "my attachment");
 %}
