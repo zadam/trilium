@@ -190,7 +190,7 @@ class BAttribute extends AbstractBeccaEntity {
 
         if (this.position === undefined || this.position === null) {
             const maxExistingPosition = this.getNote().getAttributes()
-                .reduce((maxPosition, attr) => Math.max(maxPosition, attr.position), 0);
+                .reduce((maxPosition, attr) => Math.max(maxPosition, attr.position || 0), 0);
 
             this.position = maxExistingPosition + 10;
         }

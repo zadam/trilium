@@ -50,7 +50,7 @@ export default class OptionsWidget extends NoteContextAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        if (loadResults.options.length > 0) {
+        if (loadResults.getOptionNames().length > 0) {
             this.refresh();
         }
     }

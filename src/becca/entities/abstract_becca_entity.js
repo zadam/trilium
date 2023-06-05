@@ -93,6 +93,8 @@ class AbstractBeccaEntity {
 
         const pojo = this.getPojoToSave();
 
+        console.log(pojo);
+
         sql.transactional(() => {
             sql.upsert(entityName, primaryKeyName, pojo);
 

@@ -22,7 +22,7 @@ Content-Type: application/json
 
 {
   "noteId": "{{createdNoteId}}",
-  "parentNoteId": '_hidden'
+  "parentNoteId": "_hidden"
 }
 
 > {% client.global.set("clonedBranchId", response.body.branchId); %}

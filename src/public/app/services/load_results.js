@@ -117,6 +117,10 @@ export default class LoadResults {
         return this.optionNames.includes(name);
     }
 
+    getOptionNames() {
+        return this.optionNames;
+    }
+
     addAttachmentRow(attachment) {
         this.attachmentRows.push(attachment);
     }
