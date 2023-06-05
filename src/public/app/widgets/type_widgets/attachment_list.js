@@ -1,5 +1,4 @@
 import TypeWidget from "./type_widget.js";
-import server from "../../services/server.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
 import linkService from "../../services/link.js";
 
@@ -72,7 +71,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         // updates and deletions are handled by the detail, for new attachments the whole list has to be refreshed
-        const attachmentsAdded = loadResults.getAttachments()
+        const attachmentsAdded = loadResults.getAttachmentRows()
             .some(att => !this.renderedAttachmentIds.has(att.attachmentId));
 
         if (attachmentsAdded) {

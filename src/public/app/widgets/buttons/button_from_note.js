@@ -42,7 +42,7 @@ export default class ButtonFromNoteWidget extends CommandButtonWidget {
             return;
         }
 
-        if (loadResults.getAttributes(this.componentId).find(attr =>
+        if (loadResults.getAttributeRows(this.componentId).find(attr =>
             attr.type === 'label'
             && attr.name === 'iconClass'
             && attributeService.isAffecting(attr, buttonNote))) {

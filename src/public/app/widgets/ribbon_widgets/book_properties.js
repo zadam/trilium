@@ -108,7 +108,7 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && attr.name === 'viewType')) {
+        if (loadResults.getAttributeRows().find(attr => attr.noteId === this.noteId && attr.name === 'viewType')) {
             this.refresh();
         }
     }

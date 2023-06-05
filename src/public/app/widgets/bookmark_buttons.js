@@ -38,11 +38,11 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.parentNoteId === '_lbBookmarks')) {
+        if (loadResults.getBranchRows().find(branch => branch.parentNoteId === '_lbBookmarks')) {
             this.refresh();
         }
 
-        if (loadResults.getAttributes().find(attr => attr.type === 'label'
+        if (loadResults.getAttributeRows().find(attr => attr.type === 'label'
             && ['iconClass', 'workspaceIconClass', 'bookmarkFolder'].includes(attr.name)
             && this.noteIds.includes(attr.noteId))
         ) {

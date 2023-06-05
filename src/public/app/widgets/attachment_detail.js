@@ -1,7 +1,6 @@
 import utils from "../services/utils.js";
 import AttachmentActionsWidget from "./buttons/attachments_actions.js";
 import BasicWidget from "./basic_widget.js";
-import server from "../services/server.js";
 import options from "../services/options.js";
 import imageService from "../services/image.js";
 import linkService from "../services/link.js";
@@ -192,7 +191,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachment.attachmentId);
+        const attachmentChange = loadResults.getAttachmentRows().find(att => att.attachmentId === this.attachment.attachmentId);
 
         if (attachmentChange) {
             if (attachmentChange.isDeleted) {

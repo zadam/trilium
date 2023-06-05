@@ -312,7 +312,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else {
-            const attrs = loadResults.getAttributes();
+            const attrs = loadResults.getAttributeRows();
 
             const label = attrs.find(attr =>
                 attr.type === 'label'

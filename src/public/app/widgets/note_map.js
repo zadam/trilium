@@ -429,7 +429,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(
+        if (loadResults.getAttributeRows(this.componentId).find(
             attr =>
                 attr.type === 'label'
                 && ['mapType', 'mapRootNoteId'].includes(attr.name)

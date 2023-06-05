@@ -22,4 +22,4 @@ CREATE INDEX `IDX_revisions_utcDateLastEdited` ON `revisions` (`utcDateLastEdite
 CREATE INDEX `IDX_revisions_dateCreated` ON `revisions` (`dateCreated`);
 CREATE INDEX `IDX_revisions_dateLastEdited` ON `revisions` (`dateLastEdited`);
 
-UPDATE entity_changes SET entity_name = 'revisions' WHERE entity_name = 'note_revisions';
+UPDATE entity_changes SET entityName = 'revisions' WHERE entityName = 'note_revisions';

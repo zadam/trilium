@@ -1082,7 +1082,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const noteIdsToUpdate = new Set();
         const noteIdsToReload = new Set();
 
-        for (const ecAttr of loadResults.getAttributes()) {
+        for (const ecAttr of loadResults.getAttributeRows()) {
             const dirtyingLabels = ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'color'];
 
             if (ecAttr.type === 'label' && dirtyingLabels.includes(ecAttr.name)) {
@@ -1124,10 +1124,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         let movedActiveNode = null;
         let parentsOfAddedNodes = [];
 
-        const allBranches = loadResults.getBranches();
-        const allBranchesDeleted = allBranches.every(branch => !!branch.isDeleted);
+        const allBranchRows = loadResults.getBranchRows();
+        const allBranchesDeleted = allBranchRows.every(branch => !!branch.isDeleted);
 
-        for (const ecBranch of allBranches) {
+        for (const ecBranch of allBranchRows) {
             if (ecBranch.parentNoteId === '_share') {
                 // all shared notes have a sign in the tree, even the descendants of shared notes
                 noteIdsToReload.add(ecBranch.noteId);

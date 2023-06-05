@@ -346,7 +346,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
 
             this.refresh();
         }
-        else if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
+        else if (loadResults.getAttributeRows(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refreshWithNote(this.note, true);
         }
     }

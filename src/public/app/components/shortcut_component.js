@@ -27,7 +27,7 @@ export default class ShortcutComponent extends Component {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        for (const attr of loadResults.getAttributes()) {
+        for (const attr of loadResults.getAttributeRows()) {
             if (attr.type === 'label' && attr.name === 'keyboardShortcut') {
                 const note = await froca.getNote(attr.noteId);
                 // launcher shortcuts are handled specifically

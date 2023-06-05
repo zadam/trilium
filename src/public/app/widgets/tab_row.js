@@ -681,7 +681,7 @@ export default class TabRowWidget extends BasicWidget {
             }
 
             if (loadResults.isNoteReloaded(noteContext.noteId) ||
-                loadResults.getAttributes().find(attr =>
+                loadResults.getAttributeRows().find(attr =>
                     ['workspace', 'workspaceIconClass', 'workspaceTabBackgroundColor'].includes(attr.name)
                     && attributeService.isAffecting(attr, noteContext.note))
             ) {

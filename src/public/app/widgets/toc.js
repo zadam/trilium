@@ -226,7 +226,7 @@ export default class TocWidget extends RightPanelWidget {
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
-        } else if (loadResults.getAttributes().find(attr => attr.type === 'label'
+        } else if (loadResults.getAttributeRows().find(attr => attr.type === 'label'
             && (attr.name.toLowerCase().includes('readonly') || attr.name === 'toc')
             && attributeService.isAffecting(attr, this.note))) {
 

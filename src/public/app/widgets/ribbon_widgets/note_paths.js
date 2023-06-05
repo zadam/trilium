@@ -135,7 +135,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)
+        if (loadResults.getBranchRows().find(branch => branch.noteId === this.noteId)
             || loadResults.isNoteReloaded(this.noteId)) {
 
             this.refresh();

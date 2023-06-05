@@ -69,7 +69,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(b => b.noteId === this.noteId)) {
+        if (loadResults.getBranchRows().find(b => b.noteId === this.noteId)) {
             this.refresh();
         }
     }

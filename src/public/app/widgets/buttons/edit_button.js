@@ -53,7 +53,7 @@ export default class EditButton extends OnClickButtonWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(
+        if (loadResults.getAttributeRows().find(
             attr => attr.type === 'label'
                 && attr.name.toLowerCase().includes("readonly")
                 && attributeService.isAffecting(attr, this.note)

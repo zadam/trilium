@@ -147,7 +147,7 @@ export default class BulkActionsDialog extends BasicWidget {
 
     entitiesReloadedEvent({loadResults}) {
         // only refreshing deleted attrs, otherwise components update themselves
-        if (loadResults.getAttributes().find(attr =>
+        if (loadResults.getAttributeRows().find(attr =>
             attr.type === 'label'
             && attr.name === 'action'
             && attr.noteId === '_bulkAction'

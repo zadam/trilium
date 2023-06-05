@@ -31,7 +31,7 @@ export default class AbstractLauncher extends OnClickButtonWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        for (const attr of loadResults.getAttributes()) {
+        for (const attr of loadResults.getAttributeRows()) {
             if (attr.noteId === this.launcherNote.noteId && attr.type === 'label' && attr.name === 'keyboardShortcut') {
                 this.bindNoteShortcutHandler(attr);
             } else if (attr.type === 'label' && attr.name === 'iconClass' && attributesService.isAffecting(attr, this.launcherNote)) {

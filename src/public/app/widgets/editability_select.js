@@ -85,7 +85,7 @@ export default class EditabilitySelectWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId)) {
+        if (loadResults.getAttributeRows().find(attr => attr.noteId === this.noteId)) {
             this.refresh();
         }
     }
