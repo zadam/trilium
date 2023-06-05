@@ -1,0 +1,79 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {% client.global.set("createdNoteId", response.body.note.noteId); %}
+
+###
+
+POST {{triliumHost}}/etapi/attachments
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentId": "{{createdNoteId}}",
+  "role": "file",
+  "mime": "text/plain",
+  "title": "my attachment",
+  "content": "text"
+}
+
+> {% client.global.set("createdAttachmentId", response.body.attachmentId); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "CHANGED",
+  "position": 999
+}
+
+###
+
+GET {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.body.title === "CHANGED");
+    client.assert(response.body.position === 999);
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentId": "root"
+}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED");
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": null
+}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code == "PROPERTY_VALIDATION_ERROR");
+%}

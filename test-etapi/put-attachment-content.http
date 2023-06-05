@@ -1,0 +1,45 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {% client.global.set("createdNoteId", response.body.note.noteId); %}
+
+###
+
+POST {{triliumHost}}/etapi/attachments
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentId": "{{createdNoteId}}",
+  "role": "file",
+  "mime": "text/plain",
+  "title": "my attachment",
+  "content": "text"
+}
+
+> {% client.global.set("createdAttachmentId", response.body.attachmentId); %}
+
+###
+
+PUT {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}/content
+Authorization: {{authToken}}
+Content-Type: text/plain
+
+Changed content
+
+> {% client.assert(response.status === 204); %}
+
+###
+
+GET {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}/content
+Authorization: {{authToken}}
+
+> {% client.assert(response.body === "Changed content"); %}

@@ -13,40 +13,40 @@ Content-Type: application/json
 
 ###
 
-POST {{triliumHost}}/etapi/attributes
+POST {{triliumHost}}/etapi/attachments
 Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "noteId": "{{createdNoteId}}",
-  "type": "label",
-  "name": "mylabel",
-  "value": "val",
-  "isInheritable": true
+  "parentId": "{{createdNoteId}}",
+  "role": "file",
+  "mime": "text/plain",
+  "title": "my attachment",
+  "content": "text"
 }
 
-> {% client.global.set("createdAttributeId", response.body.attributeId); %}
+> {% client.global.set("createdAttachmentId", response.body.attachmentId); %}
 
 ###
 
-DELETE {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+DELETE {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
 Authorization: {{authToken}}
 
 > {% client.assert(response.status === 204, "Response status is not 204"); %}
 
 ### repeat the DELETE request to test the idempotency
 
-DELETE {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+DELETE {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
 Authorization: {{authToken}}
 
 > {% client.assert(response.status === 204, "Response status is not 204"); %}
 
 ###
 
-GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+GET {{triliumHost}}/etapi/attachments/{{createdAttachmentId}}
 Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 404, "Response status is not 404");
-    client.assert(response.body.code === "ATTRIBUTE_NOT_FOUND");
+    client.assert(response.body.code === "ATTACHMENT_NOT_FOUND");
 %}
