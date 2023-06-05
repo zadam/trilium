@@ -37,13 +37,30 @@ function requestCredentials(res) {
         .sendStatus(401);
 }
 
+/** @returns {SAttachment|boolean} */
+function checkAttachmentAccess(attachmentId, req, res) {
+    const attachment = shaca.getAttachment(attachmentId);
+
+    if (!attachment) {
+        res.status(404)
+            .json({ message: `Attachment '${attachmentId}' not found.` });
+
+        return false;
+    }
+
+    const note = checkNoteAccess(attachment.parentId, req, res);
+
+    // truthy note means user has access, and we can return the attachment
+    return note ? attachment : false;
+}
+
 /** @returns {SNote|boolean} */
 function checkNoteAccess(noteId, req, res) {
     const note = shaca.getNote(noteId);
 
     if (!note) {
         res.status(404)
-            .json({ message: `Note '${noteId}' not found` });
+            .json({ message: `Note '${noteId}' not found.` });
 
         return false;
     }
@@ -151,7 +168,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        res.json(note.getPojoWithAttributes());
+        res.json(note.getPojo());
     });
 
     router.get('/share/api/notes/:noteId/download', (req, res, next) => {
@@ -213,6 +230,26 @@ function register(router) {
             res.set('Content-Type', image.mime);
             addNoIndexHeader(image, res);
             res.send(image.getContent());
+        }
+    });
+
+    // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
+    router.get('/share/api/attachments/:attachmentId/image/:filename', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
+        let attachment;
+
+        if (!(attachment = checkAttachmentAccess(req.params.attachmentId, req, res))) {
+            return;
+        }
+
+        if (attachment.role === "image") {
+            res.set('Content-Type', attachment.mime);
+            addNoIndexHeader(attachment.note, res);
+            res.send(attachment.getContent());
+        } else {
+            return res.status(400)
+                .json({ message: "Requested attachment is not a shareable image" });
         }
     });
 

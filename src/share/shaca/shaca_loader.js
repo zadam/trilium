@@ -6,6 +6,7 @@ const log = require('../../services/log');
 const SNote = require('./entities/snote');
 const SBranch = require('./entities/sbranch');
 const SAttribute = require('./entities/sattribute');
+const SAttachment = require("./entities/sattachment");
 const shareRoot = require('../share_root');
 const eventService = require("../../services/events");
 
@@ -65,9 +66,21 @@ function load() {
         new SAttribute(row);
     }
 
+    const rawAttachmentRows = sql.getRawRows(`
+        SELECT attachmentId, parentId, role, mime, title, blobId, utcDateModified 
+        FROM attachments 
+        WHERE isDeleted = 0 
+          AND parentId IN (${noteIdStr})`);
+
+    rawAttachmentRows.sort((a, b) => a.position < b.position ? -1 : 1);
+
+    for (const row of rawAttachmentRows) {
+        new SAttachment(row);
+    }
+
     shaca.loaded = true;
 
-    log.info(`Shaca loaded ${rawNoteRows.length} notes, ${rawBranchRows.length} branches, ${rawAttributeRows.length} attributes took ${Date.now() - start}ms`);
+    log.info(`Shaca loaded ${rawNoteRows.length} notes, ${rawBranchRows.length} branches, ${rawAttachmentRows.length} attributes took ${Date.now() - start}ms`);
 }
 
 function ensureLoad() {

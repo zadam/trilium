@@ -47,6 +47,9 @@ class SNote extends AbstractShacaEntity {
         /** @param {SAttribute[]} */
         this.targetRelations = [];
 
+        /** @param {SAttachment[]} */
+        this.attachments = [];
+
         this.shaca.notes[this.noteId] = this;
     }
 
@@ -101,7 +104,7 @@ class SNote extends AbstractShacaEntity {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note content for noteId '${this.noteId}', blobId '${this.blobId}'`);
+                throw new Error(`Cannot find note content for note '${this.noteId}', blob '${this.blobId}'`);
             }
         }
 
@@ -442,6 +445,11 @@ class SNote extends AbstractShacaEntity {
         return this.targetRelations;
     }
 
+    /** @returns {SAttachment[]} */
+    getAttachments() {
+        return this.attachments;
+    }
+
     /** @returns {string} */
     get shareId() {
         if (this.hasOwnedLabel('shareRoot')) {
@@ -457,7 +465,7 @@ class SNote extends AbstractShacaEntity {
         return escape(this.title);
     }
 
-    getPojoWithAttributes() {
+    getPojo() {
         return {
             noteId: this.noteId,
             title: this.title,
@@ -469,6 +477,8 @@ class SNote extends AbstractShacaEntity {
                 // individual relations might be whitelisted based on needs #3434
                 .filter(attr => attr.type === 'label')
                 .map(attr => attr.getPojo()),
+            attachments: this.getAttachments()
+                .map(attachment => attachment.getPojo()),
             parentNoteIds: this.parents.map(parentNote => parentNote.noteId),
             childNoteIds: this.children.map(child => child.noteId)
         };
