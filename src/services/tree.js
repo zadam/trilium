@@ -199,7 +199,7 @@ function sortNotesIfNeeded(parentNoteId) {
 function setNoteToParent(noteId, prefix, parentNoteId) {
     const parentNote = becca.getNote(parentNoteId);
 
-    if (parentNote && parentNote.isDeleted) {
+    if (!parentNote) {
         throw new Error(`Cannot move note to deleted parent note '${parentNoteId}'`);
     }
 
@@ -209,7 +209,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 
     if (branch) {
         if (!parentNoteId) {
-            log.info(`Removing note ${noteId} from parent ${parentNoteId}`);
+            log.info(`Removing note '${noteId}' from parent '${parentNoteId}'`);
 
             branch.markAsDeleted();
         }

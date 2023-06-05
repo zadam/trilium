@@ -11,8 +11,8 @@ const ValidationError = require("../../errors/validation_error");
 function searchFromNote(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    if (note.isDeleted) {
-        // this can be triggered from recent changes, and it's harmless to return empty list rather than fail
+    if (!note) {
+        // this can be triggered from recent changes, and it's harmless to return an empty list rather than fail
         return [];
     }
 
@@ -26,8 +26,8 @@ function searchFromNote(req) {
 function searchAndExecute(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    if (note.isDeleted) {
-        // this can be triggered from recent changes, and it's harmless to return empty list rather than fail
+    if (!note) {
+        // this can be triggered from recent changes, and it's harmless to return an empty list rather than fail
         return [];
     }
 

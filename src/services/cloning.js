@@ -9,6 +9,10 @@ const beccaService = require("../becca/becca_service");
 const log = require("./log");
 
 function cloneNoteToParentNote(noteId, parentNoteId, prefix) {
+    if (!(noteId in becca.notes) || !(parentNoteId in becca.notes)) {
+        return { success: false, message: 'Note cannot be cloned because either the cloned note or the intended parent is deleted.' };
+    }
+
     const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote.type === 'search') {
@@ -16,10 +20,6 @@ function cloneNoteToParentNote(noteId, parentNoteId, prefix) {
             success: false,
             message: "Can't clone into a search note"
         };
-    }
-
-    if (isNoteDeleted(noteId) || isNoteDeleted(parentNoteId)) {
-        return { success: false, message: 'Note cannot be cloned because either the cloned note or the intended parent is deleted.' };
     }
 
     const validationResult = treeService.validateParentChild(parentNoteId, noteId);
@@ -172,12 +172,6 @@ function cloneNoteAfter(noteId, afterBranchId) {
     log.info(`Cloned note '${noteId}' into parent note '${afterNote.parentNoteId}' after note '${afterNote.noteId}', branch '${afterBranchId}'`);
 
     return { success: true, branchId: branch.branchId };
-}
-
-function isNoteDeleted(noteId) {
-    const note = becca.getNote(noteId);
-
-    return !note || note.isDeleted;
 }
 
 module.exports = {

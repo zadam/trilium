@@ -315,21 +315,21 @@ function getEntityChangeRow(entityName, entityId) {
             throw new Error(`Unknown entity '${entityName}'`);
         }
 
-        const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
+        const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
-        if (!entity) {
+        if (!entityRow) {
             throw new Error(`Entity ${entityName} '${entityId}' not found.`);
         }
 
-        if (entityName === 'blobs' && entity.content !== null) {
-            if (typeof entity.content === 'string') {
-                entity.content = Buffer.from(entity.content, 'utf-8');
+        if (entityName === 'blobs' && entityRow.content !== null) {
+            if (typeof entityRow.content === 'string') {
+                entityRow.content = Buffer.from(entityRow.content, 'utf-8');
             }
 
-            entity.content = entity.content.toString("base64");
+            entityRow.content = entityRow.content.toString("base64");
         }
 
-        return entity;
+        return entityRow;
     }
 }
 

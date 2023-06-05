@@ -607,16 +607,16 @@ class ConsistencyChecks {
             WHERE 
               entity_changes.id IS NULL`,
             ({entityId}) => {
-                const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+                const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
                 if (this.autoFix) {
                     entityChangesService.addEntityChange({
                         entityName,
                         entityId,
                         hash: utils.randomString(10), // doesn't matter, will force sync, but that's OK
-                        isErased: !!entity.isErased,
-                        utcDateChanged: entity.utcDateModified || entity.utcDateCreated,
-                        isSynced: entityName !== 'options' || entity.isSynced
+                        isErased: !!entityRow.isErased,
+                        utcDateChanged: entityRow.utcDateModified || entityRow.utcDateCreated,
+                        isSynced: entityName !== 'options' || entityRow.isSynced
                     });
 
                     logFix(`Created missing entity change for entityName '${entityName}', entityId '${entityId}'`);

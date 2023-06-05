@@ -570,7 +570,7 @@ function downloadImages(noteId, content) {
                 for (const url in imageUrlToAttachmentIdMapping) {
                     const imageNote = imageNotes.find(note => note.noteId === imageUrlToAttachmentIdMapping[url]);
 
-                    if (imageNote && !imageNote.isDeleted) {
+                    if (imageNote) {
                         updatedContent = replaceUrl(updatedContent, url, imageNote);
                     }
                 }
@@ -697,14 +697,14 @@ function updateNoteData(noteId, content) {
  * @param {TaskContext} taskContext
  */
 function undeleteNote(noteId, taskContext) {
-    const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const noteRow = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
-    if (!note.isDeleted) {
+    if (!noteRow.isDeleted) {
         log.error(`Note '${noteId}' is not deleted and thus cannot be undeleted.`);
         return;
     }
 
-    const undeletedParentBranchIds = getUndeletedParentBranchIds(noteId, note.deleteId);
+    const undeletedParentBranchIds = getUndeletedParentBranchIds(noteId, noteRow.deleteId);
 
     if (undeletedParentBranchIds.length === 0) {
         // cannot undelete if there's no undeleted parent
@@ -712,7 +712,7 @@ function undeleteNote(noteId, taskContext) {
     }
 
     for (const parentBranchId of undeletedParentBranchIds) {
-        undeleteBranch(parentBranchId, note.deleteId, taskContext);
+        undeleteBranch(parentBranchId, noteRow.deleteId, taskContext);
     }
 }
 
@@ -722,38 +722,38 @@ function undeleteNote(noteId, taskContext) {
  * @param {TaskContext} taskContext
  */
 function undeleteBranch(branchId, deleteId, taskContext) {
-    const branch = sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId])
+    const branchRow = sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId])
 
-    if (!branch.isDeleted) {
+    if (!branchRow.isDeleted) {
         return;
     }
 
-    const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [branch.noteId]);
+    const noteRow = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [branchRow.noteId]);
 
-    if (note.isDeleted && note.deleteId !== deleteId) {
+    if (noteRow.isDeleted && noteRow.deleteId !== deleteId) {
         return;
     }
 
-    new BBranch(branch).save();
+    new BBranch(branchRow).save();
 
     taskContext.increaseProgressCount();
 
-    if (note.isDeleted && note.deleteId === deleteId) {
+    if (noteRow.isDeleted && noteRow.deleteId === deleteId) {
         // becca entity was already created as skeleton in "new Branch()" above
-        const noteEntity = becca.getNote(note.noteId);
-        noteEntity.updateFromRow(note);
+        const noteEntity = becca.getNote(noteRow.noteId);
+        noteEntity.updateFromRow(noteRow);
         noteEntity.save();
 
-        const attributes = sql.getRows(`
+        const attributeRows = sql.getRows(`
                 SELECT * FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
                   AND (noteId = ? 
-                           OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
+                           OR (type = 'relation' AND value = ?))`, [deleteId, noteRow.noteId, noteRow.noteId]);
 
-        for (const attribute of attributes) {
+        for (const attributeRow of attributeRows) {
             // relation might point to a note which hasn't been undeleted yet and would thus throw up
-            new BAttribute(attribute).save({skipValidation: true});
+            new BAttribute(attributeRow).save({skipValidation: true});
         }
 
         const childBranchIds = sql.getColumn(`
@@ -761,7 +761,7 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             FROM branches
             WHERE branches.isDeleted = 1
               AND branches.deleteId = ?
-              AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
+              AND branches.parentNoteId = ?`, [deleteId, noteRow.noteId]);
 
         for (const childBranchId of childBranchIds) {
             undeleteBranch(childBranchId, deleteId, taskContext);

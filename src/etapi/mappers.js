@@ -46,8 +46,26 @@ function mapAttributeToPojo(attr) {
     };
 }
 
+/** @param {BAttachment} attachment */
+function mapAttachmentToPojo(attachment) {
+    return {
+        attachmentId: attachment.attachmentId,
+        parentId: attachment.parentId,
+        role: attachment.role,
+        mime: attachment.mime,
+        title: attachment.title,
+        position: attachment.position,
+        blobId: attachment.blobId,
+        dateModified: attachment.dateModified,
+        utcDateModified: attachment.utcDateModified,
+        utcDateScheduledForErasureSince: attachment.utcDateScheduledForErasureSince,
+        contentLength: attachment.contentLength
+    };
+}
+
 module.exports = {
     mapNoteToPojo,
     mapBranchToPojo,
-    mapAttributeToPojo
+    mapAttributeToPojo,
+    mapAttachmentToPojo
 };

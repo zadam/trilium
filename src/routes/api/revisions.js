@@ -149,7 +149,7 @@ function getEditedNotesOnDate(req) {
     }
 
     return notes.map(note => {
-        const notePath = note.isDeleted ? null : getNotePathData(note);
+        const notePath = getNotePathData(note);
 
         const notePojo = note.getPojo();
         notePojo.notePath = notePath ? notePath.notePath : null;

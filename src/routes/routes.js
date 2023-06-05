@@ -63,6 +63,7 @@ const shareRoutes = require('../share/routes');
 
 const etapiAuthRoutes = require('../etapi/auth');
 const etapiAppInfoRoutes = require('../etapi/app_info');
+const etapiAttachmentRoutes = require('../etapi/attachments');
 const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches');
 const etapiNoteRoutes = require('../etapi/notes');
@@ -332,6 +333,7 @@ function register(app) {
 
     etapiAuthRoutes.register(router, [loginRateLimiter]);
     etapiAppInfoRoutes.register(router);
+    etapiAttachmentRoutes.register(router);
     etapiAttributeRoutes.register(router);
     etapiBranchRoutes.register(router);
     etapiNoteRoutes.register(router);

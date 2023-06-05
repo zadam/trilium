@@ -14,7 +14,7 @@ function register(router) {
         const {search} = req.query;
 
         if (!search?.trim()) {
-            throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory");
+            throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory.");
         }
 
         const searchParams = parseSearchParams(req);
@@ -78,10 +78,10 @@ function register(router) {
     };
 
     eu.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
-        const note = eu.getAndCheckNote(req.params.noteId)
+        const note = eu.getAndCheckNote(req.params.noteId);
 
         if (note.isProtected) {
-            throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI`);
+            throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI.`);
         }
 
         eu.validateAndPatch(note, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
@@ -95,7 +95,7 @@ function register(router) {
 
         const note = becca.getNote(noteId);
 
-        if (!note || note.isDeleted) {
+        if (!note) {
             return res.sendStatus(204);
         }
 
@@ -106,6 +106,10 @@ function register(router) {
 
     eu.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
+
+        if (note.isProtected) {
+            throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and content cannot be read through ETAPI.`);
+        }
 
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
@@ -120,6 +124,10 @@ function register(router) {
     eu.route(router, 'put', '/etapi/notes/:noteId/content', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
 
+        if (note.isProtected) {
+            throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI.`);
+        }
+
         note.setContent(req.body);
 
         noteService.asyncPostProcessContent(note, req.body);
@@ -132,7 +140,7 @@ function register(router) {
         const format = req.query.format || "html";
 
         if (!["html", "markdown"].includes(format)) {
-            throw new eu.EtapiError(400, "UNRECOGNIZED_EXPORT_FORMAT", `Unrecognized export format '${format}', supported values are 'html' (default) or 'markdown'`);
+            throw new eu.EtapiError(400, "UNRECOGNIZED_EXPORT_FORMAT", `Unrecognized export format '${format}', supported values are 'html' (default) or 'markdown'.`);
         }
 
         const taskContext = new TaskContext('no-progress-reporting');
@@ -152,6 +160,15 @@ function register(router) {
         note.saveRevision();
 
         return res.sendStatus(204);
+    });
+
+    eu.route(router, 'get', '/etapi/notes/:noteId/attachments', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+        const attachments = note.getAttachments({includeContentLength: true})
+
+        res.json(
+            attachments.map(attachment => mappers.mapAttachmentToPojo(attachment))
+        );
     });
 }
 
@@ -186,7 +203,7 @@ function parseBoolean(obj, name) {
     }
 
     if (!['true', 'false'].includes(obj[name])) {
-        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse boolean '${name}' value '${obj[name]}, allowed values are 'true' and 'false'`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse boolean '${name}' value '${obj[name]}, allowed values are 'true' and 'false'.`);
     }
 
     return obj[name] === 'true';
@@ -200,7 +217,7 @@ function parseOrderDirection(obj, name) {
     const integer = parseInt(obj[name]);
 
     if (!['asc', 'desc'].includes(obj[name])) {
-        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse order direction value '${obj[name]}, allowed values are 'asc' and 'desc'`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse order direction value '${obj[name]}, allowed values are 'asc' and 'desc'.`);
     }
 
     return integer;
@@ -214,7 +231,7 @@ function parseInteger(obj, name) {
     const integer = parseInt(obj[name]);
 
     if (Number.isNaN(integer)) {
-        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse integer '${name}' value '${obj[name]}`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse integer '${name}' value '${obj[name]}'.`);
     }
 
     return integer;

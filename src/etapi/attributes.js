@@ -68,7 +68,7 @@ function register(router) {
     eu.route(router, 'delete' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = becca.getAttribute(req.params.attributeId);
 
-        if (!attribute || attribute.isDeleted) {
+        if (!attribute) {
             return res.sendStatus(204);
         }
 

@@ -1549,6 +1549,8 @@ class BNote extends AbstractBeccaEntity {
     }
 
     get isDeleted() {
+        // isBeingDeleted is relevant only in the transition period when the deletion process have begun, but not yet
+        // finished (note is still in becca)
         return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
 
@@ -1602,7 +1604,7 @@ class BNote extends AbstractBeccaEntity {
     /**
      * @returns {BAttachment}
      */
-    saveAttachment({attachmentId, role, mime, title, content}) {
+    saveAttachment({attachmentId, role, mime, title, content, position}) {
         let attachment;
 
         if (attachmentId) {
@@ -1613,15 +1615,13 @@ class BNote extends AbstractBeccaEntity {
                 title,
                 role,
                 mime,
-                isProtected: this.isProtected
+                isProtected: this.isProtected,
+                position
             });
         }
 
-        if (content !== undefined && content !== null) {
-            attachment.setContent(content, {forceSave: true});
-        } else {
-            attachment.save();
-        }
+        content = content || "";
+        attachment.setContent(content, {forceSave: true});
 
         return attachment;
     }

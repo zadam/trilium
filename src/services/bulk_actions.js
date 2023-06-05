@@ -134,7 +134,7 @@ function executeActions(note, searchResultNoteIds) {
     for (const resultNoteId of searchResultNoteIds) {
         const resultNote = becca.getNote(resultNoteId);
 
-        if (!resultNote || resultNote.isDeleted) {
+        if (!resultNote) {
             continue;
         }
 

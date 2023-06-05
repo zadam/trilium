@@ -29,12 +29,12 @@ function dumpDocument(documentPath, targetPath, options) {
     function dumpNote(targetPath, noteId) {
         console.log(`Reading note '${noteId}'`);
 
-        let childTargetPath, note, fileNameWithPath;
+        let childTargetPath, noteRow, fileNameWithPath;
 
         try {
-            note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+            noteRow = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
-            if (note.isDeleted) {
+            if (noteRow.isDeleted) {
                 stats.deleted++;
 
                 if (!options.includeDeleted) {
@@ -44,13 +44,13 @@ function dumpDocument(documentPath, targetPath, options) {
                 }
             }
 
-            if (note.isProtected) {
+            if (noteRow.isProtected) {
                 stats.protected++;
 
-                note.title = decryptService.decryptString(dataKey, note.title);
+                noteRow.title = decryptService.decryptString(dataKey, noteRow.title);
             }
 
-            let safeTitle = sanitize(note.title);
+            let safeTitle = sanitize(noteRow.title);
 
             if (safeTitle.length > 20) {
                 safeTitle = safeTitle.substring(0, 20);
@@ -64,8 +64,8 @@ function dumpDocument(documentPath, targetPath, options) {
 
             existingPaths[childTargetPath] = true;
 
-            if (note.noteId in noteIdToPath) {
-                const message = `Note '${noteId}' has been already dumped to ${noteIdToPath[note.noteId]}`;
+            if (noteRow.noteId in noteIdToPath) {
+                const message = `Note '${noteId}' has been already dumped to ${noteIdToPath[noteRow.noteId]}`;
 
                 console.log(message);
 
@@ -74,16 +74,16 @@ function dumpDocument(documentPath, targetPath, options) {
                 return;
             }
 
-            let {content} = sql.getRow("SELECT content FROM blobs WHERE blobId = ?", [note.blobId]);
+            let {content} = sql.getRow("SELECT content FROM blobs WHERE blobId = ?", [noteRow.blobId]);
 
-            if (content !== null && note.isProtected && dataKey) {
+            if (content !== null && noteRow.isProtected && dataKey) {
                 content = decryptService.decrypt(dataKey, content);
             }
 
             if (isContentEmpty(content)) {
                 console.log(`Note '${noteId}' is empty, skipping.`);
             } else {
-                fileNameWithPath = extensionService.getFileName(note, childTargetPath, safeTitle);
+                fileNameWithPath = extensionService.getFileName(noteRow, childTargetPath, safeTitle);
 
                 fs.writeFileSync(fileNameWithPath, content);
 

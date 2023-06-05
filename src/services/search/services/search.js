@@ -155,7 +155,6 @@ function findResultsWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext, searchContext);
 
     const searchResults = noteSet.notes
-        .filter(note => !note.isDeleted)
         .map(note => {
             const notePathArray = executionContext.noteIdToNotePath[note.noteId] || note.getBestNotePath();
 

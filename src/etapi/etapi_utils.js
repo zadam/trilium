@@ -77,7 +77,18 @@ function getAndCheckNote(noteId) {
         return note;
     }
     else {
-        throw new EtapiError(404, "NOTE_NOT_FOUND", `Note '${noteId}' not found`);
+        throw new EtapiError(404, "NOTE_NOT_FOUND", `Note '${noteId}' not found.`);
+    }
+}
+
+function getAndCheckAttachment(attachmentId) {
+    const attachment = becca.getAttachment(attachmentId, {includeContentLength: true});
+
+    if (attachment) {
+        return attachment;
+    }
+    else {
+        throw new EtapiError(404, "ATTACHMENT_NOT_FOUND", `Attachment '${attachmentId}' not found.`);
     }
 }
 
@@ -88,7 +99,7 @@ function getAndCheckBranch(branchId) {
         return branch;
     }
     else {
-        throw new EtapiError(404, "BRANCH_NOT_FOUND", `Branch '${branchId}' not found`);
+        throw new EtapiError(404, "BRANCH_NOT_FOUND", `Branch '${branchId}' not found.`);
     }
 }
 
@@ -99,7 +110,7 @@ function getAndCheckAttribute(attributeId) {
         return attribute;
     }
     else {
-        throw new EtapiError(404, "ATTRIBUTE_NOT_FOUND", `Attribute '${attributeId}' not found`);
+        throw new EtapiError(404, "ATTRIBUTE_NOT_FOUND", `Attribute '${attributeId}' not found.`);
     }
 }
 
@@ -113,7 +124,7 @@ function validateAndPatch(target, source, allowedProperties) {
                 const validationResult = validator(source[key]);
 
                 if (validationResult) {
-                    throw new EtapiError(400, "PROPERTY_VALIDATION_ERROR", `Validation failed on property '${key}': ${validationResult}`);
+                    throw new EtapiError(400, "PROPERTY_VALIDATION_ERROR", `Validation failed on property '${key}': ${validationResult}.`);
                 }
             }
         }
@@ -134,5 +145,6 @@ module.exports = {
     validateAndPatch,
     getAndCheckNote,
     getAndCheckBranch,
-    getAndCheckAttribute
+    getAndCheckAttribute,
+    getAndCheckAttachment
 }
