@@ -62,12 +62,29 @@ function renderText(result, note) {
         for (const linkEl of document.querySelectorAll("a")) {
             const href = linkEl.getAttribute("href");
 
-            if (href?.startsWith("#")) {
-                const notePathSegments = href.split("/");
+            if (!href?.startsWith("#")) {
+                continue;
+            }
 
+            const linkRegExp = /attachmentId=([a-zA-Z0-9_]+)/g;
+            let attachmentMatch
+            if (attachmentMatch = linkRegExp.exec(href)) {
+                const attachmentId = attachmentMatch[1];
+                const attachment = shaca.getAttachment(attachmentId);
+
+                if (attachment) {
+                    linkEl.setAttribute("href", `api/attachments/${attachmentId}/download`);
+                    linkEl.classList.add(`attachment-link`);
+                    linkEl.classList.add(`role-${attachment.role}`);
+                    linkEl.innerText = attachment.title;
+                } else {
+                    linkEl.removeAttribute("href");
+                }
+            } else {
+                const [notePath] = href.split('?');
+                const notePathSegments = notePath.split("/");
                 const noteId = notePathSegments[notePathSegments.length - 1];
                 const linkedNote = shaca.getNote(noteId);
-
                 if (linkedNote) {
                     linkEl.setAttribute("href", linkedNote.shareId);
                     linkEl.classList.add(`type-${linkedNote.type}`);

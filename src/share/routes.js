@@ -8,6 +8,7 @@ const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
 const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
+const utils = require("../services/utils.js");
 
 function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
@@ -251,6 +252,29 @@ function register(router) {
             return res.status(400)
                 .json({ message: "Requested attachment is not a shareable image" });
         }
+    });
+
+    router.get('/share/api/attachments/:attachmentId/download', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
+        let attachment;
+
+        if (!(attachment = checkAttachmentAccess(req.params.attachmentId, req, res))) {
+            return;
+        }
+
+        addNoIndexHeader(attachment.note, res);
+
+        const utils = require("../services/utils");
+
+        const filename = utils.formatDownloadTitle(attachment.title, null, attachment.mime);
+
+        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
+
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader('Content-Type', attachment.mime);
+
+        res.send(attachment.getContent());
     });
 
     // used for PDF viewing
