@@ -526,7 +526,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 const note = await froca.getNote(node.data.noteId, true);
 
-                if (!note || note.isDeleted) {
+                if (!note) {
                     return;
                 }
 
@@ -984,10 +984,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             oldActiveNode.setFocus(false);
         }
 
-        if (this.noteContext
-            && this.noteContext.notePath
-            && !this.noteContext.note?.isDeleted
-            && (!treeService.isNotePathInHiddenSubtree(this.noteContext.notePath) || await hoistedNoteService.isHoistedInHiddenSubtree())
+        if (this.noteContext?.notePath
+            && (
+                !treeService.isNotePathInHiddenSubtree(this.noteContext.notePath)
+                || await hoistedNoteService.isHoistedInHiddenSubtree()
+            )
         ) {
             const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
 
@@ -1125,20 +1126,20 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         let parentsOfAddedNodes = [];
 
         const allBranchRows = loadResults.getBranchRows();
-        const allBranchesDeleted = allBranchRows.every(branch => !!branch.isDeleted);
+        const allBranchesDeleted = allBranchRows.every(branchRow => !!branchRow.isDeleted);
 
-        for (const ecBranch of allBranchRows) {
-            if (ecBranch.parentNoteId === '_share') {
+        for (const branchRow of allBranchRows) {
+            if (branchRow.parentNoteId === '_share') {
                 // all shared notes have a sign in the tree, even the descendants of shared notes
-                noteIdsToReload.add(ecBranch.noteId);
+                noteIdsToReload.add(branchRow.noteId);
             }
             else {
                 // adding noteId itself to update all potential clones
-                noteIdsToUpdate.add(ecBranch.noteId);
+                noteIdsToUpdate.add(branchRow.noteId);
             }
 
-            for (const node of this.getNodesByBranch(ecBranch)) {
-                if (ecBranch.isDeleted) {
+            for (const node of this.getNodesByBranch(branchRow)) {
+                if (branchRow.isDeleted) {
                     if (node.isActive()) {
                         if (allBranchesDeleted) {
                             const newActiveNode = node.getNextSibling()
@@ -1157,23 +1158,23 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         node.remove();
                     }
 
-                    noteIdsToUpdate.add(ecBranch.parentNoteId);
+                    noteIdsToUpdate.add(branchRow.parentNoteId);
                 }
             }
 
-            if (!ecBranch.isDeleted) {
-                for (const parentNode of this.getNodesByNoteId(ecBranch.parentNoteId)) {
+            if (!branchRow.isDeleted) {
+                for (const parentNode of this.getNodesByNoteId(branchRow.parentNoteId)) {
                     parentsOfAddedNodes.push(parentNode)
 
                     if (parentNode.isFolder() && !parentNode.isLoaded()) {
                         continue;
                     }
 
-                    const found = (parentNode.getChildren() || []).find(child => child.data.noteId === ecBranch.noteId);
+                    const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branchRow.noteId);
                     if (!found) {
                         // make sure it's loaded
-                        await froca.getNote(ecBranch.noteId);
-                        const frocaBranch = froca.getBranch(ecBranch.branchId);
+                        await froca.getNote(branchRow.noteId);
+                        const frocaBranch = froca.getBranch(branchRow.branchId);
 
                         // we're forcing lazy since it's not clear if the whole required subtree is in froca
                         parentNode.addChildren([this.prepareNode(frocaBranch, true)]);
@@ -1181,7 +1182,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         this.sortChildren(parentNode);
 
                         // this might be a first child which would force an icon change
-                        noteIdsToUpdate.add(ecBranch.parentNoteId);
+                        noteIdsToUpdate.add(branchRow.parentNoteId);
                     }
                 }
             }

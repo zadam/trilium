@@ -19,7 +19,6 @@ import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import CanvasTypeWidget from "./type_widgets/canvas.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
-import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
@@ -47,7 +46,6 @@ const TPL = `
 
 const typeWidgetClasses = {
     'empty': EmptyTypeWidget,
-    'deleted': DeletedTypeWidget,
     'editableText': EditableTextTypeWidget,
     'readOnlyText': ReadOnlyTextTypeWidget,
     'editableCode': EditableCodeTypeWidget,
@@ -189,8 +187,6 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         if (!note) {
             return "empty";
-        } else if (note.isDeleted) {
-            return "deleted";
         }
 
         let type = note.type;

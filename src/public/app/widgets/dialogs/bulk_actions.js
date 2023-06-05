@@ -147,11 +147,11 @@ export default class BulkActionsDialog extends BasicWidget {
 
     entitiesReloadedEvent({loadResults}) {
         // only refreshing deleted attrs, otherwise components update themselves
-        if (loadResults.getAttributeRows().find(attr =>
-            attr.type === 'label'
-            && attr.name === 'action'
-            && attr.noteId === '_bulkAction'
-            && attr.isDeleted)) {
+        if (loadResults.getAttributeRows().find(row =>
+            row.type === 'label'
+            && row.name === 'action'
+            && row.noteId === '_bulkAction'
+            && row.isDeleted)) {
 
             // this may be triggered from e.g. sync without open widget, then no need to refresh the widget
             if (this.selectedOrActiveNoteIds && this.$widget.is(":visible")) {

@@ -20,13 +20,13 @@ export default class AbstractLauncher extends OnClickButtonWidget {
         throw new Error("Abstract implementation");
     }
 
-    bindNoteShortcutHandler(label) {
-        const namespace = label.attributeId;
+    bindNoteShortcutHandler(labelOrRow) {
+        const namespace = labelOrRow.attributeId;
 
-        if (label.isDeleted) {
+        if (labelOrRow.isDeleted) { // only applicable if row
             shortcutService.removeGlobalShortcut(namespace);
         } else {
-            shortcutService.bindGlobalShortcut(label.value, () => this.launch(), namespace);
+            shortcutService.bindGlobalShortcut(labelOrRow.value, () => this.launch(), namespace);
         }
     }
 

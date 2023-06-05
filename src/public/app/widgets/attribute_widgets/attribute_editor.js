@@ -460,14 +460,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         const {noteId} = linkService.parseNavigationStateFromUrl($el.find("a").attr("href"));
         const note = await froca.getNote(noteId, true);
 
-        let title;
-
-        if (!note) {
-            title = '[missing]';
-        }
-        else {
-            title = note.isDeleted ? `${note.title} (deleted)` : note.title;
-        }
+        const title = note ? note.title : '[missing]';
 
         $el.text(title);
     }
@@ -477,7 +470,6 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async renderOwnedAttributes(ownedAttributes, saved) {
-        ownedAttributes = ownedAttributes.filter(oa => !oa.isDeleted);
         // attrs are not resorted if position changes after initial load
         ownedAttributes.sort((a, b) => a.position < b.position ? -1 : 1);
 

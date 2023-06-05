@@ -312,7 +312,9 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
     entitiesReloadedEvent({loadResults}) {
         // only refreshing deleted attrs, otherwise components update themselves
-        if (loadResults.getAttributeRows().find(attr => attr.type === 'label' && attr.name === 'action' && attr.isDeleted)) {
+        if (loadResults.getAttributeRows().find(attrRow =>
+            attrRow.type === 'label' && attrRow.name === 'action' && attrRow.isDeleted)) {
+
             this.refresh();
         }
     }

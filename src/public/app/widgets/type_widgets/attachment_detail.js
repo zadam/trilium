@@ -72,9 +72,9 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        const attachmentChange = loadResults.getAttachmentRows().find(att => att.attachmentId === this.attachmentId);
+        const attachmentRow = loadResults.getAttachmentRows().find(att => att.attachmentId === this.attachmentId);
 
-        if (attachmentChange?.isDeleted) {
+        if (attachmentRow?.isDeleted) {
             this.refresh(); // all other updates are handled within AttachmentDetailWidget
         }
     }

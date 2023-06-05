@@ -75,7 +75,7 @@ function mouseLeaveHandler() {
 }
 
 async function renderTooltip(note) {
-    if (note.isDeleted) {
+    if (!note) {
         return '<div>Note has been deleted.</div>';
     }
 

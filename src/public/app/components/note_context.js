@@ -241,9 +241,9 @@ class NoteContext extends Component {
 
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
-            const note = loadResults.getEntityRow('notes', this.noteId);
+            const noteRow = loadResults.getEntityRow('notes', this.noteId);
 
-            if (note.isDeleted) {
+            if (noteRow.isDeleted) {
                 this.noteId = null;
                 this.notePath = null;
 

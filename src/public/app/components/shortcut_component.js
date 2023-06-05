@@ -15,14 +15,14 @@ export default class ShortcutComponent extends Component {
         });
     }
 
-    bindNoteShortcutHandler(label) {
-        const handler = () => appContext.tabManager.getActiveContext().setNote(label.noteId);
-        const namespace = label.attributeId;
+    bindNoteShortcutHandler(labelOrRow) {
+        const handler = () => appContext.tabManager.getActiveContext().setNote(labelOrRow.noteId);
+        const namespace = labelOrRow.attributeId;
 
-        if (label.isDeleted) {
+        if (labelOrRow.isDeleted) { // only applicable if row
             shortcutService.removeGlobalShortcut(namespace);
         } else {
-            shortcutService.bindGlobalShortcut(label.value, handler, namespace);
+            shortcutService.bindGlobalShortcut(labelOrRow.value, handler, namespace);
         }
     }
 
