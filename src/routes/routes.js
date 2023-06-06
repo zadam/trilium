@@ -153,6 +153,7 @@ function register(app) {
 
     apiRoute(GET, '/api/notes/:noteId/attachments', attachmentsApiRoute.getAttachments);
     apiRoute(PST, '/api/notes/:noteId/attachments', attachmentsApiRoute.saveAttachment);
+    route(PST, '/api/notes/:noteId/attachments/upload', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], attachmentsApiRoute.uploadAttachment, apiResultHandler);
     apiRoute(GET, '/api/attachments/:attachmentId', attachmentsApiRoute.getAttachment);
     apiRoute(GET, '/api/attachments/:attachmentId/all', attachmentsApiRoute.getAllAttachments);
     apiRoute(PST, '/api/attachments/:attachmentId/convert-to-note', attachmentsApiRoute.convertAttachmentToNote);

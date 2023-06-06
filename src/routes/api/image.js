@@ -63,7 +63,7 @@ function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
 
-    const note = becca.getNoteOrThrow(noteId);
+    becca.getNoteOrThrow(noteId);
 
     if (!["image/png", "image/jpg", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         throw new ValidationError(`Unknown image type '${file.mimetype}'`);

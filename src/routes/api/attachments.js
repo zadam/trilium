@@ -35,6 +35,24 @@ function saveAttachment(req) {
     note.saveAttachment({attachmentId, role, mime, title, content});
 }
 
+function uploadAttachment(req) {
+    const {noteId} = req.params;
+    const {file} = req;
+
+    const note = becca.getNoteOrThrow(noteId);
+
+    const attachment = note.saveAttachment({
+        role: 'file',
+        mime: file.mimetype,
+        title: file.originalname,
+        content: file.buffer
+    });
+
+    return {
+        uploaded: true
+    };
+}
+
 function deleteAttachment(req) {
     const {attachmentId} = req.params;
 
@@ -58,6 +76,7 @@ module.exports = {
     getAttachment,
     getAllAttachments,
     saveAttachment,
+    uploadAttachment,
     deleteAttachment,
     convertAttachmentToNote
 };

@@ -98,31 +98,6 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
-
-        this.$widget.on("dragover", e => e.preventDefault());
-
-        this.$widget.on("dragleave", e => e.preventDefault());
-
-        this.$widget.on("drop", async e => {
-            const activeNote = appContext.tabManager.getActiveContextNote();
-
-            if (!activeNote) {
-                return;
-            }
-
-            const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
-
-            const importService = await import('../services/import.js');
-
-            importService.uploadFiles('notes', activeNote.noteId, files, {
-                safeImport: true,
-                shrinkImages: true,
-                textImportedAsText: true,
-                codeImportedAsCode: true,
-                explodeArchives: true,
-                replaceUnderscoresWithSpaces: true
-            });
-        });
     }
 
     async refresh() {
