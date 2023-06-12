@@ -65,6 +65,7 @@ const etapiBranchRoutes = require('../etapi/branches');
 const etapiNoteRoutes = require('../etapi/notes');
 const etapiSpecialNoteRoutes = require('../etapi/special_notes');
 const etapiSpecRoute = require('../etapi/spec');
+const etapiBackupRoute = require('../etapi/backup');
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -315,6 +316,7 @@ function register(app) {
     etapiNoteRoutes.register(router);
     etapiSpecialNoteRoutes.register(router);
     etapiSpecRoute.register(router);
+    etapiBackupRoute.register(router);
 
     app.use('', router);
 }
