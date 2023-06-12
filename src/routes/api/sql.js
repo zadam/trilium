@@ -37,7 +37,7 @@ function execute(req) {
                 continue;
             }
 
-            if (query.toLowerCase().startsWith('select')) {
+            if (query.toLowerCase().startsWith('select') || query.toLowerCase().startsWith('with')) {
                 results.push(sql.getRows(query));
             }
             else {
