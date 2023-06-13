@@ -700,7 +700,26 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /backup/{backupName}:
+    parameters:
+      - name: backupName
+        in: path
+        required: true
+        description: If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file
+        schema:
+          $ref: '#/components/schemas/StringId'
+    put:
+      description: Create a database backup under a given name
+      operationId: createBackup
+      responses:
+        '204':
+          description: backup has been created
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     EtapiTokenAuth:
@@ -883,6 +902,10 @@ components:
       type: string
       pattern: '[a-zA-Z0-9_]{4,32}'
       example: evnnmvHTCgIn
+    StringId:
+      type: string
+      pattern: '[a-zA-Z0-9_]{1,32}'
+      example: my_ID
     EntityIdList:
       type: array
       items:
