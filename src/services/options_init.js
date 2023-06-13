@@ -71,9 +71,6 @@ const defaultOptions = [
     { name: 'nativeTitleBarVisible', value: 'false', isSynced: false },
     { name: 'eraseEntitiesAfterTimeInSeconds', value: '604800', isSynced: true }, // default is 7 days
     { name: 'hideArchivedNotes_main', value: 'false', isSynced: false },
-    { name: 'attributeListExpanded', value: 'false', isSynced: false },
-    { name: 'promotedAttributesExpanded', value: 'true', isSynced: true },
-    { name: 'similarNotesExpanded', value: 'true', isSynced: true },
     { name: 'debugModeEnabled', value: 'false', isSynced: false },
     { name: 'headingStyle', value: 'underline', isSynced: true },
     { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
