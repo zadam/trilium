@@ -41,7 +41,7 @@ const TPL = `
             <div class="modal-header">
                 <h5 class="modal-title mr-auto">Note revisions</h5>
 
-                <button class="revisions-erase-all-revisions-button btn btn-xs"
+                <button class="revisions-erase-all-revisions-button btn btn-sm"
                         title="Delete all revisions of this note"
                         style="padding: 0 10px 0 10px;" type="button">Delete all revisions</button>
 
