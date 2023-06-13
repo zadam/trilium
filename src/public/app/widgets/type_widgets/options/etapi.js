@@ -109,8 +109,8 @@ export default class EtapiOptions extends OptionsWidget {
             message: "Please enter new token's name",
             defaultValue: oldName
         });
-        
-        if(tokenName === null) {
+
+        if (!tokenName?.trim()) {
             return;
         }
 

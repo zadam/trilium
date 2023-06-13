@@ -35,6 +35,7 @@ function updateFile(req) {
 function updateAttachment(req) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const file = req.file;
+
     attachment.getNote().saveRevision();
 
     attachment.mime = file.mimetype.toLowerCase();

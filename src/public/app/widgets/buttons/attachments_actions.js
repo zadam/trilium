@@ -26,12 +26,14 @@ const TPL = `
     </style>
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" 
-        aria-expanded="false" class="icon-action icon-action-always-border bx bx-dots-vertical-rounded"></button>
+        aria-expanded="false" class="icon-action icon-action-always-border bx bx-dots-vertical-rounded"
+        style="position: relative; top: 5px;"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="openAttachment" class="dropdown-item"
             title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">Open externally</a>
         <a data-trigger-command="downloadAttachment" class="dropdown-item">Download</a>
+        <a data-trigger-command="renameAttachment" class="dropdown-item">Rename attachment</a>
         <a data-trigger-command="uploadNewAttachmentRevision" class="dropdown-item">Upload new revision</a>
         <a data-trigger-command="copyAttachmentLinkToClipboard" class="dropdown-item">Copy link to clipboard</a>
         <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item">Convert attachment into note</a>
@@ -128,5 +130,19 @@ export default class AttachmentActionsWidget extends BasicWidget {
         toastService.showMessage(`Attachment '${this.attachment.title}' has been converted to note.`);
         await ws.waitForMaxKnownEntityChangeId();
         await appContext.tabManager.getActiveContext().setNote(newNote.noteId);
+    }
+
+    async renameAttachmentCommand() {
+        const attachmentTitle = await dialogService.prompt({
+            title: "Rename attachment",
+            message: "Please enter new attachment's name",
+            defaultValue: this.attachment.title
+        });
+
+        if (!attachmentTitle?.trim()) {
+            return;
+        }
+
+        await server.put(`attachments/${this.attachmentId}/rename`, {title: attachmentTitle});
     }
 }

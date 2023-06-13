@@ -1,5 +1,6 @@
 const becca = require("../../becca/becca");
 const blobService = require("../../services/blob.js");
+const ValidationError = require("../../errors/validation_error");
 
 function getAttachmentBlob(req) {
     const preview = req.query.preview === 'true';
@@ -41,7 +42,7 @@ function uploadAttachment(req) {
 
     const note = becca.getNoteOrThrow(noteId);
 
-    const attachment = note.saveAttachment({
+    note.saveAttachment({
         role: 'file',
         mime: file.mimetype,
         title: file.originalname,
@@ -51,6 +52,20 @@ function uploadAttachment(req) {
     return {
         uploaded: true
     };
+}
+
+function renameAttachment(req) {
+    const {title} = req.body;
+    const {attachmentId} = req.params;
+
+    const attachment = becca.getAttachmentOrThrow(attachmentId);
+
+    if (!title?.trim()) {
+        throw new ValidationError("Title must not be empty");
+    }
+
+    attachment.title = title;
+    attachment.save();
 }
 
 function deleteAttachment(req) {
@@ -77,6 +92,7 @@ module.exports = {
     getAllAttachments,
     saveAttachment,
     uploadAttachment,
+    renameAttachment,
     deleteAttachment,
     convertAttachmentToNote
 };

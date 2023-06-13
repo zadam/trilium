@@ -14,8 +14,8 @@ const TPL = `
         }
         
         .attachment-detail .links-wrapper {
-            padding: 16px;
             font-size: larger;
+            padding: 16px 0 16px 0;
         }
         
         .attachment-detail .attachment-wrapper {

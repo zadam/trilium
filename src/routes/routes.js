@@ -159,6 +159,7 @@ function register(app) {
     apiRoute(GET, '/api/attachments/:attachmentId/all', attachmentsApiRoute.getAllAttachments);
     apiRoute(PST, '/api/attachments/:attachmentId/convert-to-note', attachmentsApiRoute.convertAttachmentToNote);
     apiRoute(DEL, '/api/attachments/:attachmentId', attachmentsApiRoute.deleteAttachment);
+    apiRoute(PUT, '/api/attachments/:attachmentId/rename', attachmentsApiRoute.renameAttachment);
     apiRoute(GET, '/api/attachments/:attachmentId/blob', attachmentsApiRoute.getAttachmentBlob);
     route(GET, '/api/attachments/:attachmentId/image/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnAttachedImage);
     route(GET, '/api/attachments/:attachmentId/open', [auth.checkApiAuthOrElectron], filesRoute.openAttachment);
