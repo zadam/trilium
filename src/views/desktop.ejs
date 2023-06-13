@@ -44,6 +44,12 @@
     .note-split {
         max-width: <%= maxContentWidth %>px;
     }
+
+    <% if (hidePoweredByCKEditor) { %>
+    .ck-powered-by-balloon {
+        display: none !important;
+    }
+    <% } %>
 </style>
 
 <!-- Required for correct loading of scripts in Electron -->

@@ -56,6 +56,7 @@ const ALLOWED_OPTIONS = new Set([
     'disableTray',
     'customSearchEngineName',
     'customSearchEngineUrl',
+    'hidePoweredByCKEditor'
 ]);
 
 function getOptions() {

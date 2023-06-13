@@ -31,6 +31,7 @@ import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
 import AttachmentErasureTimeoutOptions from "./options/other/attachment_erasure_timeout.js";
+import PoweredByCKEditorOptions from "./options/appearance/powered_by_ckeditor.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -53,10 +54,11 @@ const TPL = `<div class="note-detail-content-widget note-detail-printable">
 
 const CONTENT_WIDGETS = {
     _optionsAppearance: [
-        ZoomFactorOptions,
-        NativeTitleBarOptions,
+        PoweredByCKEditorOptions,
         ThemeOptions,
         FontsOptions,
+        ZoomFactorOptions,
+        NativeTitleBarOptions,
         MaxContentWidthOptions
     ],
     _optionsShortcuts: [ KeyboardShortcutsOptions ],

@@ -89,6 +89,7 @@ const defaultOptions = [
     { name: 'eraseUnusedAttachmentsAfterSeconds', value: '2592000', isSynced: true },
     { name: 'customSearchEngineName', value: 'DuckDuckGo', isSynced: true },
     { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: true },
+    { name: 'hidePoweredByCKEditor', value: 'false', isSynced: true },
 ];
 
 function initStartupOptions() {
