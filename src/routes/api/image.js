@@ -4,7 +4,6 @@ const imageService = require('../../services/image');
 const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
-const ValidationError = require("../../errors/validation_error");
 
 function returnImage(req, res) {
     const image = becca.getNote(req.params.noteId);
@@ -59,24 +58,6 @@ function returnAttachedImage(req, res) {
     res.send(attachment.getContent());
 }
 
-function uploadImage(req) {
-    const {noteId} = req.query;
-    const {file} = req;
-
-    becca.getNoteOrThrow(noteId);
-
-    if (!["image/png", "image/jpg", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
-        throw new ValidationError(`Unknown image type '${file.mimetype}'`);
-    }
-
-    const {url} = imageService.saveImageToAttachment(noteId, file.buffer, file.originalname, true, true);
-
-    return {
-        uploaded: true,
-        url
-    };
-}
-
 function updateImage(req) {
     const {noteId} = req.params;
     const {file} = req;
@@ -98,6 +79,5 @@ function updateImage(req) {
 module.exports = {
     returnImage,
     returnAttachedImage,
-    uploadImage,
     updateImage
 };

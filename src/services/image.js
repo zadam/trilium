@@ -162,10 +162,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
         });
     });
 
-    return {
-        attachment,
-        url: `api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(fileName)}`
-    };
+    return attachment;
 }
 
 async function shrinkImage(buffer, originalName) {

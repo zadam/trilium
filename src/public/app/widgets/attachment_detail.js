@@ -89,7 +89,7 @@ const TPL = `
             <div style="flex: 1 1;"></div>
         </div>
         
-        <div class="attachment-deletion-warning alert alert-info"></div>
+        <div class="attachment-deletion-warning alert alert-info" style="margin-top: 15px;"></div>
         
         <div class="attachment-content-wrapper"></div>
     </div>

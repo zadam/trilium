@@ -267,7 +267,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             }
         }
         else {
-            this.watchdog.editor.execute('referenceLink', { notePath: notePath });
+            this.watchdog.editor.execute('referenceLink', { href: '#' + notePath });
         }
 
         this.watchdog.editor.editing.view.focus();
