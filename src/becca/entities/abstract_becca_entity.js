@@ -7,7 +7,8 @@ const eventService = require("../../services/events");
 const dateUtils = require("../../services/date_utils");
 const cls = require("../../services/cls");
 const log = require("../../services/log");
-const protectedSessionService = require("../../services/protected_session.js");
+const protectedSessionService = require("../../services/protected_session");
+const blobService = require("../../services/blob");
 
 let becca = null;
 
@@ -246,36 +247,13 @@ class AbstractBeccaEntity {
             throw new Error(`Cannot find content for ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}', blobId '${this.blobId}'`);
         }
 
-        let content = row.content;
-
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = content === null ? null : protectedSessionService.decrypt(content);
-            } else {
-                content = "";
-            }
-        }
-
-        if (this.hasStringContent()) {
-            return content === null
-                ? ""
-                : content.toString("utf-8");
-        } else {
-            // see https://github.com/zadam/trilium/issues/3523
-            // IIRC a zero-sized buffer can be returned as null from the database
-            if (content === null) {
-                // this will force de/encryption
-                content = Buffer.alloc(0);
-            }
-
-            return content;
-        }
+        return blobService.processContent(row.content);
     }
 
     /**
      * Mark the entity as (soft) deleted. It will be completely erased later.
      *
-     * This is a low level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
+     * This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
      *
      * @param [deleteId=null]
      */

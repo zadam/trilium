@@ -13,7 +13,6 @@ const revisionService = require('./revisions.js');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
 const {sanitizeAttributeName} = require("./sanitize_attribute_name");
-const {note} = require("../../spec/search/becca_mocking.js");
 const noteTypes = require("../services/note_types").getNoteTypeNames();
 
 class ConsistencyChecks {

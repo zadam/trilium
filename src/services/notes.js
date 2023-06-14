@@ -21,7 +21,7 @@ const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const fs = require("fs");
-const ws = require("./ws.js");
+const ws = require("./ws");
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {

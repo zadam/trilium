@@ -4,8 +4,8 @@ const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const sql = require("../../services/sql");
-const protectedSessionService = require("../../services/protected_session.js");
-const log = require("../../services/log.js");
+const protectedSessionService = require("../../services/protected_session");
+const log = require("../../services/log");
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'

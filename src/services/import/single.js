@@ -187,8 +187,6 @@ function importHtml(taskContext, file, parentNote) {
 function importAttachment(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
-    console.log("mime", mime);
-
     if (mime.startsWith("image/")) {
         imageService.saveImageToAttachment(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
 

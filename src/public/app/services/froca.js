@@ -367,7 +367,7 @@ class Froca {
 
             // we don't want to keep large payloads forever in memory, so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)
-            // this is also a workaround for missing invalidation after change
+            // if the blob is updated within the cache lifetime, it should be invalidated by froca_updater
             this.blobPromises[key].then(
                 () => setTimeout(() => this.blobPromises[key] = null, 1000)
             );

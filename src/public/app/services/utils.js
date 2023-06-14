@@ -295,13 +295,16 @@ async function openDialog($dialog, closeActDialog = true) {
 function isHtmlEmpty(html) {
     if (!html) {
         return true;
+    } else if (typeof html !== 'string') {
+        logError(`Got object of type '${typeof html}' where string was expected.`);
+        return false;
     }
 
     html = html.toLowerCase();
 
     return !html.includes('<img')
         && !html.includes('<section')
-        // line below will actually attempt to load images so better to check for images first
+        // the line below will actually attempt to load images so better to check for images first
         && $("<div>").html(html).text().trim().length === 0;
 }
 
@@ -579,7 +582,6 @@ export default {
     sleep,
     escapeRegExp,
     formatNoteSize,
-    escapeRegExp,
     areObjectsEqual,
     copyHtmlToClipboard
 };

@@ -665,12 +665,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const branch = froca.getBranch(node.data.branchId);
 
         if (!note) {
-            console.log(`Node update not possible because note ${node.data.noteId} was not found.`);
+            console.log(`Node update not possible because note '${node.data.noteId}' was not found.`);
             return;
-        }
-
-        if (!branch) {
-            console.log(`Node update not possible because branch ${node.data.branchId} was not found.`);
+        } else if (!branch) {
+            console.log(`Node update not possible because branch '${node.data.branchId}' was not found.`);
             return;
         }
 

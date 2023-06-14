@@ -2,8 +2,7 @@
 
 const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
-const BAttachment = require("./entities/battachment.js");
-const NotFoundError = require("../errors/not_found_error.js");
+const NotFoundError = require("../errors/not_found_error");
 
 /**
  * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
@@ -148,7 +147,7 @@ class Becca {
     getRevision(revisionId) {
         const row = sql.getRow("SELECT * FROM revisions WHERE revisionId = ?", [revisionId]);
 
-        const BRevision = require("./entities/brevision.js"); // avoiding circular dependency problems
+        const BRevision = require("./entities/brevision"); // avoiding circular dependency problems
         return row ? new BRevision(row) : null;
     }
 
@@ -186,8 +185,8 @@ class Becca {
     }
 
     /** @returns {BBlob|null} */
-    getBlob(blobId) {
-        const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [blobId]);
+    getBlob(entity) {
+        const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [entity.blobId]);
 
         const BBlob = require("./entities/bblob"); // avoiding circular dependency problems
         return row ? new BBlob(row) : null;
@@ -217,8 +216,6 @@ class Becca {
             return this.getRevision(entityId);
         } else if (entityName === 'attachments') {
             return this.getAttachment(entityId);
-        } else if (entityName === 'blobs') {
-            return this.getBlob(entityId);
         }
 
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,
@@ -247,7 +244,7 @@ class Becca {
     getRevisionsFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const BRevision = require("./entities/brevision.js"); // avoiding circular dependency problems
+        const BRevision = require("./entities/brevision"); // avoiding circular dependency problems
         return rows.map(row => new BRevision(row));
     }
 

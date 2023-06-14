@@ -148,8 +148,6 @@ function register(router) {
         // (e.g. branchIds are not seen in UI), that we export "note export" instead.
         const branch = note.getParentBranches()[0];
 
-        console.log(note.getParentBranches());
-
         zipExportService.exportToZip(taskContext, branch, format, res);
     });
 

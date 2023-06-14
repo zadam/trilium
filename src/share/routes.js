@@ -8,7 +8,6 @@ const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
 const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
-const utils = require("../services/utils.js");
 
 function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {

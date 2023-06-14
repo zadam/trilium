@@ -1,5 +1,5 @@
 const becca = require("../../becca/becca");
-const blobService = require("../../services/blob.js");
+const blobService = require("../../services/blob");
 const ValidationError = require("../../errors/validation_error");
 
 function getAttachmentBlob(req) {
