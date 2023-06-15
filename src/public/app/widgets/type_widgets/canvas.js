@@ -284,6 +284,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
+            type: "excalidraw",
+            version: 2,
             _meta: "This note has type `canvas`. It uses excalidraw and stores an exported svg alongside.",
             elements, // excalidraw
             appState, // excalidraw
