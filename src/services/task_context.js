@@ -6,7 +6,7 @@ const ws = require('./ws');
 const taskContexts = {};
 
 class TaskContext {
-    constructor(taskId, taskType = null, data = null) {
+    constructor(taskId, taskType = null, data = {}) {
         this.taskId = taskId;
         this.taskType = taskType;
         this.data = data;

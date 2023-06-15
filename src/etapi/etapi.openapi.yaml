@@ -33,13 +33,7 @@ paths:
           content:
             application/json; charset=utf-8:
               schema:
-                properties:
-                  note:
-                    $ref: '#/components/schemas/Note'
-                    description: Created note
-                  branch:
-                    $ref: '#/components/schemas/Branch'
-                    description: Created branch
+                $ref: '#/components/schemas/NoteWithBranch'
         default:
           description: unexpected error
           content:
@@ -285,6 +279,29 @@ paths:
               schema:
                 type: string
                 format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /notes/{noteId}/import:
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+    post:
+      description: Imports ZIP file into a given note.
+      operationId: importZip
+      responses:
+        '201':
+          description: note created
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/NoteWithBranch'
         default:
           description: unexpected error
           content:
@@ -852,6 +869,13 @@ components:
         utcDateModified:
           $ref: '#/components/schemas/UtcDateTime'
           readOnly: true
+    NoteWithBranch:
+      type: object
+      properties:
+        note:
+          $ref: '#/components/schemas/Note'
+        branch:
+          $ref: '#/components/schemas/Branch'
     Attribute:
       type: object
       description: Attribute (Label, Relation) is a key-value record attached to a note.
