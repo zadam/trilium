@@ -1318,7 +1318,7 @@ See addLabel, addRelation for more specific methods.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1250">line 1250</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1334">line 1334</a>
     </li></ul></dd>
     
 
@@ -1654,7 +1654,7 @@ See addLabel, addRelation for more specific methods.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1271">line 1271</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1355">line 1355</a>
     </li></ul></dd>
     
 
@@ -1900,7 +1900,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1284">line 1284</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1368">line 1368</a>
     </li></ul></dd>
     
 
@@ -2135,7 +2135,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1369">line 1369</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1453">line 1453</a>
     </li></ul></dd>
     
 
@@ -2335,7 +2335,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1383">line 1383</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1467">line 1467</a>
     </li></ul></dd>
     
 
@@ -2556,6 +2556,10 @@ returned.
 
 
 
+<div class="description">
+    Gives all possible note paths leading to this note. Paths containing search note are ignored (could form cycles)
+</div>
+
 
 
 
@@ -2597,7 +2601,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1141">line 1141</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1172">line 1172</a>
     </li></ul></dd>
     
 
@@ -2703,7 +2707,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1056">line 1056</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1085">line 1085</a>
     </li></ul></dd>
     
 
@@ -2877,7 +2881,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line619">line 619</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line633">line 633</a>
     </li></ul></dd>
     
 
@@ -3055,7 +3059,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line630">line 630</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line644">line 644</a>
     </li></ul></dd>
     
 
@@ -3299,6 +3303,364 @@ returned.
     <dd>
         
 <span class="param-type">Array.&lt;<a href="BAttribute.html">BAttribute</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getBestNotePath"><span class="type-signature"></span>getBestNotePath<span class="signature">(hoistedNoteId<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns note path considered to be the "best"
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hoistedNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'root'
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1228">line 1228</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    array of noteIds constituting the particular note path
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getBestNotePathString"><span class="type-signature"></span>getBestNotePathString<span class="signature">(hoistedNoteId<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns note path considered to be the "best"
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hoistedNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'root'
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1238">line 1238</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    serialized note path (e.g. 'root/a1h315/js725h')
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
 
 
     </dd>
@@ -3878,7 +4240,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1003">line 1003</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1032">line 1032</a>
     </li></ul></dd>
     
 
@@ -3968,7 +4330,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line786">line 786</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line815">line 815</a>
     </li></ul></dd>
     
 
@@ -4074,7 +4436,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1102">line 1102</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1131">line 1131</a>
     </li></ul></dd>
     
 
@@ -4332,7 +4694,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line560">line 560</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line574">line 574</a>
     </li></ul></dd>
     
 
@@ -4490,7 +4852,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line584">line 584</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line598">line 598</a>
     </li></ul></dd>
     
 
@@ -4660,7 +5022,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line659">line 659</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line673">line 673</a>
     </li></ul></dd>
     
 
@@ -4827,7 +5189,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line651">line 651</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line665">line 665</a>
     </li></ul></dd>
     
 
@@ -4933,7 +5295,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1133">line 1133</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1162">line 1162</a>
     </li></ul></dd>
     
 
@@ -5035,7 +5397,7 @@ returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line726">line 726</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line740">line 740</a>
     </li></ul></dd>
     
 
@@ -5215,7 +5577,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line641">line 641</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line655">line 655</a>
     </li></ul></dd>
     
 
@@ -5480,7 +5842,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line701">line 701</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line715">line 715</a>
     </li></ul></dd>
     
 
@@ -5635,7 +5997,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line566">line 566</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line580">line 580</a>
     </li></ul></dd>
     
 
@@ -5793,7 +6155,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line590">line 590</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line604">line 604</a>
     </li></ul></dd>
     
 
@@ -5963,7 +6325,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line675">line 675</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line689">line 689</a>
     </li></ul></dd>
     
 
@@ -6130,7 +6492,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line667">line 667</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line681">line 681</a>
     </li></ul></dd>
     
 
@@ -6285,7 +6647,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line578">line 578</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line592">line 592</a>
     </li></ul></dd>
     
 
@@ -6443,7 +6805,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line602">line 602</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line616">line 616</a>
     </li></ul></dd>
     
 
@@ -6613,7 +6975,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line691">line 691</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line705">line 705</a>
     </li></ul></dd>
     
 
@@ -7061,7 +7423,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line572">line 572</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line586">line 586</a>
     </li></ul></dd>
     
 
@@ -7219,7 +7581,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line596">line 596</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line610">line 610</a>
     </li></ul></dd>
     
 
@@ -7389,7 +7751,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line683">line 683</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line697">line 697</a>
     </li></ul></dd>
     
 
@@ -7604,7 +7966,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line914">line 914</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line943">line 943</a>
     </li></ul></dd>
     
 
@@ -7641,6 +8003,177 @@ This method can be significantly faster than the getAttribute()
     <dd>
         
 <span class="param-type">Array.&lt;<a href="BNote.html">BNote</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getSortedNotePathRecords"><span class="type-signature"></span>getSortedNotePathRecords<span class="signature">(hoistedNoteId<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array.&lt;string>, isHidden: boolean}>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hoistedNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'root'
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1197">line 1197</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array.&lt;string>, isHidden: boolean}></span>
 
 
     </dd>
@@ -7812,7 +8345,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line937">line 937</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line966">line 966</a>
     </li></ul></dd>
     
 
@@ -7914,7 +8447,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line996">line 996</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1025">line 1025</a>
     </li></ul></dd>
     
 
@@ -8020,7 +8553,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line882">line 882</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line911">line 911</a>
     </li></ul></dd>
     
 
@@ -8211,7 +8744,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1082">line 1082</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1111">line 1111</a>
     </li></ul></dd>
     
 
@@ -8962,7 +9495,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line610">line 610</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line624">line 624</a>
     </li></ul></dd>
     
 
@@ -9160,7 +9693,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line540">line 540</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line554">line 554</a>
     </li></ul></dd>
     
 
@@ -9358,7 +9891,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line554">line 554</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line568">line 568</a>
     </li></ul></dd>
     
 
@@ -9556,7 +10089,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line547">line 547</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line561">line 561</a>
     </li></ul></dd>
     
 
@@ -9706,7 +10239,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1185">line 1185</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1269">line 1269</a>
     </li></ul></dd>
     
 
@@ -9812,7 +10345,7 @@ This method can be significantly faster than the getAttribute()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1161">line 1161</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1247">line 1247</a>
     </li></ul></dd>
     
 
@@ -10254,6 +10787,161 @@ This method can be significantly faster than the getAttribute()
         
 <div class="param-desc">
     true if this note is of application/json content type
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="isLabelTruthy"><span class="type-signature"></span>isLabelTruthy<span class="signature">(name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">label name</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line539">line 539</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    true if label exists (including inherited) and does not have "false" value.
 </div>
 
 
@@ -10828,7 +11516,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1229">line 1229</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1313">line 1313</a>
     </li></ul></dd>
     
 
@@ -11008,7 +11696,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1345">line 1345</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1429">line 1429</a>
     </li></ul></dd>
     
 
@@ -11188,7 +11876,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1353">line 1353</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1437">line 1437</a>
     </li></ul></dd>
     
 
@@ -11383,7 +12071,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1435">line 1435</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1519">line 1519</a>
     </li></ul></dd>
     
 
@@ -11615,7 +12303,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1198">line 1198</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1282">line 1282</a>
     </li></ul></dd>
     
 
@@ -11795,7 +12483,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1329">line 1329</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1413">line 1413</a>
     </li></ul></dd>
     
 
@@ -11955,7 +12643,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1337">line 1337</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1421">line 1421</a>
     </li></ul></dd>
     
 
@@ -12197,7 +12885,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1296">line 1296</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1380">line 1380</a>
     </li></ul></dd>
     
 
@@ -12408,7 +13096,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1312">line 1312</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1396">line 1396</a>
     </li></ul></dd>
     
 
@@ -12619,7 +13307,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1321">line 1321</a>
+        <a href="becca_entities_bnote.js.html">becca/entities/bnote.js</a>, <a href="becca_entities_bnote.js.html#line1405">line 1405</a>
     </li></ul></dd>
     
 
@@ -12671,7 +13359,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.1</a>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a>
 </footer>
 
 <script> prettyPrint(); </script>

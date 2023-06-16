@@ -157,9 +157,6 @@ async function getRenderedContent(note, options = {}) {
             $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
         }
     }
-    else if (type === 'book') {
-        // nothing, book doesn't have its own content
-    }
     else if (!options.tooltip && type === 'protectedSession') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
@@ -172,7 +169,12 @@ async function getRenderedContent(note, options = {}) {
         );
     }
     else {
-        $renderedContent.append($("<p><em>Content of this note cannot be displayed in the book format</em></p>"));
+        $renderedContent.append(
+            $("<div>")
+                .css("text-align", "center")
+                .css("font-size", "500%")
+                .append($("<span>").addClass(note.getIcon()))
+        );
     }
 
     $renderedContent.addClass(note.getCssClass());

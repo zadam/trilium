@@ -109,6 +109,10 @@ export default class EtapiOptions extends OptionsWidget {
             message: "Please enter new token's name",
             defaultValue: oldName
         });
+        
+        if(tokenName === null) {
+            return;
+        }
 
         await server.patch(`etapi-tokens/${etapiTokenId}`, {name: tokenName});
 

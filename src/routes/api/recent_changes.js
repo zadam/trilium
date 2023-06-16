@@ -27,7 +27,8 @@ function getRecentChanges(req) {
     for (const noteRevisionRow of noteRevisionRows) {
         const note = becca.getNote(noteRevisionRow.noteId);
 
-        if (note?.hasAncestor(ancestorNoteId)) {
+        // for deleted notes, the becca note is null, and it's not possible to (easily) determine if it belongs to a subtree
+        if (ancestorNoteId === 'root' || note?.hasAncestor(ancestorNoteId)) {
             recentChanges.push(noteRevisionRow);
         }
     }
@@ -43,8 +44,8 @@ function getRecentChanges(req) {
                 notes.title AS current_title,
                 notes.isProtected AS current_isProtected,
                 notes.title,
-                notes.utcDateCreated AS utcDate,
-                notes.dateCreated AS date
+                notes.utcDateCreated AS utcDate, -- different from the second SELECT
+                notes.dateCreated AS date        -- different from the second SELECT
             FROM notes
         UNION ALL
             SELECT
@@ -54,15 +55,16 @@ function getRecentChanges(req) {
                 notes.title AS current_title,
                 notes.isProtected AS current_isProtected,
                 notes.title,
-                notes.utcDateModified AS utcDate,
-                notes.dateModified AS date
+                notes.utcDateModified AS utcDate, -- different from the first SELECT
+                notes.dateModified AS date        -- different from the first SELECT
             FROM notes
             WHERE notes.isDeleted = 1`);
 
     for (const noteRow of noteRows) {
         const note = becca.getNote(noteRow.noteId);
 
-        if (note?.hasAncestor(ancestorNoteId)) {
+        // for deleted notes, the becca note is null, and it's not possible to (easily) determine if it belongs to a subtree
+        if (ancestorNoteId === 'root' || note?.hasAncestor(ancestorNoteId)) {
             recentChanges.push(noteRow);
         }
     }

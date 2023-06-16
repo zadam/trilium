@@ -332,7 +332,7 @@ class FNote {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {{isArchived: boolean, isInHoistedSubTree: boolean, notePath: string[], isHidden: boolean}[]}
+     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array<string>, isHidden: boolean}>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -392,7 +392,7 @@ class FNote {
         for (const parentNote of this.getParentNotes()) {
             if (parentNote.noteId === 'root') {
                 return false;
-            } else if (parentNote.noteId === '_hidden') {
+            } else if (parentNote.noteId === '_hidden' || parentNote.type === 'search') {
                 continue;
             }
 

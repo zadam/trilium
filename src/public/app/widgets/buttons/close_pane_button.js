@@ -7,6 +7,10 @@ export default class ClosePaneButton extends OnClickButtonWidget {
             && this.noteContext && !!this.noteContext.mainNtxId;
     }
 
+    async noteContextReorderEvent({ntxIdsInOrder}) {
+        this.refresh();
+    }
+
     constructor() {
         super();
 

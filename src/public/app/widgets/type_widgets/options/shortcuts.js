@@ -116,11 +116,11 @@ export default class KeyboardShortcutsOptions extends OptionsWidget {
                 return;
             }
 
-            $table.find('input.form-control').each(function() {
-                const defaultShortcuts = this.$widget.find(this).attr('data-default-keyboard-shortcuts');
+            $table.find('input.form-control').each((_index, el) => {
+                const defaultShortcuts = this.$widget.find(el).attr('data-default-keyboard-shortcuts');
 
-                if (this.$widget.find(this).val() !== defaultShortcuts) {
-                    this.$widget.find(this)
+                if (this.$widget.find(el).val() !== defaultShortcuts) {
+                    this.$widget.find(el)
                         .val(defaultShortcuts)
                         .trigger('change');
                 }

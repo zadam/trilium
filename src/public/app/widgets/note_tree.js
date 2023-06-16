@@ -148,6 +148,9 @@ const TPL = `
 
 const MAX_SEARCH_RESULTS_IN_TREE = 100;
 
+// this has to be hanged on the actual elements to effectively intercept and stop click event
+const cancelClickPropagation = e => e.stopPropagation();
+
 export default class NoteTreeWidget extends NoteContextAwareWidget {
     constructor() {
         super();
@@ -570,7 +573,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 const isHoistedNote = activeNoteContext && activeNoteContext.hoistedNoteId === note.noteId && note.noteId !== 'root';
 
                 if (isHoistedNote) {
-                    const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
+                    const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>')
+                        .on("click", cancelClickPropagation);
 
                     // unhoist button is prepended since compared to other buttons this is not just convenience
                     // on the mobile interface - it's the only way to unhoist
@@ -578,19 +582,22 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
 
                 if (note.hasLabel('workspace') && !isHoistedNote) {
-                    const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>');
+                    const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>')
+                        .on("click", cancelClickPropagation);
 
                     $span.append($enterWorkspaceButton);
                 }
 
                 if (note.type === 'search') {
-                    const $refreshSearchButton = $('<span class="tree-item-button refresh-search-button bx bx-refresh" title="Refresh saved search results"></span>');
+                    const $refreshSearchButton = $('<span class="tree-item-button refresh-search-button bx bx-refresh" title="Refresh saved search results"></span>')
+                        .on("click", cancelClickPropagation);
 
                     $span.append($refreshSearchButton);
                 }
 
                 if (!['search', 'launcher'].includes(note.type) && !note.isOptions() && !note.isLaunchBarConfig()) {
-                    const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
+                    const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>')
+                        .on("click", cancelClickPropagation);
 
                     $span.append($createChildNoteButton);
                 }

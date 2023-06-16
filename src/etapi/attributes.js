@@ -40,19 +40,25 @@ function register(router) {
         }
     });
 
-    const ALLOWED_PROPERTIES_FOR_PATCH = {
+    const ALLOWED_PROPERTIES_FOR_PATCH_LABEL = {
         'value': [v.notNull, v.isString],
+        'position': [v.notNull, v.isInteger]
+    };
+
+    const ALLOWED_PROPERTIES_FOR_PATCH_RELATION = {
         'position': [v.notNull, v.isInteger]
     };
 
     eu.route(router, 'patch' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = eu.getAndCheckAttribute(req.params.attributeId);
 
-        if (attribute.type === 'relation') {
+        if (attribute.type === 'label') {
+            eu.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH_LABEL);
+        } else if (attribute.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
-        }
 
-        eu.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+            eu.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH_RELATION);
+        }
 
         attribute.save();
 

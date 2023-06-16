@@ -1,3 +1,4 @@
+/** @param {BNote} note */
 function mapNoteToPojo(note) {
     return {
         noteId: note.noteId,
@@ -17,6 +18,7 @@ function mapNoteToPojo(note) {
     };
 }
 
+/** @param {BBranch} branch */
 function mapBranchToPojo(branch) {
     return {
         branchId: branch.branchId,
@@ -29,6 +31,7 @@ function mapBranchToPojo(branch) {
     };
 }
 
+/** @param {BAttribute} attr */
 function mapAttributeToPojo(attr) {
     return {
         attributeId: attr.attributeId,
