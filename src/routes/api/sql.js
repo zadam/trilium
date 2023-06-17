@@ -36,6 +36,11 @@ function execute(req) {
             if (!query) {
                 continue;
             }
+            
+            while (query.startsWith('-- ') {
+                // Query starts with one or more SQL comments, discard these before we execute.
+                query = query.substr(query.indexOf('\n') + 1)
+            }
 
             if (query.toLowerCase().startsWith('select') || query.toLowerCase().startsWith('with')) {
                 results.push(sql.getRows(query));
