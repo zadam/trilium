@@ -27,11 +27,13 @@ const ws = require("./ws");
 function getNewNotePosition(parentNote) {
     if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
+            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
             .reduce((min, note) => Math.min(min, note.notePosition), 0);
 
         return minNotePos - 10;
     } else {
         const maxNotePos = parentNote.getChildBranches()
+            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
             .reduce((max, note) => Math.max(max, note.notePosition), 0);
 
         return maxNotePos + 10;
