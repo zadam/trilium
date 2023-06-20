@@ -93,11 +93,11 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
         });
 
         this.$iconCategory = this.$widget.find("select[name='icon-category']");
-        this.$iconCategory.on('change', () => this.renderFilteredDropdown());
+        this.$iconCategory.on('change', () => this.renderDropdown());
         this.$iconCategory.on('click', e => e.stopPropagation());
 
         this.$iconSearch = this.$widget.find("input[name='icon-search']");
-        this.$iconSearch.on('input', () => this.renderFilteredDropdown());
+        this.$iconSearch.on('input', () => this.renderDropdown());
 
         this.$notePathList = this.$widget.find(".note-path-list");
         this.$widget.on('show.bs.dropdown', async () => {
@@ -140,14 +140,7 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
         }
     }
 
-    renderFilteredDropdown() {
-        const categoryId = parseInt(this.$iconCategory.find('option:selected').val());
-        const search = this.$iconSearch.val();
-
-        this.renderDropdown(categoryId, search);
-    }
-
-    async renderDropdown(categoryId, search) {
+    async renderDropdown() {
         const iconToCountPromise = this.getIconToCountMap();
 
         this.$iconList.empty();
@@ -165,8 +158,10 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
         }
 
         const {icons} = (await import('./icon_list.js')).default;
+        const iconToCount = await iconToCountPromise;
 
-        search = search?.trim()?.toLowerCase();
+        const categoryId = parseInt(this.$iconCategory.find('option:selected').val());
+        const search = this.$iconSearch.val().trim().toLowerCase();
 
         const filteredIcons = icons.filter(icon => {
             if (categoryId && icon.category_id !== categoryId) {
@@ -181,8 +176,6 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
 
             return true;
         });
-
-        const iconToCount = await iconToCountPromise;
 
         filteredIcons.sort((a, b) => {
             const countA = iconToCount[a.className] || 0;
