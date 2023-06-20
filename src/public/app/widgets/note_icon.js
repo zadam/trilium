@@ -141,7 +141,8 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
     }
 
     async renderDropdown() {
-        const iconToCountPromise = this.getIconToCountMap();
+        const iconToCount = await this.getIconToCountMap();
+        const {icons} = (await import('./icon_list.js')).default;
 
         this.$iconList.empty();
 
@@ -156,9 +157,6 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
                     )
             );
         }
-
-        const {icons} = (await import('./icon_list.js')).default;
-        const iconToCount = await iconToCountPromise;
 
         const categoryId = parseInt(this.$iconCategory.find('option:selected').val());
         const search = this.$iconSearch.val().trim().toLowerCase();
@@ -192,9 +190,12 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
     }
 
     async getIconToCountMap() {
-        const {iconClassToCountMap} = await server.get('other/icon-usage');
+        if (!this.iconToCountCache) {
+            this.iconToCountCache = server.get('other/icon-usage');
+            setTimeout(() => this.iconToCountCache = null, 20000); // invalidate cache after 20 seconds
+        }
 
-        return iconClassToCountMap;
+        return (await this.iconToCountCache).iconClassToCountMap;
     }
 
     renderIcon(icon) {
