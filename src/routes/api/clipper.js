@@ -16,17 +16,20 @@ const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 function findClippingNote(clipperInboxNote, pageUrl) {
-    const notes = clipperInboxNote.searchNotesInSubtree(
-        formatAttrForSearch({
-            type: 'label',
-            name: "pageUrl",
-            value: pageUrl
-        }, true)
-    );
+    //Avoid searching for empty of browser pages like about:blank
+    if (pageUrl.trim().length > 1 && pageUrl.trim().indexOf('about:') != 0 ){
+        const notes = clipperInboxNote.searchNotesInSubtree(
+            formatAttrForSearch({
+                type: 'label',
+                name: "pageUrl",
+                value: pageUrl
+            }, true)
+        );
 
-    for (const note of notes) {
-        if (note.getOwnedLabelValue('clipType') === 'note') {
-            return note;
+        for (const note of notes) {
+            if (note.getOwnedLabelValue('clipType') === 'note') {
+                return note;
+            }
         }
     }
 
