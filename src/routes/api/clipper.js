@@ -37,7 +37,7 @@ function getClipperInboxNote() {
     let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
 
     if (!clipperInbox) {
-        clipperInbox = dateNoteService.getDayNote(dateUtils.localNowDate());
+        clipperInbox = dateNoteService.getRootCalendarNote();
     }
 
     return clipperInbox;
@@ -49,11 +49,12 @@ function addClipping(req) {
     //otherwise just create a new note under today's inbox
     let {title, content, pageUrl, images} = req.body;
 
+    //this is only for reference
     const clipperInbox = getClipperInboxNote();
+    const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
 
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
-    let dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
     
     if (!clippingNote) {
         clippingNote = noteService.createNewNote({
@@ -91,24 +92,31 @@ function createNote(req) {
     }
 
     const clipperInbox = getClipperInboxNote();
+    const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
+    pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
+    let note = findClippingNote(clipperInbox, pageUrl);
 
-    const {note} = noteService.createNewNote({
-        parentNoteId: clipperInbox.noteId,
-        title,
-        content,
-        type: 'text'
-    });
+    if (!note){
+        note = noteService.createNewNote({
+            parentNoteId: dailyNote.noteId,
+            title,
+            content,
+            type: 'text'
+        }).note;
+        clipType = htmlSanitizer.sanitize(clipType);
 
-    clipType = htmlSanitizer.sanitize(clipType);
+        note.setLabel('clipType', clipType);
+        if (pageUrl) {
+            pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
 
-    note.setLabel('clipType', clipType);
+            note.setLabel('pageUrl', pageUrl);
+            note.setLabel('iconClass', 'bx bx-globe');
+        }
 
-    if (pageUrl) {
-        pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
-
-        note.setLabel('pageUrl', pageUrl);
-        note.setLabel('iconClass', 'bx bx-globe');
     }
+
+
+
     
     if (labels) {
         for (const labelName in labels) {
@@ -117,9 +125,11 @@ function createNote(req) {
         }
     }
 
+    const existingContent = note.getContent();
     const rewrittenContent = processContent(images, note, content);
+    note.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
 
-    note.setContent(rewrittenContent);
+    // note.setContent(rewrittenContent);
 
     return {
         noteId: note.noteId
