@@ -1,6 +1,7 @@
 "use strict";
 
 const attributeService = require("../../services/attributes");
+const cloneService = require("../../services/cloning");
 const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
@@ -24,7 +25,7 @@ function findClippingNote(clipperInboxNote, pageUrl) {
     );
 
     for (const note of notes) {
-        if (note.getOwnedLabelValue('clipType') === 'clippings') {
+        if (note.getOwnedLabelValue('clipType') === 'note') {
             return note;
         }
     }
@@ -43,16 +44,20 @@ function getClipperInboxNote() {
 }
 
 function addClipping(req) {
+    //if a note under the clipperInbox as the same 'pageUrl' attribute, add the content to that note
+    //and clone it under today's inbox
+    //otherwise just create a new note under today's inbox
     let {title, content, pageUrl, images} = req.body;
 
     const clipperInbox = getClipperInboxNote();
 
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
-
+    let dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
+    
     if (!clippingNote) {
         clippingNote = noteService.createNewNote({
-            parentNoteId: clipperInbox.noteId,
+            parentNoteId: dailyNote.noteId,
             title: title,
             content: '',
             type: 'text'
@@ -63,12 +68,16 @@ function addClipping(req) {
         clippingNote.setLabel('iconClass', 'bx bx-globe');
     }
 
+
     const rewrittenContent = processContent(images, clippingNote, content);
 
     const existingContent = clippingNote.getContent();
 
     clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
-
+    
+    if (clippingNote.parentNoteId != dailyNote.noteId){
+        cloneService.cloneNoteToParentNote(clippingNote.noteId, dailyNote.noteId);
+    }
     return {
         noteId: clippingNote.noteId
     };
@@ -187,9 +196,20 @@ function handshake() {
     }
 }
 
+function findNotesByUrl(req){
+    let pageUrl = req.params.noteUrl;
+    const clipperInbox = getClipperInboxNote();
+    let foundPage = findClippingNote(clipperInbox, pageUrl);
+    return {
+        noteId: foundPage ? foundPage.noteId : null
+    }
+
+}
+
 module.exports = {
     createNote,
     addClipping,
     openNote,
-    handshake
+    handshake,
+    findNotesByUrl
 };
