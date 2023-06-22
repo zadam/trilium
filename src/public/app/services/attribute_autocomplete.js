@@ -41,8 +41,8 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
 
 async function initLabelValueAutocomplete({ $el, open, nameCallback }) {
     if ($el.hasClass("aa-input")) {
-        // we reinit everytime because autocomplete seems to have a bug where it retains state from last
-        // open even though the value was resetted
+        // we reinit every time because autocomplete seems to have a bug where it retains state from last
+        // open even though the value was reset
         $el.autocomplete('destroy');
     }
 

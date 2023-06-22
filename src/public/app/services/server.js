@@ -23,7 +23,7 @@ async function getHeaders(headers) {
     }
 
     if (utils.isElectron()) {
-        // passing it explicitely here because of the electron HTTP bypass
+        // passing it explicitly here because of the electron HTTP bypass
         allHeaders.cookie = document.cookie;
     }
 

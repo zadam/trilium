@@ -473,7 +473,7 @@ function downloadImages(noteId, content) {
             // once the download is finished, the image note representing downloaded image will be used
             // to replace the IMG link.
             // However, there's another flow where user pastes the image and leaves the note before the images
-            // are downloaded and the IMG references are not updated. For this occassion we have this code
+            // are downloaded and the IMG references are not updated. For this occasion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
