@@ -61,7 +61,7 @@ function checkSync() {
 function syncNow() {
     log.info("Received request to trigger sync now.");
 
-    // when explicitly asked for set in progress status immediatelly for faster user feedback
+    // when explicitly asked for set in progress status immediately for faster user feedback
     ws.syncPullInProgress();
 
     return syncService.sync();

@@ -352,7 +352,7 @@ class ConsistencyChecks {
             ({noteId, isProtected, type, mime}) => {
                 if (this.autoFix) {
                     // it might be possible that the note_content is not available only because of the interrupted
-                    // sync, and it will come later. It's therefore important to guarantee that this artifical
+                    // sync, and it will come later. It's therefore important to guarantee that this artificial
                     // record won't overwrite the real one coming from the sync.
                     const fakeDate = "2000-01-01 00:00:00Z";
 

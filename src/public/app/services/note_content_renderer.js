@@ -137,7 +137,7 @@ async function getRenderedContent(note, options = {}) {
         $renderedContent.append($content);
     }
     else if (type === 'canvas') {
-        // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
+        // make sure surrounding container has size of what is visible. Then image is shrunk to its boundaries
         $renderedContent.css({height: "100%", width:"100%"});
 
         const noteComplement = await froca.getNoteComplement(note.noteId);

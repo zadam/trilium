@@ -367,7 +367,7 @@ async function findSimilarNotes(noteId) {
          * We want to improve standing of notes which have been created in similar time to each other since
          * there's a good chance they are related.
          *
-         * But there's an exception - if they were created really close to each other (withing few seconds) then
+         * But there's an exception - if they were created really close to each other (within few seconds) then
          * they are probably part of the import and not created by hand - these OTOH should not benefit.
          */
         const {utcDateCreated} = candidateNote;

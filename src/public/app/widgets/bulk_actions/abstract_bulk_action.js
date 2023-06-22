@@ -26,7 +26,7 @@ export default class AbstractBulkAction {
         }
     }
 
-    // to be overriden
+    // to be overridden
     doRender() {}
 
     async saveAction(data) {

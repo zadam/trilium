@@ -39,7 +39,7 @@ export default class AbstractSearchOption extends Component {
         }
     }
 
-    // to be overriden
+    // to be overridden
     doRender() {}
 
     async deleteOption() {
