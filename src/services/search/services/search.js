@@ -10,7 +10,6 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
-const scriptService = require("../../script");
 const hoistedNoteService = require("../../hoisted_note");
 
 function searchFromNote(note) {
@@ -73,6 +72,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
+    const scriptService = require("../../script"); // to avoid circular dependency
     const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {
