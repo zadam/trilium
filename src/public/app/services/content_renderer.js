@@ -67,7 +67,10 @@ async function getRenderedContent(entity, options = {}) {
     else if (entity instanceof FNote) {
         $renderedContent.append(
             $("<div>")
-                .css("text-align", "center")
+                .css("display", "flex")
+                .css("justify-content", "space-around")
+                .css("align-items", "center")
+                .css("height", "100%")
                 .css("font-size", "500%")
                 .append($("<span>").addClass(entity.getIcon()))
         );

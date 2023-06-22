@@ -66,6 +66,10 @@ const TPL = `
         padding-top: 10px;
     }
 
+    .note-book-content .rendered-content {
+        height: 100%;
+    }
+
     .note-book-header {
         border-bottom: 1px solid var(--main-border-color);
         margin-bottom: 0;
