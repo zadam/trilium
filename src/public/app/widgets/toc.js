@@ -191,7 +191,7 @@ export default class TocWidget extends RightPanelWidget {
 
         if (isReadOnly) {
             const $container = await this.noteContext.getContentElement();
-            const headingElement = $container.find(":header")[headingIndex];
+            const headingElement = $container.find(":header:not(section.include-note :header)")[headingIndex];
 
             if (headingElement != null) {
                 headingElement.scrollIntoView({ behavior: "smooth" });
@@ -210,7 +210,7 @@ export default class TocWidget extends RightPanelWidget {
             // navigate (note that the TOC rendering and other TOC
             // entries' navigation could be wrong too)
             if (headingNode != null) {
-                $(textEditor.editing.view.domRoots.values().next().value).find(':header')[headingIndex].scrollIntoView({
+                $(textEditor.editing.view.domRoots.values().next().value).find(':header:not(section.include-note :header)')[headingIndex].scrollIntoView({
                     behavior: 'smooth'
                 });
             }
