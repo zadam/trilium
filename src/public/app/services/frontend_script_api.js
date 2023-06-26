@@ -274,7 +274,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showError = toastService.showError;
 
     /**
-     * Trigger command.
+     * Trigger command. This is a very low-level API which should be avoided if possible.
      *
      * @method
      * @param {string} name
@@ -283,7 +283,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.triggerCommand = (name, data) => appContext.triggerCommand(name, data);
 
     /**
-     * Trigger event.
+     * Trigger event. This is a very low-level API which should be avoided if possible.
      *
      * @method
      * @param {string} name
