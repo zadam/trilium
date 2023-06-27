@@ -731,7 +731,7 @@ class BNote extends AbstractBeccaEntity {
             return this.ownedAttributes.filter(attr => attr.name === name);
         }
         else {
-            return this.ownedAttributes.slice();
+            return this.ownedAttributes;
         }
     }
 
