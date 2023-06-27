@@ -230,6 +230,15 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         }
     }
 
+    async runActiveNoteCommand(params) {
+        if (this.isNoteContext(params.ntxId)) {
+            // make sure that script is saved before running it #4028
+            await this.spacedUpdate.updateNowIfNecessary();
+        }
+
+        return await this.parent.triggerCommand('runActiveNote', params);
+    }
+
     async printActiveNoteEvent() {
         if (!this.noteContext.isActive()) {
             return;
