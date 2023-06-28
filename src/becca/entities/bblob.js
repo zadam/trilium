@@ -1,4 +1,8 @@
 class BBlob {
+    static get entityName() { return "blobs"; }
+    static get primaryKeyName() { return "blobId"; }
+    static get hashedProperties() { return ["blobId", "content"]; }
+
     constructor(row) {
         /** @type {string} */
         this.blobId = row.blobId;

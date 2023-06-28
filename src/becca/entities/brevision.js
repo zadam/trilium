@@ -17,7 +17,8 @@ const BAttachment = require("./battachment");
 class BRevision extends AbstractBeccaEntity {
     static get entityName() { return "revisions"; }
     static get primaryKeyName() { return "revisionId"; }
-    static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated",
+                                            "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"]; }
 
     constructor(row, titleDecrypted = false) {
         super();

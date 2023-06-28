@@ -25,7 +25,7 @@ const RELATION = 'relation';
 class BNote extends AbstractBeccaEntity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "isProtected", "type", "mime"]; }
+    static get hashedProperties() { return ["noteId", "title", "isProtected", "type", "mime", "blobId"]; }
 
     constructor(row) {
         super();
