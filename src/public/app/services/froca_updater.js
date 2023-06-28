@@ -56,6 +56,11 @@ async function processEntityChanges(entityChanges) {
         }
     }
 
+    // froca is supposed to contain all notes currently being visible to the users in the tree / otherwise being processed
+    // and their complete "ancestor relationship", so it's always possible to go up in the hierarchy towards the root.
+    // To this we count: standard parent-child relationships and template/inherit relations (attribute inheritance follows them).
+    // Here we watch for changes which might violate this principle - e.g. introduction of a new "inherit" relation might
+    // mean we need to load the target of the relation (and then perhaps transitively the whole note path of this target).
     const missingNoteIds = [];
 
     for (const {entityName, entity} of entityChanges) {
