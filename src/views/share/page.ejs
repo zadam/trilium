@@ -13,7 +13,7 @@
     <link rel="shortcut icon" href="../favicon.ico">
     <% } %>
     <script src="../<%= appPath %>/share.js"></script>
-    <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
+    <% if (!note.isLabelTruthy("shareOmitDefaultCss")) { %>
         <link href="../<%= assetPath %>/libraries/normalize.min.css" rel="stylesheet">
         <link href="../<%= assetPath %>/stylesheets/share.css" rel="stylesheet">
     <% } %>
@@ -26,7 +26,7 @@
     <% for (const jsRelation of note.getRelations("shareJs")) { %>
         <script type="module" src="api/notes/<%= jsRelation.value %>/download"></script>
     <% } %>
-    <% if (note.hasLabel('shareDisallowRobotIndexing')) { %>
+    <% if (note.isLabelTruthy('shareDisallowRobotIndexing')) { %>
         <meta name="robots" content="noindex,follow" />
     <% } %>
     <%- header %>

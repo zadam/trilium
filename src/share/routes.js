@@ -27,7 +27,7 @@ function getSharedSubTreeRoot(note) {
 }
 
 function addNoIndexHeader(note, res) {
-    if (note.hasLabel('shareDisallowRobotIndexing')) {
+    if (note.isLabelTruthy('shareDisallowRobotIndexing')) {
         res.setHeader('X-Robots-Tag', 'noindex');
     }
 }
@@ -113,7 +113,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        if (note.hasLabel('shareRaw')) {
+        if (note.isLabelTruthy('shareRaw')) {
             res.setHeader('Content-Type', note.mime)
                 .send(note.getContent());
 

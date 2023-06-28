@@ -72,7 +72,7 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
 
         this.$expandChildrenButton = this.$widget.find('.expand-children-button');
         this.$expandChildrenButton.on('click', async () => {
-            if (!this.note.hasLabel('expanded')) {
+            if (!this.note.isLabelTruthy('expanded')) {
                 await attributeService.addLabel(this.noteId, 'expanded');
             }
 

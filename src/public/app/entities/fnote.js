@@ -761,7 +761,7 @@ class FNote {
     }
 
     getPromotedDefinitionAttributes() {
-        if (this.hasLabel('hidePromotedAttributes')) {
+        if (this.isLabelTruthy('hidePromotedAttributes')) {
             return [];
         }
 

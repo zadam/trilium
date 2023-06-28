@@ -230,7 +230,7 @@ class NoteListRenderer {
         const pageNotes = await froca.getNotes(pageNoteIds);
 
         for (const note of pageNotes) {
-            const $card = await this.renderNote(note, this.parentNote.hasLabel('expanded'));
+            const $card = await this.renderNote(note, this.parentNote.isLabelTruthy('expanded'));
 
             $container.append($card);
         }

@@ -10,7 +10,7 @@ export default class ScriptLauncher extends AbstractLauncher {
     }
 
     async launch() {
-        if (this.launcherNote.hasLabel('scriptInLauncherContent')) {
+        if (this.launcherNote.isLabelTruthy('scriptInLauncherContent')) {
             await this.launcherNote.executeScript();
         } else {
             const script = await this.launcherNote.getRelationTarget('script');

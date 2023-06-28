@@ -83,7 +83,7 @@ class SNote extends AbstractShacaEntity {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden)
             .map(branch => branch.getNote())
-            .filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
+            .filter(childNote => !childNote.isLabelTruthy('shareHiddenFromTree'));
     }
 
     /** @returns {boolean} */
@@ -237,6 +237,20 @@ class SNote extends AbstractShacaEntity {
      * @returns {boolean} true if label exists (including inherited)
      */
     hasLabel(name) { return this.hasAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     */
+    isLabelTruthy(name) {
+        const label = this.getLabel(name);
+
+        if (!label) {
+            return false;
+        }
+
+        return label && label.value !== 'false';
+    }
 
     /**
      * @param {string} name - label name

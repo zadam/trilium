@@ -31,7 +31,7 @@ export default class LauncherWidget extends BasicWidget {
             throw new Error(`Note '${note.noteId}' '${note.title}' is not a launcher even though it's in the launcher subtree`);
         }
 
-        if (!utils.isDesktop() && note.hasLabel('desktopOnly')) {
+        if (!utils.isDesktop() && note.isLabelTruthy('desktopOnly')) {
             return false;
         }
 

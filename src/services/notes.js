@@ -661,7 +661,7 @@ function saveLinks(note, content) {
 /** @param {BNote} note */
 function saveRevisionIfNeeded(note) {
     // files and images are versioned separately
-    if (note.type === 'file' || note.type === 'image' || note.hasLabel('disableVersioning')) {
+    if (note.type === 'file' || note.type === 'image' || note.isLabelTruthy('disableVersioning')) {
         return;
     }
 

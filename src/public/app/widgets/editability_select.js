@@ -65,10 +65,10 @@ export default class EditabilitySelectWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         let editability = 'auto'
 
-        if (this.note.hasLabel('readOnly')) {
+        if (this.note.isLabelTruthy('readOnly')) {
             editability = 'readOnly';
         }
-        else if (this.note.hasLabel('autoReadOnlyDisabled')) {
+        else if (this.note.isLabelTruthy('autoReadOnlyDisabled')) {
             editability = 'autoReadOnlyDisabled';
         }
 

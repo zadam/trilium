@@ -20,7 +20,7 @@ export default class BookmarkButtons extends FlexContainer {
         for (const note of await bookmarkParentNote.getChildNotes()) {
             this.noteIds.push(note.noteId);
 
-            const buttonWidget = note.hasLabel("bookmarkFolder")
+            const buttonWidget = note.isLabelTruthy("bookmarkFolder")
                 ? new BookmarkFolderWidget(note)
                 : new OpenNoteButtonWidget(note)
                     .class("launcher-button");

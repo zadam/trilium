@@ -85,7 +85,7 @@ class NoteContext extends Component {
     async setHoistedNoteIfNeeded() {
         if (this.hoistedNoteId === 'root'
             && this.notePath.startsWith("root/_hidden")
-            && !this.note.hasLabel("keepCurrentHoisting")
+            && !this.note.isLabelTruthy("keepCurrentHoisting")
         ) {
             // hidden subtree displays only when hoisted, so it doesn't make sense to keep root as hoisted note
 
@@ -221,7 +221,7 @@ class NoteContext extends Component {
             return false;
         }
 
-        if (this.note.hasLabel('readOnly')) {
+        if (this.note.isLabelTruthy('readOnly')) {
             return true;
         }
 
@@ -236,7 +236,7 @@ class NoteContext extends Component {
             : options.getInt('autoReadonlySizeCode');
 
         return blob.contentLength > sizeLimit
-            && !this.note.hasLabel('autoReadOnlyDisabled');
+            && !this.note.isLabelTruthy('autoReadOnlyDisabled');
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -261,7 +261,7 @@ class NoteContext extends Component {
             && this.note.hasChildren()
             && ['book', 'text', 'code'].includes(this.note.type)
             && this.note.mime !== 'text/x-sqlite;schema=trilium'
-            && !this.note.hasLabel('hideChildrenOverview');
+            && !this.note.isLabelTruthy('hideChildrenOverview');
     }
 
     async getTextEditor(callback) {

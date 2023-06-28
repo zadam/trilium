@@ -42,7 +42,7 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type !== 'search'
-            && !this.note.hasLabel('similarNotesWidgetDisabled');
+            && !this.note.isLabelTruthy('similarNotesWidgetDisabled');
     }
 
     getTitle() {
