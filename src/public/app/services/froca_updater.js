@@ -21,15 +21,17 @@ async function processEntityChanges(entityChanges) {
             } else if (ec.entityName === 'note_reordering') {
                 processNoteReordering(loadResults, ec);
             } else if (ec.entityName === 'blobs') {
-                for (const affectedNoteId of ec.noteIds) {
-                    for (const key of Object.keys(froca.blobPromises)) {
-                        if (key.includes(affectedNoteId)) {
-                            delete froca.blobPromises[key];
+                if (!ec.isErased) {
+                    for (const affectedNoteId of ec.noteIds) {
+                        for (const key of Object.keys(froca.blobPromises)) {
+                            if (key.includes(affectedNoteId)) {
+                                delete froca.blobPromises[key];
+                            }
                         }
                     }
-                }
 
-                loadResults.addNoteContent(ec.noteIds, ec.componentId);
+                    loadResults.addNoteContent(ec.noteIds, ec.componentId);
+                }
             } else if (ec.entityName === 'revisions') {
                 loadResults.addRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'options') {
