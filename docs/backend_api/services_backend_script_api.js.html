@@ -243,7 +243,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @property {boolean} [params.isProtected=false]
      * @property {boolean} [params.isExpanded=false]
      * @property {string} [params.prefix='']
-     * @property {int} [params.notePosition] - default is last existing notePosition in a parent + 10
+     * @property {integer} [params.notePosition] - default is last existing notePosition in a parent + 10
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
     this.createNewNote = noteService.createNewNote;
@@ -440,7 +440,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
      *
      * @method
-     * @param {number} length of the string
+     * @param {integer} length of the string
      * @returns {string} random string
      */
     this.randomString = utils.randomString;
@@ -578,7 +578,7 @@ module.exports = BackendScriptApi;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BNoteRevision.html">BNoteRevision</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
 </nav>
 
 <br class="clear">

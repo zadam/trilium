@@ -83,7 +83,7 @@ class BBranch extends AbstractBeccaEntity {
         this.parentNoteId = parentNoteId;
         /** @type {string|null} */
         this.prefix = prefix;
-        /** @type {int} */
+        /** @type {integer} */
         this.notePosition = notePosition;
         /** @type {boolean} */
         this.isExpanded = !!isExpanded;
@@ -131,6 +131,7 @@ class BBranch extends AbstractBeccaEntity {
         return this.becca.notes[this.noteId];
     }
 
+    /** @returns {BNote} */
     getNote() {
         return this.childNote;
     }
@@ -214,7 +215,7 @@ class BBranch extends AbstractBeccaEntity {
 
             // first delete children and then parent - this will show up better in recent changes
 
-            log.info(`Deleting note ${note.noteId}`);
+            log.info(`Deleting note '${note.noteId}'`);
 
             this.becca.notes[note.noteId].isBeingDeleted = true;
 
@@ -224,6 +225,10 @@ class BBranch extends AbstractBeccaEntity {
 
             for (const relation of note.getTargetRelations()) {
                 relation.markAsDeleted(deleteId);
+            }
+
+            for (const attachment of note.getAttachments()) {
+                attachment.markAsDeleted(deleteId);
             }
 
             note.markAsDeleted(deleteId);
@@ -247,7 +252,7 @@ class BBranch extends AbstractBeccaEntity {
 
             for (const childBranch of this.parentNote.getChildBranches()) {
                 if (maxNotePos &lt; childBranch.notePosition
-                    &amp;&amp; childBranch.noteId !== '_hidden' // hidden has very large notePosition to always stay last
+                    &amp;&amp; childBranch.noteId !== '_hidden' // hidden has a very large notePosition to always stay last
                 ) {
                     maxNotePos = childBranch.notePosition;
                 }
@@ -313,7 +318,7 @@ module.exports = BBranch;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BNoteRevision.html">BNoteRevision</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
 </nav>
 
 <br class="clear">

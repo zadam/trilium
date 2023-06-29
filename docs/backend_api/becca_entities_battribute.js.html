@@ -79,7 +79,7 @@ class BAttribute extends AbstractBeccaEntity {
         this.type = type;
         /** @type {string} */
         this.name = name;
-        /** @type {int} */
+        /** @type {integer} */
         this.position = position;
         /** @type {string} */
         this.value = value || "";
@@ -169,7 +169,7 @@ class BAttribute extends AbstractBeccaEntity {
      */
     getTargetNote() {
         if (this.type !== 'relation') {
-            throw new Error(`Attribute ${this.attributeId} is not relation`);
+            throw new Error(`Attribute '${this.attributeId}' is not a relation.`);
         }
 
         if (!this.value) {
@@ -216,9 +216,11 @@ class BAttribute extends AbstractBeccaEntity {
             this.value = "";
         }
 
-        if (this.position === undefined) {
-            // TODO: can be calculated from becca
-            this.position = 1 + sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
+        if (this.position === undefined || this.position === null) {
+            const maxExistingPosition = this.getNote().getAttributes()
+                .reduce((maxPosition, attr) => Math.max(maxPosition, attr.position || 0), 0);
+
+            this.position = maxExistingPosition + 10;
         }
 
         if (!this.isInheritable) {
@@ -270,7 +272,7 @@ module.exports = BAttribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BNoteRevision.html">BNoteRevision</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
 </nav>
 
 <br class="clear">

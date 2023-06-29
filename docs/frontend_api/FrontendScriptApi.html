@@ -625,7 +625,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
 
             
 
-            <td class="description last">where script is currently executing</td>
+            <td class="description last">where the script is currently executing</td>
         </tr>
 
     
@@ -958,7 +958,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
 
             
 
-            <td class="description last">where script started executing</td>
+            <td class="description last">where the script started executing</td>
         </tr>
 
     
@@ -2021,7 +2021,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
     
 
     
-    <h4 class="name" id="createNoteLink"><span class="type-signature"></span>createNoteLink<span class="signature">(notePath, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="createLink"><span class="type-signature"></span>createLink<span class="signature">(notePath, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -2029,7 +2029,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
 
 
 <div class="description">
-    Create note link (jQuery object) for given note.
+    Create a note link (jQuery object) for given note.
 </div>
 
 
@@ -2540,6 +2540,161 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
     
 
     
+    <h4 class="name" id="formatNoteSize"><span class="type-signature"></span>formatNoteSize<span class="signature">(size)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>size</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">in bytes</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line491">line 491</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    formatted string
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="getActiveContextCodeEditor"><span class="type-signature"></span>getActiveContextCodeEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;CodeMirror>}</span></h4>
     
 
@@ -2833,7 +2988,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
 
         
 <div class="param-desc">
-    returns note path of active note or null if there isn't active note
+    returns a note path of active note or null if there isn't active note
 </div>
 
 
@@ -2862,7 +3017,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
     
 
     
-    <h4 class="name" id="getActiveContextTextEditor"><span class="type-signature"></span>getActiveContextTextEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;CKEditor>}</span></h4>
+    <h4 class="name" id="getActiveContextTextEditor"><span class="type-signature"></span>getActiveContextTextEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;BalloonEditor>}</span></h4>
     
 
     
@@ -2870,7 +3025,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
 
 
 <div class="description">
-    See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+    See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for documentation on the returned instance.
 </div>
 
 
@@ -2954,7 +3109,7 @@ available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.s
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;CKEditor></span>
+<span class="param-type">Promise.&lt;BalloonEditor></span>
 
 
     </dd>
@@ -3087,7 +3242,7 @@ implementation of actual widget type.
 
 
 <div class="description">
-    Returns component which owns given DOM element (the nearest parent component in DOM tree)
+    Returns component which owns the given DOM element (the nearest parent component in DOM tree)
 </div>
 
 
@@ -3659,7 +3814,7 @@ if some action needs to happen on only one specific instance.
 
 
 <div class="description">
-    Returns note by given noteId. If note is missing from cache, it's loaded.
+    Returns note by given noteId. If note is missing from the cache, it's loaded.
 *
 </div>
 
@@ -3815,10 +3970,10 @@ if some action needs to happen on only one specific instance.
 
 
 <div class="description">
-    Returns list of notes. If note is missing from cache, it's loaded.
+    Returns list of notes. If note is missing from the cache, it's loaded.
 
 This is often used to bulk-fill the cache with notes which would have to be picked one by one
-otherwise (by e.g. createNoteLink())
+otherwise (by e.g. createLink())
 </div>
 
 
@@ -4520,7 +4675,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line495">line 495</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line502">line 502</a>
     </li></ul></dd>
     
 
@@ -5483,7 +5638,7 @@ otherwise (by e.g. createNoteLink())
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">integer</span>
 
 
             
@@ -6688,7 +6843,7 @@ Internally this serializes the anonymous function into string and sends it to ba
 
 
 <div class="description">
-    Show error message to the user.
+    Show an error message to the user.
 </div>
 
 
@@ -6825,7 +6980,7 @@ Internally this serializes the anonymous function into string and sends it to ba
 
 
 <div class="description">
-    Show info message to the user.
+    Show an info message to the user.
 </div>
 
 
@@ -6962,7 +7117,7 @@ Internally this serializes the anonymous function into string and sends it to ba
 
 
 <div class="description">
-    Trigger command.
+    Trigger command. This is a very low-level API which should be avoided if possible.
 </div>
 
 
@@ -7122,7 +7277,7 @@ Internally this serializes the anonymous function into string and sends it to ba
 
 
 <div class="description">
-    Trigger event.
+    Trigger event. This is a very low-level API which should be avoided if possible.
 </div>
 
 
@@ -7282,11 +7437,11 @@ Internally this serializes the anonymous function into string and sends it to ba
 
 
 <div class="description">
-    Trilium runs in backend and frontend process, when something is changed on the backend from script,
+    Trilium runs in a backend and frontend process, when something is changed on the backend from a script,
 frontend will get asynchronously synchronized.
 
 This method returns a promise which resolves once all the backend -> frontend synchronization is finished.
-Typical use case is when new note has been created, we should wait until it is synced into frontend and only then activate it.
+Typical use case is when a new note has been created, we should wait until it is synced into frontend and only then activate it.
 </div>
 
 
@@ -7394,7 +7549,7 @@ Typical use case is when new note has been created, we should wait until it is s
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FNoteComplement.html">FNoteComplement</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li></ul>
 </nav>
 
 <br class="clear">
