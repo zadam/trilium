@@ -27,11 +27,11 @@ const exportService = require("./export/zip");
  * @constructor
  */
 function BackendScriptApi(currentNote, apiParams) {
-    /** @property {BNote} note where script started executing */
+    /** @property {BNote} note where the script started executing */
     this.startNote = apiParams.startNote;
-    /** @property {BNote} note where script is currently executing. Don't mix this up with concept of active note */
+    /** @property {BNote} note where the script is currently executing. Don't mix this up with the concept of active note */
     this.currentNote = currentNote;
-    /** @property {AbstractBeccaEntity} entity whose event triggered this executions */
+    /** @property {AbstractBeccaEntity} entity whose event triggered this execution */
     this.originEntity = apiParams.originEntity;
 
     for (const key in apiParams) {
