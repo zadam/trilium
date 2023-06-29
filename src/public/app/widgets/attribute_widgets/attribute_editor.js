@@ -104,8 +104,7 @@ const mentionSetup = {
                     }
                 });
             },
-            minimumCharacters: 0,
-            attributeMention: true
+            minimumCharacters: 0
         },
         {
             marker: '~',
@@ -119,8 +118,7 @@ const mentionSetup = {
                     }
                 });
             },
-            minimumCharacters: 0,
-            attributeMention: true
+            minimumCharacters: 0
         }
     ]
 };
