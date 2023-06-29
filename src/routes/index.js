@@ -13,7 +13,7 @@ const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
 
 function index(req, res) {
-    const options = optionService.getOptionsMap();
+    const options = optionService.getOptionMap();
 
     let view = (!utils.isElectron() && req.cookies['trilium-device'] === 'mobile')
         ? 'mobile'

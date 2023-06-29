@@ -9,7 +9,7 @@ const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
 const BBranch = require('../becca/entities/bbranch');
-const revisionService = require('./revisions.js');
+const revisionService = require('./revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
 const {sanitizeAttributeName} = require("./sanitize_attribute_name");
@@ -153,7 +153,7 @@ class ConsistencyChecks {
                     const noteId = oldBranch.noteId;
                     oldBranch.markAsDeleted("missing-parent");
 
-                    let message = `Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. `;
+                    let message = `Branch '${branchId}' was missing parent note '${parentNoteId}', so it was deleted. `;
 
                     if (becca.getNote(noteId).getParentBranches().length === 0) {
                         const newBranch = new BBranch({
@@ -258,9 +258,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch '${branchId}' has been deleted since associated note '${noteId}' is deleted.`);
+                    logFix(`Branch '${branchId}' has been deleted since the associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Branch '${branchId}' is not deleted even though associated note '${noteId}' is deleted.`)
+                    logError(`Branch '${branchId}' is not deleted even though the associated note '${noteId}' is deleted.`)
                 }
             });
 
@@ -278,9 +278,9 @@ class ConsistencyChecks {
 
                 this.reloadNeeded = true;
 
-                logFix(`Branch '${branchId}' has been deleted since associated parent note '${parentNoteId}' is deleted.`);
+                logFix(`Branch '${branchId}' has been deleted since the associated parent note '${parentNoteId}' is deleted.`);
             } else {
-                logError(`Branch '${branchId}' is not deleted even though associated parent note '${parentNoteId}' is deleted.`)
+                logError(`Branch '${branchId}' is not deleted even though the associated parent note '${parentNoteId}' is deleted.`)
             }
         });
 
@@ -357,9 +357,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = false;
 
-                    logFix(`Attachment '${attachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
+                    logFix(`Attachment '${attachmentId}' has been deleted since the associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Attachment '${attachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
+                    logError(`Attachment '${attachmentId}' is not deleted even though the associated note '${noteId}' is deleted.`)
                 }
             });
     }

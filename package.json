@@ -110,14 +110,14 @@
     "esm": "3.2.25",
     "husky": "8.0.3",
     "jsonc-eslint-parser": "2.3.0",
-    "lint-staged": "13.2.2",
+    "lint-staged": "13.2.3",
     "jasmine": "5.0.2",
     "jsdoc": "4.0.2",
     "lorem-ipsum": "2.0.8",
     "prettier": "2.8.8",
     "nodemon": "2.0.22",
     "rcedit": "3.0.1",
-    "webpack": "5.88.0",
+    "webpack": "5.88.1",
     "webpack-cli": "5.1.4"
   },
   "optionalDependencies": {

@@ -8,7 +8,7 @@ const cls = require('../services/cls');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
-const revisionService = require('./revisions.js');
+const revisionService = require('./revisions');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
@@ -312,10 +312,17 @@ function protectNote(note, protect) {
 
         for (const attachment of note.getAttachments()) {
             if (protect !== attachment.isProtected) {
-                const content = attachment.getContent();
+                try {
+                    const content = attachment.getContent();
 
-                attachment.isProtected = protect;
-                attachment.setContent(content, { forceSave: true });
+                    attachment.isProtected = protect;
+                    attachment.setContent(content, {forceSave: true});
+                }
+                catch (e) {
+                    log.error(`Could not un/protect attachment '${attachment.attachmentId}'`);
+
+                    throw e;
+                }
             }
         }
     }

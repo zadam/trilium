@@ -94,6 +94,9 @@ function getParams(params) {
     }).join(",");
 }
 
+/**
+ * @param {BNote} note
+ */
 function getScriptBundleForFrontend(note) {
     const bundle = getScriptBundle(note);
 
@@ -111,6 +114,13 @@ function getScriptBundleForFrontend(note) {
     return bundle;
 }
 
+/**
+ * @param {BNote} note
+ * @param {boolean} [root=true]
+ * @param {string|null} [scriptEnv]
+ * @param {string[]} [includedNoteIds]
+ * @param {string|null} [backendOverrideContent]
+ */
 function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
     if (!note.isContentAvailable()) {
         return;

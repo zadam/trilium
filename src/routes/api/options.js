@@ -60,7 +60,7 @@ const ALLOWED_OPTIONS = new Set([
 ]);
 
 function getOptions() {
-    const optionMap = optionService.getOptionsMap();
+    const optionMap = optionService.getOptionMap();
     const resultMap = {};
 
     for (const optionName in optionMap) {

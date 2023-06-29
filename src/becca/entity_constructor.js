@@ -6,7 +6,7 @@ const BEtapiToken = require('./entities/betapi_token');
 const BNote = require('./entities/bnote');
 const BOption = require('./entities/boption');
 const BRecentNote = require('./entities/brecent_note');
-const BRevision = require('./entities/brevision.js');
+const BRevision = require('./entities/brevision');
 
 const ENTITY_NAME_TO_ENTITY = {
     "attachments": BAttachment,

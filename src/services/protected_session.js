@@ -1,7 +1,7 @@
 "use strict";
 
 const log = require('./log');
-const dataEncryptionService = require('./data_encryption');
+const dataEncryptionService = require('./encryption/data_encryption');
 
 let dataKey = null;
 
@@ -19,19 +19,6 @@ function resetDataKey() {
 
 function isProtectedSessionAvailable() {
     return !!dataKey;
-}
-
-function decryptNotes(notes) {
-    try {
-        for (const note of notes) {
-            if (note.isProtected) {
-                note.title = decryptString(note.title);
-            }
-        }
-    }
-    catch (e) {
-        log.error(`Could not decrypt protected notes: ${e.message} ${e.stack}`);
-    }
 }
 
 function encrypt(plainText) {
@@ -84,7 +71,6 @@ module.exports = {
     encrypt,
     decrypt,
     decryptString,
-    decryptNotes,
     touchProtectedSession,
     checkProtectedSessionExpiration
 };

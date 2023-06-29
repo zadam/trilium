@@ -1,6 +1,6 @@
-const optionService = require('./options');
+const optionService = require('../options');
 const myScryptService = require('./my_scrypt');
-const utils = require('./utils');
+const utils = require('../utils');
 const dataEncryptionService = require('./data_encryption');
 
 function verifyPassword(password) {
@@ -23,6 +23,7 @@ function setDataKey(password, plainTextDataKey) {
     optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }
 
+/** @return {Buffer} */
 function getDataKey(password) {
     const passwordDerivedKey = myScryptService.getPasswordDerivedKey(password);
 

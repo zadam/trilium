@@ -1,6 +1,6 @@
 "use strict";
 
-const optionService = require('./options');
+const optionService = require('../options');
 const crypto = require('crypto');
 
 function getVerificationHash(password) {

@@ -1,6 +1,6 @@
 "use strict";
 
-const passwordService = require('../../services/password');
+const passwordService = require('../../services/encryption/password');
 const ValidationError = require("../../errors/validation_error");
 
 function changePassword(req) {

@@ -27,7 +27,6 @@ function getDefaultMimeForNoteType(typeName) {
 }
 
 module.exports = {
-    getNoteTypes: () => noteTypes,
     getNoteTypeNames: () => noteTypes.map(nt => nt.type),
     getDefaultMimeForNoteType
 };

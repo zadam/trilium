@@ -4,9 +4,9 @@ const etapiTokenService = require("./etapi_tokens");
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const utils = require('./utils');
-const passwordEncryptionService = require('./password_encryption');
+const passwordEncryptionService = require('./encryption/password_encryption');
 const config = require('./config');
-const passwordService = require("./password");
+const passwordService = require("./encryption/password");
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 

@@ -7,6 +7,10 @@ const attributeService = require("../services/attributes");
 const protectedSessionService = require("../services/protected_session");
 const hiddenSubtreeService = require("./hidden_subtree");
 
+/**
+ * @param {BNote} note
+ * @return {int[]}
+ */
 function getRunAtHours(note) {
     try {
         return note.getLabelValues('runAtHour').map(hour => parseInt(hour));

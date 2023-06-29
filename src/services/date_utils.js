@@ -51,12 +51,6 @@ function parseDateTime(str) {
     }
 }
 
-function parseDate(str) {
-    const datePart = str.substr(0, 10);
-
-    return parseDateTime(`${datePart}T12:00:00.000Z`);
-}
-
 function parseLocalDate(str) {
     const datePart = str.substr(0, 10);
 
@@ -74,7 +68,6 @@ module.exports = {
     localNowDate,
     utcDateStr,
     utcDateTimeStr,
-    parseDate,
     parseDateTime,
     parseLocalDate,
     getDateTimeForFile

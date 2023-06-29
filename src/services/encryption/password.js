@@ -1,9 +1,9 @@
 "use strict";
 
-const sql = require('./sql');
-const optionService = require('./options');
+const sql = require('../sql');
+const optionService = require('../options');
 const myScryptService = require('./my_scrypt');
-const utils = require('./utils');
+const utils = require('../utils');
 const passwordEncryptionService = require('./password_encryption');
 
 function isPasswordSet() {

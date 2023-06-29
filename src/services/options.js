@@ -26,9 +26,7 @@ function getOption(name) {
     return val;
 }
 
-/**
- * @returns {integer}
- */
+/** @returns {integer} */
 function getOptionInt(name, defaultValue = undefined) {
     const val = getOption(name);
 
@@ -45,9 +43,7 @@ function getOptionInt(name, defaultValue = undefined) {
     return intVal;
 }
 
-/**
- * @returns {boolean}
- */
+/** @returns {boolean} */
 function getOptionBool(name) {
     const val = getOption(name);
 
@@ -76,7 +72,7 @@ function setOption(name, value) {
 }
 
 function createOption(name, value, isSynced) {
-    // to avoid circular dependency, need to find better solution
+    // to avoid circular dependency, need to find a better solution
     const BOption = require('../becca/entities/boption');
 
     new BOption({
@@ -90,7 +86,7 @@ function getOptions() {
     return Object.values(becca.options);
 }
 
-function getOptionsMap() {
+function getOptionMap() {
     const map = {};
 
     for (const option of Object.values(becca.options)) {
@@ -107,6 +103,6 @@ module.exports = {
     setOption,
     createOption,
     getOptions,
-    getOptionsMap,
+    getOptionMap,
     getOptionOrNull
 };

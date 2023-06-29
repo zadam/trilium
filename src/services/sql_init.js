@@ -88,7 +88,7 @@ async function createInitialDatabase() {
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
-        require("./password").resetPassword();
+        require("./encryption/password").resetPassword();
     });
 
     log.info("Importing demo content ...");

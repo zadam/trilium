@@ -1,7 +1,7 @@
 const scheduledExecutions = {};
 
 /**
- * Subsequent calls will not move the timer to future. The first caller determines the time of execution.
+ * Subsequent calls will not move the timer to the future. The first caller determines the time of execution.
  *
  * The good thing about synchronous better-sqlite3 is that this cannot interrupt transaction. The execution will be called
  * only outside of a transaction.

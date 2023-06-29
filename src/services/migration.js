@@ -87,7 +87,7 @@ function executeMigration(mig) {
         const migrationModule = require(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`);
         migrationModule();
     } else {
-        throw new Error(`Unknown migration type ${mig.type}`);
+        throw new Error(`Unknown migration type '${mig.type}'`);
     }
 }
 
@@ -111,7 +111,7 @@ async function migrateIfNecessary() {
     const currentDbVersion = getDbVersion();
 
     if (currentDbVersion > appInfo.dbVersion && process.env.TRILIUM_IGNORE_DB_VERSION !== 'true') {
-        log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
+        log.error(`Current DB version ${currentDbVersion} is newer than the current DB version ${appInfo.dbVersion}, which means that it was created by a newer and incompatible version of Trilium. Upgrade to the latest version of Trilium to resolve this issue.`);
 
         utils.crash();
     }

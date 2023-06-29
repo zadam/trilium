@@ -93,7 +93,7 @@ const defaultOptions = [
 ];
 
 function initStartupOptions() {
-    const optionsMap = optionService.getOptionsMap();
+    const optionsMap = optionService.getOptionMap();
 
     const allDefaultOptions = defaultOptions.concat(getKeyboardDefaultOptions());
 

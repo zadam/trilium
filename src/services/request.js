@@ -6,7 +6,7 @@ const url = require('url');
 const syncOptions = require('./sync_options');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
-// this allows to support system proxy
+// this allows supporting system proxy
 
 function exec(opts) {
     const client = getClient(opts);
@@ -171,7 +171,7 @@ function getProxyAgent(opts) {
 
 function getClient(opts) {
     // it's not clear how to explicitly configure proxy (as opposed to system proxy)
-    // so in that case we always use node's modules
+    // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
         return require('electron').net;
     }

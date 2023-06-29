@@ -14,7 +14,7 @@ const NOTE_CONTENT_CHANGE = "NOTE_CONTENT_CHANGED";
 const eventListeners = {};
 
 /**
- * @param eventTypes - can be either single event or an array of events
+ * @param {string|string[]}eventTypes - can be either single event or an array of events
  * @param listener
  */
 function subscribe(eventTypes, listener) {

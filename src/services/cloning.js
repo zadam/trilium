@@ -5,7 +5,6 @@ const eventChangesService = require('./entity_changes');
 const treeService = require('./tree');
 const BBranch = require('../becca/entities/bbranch');
 const becca = require("../becca/becca");
-const beccaService = require("../becca/becca_service");
 const log = require("./log");
 
 function cloneNoteToParentNote(noteId, parentNoteId, prefix) {
@@ -136,8 +135,10 @@ function cloneNoteAfter(noteId, afterBranchId) {
 
     const afterNote = becca.getBranch(afterBranchId);
 
-    if (isNoteDeleted(noteId) || isNoteDeleted(afterNote.parentNoteId)) {
-        return { success: false, message: 'Note is deleted.' };
+    if (!(noteId in becca.notes)) {
+        return { success: false, message: `Note to be cloned '${noteId}' is deleted or does not exist.` };
+    } else if (!(afterNote.parentNoteId in becca.notes)) {
+        return { success: false, message: `After note '${afterNote.parentNoteId}' is deleted or does not exist.` };
     }
 
     const parentNote = becca.getNote(afterNote.parentNoteId);
