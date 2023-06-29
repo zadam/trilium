@@ -117,7 +117,7 @@ function getUrlForDownload(url) {
         return `${getHost()}/${url}`;
     }
     else {
-        // web server can be deployed on subdomain, so we need to use relative path
+        // web server can be deployed on subdomain, so we need to use a relative path
         return url;
     }
 }

@@ -121,32 +121,6 @@ function escapeHtml(str) {
     return str.replace(/[&<>"'`=\/]/g, s => entityMap[s]);
 }
 
-async function stopWatch(what, func) {
-    const start = new Date();
-
-    const ret = await func();
-
-    const tookMs = Date.now() - start.getTime();
-
-    console.log(`${what} took ${tookMs}ms`);
-
-    return ret;
-}
-
-function formatValueWithWhitespace(val) {
-    return /[^\w-]/.test(val) ? `"${val}"` : val;
-}
-
-function formatLabel(label) {
-    let str = `#${formatValueWithWhitespace(label.name)}`;
-
-    if (label.value !== "") {
-        str += `=${formatValueWithWhitespace(label.value)}`;
-    }
-
-    return str;
-}
-
 function formatSize(size) {
     size = Math.max(Math.round(size / 1024), 1);
 
@@ -201,15 +175,6 @@ function setCookie(name, value) {
     const expires = `; expires=${date.toUTCString()}`;
 
     document.cookie = `${name}=${value || ""}${expires};`;
-}
-
-function setSessionCookie(name, value) {
-    document.cookie = `${name}=${value || ""}; SameSite=Strict`;
-}
-
-function getCookie(name) {
-    const valueMatch = document.cookie.match(`(^|;) ?${name}=([^;]*)(;|$)`);
-    return valueMatch ? valueMatch[2] : null;
 }
 
 function getNoteTypeClass(type) {
@@ -372,7 +337,7 @@ function openHelp(e) {
 }
 
 function initHelpButtons($el) {
-    // for some reason the .on(event, listener, handler) does not work here (e.g. Options -> Sync -> Help button)
+    // for some reason, the .on(event, listener, handler) does not work here (e.g. Options -> Sync -> Help button)
     // so we do it manually
     $el.on("click", e => {
         if ($(e.target).attr("data-help-page")) {
@@ -525,24 +490,9 @@ function copyHtmlToClipboard(content) {
     navigator.clipboard.write([clipboardItem]);
 }
 
-function formatNoteSize(size) {
-    size = Math.max(Math.round(size / 1024), 1);
-
-    if (size < 1024) {
-        return `${size} KiB`;
-    }
-    else {
-        return `${Math.round(size / 102.4) / 10} MiB`;
-    }
-}
-
 export default {
     reloadFrontendApp,
     parseDate,
-    padNum,
-    formatTime,
-    formatTimeWithSeconds,
-    formatDate,
     formatDateISO,
     formatDateTime,
     formatTimeInterval,
@@ -554,15 +504,11 @@ export default {
     isCtrlKey,
     assertArguments,
     escapeHtml,
-    stopWatch,
-    formatLabel,
     toObject,
     randomString,
     isMobile,
     isDesktop,
     setCookie,
-    setSessionCookie,
-    getCookie,
     getNoteTypeClass,
     getMimeTypeClass,
     closeActiveDialog,
@@ -581,7 +527,6 @@ export default {
     isValidAttributeName,
     sleep,
     escapeRegExp,
-    formatNoteSize,
     areObjectsEqual,
     copyHtmlToClipboard
 };

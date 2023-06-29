@@ -1,7 +1,6 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import AttributeDetailWidget from "../attribute_widgets/attribute_detail.js";
 import AttributeEditorWidget from "../attribute_widgets/attribute_editor.js";
-import attributeService from "../../services/attributes.js";
 
 const TPL = `
 <div class="attribute-list">

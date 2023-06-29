@@ -5,7 +5,8 @@ const NoteSet = require("../services/search/note_set");
 const NotFoundError = require("../errors/not_found_error");
 
 /**
- * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
+ * Becca is a backend cache of all notes, branches, and attributes.
+ * There's a similar frontend cache Froca, and share cache Shaca.
  */
 class Becca {
     constructor() {

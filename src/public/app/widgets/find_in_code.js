@@ -42,7 +42,7 @@ export default class FindInCode {
             // Find and highlight matches
             // Find and highlight matches
             // XXX Using \\b and not using the unicode flag probably doesn't
-            //     work with non ascii alphabets, findAndReplace uses a more
+            //     work with non-ASCII alphabets, findAndReplace uses a more
             //     complicated regexp, see
             //     https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/utils.js#L145
             const wholeWordChar = wholeWord ? "\\b" : "";
@@ -166,8 +166,6 @@ export default class FindInCode {
                 }
             });
         }
-        // Restore the highlightSelectionMatches setting
-        codeEditor.setOption("highlightSelectionMatches", this.oldHighlightSelectionMatches);
         this.findResult = null;
 
         codeEditor.focus();

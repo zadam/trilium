@@ -46,7 +46,7 @@ class BAttachment extends AbstractBeccaEntity {
         this.mime = row.mime;
         /** @type {string} */
         this.title = row.title;
-        /** @type {integer} */
+        /** @type {int} */
         this.position = row.position;
         /** @type {string} */
         this.blobId = row.blobId;
@@ -59,7 +59,7 @@ class BAttachment extends AbstractBeccaEntity {
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
-        /** @type {integer} optionally added to the entity */
+        /** @type {int} optionally added to the entity */
         this.contentLength = row.contentLength;
 
         this.decrypt();

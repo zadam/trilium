@@ -158,7 +158,7 @@ function renderFile(entity, type, $renderedContent) {
         $content.append($pdfPreview);
     } else if (type === 'audio') {
         const $audioPreview = $('<audio controls></audio>')
-            .attr("src", openService.getUrlForStreaming(`api/${entityType}/${entityId}/open-partial`))
+            .attr("src", openService.getUrlForDownload(`api/${entityType}/${entityId}/open-partial`))
             .attr("type", entity.mime)
             .css("width", "100%");
 

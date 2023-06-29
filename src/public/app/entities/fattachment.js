@@ -23,7 +23,7 @@ class FAttachment {
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
-        /** @type {integer} optionally added to the entity */
+        /** @type {int} optionally added to the entity */
         this.contentLength = row.contentLength;
 
         this.froca.attachments[this.attachmentId] = this;

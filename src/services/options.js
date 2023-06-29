@@ -26,7 +26,7 @@ function getOption(name) {
     return val;
 }
 
-/** @returns {integer} */
+/** @returns {int} */
 function getOptionInt(name, defaultValue = undefined) {
     const val = getOption(name);
 

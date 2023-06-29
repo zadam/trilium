@@ -35,7 +35,7 @@ function buildDescendantCountMap(noteIdsToCount) {
 }
 /**
  * @param {BNote} note
- * @param {integer} depth
+ * @param {int} depth
  * @returns {string[]} noteIds
  */
 function getNeighbors(note, depth) {

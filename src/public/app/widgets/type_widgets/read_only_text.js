@@ -1,5 +1,4 @@
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
-import treeService from "../../services/tree.js";
 import libraryLoader from "../../services/library_loader.js";
 
 const TPL = `

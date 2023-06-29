@@ -62,10 +62,7 @@ span.fancytree-node.fancytree-hide {
     display: inline-block;
     width: 16px;
     height: 16px;
-    margin-left: 5px;
-    margin-right: 8px;
-    margin-top: 4px;
-    margin-bottom: 2px;
+    margin: 4px 8px 2px 5px;
 }
 
 .fancytree-loading span.fancytree-expander:after {

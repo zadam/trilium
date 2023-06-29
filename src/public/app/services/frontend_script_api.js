@@ -478,7 +478,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
      *
      * @method
-     * @param {integer} length of the string
+     * @param {int} length of the string
      * @returns {string} random string
      */
     this.randomString = utils.randomString;
@@ -488,7 +488,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {int} size in bytes
      * @return {string} formatted string
      */
-    this.formatNoteSize = utils.formatNoteSize;
+    this.formatSize = utils.formatSize;
+
+    /**
+     * @method
+     * @param {int} size in bytes
+     * @return {string} formatted string
+     * @deprecated - use api.formatSize()
+     */
+    this.formatNoteSize = utils.formatSize;
 
     this.logMessages = {};
     this.logSpacedUpdates = {};

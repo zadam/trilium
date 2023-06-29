@@ -8,7 +8,7 @@ class BBlob {
         this.blobId = row.blobId;
         /** @type {string|Buffer} */
         this.content = row.content;
-        /** @type {integer} */
+        /** @type {int} */
         this.contentLength = row.contentLength;
         /** @type {string} */
         this.dateModified = row.dateModified;

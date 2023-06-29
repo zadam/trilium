@@ -134,7 +134,7 @@ function buildRewardMap(note) {
 
         // title is the top with weight 1 so smaller headings will have lower weight
 
-        // technically H1 is not supported but for the case it's present let's weigh it just as H2
+        // technically H1 is not supported, but for the case it's present let's weigh it just as H2
         addHeadingsToRewardMap("h1", 0.9);
         addHeadingsToRewardMap("h2", 0.9);
         addHeadingsToRewardMap("h3", 0.8);
@@ -447,7 +447,7 @@ async function findSimilarNotes(noteId) {
 }
 
 /**
- * Point of this is to break up long-running sync process to avoid blocking
+ * The point of this is to break up the long-running sync process to avoid blocking
  * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
  */
 function setImmediatePromise() {

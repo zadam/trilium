@@ -14,7 +14,7 @@ class SAttribute extends AbstractShacaEntity {
         this.type = type;
         /** @param {string} */
         this.name = name;
-        /** @param {integer} */
+        /** @param {int} */
         this.position = position;
         /** @param {string} */
         this.value = value;

@@ -7,7 +7,7 @@ class AttachmentMeta {
     role;
     /** @type {string} */
     mime;
-    /** @type {integer} */
+    /** @type {int} */
     position;
     /** @type {string} */
     dataFileName;

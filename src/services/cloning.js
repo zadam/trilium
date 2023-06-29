@@ -59,9 +59,9 @@ function cloneNoteToBranch(noteId, parentBranchId, prefix) {
 }
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
-    if (isNoteDeleted(noteId)) {
+    if (!(noteId in becca.notes)) {
         return { branch: null, success: false, message: `Note '${noteId}' is deleted.` };
-    } else if (isNoteDeleted(parentNoteId)) {
+    } else if (!(parentNoteId in becca.notes)) {
         return { branch: null, success: false, message: `Note '${parentNoteId}' is deleted.` };
     }
 

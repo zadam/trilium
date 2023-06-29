@@ -59,7 +59,7 @@ function login(req, res) {
     const guessedPassword = req.body.password;
 
     if (verifyPassword(guessedPassword)) {
-        const rememberMe = req.body.remember_me;
+        const rememberMe = req.body.rememberMe;
 
         req.session.regenerate(() => {
             if (rememberMe) {

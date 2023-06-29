@@ -7,7 +7,7 @@ class AttributeMeta {
     value;
     /** @type {boolean} */
     isInheritable;
-    /** @type {integer} */
+    /** @type {int} */
     position;
 }
 

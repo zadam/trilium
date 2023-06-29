@@ -111,15 +111,12 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        const attributes = note.getAttributes();
-        const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
-
         this.$widget.show();
 
         const blob = await this.note.getBlob();
 
-        this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(`${blob.contentLength} bytes`);
+        this.$fileName.text(note.getLabelValue('originalFileName') || "?");
+        this.$fileSize.text(utils.formatSize(blob.contentLength));
         this.$fileType.text(note.mime);
     }
 }

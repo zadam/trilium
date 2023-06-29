@@ -19,7 +19,7 @@ class FBranch {
         this.noteId = row.noteId;
         /** @type {string} */
         this.parentNoteId = row.parentNoteId;
-        /** @type {integer} */
+        /** @type {int} */
         this.notePosition = row.notePosition;
         /** @type {string} */
         this.prefix = row.prefix;

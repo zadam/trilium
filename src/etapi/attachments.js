@@ -63,7 +63,7 @@ function register(router) {
             throw new eu.EtapiError(400, "ATTACHMENT_IS_PROTECTED", `Attachment '${req.params.attachmentId}' is protected and content cannot be read through ETAPI.`);
         }
 
-        const filename = utils.formatDownloadTitle(attachment.title, attachment.type, attachment.mime);
+        const filename = utils.formatDownloadTitle(attachment.title, attachment.role, attachment.mime);
 
         res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
 

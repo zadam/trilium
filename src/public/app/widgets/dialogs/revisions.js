@@ -147,7 +147,7 @@ export default class RevisionsDialog extends BasicWidget {
         for (const item of this.revisionItems) {
             this.$list.append(
                 $('<a class="dropdown-item" tabindex="0">')
-                    .text(`${item.dateLastEdited.substr(0, 16)} (${item.contentLength} bytes)`)
+                    .text(`${item.dateLastEdited.substr(0, 16)} (${utils.formatSize(item.contentLength)})`)
                     .attr('data-revision-id', item.revisionId)
                     .attr('title', `This revision was last edited on ${item.dateLastEdited}`)
             );
@@ -259,7 +259,7 @@ export default class RevisionsDialog extends BasicWidget {
                 ))
                 .append($("<tr>").append(
                     $("<th>").text("File size:"),
-                    $("<td>").text(`${revisionItem.contentLength} bytes`)
+                    $("<td>").text(utils.formatSize(revisionItem.contentLength))
                 ));
 
             if (fullRevision.content) {

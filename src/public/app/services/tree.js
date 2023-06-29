@@ -16,7 +16,7 @@ async function resolveNotePath(notePath, hoistedNoteId = 'root') {
 /**
  * Accepts notePath which might or might not be valid and returns an existing path as close to the original
  * notePath as possible. Part of the path might not be valid because of note moving (which causes
- * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
+ * path change) or other corruption, in that case, this will try to get some other valid path to the correct note.
  *
  * @returns {Promise<string[]>}
  */
@@ -27,7 +27,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
     notePath = notePath.split("?")[0].trim();
 
     if (notePath.length === 0) {
-        return;
+        return null;
     }
 
     const path = notePath.split("/").reverse();
@@ -55,7 +55,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                     ws.logError(`Can't find note ${childNoteId}`);
                 }
 
-                return;
+                return null;
             }
 
             child.sortParents();
@@ -67,7 +67,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                     ws.logError(`No parents found for note ${childNoteId} (${child.title}) for path ${notePath}`);
                 }
 
-                return;
+                return null;
             }
 
             if (!parents.some(p => p.noteId === parentNoteId)) {

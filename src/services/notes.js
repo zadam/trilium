@@ -152,7 +152,7 @@ function getAndValidateParent(params) {
  * - {boolean} isProtected - default is false
  * - {boolean} isExpanded - default is false
  * - {string} prefix - default is empty string
- * - {integer} notePosition - default is last existing notePosition in a parent + 10
+ * - {int} notePosition - default is last existing notePosition in a parent + 10
  *
  * @param params
  * @returns {{note: BNote, branch: BBranch}}

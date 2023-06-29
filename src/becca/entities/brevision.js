@@ -47,7 +47,7 @@ class BRevision extends AbstractBeccaEntity {
         this.utcDateCreated = row.utcDateCreated;
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @type {integer} */
+        /** @type {int} */
         this.contentLength = row.contentLength;
 
         if (this.isProtected && !titleDecrypted) {

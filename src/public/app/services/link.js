@@ -93,7 +93,7 @@ async function createLink(notePath, options = {}) {
     if (showNotePath) {
         const resolvedNotePathSegments = await treeService.resolveNotePathToSegments(notePath);
 
-        if (notePath) {
+        if (resolvedNotePathSegments) {
             resolvedNotePathSegments.pop(); // remove last element
 
             const parentNotePath = resolvedNotePathSegments.join("/").trim();

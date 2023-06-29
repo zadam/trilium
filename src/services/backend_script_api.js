@@ -215,7 +215,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @property {boolean} [params.isProtected=false]
      * @property {boolean} [params.isExpanded=false]
      * @property {string} [params.prefix='']
-     * @property {integer} [params.notePosition] - default is last existing notePosition in a parent + 10
+     * @property {int} [params.notePosition] - default is last existing notePosition in a parent + 10
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
     this.createNewNote = noteService.createNewNote;
@@ -412,7 +412,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
      *
      * @method
-     * @param {integer} length of the string
+     * @param {int} length of the string
      * @returns {string} random string
      */
     this.randomString = utils.randomString;

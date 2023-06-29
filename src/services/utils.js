@@ -7,7 +7,6 @@ const escape = require('escape-html');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const path = require('path');
-const log = require('./log');
 
 function newEntityId() {
     return randomString(12);
@@ -31,11 +30,6 @@ function hashedBlobId(content) {
 
     // 20 characters of base64 gives us 120 bit of entropy which is plenty enough
     return base64Hash.substr(0, 20);
-}
-
-function randomBlobId(content) {
-    // underscore prefix to easily differentiate the random as opposed to hashed
-    return '_' + randomString(19);
 }
 
 function toBase64(plainText) {
@@ -71,30 +65,6 @@ function sanitizeSqlIdentifier(str) {
     return str.replace(/[^A-Za-z0-9_]/g, "");
 }
 
-function prepareSqlForLike(prefix, str, suffix) {
-    const value = str
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "''")
-        .replace(/_/g, "\\_")
-        .replace(/%/g, "\\%");
-
-    return `'${prefix}${value}${suffix}' ESCAPE '\\'`;
-}
-
-function stopWatch(what, func, timeLimit = 0) {
-    const start = Date.now();
-
-    const ret = func();
-
-    const tookMs = Date.now() - start;
-
-    if (tookMs >= timeLimit) {
-        log.info(`${what} took ${tookMs}ms`);
-    }
-
-    return ret;
-}
-
 function escapeHtml(str) {
     return escape(str);
 }
@@ -117,10 +87,6 @@ function toObject(array, fn) {
 
 function stripTags(text) {
     return text.replace(/<(?:.|\n)*?>/gm, '');
-}
-
-function intersection(a, b) {
-    return a.filter(value => b.indexOf(value) !== -1);
 }
 
 function union(a, b) {
@@ -231,7 +197,7 @@ function formatDownloadTitle(fileName, type, mime) {
 
         if (mime === 'application/octet-stream') {
             // we didn't find any good guess for this one, it will be better to just return
-            // the current name without fake extension. It's possible that the title still preserves to correct
+            // the current name without a fake extension. It's possible that the title still preserves the correct
             // extension too
 
             return fileName;
@@ -318,10 +284,6 @@ function normalize(str) {
     return removeDiacritic(str).toLowerCase();
 }
 
-function filterAttributeName(name) {
-    return name.replace(/[^\p{L}\p{N}_:]/ug, "");
-}
-
 module.exports = {
     randomSecureToken,
     randomString,
@@ -334,17 +296,13 @@ module.exports = {
     hash,
     isEmptyOrWhitespace,
     sanitizeSqlIdentifier,
-    prepareSqlForLike,
-    stopWatch,
     escapeHtml,
     unescapeHtml,
     toObject,
     stripTags,
-    intersection,
     union,
     escapeRegExp,
     crash,
-    sanitizeFilenameForHeader,
     getContentDisposition,
     isStringNote,
     quoteRegex,
@@ -356,7 +314,5 @@ module.exports = {
     deferred,
     removeDiacritic,
     normalize,
-    filterAttributeName,
     hashedBlobId,
-    randomBlobId
 };

@@ -7,7 +7,7 @@ class NoteMeta {
     isClone;
     /** @type {string} */
     title;
-    /** @type {integer} */
+    /** @type {int} */
     notePosition;
     /** @type {string} */
     prefix;

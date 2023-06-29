@@ -40,7 +40,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     const noteIdToMeta = {};
 
     /**
-     * @param {Object.<string, integer>} existingFileNames
+     * @param {Object.<string, int>} existingFileNames
      * @param {string} fileName
      * @returns {string}
      */
@@ -60,7 +60,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
             return `${index}_${fileName}`;
         }
-        else {[]
+        else {
             existingFileNames[lcFileName] = 1;
 
             return fileName;
@@ -71,7 +71,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
      * @param {string|null} type
      * @param {string} mime
      * @param {string} baseFileName
-     * @param {Object.<string, integer>} existingFileNames
+     * @param {Object.<string, int>} existingFileNames
      * @return {string}
      */
     function getDataFileName(type, mime, baseFileName, existingFileNames) {
@@ -119,7 +119,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     /**
      * @param {BBranch} branch
      * @param {NoteMeta} parentMeta
-     * @param {Object.<string, integer>} existingFileNames
+     * @param {Object.<string, int>} existingFileNames
      * @returns {NoteMeta|null}
      */
     function createNoteMeta(branch, parentMeta, existingFileNames) {

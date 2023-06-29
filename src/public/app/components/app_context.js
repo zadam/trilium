@@ -6,7 +6,6 @@ import options from "../services/options.js";
 import utils from "../services/utils.js";
 import zoomComponent from "./zoom.js";
 import TabManager from "./tab_manager.js";
-import treeService from "../services/tree.js";
 import Component from "./component.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import linkService from "../services/link.js";

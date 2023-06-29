@@ -4,7 +4,6 @@ import ws from "../services/ws.js";
 import froca from "../services/froca.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import cssClassManager from "../services/css_class_manager.js";
-import FAttachment from "./fattachment.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -371,7 +370,7 @@ class FNote {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array<string>, isHidden: boolean}>}
+     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, isSearch: boolean, notePath: Array<string>, isHidden: boolean}>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -380,6 +379,7 @@ class FNote {
             notePath: path,
             isInHoistedSubTree: isHoistedRoot || path.includes(hoistedNoteId),
             isArchived: path.some(noteId => froca.notes[noteId].isArchived),
+            isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
             isHidden: path.includes('_hidden')
         }));
 
@@ -390,6 +390,8 @@ class FNote {
                 return a.isArchived ? 1 : -1;
             } else if (a.isHidden !== b.isHidden) {
                 return a.isHidden ? 1 : -1;
+            } else if (a.isSearch !== b.isSearch) {
+                return a.isSearch ? 1 : -1;
             } else {
                 return a.notePath.length - b.notePath.length;
             }

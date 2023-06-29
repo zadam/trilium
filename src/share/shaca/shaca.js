@@ -16,7 +16,7 @@ class Shaca {
         this.attributes = {};
         /** @type {Object.<String, SAttachment>} */
         this.attachments = {};
-        /** @type {Object.<String, String>} */
+        /** @type {Object.<String, SNote>} */
         this.aliasToNote = {};
 
         /** @type {SNote|null} */
