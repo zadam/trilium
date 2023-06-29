@@ -1580,22 +1580,24 @@ class BNote extends AbstractBeccaEntity {
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 
-            revision.save(); // to generate revisionId which is then used to save attachments
+            revision.save(); // to generate revisionId, which is then used to save attachments
 
-            for (const noteAttachment of this.getAttachments()) {
-                if (noteAttachment.utcDateScheduledForErasureSince) {
-                    continue;
+            if (this.type === 'text') {
+                for (const noteAttachment of this.getAttachments()) {
+                    if (noteAttachment.utcDateScheduledForErasureSince) {
+                        continue;
+                    }
+
+                    const revisionAttachment = noteAttachment.copy();
+                    revisionAttachment.parentId = revision.revisionId;
+                    revisionAttachment.setContent(noteAttachment.getContent(), {forceSave: true});
+
+                    // content is rewritten to point to the revision attachments
+                    noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
                 }
 
-                const revisionAttachment = noteAttachment.copy();
-                revisionAttachment.parentId = revision.revisionId;
-                revisionAttachment.setContent(noteAttachment.getContent(), { forceSave: true });
-
-                // content is rewritten to point to the revision attachments
-                noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
+                revision.setContent(noteContent, {forceSave: true});
             }
-
-            revision.setContent(noteContent, { forceSave: true });
 
             return revision;
         });

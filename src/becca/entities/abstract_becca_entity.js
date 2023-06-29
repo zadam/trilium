@@ -247,7 +247,7 @@ class AbstractBeccaEntity {
             throw new Error(`Cannot find content for ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}', blobId '${this.blobId}'`);
         }
 
-        return blobService.processContent(row.content);
+        return blobService.processContent(row.content, this.isProtected, this.hasStringContent());
     }
 
     /**

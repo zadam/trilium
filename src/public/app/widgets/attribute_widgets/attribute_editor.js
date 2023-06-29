@@ -454,8 +454,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         return clickIndex;
     }
 
-    async loadReferenceLinkTitle($el) {
-        const {noteId} = linkService.parseNavigationStateFromUrl($el.find("a").attr("href"));
+    async loadReferenceLinkTitle($el, href) {
+        const {noteId} = linkService.parseNavigationStateFromUrl(href);
         const note = await froca.getNote(noteId, true);
 
         const title = note ? note.title : '[missing]';
@@ -468,7 +468,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async renderOwnedAttributes(ownedAttributes, saved) {
-        // attrs are not resorted if position changes after initial load
+        // attrs are not resorted if position changes after the initial load
         ownedAttributes.sort((a, b) => a.position < b.position ? -1 : 1);
 
         let htmlAttrs = (await attributeRenderer.renderAttributes(ownedAttributes, true)).html();

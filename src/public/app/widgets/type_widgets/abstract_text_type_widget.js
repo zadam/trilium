@@ -101,14 +101,6 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         await linkService.loadReferenceLinkTitle($el, href);
     }
 
-    async getReferenceLinkTitle(href) {
-        return await linkService.getReferenceLinkTitle(href);
-    }
-
-    getReferenceLinkTitleSync(href) {
-        return linkService.getReferenceLinkTitleSync(href);
-    }
-
     refreshIncludedNote($container, noteId) {
         if ($container) {
             $container.find(`section[data-note-id="${noteId}"]`).each((_, el) => {
