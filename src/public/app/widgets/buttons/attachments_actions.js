@@ -64,18 +64,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
             const fileToUpload = this.$uploadNewRevisionInput[0].files[0]; // copy to allow reset below
             this.$uploadNewRevisionInput.val('');
 
-            const formData = new FormData();
-            formData.append('upload', fileToUpload);
-
-            const result = await $.ajax({
-                url: `${window.glob.baseApiUrl}attachments/${this.attachmentId}/file`,
-                headers: await server.getHeaders(),
-                data: formData,
-                type: 'PUT',
-                timeout: 60 * 60 * 1000,
-                contentType: false, // NEEDED, DON'T REMOVE THIS
-                processData: false, // NEEDED, DON'T REMOVE THIS
-            });
+            const result = await server.upload(`attachments/${this.attachmentId}/file`, fileToUpload);
 
             if (result.uploaded) {
                 toastService.showMessage("New attachment revision has been uploaded.");

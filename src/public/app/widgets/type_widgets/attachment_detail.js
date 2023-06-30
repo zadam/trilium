@@ -57,7 +57,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
             })
         );
 
-        const attachment = await froca.getAttachment(this.attachmentId);
+        const attachment = await froca.getAttachment(this.attachmentId, true);
 
         if (!attachment) {
             this.$wrapper.html("<strong>This attachment has been deleted.</strong>");

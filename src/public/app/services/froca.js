@@ -315,14 +315,25 @@ class Froca {
     }
 
     /** @returns {Promise<FAttachment>} */
-    async getAttachment(attachmentId) {
+    async getAttachment(attachmentId, silentNotFoundError = false) {
         const attachment = this.attachments[attachmentId];
         if (attachment) {
             return attachment;
         }
 
         // load all attachments for the given note even if one is requested, don't load one by one
-        const attachmentRows = await server.get(`attachments/${attachmentId}/all`);
+        let attachmentRows;
+        try {
+            attachmentRows = await server.get(`attachments/${attachmentId}/all`);
+        }
+        catch (e) {
+            if (silentNotFoundError) {
+                logInfo(`Attachment '${attachmentId} not found, but silentNotFoundError is enabled: ` + e.message);
+            } else {
+                throw e;
+            }
+        }
+
         const attachments = this.processAttachmentRows(attachmentRows);
 
         if (attachments.length) {

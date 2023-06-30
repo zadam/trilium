@@ -7,8 +7,6 @@ import froca from "./froca.js";
 import linkService from "./link.js";
 
 function setupGlobs() {
-    window.glob.PROFILING_LOG = false;
-
     window.glob.isDesktop = utils.isDesktop;
     window.glob.isMobile = utils.isMobile;
 

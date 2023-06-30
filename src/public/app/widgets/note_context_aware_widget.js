@@ -49,16 +49,8 @@ export default class NoteContextAwareWidget extends BasicWidget {
 
     async refresh() {
         if (this.isEnabled()) {
-            const start = Date.now();
-
             this.toggleInt(true);
             await this.refreshWithNote(this.note);
-
-            const end = Date.now();
-
-            if (glob.PROFILING_LOG && end - start > 10) {
-                console.log(`Refresh of ${this.componentId} took ${end-start}ms`);
-            }
         }
         else {
             this.toggleInt(false);
