@@ -65,7 +65,7 @@ const TPL = `
             margin: 10px;
         }
         
-        .attachment-detail-wrapper.list-view .attachment-content-wrapper img {
+        .attachment-detail-wrapper.list-view .attachment-content-wrapper img, .attachment-detail-wrapper.list-view .attachment-content-wrapper video {
             max-height: 300px; 
             max-width: 90%; 
             object-fit: contain;
