@@ -23,11 +23,11 @@ class ContextMenu {
     }
 
     positionMenu() {
-        // code below tries to detect when dropdown would overflow from page
-        // in such case we'll position it above click coordinates, so it will fit into client
+        // the code below tries to detect when dropdown would overflow from page
+        // in such case we'll position it above click coordinates, so it will fit into the client
 
-        const CONTEXT_MENU_PADDING = 5; // How many pixels to pad context menu from edge of screen
-        const CONTEXT_MENU_OFFSET = 0; // How many pixels to offset context menu by relative to cursor, see #3157
+        const CONTEXT_MENU_PADDING = 5; // How many pixels to pad the context menu from edge of screen
+        const CONTEXT_MENU_OFFSET = 0; // How many pixels to offset the context menu by relative to cursor, see #3157
 
         const clientHeight = document.documentElement.clientHeight;
         const clientWidth = document.documentElement.clientWidth;
@@ -144,7 +144,7 @@ class ContextMenu {
 
     hide() {
         // this date checking comes from change in FF66 - https://github.com/zadam/trilium/issues/468
-        // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
+        // "contextmenu" event also triggers "click" event which depending on the timing can close the just opened context menu
         // we might filter out right clicks, but then it's better if even right clicks close the context menu
         if (Date.now() - this.dateContextMenuOpenedMs > 300) {
             // seems like if we hide the menu immediately, some clicks can get propagated to the underlying component

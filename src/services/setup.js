@@ -37,7 +37,7 @@ async function sendSeedToSyncServer() {
         syncVersion: appInfo.syncVersion
     });
 
-    // this is completely new sync, need to reset counters. If this would not be new sync,
+    // this is a completely new sync, need to reset counters. If this was not a new sync,
     // the previous request would have failed.
     optionService.setOption('lastSyncedPush', 0);
     optionService.setOption('lastSyncedPull', 0);
@@ -66,7 +66,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
     try {
         log.info("Getting document options FROM sync server.");
 
-        // response is expected to contain documentId and documentSecret options
+        // the response is expected to contain documentId and documentSecret options
         const resp = await request.exec({
             method: 'get',
             url: `${syncServerHost}/api/setup/sync-seed`,

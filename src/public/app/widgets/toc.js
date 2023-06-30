@@ -2,14 +2,14 @@
  * Table of contents widget
  * (c) Antonio Tejada 2022
  *
- * By design there's no support for nonsensical or malformed constructs:
+ * By design, there's no support for nonsensical or malformed constructs:
  * - headings inside elements (e.g. Trilium allows headings inside tables, but
  *   not inside lists)
  * - nested headings when using raw HTML <H2><H3></H3></H2>
  * - malformed headings when using raw HTML <H2></H3></H2><H3>
  * - etc.
  *
- * In those cases the generated TOC may be incorrect or the navigation may lead
+ * In those cases, the generated TOC may be incorrect, or the navigation may lead
  * to the wrong heading (although what "right" means in those cases is not
  * clear), but it won't crash.
  */

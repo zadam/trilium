@@ -28,7 +28,7 @@ function enterProtectedSession() {
         dfd.resolve(false);
     }
     else {
-        // using deferred instead of promise because it allows resolving from outside
+        // using deferred instead of promise because it allows resolving from the outside
         protectedSessionDeferred = dfd;
 
         appContext.triggerCommand("showProtectedSessionPasswordDialog");

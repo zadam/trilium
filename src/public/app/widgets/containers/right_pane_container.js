@@ -20,9 +20,9 @@ export default class RightPaneContainer extends FlexContainer {
         const promise = super.handleEventInChildren(name, data);
 
         if (['activeContextChanged', 'noteSwitchedAndActivated', 'noteSwitched'].includes(name)) {
-            // right pane is displayed only if some child widget is active
+            // the right pane is displayed only if some child widget is active,
             // we'll reevaluate the visibility based on events which are probable to cause visibility change
-            // but these events needs to be finished and only then we check
+            // but these events need to be finished and only then we check
             if (promise) {
                 promise.then(() => this.reEvaluateRightPaneVisibilityCommand());
             }

@@ -35,7 +35,7 @@ function executeBundle(bundle, apiParams = {}) {
     cls.set('componentId', 'script');
     cls.set('bundleNoteId', bundle.note.noteId);
 
-    // last \r\n is necessary if script contains line comment on its last line
+    // last \r\n is necessary if the script contains line comment on its last line
     const script = `function() {\r
 ${bundle.script}\r
 }`;

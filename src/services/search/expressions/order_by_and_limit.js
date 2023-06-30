@@ -47,7 +47,7 @@ class OrderByAndLimitExp extends Expression {
                     return larger;
                 }
 
-                // if both are numbers then parse them for numerical comparison
+                // if both are numbers, then parse them for numerical comparison
                 if (this.isNumber(valA) && this.isNumber(valB)) {
                     valA = parseFloat(valA);
                     valB = parseFloat(valB);

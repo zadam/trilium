@@ -92,13 +92,13 @@ function getNeighbors(note, depth) {
 
 function getLinkMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
-    // if the map root itself has exclude attribute (journal typically) then there wouldn't be anything to display, so
-    // we'll just ignore it
+    // if the map root itself has "excludeFromNoteMap" attribute (journal typically) then there wouldn't be anything
+    // to display, so we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.isLabelTruthy('excludeFromNoteMap');
     let unfilteredNotes;
 
     if (mapRootNote.type === 'search') {
-        // for search notes we want to consider the direct search results only without the descendants
+        // for search notes, we want to consider the direct search results only without the descendants
         unfilteredNotes = mapRootNote.getSearchResultNotes();
     } else {
         unfilteredNotes = mapRootNote.getSubtree({
@@ -167,8 +167,8 @@ function getLinkMap(req) {
 
 function getTreeMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
-    // if the map root itself has ignore (journal typically) then there wouldn't be anything to display, so
-    // we'll just ignore it
+    // if the map root itself has "excludeFromNoteMap" (journal typically) then there wouldn't be anything to display,
+    // so we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.isLabelTruthy('excludeFromNoteMap');
     const subtree = mapRootNote.getSubtree({
         includeArchived: false,

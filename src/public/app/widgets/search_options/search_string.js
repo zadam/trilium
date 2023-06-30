@@ -47,8 +47,8 @@ export default class SearchString extends AbstractSearchOption {
 
         shortcutService.bindElShortcut(this.$searchString, 'return', async () => {
             // this also in effect disallows new lines in query string.
-            // on one hand this makes sense since search string is a label
-            // on the other hand it could be nice for structuring long search string. It's probably a niche case though.
+            // on one hand, this makes sense since search string is a label
+            // on the other hand, it could be nice for structuring long search string. It's probably a niche case though.
             await this.spacedUpdate.updateNowIfNecessary();
 
             this.triggerCommand('refreshResults');

@@ -14,7 +14,7 @@ function load() {
     const start = Date.now();
     shaca.reset();
 
-    // using raw query and passing arrays to avoid allocating new objects
+    // using a raw query and passing arrays to avoid allocating new objects
 
     const noteIds = sql.getColumn(`
         WITH RECURSIVE

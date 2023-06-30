@@ -123,7 +123,7 @@ function getImage(imageUrl) {
                 host: parsedTargetUrl.hostname,
                 port: parsedTargetUrl.port,
                 path: parsedTargetUrl.path,
-                timeout: opts.timeout, // works only for node client
+                timeout: opts.timeout, // works only for the node client
                 headers: {},
                 agent: proxyAgent
             });
@@ -170,7 +170,7 @@ function getProxyAgent(opts) {
 }
 
 function getClient(opts) {
-    // it's not clear how to explicitly configure proxy (as opposed to system proxy)
+    // it's not clear how to explicitly configure proxy (as opposed to system proxy),
     // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
         return require('electron').net;

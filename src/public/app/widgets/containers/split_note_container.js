@@ -157,7 +157,7 @@ export default class SplitNoteContainer extends FlexContainer {
     /**
      * widget.hasBeenAlreadyShown is intended for lazy loading of cached tabs - initial note switches of new tabs
      * are not executed, we're waiting for the first tab activation, and then we update the tab. After this initial
-     * activation further note switches are always propagated to the tabs.
+     * activation, further note switches are always propagated to the tabs.
      */
     handleEventInChildren(name, data) {
         if (['noteSwitched', 'noteSwitchedAndActivated'].includes(name)) {

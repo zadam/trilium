@@ -17,7 +17,7 @@ function bindElShortcut($el, keyboardShortcut, handler, namespace = null) {
         if (namespace) {
             eventName += `.${namespace}`;
 
-            // if there's a namespace then we replace the existing event handler with the new one
+            // if there's a namespace, then we replace the existing event handler with the new one
             $el.off(eventName);
         }
 

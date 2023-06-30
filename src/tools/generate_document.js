@@ -1,6 +1,6 @@
 /**
  * Usage: node src/tools/generate_document.js 1000
- * will create 1000 new notes and some clones into a current document.db
+ * will create 1000 new notes and some clones into the current document.db
  */
 
 require('../becca/entity_constructor');

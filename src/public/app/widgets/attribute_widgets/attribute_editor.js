@@ -310,7 +310,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
             this.$saveAttributesButton.fadeOut();
 
-            // blink the attribute text to give visual hint that save has been executed
+            // blink the attribute text to give a visual hint that save has been executed
             this.$editor.css('opacity', 0);
 
             // revert back
@@ -387,7 +387,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
                 parsedAttrs = attributeParser.lexAndParse(this.getPreprocessedData(), true);
             }
             catch (e) {
-                // the input is incorrect because user messed up with it and now needs to fix it manually
+                // the input is incorrect because the user messed up with it and now needs to fix it manually
                 return null;
             }
 

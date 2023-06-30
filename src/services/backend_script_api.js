@@ -142,7 +142,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
+     * @param {string} prefix - if branch is created between note and parent note, set this prefix
      * @returns {{branch: BBranch|null}}
      */
     this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
@@ -164,7 +164,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {boolean} present - true if we want the branch to exist, false if we want it gone
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
+     * @param {string} prefix - if branch is created between note and parent note, set this prefix
      * @returns {void}
      */
     this.toggleNoteInParent = cloningService.toggleNoteInParent;
@@ -244,7 +244,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
         const parentNote = becca.getNote(parentNoteId);
 
-        // code note type can be inherited, otherwise text is default
+        // code note type can be inherited, otherwise "text" is the default
         extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
         extraOptions.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
 

@@ -185,7 +185,7 @@ class NoteListRenderer {
         this.viewType = parentNote.getLabelValue('viewType');
 
         if (!['list', 'grid'].includes(this.viewType)) {
-            // when not explicitly set decide based on note type
+            // when not explicitly set, decide based on the note type
             this.viewType = parentNote.type === 'search' ? 'list' : 'grid';
         }
 
@@ -194,7 +194,7 @@ class NoteListRenderer {
         this.showNotePath = showNotePath;
     }
 
-    /** @returns {Set<string>} list of noteIds included (images, included notes) into a parent note and which
+    /** @returns {Set<string>} list of noteIds included (images, included notes) in the parent note and which
      *                        don't have to be shown in the note list. */
     getIncludedNoteIds() {
         const includedLinks = this.parentNote

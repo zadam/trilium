@@ -64,7 +64,7 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
         this.$noteTypeButton.dropdown('hide');
     }
 
-    /** actual body is rendered lazily on note-type button click */
+    /** the actual body is rendered lazily on note-type button click */
     async renderDropdown() {
         this.$noteTypeDropdown.empty();
 

@@ -97,7 +97,7 @@ async function importAttachmentsToNote(req) {
     const parentNote = becca.getNoteOrThrow(parentNoteId);
     const taskContext = TaskContext.getInstance(taskId, 'importAttachment', options);
 
-    // unlike in note import we let the events run, because a huge number of attachments is not likely
+    // unlike in note import, we let the events run, because a huge number of attachments is not likely
 
     try {
         await singleImportService.importAttachment(taskContext, file, parentNote);

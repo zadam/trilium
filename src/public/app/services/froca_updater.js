@@ -59,7 +59,7 @@ async function processEntityChanges(entityChanges) {
     // froca is supposed to contain all notes currently being visible to the users in the tree / otherwise being processed
     // and their complete "ancestor relationship", so it's always possible to go up in the hierarchy towards the root.
     // To this we count: standard parent-child relationships and template/inherit relations (attribute inheritance follows them).
-    // Here we watch for changes which might violate this principle - e.g. introduction of a new "inherit" relation might
+    // Here we watch for changes which might violate this principle - e.g., an introduction of a new "inherit" relation might
     // mean we need to load the target of the relation (and then perhaps transitively the whole note path of this target).
     const missingNoteIds = [];
 
@@ -157,7 +157,7 @@ async function processBranchChange(loadResults, ec) {
     if (childNote && !childNote.isRoot() && !parentNote) {
         // a branch cannot exist without the parent
         // a note loaded into froca has to also contain all its ancestors,
-        // this problem happened e.g., in sharing where _share was hidden and thus not loaded
+        // this problem happened, e.g., in sharing where _share was hidden and thus not loaded
         // sharing meant cloning into _share, which crashed because _share was not loaded
         parentNote = await froca.getNote(ec.entity.parentNoteId);
     }

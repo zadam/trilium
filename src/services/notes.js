@@ -69,7 +69,7 @@ function copyChildAttributes(parentNote, childNote) {
 
             if (hasAlreadyTemplate && attr.type === 'relation' && name === 'template') {
                 // if the note already has a template, it means the template was chosen by the user explicitly
-                // in the menu. In that case we should override the default templates defined in the child: attrs
+                // in the menu. In that case, we should override the default templates defined in the child: attrs
                 continue;
             }
 
@@ -105,8 +105,8 @@ function getNewNoteTitle(parentNote) {
         }
     }
 
-    // this isn't in theory a good place to sanitize title, but this will catch a lot of XSS attempts
-    // title is supposed to contain text only (not HTML) and be printed text only, but given the number of usages
+    // this isn't in theory a good place to sanitize title, but this will catch a lot of XSS attempts.
+    // title is supposed to contain text only (not HTML) and be printed text only, but given the number of usages,
     // it's difficult to guarantee correct handling in all cases
     title = htmlSanitizer.sanitize(title);
 
@@ -147,12 +147,12 @@ function getAndValidateParent(params) {
  * - {*} content
  * - {string} type - text, code, file, image, search, book, relationMap, canvas, render
  *
- * Following are optional (have defaults)
+ * The following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type
  * - {boolean} isProtected - default is false
  * - {boolean} isExpanded - default is false
  * - {string} prefix - default is empty string
- * - {int} notePosition - default is last existing notePosition in a parent + 10
+ * - {int} notePosition - default is the last existing notePosition in a parent + 10
  *
  * @param params
  * @returns {{note: BNote, branch: BBranch}}
@@ -226,7 +226,7 @@ function createNewNote(params) {
         eventService.emit(eventService.ENTITY_CREATED, { entityName: 'notes', entity: note });
         eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'notes', entity: note });
         triggerNoteTitleChanged(note);
-        // blobs doesn't use "created" event
+        // blobs entity doesn't use "created" event
         eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'blobs', entity: note });
         eventService.emit(eventService.ENTITY_CREATED, { entityName: 'branches', entity: branch });
         eventService.emit(eventService.ENTITY_CHANGED, { entityName: 'branches', entity: branch });
@@ -245,7 +245,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
     if (!params.type) {
         const parentNote = becca.notes[params.parentNoteId];
 
-        // code note type can be inherited, otherwise text is default
+        // code note type can be inherited, otherwise "text" is the default
         params.type = parentNote.type === 'code' ? 'code' : 'text';
         params.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
     }
@@ -366,7 +366,7 @@ function checkImageAttachments(note, content) {
     const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
     for (const unknownAttachment of unknownAttachments) {
-        // the attachment belongs to a different note (was copy pasted). Attachments can be linked only from the note
+        // the attachment belongs to a different note (was copy-pasted). Attachments can be linked only from the note
         // which owns it, so either find an existing attachment having the same content or make a copy.
         let localAttachment = note.getAttachments().find(att => att.role === unknownAttachment.role && att.blobId === unknownAttachment.blobId);
 
@@ -412,7 +412,7 @@ function findImageLinks(content, foundLinks) {
         });
     }
 
-    // removing absolute references to server to keep it working between instances
+    // removing absolute references to server to keep it working between instances,
     // we also omit / at the beginning to keep the paths relative
     return content.replace(/src="[^"]*\/api\/images\//g, 'src="api/images/');
 }
@@ -557,10 +557,10 @@ function downloadImages(noteId, content) {
         setTimeout(() => {
             // the normal expected flow of the offline image saving is that users will paste the image(s)
             // which will get asynchronously downloaded, during that time they keep editing the note
-            // once the download is finished, the image note representing downloaded image will be used
+            // once the download is finished, the image note representing the downloaded image will be used
             // to replace the IMG link.
-            // However, there's another flow where user pastes the image and leaves the note before the images
-            // are downloaded and the IMG references are not updated. For this occassion we have this code
+            // However, there's another flow where the user pastes the image and leaves the note before the images
+            // are downloaded and the IMG references are not updated. For this occasion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
@@ -972,7 +972,7 @@ function eraseUnusedAttachmentsNow() {
     eraseScheduledAttachments(0);
 }
 
-// do a replace in str - all keys should be replaced by the corresponding values
+// all keys should be replaced by the corresponding values
 function replaceByMap(str, mapObj) {
     const re = new RegExp(Object.keys(mapObj).join("|"),"g");
 
@@ -1076,7 +1076,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     const existingNote = becca.notes[newNoteId];
 
     if (existingNote && existingNote.title !== undefined) { // checking that it's not just note's skeleton created because of Branch above
-        // note has multiple clones and was already created from another placement in the tree
+        // note has multiple clones and was already created from another placement in the tree,
         // so a branch is all we need for this clone
         return {
             note: existingNote,

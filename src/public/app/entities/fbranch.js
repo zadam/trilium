@@ -44,7 +44,7 @@ class FBranch {
         return this.froca.getNote(this.parentNoteId);
     }
 
-    /** @returns {boolean} true if it's top level, meaning its parent is root note */
+    /** @returns {boolean} true if it's top level, meaning its parent is the root note */
     isTopLevel() {
         return this.parentNoteId === 'root';
     }

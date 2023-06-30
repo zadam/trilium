@@ -55,15 +55,15 @@
         <div id="setup-type" data-bind="visible: step() == 'setup-type'" style="margin-top: 20px;">
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupType">
-                    I'm a new user, and I want to create new Trilium document for my notes</label>
+                    I'm a new user, and I want to create a new Trilium document for my notes</label>
             </div>
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupType">
-                    I have desktop instance already, and I want to set up sync with it</label>
+                    I have a desktop instance already, and I want to set up sync with it</label>
             </div>
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupType">
-                    I have server instance already, and I want to set up sync with it</label>
+                    I have a server instance already, and I want to set up sync with it</label>
             </div>
 
             <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>

@@ -93,8 +93,8 @@ function updateNoteReordering(entityChange, entity, instanceId) {
 }
 
 function handleContent(content) {
-    // we always use Buffer object which is different from normal saving - there we use simple string type for
-    // "string notes". The problem is that in general it's not possible to detect whether a blob content
+    // we always use a Buffer object which is different from normal saving - there we use a simple string type for
+    // "string notes". The problem is that in general, it's not possible to detect whether a blob content
     // is string note or note (syncs can arrive out of order)
     content = content === null ? null : Buffer.from(content, 'base64');
 

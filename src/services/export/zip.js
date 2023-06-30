@@ -108,7 +108,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             }
         }
 
-        // if the note is already named with extension (e.g. "jquery"), then it's silly to append exact same extension again
+        // if the note is already named with extension (e.g. "jquery"), then it's silly to append the exact same extension again
         if (newExtension && existingExtension !== `.${newExtension.toLowerCase()}`) {
             fileName += `.${newExtension}`;
         }

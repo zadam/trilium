@@ -323,7 +323,7 @@ export default class TabManager extends Component {
 
         if (notePath) {
             await noteContext.setNote(notePath, {
-                // if activate is false then send normal noteSwitched event
+                // if activate is false, then send normal noteSwitched event
                 triggerSwitchEvent: !activate,
                 viewScope: viewScope
             });
@@ -378,7 +378,7 @@ export default class TabManager extends Component {
      * @returns {Promise<boolean>} true if note context has been removed, false otherwise
      */
     async removeNoteContext(ntxId) {
-        // removing note context is async process which can take some time, if users presses CTRL-W quickly, two
+        // removing note context is an async process which can take some time, if users presses CTRL-W quickly, two
         // close events could interleave which would then lead to attempting to activate already removed context.
         return await this.mutex.runExclusively(async () => {
             let noteContextToRemove;

@@ -330,7 +330,8 @@ class SNote extends AbstractShacaEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {SAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {SAttribute} attribute of the given type and name. If there are more such attributes, first is  returned.
+     *                       Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -341,7 +342,7 @@ class SNote extends AbstractShacaEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string|null} attribute value of the given type and name or null if no such attribute exists.
      */
     getAttributeValue(type, name) {
         const attr = this.getAttribute(type, name);
@@ -352,7 +353,7 @@ class SNote extends AbstractShacaEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string|null} attribute value of the given type and name or null if no such attribute exists.
      */
     getOwnedAttributeValue(type, name) {
         const attr = this.getOwnedAttribute(type, name);

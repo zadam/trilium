@@ -192,7 +192,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     getData() {
         const content = this.watchdog.editor.getData();
 
-        // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
+        // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty,
         // this is important when setting a new note to code
         return {
             content: utils.isHtmlEmpty(content) ? '' : content

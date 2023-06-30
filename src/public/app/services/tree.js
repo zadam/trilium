@@ -111,7 +111,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
             throw new Error(`Did not find any path segments for '${note.toString()}', hoisted note '${hoistedNoteId}'`);
         }
 
-        // if there isn't actually any note path with hoisted note then return the original resolved note path
+        // if there isn't actually any note path with hoisted note, then return the original resolved note path
         return bestNotePath.includes(hoistedNoteId) ? bestNotePath : effectivePathSegments;
     }
 }

@@ -86,7 +86,7 @@ async function executeFrontendUpdate(entityChanges) {
         }
 
         try {
-            // it's my turn so start it up
+            // it's my turn, so start it up
             consumeQueuePromise = consumeFrontendUpdateData();
 
             await consumeQueuePromise;
@@ -175,7 +175,7 @@ async function consumeFrontendUpdateData() {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
 
             if (!glob.isDev && !options.is('debugModeEnabled')) {
-                // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
+                // if there's an error in updating the frontend, then the easy option to recover is to reload the frontend completely
 
                 utils.reloadFrontendApp();
             }

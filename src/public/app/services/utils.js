@@ -167,8 +167,8 @@ function isDesktop() {
         || (!window.glob?.device && !/Mobi/.test(navigator.userAgent));
 }
 
-// cookie code below works for simple use cases only - ASCII only
-// not setting path so that cookies do not leak into other websites if multiplexed with reverse proxy
+// the cookie code below works for simple use cases only - ASCII only
+// not setting a path so that cookies do not leak into other websites if multiplexed with reverse proxy
 
 function setCookie(name, value) {
     const date = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
@@ -396,7 +396,7 @@ function areObjectsEqual () {
             return x.toString() === y.toString();
         }
 
-        // At last checking prototypes as good as we can
+        // At last, checking prototypes as good as we can
         if (!(x instanceof Object && y instanceof Object)) {
             return false;
         }

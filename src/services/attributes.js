@@ -21,7 +21,7 @@ function getNotesWithLabel(name, value = undefined) {
 // TODO: should be in search service
 /** @returns {BNote|null} */
 function getNoteWithLabel(name, value = undefined) {
-    // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
+    // optimized version (~20 times faster) without using normal search, useful for e.g., finding date notes
     const attrs = becca.findAttributes('label', name);
 
     if (value === undefined) {

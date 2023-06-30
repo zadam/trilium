@@ -72,7 +72,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         const blob = await this.note.getBlob();
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            // CodeMirror breaks pretty badly on null, so even though it shouldn't happen (guarded by consistency check)
+            // CodeMirror breaks pretty badly on null, so even though it shouldn't happen (guarded by a consistency check)
             // we provide fallback
             this.codeEditor.setValue(blob.content || "");
             this.codeEditor.clearHistory();

@@ -76,7 +76,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
     for (const outline of outlines) {
         const note = importOutline(outline, parentNote.noteId);
 
-        // first created note will be activated after import
+        // the first created note will be activated after import
         returnNote = returnNote || note;
     }
 

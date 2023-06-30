@@ -231,7 +231,7 @@ function register(app) {
     // docker health check
     route(GET, '/api/health-check', [], () => ({"status": "ok"}), apiResultHandler);
 
-    // group of services below are meant to be executed from outside
+    // group of the services below are meant to be executed from the outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
     route(PST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler, false);
     route(PST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
@@ -380,7 +380,7 @@ function apiResultHandler(req, res, result) {
 
     result = convertEntitiesToPojo(result);
 
-    // if it's an array and first element is integer then we consider this to be [statusCode, response] format
+    // if it's an array and the first element is integer, then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
         const [statusCode, response] = result;
 

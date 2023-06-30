@@ -105,7 +105,7 @@ eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED,  ({entityName, en
  *
  * @param entityName
  * @param entityRow - can be a becca entity (change comes from this trilium instance) or just a row (from sync).
- *                    Should be therefore treated as a row.
+ *                    It should be therefore treated as a row.
  */
 function postProcessEntityUpdate(entityName, entityRow) {
     if (entityName === 'notes') {
@@ -188,7 +188,7 @@ function branchUpdated(branchRow) {
         childNote.sortParents();
 
         // notes in the subtree can get new inherited attributes
-        // this is in theory needed upon branch creation, but there's no create event for sync changes
+        // this is in theory needed upon branch creation, but there's no "create" event for sync changes
         childNote.invalidateSubTree();
     }
 

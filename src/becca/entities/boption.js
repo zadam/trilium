@@ -4,7 +4,7 @@ const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
- * Option represents name-value pair, either directly configurable by the user or some system property.
+ * Option represents a name-value pair, either directly configurable by the user or some system property.
  *
  * @extends AbstractBeccaEntity
  */

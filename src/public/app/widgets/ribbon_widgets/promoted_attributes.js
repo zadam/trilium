@@ -107,7 +107,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             }
         }
 
-        // we replace the whole content in one step so there can't be any race conditions
+        // we replace the whole content in one step, so there can't be any race conditions
         // (previously we saw promoted attributes doubling)
         this.$container.empty().append(...$cells);
         this.toggleInt(true);

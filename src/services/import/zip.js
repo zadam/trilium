@@ -145,7 +145,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             } else if (parentPath in createdPaths) {
                 parentNoteId = createdPaths[parentPath];
             } else {
-                // ZIP allows creating out of order records - i.e., file in a directory can appear in the ZIP stream before actual directory
+                // ZIP allows creating out of order records - i.e., file in a directory can appear in the ZIP stream before the actual directory
                 parentNoteId = saveDirectory(parentPath);
             }
         }

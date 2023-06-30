@@ -18,7 +18,7 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 /**
- * Trilium's main entity which can represent text note, image, code note, file attachment etc.
+ * Trilium's main entity, which can represent text note, image, code note, file attachment etc.
  *
  * @extends AbstractBeccaEntity
  */
@@ -123,7 +123,7 @@ class BNote extends AbstractBeccaEntity {
          * @private */
         this.__ancestorCache = null;
 
-        // following attributes are filled during searching from database
+        // following attributes are filled during searching in the database
 
         /**
          * size of the content in bytes
@@ -566,7 +566,8 @@ class BNote extends AbstractBeccaEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {BAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {BAttribute} attribute of the given type and name. If there are more such attributes, first is returned.
+     *                       Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -688,7 +689,7 @@ class BNote extends AbstractBeccaEntity {
     areAllNotePathsArchived() {
         // there's a slight difference between note being itself archived and all its note paths being archived
         // - note is archived when it itself has an archived label or inherits it
-        // - note does not have or inherit archived label, but each note paths contains a note with (non-inheritable)
+        // - note does not have or inherit archived label, but each note path contains a note with (non-inheritable)
         //   archived label
 
         const bestNotePathRecord = this.getSortedNotePathRecords()[0];
@@ -1093,7 +1094,7 @@ class BNote extends AbstractBeccaEntity {
     /** @returns {BAttachment[]} */
     getAttachments(opts = {}) {
         opts.includeContentLength = !!opts.includeContentLength;
-        // from testing it looks like calculating length does not make a difference in performance even on large-ish DB
+        // from testing, it looks like calculating length does not make a difference in performance even on large-ish DB
         // given that we're always fetching attachments only for a specific note, we might just do it always
 
         const query = opts.includeContentLength
@@ -1148,7 +1149,7 @@ class BNote extends AbstractBeccaEntity {
         const parentNotes = this.getParentNotes();
 
         const notePaths = parentNotes.length === 1
-            ? parentNotes[0].getAllNotePaths() // optimization for most common case
+            ? parentNotes[0].getAllNotePaths() // optimization for the most common case
             : parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
 
         for (const notePath of notePaths) {
@@ -1188,7 +1189,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * Returns note path considered to be the "best"
+     * Returns a note path considered to be the "best"
      *
      * @param {string} [hoistedNoteId='root']
      * @return {string[]} array of noteIds constituting the particular note path
@@ -1198,7 +1199,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * Returns note path considered to be the "best"
+     * Returns a note path considered to be the "best"
      *
      * @param {string} [hoistedNoteId='root']
      * @return {string} serialized note path (e.g. 'root/a1h315/js725h')
@@ -1338,7 +1339,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * Based on enabled, attribute is either set or removed.
+     * Based on enabled, the attribute is either set or removed.
      *
      * @param {string} type - attribute type ('relation', 'label' etc.)
      * @param {boolean} enabled - toggle On or Off
@@ -1397,7 +1398,7 @@ class BNote extends AbstractBeccaEntity {
     removeLabel(name, value) { return this.removeAttribute(LABEL, name, value); }
 
     /**
-     * Remove relation name-value pair, if it exists.
+     * Remove the relation name-value pair, if it exists.
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
@@ -1455,16 +1456,16 @@ class BNote extends AbstractBeccaEntity {
      * - it has a relation from its parent note
      * - it has no children
      * - it has no clones
-     * - parent is of type text
+     * - the parent is of type text
      * - both notes are either unprotected or user is in protected session
      *
      * Currently, works only for image notes.
      *
-     * In future this functionality might get more generic and some of the requirements relaxed.
+     * In future, this functionality might get more generic and some of the requirements relaxed.
      *
      * @params {Object} [opts]
      * @params {bolean} [opts.force=false} it is envisioned that user can force the conversion even if some conditions
-     *                                     are not satisfied (e.g. relation to parent doesn't exist).
+     *                                     are not satisfied (e.g., relation to parent doesn't exist).
      *
      * @returns {BAttachment|null} - null if note is not eligible for conversion
      */
@@ -1549,7 +1550,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     get isDeleted() {
-        // isBeingDeleted is relevant only in the transition period when the deletion process have begun, but not yet
+        // isBeingDeleted is relevant only in the transition period when the deletion process has begun, but not yet
         // finished (note is still in becca)
         return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }

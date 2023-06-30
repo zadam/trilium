@@ -336,7 +336,7 @@ export default class TabRowWidget extends BasicWidget {
             position += width + MARGIN_WIDTH;
         });
 
-        position -= MARGIN_WIDTH; // last margin should not be applied
+        position -= MARGIN_WIDTH; // the last margin should not be applied
 
         const newTabPosition = position;
         const fillerPosition = position + 32;
@@ -542,7 +542,7 @@ export default class TabRowWidget extends BasicWidget {
             });
 
             draggabilly.on('dragMove', (event, pointer, moveVector) => {
-                // Current index be computed within the event since it can change during the dragMove
+                // The current index be computed within the event since it can change during the dragMove
                 const tabEls = this.tabEls;
                 const currentIndex = tabEls.indexOf(tabEl);
 

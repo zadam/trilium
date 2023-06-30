@@ -73,7 +73,7 @@ export default class NoteListWidget extends NoteContextAwareWidget {
 
     /**
      * We have this event so that we evaluate intersection only after note detail is loaded.
-     * If it's evaluated before note detail then it's clearly intersected (visible) although after note detail load
+     * If it's evaluated before note detail, then it's clearly intersected (visible) although after note detail load
      * it is not intersected (visible) anymore.
      */
     noteDetailRefreshedEvent({ntxId}) {

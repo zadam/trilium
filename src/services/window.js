@@ -9,7 +9,7 @@ const cls = require('./cls');
 const keyboardActionsService = require('./keyboard_actions');
 const {ipcMain} = require('electron');
 
-// Prevent window being garbage collected
+// Prevent the window being garbage collected
 /** @type {Electron.BrowserWindow} */
 let mainWindow;
 /** @type {Electron.BrowserWindow} */
@@ -48,7 +48,7 @@ async function createMainWindow(app) {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
 
     const mainWindowState = windowStateKeeper({
-        // default window width & height, so it's usable on 1600 * 900 display (including some extra panels etc.)
+        // default window width & height, so it's usable on a 1600 * 900 display (including some extra panels etc.)
         defaultWidth: 1200,
         defaultHeight: 800
     });

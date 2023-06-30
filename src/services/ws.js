@@ -185,7 +185,7 @@ function sendPing(client, entityChangeIds = []) {
 
     // sort entity changes since froca expects "referential order", i.e. referenced entities should already exist
     // in froca.
-    // Froca needs this since it is incomplete copy, it can't create "skeletons" like becca.
+    // Froca needs this since it is an incomplete copy, it can't create "skeletons" like becca.
     entityChanges.sort((a, b) => ORDERING[a.entityName] - ORDERING[b.entityName]);
 
     for (const entityChange of entityChanges) {

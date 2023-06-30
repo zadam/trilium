@@ -67,7 +67,7 @@ export default class LauncherContainer extends FlexContainer {
 
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getBranchRows().find(branch => froca.getNoteFromCache(branch.parentNoteId)?.isLaunchBarConfig())) {
-            // changes in note placement requires reload of all launchers, all other changes are handled by individual
+            // changes in note placement require reload of all launchers, all other changes are handled by individual
             // launchers
             this.load();
         }

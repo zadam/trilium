@@ -84,7 +84,7 @@ export default class JumpToNoteDialog extends BasicWidget {
     }
 
     showInFullText(e) {
-        // stop from propagating upwards (dangerous especially with ctrl+enter executable javascript notes)
+        // stop from propagating upwards (dangerous, especially with ctrl+enter executable javascript notes)
         e.preventDefault();
         e.stopPropagation();
 

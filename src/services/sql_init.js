@@ -171,7 +171,7 @@ dbReady.then(() => {
     // kickoff first backup soon after start up
     setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
 
-    // optimize is usually inexpensive no-op so running it semi-frequently is not a big deal
+    // optimize is usually inexpensive no-op, so running it semi-frequently is not a big deal
     setTimeout(() => optimize(), 60 * 60 * 1000);
 
     setInterval(() => optimize(), 10 * 60 * 60 * 1000);

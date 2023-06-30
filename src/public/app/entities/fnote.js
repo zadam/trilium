@@ -598,7 +598,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is returned. Returns null if there's no such attribute belonging to this note.
      */
     getOwnedAttribute(type, name) {
         const attributes = this.getOwnedAttributes();
@@ -609,7 +609,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();

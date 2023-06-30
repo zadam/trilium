@@ -341,7 +341,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId) && this.lastNoteType !== this.note.type) {
             // note type influences the list of available ribbon tabs the most
-            // check for type is so that we don't update on each title rename
+            // check for the type is so that we don't update on each title rename
             this.lastNoteType = this.note.type;
 
             this.refresh();

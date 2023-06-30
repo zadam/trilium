@@ -91,7 +91,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             if (this.clipboard) {
                 let {x, y} = this.getMousePosition(event);
 
-                // modifying position so that cursor is on the top-center of the box
+                // modifying position so that the cursor is on the top-center of the box
                 x -= 80;
                 y -= 15;
 
@@ -186,8 +186,8 @@ export default class RelationMapTypeWidget extends TypeWidget {
     async loadMapData() {
         this.mapData = {
             notes: [],
-            // it is important to have this exact value here so that initial transform is same as this
-            // which will guarantee note won't be saved on first conversion to relation map note type
+            // it is important to have this exact value here so that initial transform is the same as this
+            // which will guarantee note won't be saved on first conversion to the relation map note type
             // this keeps the principle that note type change doesn't destroy note content unless user
             // does some actual change
             transform: {
@@ -231,7 +231,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         // this is done at this point (after async operations) to reduce flicker to the minimum
         this.jsPlumbInstance.deleteEveryEndpoint();
 
-        // without this we still end up with note boxes remaining in the canvas
+        // without this, we still end up with note boxes remaining in the canvas
         this.$relationMapContainer.empty();
     }
 
@@ -305,7 +305,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             minZoom: 0.3,
             smoothScroll: false,
             filterKey: function(e, dx, dy, dz) {
-                // if ALT is pressed then panzoom should bubble the event up
+                // if ALT is pressed, then panzoom should bubble the event up
                 // this is to preserve ALT-LEFT, ALT-RIGHT navigation working
                 return e.altKey;
             }

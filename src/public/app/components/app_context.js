@@ -107,7 +107,7 @@ class AppContext extends Component {
             }
         }
 
-        // this might hint at error but sometimes this is used by components which are at different places
+        // this might hint at error, but sometimes this is used by components which are at different places
         // in the component tree to communicate with each other
         console.debug(`Unhandled command ${name}, converting to event.`);
 

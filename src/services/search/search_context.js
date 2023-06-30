@@ -33,7 +33,7 @@ class SearchContext {
     }
 
     addError(error) {
-        // we record only the first error, subsequent ones are usually consequence of the first
+        // we record only the first error, subsequent ones are usually a consequence of the first
         if (!this.error) {
             this.error = error;
         }

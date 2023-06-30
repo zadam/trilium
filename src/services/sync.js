@@ -203,7 +203,7 @@ async function pushChanges(syncContext) {
         });
 
         if (filteredEntityChanges.length === 0) {
-            // there still might be more sync changes (because of batch limit), just all from current batch
+            // there still might be more sync changes (because of batch limit), just all the current batch
             // has been filtered out
             setLastSyncedPush(lastSyncedPush);
 
@@ -255,7 +255,7 @@ async function checkContentHash(syncContext) {
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
     if (failedChecks.length > 0) {
-        // before requeuing sectors make sure the entity changes are correct
+        // before requeuing sectors, make sure the entity changes are correct
         const consistencyChecks = require("./consistency_checks");
         consistencyChecks.runEntityChangesChecks();
 

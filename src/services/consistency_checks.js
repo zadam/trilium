@@ -810,7 +810,7 @@ function getBlankContent(isProtected, type, mime) {
         return '{}';
     }
 
-    return ''; // empty string might be wrong choice for some note types, but it's the best guess
+    return ''; // empty string might be a wrong choice for some note types, but it's the best guess
 }
 
 function logFix(message) {

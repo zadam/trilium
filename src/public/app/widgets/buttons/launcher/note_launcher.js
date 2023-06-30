@@ -4,7 +4,7 @@ import appContext from "../../../components/app_context.js";
 import utils from "../../../services/utils.js";
 import linkContextMenuService from "../../../menus/link_context_menu.js";
 
-// we're intentionally displaying the launcher title and icon instead of the target
+// we're intentionally displaying the launcher title and icon instead of the target,
 // e.g. you want to make launchers to 2 mermaid diagrams which both have mermaid icon (ok),
 // but on the launchpad you want them distinguishable.
 // for titles, the note titles may follow a different scheme than maybe desirable on the launchpad

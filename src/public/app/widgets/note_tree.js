@@ -171,7 +171,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             this.triggerCommand('hoistNote', {noteId: node.data.noteId});
         });
 
-        // fancytree doesn't support middle click so this is a way to support it
+        // fancytree doesn't support middle click, so this is a way to support it
         this.$tree.on('mousedown', '.fancytree-title', e => {
             if (e.which === 2) {
                 const node = $.ui.fancytree.getNode(e);
@@ -353,7 +353,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
             },
             beforeActivate: (event, {node}) => {
-                // hidden subtree is hidden hackily, prevent activating it e.g. by keyboard
+                // hidden subtree is hidden hackily, prevent activating it, e.g. by keyboard
 
                 if (hoistedNoteService.getHoistedNoteId() === '_hidden') {
                     // if we're hoisted in hidden subtree, we want to avoid crossing to "visible" tree,
@@ -545,7 +545,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>')
                         .on("click", cancelClickPropagation);
 
-                    // unhoist button is prepended since compared to other buttons this is not just convenience
+                    // unhoist button is prepended since compared to other buttons, this is not just convenience
                     // on the mobile interface - it's the only way to unhoist
                     $span.prepend($unhoistButton);
                 }
@@ -812,7 +812,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         await this.batchUpdate(async () => {
             await node.load(true);
 
-            if (node.data.noteId !== hoistedNoteService.getHoistedNoteId()) { // hoisted note should be always expanded
+            if (node.data.noteId !== hoistedNoteService.getHoistedNoteId()) { // hoisted note should always be expanded
                 await node.setExpanded(isExpanded, {noEvents: true, noAnimation: true});
             }
         });
@@ -905,7 +905,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         await parentNode.setExpanded(true, {noAnimation: true});
                     }
 
-                    // although previous line should set the expanded status, it seems to happen asynchronously,
+                    // although the previous line should set the expanded status, it seems to happen asynchronously,
                     // so we need to make sure it is set properly before calling updateNode which uses this flag
                     const branch = froca.getBranch(parentNode.data.branchId);
                     branch.isExpanded = true;
@@ -922,7 +922,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                     if (!foundChildNode) {
                         if (logErrors) {
-                            // besides real errors this can be also caused by hiding of e.g. included images
+                            // besides real errors, this can be also caused by hiding of e.g. included images
                             // these are real notes with real notePath, user can display them in a detail,
                             // but they don't have a node in the tree
 
@@ -1040,7 +1040,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
 
             /*
-             * We're collapsing notes after period of inactivity to "cleanup" the tree - users rarely
+             * We're collapsing notes after a period of inactivity to "cleanup" the tree - users rarely
              * collapse the notes and the tree becomes unusuably large.
              * Some context: https://github.com/zadam/trilium/issues/1192
              */
@@ -1116,8 +1116,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 const note = froca.getNoteFromCache(ecAttr.noteId);
 
                 if (note && note.getChildNoteIds().includes(ecAttr.value)) {
-                    // there's new/deleted imageLink betwen note and its image child - which can show/hide
-                    // the image (if there is a imageLink relation between parent and child
+                    // there's a new /deleted imageLink betwen note and its image child - which can show/hide
+                    // the image (if there is an imageLink relation between parent and child,
                     // then it is assumed to be "contained" in the note and thus does not have to be displayed in the tree)
                     noteIdsToReload.add(ecAttr.noteId);
                 }
@@ -1213,7 +1213,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
         });
 
-        // for some reason node update cannot be in the batchUpdate() block (node is not re-rendered)
+        // for some reason, node update cannot be in the batchUpdate() block (node is not re-rendered)
         for (const noteId of noteIdsToUpdate) {
             for (const node of this.getNodesByNoteId(noteId)) {
                 await this.updateNode(node);
@@ -1239,7 +1239,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 // so we switch to the alternative of trying to find it by noteId
                 const notesById = this.getNodesByNoteId(activeNoteId);
 
-                // if there are multiple clones then we'd rather not activate any one
+                // if there are multiple clones, then we'd rather not activate anyone
                 node = notesById.length === 1 ? notesById[0] : null;
             }
 
@@ -1252,7 +1252,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 await node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
             }
             else {
-                // this is used when original note has been deleted, and we want to move the focus to the note above/below
+                // this is used when the original note has been deleted, and we want to move the focus to the note above/below
                 node = await this.expandToNote(nextNotePath, false);
 
                 if (node) {

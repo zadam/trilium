@@ -16,7 +16,7 @@ function getSharedSubTreeRoot(note) {
     }
 
     // every path leads to share root, but which one to choose?
-    // for sake of simplicity URLs are not note paths
+    // for the sake of simplicity, URLs are not note paths
     const parentNote = note.getParentNotes()[0];
 
     if (parentNote.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
@@ -50,7 +50,7 @@ function checkAttachmentAccess(attachmentId, req, res) {
 
     const note = checkNoteAccess(attachment.parentId, req, res);
 
-    // truthy note means user has access, and we can return the attachment
+    // truthy note means the user has access, and we can return the attachment
     return note ? attachment : false;
 }
 

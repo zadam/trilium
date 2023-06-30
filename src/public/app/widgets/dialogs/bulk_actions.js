@@ -153,7 +153,7 @@ export default class BulkActionsDialog extends BasicWidget {
             && row.noteId === '_bulkAction'
             && row.isDeleted)) {
 
-            // this may be triggered from e.g. sync without open widget, then no need to refresh the widget
+            // this may be triggered from e.g., sync without open widget, then no need to refresh the widget
             if (this.selectedOrActiveNoteIds && this.$widget.is(":visible")) {
                 this.refresh();
             }

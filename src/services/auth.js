@@ -23,7 +23,7 @@ function checkAuth(req, res, next) {
 }
 
 // for electron things which need network stuff
-// currently we're doing that for file upload because handling form data seems to be difficult
+//  currently, we're doing that for file upload because handling form data seems to be difficult
 function checkApiAuthOrElectron(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
         reject(req, res, "Logged in session not found");
