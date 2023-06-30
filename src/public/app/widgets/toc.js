@@ -51,7 +51,7 @@ const TPL = `<div class="toc-widget">
         .close-toc {
             position: absolute;
             top: 2px;
-            right: 2px;
+            right: 0px;
         }
     </style>
 

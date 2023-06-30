@@ -39,7 +39,7 @@ const TPL = `<div class="highlists-list-widget">
         .close-highlists-list {
             position: absolute;
             top: 2px;
-            right: 2px;
+            right: 0px;
         }
     </style>
 

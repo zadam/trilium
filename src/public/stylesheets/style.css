@@ -954,6 +954,8 @@ input {
     display: flex;
     flex-shrink: 0;
     flex-direction: column;
+    margin-left: 10px;
+    margin-right: 5px;
 }
 
 #right-pane .card-header {
