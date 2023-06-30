@@ -117,7 +117,12 @@ async function reportError(method, url, statusCode, response) {
 
     if ([400, 404].includes(statusCode) && response && typeof response === 'object') {
         toastService.showError(message);
-        throw new ValidationError(response);
+        throw new ValidationError({
+            requestUrl: url,
+            method,
+            statusCode,
+            ...response
+        });
     } else {
         const title = `${statusCode} ${method} ${url}`;
         toastService.showErrorTitleAndMessage(title, message);

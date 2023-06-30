@@ -27,7 +27,7 @@ const TPL = `
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" 
         aria-expanded="false" class="icon-action icon-action-always-border bx bx-dots-vertical-rounded"
-        style="position: relative; top: 5px;"></button>
+        style="position: relative; top: 3px;"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="openAttachment" class="dropdown-item"
