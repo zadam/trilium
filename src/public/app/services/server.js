@@ -28,24 +28,28 @@ async function getHeaders(headers) {
     return allHeaders;
 }
 
+async function getWithSilentNotFound(url, componentId) {
+    return await call('GET', url, componentId, { silentNotFound: true });
+}
+
 async function get(url, componentId) {
-    return await call('GET', url, null, {'trilium-component-id': componentId});
+    return await call('GET', url, componentId);
 }
 
 async function post(url, data, componentId) {
-    return await call('POST', url, data, {'trilium-component-id': componentId});
+    return await call('POST', url, componentId, { data });
 }
 
 async function put(url, data, componentId) {
-    return await call('PUT', url, data, {'trilium-component-id': componentId});
+    return await call('PUT', url, componentId, { data });
 }
 
 async function patch(url, data, componentId) {
-    return await call('PATCH', url, data, {'trilium-component-id': componentId});
+    return await call('PATCH', url, componentId, { data });
 }
 
 async function remove(url, componentId) {
-    return await call('DELETE', url, null, {'trilium-component-id': componentId});
+    return await call('DELETE', url, componentId);
 }
 
 async function upload(url, fileToUpload) {
@@ -63,24 +67,29 @@ async function upload(url, fileToUpload) {
     });
 }
 
-let i = 1;
-const reqResolves = {};
-const reqRejects = {};
+let idCounter = 1;
+const idToRequestMap = {};
 
 let maxKnownEntityChangeId = 0;
 
-async function call(method, url, data, headers = {}) {
+async function call(method, url, componentId, options = {}) {
     let resp;
 
-    headers = await getHeaders(headers);
+    const headers = await getHeaders({
+        'trilium-component-id': componentId
+    });
+    const {data} = options;
 
     if (utils.isElectron()) {
         const ipc = utils.dynamicRequire('electron').ipcRenderer;
-        const requestId = i++;
+        const requestId = idCounter++;
 
         resp = await new Promise((resolve, reject) => {
-            reqResolves[requestId] = resolve;
-            reqRejects[requestId] = reject;
+            idToRequestMap[requestId] = {
+                resolve,
+                reject,
+                silentNotFound: !!options.silentNotFound
+            };
 
             ipc.send('server-request', {
                 requestId: requestId,
@@ -92,7 +101,7 @@ async function call(method, url, data, headers = {}) {
         });
     }
     else {
-        resp = await ajax(url, method, data, headers);
+        resp = await ajax(url, method, data, headers, !!options.silentNotFound);
     }
 
     const maxEntityChangeIdStr = resp.headers['trilium-max-entity-change-id'];
@@ -104,7 +113,7 @@ async function call(method, url, data, headers = {}) {
     return resp.body;
 }
 
-function ajax(url, method, data, headers) {
+function ajax(url, method, data, headers, silentNotFound) {
     return new Promise((res, rej) => {
         const options = {
             url: window.glob.baseApiUrl + url,
@@ -126,7 +135,11 @@ function ajax(url, method, data, headers) {
                 });
             },
             error: async jqXhr => {
-                await reportError(method, url, jqXhr.status, jqXhr.responseText);
+                if (silentNotFound && jqXhr.status === 404) {
+                    // report nothing
+                } else {
+                    await reportError(method, url, jqXhr.status, jqXhr.responseText);
+                }
 
                 rej(jqXhr.responseText);
             }
@@ -153,13 +166,16 @@ if (utils.isElectron()) {
             handleSuccessfulResponse(arg);
         }
         else {
-            await reportError(arg.method, arg.url, arg.statusCode, arg.body);
+            if (arg.statusCode === 404 && idToRequestMap[arg.requestId]?.silentNotFound) {
+                // report nothing
+            } else {
+                await reportError(arg.method, arg.url, arg.statusCode, arg.body);
+            }
 
-            reqRejects[arg.requestId]();
+            idToRequestMap[arg.requestId].reject();
         }
 
-        delete reqResolves[arg.requestId];
-        delete reqRejects[arg.requestId];
+        delete idToRequestMap[arg.requestId];
     });
 
     function handleSuccessfulResponse(arg) {
@@ -167,12 +183,12 @@ if (utils.isElectron()) {
             arg.body = JSON.parse(arg.body);
         }
 
-        if (!(arg.requestId in reqResolves)) {
+        if (!(arg.requestId in idToRequestMap)) {
             // this can happen when reload happens between firing up the request and receiving the response
-            throw new Error(`Unknown requestId="${arg.requestId}"`);
+            throw new Error(`Unknown requestId '${arg.requestId}'`);
         }
 
-        reqResolves[arg.requestId]({
+        idToRequestMap[arg.requestId].resolve({
             body: arg.body,
             headers: arg.headers
         });
@@ -180,7 +196,6 @@ if (utils.isElectron()) {
 }
 
 async function reportError(method, url, statusCode, response) {
-    const toastService = (await import("./toast.js")).default;
     let message = response;
 
     if (typeof response === 'string') {
@@ -190,6 +205,8 @@ async function reportError(method, url, statusCode, response) {
         }
         catch (e) {}
     }
+
+    const toastService = (await import("./toast.js")).default;
 
     if ([400, 404].includes(statusCode) && response && typeof response === 'object') {
         toastService.showError(message);
@@ -208,6 +225,7 @@ async function reportError(method, url, statusCode, response) {
 
 export default {
     get,
+    getWithSilentNotFound,
     post,
     put,
     patch,

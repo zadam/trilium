@@ -324,11 +324,12 @@ class Froca {
         // load all attachments for the given note even if one is requested, don't load one by one
         let attachmentRows;
         try {
-            attachmentRows = await server.get(`attachments/${attachmentId}/all`);
+            attachmentRows = await server.getWithSilentNotFound(`attachments/${attachmentId}/all`);
         }
         catch (e) {
             if (silentNotFoundError) {
                 logInfo(`Attachment '${attachmentId} not found, but silentNotFoundError is enabled: ` + e.message);
+                return null;
             } else {
                 throw e;
             }
