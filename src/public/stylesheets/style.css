@@ -1043,3 +1043,7 @@ textarea {
     /* Fix center vertical alignment of table cells */
     vertical-align: middle;
 }
+
+.ck-powered-by-balloon {
+    display: none !important;
+}
