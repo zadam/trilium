@@ -25,7 +25,7 @@ const TPL = `
                 </div>
 
                 <div class="checkbox">
-                    <label title="Normal (soft) deletion only marks the notes as deleted and they can be undeleted (in recent changes dialog) within a period of time. Checking this option will erase the notes immediatelly and it won't be possible to undelete the notes.">
+                    <label title="Normal (soft) deletion only marks the notes as deleted and they can be undeleted (in recent changes dialog) within a period of time. Checking this option will erase the notes immediately and it won't be possible to undelete the notes.">
                         <input class="erase-notes" value="1" type="checkbox">
 
                         erase notes permanently (can't be undone), including all clones. This will force application reload.

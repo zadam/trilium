@@ -1,0 +1,12 @@
+POST {{triliumHost}}/etapi/notes/root/import
+Authorization: {{authToken}}
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+< ../db/demo.zip
+
+> {%
+    client.assert(response.status === 201);
+    client.assert(response.body.note.title == "Trilium Demo");
+    client.assert(response.body.branch.parentNoteId == "root");
+%}

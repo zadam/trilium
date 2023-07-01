@@ -10,20 +10,20 @@ import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
 import OnClickButtonWidget from "./buttons/onclick_button.js";
 
-const TPL = `<div class="highlists-list-widget">
+const TPL = `<div class="highlights-list-widget">
     <style>
-        .highlists-list-widget {
+        .highlights-list-widget {
             padding: 10px;
             contain: none; 
             overflow: auto;
             position: relative;
         }
         
-        .highlists-list > ol {
+        .highlights-list > ol {
             padding-left: 20px;
         }
         
-        .highlists-list li {
+        .highlights-list li {
             cursor: pointer;
             margin-bottom: 3px;
             text-align: justify;
@@ -32,18 +32,18 @@ const TPL = `<div class="highlists-list-widget">
             hyphens: auto;
         }
         
-        .highlists-list li:hover {
+        .highlights-list li:hover {
             font-weight: bold;
         }
         
-        .close-highlists-list {
+        .close-highlights-list {
             position: absolute;
             top: 2px;
             right: 2px;
         }
     </style>
 
-    <span class="highlists-list"></span>
+    <span class="highlights-list"></span>
 </div>`;
 
 export default class HighlightsListWidget extends RightPanelWidget {
@@ -55,61 +55,61 @@ export default class HighlightsListWidget extends RightPanelWidget {
     }
 
     get widgetTitle() {
-        return "Highlighted Text";
+        return "Highlights List";
     }
 
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-            && !this.noteContext.viewScope.highlightedTextTemporarilyHidden
+            && !this.noteContext.viewScope.highlightsListTemporarilyHidden
             && this.noteContext.viewScope.viewMode === 'default';
     }
 
     async doRenderBody() {
         this.$body.empty().append($(TPL));
-        this.$highlightsList = this.$body.find('.highlists-list');
-        this.$body.find('.highlists-list-widget').append(this.closeHltButton.render());
+        this.$highlightsList = this.$body.find('.highlights-list');
+        this.$body.find('.highlights-list-widget').append(this.closeHltButton.render());
     }
 
     async refreshWithNote(note) {
-        /* The reason for adding highlightedTextPreviousVisible is to record whether the previous state
-           of the highlightedText is hidden or displayed, and then let it be displayed/hidden at the initial time.
+        /* The reason for adding highlightsListPreviousVisible is to record whether the previous state
+           of the highlightsList is hidden or displayed, and then let it be displayed/hidden at the initial time.
            If there is no such value, when the right panel needs to display toc but not highlighttext,
            every time the note content is changed, highlighttext Widget will appear and then close immediately,
            because getHlt function will consume time */
-        if (this.noteContext.viewScope.highlightedTextPreviousVisible) {
+        if (this.noteContext.viewScope.highlightsListPreviousVisible) {
             this.toggleInt(true);
         } else {
             this.toggleInt(false);
         }
 
-        const optionsHlt = JSON.parse(options.get('highlightedText'));
+        const optionsHighlightsList = JSON.parse(options.get('highlightsList'));
 
-        if (note.isLabelTruthy('hideHighlightWidget') || !optionsHlt) {
+        if (note.isLabelTruthy('hideHighlightWidget') || !optionsHighlightsList) {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
         }
 
-        let $highlightsList = "", hltLiCount = -1;
+        let $highlightsList = "", hlLiCount = -1;
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const {content} = await note.getNoteComplement();
-            ({$highlightsList, hltLiCount} = this.getHighlightList(content, optionsHlt));
+            ({$highlightsList, hlLiCount} = this.getHighlightList(content, optionsHighlightsList));
         }
         this.$highlightsList.empty().append($highlightsList);
-        if (hltLiCount > 0) {
+        if (hlLiCount > 0) {
             this.toggleInt(true);
-            this.noteContext.viewScope.highlightedTextPreviousVisible = true;
+            this.noteContext.viewScope.highlightsListPreviousVisible = true;
         } else {
             this.toggleInt(false);
-            this.noteContext.viewScope.highlightedTextPreviousVisible = false;
+            this.noteContext.viewScope.highlightsListPreviousVisible = false;
         }
 
         this.triggerCommand("reEvaluateRightPaneVisibility");
     }
 
-    getHighlightList(content, optionsHlt) {
+    getHighlightList(content, optionsHighlightsList) {
         // matches a span containing background-color
         const regex1 = /<span[^>]*style\s*=\s*[^>]*background-color:[^>]*?>[\s\S]*?<\/span>/gi;
         // matches a span containing color
@@ -120,27 +120,27 @@ export default class HighlightsListWidget extends RightPanelWidget {
         const regex4 = /<strong>[\s\S]*?<\/strong>/gi;
         // match underline
         const regex5 = /<u>[\s\S]*?<\/u>/g;
-        // Possible values in optionsHlt： '["bold","italic","underline","color","bgColor"]'
+        // Possible values in optionsHighlightsList： '["bold","italic","underline","color","bgColor"]'
         // element priority： span>i>strong>u
         let findSubStr = "", combinedRegexStr = "";
-        if (optionsHlt.includes("bgColor")) {
-            findSubStr += `,span[style*="background-color"]`;
+        if (optionsHighlightsList.includes("bgColor")) {
+            findSubStr += `,span[style*="background-color"]:not(section.include-note span[style*="background-color"])`;
             combinedRegexStr += `|${regex1.source}`;
         }
-        if (optionsHlt.includes("color")) {
-            findSubStr += `,span[style*="color"]`;
+        if (optionsHighlightsList.includes("color")) {
+            findSubStr += `,span[style*="color"]:not(section.include-note span[style*="color"])`;
             combinedRegexStr += `|${regex2.source}`;
         }
-        if (optionsHlt.includes("italic")) {
-            findSubStr += `,i`;
+        if (optionsHighlightsList.includes("italic")) {
+            findSubStr += `,i:not(section.include-note i)`;
             combinedRegexStr += `|${regex3.source}`;
         }
-        if (optionsHlt.indexOf("bold")) {
-            findSubStr += `,strong`;
+        if (optionsHighlightsList.includes("bold")) {
+            findSubStr += `,strong:not(section.include-note strong)`;
             combinedRegexStr += `|${regex4.source}`;
         }
-        if (optionsHlt.includes("underline")) {
-            findSubStr += `,u`;
+        if (optionsHighlightsList.includes("underline")) {
+            findSubStr += `,u:not(section.include-note u)`;
             combinedRegexStr += `|${regex5.source}`;
         }
 
@@ -148,7 +148,7 @@ export default class HighlightsListWidget extends RightPanelWidget {
         combinedRegexStr = `(` + combinedRegexStr.substring(1) + `)`;
         const combinedRegex = new RegExp(combinedRegexStr, 'gi');
         const $highlightsList = $("<ol>");
-        let prevEndIndex = -1, hltLiCount = 0;
+        let prevEndIndex = -1, hlLiCount = 0;
         for (let match = null, hltIndex = 0; ((match = combinedRegex.exec(content)) !== null); hltIndex++) {
             const subHtml = match[0];
             const startIndex = match.index;
@@ -158,16 +158,18 @@ export default class HighlightsListWidget extends RightPanelWidget {
                 $highlightsList.children().last().append(subHtml);
             } else {
                 // TODO: can't be done with $(subHtml).text()?
-                const hasText = [...subHtml.matchAll(/(?<=^|>)[^><]+?(?=<|$)/g)].map(matchTmp => matchTmp[0]).join('').trim();
+                //Can’t remember why regular expressions are used here, but modified to $(subHtml).text() works as expected
+                //const hasText = [...subHtml.matchAll(/(?<=^|>)[^><]+?(?=<|$)/g)].map(matchTmp => matchTmp[0]).join('').trim();
+                const hasText = $(subHtml).text().trim();
 
                 if (hasText) {
                     $highlightsList.append(
                         $('<li>')
                             .html(subHtml)
-                            .on("click", () => this.jumpToHighlightedText(findSubStr, hltIndex))
+                            .on("click", () => this.jumpToHighlightsList(findSubStr, hltIndex))
                     );
 
-                    hltLiCount++;
+                    hlLiCount++;
                 } else {
                     // hide li if its text content is empty
                     continue;
@@ -177,11 +179,11 @@ export default class HighlightsListWidget extends RightPanelWidget {
         }
         return {
             $highlightsList,
-            hltLiCount
+            hlLiCount
         };
     }
 
-    async jumpToHighlightedText(findSubStr, itemIndex) {
+    async jumpToHighlightsList(findSubStr, itemIndex) {
         const isReadOnly = await this.noteContext.isReadOnly();
         let targetElement;
         if (isReadOnly) {
@@ -224,7 +226,7 @@ export default class HighlightsListWidget extends RightPanelWidget {
     }
 
     async closeHltCommand() {
-        this.noteContext.viewScope.highlightedTextTemporarilyHidden = true;
+        this.noteContext.viewScope.highlightsListTemporarilyHidden = true;
         await this.refresh();
         this.triggerCommand('reEvaluateRightPaneVisibility');
     }
@@ -245,13 +247,13 @@ class CloseHltButton extends OnClickButtonWidget {
         super();
 
         this.icon("bx-x")
-            .title("Close HighlightedTextWidget")
+            .title("Close HighlightsListWidget")
             .titlePlacement("bottom")
             .onClick((widget, e) => {
                 e.stopPropagation();
 
                 widget.triggerCommand("closeHlt");
             })
-            .class("icon-action close-highlists-list");
+            .class("icon-action close-highlights-list");
     }
 }

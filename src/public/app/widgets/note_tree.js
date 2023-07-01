@@ -1013,21 +1013,21 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.activityDetected();
 
         const oldActiveNode = this.getActiveNode();
-        let oldActiveNodeFocused = false;
 
-        if (oldActiveNode) {
-            oldActiveNodeFocused = oldActiveNode.hasFocus();
-
-            oldActiveNode.setActive(false);
-            oldActiveNode.setFocus(false);
-        }
-
-        if (this.noteContext
-            && this.noteContext.notePath
+        const newActiveNode = this.noteContext?.notePath
             && !this.noteContext.note?.isDeleted
             && (!treeService.isNotePathInHiddenSubtree(this.noteContext.notePath) || await hoistedNoteService.isHoistedInHiddenSubtree())
-        ) {
-            const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
+            && await this.getNodeFromPath(this.noteContext.notePath);
+
+        if (newActiveNode !== oldActiveNode) {
+            let oldActiveNodeFocused = false;
+
+            if (oldActiveNode) {
+                oldActiveNodeFocused = oldActiveNode.hasFocus();
+
+                oldActiveNode.setActive(false);
+                oldActiveNode.setFocus(false);
+            }
 
             if (newActiveNode) {
                 if (!newActiveNode.isVisible()) {
@@ -1150,7 +1150,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 const note = froca.getNoteFromCache(ecAttr.noteId);
 
                 if (note && note.getChildNoteIds().includes(ecAttr.value)) {
-                    // there's new/deleted imageLink betwen note and its image child - which can show/hide
+                    // there's new/deleted imageLink between note and its image child - which can show/hide
                     // the image (if there is a imageLink relation between parent and child
                     // then it is assumed to be "contained" in the note and thus does not have to be displayed in the tree)
                     noteIdsToReload.add(ecAttr.noteId);

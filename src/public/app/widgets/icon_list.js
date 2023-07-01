@@ -9584,7 +9584,7 @@ const icons = [
         "term": [
             "honor",
             "honour",
-            "acheivement"
+            "achievement"
         ]
     },
     {
@@ -9595,7 +9595,7 @@ const icons = [
         "term": [
             "honor",
             "honour",
-            "acheivement"
+            "achievement"
         ]
     },
     {

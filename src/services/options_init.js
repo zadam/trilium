@@ -87,7 +87,7 @@ const defaultOptions = [
     { name: 'compressImages', value: 'true', isSynced: true },
     { name: 'downloadImagesAutomatically', value: 'true', isSynced: true },
     { name: 'minTocHeadings', value: '5', isSynced: true },
-    { name: 'highlightedText', value: '["bold","italic","underline","color","bgColor"]', isSynced: true },
+    { name: 'highlightsList', value: '["bold","italic","underline","color","bgColor"]', isSynced: true },
     { name: 'checkForUpdates', value: 'true', isSynced: true },
     { name: 'disableTray', value: 'false', isSynced: false },
     { name: 'customSearchEngineName', value: 'Duckduckgo', isSynced: false },

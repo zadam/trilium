@@ -134,7 +134,7 @@ function initNoteAutocomplete($el, options) {
         showRecentNotes($el);
 
         // this will cause the click not give focus to the "show recent notes" button
-        // this is important because otherwise input will lose focus immediatelly and not show the results
+        // this is important because otherwise input will lose focus immediately and not show the results
         return false;
     });
 

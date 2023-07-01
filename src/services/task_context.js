@@ -6,14 +6,14 @@ const ws = require('./ws');
 const taskContexts = {};
 
 class TaskContext {
-    constructor(taskId, taskType = null, data = null) {
+    constructor(taskId, taskType = null, data = {}) {
         this.taskId = taskId;
         this.taskType = taskType;
         this.data = data;
         this.noteDeletionHandlerTriggered = false;
 
         // progressCount is meant to represent just some progress - to indicate the task is not stuck
-        this.progressCount = -1; // we're incrementing immediatelly
+        this.progressCount = -1; // we're incrementing immediately
         this.lastSentCountTs = 0; // 0 will guarantee first message will be sent
 
         // just the fact this has been initialized is a progress which should be sent to clients

@@ -78,7 +78,7 @@ const TPL = `
  *
  * Discussion of storing svg in the note:
  *  - Pro: we will combat bit-rot. Showing the SVG will be very fast and easy, since it is already there.
- *  - Con: The note will get bigger (~40-50%?), we will generate more bandwith. However, using trilium
+ *  - Con: The note will get bigger (~40-50%?), we will generate more bandwidth. However, using trilium
  *         desktop instance mitigates that issue.
  *
  * Roadmap:
@@ -285,6 +285,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
+            type: "excalidraw",
+            version: 2,
             _meta: "This note has type `canvas`. It uses excalidraw and stores an exported svg alongside.",
             elements, // excalidraw
             appState, // excalidraw

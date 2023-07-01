@@ -26,11 +26,13 @@ const fs = require("fs");
 function getNewNotePosition(parentNote) {
     if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
+            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
             .reduce((min, note) => Math.min(min, note.notePosition), 0);
 
         return minNotePos - 10;
     } else {
         const maxNotePos = parentNote.getChildBranches()
+            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
             .reduce((max, note) => Math.max(max, note.notePosition), 0);
 
         return maxNotePos + 10;
@@ -473,7 +475,7 @@ function downloadImages(noteId, content) {
             // once the download is finished, the image note representing downloaded image will be used
             // to replace the IMG link.
             // However, there's another flow where user pastes the image and leaves the note before the images
-            // are downloaded and the IMG references are not updated. For this occassion we have this code
+            // are downloaded and the IMG references are not updated. For this occasion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
