@@ -15,7 +15,7 @@ const BAttribute = require('../../becca/entities/battribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
-function findClippingNote(clipperInboxNote, pageUrl) {
+function findClippingNote(clipperInboxNote, pageUrl, clipType) {
     //Avoid searching for empty of browser pages like about:blank
     if (pageUrl.trim().length > 1 && pageUrl.trim().indexOf('about:') != 0 ){
         const notes = clipperInboxNote.searchNotesInSubtree(
@@ -27,7 +27,12 @@ function findClippingNote(clipperInboxNote, pageUrl) {
         );
 
         for (const note of notes) {
-            if (note.getOwnedLabelValue('clipType') === 'note') {
+            if (clipType){
+                if (note.getOwnedLabelValue('clipType') === clipType) {
+                    return note;
+                }
+            }
+            else{
                 return note;
             }
         }
@@ -51,13 +56,14 @@ function addClipping(req) {
     //and clone it under today's inbox
     //otherwise just create a new note under today's inbox
     let {title, content, pageUrl, images} = req.body;
+    const clipType = 'clippings';
 
     //this is only for reference
     const clipperInbox = getClipperInboxNote();
     const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
 
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
-    let clippingNote = findClippingNote(clipperInbox, pageUrl);
+    let clippingNote = findClippingNote(clipperInbox, pageUrl, clipType);
     
     if (!clippingNote) {
         clippingNote = noteService.createNewNote({
@@ -94,19 +100,21 @@ function createNote(req) {
         title = `Clipped note from ${pageUrl}`;
     }
 
+
+    clipType = htmlSanitizer.sanitize(clipType);
+
     const clipperInbox = getClipperInboxNote();
     const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
-    let note = findClippingNote(clipperInbox, pageUrl);
+    let note = findClippingNote(clipperInbox, pageUrl, clipType);
 
     if (!note){
         note = noteService.createNewNote({
             parentNoteId: dailyNote.noteId,
             title,
-            content,
+            content: '',
             type: 'text'
         }).note;
-        clipType = htmlSanitizer.sanitize(clipType);
 
         note.setLabel('clipType', clipType);
         if (pageUrl) {
@@ -212,7 +220,7 @@ function handshake() {
 function findNotesByUrl(req){
     let pageUrl = req.params.noteUrl;
     const clipperInbox = getClipperInboxNote();
-    let foundPage = findClippingNote(clipperInbox, pageUrl);
+    let foundPage = findClippingNote(clipperInbox, pageUrl, null);
     return {
         noteId: foundPage ? foundPage.noteId : null
     }
