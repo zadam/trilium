@@ -14,6 +14,8 @@ const path = require('path');
 const BAttribute = require('../../becca/entities/battribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 
 function findClippingNote(clipperInboxNote, pageUrl, clipType) {
     //Avoid searching for empty of browser pages like about:blank
@@ -83,7 +85,7 @@ function addClipping(req) {
 
     const existingContent = clippingNote.getContent();
 
-    clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
+    clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br>" : ""}${rewrittenContent}`);
     
     if (clippingNote.parentNoteId != dailyNote.noteId){
         cloneService.cloneNoteToParentNote(clippingNote.noteId, dailyNote.noteId);
@@ -188,6 +190,15 @@ function processContent(images, note, content) {
 
     // fallback if parsing/downloading images fails for some reason on the extension side (
     rewrittenContent = noteService.downloadImages(note.noteId, rewrittenContent);
+    // Check if rewrittenContent contains at least one HTML tag
+    if (!/<.+?>/.test(rewrittenContent)) {
+        rewrittenContent = '<p>'+rewrittenContent + '</p>';
+    }
+    // Create a JSDOM object from the existing HTML content
+    let dom = new JSDOM(rewrittenContent);
+
+    // Get the content inside the body tag and serialize it
+    rewrittenContent = dom.window.document.body.innerHTML;
 
     return rewrittenContent;
 }
