@@ -17,56 +17,19 @@ const {formatAttrForSearch} = require("../../services/attribute_formatter");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
-function findClippingNote(clipperInboxNote, pageUrl, clipType) {
-    //Avoid searching for empty of browser pages like about:blank
-    if (pageUrl.trim().length > 1 && pageUrl.trim().indexOf('about:') != 0 ){
-        const notes = clipperInboxNote.searchNotesInSubtree(
-            formatAttrForSearch({
-                type: 'label',
-                name: "pageUrl",
-                value: pageUrl
-            }, true)
-        );
-
-        for (const note of notes) {
-            if (clipType){
-                if (note.getOwnedLabelValue('clipType') === clipType) {
-                    return note;
-                }
-            }
-            else{
-                return note;
-            }
-        }
-    }
-
-    return null;
-}
-
-function getClipperInboxNote() {
-    let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
-
-    if (!clipperInbox) {
-        clipperInbox = dateNoteService.getRootCalendarNote();
-    }
-
-    return clipperInbox;
-}
-
 function addClipping(req) {
-    //if a note under the clipperInbox as the same 'pageUrl' attribute, add the content to that note
-    //and clone it under today's inbox
-    //otherwise just create a new note under today's inbox
+    // if a note under the clipperInbox as the same 'pageUrl' attribute,
+    // add the content to that note and clone it under today's inbox
+    // otherwise just create a new note under today's inbox
     let {title, content, pageUrl, images} = req.body;
     const clipType = 'clippings';
 
-    //this is only for reference
     const clipperInbox = getClipperInboxNote();
     const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
 
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl, clipType);
-    
+
     if (!clippingNote) {
         clippingNote = noteService.createNewNote({
             parentNoteId: dailyNote.noteId,
@@ -80,19 +43,47 @@ function addClipping(req) {
         clippingNote.setLabel('iconClass', 'bx bx-globe');
     }
 
-
     const rewrittenContent = processContent(images, clippingNote, content);
 
     const existingContent = clippingNote.getContent();
 
     clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br>" : ""}${rewrittenContent}`);
-    
-    if (clippingNote.parentNoteId != dailyNote.noteId){
+
+    if (clippingNote.parentNoteId !== dailyNote.noteId) {
         cloneService.cloneNoteToParentNote(clippingNote.noteId, dailyNote.noteId);
     }
+
     return {
         noteId: clippingNote.noteId
     };
+}
+
+function findClippingNote(clipperInboxNote, pageUrl, clipType) {
+    if (!pageUrl) {
+        return null;
+    }
+
+    const notes = clipperInboxNote.searchNotesInSubtree(
+        formatAttrForSearch({
+            type: 'label',
+            name: "pageUrl",
+            value: pageUrl
+        }, true)
+    );
+
+    return clipType
+        ? notes.find(note => note.getOwnedLabelValue('clipType') === clipType)
+        : notes[0];
+}
+
+function getClipperInboxNote() {
+    let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
+
+    if (!clipperInbox) {
+        clipperInbox = dateNoteService.getRootCalendarNote();
+    }
+
+    return clipperInbox;
 }
 
 function createNote(req) {
@@ -102,7 +93,6 @@ function createNote(req) {
         title = `Clipped note from ${pageUrl}`;
     }
 
-
     clipType = htmlSanitizer.sanitize(clipType);
 
     const clipperInbox = getClipperInboxNote();
@@ -110,7 +100,7 @@ function createNote(req) {
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let note = findClippingNote(clipperInbox, pageUrl, clipType);
 
-    if (!note){
+    if (!note) {
         note = noteService.createNewNote({
             parentNoteId: dailyNote.noteId,
             title,
@@ -119,18 +109,15 @@ function createNote(req) {
         }).note;
 
         note.setLabel('clipType', clipType);
+
         if (pageUrl) {
             pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
 
             note.setLabel('pageUrl', pageUrl);
             note.setLabel('iconClass', 'bx bx-globe');
         }
-
     }
 
-
-
-    
     if (labels) {
         for (const labelName in labels) {
             const labelValue = htmlSanitizer.sanitize(labels[labelName]);
@@ -141,8 +128,6 @@ function createNote(req) {
     const existingContent = note.getContent();
     const rewrittenContent = processContent(images, note, content);
     note.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
-
-    // note.setContent(rewrittenContent);
 
     return {
         noteId: note.noteId
@@ -192,10 +177,10 @@ function processContent(images, note, content) {
     rewrittenContent = noteService.downloadImages(note.noteId, rewrittenContent);
     // Check if rewrittenContent contains at least one HTML tag
     if (!/<.+?>/.test(rewrittenContent)) {
-        rewrittenContent = '<p>'+rewrittenContent + '</p>';
+        rewrittenContent = `<p>${rewrittenContent}</p>`;
     }
     // Create a JSDOM object from the existing HTML content
-    let dom = new JSDOM(rewrittenContent);
+    const dom = new JSDOM(rewrittenContent);
 
     // Get the content inside the body tag and serialize it
     rewrittenContent = dom.window.document.body.innerHTML;
@@ -235,7 +220,6 @@ function findNotesByUrl(req){
     return {
         noteId: foundPage ? foundPage.noteId : null
     }
-
 }
 
 module.exports = {

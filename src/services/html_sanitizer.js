@@ -57,5 +57,7 @@ function sanitize(dirtyHtml) {
 
 module.exports = {
     sanitize,
-    sanitizeUrl
+    sanitizeUrl: url => {
+        return sanitizeUrl(url).trim();
+    }
 };
