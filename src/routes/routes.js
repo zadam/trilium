@@ -286,6 +286,7 @@ function register(app) {
     route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
+    route(GET, '/api/clipper/notes-by-url/:noteUrl', clipperMiddleware, clipperRoute.findNotesByUrl, apiResultHandler);
 
     apiRoute(GET, '/api/similar-notes/:noteId', similarNotesRoute.getSimilarNotes);
 
