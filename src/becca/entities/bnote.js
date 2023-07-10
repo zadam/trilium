@@ -1594,7 +1594,11 @@ class BNote extends AbstractBeccaEntity {
                     revisionAttachment.setContent(noteAttachment.getContent(), {forceSave: true});
 
                     // content is rewritten to point to the revision attachments
-                    noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
+                    noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`,
+                        `attachments/${revisionAttachment.attachmentId}`);
+
+                    noteContent = noteContent.replaceAll(new RegExp(`href="[^"]*attachmentId=${noteAttachment.attachmentId}[^"]*"`, 'gi'),
+                        `href="api/attachments/${revisionAttachment.attachmentId}/download"`);
                 }
 
                 revision.setContent(noteContent, {forceSave: true});

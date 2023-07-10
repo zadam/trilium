@@ -328,7 +328,7 @@ class Froca {
         }
         catch (e) {
             if (silentNotFoundError) {
-                logInfo(`Attachment '${attachmentId} not found, but silentNotFoundError is enabled: ` + e.message);
+                logInfo(`Attachment '${attachmentId}' not found, but silentNotFoundError is enabled: ` + e.message);
                 return null;
             } else {
                 throw e;

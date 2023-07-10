@@ -228,7 +228,7 @@ function goToLink(evt) {
             || (withinEditLink && (leftClick || middleClick))
             || (outsideOfCKEditor && (leftClick || middleClick))
         ) {
-            if (hrefLink.toLowerCase().startsWith('http')) {
+            if (hrefLink.toLowerCase().startsWith('http') || hrefLink.startsWith("api/")) {
                 window.open(hrefLink, '_blank');
             }
             else if (hrefLink.toLowerCase().startsWith('file:') && utils.isElectron()) {
