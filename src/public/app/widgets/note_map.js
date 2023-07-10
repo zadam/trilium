@@ -166,7 +166,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
     generateColorFromString(str) {
         if (this.themeStyle === "dark") {
-            str = `0${str}`; // magic lightening modifier
+            str = `0${str}`; // magic lightning modifier
         }
 
         let hash = 0;

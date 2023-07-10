@@ -99,7 +99,7 @@ function parseSelectedHtml(selectedHtml) {
 
     if (dom.length > 0 && dom[0].tagName && dom[0].tagName.match(/h[1-6]/i)) {
         const title = $(dom[0]).text();
-        // remove the title from content (only first occurence)
+        // remove the title from content (only first occurrence)
         const content = selectedHtml.replace(dom[0].outerHTML, "");
 
         return [title, content];

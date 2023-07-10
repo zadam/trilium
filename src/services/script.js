@@ -55,7 +55,7 @@ ${bundle.script}\r
 }
 
 /**
- * THIS METHOD CANT BE ASYNC, OTHERWISE TRANSACTION WRAPPER WON'T BE EFFECTIVE AND WE WILL BE LOSING THE
+ * THIS METHOD CAN'T BE ASYNC, OTHERWISE TRANSACTION WRAPPER WON'T BE EFFECTIVE AND WE WILL BE LOSING THE
  * ENTITY CHANGES IN CLS.
  *
  * This method preserves frontend startNode - that's why we start execution from currentNote and override

@@ -49,7 +49,7 @@ const ALLOWED_OPTIONS = new Set([
     'compressImages',
     'downloadImagesAutomatically',
     'minTocHeadings',
-    'highlightedText',
+    'highlightsList',
     'checkForUpdates',
     'disableTray',
     'eraseUnusedAttachmentsAfterSeconds',

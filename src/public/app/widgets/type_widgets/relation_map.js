@@ -412,7 +412,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         });
 
-        // if there's no event, then this has been triggered programatically
+        // if there's no event, then this has been triggered programmatically
         if (!originalEvent) {
             return;
         }

@@ -2,6 +2,7 @@ import AbstractSearchOption from "./abstract_search_option.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import server from "../../services/server.js";
 import shortcutService from "../../services/shortcuts.js";
+import appContext from "../../components/app_context.js";
 
 const TPL = `
 <tr>
@@ -56,6 +57,7 @@ export default class SearchString extends AbstractSearchOption {
 
         this.spacedUpdate = new SpacedUpdate(async () => {
             const searchString = this.$searchString.val();
+            appContext.lastSearchString = searchString;
 
             await this.setAttribute('label', 'searchString', searchString);
 
@@ -84,6 +86,7 @@ export default class SearchString extends AbstractSearchOption {
     }
 
     focusOnSearchDefinitionEvent() {
-        this.$searchString.focus();
+        this.$searchString.val(appContext.lastSearchString).focus().select();
+        this.spacedUpdate.scheduleUpdate();
     }
 }

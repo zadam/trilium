@@ -161,7 +161,7 @@ class NoteListRenderer {
     constructor($parent, parentNote, noteIds, showNotePath = false) {
         this.$noteList = $(TPL);
 
-        // note list must be added to the DOM immediatelly, otherwise some functionality scripting (canvas) won't work
+        // note list must be added to the DOM immediately, otherwise some functionality scripting (canvas) won't work
         $parent.empty();
 
         this.parentNote = parentNote;

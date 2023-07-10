@@ -269,6 +269,7 @@ function register(app) {
     route(PST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     route(PST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(PST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
+    route(GET, '/api/clipper/notes-by-url/:noteUrl', clipperMiddleware, clipperRoute.findNotesByUrl, apiResultHandler);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
     apiRoute(GET, '/api/special-notes/days/:date', specialNotesRoute.getDayNote);

@@ -231,7 +231,7 @@ paths:
         schema:
           $ref: '#/components/schemas/EntityId'
     get:
-      description: Returns note content idenfied by its ID
+      description: Returns note content identified by its ID
       operationId: getNoteContent
       responses:
         '200':
@@ -241,7 +241,7 @@ paths:
               schema:
                 type: string
     put:
-      description: Updates note content idenfied by its ID
+      description: Updates note content identified by its ID
       operationId: putNoteContentById
       requestBody:
         description: html content of note

@@ -50,7 +50,7 @@ export default class RightDropdownButtonWidget extends BasicWidget {
         this.$widget.find(".dropdown-menu").append(this.$dropdownContent);
     }
 
-    // to be overriden
+    // to be overridden
     async dropdownShow() {}
 
     hideDropdown() {

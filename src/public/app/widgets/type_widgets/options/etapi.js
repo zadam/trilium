@@ -96,7 +96,7 @@ export default class EtapiOptions extends OptionsWidget {
                     .append($("<td>").append(
                         $('<span class="bx bx-pen token-table-button" title="Rename this token"></span>')
                             .on("click", () => this.renameToken(token.etapiTokenId, token.name)),
-                        $('<span class="bx bx-trash token-table-button" title="Delete / deactive this token"></span>')
+                        $('<span class="bx bx-trash token-table-button" title="Delete / deactivate this token"></span>')
                             .on("click", () => this.deleteToken(token.etapiTokenId, token.name))
                     ))
             );
