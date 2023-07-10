@@ -106,11 +106,11 @@ function hasAttribute(list, attributeId) {
   return false;
 }
 
+client.log(JSON.stringify(response.body.attributes));
+
 client.assert(response.status === 200);
 client.assert(response.body.noteId == client.global.get("childNoteId"));
 client.assert(response.body.attributes.length == 2);
-client.assert(hasAttribute(response.body.attributes, 
-  client.global.get("parentAttributeId")));
-client.assert(hasAttribute(response.body.attributes, 
-  client.global.get("childAttributeId")));
+client.assert(hasAttribute(response.body.attributes, client.global.get("parentAttributeId")));
+client.assert(hasAttribute(response.body.attributes, client.global.get("childAttributeId")));
 %}

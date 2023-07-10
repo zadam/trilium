@@ -1,9 +1,27 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "GetInheritedAttributes Test Note",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.global.set("parentNoteId", response.body.note.noteId);
+%}
+
+###
+
 POST {{triliumHost}}/etapi/attributes
 Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "noteId": "root",
+  "noteId": "{{parentNoteId}}",
   "type": "label",
   "name": "mylabel",
   "value": "val",
@@ -19,7 +37,7 @@ Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "parentNoteId": "root",
+  "parentNoteId": "{{parentNoteId}}",
   "title": "Hello",
   "type": "text",
   "content": "Hi there!"
@@ -39,6 +57,5 @@ Authorization: {{authToken}}
 client.assert(response.status === 200);
 client.assert(response.body.noteId == client.global.get("createdNoteId"));
 client.assert(response.body.attributes.length == 1);
-client.assert(response.body.attributes[0].attributeId == 
-  client.global.get("createdAttributeId"));
+client.assert(response.body.attributes[0].attributeId == client.global.get("createdAttributeId"));
 %}

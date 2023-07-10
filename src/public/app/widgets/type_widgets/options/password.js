@@ -25,7 +25,7 @@ const TPL = `
         </div>
     
         <div class="form-group">
-            <label>New password Confirmation</label>
+            <label>New password confirmation</label>
             <input class="new-password2 form-control" type="password">
         </div>
     
