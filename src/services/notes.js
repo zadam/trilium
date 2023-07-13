@@ -22,6 +22,7 @@ const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const fs = require("fs");
 const ws = require("./ws");
+const html2plaintext = require('html2plaintext')
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {
@@ -504,10 +505,6 @@ function replaceUrl(content, url, attachment) {
 }
 
 function downloadImages(noteId, content) {
-    if (!optionService.getOptionBool("downloadImagesAutomatically")) {
-        return content;
-    }
-
     const imageRe = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
     let imageMatch;
 
@@ -520,15 +517,19 @@ function downloadImages(noteId, content) {
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
             const imageService = require('../services/image');
-            const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true, true);
+            const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
-            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
 
-            content = `${content.substr(0, imageMatch.index)}<img src="api/images/${note.noteId}/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
+            content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
         else if (!url.includes('api/images/') && !/api\/attachments\/.+\/image\/?.*/.test(url)
             // this is an exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
+
+            if (!optionService.getOptionBool("downloadImagesAutomatically")) {
+                continue;
+            }
 
             if (url in imageUrlToAttachmentIdMapping) {
                 const attachment = becca.getAttachment(imageUrlToAttachmentIdMapping[url]);
@@ -599,6 +600,39 @@ function downloadImages(noteId, content) {
     return content;
 }
 
+/**
+ * @param {BNote} note
+ * @param {string} content
+ */
+function saveAttachments(note, content) {
+    const inlineAttachmentRe = /<a[^>]*?\shref=['"]data:([^;'">]+);base64,([^'">]+)['"][^>]*>(.*?)<\/a>/igm;
+    let attachmentMatch;
+
+    while (attachmentMatch = inlineAttachmentRe.exec(content)) {
+        const mime = attachmentMatch[1].toLowerCase();
+
+        const base64data = attachmentMatch[2];
+        const buffer = Buffer.from(base64data, 'base64');
+
+        const title = html2plaintext(attachmentMatch[3]);
+
+        const attachment = note.saveAttachment({
+            role: 'file',
+            mime: mime,
+            title: title,
+            content: buffer
+        });
+
+        content = `${content.substr(0, attachmentMatch.index)}<a class="reference-link" href="#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}">${title}</a>${content.substr(attachmentMatch.index + attachmentMatch[0].length)}`;
+    }
+
+    return content;
+}
+
+/**
+ * @param {BNote} note
+ * @param {string} content
+ */
 function saveLinks(note, content) {
     if ((note.type !== 'text' && note.type !== 'relationMap')
         || (note.isProtected && !protectedSessionService.isProtectedSessionAvailable())) {
@@ -613,6 +647,7 @@ function saveLinks(note, content) {
 
     if (note.type === 'text') {
         content = downloadImages(note.noteId, content);
+        content = saveAttachments(note, content);
 
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);

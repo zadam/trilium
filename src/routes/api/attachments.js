@@ -55,7 +55,7 @@ function uploadAttachment(req) {
             content: file.buffer
         });
 
-        url = `#${noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}`;
+        url = `#root/${noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}`;
     }
 
     return {

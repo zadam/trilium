@@ -267,9 +267,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return noteId;
     }
 
-    /**
-     * @returns {{attachmentId: string}|{noteId: string}}
-     */
+    /** @returns {{attachmentId: string}|{noteId: string}} */
     function getEntityIdFromRelativeUrl(url, filePath) {
         while (url.startsWith("./")) {
             url = url.substr(2);
@@ -293,7 +291,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         if (attachmentMeta) {
             return {
-                attachmentId: getNewAttachmentId(attachmentMeta.attachmentId)
+                attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
+                noteId: getNewNoteId(noteMeta.noteId)
             };
         } else { // don't check for noteMeta since it's not mandatory for notes
             return {
@@ -343,10 +342,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             const target = getEntityIdFromRelativeUrl(url, filePath);
 
-            if (target.noteId) {
-                return `src="api/images/${target.noteId}/${path.basename(url)}"`;
-            } else if (target.attachmentId) {
+            if (target.attachmentId) {
                 return `src="api/attachments/${target.attachmentId}/image/${path.basename(url)}"`;
+            } else if (target.noteId) {
+                return `src="api/images/${target.noteId}/${path.basename(url)}"`;
             } else {
                 return match;
             }
@@ -367,13 +366,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             const target = getEntityIdFromRelativeUrl(url, filePath);
 
-            if (!target.noteId) {
+            if (target.attachmentId) {
+                return `href="#root/${target.noteId}?viewMode=attachments&attachmentId=${target.attachmentId}"`;
+            } else if (target.noteId) {
+                return `href="#root/${target.noteId}"`;
+            } else {
                 return match;
             }
-
-            // FIXME for linking attachments
-
-            return `href="#root/${target.noteId}"`;
         });
 
         if (noteMeta) {

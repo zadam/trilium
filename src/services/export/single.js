@@ -65,6 +65,23 @@ function exportSingleNote(taskContext, branch, format, res) {
 }
 
 function inlineAttachments(content) {
+    content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9_]+)\/?[^"]+"/g, (match, noteId) => {
+        const note = becca.getNote(noteId);
+        if (!note || !note.mime.startsWith('image/')) {
+            return match;
+        }
+
+        const imageContent = note.getContent();
+        if (!Buffer.isBuffer(imageContent)) {
+            return match;
+        }
+
+        const base64Content = imageContent.toString('base64');
+        const srcValue = `data:${note.mime};base64,${base64Content}`;
+
+        return `src="${srcValue}"`;
+    });
+
     content = content.replace(/src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image\/?[^"]+"/g, (match, attachmentId) => {
         const attachment = becca.getAttachment(attachmentId);
         if (!attachment || !attachment.mime.startsWith('image/')) {
