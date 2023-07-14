@@ -168,7 +168,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
 
-        const {$renderedContent} = await contentRenderer.getRenderedContent(this.attachment, { imageHasZoom: true });
+        const {$renderedContent} = await contentRenderer.getRenderedContent(this.attachment, { imageHasZoom: this.isFullDetail });
         this.$wrapper.find('.attachment-content-wrapper').append($renderedContent);
     }
 
