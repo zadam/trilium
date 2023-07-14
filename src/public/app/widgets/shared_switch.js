@@ -21,7 +21,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
         this.$switchOffButton.attr("title", "Unshare the note");
 
         this.$helpButton.attr("data-help-page", "Sharing").show();
-        this.$helpButton.on('click', e => utils.openHelp(e));
+        this.$helpButton.on('click', e => utils.openHelp($(e.target)));
     }
 
     async switchOn() {

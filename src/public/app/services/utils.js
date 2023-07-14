@@ -332,17 +332,22 @@ function initHelpDropdown($el) {
 
 const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";
 
-function openHelp(e) {
-    window.open(wikiBaseUrl + $(e.target).attr("data-help-page"), '_blank');
+function openHelp($button) {
+    const helpPage = $button.attr("data-help-page");
+
+    if (helpPage) {
+        const url = wikiBaseUrl + helpPage;
+
+        window.open(url, '_blank');
+    }
 }
 
 function initHelpButtons($el) {
     // for some reason, the .on(event, listener, handler) does not work here (e.g. Options -> Sync -> Help button)
     // so we do it manually
     $el.on("click", e => {
-        if ($(e.target).attr("data-help-page")) {
-            openHelp(e);
-        }
+        const $helpButton = $(e.target).closest("[data-help-page]");
+        openHelp($helpButton);
     });
 }
 

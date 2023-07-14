@@ -98,11 +98,9 @@ async function createMainWindow(app) {
 function configureWebContents(webContents, spellcheckEnabled) {
     require("@electron/remote/main").enable(webContents);
 
-    webContents.on('new-window', (e, url) => {
-        if (url !== webContents.getURL()) {
-            e.preventDefault();
-            require('electron').shell.openExternal(url);
-        }
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+        require("electron").shell.openExternal(details.url);
+        return { action: 'deny' }
     });
 
     // prevent drag & drop to navigate away from trilium

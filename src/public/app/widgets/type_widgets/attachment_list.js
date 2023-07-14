@@ -1,6 +1,7 @@
 import TypeWidget from "./type_widget.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
 import linkService from "../../services/link.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="attachment-list note-detail-printable">
@@ -14,6 +15,18 @@ const TPL = `
             margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
+            align-items: baseline;
+        }
+        
+        .attachment-help-button {
+            font-size: xx-large;
+            border: 0;
+            background: none;
+            cursor: pointer;
+            color: var(--main-text-color);
+            margin-left: 20px;
+            position: relative;
+            top: 8px;
         }
     </style>
     
@@ -36,14 +49,20 @@ export default class AttachmentListTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
+        const $helpButton = $('<button class="attachment-help-button" type="button" data-help-page="attachments" title="Open help page on attachments"><span class="bx bx-help-circle"></span></button>');
+        utils.initHelpButtons($helpButton);
+
         this.$linksWrapper.empty().append(
             $('<div>').append(
                 "Owning note: ",
                 await linkService.createLink(this.noteId),
             ),
-            $('<button class="btn btn-sm">')
-                .text("Upload attachments")
-                .on('click', () => this.triggerCommand("showUploadAttachmentsDialog", {noteId: this.noteId}))
+            $('<div>').append(
+                $('<button class="btn btn-sm">')
+                    .text("Upload attachments")
+                    .on('click', () => this.triggerCommand("showUploadAttachmentsDialog", {noteId: this.noteId})),
+                $helpButton
+            )
         );
 
         this.$list.empty();

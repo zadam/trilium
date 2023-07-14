@@ -110,7 +110,6 @@ export default class SwitchWidget extends NoteContextAwareWidget {
         this.$switchOffButton.on('click', () => this.toggle(false));
 
         this.$helpButton = this.$widget.find(".switch-help-button");
-
     }
 
     toggle(state) {
