@@ -2,6 +2,7 @@ import TypeWidget from "./type_widget.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
 import linkService from "../../services/link.js";
 import froca from "../../services/froca.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="attachment-detail note-detail-printable">
@@ -45,6 +46,9 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
         this.$wrapper.empty();
         this.children = [];
 
+        const $helpButton = $('<button class="attachment-help-button" type="button" data-help-page="attachments" title="Open help page on attachments"><span class="bx bx-help-circle"></span></button>');
+        utils.initHelpButtons($helpButton);
+
         this.$linksWrapper.empty().append(
             "Owning note: ",
             await linkService.createLink(this.noteId),
@@ -54,7 +58,8 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
                 viewScope: {
                     viewMode: 'attachments'
                 }
-            })
+            }),
+            $helpButton
         );
 
         const attachment = await froca.getAttachment(this.attachmentId, true);

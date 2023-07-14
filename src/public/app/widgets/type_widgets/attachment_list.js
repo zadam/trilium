@@ -17,17 +17,6 @@ const TPL = `
             justify-content: space-between;
             align-items: baseline;
         }
-        
-        .attachment-help-button {
-            font-size: xx-large;
-            border: 0;
-            background: none;
-            cursor: pointer;
-            color: var(--main-text-color);
-            margin-left: 20px;
-            position: relative;
-            top: 8px;
-        }
     </style>
     
     <div class="links-wrapper"></div>
