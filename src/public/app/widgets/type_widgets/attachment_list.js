@@ -7,7 +7,8 @@ const TPL = `
 <div class="attachment-list note-detail-printable">
     <style>
         .attachment-list {
-            padding: 15px;
+            padding-left: 15px;
+            padding-right: 15px;
         }
         
         .attachment-list .links-wrapper {

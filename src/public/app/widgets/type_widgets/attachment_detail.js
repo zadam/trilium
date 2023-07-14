@@ -8,7 +8,8 @@ const TPL = `
 <div class="attachment-detail note-detail-printable">
     <style>
         .attachment-detail {
-            padding: 15px;
+            padding-left: 15px;
+            padding-right: 15px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -16,7 +17,7 @@ const TPL = `
         
         .attachment-detail .links-wrapper {
             font-size: larger;
-            padding: 16px 0 16px 0;
+            padding: 0 0 16px 0;
         }
         
         .attachment-detail .attachment-wrapper {
