@@ -142,15 +142,21 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     const fileName = sanitizeFilename(originalName);
     const note = becca.getNoteOrThrow(noteId);
 
-    const attachment = note.saveAttachment({
+    let attachment = note.saveAttachment({
         role: 'image',
         mime: 'unknown',
         title: fileName
     });
 
+    const noteService = require("../services/notes");
+    noteService.asyncPostProcessContent(note, note.getContent()); // to mark an unused attachment for deletion
+
     // resizing images asynchronously since JIMP does not support sync operation
     processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
+            // re-read, might be changed in the meantime
+            attachment = becca.getAttachmentOrThrow(attachment.attachmentId);
+
             attachment.mime = getImageMimeFromExtension(imageFormat.ext);
 
             if (!originalName.includes(".")) {
