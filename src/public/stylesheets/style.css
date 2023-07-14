@@ -1036,6 +1036,13 @@ button.close:hover {
     margin-bottom: 10px;
 }
 
+.options-number-input {
+    text-align: right;
+    /* overriding settings from .form-control */
+    width: 10em !important;
+    flex-grow: 0 !important;
+}
+
 textarea {
     cursor: auto;
 }

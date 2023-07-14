@@ -26,12 +26,12 @@ const TPL = `
     <div class="image-compression-enabled-wraper">
         <div class="form-group">
             <label>Max width / height of an image in pixels (image will be resized if it exceeds this setting).</label>
-            <input class="image-max-width-height form-control" type="number" min="1">
+            <input class="image-max-width-height form-control options-number-input" type="number" min="1">
         </div>
     
         <div class="form-group">
             <label>JPEG quality (10 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
-            <input class="image-jpeg-quality form-control" min="10" max="100" type="number">
+            <input class="image-jpeg-quality form-control options-number-input" min="10" max="100" type="number">
         </div>
     </div>
 </div>

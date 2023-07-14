@@ -7,7 +7,7 @@ const TPL = `
     Table of contents will appear in text notes when the note has more than a defined number of headings. You can customize this number:
     
     <div class="form-group">
-        <input type="number" class="min-toc-headings form-control" min="0" max="9999999999999999" step="1" style="text-align: right;"/>
+        <input type="number" class="min-toc-headings form-control options-number-input options-number-input" min="0" max="9999999999999999" step="1" />
     </div>
     
     <p>You can also use this option to effectively disable TOC by setting a very high number.</p>

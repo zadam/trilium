@@ -13,7 +13,7 @@ const TPL = `
 
     <div class="form-group">
         <label>Erase notes after X seconds</label>
-        <input class="erase-entities-after-time-in-seconds form-control" type="number" min="0">
+        <input class="erase-entities-after-time-in-seconds form-control options-number-input" type="number" min="0">
     </div>
     
     <p>You can also trigger erasing manually (without considering the timeout defined above):</p>

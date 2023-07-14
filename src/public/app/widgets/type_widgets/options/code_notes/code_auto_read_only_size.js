@@ -8,7 +8,7 @@ const TPL = `
 
     <div class="form-group">
         <label>Automatic read-only size (code notes)</label>
-        <input class="auto-readonly-size-code form-control" type="number" min="0">
+        <input class="auto-readonly-size-code form-control options-number-input" type="number" min="0">
     </div>
 </div>`;
 

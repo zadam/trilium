@@ -8,7 +8,7 @@ const TPL = `
 
     <div class="form-group">
         <label>Note revision snapshot time interval (in seconds)</label>
-        <input class="revision-snapshot-time-interval-in-seconds form-control" type="number" min="10">
+        <input class="revision-snapshot-time-interval-in-seconds form-control options-number-input" type="number" min="10">
     </div>
 </div>`;
 

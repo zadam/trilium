@@ -10,7 +10,7 @@ const TPL = `
     <div class="form-group row">
         <div class="col-4">
             <label>Max content width in pixels</label>
-            <input type="number" min="200" step="10" class="max-content-width form-control">
+            <input type="number" min="200" step="10" class="max-content-width form-control options-number-input">
         </div>
     </div>
     

@@ -10,7 +10,7 @@ const TPL = `
 
     <div class="form-group">
         <label>Erase attachments after X seconds of not being used in its note</label>
-        <input class="erase-unused-attachments-after-time-in-seconds form-control" type="number" min="0">
+        <input class="erase-unused-attachments-after-time-in-seconds form-control options-number-input" type="number" min="0">
     </div>
     
     <p>You can also trigger erasing manually (without considering the timeout defined above):</p>

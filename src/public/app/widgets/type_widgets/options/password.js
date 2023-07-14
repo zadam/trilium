@@ -41,7 +41,7 @@ const TPL = `
 
     <div class="form-group">
         <label>Protected session timeout (in seconds)</label>
-        <input class="protected-session-timeout-in-seconds form-control" type="number" min="60">
+        <input class="protected-session-timeout-in-seconds form-control options-number-input" type="number" min="60">
     </div>
 </div>`;
 
