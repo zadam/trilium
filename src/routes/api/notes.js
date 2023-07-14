@@ -232,7 +232,7 @@ function convertNoteToAttachment(req) {
     const note = becca.getNoteOrThrow(noteId);
 
     return {
-        attachment: note.convertToParentAttachment({ force: true })
+        attachment: note.convertToParentAttachment()
     };
 }
 

@@ -1427,14 +1427,16 @@ class BNote extends AbstractBeccaEntity {
         return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
     }
 
-    isEligibleForConversionToAttachment() {
+    isEligibleForConversionToAttachment(opts = {autoConversion: false}) {
         if (this.type !== 'image' || !this.isContentAvailable() || this.hasChildren() || this.getParentBranches().length !== 1) {
             return false;
         }
 
         const targetRelations = this.getTargetRelations().filter(relation => relation.name === 'imageLink');
 
-        if (targetRelations.length > 1) {
+        if (opts.autoConversion && targetRelations.length === 0) {
+            return false;
+        } else if (targetRelations.length > 1) {
             return false;
         }
 
@@ -1461,16 +1463,16 @@ class BNote extends AbstractBeccaEntity {
      *
      * Currently, works only for image notes.
      *
-     * In future, this functionality might get more generic and some of the requirements relaxed.
+     * In the future, this functionality might get more generic and some of the requirements relaxed.
      *
      * @params {Object} [opts]
-     * @params {bolean} [opts.force=false} it is envisioned that user can force the conversion even if some conditions
-     *                                     are not satisfied (e.g., relation to parent doesn't exist).
+     * @params {bolean} [opts.autoConversion=false} if true, the action is not triggered by user, but e.g. by migration,
+     *                                              and only perfect candidates will be migrated
      *
      * @returns {BAttachment|null} - null if note is not eligible for conversion
      */
-    convertToParentAttachment(opts = {force: false}) {
-        if (!this.isEligibleForConversionToAttachment()) {
+    convertToParentAttachment(opts = {autoConversion: false}) {
+        if (!this.isEligibleForConversionToAttachment(opts)) {
             return null;
         }
 

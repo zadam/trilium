@@ -9,7 +9,7 @@ module.exports = () => {
 
         for (const note of Object.values(becca.notes)) {
             try {
-                const attachment = note.convertToParentAttachment({force: false});
+                const attachment = note.convertToParentAttachment({autoConversion: true});
 
                 if (attachment) {
                     log.info(`Auto-converted note '${note.noteId}' into attachment '${attachment.attachmentId}'.`);
