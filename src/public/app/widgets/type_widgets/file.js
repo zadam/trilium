@@ -85,4 +85,10 @@ export default class FileTypeWidget extends TypeWidget {
             this.$previewNotAvailable.show();
         }
     }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
+        }
+    }
 }
