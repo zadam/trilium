@@ -1101,9 +1101,9 @@ class BNote extends AbstractBeccaEntity {
             ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
                FROM attachments 
                JOIN blobs USING (blobId) 
-               WHERE parentId = ? AND isDeleted = 0 
+               WHERE ownerId = ? AND isDeleted = 0 
                ORDER BY position`
-            : `SELECT * FROM attachments WHERE parentId = ? AND isDeleted = 0 ORDER BY position`;
+            : `SELECT * FROM attachments WHERE ownerId = ? AND isDeleted = 0 ORDER BY position`;
 
         return sql.getRows(query, [this.noteId])
             .map(row => new BAttachment(row));
@@ -1117,8 +1117,8 @@ class BNote extends AbstractBeccaEntity {
             ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
                FROM attachments 
                JOIN blobs USING (blobId) 
-               WHERE parentId = ? AND attachmentId = ? AND isDeleted = 0`
-            : `SELECT * FROM attachments WHERE parentId = ? AND attachmentId = ? AND isDeleted = 0`;
+               WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`
+            : `SELECT * FROM attachments WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`;
 
         return sql.getRows(query, [this.noteId, attachmentId])
             .map(row => new BAttachment(row))[0];
@@ -1129,7 +1129,7 @@ class BNote extends AbstractBeccaEntity {
         return sql.getRows(`
                 SELECT attachments.*
                 FROM attachments 
-                WHERE parentId = ? 
+                WHERE ownerId = ? 
                   AND role = ?
                   AND isDeleted = 0
                 ORDER BY position`, [this.noteId, role])
@@ -1590,7 +1590,7 @@ class BNote extends AbstractBeccaEntity {
                     }
 
                     const revisionAttachment = noteAttachment.copy();
-                    revisionAttachment.parentId = revision.revisionId;
+                    revisionAttachment.ownerId = revision.revisionId;
                     revisionAttachment.setContent(noteAttachment.getContent(), {forceSave: true});
 
                     // content is rewritten to point to the revision attachments
@@ -1618,7 +1618,7 @@ class BNote extends AbstractBeccaEntity {
             attachment = this.becca.getAttachmentOrThrow(attachmentId);
         } else {
             attachment = new BAttachment({
-                parentId: this.noteId,
+                ownerId: this.noteId,
                 title,
                 role,
                 mime,

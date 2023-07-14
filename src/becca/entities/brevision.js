@@ -100,7 +100,7 @@ class BRevision extends AbstractBeccaEntity {
         return sql.getRows(`
                 SELECT attachments.*
                 FROM attachments 
-                WHERE parentId = ? 
+                WHERE ownerId = ? 
                   AND isDeleted = 0`, [this.revisionId])
             .map(row => new BAttachment(row));
     }

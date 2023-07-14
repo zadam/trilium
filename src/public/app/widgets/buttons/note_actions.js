@@ -121,7 +121,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
         toastService.showMessage(`Note '${newAttachment.title}' has been converted to attachment.`);
         await ws.waitForMaxKnownEntityChangeId();
-        await appContext.tabManager.getActiveContext().setNote(newAttachment.parentId, {
+        await appContext.tabManager.getActiveContext().setNote(newAttachment.ownerId, {
             viewScope: {
                 viewMode: 'attachments',
                 attachmentId: newAttachment.attachmentId

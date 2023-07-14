@@ -6,7 +6,7 @@ const utils = require("../services/utils");
 
 function register(router) {
     const ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT = {
-        'parentId': [v.notNull, v.isNoteId],
+        'ownerId': [v.notNull, v.isNoteId],
         'role': [v.notNull, v.isString],
         'mime': [v.notNull, v.isString],
         'title': [v.notNull, v.isString],
@@ -20,7 +20,7 @@ function register(router) {
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT);
 
         try {
-            const note = becca.getNoteOrThrow(params.parentId);
+            const note = becca.getNoteOrThrow(params.ownerId);
             const attachment = note.saveAttachment(params);
 
             res.status(201).json(mappers.mapAttachmentToPojo(attachment));

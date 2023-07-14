@@ -126,7 +126,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
 
         if (!this.isFullDetail) {
             this.$wrapper.find('.attachment-title').append(
-                await linkService.createLink(this.attachment.parentId, {
+                await linkService.createLink(this.attachment.ownerId, {
                     title: this.attachment.title,
                     viewScope: {
                         viewMode: 'attachments',
@@ -174,7 +174,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
         if (this.attachment.role === 'image') {
             imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content-wrapper'));
         } else if (this.attachment.role === 'file') {
-            const $link = await linkService.createLink(this.attachment.parentId, {
+            const $link = await linkService.createLink(this.attachment.ownerId, {
                 referenceLink: true,
                 viewScope: {
                     viewMode: 'attachments',

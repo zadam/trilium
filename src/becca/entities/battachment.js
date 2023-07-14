@@ -20,14 +20,14 @@ const attachmentRoleToNoteTypeMapping = {
 class BAttachment extends AbstractBeccaEntity {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
-    static get hashedProperties() { return ["attachmentId", "parentId", "role", "mime", "title", "blobId",
+    static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId",
                                             "utcDateScheduledForErasureSince", "utcDateModified"]; }
 
     constructor(row) {
         super();
 
-        if (!row.parentId?.trim()) {
-            throw new Error("'parentId' must be given to initialize a Attachment entity");
+        if (!row.ownerId?.trim()) {
+            throw new Error("'ownerId' must be given to initialize a Attachment entity");
         } else if (!row.role?.trim()) {
             throw new Error("'role' must be given to initialize a Attachment entity");
         } else if (!row.mime?.trim()) {
@@ -39,7 +39,7 @@ class BAttachment extends AbstractBeccaEntity {
         /** @type {string} */
         this.attachmentId = row.attachmentId;
         /** @type {string} either noteId or revisionId to which this attachment belongs */
-        this.parentId = row.parentId;
+        this.ownerId = row.ownerId;
         /** @type {string} */
         this.role = row.role;
         /** @type {string} */
@@ -68,7 +68,7 @@ class BAttachment extends AbstractBeccaEntity {
     /** @returns {BAttachment} */
     copy() {
         return new BAttachment({
-            parentId: this.parentId,
+            ownerId: this.ownerId,
             role: this.role,
             mime: this.mime,
             title: this.title,
@@ -79,7 +79,7 @@ class BAttachment extends AbstractBeccaEntity {
 
     /** @returns {BNote} */
     getNote() {
-        return this.becca.notes[this.parentId];
+        return this.becca.notes[this.ownerId];
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
@@ -148,7 +148,7 @@ class BAttachment extends AbstractBeccaEntity {
         const noteService = require('../../services/notes');
 
         const { note, branch } = noteService.createNewNote({
-            parentNoteId: this.parentId,
+            parentNoteId: this.ownerId,
             title: this.title,
             type: attachmentRoleToNoteTypeMapping[this.role],
             mime: this.mime,
@@ -189,7 +189,7 @@ class BAttachment extends AbstractBeccaEntity {
         if (this.position === undefined || this.position === null) {
             this.position = 10 + sql.getValue(`SELECT COALESCE(MAX(position), 0)
                                               FROM attachments
-                                              WHERE parentId = ?`, [this.noteId]);
+                                              WHERE ownerId = ?`, [this.noteId]);
         }
 
         this.dateModified = dateUtils.localNowDateTime();
@@ -199,7 +199,7 @@ class BAttachment extends AbstractBeccaEntity {
     getPojo() {
         return {
             attachmentId: this.attachmentId,
-            parentId: this.parentId,
+            ownerId: this.ownerId,
             role: this.role,
             mime: this.mime,
             title: this.title,

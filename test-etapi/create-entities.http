@@ -127,7 +127,7 @@ Content-Type: application/json
 Authorization: {{authToken}}
 
 {
-  "parentId": "{{createdNoteId}}",
+  "ownerId": "{{createdNoteId}}",
   "role": "file",
   "mime": "plain/text",
   "title": "my attachment",

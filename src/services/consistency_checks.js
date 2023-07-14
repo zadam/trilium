@@ -215,24 +215,24 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT attachmentId, attachments.parentId AS noteId
+                    SELECT attachmentId, attachments.ownerId AS noteId
                     FROM attachments
-                    WHERE attachments.parentId NOT IN (
+                    WHERE attachments.ownerId NOT IN (
                             SELECT noteId FROM notes
                             UNION ALL
                             SELECT revisionId FROM revisions
                         )
                       AND attachments.isDeleted = 0`,
-            ({attachmentId, parentId}) => {
+            ({attachmentId, ownerId}) => {
                 if (this.autoFix) {
                     const attachment = becca.getAttachment(attachmentId);
                     attachment.markAsDeleted();
 
                     this.reloadNeeded = false;
 
-                    logFix(`Attachment '${attachmentId}' has been deleted since it references missing note/revision '${parentId}'`);
+                    logFix(`Attachment '${attachmentId}' has been deleted since it references missing note/revision '${ownerId}'`);
                 } else {
-                    logError(`Attachment '${attachmentId}' references missing note/revision '${parentId}'`);
+                    logError(`Attachment '${attachmentId}' references missing note/revision '${ownerId}'`);
                 }
             });
     }
@@ -345,9 +345,9 @@ class ConsistencyChecks {
 
         this.findAndFixIssues(`
                     SELECT attachmentId,
-                           attachments.parentId AS noteId
+                           attachments.ownerId AS noteId
                     FROM attachments
-                      JOIN notes ON notes.noteId = attachments.parentId
+                      JOIN notes ON notes.noteId = attachments.ownerId
                     WHERE notes.isDeleted = 1
                       AND attachments.isDeleted = 0`,
             ({attachmentId, noteId}) => {

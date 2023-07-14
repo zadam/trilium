@@ -50,7 +50,7 @@ function mapAttributeToPojo(attr) {
 function mapAttachmentToPojo(attachment) {
     return {
         attachmentId: attachment.attachmentId,
-        parentId: attachment.parentId,
+        ownerId: attachment.ownerId,
         role: attachment.role,
         mime: attachment.mime,
         title: attachment.title,

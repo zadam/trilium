@@ -378,21 +378,21 @@ function checkImageAttachments(note, content) {
                 localAttachment.save();
             }
 
-            log.info(`Found equivalent attachment '${localAttachment.attachmentId}' of note '${note.noteId}' for the linked foreign attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.parentId}'`);
+            log.info(`Found equivalent attachment '${localAttachment.attachmentId}' of note '${note.noteId}' for the linked foreign attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.ownerId}'`);
         } else {
             localAttachment = unknownAttachment.copy();
-            localAttachment.parentId = note.noteId;
+            localAttachment.ownerId = note.noteId;
             localAttachment.setContent(unknownAttachment.getContent(), {forceSave: true});
 
             ws.sendMessageToAllClients({ type: 'toast', message: `Attachment '${localAttachment.title}' has been copied to note '${note.title}'.`});
-            log.info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.parentId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
+            log.info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.ownerId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
         }
 
         // replace image links
         content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${localAttachment.attachmentId}/image`);
         // replace reference links
         content = content.replace(new RegExp(`href="[^"]+attachmentId=${unknownAttachment.attachmentId}[^"]*"`, "g"),
-            `href="#root/${localAttachment.parentId}?viewMode=attachments&amp;attachmentId=${localAttachment.attachmentId}"`);
+            `href="#root/${localAttachment.ownerId}?viewMode=attachments&amp;attachmentId=${localAttachment.attachmentId}"`);
     }
 
     return {

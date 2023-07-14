@@ -18,7 +18,7 @@ Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "parentId": "{{createdNoteId}}",
+  "ownerId": "{{createdNoteId}}",
   "role": "file",
   "mime": "text/plain",
   "title": "my attachment",
@@ -55,7 +55,7 @@ Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "parentId": "root"
+  "ownerId": "root"
 }
 
 > {%

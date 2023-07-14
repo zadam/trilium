@@ -60,7 +60,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
             const attachment = await froca.getAttachment(attachmentId);
 
             return {
-                noteId: attachment.parentId,
+                noteId: attachment.ownerId,
                 viewScope: {
                     viewMode: 'attachments',
                     attachmentId: attachmentId

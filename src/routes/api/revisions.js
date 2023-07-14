@@ -112,7 +112,7 @@ function restoreRevision(req) {
 
             for (const revisionAttachment of revision.getAttachments()) {
                 const noteAttachment = revisionAttachment.copy();
-                noteAttachment.parentId = note.noteId;
+                noteAttachment.ownerId = note.noteId;
                 noteAttachment.setContent(revisionAttachment.getContent(), { forceSave: true });
 
                 // content is rewritten to point to the restored revision attachments

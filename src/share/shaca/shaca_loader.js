@@ -67,10 +67,10 @@ function load() {
     }
 
     const rawAttachmentRows = sql.getRawRows(`
-        SELECT attachmentId, parentId, role, mime, title, blobId, utcDateModified 
+        SELECT attachmentId, ownerId, role, mime, title, blobId, utcDateModified 
         FROM attachments 
         WHERE isDeleted = 0 
-          AND parentId IN (${noteIdStr})`);
+          AND ownerId IN (${noteIdStr})`);
 
     rawAttachmentRows.sort((a, b) => a.position < b.position ? -1 : 1);
 

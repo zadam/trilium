@@ -280,7 +280,7 @@ function processAttachment(loadResults, ec) {
     if (attachment) {
         attachment.update(ec.entity);
     } else {
-        const note = froca.notes[ec.entity.parentId];
+        const note = froca.notes[ec.entity.ownerId];
 
         if (note?.attachments) {
             note.attachments.push(new FAttachment(froca, ec.entity));

@@ -452,7 +452,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         if (attachmentMeta) {
             const attachment = new BAttachment({
                 attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
-                parentId: noteId,
+                ownerId: noteId,
                 title: attachmentMeta.title,
                 role: attachmentMeta.role,
                 mime: attachmentMeta.mime,

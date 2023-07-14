@@ -48,7 +48,7 @@ function checkAttachmentAccess(attachmentId, req, res) {
         return false;
     }
 
-    const note = checkNoteAccess(attachment.parentId, req, res);
+    const note = checkNoteAccess(attachment.ownerId, req, res);
 
     // truthy note means the user has access, and we can return the attachment
     return note ? attachment : false;

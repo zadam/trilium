@@ -9,7 +9,7 @@ class FAttachment {
         /** @type {string} */
         this.attachmentId = row.attachmentId;
         /** @type {string} */
-        this.parentId = row.parentId;
+        this.ownerId = row.ownerId;
         /** @type {string} */
         this.role = row.role;
         /** @type {string} */
@@ -31,7 +31,7 @@ class FAttachment {
 
     /** @returns {FNote} */
     getNote() {
-        return this.froca.notes[this.parentId];
+        return this.froca.notes[this.ownerId];
     }
 
     /**

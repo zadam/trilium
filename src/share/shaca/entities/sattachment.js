@@ -5,13 +5,13 @@ const utils = require('../../../services/utils');
 const AbstractShacaEntity = require('./abstract_shaca_entity');
 
 class SAttachment extends AbstractShacaEntity {
-    constructor([attachmentId, parentId, role, mime, title, blobId, utcDateModified]) {
+    constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]) {
         super();
 
         /** @param {string} */
         this.attachmentId = attachmentId;
         /** @param {string} */
-        this.parentId = parentId;
+        this.ownerId = ownerId;
         /** @param {string} */
         this.title = title;
         /** @param {string} */
@@ -24,12 +24,12 @@ class SAttachment extends AbstractShacaEntity {
         this.utcDateModified = utcDateModified; // used for caching of images
 
         this.shaca.attachments[this.attachmentId] = this;
-        this.shaca.notes[this.parentId].attachments.push(this);
+        this.shaca.notes[this.ownerId].attachments.push(this);
     }
 
     /** @returns {SNote} */
     get note() {
-        return this.shaca.notes[this.parentId];
+        return this.shaca.notes[this.ownerId];
     }
 
     getContent(silentNotFoundError = false) {
