@@ -167,7 +167,9 @@ export default class AttachmentDetailWidget extends BasicWidget {
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
-        this.$wrapper.find('.attachment-content-wrapper').append((await contentRenderer.getRenderedContent(this.attachment)).$renderedContent);
+
+        const {$renderedContent} = await contentRenderer.getRenderedContent(this.attachment, { imageHasZoom: true });
+        this.$wrapper.find('.attachment-content-wrapper').append($renderedContent);
     }
 
     async copyAttachmentLinkToClipboard() {

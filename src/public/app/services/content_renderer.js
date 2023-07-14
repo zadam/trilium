@@ -35,7 +35,7 @@ async function getRenderedContent(entity, options = {}) {
         await renderCode(entity, options, $renderedContent);
     }
     else if (type === 'image') {
-        renderImage(entity, $renderedContent);
+        renderImage(entity, $renderedContent, options);
     }
     else if (!options.tooltip && ['file', 'pdf', 'audio', 'video'].includes(type)) {
         renderFile(entity, type, $renderedContent);
@@ -118,7 +118,7 @@ async function renderCode(note, options, $renderedContent) {
     $renderedContent.append($("<pre>").text(trim(blob.content, options.trim)));
 }
 
-function renderImage(entity, $renderedContent) {
+function renderImage(entity, $renderedContent, options = {}) {
     const sanitizedTitle = entity.title.replace(/[^a-z0-9-.]/gi, "");
 
     let url;
@@ -129,11 +129,27 @@ function renderImage(entity, $renderedContent) {
         url = `api/attachments/${entity.attachmentId}/image/${sanitizedTitle}?${entity.utcDateModified}">`;
     }
 
-    $renderedContent.append(
-        $("<img>")
-            .attr("src", url)
-            .css("max-width", "100%")
-    );
+    $renderedContent // styles needed for the zoom to work well
+        .css('display', 'flex')
+        .css('align-items', 'center')
+        .css('justify-content', 'center');
+
+    const $img = $("<img>")
+        .attr("src", url)
+        .attr("id", "attachment-image-" + idCounter++)
+        .css("max-width", "100%");
+
+    $renderedContent.append($img);
+
+    if (options.imageHasZoom) {
+        libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM).then(() => {
+            WZoom.create(`#${$img.attr("id")}`, {
+                maxScale: 10,
+                speed: 20,
+                zoomOnClick: false
+            });
+        });
+    }
 }
 
 function renderFile(entity, type, $renderedContent) {
