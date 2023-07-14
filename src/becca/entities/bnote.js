@@ -1495,6 +1495,9 @@ class BNote extends AbstractBeccaEntity {
 
         parentNote.setContent(fixedContent);
 
+        const noteService = require("../../services/notes");
+        noteService.asyncPostProcessContent(parentNote, fixedContent);
+
         this.deleteNote();
 
         return attachment;

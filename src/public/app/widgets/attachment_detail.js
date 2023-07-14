@@ -153,12 +153,12 @@ export default class AttachmentDetailWidget extends BasicWidget {
             $deletionWarning.show();
 
             if (willBeDeletedInMs >= 60000) {
-                $deletionWarning.text(`This attachment will be deleted in ${utils.formatTimeInterval(willBeDeletedInMs)}`);
+                $deletionWarning.text(`This attachment will be automatically deleted in ${utils.formatTimeInterval(willBeDeletedInMs)}`);
             } else {
-                $deletionWarning.text(`This attachment will be deleted soon`);
+                $deletionWarning.text(`This attachment will be automatically deleted soon`);
             }
 
-            $deletionWarning.append(", because the attachment is not linked in the note's content. To prevent deletion, add the attachment link back into the content.");
+            $deletionWarning.append(", because the attachment is not linked in the note's content. To prevent deletion, add the attachment link back into the content or convert the attachment into note.");
         } else {
             this.$wrapper.removeClass("scheduled-for-deletion");
             $deletionWarning.hide();
@@ -185,11 +185,11 @@ export default class AttachmentDetailWidget extends BasicWidget {
             });
 
             utils.copyHtmlToClipboard($link[0].outerHTML);
+
+            toastService.showMessage("Attachment link copied to clipboard.");
         } else {
             throw new Error(`Unrecognized attachment role '${this.attachment.role}'.`);
         }
-
-        toastService.showMessage("Attachment link copied to clipboard.");
     }
 
     async entitiesReloadedEvent({loadResults}) {

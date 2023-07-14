@@ -124,9 +124,7 @@ class BAttachment extends AbstractBeccaEntity {
         this._setContent(content, opts);
     }
 
-    /**
-     * @returns {{note: BNote, branch: BBranch}}
-     */
+    /** @returns {{note: BNote, branch: BBranch}} */
     convertToNote() {
         if (this.type === 'search') {
             throw new Error(`Note of type search cannot have child notes`);
