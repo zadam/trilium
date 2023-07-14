@@ -75,19 +75,19 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         this.$errorContainer.hide();
 
         try {
-            await this.renderSvg(async renderedSvg => {
-                this.$display.html(renderedSvg);
+            const svg = await this.renderSvg();
 
-                await wheelZoomLoaded;
+            this.$display.html(svg);
 
-                this.$display.attr("id", `mermaid-render-${idCounter}`);
+            await wheelZoomLoaded;
 
-                WZoom.create(`#mermaid-render-${idCounter}`, {
-                    type: 'html',
-                    maxScale: 10,
-                    speed: 20,
-                    zoomOnClick: false
-                });
+            this.$display.attr("id", `mermaid-render-${idCounter}`);
+
+            WZoom.create(`#mermaid-render-${idCounter}`, {
+                type: 'html',
+                maxScale: 10,
+                speed: 20,
+                zoomOnClick: false
             });
         } catch (e) {
             this.$errorMessage.text(e.message);
@@ -95,15 +95,14 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         }
     }
 
-    async renderSvg(cb) {
+    async renderSvg() {
         idCounter++;
 
         const blob = await this.note.getBlob();
         const content = blob.content || "";
 
-        // this can't be promisified since in case of error, this both calls callback with error SVG and throws exception
-        // with error details
-        mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content, cb);
+        const {svg} = await mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content);
+        return svg;
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -117,9 +116,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             return;
         }
 
-        await this.renderSvg(renderedSvg => {
-            this.download(`${this.note.title}.svg`, renderedSvg);
-        });
+        const svg = await this.renderSvg();
+        this.download(`${this.note.title}.svg`, svg);
     }
 
     download(filename, text) {
