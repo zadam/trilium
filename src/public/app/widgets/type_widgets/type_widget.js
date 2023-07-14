@@ -11,9 +11,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
         return super.doRender();
     }
 
-    /**
-     * @param {FNote} note
-     */
+    /** @param {FNote} note */
     async doRefresh(note) {}
 
     async refresh() {
@@ -38,9 +36,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
         return this.$widget.is(":visible") && this.noteContext?.ntxId === appContext.tabManager.activeNtxId;
     }
 
-    /**
-     * @returns {Promise<Object>|*} promise resolving note data. Note data is an object with content.
-     */
+    /** @returns {Promise<Object>|*} promise resolving note data. Note data is an object with content. */
     getData() {}
 
     focus() {}

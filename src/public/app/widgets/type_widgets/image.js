@@ -90,7 +90,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.$imageView.prop("src", `api/images/${note.noteId}/${encodeURIComponent(note.title)}`);
+        this.$imageView.prop("src", `api/images/${note.noteId}/${encodeURIComponent(note.title)}?timestamp=${Date.now()}`);
     }
 
     copyImageReferenceToClipboardEvent({ntxId}) {
@@ -99,6 +99,12 @@ class ImageTypeWidget extends TypeWidget {
         }
 
         imageService.copyImageReferenceToClipboard(this.$imageWrapper);
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
+        }
     }
 }
 
