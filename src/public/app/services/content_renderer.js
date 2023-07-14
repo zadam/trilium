@@ -209,8 +209,9 @@ async function renderMermaid(note, $renderedContent) {
     mermaid.mermaidAPI.initialize({startOnLoad: false, theme: mermaidTheme.trim(), securityLevel: 'antiscript'});
 
     try {
-        mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content,
-            content => $renderedContent.append($(content)));
+        const {svg} = await mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content);
+
+        $renderedContent.append($(svg));
     } catch (e) {
         const $error = $("<p>The diagram could not displayed.</p>");
 
