@@ -1,4 +1,3 @@
-import libraryLoader from "../../services/library_loader.js";
 import toastService from "../../services/toast.js";
 import utils from "../../services/utils.js";
 import appContext from "../../components/app_context.js";
@@ -49,8 +48,6 @@ export default class MarkdownImportDialog extends BasicWidget {
 
     async convertMarkdownToHtml(markdownContent) {
         const {htmlContent} = await server.post('other/render-markdown', { markdownContent });
-
-        console.log(htmlContent);
 
         const textEditor = await appContext.tabManager.getActiveContext().getTextEditor();
 
