@@ -23,8 +23,6 @@ const CODE_MIRROR = {
 
 const ESLINT = {js: ["libraries/eslint.js"]};
 
-const COMMONMARK = {js: ["libraries/commonmark.min.js"]};
-
 const RELATION_MAP = {
     js: [
         "libraries/jsplumb.js",
@@ -119,7 +117,6 @@ export default {
     CKEDITOR,
     CODE_MIRROR,
     ESLINT,
-    COMMONMARK,
     RELATION_MAP,
     PRINT_THIS,
     CALENDAR_WIDGET,

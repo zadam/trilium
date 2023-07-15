@@ -324,6 +324,7 @@ function register(app) {
     apiRoute(PST, '/api/delete-notes-preview', notesApiRoute.getDeleteNotesPreview);
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
     apiRoute(GET, '/api/other/icon-usage', otherRoute.getIconUsage);
+    apiRoute(PST, '/api/other/render-markdown', otherRoute.renderMarkdown);
     apiRoute(GET, '/api/recent-changes/:ancestorNoteId', recentChangesApiRoute.getRecentChanges);
     apiRoute(GET, '/api/edited-notes/:date', revisionsApiRoute.getEditedNotesOnDate);
 

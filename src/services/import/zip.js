@@ -7,7 +7,6 @@ const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
 const BBranch = require('../../becca/entities/bbranch');
 const path = require('path');
-const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
 const treeService = require("../tree");
@@ -15,6 +14,7 @@ const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
 const BAttachment = require("../../becca/entities/battachment");
+const markdownService = require("./markdown");
 
 /**
  * @param {TaskContext} taskContext
@@ -31,8 +31,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // path => noteId, used only when meta file is not available
     /** @type {Object.<string, string>} path => noteId | attachmentId */
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
-    const mdReader = new commonmark.Parser();
-    const mdWriter = new commonmark.HtmlRenderer();
     let metaFile = null;
     /** @type {BNote} */
     let firstNote = null;
@@ -414,8 +412,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     function processNoteContent(noteMeta, type, mime, content, noteTitle, filePath) {
         if (noteMeta?.format === 'markdown'
             || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
-            const parsed = mdReader.parse(content);
-            content = mdWriter.render(parsed);
+            content = markdownService.renderToHtml(content, noteTitle);
         }
 
         if (type === 'text') {

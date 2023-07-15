@@ -3,9 +3,10 @@
 const noteService = require('../../services/notes');
 const imageService = require('../../services/image');
 const protectedSessionService = require('../protected_session');
-const commonmark = require('commonmark');
+const markdownService = require('./markdown');
 const mimeService = require('./mime');
 const utils = require('../../services/utils');
+const importUtils = require('./utils');
 const htmlSanitizer = require('../html_sanitizer');
 
 function importSingleFile(taskContext, file, parentNote) {
@@ -120,16 +121,7 @@ function importMarkdown(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
     const markdownContent = file.buffer.toString("utf-8");
-
-    const reader = new commonmark.Parser();
-    const writer = new commonmark.HtmlRenderer();
-
-    const parsed = reader.parse(markdownContent);
-    let htmlContent = writer.render(parsed);
-
-    htmlContent = htmlSanitizer.sanitize(htmlContent);
-
-    htmlContent = handleH1(htmlContent, title);
+    const htmlContent = markdownService.renderToHtml(markdownContent, title);
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
@@ -145,24 +137,12 @@ function importMarkdown(taskContext, file, parentNote) {
     return note;
 }
 
-function handleH1(content, title) {
-    content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
-        if (title.trim() === text.trim()) {
-            return ""; // remove whole H1 tag
-        } else {
-            return `<h2>${text}</h2>`;
-        }
-    });
-    return content;
-}
-
 function importHtml(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     let content = file.buffer.toString("utf-8");
 
     content = htmlSanitizer.sanitize(content);
-
-    content = handleH1(content, title);
+    content = importUtils.handleH1(content, title);
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,

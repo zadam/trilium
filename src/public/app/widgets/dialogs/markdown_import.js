@@ -4,6 +4,7 @@ import utils from "../../services/utils.js";
 import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
 import shortcutService from "../../services/shortcuts.js";
+import server from "../../services/server.js";
 
 const TPL = `
 <div class="markdown-import-dialog modal fade mx-auto" tabindex="-1" role="dialog">
@@ -46,18 +47,14 @@ export default class MarkdownImportDialog extends BasicWidget {
         shortcutService.bindElShortcut(this.$widget, 'ctrl+return', () => this.sendForm());
     }
 
-    async convertMarkdownToHtml(text) {
-        await libraryLoader.requireLibrary(libraryLoader.COMMONMARK);
+    async convertMarkdownToHtml(markdownContent) {
+        const {htmlContent} = await server.post('other/render-markdown', { markdownContent });
 
-        const reader = new commonmark.Parser();
-        const writer = new commonmark.HtmlRenderer();
-        const parsed = reader.parse(text);
-
-        const result = writer.render(parsed);
+        console.log(htmlContent);
 
         const textEditor = await appContext.tabManager.getActiveContext().getTextEditor();
 
-        const viewFragment = textEditor.data.processor.toView(result);
+        const viewFragment = textEditor.data.processor.toView(htmlContent);
         const modelFragment = textEditor.data.toModel(viewFragment);
 
         textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);

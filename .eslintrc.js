@@ -102,8 +102,6 @@ module.exports = {
         mermaid: true,
         // src\public\app\services\frontend_script_api.js
         dayjs: true,
-        // \src\public\app\widgets\dialogs\markdown_import.js
-        commonmark: true,
         // \src\public\app\widgets\note_map.js
         ForceGraph: true,
         // \src\public\app\setup.js
