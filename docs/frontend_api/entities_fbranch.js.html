@@ -47,7 +47,7 @@ class FBranch {
         this.noteId = row.noteId;
         /** @type {string} */
         this.parentNoteId = row.parentNoteId;
-        /** @type {integer} */
+        /** @type {int} */
         this.notePosition = row.notePosition;
         /** @type {string} */
         this.prefix = row.prefix;
@@ -72,7 +72,7 @@ class FBranch {
         return this.froca.getNote(this.parentNoteId);
     }
 
-    /** @returns {boolean} true if it's top level, meaning its parent is root note */
+    /** @returns {boolean} true if it's top level, meaning its parent is the root note */
     isTopLevel() {
         return this.parentNoteId === 'root';
     }

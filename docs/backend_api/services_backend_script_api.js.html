@@ -55,11 +55,11 @@ const exportService = require("./export/zip");
  * @constructor
  */
 function BackendScriptApi(currentNote, apiParams) {
-    /** @property {BNote} note where script started executing */
+    /** @property {BNote} note where the script started executing */
     this.startNote = apiParams.startNote;
-    /** @property {BNote} note where script is currently executing. Don't mix this up with concept of active note */
+    /** @property {BNote} note where the script is currently executing. Don't mix this up with the concept of active note */
     this.currentNote = currentNote;
-    /** @property {AbstractBeccaEntity} entity whose event triggered this executions */
+    /** @property {AbstractBeccaEntity} entity whose event triggered this execution */
     this.originEntity = apiParams.originEntity;
 
     for (const key in apiParams) {
@@ -170,7 +170,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
+     * @param {string} prefix - if branch is created between note and parent note, set this prefix
      * @returns {{branch: BBranch|null}}
      */
     this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
@@ -192,7 +192,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {boolean} present - true if we want the branch to exist, false if we want it gone
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
+     * @param {string} prefix - if branch is created between note and parent note, set this prefix
      * @returns {void}
      */
     this.toggleNoteInParent = cloningService.toggleNoteInParent;
@@ -243,7 +243,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @property {boolean} [params.isProtected=false]
      * @property {boolean} [params.isExpanded=false]
      * @property {string} [params.prefix='']
-     * @property {integer} [params.notePosition] - default is last existing notePosition in a parent + 10
+     * @property {int} [params.notePosition] - default is last existing notePosition in a parent + 10
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
     this.createNewNote = noteService.createNewNote;
@@ -272,7 +272,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
         const parentNote = becca.getNote(parentNoteId);
 
-        // code note type can be inherited, otherwise text is default
+        // code note type can be inherited, otherwise "text" is the default
         extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
         extraOptions.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
 
@@ -440,7 +440,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
      *
      * @method
-     * @param {integer} length of the string
+     * @param {int} length of the string
      * @returns {string} random string
      */
     this.randomString = utils.randomString;
