@@ -153,6 +153,7 @@ function parseNavigationStateFromUrl(url) {
     };
     let ntxId = null;
     let hoistedNoteId = null;
+    let searchString = null;
 
     if (paramString) {
         for (const pair of paramString.split("&")) {
@@ -164,6 +165,8 @@ function parseNavigationStateFromUrl(url) {
                 ntxId = value;
             } else if (name === 'hoistedNoteId') {
                 hoistedNoteId = value;
+            } else if (name === 'searchString') {
+                searchString = value; // supports triggering search from URL, e.g. #?searchString=blabla
             } else if (['viewMode', 'attachmentId'].includes(name)) {
                 viewScope[name] = value;
             } else {
@@ -177,7 +180,8 @@ function parseNavigationStateFromUrl(url) {
         noteId: treeService.getNoteIdFromUrl(notePath),
         ntxId,
         hoistedNoteId,
-        viewScope
+        viewScope,
+        searchString
     };
 }
 

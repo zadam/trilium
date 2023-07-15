@@ -86,7 +86,7 @@ export default class SearchString extends AbstractSearchOption {
     }
 
     focusOnSearchDefinitionEvent() {
-        this.$searchString.val(appContext.lastSearchString).focus().select();
+        this.$searchString.val(this.$searchString.val().trim() || appContext.lastSearchString).focus().select();
         this.spacedUpdate.scheduleUpdate();
     }
 }

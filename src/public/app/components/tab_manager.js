@@ -117,6 +117,10 @@ export default class TabManager extends Component {
                     parsedFromUrl.viewScope,
                     parsedFromUrl.hoistedNoteId
                 );
+            } else if (parsedFromUrl.searchString) {
+                await appContext.triggerCommand('searchNotes', {
+                    searchString: parsedFromUrl.searchString
+                });
             }
         }
         catch (e) {
