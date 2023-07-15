@@ -197,6 +197,9 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             else if (definition.labelType === 'date') {
                 $input.prop("type", "date");
             }
+            else if (definition.labelType === 'datetime') {
+                $input.prop('type', 'datetime-local')
+            }
             else if (definition.labelType === 'url') {
                 $input.prop("placeholder", "http://website...");
 
