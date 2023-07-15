@@ -4,7 +4,7 @@ import server from "../../../../services/server.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Vacuum database</h4>
+    <h4>Vacuum Database</h4>
     
     <p>This will rebuild the database which will typically result in a smaller database file. No data will be actually changed.</p>
     

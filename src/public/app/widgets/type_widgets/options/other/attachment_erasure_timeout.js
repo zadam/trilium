@@ -4,7 +4,7 @@ import toastService from "../../../../services/toast.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Attachment erasure timeout</h4>
+    <h4>Attachment Erasure Timeout</h4>
 
     <p>Attachments get automatically deleted (and erased) if they are not referenced by their note anymore after a defined time out.</p>
 

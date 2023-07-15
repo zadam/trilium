@@ -2,7 +2,7 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Table of contents</h4>
+    <h4>Table of Contents</h4>
     
     Table of contents will appear in text notes when the note has more than a defined number of headings. You can customize this number:
     

@@ -4,7 +4,7 @@ import server from "../../../../services/server.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Consistency checks</h4>
+    <h4>Consistency Checks</h4>
     
     <button class="find-and-fix-consistency-issues-button btn">Find and fix consistency issues</button>
 </div>`;

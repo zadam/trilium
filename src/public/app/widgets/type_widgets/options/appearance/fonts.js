@@ -31,7 +31,7 @@ const TPL = `
 <div class="options-section">
     <h4>Fonts</h4>
     
-    <h5>Main font</h5>
+    <h5>Main Font</h5>
     
     <div class="form-group row">
         <div class="col-6">
@@ -51,7 +51,7 @@ const TPL = `
         </div>
     </div>
 
-    <h5>Note tree font</h5>
+    <h5>Note Tree Font</h5>
 
     <div class="form-group row">
         <div class="col-4">
@@ -71,7 +71,7 @@ const TPL = `
         </div>
     </div>
     
-    <h5>Note detail font</h5>
+    <h5>Note Detail Font</h5>
     
     <div class="form-group row">
         <div class="col-4">
@@ -91,7 +91,7 @@ const TPL = `
         </div>
     </div>
     
-    <h5>Monospace (code) font</h5>
+    <h5>Monospace (code) Font</h5>
     
     <div class="form-group row">
         <div class="col-4">

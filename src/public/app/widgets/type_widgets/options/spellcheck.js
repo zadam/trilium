@@ -3,7 +3,7 @@ import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Spell check</h4>
+    <h4>Spell Check</h4>
 
     <p>These options apply only for desktop builds, browsers will use their own native spell check. App restart is required after change.</p>
 

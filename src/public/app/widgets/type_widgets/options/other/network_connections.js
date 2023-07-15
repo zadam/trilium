@@ -2,7 +2,7 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Network connections</h4>
+    <h4>Network Connections</h4>
         
     <label>
         <input class="check-for-updates" type="checkbox" name="check-for-updates">

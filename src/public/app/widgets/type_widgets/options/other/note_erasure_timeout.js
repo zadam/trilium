@@ -4,7 +4,7 @@ import toastService from "../../../../services/toast.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Note erasure timeout</h4>
+    <h4>Note Erasure Timeout</h4>
 
     <p>Deleted notes (and attributes, revisions...) are at first only marked as deleted and it is possible to recover them 
     from Recent Notes dialog. After a period of time, deleted notes are "erased" which means 

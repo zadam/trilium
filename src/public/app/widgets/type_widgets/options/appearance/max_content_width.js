@@ -3,7 +3,7 @@ import utils from "../../../../services/utils.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Content width</h4>
+    <h4>Content Width</h4>
     
     <p>Trilium by default limits max content width to improve readability for maximized screens on wide screens.</p>
     

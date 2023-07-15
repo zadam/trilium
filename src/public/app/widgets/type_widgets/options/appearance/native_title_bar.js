@@ -2,7 +2,7 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Native title bar (requires app restart)</h4>
+    <h4>Native Title Bar (requires app restart)</h4>
     
     <select class="native-title-bar-select form-control">
         <option value="show">enabled</option>

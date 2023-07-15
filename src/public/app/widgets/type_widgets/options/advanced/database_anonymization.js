@@ -4,20 +4,20 @@ import server from "../../../../services/server.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Database anonymization</h4>
+    <h4>Database Anonymization</h4>
     
-    <h5>Full anonymization</h5>
+    <h5>Full Anonymization</h5>
     
     <p>This action will create a new copy of the database and anonymize it (remove all note content and leave only structure and some non-sensitive metadata)
         for sharing online for debugging purposes without fear of leaking your personal data.</p>
     
     <button class="anonymize-full-button btn">Save fully anonymized database</button>
 
-    <h5>Light anonymization</h5>
+    <h5>Light Anonymization</h5>
     
-    <p>This action will create a new copy of the database and do a light anonymization on it - specifically only content of all notes will be removed, but titles and attributes will remain. Additionally, custom JS frontend/backend script notes and custom widgets will remain. This provides more context to debug the issues.</p>
+    <p>This action will create a new copy of the database and do a light anonymization on it — specifically only content of all notes will be removed, but titles and attributes will remain. Additionally, custom JS frontend/backend script notes and custom widgets will remain. This provides more context to debug the issues.</p>
     
-    <p>You can decide yourself if you want to provide fully or lightly anonymized database. Even fully anonymized DB is very useful, however in some cases lightly anonymized database can speed up the process of bug identification and fixing.</p>
+    <p>You can decide yourself if you want to provide a fully or lightly anonymized database. Even fully anonymized DB is very useful, however in some cases lightly anonymized database can speed up the process of bug identification and fixing.</p>
     
     <button class="anonymize-light-button btn">Save lightly anonymized database</button>
 </div>`;

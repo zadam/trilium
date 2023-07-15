@@ -25,7 +25,7 @@ const TPL = `
         }
     </style>
 
-    <h4>Keyboard shortcuts</h4>
+    <h4>Keyboard Shortcuts</h4>
     
     <p>
       Multiple shortcuts for the same action can be separated by comma.

@@ -4,7 +4,7 @@ import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4 style="margin-top: 0px;">Sync configuration</h4>
+    <h4 style="margin-top: 0px;">Sync Configuration</h4>
     
     <form class="sync-setup-form">
         <div class="form-group">
@@ -33,7 +33,7 @@ const TPL = `
 </div>
 
 <div class="options-section">
-    <h4>Sync test</h4>
+    <h4>Sync Test</h4>
     
     <p>This will test the connection and handshake to the sync server. If the sync server isn't initialized, this will set it up to sync with the local document.</p>
     

@@ -4,7 +4,7 @@ import server from "../../../../services/server.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Database integrity check</h4>
+    <h4>Database Integrity Check</h4>
     
     <p>This will check that the database is not corrupted on the SQLite level. It might take some time, depending on the DB size.</p>
     

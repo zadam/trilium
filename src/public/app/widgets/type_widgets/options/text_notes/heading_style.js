@@ -2,7 +2,8 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Heading style</h4>
+    <h4>Heading Style</h4>
+    
     <select class="heading-style form-control">
         <option value="plain">Plain</option>
         <option value="underline">Underline</option>

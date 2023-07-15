@@ -3,8 +3,6 @@ import utils from "../../../../services/utils.js";
 
 const TPL = `
 <div class="options-section">
-
-
     <h4>Search Engine</h4>
     
     <p>Custom search engine requires both a name and a URL to be set. If either of these is not set, DuckDuckGo will be used as the default search engine.</p>

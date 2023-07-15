@@ -2,7 +2,7 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Automatic read-only size</h4>
+    <h4>Automatic Read-Only Size</h4>
 
     <p>Automatic read-only note size is the size after which notes will be displayed in a read-only mode (for performance reasons).</p>
 

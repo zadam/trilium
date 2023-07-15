@@ -2,7 +2,7 @@ import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4>Note revisions snapshot interval</h4>
+    <h4>Note Revisions Snapshot Interval</h4>
 
     <p>Note revision snapshot time interval is time in seconds after which a new note revision will be created for the note. See <a href="https://github.com/zadam/trilium/wiki/Note-revisions" class="external">wiki</a> for more info.</p>
 
