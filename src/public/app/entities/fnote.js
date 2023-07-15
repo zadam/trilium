@@ -426,7 +426,9 @@ class FNote {
      * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
      */
     isHiddenCompletely() {
-        if (this.noteId === 'root') {
+        if (this.noteId === '_hidden') {
+            return true;
+        } else if (this.noteId === 'root') {
             return false;
         }
 
