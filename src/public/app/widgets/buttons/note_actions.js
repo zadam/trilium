@@ -105,6 +105,9 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
         this.$openNoteExternallyButton.toggle(utils.isElectron());
         this.$openNoteCustomButton.toggle(utils.isElectron() && !utils.isMac()); // no implementation for Mac yet
+
+        // I don't want to handle all special notes like this, but intuitively user might want to export content of backend log
+        this.toggleDisabled(this.$exportNoteButton, !['_backendLog'].includes(note.noteId));
     }
 
     async convertNoteIntoAttachmentCommand() {
