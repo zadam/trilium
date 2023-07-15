@@ -353,7 +353,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
             },
             beforeActivate: (event, {node}) => {
-                // hidden subtree is hidden hackily, prevent activating it, e.g. by keyboard
+                // hidden subtree is hidden hackily - we want it to be present in the tree so that we can switch to it
+                // without reloading the whole tree, but we want it to be hidden when hoisted to root. FancyTree allows
+                // filtering the display only by ascendant - i.e. if the root is visible, all the descendants are as well.
+                // We solve it by hiding the hidden subtree via CSS (class "hidden-node-is-hidden"),
+                // but then we need to prevent activating it, e.g. by keyboard
 
                 if (hoistedNoteService.getHoistedNoteId() === '_hidden') {
                     // if we're hoisted in hidden subtree, we want to avoid crossing to "visible" tree,
