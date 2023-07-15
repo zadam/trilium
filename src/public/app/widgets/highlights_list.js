@@ -248,7 +248,7 @@ class CloseHltButton extends OnClickButtonWidget {
 
         this.icon("bx-x")
             .title("Close HighlightsListWidget")
-            .titlePlacement("bottom")
+            .titlePlacement("left")
             .onClick((widget, e) => {
                 e.stopPropagation();
 

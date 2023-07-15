@@ -267,7 +267,7 @@ class CloseTocButton extends OnClickButtonWidget {
 
         this.icon("bx-x")
             .title("Close TOC")
-            .titlePlacement("bottom")
+            .titlePlacement("left")
             .onClick((widget, e) => {
                 e.stopPropagation();
 
