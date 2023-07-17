@@ -18,7 +18,7 @@ module.exports = () => {
             if (noteId.startsWith("_")) { // is "named" note
                 const note = becca.getNote(noteId);
 
-                for (const attr of note.getOwnedAttributes()) {
+                for (const attr of note.getOwnedAttributes().slice()) {
                     attr.markAsDeleted("0212__delete_all_attributes_of_named_notes");
                 }
             }
