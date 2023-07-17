@@ -95,7 +95,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.$convertNoteIntoAttachmentButton.toggle(note.isEligibleForConversionToAttachment());
 
-        this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book', 'search'].includes(note.type));
+        this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book'].includes(note.type));
 
         this.toggleDisabled(this.$showSourceButton, ['text', 'relationMap', 'mermaid'].includes(note.type));
 
@@ -103,11 +103,17 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
         this.$renderNoteButton.toggle(note.type === 'render');
 
-        this.$openNoteExternallyButton.toggle(utils.isElectron());
-        this.$openNoteCustomButton.toggle(utils.isElectron() && !utils.isMac()); // no implementation for Mac yet
+        this.toggleDisabled(this.$openNoteExternallyButton, utils.isElectron() && !['search'].includes(note.type));
+        this.toggleDisabled(this.$openNoteCustomButton,
+            utils.isElectron()
+            && !utils.isMac() // no implementation for Mac yet
+            && !['search'].includes(note.type)
+        );
 
         // I don't want to handle all special notes like this, but intuitively user might want to export content of backend log
         this.toggleDisabled(this.$exportNoteButton, !['_backendLog'].includes(note.noteId));
+
+        this.toggleDisabled(this.$importNoteButton, !['search'].includes(note.type));
     }
 
     async convertNoteIntoAttachmentCommand() {
