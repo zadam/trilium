@@ -317,6 +317,9 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
+     * Beware that the method must not create a copy of the array, but actually returns its internal array
+     * (for performance reasons)
+     *
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
      * @returns {BAttribute[]} all note's attributes, including inherited ones
@@ -335,7 +338,6 @@ class BNote extends AbstractBeccaEntity {
             return this.__attributeCache.filter(attr => attr.name === name);
         }
         else {
-            // a bit unsafe to return the original array, but defensive copy would be costly
             return this.__attributeCache;
         }
     }
@@ -646,6 +648,9 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
+     * Beware that the method must not create a copy of the array, but actually returns its internal array
+     * (for performance reasons)
+     *
      * @param {string|null} [type] - (optional) attribute type to filter
      * @param {string|null} [name] - (optional) attribute name to filter
      * @param {string|null} [value] - (optional) attribute value to filter

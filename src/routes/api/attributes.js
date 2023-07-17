@@ -116,7 +116,7 @@ function updateNoteAttributes(req) {
 
     const note = becca.getNote(noteId);
 
-    let existingAttrs = note.getOwnedAttributes();
+    let existingAttrs = note.getOwnedAttributes().slice();
 
     let position = 0;
 

@@ -274,6 +274,8 @@ class AbstractBeccaEntity {
                 [this.dateModified, entityId]);
         }
 
+        console.trace("DELETE");
+
         log.info(`Marking ${entityName} ${entityId} as deleted`);
 
         this.addEntityChange(true);
@@ -290,6 +292,8 @@ class AbstractBeccaEntity {
         sql.execute(`UPDATE ${entityName} SET isDeleted = 1, utcDateModified = ?
                            WHERE ${this.constructor.primaryKeyName} = ?`,
             [this.utcDateModified, entityId]);
+
+        console.trace("DELETE");
 
         log.info(`Marking ${entityName} ${entityId} as deleted`);
 
