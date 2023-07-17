@@ -742,7 +742,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         if (note.isShared()) {
             extraClasses.push("shared");
         }
-        else if (note.getParentNoteIds().length > 1) {
+
+        if (note.getParentNoteIds().length > 1) {
             const realClones = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)

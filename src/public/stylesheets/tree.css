@@ -132,8 +132,16 @@ span.fancytree-node.protected > span.fancytree-custom-icon {
     filter: drop-shadow(2px 2px 2px var(--main-text-color));
 }
 
+span.fancytree-node.multiple-parents.shared .fancytree-title::after {
+    font-family: 'boxicons' !important;
+    font-size: smaller;
+    content: " \ec27  \ec03";
+}
+
 span.fancytree-node.multiple-parents .fancytree-title::after {
-    content: " *";
+    font-family: 'boxicons' !important;
+    font-size: smaller;
+    content: " \ec27"; /* lookup code for "star" in boxicons.css */
 }
 
 span.fancytree-node.shared .fancytree-title::after {
