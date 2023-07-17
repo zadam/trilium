@@ -68,6 +68,13 @@ class SNote extends AbstractShacaEntity {
         return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
+    /** @returns {SBranch[]} */
+    getVisibleChildBranches() {
+        return this.getChildBranches()
+            .filter(branch => !branch.isHidden
+                && !branch.getNote().isLabelTruthy('shareHiddenFromTree'));
+    }
+
     /** @returns {SNote[]} */
     getParentNotes() {
         return this.parents;
@@ -80,10 +87,8 @@ class SNote extends AbstractShacaEntity {
 
     /** @returns {SNote[]} */
     getVisibleChildNotes() {
-        return this.getChildBranches()
-            .filter(branch => !branch.isHidden)
-            .map(branch => branch.getNote())
-            .filter(childNote => !childNote.isLabelTruthy('shareHiddenFromTree'));
+        return this.getVisibleChildBranches()
+            .map(branch => branch.getNote());
     }
 
     /** @returns {boolean} */

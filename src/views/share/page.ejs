@@ -75,11 +75,11 @@
         <% } %>
     </div>
 
-    <% if (subRoot.hasVisibleChildren()) { %>
+    <% if (subRoot.note.hasVisibleChildren()) { %>
         <button id="toggleMenuButton"></button>
 
         <nav id="menu">
-            <%- include('tree_item', {note: subRoot, activeNote: note}) %>
+            <%- include('tree_item', {note: subRoot.note, branch: subRoot.branch, activeNote: note}) %>
         </nav>
     <% } %>
 </div>

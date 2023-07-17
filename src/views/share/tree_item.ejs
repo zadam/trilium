@@ -1,16 +1,18 @@
 <p>
+    <% const titleWithPrefix = (branch.prefix ? `${branch.prefix} - ` : '') + note.title; %>
+
     <% if (activeNote.noteId === note.noteId) { %>
-    <strong><%= note.title %></strong>
+    <strong><%= titleWithPrefix %></strong>
     <% } else { %>
-    <a class="type-<%= note.type %>" href="./<%= note.shareId %>"><%= note.title %></a>
+    <a class="type-<%= note.type %>" href="./<%= note.shareId %>"><%= titleWithPrefix %></a>
     <% } %>
 </p>
 
 <% if (note.hasChildren()) { %>
 <ul>
-    <% note.getVisibleChildNotes().forEach(function (childNote) { %>
+    <% note.getVisibleChildBranches().forEach(function (branch) { %>
         <li>
-            <%- include('tree_item', {note: childNote}) %>
+            <%- include('tree_item', {branch: branch, note: branch.getNote()}) %>
         </li>
     <% }) %>
 </ul>

@@ -52,6 +52,11 @@ class SBranch extends AbstractShacaEntity {
     get parentNote() {
         return this.shaca.notes[this.parentNoteId];
     }
+
+    /** @returns {SNote} */
+    getParentNote() {
+        return this.parentNote;
+    }
 }
 
 module.exports = SBranch;

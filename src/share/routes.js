@@ -9,21 +9,28 @@ const contentRenderer = require("./content_renderer");
 const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
 
+/**
+ * @param {SNote} note
+ * @return {{note: SNote, branch: SBranch}|{}}
+ */
 function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
         // share root itself is not shared
-        return null;
+        return {};
     }
 
     // every path leads to share root, but which one to choose?
     // for the sake of simplicity, URLs are not note paths
-    const parentNote = note.getParentNotes()[0];
+    const parentBranch = note.getParentBranches()[0];
 
-    if (parentNote.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
-        return note;
+    if (parentBranch.parentNoteId === shareRoot.SHARE_ROOT_NOTE_ID) {
+        return {
+            note,
+            branch: parentBranch
+        };
     }
 
-    return getSharedSubTreeRoot(parentNote);
+    return getSharedSubTreeRoot(parentBranch.getParentNote());
 }
 
 function addNoIndexHeader(note, res) {
