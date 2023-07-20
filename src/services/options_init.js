@@ -92,6 +92,7 @@ const defaultOptions = [
     { name: 'disableTray', value: 'false', isSynced: false },
     { name: 'customSearchEngineName', value: 'Duckduckgo', isSynced: false },
     { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: false },
+    { name: 'openNoteIn', value: 'curtab', isSynced: true },
 ];
 
 function initStartupOptions() {
