@@ -73,6 +73,10 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
 
         const promotedDefAttrs = note.getPromotedDefinitionAttributes();
         const ownedAttributes = note.getOwnedAttributes();
+        // attrs are not resorted if position changes after the initial load
+        // promoted attrs are sorted primarily by order of definitions, but with multi-valued promoted attrs
+        // the order of attributes is important as well
+        ownedAttributes.sort((a, b) => a.position < b.position ? -1 : 1);
 
         if (promotedDefAttrs.length === 0) {
             this.toggleInt(false);
