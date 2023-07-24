@@ -304,6 +304,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
     this.createLink = linkService.createLink;
 
+    /** @deprecated - use api.createLink() instead */
+    this.createNoteLink = linkService.createLink;
+
     /**
      * Adds given text to the editor cursor
      *
