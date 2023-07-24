@@ -85,7 +85,7 @@ export default class HighlightsListWidget extends RightPanelWidget {
 
         const optionsHighlightsList = JSON.parse(options.get('highlightsList'));
 
-        if (note.isLabelTruthy('hideHighlightWidget') || !optionsHighlightsList) {
+        if (note.isLabelTruthy('hideHighlightWidget') || !optionsHighlightsList.length) {
             this.toggleInt(false);
             this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
