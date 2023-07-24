@@ -620,6 +620,15 @@ export default class TabRowWidget extends BasicWidget {
         this.updateTabById(newMainNtxId);        
     }
 
+    contextsReopenedEvent({mainNtxId, tabPosition}) {
+        if (mainNtxId === undefined || tabPosition === undefined) {
+            // no tab reopened
+            return;
+        }
+        const tabEl = this.getTabById(mainNtxId)[0];
+        tabEl.parentNode.insertBefore(tabEl, this.tabEls[tabPosition]);
+    }
+
     updateTabById(ntxId) {
         const $tab = this.getTabById(ntxId);
 

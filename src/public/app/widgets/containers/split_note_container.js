@@ -136,6 +136,15 @@ export default class SplitNoteContainer extends FlexContainer {
         }
     }
 
+    contextsReopenedEvent({ntxId, afterNtxId}) {
+        if (ntxId === undefined || afterNtxId === undefined) {
+            // no single split reopened
+            return;
+        }
+        this.$widget.find(`[data-ntx-id="${ntxId}"]`)
+            .insertAfter(this.$widget.find(`[data-ntx-id="${afterNtxId}"]`));
+    }
+
     async refresh() {
         this.toggleExt(true);
     }

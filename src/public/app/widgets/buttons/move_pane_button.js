@@ -44,4 +44,8 @@ export default class MovePaneButton extends OnClickButtonWidget {
     async noteContextReorderEvent() {
         this.refresh();
     }
+
+    async contextsReopenedEvent() {
+        this.refresh();
+    }
 }
