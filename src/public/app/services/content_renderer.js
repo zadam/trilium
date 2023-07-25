@@ -19,7 +19,6 @@ let idCounter = 1;
  */
 async function getRenderedContent(entity, options = {}) {
     options = Object.assign({
-        trim: false,
         tooltip: false
     }, options);
 
@@ -29,7 +28,7 @@ async function getRenderedContent(entity, options = {}) {
     const $renderedContent = $('<div class="rendered-content">');
 
     if (type === 'text') {
-        await renderText(entity, options, $renderedContent);
+        await renderText(entity, $renderedContent);
     }
     else if (type === 'code') {
         await renderCode(entity, options, $renderedContent);
@@ -86,12 +85,13 @@ async function getRenderedContent(entity, options = {}) {
     };
 }
 
-async function renderText(note, options, $renderedContent) {
+/** @param {FNote} note */
+async function renderText(note, $renderedContent) {
     // entity must be FNote
-    const blob = await note.getBlob({preview: options.trim});
+    const blob = await note.getBlob();
 
     if (!utils.isHtmlEmpty(blob.content)) {
-        $renderedContent.append($('<div class="ck-content">').html(trim(blob.content, options.trim)));
+        $renderedContent.append($('<div class="ck-content">').html(blob.content));
 
         if ($renderedContent.find('span.math-tex').length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.KATEX);
@@ -112,10 +112,11 @@ async function renderText(note, options, $renderedContent) {
     }
 }
 
-async function renderCode(note, options, $renderedContent) {
-    const blob = await note.getBlob({preview: options.trim});
+/** @param {FNote} note */
+async function renderCode(note, $renderedContent) {
+    const blob = await note.getBlob();
 
-    $renderedContent.append($("<pre>").text(trim(blob.content, options.trim)));
+    $renderedContent.append($("<pre>").text(blob.content));
 }
 
 function renderImage(entity, $renderedContent, options = {}) {
@@ -282,15 +283,6 @@ async function renderChildrenList($renderedContent, note) {
         }));
 
         $renderedContent.append("<br>");
-    }
-}
-
-function trim(text, doTrim) {
-    if (!doTrim) {
-        return text;
-    }
-    else {
-        return text.substr(0, Math.min(text.length, 2000));
     }
 }
 

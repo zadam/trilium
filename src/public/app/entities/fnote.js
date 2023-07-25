@@ -31,6 +31,7 @@ class FNote {
      * @param {Object.<string, Object>} row
      */
     constructor(froca, row) {
+        /** @type {Froca} */
         this.froca = froca;
 
         /** @type {string[]} */
@@ -859,12 +860,9 @@ class FNote {
         return this.getBlob();
     }
 
-    /**
-     * @param [opts.preview=false] - retrieve only first 10 000 characters for a preview
-     * @return {Promise<FBlob>}
-     */
-    async getBlob(opts = {}) {
-        return await this.froca.getBlob('notes', this.noteId, opts);
+    /** @return {Promise<FBlob>} */
+    async getBlob() {
+        return await this.froca.getBlob('notes', this.noteId);
     }
 
     toString() {

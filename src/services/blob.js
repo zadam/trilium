@@ -2,9 +2,7 @@ const becca = require('../becca/becca');
 const NotFoundError = require("../errors/not_found_error");
 const protectedSessionService = require("./protected_session");
 
-function getBlobPojo(entityName, entityId, opts = {}) {
-    opts.preview = !!opts.preview;
-
+function getBlobPojo(entityName, entityId) {
     const entity = becca.getEntity(entityName, entityId);
 
     if (!entity) {
@@ -19,10 +17,6 @@ function getBlobPojo(entityName, entityId, opts = {}) {
         pojo.content = null;
     } else {
         pojo.content = processContent(pojo.content, entity.isProtected, true);
-
-        if (opts.preview && pojo.content.length > 10000) {
-            pojo.content = `${pojo.content.substr(0, 10000)}\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
-        }
     }
 
     return pojo;

@@ -8,27 +8,32 @@ import appContext from "../components/app_context.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
-    $(document).on("mouseleave", "a", mouseLeaveHandler);
 
     // close any note tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
-    $(document).on("click", () => $('.note-tooltip').remove());
+    $(document).on("click", e => {
+        if ($(e.target).closest(".note-tooltip").length) {
+            // click within the tooltip shouldn't close it
+            return;
+        }
+
+        $('.note-tooltip').remove();
+    });
 }
 
 function setupElementTooltip($el) {
     $el.on('mouseenter', mouseEnterHandler);
-    $el.on('mouseleave', mouseLeaveHandler);
 }
 
 async function mouseEnterHandler() {
     const $link = $(this);
 
-    if ($link.hasClass("no-tooltip-preview")
-        || $link.hasClass("disabled")) {
+    if ($link.hasClass("no-tooltip-preview") || $link.hasClass("disabled")) {
         return;
-    }
-
-    // this is to avoid showing tooltip from inside the CKEditor link editor dialog
-    if ($link.closest(".ck-link-actions").length) {
+    } else if ($link.closest(".ck-link-actions").length) {
+        // this is to avoid showing tooltip from inside the CKEditor link editor dialog
+        return;
+    } else if ($link.closest(".note-tooltip").length) {
+        // don't show tooltip for links within tooltip
         return;
     }
 
@@ -39,8 +44,21 @@ async function mouseEnterHandler() {
         return;
     }
 
+    const linkId = $link.attr("data-link-id") || `link-${Math.floor(Math.random() * 1000000)}`;
+    $link.attr("data-link-id", linkId);
+
+    if ($(`.${linkId}`).is(":visible")) {
+        // tooltip is already open for this link
+        return;
+    }
+
     const note = await froca.getNote(noteId);
-    const content = await renderTooltip(note);
+
+    const [content] = await Promise.all([
+        renderTooltip(note),
+        // to reduce flicker due to accidental mouseover, cursor must stay for a bit over the link for tooltip to appear
+        new Promise(res => setTimeout(res, 500))
+    ]);
 
     if (utils.isHtmlEmpty(content)) {
         return;
@@ -53,7 +71,6 @@ async function mouseEnterHandler() {
     // we now create tooltip which won't close because it won't receive mouseleave event
     if ($(this).is(":hover")) {
         $(this).tooltip({
-            delay: {"show": 300, "hide": 100},
             container: 'body',
             // https://github.com/zadam/trilium/issues/2794 https://github.com/zadam/trilium/issues/2988
             // with bottom this flickering happens a bit less
@@ -63,15 +80,19 @@ async function mouseEnterHandler() {
             title: html,
             html: true,
             template: '<div class="tooltip note-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
-            sanitize: false
+            sanitize: false,
+            customClass: linkId
         });
 
         $(this).tooltip('show');
-    }
-}
 
-function mouseLeaveHandler() {
-    $(this).tooltip('dispose');
+        setTimeout(() => {
+            if (!$(this).is(":hover") && !$(`.${linkId}`).is(":hover")) {
+                // cursor is neither over the link nor over the tooltip, user likely is not interested
+                $(this).tooltip('dispose');
+            }
+        }, 1000);
+    }
 }
 
 async function renderTooltip(note) {

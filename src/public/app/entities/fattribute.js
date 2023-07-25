@@ -6,6 +6,7 @@ import promotedAttributeDefinitionParser from '../services/promoted_attribute_de
  */
 class FAttribute {
     constructor(froca, row) {
+        /** @type {Froca} */
         this.froca = froca;
 
         this.update(row);

@@ -182,8 +182,6 @@ export default class Entrypoints extends Component {
     }
 
     hideAllPopups() {
-        $(".tooltip").removeClass("show");
-
         if (utils.isDesktop()) {
             $(".aa-input").autocomplete("close");
         }

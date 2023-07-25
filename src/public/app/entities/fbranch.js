@@ -4,6 +4,7 @@
  */
 class FBranch {
     constructor(froca, row) {
+        /** @type {Froca} */
         this.froca = froca;
 
         this.update(row);

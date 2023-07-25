@@ -471,7 +471,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .note-tooltip-content {
     /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
     max-height: 300px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .note-tooltip-content .note-title-with-path .note-path {

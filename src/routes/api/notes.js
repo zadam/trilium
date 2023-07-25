@@ -15,9 +15,7 @@ function getNote(req) {
 }
 
 function getNoteBlob(req) {
-    const preview = req.query.preview === 'true';
-
-    return blobService.getBlobPojo('notes', req.params.noteId, { preview });
+    return blobService.getBlobPojo('notes', req.params.noteId);
 }
 
 function getNoteMetadata(req) {

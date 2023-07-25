@@ -368,12 +368,11 @@ class Froca {
     }
 
     /** @returns {Promise<FBlob>} */
-    async getBlob(entityType, entityId, opts = {}) {
-        opts.preview = !!opts.preview;
-        const key = `${entityType}-${entityId}-${opts.preview}`;
+    async getBlob(entityType, entityId) {
+        const key = `${entityType}-${entityId}`;
 
         if (!this.blobPromises[key]) {
-            this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob?preview=${opts.preview}`)
+            this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob`)
                 .then(row => new FBlob(row))
                 .catch(e => console.error(`Cannot get blob for ${entityType} '${entityId}'`));
 

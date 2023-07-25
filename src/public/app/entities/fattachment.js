@@ -1,5 +1,6 @@
 class FAttachment {
     constructor(froca, row) {
+        /** @type {Froca} */
         this.froca = froca;
 
         this.update(row);
@@ -34,12 +35,9 @@ class FAttachment {
         return this.froca.notes[this.ownerId];
     }
 
-    /**
-     * @param [opts.preview=false] - retrieve only first 10 000 characters for a preview
-     * @return {FBlob}
-     */
-    async getBlob(opts = {}) {
-        return await this.froca.getBlob('attachments', this.attachmentId, opts);
+    /** @return {FBlob} */
+    async getBlob() {
+        return await this.froca.getBlob('attachments', this.attachmentId);
     }
 }
 
