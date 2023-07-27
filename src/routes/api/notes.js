@@ -1,6 +1,7 @@
 "use strict";
 
 const noteService = require('../../services/notes');
+const eraseService = require('../../services/erase');
 const treeService = require('../../services/tree');
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
@@ -65,7 +66,7 @@ function deleteNote(req) {
     note.deleteNote(deleteId, taskContext);
 
     if (eraseNotes) {
-        noteService.eraseNotesWithDeleteId(deleteId);
+        eraseService.eraseNotesWithDeleteId(deleteId);
     }
 
     if (last) {
@@ -150,11 +151,11 @@ function duplicateSubtree(req) {
 }
 
 function eraseDeletedNotesNow() {
-    noteService.eraseDeletedNotesNow();
+    eraseService.eraseDeletedNotesNow();
 }
 
 function eraseUnusedAttachmentsNow() {
-    noteService.eraseUnusedAttachmentsNow();
+    eraseService.eraseUnusedAttachmentsNow();
 }
 
 function getDeleteNotesPreview(req) {

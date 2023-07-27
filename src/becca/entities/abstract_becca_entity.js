@@ -175,6 +175,8 @@ class AbstractBeccaEntity {
         }
 
         sql.execute("DELETE FROM blobs WHERE blobId = ?", [oldBlobId]);
+        // blobs are not marked as erased in entity_changes, they are just purged completely
+        // this is because technically every keystroke can create a new blob and there would be just too many
         sql.execute("DELETE FROM entity_changes WHERE entityName = 'blobs' AND entityId = ?", [oldBlobId]);
     }
 

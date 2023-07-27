@@ -4,7 +4,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const entityChangesService = require('../../services/entity_changes');
 const treeService = require('../../services/tree');
-const noteService = require('../../services/notes');
+const eraseService = require('../../services/erase');
 const becca = require('../../becca/becca');
 const TaskContext = require('../../services/task_context');
 const branchService = require("../../services/branches");
@@ -193,7 +193,7 @@ function deleteBranch(req) {
     if (eraseNotes) {
         // erase automatically means deleting all clones + note itself
         branch.getNote().deleteNote(deleteId, taskContext);
-        noteService.eraseNotesWithDeleteId(deleteId);
+        eraseService.eraseNotesWithDeleteId(deleteId);
         noteDeleted = true;
     } else {
         noteDeleted = branch.deleteBranch(deleteId, taskContext);

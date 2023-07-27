@@ -3,11 +3,11 @@ module.exports = async () => {
     const beccaLoader = require("../../src/becca/becca_loader");
     const log = require("../../src/services/log");
     const consistencyChecks = require("../../src/services/consistency_checks");
-    const noteService = require("../../src/services/notes");
+    const eraseService = require("../../src/services/erase");
 
     await cls.init(async () => {
         // precaution for the 0211 migration
-        noteService.eraseDeletedNotesNow();
+        eraseService.eraseDeletedNotesNow();
 
         beccaLoader.load();
 
