@@ -156,13 +156,13 @@ class AbstractBeccaEntity {
                 this.save();
 
                 if (newBlobId !== oldBlobId) {
-                    this.#deleteBlobIfNoteUsed(oldBlobId);
+                    this.#deleteBlobIfNotUsed(oldBlobId);
                 }
             }
         });
     }
 
-    #deleteBlobIfNoteUsed(blobId) {
+    #deleteBlobIfNotUsed(blobId) {
         if (sql.getValue("SELECT 1 FROM notes WHERE blobId = ? LIMIT 1", [blobId])) {
             return;
         }
