@@ -65,7 +65,15 @@ function updateNormalEntity(remoteEntityChange, remoteEntityRow, instanceId) {
         || localEntityChange.hash !== remoteEntityChange.hash // sync error, we should still update
     ) {
         if (remoteEntityChange.entityName === 'blobs') {
-            remoteEntityRow.content = handleContent(remoteEntityRow.content);
+            // we always use a Buffer object which is different from normal saving - there we use a simple string type for
+            // "string notes". The problem is that in general, it's not possible to detect whether a blob content
+            // is string note or note (syncs can arrive out of order)
+            remoteEntityRow.content = remoteEntityRow.content === null ? null : Buffer.from(remoteEntityRow.content, 'base64');
+
+            if (remoteEntityRow.content?.byteLength === 0) {
+                // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
+                remoteEntityRow.content = "";
+            }
         }
 
         sql.transactional(() => {
@@ -90,20 +98,6 @@ function updateNoteReordering(entityChange, entity, instanceId) {
     });
 
     return true;
-}
-
-function handleContent(content) {
-    // we always use a Buffer object which is different from normal saving - there we use a simple string type for
-    // "string notes". The problem is that in general, it's not possible to detect whether a blob content
-    // is string note or note (syncs can arrive out of order)
-    content = content === null ? null : Buffer.from(content, 'base64');
-
-    if (content && content.byteLength === 0) {
-        // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
-        content = "";
-    }
-
-    return content;
 }
 
 function eraseEntity(entityChange, instanceId) {

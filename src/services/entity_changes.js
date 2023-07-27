@@ -5,6 +5,7 @@ const cls = require('./cls');
 const utils = require('./utils');
 const instanceId = require('./member_id');
 const becca = require("../becca/becca");
+const blobService = require("../services/blob");
 
 let maxEntityChangeId = 0;
 
@@ -88,52 +89,53 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
 
     sql.transactional(() => {
-        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
-            + (condition ? ` WHERE ${condition}` : ''));
+        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} ${condition}`);
 
         let createdCount = 0;
 
         for (const entityId of entityIds) {
             const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-            // we don't want to replace existing entities (which would effectively cause full resync)
-            if (existingRows === 0) {
-                createdCount++;
-
-                let hash;
-                let utcDateChanged;
-                let isSynced;
-
-                if (entityName === 'blobs') {
-                    // FIXME: hacky, not sure if it might cause some problems
-                    hash = "fake value";
-                    utcDateChanged = dateUtils.utcNowDateTime();
-                    isSynced = true; // contents are always synced
-                } else {
-                    const entity = becca.getEntity(entityName, entityId);
-
-                    if (entity) {
-                        hash = entity?.generateHash() || "|deleted";
-                        utcDateChanged = entity?.getUtcDateChanged() || dateUtils.utcNowDateTime();
-                        isSynced = entityName !== 'options' || !!entity?.isSynced;
-                    } else {
-                        // entity might be null (not present in becca) when it's deleted
-                        // FIXME: hacky, not sure if it might cause some problems
-                        hash = "deleted";
-                        utcDateChanged = dateUtils.utcNowDateTime();
-                        isSynced = true; // deletable (the ones with isDeleted) entities are synced
-                    }
-                }
-
-                addEntityChange({
-                    entityName,
-                    entityId,
-                    hash: hash,
-                    isErased: false,
-                    utcDateChanged: utcDateChanged,
-                    isSynced: isSynced
-                });
+            if (existingRows !== 0) {
+                // we don't want to replace existing entities (which would effectively cause full resync)
+                continue;
             }
+
+            createdCount++;
+
+            let hash;
+            let utcDateChanged;
+            let isSynced;
+
+            if (entityName === 'blobs') {
+                const blob = sql.getRow("SELECT blobId, content, utcDateModified FROM blobs WHERE blobId = ?", [entityId]);
+                hash = blobService.calculateContentHash(blob);
+                utcDateChanged = blob.utcDateModified;
+                isSynced = true; // blobs are always synced
+            } else {
+                const entity = becca.getEntity(entityName, entityId);
+
+                if (entity) {
+                    hash = entity?.generateHash() || "|deleted";
+                    utcDateChanged = entity?.getUtcDateChanged() || dateUtils.utcNowDateTime();
+                    isSynced = entityName !== 'options' || !!entity?.isSynced;
+                } else {
+                    // entity might be null (not present in becca) when it's deleted
+                    // FIXME: hacky, not sure if it might cause some problems
+                    hash = "deleted";
+                    utcDateChanged = dateUtils.utcNowDateTime();
+                    isSynced = true; // deletable (the ones with isDeleted) entities are synced
+                }
+            }
+
+            addEntityChange({
+                entityName,
+                entityId,
+                hash: hash,
+                isErased: false,
+                utcDateChanged: utcDateChanged,
+                isSynced: isSynced
+            });
         }
 
         if (createdCount > 0) {
@@ -153,7 +155,7 @@ function fillAllEntityChanges() {
         fillEntityChanges("blobs", "blobId");
         fillEntityChanges("attributes", "attributeId");
         fillEntityChanges("etapi_tokens", "etapiTokenId");
-        fillEntityChanges("options", "name", 'isSynced = 1');
+        fillEntityChanges("options", "name", 'WHERE isSynced = 1');
     });
 }
 

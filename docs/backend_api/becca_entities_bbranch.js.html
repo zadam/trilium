@@ -219,7 +219,7 @@ class BBranch extends AbstractBeccaEntity {
 
             this.becca.notes[note.noteId].isBeingDeleted = true;
 
-            for (const attribute of note.getOwnedAttributes()) {
+            for (const attribute of note.getOwnedAttributes().slice()) {
                 attribute.markAsDeleted(deleteId);
             }
 
