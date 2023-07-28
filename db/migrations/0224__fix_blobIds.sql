@@ -10,5 +10,5 @@ UPDATE attachments SET blobId = REPLACE(blobId, '/', 'Y');
 UPDATE revisions SET blobId = REPLACE(blobId, '+', 'X');
 UPDATE revisions SET blobId = REPLACE(blobId, '/', 'Y');
 
-UPDATE entity_changes SET entityId = REPLACE(blobId, '+', 'X') WHERE entityName = 'blobs';
-UPDATE entity_changes SET entityId = REPLACE(blobId, '/', 'Y') WHERE entityName = 'blobs';
+UPDATE entity_changes SET entityId = REPLACE(entityId, '+', 'X') WHERE entityName = 'blobs';
+UPDATE entity_changes SET entityId = REPLACE(entityId, '/', 'Y') WHERE entityName = 'blobs';
