@@ -28,8 +28,13 @@ function hashedBlobId(content) {
     // sha512 is faster than sha256
     const base64Hash = crypto.createHash('sha512').update(content).digest('base64');
 
-    // 20 characters of base64 gives us 120 bit of entropy which is plenty enough
-    return base64Hash.substr(0, 20);
+    // we don't want such + and / in the IDs
+    const kindaBase62Hash = base64Hash
+        .replace('+', 'X')
+        .replace('/', 'Y');
+
+    // 20 characters of base62 gives us ~120 bit of entropy which is plenty enough
+    return kindaBase62Hash.substr(0, 20);
 }
 
 function toBase64(plainText) {

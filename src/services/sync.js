@@ -56,10 +56,9 @@ async function sync() {
     catch (e) {
         proxyToggle = !proxyToggle;
 
-        if (e.message &&
-                (e.message.includes('ECONNREFUSED') ||
-                 e.message.includes('ERR_') || // node network errors
-                 e.message.includes('Bad Gateway'))) {
+        if (e.message?.includes('ECONNREFUSED') ||
+            e.message?.includes('ERR_') || // node network errors
+            e.message?.includes('Bad Gateway')) {
 
             ws.syncFailed();
 
