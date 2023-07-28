@@ -72,6 +72,9 @@ async function migrate() {
             }
         }
     });
+
+    log.info("VACUUMing database, this might take a while ...");
+    sql.execute("VACUUM");
 }
 
 function executeMigration(mig) {
