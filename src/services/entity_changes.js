@@ -12,7 +12,7 @@ let maxEntityChangeId = 0;
 function putEntityChangeWithInstanceId(origEntityChange, instanceId) {
     const ec = {...origEntityChange, instanceId};
 
-    return putEntityChange(ec);
+    putEntityChange(ec);
 }
 
 function putEntityChange(origEntityChange) {
@@ -56,7 +56,11 @@ function putNoteReorderingEntityChange(parentNoteId, componentId) {
 }
 
 function putEntityChangeForOtherInstances(ec) {
-    putEntityChangeWithInstanceId(ec, null);
+    putEntityChange({
+        ...ec,
+        changeId: null,
+        instanceId: null
+    });
 }
 
 function addEntityChangesForSector(entityName, sector) {
