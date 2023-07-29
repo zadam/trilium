@@ -61,8 +61,8 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    addEntityChange(isDeleted = false) {
-        entityChangesService.addEntityChange({
+    putEntityChange(isDeleted = false) {
+        entityChangesService.putEntityChange({
             entityName: this.constructor.entityName,
             entityId: this[this.constructor.primaryKeyName],
             hash: this.generateHash(isDeleted),
@@ -101,7 +101,7 @@ class AbstractBeccaEntity {
                 return;
             }
 
-            this.addEntityChange(false);
+            this.putEntityChange(false);
 
             if (!cls.isEntityEventsDisabled()) {
                 const eventPayload = {
@@ -219,7 +219,7 @@ class AbstractBeccaEntity {
         // access to the decrypted content
         const hash = blobService.calculateContentHash(pojo);
 
-        entityChangesService.addEntityChange({
+        entityChangesService.putEntityChange({
             entityName: 'blobs',
             entityId: newBlobId,
             hash: hash,
@@ -279,7 +279,7 @@ class AbstractBeccaEntity {
 
         log.info(`Marking ${entityName} ${entityId} as deleted`);
 
-        this.addEntityChange(true);
+        this.putEntityChange(true);
 
         eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
     }
@@ -296,7 +296,7 @@ class AbstractBeccaEntity {
 
         log.info(`Marking ${entityName} ${entityId} as deleted`);
 
-        this.addEntityChange(true);
+        this.putEntityChange(true);
 
         eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
     }

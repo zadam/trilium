@@ -56,7 +56,7 @@ function getAndClearEntityChangeIds() {
     return entityChangeIds;
 }
 
-function addEntityChange(entityChange) {
+function putEntityChange(entityChange) {
     if (namespace.get('ignoreEntityChangeIds')) {
         return;
     }
@@ -91,6 +91,6 @@ module.exports = {
     isEntityEventsDisabled,
     reset,
     getAndClearEntityChangeIds,
-    addEntityChange,
+    putEntityChange,
     ignoreEntityChangeIds,
 };

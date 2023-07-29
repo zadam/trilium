@@ -165,7 +165,7 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
         }
 
         if (someBranchUpdated) {
-            entityChangesService.addNoteReorderingEntityChange(parentNoteId);
+            entityChangesService.putNoteReorderingEntityChange(parentNoteId);
         }
     });
 }

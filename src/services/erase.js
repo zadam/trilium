@@ -39,7 +39,7 @@ function setEntityChangesAsErased(entityChanges) {
         ec.isErased = true;
         ec.utcDateChanged = dateUtils.utcNowDateTime();
 
-        entityChangesService.addEntityChange(ec);
+        entityChangesService.putEntityChange(ec);
     }
 }
 

@@ -31,10 +31,6 @@ function getEntityHashes() {
 
         const sector = entityId[0];
 
-        if (entityName === 'revisions' && sector === '5') {
-            console.log(entityId, hash, isErased);
-        }
-
         // if the entity is erased, its hash is not updated, so it has to be added extra
         entityHashMap[sector] = (entityHashMap[sector] || "") + hash + isErased;
     }

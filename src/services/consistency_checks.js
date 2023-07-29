@@ -414,7 +414,7 @@ class ConsistencyChecks {
 
                         const hash = utils.hash(utils.randomString(10));
 
-                        entityChangesService.addEntityChange({
+                        entityChangesService.putEntityChange({
                             entityName: 'blobs',
                             entityId: blobId,
                             hash: hash,
@@ -605,7 +605,7 @@ class ConsistencyChecks {
                 const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
                 if (this.autoFix) {
-                    entityChangesService.addEntityChange({
+                    entityChangesService.putEntityChange({
                         entityName,
                         entityId,
                         hash: utils.randomString(10), // doesn't matter, will force sync, but that's OK

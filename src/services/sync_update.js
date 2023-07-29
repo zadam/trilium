@@ -38,7 +38,7 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
         return true;
     } else if (localEC?.isErased && !remoteEC.isErased) {
         // on this side, we can't unerase the entity, so force the entity to be erased on the other side.
-        entityChangesService.addEntityChangeWithInstanceId(localEC, null);
+        entityChangesService.putEntityChangeForOtherInstances(localEC);
 
         return false;
     }
@@ -62,12 +62,12 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
 
         sql.replace(remoteEC.entityName, remoteEntityRow);
 
-        entityChangesService.addEntityChangeWithInstanceId(remoteEC, instanceId);
+        entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
 
         return true;
     } else if (localEC.hash !== remoteEC.hash && localEC.utcDateChanged > remoteEC.utcDateChanged) {
         // the change on our side is newer than on the other side, so the other side should update
-        entityChangesService.addEntityChangeWithInstanceId(localEC, null);
+        entityChangesService.putEntityChangeForOtherInstances(localEC);
 
         return false;
     }
@@ -80,7 +80,7 @@ function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
         sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remoteEntityRow[key], key]);
     }
 
-    entityChangesService.addEntityChangeWithInstanceId(remoteEC, instanceId);
+    entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
 
     return true;
 }
@@ -106,7 +106,7 @@ function eraseEntity(entityChange, instanceId) {
 
     sql.execute(`DELETE FROM ${entityName} WHERE ${primaryKeyName} = ?`, [entityId]);
 
-    entityChangesService.addEntityChangeWithInstanceId(entityChange, instanceId);
+    entityChangesService.putEntityChangeWithInstanceId(entityChange, instanceId);
 }
 
 module.exports = {

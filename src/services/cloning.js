@@ -161,7 +161,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
     sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    eventChangesService.addNoteReorderingEntityChange(afterNote.parentNoteId);
+    eventChangesService.putNoteReorderingEntityChange(afterNote.parentNoteId);
 
     const branch = new BBranch({
         noteId: noteId,

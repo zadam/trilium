@@ -72,7 +72,7 @@ function moveBranchBeforeNote(req) {
     treeService.sortNotesIfNeeded(parentNote.noteId);
 
     // if sorting is not needed, then still the ordering might have changed above manually
-    entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
+    entityChangesService.putNoteReorderingEntityChange(parentNote.noteId);
 
     log.info(`Moved note ${branchToMove.noteId}, branch ${branchId} before note ${beforeBranch.noteId}, branch ${beforeBranchId}`);
 
@@ -123,7 +123,7 @@ function moveBranchAfterNote(req) {
     treeService.sortNotesIfNeeded(parentNote.noteId);
 
     // if sorting is not needed, then still the ordering might have changed above manually
-    entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
+    entityChangesService.putNoteReorderingEntityChange(parentNote.noteId);
 
     log.info(`Moved note ${branchToMove.noteId}, branch ${branchId} after note ${afterNote.noteId}, branch ${afterBranchId}`);
 

@@ -9,13 +9,13 @@ const blobService = require("../services/blob");
 
 let maxEntityChangeId = 0;
 
-function addEntityChangeWithInstanceId(origEntityChange, instanceId) {
+function putEntityChangeWithInstanceId(origEntityChange, instanceId) {
     const ec = {...origEntityChange, instanceId};
 
-    return addEntityChange(ec);
+    return putEntityChange(ec);
 }
 
-function addEntityChange(origEntityChange) {
+function putEntityChange(origEntityChange) {
     const ec = {...origEntityChange};
 
     delete ec.id;
@@ -32,11 +32,11 @@ function addEntityChange(origEntityChange) {
 
     maxEntityChangeId = Math.max(maxEntityChangeId, ec.id);
 
-    cls.addEntityChange(ec);
+    cls.putEntityChange(ec);
 }
 
-function addNoteReorderingEntityChange(parentNoteId, componentId) {
-    addEntityChange({
+function putNoteReorderingEntityChange(parentNoteId, componentId) {
+    putEntityChange({
         entityName: "note_reordering",
         entityId: parentNoteId,
         hash: 'N/A',
@@ -55,10 +55,8 @@ function addNoteReorderingEntityChange(parentNoteId, componentId) {
     });
 }
 
-function moveEntityChangeToTop(entityName, entityId) {
-    const ec = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
-
-    addEntityChange(ec);
+function putEntityChangeForOtherInstances(ec) {
+    putEntityChangeWithInstanceId(ec, null);
 }
 
 function addEntityChangesForSector(entityName, sector) {
@@ -66,7 +64,7 @@ function addEntityChangesForSector(entityName, sector) {
 
     sql.transactional(() => {
         for (const ec of entityChanges) {
-            addEntityChange(ec);
+            putEntityChange(ec);
         }
     });
 
@@ -128,7 +126,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                 }
             }
 
-            addEntityChange(ec);
+            putEntityChange(ec);
         }
 
         if (createdCount > 0) {
@@ -157,10 +155,10 @@ function recalculateMaxEntityChangeId() {
 }
 
 module.exports = {
-    addNoteReorderingEntityChange,
-    moveEntityChangeToTop,
-    addEntityChange,
-    addEntityChangeWithInstanceId,
+    putNoteReorderingEntityChange,
+    putEntityChangeForOtherInstances,
+    putEntityChange,
+    putEntityChangeWithInstanceId,
     fillAllEntityChanges,
     addEntityChangesForSector,
     getMaxEntityChangeId: () => maxEntityChangeId,

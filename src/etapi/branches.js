@@ -75,7 +75,7 @@ function register(router) {
     eu.route(router, 'post' ,'/etapi/refresh-note-ordering/:parentNoteId', (req, res, next) => {
         eu.getAndCheckNote(req.params.parentNoteId);
 
-        entityChangesService.addNoteReorderingEntityChange(req.params.parentNoteId, "etapi");
+        entityChangesService.putNoteReorderingEntityChange(req.params.parentNoteId, "etapi");
 
         res.sendStatus(204);
     });

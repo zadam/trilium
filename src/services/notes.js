@@ -265,7 +265,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
 
         const retObject = createNewNote(params);
 
-        entityChangesService.addNoteReorderingEntityChange(params.parentNoteId);
+        entityChangesService.putNoteReorderingEntityChange(params.parentNoteId);
 
         return retObject;
     }
