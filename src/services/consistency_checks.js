@@ -597,14 +597,10 @@ class ConsistencyChecks {
 
     runEntityChangeChecks(entityName, key) {
         this.findAndFixIssues(`
-            SELECT
-              ${key} as entityId
-            FROM
-              ${entityName} 
-              LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
-                                      AND entity_changes.entityId = ${key} 
-            WHERE 
-              entity_changes.id IS NULL`,
+            SELECT ${key} as entityId
+            FROM ${entityName}
+            LEFT JOIN entity_changes ec ON ec.entityName = '${entityName}' AND ec.entityId = ${entityName}.${key} 
+            WHERE ec.id IS NULL`,
             ({entityId}) => {
                 const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
@@ -613,7 +609,7 @@ class ConsistencyChecks {
                         entityName,
                         entityId,
                         hash: utils.randomString(10), // doesn't matter, will force sync, but that's OK
-                        isErased: !!entityRow.isErased,
+                        isErased: false,
                         utcDateChanged: entityRow.utcDateModified || entityRow.utcDateCreated,
                         isSynced: entityName !== 'options' || entityRow.isSynced
                     });
@@ -625,15 +621,13 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-            SELECT 
-              id, entityId
-            FROM 
-              entity_changes 
-              LEFT JOIN ${entityName} ON entityId = ${key} 
+            SELECT id, entityId
+            FROM entity_changes 
+            LEFT JOIN ${entityName} ON entityId = ${entityName}.${key} 
             WHERE
               entity_changes.isErased = 0
               AND entity_changes.entityName = '${entityName}' 
-              AND ${key} IS NULL`,
+              AND ${entityName}.${key} IS NULL`,
                 ({id, entityId}) => {
                     if (this.autoFix) {
                         sql.execute("DELETE FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
@@ -645,11 +639,9 @@ class ConsistencyChecks {
                 });
 
         this.findAndFixIssues(`
-            SELECT 
-              id, entityId
-            FROM 
-              entity_changes 
-              JOIN ${entityName} ON entityId = ${key} 
+            SELECT id, entityId
+            FROM entity_changes 
+            JOIN ${entityName} ON entityId = ${entityName}.${key} 
             WHERE
               entity_changes.isErased = 1
               AND entity_changes.entityName = '${entityName}'`,

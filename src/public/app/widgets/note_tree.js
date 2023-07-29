@@ -1564,10 +1564,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.triggerCommand("showImportDialog", {noteId: node.data.noteId});
     }
 
-    forceNoteSyncCommand({node}) {
-        syncService.forceNoteSync(node.data.noteId);
-    }
-
     editNoteTitleCommand({node}) {
         appContext.triggerCommand('focusOnTitle');
     }

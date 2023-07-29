@@ -4,7 +4,7 @@ const log = require('./log');
 const sql = require('./sql');
 const optionService = require('./options');
 const utils = require('./utils');
-const instanceId = require('./member_id');
+const instanceId = require('./instance_id');
 const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
@@ -54,6 +54,7 @@ async function sync() {
         });
     }
     catch (e) {
+        // we're dynamically switching whether we're using proxy or not based on whether we encountered error with the current method
         proxyToggle = !proxyToggle;
 
         if (e.message?.includes('ECONNREFUSED') ||
@@ -107,7 +108,7 @@ async function doLogin() {
     });
 
     if (resp.instanceId === instanceId) {
-        throw new Error(`Sync server has member ID '${resp.instanceId}' which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
+        throw new Error(`Sync server has instance ID '${resp.instanceId}' which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
     }
 
     syncContext.instanceId = resp.instanceId;
@@ -253,7 +254,7 @@ async function checkContentHash(syncContext) {
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
     if (failedChecks.length > 0) {
-        // before requeuing sectors, make sure the entity changes are correct
+        // before re-queuing sectors, make sure the entity changes are correct
         const consistencyChecks = require("./consistency_checks");
         consistencyChecks.runEntityChangesChecks();
 
@@ -350,7 +351,8 @@ function getEntityChangeRecords(entityChanges) {
 
         length += JSON.stringify(record).length;
 
-        if (length > 1000000) {
+        if (length > 1_000_000) {
+            // each sync request/response should have at most ~1 MB.
             break;
         }
     }

@@ -3,7 +3,7 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 const utils = require('./utils');
-const instanceId = require('./member_id');
+const instanceId = require('./instance_id');
 const becca = require("../becca/becca");
 const blobService = require("../services/blob");
 
@@ -62,8 +62,6 @@ function moveEntityChangeToTop(entityName, entityId) {
 }
 
 function addEntityChangesForSector(entityName, sector) {
-    const startTime = Date.now();
-
     const entityChanges = sql.getRows(`SELECT * FROM entity_changes WHERE entityName = ? AND SUBSTR(entityId, 1, 1) = ?`, [entityName, sector]);
 
     sql.transactional(() => {
@@ -72,7 +70,7 @@ function addEntityChangesForSector(entityName, sector) {
         }
     });
 
-    log.info(`Added sector ${sector} of '${entityName}' (${entityChanges.length} entities) to sync queue in ${Date.now() - startTime}ms.`);
+    log.info(`Added sector ${sector} of '${entityName}' (${entityChanges.length} entities) to the sync queue.`);
 }
 
 function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
@@ -103,39 +101,34 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
 
             createdCount++;
 
-            let hash;
-            let utcDateChanged;
-            let isSynced;
+            const ec = {
+                entityName,
+                entityId,
+                isErased: false
+            };
 
             if (entityName === 'blobs') {
                 const blob = sql.getRow("SELECT blobId, content, utcDateModified FROM blobs WHERE blobId = ?", [entityId]);
-                hash = blobService.calculateContentHash(blob);
-                utcDateChanged = blob.utcDateModified;
-                isSynced = true; // blobs are always synced
+                ec.hash = blobService.calculateContentHash(blob);
+                ec.utcDateChanged = blob.utcDateModified;
+                ec.isSynced = true; // blobs are always synced
             } else {
                 const entity = becca.getEntity(entityName, entityId);
 
                 if (entity) {
-                    hash = entity?.generateHash() || "|deleted";
-                    utcDateChanged = entity?.getUtcDateChanged() || dateUtils.utcNowDateTime();
-                    isSynced = entityName !== 'options' || !!entity?.isSynced;
+                    ec.hash = entity.generateHash() || "|deleted";
+                    ec.utcDateChanged = entity.getUtcDateChanged() || dateUtils.utcNowDateTime();
+                    ec.isSynced = entityName !== 'options' || !!entity.isSynced;
                 } else {
                     // entity might be null (not present in becca) when it's deleted
                     // FIXME: hacky, not sure if it might cause some problems
-                    hash = "deleted";
-                    utcDateChanged = dateUtils.utcNowDateTime();
-                    isSynced = true; // deletable (the ones with isDeleted) entities are synced
+                    ec.hash = "deleted";
+                    ec.utcDateChanged = dateUtils.utcNowDateTime();
+                    ec.isSynced = true; // deletable (the ones with isDeleted) entities are synced
                 }
             }
 
-            addEntityChange({
-                entityName,
-                entityId,
-                hash: hash,
-                isErased: false,
-                utcDateChanged: utcDateChanged,
-                isSynced: isSynced
-            });
+            addEntityChange(ec);
         }
 
         if (createdCount > 0) {

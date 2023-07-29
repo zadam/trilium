@@ -37,6 +37,7 @@ function eraseNotes(noteIdsToErase) {
 function setEntityChangesAsErased(entityChanges) {
     for (const ec of entityChanges) {
         ec.isErased = true;
+        ec.utcDateChanged = dateUtils.utcNowDateTime();
 
         entityChangesService.addEntityChange(ec);
     }

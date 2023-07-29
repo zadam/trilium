@@ -3,6 +3,7 @@
 const log = require('./log');
 const sql = require('./sql');
 const protectedSessionService = require("./protected_session");
+const dateUtils = require("./date_utils");
 
 /**
  * @param {BNote} note
@@ -40,7 +41,7 @@ function eraseRevisions(revisionIdsToErase) {
     log.info(`Removing note revisions: ${JSON.stringify(revisionIdsToErase)}`);
 
     sql.executeMany(`DELETE FROM revisions WHERE revisionId IN (???)`, revisionIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1, utcDateChanged = '${dateUtils.utcNowDateTime()}' WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);
 }
 
 module.exports = {

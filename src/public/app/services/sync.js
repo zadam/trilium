@@ -18,13 +18,6 @@ async function syncNow(ignoreNotConfigured = false) {
     }
 }
 
-async function forceNoteSync(noteId) {
-    await server.post(`sync/force-note-sync/${noteId}`);
-
-    toastService.showMessage("Note added to sync queue.");
-}
-
 export default {
-    syncNow,
-    forceNoteSync
+    syncNow
 };

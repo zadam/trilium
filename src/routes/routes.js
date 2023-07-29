@@ -216,7 +216,6 @@ function register(app) {
     apiRoute(PST, '/api/sync/now', syncApiRoute.syncNow);
     apiRoute(PST, '/api/sync/fill-entity-changes', syncApiRoute.fillEntityChanges);
     apiRoute(PST, '/api/sync/force-full-sync', syncApiRoute.forceFullSync);
-    apiRoute(PST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
     route(GET, '/api/sync/check', [auth.checkApiAuth], syncApiRoute.checkSync, apiResultHandler);
     route(GET, '/api/sync/changed', [auth.checkApiAuth], syncApiRoute.getChanged, apiResultHandler);
     route(PUT, '/api/sync/update', [auth.checkApiAuth], syncApiRoute.update, apiResultHandler);
