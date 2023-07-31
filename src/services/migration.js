@@ -18,7 +18,7 @@ async function migrate() {
 
     // backup before attempting migration
     await backupService.backupNow(
-        // special name for the pre-0.60 migration to prevent later overwrite
+        // creating a special backup for versions 0.60.X and older, the changes in 0.61 are major.
         currentDbVersion < 214
             ? `before-migration-v${currentDbVersion}`
             : 'before-migration'
