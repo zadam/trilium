@@ -148,6 +148,11 @@ function parseNavigationStateFromUrl(url) {
 
     const hash = url.substr(hashIdx + 1); // strip also the initial '#'
     const [notePath, paramString] = hash.split("?");
+
+    if (!notePath.match(/^[_a-z0-9]{4,}(\/[_a-z0-9]{4,})*$/i)) {
+        return {};
+    }
+
     const viewScope = {
         viewMode: 'default'
     };
