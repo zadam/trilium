@@ -1,0 +1,155 @@
+/*!
+ * Fancytree "Win7" skin.
+ *
+ * DON'T EDIT THE CSS FILE DIRECTLY, since it is automatically generated from
+ * the LESS templates.
+ */
+
+// Fancytree Win7 styles
+
+// both:
+//    unselected background: #FCFCFC 'nearly white', no border
+//
+//    hover bar (unselected, inactive): #fcfdfe..#EFF9FE (border: #b8d6fb) 'very light blue'
+//         background: #f8fcfe; //
+//         background: -moz-linear-gradient(top, #f8fcfe 0%, #eff9fe 100%);
+
+//    active node: #F6FBFD..#D5EFFC (border: #719acb)  'light blue'
+//         background: #f6fbfd;
+//         background: -moz-linear-gradient(top, #f6fbfd 0%, #d5effc 100%);
+
+//    active node with hover: #F2F9FD..#C4E8FA (border: #B6E6FB)
+//         background: #f2f9fd;
+//         background: -moz-linear-gradient(top, #f2f9fd 0%, #c4e8fa 100%);
+
+// Tree view:
+//    active node, tree inactive: #FAFAFB..#E5E5E5 (border: #D9D9D9) 'light gray, selected, but tree not active'
+//         background: #fafafb;
+//         background: -moz-linear-gradient(top, #fafafb 0%, #e5e5e5 100%);
+
+// List view:
+//    selected bar: --> active bar
+//    focus  bar: active + border 1px dotted #090402 (inside the blue border)
+
+//    table left/right border: #EDEDED 'light gray'
+
+// Import common styles
+@import "../skin-common.less";
+
+
+/*******************************************************************************
+ * Styles specific to this skin.
+ *
+ * This section is automatically generated from the `ui-fancytree.less` template.
+ ******************************************************************************/
+
+// Override the variable after the import.
+// NOTE: Variables are always resolved as the last definition, even if it is
+// after where it is used.
+@fancy-use-sprites: true;      // false: suppress all background images (i.e. icons)
+
+@fancy-line-height: 20px;      // height of a nodes selection bar including borders
+@fancy-node-v-spacing: 1px;    // gap between two node borders
+@fancy-icon-width: 16px;
+@fancy-icon-height: 16px;
+@fancy-icon-spacing: 3px;      // margin between icon/icon or icon/title
+@fancy-icon-ofs-top: 2px;      // extra vertical offset for expander, checkbox and icon
+@fancy-title-ofs-top: 0px;     // extra vertical offset for title
+@fancy-node-border-width: 1px;
+@fancy-node-border-radius: 3px;
+@fancy-node-outline-width: 1px;
+
+// We need to define this variable here (not in skin-common.less) to make it
+// work with grunt and webpack:
+@fancy-image-prefix: "./skin-win7/";
+
+// Use 'data-uri(...)' to embed the image into CSS instead of linking to 'loading.gif':
+// @fancy-loading-url: data-uri("@{fancy-image-prefix}loading.gif");
+// Set to `true` to use `data-uri(...)` which will embed icons.gif into CSS
+// instead of linking to that file:
+// @fancy-inline-sprites: true;
+
+
+ul.fancytree-container {
+
+}
+
+/*******************************************************************************
+ * Node titles
+ */
+span.fancytree-title {
+}
+// active nodes inside an UN-focused tree are gray instead of blue
+span.fancytree-active .fancytree-title,
+span.fancytree-selected .fancytree-title {
+    .spanStyleMixin(inherit, #e5e5e5, #d9d9d9, #fafafb, #e5e5e5);
+}
+span.fancytree-selected .fancytree-title {
+    font-style: italic;
+}
+// Markers inside an active tree
+.fancytree-treefocus {
+    span.fancytree-active .fancytree-title,
+    span.fancytree-selected .fancytree-title {
+        .spanStyleMixin(inherit, #f6fbfd, #99defd, #f6fbfd, #d5effc);
+    }
+    span.fancytree-focused span.fancytree-title {
+        border: @fancy-node-border-width solid #719acb;
+    }
+}
+// Hover is always colored (even if tree is inactive)
+span.fancytree-title:hover {
+    .spanStyleMixin(inherit, #f8fcfe, #d8f0fa, #f8fcfe, #eff9fe);
+}
+span.fancytree-active .fancytree-title:hover,
+span.fancytree-selected .fancytree-title:hover {
+    .spanStyleMixin(inherit, #f2f9fd, #719acb, #f2f9fd, #c4e8fa);
+}
+
+/*******************************************************************************
+ * 'table' extension
+ */
+
+table.fancytree-ext-table tbody {
+  tr td {
+    border: 1px solid #ededed;
+  }
+  tr:hover  {
+    .spanStyleMixin(inherit, #f8fcfe, inherit, #f8fcfe, #eff9fe);
+    outline: 1px solid #d8f0fa;
+  }
+  // tr:hover td {
+  //   outline: 1px solid #D8F0FA;
+  // }
+  tr.fancytree-focused {
+    // background-color: #99DEFD;
+    outline: 1px dotted #090402;
+  }
+  span.fancytree-focused span.fancytree-title {
+    outline: solid dotted black;
+  }
+
+  // Title gets a white background, when hovered. Undo standard node formatting
+  span.fancytree-title:hover {
+    border: 1px solid transparent;
+    background: inherit;
+    background: transparent;
+    background: none;
+    filter: none;
+  }
+
+  tr.fancytree-active:hover,
+  tr.fancytree-selected:hover {
+    .spanStyleMixin(inherit, #f2f9fd, inherit, #f2f9fd, #c4e8fa);
+    outline: 1px solid #B6E6FB;
+  }
+  tr.fancytree-active,
+  tr.fancytree-selected {
+    .spanStyleMixin(inherit, #f6fbfd, inherit, #f6fbfd, #d5effc);
+    outline: 1px solid #99DEFD;
+  }
+  // tr.fancytree-selected .fancytree-title {
+  //   font-style: italic;
+  // }
+
+}

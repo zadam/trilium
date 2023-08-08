@@ -1,0 +1,122 @@
+/*!
+ * Fancytree "material" skin.
+ *
+ * DON'T EDIT THE CSS FILE DIRECTLY, since it is automatically generated from
+ * the LESS templates.
+ */
+
+// Import common styles
+@import "../skin-common.less";
+
+// We need to define this variable here (not in skin-common.less) to make it
+// work with grunt and webpack:
+@fancy-image-prefix: "./skin-material/";
+
+/*******************************************************************************
+ * Styles specific to this skin.
+ *
+ * This section is automatically generated from the `ui-fancytree.less` template.
+ ******************************************************************************/
+/*
+https://material.io/guidelines/components/data-tables.html#data-tables-structure
+*/
+// local vars
+@fancy-cst-size: 24px;
+@fancy-cst-primary-color: #3f51b5;  // primary app color (of indigo-pink)
+@fancy-cst-secondary-color: #ff4081;  // secondary app color (of indigo-pink): checkbox
+@fancy-cst-black-87: #212121;  // 87% black: table content
+@fancy-cst-black-54: #757575;  // 54% black:  column headers
+@fancy-cst-select-bg: #f5f5f5;  // Grey 100: selected row backround
+@fancy-cst-hover-bg: #eeeeee;  // Grey 200: hovered row backround
+
+// Override the variable after the import.
+// NOTE: Variables are always resolved as the last definition, even if it is
+// after where it is used.
+@fancy-use-sprites: false;     // false: suppress all background images (i.e. icons)
+@fancy-loading-url: none;
+
+@fancy-level-indent: @fancy-cst-size;  //@fancy-cst-size;
+@fancy-line-height: @fancy-cst-size;      // height of a nodes selection bar including borders
+@fancy-node-v-spacing: 1px;    // gap between two node borders
+@fancy-icon-width: @fancy-cst-size;
+@fancy-icon-height: @fancy-cst-size;
+@fancy-icon-spacing: 3px;      // margin between icon/icon or icon/title
+@fancy-icon-ofs-top: 0px;      // extra vertical offset for expander, checkbox and icon
+@fancy-title-ofs-top: 0px;     // extra vertical offset for title
+@fancy-node-border-width: 1px;
+@fancy-node-border-radius: 0px;
+@fancy-node-outline-width: 1px;
+
+// @fancy-loading-url: data-uri("@{fancy-image-prefix}loading.gif");
+
+// Set to `true` to use `data-uri(...)` instead of a `url(...)` link:
+@fancy-inline-sprites: false;
+
+@fancy-font-size: @fancy-cst-size;
+@fancy-font-family: "Roboto Regular", tahoma, arial, helvetica;
+@fancy-font-color: @fancy-cst-black-87;
+@fancy-font-color-dimm: silver;
+@fancy-font-error-color: red;
+
+
+ul.fancytree-container ul
+{
+	padding: 0.3em 0 0 1em;
+	margin: 0;
+	font-size: @fancy-cst-size;
+	color: @fancy-cst-black-87;
+}
+
+ul.fancytree-container span.fancytree-icon.material-icons
+{
+	// font-size: @fancy-cst-size;
+	// color: @fancy-cst-black-87;
+}
+
+
+/*******************************************************************************
+ * Node titles
+ */
+
+ .fancytree-plain {
+	 span.fancytree-selected span.fancytree-title {
+		 background-color: @fancy-cst-select-bg;
+	 }
+	 span.fancytree-selected span.fancytree-title:hover,
+	 span.fancytree-active span.fancytree-title {
+		 background-color: @fancy-cst-hover-bg;
+	 }
+}
+
+.fancytree-container span.fancytree-checkbox {
+	color: @fancy-cst-secondary-color;
+}
+
+/*******************************************************************************
+ * 'table' extension
+ */
+table.fancytree-ext-table {
+	border-collapse: collapse;
+	tbody {
+		tr.fancytree-focused, tr.fancytree-selected {
+			background-color: @fancy-cst-select-bg;
+		}
+		tr.fancytree-active, tr:hover {
+			background-color: @fancy-cst-hover-bg;
+		}
+	}
+}
+
+/*******************************************************************************
+ * 'columnview' extension
+ */
+
+table.fancytree-ext-columnview tbody tr td {
+	border: 1px solid gray;
+}
+table.fancytree-ext-columnview span.fancytree-node.fancytree-expanded {
+	background-color: #ccc;
+}
+table.fancytree-ext-columnview span.fancytree-node.fancytree-active {
+	background-color: royalblue;
+}

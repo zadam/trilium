@@ -1,7 +1,7 @@
 .DS_Store
-node_modules/
-dist/
-src/public/app-dist/
+code/node_modules/
+code/dist/
+code/src/public/app-dist/
 npm-debug.log
 yarn-error.log
 *.db
@@ -11,5 +11,7 @@ cert.crt
 server-package.json
 .idea/httpRequests/
 data/
-tmp/
-.eslintcache
+code/data/
+code/tmp/
+code/.eslintcache
+code/db-data

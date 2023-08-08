@@ -1,0 +1,128 @@
+/*!
+ * Fancytree "awesome" skin.
+ *
+ * DON'T EDIT THE CSS FILE DIRECTLY, since it is automatically generated from
+ * the LESS templates.
+ */
+
+// Import common styles
+@import "../skin-common.less";
+
+// We need to define this variable here (not in skin-common.less) to make it
+// work with grunt and webpack:
+@fancy-image-prefix: "./skin-awesome/";
+
+
+/*******************************************************************************
+ * Styles specific to this skin.
+ *
+ * This section is automatically generated from the `ui-fancytree.less` template.
+ ******************************************************************************/
+
+@fancy-use-sprites: false;     // false: suppress all background images (i.e. icons)
+@fancy-loading-url: none;
+
+@fancy-cst-size: 10pt;
+
+@fancy-level-indent: @fancy-cst-size;  //@fancy-cst-size;
+@fancy-line-height: @fancy-cst-size;      // height of a nodes selection bar including borders
+@fancy-node-v-spacing: 1px;    // gap between two node borders
+@fancy-icon-width: @fancy-cst-size;
+@fancy-icon-height: @fancy-cst-size;
+@fancy-icon-spacing: 3px;      // margin between icon/icon or icon/title
+@fancy-icon-ofs-top: 0px;      // extra vertical offset for expander, checkbox and icon
+@fancy-title-ofs-top: 0px;     // extra vertical offset for title
+@fancy-node-border-width: 1px;
+@fancy-node-border-radius: 0px;
+@fancy-node-outline-width: 1px;
+
+// @fancy-loading-url: data-uri("@{fancy-image-prefix}loading.gif");
+
+// Set to `true` to use `data-uri(...)` instead of a `url(...)` link:
+@fancy-inline-sprites: false;
+
+@fancy-font-size: @fancy-cst-size;
+@fancy-font-family: tahoma, arial, helvetica;
+@fancy-font-color: #000;
+@fancy-font-color-dimm: silver;
+@fancy-font-error-color: red;
+
+
+ul.fancytree-container ul
+{
+	padding: 0.3em 0 0 1em;
+	margin: 0;
+}
+
+
+// The standard CSS assumes span.icon, but Fontawesome may use SVG or SPAN
+.fancytree-expander,
+.fancytree-checkbox,
+.fancytree-icon {
+  min-width: @fancy-icon-width;
+  text-align: center;
+}
+svg.fancytree-checkbox,  // span... is already defined in skin-common-less
+svg.fancytree-icon {
+  padding-left: @fancy-icon-spacing;
+}
+
+/*******************************************************************************
+ * Node titles
+ */
+span.fancytree-title {
+	border: 1px solid transparent; // reserve some space for status borders
+	border-radius: 0;
+}
+span.fancytree-focused span.fancytree-title {
+	outline: 1px dotted black;
+}
+// span.fancytree-selected span.fancytree-title,
+span.fancytree-active span.fancytree-title {
+	background-color: #D4D4D4; // gray
+}
+// span.fancytree-selected span.fancytree-title {
+// 	font-style: italic;
+// }
+// .fancytree-treefocus span.fancytree-selected span.fancytree-title,
+.fancytree-treefocus span.fancytree-active span.fancytree-title {
+	color: white;
+	background-color: #3875D7; // blue
+}
+
+// .fancytree-treefocus span.fancytree-selected span.fancytree-title{
+// 	color: white;
+// 	background-color: #99DEFD; // blue
+// }
+
+/*******************************************************************************
+ * 'table' extension
+ */
+table.fancytree-ext-table {
+	border-collapse: collapse;
+	tbody {
+	    tr.fancytree-focused {
+			background-color: #99DEFD;
+		}
+	    tr.fancytree-active {
+			background-color: royalblue;
+		}
+	    // tr.fancytree-selected {
+		// 	background-color: #99DEFD;
+		// }
+	}
+}
+
+/*******************************************************************************
+ * 'columnview' extension
+ */
+
+table.fancytree-ext-columnview tbody tr td {
+	border: 1px solid gray;
+}
+table.fancytree-ext-columnview span.fancytree-node.fancytree-expanded {
+	background-color: #ccc;
+}
+table.fancytree-ext-columnview span.fancytree-node.fancytree-active {
+	background-color: royalblue;
+}
