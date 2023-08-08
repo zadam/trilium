@@ -259,8 +259,6 @@ function init() {
     };
 
     $.fn.setSelectedExternalLink = function (externalLink) {
-        console.trace("setSelectedExternalLink");
-
         if (externalLink) {
             $(this)
                 .closest(".input-group")
