@@ -152,20 +152,9 @@ function processContent(images, note, content) {
 
             const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
 
-            const {note: imageNote, url} = imageService.saveImage(note.noteId, buffer, filename, true);
-
-            new BAttribute({
-                noteId: imageNote.noteId,
-                type: 'label',
-                name: 'archived'
-            }).save(); // so that these image notes don't show up in search / autocomplete
-
-            new BAttribute({
-                noteId: note.noteId,
-                type: 'relation',
-                name: 'imageLink',
-                value: imageNote.noteId
-            }).save();
+            const attachment = imageService.saveImageToAttachment(note.noteId, buffer, filename, true);
+            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
+            const url = `<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"/>`;
 
             log.info(`Replacing '${imageId}' with '${url}' in note '${note.noteId}'`);
 
