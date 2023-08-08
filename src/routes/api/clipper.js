@@ -11,7 +11,6 @@ const ws = require('../../services/ws');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const BAttribute = require('../../becca/entities/battribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 const jsdom = require("jsdom");
@@ -130,7 +129,6 @@ function createNote(req) {
     const newContent = `${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`;
     note.setContent(newContent);
 
-    const noteService = require("../../services/notes");
     noteService.asyncPostProcessContent(note, newContent); // to mark attachments as used
 
     return {
