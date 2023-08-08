@@ -127,7 +127,11 @@ function createNote(req) {
 
     const existingContent = note.getContent();
     const rewrittenContent = processContent(images, note, content);
-    note.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
+    const newContent = `${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`;
+    note.setContent(newContent);
+
+    const noteService = require("../../services/notes");
+    noteService.asyncPostProcessContent(note, newContent); // to mark attachments as used
 
     return {
         noteId: note.noteId
@@ -154,7 +158,7 @@ function processContent(images, note, content) {
 
             const attachment = imageService.saveImageToAttachment(note.noteId, buffer, filename, true);
             const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
-            const url = `<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"/>`;
+            const url = `api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}`;
 
             log.info(`Replacing '${imageId}' with '${url}' in note '${note.noteId}'`);
 
