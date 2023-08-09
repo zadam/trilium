@@ -2,6 +2,7 @@ import linkService from "../../services/link.js";
 import server from "../../services/server.js";
 import froca from "../../services/froca.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <div class="edited-notes-widget">
@@ -34,7 +35,9 @@ export default class EditedNotesWidget extends NoteContextAwareWidget {
         return {
             show: this.isEnabled(),
             // promoted attributes have priority over edited notes
-            activate: this.note.getPromotedDefinitionAttributes().length === 0,
+            activate:
+                (this.note.getPromotedDefinitionAttributes().length === 0 || !options.is('promotedAttributesOpenInRibbon'))
+                && options.is('editedNotesOpenInRibbon'),
             title: 'Edited Notes',
             icon: 'bx bx-calendar-edit'
         };

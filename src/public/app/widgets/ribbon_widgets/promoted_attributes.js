@@ -4,6 +4,7 @@ import treeService from "../../services/tree.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import attributeService from "../../services/attributes.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <div>
@@ -62,7 +63,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
 
         return {
             show: true,
-            activate: true,
+            activate: options.is('promotedAttributesOpenInRibbon'),
             title: "Promoted Attributes",
             icon: "bx bx-table"
         };
