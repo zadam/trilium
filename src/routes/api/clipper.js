@@ -17,21 +17,20 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
 function addClipping(req) {
-    // if a note under the clipperInbox as the same 'pageUrl' attribute,
+    // if a note under the clipperInbox has the same 'pageUrl' attribute,
     // add the content to that note and clone it under today's inbox
     // otherwise just create a new note under today's inbox
     let {title, content, pageUrl, images} = req.body;
     const clipType = 'clippings';
 
     const clipperInbox = getClipperInboxNote();
-    const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
 
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl, clipType);
 
     if (!clippingNote) {
         clippingNote = noteService.createNewNote({
-            parentNoteId: dailyNote.noteId,
+            parentNoteId: clipperInbox.noteId,
             title: title,
             content: '',
             type: 'text'
@@ -48,8 +47,8 @@ function addClipping(req) {
 
     clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br>" : ""}${rewrittenContent}`);
 
-    if (clippingNote.parentNoteId !== dailyNote.noteId) {
-        cloneService.cloneNoteToParentNote(clippingNote.noteId, dailyNote.noteId);
+    if (clippingNote.parentNoteId !== clipperInbox.noteId) {
+        cloneService.cloneNoteToParentNote(clippingNote.noteId, clipperInbox.noteId);
     }
 
     return {
@@ -79,7 +78,7 @@ function getClipperInboxNote() {
     let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
 
     if (!clipperInbox) {
-        clipperInbox = dateNoteService.getRootCalendarNote();
+        clipperInbox = dateNoteService.getDayNote(dateUtils.localNowDate());
     }
 
     return clipperInbox;

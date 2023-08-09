@@ -65,6 +65,7 @@ module.exports = [
     { type: 'label', name: 'executeButton'},
     { type: 'label', name: 'executeDescription'},
     { type: 'label', name: 'newNotesOnTop'},
+    { type: 'label', name: 'clipperInbox'},
 
     // relation names
     { type: 'relation', name: 'internalLink' },
