@@ -19,6 +19,7 @@ const NOTE_TYPE_ICONS = {
     "noteMap": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
+    "drawio": "bx bx-vector",
     "webView": "bx bx-globe-alt",
     "launcher": "bx bx-link",
     "doc": "bx bxs-file-doc",

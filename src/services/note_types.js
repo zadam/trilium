@@ -10,6 +10,7 @@ const noteTypes = [
     { type: 'noteMap', defaultMime: '' },
     { type: 'mermaid', defaultMime: 'text/plain' },
     { type: 'canvas', defaultMime: 'application/json' },
+    { type: 'drawio', defaultMime: 'application/xml' },
     { type: 'webView', defaultMime: '' },
     { type: 'launcher', defaultMime: '' },
     { type: 'doc', defaultMime: '' },

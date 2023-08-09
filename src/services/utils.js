@@ -155,7 +155,7 @@ const STRING_MIME_TYPES = [
 
 function isStringNote(type, mime) {
     // render and book are string note in the sense that they are expected to contain empty string
-    return ["text", "code", "relationMap", "search", "render", "book", "mermaid", "canvas"].includes(type)
+    return ["text", "code", "relationMap", "search", "render", "book", "mermaid", "canvas", "drawio"].includes(type)
         || mime.startsWith('text/')
         || STRING_MIME_TYPES.includes(mime);
 }

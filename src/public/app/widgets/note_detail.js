@@ -17,6 +17,7 @@ import ImageTypeWidget from "./type_widgets/image.js";
 import RenderTypeWidget from "./type_widgets/render.js";
 import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import CanvasTypeWidget from "./type_widgets/canvas.js";
+import DrawioTypeWidget from "./type_widgets/drawio.js"
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
@@ -56,6 +57,7 @@ const typeWidgetClasses = {
     'render': RenderTypeWidget,
     'relationMap': RelationMapTypeWidget,
     'canvas': CanvasTypeWidget,
+    'drawio': DrawioTypeWidget,
     'protectedSession': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
     'noteMap': NoteMapTypeWidget,
@@ -142,7 +144,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         this.$widget.toggleClass("full-height",
             (
                 !this.noteContext.hasNoteList()
-                && ['editableText', 'editableCode', 'canvas', 'webView', 'noteMap'].includes(this.type)
+                && ['editableText', 'editableCode', 'canvas', 'drawio', 'webView', 'noteMap'].includes(this.type)
                 && this.mime !== 'text/x-sqlite;schema=trilium'
             )
             || this.noteContext.viewScope.viewMode === 'attachments'

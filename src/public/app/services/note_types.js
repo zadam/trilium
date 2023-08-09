@@ -12,6 +12,7 @@ async function getNoteTypeItems(command) {
         { title: "Book", command: command, type: "book", uiIcon: "bx bx-book" },
         { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "bx bx-selection" },
         { title: "Canvas", command: command, type: "canvas", uiIcon: "bx bx-pen" },
+        { title: "Drawio", command: command, type: "drawio", uiIcon: "bx bx-vector" },
         { title: "Web View", command: command, type: "webView", uiIcon: "bx bx-globe-alt" },
     ];
 
