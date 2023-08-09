@@ -21,8 +21,8 @@ function getRevisions(req) {
                LENGTH(blobs.content) AS contentLength
         FROM revisions
         JOIN blobs ON revisions.blobId = blobs.blobId 
-        WHERE noteId = ?
-        ORDER BY utcDateCreated DESC`, [req.params.noteId]);
+        WHERE revisions.noteId = ?
+        ORDER BY revisions.utcDateCreated DESC`, [req.params.noteId]);
 }
 
 function getRevision(req) {
