@@ -382,4 +382,24 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     async refreshIncludedNoteEvent({noteId}) {
         this.refreshIncludedNote(this.$editor, noteId);
     }
+
+    textRemoveFormatCommand() {
+        this.watchdog.editor.execute('removeFormat', {value:'null'});
+    }
+
+    textRemoveColorCommand() {
+        this.watchdog.editor.execute('fontColor', {value:'null'});
+    }
+
+    textColorYellowCommand() {
+        this.watchdog.editor.execute('fontColor', {value:'hsl(60, 75%, 60%)'});
+    }
+
+    textColorGreenCommand() {
+        this.watchdog.editor.execute('fontColor', {value:'hsl(120, 75%, 60%)'});
+    }
+
+    textColorTurquoiseCommand() {
+        this.watchdog.editor.execute('fontColor', {value:'hsl(120, 75%, 60%)'});
+    }
 }

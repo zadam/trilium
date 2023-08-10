@@ -328,6 +328,225 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
 
     {
+        separator: "Text formatting"
+    },
+
+    {
+        actionName: "textRemoveFormat",
+        defaultShortcuts: ["CommandOrControl+Alt+x"],
+        description: "Remove formatting",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textRemoveColor",
+        defaultShortcuts: ["CommandOrControl+`"],
+        description: "Remove color",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorYellow",
+        defaultShortcuts: ["CommandOrControl+1"],
+        description: "Color text with yellow",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorGreen",
+        defaultShortcuts: ["CommandOrControl+2"],
+        description: "Color text with green",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorTurquoise",
+        defaultShortcuts: ["CommandOrControl+3"],
+        description: "Color text with turquoise",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorRed",
+        defaultShortcuts: ["CommandOrControl+4"],
+        description: "Color text with red",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorOrange",
+        defaultShortcuts: ["CommandOrControl+5"],
+        description: "Color text with orange",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorLightGreen",
+        defaultShortcuts: ["CommandOrControl+6"],
+        description: "Color text with light green",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorAquamarine",
+        defaultShortcuts: ["CommandOrControl+7"],
+        description: "Color text with aquamarine",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorLightBlue",
+        defaultShortcuts: ["CommandOrControl+8"],
+        description: "Color text with light blue",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorBlue",
+        defaultShortcuts: ["CommandOrControl+9"],
+        description: "Color text with blue",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textColorPurple",
+        defaultShortcuts: ["CommandOrControl+0"],
+        description: "Color text with purple",
+        scope: "text-detail"
+    },
+
+    {
+        actionName: "textRemoveHighlight",
+        defaultShortcuts: ["CommandOrControl+Shift+`"],
+        description: "Remove highlight",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightYellow",
+        defaultShortcuts: ["CommandOrControl+Shift+1"],
+        description: "Highlight text with yellow",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightGreen",
+        defaultShortcuts: ["CommandOrControl+Shift+2"],
+        description: "Highlight text with green",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightTurquoise",
+        defaultShortcuts: ["CommandOrControl+Shift+3"],
+        description: "Highlight text with turquoise",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightRed",
+        defaultShortcuts: ["CommandOrControl+Shift+4"],
+        description: "Highlight text with red",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightOrange",
+        defaultShortcuts: ["CommandOrControl+Shift+5"],
+        description: "Highlight text with orange",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightLightGreen",
+        defaultShortcuts: ["CommandOrControl+Shift+6"],
+        description: "Highlight text with light green",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightAquamarine",
+        defaultShortcuts: ["CommandOrControl+Shift+7"],
+        description: "Highlight text with aquamarine",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightLightBlue",
+        defaultShortcuts: ["CommandOrControl+Shift+8"],
+        description: "Highlight text with light blue",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightBlue",
+        defaultShortcuts: ["CommandOrControl+Shift+9"],
+        description: "Highlight text with blue",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHighlightPurple",
+        defaultShortcuts: ["CommandOrControl+Shift+0"],
+        description: "Highlight text with purple",
+        scope: "text-detail"
+    },
+
+    {
+        actionName: "textSizeTiny",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+a"],
+        description: "Set text size to tiny",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textSizeSmall",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+s"],
+        description: "Set text size to small",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textSizeDefault",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+d"],
+        description: "Set text size to default",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textSizeBig",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+f"],
+        description: "Set text size to big",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textSizeHuge",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+g"],
+        description: "Set text size to huge",
+        scope: "text-detail"
+    },
+
+    {
+        actionName: "textParagraph",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+0"],
+        description: "Paragraph",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHeading2",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+2"],
+        description: "Heading 2",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHeading3",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+3"],
+        description: "Heading 3",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHeading4",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+4"],
+        description: "Heading 4",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHeading5",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+5"],
+        description: "Heading 5",
+        scope: "text-detail"
+    },
+    {
+        actionName: "textHeading6",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+6"],
+        description: "Heading 6",
+        scope: "text-detail"
+    },
+
+    {
+        actionName: "textInlineCode",
+        defaultShortcuts: ["CommandOrControl+Alt+Shift+c"],
+        description: "Inline code",
+        scope: "text-detail"
+    },
+
+    {
         separator: "Attributes (labels & relations)"
     },
 
