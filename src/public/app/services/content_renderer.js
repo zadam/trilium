@@ -31,7 +31,7 @@ async function getRenderedContent(entity, options = {}) {
         await renderText(entity, $renderedContent);
     }
     else if (type === 'code') {
-        await renderCode(entity, options, $renderedContent);
+        await renderCode(entity, $renderedContent);
     }
     else if (type === 'image') {
         renderImage(entity, $renderedContent, options);
