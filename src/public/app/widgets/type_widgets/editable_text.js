@@ -384,22 +384,150 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     textRemoveFormatCommand() {
-        this.watchdog.editor.execute('removeFormat', {value:'null'});
+        this.watchdog.editor.execute('removeFormat', {value: 'null'});
+    }
+
+    setFontColor(color) {
+        this.watchdog.editor.execute('fontColor', {value: color});
     }
 
     textRemoveColorCommand() {
-        this.watchdog.editor.execute('fontColor', {value:'null'});
+        this.setFontColor('null');
+    }
+
+    textColorRedCommand() {
+        this.setFontColor('hsl(0, 75%, 60%)');
+    }
+
+    textColorOrangeCommand() {
+        this.setFontColor('hsl(30, 75%, 60%)');
     }
 
     textColorYellowCommand() {
-        this.watchdog.editor.execute('fontColor', {value:'hsl(60, 75%, 60%)'});
+        this.setFontColor('hsl(60, 75%, 60%)');
+    }
+
+    textColorLightGreenCommand() {
+        this.setFontColor('hsl(90, 75%, 60%)');
     }
 
     textColorGreenCommand() {
-        this.watchdog.editor.execute('fontColor', {value:'hsl(120, 75%, 60%)'});
+        this.setFontColor('hsl(120, 75%, 60%)');
     }
 
-    textColorTurquoiseCommand() {
-        this.watchdog.editor.execute('fontColor', {value:'hsl(120, 75%, 60%)'});
+    textColorAquamarineCommand() {
+        this.setFontColor('hsl(150, 75%, 60%)');
+    }
+
+    textColorLightBlueCommand() {
+        this.setFontColor('hsl(210, 75%, 60%)');
+    }
+
+    textColorBlueCommand() {
+        this.setFontColor('hsl(240, 75%, 60%)');
+    }
+
+    textColorPurpleCommand() {
+        this.setFontColor('hsl(270, 75%, 60%)');
+    }
+
+    setHighlight(color) {
+        this.watchdog.editor.execute('fontBackgroundColor', {value: color});
+    }
+
+    textRemoveHighlightCommand() {
+        this.setHighlight('null');
+    }
+
+    textHighlightRedCommand() {
+        this.setHighlight('hsl(0, 75%, 60%)');
+    }
+
+    textHighlightOrangeCommand() {
+        this.setHighlight('hsl(30, 75%, 60%)');
+    }
+
+    textHighlightYellowCommand() {
+        this.setHighlight('hsl(60, 75%, 60%)');
+    }
+
+    textHighlightLightGreenCommand() {
+        this.setHighlight('hsl(90, 75%, 60%)');
+    }
+
+    textHighlightGreenCommand() {
+        this.setHighlight('hsl(120, 75%, 60%)');
+    }
+
+    textHighlightAquamarineCommand() {
+        this.setHighlight('hsl(150, 75%, 60%)');
+    }
+
+    textHighlightLightBlueCommand() {
+        this.setHighlight('hsl(210, 75%, 60%)');
+    }
+
+    textHighlightBlueCommand() {
+        this.setHighlight('hsl(240, 75%, 60%)');
+    }
+
+    textHighlightPurpleCommand() {
+        this.setHighlight('hsl(270, 75%, 60%)');
+    }
+
+    setFontSize(value) {
+        this.watchdog.editor.execute('fontSize', {value});
+    }
+
+    textSizeTinyCommand() {
+        this.setFontSize('tiny');
+    }
+
+    textSizeSmallCommand() {
+        this.setFontSize('small');
+    }
+
+    textSizeDefaultCommand() {
+        this.setFontSize('default');
+    }
+
+    textSizeBigCommand() {
+        this.setFontSize('big');
+    }
+
+    textSizeHugeCommand() {
+        this.setFontSize('huge');
+    }
+
+    textInlineCodeCommand() {
+        this.watchdog.editor.execute('code', {value: 'null'});
+    }
+
+    setHeading(value) {
+        this.watchdog.editor.execute('heading', {value});
+    }
+
+    textParagraphCommand() {
+        this.setHeading('paragraph');
+    }
+
+    textHeading2Command() {
+        this.setHeading('heading2');
+    }
+
+    textHeading3Command() {
+        this.setHeading('heading3');
+    }
+
+    textHeading4Command() {
+        this.setHeading('heading4');
+    }
+
+    textHeading5Command() {
+        this.setHeading('heading5');
+    }
+
+    textHeading6Command() {
+        this.setHeading('heading6');
     }
 }
