@@ -55,7 +55,9 @@ const ALLOWED_OPTIONS = new Set([
     'eraseUnusedAttachmentsAfterSeconds',
     'disableTray',
     'customSearchEngineName',
-    'customSearchEngineUrl'
+    'customSearchEngineUrl',
+    'promotedAttributesOpenInRibbon',
+    'editedNotesOpenInRibbon'
 ]);
 
 function getOptions() {

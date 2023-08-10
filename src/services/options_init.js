@@ -88,7 +88,9 @@ const defaultOptions = [
     { name: 'disableTray', value: 'false', isSynced: false },
     { name: 'eraseUnusedAttachmentsAfterSeconds', value: '2592000', isSynced: true },
     { name: 'customSearchEngineName', value: 'DuckDuckGo', isSynced: true },
-    { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: true }
+    { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: true },
+    { name: 'promotedAttributesOpenInRibbon', value: 'true', isSynced: true },
+    { name: 'editedNotesOpenInRibbon', value: 'true', isSynced: true }
 ];
 
 function initStartupOptions() {

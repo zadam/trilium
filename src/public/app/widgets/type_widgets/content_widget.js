@@ -31,6 +31,7 @@ import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
 import AttachmentErasureTimeoutOptions from "./options/other/attachment_erasure_timeout.js";
+import RibbonOptions from "./options/appearance/ribbon.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -57,7 +58,8 @@ const CONTENT_WIDGETS = {
         FontsOptions,
         ZoomFactorOptions,
         NativeTitleBarOptions,
-        MaxContentWidthOptions
+        MaxContentWidthOptions,
+        RibbonOptions
     ],
     _optionsShortcuts: [ KeyboardShortcutsOptions ],
     _optionsTextNotes: [
