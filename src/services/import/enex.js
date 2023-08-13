@@ -301,16 +301,10 @@ function importEnex(taskContext, file, parentNote) {
                         ? resource.title
                         : `image.${resource.mime.substr(6)}`; // default if real name is not present
 
-                    const {url, note: imageNote} = imageService.saveImage(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
+                    const attachment = imageService.saveImageToAttachment(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
 
-                    for (const attr of resource.attributes) {
-                        if (attr.name !== 'originalFileName') { // this one is already saved in imageService
-                            imageNote.addAttribute(attr.type, attr.name, attr.value);
-                        }
-                    }
-
-                    updateDates(imageNote, utcDateCreated, utcDateModified);
-
+                    const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
+                    const url = `api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}`;
                     const imageLink = `<img src="${url}">`;
 
                     content = content.replace(mediaRegex, imageLink);
