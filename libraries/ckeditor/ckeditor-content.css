@@ -5,8 +5,8 @@
 }
 
 /*
- * CKEditor 5 (v38.1.1) content styles.
- * Generated on Thu, 27 Jul 2023 08:16:09 GMT.
+ * CKEditor 5 (v39.0.1) content styles.
+ * Generated on Thu, 10 Aug 2023 09:21:07 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
@@ -15,8 +15,8 @@
     --ck-color-image-caption-text: hsl(0, 0%, 20%);
     --ck-color-mention-background: hsla(341, 100%, 30%, 0.1);
     --ck-color-mention-text: hsl(341, 100%, 30%);
-    --ck-color-table-caption-background: hsl(0, 0%, 97%);
-    --ck-color-table-caption-text: hsl(0, 0%, 20%);
+    --ck-color-selector-caption-background: hsl(0, 0%, 97%);
+    --ck-color-selector-caption-text: hsl(0, 0%, 20%);
     --ck-highlight-marker-blue: hsl(201, 97%, 72%);
     --ck-highlight-marker-green: hsl(120, 93%, 68%);
     --ck-highlight-marker-pink: hsl(345, 96%, 73%);
@@ -41,18 +41,6 @@
 .ck-content .table th {
     overflow-wrap: break-word;
     position: relative;
-}
-/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-table-caption-text);
-    background-color: var(--ck-color-table-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
 }
 /* @ckeditor/ckeditor5-table/theme/table.css */
 .ck-content .table {
@@ -86,6 +74,18 @@
 /* @ckeditor/ckeditor5-table/theme/table.css */
 .ck-content[dir="ltr"] .table th {
     text-align: left;
+}
+/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-selector-caption-text);
+    background-color: var(--ck-color-selector-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
 }
 /* @ckeditor/ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
@@ -382,12 +382,6 @@
 .ck-content .image-inline.image-style-align-right {
     margin-left: var(--ck-inline-image-style-spacing);
 }
-/* @ckeditor/ckeditor5-basic-styles/theme/code.css */
-.ck-content code {
-    background-color: hsla(0, 0%, 78%, 0.3);
-    padding: .15em;
-    border-radius: 2px;
-}
 /* @ckeditor/ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
     overflow: hidden;
@@ -402,6 +396,12 @@
 .ck-content[dir="rtl"] blockquote {
     border-left: 0;
     border-right: solid 5px hsl(0, 0%, 80%);
+}
+/* @ckeditor/ckeditor5-basic-styles/theme/code.css */
+.ck-content code {
+    background-color: hsla(0, 0%, 78%, 0.3);
+    padding: .15em;
+    border-radius: 2px;
 }
 /* @ckeditor/ckeditor5-font/theme/fontsize.css */
 .ck-content .text-tiny {
