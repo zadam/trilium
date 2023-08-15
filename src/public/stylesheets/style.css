@@ -925,6 +925,7 @@ body {
     color: var(--launcher-pane-text-color);
     background-color: var(--launcher-pane-background-color);
     height: 53px;
+    width: 100%;
 }
 
 #launcher-pane .icon-action:hover {
