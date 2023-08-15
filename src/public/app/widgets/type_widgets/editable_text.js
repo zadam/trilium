@@ -203,6 +203,14 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         this.$editor.trigger('focus');
     }
 
+    scrollToEnd() {
+        this.watchdog?.editor.model.change(writer => {
+            writer.setSelection(writer.createPositionAt(this.watchdog?.editor.model.document.getRoot(), 'end'));
+        });
+
+        this.watchdog?.editor.editing.view.focus();
+    }
+
     show() {}
 
     getEditor() {
