@@ -1,11 +1,13 @@
-//https://prettier.io/docs/en/options.html 
+//https://prettier.io/docs/en/options.html
 module.exports = {
 	semi: true,
-	trailingComma: 'es5',
+	trailingComma: 'none',
 	singleQuote: true,
-	printWidth: 120,
+	printWidth: 100,
 	tabWidth: 4,
-	// useTabs: false,
-	// bracketSpacing: true,
+	useTabs: false,
+	quoteProps: "as-needed",
+	bracketSpacing: true,
+	arrowParens: "avoid"
 	// htmlWhitespaceSensitivity: 'ignore',
 };
