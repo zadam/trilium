@@ -1610,9 +1610,9 @@ class BNote extends AbstractBeccaEntity {
                     noteContent = noteContent.replaceAll(new RegExp(`href="[^"]*attachmentId=${noteAttachment.attachmentId}[^"]*"`, 'gi'),
                         `href="api/attachments/${revisionAttachment.attachmentId}/download"`);
                 }
-
-                revision.setContent(noteContent, {forceSave: true});
             }
+
+            revision.setContent(noteContent);
 
             return revision;
         });
