@@ -265,32 +265,39 @@ class NoteContext extends Component {
     }
 
     async getTextEditor(callback) {
-        return new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
             callback,
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getCodeEditor() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getContentElement() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getTypeWidget() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
+    }
+
+    timeout(promise) {
+        return Promise.race([
+            promise,
+            new Promise(res => setTimeout(() => res(null), 200))
+        ]);
     }
 
     resetViewScope() {
