@@ -35,10 +35,18 @@ const TPL = `
         .CollabButton {
             display: none !important;
         }
+        
+        button[data-testid='save-button'], button[data-testid='json-export-button'] {
+            display: none !important; /* these exports don't work, user should use import/export dialog */
+        }
+        
+        .library-button {
+            display: none !important; /* library won't work without extra support which isn't currently implemented */
+        }
 
         </style>
         <!-- height here necessary. otherwise excalidraw not shown -->
-        <div class="canvas-render" style="height: 100%"></div>
+        <div class="canvas-render" style="height: 100%"></div>  
     </div>
 `;
 
