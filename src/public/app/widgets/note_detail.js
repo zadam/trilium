@@ -217,6 +217,9 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
     async beforeNoteSwitchEvent({noteContext}) {
         if (this.isNoteContext(noteContext.ntxId)) {
+            for (const x of this.children) {
+                x.handleEvent("deactivated", {});
+            }
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
