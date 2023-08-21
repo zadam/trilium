@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: entities/fblob.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,36 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: entities/fblob.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>export default class FBlob {
+    constructor(row) {
+        /** @type {string} */
+        this.blobId = row.blobId;
 
+        /**
+         * can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         * @type {string}
+         */
+        this.content = row.content;
+        this.contentLength = row.contentLength;
 
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
+        /** @type {string} */
+        this.dateModified = row.dateModified;
+        /** @type {string} */
+        this.utcDateModified = row.utcDateModified;
+    }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

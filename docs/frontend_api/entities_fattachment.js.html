@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: entities/fbranch.js</title>
+    <title>JSDoc: Source: entities/fattachment.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: entities/fbranch.js</h1>
+    <h1 class="page-title">Source: entities/fattachment.js</h1>
 
     
 
@@ -27,10 +27,10 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
- * parents.
+ * Attachment is a file directly tied into a note without
+ * being a hidden child.
  */
-class FBranch {
+class FAttachment {
     constructor(froca, row) {
         /** @type {Froca} */
         this.froca = froca;
@@ -39,57 +39,44 @@ class FBranch {
     }
 
     update(row) {
+        /** @type {string} */
+        this.attachmentId = row.attachmentId;
+        /** @type {string} */
+        this.ownerId = row.ownerId;
+        /** @type {string} */
+        this.role = row.role;
+        /** @type {string} */
+        this.mime = row.mime;
+        /** @type {string} */
+        this.title = row.title;
+        /** @type {string} */
+        this.dateModified = row.dateModified;
+        /** @type {string} */
+        this.utcDateModified = row.utcDateModified;
+        /** @type {string} */
+        this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
+
         /**
-         * primary key
-         * @type {string}
+         * optionally added to the entity 
+         * @type {int}
          */
-        this.branchId = row.branchId;
-        /** @type {string} */
-        this.noteId = row.noteId;
-        /** @type {string} */
-        this.parentNoteId = row.parentNoteId;
-        /** @type {int} */
-        this.notePosition = row.notePosition;
-        /** @type {string} */
-        this.prefix = row.prefix;
-        /** @type {boolean} */
-        this.isExpanded = !!row.isExpanded;
-        /** @type {boolean} */
-        this.fromSearchNote = !!row.fromSearchNote;
+        this.contentLength = row.contentLength;
+
+        this.froca.attachments[this.attachmentId] = this;
     }
 
     /** @returns {FNote} */
-    async getNote() {
-        return this.froca.getNote(this.noteId);
+    getNote() {
+        return this.froca.notes[this.ownerId];
     }
 
-    /** @returns {FNote} */
-    getNoteFromCache() {
-        return this.froca.getNoteFromCache(this.noteId);
-    }
-
-    /** @returns {FNote} */
-    async getParentNote() {
-        return this.froca.getNote(this.parentNoteId);
-    }
-
-    /** @returns {boolean} true if it's top level, meaning its parent is the root note */
-    isTopLevel() {
-        return this.parentNoteId === 'root';
-    }
-
-    get toString() {
-        return `FBranch(branchId=${this.branchId})`;
-    }
-
-    get pojo() {
-        const pojo = {...this};
-        delete pojo.froca;
-        return pojo;
+    /** @return {FBlob} */
+    async getBlob() {
+        return await this.froca.getBlob('attachments', this.attachmentId);
     }
 }
 
-export default FBranch;
+export default FAttachment;
 </code></pre>
         </article>
     </section>

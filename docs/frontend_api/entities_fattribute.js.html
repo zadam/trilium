@@ -29,6 +29,11 @@
             <pre class="prettyprint source linenums"><code>import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
 /**
+ * There are currently only two types of attributes, labels or relations.
+ * @typedef {"label" | "relation"} AttributeType
+ */
+
+/**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
  */
@@ -45,7 +50,7 @@ class FAttribute {
         this.attributeId = row.attributeId;
         /** @type {string} */
         this.noteId = row.noteId;
-        /** @type {string} */
+        /** @type {AttributeType} */
         this.type = row.type;
         /** @type {string} */
         this.name = row.name;
@@ -116,7 +121,7 @@ export default FAttribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BasicWidget.html">BasicWidget</a></li><li><a href="FAttachment.html">FAttachment</a></li><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteContextAwareWidget.html">NoteContextAwareWidget</a></li><li><a href="RightPanelWidget.html">RightPanelWidget</a></li></ul><h3>Global</h3><ul><li><a href="global.html#api">api</a></li></ul>
 </nav>
 
 <br class="clear">

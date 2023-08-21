@@ -46,6 +46,21 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 /**
+ * There are many different Note types, some of which are entirely opaque to the
+ * end user. Those types should be used only for checking against, they are
+ * not for direct use.
+ * @typedef {"file" | "image" | "search" | "noteMap" | "launcher" | "doc" | "contentWidget" | "text" | "relationMap" | "render" | "canvas" | "mermaid" | "book" | "webView" | "code"} NoteType
+ */
+
+/**
+ * @typedef {Object} NotePathRecord
+ * @property {boolean} isArchived
+ * @property {boolean} isInHoistedSubTree
+ * @property {Array&lt;string>} notePath
+ * @property {boolean} isHidden
+ */
+
+/**
  * Trilium's main entity, which can represent text note, image, code note, file attachment etc.
  *
  * @extends AbstractBeccaEntity
@@ -88,7 +103,7 @@ class BNote extends AbstractBeccaEntity {
         this.noteId = noteId;
         /** @type {string} */
         this.title = title;
-        /** @type {string} */
+        /** @type {NoteType} */
         this.type = type;
         /** @type {string} */
         this.mime = mime;
@@ -104,7 +119,10 @@ class BNote extends AbstractBeccaEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
-        /** @type {boolean} - set during the deletion operation, before it is completed (removed from becca completely) */
+        /** 
+         * set during the deletion operation, before it is completed (removed from becca completely)
+         * @type {boolean}
+         */
         this.isBeingDeleted = false;
 
         // ------ Derived attributes ------
@@ -1194,7 +1212,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {Array&lt;{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array&lt;string>, isHidden: boolean}>}
+     * @return {Array&lt;NotePathRecord>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -1638,9 +1656,9 @@ class BNote extends AbstractBeccaEntity {
                     noteContent = noteContent.replaceAll(new RegExp(`href="[^"]*attachmentId=${noteAttachment.attachmentId}[^"]*"`, 'gi'),
                         `href="api/attachments/${revisionAttachment.attachmentId}/download"`);
                 }
-
-                revision.setContent(noteContent, {forceSave: true});
             }
+
+            revision.setContent(noteContent);
 
             return revision;
         });
@@ -1728,7 +1746,7 @@ module.exports = BNote;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul><h3>Global</h3><ul><li><a href="global.html#api">api</a></li></ul>
 </nav>
 
 <br class="clear">
