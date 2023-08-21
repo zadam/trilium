@@ -25,6 +25,25 @@ const NOTE_TYPE_ICONS = {
     "contentWidget": "bx bxs-widget"
 };
 
+/**
+ * There are many different Note types, some of which are entirely opaque to the
+ * end user. Those types should be used only for checking against, they are
+ * not for direct use.
+ * @typedef {"file" | "image" | "search" | "noteMap" | "launcher" | "doc" | "contentWidget" | "text" | "relationMap" | "render" | "canvas" | "mermaid" | "book" | "webView" | "code"} NoteType
+ */
+
+/**
+ * @typedef {Object} NotePathRecord
+ * @property {boolean} isArchived
+ * @property {boolean} isInHoistedSubTree
+ * @property {boolean} isSearch
+ * @property {Array<string>} notePath
+ * @property {boolean} isHidden
+ */
+
+/**
+ * Note is the main node and concept in Trilium.
+ */
 class FNote {
     /**
      * @param {Froca} froca
@@ -65,8 +84,8 @@ class FNote {
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
         /**
-         * one of 'text', 'code', 'file' or 'render'
-         * @type {string}
+         * See {@see NoteType} for info on values.
+         * @type {NoteType}
          */
         this.type = row.type;
         /**
@@ -371,7 +390,7 @@ class FNote {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, isSearch: boolean, notePath: Array<string>, isHidden: boolean}>}
+     * @return {Array<NotePathRecord>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -450,7 +469,7 @@ class FNote {
 
     /**
      * @param {FAttribute[]} attributes
-     * @param {string} type
+     * @param {AttributeType} type
      * @param {string} name
      * @return {FAttribute[]}
      * @private
@@ -579,7 +598,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {boolean} true if note has an attribute with given type and name (including inherited)
      */
@@ -590,7 +609,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {boolean} true if note has an attribute with given type and name (including inherited)
      */
@@ -599,7 +618,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is returned. Returns null if there's no such attribute belonging to this note.
      */
@@ -610,7 +629,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is returned. Returns null if there's no such attribute belonging to this note.
      */
@@ -621,7 +640,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {string} attribute value of the given type and name or null if no such attribute exists.
      */
@@ -632,7 +651,7 @@ class FNote {
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {AttributeType} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @returns {string} attribute value of the given type and name or null if no such attribute exists.
      */

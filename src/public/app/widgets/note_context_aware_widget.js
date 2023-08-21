@@ -1,7 +1,11 @@
 import BasicWidget from "./basic_widget.js";
 import appContext from "../components/app_context.js";
 
-export default class NoteContextAwareWidget extends BasicWidget {
+/**
+ * This widget allows for changing and updating depending on the active note.
+ * @extends {BasicWidget}
+ */
+class NoteContextAwareWidget extends BasicWidget {
     isNoteContext(ntxId) {
         if (Array.isArray(ntxId)) {
             return this.noteContext && ntxId.includes(this.noteContext.ntxId);
@@ -43,6 +47,9 @@ export default class NoteContextAwareWidget extends BasicWidget {
         return this.noteContext?.ntxId;
     }
 
+    /**
+     * @returns {boolean} true when an active note exists
+     */
     isEnabled() {
         return !!this.note;
     }
@@ -58,6 +65,8 @@ export default class NoteContextAwareWidget extends BasicWidget {
     }
 
     /**
+     * Override this method to be able to refresh your
+     * widget with each note.
      * @param {FNote} note
      * @returns {Promise<void>}
      */
@@ -109,3 +118,5 @@ export default class NoteContextAwareWidget extends BasicWidget {
         await this.refresh();
     }
 }
+
+export default NoteContextAwareWidget;

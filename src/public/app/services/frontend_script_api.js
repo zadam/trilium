@@ -15,6 +15,18 @@ import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
 import shortcutService from "./shortcuts.js";
 
+
+/**
+ * A whole number
+ * @typedef {number} int
+ */
+
+/**
+ * An instance of the frontend api available globally.
+ * @global
+ * @var {FrontendScriptApi} api
+ */
+
 /**
  * <p>This is the main frontend API interface for scripts. All the properties and methods are published in the "api" object
  * available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.startNote.title);</code></p>
@@ -22,26 +34,44 @@ import shortcutService from "./shortcuts.js";
  * @constructor
  */
 function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
-    /** @property {jQuery} container of all the rendered script content */
+    /** 
+     * Container of all the rendered script content
+     * @type {jQuery}
+     * */
     this.$container = $container;
 
-    /** @property {object} note where the script started executing */
+    /**
+     * Note where the script started executing
+     * @type {FNote}
+     */
     this.startNote = startNote;
-    /** @property {object} note where the script is currently executing */
+
+    /**
+     * Note where the script is currently executing
+     * @type {FNote}
+     */
     this.currentNote = currentNote;
-    /** @property {object|null} entity whose event triggered this execution */
+    /** 
+     * Entity whose event triggered this execution
+     * @type {object|null}
+     */
     this.originEntity = originEntity;
 
-    /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
+    /**
+     * day.js library for date manipulation.
+     * See {@link https://day.js.org} for documentation
+     * @see https://day.js.org
+     * @type {dayjs}
+     */
     this.dayjs = dayjs;
 
-    /** @property {RightPanelWidget} */
+    /** @type {RightPanelWidget} */
     this.RightPanelWidget = RightPanelWidget;
 
-    /** @property {NoteContextAwareWidget} */
+    /** @type {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
 
-    /** @property {BasicWidget} */
+    /** @type {BasicWidget} */
     this.BasicWidget = BasicWidget;
 
     /**
@@ -114,12 +144,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
      *             for special needs there's also backend API's createOrUpdateLauncher()
      * @param {object} opts
-     * @property {string} [opts.id] - id of the button, used to identify the old instances of this button to be replaced
+     * @param {string} opts.title
+     * @param {function} opts.action - callback handling the click on the button
+     * @param {string} [opts.id] - id of the button, used to identify the old instances of this button to be replaced
      *                          ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.
-     * @property {string} opts.title
-     * @property {string} [opts.icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
-     * @property {function} opts.action - callback handling the click on the button
-     * @property {string} [opts.shortcut] - keyboard shortcut for the button, e.g. "alt+t"
+     * @param {string} [opts.icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
+     * @param {string} [opts.shortcut] - keyboard shortcut for the button, e.g. "alt+t"
      */
     this.addButtonToToolbar = async opts => {
         console.warn("api.addButtonToToolbar() has been deprecated since v0.58 and may be removed in the future. Use  Menu -> Configure Launchbar to create/update launchers instead.");
@@ -150,9 +180,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
      *
      * @method
-     * @param {string} script - script to be executed on the backend
-     * @param {Array.<?>} params - list of parameters to the anonymous function to be sent to backend
-     * @returns {Promise<*>} return value of the executed function on the backend
+     * @param {string|Function} script - script to be executed on the backend
+     * @param {Array<any>} params - list of parameters to the anonymous function to be sent to backend
+     * @returns {Promise<any>} return value of the executed function on the backend
      */
     this.runOnBackend = async (script, params = []) => {
         if (typeof script === "function") {
@@ -300,7 +330,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {boolean} [params.showTooltip=true] - enable/disable tooltip on the link
      * @param {boolean} [params.showNotePath=false] - show also whole note's path as part of the link
      * @param {boolean} [params.showNoteIcon=false] - show also note icon before the title
-     * @param {string} [params.title=] - custom link tile with note's title as default
+     * @param {string} [params.title] - custom link tile with note's title as default
      */
     this.createLink = linkService.createLink;
 

@@ -18,6 +18,21 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 /**
+ * There are many different Note types, some of which are entirely opaque to the
+ * end user. Those types should be used only for checking against, they are
+ * not for direct use.
+ * @typedef {"file" | "image" | "search" | "noteMap" | "launcher" | "doc" | "contentWidget" | "text" | "relationMap" | "render" | "canvas" | "mermaid" | "book" | "webView" | "code"} NoteType
+ */
+
+/**
+ * @typedef {Object} NotePathRecord
+ * @property {boolean} isArchived
+ * @property {boolean} isInHoistedSubTree
+ * @property {Array<string>} notePath
+ * @property {boolean} isHidden
+ */
+
+/**
  * Trilium's main entity, which can represent text note, image, code note, file attachment etc.
  *
  * @extends AbstractBeccaEntity
@@ -60,7 +75,7 @@ class BNote extends AbstractBeccaEntity {
         this.noteId = noteId;
         /** @type {string} */
         this.title = title;
-        /** @type {string} */
+        /** @type {NoteType} */
         this.type = type;
         /** @type {string} */
         this.mime = mime;
@@ -76,7 +91,10 @@ class BNote extends AbstractBeccaEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
-        /** @type {boolean} - set during the deletion operation, before it is completed (removed from becca completely) */
+        /** 
+         * set during the deletion operation, before it is completed (removed from becca completely)
+         * @type {boolean}
+         */
         this.isBeingDeleted = false;
 
         // ------ Derived attributes ------
@@ -1166,7 +1184,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array<string>, isHidden: boolean}>}
+     * @return {Array<NotePathRecord>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';

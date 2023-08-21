@@ -1,5 +1,11 @@
 import Component from "../components/component.js";
 
+
+/**
+ * This is the base widget for all other widgets.
+ * 
+ * For information on using widgets, see the tutorial {@tutorial widget_basics}.
+ */
 class BasicWidget extends Component {
     constructor() {
         super();
@@ -64,6 +70,11 @@ class BasicWidget extends Component {
         return this;
     }
 
+    /**
+     * Accepts a string of CSS to add with the widget.
+     * @param {string} block 
+     * @returns {this} for chaining
+     */
     cssBlock(block) {
         this.cssEl = block;
         return this;
@@ -112,7 +123,10 @@ class BasicWidget extends Component {
     }
 
     /**
-     * for overriding
+     * Method used for rendering the widget.
+     * 
+     * Your class should override this method.
+     * @returns {JQuery<HTMLElement>} Your widget.
      */
     doRender() {}
 
