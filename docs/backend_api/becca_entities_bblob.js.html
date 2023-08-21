@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: becca/entities/brecent_note.js</title>
+    <title>JSDoc: Source: becca/entities/bblob.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: becca/entities/brecent_note.js</h1>
+    <h1 class="page-title">Source: becca/entities/bblob.js</h1>
 
     
 
@@ -26,41 +26,36 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
-
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-
-/**
- * RecentNote represents recently visited note.
- *
- * @extends AbstractBeccaEntity
- */
-class BRecentNote extends AbstractBeccaEntity {
-    static get entityName() { return "recent_notes"; }
-    static get primaryKeyName() { return "noteId"; }
+            <pre class="prettyprint source linenums"><code>class BBlob {
+    static get entityName() { return "blobs"; }
+    static get primaryKeyName() { return "blobId"; }
+    static get hashedProperties() { return ["blobId", "content"]; }
 
     constructor(row) {
-        super();
-
         /** @type {string} */
-        this.noteId = row.noteId;
+        this.blobId = row.blobId;
+        /** @type {string|Buffer} */
+        this.content = row.content;
+        /** @type {int} */
+        this.contentLength = row.contentLength;
         /** @type {string} */
-        this.notePath = row.notePath;
+        this.dateModified = row.dateModified;
         /** @type {string} */
-        this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
+        this.utcDateModified = row.utcDateModified;
     }
 
     getPojo() {
         return {
-            noteId: this.noteId,
-            notePath: this.notePath,
-            utcDateCreated: this.utcDateCreated
-        }
+            blobId: this.blobId,
+            content: this.content,
+            contentLength: this.contentLength,
+            dateModified: this.dateModified,
+            utcDateModified: this.utcDateModified
+        };
     }
 }
 
-module.exports = BRecentNote;
+module.exports = BBlob;
 </code></pre>
         </article>
     </section>

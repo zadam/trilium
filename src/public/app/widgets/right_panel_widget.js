@@ -9,11 +9,19 @@ const WIDGET_TPL = `
     </div>
 </div>`;
 
-export default class RightPanelWidget extends NoteContextAwareWidget {
+/**
+ * This widget manages rendering panels in the right-hand pane.
+ * @extends {NoteContextAwareWidget}
+ */
+class RightPanelWidget extends NoteContextAwareWidget {
+    /** Title to show in the panel. */
     get widgetTitle() { return "Untitled widget"; }
 
     get help() { return {}; }
 
+    /**
+     * Do not override this method unless you know what you're doing.
+     */
     doRender() {
         this.$widget = $(WIDGET_TPL);
         this.contentSized();
@@ -30,6 +38,13 @@ export default class RightPanelWidget extends NoteContextAwareWidget {
         this.initialized = this.doRenderBody();
     }
 
-    /* for overriding */
+    /**
+     * Method used for rendering the body of the widget.
+     * 
+     * Your class should override this method.
+     * @returns {JQuery<HTMLElement>} The body of your widget.
+     */
     async doRenderBody() {}
 }
+
+export default RightPanelWidget;
