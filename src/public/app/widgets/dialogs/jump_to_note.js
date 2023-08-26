@@ -20,6 +20,8 @@ const TPL = `<div class="jump-to-note-dialog modal mx-auto" tabindex="-1" role="
                         <input class="jump-to-note-autocomplete form-control" placeholder="search for note by its name">
                     </div>
                 </div>
+
+                <div class="jump-to-note-results"></div>
             </div>
             <div class="modal-footer">
                 <button class="show-in-full-text-button btn btn-sm">Search in full text <kbd>Ctrl+Enter</kbd></button>
@@ -40,6 +42,7 @@ export default class JumpToNoteDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$autoComplete = this.$widget.find(".jump-to-note-autocomplete");
+        this.$results = this.$widget.find(".jump-to-note-results");
         this.$showInFullTextButton = this.$widget.find(".show-in-full-text-button");
         this.$showInFullTextButton.on('click', e => this.showInFullText(e));
 
@@ -56,7 +59,10 @@ export default class JumpToNoteDialog extends BasicWidget {
     }
 
     async refresh() {
-        noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, {hideGoToSelectedNoteButton: true})
+        noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, {
+            hideGoToSelectedNoteButton: true,
+            container: this.$results
+        })
             // clear any event listener added in previous invocation of this function
             .off('autocomplete:noteselected')
             .on('autocomplete:noteselected', function (event, suggestion, dataset) {

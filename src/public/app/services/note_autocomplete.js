@@ -137,8 +137,15 @@ function initNoteAutocomplete($el, options) {
         return false;
     });
 
+    let autocompleteOptions = {};
+    if (options.container) {
+        autocompleteOptions.dropdownMenuContainer = options.container;
+    } else {
+        autocompleteOptions.appendTo = document.querySelector('body');
+    }
+
     $el.autocomplete({
-        appendTo: document.querySelector('body'),
+        ...autocompleteOptions,
         hint: false,
         autoselect: true,
         // openOnFocus has to be false, otherwise re-focus (after return from note type chooser dialog) forces
