@@ -21,7 +21,7 @@ const TPL = `<div class="jump-to-note-dialog modal mx-auto" tabindex="-1" role="
                     </div>
                 </div>
 
-                <div class="jump-to-note-results"></div>
+                <div class="algolia-autocomplete-container jump-to-note-results"></div>
             </div>
             <div class="modal-footer">
                 <button class="show-in-full-text-button btn btn-sm">Search in full text <kbd>Ctrl+Enter</kbd></button>

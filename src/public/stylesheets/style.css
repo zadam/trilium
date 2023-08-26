@@ -504,6 +504,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     z-index: 2000 !important;
 }
 
+.algolia-autocomplete-container .aa-dropdown-menu {
+    position: inherit !important;
+    max-height: 40vh;
+    overflow: scroll;
+}
+
 .algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
     width: 100%;
 }
