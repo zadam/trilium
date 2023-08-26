@@ -141,12 +141,11 @@ function initNoteAutocomplete($el, options) {
     if (options.container) {
         autocompleteOptions.dropdownMenuContainer = options.container;
         autocompleteOptions.debug = true;   // don't close on blur
-    } else {
-        autocompleteOptions.appendTo = document.querySelector('body');        
     }
 
     $el.autocomplete({
         ...autocompleteOptions,
+        appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
         // openOnFocus has to be false, otherwise re-focus (after return from note type chooser dialog) forces

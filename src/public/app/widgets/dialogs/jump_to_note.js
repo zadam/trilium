@@ -8,19 +8,17 @@ const TPL = `<div class="jump-to-note-dialog modal mx-auto" tabindex="-1" role="
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Jump to note</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="jump-to-note-autocomplete">Note</label>
+                <div class="form-group" style="flex-grow: 1;">
                     <div class="input-group">
                         <input class="jump-to-note-autocomplete form-control" placeholder="search for note by its name">
                     </div>
                 </div>
 
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
                 <div class="algolia-autocomplete-container jump-to-note-results"></div>
             </div>
             <div class="modal-footer">
