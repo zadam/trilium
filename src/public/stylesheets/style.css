@@ -526,18 +526,18 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     margin: 0;
 }
 
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion {
+.aa-dropdown-menu .aa-suggestion {
     cursor: pointer;
     padding: 5px;
     margin: 0;
 }
 
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion p {
+.aa-dropdown-menu .aa-suggestion p {
     padding: 0;
     margin: 0;
 }
 
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
+.aa-dropdown-menu .aa-suggestion.aa-cursor {
     color: var(--active-item-text-color);
     background-color: var(--active-item-background-color);
 }
