@@ -140,8 +140,9 @@ function initNoteAutocomplete($el, options) {
     let autocompleteOptions = {};
     if (options.container) {
         autocompleteOptions.dropdownMenuContainer = options.container;
+        autocompleteOptions.debug = true;   // don't close on blur
     } else {
-        autocompleteOptions.appendTo = document.querySelector('body');
+        autocompleteOptions.appendTo = document.querySelector('body');        
     }
 
     $el.autocomplete({
