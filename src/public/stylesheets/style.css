@@ -505,8 +505,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .algolia-autocomplete-container .aa-dropdown-menu {
-    position: inherit !important;
-    max-height: 40vh;
+    position: inherit !important;    
     overflow: scroll;
 }
 
@@ -1074,4 +1073,16 @@ textarea {
     margin-left: 20px;
     position: relative;
     top: 8px;
+}
+
+.jump-to-note-dialog .modal-body {
+    padding: 0 1rem;
+}
+
+.jump-to-note-results .aa-dropdown-menu {
+    max-height: 40vh;
+}
+
+.jump-to-note-results .aa-suggestions {
+    padding: 1rem 0;
 }
