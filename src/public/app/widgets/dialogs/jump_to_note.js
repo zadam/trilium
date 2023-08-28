@@ -58,6 +58,7 @@ export default class JumpToNoteDialog extends BasicWidget {
 
     async refresh() {
         noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, {
+            allowCreatingNotes: true,
             hideGoToSelectedNoteButton: true,
             container: this.$results
         })
