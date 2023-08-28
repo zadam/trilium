@@ -506,7 +506,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .algolia-autocomplete-container .aa-dropdown-menu {
     position: inherit !important;    
-    overflow: scroll;
+    overflow: auto;
 }
 
 .algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
