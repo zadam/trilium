@@ -8,10 +8,8 @@ const TPL = `<div class="jump-to-note-dialog modal mx-auto" tabindex="-1" role="
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="form-group" style="flex-grow: 1;">
-                    <div class="input-group">
-                        <input class="jump-to-note-autocomplete form-control" placeholder="search for note by its name">
-                    </div>
+                <div class="input-group">
+                    <input class="jump-to-note-autocomplete form-control" placeholder="search for note by its name">
                 </div>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">

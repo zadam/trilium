@@ -1075,6 +1075,11 @@ textarea {
     top: 8px;
 }
 
+.jump-to-note-dialog .modal-header {
+    align-items: center;
+    padding-bottom: 1rem !important;
+}
+
 .jump-to-note-dialog .modal-body {
     padding: 0 1rem;
 }
