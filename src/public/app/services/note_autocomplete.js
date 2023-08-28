@@ -106,7 +106,7 @@ function initNoteAutocomplete($el, options) {
     $el.addClass("note-autocomplete-input");
 
     const $clearTextButton = $("<a>")
-            .addClass("input-group-text input-clearer-button bx bx-x")
+            .addClass("input-group-text input-clearer-button bx bxs-tag-x")
             .prop("title", "Clear text field");
 
     const $showRecentNotesButton = $("<a>")
