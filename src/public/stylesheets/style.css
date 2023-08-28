@@ -1081,7 +1081,7 @@ textarea {
 }
 
 .jump-to-note-dialog .modal-body {
-    padding: 0 1rem;
+    padding: 0;
 }
 
 .jump-to-note-results .aa-dropdown-menu {
@@ -1089,5 +1089,5 @@ textarea {
 }
 
 .jump-to-note-results .aa-suggestions {
-    padding: 1rem 0;
+    padding: 1rem;
 }
