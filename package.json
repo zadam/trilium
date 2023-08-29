@@ -68,10 +68,10 @@
     "jimp": "0.22.10",
     "joplin-turndown-plugin-gfm": "1.0.12",
     "jsdom": "22.1.0",
-    "marked": "7.0.3",
+    "marked": "7.0.5",
     "mime-types": "2.1.35",
     "multer": "1.4.5-lts.1",
-    "node-abi": "3.46.0",
+    "node-abi": "3.47.0",
     "normalize-strings": "1.1.1",
     "open": "8.4.1",
     "rand-token": "1.0.1",
@@ -97,14 +97,14 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "25.5.0",
+    "electron": "25.7.0",
     "electron-builder": "24.6.3",
-    "electron-packager": "17.1.1",
+    "electron-packager": "17.1.2",
     "electron-rebuild": "3.2.9",
-    "eslint": "8.47.0",
+    "eslint": "8.48.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-prettier": "9.0.0",
-    "eslint-plugin-import": "2.28.0",
+    "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jsonc": "2.9.0",
     "eslint-plugin-prettier": "5.0.0",
     "esm": "3.2.25",
@@ -115,13 +115,13 @@
     "lint-staged": "14.0.0",
     "lorem-ipsum": "2.0.8",
     "nodemon": "3.0.1",
-    "prettier": "3.0.2",
+    "prettier": "3.0.3",
     "rcedit": "3.1.0",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4"
   },
   "optionalDependencies": {
-    "electron-installer-debian": "3.1.0"
+    "electron-installer-debian": "3.2.0"
   },
   "lint-staged": {
     "*.js": "eslint --cache --fix"

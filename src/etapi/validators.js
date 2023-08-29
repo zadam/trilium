@@ -1,4 +1,5 @@
 const noteTypeService = require("../services/note_types");
+const dateUtils = require("../services/date_utils");
 
 function mandatory(obj) {
     if (obj === undefined ) {
@@ -20,6 +21,22 @@ function isString(obj) {
     if (typeof obj !== 'string') {
         return `'${obj}' is not a string`;
     }
+}
+
+function isLocalDateTime(obj) {
+    if (obj === undefined || obj === null) {
+        return;
+    }
+
+    return dateUtils.validateLocalDateTime(obj);
+}
+
+function isUtcDateTime(obj) {
+    if (obj === undefined || obj === null) {
+        return;
+    }
+
+    return dateUtils.validateUtcDateTime(obj);
 }
 
 function isBoolean(obj) {
@@ -99,5 +116,7 @@ module.exports = {
     isNoteId,
     isNoteType,
     isAttributeType,
-    isValidEntityId
+    isValidEntityId,
+    isLocalDateTime,
+    isUtcDateTime
 };
