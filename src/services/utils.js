@@ -281,7 +281,7 @@ function removeDiacritic(str) {
     if (!str) {
         return "";
     }
-
+    str = str.toString();
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
