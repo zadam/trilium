@@ -107,8 +107,9 @@ function getRelationBundles(req) {
 
 function getBundle(req) {
     const note = becca.getNote(req.params.noteId);
+    const {script, params} = req.body;
 
-    return scriptService.getScriptBundleForFrontend(note);
+    return scriptService.getScriptBundleForFrontend(note, script, params);
 }
 
 module.exports = {
