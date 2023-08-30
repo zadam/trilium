@@ -106,7 +106,7 @@ function initNoteAutocomplete($el, options) {
     $el.addClass("note-autocomplete-input");
 
     const $clearTextButton = $("<a>")
-            .addClass("input-group-text input-clearer-button bx bx-x")
+            .addClass("input-group-text input-clearer-button bx bxs-tag-x")
             .prop("title", "Clear text field");
 
     const $showRecentNotesButton = $("<a>")
@@ -137,7 +137,14 @@ function initNoteAutocomplete($el, options) {
         return false;
     });
 
+    let autocompleteOptions = {};
+    if (options.container) {
+        autocompleteOptions.dropdownMenuContainer = options.container;
+        autocompleteOptions.debug = true;   // don't close on blur
+    }
+
     $el.autocomplete({
+        ...autocompleteOptions,
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
