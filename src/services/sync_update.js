@@ -41,6 +41,8 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
         entityChangesService.putEntityChangeForOtherInstances(localEC);
 
         return false;
+    } else if (localEC?.isErased && remoteEC.isErased) {
+        return false;
     }
 
     if (!localEC
