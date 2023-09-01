@@ -497,7 +497,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "zoomReset",
-        description: "Zoom Reset",
+        description: "Reset zoom level",
         defaultShortcuts: isElectron ? ["CommandOrControl+0"] : [],
         scope: "window"
     },
