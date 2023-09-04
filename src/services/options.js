@@ -9,7 +9,7 @@ function getOptionOrNull(name) {
         option = becca.getOption(name);
     } else {
         // e.g. in initial sync becca is not loaded because DB is not initialized
-        option = sql.getRow("SELECT * FROM options WHERE name = ?", name);
+        option = sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
     }
 
     return option ? option.value : null;
