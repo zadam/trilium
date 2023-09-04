@@ -45,10 +45,7 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
         return false;
     }
 
-    if (!localEC
-        || localEC.utcDateChanged < remoteEC.utcDateChanged
-        || (localEC.utcDateChanged === remoteEC.utcDateChanged && localEC.hash !== remoteEC.hash) // sync error, we should still update
-    ) {
+    if (!localEC || localEC.utcDateChanged <= remoteEC.utcDateChanged) {
         if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
             // we always use a Buffer object which is different from normal saving - there we use a simple string type for
             // "string notes". The problem is that in general, it's not possible to detect whether a blob content
@@ -64,7 +61,9 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
 
         sql.replace(remoteEC.entityName, remoteEntityRow);
 
-        entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
+        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged) {
+            entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
+        }
 
         return true;
     } else if (localEC.hash !== remoteEC.hash && localEC.utcDateChanged > remoteEC.utcDateChanged) {

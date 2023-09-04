@@ -758,7 +758,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens", "blobs" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }
@@ -767,7 +767,13 @@ class ConsistencyChecks {
         let elapsedTimeMs;
 
         await syncMutexService.doExclusively(() => {
-            elapsedTimeMs = this.runChecksInner();
+            const startTimeMs = Date.now();
+
+            this.runDbDiagnostics();
+
+            this.runAllChecksAndFixers();
+
+            elapsedTimeMs = Date.now() - startTimeMs;
         });
 
         if (this.unrecoveredConsistencyErrors) {
@@ -780,16 +786,6 @@ class ConsistencyChecks {
                 ` (took ${elapsedTimeMs}ms)`
             );
         }
-    }
-
-    runChecksInner() {
-        const startTimeMs = Date.now();
-
-        this.runDbDiagnostics();
-
-        this.runAllChecksAndFixers();
-
-        return Date.now() - startTimeMs;
     }
 }
 
@@ -825,11 +821,6 @@ async function runOnDemandChecks(autoFix) {
     await consistencyChecks.runChecks();
 }
 
-function runOnDemandChecksWithoutExclusiveLock(autoFix) {
-    const consistencyChecks = new ConsistencyChecks(autoFix);
-    consistencyChecks.runChecksInner();
-}
-
 function runEntityChangesChecks() {
     const consistencyChecks = new ConsistencyChecks(true);
     consistencyChecks.findEntityChangeIssues();
@@ -844,6 +835,5 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     runOnDemandChecks,
-    runOnDemandChecksWithoutExclusiveLock,
     runEntityChangesChecks
 };
