@@ -496,6 +496,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "zoomReset",
+        description: "Reset zoom level",
+        defaultShortcuts: isElectron ? ["CommandOrControl+0"] : [],
+        scope: "window"
+    },
+    {
         actionName: "copyWithoutFormatting",
         defaultShortcuts: ["CommandOrControl+Alt+C"],
         description: "Copy selected text without formatting",

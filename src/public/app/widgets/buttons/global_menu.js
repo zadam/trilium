@@ -131,7 +131,7 @@ const TPL = `
                 
                 <a data-trigger-command="zoomOut" title="Zoom Out" class="bx bx-minus"></a>
                 
-                <span class="zoom-state"></span>
+                <span data-trigger-command="zoomReset" title="Reset Zoom Level" class="zoom-state"></span>
                 
                 <a data-trigger-command="zoomIn" title="Zoom In" class="bx bx-plus"></a>
             </div>
