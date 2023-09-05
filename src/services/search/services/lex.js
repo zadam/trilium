@@ -11,7 +11,7 @@ function lex(str) {
     let currentWord = '';
 
     function isSymbolAnOperator(chr) {
-        return ['=', '*', '>', '<', '!', "-", "+", '%'].includes(chr);
+        return ['=', '*', '>', '<', '!', "-", "+", '%', ','].includes(chr);
     }
 
     function isPreviousSymbolAnOperator() {
@@ -126,6 +126,10 @@ function lex(str) {
                 currentWord += chr;
                 continue;
             }
+        }
+
+        if (chr === ',') {
+            continue;
         }
 
         currentWord += chr;
