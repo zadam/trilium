@@ -39,7 +39,7 @@ export default class FindInHtml {
 
                             res({
                                 totalFound: this.$results.length,
-                                currentFound: 1
+                                currentFound: Math.min(1, this.$results.length)
                             });
                         }
                     });
