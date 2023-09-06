@@ -229,11 +229,6 @@ class BNote extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    /** @returns {{dateModified, utcDateModified}} */
-    getContentMetadata() {
-        return sql.getRow(`SELECT dateModified, utcDateModified FROM blobs WHERE blobId = ?`, [this.blobId]);
-    }
-
     /** @returns {*} */
     getJsonContent() {
         const content = this.getContent();
@@ -1589,7 +1584,6 @@ class BNote extends AbstractBeccaEntity {
     saveRevision() {
         return sql.transactional(() => {
             let noteContent = this.getContent();
-            const contentMetadata = this.getContentMetadata();
 
             const revision = new BRevision({
                 noteId: this.noteId,
@@ -1598,14 +1592,10 @@ class BNote extends AbstractBeccaEntity {
                 type: this.type,
                 mime: this.mime,
                 isProtected: this.isProtected,
-                utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
-                    ? this.utcDateModified
-                    : contentMetadata.utcDateModified,
+                utcDateLastEdited: this.utcDateModified,
                 utcDateCreated: dateUtils.utcNowDateTime(),
                 utcDateModified: dateUtils.utcNowDateTime(),
-                dateLastEdited: this.dateModified > contentMetadata.dateModified
-                    ? this.dateModified
-                    : contentMetadata.dateModified,
+                dateLastEdited: this.dateModified,
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 

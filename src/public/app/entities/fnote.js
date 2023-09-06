@@ -989,6 +989,10 @@ class FNote {
     isOptions() {
         return this.noteId.startsWith("_options");
     }
+
+    async getMetadata() {
+        return await server.get(`notes/${this.noteId}/metadata`);
+    }
 }
 
 export default FNote;

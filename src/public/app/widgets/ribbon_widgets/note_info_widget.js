@@ -128,8 +128,8 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
             .attr("title", metadata.dateCreated);
 
         this.$dateModified
-            .text(metadata.combinedDateModified.substr(0, 16))
-            .attr("title", metadata.combinedDateModified);
+            .text(metadata.dateModified.substr(0, 16))
+            .attr("title", metadata.dateModified);
 
         this.$type.text(note.type);
 
