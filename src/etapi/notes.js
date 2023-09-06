@@ -50,7 +50,9 @@ function register(router) {
         'notePosition': [v.notNull, v.isInteger],
         'prefix': [v.notNull, v.isString],
         'isExpanded': [v.notNull, v.isBoolean],
-        'noteId': [v.notNull, v.isValidEntityId]
+        'noteId': [v.notNull, v.isValidEntityId],
+        'dateCreated': [v.notNull, v.isString, v.isLocalDateTime],
+        'utcDateCreated': [v.notNull, v.isString, v.isUtcDateTime]
     };
 
     eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
@@ -74,7 +76,9 @@ function register(router) {
     const ALLOWED_PROPERTIES_FOR_PATCH = {
         'title': [v.notNull, v.isString],
         'type': [v.notNull, v.isString],
-        'mime': [v.notNull, v.isString]
+        'mime': [v.notNull, v.isString],
+        'dateCreated': [v.notNull, v.isString, v.isLocalDateTime],
+        'utcDateCreated': [v.notNull, v.isString, v.isUtcDateTime]
     };
 
     eu.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {

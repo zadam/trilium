@@ -559,6 +559,48 @@ function BackendScriptApi(currentNote, apiParams) {
     this.exportSubtreeToZipFile = async (noteId, format, zipFilePath) => await exportService.exportToZipFile(noteId, format, zipFilePath);
 
     /**
+     * Executes given anonymous function on the frontend(s).
+     * Internally this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
+     * Note that there can be multiple connected frontend instances (e.g. in different tabs). In such case, all
+     * instances execute the given function.
+     *
+     * @method
+     * @param {string} script - script to be executed on the frontend
+     * @param {Array.<?>} params - list of parameters to the anonymous function to be sent to frontend
+     * @returns {undefined} - no return value is provided.
+     */
+    this.runOnFrontend = async (script, params = []) => {
+        if (typeof script === "function") {
+            script = script.toString();
+        }
+
+        ws.sendMessageToAllClients({
+            type: 'execute-script',
+            script: script,
+            params: prepareParams(params),
+            startNoteId: this.startNote.noteId,
+            currentNoteId: this.currentNote.noteId,
+            originEntityName: "notes", // currently there's no other entity on the frontend which can trigger event
+            originEntityId: this.originEntity?.noteId || null
+        });
+
+        function prepareParams(params) {
+            if (!params) {
+                return params;
+            }
+
+            return params.map(p => {
+                if (typeof p === "function") {
+                    return `!@#Function: ${p.toString()}`;
+                }
+                else {
+                    return p;
+                }
+            });
+        }
+    };
+
+    /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.
      *
      * @property {Becca} becca - provides access to the backend in-memory object graph, see {@link https://github.com/zadam/trilium/blob/master/src/becca/becca.js}

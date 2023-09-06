@@ -184,10 +184,8 @@ function sortNotesIfNeeded(parentNoteId) {
     }
 
     const sortReversed = parentNote.getLabelValue('sortDirection')?.toLowerCase() === "desc";
-    const sortFoldersFirstLabel = parentNote.getLabel('sortFoldersFirst');
-    const sortFoldersFirst = sortFoldersFirstLabel && sortFoldersFirstLabel.value.toLowerCase() !== "false";
-    const sortNaturalLabel = parentNote.getLabel('sortNatural');
-    const sortNatural = sortNaturalLabel && sortNaturalLabel.value.toLowerCase() !== "false";
+    const sortFoldersFirst = parentNote.isLabelTruthy('sortFoldersFirst');
+    const sortNatural = parentNote.isLabelTruthy('sortNatural');
     const sortLocale = parentNote.getLabelValue('sortLocale');
 
     sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst, sortNatural, sortLocale);

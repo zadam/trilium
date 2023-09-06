@@ -4,8 +4,11 @@ import toastService from "./toast.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 
-async function getAndExecuteBundle(noteId, originEntity = null) {
-    const bundle = await server.get(`script/bundle/${noteId}`);
+async function getAndExecuteBundle(noteId, originEntity = null, script = null, params = null) {
+    const bundle = await server.post(`script/bundle/${noteId}`, {
+        script,
+        params
+    });
 
     return await executeBundle(bundle, originEntity);
 }

@@ -302,7 +302,7 @@ function register(app) {
     apiRoute(PST, '/api/script/run/:noteId', scriptRoute.run);
     apiRoute(GET, '/api/script/startup', scriptRoute.getStartupBundles);
     apiRoute(GET, '/api/script/widgets', scriptRoute.getWidgetBundles);
-    apiRoute(GET, '/api/script/bundle/:noteId', scriptRoute.getBundle);
+    apiRoute(PST, '/api/script/bundle/:noteId', scriptRoute.getBundle);
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     // no CSRF since this is called from android app

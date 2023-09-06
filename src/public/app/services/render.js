@@ -10,7 +10,7 @@ async function render(note, $el) {
     $el.empty().toggle(renderNoteIds.length > 0);
 
     for (const renderNoteId of renderNoteIds) {
-        const bundle = await server.get(`script/bundle/${renderNoteId}`);
+        const bundle = await server.post(`script/bundle/${renderNoteId}`);
 
         const $scriptContainer = $('<div>');
         $el.append($scriptContainer);

@@ -10,7 +10,7 @@ function executeNote(note, apiParams) {
         return;
     }
 
-    const bundle = getScriptBundle(note);
+    const bundle = getScriptBundle(note, true, 'backend');
 
     return executeBundle(bundle, apiParams);
 }
@@ -68,9 +68,9 @@ function executeScript(script, params, startNoteId, currentNoteId, originEntityN
 
     // we're just executing an excerpt of the original frontend script in the backend context, so we must
     // override normal note's content, and it's mime type / script environment
-    const backendOverrideContent = `return (${script}\r\n)(${getParams(params)})`;
+    const overrideContent = `return (${script}\r\n)(${getParams(params)})`;
 
-    const bundle = getScriptBundle(currentNote, true, null, [], backendOverrideContent);
+    const bundle = getScriptBundle(currentNote, true, 'backend', [], overrideContent);
 
     return executeBundle(bundle, { startNote, originEntity });
 }
@@ -96,9 +96,17 @@ function getParams(params) {
 
 /**
  * @param {BNote} note
+ * @param {string} [script]
+ * @param {Array} [params]
  */
-function getScriptBundleForFrontend(note) {
-    const bundle = getScriptBundle(note);
+function getScriptBundleForFrontend(note, script, params) {
+    let overrideContent = null;
+
+    if (script) {
+        overrideContent = `return (${script}\r\n)(${getParams(params)})`;
+    }
+
+    const bundle = getScriptBundle(note, true, 'frontend', [], overrideContent);
 
     if (!bundle) {
         return;
@@ -119,9 +127,9 @@ function getScriptBundleForFrontend(note) {
  * @param {boolean} [root=true]
  * @param {string|null} [scriptEnv]
  * @param {string[]} [includedNoteIds]
- * @param {string|null} [backendOverrideContent]
+ * @param {string|null} [overrideContent]
  */
-function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
+function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], overrideContent = null) {
     if (!note.isContentAvailable()) {
         return;
     }
@@ -132,12 +140,6 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
 
     if (!root && note.hasOwnedLabel('disableInclusion')) {
         return;
-    }
-
-    if (root) {
-        scriptEnv = backendOverrideContent
-            ? 'backend'
-            : note.getScriptEnv();
     }
 
     if (note.type !== 'file' && !root && scriptEnv !== note.getScriptEnv()) {
@@ -180,7 +182,7 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
 apiContext.modules['${note.noteId}'] = { exports: {} };
 ${root ? 'return ' : ''}${isFrontend ? 'await' : ''} ((${isFrontend ? 'async' : ''} function(exports, module, require, api${modules.length > 0 ? ', ' : ''}${modules.map(child => sanitizeVariableName(child.title)).join(', ')}) {
 try {
-${backendOverrideContent || note.getContent()};
+${overrideContent || note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
 return module.exports;

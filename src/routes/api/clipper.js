@@ -94,13 +94,12 @@ function createNote(req) {
     clipType = htmlSanitizer.sanitize(clipType);
 
     const clipperInbox = getClipperInboxNote();
-    const dailyNote = dateNoteService.getDayNote(dateUtils.localNowDate());
     pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let note = findClippingNote(clipperInbox, pageUrl, clipType);
 
     if (!note) {
         note = noteService.createNewNote({
-            parentNoteId: dailyNote.noteId,
+            parentNoteId: clipperInbox.noteId,
             title,
             content: '',
             type: 'text'

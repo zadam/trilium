@@ -9,8 +9,8 @@ const appInfo = require('./app_info');
 async function migrate() {
     const currentDbVersion = getDbVersion();
 
-    if (currentDbVersion < 183) {
-        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.47.X first and only then to this version.");
+    if (currentDbVersion < 214) {
+        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.60.X first and only then to this version.");
 
         utils.crash();
         return;
@@ -18,9 +18,9 @@ async function migrate() {
 
     // backup before attempting migration
     await backupService.backupNow(
-        // creating a special backup for versions 0.60.X and older, the changes in 0.61 are major.
-        currentDbVersion < 214
-            ? `before-migration-v${currentDbVersion}`
+        // creating a special backup for versions 0.60.X, the changes in 0.61 are major.
+        currentDbVersion === 214
+            ? `before-migration-v060`
             : 'before-migration'
     );
 

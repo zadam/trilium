@@ -59,7 +59,7 @@ export default class FindInText {
 
         return {
             totalFound,
-            currentFound: currentFound + 1
+            currentFound: Math.min(currentFound + 1, totalFound)
         };
     }
 

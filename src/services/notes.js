@@ -1,5 +1,4 @@
 const sql = require('./sql');
-const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const entityChangesService = require('./entity_changes');
@@ -169,6 +168,15 @@ function createNewNote(params) {
         throw new Error(`Note content must be set`);
     }
 
+    let error;
+    if (error = dateUtils.validateLocalDateTime(params.dateCreated)) {
+        throw new Error(error);
+    }
+
+    if (error = dateUtils.validateUtcDateTime(params.utcDateCreated)) {
+        throw new Error(error);
+    }
+
     return sql.transactional(() => {
         let note, branch, isEntityEventsDisabled;
 
@@ -189,7 +197,9 @@ function createNewNote(params) {
                 title: params.title,
                 isProtected: !!params.isProtected,
                 type: params.type,
-                mime: deriveMime(params.type, params.mime)
+                mime: deriveMime(params.type, params.mime),
+                dateCreated: params.dateCreated,
+                utcDateCreated: params.utcDateCreated
             }).save();
 
             note.setContent(params.content);
