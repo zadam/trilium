@@ -21,11 +21,12 @@ function getNoteBlob(req) {
 
 function getNoteMetadata(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
-    const contentMetadata = note.getContentMetadata();
 
     return {
         dateCreated: note.dateCreated,
-        combinedDateModified: note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified
+        utcDateCreated: note.utcDateCreated,
+        dateModified: note.dateModified,
+        utcDateModified: note.utcDateModified,
     };
 }
 
