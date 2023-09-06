@@ -990,6 +990,11 @@ class FNote {
         return this.noteId.startsWith("_options");
     }
 
+    /**
+     * Provides note's date metadata.
+     *
+     * @returns {Promise<{dateCreated: string, utcDateCreated: string, dateModified: string, utcDateModified: string}>}
+     */
     async getMetadata() {
         return await server.get(`notes/${this.noteId}/metadata`);
     }

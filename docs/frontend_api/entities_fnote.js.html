@@ -1017,6 +1017,15 @@ class FNote {
     isOptions() {
         return this.noteId.startsWith("_options");
     }
+
+    /**
+     * Provides note's date metadata.
+     *
+     * @returns {Promise&lt;{dateCreated: string, utcDateCreated: string, dateModified: string, utcDateModified: string}>}
+     */
+    async getMetadata() {
+        return await server.get(`notes/${this.noteId}/metadata`);
+    }
 }
 
 export default FNote;
