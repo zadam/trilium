@@ -30,7 +30,11 @@
     
         <h2><span class="attribs"><span class="type-signature"></span></span>BBranch<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multipleparents.Note that you should not rely on the branch's identity, since it can change easily with a note's move.Always check noteId instead.</div>
+            <div class="class-description">Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
+parents.
+
+Note that you should not rely on the branch's identity, since it can change easily with a note's move.
+Always check noteId instead.</div>
         
     
 </header>
@@ -417,7 +421,11 @@
 
 
 <div class="description">
-    Branch is weak when its existence should not hinder deletion of its note.As a result, note with only weak branches should be immediately deleted.An example is shared or bookmarked clones - they are created automatically and exist for technical reasons,not as user-intended actions. From user perspective, they don't count as real clones and for the purposeof deletion should not act as a clone.
+    Branch is weak when its existence should not hinder deletion of its note.
+As a result, note with only weak branches should be immediately deleted.
+An example is shared or bookmarked clones - they are created automatically and exist for technical reasons,
+not as user-intended actions. From user perspective, they don't count as real clones and for the purpose
+of deletion should not act as a clone.
 </div>
 
 
@@ -1842,7 +1850,9 @@
 
 
 <div class="description">
-    Mark the entity as (soft) deleted. It will be completely erased later.This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
+    Mark the entity as (soft) deleted. It will be completely erased later.
+
+This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
 </div>
 
 

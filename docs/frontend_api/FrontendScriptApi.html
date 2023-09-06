@@ -49,7 +49,8 @@
 
 
 <div class="description">
-    <p>This is the main frontend API interface for scripts. All the properties and methods are published in the "api" objectavailable in the JS frontend notes. You can use e.g. <code>api.showMessage(api.startNote.title);</code></p>
+    <p>This is the main frontend API interface for scripts. All the properties and methods are published in the "api" object
+available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.startNote.title);</code></p>
 </div>
 
 
@@ -461,7 +462,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line338">line 338</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line340">line 340</a>
     </li></ul></dd>
     
 
@@ -557,7 +558,8 @@
 
 
 <div class="description">
-    day.js library for date manipulation.See <a href="https://day.js.org">https://day.js.org</a> for documentation
+    day.js library for date manipulation.
+See <a href="https://day.js.org">https://day.js.org</a> for documentation
 </div>
 
 
@@ -1273,7 +1275,8 @@
 
             
 
-            <td class="description last">id of the button, used to identify the old instances of this button to be replaced                         ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.</td>
+            <td class="description last">id of the button, used to identify the old instances of this button to be replaced
+                         ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.</td>
         </tr>
 
     
@@ -1375,7 +1378,8 @@
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>you can now create/modify launchers in the top-left Menu -> Configure Launchbar            for special needs there's also backend API's createOrUpdateLauncher()</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>you can now create/modify launchers in the top-left Menu -> Configure Launchbar
+            for special needs there's also backend API's createOrUpdateLauncher()</li></ul></dd>
     
 
     
@@ -1526,7 +1530,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line346">line 346</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line348">line 348</a>
     </li></ul></dd>
     
 
@@ -1692,7 +1696,8 @@
 
             
 
-            <td class="description last">specify namespace of the handler for the cases where call for bind may be repeated.                              If a handler with this ID exists, it's replaced by the new handler.</td>
+            <td class="description last">specify namespace of the handler for the cases where call for bind may be repeated.
+                              If a handler with this ID exists, it's replaced by the new handler.</td>
         </tr>
 
     
@@ -1733,7 +1738,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line488">line 488</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line490">line 490</a>
     </li></ul></dd>
     
 
@@ -1787,7 +1792,7 @@
     
 
     
-    <h4 class="name" id="createLink"><span class="type-signature"></span>createLink<span class="signature">(notePath, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="createLink"><span class="type-signature"></span>createLink<span class="signature">(notePath, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {jQuery}</span></h4>
     
 
     
@@ -2071,6 +2076,43 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>title=</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">custom link tile with note's title as default</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -2115,7 +2157,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line335">line 335</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line337">line 337</a>
     </li></ul></dd>
     
 
@@ -2140,6 +2182,28 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - jQuery element with the link (wrapped in <span>)
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">jQuery</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -2405,7 +2469,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line532">line 532</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line534">line 534</a>
     </li></ul></dd>
     
 
@@ -2560,7 +2624,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line524">line 524</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line526">line 526</a>
     </li></ul></dd>
     
 
@@ -2670,7 +2734,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line368">line 368</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line370">line 370</a>
     </li></ul></dd>
     
 
@@ -2776,7 +2840,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line352">line 352</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line354">line 354</a>
     </li></ul></dd>
     
 
@@ -2882,7 +2946,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line383">line 383</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line385">line 385</a>
     </li></ul></dd>
     
 
@@ -2992,7 +3056,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line360">line 360</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line362">line 362</a>
     </li></ul></dd>
     
 
@@ -3058,7 +3122,8 @@
 
 
 <div class="description">
-    Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to theimplementation of actual widget type.
+    Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
+implementation of actual widget type.
 </div>
 
 
@@ -3102,7 +3167,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line377">line 377</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line379">line 379</a>
     </li></ul></dd>
     
 
@@ -3257,7 +3322,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line392">line 392</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line394">line 394</a>
     </li></ul></dd>
     
 
@@ -3412,7 +3477,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line436">line 436</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line438">line 438</a>
     </li></ul></dd>
     
 
@@ -3474,7 +3539,8 @@
 
 
 <div class="description">
-    Instance name identifies particular Trilium instance. It can be useful for scriptsif some action needs to happen on only one specific instance.
+    Instance name identifies particular Trilium instance. It can be useful for scripts
+if some action needs to happen on only one specific instance.
 </div>
 
 
@@ -3673,7 +3739,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line454">line 454</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line456">line 456</a>
     </li></ul></dd>
     
 
@@ -3735,7 +3801,8 @@
 
 
 <div class="description">
-    Returns note by given noteId. If note is missing from the cache, it's loaded.*
+    Returns note by given noteId. If note is missing from the cache, it's loaded.
+*
 </div>
 
 
@@ -3890,7 +3957,10 @@
 
 
 <div class="description">
-    Returns list of notes. If note is missing from the cache, it's loaded.This is often used to bulk-fill the cache with notes which would have to be picked one by oneotherwise (by e.g. createLink())
+    Returns list of notes. If note is missing from the cache, it's loaded.
+
+This is often used to bulk-fill the cache with notes which would have to be picked one by one
+otherwise (by e.g. createLink())
 </div>
 
 
@@ -4132,7 +4202,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line427">line 427</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line429">line 429</a>
     </li></ul></dd>
     
 
@@ -4287,7 +4357,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line445">line 445</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line447">line 447</a>
     </li></ul></dd>
     
 
@@ -4442,7 +4512,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line463">line 463</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line465">line 465</a>
     </li></ul></dd>
     
 
@@ -4592,7 +4662,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line543">line 543</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line545">line 545</a>
     </li></ul></dd>
     
 
@@ -5277,7 +5347,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line407">line 407</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line409">line 409</a>
     </li></ul></dd>
     
 
@@ -5451,7 +5521,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line417">line 417</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line419">line 419</a>
     </li></ul></dd>
     
 
@@ -5606,7 +5676,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line517">line 517</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line519">line 519</a>
     </li></ul></dd>
     
 
@@ -5760,7 +5830,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line508">line 508</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line510">line 510</a>
     </li></ul></dd>
     
 
@@ -5959,7 +6029,8 @@
 
 
 <div class="description">
-    Executes given anonymous function on the backend.Internally this serializes the anonymous function into string and sends it to backend via AJAX.
+    Executes given anonymous function on the backend.
+Internally this serializes the anonymous function into string and sends it to backend via AJAX.
 </div>
 
 
@@ -6144,7 +6215,8 @@
 
 
 <div class="description">
-    This is a powerful search method - you can search by attributes and their values, e.g.:"#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+    This is a powerful search method - you can search by attributes and their values, e.g.:
+"#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
 </div>
 
 
@@ -6299,7 +6371,8 @@
 
 
 <div class="description">
-    This is a powerful search method - you can search by attributes and their values, e.g.:"#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+    This is a powerful search method - you can search by attributes and their values, e.g.:
+"#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
 </div>
 
 
@@ -6547,7 +6620,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line472">line 472</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line474">line 474</a>
     </li></ul></dd>
     
 
@@ -6698,7 +6771,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line399">line 399</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line401">line 401</a>
     </li></ul></dd>
     
 
@@ -7354,7 +7427,11 @@
 
 
 <div class="description">
-    Trilium runs in a backend and frontend process, when something is changed on the backend from a script,frontend will get asynchronously synchronized.This method returns a promise which resolves once all the backend -> frontend synchronization is finished.Typical use case is when a new note has been created, we should wait until it is synced into frontend and only then activate it.
+    Trilium runs in a backend and frontend process, when something is changed on the backend from a script,
+frontend will get asynchronously synchronized.
+
+This method returns a promise which resolves once all the backend -> frontend synchronization is finished.
+Typical use case is when a new note has been created, we should wait until it is synced into frontend and only then activate it.
 </div>
 
 
@@ -7398,7 +7475,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line500">line 500</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line502">line 502</a>
     </li></ul></dd>
     
 

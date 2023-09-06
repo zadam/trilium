@@ -49,7 +49,8 @@
 
 
 <div class="description">
-    <p>This is the main backend API interface for scripts. All the properties and methods are published in the "api" objectavailable in the JS backend notes. You can use e.g. <code>api.log(api.startNote.title);</code></p>
+    <p>This is the main backend API interface for scripts. All the properties and methods are published in the "api" object
+available in the JS backend notes. You can use e.g. <code>api.log(api.startNote.title);</code></p>
 </div>
 
 
@@ -239,7 +240,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line566">line 566</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line608">line 608</a>
     </li></ul></dd>
     
 
@@ -781,7 +782,8 @@
 
 
 <div class="description">
-    Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' andJSON MIME type. See also createNewNote() for more options.
+    Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
+JSON MIME type. See also createNewNote() for more options.
 </div>
 
 
@@ -2290,7 +2292,10 @@
                 </td>
             
 
-            <td class="description last">one of                         * "note" - activating the launcher will navigate to the target note (specified in targetNoteId param)                         * "script" -  activating the launcher will execute the script (specified in scriptNoteId param)                         * "customWidget" - the launcher will be rendered with a custom widget (specified in widgetNoteId param)</td>
+            <td class="description last">one of
+                         * "note" - activating the launcher will navigate to the target note (specified in targetNoteId param)
+                         * "script" -  activating the launcher will execute the script (specified in scriptNoteId param)
+                         * "customWidget" - the launcher will be rendered with a custom widget (specified in widgetNoteId param)</td>
         </tr>
 
     
@@ -4213,7 +4218,8 @@
 
 
 <div class="description">
-    Instance name identifies particular Trilium instance. It can be useful for scriptsif some action needs to happen on only one specific instance.
+    Instance name identifies particular Trilium instance. It can be useful for scripts
+if some action needs to happen on only one specific instance.
 </div>
 
 
@@ -6160,6 +6166,191 @@
     
 
     
+    <h4 class="name" id="runOnFrontend"><span class="type-signature"></span>runOnFrontend<span class="signature">(script, params)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Executes given anonymous function on the frontend(s).
+Internally this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
+Note that there can be multiple connected frontend instances (e.g. in different tabs). In such case, all
+instances execute the given function.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>script</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">script to be executed on the frontend</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;?></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">list of parameters to the anonymous function to be sent to frontend</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line572">line 572</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - no return value is provided.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="searchForNote"><span class="type-signature"></span>searchForNote<span class="signature">(query, searchParams<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
@@ -6168,7 +6359,8 @@
 
 
 <div class="description">
-    This is a powerful search method - you can search by attributes and their values, e.g.:"#dateModified =* MONTH AND #log". See <a href="https://github.com/zadam/trilium/wiki/Search">https://github.com/zadam/trilium/wiki/Search</a> for full documentation for all options
+    This is a powerful search method - you can search by attributes and their values, e.g.:
+"#dateModified =* MONTH AND #log". See <a href="https://github.com/zadam/trilium/wiki/Search">https://github.com/zadam/trilium/wiki/Search</a> for full documentation for all options
 </div>
 
 
@@ -6369,7 +6561,8 @@
 
 
 <div class="description">
-    This is a powerful search method - you can search by attributes and their values, e.g.:"#dateModified =* MONTH AND #log". See <a href="https://github.com/zadam/trilium/wiki/Search">https://github.com/zadam/trilium/wiki/Search</a> for full documentation for all options
+    This is a powerful search method - you can search by attributes and their values, e.g.:
+"#dateModified =* MONTH AND #log". See <a href="https://github.com/zadam/trilium/wiki/Search">https://github.com/zadam/trilium/wiki/Search</a> for full documentation for all options
 </div>
 
 
@@ -6567,7 +6760,10 @@
 
 
 <div class="description">
-    This method finds note by its noteId and prefix and either sets it to the given parentNoteIdor removes the branch (if parentNoteId is not given).This method looks similar to toggleNoteInParent() but differs because we're looking up branch by prefix.
+    This method finds note by its noteId and prefix and either sets it to the given parentNoteId
+or removes the branch (if parentNoteId is not given).
+
+This method looks similar to toggleNoteInParent() but differs because we're looking up branch by prefix.
 </div>
 
 
@@ -6930,7 +7126,8 @@
                 </td>
             
 
-            <td class="description last">'title', 'dateCreated', 'dateModified' or a label name                               See <a href="https://github.com/zadam/trilium/wiki/Sorting">https://github.com/zadam/trilium/wiki/Sorting</a> for details.</td>
+            <td class="description last">'title', 'dateCreated', 'dateModified' or a label name
+                               See <a href="https://github.com/zadam/trilium/wiki/Sorting">https://github.com/zadam/trilium/wiki/Sorting</a> for details.</td>
         </tr>
 
     
@@ -7342,7 +7539,8 @@
 
 
 <div class="description">
-    This functions wraps code which is supposed to be running in transaction. If transaction alreadyexists, then we'll use that transaction.
+    This functions wraps code which is supposed to be running in transaction. If transaction already
+exists, then we'll use that transaction.
 </div>
 
 

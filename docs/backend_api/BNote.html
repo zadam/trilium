@@ -1325,7 +1325,8 @@
 
 
 <div class="description">
-    Adds a new attribute to this note. The attribute is saved and returned.See addLabel, addRelation for more specific methods.
+    Adds a new attribute to this note. The attribute is saved and returned.
+See addLabel, addRelation for more specific methods.
 </div>
 
 
@@ -1896,7 +1897,8 @@
 
 
 <div class="description">
-    Adds a new relation to this note. The relation attribute is saved andreturned.
+    Adds a new relation to this note. The relation attribute is saved and
+returned.
 </div>
 
 
@@ -2376,7 +2378,17 @@
 
 
 <div class="description">
-    Some notes are eligible for conversion into an attachment of its parent, note must have these properties:- it has exactly one target relation- it has a relation from its parent note- it has no children- it has no clones- the parent is of type text- both notes are either unprotected or user is in protected sessionCurrently, works only for image notes.In the future, this functionality might get more generic and some of the requirements relaxed.
+    Some notes are eligible for conversion into an attachment of its parent, note must have these properties:
+- it has exactly one target relation
+- it has a relation from its parent note
+- it has no children
+- it has no clones
+- the parent is of type text
+- both notes are either unprotected or user is in protected session
+
+Currently, works only for image notes.
+
+In the future, this functionality might get more generic and some of the requirements relaxed.
 </div>
 
 
@@ -3627,7 +3639,8 @@
 
         
 <div class="param-desc">
-    attribute of the given type and name. If there are more such attributes, first is returned.                      Returns null if there's no such attribute belonging to this note.
+    attribute of the given type and name. If there are more such attributes, first is returned.
+                      Returns null if there's no such attribute belonging to this note.
 </div>
 
 
@@ -3845,7 +3858,8 @@
 
 
 <div class="description">
-    Beware that the method must not create a copy of the array, but actually returns its internal array(for performance reasons)
+    Beware that the method must not create a copy of the array, but actually returns its internal array
+(for performance reasons)
 </div>
 
 
@@ -5008,7 +5022,9 @@
 
 
 <div class="description">
-    This is used for:- fast searching- note similarity evaluation
+    This is used for:
+- fast searching
+- note similarity evaluation
 </div>
 
 
@@ -5187,7 +5203,8 @@
 
         
 <div class="param-desc">
-    - returns only notes which are templated, does not include their subtrees                    in effect returns notes which are influenced by note's non-inheritable attributes
+    - returns only notes which are templated, does not include their subtrees
+                    in effect returns notes which are influenced by note's non-inheritable attributes
 </div>
 
 
@@ -6045,7 +6062,9 @@
 
         
 <div class="param-desc">
-    attribute belonging to this specific note (excludes inherited attributes)This method can be significantly faster than the getAttribute()
+    attribute belonging to this specific note (excludes inherited attributes)
+
+This method can be significantly faster than the getAttribute()
 </div>
 
 
@@ -6263,7 +6282,8 @@
 
 
 <div class="description">
-    Beware that the method must not create a copy of the array, but actually returns its internal array(for performance reasons)
+    Beware that the method must not create a copy of the array, but actually returns its internal array
+(for performance reasons)
 </div>
 
 
@@ -12101,7 +12121,9 @@
 
 
 <div class="description">
-    Mark the entity as (soft) deleted. It will be completely erased later.This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
+    Mark the entity as (soft) deleted. It will be completely erased later.
+
+This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
 </div>
 
 
