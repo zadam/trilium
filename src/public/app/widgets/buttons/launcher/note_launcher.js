@@ -34,7 +34,7 @@ export default class NoteLauncher extends AbstractLauncher {
     async launch(evt) {
         // await because subclass overrides can be async
         const targetNoteId = await this.getTargetNoteId();
-        if (!targetNoteId) {
+        if (!targetNoteId || evt.which === 3) {
             return;
         }
 
