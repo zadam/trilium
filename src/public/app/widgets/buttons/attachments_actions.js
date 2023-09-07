@@ -5,6 +5,7 @@ import toastService from "../../services/toast.js";
 import ws from "../../services/ws.js";
 import appContext from "../../components/app_context.js";
 import openService from "../../services/open.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="dropdown attachment-actions">
@@ -32,6 +33,8 @@ const TPL = `
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="openAttachment" class="dropdown-item"
             title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">Open externally</a>
+        <a data-trigger-command="openAttachmentCustom" class="dropdown-item"
+            title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">Open custom</a>
         <a data-trigger-command="downloadAttachment" class="dropdown-item">Download</a>
         <a data-trigger-command="renameAttachment" class="dropdown-item">Rename attachment</a>
         <a data-trigger-command="uploadNewAttachmentRevision" class="dropdown-item">Upload new revision</a>
@@ -82,11 +85,29 @@ export default class AttachmentActionsWidget extends BasicWidget {
                 .append($('<span class="disabled-tooltip"> (?)</span>')
                     .attr("title", "Opening attachment externally is available only from the detail page, please first click on the attachment detail first and repeat the action.")
                 );
+            const $openAttachmentCustomButton = this.$widget.find("[data-trigger-command='openAttachmentCustom']");
+            $openAttachmentCustomButton
+                .addClass("disabled")
+                .append($('<span class="disabled-tooltip"> (?)</span>')
+                    .attr("title", "Opening attachment externally is available only from the detail page, please first click on the attachment detail first and repeat the action.")
+                );
+        }
+        if (!utils.isElectron()){
+            const $openAttachmentCustomButton = this.$widget.find("[data-trigger-command='openAttachmentCustom']");
+            $openAttachmentCustomButton
+                .addClass("disabled")
+                .append($('<span class="disabled-tooltip"> (?)</span>')
+                    .attr("title", "Custom opening of attachments can only be done from the client.")
+                );
         }
     }
 
     async openAttachmentCommand() {
         await openService.openAttachmentExternally(this.attachmentId, this.attachment.mime);
+    }
+
+    async openAttachmentCustomCommand() {
+        await openService.openAttachmentCustom(this.attachmentId, this.attachment.mime);
     }
 
     async downloadAttachmentCommand() {

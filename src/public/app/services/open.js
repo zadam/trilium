@@ -41,12 +41,13 @@ function downloadAttachment(attachmentId) {
     download(url);
 }
 
-async function openNoteCustom(noteId) {
+async function openCustom(type, entityId, mime) {
+    checkType(type);
     if (!utils.isElectron() || utils.isMac()) {
         return;
     }
 
-    const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
+    const resp = await server.post(`${type}/${entityId}/save-to-tmp-dir`);
     let filePath = resp.tmpFilePath;
     const {exec} = utils.dynamicRequire('child_process');
     const platform = process.platform;
@@ -71,7 +72,7 @@ async function openNoteCustom(noteId) {
             const terminal = terminals[index];
             if (!terminal) {
                 console.error('Open Note custom: No terminal found!');
-                open(getFileUrl(noteId), {url: true});
+                open(getFileUrl(entityId), {url: true});
                 return;
             }
             exec(`which ${terminal}`, (error, stdout, stderr) => {
@@ -92,15 +93,19 @@ async function openNoteCustom(noteId) {
         exec(command, (err, stdout, stderr) => {
             if (err) {
                 console.error("Open Note custom: ", err);
-                open(getFileUrl(noteId), {url: true});
+                open(getFileUrl(entityId), {url: true});
                 return;
             }
         });
     } else {
         console.log('Currently "Open Note custom" only supports linux and windows systems');
-        open(getFileUrl(noteId), {url: true});
+        open(getFileUrl(entityId), {url: true});
     }
 }
+
+const openNoteCustom = async (noteId, mime) => await openCustom('notes', noteId, mime);
+const openAttachmentCustom = async (attachmentId, mime) => await openCustom('attachments', attachmentId, mime);
+
 
 function downloadRevision(noteId, revisionId) {
     const url = getUrlForDownload(`api/revisions/${revisionId}/download`);
@@ -170,4 +175,5 @@ export default {
     openNoteExternally,
     openAttachmentExternally,
     openNoteCustom,
+    openAttachmentCustom,
 }
