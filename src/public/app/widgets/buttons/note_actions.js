@@ -55,6 +55,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$widget.on('show.bs.dropdown', () => this.refreshVisibility(this.note));
 
         this.$convertNoteIntoAttachmentButton = this.$widget.find("[data-trigger-command='convertNoteIntoAttachment']");
         this.$findInTextButton = this.$widget.find('.find-in-text-button');
@@ -92,7 +93,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         });
     }
 
-    async refreshWithNote(note) {
+    async refreshVisibility(note) {
         this.$convertNoteIntoAttachmentButton.toggle(note.isEligibleForConversionToAttachment());
 
         this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book'].includes(note.type));
@@ -103,11 +104,11 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
         this.$renderNoteButton.toggle(note.type === 'render');
 
-        this.toggleDisabled(this.$openNoteExternallyButton, utils.isElectron() && !['search'].includes(note.type));
+        this.toggleDisabled(this.$openNoteExternallyButton, utils.isElectron() && !['search', 'book'].includes(note.type));
         this.toggleDisabled(this.$openNoteCustomButton,
             utils.isElectron()
             && !utils.isMac() // no implementation for Mac yet
-            && !['search'].includes(note.type)
+            && !['search', 'book'].includes(note.type)
         );
 
         // I don't want to handle all special notes like this, but intuitively user might want to export content of backend log
