@@ -15,6 +15,7 @@ const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
 const BNote = require('../becca/entities/bnote');
 const BAttribute = require('../becca/entities/battribute');
+const BAttachment = require("../becca/entities/battachment");
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
@@ -808,6 +809,16 @@ function undeleteBranch(branchId, deleteId, taskContext) {
         for (const attributeRow of attributeRows) {
             // relation might point to a note which hasn't been undeleted yet and would thus throw up
             new BAttribute(attributeRow).save({skipValidation: true});
+        }
+
+        const attachmentRows = sql.getRows(`
+            SELECT * FROM attachments
+            WHERE isDeleted = 1
+              AND deleteId = ?
+              AND ownerId = ?`, [deleteId, noteRow.noteId]);
+
+        for (const attachmentRow of attachmentRows) {
+            new BAttachment(attachmentRow).save();
         }
 
         const childBranchIds = sql.getColumn(`
