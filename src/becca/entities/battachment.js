@@ -98,7 +98,12 @@ class BAttachment extends AbstractBeccaEntity {
     }
 
     decrypt() {
-        if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+        if (!this.isProtected || !this.attachmentId) {
+            this.isDecrypted = true;
+            return;
+        }
+
+        if (!this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
                 this.title = protectedSessionService.decryptString(this.title);
                 this.isDecrypted = true;
