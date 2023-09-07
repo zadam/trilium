@@ -647,4 +647,12 @@ export default class TabManager extends Component {
             await this.updateDocumentTitle(activeContext);
         }
     }
+
+    async frocaReloadedEvent() {
+        const activeContext = this.getActiveContext();
+
+        if (activeContext) {
+            await this.updateDocumentTitle(activeContext);
+        }
+    }
 }
