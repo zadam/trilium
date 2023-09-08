@@ -86,6 +86,8 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             protectedSessionHolder.touchProtectedSessionIfNecessary(note);
 
             await server.put(`notes/${noteId}/data`, data, this.componentId);
+
+            this.getTypeWidget().dataSaved?.();
         });
 
         appContext.addBeforeUnloadListener(this);
@@ -167,7 +169,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         let type = note.type;
         const viewScope = this.noteContext.viewScope;
 
-        if (type === 'text' && viewScope.viewMode === 'source') {
+        if (viewScope.viewMode === 'source') {
             type = 'readOnlyCode';
         } else if (viewScope.viewMode === 'attachments') {
             type = viewScope.attachmentId ? 'attachmentDetail' : 'attachmentList';

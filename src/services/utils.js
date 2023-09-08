@@ -289,6 +289,16 @@ function normalize(str) {
     return removeDiacritic(str).toLowerCase();
 }
 
+function toMap(list, key) {
+    const map = {};
+
+    for (const el of list) {
+        map[el[key]] = el;
+    }
+
+    return map;
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -320,4 +330,5 @@ module.exports = {
     removeDiacritic,
     normalize,
     hashedBlobId,
+    toMap,
 };

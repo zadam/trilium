@@ -236,6 +236,12 @@ class FNote {
         return this.attachments;
     }
 
+    /** @returns {Promise<FAttachment[]>} */
+    async getAttachmentsByRole(role) {
+        return (await this.getAttachments())
+            .filter(attachment => attachment.role === role);
+    }
+
     /** @returns {Promise<FAttachment>} */
     async getAttachmentById(attachmentId) {
         const attachments = await this.getAttachments();

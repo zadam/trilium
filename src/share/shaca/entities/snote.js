@@ -470,6 +470,11 @@ class SNote extends AbstractShacaEntity {
         return this.attachments;
     }
 
+    /** @returns {SAttachment} */
+    getAttachmentByTitle(title) {
+        return this.attachments.find(attachment => attachment.title === title);
+    }
+
     /** @returns {string} */
     get shareId() {
         if (this.hasOwnedLabel('shareRoot')) {
