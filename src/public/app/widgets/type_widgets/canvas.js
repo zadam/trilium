@@ -1,6 +1,7 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import utils from '../../services/utils.js';
+import linkService from '../../services/link.js';
 import debounce from "../../services/debounce.js";
 
 const {sleep} = utils;
@@ -404,20 +405,17 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }, [excalidrawWrapperRef]);
 
         const onLinkOpen = React.useCallback((element, event) => {
-            const link = element.link;
-            const { nativeEvent } = event.detail;
-            const isNewTab = nativeEvent.ctrlKey || nativeEvent.metaKey;
-            const isNewWindow = nativeEvent.shiftKey;
-            const isInternalLink = link.startsWith("/") || link.includes(window.location.origin);
+            let link = element.link;
 
-            if (isInternalLink && !isNewTab && !isNewWindow) {
-                // signal that we're handling the redirect ourselves
-                event.preventDefault();
-                // do a custom redirect, such as passing to react-router
-                // ...
-            } else {
-                // open in the same tab
+            if (link.startsWith("root/")) {
+                link = "#" + link;
             }
+
+            const { nativeEvent } = event.detail;
+
+            event.preventDefault();
+
+            return linkService.goToLinkExt(nativeEvent, link, null);
           }, []);
 
         return React.createElement(
@@ -450,7 +448,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     isCollaborating: false,
                     detectScroll: false,
                     handleKeyboardGlobally: false,
-                    autoFocus: true,
+                    autoFocus: false,
                     onLinkOpen,
                 })
             )
