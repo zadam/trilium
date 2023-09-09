@@ -231,6 +231,66 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Open new empty window",
         scope: "window"
     },
+    {
+        actionName: "firstTab",
+        defaultShortcuts: ["CommandOrControl+1"],
+        description: "Activates the first tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "secondTab",
+        defaultShortcuts: ["CommandOrControl+2"],
+        description: "Activates the second tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "thirdTab",
+        defaultShortcuts: ["CommandOrControl+3"],
+        description: "Activates the third tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "fourthTab",
+        defaultShortcuts: ["CommandOrControl+4"],
+        description: "Activates the fourth tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "fifthTab",
+        defaultShortcuts: ["CommandOrControl+5"],
+        description: "Activates the fifth tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "sixthTab",
+        defaultShortcuts: ["CommandOrControl+6"],
+        description: "Activates the sixth tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "seventhTab",
+        defaultShortcuts: ["CommandOrControl+7"],
+        description: "Activates the seventh tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "eigthTab",
+        defaultShortcuts: ["CommandOrControl+8"],
+        description: "Activates the eigth tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "ninthTab",
+        defaultShortcuts: ["CommandOrControl+9"],
+        description: "Activates the ninth tab in the list",
+        scope: "tabs"
+    },
+    {
+        actionName: "lastTab",
+        defaultShortcuts: ["CommandOrControl+0"],
+        description: "Activates the last tab in the list",
+        scope: "tabs"
+    },
 
 
     {
