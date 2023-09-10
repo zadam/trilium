@@ -1,7 +1,10 @@
 class NoteMeta {
     /** @type {string} */
     noteId;
-    /** @type {string} */
+    /**
+     * @type {string[]}
+     * @deprecated unused as of v3
+     */
     notePath;
     /** @type {boolean} */
     isClone;
@@ -29,7 +32,10 @@ class NoteMeta {
     attributes;
     /** @type {AttachmentMeta[]} */
     attachments;
-    /** @type {NoteMeta[]|undefined} */
+    /**
+     * @type {NoteMeta[]|undefined}
+     * @deprecated unused as of v3, there's meta file for each directory, avoiding the need to use this
+     */
     children;
 }
 

@@ -16,6 +16,7 @@ const archiver = require('archiver');
 const log = require("../log");
 const TaskContext = require("../task_context");
 const ValidationError = require("../../errors/validation_error");
+const MetaFile = require("../meta/meta_file");
 const NoteMeta = require("../meta/note_meta");
 const AttachmentMeta = require("../meta/attachment_meta");
 const AttributeMeta = require("../meta/attribute_meta");
@@ -38,6 +39,24 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
     /** @type {Object.<string, NoteMeta>} */
     const noteIdToMeta = {};
+
+    /** @type {Object.<string, NoteMeta>} */
+    const childNoteIdToParentMeta = {};
+
+    /** @type {Object.<string, NoteMeta[]>} */
+    const parentNoteIdToChildrenMeta = {};
+
+    function getNotePath(noteId) {
+        const notePath = [noteId];
+
+        let cur = noteIdToMeta[noteId];
+        while (cur = childNoteIdToParentMeta[cur.noteId]) {
+            notePath.push(cur.noteId);
+        }
+
+        notePath.reverse();
+        return notePath;
+    }
 
     /**
      * @param {Object.<string, int>} existingFileNames
@@ -117,12 +136,48 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     }
 
     /**
+     * @param {BBranch[]} branches
+     * @param {Object.<string, int>} existingFileNames
+     * @returns {MetaFile}
+     */
+    function createMetaFileForDirectory(branches, existingFileNames = {}) {
+        // namespace is shared by children in the same note
+        const metas = [];
+
+        for (const branch of branches) {
+            const noteMeta = createNoteMeta(branch, existingFileNames);
+
+            // can be undefined if export is disabled for this note
+            if (noteMeta) {
+                metas.push(noteMeta);
+
+                const parentMeta = noteIdToMeta[branch.parentNoteId];
+
+                if (parentMeta) {
+                    childNoteIdToParentMeta[noteMeta.noteId] = parentMeta;
+                    parentNoteIdToChildrenMeta[parentMeta.noteId] = parentNoteIdToChildrenMeta[parentMeta.noteId] || [];
+                    parentNoteIdToChildrenMeta[parentMeta.noteId].push(noteMeta);
+                }
+            }
+        }
+
+        if (!metas.length) {
+            return null;
+        }
+
+        const metaFile = new MetaFile();
+        metaFile.formatVersion = 3;
+        metaFile.appVersion = packageInfo.version;
+        metaFile.files = metas;
+        return metaFile;
+    }
+
+    /**
      * @param {BBranch} branch
-     * @param {NoteMeta} parentMeta
      * @param {Object.<string, int>} existingFileNames
      * @returns {NoteMeta|null}
      */
-    function createNoteMeta(branch, parentMeta, existingFileNames) {
+    function createNoteMeta(branch, existingFileNames) {
         const note = branch.getNote();
 
         if (note.hasOwnedLabel('excludeFromExport')) {
@@ -137,15 +192,13 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             baseFileName = baseFileName.substr(0, 200);
         }
 
-        const notePath = parentMeta.notePath.concat([note.noteId]);
-
         if (note.noteId in noteIdToMeta) {
-            const fileName = getUniqueFilename(existingFileNames, `${baseFileName}.clone.${format === 'html' ? 'html' : 'md'}`);
+            const fileName = getUniqueFilename(existingFileNames,
+                `${baseFileName}.clone.${format === 'html' ? 'html' : 'md'}`);
 
             const meta = new NoteMeta();
             meta.isClone = true;
             meta.noteId = note.noteId;
-            meta.notePath = notePath;
             meta.title = note.getTitleOrProtected();
             meta.prefix = branch.prefix;
             meta.dataFileName = fileName;
@@ -157,7 +210,6 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         const meta = new NoteMeta();
         meta.isClone = false;
         meta.noteId = note.noteId;
-        meta.notePath = notePath;
         meta.title = note.getTitleOrProtected();
         meta.notePosition = branch.notePosition;
         meta.prefix = branch.prefix;
@@ -212,19 +264,6 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         if (childBranches.length > 0) {
             meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
-            meta.children = [];
-
-            // namespace is shared by children in the same note
-            const childExistingNames = {};
-
-            for (const childBranch of childBranches) {
-                const note = createNoteMeta(childBranch, meta, childExistingNames);
-
-                // can be undefined if export is disabled for this note
-                if (note) {
-                    meta.children.push(note);
-                }
-            }
         }
 
         return meta;
@@ -242,8 +281,8 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             return null;
         }
 
-        const targetPath = targetMeta.notePath.slice();
-        const sourcePath = sourceMeta.notePath.slice();
+        const targetPath = getNotePath(targetMeta.noteId);
+        const sourcePath = getNotePath(sourceMeta.noteId);
 
         // > 1 for the edge case that targetPath and sourcePath are exact same (a link to itself)
         while (targetPath.length > 1 && sourcePath.length > 1 && targetPath[0] === sourcePath[0]) {
@@ -328,7 +367,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         if (noteMeta.format === 'html') {
             if (!content.substr(0, 100).toLowerCase().includes("<html")) {
-                const cssUrl = `${"../".repeat(noteMeta.notePath.length - 1)}style.css`;
+                const cssUrl = `${"../".repeat(getNotePath(noteMeta.noteId).length - 1)}style.css`;
                 const htmlTitle = utils.escapeHtml(title);
 
                 // <base> element will make sure external links are openable - https://github.com/zadam/trilium/issues/1289#issuecomment-704066809
@@ -409,14 +448,17 @@ ${markdownContent}`;
             });
         }
 
-        if (noteMeta.children?.length > 0) {
-            const directoryPath = filePathPrefix + noteMeta.dirFileName;
+        const metaFile = createMetaFileForDirectory(note.getChildBranches());
+        if (metaFile) {
+            const childFilePathPrefix = `${filePathPrefix}${noteMeta.dirFileName}/`;
 
             // create directory
-            archive.append('', { name: `${directoryPath}/`, date: dateUtils.parseDateTime(note.utcDateModified) });
+            archive.append('', { name: childFilePathPrefix, date: dateUtils.parseDateTime(note.utcDateModified) });
 
-            for (const childMeta of noteMeta.children) {
-                saveNote(childMeta, `${directoryPath}/`);
+            metaFile.save(archive, childFilePathPrefix);
+
+            for (const childMeta of metaFile.files) {
+                saveNote(childMeta, childFilePathPrefix);
             }
         }
     }
@@ -440,11 +482,13 @@ ${markdownContent}`;
                 html += escapedTitle;
             }
 
-            if (meta.children && meta.children.length > 0) {
+            const childrenMeta = parentNoteIdToChildrenMeta[meta.noteId];
+
+            if (childrenMeta?.length > 0) {
                 html += '<ul>';
 
-                for (const child of meta.children) {
-                    html += saveNavigationInner(child);
+                for (const childMeta of childrenMeta) {
+                    html += saveNavigationInner(childMeta);
                 }
 
                 html += '</ul>'
@@ -482,8 +526,10 @@ ${markdownContent}`;
                 firstNonEmptyNote = getNoteTargetUrl(curMeta.noteId, rootMeta);
             }
 
-            if (curMeta.children && curMeta.children.length > 0) {
-                curMeta = curMeta.children[0];
+            const childrenMeta = parentNoteIdToChildrenMeta[curMeta.noteId];
+
+            if (childrenMeta?.length > 0) {
+                curMeta = childrenMeta[0];
             }
             else {
                 break;
@@ -515,14 +561,13 @@ ${markdownContent}`;
         archive.append(cssContent, { name: cssMeta.dataFileName });
     }
 
-    const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
-    const rootMeta = createNoteMeta(branch, { notePath: [] }, existingFileNames);
+    const existingFileNames = format === 'html' ? { 'navigation': 1, 'index': 1 } : {};
+    const metaFile = createMetaFileForDirectory([branch], existingFileNames);
 
-    const metaFile = {
-        formatVersion: 2,
-        appVersion: packageInfo.version,
-        files: [ rootMeta ]
-    };
+    if (!metaFile) { // corner case of disabled export for exported note
+        res.sendStatus(400);
+        return;
+    }
 
     let navigationMeta, indexMeta, cssMeta;
 
@@ -565,15 +610,9 @@ ${markdownContent}`;
         });
     }
 
-    if (!rootMeta) { // corner case of disabled export for exported note
-        res.sendStatus(400);
-        return;
-    }
+    metaFile.save(archive);
 
-    const metaFileJson = JSON.stringify(metaFile, null, '\t');
-
-    archive.append(metaFileJson, { name: "!!!meta.json" });
-
+    const rootMeta = metaFile.files[0];
     saveNote(rootMeta, '');
 
     if (format === 'html') {
