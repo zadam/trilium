@@ -105,6 +105,8 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
     const monthName = MONTHS[dateObj.getMonth()];
 
     return pattern
+        .replace(/{shortMonth3}/g, monthName.slice(0,3))
+        .replace(/{shortMonth4}/g, monthName.slice(0,4))
         .replace(/{monthNumberPadded}/g, monthNumber)
         .replace(/{month}/g, monthName);
 }
