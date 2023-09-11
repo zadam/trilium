@@ -7,6 +7,15 @@ const utils = require('./utils');
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();
 
+/**
+ * Scope here means on which element the keyboard shortcuts are attached - this means that for the shortcut to work,
+ * the focus has to be inside the element.
+ *
+ * So e.g. shortcuts with "note-tree" scope work only when the focus is in note tree.
+ * This allows to have the same shortcut have different actions attached based on the context
+ * e.g. CTRL-C in note tree does something a bit different from CTRL-C in the text editor.
+ */
+
 const DEFAULT_KEYBOARD_ACTIONS = [
     {
         separator: "Note navigation"
