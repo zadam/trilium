@@ -29,6 +29,13 @@ function createNote(parentNote, noteTitle) {
     }).note;
 }
 
+function ordinal(n) {
+    var s = ["th", "st", "nd", "rd"],
+        v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+  
+
 /** @returns {BNote} */
 function getRootCalendarNote() {
     let rootNote;
@@ -145,6 +152,7 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
     const weekDay = DAYS[dateObj.getDay()];
 
     return pattern
+        .replace(/{ordinal}/g, ordinal(parseInt(dayNumber)))
         .replace(/{dayInMonthPadded}/g, dayNumber)
         .replace(/{isoDate}/g, dateUtils.utcDateStr(dateObj))
         .replace(/{weekDay}/g, weekDay)
