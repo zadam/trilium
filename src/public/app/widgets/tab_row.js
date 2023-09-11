@@ -268,11 +268,11 @@ export default class TabRowWidget extends BasicWidget {
             });
         });
 
-        keyboardActionService.setupActionsForElement('tabs', $(document), this);
+        keyboardActionService.setupActionsForElement('window', $(document), this);
     }
 
     goToTab(tabNumber) {
-        const index = tabNumber === 0 ? this.tabEls.length - 1 : tabNumber - 1;
+        const index = tabNumber === Number.POSITIVE_INFINITY ? this.tabEls.length - 1 : tabNumber - 1;
         const tab = this.tabEls[index];
         if (!tab) return;
         appContext.tabManager.activateNoteContext(tab.getAttribute('data-ntx-id'));
@@ -287,7 +287,7 @@ export default class TabRowWidget extends BasicWidget {
     seventhTabCommand() {this.goToTab(7);}
     eigthTabCommand() {this.goToTab(8);}
     ninthTabCommand() {this.goToTab(9);}
-    lastTabCommand() {this.goToTab(0);}
+    lastTabCommand() {this.goToTab(Number.POSITIVE_INFINITY);}
 
     setupStyle() {
         this.$style = $("<style>");

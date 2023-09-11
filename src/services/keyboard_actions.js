@@ -235,61 +235,61 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "firstTab",
         defaultShortcuts: ["CommandOrControl+1"],
         description: "Activates the first tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "secondTab",
         defaultShortcuts: ["CommandOrControl+2"],
         description: "Activates the second tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "thirdTab",
         defaultShortcuts: ["CommandOrControl+3"],
         description: "Activates the third tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "fourthTab",
         defaultShortcuts: ["CommandOrControl+4"],
         description: "Activates the fourth tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "fifthTab",
         defaultShortcuts: ["CommandOrControl+5"],
         description: "Activates the fifth tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "sixthTab",
         defaultShortcuts: ["CommandOrControl+6"],
         description: "Activates the sixth tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "seventhTab",
         defaultShortcuts: ["CommandOrControl+7"],
         description: "Activates the seventh tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "eigthTab",
         defaultShortcuts: ["CommandOrControl+8"],
         description: "Activates the eigth tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "ninthTab",
         defaultShortcuts: ["CommandOrControl+9"],
         description: "Activates the ninth tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
     {
         actionName: "lastTab",
         defaultShortcuts: ["CommandOrControl+0"],
         description: "Activates the last tab in the list",
-        scope: "tabs"
+        scope: "window"
     },
 
 
