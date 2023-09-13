@@ -154,4 +154,24 @@ export default class RootCommandExecutor extends Component {
             });
         }
     }
+
+    firstTabCommand() {this.#goToTab(1);}
+    secondTabCommand() {this.#goToTab(2);}
+    thirdTabCommand() {this.#goToTab(3);}
+    fourthTabCommand() {this.#goToTab(4);}
+    fifthTabCommand() {this.#goToTab(5);}
+    sixthTabCommand() {this.#goToTab(6);}
+    seventhTabCommand() {this.#goToTab(7);}
+    eigthTabCommand() {this.#goToTab(8);}
+    ninthTabCommand() {this.#goToTab(9);}
+    lastTabCommand() {this.#goToTab(Number.POSITIVE_INFINITY);}
+
+    #goToTab(tabNumber) {
+        const mainNoteContexts = appContext.tabManager.getMainNoteContexts();
+
+        const index = tabNumber === Number.POSITIVE_INFINITY ? mainNoteContexts.length - 1 : tabNumber - 1;
+        const tab = mainNoteContexts[index];
+
+        appContext.tabManager.activateNoteContext(tab.ntxId);
+    }
 }

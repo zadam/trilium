@@ -349,9 +349,33 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @returns {FNote} active note (loaded into right pane)
+     * @returns {FNote} active note (loaded into center pane)
      */
     this.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
+
+    /**
+     * @method
+     * @returns {NoteContext} - returns active context (split)
+     */
+    this.getActiveContext = () => appContext.tabManager.getActiveContext();
+
+    /**
+     * @method
+     * @returns {NoteContext} - returns active main context (first split in a tab, represents the tab as a whole)
+     */
+    this.getActiveMainContext = () => appContext.tabManager.getActiveMainContext();
+
+    /**
+     * @method
+     * @returns {NoteContext[]} - returns all note contexts (splits) in all tabs
+     */
+    this.getNoteContexts = () => appContext.tabManager.getNoteContexts();
+
+    /**
+     * @method
+     * @returns {NoteContext[]} - returns all main contexts representing tabs
+     */
+    this.getMainNoteContexts = () => appContext.tabManager.getMainNoteContexts();
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for documentation on the returned instance.

@@ -267,27 +267,7 @@ export default class TabRowWidget extends BasicWidget {
                 }
             });
         });
-
-        keyboardActionService.setupActionsForElement('window', $(document), this);
     }
-
-    goToTab(tabNumber) {
-        const index = tabNumber === Number.POSITIVE_INFINITY ? this.tabEls.length - 1 : tabNumber - 1;
-        const tab = this.tabEls[index];
-        if (!tab) return;
-        appContext.tabManager.activateNoteContext(tab.getAttribute('data-ntx-id'));
-    }
-
-    firstTabCommand() {this.goToTab(1);}
-    secondTabCommand() {this.goToTab(2);}
-    thirdTabCommand() {this.goToTab(3);}
-    fourthTabCommand() {this.goToTab(4);}
-    fifthTabCommand() {this.goToTab(5);}
-    sixthTabCommand() {this.goToTab(6);}
-    seventhTabCommand() {this.goToTab(7);}
-    eigthTabCommand() {this.goToTab(8);}
-    ninthTabCommand() {this.goToTab(9);}
-    lastTabCommand() {this.goToTab(Number.POSITIVE_INFINITY);}
 
     setupStyle() {
         this.$style = $("<style>");
@@ -637,7 +617,7 @@ export default class TabRowWidget extends BasicWidget {
 
         // update tab id for the new main context
         this.getTabById(oldMainNtxId).attr("data-ntx-id", newMainNtxId);
-        this.updateTabById(newMainNtxId);        
+        this.updateTabById(newMainNtxId);
     }
 
     contextsReopenedEvent({mainNtxId, tabPosition}) {
