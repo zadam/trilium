@@ -65,11 +65,12 @@ async function mouseEnterHandler() {
     }
 
     const html = `<div class="note-tooltip-content">${content}</div>`;
+    const tooltipClass = 'tooltip-' + Math.floor(Math.random() * 999_999_999);
 
     // we need to check if we're still hovering over the element
     // since the operation to get tooltip content was async, it is possible that
     // we now create tooltip which won't close because it won't receive mouseleave event
-    if ($(this).is(":hover")) {
+    if ($(this).filter(":hover").length > 0) {
         $(this).tooltip({
             container: 'body',
             // https://github.com/zadam/trilium/issues/2794 https://github.com/zadam/trilium/issues/2988
@@ -79,19 +80,33 @@ async function mouseEnterHandler() {
             boundary: 'window',
             title: html,
             html: true,
-            template: '<div class="tooltip note-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
+            template: `<div class="tooltip note-tooltip ${tooltipClass}" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>`,
             sanitize: false,
             customClass: linkId
         });
 
         $(this).tooltip('show');
 
-        setTimeout(() => {
-            if (!$(this).is(":hover") && !$(`.${linkId}`).is(":hover")) {
+        // the purpose of the code below is to:
+        // - allow user to go from hovering the link to hovering the tooltip to be able to scroll,
+        //   click on links within tooltip etc. without tooltip disappearing
+        // - once the user moves the cursor away from both link and the tooltip, hide the tooltip
+        const checkTooltip = () => {
+            if (!$(`.${tooltipClass}`).is(':visible')) {
+                console.log("Not visible anymore");
+
+                return;
+            }
+
+            if (!$(this).filter(":hover").length && !$(`.${linkId}:hover`).length) {
                 // cursor is neither over the link nor over the tooltip, user likely is not interested
                 $(this).tooltip('dispose');
+            } else {
+                setTimeout(checkTooltip, 1000);
             }
-        }, 1000);
+        }
+
+        setTimeout(checkTooltip, 1000);
     }
 }
 
