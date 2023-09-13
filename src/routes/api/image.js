@@ -55,7 +55,9 @@ function returnAttachedImage(req, res) {
     }
 
     if (!["image"].includes(attachment.role)) {
-        return res.sendStatus(400);
+        return res.setHeader("Content-Type", "text/plain")
+            .status(400)
+            .send(`Attachment '${attachment.attachmentId}' has role '${attachment.role}', but 'image' was expected.`);
     }
 
     res.set('Content-Type', attachment.mime);
