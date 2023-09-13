@@ -229,7 +229,9 @@ class BNote extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    /** @returns {*} */
+    /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
     getJsonContent() {
         const content = this.getContent();
 
@@ -238,6 +240,16 @@ class BNote extends AbstractBeccaEntity {
         }
 
         return JSON.parse(content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
     }
 
     /**
@@ -1143,7 +1155,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /** @returns {BAttachment[]} */
-    getAttachmentByRole(role) {
+    getAttachmentsByRole(role) {
         return sql.getRows(`
                 SELECT attachments.*
                 FROM attachments 
@@ -1152,6 +1164,18 @@ class BNote extends AbstractBeccaEntity {
                   AND isDeleted = 0
                 ORDER BY position`, [this.noteId, role])
             .map(row => new BAttachment(row));
+    }
+
+    /** @returns {BAttachment} */
+    getAttachmentByTitle(title) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE ownerId = ? 
+                  AND title = ?
+                  AND isDeleted = 0
+                ORDER BY position`, [this.noteId, title])
+            .map(row => new BAttachment(row))[0];
     }
 
     /**

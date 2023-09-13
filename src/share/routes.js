@@ -142,8 +142,6 @@ function register(router) {
         });
     }
 
-    router.use('/share/canvas_share.js', express.static(path.join(__dirname, 'canvas_share.js')));
-
     router.get('/share/', (req, res, next) => {
         if (req.path.substr(-1) !== '/') {
             res.redirect('../share/');
@@ -219,19 +217,24 @@ function register(router) {
              * special "image" type. the canvas is actually type application/json
              * to avoid bitrot and enable usage as referenced image the svg is included.
              */
-            const content = image.getContent();
-            try {
-                const data = JSON.parse(content);
+            let svgString = '<svg/>'
+            const attachment = image.getAttachmentByTitle('canvas-export.svg');
 
-                const svg = data.svg || '<svg />';
-                addNoIndexHeader(image, res);
-                res.set('Content-Type', "image/svg+xml");
-                res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-                res.send(svg);
-            } catch (err) {
-                res.status(500)
-                    .json({ message: "There was an error parsing excalidraw to svg." });
+            if (attachment) {
+                svgString = attachment.getContent();
+            } else {
+                // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
+                const contentSvg = image.getJsonContentSafely()?.svg;
+
+                if (contentSvg) {
+                    svgString = contentSvg;
+                }
             }
+
+            const svg = svgString
+            res.set('Content-Type', "image/svg+xml");
+            res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.send(svg);
         } else {
             // normal image
             res.set('Content-Type', image.mime);

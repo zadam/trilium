@@ -21,19 +21,24 @@ function returnImage(req, res) {
      * to avoid bitrot and enable usage as referenced image the svg is included.
      */
     if (image.type === 'canvas') {
-        const content = image.getContent();
-        try {
-            const data = JSON.parse(content);
+        let svgString = '<svg/>'
+        const attachment = image.getAttachmentByTitle('canvas-export.svg');
 
-            const svg = data.svg || '<svg />'
-            res.set('Content-Type', "image/svg+xml");
-            res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-            res.send(svg);
-        } catch(err) {
-            res.setHeader("Content-Type", "text/plain")
-                .status(500)
-                .send("there was an error parsing excalidraw to svg");
+        if (attachment) {
+            svgString = attachment.getContent();
+        } else {
+            // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
+            const contentSvg = image.getJsonContentSafely()?.svg;
+
+            if (contentSvg) {
+                svgString = contentSvg;
+            }
         }
+
+        const svg = svgString
+        res.set('Content-Type', "image/svg+xml");
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.send(svg);
     } else {
         res.set('Content-Type', image.mime);
         res.set("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -50,7 +55,9 @@ function returnAttachedImage(req, res) {
     }
 
     if (!["image"].includes(attachment.role)) {
-        return res.sendStatus(400);
+        return res.setHeader("Content-Type", "text/plain")
+            .status(400)
+            .send(`Attachment '${attachment.attachmentId}' has role '${attachment.role}', but 'image' was expected.`);
     }
 
     res.set('Content-Type', attachment.mime);

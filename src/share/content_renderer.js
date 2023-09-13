@@ -25,14 +25,12 @@ function getContent(note) {
         renderCode(result);
     } else if (note.type === 'mermaid') {
         renderMermaid(result);
-    } else if (note.type === 'image') {
+    } else if (note.type === 'image' || note.type === 'canvas') {
         renderImage(result, note);
     } else if (note.type === 'file') {
         renderFile(note, result);
     } else if (note.type === 'book') {
         result.isEmpty = true;
-    } else if (note.type === 'canvas') {
-        renderCanvas(result, note);
     } else {
         result.content = '<p>This note type cannot be displayed.</p>';
     }
@@ -149,39 +147,6 @@ function renderFile(note, result) {
     } else {
         result.content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
     }
-}
-
-function renderCanvas(result, note) {
-    result.header += `<script>
-                    window.EXCALIDRAW_ASSET_PATH = window.location.origin + "/node_modules/@excalidraw/excalidraw/dist/";
-                   </script>`;
-    result.header += `<script src="../../${assetPath}/node_modules/react/umd/react.production.min.js"></script>`;
-    result.header += `<script src="../../${assetPath}/node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
-    result.header += `<script src="../../${assetPath}/node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
-    result.header += `<style>
-
-            .excalidraw-wrapper {
-                height: 100%;
-            }
-
-            :root[dir="ltr"]
-            .excalidraw
-            .layer-ui__wrapper
-            .zen-mode-transition.App-menu_bottom--transition-left {
-                transform: none;
-            }
-        </style>`;
-
-    result.content = `<div>
-            <script>
-                const {elements, appState, files} = JSON.parse(${JSON.stringify(result.content)});
-                window.triliumExcalidraw = {elements, appState, files}
-            </script>
-            <div id="excalidraw-app"></div>
-            <hr>
-            <a href="api/images/${note.noteId}/${note.escapedTitle}?utc=${note.utcDateModified}">Get Image Link</a>
-            <script src="./canvas_share.js"></script>
-        </div>`;
 }
 
 module.exports = {

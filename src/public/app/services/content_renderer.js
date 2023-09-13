@@ -33,7 +33,7 @@ async function getRenderedContent(entity, options = {}) {
     else if (type === 'code') {
         await renderCode(entity, $renderedContent);
     }
-    else if (type === 'image') {
+    else if (type === 'image' || type === 'canvas') {
         renderImage(entity, $renderedContent, options);
     }
     else if (!options.tooltip && ['file', 'pdf', 'audio', 'video'].includes(type)) {
@@ -48,9 +48,6 @@ async function getRenderedContent(entity, options = {}) {
         await renderService.render(entity, $content, this.ctx);
 
         $renderedContent.append($content);
-    }
-    else if (type === 'canvas') {
-        await renderCanvas(entity, $renderedContent);
     }
     else if (!options.tooltip && type === 'protectedSession') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
@@ -125,7 +122,7 @@ function renderImage(entity, $renderedContent, options = {}) {
     let url;
 
     if (entity instanceof FNote) {
-        url = `api/images/${entity.noteId}/${sanitizedTitle}?${entity.utcDateModified}`;
+        url = `api/images/${entity.noteId}/${sanitizedTitle}?${Math.random()}`;
     } else if (entity instanceof FAttachment) {
         url = `api/attachments/${entity.attachmentId}/image/${sanitizedTitle}?${entity.utcDateModified}">`;
     }
@@ -233,28 +230,6 @@ async function renderMermaid(note, $renderedContent) {
         const $error = $("<p>The diagram could not displayed.</p>");
 
         $renderedContent.append($error);
-    }
-}
-
-async function renderCanvas(note, $renderedContent) {
-    // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
-    $renderedContent.css({height: "100%", width: "100%"});
-
-    const blob = await note.getBlob();
-    const content = blob.content || "";
-
-    try {
-        const placeHolderSVG = "<svg />";
-        const data = JSON.parse(content)
-        const svg = data.svg || placeHolderSVG;
-        /**
-         * maxWidth: size down to 100% (full) width of container but do not enlarge!
-         * height:auto to ensure that height scales with width
-         */
-        $renderedContent.append($(svg).css({maxWidth: "100%", maxHeight: "100%", height: "auto", width: "auto"}));
-    } catch (err) {
-        console.error("error parsing content as JSON", content, err);
-        $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
     }
 }
 

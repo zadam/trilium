@@ -42,10 +42,12 @@ export default class AttachmentListTypeWidget extends TypeWidget {
         const $helpButton = $('<button class="attachment-help-button" type="button" data-help-page="attachments" title="Open help page on attachments"><span class="bx bx-help-circle"></span></button>');
         utils.initHelpButtons($helpButton);
 
+        const noteLink = await linkService.createLink(this.noteId); // do separately to avoid race condition between empty() and .append()
+
         this.$linksWrapper.empty().append(
             $('<div>').append(
                 "Owning note: ",
-                await linkService.createLink(this.noteId),
+                noteLink,
             ),
             $('<div>').append(
                 $('<button class="btn btn-sm">')

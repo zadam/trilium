@@ -733,7 +733,7 @@ function saveRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteData(noteId, content) {
+function updateNoteData(noteId, content, attachments = []) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
@@ -745,6 +745,23 @@ function updateNoteData(noteId, content) {
     const { forceFrontendReload, content: newContent } = saveLinks(note, content);
 
     note.setContent(newContent, { forceFrontendReload });
+
+    if (attachments?.length > 0) {
+        /** @var {Object<string, BAttachment>} */
+        const existingAttachmentsByTitle = utils.toMap(note.getAttachments({includeContentLength: false}), 'title');
+
+        for (const {attachmentId, role, mime, title, content, position} of attachments) {
+            if (attachmentId || !(title in existingAttachmentsByTitle)) {
+                note.saveAttachment({attachmentId, role, mime, title, content, position});
+            } else {
+                const existingAttachment = existingAttachmentsByTitle[title];
+                existingAttachment.role = role;
+                existingAttachment.mime = mime;
+                existingAttachment.position = position;
+                existingAttachment.setContent(content, {forceSave: true});
+            }
+        }
+    }
 }
 
 /**

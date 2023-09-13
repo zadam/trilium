@@ -14,7 +14,6 @@ import keyboardActionsService from "../services/keyboard_actions.js";
 import clipboard from "../services/clipboard.js";
 import protectedSessionService from "../services/protected_session.js";
 import linkService from "../services/link.js";
-import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import dialogService from "../services/dialog.js";
@@ -586,6 +585,17 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 });
             },
             select: (event, {node}) => {
+                if (hoistedNoteService.getHoistedNoteId() === 'root'
+                    && node.data.noteId === '_hidden'
+                    && node.isSelected()) {
+
+                    // hidden is hackily hidden from the tree via CSS when root is hoisted
+                    // make sure it's not selected by mistake, it could be e.g. deleted by mistake otherwise
+                    node.setSelected(false);
+
+                    return;
+                }
+
                 $(node.span).find(".fancytree-custom-icon").attr("title",
                     node.isSelected() ? "Apply bulk actions on selected notes" : "");
             }
@@ -799,7 +809,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             nodes.push(this.getActiveNode());
         }
 
-        return nodes;
+        // hidden subtree is hackily hidden via CSS when hoisted to root
+        // make sure it's never selected for e.g. deletion in such a case
+        return nodes.filter(node => hoistedNoteService.getHoistedNoteId() !== 'root'
+                                               || node.data.noteId !== '_hidden');
     }
 
     async setExpandedStatusForSubtree(node, isExpanded) {
