@@ -25,6 +25,10 @@ function md5(content) {
 }
 
 function hashedBlobId(content) {
+    if (content === null || content === undefined) {
+        content = "";
+    }
+
     // sha512 is faster than sha256
     const base64Hash = crypto.createHash('sha512').update(content).digest('base64');
 
