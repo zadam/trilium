@@ -241,6 +241,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "toggleTray",
+        defaultShortcuts: [],
+        description: "Shows/hides the application from the system tray",
+        scope: "window"
+    },
+    {
         actionName: "firstTab",
         defaultShortcuts: ["CommandOrControl+1"],
         description: "Activates the first tab in the list",
