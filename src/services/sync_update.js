@@ -59,6 +59,10 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
             }
         }
 
+        if (!remoteEntityRow) {
+            throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
+        }
+
         sql.replace(remoteEC.entityName, remoteEntityRow);
 
         if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged) {
