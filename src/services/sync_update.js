@@ -46,6 +46,10 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
     }
 
     if (!localEC || localEC.utcDateChanged <= remoteEC.utcDateChanged) {
+        if (!remoteEntityRow) {
+            throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
+        }
+
         if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
             // we always use a Buffer object which is different from normal saving - there we use a simple string type for
             // "string notes". The problem is that in general, it's not possible to detect whether a blob content
@@ -57,10 +61,6 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
                 // (possibly not a problem anymore with the newer better-sqlite3)
                 remoteEntityRow.content = "";
             }
-        }
-
-        if (!remoteEntityRow) {
-            throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
         }
 
         sql.replace(remoteEC.entityName, remoteEntityRow);
@@ -81,6 +81,10 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
 }
 
 function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
+    if (!remoteEntityRow) {
+        throw new Error(`Empty note_reordering body for: ${JSON.stringify(remoteEC)}`);
+    }
+
     for (const key in remoteEntityRow) {
         sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remoteEntityRow[key], key]);
     }

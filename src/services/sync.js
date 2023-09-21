@@ -71,8 +71,7 @@ async function sync() {
             };
         }
         else {
-            log.info(`sync failed: ${e.message}
-stack: ${e.stack}`);
+            log.info(`Sync failed: '${e.message}', stack: ${e.stack}`);
 
             ws.syncFailed();
 
