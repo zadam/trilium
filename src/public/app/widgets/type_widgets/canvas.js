@@ -20,9 +20,12 @@ const TPL = `
             display: block;
         }
 
-
         .excalidraw-wrapper {
             height: 100%;
+        }
+        
+        .excalidraw button[data-testid="json-export-button"] {
+            display: none !important;
         }
 
         :root[dir="ltr"]
@@ -441,6 +444,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     handleKeyboardGlobally: false,
                     autoFocus: false,
                     onLinkOpen,
+                    UIOptions: {
+                        saveToActiveFile: false,
+                        saveAsImage: false
+                    }
                 })
             )
         );
