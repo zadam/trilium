@@ -13,6 +13,9 @@ appIconService.installLocalAppIcon();
 
 require('electron-dl')({ saveAs: true });
 
+// needed for excalidraw export https://github.com/zadam/trilium/issues/4271
+app.commandLine.appendSwitch("enable-experimental-web-platform-features");
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
