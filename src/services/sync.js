@@ -126,8 +126,6 @@ async function doLogin() {
 }
 
 async function pullChanges(syncContext) {
-    let atLeastOnePullApplied = false;
-
     while (true) {
         const lastSyncedPull = getLastSyncedPull();
         const logMarkerId = utils.randomString(10); // to easily pair sync events between client and server logs
@@ -143,22 +141,7 @@ async function pullChanges(syncContext) {
         const pulledDate = Date.now();
 
         sql.transactional(() => {
-            for (const {entityChange, entity} of entityChanges) {
-                const changeAppliedAlready = entityChange.changeId
-                    && !!sql.getValue("SELECT 1 FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
-
-                if (changeAppliedAlready) {
-                    continue;
-                }
-
-                if (!atLeastOnePullApplied) { // send only for first
-                    ws.syncPullInProgress();
-
-                    atLeastOnePullApplied = true;
-                }
-
-                syncUpdateService.updateEntity(entityChange, entity, syncContext.instanceId);
-            }
+            syncUpdateService.updateEntities(entityChanges, syncContext.instanceId);
 
             if (lastSyncedPull !== lastEntityChangeId) {
                 setLastSyncedPull(lastEntityChangeId);
