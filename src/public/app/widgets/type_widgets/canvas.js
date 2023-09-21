@@ -52,8 +52,8 @@ const TPL = `
  * for sketching. Excalidraw has a vibrant and active community.
  *
  * Functionality:
- * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we
- * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used when
+ * We store the excalidraw assets (elements and files) in the note. In addition to that, we
+ * export the SVG from the canvas on every update and store it in the note's attachment. It is used when
  * calling api/images and makes referencing very easy.
  *
  * Paths not taken.
@@ -173,6 +173,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             await sleep(200);
         }
 
+        const appState = {
+            theme: this.themeStyle
+        };
+
         /**
          * new and empty note - make sure that canvas is empty.
          * If we do not set it manually, we occasionally get some "bleeding" from another
@@ -182,9 +186,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         if (!blob.content?.trim()) {
             const sceneData = {
                 elements: [],
-                appState: {
-                    theme: this.themeStyle
-                },
+                appState,
                 collaborators: []
             };
 
@@ -201,19 +203,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                 content = {
                     elements: [],
-                    appState: {},
                     files: [],
                 };
             }
 
-            const {elements, appState, files} = content;
+            const {elements, files} = content;
 
-            appState.theme = this.themeStyle;
-
-            /**
-             * use widths and offsets of current view, since stored appState has the state from
-             * previous edit. using the stored state would lead to pointer mismatch.
-             */
             const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
             appState.width = boundingClientRect.width;
             appState.height = boundingClientRect.height;
@@ -276,10 +271,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          */
         const files = this.excalidrawRef.current.getFiles();
 
-        /**
-         * parallel svg export to combat bitrot and enable rendering image for note inclusion,
-         *  preview, and share.
-         */
+        // parallel svg export to combat bitrot and enable rendering image for note inclusion, preview, and share
         const svg = await window.ExcalidrawLib.exportToSvg({
             elements,
             appState,
@@ -300,7 +292,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             type: "excalidraw",
             version: 2,
             elements,
-            appState,
             files: activeFiles
         };
 
