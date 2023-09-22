@@ -239,12 +239,9 @@ class BNote extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    /** @returns {{dateModified, utcDateModified}} */
-    getContentMetadata() {
-        return sql.getRow(`SELECT dateModified, utcDateModified FROM blobs WHERE blobId = ?`, [this.blobId]);
-    }
-
-    /** @returns {*} */
+    /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
     getJsonContent() {
         const content = this.getContent();
 
@@ -253,6 +250,16 @@ class BNote extends AbstractBeccaEntity {
         }
 
         return JSON.parse(content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
     }
 
     /**
@@ -1158,7 +1165,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /** @returns {BAttachment[]} */
-    getAttachmentByRole(role) {
+    getAttachmentsByRole(role) {
         return sql.getRows(`
                 SELECT attachments.*
                 FROM attachments 
@@ -1167,6 +1174,18 @@ class BNote extends AbstractBeccaEntity {
                   AND isDeleted = 0
                 ORDER BY position`, [this.noteId, role])
             .map(row => new BAttachment(row));
+    }
+
+    /** @returns {BAttachment} */
+    getAttachmentByTitle(title) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE ownerId = ? 
+                  AND title = ?
+                  AND isDeleted = 0
+                ORDER BY position`, [this.noteId, title])
+            .map(row => new BAttachment(row))[0];
     }
 
     /**
@@ -1599,7 +1618,6 @@ class BNote extends AbstractBeccaEntity {
     saveRevision() {
         return sql.transactional(() => {
             let noteContent = this.getContent();
-            const contentMetadata = this.getContentMetadata();
 
             const revision = new BRevision({
                 noteId: this.noteId,
@@ -1608,14 +1626,10 @@ class BNote extends AbstractBeccaEntity {
                 type: this.type,
                 mime: this.mime,
                 isProtected: this.isProtected,
-                utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
-                    ? this.utcDateModified
-                    : contentMetadata.utcDateModified,
+                utcDateLastEdited: this.utcDateModified,
                 utcDateCreated: dateUtils.utcNowDateTime(),
                 utcDateModified: dateUtils.utcNowDateTime(),
-                dateLastEdited: this.dateModified > contentMetadata.dateModified
-                    ? this.dateModified
-                    : contentMetadata.dateModified,
+                dateLastEdited: this.dateModified,
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 
@@ -1638,9 +1652,9 @@ class BNote extends AbstractBeccaEntity {
                     noteContent = noteContent.replaceAll(new RegExp(`href="[^"]*attachmentId=${noteAttachment.attachmentId}[^"]*"`, 'gi'),
                         `href="api/attachments/${revisionAttachment.attachmentId}/download"`);
                 }
-
-                revision.setContent(noteContent, {forceSave: true});
             }
+
+            revision.setContent(noteContent);
 
             return revision;
         });

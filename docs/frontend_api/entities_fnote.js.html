@@ -264,6 +264,12 @@ class FNote {
         return this.attachments;
     }
 
+    /** @returns {Promise&lt;FAttachment[]>} */
+    async getAttachmentsByRole(role) {
+        return (await this.getAttachments())
+            .filter(attachment => attachment.role === role);
+    }
+
     /** @returns {Promise&lt;FAttachment>} */
     async getAttachmentById(attachmentId) {
         const attachments = await this.getAttachments();
@@ -998,6 +1004,10 @@ class FNote {
     isOptions() {
         return this.noteId.startsWith("_options");
     }
+
+    async getMetadata() {
+        return await server.get(`notes/${this.noteId}/metadata`);
+    }
 }
 
 export default FNote;
@@ -1011,7 +1021,7 @@ export default FNote;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getJsonContent">getJsonContent</a></li><li><a href="global.html#getJsonContentSafely">getJsonContentSafely</a></li></ul>
 </nav>
 
 <br class="clear">
