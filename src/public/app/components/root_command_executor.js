@@ -6,6 +6,7 @@ import openService from "../services/open.js";
 import protectedSessionService from "../services/protected_session.js";
 import options from "../services/options.js";
 import froca from "../services/froca.js";
+import utils from "../services/utils.js";
 
 export default class RootCommandExecutor extends Component {
     editReadOnlyNoteCommand() {
@@ -153,6 +154,15 @@ export default class RootCommandExecutor extends Component {
                 }
             });
         }
+    }
+
+    toggleTrayCommand() {
+        if (!utils.isElectron()) return;
+        const {BrowserWindow} = utils.dynamicRequire('@electron/remote');
+        const windows = BrowserWindow.getAllWindows();
+        const isVisible = windows.every(w => w.isVisible());
+        const action = isVisible ? "hide" : "show"
+        for (const window of windows) window[action]();
     }
 
     firstTabCommand()   { this.#goToTab(1); }
