@@ -32,6 +32,7 @@ const TPL = `
     }
     .promoted-attribute-cell strong {
         word-break:keep-all;
+        white-space: nowrap;
     }
     </style>
     
@@ -137,7 +138,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             .attr("nowrap", true);
 
         const $wrapper = $('<div class="promoted-attribute-cell">')
-            .append($("<strong>").text(valueName))
+            .append($("<strong>").text(definition.promotedAlias ?? valueName))
             .append($("<div>").addClass("input-group").append($input))
             .append($actionCell)
             .append($multiplicityCell);

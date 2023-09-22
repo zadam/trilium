@@ -17,6 +17,11 @@ function parse(value) {
 
             defObj.numberPrecision = parseInt(chunks[1]);
         }
+        else if (token.startsWith('alias')) {
+            const chunks = token.split('=');
+
+            defObj.promotedAlias = chunks[1];
+        }
         else if (token.startsWith('inverse')) {
             const chunks = token.split('=');
 

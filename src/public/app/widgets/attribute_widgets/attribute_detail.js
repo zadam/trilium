@@ -98,6 +98,14 @@ const TPL = `
             <th>Promoted:</th>
             <td><input type="checkbox" class="attr-input-promoted form-control form-control-sm" /></td>
         </tr>
+        <tr class="attr-row-promoted-alias">
+            <th title="The name to be displayed in the promoted attributes UI.">Alias:</th>
+            <td>
+                <div class="input-group">
+                    <input type="text" class="attr-input-promoted-alias form-control" />
+                </div>
+            </td>
+        </tr>
         <tr class="attr-row-multiplicity">
             <th title="Multiplicity defines how many attributes of the same name can be created - at max 1 or more than 1.">Multiplicity:</th>
             <td>
@@ -323,6 +331,10 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$inputPromoted = this.$widget.find('.attr-input-promoted');
         this.$inputPromoted.on('change', () => this.userEditedAttribute());
 
+        this.$rowPromotedAlias = this.$widget.find('.attr-row-promoted-alias');
+        this.$inputPromotedAlias = this.$widget.find('.attr-input-promoted-alias');
+        this.$inputPromotedAlias.on('change', () => this.userEditedAttribute());
+
         this.$rowMultiplicity = this.$widget.find('.attr-row-multiplicity');
         this.$inputMultiplicity = this.$widget.find('.attr-input-multiplicity');
         this.$inputMultiplicity.on('change', () => this.userEditedAttribute());
@@ -451,6 +463,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowPromoted.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
         this.$inputPromoted
             .prop("checked", !!definition.isPromoted)
+            .attr('disabled', () => !isOwned);
+
+        this.$rowPromotedAlias.toggle(!!definition.isPromoted);
+        this.$inputPromotedAlias
+            .val(definition.promotedAlias)
             .attr('disabled', () => !isOwned);
 
         this.$rowMultiplicity.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
@@ -673,6 +690,10 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         if (this.$inputPromoted.is(":checked")) {
             props.push("promoted");
+
+            if (this.$inputPromotedAlias.val() !== '') {
+                props.push(`alias=${this.$inputPromotedAlias.val()}`);
+            }
         }
 
         props.push(this.$inputMultiplicity.val());
@@ -692,6 +713,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowNumberPrecision.toggle(
             this.attrType === 'label-definition'
             && this.$inputLabelType.val() === 'number');
+
+        this.$rowPromotedAlias.toggle(this.$inputPromoted.is(":checked"));
 
         return props.join(",");
     }
