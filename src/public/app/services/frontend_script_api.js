@@ -14,6 +14,7 @@ import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
 import shortcutService from "./shortcuts.js";
+import dialogService from "./dialog.js";
 
 /**
  * <p>This is the main frontend API interface for scripts. All the properties and methods are published in the "api" object
@@ -258,7 +259,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.parseDate = utils.parseDate;
 
     /**
-     * Show an info message to the user.
+     * Show an info toast message to the user.
      *
      * @method
      * @param {string} message
@@ -266,12 +267,42 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showMessage = toastService.showMessage;
 
     /**
-     * Show an error message to the user.
+     * Show an error toast message to the user.
      *
      * @method
      * @param {string} message
      */
     this.showError = toastService.showError;
+
+    /**
+     * Show an info dialog to the user.
+     *
+     * @method
+     * @param {string} message
+     * @returns {Promise}
+     */
+    this.showInfoDialog = dialogService.info;
+
+    /**
+     * Show confirm dialog to the user.
+     *
+     * @method
+     * @param {string} message
+     * @returns {Promise<boolean>} promise resolving to true if the user confirmed
+     */
+    this.showConfirmDialog = dialogService.confirm;
+
+    /**
+     * Show prompt dialog to the user.
+     *
+     * @method
+     * @param {object} props
+     * @param {string} props.title
+     * @param {string} props.message
+     * @param {string} props.defaultValue
+     * @returns {Promise<string>} promise resolving to the answer provided by the user
+     */
+    this.showPromptDialog = dialogService.prompt;
 
     /**
      * Trigger command. This is a very low-level API which should be avoided if possible.
