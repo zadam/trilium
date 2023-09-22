@@ -176,10 +176,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             await sleep(200);
         }
 
-        const appState = {
-            theme: this.themeStyle
-        };
-
         /**
          * new and empty note - make sure that canvas is empty.
          * If we do not set it manually, we occasionally get some "bleeding" from another
@@ -189,7 +185,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         if (!blob.content?.trim()) {
             const sceneData = {
                 elements: [],
-                appState,
+                appState: {
+                    theme: this.themeStyle
+                },
                 collaborators: []
             };
 
@@ -207,10 +205,13 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 content = {
                     elements: [],
                     files: [],
+                    appState: {}
                 };
             }
 
-            const {elements, files} = content;
+            const {elements, files, appState} = content;
+
+            appState.theme = this.themeStyle;
 
             const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
             appState.width = boundingClientRect.width;
@@ -289,13 +290,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             if (element.fileId) {
                 activeFiles[element.fileId] = files[element.fileId];
             }
-        })
+        });
 
         const content = {
             type: "excalidraw",
             version: 2,
             elements,
-            files: activeFiles
+            files: activeFiles,
+            appState: {
+                scrollX: appState.scrollX,
+                scrollY: appState.scrollY,
+                zoom: appState.zoom
+            }
         };
 
         const attachments = [
@@ -325,7 +331,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         return {
             content: JSON.stringify(content),
-            attachments: attachments
+            attachments
         };
     }
 
