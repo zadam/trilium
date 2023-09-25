@@ -895,6 +895,10 @@ async function asyncPostProcessContent(note, content) {
 
 // all keys should be replaced by the corresponding values
 function replaceByMap(str, mapObj) {
+    if (!mapObj) {
+        return str;
+    }
+
     const re = new RegExp(Object.keys(mapObj).join("|"),"g");
 
     return str.replace(re, matched => mapObj[matched]);

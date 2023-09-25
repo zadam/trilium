@@ -3,15 +3,51 @@ const log = require('./log');
 const entityChangesService = require('./entity_changes');
 const eventService = require('./events');
 const entityConstructor = require("../becca/entity_constructor");
+const ws = require("./ws");
 
-function updateEntity(remoteEC, remoteEntityRow, instanceId) {
+function updateEntities(entityChanges, instanceId) {
+    if (entityChanges.length === 0) {
+        return;
+    }
+
+    let atLeastOnePullApplied = false;
+    const updateContext = {
+        updated: {},
+        alreadyUpdated: 0,
+        erased: 0,
+        alreadyErased: 0
+    };
+
+    for (const {entityChange, entity} of entityChanges) {
+        const changeAppliedAlready = entityChange.changeId
+            && !!sql.getValue("SELECT 1 FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
+
+        if (changeAppliedAlready) {
+            updateContext.alreadyUpdated++;
+
+            continue;
+        }
+
+        if (!atLeastOnePullApplied) { // avoid spamming and send only for first
+            ws.syncPullInProgress();
+
+            atLeastOnePullApplied = true;
+        }
+
+        updateEntity(entityChange, entity, instanceId, updateContext);
+    }
+
+    logUpdateContext(updateContext);
+}
+
+function updateEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
     if (!remoteEntityRow && remoteEC.entityName === 'options') {
         return; // can be undefined for options with isSynced=false
     }
 
     const updated = remoteEC.entityName === 'note_reordering'
         ? updateNoteReordering(remoteEC, remoteEntityRow, instanceId)
-        : updateNormalEntity(remoteEC, remoteEntityRow, instanceId);
+        : updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext);
 
     if (updated) {
         if (remoteEntityRow?.isDeleted) {
@@ -29,11 +65,12 @@ function updateEntity(remoteEC, remoteEntityRow, instanceId) {
     }
 }
 
-function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
+function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
     const localEC = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [remoteEC.entityName, remoteEC.entityId]);
 
     if (!localEC?.isErased && remoteEC.isErased) {
         eraseEntity(remoteEC, instanceId);
+        updateContext.erased++;
 
         return true;
     } else if (localEC?.isErased && !remoteEC.isErased) {
@@ -42,10 +79,15 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
 
         return false;
     } else if (localEC?.isErased && remoteEC.isErased) {
+        updateContext.alreadyErased++;
         return false;
     }
 
     if (!localEC || localEC.utcDateChanged <= remoteEC.utcDateChanged) {
+        if (!remoteEntityRow) {
+            throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
+        }
+
         if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
             // we always use a Buffer object which is different from normal saving - there we use a simple string type for
             // "string notes". The problem is that in general, it's not possible to detect whether a blob content
@@ -60,6 +102,9 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
         }
 
         sql.replace(remoteEC.entityName, remoteEntityRow);
+
+        updateContext.updated[remoteEC.entityName] = updateContext.updated[remoteEC.entityName] || [];
+        updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
 
         if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged) {
             entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
@@ -77,6 +122,10 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId) {
 }
 
 function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
+    if (!remoteEntityRow) {
+        throw new Error(`Empty note_reordering body for: ${JSON.stringify(remoteEC)}`);
+    }
+
     for (const key in remoteEntityRow) {
         sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remoteEntityRow[key], key]);
     }
@@ -110,6 +159,15 @@ function eraseEntity(entityChange, instanceId) {
     entityChangesService.putEntityChangeWithInstanceId(entityChange, instanceId);
 }
 
+function logUpdateContext(updateContext) {
+    const message = JSON.stringify(updateContext)
+        .replaceAll('"', '')
+        .replaceAll(":", ": ")
+        .replaceAll(",", ", ");
+
+    log.info(message.substr(1, message.length - 2));
+}
+
 module.exports = {
-    updateEntity
+    updateEntities
 };

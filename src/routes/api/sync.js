@@ -166,11 +166,7 @@ function update(req) {
 
     const {entities, instanceId} = body;
 
-    sql.transactional(() => {
-        for (const {entityChange, entity} of entities) {
-            syncUpdateService.updateEntity(entityChange, entity, instanceId);
-        }
-    });
+    sql.transactional(() => syncUpdateService.updateEntities(entities, instanceId));
 }
 
 setInterval(() => {

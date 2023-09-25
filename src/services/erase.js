@@ -183,5 +183,6 @@ module.exports = {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,
-    eraseUnusedBlobs
+    eraseUnusedBlobs,
+    eraseAttachments
 };

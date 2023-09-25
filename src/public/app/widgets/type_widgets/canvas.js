@@ -20,9 +20,12 @@ const TPL = `
             display: block;
         }
 
-
         .excalidraw-wrapper {
             height: 100%;
+        }
+        
+        .excalidraw button[data-testid="json-export-button"] {
+            display: none !important;
         }
 
         :root[dir="ltr"]
@@ -60,8 +63,8 @@ const TPL = `
  * for sketching. Excalidraw has a vibrant and active community.
  *
  * Functionality:
- * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we
- * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used when
+ * We store the excalidraw assets (elements and files) in the note. In addition to that, we
+ * export the SVG from the canvas on every update and store it in the note's attachment. It is used when
  * calling api/images and makes referencing very easy.
  *
  * Paths not taken.
@@ -209,19 +212,15 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                 content = {
                     elements: [],
-                    appState: {},
                     files: [],
+                    appState: {}
                 };
             }
 
-            const {elements, appState, files} = content;
+            const {elements, files, appState} = content;
 
             appState.theme = this.themeStyle;
 
-            /**
-             * use widths and offsets of current view, since stored appState has the state from
-             * previous edit. using the stored state would lead to pointer mismatch.
-             */
             const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
             appState.width = boundingClientRect.width;
             appState.height = boundingClientRect.height;
@@ -284,10 +283,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          */
         const files = this.excalidrawRef.current.getFiles();
 
-        /**
-         * parallel svg export to combat bitrot and enable rendering image for note inclusion,
-         *  preview, and share.
-         */
+        // parallel svg export to combat bitrot and enable rendering image for note inclusion, preview, and share
         const svg = await window.ExcalidrawLib.exportToSvg({
             elements,
             appState,
@@ -302,14 +298,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             if (element.fileId) {
                 activeFiles[element.fileId] = files[element.fileId];
             }
-        })
+        });
 
         const content = {
             type: "excalidraw",
             version: 2,
             elements,
-            appState,
-            files: activeFiles
+            files: activeFiles,
+            appState: {
+                scrollX: appState.scrollX,
+                scrollY: appState.scrollY,
+                zoom: appState.zoom
+            }
         };
 
         const attachments = [
@@ -339,7 +339,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         return {
             content: JSON.stringify(content),
-            attachments: attachments
+            attachments
         };
     }
 
@@ -458,6 +458,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     handleKeyboardGlobally: false,
                     autoFocus: false,
                     onLinkOpen,
+                    UIOptions: {
+                        saveToActiveFile: false,
+                        saveAsImage: false
+                    }
                 })
             )
         );
