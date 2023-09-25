@@ -45,6 +45,7 @@ module.exports = [
     { type: 'label', name: 'sortNatural' },
     { type: 'label', name: 'sortLocale' },
     { type: 'label', name: 'top' },
+    { type: 'label', name: 'bottom' },
     { type: 'label', name: 'fullContentWidth' },
     { type: 'label', name: 'shareHiddenFromTree' },
     { type: 'label', name: 'shareAlias' },
