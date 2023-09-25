@@ -11,7 +11,10 @@ span.fancytree-node.fancytree-hide {
 }
 
 .fancytree-title {
-    flex: auto;
+    flex-basis: 0; /* to allow shrinking text to make space for buttons */
+    flex-shrink: 1;
+    flex-grow: 1;
+    overflow: hidden;
     margin-left: 7px;
     outline: none;
     position: relative;
