@@ -43,6 +43,27 @@
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
+
+    /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
+    getJsonContent() {
+        if (!this.content || !this.content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(this.content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
+    }
 }
 </code></pre>
         </article>
@@ -54,7 +75,7 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BasicWidget.html">BasicWidget</a></li><li><a href="FAttachment.html">FAttachment</a></li><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteContextAwareWidget.html">NoteContextAwareWidget</a></li><li><a href="RightPanelWidget.html">RightPanelWidget</a></li></ul><h3>Global</h3><ul><li><a href="global.html#api">api</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BasicWidget.html">BasicWidget</a></li><li><a href="FAttachment.html">FAttachment</a></li><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteContextAwareWidget.html">NoteContextAwareWidget</a></li><li><a href="RightPanelWidget.html">RightPanelWidget</a></li></ul><h3>Global</h3><ul><li><a href="global.html#api">api</a></li><li><a href="global.html#getJsonContent">getJsonContent</a></li><li><a href="global.html#getJsonContentSafely">getJsonContentSafely</a></li></ul>
 </nav>
 
 <br class="clear">
