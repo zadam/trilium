@@ -44,7 +44,8 @@ function renderIndex(result) {
     const rootNote = shaca.getNote(shareRoot.SHARE_ROOT_NOTE_ID);
 
     for (const childNote of rootNote.getChildNotes()) {
-        result.content += `<li><a class="${childNote.type}" href="./${childNote.shareId}">${childNote.escapedTitle}</a></li>`;
+        const href = childNote.getLabelValue("shareExternal") ?? `./${childNote.shareId}`;
+        result.content += `<li><a class="${childNote.type}" href="${href}">${childNote.escapedTitle}</a></li>`;
     }
 
     result.content += '</ul>';
@@ -84,7 +85,8 @@ function renderText(result, note) {
                 const noteId = notePathSegments[notePathSegments.length - 1];
                 const linkedNote = shaca.getNote(noteId);
                 if (linkedNote) {
-                    linkEl.setAttribute("href", linkedNote.shareId);
+                    const href = linkedNote.getLabelValue("shareExternal") ?? `./${linkedNote.shareId}`;
+                    linkEl.setAttribute("href", href);
                     linkEl.classList.add(`type-${linkedNote.type}`);
                 } else {
                     linkEl.removeAttribute("href");

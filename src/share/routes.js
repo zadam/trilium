@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const safeCompare = require('safe-compare');
+const ejs = require("ejs");
 
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
@@ -8,6 +9,9 @@ const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
 const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
+const searchService = require("../services/search/services/search");
+const SearchContext = require("../services/search/search_context");
+const log = require("../services/log");
 
 /**
  * @param {SNote} note
@@ -128,18 +132,42 @@ function register(router) {
         }
 
         const {header, content, isEmpty} = contentRenderer.getContent(note);
-
         const subRoot = getSharedSubTreeRoot(note);
+        const opts = {note, header, content, isEmpty, subRoot, assetPath, appPath};
+        let useDefaultView = true;
 
-        res.render("share/page", {
-            note,
-            header,
-            content,
-            isEmpty,
-            subRoot,
-            assetPath,
-            appPath
-        });
+        // Check if the user has their own template
+        if (note.hasRelation('shareTemplate')) {
+            // Get the template note and content
+            const templateId = note.getRelation('shareTemplate').value;
+            const templateNote = shaca.getNote(templateId);
+
+            // Make sure the note type is correct
+            if (templateNote.type === 'code' && templateNote.mime === 'application/x-ejs') {
+
+                // EJS caches the result of this so we don't need to pre-cache
+                const includer = (path) => {
+                    const childNote = templateNote.children.find(n => path === n.title);
+                    if (!childNote) return null;
+                    if (childNote.type !== 'code' || childNote.mime !== 'application/x-ejs') return null;
+                    return { template: childNote.getContent() };
+                };
+
+                // Try to render user's template, w/ fallback to default view
+                try {
+                    const ejsResult = ejs.render(templateNote.getContent(), opts, {includer});
+                    res.send(ejsResult);
+                    useDefaultView = false; // Rendering went okay, don't use default view
+                }
+                catch (e) {
+                    log.error(`Rendering user provided share template (${templateId}) threw exception ${e.message} with stacktrace: ${e.stack}`);
+                }
+            }
+        }
+
+        if (useDefaultView) {
+            res.render('share/page', opts);
+        }
     }
 
     router.get('/share/', (req, res, next) => {
@@ -302,6 +330,37 @@ function register(router) {
         res.setHeader('Content-Type', note.mime);
 
         res.send(note.getContent());
+    });
+
+    // Used for searching, require noteId so we know the subTreeRoot
+    router.get('/share/api/search/:noteId', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
+        let note;
+
+        if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
+            return;
+        }
+
+        const {query} = req.query;
+
+        if (!query?.trim()) {
+            return res.status(400).json({ message: "'query' parameter is mandatory." });
+        }
+
+        const subRootPath = getSharedSubTreeRoot(note);
+        const subRoot = subRootPath.note;
+        const searchContext = new SearchContext({ancestorNoteId: subRoot.noteId});
+        const searchResults = searchService.findResultsWithQuery(query, searchContext);
+        const filteredResults = searchResults.map(sr => {
+            const fullNote = shaca.notes[sr.noteId];
+            const startIndex = sr.notePathArray.indexOf(subRoot.noteId);
+            const localPathArray = sr.notePathArray.slice(startIndex + 1);
+            const pathTitle = localPathArray.map(id => shaca.notes[id].title).join(" / ");
+            return { id: fullNote.noteId, title: fullNote.title, score: sr.score, path: pathTitle };
+        });
+
+        res.json({ results: filteredResults });
     });
 }
 
