@@ -18,29 +18,9 @@ let becca = null;
 class AbstractBeccaEntity {
     /** @protected */
     beforeSaving() {
-        this.generateIdIfNecessary();
-    }
-
-    /** @protected */
-    generateIdIfNecessary() {
         if (!this[this.constructor.primaryKeyName]) {
             this[this.constructor.primaryKeyName] = utils.newEntityId();
         }
-    }
-
-    /** @protected */
-    generateHash(isDeleted = false) {
-        let contentToHash = "";
-
-        for (const propertyName of this.constructor.hashedProperties) {
-            contentToHash += `|${this[propertyName]}`;
-        }
-
-        if (isDeleted) {
-            contentToHash += "|deleted";
-        }
-
-        return utils.hash(contentToHash).substr(0, 10);
     }
 
     /** @protected */
@@ -61,7 +41,7 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    putEntityChange(isDeleted = false) {
+    putEntityChange(isDeleted) {
         entityChangesService.putEntityChange({
             entityName: this.constructor.entityName,
             entityId: this[this.constructor.primaryKeyName],
@@ -72,9 +52,35 @@ class AbstractBeccaEntity {
         });
     }
 
+    /**
+     * @protected
+     * @returns {string}
+     */
+    generateHash(isDeleted) {
+        let contentToHash = "";
+
+        for (const propertyName of this.constructor.hashedProperties) {
+            contentToHash += `|${this[propertyName]}`;
+        }
+
+        if (isDeleted) {
+            contentToHash += "|deleted";
+        }
+
+        return utils.hash(contentToHash).substr(0, 10);
+    }
+
     /** @protected */
     getPojoToSave() {
         return this.getPojo();
+    }
+
+    /**
+     * @protected
+     * @abstract
+     */
+    getPojo() {
+        throw new Error(`Unimplemented getPojo() for entity '${this.constructor.name}'`)
     }
 
     /**
@@ -88,9 +94,7 @@ class AbstractBeccaEntity {
 
         const isNewEntity = !this[primaryKeyName];
 
-        if (this.beforeSaving) {
-            this.beforeSaving(opts);
-        }
+        this.beforeSaving(opts);
 
         const pojo = this.getPojoToSave();
 
@@ -101,7 +105,7 @@ class AbstractBeccaEntity {
                 return;
             }
 
-            this.putEntityChange(false);
+            this.putEntityChange(!!this.isDeleted);
 
             if (!cls.isEntityEventsDisabled()) {
                 const eventPayload = {

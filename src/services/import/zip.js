@@ -456,7 +456,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 position: attachmentMeta.position
             });
 
-            attachment.setContent(content);
+            attachment.setContent(content, { forceSave: true });
             return;
         }
 
