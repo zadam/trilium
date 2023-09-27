@@ -218,7 +218,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     },
 
     indent: function(state, textAfter) {
-      if (state.tokenize != tokenBase && state.tokenize != null || state.typeAtEndOfLine) return CodeMirror.Pass;
+      if (state.tokenize != tokenBase && state.tokenize != null || state.typeAtEndOfLine && isTopScope(state.context))
+        return CodeMirror.Pass;
       var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
       var closing = firstChar == ctx.type;
       if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
@@ -512,8 +513,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     name: "clike",
     keywords: words("abstract as async await base break case catch checked class const continue" +
                     " default delegate do else enum event explicit extern finally fixed for" +
-                    " foreach goto if implicit in interface internal is lock namespace new" +
-                    " operator out override params private protected public readonly ref return sealed" +
+                    " foreach goto if implicit in init interface internal is lock namespace new" +
+                    " operator out override params private protected public readonly record ref required return sealed" +
                     " sizeof stackalloc static struct switch this throw try typeof unchecked" +
                     " unsafe using virtual void volatile while add alias ascending descending dynamic from get" +
                     " global group into join let orderby partial remove select set value var yield"),
@@ -522,7 +523,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
                  " UInt64 bool byte char decimal double short int long object"  +
                  " sbyte float string ushort uint ulong"),
     blockKeywords: words("catch class do else finally for foreach if struct switch try while"),
-    defKeywords: words("class interface namespace struct var"),
+    defKeywords: words("class interface namespace record struct var"),
     typeFirstDefinitions: true,
     atoms: words("true false null"),
     hooks: {
@@ -613,6 +614,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         return state.tokenize(stream, state);
       },
       "'": function(stream) {
+        if (stream.match(/^(\\[^'\s]+|[^\\'])'/)) return "string-2"
         stream.eatWhile(/[\w\$_\xa1-\uffff]/);
         return "atom";
       },

@@ -24,7 +24,7 @@ CodeMirror.defineSimpleMode("nsis",{
     { regex: /`(?:[^\\`]|\\.)*`?/, token: "string" },
 
     // Compile Time Commands
-    {regex: /^\s*(?:\!(addincludedir|addplugindir|appendfile|cd|define|delfile|echo|error|execute|finalize|getdllversion|gettlbversion|include|insertmacro|macro|macroend|makensis|packhdr|pragma|searchparse|searchreplace|system|tempfile|undef|uninstfinalize|verbose|warning))\b/i, token: "keyword"},
+    {regex: /^\s*(?:\!(addincludedir|addplugindir|appendfile|assert|cd|define|delfile|echo|error|execute|finalize|getdllversion|gettlbversion|include|insertmacro|macro|macroend|makensis|packhdr|pragma|searchparse|searchreplace|system|tempfile|undef|uninstfinalize|verbose|warning))\b/i, token: "keyword"},
 
     // Conditional Compilation
     {regex: /^\s*(?:\!(if(?:n?def)?|ifmacron?def|macro))\b/i, token: "keyword", indent: true},
