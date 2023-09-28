@@ -63,10 +63,10 @@ function load() {
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
-function reload() {
+function reload(reason) {
     load();
 
-    require('../services/ws').reloadFrontend();
+    require('../services/ws').reloadFrontend(reason || "becca reloaded");
 }
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
