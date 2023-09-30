@@ -44,8 +44,10 @@ function renderIndex(result) {
     const rootNote = shaca.getNote(shareRoot.SHARE_ROOT_NOTE_ID);
 
     for (const childNote of rootNote.getChildNotes()) {
-        const href = childNote.getLabelValue("shareExternal") ?? `./${childNote.shareId}`;
-        result.content += `<li><a class="${childNote.type}" href="${href}">${childNote.escapedTitle}</a></li>`;
+        const isExternalLink = childNote.hasLabel("shareExternalLink");
+        const href = isExternalLink ? childNote.getLabelValue("shareExternalLink") : `./${childNote.shareId}`;
+        const target = isExternalLink ? `target="_blank" rel="noopener noreferrer"` : "";
+        result.content += `<li><a class="${childNote.type}" href="${href}" ${target}>${childNote.escapedTitle}</a></li>`;
     }
 
     result.content += '</ul>';
@@ -85,8 +87,13 @@ function renderText(result, note) {
                 const noteId = notePathSegments[notePathSegments.length - 1];
                 const linkedNote = shaca.getNote(noteId);
                 if (linkedNote) {
-                    const href = linkedNote.getLabelValue("shareExternal") ?? `./${linkedNote.shareId}`;
+                    const isExternalLink = linkedNote.hasLabel("shareExternalLink");
+                    const href = isExternalLink ? linkedNote.getLabelValue("shareExternalLink") : `./${linkedNote.shareId}`;
                     linkEl.setAttribute("href", href);
+                    if (isExternalLink) {
+                        linkEl.setAttribute("target", "_blank");
+                        linkEl.setAttribute("rel", "noopener noreferrer");
+                    }
                     linkEl.classList.add(`type-${linkedNote.type}`);
                 } else {
                     linkEl.removeAttribute("href");
