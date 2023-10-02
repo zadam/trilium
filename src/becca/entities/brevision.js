@@ -87,6 +87,29 @@ class BRevision extends AbstractBeccaEntity {
     }
 
     /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
+    getJsonContent() {
+        const content = this.getContent();
+
+        if (!content || !content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
+    /**
      * @param content
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BRevision entity
@@ -103,6 +126,45 @@ class BRevision extends AbstractBeccaEntity {
                 WHERE ownerId = ? 
                   AND isDeleted = 0`, [this.revisionId])
             .map(row => new BAttachment(row));
+    }
+
+    /** @returns {BAttachment|null} */
+    getAttachmentById(attachmentId, opts = {}) {
+        opts.includeContentLength = !!opts.includeContentLength;
+
+        const query = opts.includeContentLength
+            ? `SELECT attachments.*, LENGTH(blobs.content) AS contentLength
+               FROM attachments 
+               JOIN blobs USING (blobId) 
+               WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`
+            : `SELECT * FROM attachments WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`;
+
+        return sql.getRows(query, [this.revisionId, attachmentId])
+            .map(row => new BAttachment(row))[0];
+    }
+
+    /** @returns {BAttachment[]} */
+    getAttachmentsByRole(role) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE ownerId = ? 
+                  AND role = ?
+                  AND isDeleted = 0
+                ORDER BY position`, [this.revisionId, role])
+            .map(row => new BAttachment(row));
+    }
+
+    /** @returns {BAttachment} */
+    getAttachmentByTitle(title) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE ownerId = ? 
+                  AND title = ?
+                  AND isDeleted = 0
+                ORDER BY position`, [this.revisionId, title])
+            .map(row => new BAttachment(row))[0];
     }
 
     beforeSaving() {
