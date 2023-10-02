@@ -56,9 +56,9 @@ class OrderByAndLimitExp extends Expression {
                 if (!valA && !valB) {
                     // the attribute value is empty/zero in both notes so continue to the next order definition
                     continue;
-                } else if (!valB || valA < valB) {
+                } else if (valA < valB) {
                     return smaller;
-                } else if (!valA || valA > valB) {
+                } else if (valA > valB) {
                     return larger;
                 }
                 // else the values are equal and continue to next order definition

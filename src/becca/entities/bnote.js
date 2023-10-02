@@ -132,11 +132,17 @@ class BNote extends AbstractBeccaEntity {
          */
         this.contentSize = null;
         /**
-         * size of the content and note revision contents in bytes
+         * size of the note content, attachment contents in bytes
          * @type {int|null}
          * @private
          */
-        this.noteSize = null;
+        this.contentAndAttachmentsSize = null;
+        /**
+         * size of the note content, attachment contents and revision contents in bytes
+         * @type {int|null}
+         * @private
+         */
+        this.contentAndAttachmentsAndRevisionsSize = null;
         /**
          * number of note revisions for this note
          * @type {int|null}

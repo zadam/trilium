@@ -92,47 +92,86 @@ function searchFromRelation(note, relationName) {
 function loadNeededInfoFromDatabase() {
     const sql = require('../../sql');
 
-    for (const noteId in becca.notes) {
-        becca.notes[noteId].contentSize = 0;
-        becca.notes[noteId].noteSize = 0;
-        becca.notes[noteId].revisionCount = 0;
-    }
+    const noteBlobs = {};
 
     const noteContentLengths = sql.getRows(`
         SELECT 
             noteId, 
+            blobId,
             LENGTH(content) AS length 
         FROM notes
              JOIN blobs USING(blobId) 
         WHERE notes.isDeleted = 0`);
 
-    for (const {noteId, length} of noteContentLengths) {
+    for (const {noteId, blobId, length} of noteContentLengths) {
         if (!(noteId in becca.notes)) {
-            log.error(`Note ${noteId} not found in becca.`);
+            log.error(`Note '${noteId}' not found in becca.`);
             continue;
         }
 
         becca.notes[noteId].contentSize = length;
-        becca.notes[noteId].noteSize = length;
+        becca.notes[noteId].revisionCount = 0;
+
+        noteBlobs[noteId] = { [blobId]: length };
+    }
+
+    const attachmentContentLengths = sql.getRows(`
+        SELECT
+            ownerId AS noteId,
+            attachments.blobId,
+            LENGTH(content) AS length
+        FROM attachments
+            JOIN notes ON attachments.ownerId = notes.noteId
+            JOIN blobs ON attachments.blobId = blobs.blobId
+        WHERE attachments.isDeleted = 0 
+            AND notes.isDeleted = 0`);
+
+    for (const {noteId, blobId, length} of attachmentContentLengths) {
+        if (!(noteId in becca.notes)) {
+            log.error(`Note '${noteId}' not found in becca.`);
+            continue;
+        }
+
+        if (!(noteId in noteBlobs)) {
+            log.error(`Did not find a '${noteId}' in the noteBlobs.`);
+            continue;
+        }
+
+        noteBlobs[noteId][blobId] = length;
+    }
+
+    for (const noteId in noteBlobs) {
+        becca.notes[noteId].contentAndAttachmentsSize = Object.values(noteBlobs[noteId]).reduce((acc, size) => acc + size, 0);
     }
 
     const revisionContentLengths = sql.getRows(`
         SELECT 
             noteId, 
+            revisions.blobId,
             LENGTH(content) AS length 
         FROM notes
-             JOIN revisions USING(noteId) 
-             JOIN blobs USING(blobId) 
+            JOIN revisions USING(noteId) 
+            JOIN blobs ON revisions.blobId = blobs.blobId
         WHERE notes.isDeleted = 0`);
 
-    for (const {noteId, length} of revisionContentLengths) {
+    for (const {noteId, blobId, length} of revisionContentLengths) {
         if (!(noteId in becca.notes)) {
-            log.error(`Note ${noteId} not found in becca.`);
+            log.error(`Note '${noteId}' not found in becca.`);
             continue;
         }
 
-        becca.notes[noteId].noteSize += length;
+        if (!(noteId in noteBlobs)) {
+            log.error(`Did not find a '${noteId}' in the noteBlobs.`);
+            continue;
+        }
+
+        noteBlobs[noteId][blobId] = length;
+
         becca.notes[noteId].revisionCount++;
+    }
+
+    for (const noteId in noteBlobs) {
+        becca.notes[noteId].contentAndAttachmentsAndRevisionsSize = Object.values(noteBlobs[noteId]).reduce((acc, size) => acc + size, 0);
     }
 }
 
