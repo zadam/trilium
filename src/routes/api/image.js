@@ -37,8 +37,6 @@ function returnImageInt(image, res) {
         let svgString = '<svg/>'
         const attachment = image.getAttachmentByTitle('canvas-export.svg');
 
-        console.log(attachment);
-
         if (attachment) {
             svgString = attachment.getContent();
         } else {
