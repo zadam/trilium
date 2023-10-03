@@ -327,6 +327,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         content = content.replace(/<\/body>.*<\/html>/gis, "");
 
         content = content.replace(/src="([^"]*)"/g, (match, url) => {
+            if (url.startsWith("data:image")) {
+                // inline images are parsed and saved into attachments in the note service
+                return match;
+            }
+
             try {
                 url = decodeURIComponent(url).trim();
             } catch (e) {
