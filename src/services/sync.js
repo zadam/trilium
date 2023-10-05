@@ -151,9 +151,14 @@ async function pullChanges(syncContext) {
         if (entityChanges.length === 0) {
             break;
         } else {
-            const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
+            try { // https://github.com/zadam/trilium/issues/4310
+                const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
 
-            log.info(`Sync ${logMarkerId}: Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
+                log.info(`Sync ${logMarkerId}: Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
+            }
+            catch (e) {
+                log.error(`Error occurred ${e.message} ${e.stack}`);
+            }
         }
     }
 
