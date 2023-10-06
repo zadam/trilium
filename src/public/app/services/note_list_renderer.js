@@ -252,11 +252,15 @@ class NoteListRenderer {
             if (pageCount < 20 || i <= 5 || pageCount - i <= 5 || Math.abs(this.page - i) <= 2) {
                 lastPrinted = true;
 
+                const startIndex = (i - 1) * this.pageSize + 1;
+                const endIndex = Math.min(this.noteIds.length, i * this.pageSize);
+
                 $pager.append(
                     i === this.page
                         ? $('<span>').text(i).css('text-decoration', 'underline').css('font-weight', "bold")
                         : $('<a href="javascript:">')
                             .text(i)
+                            .attr("title", `Page of ${startIndex} - ${endIndex}`)
                             .on('click', () => {
                                 this.page = i;
                                 this.renderList();
@@ -270,6 +274,9 @@ class NoteListRenderer {
                 lastPrinted = false;
             }
         }
+
+        // no need to distinguish "note" vs "notes" since in case of one result, there's no paging at all
+        $pager.append(`<span class="note-list-pager-total-count">(${this.noteIds.length} notes)</span>`);
     }
 
     async renderNote(note, expand = false) {
