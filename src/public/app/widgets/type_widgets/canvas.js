@@ -209,7 +209,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 };
             }
 
-            const {elements, files, appState} = content;
+            const {elements, files, appState = {}} = content;
 
             appState.theme = this.themeStyle;
 
