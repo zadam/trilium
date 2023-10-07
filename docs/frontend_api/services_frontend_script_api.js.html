@@ -70,18 +70,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.$container = $container;
 
     /**
-     * Note where the script started executing
+     * Note where the script started executing, i.e., the (event) entrypoint of the current script execution.
      * @type {FNote}
      */
     this.startNote = startNote;
 
     /**
-     * Note where the script is currently executing
+     * Note where the script is currently executing, i.e. the note where the currently executing source code is written.
      * @type {FNote}
      */
     this.currentNote = currentNote;
+
     /**
-     * Entity whose event triggered this execution
+     * Entity whose event triggered this execution.
      * @type {object|null}
      */
     this.originEntity = originEntity;
