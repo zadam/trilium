@@ -779,7 +779,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "async" ||
         (type == "variable" &&
          (value == "static" || value == "get" || value == "set" || (isTS && isModifier(value))) &&
-         cx.stream.match(/^\s+[\w$\xa1-\uffff]/, false))) {
+         cx.stream.match(/^\s+#?[\w$\xa1-\uffff]/, false))) {
       cx.marked = "keyword";
       return cont(classBody);
     }

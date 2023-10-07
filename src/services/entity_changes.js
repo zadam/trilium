@@ -148,12 +148,13 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                 const entity = becca.getEntity(entityName, entityId);
 
                 if (entity) {
-                    ec.hash = entity.generateHash() || "|deleted";
+                    ec.hash = entity.generateHash();
                     ec.utcDateChanged = entity.getUtcDateChanged() || dateUtils.utcNowDateTime();
                     ec.isSynced = entityName !== 'options' || !!entity.isSynced;
                 } else {
                     // entity might be null (not present in becca) when it's deleted
-                    // FIXME: hacky, not sure if it might cause some problems
+                    // this will produce different hash value than when entity is being deleted since then
+                    // all normal hashed attributes are being used. Sync should recover from that, though.
                     ec.hash = "deleted";
                     ec.utcDateChanged = dateUtils.utcNowDateTime();
                     ec.isSynced = true; // deletable (the ones with isDeleted) entities are synced

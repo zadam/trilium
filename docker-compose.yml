@@ -1,3 +1,5 @@
+# Running `docker-compose up` will create/use the "trilium-data" directory in the user home
+# Run `TRILIUM_DATA_DIR=/path/of/your/choice docker-compose up` to set a different directory
 version: '2.1'
 services:
   trilium:
@@ -8,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - trilium:/home/node/trilium-data
+      - ${TRILIUM_DATA_DIR:-~/trilium-data}:/home/node/trilium-data
 
 volumes:
   trilium:

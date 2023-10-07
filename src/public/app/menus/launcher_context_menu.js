@@ -32,8 +32,8 @@ export default class LauncherContextMenu {
         const isVisibleItem = parentNoteId === '_lbVisibleLaunchers';
         const isAvailableItem = parentNoteId === '_lbAvailableLaunchers';
         const isItem = isVisibleItem || isAvailableItem;
-        const canBeDeleted = !note.isLaunchBarConfig();
-        const canBeReset = note.isLaunchBarConfig();
+        const canBeDeleted = !note.noteId.startsWith("_"); // fixed notes can't be deleted
+        const canBeReset = !canBeDeleted && note.isLaunchBarConfig();;
 
         return [
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add a note launcher', command: 'addNoteLauncher', uiIcon: "bx bx-plus" } : null,

@@ -127,7 +127,8 @@ paths:
             - targetRelationCount
             - targetRelationCountIncludingLinks
             - contentSize
-            - noteSize
+            - contentAndAttachmentsSize
+            - contentAndAttachmentsAndRevisionsSize
             - revisionCount
         - name: orderDirection
           in: query

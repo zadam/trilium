@@ -60,7 +60,7 @@ function checkProtectedSessionExpiration() {
 
         log.info("Expiring protected session");
 
-        require('./ws').reloadFrontend();
+        require('./ws').reloadFrontend("leaving protected session");
     }
 }
 

@@ -8259,8 +8259,8 @@
   }
 
   function disableBrowserMagic(field, spellcheck, autocorrect, autocapitalize) {
-    field.setAttribute("autocorrect", autocorrect ? "" : "off");
-    field.setAttribute("autocapitalize", autocapitalize ? "" : "off");
+    field.setAttribute("autocorrect", autocorrect ? "on" : "off");
+    field.setAttribute("autocapitalize", autocapitalize ? "on" : "off");
     field.setAttribute("spellcheck", !!spellcheck);
   }
 
@@ -8275,7 +8275,6 @@
     else { te.setAttribute("wrap", "off"); }
     // If border: 0; -- iOS fails to open keyboard (issue #1287)
     if (ios) { te.style.border = "1px solid black"; }
-    disableBrowserMagic(te);
     return div
   }
 
@@ -8897,6 +8896,7 @@
       }
       // Old-fashioned briefly-focus-a-textarea hack
       var kludge = hiddenTextarea(), te = kludge.firstChild;
+      disableBrowserMagic(te);
       cm.display.lineSpace.insertBefore(kludge, cm.display.lineSpace.firstChild);
       te.value = lastCopied.text.join("\n");
       var hadFocus = activeElt(div.ownerDocument);
@@ -9461,6 +9461,8 @@
     // The semihidden textarea that is focused when the editor is
     // focused, and receives input.
     this.textarea = this.wrapper.firstChild;
+    var opts = this.cm.options;
+    disableBrowserMagic(this.textarea, opts.spellcheck, opts.autocorrect, opts.autocapitalize);
   };
 
   TextareaInput.prototype.screenReaderLabelChanged = function (label) {
@@ -9865,7 +9867,7 @@
 
   addLegacyProps(CodeMirror);
 
-  CodeMirror.version = "5.65.9";
+  CodeMirror.version = "5.65.15";
 
   return CodeMirror;
 

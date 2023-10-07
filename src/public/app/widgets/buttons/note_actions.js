@@ -45,6 +45,7 @@ const TPL = `
         <a class="dropdown-item export-note-button">Export note</a>
         <a class="dropdown-item delete-note-button">Delete note</a>
         <a data-trigger-command="printActiveNote" class="dropdown-item print-active-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
+        <a data-trigger-command="forceSaveRevision" class="dropdown-item save-revision-button"><kbd data-command="forceSaveRevision"></kbd> Save revision</a>
     </div>
 </div>`;
 
