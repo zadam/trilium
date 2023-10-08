@@ -22,6 +22,7 @@ import GlobalMenuWidget from "../widgets/buttons/global_menu.js";
 import LauncherContainer from "../widgets/containers/launcher_container.js";
 import RootContainer from "../widgets/containers/root_container.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
+import PromotedAttributesWidget from "../widgets/ribbon_widgets/promoted_attributes.js";
 
 const MOBILE_CSS = `
 <style>
@@ -154,6 +155,7 @@ export default class MobileLayout {
                         .child(new HideFloatingButtonsButton())
                     )
                     .child(new MermaidWidget())
+                    .child(new PromotedAttributesWidget())
                     .child(
                         new ScrollingContainer()
                             .filling()
