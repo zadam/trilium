@@ -208,6 +208,7 @@ class Becca {
         return this.etapiTokens[etapiTokenId];
     }
 
+    /** @returns {AbstractBeccaEntity|null} */
     getEntity(entityName, entityId) {
         if (!entityName || !entityId) {
             return null;

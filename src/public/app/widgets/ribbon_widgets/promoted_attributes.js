@@ -5,6 +5,7 @@ import noteAutocompleteService from "../../services/note_autocomplete.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import attributeService from "../../services/attributes.js";
 import options from "../../services/options.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div>
@@ -37,9 +38,13 @@ const TPL = `
     </style>
     
     <div class="promoted-attributes-container"></div>
-</div>
-`;
+</div>`;
 
+/**
+ * This widget is quite special because it's used in the desktop ribbon, but in mobile outside of ribbon.
+ * This works without many issues (apart from autocomplete), but it should be kept in mind when changing things
+ * and testing.
+ */
 export default class PromotedAttributesWidget extends NoteContextAwareWidget {
     get name() {
         return "promotedAttributes";
@@ -147,34 +152,37 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             if (definition.labelType === 'text') {
                 $input.prop("type", "text");
 
-                // no need to await for this, can be done asynchronously
-                server.get(`attribute-values/${encodeURIComponent(valueAttr.name)}`).then(attributeValues => {
-                    if (attributeValues.length === 0) {
-                        return;
-                    }
-
-                    attributeValues = attributeValues.map(attribute => ({value: attribute}));
-
-                    $input.autocomplete({
-                        appendTo: document.querySelector('body'),
-                        hint: false,
-                        autoselect: false,
-                        openOnFocus: true,
-                        minLength: 0,
-                        tabAutocomplete: false
-                    }, [{
-                        displayKey: 'value',
-                        source: function (term, cb) {
-                            term = term.toLowerCase();
-
-                            const filtered = attributeValues.filter(attr => attr.value.toLowerCase().includes(term));
-
-                            cb(filtered);
+                // autocomplete for label values is just nice to have, mobile can keep labels editable without autocomplete
+                if (utils.isDesktop()) {
+                    // no need to await for this, can be done asynchronously
+                    server.get(`attribute-values/${encodeURIComponent(valueAttr.name)}`).then(attributeValues => {
+                        if (attributeValues.length === 0) {
+                            return;
                         }
-                    }]);
 
-                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e));
-                });
+                        attributeValues = attributeValues.map(attribute => ({value: attribute}));
+
+                        $input.autocomplete({
+                            appendTo: document.querySelector('body'),
+                            hint: false,
+                            autoselect: false,
+                            openOnFocus: true,
+                            minLength: 0,
+                            tabAutocomplete: false
+                        }, [{
+                            displayKey: 'value',
+                            source: function (term, cb) {
+                                term = term.toLowerCase();
+
+                                const filtered = attributeValues.filter(attr => attr.value.toLowerCase().includes(term));
+
+                                cb(filtered);
+                            }
+                        }]);
+
+                        $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e));
+                    });
+                }
             }
             else if (definition.labelType === 'number') {
                 $input.prop("type", "number");
@@ -219,7 +227,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                     .append($openButton));
             }
             else {
-                ws.logError(`Unknown labelType=${definitionAttr.labelType}`);
+                ws.logError(`Unknown labelType '${definitionAttr.labelType}'`);
             }
         }
         else if (valueAttr.type === 'relation') {
@@ -227,17 +235,22 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                 $input.val(await treeService.getNoteTitle(valueAttr.value));
             }
 
-            // no need to wait for this
-            noteAutocompleteService.initNoteAutocomplete($input, {allowCreatingNotes: true});
+            if (utils.isDesktop()) {
+                // no need to wait for this
+                noteAutocompleteService.initNoteAutocomplete($input, {allowCreatingNotes: true});
 
-            $input.on('autocomplete:noteselected', (event, suggestion, dataset) => {
-                this.promotedAttributeChanged(event);
-            });
+                $input.on('autocomplete:noteselected', (event, suggestion, dataset) => {
+                    this.promotedAttributeChanged(event);
+                });
 
-            $input.setSelectedNotePath(valueAttr.value);
+                $input.setSelectedNotePath(valueAttr.value);
+            } else {
+                // we can't provide user a way to edit the relation so make it read only
+                $input.attr("readonly", "readonly");
+            }
         }
         else {
-            ws.logError(`Unknown attribute type=${valueAttr.type}`);
+            ws.logError(`Unknown attribute type '${valueAttr.type}'`);
             return;
         }
 

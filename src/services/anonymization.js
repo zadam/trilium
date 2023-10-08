@@ -7,8 +7,9 @@ const sql = require("./sql");
 
 function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
-// on the other hand builtin/system attrs should not contain any sensitive info
+    // on the other hand builtin/system attrs should not contain any sensitive info
     const builtinAttrNames = BUILTIN_ATTRIBUTES
+        .filter(attr => !["shareCredentials", "shareAlias"].includes(attr.name))
         .map(attr => `'${attr.name}'`).join(', ');
 
     const anonymizeScript = `

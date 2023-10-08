@@ -5,14 +5,27 @@ const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
-function returnImage(req, res) {
+function returnImageFromNote(req, res) {
     const image = becca.getNote(req.params.noteId);
 
+    return returnImageInt(image, res);
+}
+
+function returnImageFromRevision(req, res) {
+    const image = becca.getRevision(req.params.revisionId);
+
+    return returnImageInt(image, res);
+}
+
+/**
+ * @param {BNote|BRevision} image
+ * @param res
+ */
+function returnImageInt(image, res) {
     if (!image) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
-    }
-    else if (!["image", "canvas"].includes(image.type)){
+    } else if (!["image", "canvas"].includes(image.type)) {
         return res.sendStatus(400);
     }
 
@@ -84,7 +97,8 @@ function updateImage(req) {
 }
 
 module.exports = {
-    returnImage,
+    returnImageFromNote,
+    returnImageFromRevision,
     returnAttachedImage,
     updateImage
 };

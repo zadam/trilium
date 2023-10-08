@@ -181,6 +181,8 @@ function register(app) {
     apiRoute(GET, '/api/revisions/:revisionId/blob', revisionsApiRoute.getRevisionBlob);
     apiRoute(DEL, '/api/revisions/:revisionId', revisionsApiRoute.eraseRevision);
     apiRoute(PST, '/api/revisions/:revisionId/restore', revisionsApiRoute.restoreRevision);
+    route(GET, '/api/revisions/:revisionId/image/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImageFromRevision);
+
     route(GET, '/api/revisions/:revisionId/download', [auth.checkApiAuthOrElectron], revisionsApiRoute.downloadRevision);
 
 
@@ -200,7 +202,7 @@ function register(app) {
     apiRoute(GET, '/api/attribute-values/:attributeName', attributesRoute.getValuesForAttribute);
 
     // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
-    route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
+    route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImageFromNote);
     route(PUT, '/api/images/:noteId', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
 
     apiRoute(GET, '/api/options', optionsApiRoute.getOptions);

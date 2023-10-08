@@ -106,7 +106,7 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
         updateContext.updated[remoteEC.entityName] = updateContext.updated[remoteEC.entityName] || [];
         updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
 
-        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged) {
+        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged || localEC.hash !== remoteEC.hash) {
             entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
         }
 
