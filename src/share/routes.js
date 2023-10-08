@@ -333,31 +333,31 @@ function register(router) {
     });
 
     // Used for searching, require noteId so we know the subTreeRoot
-    router.get('/share/api/search/:noteId', (req, res, next) => {
+    router.get('/share/api/notes', (req, res, next) => {
         shacaLoader.ensureLoad();
 
+        const ancestorNoteId = req.query.ancestorNoteId ?? "_share";
         let note;
 
-        if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
+        // This will automatically return if no ancestorNoteId is provided and there is no shareIndex
+        if (!(note = checkNoteAccess(ancestorNoteId, req, res))) {
             return;
         }
 
-        const {query} = req.query;
+        const {search} = req.query;
 
-        if (!query?.trim()) {
-            return res.status(400).json({ message: "'query' parameter is mandatory." });
+        if (!search?.trim()) {
+            return res.status(400).json({ message: "'search' parameter is mandatory." });
         }
 
-        const subRootPath = getSharedSubTreeRoot(note);
-        const subRoot = subRootPath.note;
-        const searchContext = new SearchContext({ancestorNoteId: subRoot.noteId});
-        const searchResults = searchService.findResultsWithQuery(query, searchContext);
+        const searchContext = new SearchContext({ancestorNoteId: ancestorNoteId});
+        const searchResults = searchService.findResultsWithQuery(search, searchContext);
         const filteredResults = searchResults.map(sr => {
             const fullNote = shaca.notes[sr.noteId];
-            const startIndex = sr.notePathArray.indexOf(subRoot.noteId);
-            const localPathArray = sr.notePathArray.slice(startIndex + 1);
+            const startIndex = sr.notePathArray.indexOf(ancestorNoteId);
+            const localPathArray = sr.notePathArray.slice(startIndex + 1).filter(id => shaca.notes[id]);
             const pathTitle = localPathArray.map(id => shaca.notes[id].title).join(" / ");
-            return { id: fullNote.noteId, title: fullNote.title, score: sr.score, path: pathTitle };
+            return { id: fullNote.shareId, title: fullNote.title, score: sr.score, path: pathTitle };
         });
 
         res.json({ results: filteredResults });

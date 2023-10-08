@@ -32,7 +32,7 @@
     <%- header %>
     <title><%= note.title %></title>
 </head>
-<body data-note-id="<%= note.noteId %>" data-wtf="true">
+<body data-note-id="<%= note.noteId %>" data-ancestor-note-id="<%= subRoot.note.noteId %>">
 <div id="layout">
     <div id="main">
         <% if (note.parents[0].noteId !== '_share' && note.parents.length !== 0) { %>
