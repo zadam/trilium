@@ -1,5 +1,8 @@
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
-UPDATE notes SET title = 'title' WHERE title NOT IN ('root', '_hidden', '_share');
+UPDATE notes SET title = 'title'
+             WHERE noteId NOT IN ('root', '_hidden', '_share')
+               AND SUBSTR(noteId, 1, 8) != '_options'
+               AND SUBSTR(noteId, 1, 3) != '_lb';
 UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
 UPDATE revisions SET title = 'title';
 
