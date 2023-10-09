@@ -1,10 +1,15 @@
+<%
+const isExternalLink = note.hasLabel('shareExternalLink');
+const linkHref = isExternalLink ? note.getLabelValue('shareExternalLink') : `./${note.shareId}`;
+const target = isExternalLink ? ` target="_blank" rel="noopener noreferrer"` : '';
+%>
 <p>
     <% const titleWithPrefix = (branch.prefix ? `${branch.prefix} - ` : '') + note.title; %>
 
     <% if (activeNote.noteId === note.noteId) { %>
     <strong><%= titleWithPrefix %></strong>
     <% } else { %>
-    <a class="type-<%= note.type %>" href="./<%= note.shareId %>"><%= titleWithPrefix %></a>
+    <a class="type-<%= note.type %>" href="<%= linkHref %>"<%= target %>><%= titleWithPrefix %></a>
     <% } %>
 </p>
 
