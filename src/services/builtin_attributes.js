@@ -66,6 +66,7 @@ module.exports = [
     { type: 'label', name: 'executeDescription'},
     { type: 'label', name: 'newNotesOnTop'},
     { type: 'label', name: 'clipperInbox'},
+    { type: 'label', name: 'webViewSrc', isDangerous: true },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
