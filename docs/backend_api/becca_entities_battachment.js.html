@@ -48,8 +48,7 @@ const attachmentRoleToNoteTypeMapping = {
 class BAttachment extends AbstractBeccaEntity {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
-    static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId",
-                                            "utcDateScheduledForErasureSince", "utcDateModified"]; }
+    static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId", "utcDateScheduledForErasureSince"]; }
 
     constructor(row) {
         super();
