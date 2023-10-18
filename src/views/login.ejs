@@ -68,8 +68,6 @@
 
     // https://stackoverflow.com/a/73731646/944162
     function isMobile() {
-        if ('maxTouchPoints' in navigator) return navigator.maxTouchPoints > 0;
-
         const mQ = matchMedia?.('(pointer:coarse)');
         if (mQ?.media === '(pointer:coarse)') return !!mQ.matches;
 
