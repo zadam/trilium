@@ -68,43 +68,28 @@ function updateEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
 function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
     const localEC = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [remoteEC.entityName, remoteEC.entityId]);
 
-    if (!localEC?.isErased && remoteEC.isErased) {
-        eraseEntity(remoteEC, instanceId);
-        updateContext.erased++;
-
-        return true;
-    } else if (localEC?.isErased && !remoteEC.isErased) {
-        // on this side, we can't unerase the entity, so force the entity to be erased on the other side.
-        entityChangesService.putEntityChangeForOtherInstances(localEC);
-
-        return false;
-    } else if (localEC?.isErased && remoteEC.isErased) {
-        updateContext.alreadyErased++;
-        return false;
-    }
-
     if (!localEC || localEC.utcDateChanged <= remoteEC.utcDateChanged) {
-        if (!remoteEntityRow) {
-            throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
-        }
-
-        if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
-            // we always use a Buffer object which is different from normal saving - there we use a simple string type for
-            // "string notes". The problem is that in general, it's not possible to detect whether a blob content
-            // is string note or note (syncs can arrive out of order)
-            remoteEntityRow.content = Buffer.from(remoteEntityRow.content, 'base64');
-
-            if (remoteEntityRow.content.byteLength === 0) {
-                // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
-                // (possibly not a problem anymore with the newer better-sqlite3)
-                remoteEntityRow.content = "";
+        if (remoteEC.isErased) {
+            if (localEC?.isErased) {
+                eraseEntity(remoteEC); // make sure it's erased anyway
+                updateContext.alreadyErased++;
+                return false; // we won't save entitychange in this case
+            } else {
+                eraseEntity(remoteEC);
+                updateContext.erased++;
             }
+        } else {
+            if (!remoteEntityRow) {
+                throw new Error(`Empty entity row for: ${JSON.stringify(remoteEC)}`);
+            }
+
+            preProcessContent(remoteEC, remoteEntityRow);
+
+            sql.replace(remoteEC.entityName, remoteEntityRow);
+
+            updateContext.updated[remoteEC.entityName] = updateContext.updated[remoteEC.entityName] || [];
+            updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
         }
-
-        sql.replace(remoteEC.entityName, remoteEntityRow);
-
-        updateContext.updated[remoteEC.entityName] = updateContext.updated[remoteEC.entityName] || [];
-        updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
 
         if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged || localEC.hash !== remoteEC.hash) {
             entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
@@ -121,6 +106,21 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
     return false;
 }
 
+function preProcessContent(remoteEC, remoteEntityRow) {
+    if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
+        // we always use a Buffer object which is different from normal saving - there we use a simple string type for
+        // "string notes". The problem is that in general, it's not possible to detect whether a blob content
+        // is string note or note (syncs can arrive out of order)
+        remoteEntityRow.content = Buffer.from(remoteEntityRow.content, 'base64');
+
+        if (remoteEntityRow.content.byteLength === 0) {
+            // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
+            // (possibly not a problem anymore with the newer better-sqlite3)
+            remoteEntityRow.content = "";
+        }
+    }
+}
+
 function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
     if (!remoteEntityRow) {
         throw new Error(`Empty note_reordering body for: ${JSON.stringify(remoteEC)}`);
@@ -135,7 +135,7 @@ function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
     return true;
 }
 
-function eraseEntity(entityChange, instanceId) {
+function eraseEntity(entityChange) {
     const {entityName, entityId} = entityChange;
 
     const entityNames = [
@@ -155,8 +155,6 @@ function eraseEntity(entityChange, instanceId) {
     const primaryKeyName = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
     sql.execute(`DELETE FROM ${entityName} WHERE ${primaryKeyName} = ?`, [entityId]);
-
-    entityChangesService.putEntityChangeWithInstanceId(entityChange, instanceId);
 }
 
 function logUpdateContext(updateContext) {
