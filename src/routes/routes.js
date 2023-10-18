@@ -289,9 +289,11 @@ function register(app) {
     apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(PST, '/api/sql/execute/:noteId', sqlRoute.execute);
     route(PST, '/api/database/anonymize/:type', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
+    apiRoute(GET, '/api/database/anonymized-databases', databaseRoute.getExistingAnonymizedDatabases);
 
     // backup requires execution outside of transaction
     route(PST, '/api/database/backup-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler, false);
+    apiRoute(GET, '/api/database/backups', databaseRoute.getExistingBackups);
 
     // VACUUM requires execution outside of transaction
     route(PST, '/api/database/vacuum-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.vacuumDatabase, apiResultHandler, false);

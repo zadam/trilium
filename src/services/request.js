@@ -58,10 +58,6 @@ function exec(opts) {
             request.on('error', err => reject(generateError(opts, err)));
 
             request.on('response', response => {
-                if (![200, 201, 204].includes(response.statusCode)) {
-                    reject(generateError(opts, `${response.statusCode} ${response.statusMessage}`));
-                }
-
                 if (opts.cookieJar && response.headers['set-cookie']) {
                     opts.cookieJar.header = response.headers['set-cookie'];
                 }
@@ -71,15 +67,28 @@ function exec(opts) {
                 response.on('data', chunk => responseStr += chunk);
 
                 response.on('end', () => {
-                    try {
-                        const jsonObj = responseStr.trim() ? JSON.parse(responseStr) : null;
+                    if ([200, 201, 204].includes(response.statusCode)) {
+                        try {
+                            const jsonObj = responseStr.trim() ? JSON.parse(responseStr) : null;
 
-                        resolve(jsonObj);
-                    }
-                    catch (e) {
-                        log.error(`Failed to deserialize sync response: ${responseStr}`);
+                            resolve(jsonObj);
+                        } catch (e) {
+                            log.error(`Failed to deserialize sync response: ${responseStr}`);
 
-                        reject(generateError(opts, e.message));
+                            reject(generateError(opts, e.message));
+                        }
+                    } else {
+                        let errorMessage;
+
+                        try {
+                            const jsonObj = JSON.parse(responseStr);
+
+                            errorMessage = jsonObj?.message || '';
+                        } catch (e) {
+                            errorMessage = responseStr.substr(0, Math.min(responseStr.length, 100));
+                        }
+
+                        reject(generateError(opts, `${response.statusCode} ${response.statusMessage} ${errorMessage}`));
                     }
                 });
             });

@@ -19,6 +19,7 @@ const SpacedUpdate = require("./spaced_update");
 const specialNotesService = require("./special_notes");
 const branchService = require("./branches");
 const exportService = require("./export/zip");
+const syncMutex = require("./sync_mutex.js");
 
 
 /**
@@ -599,6 +600,20 @@ function BackendScriptApi(currentNote, apiParams) {
             });
         }
     };
+
+    /**
+     * Sync process can make data intermittently inconsistent. Scripts which require strong data consistency
+     * can use this function to wait for a possible sync process to finish and prevent new sync process from starting
+     * while it is running.
+     *
+     * Because this is an async process, the inner callback doesn't have automatic transaction handling, so in case
+     * you need to make some DB changes, you need to surround your call with api.transactional(...)
+     *
+     * @method
+     * @param {function} callback - function to be executed while sync process is not running
+     * @returns {Promise} - resolves once the callback is finished (callback is awaited)
+     */
+    this.runOutsideOfSync = syncMutex.doExclusively;
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.

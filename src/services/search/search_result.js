@@ -22,6 +22,10 @@ class SearchResult {
 
         const note = becca.notes[this.noteId];
 
+        if (note.noteId.toLowerCase() === fulltextQuery) {
+            this.score += 100;
+        }
+
         if (note.title.toLowerCase() === fulltextQuery) {
             this.score += 100; // high reward for exact match #3470
         }
