@@ -84,11 +84,11 @@ export default class BackupOptions extends OptionsWidget {
             this.$existingBackupList.empty();
 
             if (!backupFiles.length) {
-                backupFiles = [{filePath: "no backup yet"}];
+                backupFiles = [{filePath: "no backup yet", ctime: ''}];
             }
 
-            for (const {filePath} of backupFiles) {
-                this.$existingBackupList.append($("<li>").text(filePath));
+            for (const {filePath, ctime} of backupFiles) {
+                this.$existingBackupList.append($("<li>").text(`${filePath} ${ctime ? ` - ${ctime}` : ''}`));
             }
         });
     }

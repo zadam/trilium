@@ -17,10 +17,12 @@ function getExistingBackups() {
 
     return fs.readdirSync(dataDir.BACKUP_DIR)
         .filter(fileName => fileName.includes("backup"))
-        .map(fileName => ({
-            fileName: fileName,
-            filePath: path.resolve(dataDir.BACKUP_DIR, fileName)
-        }));
+        .map(fileName => {
+            const filePath = path.resolve(dataDir.BACKUP_DIR, fileName);
+            const stat = fs.statSync(filePath)
+
+            return {fileName, filePath, ctime: stat.ctime};
+        });
 }
 
 function regularBackup() {
