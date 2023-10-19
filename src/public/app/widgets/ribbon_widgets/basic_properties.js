@@ -17,7 +17,8 @@ const TPL = `
         
         .basic-properties-widget > * {
             margin-right: 30px;
-            margin-top: 12px;
+            margin-top: 9px;
+            margin-bottom: 2px;
         }
         
         .note-type-container, .editability-select-container {

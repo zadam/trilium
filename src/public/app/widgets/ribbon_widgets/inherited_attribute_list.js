@@ -14,7 +14,7 @@ const TPL = `
         color: var(--muted-text-color);
         max-height: 200px;
         overflow: auto;
-        padding: 12px 12px 11px 12px;
+        padding: 14px 12px 13px 12px;
     }
     </style>
 

@@ -18,7 +18,7 @@ const TPL = `
     .global-menu-button {
         background-image: url("${window.glob.assetPath}/images/icon-black.svg");
         background-repeat: no-repeat;
-        background-position: 50% 80%;
+        background-position: 40% 50%;
         background-size: 45px;
         width: 100%;
         height: 100%;
