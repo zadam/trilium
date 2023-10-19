@@ -495,6 +495,14 @@ function copyHtmlToClipboard(content) {
     navigator.clipboard.write([clipboardItem]);
 }
 
+/**
+ * @param {FNote} note
+ * @return {string}
+ */
+function createImageSrcUrl(note) {
+    return `api/images/${note.noteId}/${encodeURIComponent(note.title)}?timestamp=${Date.now()}`;
+}
+
 export default {
     reloadFrontendApp,
     parseDate,
@@ -533,5 +541,6 @@ export default {
     sleep,
     escapeRegExp,
     areObjectsEqual,
-    copyHtmlToClipboard
+    copyHtmlToClipboard,
+    createImageSrcUrl
 };

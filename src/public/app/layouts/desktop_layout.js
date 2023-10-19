@@ -78,6 +78,7 @@ import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating
 import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
 import MovePaneButton from "../widgets/buttons/move_pane_button.js";
 import UploadAttachmentsDialog from "../widgets/dialogs/upload_attachments.js";
+import CanvasPropertiesWidget from "../widgets/ribbon_widgets/canvas_properties.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -144,6 +145,7 @@ export default class DesktopLayout {
                                             .ribbon(new NotePropertiesWidget())
                                             .ribbon(new FilePropertiesWidget())
                                             .ribbon(new ImagePropertiesWidget())
+                                            .ribbon(new CanvasPropertiesWidget())
                                             .ribbon(new BasicPropertiesWidget())
                                             .ribbon(new OwnedAttributeListWidget())
                                             .ribbon(new InheritedAttributesWidget())
