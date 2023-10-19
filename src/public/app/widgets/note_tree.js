@@ -1147,6 +1147,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         let parentsOfAddedNodes = [];
 
         const allBranchRows = loadResults.getBranchRows();
+        // TODO: this flag is suspicious - why does it matter that all branches in a particular update are deleted?
         const allBranchesDeleted = allBranchRows.every(branchRow => !!branchRow.isDeleted);
 
         for (const branchRow of allBranchRows) {
@@ -1159,8 +1160,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 noteIdsToUpdate.add(branchRow.noteId);
             }
 
-            for (const node of this.getNodesByBranch(branchRow)) {
-                if (branchRow.isDeleted) {
+            if (branchRow.isDeleted) {
+                for (const node of this.getNodesByBranch(branchRow)) {
                     if (node.isActive()) {
                         if (allBranchesDeleted) {
                             const newActiveNode = node.getNextSibling()
@@ -1181,9 +1182,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                     noteIdsToUpdate.add(branchRow.parentNoteId);
                 }
-            }
-
-            if (!branchRow.isDeleted) {
+            } else {
                 for (const parentNode of this.getNodesByNoteId(branchRow.parentNoteId)) {
                     parentsOfAddedNodes.push(parentNode)
 
@@ -1194,11 +1193,15 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branchRow.noteId);
                     if (!found) {
                         // make sure it's loaded
-                        await froca.getNote(branchRow.noteId);
+                        const note = await froca.getNote(branchRow.noteId);
                         const frocaBranch = froca.getBranch(branchRow.branchId);
 
                         // we're forcing lazy since it's not clear if the whole required subtree is in froca
                         parentNode.addChildren([this.prepareNode(frocaBranch, true)]);
+
+                        if (frocaBranch.isExpanded && note.hasChildren()) {
+                            noteIdsToReload.add(frocaBranch.noteId);
+                        }
 
                         this.sortChildren(parentNode);
 
