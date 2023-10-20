@@ -242,7 +242,7 @@ export default class RevisionsDialog extends BasicWidget {
 
                 renderMathInElement(this.$content[0], {trust: true});
             }
-        } else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
+        } else if (revisionItem.type === 'code') {
             this.$content.html($("<pre>").text(fullRevision.content));
         } else if (revisionItem.type === 'image') {
             this.$content.html($("<img>")
@@ -279,6 +279,14 @@ export default class RevisionsDialog extends BasicWidget {
             this.$content.html($("<img>")
                 .attr("src", `api/revisions/${revisionItem.revisionId}/image/${sanitizedTitle}?${Math.random()}`)
                 .css("max-width", "100%"));
+        } else if (revisionItem.type === 'mermaid') {
+            const sanitizedTitle = revisionItem.title.replace(/[^a-z0-9-.]/gi, "");
+
+            this.$content.html($("<img>")
+                .attr("src", `api/revisions/${revisionItem.revisionId}/image/${sanitizedTitle}?${Math.random()}`)
+                .css("max-width", "100%"));
+
+            this.$content.append($("<pre>").text(fullRevision.content));
         } else {
             this.$content.text("Preview isn't available for this note type.");
         }

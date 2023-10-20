@@ -1,5 +1,6 @@
 import libraryLoader from "../services/library_loader.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import server from "../services/server.js";
 
 const TPL = `<div class="mermaid-widget">
     <style>
@@ -77,6 +78,20 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         try {
             const svg = await this.renderSvg();
 
+            if (this.dirtyAttachment) {
+                const payload = {
+                    role: 'image',
+                    title: 'mermaid-export.svg',
+                    mime: 'image/svg+xml',
+                    content: svg,
+                    position: 0
+                };
+
+                server.post(`notes/${this.noteId}/attachments?matchBy=title`, payload).then(() => {
+                    this.dirtyAttachment = false;
+                });
+            }
+
             this.$display.html(svg);
 
             await wheelZoomLoaded;
@@ -107,6 +122,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
+            this.dirtyAttachment = true;
+
             await this.refresh();
         }
     }
