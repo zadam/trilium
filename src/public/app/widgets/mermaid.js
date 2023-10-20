@@ -85,8 +85,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
             WZoom.create(`#mermaid-render-${idCounter}`, {
                 type: 'html',
-                maxScale: 10,
-                speed: 20,
+                maxScale: 50,
+                speed: 1.3,
                 zoomOnClick: false
             });
         } catch (e) {
