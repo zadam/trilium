@@ -48,6 +48,14 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
+function disableSlowQueryLogging(disable) {
+    namespace.set('disableSlowQueryLogging', disable);
+}
+
+function isSlowQueryLoggingDisabled() {
+    return !!namespace.get('disableSlowQueryLogging');
+}
+
 function getAndClearEntityChangeIds() {
     const entityChangeIds = namespace.get('entityChangeIds') || [];
 
@@ -93,4 +101,6 @@ module.exports = {
     getAndClearEntityChangeIds,
     putEntityChange,
     ignoreEntityChangeIds,
+    disableSlowQueryLogging,
+    isSlowQueryLoggingDisabled
 };

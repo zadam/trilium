@@ -15,11 +15,13 @@ const entityConstructor = require("../becca/entity_constructor");
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
-        load();
+        cls.init(() => {
+            load();
 
-        cls.init(() => require('../services/options_init').initStartupOptions());
+            require('../services/options_init').initStartupOptions();
 
-        res();
+            res();
+        });
     });
 });
 
@@ -27,32 +29,35 @@ function load() {
     const start = Date.now();
     becca.reset();
 
-    // using a raw query and passing arrays to avoid allocating new objects,
-    // this is worth it for the becca load since it happens every run and blocks the app until finished
+    // we know this is slow and the total becca load time is logged
+    sql.disableSlowQueryLogging(() => {
+        // using a raw query and passing arrays to avoid allocating new objects,
+        // this is worth it for the becca load since it happens every run and blocks the app until finished
 
-    for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, isProtected, blobId, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`)) {
-        new BNote().update(row).init();
-    }
+        for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, isProtected, blobId, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`)) {
+            new BNote().update(row).init();
+        }
 
-    const branchRows = sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
-    // in-memory sort is faster than in the DB
-    branchRows.sort((a, b) => a.notePosition - b.notePosition);
+        const branchRows = sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
+        // in-memory sort is faster than in the DB
+        branchRows.sort((a, b) => a.notePosition - b.notePosition);
 
-    for (const row of branchRows) {
-        new BBranch().update(row).init();
-    }
+        for (const row of branchRows) {
+            new BBranch().update(row).init();
+        }
 
-    for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`)) {
-        new BAttribute().update(row).init();
-    }
+        for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`)) {
+            new BAttribute().update(row).init();
+        }
 
-    for (const row of sql.getRows(`SELECT name, value, isSynced, utcDateModified FROM options`)) {
-        new BOption(row);
-    }
+        for (const row of sql.getRows(`SELECT name, value, isSynced, utcDateModified FROM options`)) {
+            new BOption(row);
+        }
 
-    for (const row of sql.getRows(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
-        new BEtapiToken(row);
-    }
+        for (const row of sql.getRows(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
+            new BEtapiToken(row);
+        }
+    });
 
     for (const noteId in becca.notes) {
         becca.notes[noteId].sortParents();

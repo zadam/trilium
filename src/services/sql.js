@@ -225,7 +225,7 @@ function wrap(query, func) {
 
     const milliseconds = Date.now() - startTimestamp;
 
-    if (milliseconds >= 20) {
+    if (milliseconds >= 20 && !cls.isSlowQueryLoggingDisabled()) {
         if (query.includes("WITH RECURSIVE")) {
             log.info(`Slow recursive query took ${milliseconds}ms.`);
         }
@@ -293,6 +293,19 @@ async function copyDatabase(targetFilePath) {
     } // unlink throws exception if the file did not exist
 
     await dbConnection.backup(targetFilePath);
+}
+
+function disableSlowQueryLogging(cb) {
+    const orig = cls.isSlowQueryLoggingDisabled();
+
+    try {
+        cls.disableSlowQueryLogging(true);
+
+        return cb();
+    }
+    finally {
+        cls.disableSlowQueryLogging(orig);
+    }
 }
 
 module.exports = {
@@ -367,5 +380,6 @@ module.exports = {
     transactional,
     upsert,
     fillParamList,
-    copyDatabase
+    copyDatabase,
+    disableSlowQueryLogging
 };
