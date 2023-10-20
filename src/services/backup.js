@@ -21,7 +21,7 @@ function getExistingBackups() {
             const filePath = path.resolve(dataDir.BACKUP_DIR, fileName);
             const stat = fs.statSync(filePath)
 
-            return {fileName, filePath, ctime: stat.ctime};
+            return {fileName, filePath, mtime: stat.mtime};
         });
 }
 
