@@ -33,17 +33,7 @@ function sanitize(dirtyHtml) {
             'en-media' // for ENEX import
         ],
         allowedAttributes: {
-            'a': [ 'href', 'class' ],
-            'img': [ 'src' ],
-            'section': [ 'class', 'data-note-id' ],
-            'figure': [ 'class' ],
-            'span': [ 'class', 'style' ],
-            'label': [ 'class' ],
-            'input': [ 'class', 'type', 'disabled' ],
-            'code': [ 'class' ],
-            'ul': [ 'class' ],
-            'table': [ 'class' ],
-            'en-media': [ 'hash' ]
+            '*': [ 'class', 'style', 'title', 'src', 'href', 'hash', 'disabled', 'align', 'alt', 'center', 'data-*' ]
         },
         allowedSchemes: [
             'http', 'https', 'ftp', 'ftps', 'mailto', 'data', 'evernote', 'file', 'facetime', 'irc', 'gemini', 'git',

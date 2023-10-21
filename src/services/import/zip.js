@@ -321,7 +321,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         });
 
-        content = htmlSanitizer.sanitize(content);
+        if (taskContext.data.safeImport) {
+            content = htmlSanitizer.sanitize(content);
+        }
 
         content = content.replace(/<html.*<body[^>]*>/gis, "");
         content = content.replace(/<\/body>.*<\/html>/gis, "");
