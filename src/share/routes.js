@@ -105,6 +105,27 @@ function checkNoteAccess(noteId, req, res) {
     return false;
 }
 
+function renderImageAttachment(image, res, attachmentName) {
+    let svgString = '<svg/>'
+    const attachment = image.getAttachmentByTitle(attachmentName);
+
+    if (attachment) {
+        svgString = attachment.getContent();
+    } else {
+        // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
+        const contentSvg = image.getJsonContentSafely()?.svg;
+
+        if (contentSvg) {
+            svgString = contentSvg;
+        }
+    }
+
+    const svg = svgString
+    res.set('Content-Type', "image/svg+xml");
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.send(svg);
+}
+
 function register(router) {
     function renderNote(note, req, res) {
         if (!note) {
@@ -209,37 +230,18 @@ function register(router) {
             return;
         }
 
-        if (!["image", "canvas"].includes(image.type)) {
-            return res.status(400)
-                .json({ message: "Requested note is not a shareable image" });
-        } else if (image.type === "canvas") {
-            /**
-             * special "image" type. the canvas is actually type application/json
-             * to avoid bitrot and enable usage as referenced image the svg is included.
-             */
-            let svgString = '<svg/>'
-            const attachment = image.getAttachmentByTitle('canvas-export.svg');
-
-            if (attachment) {
-                svgString = attachment.getContent();
-            } else {
-                // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
-                const contentSvg = image.getJsonContentSafely()?.svg;
-
-                if (contentSvg) {
-                    svgString = contentSvg;
-                }
-            }
-
-            const svg = svgString
-            res.set('Content-Type', "image/svg+xml");
-            res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-            res.send(svg);
-        } else {
+        if (image.type === 'image') {
             // normal image
             res.set('Content-Type', image.mime);
             addNoIndexHeader(image, res);
             res.send(image.getContent());
+        } else if (image.type === "canvas") {
+            renderImageAttachment(image, res, 'canvas-export.svg');
+        } else if (image.type === 'mermaid') {
+            renderImageAttachment(image, res, 'mermaid-export.svg');
+        } else {
+            return res.status(400)
+                .json({ message: "Requested note is not a shareable image" });
         }
     });
 
