@@ -19,6 +19,10 @@ const TPL = `<div class="mermaid-widget">
             height: 100%;
             text-align: center;
         }
+        
+        .mermaid-render svg {
+            width: 95%; /* https://github.com/zadam/trilium/issues/4340 */
+        }
     </style>
 
     <div class="mermaid-error alert alert-warning">
