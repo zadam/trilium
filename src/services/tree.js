@@ -126,6 +126,14 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
                 return compare(topAEl, topBEl) * (reverse ? -1 : 1);
             }
 
+            const bottomAEl = fetchValue(a, 'bottom');
+            const bottomBEl = fetchValue(b, 'bottom');
+
+            if (bottomAEl !== bottomBEl) {
+                // since "bottom" should not be reversible, we'll reverse it once more to nullify this effect
+                return compare(bottomBEl, bottomAEl) * (reverse ? -1 : 1);
+            }
+
             const customAEl = fetchValue(a, customSortBy);
             const customBEl = fetchValue(b, customSortBy);
 
@@ -184,10 +192,8 @@ function sortNotesIfNeeded(parentNoteId) {
     }
 
     const sortReversed = parentNote.getLabelValue('sortDirection')?.toLowerCase() === "desc";
-    const sortFoldersFirstLabel = parentNote.getLabel('sortFoldersFirst');
-    const sortFoldersFirst = sortFoldersFirstLabel && sortFoldersFirstLabel.value.toLowerCase() !== "false";
-    const sortNaturalLabel = parentNote.getLabel('sortNatural');
-    const sortNatural = sortNaturalLabel && sortNaturalLabel.value.toLowerCase() !== "false";
+    const sortFoldersFirst = parentNote.isLabelTruthy('sortFoldersFirst');
+    const sortNatural = parentNote.isLabelTruthy('sortNatural');
     const sortLocale = parentNote.getLabelValue('sortLocale');
 
     sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst, sortNatural, sortLocale);

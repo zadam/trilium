@@ -6,6 +6,7 @@ import openService from "../services/open.js";
 import protectedSessionService from "../services/protected_session.js";
 import options from "../services/options.js";
 import froca from "../services/froca.js";
+import utils from "../services/utils.js";
 
 export default class RootCommandExecutor extends Component {
     editReadOnlyNoteCommand() {
@@ -44,8 +45,7 @@ export default class RootCommandExecutor extends Component {
 
     openNoteExternallyCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
-        const mime = appContext.tabManager.getActiveContextNoteMime()
-
+        const mime = appContext.tabManager.getActiveContextNoteMime();
         if (noteId) {
             openService.openNoteExternally(noteId, mime);
         }
@@ -53,8 +53,9 @@ export default class RootCommandExecutor extends Component {
 
     openNoteCustomCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
+        const mime = appContext.tabManager.getActiveContextNoteMime();
         if (noteId) {
-            openService.openNoteCustom(noteId);
+            openService.openNoteCustom(noteId, mime);
         }
     }
 
@@ -152,6 +153,37 @@ export default class RootCommandExecutor extends Component {
                     viewMode: 'attachments'
                 }
             });
+        }
+    }
+
+    toggleTrayCommand() {
+        if (!utils.isElectron()) return;
+        const {BrowserWindow} = utils.dynamicRequire('@electron/remote');
+        const windows = BrowserWindow.getAllWindows();
+        const isVisible = windows.every(w => w.isVisible());
+        const action = isVisible ? "hide" : "show"
+        for (const window of windows) window[action]();
+    }
+
+    firstTabCommand()   { this.#goToTab(1); }
+    secondTabCommand()  { this.#goToTab(2); }
+    thirdTabCommand()   { this.#goToTab(3); }
+    fourthTabCommand()  { this.#goToTab(4); }
+    fifthTabCommand()   { this.#goToTab(5); }
+    sixthTabCommand()   { this.#goToTab(6); }
+    seventhTabCommand() { this.#goToTab(7); }
+    eigthTabCommand()   { this.#goToTab(8); }
+    ninthTabCommand()   { this.#goToTab(9); }
+    lastTabCommand()    { this.#goToTab(Number.POSITIVE_INFINITY); }
+
+    #goToTab(tabNumber) {
+        const mainNoteContexts = appContext.tabManager.getMainNoteContexts();
+
+        const index = tabNumber === Number.POSITIVE_INFINITY ? mainNoteContexts.length - 1 : tabNumber - 1;
+        const tab = mainNoteContexts[index];
+
+        if (tab) {
+            appContext.tabManager.activateNoteContext(tab.ntxId);
         }
     }
 }

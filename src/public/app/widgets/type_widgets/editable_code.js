@@ -110,6 +110,11 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         this.codeEditor.focus();
     }
 
+    scrollToEnd() {
+        this.codeEditor.setCursor(this.codeEditor.lineCount(), 0);
+        this.codeEditor.focus();
+    }
+
     cleanup() {
         if (this.codeEditor) {
             this.spacedUpdate.allowUpdateWithoutChange(() => {

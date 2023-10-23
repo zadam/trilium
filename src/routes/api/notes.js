@@ -21,11 +21,12 @@ function getNoteBlob(req) {
 
 function getNoteMetadata(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
-    const contentMetadata = note.getContentMetadata();
 
     return {
         dateCreated: note.dateCreated,
-        combinedDateModified: note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified
+        utcDateCreated: note.utcDateCreated,
+        dateModified: note.dateModified,
+        utcDateModified: note.utcDateModified,
     };
 }
 
@@ -44,10 +45,10 @@ function createNote(req) {
 }
 
 function updateNoteData(req) {
-    const {content} = req.body;
+    const {content, attachments} = req.body;
     const {noteId} = req.params;
 
-    return noteService.updateNoteData(noteId, content);
+    return noteService.updateNoteData(noteId, content, attachments);
 }
 
 function deleteNote(req) {

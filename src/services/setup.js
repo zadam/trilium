@@ -93,7 +93,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
         return { result: 'success' };
     }
     catch (e) {
-        log.error(`Sync failed: ${e.message}`);
+        log.error(`Sync failed: '${e.message}', stack: ${e.stack}`);
 
         return {
             result: 'failure',

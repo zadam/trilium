@@ -37,6 +37,12 @@ const TPL = `
     
     <button class="backup-database-button btn">Backup database now</button>
 </div>
+
+<div class="options-section">
+    <h4>Existing backups</h4>
+    
+    <ul class="existing-backup-list"></ul>
+</div>
 `;
 
 export default class BackupOptions extends OptionsWidget {
@@ -49,6 +55,8 @@ export default class BackupOptions extends OptionsWidget {
             const {backupFile} = await server.post('database/backup-database');
 
             toastService.showMessage(`Database has been backed up to ${backupFile}`, 10000);
+
+            this.refresh();
         });
 
         this.$dailyBackupEnabled = this.$widget.find(".daily-backup-enabled");
@@ -63,11 +71,25 @@ export default class BackupOptions extends OptionsWidget {
 
         this.$monthlyBackupEnabled.on('change', () =>
             this.updateCheckboxOption('monthlyBackupEnabled', this.$monthlyBackupEnabled));
+
+        this.$existingBackupList = this.$widget.find(".existing-backup-list");
     }
 
     optionsLoaded(options) {
         this.setCheckboxState(this.$dailyBackupEnabled, options.dailyBackupEnabled);
         this.setCheckboxState(this.$weeklyBackupEnabled, options.weeklyBackupEnabled);
         this.setCheckboxState(this.$monthlyBackupEnabled, options.monthlyBackupEnabled);
+
+        server.get("database/backups").then(backupFiles => {
+            this.$existingBackupList.empty();
+
+            if (!backupFiles.length) {
+                backupFiles = [{filePath: "no backup yet", mtime: ''}];
+            }
+
+            for (const {filePath, mtime} of backupFiles) {
+                this.$existingBackupList.append($("<li>").text(`${filePath} ${mtime ? ` - ${mtime}` : ''}`));
+            }
+        });
     }
 }

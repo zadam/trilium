@@ -1,6 +1,9 @@
 const dayjs = require('dayjs');
 const cls = require('./cls');
 
+const LOCAL_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSSZZ';
+const UTC_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ssZ';
+
 function utcNowDateTime() {
     return utcDateTimeStr(new Date());
 }
@@ -10,7 +13,7 @@ function utcNowDateTime() {
 // "trilium-local-now-datetime" header which is then stored in CLS
 function localNowDateTime() {
     return cls.getLocalNowDateTime()
-        || dayjs().format('YYYY-MM-DD HH:mm:ss.SSSZZ')
+        || dayjs().format(LOCAL_DATETIME_FORMAT)
 }
 
 function localNowDate() {
@@ -62,6 +65,36 @@ function getDateTimeForFile() {
     return new Date().toISOString().substr(0, 19).replace(/:/g, '');
 }
 
+function validateLocalDateTime(str) {
+    if (!str) {
+        return;
+    }
+
+    if (!/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}[+-][0-9]{4}/.test(str)) {
+        return `Invalid local date time format in '${str}'. Correct format shoud follow example: '2023-08-21 23:38:51.110+0200'`;
+    }
+
+
+    if (!dayjs(str, LOCAL_DATETIME_FORMAT)) {
+        return `Date '${str}' appears to be in the correct format, but cannot be parsed. It likely represents an invalid date.`;
+    }
+}
+
+function validateUtcDateTime(str) {
+    if (!str) {
+        return;
+    }
+
+    if (!/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/.test(str)) {
+        return `Invalid UTC date time format in '${str}'. Correct format shoud follow example: '2023-08-21 23:38:51.110Z'`;
+    }
+
+
+    if (!dayjs(str, UTC_DATETIME_FORMAT)) {
+        return `Date '${str}' appears to be in the correct format, but cannot be parsed. It likely represents an invalid date.`;
+    }
+}
+
 module.exports = {
     utcNowDateTime,
     localNowDateTime,
@@ -70,5 +103,7 @@ module.exports = {
     utcDateTimeStr,
     parseDateTime,
     parseLocalDate,
-    getDateTimeForFile
+    getDateTimeForFile,
+    validateLocalDateTime,
+    validateUtcDateTime
 };

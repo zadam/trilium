@@ -53,7 +53,10 @@ class ZoomComponent extends Component {
     zoomInEvent() {
         this.setZoomFactorAndSave(this.getCurrentZoom() + 0.1);
     }
-
+    zoomResetEvent() {
+        this.setZoomFactorAndSave(1);
+    }
+    
     setZoomFactorAndSaveEvent({zoomFactor}) {
         this.setZoomFactorAndSave(zoomFactor);
     }

@@ -1,3 +1,7 @@
+/**
+ * Attachment is a file directly tied into a note without
+ * being a hidden child.
+ */
 class FAttachment {
     constructor(froca, row) {
         /** @type {Froca} */
@@ -24,7 +28,10 @@ class FAttachment {
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
-        /** @type {int} optionally added to the entity */
+        /**
+         * optionally added to the entity 
+         * @type {int}
+         */
         this.contentLength = row.contentLength;
 
         this.froca.attachments[this.attachmentId] = this;

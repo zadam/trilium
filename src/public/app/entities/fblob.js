@@ -15,4 +15,25 @@ export default class FBlob {
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
+
+    /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
+    getJsonContent() {
+        if (!this.content || !this.content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(this.content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
+    }
 }

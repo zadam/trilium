@@ -20,6 +20,10 @@ const TPL = `
     <p>You can decide yourself if you want to provide a fully or lightly anonymized database. Even fully anonymized DB is very useful, however in some cases lightly anonymized database can speed up the process of bug identification and fixing.</p>
     
     <button class="anonymize-light-button btn">Save lightly anonymized database</button>
+    
+    <h5>Existing anonymized databases</h5>
+    
+    <ul class="existing-anonymized-databases"></ul>
 </div>`;
 
 export default class DatabaseAnonymizationOptions extends OptionsWidget {
@@ -38,6 +42,8 @@ export default class DatabaseAnonymizationOptions extends OptionsWidget {
             else {
                 toastService.showMessage(`Created fully anonymized database in ${resp.anonymizedFilePath}`, 10000);
             }
+
+            this.refresh();
         });
 
         this.$anonymizeLightButton.on('click', async () => {
@@ -50,6 +56,24 @@ export default class DatabaseAnonymizationOptions extends OptionsWidget {
             }
             else {
                 toastService.showMessage(`Created lightly anonymized database in ${resp.anonymizedFilePath}`, 10000);
+            }
+
+            this.refresh();
+        });
+
+        this.$existingAnonymizedDatabases = this.$widget.find(".existing-anonymized-databases");
+    }
+
+    optionsLoaded(options) {
+        server.get("database/anonymized-databases").then(anonymizedDatabases => {
+            this.$existingAnonymizedDatabases.empty();
+
+            if (!anonymizedDatabases.length) {
+                anonymizedDatabases = [{filePath: "no anonymized database yet"}];
+            }
+
+            for (const {filePath} of anonymizedDatabases) {
+                this.$existingAnonymizedDatabases.append($("<li>").text(filePath));
             }
         });
     }

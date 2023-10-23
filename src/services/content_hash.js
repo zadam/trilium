@@ -11,14 +11,17 @@ function getEntityHashes() {
 
     const startTime = new Date();
 
-    const hashRows = sql.getRawRows(`
-        SELECT entityName,
-               entityId,
-               hash,
-               isErased
-        FROM entity_changes 
-        WHERE isSynced = 1
-          AND entityName != 'note_reordering'`);
+    // we know this is slow and the total content hash calculation time is logged
+    const hashRows = sql.disableSlowQueryLogging(
+        () => sql.getRawRows(`
+            SELECT entityName,
+                   entityId,
+                   hash,
+                   isErased
+            FROM entity_changes
+            WHERE isSynced = 1
+              AND entityName != 'note_reordering'`)
+    );
 
     // sorting is faster in memory
     // sorting by entityId is enough, hashes will be segmented by entityName later on anyway

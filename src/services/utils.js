@@ -25,6 +25,10 @@ function md5(content) {
 }
 
 function hashedBlobId(content) {
+    if (content === null || content === undefined) {
+        content = "";
+    }
+
     // sha512 is faster than sha256
     const base64Hash = crypto.createHash('sha512').update(content).digest('base64');
 
@@ -281,12 +285,22 @@ function removeDiacritic(str) {
     if (!str) {
         return "";
     }
-
+    str = str.toString();
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
 function normalize(str) {
     return removeDiacritic(str).toLowerCase();
+}
+
+function toMap(list, key) {
+    const map = {};
+
+    for (const el of list) {
+        map[el[key]] = el;
+    }
+
+    return map;
 }
 
 module.exports = {
@@ -320,4 +334,5 @@ module.exports = {
     removeDiacritic,
     normalize,
     hashedBlobId,
+    toMap,
 };

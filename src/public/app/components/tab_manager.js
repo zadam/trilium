@@ -173,7 +173,10 @@ export default class TabManager extends Component {
         return this.noteContexts;
     }
 
-    /** @returns {NoteContext[]} */
+    /**
+     * Main context is essentially a tab (children are splits), so this returns tabs.
+     * @returns {NoteContext[]}
+     */
     getMainNoteContexts() {
         return this.noteContexts.filter(nc => nc.isMainContext());
     }
@@ -189,14 +192,22 @@ export default class TabManager extends Component {
         return noteContext;
     }
 
-    /** @returns {NoteContext} */
+    /**
+     * Get active context which represents the visible split with focus. Active context can, but doesn't have to be "main".
+     *
+     * @returns {NoteContext}
+     */
     getActiveContext() {
         return this.activeNtxId
             ? this.getNoteContextById(this.activeNtxId)
             : null;
     }
 
-    /** @returns {NoteContext} */
+    /**
+     * Get active main context which corresponds to the active tab.
+     *
+     * @returns {NoteContext}
+     */
     getActiveMainContext() {
         return this.activeNtxId
             ? this.getNoteContextById(this.activeNtxId).getMainContext()
@@ -644,6 +655,14 @@ export default class TabManager extends Component {
         const activeContext = this.getActiveContext();
 
         if (activeContext && loadResults.isNoteReloaded(activeContext.noteId)) {
+            await this.updateDocumentTitle(activeContext);
+        }
+    }
+
+    async frocaReloadedEvent() {
+        const activeContext = this.getActiveContext();
+
+        if (activeContext) {
             await this.updateDocumentTitle(activeContext);
         }
     }

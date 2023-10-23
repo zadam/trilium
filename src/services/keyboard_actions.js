@@ -7,6 +7,15 @@ const utils = require('./utils');
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();
 
+/**
+ * Scope here means on which element the keyboard shortcuts are attached - this means that for the shortcut to work,
+ * the focus has to be inside the element.
+ *
+ * So e.g. shortcuts with "note-tree" scope work only when the focus is in note tree.
+ * This allows to have the same shortcut have different actions attached based on the context
+ * e.g. CTRL-C in note tree does something a bit different from CTRL-C in the text editor.
+ */
+
 const DEFAULT_KEYBOARD_ACTIONS = [
     {
         separator: "Note navigation"
@@ -229,6 +238,72 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "openNewWindow",
         defaultShortcuts: [],
         description: "Open new empty window",
+        scope: "window"
+    },
+    {
+        actionName: "toggleTray",
+        defaultShortcuts: [],
+        description: "Shows/hides the application from the system tray",
+        scope: "window"
+    },
+    {
+        actionName: "firstTab",
+        defaultShortcuts: ["CommandOrControl+1"],
+        description: "Activates the first tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "secondTab",
+        defaultShortcuts: ["CommandOrControl+2"],
+        description: "Activates the second tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "thirdTab",
+        defaultShortcuts: ["CommandOrControl+3"],
+        description: "Activates the third tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "fourthTab",
+        defaultShortcuts: ["CommandOrControl+4"],
+        description: "Activates the fourth tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "fifthTab",
+        defaultShortcuts: ["CommandOrControl+5"],
+        description: "Activates the fifth tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "sixthTab",
+        defaultShortcuts: ["CommandOrControl+6"],
+        description: "Activates the sixth tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "seventhTab",
+        defaultShortcuts: ["CommandOrControl+7"],
+        description: "Activates the seventh tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "eigthTab",
+        defaultShortcuts: ["CommandOrControl+8"],
+        description: "Activates the eigth tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "ninthTab",
+        defaultShortcuts: ["CommandOrControl+9"],
+        description: "Activates the ninth tab in the list",
+        scope: "window"
+    },
+    {
+        actionName: "lastTab",
+        defaultShortcuts: ["CommandOrControl+0"],
+        description: "Activates the last tab in the list",
         scope: "window"
     },
 
@@ -700,6 +775,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "zoomIn",
         description: "Zoom In",
         defaultShortcuts: isElectron ? ["CommandOrControl+="] : [],
+        scope: "window"
+    },
+    {
+        actionName: "zoomReset",
+        description: "Reset zoom level",
+        defaultShortcuts: isElectron ? ["CommandOrControl+0"] : [],
         scope: "window"
     },
     {

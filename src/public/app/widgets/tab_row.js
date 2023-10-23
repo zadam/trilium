@@ -22,6 +22,7 @@ const Draggabilly = window.Draggabilly;
 
 const TAB_CONTAINER_MIN_WIDTH = 24;
 const TAB_CONTAINER_MAX_WIDTH = 240;
+const TAB_CONTAINER_LEFT_PADDING = 5;
 const NEW_TAB_WIDTH = 32;
 const MIN_FILLER_WIDTH = 50;
 const MARGIN_WIDTH = 5;
@@ -330,7 +331,7 @@ export default class TabRowWidget extends BasicWidget {
     getTabPositions() {
         const tabPositions = [];
 
-        let position = 0;
+        let position = TAB_CONTAINER_LEFT_PADDING;
         this.tabWidths.forEach(width => {
             tabPositions.push(position);
             position += width + MARGIN_WIDTH;
@@ -617,7 +618,7 @@ export default class TabRowWidget extends BasicWidget {
 
         // update tab id for the new main context
         this.getTabById(oldMainNtxId).attr("data-ntx-id", newMainNtxId);
-        this.updateTabById(newMainNtxId);        
+        this.updateTabById(newMainNtxId);
     }
 
     contextsReopenedEvent({mainNtxId, tabPosition}) {

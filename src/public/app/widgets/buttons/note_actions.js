@@ -45,6 +45,7 @@ const TPL = `
         <a class="dropdown-item export-note-button">Export note</a>
         <a class="dropdown-item delete-note-button">Delete note</a>
         <a data-trigger-command="printActiveNote" class="dropdown-item print-active-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
+        <a data-trigger-command="forceSaveRevision" class="dropdown-item save-revision-button"><kbd data-command="forceSaveRevision"></kbd> Save revision</a>
     </div>
 </div>`;
 
@@ -55,6 +56,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$widget.on('show.bs.dropdown', () => this.refreshVisibility(this.note));
 
         this.$convertNoteIntoAttachmentButton = this.$widget.find("[data-trigger-command='convertNoteIntoAttachment']");
         this.$findInTextButton = this.$widget.find('.find-in-text-button');
@@ -92,22 +94,22 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         });
     }
 
-    async refreshWithNote(note) {
+    async refreshVisibility(note) {
         this.$convertNoteIntoAttachmentButton.toggle(note.isEligibleForConversionToAttachment());
 
         this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book'].includes(note.type));
 
-        this.toggleDisabled(this.$showSourceButton, ['text', 'relationMap', 'mermaid'].includes(note.type));
+        this.toggleDisabled(this.$showSourceButton, ['text', 'code', 'relationMap', 'mermaid', 'canvas'].includes(note.type));
 
         this.toggleDisabled(this.$printActiveNoteButton, ['text', 'code'].includes(note.type));
 
         this.$renderNoteButton.toggle(note.type === 'render');
 
-        this.toggleDisabled(this.$openNoteExternallyButton, utils.isElectron() && !['search'].includes(note.type));
+        this.toggleDisabled(this.$openNoteExternallyButton, utils.isElectron() && !['search', 'book'].includes(note.type));
         this.toggleDisabled(this.$openNoteCustomButton,
             utils.isElectron()
             && !utils.isMac() // no implementation for Mac yet
-            && !['search'].includes(note.type)
+            && !['search', 'book'].includes(note.type)
         );
 
         // I don't want to handle all special notes like this, but intuitively user might want to export content of backend log

@@ -1,6 +1,7 @@
 {
   "src": "dist/trilium-linux-x64",
   "dest": "dist/",
+  "compression": "xz",
   "name": "trilium",
   "productName": "Trilium Notes",
   "genericName": "Note taker",

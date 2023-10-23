@@ -19,6 +19,19 @@ const SpacedUpdate = require("./spaced_update");
 const specialNotesService = require("./special_notes");
 const branchService = require("./branches");
 const exportService = require("./export/zip");
+const syncMutex = require("./sync_mutex.js");
+
+
+/**
+ * A whole number
+ * @typedef {number} int
+ */
+
+/**
+ * An instance of the frontend api available globally.
+ * @global
+ * @var {BackendScriptApi} api
+ */
 
 /**
  * <p>This is the main backend API interface for scripts. All the properties and methods are published in the "api" object
@@ -27,11 +40,20 @@ const exportService = require("./export/zip");
  * @constructor
  */
 function BackendScriptApi(currentNote, apiParams) {
-    /** @property {BNote} note where the script started executing */
+    /**
+     * Note where the script started executing
+     * @type {BNote}
+     */
     this.startNote = apiParams.startNote;
-    /** @property {BNote} note where the script is currently executing. Don't mix this up with the concept of active note */
+    /**
+     * Note where the script is currently executing. Don't mix this up with the concept of active note
+     * @type {BNote}
+     */
     this.currentNote = currentNote;
-    /** @property {AbstractBeccaEntity} entity whose event triggered this execution */
+    /**
+     * Entity whose event triggered this execution
+     * @type {AbstractBeccaEntity}
+     */
     this.originEntity = apiParams.originEntity;
 
     for (const key in apiParams) {
@@ -39,13 +61,20 @@ function BackendScriptApi(currentNote, apiParams) {
     }
 
     /**
-     * @property {axios} Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
+     * Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
+     * @type {axios} 
      * @deprecated use native (browser compatible) fetch() instead
      */
     this.axios = axios;
-    /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
+    /**
+     * day.js library for date manipulation. See {@link https://day.js.org} for documentation 
+     * @type {dayjs}
+     */
     this.dayjs = dayjs;
-    /** @property {axios} xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation */
+    /** 
+     * xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation
+     * @type {xml2js} 
+     */
     this.xml2js = xml2js;
 
     /**
@@ -206,16 +235,16 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      *
-     * @property {object} params
-     * @property {string} params.parentNoteId
-     * @property {string} params.title
-     * @property {string|buffer} params.content
-     * @property {string} params.type - text, code, file, image, search, book, relationMap, canvas
-     * @property {string} [params.mime] - value is derived from default mimes for type
-     * @property {boolean} [params.isProtected=false]
-     * @property {boolean} [params.isExpanded=false]
-     * @property {string} [params.prefix='']
-     * @property {int} [params.notePosition] - default is last existing notePosition in a parent + 10
+     * @param {object} params
+     * @param {string} params.parentNoteId
+     * @param {string} params.title
+     * @param {string|Buffer} params.content
+     * @param {NoteType} params.type - text, code, file, image, search, book, relationMap, canvas
+     * @param {string} [params.mime] - value is derived from default mimes for type
+     * @param {boolean} [params.isProtected=false]
+     * @param {boolean} [params.isExpanded=false]
+     * @param {string} [params.prefix='']
+     * @param {int} [params.notePosition] - default is last existing notePosition in a parent + 10
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
     this.createNewNote = noteService.createNewNote;
@@ -228,14 +257,14 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} title
      * @param {string} [content=""]
      * @param {object} [extraOptions={}]
-     * @property {boolean} [extraOptions.json=false] - should the note be JSON
-     * @property {boolean} [extraOptions.isProtected=false] - should the note be protected
-     * @property {string} [extraOptions.type='text'] - note type
-     * @property {string} [extraOptions.mime='text/html'] - MIME type of the note
-     * @property {object[]} [extraOptions.attributes=[]] - attributes to be created for this note
-     * @property {string} extraOptions.attributes.type - attribute type - label, relation etc.
-     * @property {string} extraOptions.attributes.name - attribute name
-     * @property {string} [extraOptions.attributes.value] - attribute value
+     * @param {boolean} [extraOptions.json=false] - should the note be JSON
+     * @param {boolean} [extraOptions.isProtected=false] - should the note be protected
+     * @param {string} [extraOptions.type='text'] - note type
+     * @param {string} [extraOptions.mime='text/html'] - MIME type of the note
+     * @param {object[]} [extraOptions.attributes=[]] - attributes to be created for this note
+     * @param {AttributeType} extraOptions.attributes.type - attribute type - label, relation etc.
+     * @param {string} extraOptions.attributes.name - attribute name
+     * @param {string} [extraOptions.attributes.value] - attribute value
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
     this.createNote = (parentNoteId, title, content = "", extraOptions= {}) => {
@@ -370,10 +399,10 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} parentNoteId - this note's child notes will be sorted
      * @param {object} [sortConfig]
-     * @property {string} [sortConfig.sortBy=title] - 'title', 'dateCreated', 'dateModified' or a label name
+     * @param {string} [sortConfig.sortBy=title] - 'title', 'dateCreated', 'dateModified' or a label name
      *                                See {@link https://github.com/zadam/trilium/wiki/Sorting} for details.
-     * @property {boolean} [sortConfig.reverse=false]
-     * @property {boolean} [sortConfig.foldersFirst=false]
+     * @param {boolean} [sortConfig.reverse=false]
+     * @param {boolean} [sortConfig.foldersFirst=false]
      * @returns {void}
      */
     this.sortNotes = (parentNoteId, sortConfig = {}) => treeService.sortNotes(
@@ -404,7 +433,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {function} func
-     * @returns {?} result of func callback
+     * @returns {any} result of func callback
      */
     this.transactional = sql.transactional;
 
@@ -432,7 +461,8 @@ function BackendScriptApi(currentNote, apiParams) {
     this.unescapeHtml = utils.unescapeHtml;
 
     /**
-     * @property {module:sql} sql
+     * sql
+     * @type {module:sql}
      */
     this.sql = sql;
 
@@ -447,18 +477,18 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {object} opts
-     * @property {string} opts.id - id of the launcher, only alphanumeric at least 6 characters long
-     * @property {string} opts.type - one of
+     * @param {string} opts.id - id of the launcher, only alphanumeric at least 6 characters long
+     * @param {"note" | "script" | "customWidget"} opts.type - one of
      *                          * "note" - activating the launcher will navigate to the target note (specified in targetNoteId param)
      *                          * "script" -  activating the launcher will execute the script (specified in scriptNoteId param)
      *                          * "customWidget" - the launcher will be rendered with a custom widget (specified in widgetNoteId param)
-     * @property {string} opts.title
-     * @property {boolean} [opts.isVisible=false] - if true, will be created in the "Visible launchers", otherwise in "Available launchers"
-     * @property {string} [opts.icon] - name of the boxicon to be used (e.g. "bx-time")
-     * @property {string} [opts.keyboardShortcut] - will activate the target note/script upon pressing, e.g. "ctrl+e"
-     * @property {string} [opts.targetNoteId] - for type "note"
-     * @property {string} [opts.scriptNoteId] - for type "script"
-     * @property {string} [opts.widgetNoteId] - for type "customWidget"
+     * @param {string} opts.title
+     * @param {boolean} [opts.isVisible=false] - if true, will be created in the "Visible launchers", otherwise in "Available launchers"
+     * @param {string} [opts.icon] - name of the boxicon to be used (e.g. "bx-time")
+     * @param {string} [opts.keyboardShortcut] - will activate the target note/script upon pressing, e.g. "ctrl+e"
+     * @param {string} [opts.targetNoteId] - for type "note"
+     * @param {string} [opts.scriptNoteId] - for type "script"
+     * @param {string} [opts.widgetNoteId] - for type "customWidget"
      * @returns {{note: BNote}}
      */
     this.createOrUpdateLauncher = opts => {
@@ -528,6 +558,62 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise<void>}
      */
     this.exportSubtreeToZipFile = async (noteId, format, zipFilePath) => await exportService.exportToZipFile(noteId, format, zipFilePath);
+
+    /**
+     * Executes given anonymous function on the frontend(s).
+     * Internally this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
+     * Note that there can be multiple connected frontend instances (e.g. in different tabs). In such case, all
+     * instances execute the given function.
+     *
+     * @method
+     * @param {string} script - script to be executed on the frontend
+     * @param {Array.<?>} params - list of parameters to the anonymous function to be sent to frontend
+     * @returns {undefined} - no return value is provided.
+     */
+    this.runOnFrontend = async (script, params = []) => {
+        if (typeof script === "function") {
+            script = script.toString();
+        }
+
+        ws.sendMessageToAllClients({
+            type: 'execute-script',
+            script: script,
+            params: prepareParams(params),
+            startNoteId: this.startNote.noteId,
+            currentNoteId: this.currentNote.noteId,
+            originEntityName: "notes", // currently there's no other entity on the frontend which can trigger event
+            originEntityId: this.originEntity?.noteId || null
+        });
+
+        function prepareParams(params) {
+            if (!params) {
+                return params;
+            }
+
+            return params.map(p => {
+                if (typeof p === "function") {
+                    return `!@#Function: ${p.toString()}`;
+                }
+                else {
+                    return p;
+                }
+            });
+        }
+    };
+
+    /**
+     * Sync process can make data intermittently inconsistent. Scripts which require strong data consistency
+     * can use this function to wait for a possible sync process to finish and prevent new sync process from starting
+     * while it is running.
+     *
+     * Because this is an async process, the inner callback doesn't have automatic transaction handling, so in case
+     * you need to make some DB changes, you need to surround your call with api.transactional(...)
+     *
+     * @method
+     * @param {function} callback - function to be executed while sync process is not running
+     * @returns {Promise} - resolves once the callback is finished (callback is awaited)
+     */
+    this.runOutsideOfSync = syncMutex.doExclusively;
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.

@@ -27,7 +27,8 @@ const PROP_MAPPING = {
     "targetrelationcount": "targetRelationCount",
     "targetrelationcountincludinglinks": "targetRelationCountIncludingLinks",
     "contentsize": "contentSize",
-    "notesize": "noteSize",
+    "contentandattachmentssize": "contentAndAttachmentsSize",
+    "contentandattachmentsandrevisionssize": "contentAndAttachmentsAndRevisionsSize",
     "revisioncount": "revisionCount"
 };
 
@@ -42,7 +43,7 @@ class ValueExtractor {
             this.propertyPath = ['note', 'relations', this.propertyPath[0].substr(1), ...this.propertyPath.slice(1, this.propertyPath.length)];
         }
 
-        if (['contentsize', 'notesize', 'revisioncount'].includes(this.propertyPath[this.propertyPath.length - 1])) {
+        if (['contentsize', 'contentandattachmentssize', 'contentandattachmentsandrevisionssize', 'revisioncount'].includes(this.propertyPath[this.propertyPath.length - 1])) {
             searchContext.dbLoadNeeded = true;
         }
     }

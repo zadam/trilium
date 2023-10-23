@@ -31,7 +31,8 @@ const PROP_MAPPING = {
     "targetrelationcount": "targetRelationCount",
     "targetrelationcountincludinglinks": "targetRelationCountIncludingLinks",
     "contentsize": "contentSize",
-    "notesize": "noteSize",
+    "contentandattachmentssize": "contentAndAttachmentsSize",
+    "contentandattachmentsandrevisionssize": "contentAndAttachmentsAndRevisionsSize",
     "revisioncount": "revisionCount"
 };
 
@@ -48,7 +49,7 @@ class PropertyComparisonExp extends Expression {
         this.comparedValue = comparedValue; // for DEBUG mode
         this.comparator = buildComparator(operator, comparedValue);
 
-        if (['contentsize', 'notesize', 'revisioncount'].includes(this.propertyName)) {
+        if (['contentsize', 'contentandattachmentssize', 'contentandattachmentsandrevisionssize', 'revisioncount'].includes(this.propertyName)) {
             searchContext.dbLoadNeeded = true;
         }
     }

@@ -8,7 +8,8 @@ const TPL = `
         .attribute-list {
             margin-left: 7px;
             margin-right: 7px;
-            margin-top: 3px;
+            margin-top: 5px;
+            margin-bottom: 2px;
             position: relative;
         }
         

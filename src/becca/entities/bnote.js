@@ -18,6 +18,21 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 /**
+ * There are many different Note types, some of which are entirely opaque to the
+ * end user. Those types should be used only for checking against, they are
+ * not for direct use.
+ * @typedef {"file" | "image" | "search" | "noteMap" | "launcher" | "doc" | "contentWidget" | "text" | "relationMap" | "render" | "canvas" | "mermaid" | "book" | "webView" | "code"} NoteType
+ */
+
+/**
+ * @typedef {Object} NotePathRecord
+ * @property {boolean} isArchived
+ * @property {boolean} isInHoistedSubTree
+ * @property {Array<string>} notePath
+ * @property {boolean} isHidden
+ */
+
+/**
  * Trilium's main entity, which can represent text note, image, code note, file attachment etc.
  *
  * @extends AbstractBeccaEntity
@@ -60,7 +75,7 @@ class BNote extends AbstractBeccaEntity {
         this.noteId = noteId;
         /** @type {string} */
         this.title = title;
-        /** @type {string} */
+        /** @type {NoteType} */
         this.type = type;
         /** @type {string} */
         this.mime = mime;
@@ -76,7 +91,10 @@ class BNote extends AbstractBeccaEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
-        /** @type {boolean} - set during the deletion operation, before it is completed (removed from becca completely) */
+        /** 
+         * set during the deletion operation, before it is completed (removed from becca completely)
+         * @type {boolean}
+         */
         this.isBeingDeleted = false;
 
         // ------ Derived attributes ------
@@ -132,11 +150,17 @@ class BNote extends AbstractBeccaEntity {
          */
         this.contentSize = null;
         /**
-         * size of the content and note revision contents in bytes
+         * size of the note content, attachment contents in bytes
          * @type {int|null}
          * @private
          */
-        this.noteSize = null;
+        this.contentAndAttachmentsSize = null;
+        /**
+         * size of the note content, attachment contents and revision contents in bytes
+         * @type {int|null}
+         * @private
+         */
+        this.contentAndAttachmentsAndRevisionsSize = null;
         /**
          * number of note revisions for this note
          * @type {int|null}
@@ -211,12 +235,9 @@ class BNote extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    /** @returns {{dateModified, utcDateModified}} */
-    getContentMetadata() {
-        return sql.getRow(`SELECT dateModified, utcDateModified FROM blobs WHERE blobId = ?`, [this.blobId]);
-    }
-
-    /** @returns {*} */
+    /**
+     * @returns {*}
+     * @throws Error in case of invalid JSON */
     getJsonContent() {
         const content = this.getContent();
 
@@ -225,6 +246,16 @@ class BNote extends AbstractBeccaEntity {
         }
 
         return JSON.parse(content);
+    }
+
+    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
     }
 
     /**
@@ -1130,7 +1161,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /** @returns {BAttachment[]} */
-    getAttachmentByRole(role) {
+    getAttachmentsByRole(role) {
         return sql.getRows(`
                 SELECT attachments.*
                 FROM attachments 
@@ -1139,6 +1170,18 @@ class BNote extends AbstractBeccaEntity {
                   AND isDeleted = 0
                 ORDER BY position`, [this.noteId, role])
             .map(row => new BAttachment(row));
+    }
+
+    /** @returns {BAttachment} */
+    getAttachmentByTitle(title) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE ownerId = ? 
+                  AND title = ?
+                  AND isDeleted = 0
+                ORDER BY position`, [this.noteId, title])
+            .map(row => new BAttachment(row))[0];
     }
 
     /**
@@ -1166,7 +1209,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [hoistedNoteId='root']
-     * @return {Array<{isArchived: boolean, isInHoistedSubTree: boolean, notePath: Array<string>, isHidden: boolean}>}
+     * @return {Array<NotePathRecord>}
      */
     getSortedNotePathRecords(hoistedNoteId = 'root') {
         const isHoistedRoot = hoistedNoteId === 'root';
@@ -1571,7 +1614,6 @@ class BNote extends AbstractBeccaEntity {
     saveRevision() {
         return sql.transactional(() => {
             let noteContent = this.getContent();
-            const contentMetadata = this.getContentMetadata();
 
             const revision = new BRevision({
                 noteId: this.noteId,
@@ -1580,29 +1622,21 @@ class BNote extends AbstractBeccaEntity {
                 type: this.type,
                 mime: this.mime,
                 isProtected: this.isProtected,
-                utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
-                    ? this.utcDateModified
-                    : contentMetadata.utcDateModified,
+                utcDateLastEdited: this.utcDateModified,
                 utcDateCreated: dateUtils.utcNowDateTime(),
                 utcDateModified: dateUtils.utcNowDateTime(),
-                dateLastEdited: this.dateModified > contentMetadata.dateModified
-                    ? this.dateModified
-                    : contentMetadata.dateModified,
+                dateLastEdited: this.dateModified,
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 
             revision.save(); // to generate revisionId, which is then used to save attachments
 
-            if (this.type === 'text') {
-                for (const noteAttachment of this.getAttachments()) {
-                    if (noteAttachment.utcDateScheduledForErasureSince) {
-                        continue;
-                    }
+            for (const noteAttachment of this.getAttachments()) {
+                const revisionAttachment = noteAttachment.copy();
+                revisionAttachment.ownerId = revision.revisionId;
+                revisionAttachment.setContent(noteAttachment.getContent(), {forceSave: true});
 
-                    const revisionAttachment = noteAttachment.copy();
-                    revisionAttachment.ownerId = revision.revisionId;
-                    revisionAttachment.setContent(noteAttachment.getContent(), {forceSave: true});
-
+                if (this.type === 'text') {
                     // content is rewritten to point to the revision attachments
                     noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`,
                         `attachments/${revisionAttachment.attachmentId}`);
@@ -1610,32 +1644,40 @@ class BNote extends AbstractBeccaEntity {
                     noteContent = noteContent.replaceAll(new RegExp(`href="[^"]*attachmentId=${noteAttachment.attachmentId}[^"]*"`, 'gi'),
                         `href="api/attachments/${revisionAttachment.attachmentId}/download"`);
                 }
-
-                revision.setContent(noteContent, {forceSave: true});
             }
+
+            revision.setContent(noteContent);
 
             return revision;
         });
     }
 
     /**
+     * @param {string} matchBy - choose by which property we detect if to update an existing attachment.
+ *                               Supported values are either 'attachmentId' (default) or 'title'
      * @returns {BAttachment}
      */
-    saveAttachment({attachmentId, role, mime, title, content, position}) {
+    saveAttachment({attachmentId, role, mime, title, content, position}, matchBy = 'attachmentId') {
+        if (!['attachmentId', 'title'].includes(matchBy)) {
+            throw new Error(`Unsupported value '${matchBy}' for matchBy param, has to be either 'attachmentId' or 'title'.`);
+        }
+
         let attachment;
 
-        if (attachmentId) {
+        if (matchBy === 'title') {
+            attachment = this.getAttachmentByTitle(title);
+        } else if (matchBy === 'attachmentId' && attachmentId) {
             attachment = this.becca.getAttachmentOrThrow(attachmentId);
-        } else {
-            attachment = new BAttachment({
-                ownerId: this.noteId,
-                title,
-                role,
-                mime,
-                isProtected: this.isProtected,
-                position
-            });
         }
+
+        attachment = attachment || new BAttachment({
+            ownerId: this.noteId,
+            title,
+            role,
+            mime,
+            isProtected: this.isProtected,
+            position
+        });
 
         content = content || "";
         attachment.setContent(content, {forceSave: true});

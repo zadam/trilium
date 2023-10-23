@@ -7,6 +7,12 @@ const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
 
+
+/**
+ * There are currently only two types of attributes, labels or relations.
+ * @typedef {"label" | "relation"} AttributeType
+ */
+
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
@@ -47,7 +53,7 @@ class BAttribute extends AbstractBeccaEntity {
         this.attributeId = attributeId;
         /** @type {string} */
         this.noteId = noteId;
-        /** @type {string} */
+        /** @type {AttributeType} */
         this.type = type;
         /** @type {string} */
         this.name = name;

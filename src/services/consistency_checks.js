@@ -12,6 +12,7 @@ const BBranch = require('../becca/entities/bbranch');
 const revisionService = require('./revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
+const eraseService = require("../services/erase");
 const {sanitizeAttributeName} = require("./sanitize_attribute_name");
 const noteTypes = require("../services/note_types").getNoteTypeNames();
 
@@ -440,7 +441,7 @@ class ConsistencyChecks {
             this.findAndFixIssues(`
                         SELECT notes.noteId, notes.type, notes.mime
                         FROM notes
-                                 JOIN blobs USING (blobId)
+                          JOIN blobs USING (blobId)
                         WHERE isDeleted = 0
                           AND isProtected = 0
                           AND content IS NULL`,
@@ -460,19 +461,36 @@ class ConsistencyChecks {
         }
 
         this.findAndFixIssues(`
-                    SELECT revisions.revisionId
+                    SELECT revisions.revisionId, blobs.blobId
                     FROM revisions
                       LEFT JOIN blobs USING (blobId)
                     WHERE blobs.blobId IS NULL`,
-            ({revisionId}) => {
+            ({revisionId, blobId}) => {
                 if (this.autoFix) {
                     revisionService.eraseRevisions([revisionId]);
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note revision content '${revisionId}' was set to erased since its content did not exist.`);
+                    logFix(`Note revision '${revisionId}' was erased since the referenced blob '${blobId}' did not exist.`);
                 } else {
-                    logError(`Note revision content '${revisionId}' does not exist`);
+                    logError(`Note revision '${revisionId}' blob '${blobId}' does not exist`);
+                }
+            });
+
+        this.findAndFixIssues(`
+                    SELECT attachments.attachmentId, blobs.blobId
+                    FROM attachments
+                      LEFT JOIN blobs USING (blobId)
+                    WHERE blobs.blobId IS NULL`,
+            ({attachmentId, blobId}) => {
+                if (this.autoFix) {
+                    eraseService.eraseAttachments([attachmentId]);
+
+                    this.reloadNeeded = true;
+
+                    logFix(`Attachment '${attachmentId}' was erased since the referenced blob '${blobId}' did not exist.`);
+                } else {
+                    logError(`Attachment '${attachmentId}' blob '${blobId}' does not exist`);
                 }
             });
 
@@ -745,7 +763,7 @@ class ConsistencyChecks {
         }
 
         if (this.reloadNeeded) {
-            require("../becca/becca_loader").reload();
+            require("../becca/becca_loader").reload("consistency checks need becca reload");
         }
 
         return !this.unrecoveredConsistencyErrors;
@@ -758,7 +776,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens", "blobs" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }
@@ -767,7 +785,13 @@ class ConsistencyChecks {
         let elapsedTimeMs;
 
         await syncMutexService.doExclusively(() => {
-            elapsedTimeMs = this.runChecksInner();
+            const startTimeMs = Date.now();
+
+            this.runDbDiagnostics();
+
+            this.runAllChecksAndFixers();
+
+            elapsedTimeMs = Date.now() - startTimeMs;
         });
 
         if (this.unrecoveredConsistencyErrors) {
@@ -780,16 +804,6 @@ class ConsistencyChecks {
                 ` (took ${elapsedTimeMs}ms)`
             );
         }
-    }
-
-    runChecksInner() {
-        const startTimeMs = Date.now();
-
-        this.runDbDiagnostics();
-
-        this.runAllChecksAndFixers();
-
-        return Date.now() - startTimeMs;
     }
 }
 
@@ -825,11 +839,6 @@ async function runOnDemandChecks(autoFix) {
     await consistencyChecks.runChecks();
 }
 
-function runOnDemandChecksWithoutExclusiveLock(autoFix) {
-    const consistencyChecks = new ConsistencyChecks(autoFix);
-    consistencyChecks.runChecksInner();
-}
-
 function runEntityChangesChecks() {
     const consistencyChecks = new ConsistencyChecks(true);
     consistencyChecks.findEntityChangeIssues();
@@ -844,6 +853,5 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     runOnDemandChecks,
-    runOnDemandChecksWithoutExclusiveLock,
     runEntityChangesChecks
 };

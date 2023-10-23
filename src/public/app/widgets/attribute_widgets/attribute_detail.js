@@ -98,6 +98,14 @@ const TPL = `
             <th>Promoted:</th>
             <td><input type="checkbox" class="attr-input-promoted form-control form-control-sm" /></td>
         </tr>
+        <tr class="attr-row-promoted-alias">
+            <th title="The name to be displayed in the promoted attributes UI.">Alias:</th>
+            <td>
+                <div class="input-group">
+                    <input type="text" class="attr-input-promoted-alias form-control" />
+                </div>
+            </td>
+        </tr>
         <tr class="attr-row-multiplicity">
             <th title="Multiplicity defines how many attributes of the same name can be created - at max 1 or more than 1.">Multiplicity:</th>
             <td>
@@ -217,6 +225,7 @@ const ATTR_HELP = {
         "sqlConsoleHome": "default location of SQL console notes",
         "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)",
         "shareHiddenFromTree": "this note is hidden from left navigation tree, but still accessible with its URL",
+        "shareExternalLink": "note will act as a link to an external website in the share tree",
         "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
         "shareOmitDefaultCss": "default share page CSS will be omitted. Use when you make extensive styling changes.",
         "shareRoot": "marks note which is served on /share root.",
@@ -263,6 +272,7 @@ const ATTR_HELP = {
         "widget": "target of this relation will be executed and rendered as a widget in the sidebar",
         "shareCss": "CSS note which will be injected into the share page. CSS note must be in the shared sub-tree as well. Consider using 'shareHiddenFromTree' and 'shareOmitDefaultCss' as well.",
         "shareJs": "JavaScript note which will be injected into the share page. JS note must be in the shared sub-tree as well. Consider using 'shareHiddenFromTree'.",
+        "shareTemplate": "Embedded JavaScript note that will be used as the template for displaying the shared note. Falls back to the default template. Consider using 'shareHiddenFromTree'.",
         "shareFavicon": "Favicon note to be set in the shared page. Typically you want to set it to share root and make it inheritable. Favicon note must be in the shared sub-tree as well. Consider using 'shareHiddenFromTree'.",
     }
 };
@@ -322,6 +332,10 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowPromoted = this.$widget.find('.attr-row-promoted');
         this.$inputPromoted = this.$widget.find('.attr-input-promoted');
         this.$inputPromoted.on('change', () => this.userEditedAttribute());
+
+        this.$rowPromotedAlias = this.$widget.find('.attr-row-promoted-alias');
+        this.$inputPromotedAlias = this.$widget.find('.attr-input-promoted-alias');
+        this.$inputPromotedAlias.on('change', () => this.userEditedAttribute());
 
         this.$rowMultiplicity = this.$widget.find('.attr-row-multiplicity');
         this.$inputMultiplicity = this.$widget.find('.attr-input-multiplicity');
@@ -451,6 +465,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowPromoted.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
         this.$inputPromoted
             .prop("checked", !!definition.isPromoted)
+            .attr('disabled', () => !isOwned);
+
+        this.$rowPromotedAlias.toggle(!!definition.isPromoted);
+        this.$inputPromotedAlias
+            .val(definition.promotedAlias)
             .attr('disabled', () => !isOwned);
 
         this.$rowMultiplicity.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
@@ -673,6 +692,10 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         if (this.$inputPromoted.is(":checked")) {
             props.push("promoted");
+
+            if (this.$inputPromotedAlias.val() !== '') {
+                props.push(`alias=${this.$inputPromotedAlias.val()}`);
+            }
         }
 
         props.push(this.$inputMultiplicity.val());
@@ -692,6 +715,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowNumberPrecision.toggle(
             this.attrType === 'label-definition'
             && this.$inputLabelType.val() === 'number');
+
+        this.$rowPromotedAlias.toggle(this.$inputPromoted.is(":checked"));
 
         return props.join(",");
     }

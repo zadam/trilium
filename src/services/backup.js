@@ -8,6 +8,22 @@ const log = require('./log');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const sql = require('./sql');
+const path = require('path');
+
+function getExistingBackups() {
+    if (!fs.existsSync(dataDir.BACKUP_DIR)) {
+        return [];
+    }
+
+    return fs.readdirSync(dataDir.BACKUP_DIR)
+        .filter(fileName => fileName.includes("backup"))
+        .map(fileName => {
+            const filePath = path.resolve(dataDir.BACKUP_DIR, fileName);
+            const stat = fs.statSync(filePath)
+
+            return {fileName, filePath, mtime: stat.mtime};
+        });
+}
 
 function regularBackup() {
     cls.init(() => {
@@ -58,6 +74,7 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
 }
 
 module.exports = {
+    getExistingBackups,
     backupNow,
     regularBackup
 };

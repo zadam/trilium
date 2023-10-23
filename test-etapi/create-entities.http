@@ -7,13 +7,17 @@ Content-Type: application/json
   "parentNoteId": "root",
   "title": "Hello",
   "type": "text",
-  "content": "Hi there!"
+  "content": "Hi there!",
+  "dateCreated": "2023-08-21 23:38:51.123+0200",
+  "utcDateCreated": "2023-08-21 23:38:51.123Z"
 }
 
 > {%
     client.assert(response.status === 201);
     client.assert(response.body.note.noteId.startsWith("forcedId"));
     client.assert(response.body.note.title == "Hello");
+    client.assert(response.body.note.dateCreated == "2023-08-21 23:38:51.123+0200");
+    client.assert(response.body.note.utcDateCreated == "2023-08-21 23:38:51.123Z");
     client.assert(response.body.branch.parentNoteId == "root");
 
     client.log(`Created note ` + response.body.note.noteId + ` and branch ` + response.body.branch.branchId);

@@ -32,9 +32,10 @@ function getAllAttachments(req) {
 function saveAttachment(req) {
     const {noteId} = req.params;
     const {attachmentId, role, mime, title, content} = req.body;
+    const {matchBy} = req.query;
 
     const note = becca.getNoteOrThrow(noteId);
-    note.saveAttachment({attachmentId, role, mime, title, content});
+    note.saveAttachment({attachmentId, role, mime, title, content}, matchBy);
 }
 
 function uploadAttachment(req) {

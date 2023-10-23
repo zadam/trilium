@@ -14,21 +14,34 @@ function protectRevisions(note) {
     }
 
     for (const revision of note.getRevisions()) {
-        if (note.isProtected === revision.isProtected) {
-            continue;
+        if (note.isProtected !== revision.isProtected) {
+            try {
+                const content = revision.getContent();
+
+                revision.isProtected = note.isProtected;
+
+                // this will force de/encryption
+                revision.setContent(content, {forceSave: true});
+            } catch (e) {
+                log.error(`Could not un/protect note revision '${revision.revisionId}'`);
+
+                throw e;
+            }
         }
 
-        try {
-            const content = revision.getContent();
+        for (const attachment of revision.getAttachments()) {
+            if (note.isProtected !== attachment.isProtected) {
+                try {
+                    const content = attachment.getContent();
 
-            revision.isProtected = note.isProtected;
+                    attachment.isProtected = note.isProtected;
+                    attachment.setContent(content, {forceSave: true});
+                } catch (e) {
+                    log.error(`Could not un/protect attachment '${attachment.attachmentId}'`);
 
-            // this will force de/encryption
-            revision.setContent(content, {forceSave: true});
-        } catch (e) {
-            log.error(`Could not un/protect note revision '${revision.revisionId}'`);
-
-            throw e;
+                    throw e;
+                }
+            }
         }
     }
 }
@@ -38,7 +51,7 @@ function eraseRevisions(revisionIdsToErase) {
         return;
     }
 
-    log.info(`Removing note revisions: ${JSON.stringify(revisionIdsToErase)}`);
+    log.info(`Removing revisions: ${JSON.stringify(revisionIdsToErase)}`);
 
     sql.executeMany(`DELETE FROM revisions WHERE revisionId IN (???)`, revisionIdsToErase);
     sql.executeMany(`UPDATE entity_changes SET isErased = 1, utcDateChanged = '${dateUtils.utcNowDateTime()}' WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);

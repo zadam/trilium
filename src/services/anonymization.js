@@ -4,11 +4,13 @@ const dataDir = require("./data_dir");
 const dateUtils = require("./date_utils");
 const Database = require("better-sqlite3");
 const sql = require("./sql");
+const path = require("path");
 
 function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
-// on the other hand builtin/system attrs should not contain any sensitive info
+    // on the other hand builtin/system attrs should not contain any sensitive info
     const builtinAttrNames = BUILTIN_ATTRIBUTES
+        .filter(attr => !["shareCredentials", "shareAlias"].includes(attr.name))
         .map(attr => `'${attr.name}'`).join(', ');
 
     const anonymizeScript = `
@@ -69,7 +71,21 @@ async function createAnonymizedCopy(type) {
     };
 }
 
+function getExistingAnonymizedDatabases() {
+    if (!fs.existsSync(dataDir.ANONYMIZED_DB_DIR)) {
+        return [];
+    }
+
+    return fs.readdirSync(dataDir.ANONYMIZED_DB_DIR)
+        .filter(fileName => fileName.includes("anonymized"))
+        .map(fileName => ({
+            fileName: fileName,
+            filePath: path.resolve(dataDir.ANONYMIZED_DB_DIR, fileName)
+        }));
+}
+
 module.exports = {
     getFullAnonymizationScript,
-    createAnonymizedCopy
+    createAnonymizedCopy,
+    getExistingAnonymizedDatabases
 }

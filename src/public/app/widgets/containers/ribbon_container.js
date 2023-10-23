@@ -88,7 +88,7 @@ const TPL = `
         display: none;
         border-bottom: 1px solid var(--main-border-color);
         margin-left: 10px;
-        margin-right: 10px;
+        margin-right: 5px; /* needs to have this value so that the bottom border is the same width as the top one */
     }
     
     .ribbon-body.active {

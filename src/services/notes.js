@@ -1,5 +1,4 @@
 const sql = require('./sql');
-const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const entityChangesService = require('./entity_changes');
@@ -16,6 +15,7 @@ const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
 const BNote = require('../becca/entities/bnote');
 const BAttribute = require('../becca/entities/battribute');
+const BAttachment = require("../becca/entities/battachment");
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
@@ -169,6 +169,15 @@ function createNewNote(params) {
         throw new Error(`Note content must be set`);
     }
 
+    let error;
+    if (error = dateUtils.validateLocalDateTime(params.dateCreated)) {
+        throw new Error(error);
+    }
+
+    if (error = dateUtils.validateUtcDateTime(params.utcDateCreated)) {
+        throw new Error(error);
+    }
+
     return sql.transactional(() => {
         let note, branch, isEntityEventsDisabled;
 
@@ -189,7 +198,9 @@ function createNewNote(params) {
                 title: params.title,
                 isProtected: !!params.isProtected,
                 type: params.type,
-                mime: deriveMime(params.type, params.mime)
+                mime: deriveMime(params.type, params.mime),
+                dateCreated: params.dateCreated,
+                utcDateCreated: params.utcDateCreated
             }).save();
 
             note.setContent(params.content);
@@ -722,7 +733,7 @@ function saveRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteData(noteId, content) {
+function updateNoteData(noteId, content, attachments = []) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
@@ -734,6 +745,23 @@ function updateNoteData(noteId, content) {
     const { forceFrontendReload, content: newContent } = saveLinks(note, content);
 
     note.setContent(newContent, { forceFrontendReload });
+
+    if (attachments?.length > 0) {
+        /** @var {Object<string, BAttachment>} */
+        const existingAttachmentsByTitle = utils.toMap(note.getAttachments({includeContentLength: false}), 'title');
+
+        for (const {attachmentId, role, mime, title, content, position} of attachments) {
+            if (attachmentId || !(title in existingAttachmentsByTitle)) {
+                note.saveAttachment({attachmentId, role, mime, title, content, position});
+            } else {
+                const existingAttachment = existingAttachmentsByTitle[title];
+                existingAttachment.role = role;
+                existingAttachment.mime = mime;
+                existingAttachment.position = position;
+                existingAttachment.setContent(content, {forceSave: true});
+            }
+        }
+    }
 }
 
 /**
@@ -800,6 +828,16 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             new BAttribute(attributeRow).save({skipValidation: true});
         }
 
+        const attachmentRows = sql.getRows(`
+            SELECT * FROM attachments
+            WHERE isDeleted = 1
+              AND deleteId = ?
+              AND ownerId = ?`, [deleteId, noteRow.noteId]);
+
+        for (const attachmentRow of attachmentRows) {
+            new BAttachment(attachmentRow).save();
+        }
+
         const childBranchIds = sql.getColumn(`
             SELECT branches.branchId
             FROM branches
@@ -857,6 +895,10 @@ async function asyncPostProcessContent(note, content) {
 
 // all keys should be replaced by the corresponding values
 function replaceByMap(str, mapObj) {
+    if (!mapObj) {
+        return str;
+    }
+
     const re = new RegExp(Object.keys(mapObj).join("|"),"g");
 
     return str.replace(re, matched => mapObj[matched]);

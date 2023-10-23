@@ -13,7 +13,7 @@ const env = require('./env');
 if (env.isDev()) {
     const chokidar = require('chokidar');
     const debounce = require('debounce');
-    const debouncedReloadFrontend = debounce(reloadFrontend, 200);
+    const debouncedReloadFrontend = debounce(() => reloadFrontend("source code change"), 200);
     chokidar
         .watch('src/public')
         .on('add', debouncedReloadFrontend)
@@ -230,8 +230,8 @@ function syncFailed() {
     sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
 }
 
-function reloadFrontend() {
-    sendMessageToAllClients({ type: 'reload-frontend' });
+function reloadFrontend(reason) {
+    sendMessageToAllClients({ type: 'reload-frontend', reason });
 }
 
 function setLastSyncedPush(entityChangeId) {

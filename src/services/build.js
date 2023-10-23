@@ -1,1 +1,1 @@
-module.exports = { buildDate:"2023-07-31T23:03:45+02:00", buildRevision: "530e56dcb595a764ec0f6221c09b1b3a7ac22f0d" };
+module.exports = { buildDate:"2023-10-19T09:33:51+02:00", buildRevision: "b01fe5ead9268784fb133a8cfa53670927ba0e3b" };

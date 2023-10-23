@@ -4,8 +4,11 @@ import toastService from "./toast.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 
-async function getAndExecuteBundle(noteId, originEntity = null) {
-    const bundle = await server.get(`script/bundle/${noteId}`);
+async function getAndExecuteBundle(noteId, originEntity = null, script = null, params = null) {
+    const bundle = await server.post(`script/bundle/${noteId}`, {
+        script,
+        params
+    });
 
     return await executeBundle(bundle, originEntity);
 }
@@ -50,7 +53,15 @@ class WidgetsByParent {
     }
 
     get(parentName) {
-        return this.byParent[parentName] || [];
+        if (!this.byParent[parentName]) {
+            return [];
+        }
+
+        return this.byParent[parentName]
+            // previously, custom widgets were provided as a single instance, but that has the disadvantage
+            // for splits where we actually need multiple instaces and thus having a class to instantiate is better
+            // https://github.com/zadam/trilium/issues/4274
+            .map(w => w.prototype ? new w() : w);
     }
 }
 

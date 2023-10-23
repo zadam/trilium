@@ -54,7 +54,7 @@ const LOG_ALL_QUERIES = false;
 });
 
 function insert(tableName, rec, replace = false) {
-    const keys = Object.keys(rec);
+    const keys = Object.keys(rec || {});
     if (keys.length === 0) {
         log.error(`Can't insert empty object into table ${tableName}`);
         return;
@@ -81,7 +81,7 @@ function replace(tableName, rec) {
 }
 
 function upsert(tableName, primaryKey, rec) {
-    const keys = Object.keys(rec);
+    const keys = Object.keys(rec || {});
     if (keys.length === 0) {
         log.error(`Can't upsert empty object into table ${tableName}`);
         return;
@@ -253,7 +253,7 @@ function wrap(query, func) {
 
     const milliseconds = Date.now() - startTimestamp;
 
-    if (milliseconds >= 20) {
+    if (milliseconds >= 20 &amp;&amp; !cls.isSlowQueryLoggingDisabled()) {
         if (query.includes("WITH RECURSIVE")) {
             log.info(`Slow recursive query took ${milliseconds}ms.`);
         }
@@ -321,6 +321,19 @@ async function copyDatabase(targetFilePath) {
     } // unlink throws exception if the file did not exist
 
     await dbConnection.backup(targetFilePath);
+}
+
+function disableSlowQueryLogging(cb) {
+    const orig = cls.isSlowQueryLoggingDisabled();
+
+    try {
+        cls.disableSlowQueryLogging(true);
+
+        return cb();
+    }
+    finally {
+        cls.disableSlowQueryLogging(orig);
+    }
 }
 
 module.exports = {
@@ -395,7 +408,8 @@ module.exports = {
     transactional,
     upsert,
     fillParamList,
-    copyDatabase
+    copyDatabase,
+    disableSlowQueryLogging
 };
 </code></pre>
         </article>
@@ -407,7 +421,7 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttachment.html">BAttachment</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BRevision.html">BRevision</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul><h3>Global</h3><ul><li><a href="global.html#api">api</a></li></ul>
 </nav>
 
 <br class="clear">

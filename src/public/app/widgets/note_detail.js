@@ -86,6 +86,8 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             protectedSessionHolder.touchProtectedSessionIfNecessary(note);
 
             await server.put(`notes/${noteId}/data`, data, this.componentId);
+
+            this.getTypeWidget().dataSaved?.();
         });
 
         appContext.addBeforeUnloadListener(this);
@@ -142,7 +144,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         this.$widget.toggleClass("full-height",
             (
                 !this.noteContext.hasNoteList()
-                && ['editableText', 'editableCode', 'canvas', 'webView', 'noteMap'].includes(this.type)
+                && ['canvas', 'webView', 'noteMap'].includes(this.type)
                 && this.mime !== 'text/x-sqlite;schema=trilium'
             )
             || this.noteContext.viewScope.viewMode === 'attachments'
@@ -167,7 +169,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         let type = note.type;
         const viewScope = this.noteContext.viewScope;
 
-        if (type === 'text' && viewScope.viewMode === 'source') {
+        if (viewScope.viewMode === 'source') {
             type = 'readOnlyCode';
         } else if (viewScope.viewMode === 'attachments') {
             type = viewScope.attachmentId ? 'attachmentDetail' : 'attachmentList';
@@ -191,12 +193,27 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     async focusOnDetailEvent({ntxId}) {
-        if (this.noteContext.ntxId === ntxId) {
-            await this.refresh();
+        if (this.noteContext.ntxId !== ntxId) {
+            return;
+        }
 
-            const widget = this.getTypeWidget();
-            await widget.initialized;
-            widget.focus();
+        await this.refresh();
+        const widget = this.getTypeWidget();
+        await widget.initialized;
+        widget.focus();
+    }
+
+    async scrollToEndEvent({ntxId}) {
+        if (this.noteContext.ntxId !== ntxId) {
+            return;
+        }
+
+        await this.refresh();
+        const widget = this.getTypeWidget();
+        await widget.initialized;
+
+        if (widget.scrollToEnd) {
+            widget.scrollToEnd();
         }
     }
 

@@ -61,9 +61,13 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
+
         this.$copyReferenceToClipboardButton = this.$widget.find(".image-copy-reference-to-clipboard");
+        this.$copyReferenceToClipboardButton.on('click', () => this.triggerEvent(`copyImageReferenceToClipboard`, {ntxId: this.noteContext.ntxId}));
+
         this.$uploadNewRevisionButton = this.$widget.find(".image-upload-new-revision");
         this.$uploadNewRevisionInput = this.$widget.find(".image-upload-new-revision-input");
+
         this.$fileName = this.$widget.find(".image-filename");
         this.$fileType = this.$widget.find(".image-filetype");
         this.$fileSize = this.$widget.find(".image-filesize");
@@ -73,8 +77,6 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
 
         this.$imageDownloadButton = this.$widget.find(".image-download");
         this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));
-
-        this.$copyReferenceToClipboardButton.on('click', () => this.triggerEvent(`copyImageReferenceToClipboard`, {ntxId: this.noteContext.ntxId}));
 
         this.$uploadNewRevisionButton.on("click", () => {
             this.$uploadNewRevisionInput.trigger("click");

@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const safeCompare = require('safe-compare');
+const ejs = require("ejs");
 
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
@@ -8,6 +9,9 @@ const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
 const assetPath = require("../services/asset_path");
 const appPath = require("../services/app_path");
+const searchService = require("../services/search/services/search");
+const SearchContext = require("../services/search/search_context");
+const log = require("../services/log");
 
 /**
  * @param {SNote} note
@@ -105,6 +109,27 @@ function checkNoteAccess(noteId, req, res) {
     return false;
 }
 
+function renderImageAttachment(image, res, attachmentName) {
+    let svgString = '<svg/>'
+    const attachment = image.getAttachmentByTitle(attachmentName);
+
+    if (attachment) {
+        svgString = attachment.getContent();
+    } else {
+        // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
+        const contentSvg = image.getJsonContentSafely()?.svg;
+
+        if (contentSvg) {
+            svgString = contentSvg;
+        }
+    }
+
+    const svg = svgString
+    res.set('Content-Type', "image/svg+xml");
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.send(svg);
+}
+
 function register(router) {
     function renderNote(note, req, res) {
         if (!note) {
@@ -128,21 +153,43 @@ function register(router) {
         }
 
         const {header, content, isEmpty} = contentRenderer.getContent(note);
-
         const subRoot = getSharedSubTreeRoot(note);
+        const opts = {note, header, content, isEmpty, subRoot, assetPath, appPath};
+        let useDefaultView = true;
 
-        res.render("share/page", {
-            note,
-            header,
-            content,
-            isEmpty,
-            subRoot,
-            assetPath,
-            appPath
-        });
+        // Check if the user has their own template
+        if (note.hasRelation('shareTemplate')) {
+            // Get the template note and content
+            const templateId = note.getRelation('shareTemplate').value;
+            const templateNote = shaca.getNote(templateId);
+
+            // Make sure the note type is correct
+            if (templateNote.type === 'code' && templateNote.mime === 'application/x-ejs') {
+
+                // EJS caches the result of this so we don't need to pre-cache
+                const includer = (path) => {
+                    const childNote = templateNote.children.find(n => path === n.title);
+                    if (!childNote) return null;
+                    if (childNote.type !== 'code' || childNote.mime !== 'application/x-ejs') return null;
+                    return { template: childNote.getContent() };
+                };
+
+                // Try to render user's template, w/ fallback to default view
+                try {
+                    const ejsResult = ejs.render(templateNote.getContent(), opts, {includer});
+                    res.send(ejsResult);
+                    useDefaultView = false; // Rendering went okay, don't use default view
+                }
+                catch (e) {
+                    log.error(`Rendering user provided share template (${templateId}) threw exception ${e.message} with stacktrace: ${e.stack}`);
+                }
+            }
+        }
+
+        if (useDefaultView) {
+            res.render('share/page', opts);
+        }
     }
-
-    router.use('/share/canvas_share.js', express.static(path.join(__dirname, 'canvas_share.js')));
 
     router.get('/share/', (req, res, next) => {
         if (req.path.substr(-1) !== '/') {
@@ -211,32 +258,18 @@ function register(router) {
             return;
         }
 
-        if (!["image", "canvas"].includes(image.type)) {
-            return res.status(400)
-                .json({ message: "Requested note is not a shareable image" });
-        } else if (image.type === "canvas") {
-            /**
-             * special "image" type. the canvas is actually type application/json
-             * to avoid bitrot and enable usage as referenced image the svg is included.
-             */
-            const content = image.getContent();
-            try {
-                const data = JSON.parse(content);
-
-                const svg = data.svg || '<svg />';
-                addNoIndexHeader(image, res);
-                res.set('Content-Type', "image/svg+xml");
-                res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-                res.send(svg);
-            } catch (err) {
-                res.status(500)
-                    .json({ message: "There was an error parsing excalidraw to svg." });
-            }
-        } else {
+        if (image.type === 'image') {
             // normal image
             res.set('Content-Type', image.mime);
             addNoIndexHeader(image, res);
             res.send(image.getContent());
+        } else if (image.type === "canvas") {
+            renderImageAttachment(image, res, 'canvas-export.svg');
+        } else if (image.type === 'mermaid') {
+            renderImageAttachment(image, res, 'mermaid-export.svg');
+        } else {
+            return res.status(400)
+                .json({ message: "Requested note is not a shareable image" });
         }
     });
 
@@ -299,6 +332,37 @@ function register(router) {
         res.setHeader('Content-Type', note.mime);
 
         res.send(note.getContent());
+    });
+
+    // Used for searching, require noteId so we know the subTreeRoot
+    router.get('/share/api/notes', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
+        const ancestorNoteId = req.query.ancestorNoteId ?? "_share";
+        let note;
+
+        // This will automatically return if no ancestorNoteId is provided and there is no shareIndex
+        if (!(note = checkNoteAccess(ancestorNoteId, req, res))) {
+            return;
+        }
+
+        const {search} = req.query;
+
+        if (!search?.trim()) {
+            return res.status(400).json({ message: "'search' parameter is mandatory." });
+        }
+
+        const searchContext = new SearchContext({ancestorNoteId: ancestorNoteId});
+        const searchResults = searchService.findResultsWithQuery(search, searchContext);
+        const filteredResults = searchResults.map(sr => {
+            const fullNote = shaca.notes[sr.noteId];
+            const startIndex = sr.notePathArray.indexOf(ancestorNoteId);
+            const localPathArray = sr.notePathArray.slice(startIndex + 1).filter(id => shaca.notes[id]);
+            const pathTitle = localPathArray.map(id => shaca.notes[id].title).join(" / ");
+            return { id: fullNote.shareId, title: fullNote.title, score: sr.score, path: pathTitle };
+        });
+
+        res.json({ results: filteredResults });
     });
 }
 

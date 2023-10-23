@@ -185,32 +185,16 @@ export default class TocWidget extends RightPanelWidget {
         // See https://github.com/zadam/trilium/issues/2828
         const isReadOnly = await this.noteContext.isReadOnly();
 
+        let $container;
         if (isReadOnly) {
-            const $container = await this.noteContext.getContentElement();
-            const headingElement = $container.find(":header:not(section.include-note :header)")[headingIndex];
-
-            if (headingElement != null) {
-                headingElement.scrollIntoView({ behavior: "smooth" });
-            }
+            $container = await this.noteContext.getContentElement();
         } else {
             const textEditor = await this.noteContext.getTextEditor();
-
-            const model = textEditor.model;
-            const doc = model.document;
-            const root = doc.getRoot();
-
-            const headingNode = findHeadingNodeByIndex(root, headingIndex);
-
-            // headingNode could be null if the html was malformed or
-            // with headings inside elements, just ignore and don't
-            // navigate (note that the TOC rendering and other TOC
-            // entries' navigation could be wrong too)
-            if (headingNode != null) {
-                $(textEditor.editing.view.domRoots.values().next().value).find(':header:not(section.include-note :header)')[headingIndex].scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
+            $container = $(textEditor.sourceElement);
         }
+
+        const headingElement = $container?.find(":header:not(section.include-note :header)")?.[headingIndex];
+        headingElement?.scrollIntoView({ behavior: "smooth" });
     }
 
     async closeTocCommand() {
@@ -231,35 +215,6 @@ export default class TocWidget extends RightPanelWidget {
     }
 }
 
-/**
- * Find a heading node in the parent's children given its index.
- *
- * @param {Element} parent Parent node to find a headingIndex'th in.
- * @param {uint} headingIndex Index for the heading
- * @returns {Element|null} Heading node with the given index, null couldn't be
- *          found (ie malformed like nested headings, etc.)
- */
-function findHeadingNodeByIndex(parent, headingIndex) {
-    let headingNode = null;
-    for (let i = 0; i < parent.childCount; ++i) {
-        let child = parent.getChild(i);
-
-        // Headings appear as flattened top level children in the CKEditor
-        // document named as "heading" plus the level, eg "heading2",
-        // "heading3", "heading2", etc. and not nested wrt the heading level. If
-        // a heading node is found, decrement the headingIndex until zero is
-        // reached
-        if (child.name.startsWith("heading")) {
-            if (headingIndex === 0) {
-                headingNode = child;
-                break;
-            }
-            headingIndex--;
-        }
-    }
-
-    return headingNode;
-}
 
 class CloseTocButton extends OnClickButtonWidget {
     constructor() {

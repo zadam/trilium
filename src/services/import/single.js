@@ -121,7 +121,11 @@ function importMarkdown(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
     const markdownContent = file.buffer.toString("utf-8");
-    const htmlContent = markdownService.renderToHtml(markdownContent, title);
+    let htmlContent = markdownService.renderToHtml(markdownContent, title);
+
+    if (taskContext.data.safeImport) {
+        htmlContent = htmlSanitizer.sanitize(htmlContent);
+    }
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
@@ -141,7 +145,10 @@ function importHtml(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     let content = file.buffer.toString("utf-8");
 
-    content = htmlSanitizer.sanitize(content);
+    if (taskContext.data.safeImport) {
+        content = htmlSanitizer.sanitize(content);
+    }
+
     content = importUtils.handleH1(content, title);
 
     const {note} = noteService.createNewNote({

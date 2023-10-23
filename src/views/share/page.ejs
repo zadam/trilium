@@ -32,7 +32,7 @@
     <%- header %>
     <title><%= note.title %></title>
 </head>
-<body data-note-id="<%= note.noteId %>">
+<body data-note-id="<%= note.noteId %>" data-ancestor-note-id="<%= subRoot.note.noteId %>">
 <div id="layout">
     <div id="main">
         <% if (note.parents[0].noteId !== '_share' && note.parents.length !== 0) { %>
@@ -62,9 +62,14 @@
                 <% } %>
 
                 <ul>
-                    <% for (const childNote of note.getVisibleChildNotes()) { %>
+                    <%
+                    for (const childNote of note.getVisibleChildNotes()) {
+                        const isExternalLink = childNote.hasLabel('shareExternalLink');
+                        const linkHref = isExternalLink ? childNote.getLabelValue('shareExternalLink') : `./${childNote.shareId}`;
+                        const target = isExternalLink ? `target="_blank" rel="noopener noreferrer"` : '';
+                    %>
                         <li>
-                            <a href="<%= childNote.shareId %>"
+                            <a href="<%= linkHref %>" <%= target %>
                                class="type-<%= childNote.type %>"><%= childNote.title %></a>
                         </li>
                     <% } %>

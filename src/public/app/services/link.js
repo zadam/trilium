@@ -194,6 +194,10 @@ function goToLink(evt) {
     const $link = $(evt.target).closest("a,.block-link");
     const hrefLink = $link.attr('href') || $link.attr('data-href');
 
+    return goToLinkExt(evt, hrefLink, $link);
+}
+
+function goToLinkExt(evt, hrefLink, $link) {
     if (hrefLink?.startsWith("data:")) {
         return true;
     }
@@ -201,7 +205,7 @@ function goToLink(evt) {
     evt.preventDefault();
     evt.stopPropagation();
 
-    const { notePath, viewScope } = parseNavigationStateFromUrl(hrefLink);
+    const {notePath, viewScope} = parseNavigationStateFromUrl(hrefLink);
 
     const ctrlKey = utils.isCtrlKey(evt);
     const isLeftClick = evt.which === 1;
@@ -213,25 +217,23 @@ function goToLink(evt) {
 
     if (notePath) {
         if (openInNewTab) {
-            appContext.tabManager.openTabWithNoteWithHoisting(notePath, { viewScope });
-        }
-        else if (isLeftClick) {
+            appContext.tabManager.openTabWithNoteWithHoisting(notePath, {viewScope});
+        } else if (isLeftClick) {
             const ntxId = $(evt.target).closest("[data-ntx-id]").attr("data-ntx-id");
 
             const noteContext = ntxId
                 ? appContext.tabManager.getNoteContextById(ntxId)
                 : appContext.tabManager.getActiveContext();
 
-            noteContext.setNote(notePath, { viewScope }).then(() => {
+            noteContext.setNote(notePath, {viewScope}).then(() => {
                 if (noteContext !== appContext.tabManager.getActiveContext()) {
                     appContext.tabManager.activateNoteContext(noteContext.ntxId);
                 }
             });
         }
-    }
-    else if (hrefLink) {
-        const withinEditLink = $link.hasClass("ck-link-actions__preview");
-        const outsideOfCKEditor = $link.closest("[contenteditable]").length === 0;
+    } else if (hrefLink) {
+        const withinEditLink = $link?.hasClass("ck-link-actions__preview");
+        const outsideOfCKEditor = !$link || $link.closest("[contenteditable]").length === 0;
 
         if (openInNewTab
             || (withinEditLink && (leftClick || middleClick))
@@ -239,8 +241,7 @@ function goToLink(evt) {
         ) {
             if (hrefLink.toLowerCase().startsWith('http') || hrefLink.startsWith("api/")) {
                 window.open(hrefLink, '_blank');
-            }
-            else if (hrefLink.toLowerCase().startsWith('file:') && utils.isElectron()) {
+            } else if (hrefLink.toLowerCase().startsWith('file:') && utils.isElectron()) {
                 const electron = utils.dynamicRequire('electron');
 
                 electron.shell.openPath(hrefLink);
@@ -364,6 +365,7 @@ export default {
     getNotePathFromUrl,
     createLink,
     goToLink,
+    goToLinkExt,
     loadReferenceLinkTitle,
     getReferenceLinkTitle,
     getReferenceLinkTitleSync,

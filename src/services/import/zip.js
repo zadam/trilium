@@ -311,7 +311,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
         }
 
-        content = removeTrilumTags(content);
+        content = removeTriliumTags(content);
 
         content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
             if (noteTitle.trim() === text.trim()) {
@@ -321,12 +321,19 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         });
 
-        content = htmlSanitizer.sanitize(content);
+        if (taskContext.data.safeImport) {
+            content = htmlSanitizer.sanitize(content);
+        }
 
         content = content.replace(/<html.*<body[^>]*>/gis, "");
         content = content.replace(/<\/body>.*<\/html>/gis, "");
 
         content = content.replace(/src="([^"]*)"/g, (match, url) => {
+            if (url.startsWith("data:image")) {
+                // inline images are parsed and saved into attachments in the note service
+                return match;
+            }
+
             try {
                 url = decodeURIComponent(url).trim();
             } catch (e) {
@@ -388,7 +395,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
-    function removeTrilumTags(content) {
+    function removeTriliumTags(content) {
         const tagsToRemove = [
             '<h1 data-trilium-h1>([^<]*)<\/h1>',
             '<title data-trilium-title>([^<]*)<\/title>'
@@ -456,7 +463,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 position: attachmentMeta.position
             });
 
-            attachment.setContent(content);
+            attachment.setContent(content, { forceSave: true });
             return;
         }
 

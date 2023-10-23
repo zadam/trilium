@@ -105,11 +105,24 @@ class NoteContext extends Component {
         return appContext.tabManager.noteContexts.filter(nc => nc.ntxId === this.ntxId || nc.mainNtxId === this.ntxId);
     }
 
+    /**
+     * A main context represents a tab and also the first split. Further splits are the children contexts of the main context.
+     * Imagine you have a tab with 3 splits, each showing notes A, B, C (in this order).
+     * In such a scenario, A context is the main context (also representing the tab as a whole), and B, C are the children
+     * of context A.
+     *
+     * @returns {boolean} true if the context is main (= tab)
+     */
     isMainContext() {
         // if null, then this is a main context
         return !this.mainNtxId;
     }
 
+    /**
+     * See docs for isMainContext() for better explanation.
+     *
+     * @returns {NoteContext}
+     */
     getMainContext() {
         if (this.mainNtxId) {
             try {
@@ -265,32 +278,39 @@ class NoteContext extends Component {
     }
 
     async getTextEditor(callback) {
-        return new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
             callback,
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getCodeEditor() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getContentElement() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
     }
 
     async getTypeWidget() {
-        return new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
+        return this.timeout(new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
             resolve,
             ntxId: this.ntxId
-        }));
+        })));
+    }
+
+    timeout(promise) {
+        return Promise.race([
+            promise,
+            new Promise(res => setTimeout(() => res(null), 200))
+        ]);
     }
 
     resetViewScope() {

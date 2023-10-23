@@ -16,6 +16,10 @@ const TPL = `
             z-index: 100;
         }
         
+        .type-canvas .floating-buttons-children {
+            top: 70px; 
+        }
+        
         .floating-buttons-children > *:not(.hidden-int):not(.no-content-hidden) {
             margin-left: 10px;
         }

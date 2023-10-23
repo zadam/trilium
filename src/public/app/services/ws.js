@@ -125,6 +125,13 @@ async function handleMessage(event) {
     else if (message.type === 'toast') {
         toastService.showMessage(message.message);
     }
+    else if (message.type === 'execute-script') {
+        const bundleService = (await import("../services/bundle.js")).default;
+        const froca = (await import("../services/froca.js")).default;
+        const originEntity = message.originEntityId ? await froca.getNote(message.originEntityId) : null;
+
+        bundleService.getAndExecuteBundle(message.currentNoteId, originEntity, message.script, message.params);
+    }
 }
 
 let entityChangeIdReachedListeners = [];

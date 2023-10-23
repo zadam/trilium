@@ -69,7 +69,8 @@ export default class TreeContextMenu {
                     { title: 'Collapse subtree <kbd data-command="collapseSubtree"></kbd>', command: "collapseSubtree", uiIcon: "bx bx-collapse", enabled: noSelectedNotes },
                     { title: 'Sort by ... <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "bx bx-empty", enabled: noSelectedNotes && notSearch },
                     { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "bx bx-history", enabled: noSelectedNotes },
-                    { title: 'Convert to attachment', command: "convertNoteToAttachment", uiIcon: "bx bx-empty", enabled: isNotRoot && !isHoisted }
+                    { title: 'Convert to attachment', command: "convertNoteToAttachment", uiIcon: "bx bx-empty", enabled: isNotRoot && !isHoisted },
+                    { title: 'Copy note path to clipboard', command: "copyNotePathToClipboard", uiIcon: "bx bx-empty", enabled: true }
                 ] },
             { title: "----" },
             { title: "Protect subtree", command: "protectSubtree", uiIcon: "bx bx-check-shield", enabled: noSelectedNotes },
@@ -152,6 +153,9 @@ export default class TreeContextMenu {
             }
 
             toastService.showMessage(`${converted} notes have been converted to attachments.`);
+        }
+        else if (command === 'copyNotePathToClipboard') {
+            navigator.clipboard.writeText('#' + notePath);
         }
         else {
             this.treeWidget.triggerCommand(command, {

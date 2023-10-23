@@ -18,7 +18,7 @@ const TPL = `
     .global-menu-button {
         background-image: url("${window.glob.assetPath}/images/icon-black.svg");
         background-repeat: no-repeat;
-        background-position: 50% 80%;
+        background-position: 40% 50%;
         background-size: 45px;
         width: 100%;
         height: 100%;
@@ -131,7 +131,7 @@ const TPL = `
                 
                 <a data-trigger-command="zoomOut" title="Zoom Out" class="bx bx-minus"></a>
                 
-                <span class="zoom-state"></span>
+                <span data-trigger-command="zoomReset" title="Reset Zoom Level" class="zoom-state"></span>
                 
                 <a data-trigger-command="zoomIn" title="Zoom In" class="bx bx-plus"></a>
             </div>

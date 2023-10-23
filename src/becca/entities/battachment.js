@@ -20,8 +20,7 @@ const attachmentRoleToNoteTypeMapping = {
 class BAttachment extends AbstractBeccaEntity {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
-    static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId",
-                                            "utcDateScheduledForErasureSince", "utcDateModified"]; }
+    static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId", "utcDateScheduledForErasureSince"]; }
 
     constructor(row) {
         super();
@@ -38,7 +37,10 @@ class BAttachment extends AbstractBeccaEntity {
 
         /** @type {string} */
         this.attachmentId = row.attachmentId;
-        /** @type {string} either noteId or revisionId to which this attachment belongs */
+        /** 
+         * either noteId or revisionId to which this attachment belongs
+         * @type {string}
+         */
         this.ownerId = row.ownerId;
         /** @type {string} */
         this.role = row.role;
@@ -59,7 +61,10 @@ class BAttachment extends AbstractBeccaEntity {
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
-        /** @type {int} optionally added to the entity */
+        /**
+         * optionally added to the entity
+         * @type {int}
+         */
         this.contentLength = row.contentLength;
 
         this.decrypt();
@@ -98,7 +103,12 @@ class BAttachment extends AbstractBeccaEntity {
     }
 
     decrypt() {
-        if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+        if (!this.isProtected || !this.attachmentId) {
+            this.isDecrypted = true;
+            return;
+        }
+
+        if (!this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
                 this.title = protectedSessionService.decryptString(this.title);
                 this.isDecrypted = true;

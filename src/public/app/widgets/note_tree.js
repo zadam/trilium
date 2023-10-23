@@ -14,7 +14,6 @@ import keyboardActionsService from "../services/keyboard_actions.js";
 import clipboard from "../services/clipboard.js";
 import protectedSessionService from "../services/protected_session.js";
 import linkService from "../services/link.js";
-import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import dialogService from "../services/dialog.js";
@@ -586,6 +585,17 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 });
             },
             select: (event, {node}) => {
+                if (hoistedNoteService.getHoistedNoteId() === 'root'
+                    && node.data.noteId === '_hidden'
+                    && node.isSelected()) {
+
+                    // hidden is hackily hidden from the tree via CSS when root is hoisted
+                    // make sure it's not selected by mistake, it could be e.g. deleted by mistake otherwise
+                    node.setSelected(false);
+
+                    return;
+                }
+
                 $(node.span).find(".fancytree-custom-icon").attr("title",
                     node.isSelected() ? "Apply bulk actions on selected notes" : "");
             }
@@ -799,7 +809,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             nodes.push(this.getActiveNode());
         }
 
-        return nodes;
+        // hidden subtree is hackily hidden via CSS when hoisted to root
+        // make sure it's never selected for e.g. deletion in such a case
+        return nodes.filter(node => hoistedNoteService.getHoistedNoteId() !== 'root'
+                                               || node.data.noteId !== '_hidden');
     }
 
     async setExpandedStatusForSubtree(node, isExpanded) {
@@ -1134,6 +1147,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         let parentsOfAddedNodes = [];
 
         const allBranchRows = loadResults.getBranchRows();
+        // TODO: this flag is suspicious - why does it matter that all branches in a particular update are deleted?
         const allBranchesDeleted = allBranchRows.every(branchRow => !!branchRow.isDeleted);
 
         for (const branchRow of allBranchRows) {
@@ -1146,8 +1160,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 noteIdsToUpdate.add(branchRow.noteId);
             }
 
-            for (const node of this.getNodesByBranch(branchRow)) {
-                if (branchRow.isDeleted) {
+            if (branchRow.isDeleted) {
+                for (const node of this.getNodesByBranch(branchRow)) {
                     if (node.isActive()) {
                         if (allBranchesDeleted) {
                             const newActiveNode = node.getNextSibling()
@@ -1168,9 +1182,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                     noteIdsToUpdate.add(branchRow.parentNoteId);
                 }
-            }
-
-            if (!branchRow.isDeleted) {
+            } else {
                 for (const parentNode of this.getNodesByNoteId(branchRow.parentNoteId)) {
                     parentsOfAddedNodes.push(parentNode)
 
@@ -1181,11 +1193,15 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branchRow.noteId);
                     if (!found) {
                         // make sure it's loaded
-                        await froca.getNote(branchRow.noteId);
+                        const note = await froca.getNote(branchRow.noteId);
                         const frocaBranch = froca.getBranch(branchRow.branchId);
 
                         // we're forcing lazy since it's not clear if the whole required subtree is in froca
                         parentNode.addChildren([this.prepareNode(frocaBranch, true)]);
+
+                        if (frocaBranch.isExpanded && note.hasChildren()) {
+                            noteIdsToReload.add(frocaBranch.noteId);
+                        }
 
                         this.sortChildren(parentNode);
 

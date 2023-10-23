@@ -49,8 +49,8 @@ class ImageTypeWidget extends TypeWidget {
 
         libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM).then(() => {
             WZoom.create(`#${this.$imageView.attr("id")}`, {
-                maxScale: 10,
-                speed: 20,
+                maxScale: 50,
+                speed: 1.3,
                 zoomOnClick: false
             });
         });
@@ -90,7 +90,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.$imageView.prop("src", `api/images/${note.noteId}/${encodeURIComponent(note.title)}?timestamp=${Date.now()}`);
+        this.$imageView.prop("src", utils.createImageSrcUrl(note));
     }
 
     copyImageReferenceToClipboardEvent({ntxId}) {

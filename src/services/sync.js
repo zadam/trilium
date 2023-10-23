@@ -71,8 +71,7 @@ async function sync() {
             };
         }
         else {
-            log.info(`sync failed: ${e.message}
-stack: ${e.stack}`);
+            log.info(`Sync failed: '${e.message}', stack: ${e.stack}`);
 
             ws.syncFailed();
 
@@ -127,8 +126,6 @@ async function doLogin() {
 }
 
 async function pullChanges(syncContext) {
-    let atLeastOnePullApplied = false;
-
     while (true) {
         const lastSyncedPull = getLastSyncedPull();
         const logMarkerId = utils.randomString(10); // to easily pair sync events between client and server logs
@@ -144,22 +141,7 @@ async function pullChanges(syncContext) {
         const pulledDate = Date.now();
 
         sql.transactional(() => {
-            for (const {entityChange, entity} of entityChanges) {
-                const changeAppliedAlready = entityChange.changeId
-                    && !!sql.getValue("SELECT 1 FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
-
-                if (changeAppliedAlready) {
-                    continue;
-                }
-
-                if (!atLeastOnePullApplied) { // send only for first
-                    ws.syncPullInProgress();
-
-                    atLeastOnePullApplied = true;
-                }
-
-                syncUpdateService.updateEntity(entityChange, entity, syncContext.instanceId);
-            }
+            syncUpdateService.updateEntities(entityChanges, syncContext.instanceId);
 
             if (lastSyncedPull !== lastEntityChangeId) {
                 setLastSyncedPull(lastEntityChangeId);
@@ -169,9 +151,14 @@ async function pullChanges(syncContext) {
         if (entityChanges.length === 0) {
             break;
         } else {
-            const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
+            try { // https://github.com/zadam/trilium/issues/4310
+                const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
 
-            log.info(`Sync ${logMarkerId}: Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
+                log.info(`Sync ${logMarkerId}: Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
+            }
+            catch (e) {
+                log.error(`Error occurred ${e.message} ${e.stack}`);
+            }
         }
     }
 

@@ -17,6 +17,9 @@ export default class OpenNoteButtonWidget extends OnClickButtonWidget {
     }
 
     async launch(evt) {
+        if (evt.which === 3) {
+            return;
+        }
         const ctrlKey = utils.isCtrlKey(evt);
 
         if ((evt.which === 1 && ctrlKey) || evt.which === 2) {

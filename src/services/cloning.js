@@ -7,7 +7,7 @@ const BBranch = require('../becca/entities/bbranch');
 const becca = require("../becca/becca");
 const log = require("./log");
 
-function cloneNoteToParentNote(noteId, parentNoteId, prefix) {
+function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {
     if (!(noteId in becca.notes) || !(parentNoteId in becca.notes)) {
         return { success: false, message: 'Note cannot be cloned because either the cloned note or the intended parent is deleted.' };
     }
