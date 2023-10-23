@@ -17,7 +17,6 @@ import SqlResultWidget from "../widgets/sql_result.js";
 import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import FilePropertiesWidget from "../widgets/ribbon_widgets/file_properties.js";
 import ImagePropertiesWidget from "../widgets/ribbon_widgets/image_properties.js";
-import CanvasPropertiesWidget from "../widgets/ribbon_widgets/canvas_properties.js";
 import NotePropertiesWidget from "../widgets/ribbon_widgets/note_properties.js";
 import NoteIconWidget from "../widgets/note_icon.js";
 import SearchResultWidget from "../widgets/search_result.js";
