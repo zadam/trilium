@@ -79,6 +79,7 @@ import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating
 import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
 import MovePaneButton from "../widgets/buttons/move_pane_button.js";
 import UploadAttachmentsDialog from "../widgets/dialogs/upload_attachments.js";
+import CopyImageReferenceButton from "../widgets/floating_buttons/copy_image_reference_button.js";
 import ScrollPaddingWidget from "../widgets/scroll_padding.js";
 
 export default class DesktopLayout {
@@ -146,7 +147,6 @@ export default class DesktopLayout {
                                             .ribbon(new NotePropertiesWidget())
                                             .ribbon(new FilePropertiesWidget())
                                             .ribbon(new ImagePropertiesWidget())
-                                            .ribbon(new CanvasPropertiesWidget())
                                             .ribbon(new BasicPropertiesWidget())
                                             .ribbon(new OwnedAttributeListWidget())
                                             .ribbon(new InheritedAttributesWidget())
@@ -163,6 +163,7 @@ export default class DesktopLayout {
                                         .child(new EditButton())
                                         .child(new CodeButtonsWidget())
                                         .child(new RelationMapButtons())
+                                        .child(new CopyImageReferenceButton())
                                         .child(new MermaidExportButton())
                                         .child(new BacklinksWidget())
                                         .child(new HideFloatingButtonsButton())

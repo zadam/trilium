@@ -1,5 +1,6 @@
 import libraryLoader from "../services/library_loader.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import server from "../services/server.js";
 
 const TPL = `<div class="mermaid-widget">
     <style>
@@ -17,6 +18,10 @@ const TPL = `<div class="mermaid-widget">
             overflow: auto;
             height: 100%;
             text-align: center;
+        }
+        
+        .mermaid-render svg {
+            width: 95%; /* https://github.com/zadam/trilium/issues/4340 */
         }
     </style>
 
@@ -77,6 +82,20 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         try {
             const svg = await this.renderSvg();
 
+            if (this.dirtyAttachment) {
+                const payload = {
+                    role: 'image',
+                    title: 'mermaid-export.svg',
+                    mime: 'image/svg+xml',
+                    content: svg,
+                    position: 0
+                };
+
+                server.post(`notes/${this.noteId}/attachments?matchBy=title`, payload).then(() => {
+                    this.dirtyAttachment = false;
+                });
+            }
+
             this.$display.html(svg);
 
             await wheelZoomLoaded;
@@ -85,8 +104,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
             WZoom.create(`#mermaid-render-${idCounter}`, {
                 type: 'html',
-                maxScale: 10,
-                speed: 20,
+                maxScale: 50,
+                speed: 1.3,
                 zoomOnClick: false
             });
         } catch (e) {
@@ -107,6 +126,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
+            this.dirtyAttachment = true;
+
             await this.refresh();
         }
     }

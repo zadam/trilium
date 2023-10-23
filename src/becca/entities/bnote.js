@@ -1653,23 +1653,31 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
+     * @param {string} matchBy - choose by which property we detect if to update an existing attachment.
+ *                               Supported values are either 'attachmentId' (default) or 'title'
      * @returns {BAttachment}
      */
-    saveAttachment({attachmentId, role, mime, title, content, position}) {
+    saveAttachment({attachmentId, role, mime, title, content, position}, matchBy = 'attachmentId') {
+        if (!['attachmentId', 'title'].includes(matchBy)) {
+            throw new Error(`Unsupported value '${matchBy}' for matchBy param, has to be either 'attachmentId' or 'title'.`);
+        }
+
         let attachment;
 
-        if (attachmentId) {
+        if (matchBy === 'title') {
+            attachment = this.getAttachmentByTitle(title);
+        } else if (matchBy === 'attachmentId' && attachmentId) {
             attachment = this.becca.getAttachmentOrThrow(attachmentId);
-        } else {
-            attachment = new BAttachment({
-                ownerId: this.noteId,
-                title,
-                role,
-                mime,
-                isProtected: this.isProtected,
-                position
-            });
         }
+
+        attachment = attachment || new BAttachment({
+            ownerId: this.noteId,
+            title,
+            role,
+            mime,
+            isProtected: this.isProtected,
+            position
+        });
 
         content = content || "";
         attachment.setContent(content, {forceSave: true});

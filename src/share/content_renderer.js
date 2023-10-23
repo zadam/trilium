@@ -24,7 +24,7 @@ function getContent(note) {
     } else if (note.type === 'code') {
         renderCode(result);
     } else if (note.type === 'mermaid') {
-        renderMermaid(result);
+        renderMermaid(result, note);
     } else if (note.type === 'image' || note.type === 'canvas') {
         renderImage(result, note);
     } else if (note.type === 'file') {
@@ -135,15 +135,14 @@ function renderCode(result) {
     }
 }
 
-function renderMermaid(result) {
+function renderMermaid(result, note) {
     result.content = `
-<div class="mermaid">${escapeHtml(result.content)}</div>
+<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">
 <hr>
 <details>
     <summary>Chart source</summary>
     <pre>${escapeHtml(result.content)}</pre>
 </details>`
-    result.header += `<script src="../../${assetPath}/libraries/mermaid.min.js"></script>`;
 }
 
 function renderImage(result, note) {
