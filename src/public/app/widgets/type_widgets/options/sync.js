@@ -21,7 +21,8 @@ const TPL = `
             <label>Sync proxy server (optional)</label>
             <input class="sync-proxy form-control" placeholder="https://<host>:<port>">
     
-            <p><strong>Note:</strong> If you leave the proxy setting blank, the system proxy will be used (applies to desktop/electron build only)</p>
+            <p><strong>Note:</strong> If you leave the proxy setting blank, the system proxy will be used (applies to desktop/electron build only).</p>
+            <p>Another special value is <code>noproxy</code> which forces ignoring even the system proxy and respectes <code>NODE_TLS_REJECT_UNAUTHORIZED</code>.</p>
         </div>
     
         <div style="display: flex; justify-content: space-between;">
