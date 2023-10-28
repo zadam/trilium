@@ -3,6 +3,7 @@ import contentRenderer from "./content_renderer.js";
 import froca from "./froca.js";
 import attributeRenderer from "./attribute_renderer.js";
 import libraryLoader from "./library_loader.js";
+import treeService from "./tree.js";
 
 const TPL = `
 <div class="note-list">
@@ -294,7 +295,7 @@ class NoteListRenderer {
                     .append($expander)
                     .append($('<span class="note-icon">').addClass(note.getIcon()))
                     .append(this.viewType === 'grid'
-                        ? $('<span class="note-book-title">').text(note.title)
+                        ? $('<span class="note-book-title">').text(await treeService.getNoteTitle(note.noteId, this.parentNote.noteId))
                         : (await linkService.createLink(notePath, {showTooltip: false, showNotePath: this.showNotePath}))
                             .addClass("note-book-title")
                     )

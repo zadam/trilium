@@ -217,7 +217,7 @@ async function getNoteTitle(noteId, parentNoteId = null) {
         if (branchId) {
             const branch = froca.getBranch(branchId);
 
-            if (branch && branch.prefix) {
+            if (branch?.prefix) {
                 title = `${branch.prefix} - ${title}`;
             }
         }
