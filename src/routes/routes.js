@@ -302,7 +302,8 @@ function register(app) {
 
     apiRoute(GET, '/api/database/check-integrity', databaseRoute.checkIntegrity);
 
-    apiRoute(PST, '/api/script/exec', scriptRoute.exec);
+    route(PST, '/api/script/exec', [auth.checkApiAuth, csrfMiddleware], scriptRoute.exec, apiResultHandler, false);
+
     apiRoute(PST, '/api/script/run/:noteId', scriptRoute.run);
     apiRoute(GET, '/api/script/startup', scriptRoute.getStartupBundles);
     apiRoute(GET, '/api/script/widgets', scriptRoute.getWidgetBundles);
@@ -449,7 +450,7 @@ function route(method, path, middleware, routeHandler, resultHandler = null, tra
                 return;
             }
 
-            if (result && result.then) { // promise
+            if (result?.then) { // promise
                 result
                     .then(promiseResult => handleResponse(resultHandler, req, res, promiseResult, start))
                     .catch(e => handleException(e, method, path, res));
