@@ -11,5 +11,6 @@ cert.crt
 server-package.json
 .idea/httpRequests/
 data/
+data-test/
 tmp/
 .eslintcache
