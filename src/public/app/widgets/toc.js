@@ -133,7 +133,7 @@ export default class TocWidget extends RightPanelWidget {
         // Use jquery to build the table rather than html text, since it makes
         // it easier to set the onclick event that will be executed with the
         // right captured callback context
-        const $toc = $("<ol>");
+        let $toc = $("<ol>");
         // Note heading 2 is the first level Trilium makes available to the note
         let curLevel = 2;
         const $ols = [$toc];
@@ -171,10 +171,34 @@ export default class TocWidget extends RightPanelWidget {
             headingCount = headingIndex;
         }
 
+        $toc = this.pullLeft($toc);
+
         return {
             $toc,
             headingCount
         };
+    }
+
+    /**
+     * Reduce indent if a larger headings are not being used: https://github.com/zadam/trilium/issues/4363
+     */
+    pullLeft($toc) {
+        while (true) {
+            const $children = $toc.children();
+
+            if ($children.length !== 1) {
+                break;
+            }
+
+            const $first = $toc.children(":first");
+
+            if ($first[0].tagName !== 'OL') {
+                break;
+            }
+
+            $toc = $first;
+        }
+        return $toc;
     }
 
     async jumpToHeading(headingIndex) {
