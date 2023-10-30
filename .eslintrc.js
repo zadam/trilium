@@ -109,7 +109,9 @@ module.exports = {
         // src\public\app\services\utils.js
         logInfo: true,
         __non_webpack_require__: true,
-        //
+        describe: true,
+        it: true,
+        expect: true
     },
     parserOptions: {
         ecmaVersion: 'latest',

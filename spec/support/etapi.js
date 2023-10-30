@@ -51,13 +51,17 @@ function describeEtapi(description, specDefinitions) {
     });
 }
 
-async function getEtapi(url) {
-    const response = await fetch(`${HOST}/etapi/${url}`, {
+async function getEtapiResponse(url) {
+    return await fetch(`${HOST}/etapi/${url}`, {
         method: 'GET',
         headers: {
             Authorization: getEtapiAuthorizationHeader()
         }
     });
+}
+
+async function getEtapi(url) {
+    const response = await getEtapiResponse(url);
     return await processEtapiResponse(response);
 }
 
@@ -68,7 +72,10 @@ async function getEtapiContent(url) {
             Authorization: getEtapiAuthorizationHeader()
         }
     });
-    return await response.text();
+
+    checkStatus(response);
+
+    return response;
 }
 
 async function postEtapi(url, data = {}) {
@@ -95,6 +102,31 @@ async function putEtapi(url, data = {}) {
     return await processEtapiResponse(response);
 }
 
+async function putEtapiContent(url, data) {
+    const response = await fetch(`${HOST}/etapi/${url}`, {
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/octet-stream",
+            Authorization: getEtapiAuthorizationHeader()
+        },
+        body: data
+    });
+
+    checkStatus(response);
+}
+
+async function patchEtapi(url, data = {}) {
+    const response = await fetch(`${HOST}/etapi/${url}`, {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: getEtapiAuthorizationHeader()
+        },
+        body: JSON.stringify(data)
+    });
+    return await processEtapiResponse(response);
+}
+
 async function deleteEtapi(url) {
     const response = await fetch(`${HOST}/etapi/${url}`, {
         method: 'DELETE',
@@ -106,20 +138,29 @@ async function deleteEtapi(url) {
 }
 
 async function processEtapiResponse(response) {
-    const json = await response.json();
+    const text = await response.text();
 
     if (response.status < 200 || response.status >= 300) {
-        throw new Error("ETAPI error: " + JSON.stringify(json));
+        throw new Error(`ETAPI error ${response.status}: ` + text);
     }
 
-    return json;
+    return text?.trim() ? JSON.parse(text) : null;
+}
+
+function checkStatus(response) {
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(`ETAPI error ${response.status}`);
+    }
 }
 
 module.exports = {
     describeEtapi,
     getEtapi,
+    getEtapiResponse,
     getEtapiContent,
     postEtapi,
     putEtapi,
+    putEtapiContent,
+    patchEtapi,
     deleteEtapi
 };

@@ -412,7 +412,6 @@ function checkImageAttachments(note, content) {
     };
 }
 
-
 function findImageLinks(content, foundLinks) {
     const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
