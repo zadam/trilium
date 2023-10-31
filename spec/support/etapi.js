@@ -90,6 +90,21 @@ async function postEtapi(url, data = {}) {
     return await processEtapiResponse(response);
 }
 
+async function postEtapiContent(url, data) {
+    const response = await fetch(`${HOST}/etapi/${url}`, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/octet-stream",
+            Authorization: getEtapiAuthorizationHeader()
+        },
+        body: data
+    });
+
+    checkStatus(response);
+
+    return response;
+}
+
 async function putEtapi(url, data = {}) {
     const response = await fetch(`${HOST}/etapi/${url}`, {
         method: 'PUT',
@@ -113,6 +128,8 @@ async function putEtapiContent(url, data) {
     });
 
     checkStatus(response);
+
+    return response;
 }
 
 async function patchEtapi(url, data = {}) {
@@ -159,6 +176,7 @@ module.exports = {
     getEtapiResponse,
     getEtapiContent,
     postEtapi,
+    postEtapiContent,
     putEtapi,
     putEtapiContent,
     patchEtapi,

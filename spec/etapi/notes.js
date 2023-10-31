@@ -1,6 +1,13 @@
-const {describeEtapi, postEtapi, getEtapi, getEtapiContent, patchEtapi, putEtapi, putEtapiContent} = require("../support/etapi");
 const crypto = require('crypto');
-const {deleteEtapi, getEtapiResponse} = require("../support/etapi.js");
+const {
+    deleteEtapi,
+    getEtapiResponse,
+    describeEtapi, postEtapi,
+    getEtapi,
+    getEtapiContent,
+    patchEtapi, putEtapi,
+    putEtapiContent
+} = require("../support/etapi");
 
 describeEtapi("notes", () => {
     it("create", async () => {
