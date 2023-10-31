@@ -20,6 +20,7 @@ const specialNotesService = require("./special_notes");
 const branchService = require("./branches");
 const exportService = require("./export/zip");
 const syncMutex = require("./sync_mutex.js");
+const optionsService = require("./options");
 
 
 /**
@@ -62,18 +63,18 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
-     * @type {axios} 
+     * @type {axios}
      * @deprecated use native (browser compatible) fetch() instead
      */
     this.axios = axios;
     /**
-     * day.js library for date manipulation. See {@link https://day.js.org} for documentation 
+     * day.js library for date manipulation. See {@link https://day.js.org} for documentation
      * @type {dayjs}
      */
     this.dayjs = dayjs;
-    /** 
+    /**
      * xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation
-     * @type {xml2js} 
+     * @type {xml2js}
      */
     this.xml2js = xml2js;
 
@@ -98,6 +99,53 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {BBranch|null}
      */
     this.getBranch = branchId => becca.getBranch(branchId);
+
+    /**
+     * @method
+     * @param {string} attributeId
+     * @returns {BAttribute|null}
+     */
+    this.getAttribute = attributeId => becca.getAttribute(attributeId);
+
+    /**
+     * @method
+     * @param {string} attachmentId
+     * @returns {BAttachment|null}
+     */
+    this.getAttachment = attachmentId => becca.getAttachment(attachmentId);
+
+    /**
+     * @method
+     * @param {string} revisionId
+     * @returns {BRevision|null}
+     */
+    this.getRevision = revisionId => becca.getRevision(revisionId);
+
+    /**
+     * @method
+     * @param {string} etapiTokenId
+     * @returns {BEtapiToken|null}
+     */
+    this.getEtapiToken = etapiTokenId => becca.getEtapiToken(etapiTokenId);
+
+    /**
+     * @method
+     * @returns {BEtapiToken[]}
+     */
+    this.getEtapiTokens = () => becca.getEtapiTokens();
+
+    /**
+     * @method
+     * @param {string} optionName
+     * @returns {BOption|null}
+     */
+    this.getOption = optionName => becca.getOption(optionName);
+
+    /**
+     * @method
+     * @returns {BOption[]}
+     */
+    this.getOptions = () => optionsService.getOptions();
 
     /**
      * @method
@@ -374,7 +422,7 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getWeekNote = dateNoteService.getWeekNote;
 
     /**
-     * Returns month note for given date. If such note doesn't exist, it is created.
+     * Returns month note for given date. If such a note doesn't exist, it is created.
      *
      * @method
      * @param {string} date in YYYY-MM format
@@ -384,7 +432,7 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getMonthNote = dateNoteService.getMonthNote;
 
     /**
-     * Returns year note for given year. If such note doesn't exist, it is created.
+     * Returns year note for given year. If such a note doesn't exist, it is created.
      *
      * @method
      * @param {string} year in YYYY format
@@ -470,7 +518,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @returns {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
      */
-    this.getAppInfo = () => appInfo
+    this.getAppInfo = () => appInfo;
 
     /**
      * Creates a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
@@ -561,7 +609,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * Executes given anonymous function on the frontend(s).
-     * Internally this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
+     * Internally, this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
      * Note that there can be multiple connected frontend instances (e.g. in different tabs). In such case, all
      * instances execute the given function.
      *

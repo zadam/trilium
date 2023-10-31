@@ -206,36 +206,73 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     }
 
     /**
-     * Executes given anonymous function on the backend.
-     * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
-     *
-     * @method
-     * @param {string|Function} script - script to be executed on the backend
-     * @param {Array&lt;any>} params - list of parameters to the anonymous function to be sent to backend
-     * @returns {Promise&lt;any>} return value of the executed function on the backend
+     * @private
      */
-    this.runOnBackend = async (script, params = []) => {
-        if (typeof script === "function") {
-            script = script.toString();
+    this.__runOnBackendInner = async (func, params, transactional) => {
+        if (typeof func === "function") {
+            func = func.toString();
         }
 
         const ret = await server.post('script/exec', {
-            script: script,
+            script: func,
             params: prepareParams(params),
             startNoteId: startNote.noteId,
             currentNoteId: currentNote.noteId,
             originEntityName: "notes", // currently there's no other entity on the frontend which can trigger event
-            originEntityId: originEntity ? originEntity.noteId : null
+            originEntityId: originEntity ? originEntity.noteId : null,
+            transactional
         }, "script");
 
         if (ret.success) {
             await ws.waitForMaxKnownEntityChangeId();
 
             return ret.executionResult;
-        }
-        else {
+        } else {
             throw new Error(`server error: ${ret.error}`);
         }
+    }
+
+    /**
+     * Executes given anonymous function on the backend.
+     * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
+     * Please make sure that the supplied function is synchronous. Only sync functions will work correctly
+     * with transaction management. If you really know what you're doing, you can call api.runAsyncOnBackendWithManualTransactionHandling()
+     *
+     * @method
+     * @param {function|string} func - (synchronous) function to be executed on the backend
+     * @param {Array.&lt;?>} params - list of parameters to the anonymous function to be sent to backend
+     * @returns {Promise&lt;*>} return value of the executed function on the backend
+     */
+    this.runOnBackend = async (func, params = []) => {
+        if (func?.constructor.name === "AsyncFunction" || func?.startsWith?.("async ")) {
+            toastService.showError("You're passing an async function to api.runOnBackend() which will likely not work as you intended. "
+                + "Either make the function synchronous (by removing 'async' keyword), or use api.runAsyncOnBackendWithManualTransactionHandling()");
+        }
+
+        return await this.__runOnBackendInner(func, params, true);
+    };
+
+    /**
+     * Executes given anonymous function on the backend.
+     * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
+     * This function is meant for advanced needs where an async function is necessary.
+     * In this case, the automatic request-scoped transaction management is not applied,
+     * and you need to manually define transaction via api.transactional().
+     *
+     * If you have a synchronous function, please use api.runOnBackend().
+     *
+     * @method
+     * @param {function|string} func - (synchronous) function to be executed on the backend
+     * @param {Array.&lt;?>} params - list of parameters to the anonymous function to be sent to backend
+     * @returns {Promise&lt;*>} return value of the executed function on the backend
+     */
+    this.runAsyncOnBackendWithManualTransactionHandling = async (func, params = []) => {
+        if (func?.constructor.name === "Function" || func?.startsWith?.("function")) {
+            toastService.showError("You're passing a synchronous function to api.runAsyncOnBackendWithManualTransactionHandling(), " +
+                "while you should likely use api.runOnBackend() instead.");
+        }
+
+        return await this.__runOnBackendInner(func, params, false);
     };
 
     /**
@@ -528,7 +565,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string} date - e.g. "2019-04-29"
      * @returns {Promise&lt;FNote>}
      */
-     this.getWeekNote = dateNotesService.getWeekNote;
+    this.getWeekNote = dateNotesService.getWeekNote;
 
     /**
      * Returns month-note. If it doesn't exist, it is automatically created.
