@@ -263,6 +263,7 @@ const ATTR_HELP = {
         "runOnNoteChange": "executes when note is changed (includes note creation as well). Does not include content changes",
         "runOnNoteDeletion": "executes when note is being deleted",
         "runOnBranchCreation": "executes when a branch is created. Branch is a link between parent note and child note and is created e.g. when cloning or moving note.",
+        "runOnBranchChange": "executes when a branch is updated.",
         "runOnBranchDeletion": "executes when a branch is deleted. Branch is a link between parent note and child note and is deleted e.g. when moving note (old branch/link is deleted).",
         "runOnAttributeCreation": "executes when new attribute is created for the note which defines this relation",
         "runOnAttributeChange": " executes when the attribute is changed of a note which defines this relation. This is triggered also when the attribute is deleted",

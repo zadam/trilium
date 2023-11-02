@@ -20,7 +20,7 @@ UPDATE attributes SET name  = 'name', value = 'value' WHERE type = 'label'
        'shareRaw', 'shareDisallowRobotIndexing', 'shareIndex', 'displayRelations', 'hideRelations', 'titleTemplate',
        'template', 'toc', 'color', 'keepCurrentHoisting', 'executeButton', 'executeDescription', 'newNotesOnTop',
        'clipperInbox', 'internalLink', 'imageLink', 'relationMapLink', 'includeMapLink', 'runOnNoteCreation',
-       'runOnNoteTitleChange', 'runOnNoteChange', 'runOnNoteContentChange', 'runOnNoteDeletion', 'runOnBranchCreation',
+       'runOnNoteTitleChange', 'runOnNoteChange', 'runOnNoteContentChange', 'runOnNoteDeletion', 'runOnBranchCreation', 'runOnBranchChange',
        'runOnBranchDeletion', 'runOnChildNoteCreation', 'runOnAttributeCreation', 'runOnAttributeChange', 'template',
        'inherit', 'widget', 'renderNote', 'shareCss', 'shareJs', 'shareTemplate', 'shareFavicon');
 UPDATE attributes SET name = 'name' WHERE type = 'relation'
@@ -37,7 +37,7 @@ UPDATE attributes SET name = 'name' WHERE type = 'relation'
        'shareRaw', 'shareDisallowRobotIndexing', 'shareIndex', 'displayRelations', 'hideRelations', 'titleTemplate',
        'template', 'toc', 'color', 'keepCurrentHoisting', 'executeButton', 'executeDescription', 'newNotesOnTop',
        'clipperInbox', 'internalLink', 'imageLink', 'relationMapLink', 'includeMapLink', 'runOnNoteCreation',
-       'runOnNoteTitleChange', 'runOnNoteChange', 'runOnNoteContentChange', 'runOnNoteDeletion', 'runOnBranchCreation',
+       'runOnNoteTitleChange', 'runOnNoteChange', 'runOnNoteContentChange', 'runOnNoteDeletion', 'runOnBranchCreation', 'runOnBranchChange',
        'runOnBranchDeletion', 'runOnChildNoteCreation', 'runOnAttributeCreation', 'runOnAttributeChange', 'template',
        'inherit', 'widget', 'renderNote', 'shareCss', 'shareJs', 'shareTemplate', 'shareFavicon');
 UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL AND prefix != 'recovered';

@@ -81,6 +81,7 @@ module.exports = [
     { type: 'relation', name: 'runOnNoteContentChange', isDangerous: true },
     { type: 'relation', name: 'runOnNoteDeletion', isDangerous: true },
     { type: 'relation', name: 'runOnBranchCreation', isDangerous: true },
+    { type: 'relation', name: 'runOnBranchChange', isDangerous: true },
     { type: 'relation', name: 'runOnBranchDeletion', isDangerous: true },
     { type: 'relation', name: 'runOnChildNoteCreation', isDangerous: true },
     { type: 'relation', name: 'runOnAttributeCreation', isDangerous: true },

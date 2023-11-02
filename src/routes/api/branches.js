@@ -10,6 +10,7 @@ const TaskContext = require('../../services/task_context');
 const branchService = require("../../services/branches");
 const log = require("../../services/log");
 const ValidationError = require("../../errors/validation_error");
+const eventService = require("../../services/events.js");
 
 /**
  * Code in this file deals with moving and cloning branches. The relationship between note and parent note is unique
@@ -144,6 +145,11 @@ function setExpanded(req) {
         if (branch) {
             branch.isExpanded = !!expanded;
         }
+
+        eventService.emit(eventService.ENTITY_CHANGED, {
+            entityName: 'branches',
+            entity: branch
+        });
     }
 }
 

@@ -65,6 +65,12 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
         if (parentNote?.hasLabel("sorted")) {
             treeService.sortNotesIfNeeded(parentNote.noteId);
         }
+
+        const childNote = becca.getNote(entity.noteId);
+
+        if (childNote) {
+            runAttachedRelations(childNote, 'runOnBranchChange', entity);
+        }
     }
 });
 
