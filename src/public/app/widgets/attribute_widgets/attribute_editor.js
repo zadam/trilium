@@ -473,7 +473,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     async renderOwnedAttributes(ownedAttributes, saved) {
         // attrs are not resorted if position changes after the initial load
-        ownedAttributes.sort((a, b) => a.position < b.position ? -1 : 1);
+        ownedAttributes.sort((a, b) => a.position - b.position);
 
         let htmlAttrs = (await attributeRenderer.renderAttributes(ownedAttributes, true)).html();
 

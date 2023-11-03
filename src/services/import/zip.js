@@ -20,7 +20,7 @@ const markdownService = require("./markdown");
  * @param {TaskContext} taskContext
  * @param {Buffer} fileBuffer
  * @param {BNote} importRootNote
- * @returns {Promise<*>}
+ * @returns {Promise<BNote>}
  */
 async function importZip(taskContext, fileBuffer, importRootNote) {
     /** @type {Object.<string, string>} maps from original noteId (in ZIP file) to newly generated noteId */

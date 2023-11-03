@@ -96,7 +96,7 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
 
         attrs.sort((a, b) => {
             if (a.noteId === b.noteId) {
-                return a.position < b.position ? -1 : 1;
+                return a.position - b.position;
             } else {
                 // inherited attributes should stay grouped: https://github.com/zadam/trilium/issues/3761
                 return a.noteId < b.noteId ? -1 : 1;

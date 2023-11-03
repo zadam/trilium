@@ -91,7 +91,7 @@ class BNote extends AbstractBeccaEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
-        /** 
+        /**
          * set during the deletion operation, before it is completed (removed from becca completely)
          * @type {boolean}
          */
@@ -756,7 +756,7 @@ class BNote extends AbstractBeccaEntity {
             } else if (a.parentNote?.isHiddenCompletely()) {
                 return 1;
             } else {
-                return -1;
+                return 0;
             }
         });
 
@@ -776,7 +776,7 @@ class BNote extends AbstractBeccaEntity {
             const aBranch = becca.getBranchFromChildAndParent(a.noteId, this.noteId);
             const bBranch = becca.getBranchFromChildAndParent(b.noteId, this.noteId);
 
-            return aBranch?.notePosition < bBranch?.notePosition ? -1 : 1;
+            return (aBranch?.notePosition - bBranch?.notePosition) || 0;
         });
     }
 

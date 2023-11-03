@@ -130,7 +130,7 @@ class FNote {
             branchIdPos[branchId] = this.froca.getBranch(branchId).notePosition;
         }
 
-        this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] < branchIdPos[this.childToBranch[b]] ? -1 : 1);
+        this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] - branchIdPos[this.childToBranch[b]]);
     }
 
     /** @returns {boolean} */
@@ -228,7 +228,7 @@ class FNote {
                 return 1;
             }
 
-            return -1;
+            return 0;
         });
     }
 

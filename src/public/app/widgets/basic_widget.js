@@ -3,7 +3,7 @@ import Component from "../components/component.js";
 
 /**
  * This is the base widget for all other widgets.
- * 
+ *
  * For information on using widgets, see the tutorial {@tutorial widget_basics}.
  */
 class BasicWidget extends Component {
@@ -33,7 +33,7 @@ class BasicWidget extends Component {
             }
         }
 
-        this.children.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
+        this.children.sort((a, b) => a.position - b.position);
 
         return this;
     }
@@ -72,7 +72,7 @@ class BasicWidget extends Component {
 
     /**
      * Accepts a string of CSS to add with the widget.
-     * @param {string} block 
+     * @param {string} block
      * @returns {this} for chaining
      */
     cssBlock(block) {
@@ -124,7 +124,7 @@ class BasicWidget extends Component {
 
     /**
      * Method used for rendering the widget.
-     * 
+     *
      * Your class should override this method.
      * @returns {JQuery<HTMLElement>} Your widget.
      */

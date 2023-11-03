@@ -163,7 +163,7 @@ function register(router) {
         zipImportService.importZip(taskContext, req.body, note).then(importedNote => {
             res.status(201).json({
                 note: mappers.mapNoteToPojo(importedNote),
-                branch: mappers.mapBranchToPojo(importedNote.getBranches()[0]),
+                branch: mappers.mapBranchToPojo(importedNote.getParentBranches()[0]),
             });
         }); // we need better error handling here, async errors won't be properly processed.
     });
