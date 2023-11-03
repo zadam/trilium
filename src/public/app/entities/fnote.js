@@ -228,7 +228,7 @@ class FNote {
                 return 1;
             }
 
-            return 0;
+            return aNoteId < bNoteId ? -1 : 1;
         });
     }
 

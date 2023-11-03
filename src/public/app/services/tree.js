@@ -132,29 +132,29 @@ function getParentProtectedStatus(node) {
     return hoistedNoteService.isHoistedNode(node) ? false : node.getParent().data.isProtected;
 }
 
-function getNoteIdFromUrl(url) {
-    if (!url) {
+function getNoteIdFromUrl(urlOrNotePath) {
+    if (!urlOrNotePath) {
         return null;
     }
 
-    const [notePath] = url.split("?");
+    const [notePath] = urlOrNotePath.split("?");
     const segments = notePath.split("/");
 
     return segments[segments.length - 1];
 }
 
-async function getBranchIdFromUrl(url) {
-    const {noteId, parentNoteId} = getNoteIdAndParentIdFromUrl(url);
+async function getBranchIdFromUrl(urlOrNotePath) {
+    const {noteId, parentNoteId} = getNoteIdAndParentIdFromUrl(urlOrNotePath);
 
     return await froca.getBranchId(parentNoteId, noteId);
 }
 
-function getNoteIdAndParentIdFromUrl(url) {
-    if (!url) {
+function getNoteIdAndParentIdFromUrl(urlOrNotePath) {
+    if (!urlOrNotePath) {
         return {};
     }
 
-    const [notePath] = url.split("?");
+    const [notePath] = urlOrNotePath.split("?");
 
     if (notePath === 'root') {
         return {
