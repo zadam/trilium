@@ -310,7 +310,7 @@ For information on using widgets, see the tutorial widget_basics.</div>
     
 
     
-    <h4 class="name" id="doRender"><span class="type-signature"></span>doRender<span class="signature">()</span><span class="type-signature"> &rarr; {JQuery.&lt;HTMLElement>}</span></h4>
+    <h4 class="name" id="doRender"><span class="type-signature"></span>doRender<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -321,6 +321,7 @@ For information on using widgets, see the tutorial widget_basics.</div>
     Method used for rendering the widget.
 
 Your class should override this method.
+The method is expected to create a this.$widget containing jQuery object
 </div>
 
 
@@ -364,7 +365,7 @@ Your class should override this method.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="widgets_basic_widget.js.html">widgets/basic_widget.js</a>, <a href="widgets_basic_widget.js.html#line131">line 131</a>
+        <a href="widgets_basic_widget.js.html">widgets/basic_widget.js</a>, <a href="widgets_basic_widget.js.html#line132">line 132</a>
     </li></ul></dd>
     
 
@@ -389,28 +390,6 @@ Your class should override this method.
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Your widget.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">JQuery.&lt;HTMLElement></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 

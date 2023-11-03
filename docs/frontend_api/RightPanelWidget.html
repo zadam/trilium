@@ -93,7 +93,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line16">line 16</a>
+        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line19">line 19</a>
     </li></ul></dd>
     
 
@@ -172,12 +172,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#hoistedNoteId">NoteContextAwareWidget#hoistedNoteId</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -235,12 +235,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#note">NoteContextAwareWidget#note</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -308,12 +308,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#noteContext">NoteContextAwareWidget#noteContext</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -371,12 +371,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#noteId">NoteContextAwareWidget#noteId</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -434,12 +434,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#notePath">NoteContextAwareWidget#notePath</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -523,7 +523,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line18">line 18</a>
+        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line21">line 21</a>
     </li></ul></dd>
     
 
@@ -630,12 +630,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="BasicWidget.html#cssBlock">BasicWidget#cssBlock</a>
-    </li></ul></dd>
-    
 
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="NoteContextAwareWidget.html#cssBlock">NoteContextAwareWidget#cssBlock</a>
+    </li></ul></dd>
     
 
     
@@ -724,6 +724,7 @@
 
 <div class="description">
     Do not override this method unless you know what you're doing.
+Do not override this method unless you know what you're doing.
 </div>
 
 
@@ -772,7 +773,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line25">line 25</a>
+        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -808,7 +809,7 @@
     
 
     
-    <h4 class="name" id="doRenderBody"><span class="type-signature">(async) </span>doRenderBody<span class="signature">()</span><span class="type-signature"> &rarr; {JQuery.&lt;HTMLElement>}</span></h4>
+    <h4 class="name" id="doRenderBody"><span class="type-signature">(async) </span>doRenderBody<span class="signature">()</span><span class="type-signature"> &rarr; {Promise|undefined}</span></h4>
     
 
     
@@ -816,7 +817,7 @@
 
 
 <div class="description">
-    Method used for rendering the body of the widget.
+    Method used for rendering the body of the widget (via existing this.$body)
 
 Your class should override this method.
 </div>
@@ -862,7 +863,7 @@ Your class should override this method.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line47">line 47</a>
+        <a href="widgets_right_panel_widget.js.html">widgets/right_panel_widget.js</a>, <a href="widgets_right_panel_widget.js.html#line66">line 66</a>
     </li></ul></dd>
     
 
@@ -891,7 +892,7 @@ Your class should override this method.
 
         
 <div class="param-desc">
-    The body of your widget.
+    if widget needs async operation to initialize, it can return a Promise
 </div>
 
 
@@ -902,7 +903,10 @@ Your class should override this method.
     </dt>
     <dd>
         
-<span class="param-type">JQuery.&lt;HTMLElement></span>
+<span class="param-type">Promise</span>
+|
+
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -946,12 +950,12 @@ Your class should override this method.
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#isEnabled">NoteContextAwareWidget#isEnabled</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -1111,12 +1115,12 @@ widget with each note.
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="NoteContextAwareWidget.html#refreshWithNote">NoteContextAwareWidget#refreshWithNote</a>
     </li></ul></dd>
-    
-
     
 
     
