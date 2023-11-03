@@ -1,14 +1,22 @@
 {
-  "name": "Trilium",
+  "name": "Trilium Notes",
   "short_name": "Trilium",
-  "theme_color": "DarkGray",
-  "background_color": "DarkGray",
+  "description": "Trilium Notes is a hierarchical note taking application with focus on building large personal knowledge bases.",
+  "theme_color": "#333333",
+  "background_color": "#1F1F1F",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
-  "icons": [{
-    "src": "assets/vX/images/app-icons/ios/apple-touch-icon.png",
-    "sizes": "180x180",
-    "type": "image/png"
-  }]
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/assets/vX/images/app-icons/ios/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/vX/images/app-icons/png/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
