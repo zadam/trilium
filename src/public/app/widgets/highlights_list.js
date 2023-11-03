@@ -9,6 +9,7 @@ import attributeService from "../services/attributes.js";
 import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
 import OnClickButtonWidget from "./buttons/onclick_button.js";
+import appContext from "../components/app_context.js";
 
 const TPL = `<div class="highlights-list-widget">
     <style>
@@ -35,27 +36,31 @@ const TPL = `<div class="highlights-list-widget">
         .highlights-list li:hover {
             font-weight: bold;
         }
-        
-        .close-highlights-list {
-            position: absolute;
-            top: 2px;
-            right: 0px;
-        }
     </style>
 
     <span class="highlights-list"></span>
 </div>`;
 
 export default class HighlightsListWidget extends RightPanelWidget {
-    constructor() {
-        super();
-
-        this.closeHltButton = new CloseHltButton();
-        this.child(this.closeHltButton);
-    }
-
     get widgetTitle() {
         return "Highlights List";
+    }
+
+    get widgetButtons() {
+        return [
+            new OnClickButtonWidget()
+                .icon("bx-slider")
+                .title("Options")
+                .titlePlacement("left")
+                .onClick(() => appContext.tabManager.openContextWithNote('_optionsTextNotes', {activate: true}))
+                .class("icon-action"),
+            new OnClickButtonWidget()
+                .icon("bx-x")
+                .title("Close Highlights List")
+                .titlePlacement("left")
+                .onClick(widget => widget.triggerCommand("closeHlt"))
+                .class("icon-action")
+        ];
     }
 
     isEnabled() {
@@ -68,7 +73,6 @@ export default class HighlightsListWidget extends RightPanelWidget {
     async doRenderBody() {
         this.$body.empty().append($(TPL));
         this.$highlightsList = this.$body.find('.highlights-list');
-        this.$body.find('.highlights-list-widget').append(this.closeHltButton.render());
     }
 
     async refreshWithNote(note) {
@@ -239,21 +243,5 @@ export default class HighlightsListWidget extends RightPanelWidget {
             && attributeService.isAffecting(attr, this.note))) {
             await this.refresh();
         }
-    }
-}
-
-class CloseHltButton extends OnClickButtonWidget {
-    constructor() {
-        super();
-
-        this.icon("bx-x")
-            .title("Close HighlightsListWidget")
-            .titlePlacement("left")
-            .onClick((widget, e) => {
-                e.stopPropagation();
-
-                widget.triggerCommand("closeHlt");
-            })
-            .class("icon-action close-highlights-list");
     }
 }

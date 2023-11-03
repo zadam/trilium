@@ -505,7 +505,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .algolia-autocomplete-container .aa-dropdown-menu {
-    position: inherit !important;    
+    position: inherit !important;
     overflow: auto;
 }
 
@@ -967,7 +967,7 @@ input {
 
 #right-pane .card-header {
     background: inherit;
-    padding: 6px 10px 3px 0;
+    padding: 6px 0 3px 0;
     width: 99%; /* to give minimal right margin */
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);
@@ -976,9 +976,17 @@ input {
     border-style: solid;
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     font-weight: bold;
     text-transform: uppercase;
     color: var(--muted-text-color) !important;
+}
+
+#right-pane .card-header-buttons {
+    display: flex;
+    transform: scale(0.9);
+    position: relative;
+    top: 2px;
 }
 
 #right-pane .body-wrapper {

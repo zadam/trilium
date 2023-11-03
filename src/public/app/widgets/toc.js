@@ -18,6 +18,7 @@ import attributeService from "../services/attributes.js";
 import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
 import OnClickButtonWidget from "./buttons/onclick_button.js";
+import appContext from "../components/app_context.js";
 
 const TPL = `<div class="toc-widget">
     <style>
@@ -47,27 +48,31 @@ const TPL = `<div class="toc-widget">
         .toc li:hover {
             font-weight: bold;
         }
-        
-        .close-toc {
-            position: absolute;
-            top: 2px;
-            right: 0px;
-        }
     </style>
 
     <span class="toc"></span>
 </div>`;
 
 export default class TocWidget extends RightPanelWidget {
-    constructor() {
-        super();
-
-        this.closeTocButton = new CloseTocButton();
-        this.child(this.closeTocButton);
-    }
-
     get widgetTitle() {
         return "Table of Contents";
+    }
+
+    get widgetButtons() {
+        return [
+            new OnClickButtonWidget()
+                .icon("bx-slider")
+                .title("Options")
+                .titlePlacement("left")
+                .onClick(() => appContext.tabManager.openContextWithNote('_optionsTextNotes', {activate: true}))
+                .class("icon-action"),
+            new OnClickButtonWidget()
+                .icon("bx-x")
+                .title("Close Table of Contents")
+                .titlePlacement("left")
+                .onClick(widget => widget.triggerCommand("closeToc"))
+                .class("icon-action")
+        ];
     }
 
     isEnabled() {
@@ -80,7 +85,6 @@ export default class TocWidget extends RightPanelWidget {
     async doRenderBody() {
         this.$body.empty().append($(TPL));
         this.$toc = this.$body.find('.toc');
-        this.$body.find('.toc-widget').append(this.closeTocButton.render());
     }
 
     async refreshWithNote(note) {
@@ -236,22 +240,5 @@ export default class TocWidget extends RightPanelWidget {
 
             await this.refresh();
         }
-    }
-}
-
-
-class CloseTocButton extends OnClickButtonWidget {
-    constructor() {
-        super();
-
-        this.icon("bx-x")
-            .title("Close TOC")
-            .titlePlacement("left")
-            .onClick((widget, e) => {
-                e.stopPropagation();
-
-                widget.triggerCommand("closeToc");
-            })
-            .class("icon-action close-toc");
     }
 }

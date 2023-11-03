@@ -84,7 +84,8 @@ class BasicWidget extends Component {
         this.doRender();
 
         this.$widget.attr('data-component-id', this.componentId);
-        this.$widget.addClass('component')
+        this.$widget
+            .addClass('component')
             .prop('component', this);
 
         if (!this.isEnabled()) {
@@ -126,7 +127,7 @@ class BasicWidget extends Component {
      * Method used for rendering the widget.
      *
      * Your class should override this method.
-     * @returns {JQuery<HTMLElement>} Your widget.
+     * The method is expected to create a this.$widget containing jQuery object
      */
     doRender() {}
 
