@@ -1,12 +1,10 @@
 "use strict";
 
 const noteService = require('./notes');
-const becca = require('../becca/becca');
 const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
-const cls = require("./cls");
 const searchService = require('../services/search/services/search');
 const SearchContext = require('../services/search/search_context');
 const hoistedNoteService = require("./hoisted_note");
@@ -28,13 +26,6 @@ function createNote(parentNote, noteTitle) {
         type: 'text'
     }).note;
 }
-
-function ordinal(n) {
-    var s = ["th", "st", "nd", "rd"],
-        v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
-  
 
 /** @returns {BNote} */
 function getRootCalendarNote() {
@@ -160,6 +151,14 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay}/g, weekDay)
         .replace(/{weekDay3}/g, weekDay.substr(0, 3))
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
+}
+
+/** produces 1st, 2nd, 3rd, 4th, 21st, 31st for 1, 2, 3, 4, 21, 31 */
+function ordinal(dayNumber) {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const suffix = suffixes[(dayNumber - 20) % 10] || suffixes[dayNumber] || suffixes[0];
+
+    return `${dayNumber}${suffix}`;
 }
 
 /** @returns {BNote} */
