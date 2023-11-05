@@ -308,7 +308,8 @@ function getEntityChangeRow(entityChange) {
         const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
         if (!entityRow) {
-            throw new Error(`Cannot find entity for entity change ${JSON.stringify(entityChange)}`);
+            log.error(`Cannot find entity for entity change ${JSON.stringify(entityChange)}`);
+            return null;
         }
 
         if (entityName === 'blobs' && entityRow.content !== null) {
@@ -335,6 +336,9 @@ function getEntityChangeRecords(entityChanges) {
         }
 
         const entity = getEntityChangeRow(entityChange);
+        if (!entity) {
+            continue;
+        }
 
         const record = { entityChange, entity };
 
