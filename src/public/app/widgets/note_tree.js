@@ -544,15 +544,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 const isHoistedNote = activeNoteContext && activeNoteContext.hoistedNoteId === note.noteId && note.noteId !== 'root';
 
-                if (isHoistedNote) {
-                    const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>')
-                        .on("click", cancelClickPropagation);
-
-                    // unhoist button is prepended since compared to other buttons, this is not just convenience
-                    // on the mobile interface - it's the only way to unhoist
-                    $span.prepend($unhoistButton);
-                }
-
                 if (note.hasLabel('workspace') && !isHoistedNote) {
                     const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>')
                         .on("click", cancelClickPropagation);
@@ -572,6 +563,13 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         .on("click", cancelClickPropagation);
 
                     $span.append($createChildNoteButton);
+                }
+
+                if (isHoistedNote) {
+                    const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>')
+                        .on("click", cancelClickPropagation);
+
+                    $span.append($unhoistButton);
                 }
             },
             // this is done to automatically lazy load all expanded notes after tree load
