@@ -833,7 +833,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
         });
 
-        await this.filterHoistedBranch();
+        await this.filterHoistedBranch(true);
 
         // don't activate the active note, see discussion in https://github.com/zadam/trilium/issues/3664
     }
@@ -1021,7 +1021,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
         }
 
-        this.filterHoistedBranch();
+        this.filterHoistedBranch(false);
     }
 
     async refreshSearch(e) {
@@ -1080,7 +1080,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
             }, false);
 
-            this.filterHoistedBranch();
+            this.filterHoistedBranch(true);
         }, 600 * 1000);
     }
 
@@ -1112,7 +1112,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         if (refreshCtx.noteIdsToReload.size > 0 || refreshCtx.noteIdsToUpdate.size > 0) {
             // workaround for https://github.com/mar10/fancytree/issues/1054
-            this.filterHoistedBranch();
+            this.filterHoistedBranch(true);
         }
     }
 
@@ -1371,7 +1371,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             await this.tree.reload([rootNode]);
         });
 
-        await this.filterHoistedBranch();
+        await this.filterHoistedBranch(true);
 
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);
@@ -1384,16 +1384,25 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     async hoistedNoteChangedEvent({ntxId}) {
         if (this.isNoteContext(ntxId)) {
-            await this.filterHoistedBranch();
+            await this.filterHoistedBranch(true);
         }
     }
 
-    async filterHoistedBranch() {
+    async filterHoistedBranch(forceUpdate = false) {
         if (!this.noteContext) {
             return;
         }
 
         const hoistedNotePath = await treeService.resolveNotePath(this.noteContext.hoistedNoteId);
+
+        if (!forceUpdate && this.lastFilteredHoistedNotePath === hoistedNotePath) {
+            // no need to re-filter if the hoisting did not change
+            // (helps with flickering on simple note change with large subtrees)
+            return;
+        }
+
+        this.lastFilteredHoistedNotePath = hoistedNotePath;
+
         await this.getNodeFromPath(hoistedNotePath);
 
         if (this.noteContext.hoistedNoteId === 'root') {
