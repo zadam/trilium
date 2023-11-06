@@ -148,8 +148,16 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
         title: fileName
     });
 
-    const noteService = require("../services/notes");
-    noteService.asyncPostProcessContent(note, note.getContent()); // to mark an unused attachment for deletion
+    // TODO: this is a quick-fix solution of a recursive bug - this is called from asyncPostProcessContent()
+    //       find some async way to do this - perhaps some global timeout with a Set of noteIds needing one more
+    //       run of asyncPostProcessContent
+    setTimeout(() => {
+        sql.transactional(() => {
+            const note = becca.getNoteOrThrow(noteId);
+            const noteService = require("../services/notes");
+            noteService.asyncPostProcessContent(note, note.getContent()); // to mark an unused attachment for deletion
+        });
+    }, 5000);
 
     // resizing images asynchronously since JIMP does not support sync operation
     processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {

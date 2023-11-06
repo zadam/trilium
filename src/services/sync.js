@@ -292,7 +292,9 @@ async function syncRequest(syncContext, method, requestPath, body) {
     return response;
 }
 
-function getEntityChangeRow(entityName, entityId) {
+function getEntityChangeRow(entityChange) {
+    const {entityName, entityId} = entityChange;
+
     if (entityName === 'note_reordering') {
         return sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [entityId]);
     }
@@ -300,13 +302,14 @@ function getEntityChangeRow(entityName, entityId) {
         const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
         if (!primaryKey) {
-            throw new Error(`Unknown entity '${entityName}'`);
+            throw new Error(`Unknown entity for entity change ${JSON.stringify(entityChange)}`);
         }
 
         const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
         if (!entityRow) {
-            throw new Error(`Entity ${entityName} '${entityId}' not found.`);
+            log.error(`Cannot find entity for entity change ${JSON.stringify(entityChange)}`);
+            return null;
         }
 
         if (entityName === 'blobs' && entityRow.content !== null) {
@@ -332,7 +335,10 @@ function getEntityChangeRecords(entityChanges) {
             continue;
         }
 
-        const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
+        const entity = getEntityChangeRow(entityChange);
+        if (!entity) {
+            continue;
+        }
 
         const record = { entityChange, entity };
 

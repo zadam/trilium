@@ -172,7 +172,7 @@ if (utils.isElectron()) {
                 await reportError(arg.method, arg.url, arg.statusCode, arg.body);
             }
 
-            idToRequestMap[arg.requestId].reject();
+            idToRequestMap[arg.requestId].reject(new Error(`Server responded with ${arg.statusCode}`));
         }
 
         delete idToRequestMap[arg.requestId];
