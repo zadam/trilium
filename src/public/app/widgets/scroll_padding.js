@@ -3,6 +3,10 @@ import NoteContextAwareWidget from "./note_context_aware_widget.js";
 const TPL = `<div class="scroll-padding-widget"></div>`;
 
 export default class ScrollPaddingWidget extends NoteContextAwareWidget {
+    isEnabled() {
+        return super.isEnabled() && ["text", "code"].includes(this.note?.type);
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
