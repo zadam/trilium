@@ -54,7 +54,7 @@ function inlineKatex(options, renderer) {
                 indexSrc = indexSrc.substring(index + 1).replace(/^\$+/, '');
             }
         },
-        tokenizer(src, tokens) {
+        tokenizer(src) {
             const match = src.match(inlineRule);
             if (match) {
                 return {
@@ -73,7 +73,7 @@ function blockKatex(options, renderer) {
     return {
         name: 'blockKatex',
         level: 'block',
-        tokenizer(src, tokens) {
+        tokenizer(src) {
             const match = src.match(blockRule);
             if (match) {
                 return {
