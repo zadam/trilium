@@ -1,11 +1,15 @@
 const inlineRule = /^(\${1,2})(?!\$)((?:\\.|[^\\\n])*?(?:\\.|[^\\\n$]))\1(?=[\s?!.,:？！。，：]|$)/;
-const blockRule = /^(\${1,2})\n((?:\\[^]|[^\\])+?)\n\1(?:\n|$)/;
+const alternativeInlineRule = /^\\\((?!\$)((?:\\.|[^\\\n])*?(?:\\.|[^\\\n$]))\\\)(?=[\s?!.,:？！。，：]|$)/;
+const blockRule = /^(\${1,2})[\s\n]((?:\\[^]|[^\\])+?)[\s\n]\1(?:\n|$)/;
+const alternativeBlockRule = /^\\\[(\s*)((?:\\[^]|[^\\])+?)(\s*)\\](?:\n|$)/;
 
 function texPlugin(options = {}) {
     return {
         extensions: [
             inlineKatex(options, createRenderer(options, false)),
-            blockKatex(options, createRenderer(options, true))
+            altInlineKatex(options, createRenderer(options, false)),
+            blockKatex(options, createRenderer(options, true)),
+            altBlockKatex(options, createRenderer(options, true))
         ]
     };
 }
@@ -69,6 +73,46 @@ function inlineKatex(options, renderer) {
     };
 }
 
+function altInlineKatex(options, renderer) {
+    return {
+        name: 'altInlineKatex',
+        level: 'inline',
+        start(src) {
+            let index;
+            let indexSrc = src;
+
+            while (indexSrc) {
+                index = indexSrc.indexOf('\\(');
+                if (index === -1) {
+                    return;
+                }
+
+                if (index === 0 || indexSrc.charAt(index - 1) === ' ') {
+                    const possibleKatex = indexSrc.substring(index + 1);
+
+                    if (possibleKatex.match(alternativeInlineRule)) {
+                        return index;
+                    }
+                }
+
+                indexSrc = indexSrc.substring(index + 2).replace(/^\\[()]/, '');
+            }
+        },
+        tokenizer(src) {
+            const match = src.match(alternativeInlineRule);
+            if (match) {
+                return {
+                    type: 'inlineKatex',
+                    raw: match[0],
+                    text: match[1].trim(),
+                    displayMode: false
+                };
+            }
+        },
+        renderer
+    };
+}
+
 function blockKatex(options, renderer) {
     return {
         name: 'blockKatex',
@@ -88,8 +132,25 @@ function blockKatex(options, renderer) {
     };
 }
 
+function altBlockKatex(options, renderer) {
+    return {
+        name: 'altBlockKatex',
+        level: 'block',
+        tokenizer(src) {
+            const match = src.match(alternativeBlockRule);
+            if (match) {
+                return {
+                    type: 'blockKatex',
+                    raw: match[0],
+                    text: match[2].trim(),
+                    displayMode: true
+                };
+            }
+        },
+        renderer
+    };
+}
 
 module.exports = {
     texPlugin
 };
-
