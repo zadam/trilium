@@ -1,10 +1,12 @@
 "use strict";
 
 const marked = require("marked");
+const texPlugin = require("./tex").texPlugin;
 const htmlSanitizer = require("../html_sanitizer");
 const importUtils = require("./utils");
 
 function renderToHtml(content, title) {
+    marked.use(texPlugin());
     const html = marked.parse(content, {
         mangle: false,
         headerIds: false
