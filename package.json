@@ -33,7 +33,10 @@
     "test": "npm run test-jasmine && npm run test-es6",
     "postinstall": "rimraf ./node_modules/canvas",
     "lint": "eslint .  --cache",
-    "prepare": "husky install || echo 'Husky install failed, expected on flatpak build'"
+    "prepare": "husky install || echo 'Husky install failed, expected on flatpak build'",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.4",
@@ -54,6 +57,7 @@
     "ejs": "3.1.9",
     "electron-debug": "3.2.0",
     "electron-dl": "3.5.1",
+    "electron-squirrel-startup": "^1.0.0",
     "electron-window-state": "5.0.3",
     "escape-html": "1.0.3",
     "express": "4.18.2",
@@ -102,9 +106,14 @@
     "yauzl": "2.10.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
     "cross-env": "7.0.3",
     "electron": "25.9.3",
-    "electron-packager": "17.1.2",
     "electron-rebuild": "3.2.9",
     "eslint": "8.53.0",
     "eslint-config-airbnb-base": "15.0.0",
