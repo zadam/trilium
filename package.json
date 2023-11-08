@@ -1,10 +1,15 @@
 {
   "name": "trilium",
   "productName": "Trilium Notes",
-  "description": "Trilium Notes",
+  "description": "Build your personal knowledge base with Trilium Notes",
   "version": "0.62.0-beta",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
+  "author": {
+    "name": "zadam",
+    "email": "zadam.apps@gmail.com",
+    "url": "https://github.com/zadam"
+  },
   "bin": {
     "trilium": "./src/www"
   },
