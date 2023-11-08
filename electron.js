@@ -1,6 +1,10 @@
 'use strict';
 
 const {app, globalShortcut, BrowserWindow} = require('electron');
+
+// Prevent Trilium starting twice on first install and on uninstall for the Windows installer.
+if (require('electron-squirrel-startup')) return;
+
 const sqlInit = require('./src/services/sql_init');
 const appIconService = require('./src/services/app_icon');
 const windowService = require('./src/services/window');
