@@ -138,11 +138,33 @@ var renderElem = function renderElem(elem, optionsCopy) {
 
     if (childNode.nodeType === 3) {
       // Text node
-      var frag = renderMathInText(childNode.textContent, optionsCopy);
+      // Concatenate all sibling text nodes.
+      // Webkit browsers split very large text nodes into smaller ones,
+      // so the delimiters may be split across different nodes.
+      var textContentConcat = childNode.textContent;
+      var sibling = childNode.nextSibling;
+      var nSiblings = 0;
+
+      while (sibling && sibling.nodeType === Node.TEXT_NODE) {
+        textContentConcat += sibling.textContent;
+        sibling = sibling.nextSibling;
+        nSiblings++;
+      }
+
+      var frag = renderMathInText(textContentConcat, optionsCopy);
 
       if (frag) {
+        // Remove extra text nodes
+        for (var j = 0; j < nSiblings; j++) {
+          childNode.nextSibling.remove();
+        }
+
         i += frag.childNodes.length - 1;
         elem.replaceChild(frag, childNode);
+      } else {
+        // If the concatenated text does not contain math
+        // the siblings will not either
+        i += nSiblings;
       }
     } else if (childNode.nodeType === 1) {
       (function () {
