@@ -6,7 +6,10 @@ module.exports = {
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        authors: "zadam",
+        description: "Build your personal knowledge base with Trilium Notes"
+      },
     },
     {
       name: '@electron-forge/maker-zip',
