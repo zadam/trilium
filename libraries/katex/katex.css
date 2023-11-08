@@ -127,10 +127,12 @@
 }
 .katex * {
   -ms-high-contrast-adjust: none !important;
+}
+.katex * {
   border-color: currentColor;
 }
 .katex .katex-version::after {
-  content: "0.16.0";
+  content: "0.16.9";
 }
 .katex .katex-mathml {
   /* Accessibility hack to only show to screen readers
@@ -208,6 +210,11 @@
 .katex .mathfrak,
 .katex .textfrak {
   font-family: KaTeX_Fraktur;
+}
+.katex .mathboldfrak,
+.katex .textboldfrak {
+  font-family: KaTeX_Fraktur;
+  font-weight: bold;
 }
 .katex .mathtt {
   font-family: KaTeX_Typewriter;
