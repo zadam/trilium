@@ -41,7 +41,7 @@
     "prepare": "husky install || echo 'Husky install failed, expected on flatpak build'",
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "npm run webpack && electron-forge make"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.4",
