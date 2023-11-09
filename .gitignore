@@ -1,3 +1,10 @@
+## Add all gitignores
+!**/.gitignore
+!.gitignore
+## Empty folders which should be kept
+!**/.keep
+!.keep
+
 #### OS
 ### Mac OS
 ## macOS system files
