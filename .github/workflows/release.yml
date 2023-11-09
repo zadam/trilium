@@ -9,8 +9,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      
       - name: Install dependencies
         run: npm install
+      
       - name: Run installer build
         run: npm run make
+      
+      - name: Publish installer artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Trilium Notes for Windows (.exe)
+          path: out/make/squirrel.windows/x64/*.exe
