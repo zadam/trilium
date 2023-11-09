@@ -1,0 +1,16 @@
+name: Release
+
+on:
+  push:
+
+jobs:
+  build-windows-installer:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run installer build
+        run: npm run make

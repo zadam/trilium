@@ -10,6 +10,7 @@
     "email": "zadam.apps@gmail.com",
     "url": "https://github.com/zadam"
   },
+  "copyright": "",
   "bin": {
     "trilium": "./src/www"
   },
