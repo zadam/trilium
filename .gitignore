@@ -1,16 +1,37 @@
+#### OS
+### Mac OS
+## macOS system files
 .DS_Store
+
+##### Development
+#### Node
+## Node.js dependencies directory
 node_modules/
+## Build directories
 dist/
 src/public/app-dist/
+## Log files generated
 npm-debug.log
 yarn-error.log
+## Databases
 *.db
+## Keys & Certs
 config.ini
 cert.key
 cert.crt
+## Server-specific package.json
 server-package.json
+#### ESLInt
+## Cache
+.eslintcache
+### Tmp files
+tmp/
+
+##### IDEs
+#### JetBrains
 .idea/httpRequests/
+
+## ---------------------
+
 data/
 data-test/
-tmp/
-.eslintcache
