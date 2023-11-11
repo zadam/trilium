@@ -12,6 +12,8 @@ const TPL = `
     <label><input type="checkbox" class="highlights-list-check" value="underline"> Underlined font &nbsp;</label>
     <label><input type="checkbox" class="highlights-list-check" value="color"> Font with color &nbsp;</label>
     <label><input type="checkbox" class="highlights-list-check" value="bgColor"> Font with background color &nbsp;</label>
+
+    <p>You can disable this functionality for specific notes by adding the #hideHighlightWidget label.</p>
     </div>
 </div>`;
 
