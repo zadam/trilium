@@ -268,7 +268,9 @@ function linkContextMenu(e) {
 }
 
 async function loadReferenceLinkTitle($el, href = null) {
-    href = href || $el.find("a").attr("href");
+    const $link = $el[0].tagName === 'A' ? $el : $el.find("a");
+
+    href = href || $link.attr("href");
     if (!href) {
         console.warn("Empty URL for parsing: " + $el[0].outerHTML);
         return;
@@ -286,7 +288,7 @@ async function loadReferenceLinkTitle($el, href = null) {
 
     if (note) {
         const icon = await getLinkIcon(noteId, viewScope.viewMode);
-
+k
         $el.prepend($("<span>").addClass(icon));
     }
 }
