@@ -21,6 +21,7 @@ RUN set -x \
         nasm \
         libpng-dev \
         python3 \
+        curl \
     && npm install \
     && apk del .build-dependencies \
     && npm run webpack \
