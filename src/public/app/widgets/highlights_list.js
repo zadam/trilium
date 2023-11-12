@@ -66,7 +66,6 @@ export default class HighlightsListWidget extends RightPanelWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-	    && !this.note.hasLabel('disableHighlightsList')
             && !this.noteContext.viewScope.highlightsListTemporarilyHidden
             && this.noteContext.viewScope.viewMode === 'default';
     }
