@@ -43,7 +43,7 @@ const KATEX = {
     js: [ "node_modules/katex/dist/katex.min.js",
         "node_modules/katex/dist/contrib/mhchem.min.js",
         "node_modules/katex/dist/contrib/auto-render.min.js" ],
-    css: [ "libraries/katex/katex.min.css" ]
+    css: [ "node_modules/katex/dist/katex.min.css" ]
 };
 
 const WHEEL_ZOOM = {
