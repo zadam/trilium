@@ -253,7 +253,8 @@ const ATTR_HELP = {
         "executeButton": "Title of the button which will execute the current code note",
         "executeDescription": "Longer description of the current code note displayed together with the execute button",
         "excludeFromNoteMap": "Notes with this label will be hidden from the Note Map",
-        "newNotesOnTop": "New notes will be created at the top of the parent note, not on the bottom."
+        "newNotesOnTop": "New notes will be created at the top of the parent note, not on the bottom.",
+        "hideHighlightWidget": "Hide Hightlight List widget"
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",

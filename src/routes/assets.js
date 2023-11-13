@@ -23,6 +23,7 @@ function register(app) {
     app.use(`/assets/vX/stylesheets`, express.static(path.join(srcRoot, 'public/stylesheets')));
     app.use(`/${assetPath}/libraries`, persistentCacheStatic(path.join(srcRoot, '..', 'libraries')));
     app.use(`/assets/vX/libraries`, express.static(path.join(srcRoot, '..', 'libraries')));
+
     // excalidraw-view mode in shared notes
     app.use(`/${assetPath}/node_modules/react/umd/react.production.min.js`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/react/umd/react.production.min.js')));
     app.use(`/${assetPath}/node_modules/react-dom/umd/react-dom.production.min.js`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/react-dom/umd/react-dom.production.min.js')));
@@ -31,7 +32,22 @@ function register(app) {
     app.use(`/${assetPath}/node_modules/@excalidraw/excalidraw/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
     app.use(`/${assetPath}/images`, persistentCacheStatic(path.join(srcRoot, '..', 'images')));
     app.use(`/assets/vX/images`, express.static(path.join(srcRoot, '..', 'images')));
-}
+
+    // KaTeX
+    app.use(
+      `/${assetPath}/node_modules/katex/dist/katex.min.js`,
+      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/katex.min.js')));
+    app.use(
+      `/${assetPath}/node_modules/katex/dist/contrib/mhchem.min.js`,
+      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/contrib/mhchem.min.js')));
+    app.use(
+      `/${assetPath}/node_modules/katex/dist/contrib/auto-render.min.js`,
+      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/contrib/auto-render.min.js')));
+    // expose the whole dist folder
+    app.use(`/node_modules/katex/dist/`,
+      express.static(path.join(srcRoot, '..', 'node_modules/katex/dist/')));
+    app.use(`/${assetPath}/node_modules/katex/dist/`,
+      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/')));}
 
 module.exports = {
     register

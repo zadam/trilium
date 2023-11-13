@@ -69,6 +69,7 @@ module.exports = [
     { type: 'label', name: 'newNotesOnTop'},
     { type: 'label', name: 'clipperInbox'},
     { type: 'label', name: 'webViewSrc', isDangerous: true },
+    { type: 'label', name: 'hideHighlightWidget' },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
