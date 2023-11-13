@@ -58,7 +58,8 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             title: note.getTitleOrProtected(),
             isProtected: note.isProtected,
             type: note.type,
-            mime: note.mime
+            mime: note.mime,
+            blobId: note.blobId
         });
     }
 

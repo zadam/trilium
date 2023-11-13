@@ -93,6 +93,9 @@ class FNote {
          * @type {string}
          */
         this.mime = row.mime;
+
+        // the main use case to keep this is to detect content change which should trigger refresh
+        this.blobId = row.blobId;
     }
 
     addParent(parentNoteId, branchId, sort = true) {

@@ -369,12 +369,15 @@ class Froca {
 
     /** @returns {Promise<FBlob>} */
     async getBlob(entityType, entityId) {
+        // I'm not sure why we're not using blobIds directly, it would save us this composite key ...
+        // perhaps one benefit is that we're always requesting the latest blob, not relying on perhaps faulty/slow
+        // websocket update?
         const key = `${entityType}-${entityId}`;
 
         if (!this.blobPromises[key]) {
             this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob`)
                 .then(row => new FBlob(row))
-                .catch(e => console.error(`Cannot get blob for ${entityType} '${entityId}'`));
+                .catch(e => console.error(`Cannot get blob for ${entityType} '${entityId}'`, e));
 
             // we don't want to keep large payloads forever in memory, so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)

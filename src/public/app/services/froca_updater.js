@@ -20,18 +20,6 @@ async function processEntityChanges(entityChanges) {
                 processAttributeChange(loadResults, ec);
             } else if (ec.entityName === 'note_reordering') {
                 processNoteReordering(loadResults, ec);
-            } else if (ec.entityName === 'blobs') {
-                if (!ec.isErased) {
-                    for (const affectedNoteId of ec.noteIds) {
-                        for (const key of Object.keys(froca.blobPromises)) {
-                            if (key.includes(affectedNoteId)) {
-                                delete froca.blobPromises[key];
-                            }
-                        }
-                    }
-
-                    loadResults.addNoteContent(ec.noteIds, ec.componentId);
-                }
             } else if (ec.entityName === 'revisions') {
                 loadResults.addRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'options') {
@@ -44,7 +32,7 @@ async function processEntityChanges(entityChanges) {
                 loadResults.addOption(ec.entity.name);
             } else if (ec.entityName === 'attachments') {
                 processAttachment(loadResults, ec);
-            } else if (ec.entityName === 'etapi_tokens') {
+            } else if (ec.entityName === 'blobs' || ec.entityName === 'etapi_tokens') {
                 // NOOP
             }
             else {
@@ -114,6 +102,16 @@ function processNoteChange(loadResults, ec) {
         delete froca.notes[ec.entityId];
     }
     else {
+        if (note.blobId !== ec.entity.blobId) {
+            for (const key of Object.keys(froca.blobPromises)) {
+                if (key.includes(note.noteId)) {
+                    delete froca.blobPromises[key];
+                }
+            }
+
+            loadResults.addNoteContent(note.noteId, ec.componentId);
+        }
+
         note.update(ec.entity);
     }
 }
