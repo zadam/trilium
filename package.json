@@ -72,7 +72,7 @@
     "jimp": "0.22.10",
     "joplin-turndown-plugin-gfm": "1.0.12",
     "jsdom": "22.1.0",
-    "marked": "9.1.2",
+    "marked": "9.1.6",
     "mime-types": "2.1.35",
     "multer": "1.4.5-lts.1",
     "node-abi": "3.50.0",
@@ -101,7 +101,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "25.9.2",
+    "electron": "25.9.5",
     "electron-builder": "24.6.4",
     "electron-packager": "17.1.2",
     "electron-rebuild": "3.2.9",
