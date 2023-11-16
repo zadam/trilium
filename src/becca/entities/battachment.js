@@ -178,7 +178,6 @@ class BAttachment extends AbstractBeccaEntity {
             if (fixedContent !== origContent) {
                 parentNote.setContent(fixedContent);
             }
-
             noteService.asyncPostProcessContent(note, fixedContent);
         }
 
