@@ -1,12 +1,12 @@
 const treeService = require("./tree");
 const sql = require("./sql");
 
-function moveBranchToNote(sourceBranch, targetParentNoteId) {
-    if (sourceBranch.parentNoteId === targetParentNoteId) {
+function moveBranchToNote(branchToMove, targetParentNoteId) {
+    if (branchToMove.parentNoteId === targetParentNoteId) {
         return {success: true}; // no-op
     }
 
-    const validationResult = treeService.validateParentChild(targetParentNoteId, sourceBranch.noteId, sourceBranch.branchId);
+    const validationResult = treeService.validateParentChild(targetParentNoteId, branchToMove.noteId, branchToMove.branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -15,10 +15,10 @@ function moveBranchToNote(sourceBranch, targetParentNoteId) {
     const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [targetParentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
-    const newBranch = sourceBranch.createClone(targetParentNoteId, newNotePos);
+    const newBranch = branchToMove.createClone(targetParentNoteId, newNotePos);
     newBranch.save();
 
-    sourceBranch.markAsDeleted();
+    branchToMove.markAsDeleted();
 
     return {
         success: true,
@@ -26,16 +26,18 @@ function moveBranchToNote(sourceBranch, targetParentNoteId) {
     };
 }
 
-function moveBranchToBranch(sourceBranch, targetParentBranch) {
-    const res = moveBranchToNote(sourceBranch, targetParentBranch.noteId);
+function moveBranchToBranch(branchToMove, targetParentBranch) {
+    const res = moveBranchToNote(branchToMove, targetParentBranch.noteId);
 
     if (!res.success) {
         return res;
     }
 
     // expanding so that the new placement of the branch is immediately visible
-    targetParentBranch.isExpanded = true;
-    targetParentBranch.save();
+    if (!targetParentBranch.isExpanded) {
+        targetParentBranch.isExpanded = true;
+        targetParentBranch.save();
+    }
 
     return res;
 }

@@ -10,6 +10,8 @@ class AttributeExistsExp extends Expression {
 
         this.attributeType = attributeType;
         this.attributeName = attributeName;
+        // template attr is used as a marker for templates, but it's not meant to be inherited
+        this.isTemplateLabel = this.attributeType === 'label' && (this.attributeName === 'template' || this.attributeName === 'workspacetemplate');
         this.prefixMatch = prefixMatch;
     }
 
@@ -23,12 +25,10 @@ class AttributeExistsExp extends Expression {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (attr.isInheritable) {
+            if (attr.isInheritable && !this.isTemplateLabel) {
                 resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
             }
-            else if (note.isInherited() &&
-                // template attr is used as a marker for templates, but it's not meant to be inherited
-                !(this.attributeType === 'label' && (this.attributeName === 'template' || this.attributeName === 'workspacetemplate'))) {
+            else if (note.isInherited() && !this.isTemplateLabel) {
                 resultNoteSet.addAll(note.getInheritingNotes());
             }
             else {
