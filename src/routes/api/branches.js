@@ -19,14 +19,14 @@ const ValidationError = require("../../errors/validation_error");
 function moveBranchToParent(req) {
     const {branchId, parentBranchId} = req.params;
 
-    const parentBranch = becca.getBranch(parentBranchId);
     const branchToMove = becca.getBranch(branchId);
+    const targetParentBranch = becca.getBranch(parentBranchId);
 
-    if (!parentBranch || !branchToMove) {
+    if (!branchToMove || !targetParentBranch) {
         throw new ValidationError(`One or both branches '${branchId}', '${parentBranchId}' have not been found`);
     }
 
-    return branchService.moveBranchToBranch(branchToMove, parentBranch, branchId);
+    return branchService.moveBranchToBranch(branchToMove, targetParentBranch, branchId);
 }
 
 function moveBranchBeforeNote(req) {
