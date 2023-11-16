@@ -288,7 +288,7 @@ async function loadReferenceLinkTitle($el, href = null) {
 
     if (note) {
         const icon = await getLinkIcon(noteId, viewScope.viewMode);
-k
+
         $el.prepend($("<span>").addClass(icon));
     }
 }
