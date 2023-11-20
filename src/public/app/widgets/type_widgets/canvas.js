@@ -248,6 +248,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
             this.excalidrawRef.current.updateScene(sceneData);
             this.excalidrawRef.current.addFiles(fileArray);
+            this.excalidrawRef.current.history.clear();
         }
 
         Promise.all(
