@@ -5,8 +5,8 @@
 }
 
 /*
- * CKEditor 5 (v40.0.0) content styles.
- * Generated on Thu, 19 Oct 2023 13:45:23 GMT.
+ * CKEditor 5 (v40.1.0) content styles.
+ * Generated on Mon, 20 Nov 2023 08:41:49 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
@@ -87,6 +87,13 @@
 .ck-content[dir="ltr"] .table th {
     text-align: left;
 }
+/* @ckeditor/ckeditor5-media-embed/theme/mediaembed.css */
+.ck-content .media {
+    clear: both;
+    margin: 0.9em 0;
+    display: block;
+    min-width: 15em;
+}
 /* @ckeditor/ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
     position: relative;
@@ -122,13 +129,6 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-/* @ckeditor/ckeditor5-media-embed/theme/mediaembed.css */
-.ck-content .media {
-    clear: both;
-    margin: 0.9em 0;
-    display: block;
-    min-width: 15em;
 }
 /* @ckeditor/ckeditor5-list/theme/todolist.css */
 .ck-content .todo-list {
