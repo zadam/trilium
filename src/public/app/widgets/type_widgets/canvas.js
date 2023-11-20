@@ -3,6 +3,7 @@ import TypeWidget from "./type_widget.js";
 import utils from '../../services/utils.js';
 import linkService from '../../services/link.js';
 import debounce from "../../services/debounce.js";
+import {Excalidraw} from "@excalidraw/excalidraw/types/packages/excalidraw/example/public/excalidraw.development.js";
 
 const {sleep} = utils;
 
@@ -115,7 +116,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.currentSceneVersion = this.SCENE_VERSION_INITIAL;
 
         // will be overwritten
-        this.excalidrawRef;
         this.$render;
         this.$widget;
         this.reactHandlers; // used to control react state
@@ -179,7 +179,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const blob = await note.getBlob();
 
         // before we load content into excalidraw, make sure excalidraw has loaded
-        while (!this.excalidrawRef?.current) {
+        while (!this.excalidrawApi) {
             console.log("excalidrawRef not yet loaded, sleep 200ms...");
             await sleep(200);
         }
@@ -199,7 +199,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 collaborators: []
             };
 
-            this.excalidrawRef.current.updateScene(sceneData);
+            this.excalidrawApi.updateScene(sceneData);
         }
         else if (blob.content) {
             // load saved content into excalidraw canvas
@@ -246,8 +246,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 fileArray.push(file);
             }
 
-            this.excalidrawRef.current.updateScene(sceneData);
-            this.excalidrawRef.current.addFiles(fileArray);
+            this.excalidrawApi.updateScene(sceneData);
+            this.excalidrawApi.addFiles(fileArray);
         }
 
         Promise.all(
@@ -260,7 +260,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             }
 
             const libraryItems = blobs.map(blob => blob.getJsonContentSafely()).filter(item => !!item);
-            this.excalidrawRef.current.updateLibrary({libraryItems, merge: false});
+            this.excalidrawApi.updateLibrary({libraryItems, merge: false});
         });
 
         // set initial scene version
@@ -274,14 +274,14 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * this is automatically called after this.saveData();
      */
     async getData() {
-        const elements = this.excalidrawRef.current.getSceneElements();
-        const appState = this.excalidrawRef.current.getAppState();
+        const elements = this.excalidrawApi.getSceneElements();
+        const appState = this.excalidrawApi.getAppState();
 
         /**
          * A file is not deleted, even though removed from canvas. Therefore, we only keep
          * files that are referenced by an element. Maybe this will change with a new excalidraw version?
          */
-        const files = this.excalidrawRef.current.getFiles();
+        const files = this.excalidrawApi.getFiles();
 
         // parallel svg export to combat bitrot and enable rendering image for note inclusion, preview, and share
         const svg = await window.ExcalidrawLib.exportToSvg({
@@ -320,7 +320,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             // this.libraryChanged is unset in dataSaved()
 
             // there's no separate method to get library items, so have to abuse this one
-            const libraryItems = await this.excalidrawRef.current.updateLibrary({merge: true});
+            const libraryItems = await this.excalidrawApi.updateLibrary({merge: true});
 
             let position = 10;
 
@@ -376,11 +376,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     createExcalidrawReactApp() {
-        const React = window.React;
-        const { Excalidraw } = window.ExcalidrawLib;
-
-        const excalidrawRef = React.useRef(null);
-        this.excalidrawRef = excalidrawRef;
         const excalidrawWrapperRef = React.useRef(null);
         this.excalidrawWrapperRef = excalidrawWrapperRef;
         const [dimensions, setDimensions] = React.useState({
@@ -438,7 +433,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 React.createElement(Excalidraw, {
                     // this makes sure that 1) manual theme switch button is hidden 2) theme stays as it should after opening menu
                     theme: this.themeStyle,
-                    ref: excalidrawRef,
+                    excalidrawAPI: api => { this.excalidrawApi = api; },
                     width: dimensions.width,
                     height: dimensions.height,
                     onPaste: (data, event) => {
@@ -482,8 +477,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     getSceneVersion() {
-        if (this.excalidrawRef) {
-            const elements = this.excalidrawRef.current.getSceneElements();
+        if (this.excalidrawApi) {
+            const elements = this.excalidrawApi.getSceneElements();
             return window.ExcalidrawLib.getSceneVersion(elements);
         } else {
             return this.SCENE_VERSION_ERROR;
