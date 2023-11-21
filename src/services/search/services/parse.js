@@ -1,5 +1,3 @@
-"use strict";
-
 import dayjs from 'dayjs';
 import AndExp from '../expressions/and.js'
 import OrExp from '../expressions/or.js'

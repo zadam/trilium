@@ -1,5 +1,3 @@
-"use strict";
-
 import BNote from './bnote.js'
 import AbstractBeccaEntity from './abstract_becca_entity.js'
 import dateUtils from '../../services/date_utils.js'

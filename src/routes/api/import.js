@@ -1,5 +1,3 @@
-"use strict";
-
 import enexImportService from '../../services/import/enex.js'
 import opmlImportService from '../../services/import/opml.js'
 import zipImportService from '../../services/import/zip.js'

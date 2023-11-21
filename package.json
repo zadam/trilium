@@ -68,6 +68,7 @@
     "http-proxy-agent": "7.0.0",
     "https-proxy-agent": "7.0.2",
     "image-type": "4.1.0",
+    "import-sync": "^2.1.2",
     "ini": "3.0.1",
     "is-animated": "2.0.2",
     "is-svg": "4.3.2",

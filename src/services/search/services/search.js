@@ -1,5 +1,3 @@
-"use strict";
-
 import normalizeString from 'normalize-strings';
 import lex from './lex.js'
 import handleParens from './handle_parens.js'
@@ -11,10 +9,8 @@ import beccaService from '../../../becca/becca_service.js'
 import utils from '../../utils.js'
 import log from '../../log.js'
 import hoistedNoteService from '../../hoisted_note.js'
-
-import scriptService from '../../script.js' // to avoid circular dependency
-
 import sql from '../../sql.js'
+import importSync from "import-sync";
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;
@@ -75,6 +71,8 @@ function searchFromRelation(note, relationName) {
 
         return [];
     }
+
+    const scriptService = importSync('../../script.js');
     const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {

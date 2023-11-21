@@ -1,5 +1,3 @@
-"use strict";
-
 import Expression from './expression.js'
 
 class TrueExp extends Expression {

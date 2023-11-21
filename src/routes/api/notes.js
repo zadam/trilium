@@ -1,5 +1,3 @@
-"use strict";
-
 import noteService from '../../services/notes.js'
 import eraseService from '../../services/erase.js'
 import treeService from '../../services/tree.js'

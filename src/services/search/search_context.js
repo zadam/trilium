@@ -1,5 +1,3 @@
-"use strict";
-
 import hoistedNoteService from '../hoisted_note.js'
 
 class SearchContext {

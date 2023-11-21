@@ -1,5 +1,3 @@
-"use strict";
-
 import crypto from 'crypto';
 import log from '../log.js'
 

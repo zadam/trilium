@@ -1,5 +1,3 @@
-"use strict";
-
 import utils from '../../services/utils.js'
 import sql from '../../services/sql.js'
 import entityChangesService from '../../services/entity_changes.js'
@@ -9,8 +7,7 @@ import cls from '../../services/cls.js'
 import log from '../../services/log.js'
 import protectedSessionService from '../../services/protected_session.js'
 import blobService from '../../services/blob.js'
-
-import becca0 from '../becca.js'
+import importSync from "import-sync";
 
 let becca = null;
 
@@ -36,7 +33,7 @@ class AbstractBeccaEntity {
      */
     get becca() {
         if (!becca) {
-            becca = becca0;
+            becca = importSync("../becca.js");
         }
 
         return becca;

@@ -1,5 +1,3 @@
-"use strict";
-
 import fs from 'fs';
 import dateUtils from '../../services/date_utils.js'
 import dataDir from '../../services/data_dir.js';

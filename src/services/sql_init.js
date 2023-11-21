@@ -3,27 +3,12 @@ import fs from 'fs';
 import resourceDir from './resource_dir.js'
 import sql from './sql.js'
 import utils from './utils.js'
-import optionService from './options.js'
 import port from './port.js'
-import BOption from '../becca/entities/boption.js'
 import TaskContext from './task_context.js'
 import migrationService from './migration.js'
 import cls from './cls.js'
 import config from './config.js'
-
-import becca from "../becca/becca_loader.js";
-
-import BNote from "../becca/entities/bnote.js";
-
-import BBranch from "../becca/entities/bbranch.js";
-
-import optionsInitService from "./options_init.js";
-
-import encryption from "./encryption/password.js";
-
-import zipImportService from "./import/zip.js";
-
-import backup from "./backup.js";
+import importSync from "import-sync";
 
 const dbReady = utils.deferred();
 
@@ -74,9 +59,10 @@ async function createInitialDatabase() {
 
         sql.executeScript(schema);
 
-        becca.load();
+        importSync("../becca/becca_loader.js").load();
         log.info("Creating root note ...");
 
+        const BNote = importSync("../becca/entities/bnote.js");
         rootNote = new BNote({
             noteId: 'root',
             title: 'root',
@@ -86,22 +72,25 @@ async function createInitialDatabase() {
 
         rootNote.setContent('');
 
+        const BBranch = importSync("../becca/entities/bbranch.js");
         new BBranch({
             noteId: 'root',
             parentNoteId: 'none',
             isExpanded: true,
             notePosition: 10
         }).save();
+
+        const optionsInitService = importSync("./options_init.js");
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
-        encryption.resetPassword();
+        importSync("./encryption/password.js").resetPassword();
     });
 
     log.info("Importing demo content ...");
 
     const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
-    await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
+    await importSync("./import/zip.js").importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
         // this needs to happen after ZIP import,
@@ -109,6 +98,7 @@ async function createInitialDatabase() {
         // are not all in one transaction (because ZIP import is async and thus not transactional)
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
+        const optionService = importSync('./options.js');
         optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,
@@ -134,8 +124,10 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     sql.transactional(() => {
         sql.executeScript(schema);
 
+        const optionsInitService = importSync("./options_init.js");
         optionsInitService.initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
+        const BOption = importSync('../becca/entities/boption.js');
         // document options required for sync to kick off
         for (const opt of options) {
             new BOption(opt).save();
@@ -147,6 +139,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
 
 function setDbAsInitialized() {
     if (!isDbInitialized()) {
+        const optionService = importSync('./options.js');
         optionService.setOption('initialized', 'true');
 
         initDbConnection();
@@ -169,10 +162,10 @@ dbReady.then(() => {
         return;
     }
 
-    setInterval(() => backup.regularBackup(), 4 * 60 * 60 * 1000);
+    setInterval(() => importSync("./backup.js").regularBackup(), 4 * 60 * 60 * 1000);
 
-    // kickoff first backup soon after start up
-    setTimeout(() => backup.regularBackup(), 5 * 60 * 1000);
+    // kickoff first backup soon after start-up
+    setTimeout(() => importSync("./backup.js").regularBackup(), 5 * 60 * 1000);
 
     // optimize is usually inexpensive no-op, so running it semi-frequently is not a big deal
     setTimeout(() => optimize(), 60 * 60 * 1000);

@@ -1,5 +1,3 @@
-"use strict";
-
 import becca from '../../becca/becca.js'
 import log from '../../services/log.js'
 import NotFoundError from '../../errors/not_found_error.js'

@@ -1,5 +1,3 @@
-"use strict";
-
 import log from './log.js'
 import sql from './sql.js'
 import optionService from './options.js'
@@ -17,14 +15,7 @@ import ws from './ws.js'
 import entityChangesService from './entity_changes.js'
 import entityConstructor from '../becca/entity_constructor.js'
 import becca from '../becca/becca.js'
-
-import setupService from './setup.js' // circular dependency issue
-
-
-// before re-queuing sectors, make sure the entity changes are correct
-import consistencyChecks from './consistency_checks.js'
-
-import becca0 from '../becca/becca_loader.js'
+import importSync from "import-sync";
 
 let proxyToggle = true;
 
@@ -92,6 +83,8 @@ async function sync() {
 }
 
 async function login() {
+    const setupService = importSync('./setup.js');
+
     if (!(await setupService.hasSyncServerSchemaAndSeed())) {
         await setupService.sendSeedToSyncServer();
     }
@@ -249,6 +242,8 @@ async function checkContentHash(syncContext) {
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
     if (failedChecks.length > 0) {
+        // before re-queuing sectors, make sure the entity changes are correct
+        const consistencyChecks = importSync('./consistency_checks.js');
         consistencyChecks.runEntityChangesChecks();
 
         await syncRequest(syncContext, 'POST', `/api/sync/check-entity-changes`);
@@ -403,7 +398,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-becca0.beccaLoaded.then(() => {
+importSync('../becca/becca_loader.js').beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately, but should happen after initial consistency checks

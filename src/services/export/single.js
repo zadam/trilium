@@ -1,5 +1,3 @@
-"use strict";
-
 import mimeTypes from 'mime-types';
 import html from 'html';
 import utils from '../utils.js'

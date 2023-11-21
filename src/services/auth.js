@@ -1,5 +1,3 @@
-"use strict";
-
 import etapiTokenService from './etapi_tokens.js'
 import log from './log.js'
 import sqlInit from './sql_init.js'

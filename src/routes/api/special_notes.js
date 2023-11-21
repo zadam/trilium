@@ -1,5 +1,3 @@
-"use strict";
-
 import dateNoteService from '../../services/date_notes.js'
 import sql from '../../services/sql.js'
 import cls from '../../services/cls.js'

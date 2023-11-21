@@ -1,5 +1,3 @@
-"use strict";
-
 import imageService from '../../services/image.js'
 import becca from '../../becca/becca.js'
 import resourceDir from '../../services/resource_dir.js';

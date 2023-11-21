@@ -1,5 +1,3 @@
-"use strict";
-
 import zipExportService from '../../services/export/zip.js'
 import singleExportService from '../../services/export/single.js'
 import opmlExportService from '../../services/export/opml.js'

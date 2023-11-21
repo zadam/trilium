@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../../services/sql.js'
 import utils from '../../services/utils.js'
 import entityChangesService from '../../services/entity_changes.js'

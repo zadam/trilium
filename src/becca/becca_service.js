@@ -1,5 +1,3 @@
-"use strict";
-
 import becca from './becca.js'
 import cls from '../services/cls.js'
 import log from '../services/log.js'

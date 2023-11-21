@@ -1,5 +1,3 @@
-"use strict";
-
 import keyboardActions from '../../services/keyboard_actions.js'
 import becca from '../../becca/becca.js'
 

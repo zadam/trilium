@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from './sql.js'
 import utils from './utils.js'
 import log from './log.js'

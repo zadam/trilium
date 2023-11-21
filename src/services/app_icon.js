@@ -1,5 +1,3 @@
-"use strict";
-
 import path from 'path';
 import resourceDir from './resource_dir.js';
 import log from './log.js'

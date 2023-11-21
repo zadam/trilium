@@ -1,5 +1,3 @@
-"use strict";
-
 import beccaService from '../../becca/becca_service.js'
 import becca from '../../becca/becca.js'
 

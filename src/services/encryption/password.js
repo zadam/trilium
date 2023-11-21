@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../sql.js'
 import optionService from '../options.js'
 import myScryptService from './my_scrypt.js'

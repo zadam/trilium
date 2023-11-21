@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from './sql.js'
 import log from './log.js'
 import BBranch from '../becca/entities/bbranch.js'

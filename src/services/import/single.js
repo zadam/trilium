@@ -1,5 +1,3 @@
-"use strict";
-
 import noteService from '../../services/notes.js'
 import imageService from '../../services/image.js'
 import protectedSessionService from '../protected_session.js'

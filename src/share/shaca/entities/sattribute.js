@@ -1,5 +1,3 @@
-"use strict";
-
 import AbstractShacaEntity from './abstract_shaca_entity.js'
 
 class SAttribute extends AbstractShacaEntity {

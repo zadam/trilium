@@ -1,5 +1,3 @@
-"use strict";
-
 import scriptService from '../../services/script.js'
 import attributeService from '../../services/attributes.js'
 import becca from '../../becca/becca.js'

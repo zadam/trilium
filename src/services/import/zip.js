@@ -1,5 +1,3 @@
-"use strict";
-
 import BAttribute from '../../becca/entities/battribute.js'
 import utils from '../../services/utils.js'
 import log from '../../services/log.js'

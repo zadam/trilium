@@ -1,13 +1,10 @@
-"use strict";
-
 import utils from '../../services/utils.js'
 import dateUtils from '../../services/date_utils.js'
 import AbstractBeccaEntity from './abstract_becca_entity.js'
 import sql from '../../services/sql.js'
 import protectedSessionService from '../../services/protected_session.js'
 import log from '../../services/log.js'
-
-import noteService from '../../services/notes.js'
+import importSync from "import-sync";
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
@@ -154,6 +151,8 @@ class BAttachment extends AbstractBeccaEntity {
         if (!this.isContentAvailable()) { // isProtected is the same for attachment
             throw new Error(`Cannot convert protected attachment outside of protected session`);
         }
+
+        const noteService = importSync('../../services/notes.js');
         const { note, branch } = noteService.createNewNote({
             parentNoteId: this.ownerId,
             title: this.title,

@@ -1,5 +1,3 @@
-"use strict";
-
 import becca from '../../becca/becca.js'
 import { JSDOM } from 'jsdom';
 

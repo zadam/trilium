@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../services/sql.js'
 import eventService from '../services/events.js'
 import becca from './becca.js'
@@ -12,17 +10,14 @@ import BOption from './entities/boption.js'
 import BEtapiToken from './entities/betapi_token.js'
 import cls from '../services/cls.js'
 import entityConstructor from '../becca/entity_constructor.js'
-
-import services from '../services/options_init.js'
-
-import services0 from '../services/ws.js'
+import importSync from "import-sync";
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
         cls.init(() => {
             load();
 
-            services.initStartupOptions();
+            importSync('../services/options_init.js').initStartupOptions();
 
             res();
         });
@@ -75,7 +70,7 @@ function load() {
 function reload(reason) {
     load();
 
-    services0.reloadFrontend(reason || "becca reloaded");
+    importSync('../services/ws.js').reloadFrontend(reason || "becca reloaded");
 }
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {

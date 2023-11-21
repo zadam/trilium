@@ -1,5 +1,3 @@
-"use strict";
-
 import utils from '../services/utils.js'
 import optionService from '../services/options.js'
 import myScryptService from '../services/encryption/my_scrypt.js'

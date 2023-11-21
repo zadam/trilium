@@ -1,5 +1,3 @@
-"use strict";
-
 export function formatAttrForSearch(attr, searchWithValue) {
     let searchStr = '';
 

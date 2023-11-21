@@ -1,5 +1,3 @@
-"use strict";
-
 import noteService from './notes.js'
 import attributeService from './attributes.js'
 import dateUtils from './date_utils.js'

@@ -1,5 +1,3 @@
-"use strict";
-
 import fs from 'fs';
 import crypto from 'crypto';
 import dataDir from './data_dir.js'

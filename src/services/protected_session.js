@@ -1,11 +1,6 @@
-"use strict";
-
 import log from './log.js'
 import dataEncryptionService from './encryption/data_encryption.js'
-
-import options from './options.js'
-
-import ws from './ws.js'
+import importSync from "import-sync";
 
 let dataKey = null;
 
@@ -54,6 +49,7 @@ function touchProtectedSession() {
 }
 
 function checkProtectedSessionExpiration() {
+    const options = importSync('./options.js');
     const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
     if (isProtectedSessionAvailable()
         && lastProtectedSessionOperationDate
@@ -63,7 +59,7 @@ function checkProtectedSessionExpiration() {
 
         log.info("Expiring protected session");
 
-        ws.reloadFrontend("leaving protected session");
+        importSync("./ws").reloadFrontend("leaving protected session");
     }
 }
 

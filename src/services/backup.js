@@ -1,5 +1,3 @@
-"use strict";
-
 import dateUtils from './date_utils.js'
 import optionService from './options.js'
 import fs from 'fs-extra';

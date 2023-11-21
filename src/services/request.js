@@ -1,5 +1,3 @@
-"use strict";
-
 import utils from './utils.js'
 import log from './log.js'
 import url from 'url';

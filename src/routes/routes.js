@@ -1,5 +1,3 @@
-"use strict";
-
 import utils from '../services/utils.js'
 import multer from 'multer';
 import log from '../services/log.js'

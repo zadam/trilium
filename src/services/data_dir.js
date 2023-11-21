@@ -1,5 +1,3 @@
-"use strict";
-
 /*
  * This file resolves trilium data path in this order of priority:
  * - if TRILIUM_DATA_DIR environment variable exists, then its value is used as the path

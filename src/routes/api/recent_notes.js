@@ -1,5 +1,3 @@
-"use strict";
-
 import BRecentNote from '../../becca/entities/brecent_note.js'
 import sql from '../../services/sql.js'
 import dateUtils from '../../services/date_utils.js'

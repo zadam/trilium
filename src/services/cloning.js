@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from './sql.js'
 import eventChangesService from './entity_changes.js'
 import treeService from './tree.js'

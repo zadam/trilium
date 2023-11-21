@@ -1,5 +1,3 @@
-"use strict";
-
 import imageType from 'image-type';
 import imageService from '../../services/image.js'
 import noteService from '../../services/notes.js'

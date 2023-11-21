@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../../services/sql.js'
 import log from '../../services/log.js'
 import backupService from '../../services/backup.js'

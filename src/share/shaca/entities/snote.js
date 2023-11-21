@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../../sql.js'
 import utils from '../../../services/utils.js'
 import AbstractShacaEntity from './abstract_shaca_entity.js'

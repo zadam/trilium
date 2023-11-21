@@ -1,5 +1,3 @@
-"use strict";
-
 function handleH1(content, title) {
     content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
         if (title.trim() === text.trim()) {

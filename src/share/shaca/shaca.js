@@ -1,5 +1,3 @@
-"use strict";
-
 class Shaca {
     constructor() {
         this.reset();

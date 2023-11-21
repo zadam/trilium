@@ -1,5 +1,3 @@
-"use strict";
-
 import html from 'html';
 import dateUtils from '../date_utils.js'
 import path from 'path';

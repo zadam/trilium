@@ -1,5 +1,3 @@
-"use strict";
-
 import searchService from './search/services/search.js'
 import sql from './sql.js'
 import becca from '../becca/becca.js'

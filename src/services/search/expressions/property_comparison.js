@@ -1,5 +1,3 @@
-"use strict";
-
 import Expression from './expression.js'
 import NoteSet from '../note_set.js'
 import buildComparator from '../services/build_comparator.js'

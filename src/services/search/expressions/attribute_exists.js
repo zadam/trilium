@@ -1,5 +1,3 @@
-"use strict";
-
 import NoteSet from '../note_set.js'
 import becca from '../../../becca/becca.js'
 import Expression from './expression.js'

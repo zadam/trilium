@@ -1,5 +1,3 @@
-"use strict";
-
 import similarityService from '../../becca/similarity.js'
 import becca from '../../becca/becca.js'
 

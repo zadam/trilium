@@ -1,8 +1,5 @@
-"use strict";
-
 import BNote from './bnote.js'
 import AbstractBeccaEntity from './abstract_becca_entity.js'
-import sql from '../../services/sql.js'
 import dateUtils from '../../services/date_utils.js'
 import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js'
 import { sanitizeAttributeName } from '../../services/sanitize_attribute_name.js';

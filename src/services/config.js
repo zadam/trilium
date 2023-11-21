@@ -1,5 +1,3 @@
-"use strict";
-
 import ini from 'ini';
 import fs from 'fs';
 import dataDir from './data_dir.js'

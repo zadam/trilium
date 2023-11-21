@@ -1,5 +1,3 @@
-"use strict";
-
 import Database from 'better-sqlite3';
 import dataDir from '../services/data_dir.js'
 

@@ -1,5 +1,3 @@
-"use strict";
-
 import log from './log.js'
 import sql from './sql.js'
 import protectedSessionService from './protected_session.js'

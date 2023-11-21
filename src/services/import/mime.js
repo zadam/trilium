@@ -1,5 +1,3 @@
-"use strict";
-
 import mimeTypes from 'mime-types';
 import path from 'path';
 

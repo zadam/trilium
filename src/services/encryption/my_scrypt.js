@@ -1,5 +1,3 @@
-"use strict";
-
 import optionService from '../options.js'
 import crypto from 'crypto';
 

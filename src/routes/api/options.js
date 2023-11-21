@@ -1,5 +1,3 @@
-"use strict";
-
 import optionService from '../../services/options.js'
 import log from '../../services/log.js'
 import searchService from '../../services/search/services/search.js'

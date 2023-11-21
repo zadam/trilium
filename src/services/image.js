@@ -1,5 +1,3 @@
-"use strict";
-
 import becca from '../becca/becca.js'
 import log from './log.js'
 import protectedSessionService from './protected_session.js'

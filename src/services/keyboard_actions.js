@@ -1,5 +1,3 @@
-"use strict";
-
 import optionService from './options.js'
 import log from './log.js'
 import utils from './utils.js'

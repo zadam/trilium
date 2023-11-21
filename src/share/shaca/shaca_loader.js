@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../sql.js'
 import shaca from './shaca.js'
 import log from '../../services/log.js'

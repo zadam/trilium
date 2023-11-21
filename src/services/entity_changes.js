@@ -6,8 +6,7 @@ import utils from './utils.js'
 import instanceId from './instance_id.js'
 import becca from '../becca/becca.js'
 import blobService from '../services/blob.js'
-
-import eventService from './events.js'
+import importSync from "import-sync";
 
 let maxEntityChangeId = 0;
 
@@ -54,6 +53,8 @@ function putNoteReorderingEntityChange(parentNoteId, componentId) {
         componentId,
         instanceId
     });
+
+    const eventService = importSync('./events.js');
     eventService.emit(eventService.ENTITY_CHANGED, {
         entityName: 'note_reordering',
         entity: sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [parentNoteId])

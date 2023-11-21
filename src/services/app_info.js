@@ -1,5 +1,3 @@
-"use strict";
-
 import build from './build.js'
 import packageJson from '../../package.json' assert { type: 'json' }
 import dataDir from './data_dir.js';

@@ -1,5 +1,3 @@
-"use strict";
-
 import TurndownService from 'turndown';
 import turndownPluginGfm from 'joplin-turndown-plugin-gfm';
 

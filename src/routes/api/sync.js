@@ -1,5 +1,3 @@
-"use strict";
-
 import syncService from '../../services/sync.js'
 import syncUpdateService from '../../services/sync_update.js'
 import entityChangesService from '../../services/entity_changes.js'

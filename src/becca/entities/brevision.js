@@ -1,5 +1,3 @@
-"use strict";
-
 import protectedSessionService from '../../services/protected_session.js'
 import utils from '../../services/utils.js'
 import dateUtils from '../../services/date_utils.js'

@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from './sql.js'
 import sqlInit from './sql_init.js'
 import log from './log.js'
@@ -15,8 +13,7 @@ import utils from '../services/utils.js'
 import eraseService from '../services/erase.js'
 import { sanitizeAttributeName } from './sanitize_attribute_name.js';
 import services from '../services/note_types.js'
-
-import becca0 from '../becca/becca_loader.js'
+import importSync from "import-sync";
 
 const noteTypes = services.getNoteTypeNames();
 
@@ -767,7 +764,7 @@ class ConsistencyChecks {
         }
 
         if (this.reloadNeeded) {
-            becca0.reload("consistency checks need becca reload");
+            importSync('../becca/becca_loader.js').reload("consistency checks need becca reload");
         }
 
         return !this.unrecoveredConsistencyErrors;

@@ -1,5 +1,3 @@
-"use strict";
-
 import Expression from './expression.js'
 import TrueExp from './true.js'
 

@@ -1,5 +1,3 @@
-"use strict";
-
 class NoteSet {
     constructor(notes = []) {
         /** @type {BNote[]} */

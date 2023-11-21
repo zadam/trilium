@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../../services/sql.js'
 import protectedSessionService from '../../services/protected_session.js'
 import noteService from '../../services/notes.js'

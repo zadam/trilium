@@ -1,5 +1,3 @@
-"use strict";
-
 import noteService from '../../services/notes.js'
 import { parseString } from 'xml2js';
 import protectedSessionService from '../protected_session.js'

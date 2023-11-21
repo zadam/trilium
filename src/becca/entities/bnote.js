@@ -1,5 +1,3 @@
-"use strict";
-
 import protectedSessionService from '../../services/protected_session.js'
 import log from '../../services/log.js'
 import sql from '../../services/sql.js'
@@ -8,21 +6,11 @@ import dateUtils from '../../services/date_utils.js'
 import AbstractBeccaEntity from './abstract_becca_entity.js'
 import BRevision from './brevision.js'
 import BAttachment from './battachment.js'
+import BAttribute from './battribute.js'
 import TaskContext from '../../services/task_context.js'
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
-import eventService from '../../services/events.js'
-import searchService from '../../services/search/services/search.js'
-
-import BAttribute from './battribute.js'
-
-import cloningService from '../../services/cloning.js'
-
-import noteService from '../../services/notes.js'
-
-
-// needs to be run before branches and attributes are deleted and thus attached relations disappear
-import handlers from '../../services/handlers.js'
+import importSync from "import-sync";
 
 dayjs.extend(utc);
 
@@ -279,6 +267,7 @@ class BNote extends AbstractBeccaEntity {
     setContent(content, opts) {
         this._setContent(content, opts);
 
+        const eventService = importSync('../../services/events.js');
         eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: this });
     }
 
@@ -915,6 +904,7 @@ class BNote extends AbstractBeccaEntity {
         }
 
         try {
+            const searchService = importSync('../../services/search/services/search.js');
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
@@ -1469,6 +1459,7 @@ class BNote extends AbstractBeccaEntity {
     cloneTo(parentNoteId) {
         const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
 
+        const cloningService = importSync('../../services/cloning.js');
         return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
     }
 
@@ -1539,6 +1530,7 @@ class BNote extends AbstractBeccaEntity {
         const fixedContent = utils.replaceAll(parentContent, oldNoteUrl, newAttachmentUrl);
 
         parentNote.setContent(fixedContent);
+        const noteService = importSync('../../services/notes.js');
         noteService.asyncPostProcessContent(parentNote, fixedContent); // to mark an unused attachment for deletion
 
         this.deleteNote();
@@ -1564,6 +1556,8 @@ class BNote extends AbstractBeccaEntity {
         if (!taskContext) {
             taskContext = new TaskContext('no-progress-reporting');
         }
+        // needs to be run before branches and attributes are deleted and thus attached relations disappear
+        const handlers = importSync('../../services/handlers.js');
         handlers.runAttachedRelations(this, 'runOnNoteDeletion', this);
         taskContext.noteDeletionHandlerTriggered = true;
 

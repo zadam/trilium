@@ -1,5 +1,3 @@
-"use strict";
-
 import attributeService from '../../services/attributes.js'
 import cloneService from '../../services/cloning.js'
 import noteService from '../../services/notes.js'

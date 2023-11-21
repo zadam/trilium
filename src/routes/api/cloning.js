@@ -1,5 +1,3 @@
-"use strict";
-
 import cloningService from '../../services/cloning.js'
 
 function cloneNoteToBranch(req) {

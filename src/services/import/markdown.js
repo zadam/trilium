@@ -1,5 +1,3 @@
-"use strict";
-
 import { marked } from 'marked';
 import htmlSanitizer from '../html_sanitizer.js'
 import importUtils from './utils.js'

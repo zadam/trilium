@@ -1,5 +1,3 @@
-"use strict";
-
 import passwordService from '../../services/encryption/password.js'
 import ValidationError from '../../errors/validation_error.js'
 

@@ -1,5 +1,3 @@
-"use strict";
-
 import becca from '../../becca/becca.js'
 import SearchContext from '../../services/search/search_context.js'
 import searchService from '../../services/search/services/search.js'

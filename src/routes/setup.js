@@ -1,5 +1,3 @@
-"use strict";
-
 import sqlInit from '../services/sql_init.js'
 import setupService from '../services/setup.js'
 import utils from '../services/utils.js'

@@ -1,5 +1,3 @@
-"use strict";
-
 import fs from 'fs';
 import dataDir from './data_dir.js'
 import cls from './cls.js'

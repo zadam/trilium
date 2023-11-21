@@ -1,5 +1,3 @@
-"use strict";
-
 import sql from '../services/sql.js'
 import attributeService from '../services/attributes.js'
 import config from '../services/config.js'

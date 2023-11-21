@@ -1,5 +1,3 @@
-"use strict";
-
 import crypto from 'crypto';
 import unescape from 'unescape';
 import escape from 'escape-html';

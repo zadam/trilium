@@ -1,9 +1,6 @@
 import becca from '../becca/becca.js'
 import sql from './sql.js'
-
-
-// to avoid circular dependency, need to find a better solution
-import BOption from "../becca/entities/boption.js";
+import importSync from "import-sync";
 
 /** @returns {string|null} */
 function getOptionOrNull(name) {
@@ -76,6 +73,7 @@ function setOption(name, value) {
 }
 
 function createOption(name, value, isSynced) {
+    const BOption = importSync("../becca/entities/boption.js");
     new BOption({
         name: name,
         value: value,
