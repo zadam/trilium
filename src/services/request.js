@@ -160,6 +160,8 @@ function getImage(imageUrl) {
     });
 }
 
+const HTTP = 'http:', HTTPS = 'https:';
+
 function getProxyAgent(opts) {
     if (!opts.proxy) {
         return null;
@@ -167,15 +169,15 @@ function getProxyAgent(opts) {
 
     const {protocol} = url.parse(opts.url);
 
-    if (protocol === 'http:' || protocol === 'https:') {
-        const protoNoColon = protocol.substr(0, protocol.length - 1);
-        const AgentClass = require(`${protoNoColon}-proxy-agent`);
-
-        return new AgentClass(opts.proxy);
-    }
-    else {
+    if (![HTTP, HTTPS].includes(protocol)) {
         return null;
     }
+
+    const AgentClass = HTTP === protocol
+        ? require("http-proxy-agent").HttpProxyAgent
+        : require("https-proxy-agent").HttpsProxyAgent;
+
+    return new AgentClass(opts.proxy);
 }
 
 function getClient(opts) {

@@ -185,14 +185,8 @@ class BRevision extends AbstractBeccaEntity {
 
     /** @returns {BAttachment} */
     getAttachmentByTitle(title) {
-        return sql.getRows(`
-                SELECT attachments.*
-                FROM attachments 
-                WHERE ownerId = ? 
-                  AND title = ?
-                  AND isDeleted = 0
-                ORDER BY position`, [this.revisionId, title])
-            .map(row => new BAttachment(row))[0];
+        // cannot use SQL to filter by title since it can be encrypted
+        return this.getAttachments().filter(attachment => attachment.title === title)[0];
     }
 
     beforeSaving() {
