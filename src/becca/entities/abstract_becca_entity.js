@@ -33,7 +33,7 @@ class AbstractBeccaEntity {
      */
     get becca() {
         if (!becca) {
-            becca = importSync("../becca.js");
+            becca = importSync("../becca.js").default;
         }
 
         return becca;
