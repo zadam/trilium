@@ -47,7 +47,8 @@ const SpacedUpdate = require("./spaced_update");
 const specialNotesService = require("./special_notes");
 const branchService = require("./branches");
 const exportService = require("./export/zip");
-const syncMutex = require("./sync_mutex.js");
+const syncMutex = require("./sync_mutex");
+const backupService = require("./backup");
 const optionsService = require("./options");
 
 
@@ -690,6 +691,13 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise} - resolves once the callback is finished (callback is awaited)
      */
     this.runOutsideOfSync = syncMutex.doExclusively;
+
+    /**
+     * @method
+     * @param {string} backupName - If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file
+     * @returns {Promise} - resolves once the backup is finished
+     */
+    this.backupNow = backupService.backupNow;
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.

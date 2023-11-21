@@ -208,7 +208,7 @@ class AbstractBeccaEntity {
 
         sql.execute("DELETE FROM blobs WHERE blobId = ?", [oldBlobId]);
         // blobs are not marked as erased in entity_changes, they are just purged completely
-        // this is because technically every keystroke can create a new blob and there would be just too many
+        // this is because technically every keystroke can create a new blob, and there would be just too many
         sql.execute("DELETE FROM entity_changes WHERE entityName = 'blobs' AND entityId = ?", [oldBlobId]);
     }
 
@@ -258,7 +258,7 @@ class AbstractBeccaEntity {
             isErased: false,
             utcDateChanged: pojo.utcDateModified,
             isSynced: true,
-            // overriding componentId will cause frontend to think the change is coming from a different component
+            // overriding componentId will cause the frontend to think the change is coming from a different component
             // and thus reload
             componentId: opts.forceFrontendReload ? utils.randomString(10) : null
         });
