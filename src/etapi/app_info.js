@@ -1,5 +1,5 @@
-const appInfo = require('../services/app_info');
-const eu = require("./etapi_utils");
+import appInfo from '../services/app_info.js'
+import eu from './etapi_utils.js'
 
 function register(router) {
     eu.route(router, 'get', '/etapi/app-info', (req, res, next) => {
@@ -7,6 +7,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

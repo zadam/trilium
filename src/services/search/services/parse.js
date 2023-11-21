@@ -1,25 +1,25 @@
 "use strict";
 
-const dayjs = require("dayjs");
-const AndExp = require('../expressions/and');
-const OrExp = require('../expressions/or');
-const NotExp = require('../expressions/not');
-const ChildOfExp = require('../expressions/child_of');
-const DescendantOfExp = require('../expressions/descendant_of');
-const ParentOfExp = require('../expressions/parent_of');
-const RelationWhereExp = require('../expressions/relation_where');
-const PropertyComparisonExp = require('../expressions/property_comparison');
-const AttributeExistsExp = require('../expressions/attribute_exists');
-const LabelComparisonExp = require('../expressions/label_comparison');
-const NoteFlatTextExp = require('../expressions/note_flat_text');
-const NoteContentFulltextExp = require('../expressions/note_content_fulltext');
-const OrderByAndLimitExp = require('../expressions/order_by_and_limit');
-const AncestorExp = require("../expressions/ancestor");
-const buildComparator = require('./build_comparator');
-const ValueExtractor = require('../value_extractor');
-const utils = require("../../utils");
-const TrueExp = require("../expressions/true");
-const IsHiddenExp = require("../expressions/is_hidden");
+import dayjs from 'dayjs';
+import AndExp from '../expressions/and.js'
+import OrExp from '../expressions/or.js'
+import NotExp from '../expressions/not.js'
+import ChildOfExp from '../expressions/child_of.js'
+import DescendantOfExp from '../expressions/descendant_of.js'
+import ParentOfExp from '../expressions/parent_of.js'
+import RelationWhereExp from '../expressions/relation_where.js'
+import PropertyComparisonExp from '../expressions/property_comparison.js'
+import AttributeExistsExp from '../expressions/attribute_exists.js'
+import LabelComparisonExp from '../expressions/label_comparison.js'
+import NoteFlatTextExp from '../expressions/note_flat_text.js'
+import NoteContentFulltextExp from '../expressions/note_content_fulltext.js'
+import OrderByAndLimitExp from '../expressions/order_by_and_limit.js'
+import AncestorExp from '../expressions/ancestor.js'
+import buildComparator from './build_comparator.js'
+import ValueExtractor from '../value_extractor.js'
+import utils from '../../utils.js'
+import TrueExp from '../expressions/true.js'
+import IsHiddenExp from '../expressions/is_hidden.js'
 
 function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => utils.removeDiacritic(t.token));
@@ -459,4 +459,4 @@ function getAncestorExp({ancestorNoteId, ancestorDepth, includeHiddenNotes}) {
     }
 }
 
-module.exports = parse;
+export default parse;

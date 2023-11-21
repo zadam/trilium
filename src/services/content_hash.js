@@ -1,9 +1,9 @@
 "use strict";
 
-const sql = require('./sql');
-const utils = require('./utils');
-const log = require('./log');
-const eraseService = require("./erase");
+import sql from './sql.js'
+import utils from './utils.js'
+import log from './log.js'
+import eraseService from './erase.js'
 
 function getEntityHashes() {
     // blob erasure is not synced, we should check before each sync if there's some blob to erase
@@ -77,7 +77,7 @@ function checkContentHashes(otherHashes) {
     return failedChecks;
 }
 
-module.exports = {
+export default {
     getEntityHashes,
     checkContentHashes
 };

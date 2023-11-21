@@ -1,8 +1,6 @@
-const {
-    describeEtapi, postEtapi,
-    putEtapiContent
-} = require("../support/etapi");
-const {getEtapi} = require("../support/etapi.js");
+import {describeEtapi, postEtapi, putEtapiContent,getEtapi} from "../support/etapi";
+
+
 
 describeEtapi("app_info", () => {
     it("get", async () => {

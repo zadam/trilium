@@ -1,19 +1,19 @@
 "use strict";
 
-const attributeService = require("../../services/attributes");
-const cloneService = require("../../services/cloning");
-const noteService = require('../../services/notes');
-const dateNoteService = require('../../services/date_notes');
-const dateUtils = require('../../services/date_utils');
-const imageService = require('../../services/image');
-const appInfo = require('../../services/app_info');
-const ws = require('../../services/ws');
-const log = require('../../services/log');
-const utils = require('../../services/utils');
-const path = require('path');
-const htmlSanitizer = require('../../services/html_sanitizer');
-const {formatAttrForSearch} = require("../../services/attribute_formatter");
-const jsdom = require("jsdom");
+import attributeService from '../../services/attributes.js'
+import cloneService from '../../services/cloning.js'
+import noteService from '../../services/notes.js'
+import dateNoteService from '../../services/date_notes.js'
+import dateUtils from '../../services/date_utils.js'
+import imageService from '../../services/image.js'
+import appInfo from '../../services/app_info.js'
+import ws from '../../services/ws.js'
+import log from '../../services/log.js'
+import utils from '../../services/utils.js'
+import path from 'path';
+import htmlSanitizer from '../../services/html_sanitizer.js'
+import { formatAttrForSearch } from '../../services/attribute_formatter.js';
+import jsdom from 'jsdom';
 const { JSDOM } = jsdom;
 
 function addClipping(req) {
@@ -211,7 +211,7 @@ function findNotesByUrl(req){
     }
 }
 
-module.exports = {
+export default {
     createNote,
     addClipping,
     openNote,

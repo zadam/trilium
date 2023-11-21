@@ -1,9 +1,9 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const log = require('../../log');
-const becca = require('../../../becca/becca');
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
+import log from '../../log.js'
+import becca from '../../../becca/becca.js'
 
 class AncestorExp extends Expression {
     constructor(ancestorNoteId, ancestorDepth) {
@@ -67,4 +67,4 @@ class AncestorExp extends Expression {
     }
 }
 
-module.exports = AncestorExp;
+export default AncestorExp;

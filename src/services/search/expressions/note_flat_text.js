@@ -1,9 +1,13 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const utils = require("../../utils");
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
+import becca from '../../../becca/becca.js'
+import utils from '../../utils.js'
+
+
+// has deps on SQL which breaks unit test so needs to be dynamically required
+import beccaService from '../../../becca/becca_service.js'
 
 class NoteFlatTextExp extends Expression {
     constructor(tokens) {
@@ -13,8 +17,6 @@ class NoteFlatTextExp extends Expression {
     }
 
     execute(inputNoteSet, executionContext, searchContext) {
-        // has deps on SQL which breaks unit test so needs to be dynamically required
-        const beccaService = require('../../../becca/becca_service');
         const resultNoteSet = new NoteSet();
 
         /**
@@ -175,4 +177,4 @@ class NoteFlatTextExp extends Expression {
     }
 }
 
-module.exports = NoteFlatTextExp;
+export default NoteFlatTextExp;

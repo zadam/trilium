@@ -1,13 +1,31 @@
-#!/usr/bin/env node
+#!/usr/bin/env node// setup basic error handling even before requiring dependencies, since those can produce errors as well
 
-// setup basic error handling even before requiring dependencies, since those can produce errors as well
+import app from './app.js'
+import sessionParser from './routes/session_parser.js'
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import config from './services/config.js'
+import log from './services/log.js'
+import appInfo from './services/app_info.js'
+import ws from './services/ws.js'
+import utils from './services/utils.js'
+import port from './services/port.js'
+import host from './services/host.js'
+import semver from 'semver';
+
+import electronRouting from "./routes/electron.js";
+
+import electron from "electron";
+
+import {cpus} from "os";
 
 process.on('unhandledRejection', error => {
     // this makes sure that stacktrace of failed promise is printed out
     console.log(error);
 
     // but also try to log it into file
-    require('./services/log').info(error);
+    log.info(error);
 });
 
 function exit() {
@@ -17,20 +35,6 @@ function exit() {
 
 process.on('SIGINT', exit);
 process.on('SIGTERM', exit);
-
-const app = require('./app');
-const sessionParser = require('./routes/session_parser');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const config = require('./services/config');
-const log = require('./services/log');
-const appInfo = require('./services/app_info');
-const ws = require('./services/ws');
-const utils = require('./services/utils');
-const port = require('./services/port');
-const host = require('./services/host');
-const semver = require('semver');
 
 if (!semver.satisfies(process.version, ">=10.5.0")) {
     console.error("Trilium only supports node.js 10.5 and later");
@@ -54,12 +58,12 @@ function startTrilium() {
      * to do a complex evaluation.
      */
     if (utils.isElectron()) {
-        require("electron").app.requestSingleInstanceLock();
+        electron.app.requestSingleInstanceLock();
     }
 
     log.info(JSON.stringify(appInfo, null, 2));
 
-    const cpuInfos = require('os').cpus();
+    const cpuInfos = cpus();
     log.info(`CPU model: ${cpuInfos[0].model}, logical cores: ${cpuInfos.length} freq: ${cpuInfos[0].speed} Mhz`); // for perf. issues it's good to know the rough configuration
 
     const httpServer = startHttpServer();
@@ -67,7 +71,6 @@ function startTrilium() {
     ws.init(httpServer, sessionParser);
 
     if (utils.isElectron()) {
-        const electronRouting = require('./routes/electron');
         electronRouting(app);
     }
 }

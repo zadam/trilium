@@ -1,10 +1,10 @@
-const backupService = require('./backup');
-const sql = require('./sql');
-const fs = require('fs-extra');
-const log = require('./log');
-const utils = require('./utils');
-const resourceDir = require('./resource_dir');
-const appInfo = require('./app_info');
+import backupService from './backup.js'
+import sql from './sql.js'
+import fs from 'fs-extra';
+import log from './log.js'
+import utils from './utils.js'
+import resourceDir from './resource_dir.js'
+import appInfo from './app_info.js'
 
 async function migrate() {
     const currentDbVersion = getDbVersion();
@@ -124,7 +124,7 @@ async function migrateIfNecessary() {
     }
 }
 
-module.exports = {
+export default {
     migrateIfNecessary,
     isDbUpToDate
 };

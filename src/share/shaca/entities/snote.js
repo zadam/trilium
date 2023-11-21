@@ -1,9 +1,9 @@
 "use strict";
 
-const sql = require('../../sql');
-const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity');
-const escape = require('escape-html');
+import sql from '../../sql.js'
+import utils from '../../../services/utils.js'
+import AbstractShacaEntity from './abstract_shaca_entity.js'
+import escape from 'escape-html';
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -510,4 +510,4 @@ class SNote extends AbstractShacaEntity {
     }
 }
 
-module.exports = SNote;
+export default SNote;

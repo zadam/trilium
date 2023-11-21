@@ -1,8 +1,8 @@
-const becca = require("../becca/becca");
-const noteService = require("./notes");
-const BAttribute = require("../becca/entities/battribute");
-const log = require("./log");
-const migrationService = require("./migration");
+import becca from '../becca/becca.js'
+import noteService from './notes.js'
+import BAttribute from '../becca/entities/battribute.js'
+import log from './log.js'
+import migrationService from './migration.js'
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -337,7 +337,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 }
 
-module.exports = {
+export default {
     checkHiddenSubtree,
     LBTPL_ROOT,
     LBTPL_BASE,

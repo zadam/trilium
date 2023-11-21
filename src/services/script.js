@@ -1,7 +1,7 @@
-const ScriptContext = require('./script_context');
-const cls = require('./cls');
-const log = require('./log');
-const becca = require("../becca/becca");
+import ScriptContext from './script_context.js'
+import cls from './cls.js'
+import log from './log.js'
+import becca from '../becca/becca.js'
 
 function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
@@ -200,7 +200,7 @@ function sanitizeVariableName(str) {
     return str.replace(/[^a-z0-9_]/gim, "");
 }
 
-module.exports = {
+export default {
     executeNote,
     executeNoteNoException,
     executeScript,

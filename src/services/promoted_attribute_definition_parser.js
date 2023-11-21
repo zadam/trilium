@@ -35,6 +35,6 @@ function parse(value) {
     return defObj;
 }
 
-module.exports = {
+export default {
     parse
 };

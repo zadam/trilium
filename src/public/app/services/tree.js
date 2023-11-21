@@ -4,6 +4,8 @@ import froca from './froca.js';
 import hoistedNoteService from '../services/hoisted_note.js';
 import appContext from "../components/app_context.js";
 
+import {getCurrentWindow} from "@electron/remote";
+
 /**
  * @returns {string|null}
  */
@@ -121,7 +123,7 @@ ws.subscribeToMessages(message => {
        appContext.tabManager.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
-           const currentWindow = utils.dynamicRequire('@electron/remote').getCurrentWindow();
+           const currentWindow = getCurrentWindow();
 
            currentWindow.show();
        }

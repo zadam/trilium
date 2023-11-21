@@ -112,7 +112,7 @@ export default class KeyboardShortcutsOptions extends OptionsWidget {
         });
 
         this.$widget.find(".options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
-            if (!await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
+            if (!(await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?"))) {
                 return;
             }
 

@@ -1,8 +1,8 @@
 "use strict";
 
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const Expression = require('./expression');
+import NoteSet from '../note_set.js'
+import becca from '../../../becca/becca.js'
+import Expression from './expression.js'
 
 class AttributeExistsExp extends Expression {
     constructor(attributeType, attributeName, prefixMatch) {
@@ -40,4 +40,4 @@ class AttributeExistsExp extends Expression {
     }
 }
 
-module.exports = AttributeExistsExp;
+export default AttributeExistsExp;

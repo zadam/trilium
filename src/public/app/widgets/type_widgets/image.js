@@ -4,6 +4,10 @@ import libraryLoader from "../../services/library_loader.js";
 import contextMenu from "../../menus/context_menu.js";
 import imageService from "../../services/image.js";
 
+import {getCurrentWebContents} from "@electron/remote";
+
+import electron from "electron";
+
 const TPL = `
 <div class="note-detail-image note-detail-printable">
     <style>
@@ -75,8 +79,7 @@ class ImageTypeWidget extends TypeWidget {
                         if (command === 'copyImageReferenceToClipboard') {
                             imageService.copyImageReferenceToClipboard(this.$imageWrapper);
                         } else if (command === 'copyImageToClipboard') {
-                            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
-                            utils.dynamicRequire('electron');
+                            const webContents = getCurrentWebContents();
                             webContents.copyImageAt(e.pageX, e.pageY);
                         } else {
                             throw new Error(`Unrecognized command '${command}'`);

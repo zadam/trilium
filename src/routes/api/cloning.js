@@ -1,6 +1,6 @@
 "use strict";
 
-const cloningService = require('../../services/cloning');
+import cloningService from '../../services/cloning.js'
 
 function cloneNoteToBranch(req) {
     const {noteId, parentBranchId} = req.params;
@@ -28,7 +28,7 @@ function toggleNoteInParent(req) {
     return cloningService.toggleNoteInParent(present === 'true', noteId, parentNoteId);
 }
 
-module.exports = {
+export default {
     cloneNoteToBranch,
     cloneNoteToParentNote,
     cloneNoteAfter,

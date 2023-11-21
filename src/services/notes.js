@@ -1,28 +1,30 @@
-const sql = require('./sql');
-const optionService = require('./options');
-const dateUtils = require('./date_utils');
-const entityChangesService = require('./entity_changes');
-const eventService = require('./events');
-const cls = require('../services/cls');
-const protectedSessionService = require('../services/protected_session');
-const log = require('../services/log');
-const utils = require('../services/utils');
-const revisionService = require('./revisions');
-const request = require('./request');
-const path = require('path');
-const url = require('url');
-const becca = require('../becca/becca');
-const BBranch = require('../becca/entities/bbranch');
-const BNote = require('../becca/entities/bnote');
-const BAttribute = require('../becca/entities/battribute');
-const BAttachment = require("../becca/entities/battachment");
-const dayjs = require("dayjs");
-const htmlSanitizer = require("./html_sanitizer");
-const ValidationError = require("../errors/validation_error");
-const noteTypesService = require("./note_types");
-const fs = require("fs");
-const ws = require("./ws");
-const html2plaintext = require('html2plaintext')
+import sql from './sql.js'
+import optionService from './options.js'
+import dateUtils from './date_utils.js'
+import entityChangesService from './entity_changes.js'
+import eventService from './events.js'
+import cls from '../services/cls.js'
+import protectedSessionService from '../services/protected_session.js'
+import log from '../services/log.js'
+import utils from '../services/utils.js'
+import revisionService from './revisions.js'
+import request from './request.js'
+import path from 'path';
+import url from 'url';
+import becca from '../becca/becca.js'
+import BBranch from '../becca/entities/bbranch.js'
+import BNote from '../becca/entities/bnote.js'
+import BAttribute from '../becca/entities/battribute.js'
+import BAttachment from '../becca/entities/battachment.js'
+import dayjs from 'dayjs';
+import htmlSanitizer from './html_sanitizer.js'
+import ValidationError from '../errors/validation_error.js'
+import noteTypesService from './note_types.js'
+import fs from 'fs';
+import ws from './ws.js'
+import html2plaintext from 'html2plaintext';
+
+import imageService from '../services/image.js'
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {
@@ -492,8 +494,6 @@ async function downloadImage(noteId, imageUrl) {
 
         const parsedUrl = url.parse(imageUrl);
         const title = path.basename(parsedUrl.pathname);
-
-        const imageService = require('../services/image');
         const {attachment} = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
@@ -525,8 +525,6 @@ function downloadImages(noteId, content) {
         if (inlineImageMatch) {
             const imageBase64 = url.substr(inlineImageMatch[0].length);
             const imageBuffer = Buffer.from(imageBase64, 'base64');
-
-            const imageService = require('../services/image');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
             const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
@@ -1027,7 +1025,7 @@ function getNoteIdMapping(origNote) {
     return noteIdMapping;
 }
 
-module.exports = {
+export default {
     createNewNote,
     createNewNoteWithTarget,
     updateNoteData,

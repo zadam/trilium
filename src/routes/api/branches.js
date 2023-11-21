@@ -1,16 +1,16 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const entityChangesService = require('../../services/entity_changes');
-const treeService = require('../../services/tree');
-const eraseService = require('../../services/erase');
-const becca = require('../../becca/becca');
-const TaskContext = require('../../services/task_context');
-const branchService = require("../../services/branches");
-const log = require("../../services/log");
-const ValidationError = require("../../errors/validation_error");
-const eventService = require("../../services/events.js");
+import sql from '../../services/sql.js'
+import utils from '../../services/utils.js'
+import entityChangesService from '../../services/entity_changes.js'
+import treeService from '../../services/tree.js'
+import eraseService from '../../services/erase.js'
+import becca from '../../becca/becca.js'
+import TaskContext from '../../services/task_context.js'
+import branchService from '../../services/branches.js'
+import log from '../../services/log.js'
+import ValidationError from '../../errors/validation_error.js'
+import eventService from '../../services/events.js';
 
 /**
  * Code in this file deals with moving and cloning branches. The relationship between note and parent note is unique
@@ -223,7 +223,7 @@ function setPrefix(req) {
     branch.save();
 }
 
-module.exports = {
+export default {
     moveBranchToParent,
     moveBranchBeforeNote,
     moveBranchAfterNote,

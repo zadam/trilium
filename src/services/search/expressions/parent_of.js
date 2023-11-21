@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
 
 class ParentOfExp extends Expression {
     constructor(subExpression) {
@@ -33,4 +33,4 @@ class ParentOfExp extends Expression {
     }
 }
 
-module.exports = ParentOfExp;
+export default ParentOfExp;

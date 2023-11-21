@@ -1,8 +1,8 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
+import becca from '../../../becca/becca.js'
 
 class LabelComparisonExp extends Expression {
     constructor(attributeType, attributeName, comparator) {
@@ -38,4 +38,4 @@ class LabelComparisonExp extends Expression {
     }
 }
 
-module.exports = LabelComparisonExp;
+export default LabelComparisonExp;

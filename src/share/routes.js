@@ -1,17 +1,18 @@
-const express = require('express');
-const path = require('path');
-const safeCompare = require('safe-compare');
-const ejs = require("ejs");
+import express from 'express';
+import path from 'path';
+import safeCompare from 'safe-compare';
+import ejs from 'ejs';
+import shaca from './shaca/shaca.js'
+import shacaLoader from './shaca/shaca_loader.js'
+import shareRoot from './share_root.js'
+import contentRenderer from './content_renderer.js'
+import assetPath from '../services/asset_path.js'
+import appPath from '../services/app_path.js'
+import searchService from '../services/search/services/search.js'
+import SearchContext from '../services/search/search_context.js'
+import log from '../services/log.js'
 
-const shaca = require("./shaca/shaca");
-const shacaLoader = require("./shaca/shaca_loader");
-const shareRoot = require("./share_root");
-const contentRenderer = require("./content_renderer");
-const assetPath = require("../services/asset_path");
-const appPath = require("../services/app_path");
-const searchService = require("../services/search/services/search");
-const SearchContext = require("../services/search/search_context");
-const log = require("../services/log");
+import utils from '../services/utils.js'
 
 /**
  * @param {SNote} note
@@ -235,9 +236,6 @@ function register(router) {
         }
 
         addNoIndexHeader(note, res);
-
-        const utils = require("../services/utils");
-
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
         res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
@@ -303,9 +301,6 @@ function register(router) {
         }
 
         addNoIndexHeader(attachment.note, res);
-
-        const utils = require("../services/utils");
-
         const filename = utils.formatDownloadTitle(attachment.title, null, attachment.mime);
 
         res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
@@ -366,6 +361,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
-}
+};

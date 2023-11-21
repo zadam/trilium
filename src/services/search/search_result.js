@@ -1,7 +1,7 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service');
-const becca = require('../../becca/becca');
+import beccaService from '../../becca/becca_service.js'
+import becca from '../../becca/becca.js'
 
 class SearchResult {
     constructor(notePathArray) {
@@ -59,4 +59,4 @@ class SearchResult {
     }
 }
 
-module.exports = SearchResult;
+export default SearchResult;

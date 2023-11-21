@@ -3,7 +3,8 @@
  * (like consistency checks) can use this mutex to make sure sync isn't currently running.
  */
 
-const Mutex = require('async-mutex').Mutex;
+import { Mutex } from 'async-mutex';
+
 const instance = new Mutex();
 
 async function doExclusively(func) {
@@ -17,6 +18,6 @@ async function doExclusively(func) {
     }
 }
 
-module.exports = {
+export default {
     doExclusively
 };

@@ -1,9 +1,9 @@
-const sql = require('./sql');
-const log = require('./log');
-const entityChangesService = require('./entity_changes');
-const eventService = require('./events');
-const entityConstructor = require("../becca/entity_constructor");
-const ws = require("./ws");
+import sql from './sql.js'
+import log from './log.js'
+import entityChangesService from './entity_changes.js'
+import eventService from './events.js'
+import entityConstructor from '../becca/entity_constructor.js'
+import ws from './ws.js'
 
 function updateEntities(entityChanges, instanceId) {
     if (entityChanges.length === 0) {
@@ -166,6 +166,6 @@ function logUpdateContext(updateContext) {
     log.info(message.substr(1, message.length - 2));
 }
 
-module.exports = {
+export default {
     updateEntities
 };

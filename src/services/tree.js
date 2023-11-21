@@ -1,10 +1,10 @@
 "use strict";
 
-const sql = require('./sql');
-const log = require('./log');
-const BBranch = require('../becca/entities/bbranch');
-const entityChangesService = require('./entity_changes');
-const becca = require('../becca/becca');
+import sql from './sql.js'
+import log from './log.js'
+import BBranch from '../becca/entities/bbranch.js'
+import entityChangesService from './entity_changes.js'
+import becca from '../becca/becca.js'
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {
@@ -254,7 +254,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
     }
 }
 
-module.exports = {
+export default {
     validateParentChild,
     sortNotes,
     sortNotesIfNeeded,

@@ -1,8 +1,8 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const log = require('../../services/log');
-const NotFoundError = require("../../errors/not_found_error");
+import becca from '../../becca/becca.js'
+import log from '../../services/log.js'
+import NotFoundError from '../../errors/not_found_error.js'
 
 function getNotesAndBranchesAndAttributes(noteIds) {
     noteIds = new Set(noteIds);
@@ -155,7 +155,7 @@ function load(req) {
     return getNotesAndBranchesAndAttributes(req.body.noteIds);
 }
 
-module.exports = {
+export default {
     getTree,
     load
 };

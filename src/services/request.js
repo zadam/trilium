@@ -1,12 +1,18 @@
 "use strict";
 
-const utils = require('./utils');
-const log = require('./log');
-const url = require('url');
-const syncOptions = require('./sync_options');
+import utils from './utils.js'
+import log from './log.js'
+import url from 'url';
+import syncOptions from './sync_options.js'
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows supporting system proxy
+
+import {HttpProxyAgent} from "http-proxy-agent";
+
+import {HttpsProxyAgent} from "https-proxy-agent";
+
+import {net} from "electron";
 
 function exec(opts) {
     const client = getClient(opts);
@@ -174,8 +180,8 @@ function getProxyAgent(opts) {
     }
 
     const AgentClass = HTTP === protocol
-        ? require("http-proxy-agent").HttpProxyAgent
-        : require("https-proxy-agent").HttpsProxyAgent;
+        ? HttpProxyAgent.HttpProxyAgent
+        : HttpsProxyAgent.HttpsProxyAgent;
 
     return new AgentClass(opts.proxy);
 }
@@ -184,7 +190,7 @@ function getClient(opts) {
     // it's not clear how to explicitly configure proxy (as opposed to system proxy),
     // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
-        return require('electron').net;
+        return net.net;
     }
     else {
         const {protocol} = url.parse(opts.url);
@@ -202,7 +208,7 @@ function generateError(opts, message) {
     return new Error(`Request to ${opts.method} ${opts.url} failed, error: ${message}`);
 }
 
-module.exports = {
+export default {
     exec,
     getImage
 };

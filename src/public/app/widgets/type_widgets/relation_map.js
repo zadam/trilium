@@ -395,7 +395,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                     items: [ {title: "Remove relation", command: "remove", uiIcon: "bx bx-trash"} ],
                     selectMenuItemHandler: async ({command}) => {
                         if (command === 'remove') {
-                            if (!await dialogService.confirm("Are you sure you want to remove the relation?")) {
+                            if (!(await dialogService.confirm("Are you sure you want to remove the relation?"))) {
                                 return;
                             }
 

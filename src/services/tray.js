@@ -1,11 +1,14 @@
-const { Menu, Tray } = require('electron');
-const path = require('path');
-const windowService = require("./window");
-const optionService = require("./options");
+import { Menu, Tray } from 'electron';
+import path from 'path';
+import windowService from './window.js'
+import optionService from './options.js'
+import {fileURLToPath} from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const UPDATE_TRAY_EVENTS = [
     'minimize', 'maximize', 'show', 'hide'
-]
+];
 
 let tray = null;
 // `mainWindow.isVisible` doesn't work with `mainWindow.show` and `mainWindow.hide` - it returns `false` when the window
@@ -106,6 +109,6 @@ function createTray() {
     registerVisibilityListener();
 }
 
-module.exports = {
+export default {
     createTray
-}
+};

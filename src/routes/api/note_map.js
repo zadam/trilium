@@ -1,7 +1,7 @@
 "use strict";
 
-const becca = require("../../becca/becca");
-const { JSDOM } = require("jsdom");
+import becca from '../../becca/becca.js'
+import { JSDOM } from 'jsdom';
 
 function buildDescendantCountMap(noteIdsToCount) {
     if (!Array.isArray(noteIdsToCount)) {
@@ -379,7 +379,7 @@ function getBacklinks(req) {
     });
 }
 
-module.exports = {
+export default {
     getLinkMap,
     getTreeMap,
     getBacklinkCount,

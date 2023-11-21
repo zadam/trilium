@@ -26,7 +26,7 @@ function getDefaultMimeForNoteType(typeName) {
     return typeRec.defaultMime;
 }
 
-module.exports = {
+export default {
     getNoteTypeNames: () => noteTypes.map(nt => nt.type),
     getDefaultMimeForNoteType
 };

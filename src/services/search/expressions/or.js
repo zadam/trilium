@@ -1,8 +1,8 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const TrueExp = require("./true");
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
+import TrueExp from './true.js'
 
 class OrExp extends Expression {
     static of(subExpressions) {
@@ -36,4 +36,4 @@ class OrExp extends Expression {
     }
 }
 
-module.exports = OrExp;
+export default OrExp;

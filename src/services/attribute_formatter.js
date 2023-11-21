@@ -1,6 +1,6 @@
 "use strict";
 
-function formatAttrForSearch(attr, searchWithValue) {
+export function formatAttrForSearch(attr, searchWithValue) {
     let searchStr = '';
 
     if (attr.type === 'label') {
@@ -44,7 +44,3 @@ function formatValue(val) {
         return `"${val.replace(/"/g, '\\"')}"`;
     }
 }
-
-module.exports = {
-    formatAttrForSearch
-};

@@ -1,10 +1,9 @@
-const {
-    describeEtapi, postEtapi,
-    postEtapiContent,
-} = require("../support/etapi");
-const fs = require("fs");
-const path = require("path");
-const {getEtapiContent} = require("../support/etapi.js");
+import {describeEtapi, postEtapi, postEtapiContent,getEtapiContent} from "../support/etapi";
+import fs from "fs";
+import path from "path";
+import {fileURLToPath} from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describeEtapi("import", () => {
     it("import", async () => {

@@ -8,6 +8,8 @@ import electronContextMenu from "./menus/electron_context_menu.js";
 import DesktopLayout from "./layouts/desktop_layout.js";
 import glob from "./services/glob.js";
 
+import {ipcRenderer} from "electron";
+
 bundleService.getWidgetBundlesByParent().then(widgetBundles => {
     appContext.setLayout(new DesktopLayout(widgetBundles));
     appContext.start();
@@ -16,7 +18,7 @@ bundleService.getWidgetBundlesByParent().then(widgetBundles => {
 glob.setupGlobs();
 
 if (utils.isElectron()) {
-    utils.dynamicRequire('electron').ipcRenderer.on('globalShortcut',
+    ipcRenderer.on('globalShortcut',
         async (event, actionName) => appContext.triggerCommand(actionName));
 }
 

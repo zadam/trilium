@@ -1,11 +1,11 @@
-const sql = require("./sql.js");
-const revisionService = require("./revisions.js");
-const log = require("./log.js");
-const entityChangesService = require("./entity_changes.js");
-const optionService = require("./options.js");
-const dateUtils = require("./date_utils.js");
-const sqlInit = require("./sql_init.js");
-const cls = require("./cls.js");
+import sql from './sql.js';
+import revisionService from './revisions.js';
+import log from './log.js';
+import entityChangesService from './entity_changes.js';
+import optionService from './options.js';
+import dateUtils from './date_utils.js';
+import sqlInit from './sql_init.js';
+import cls from './cls.js';
 
 function eraseNotes(noteIdsToErase) {
     if (noteIdsToErase.length === 0) {
@@ -179,7 +179,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(() => eraseScheduledAttachments()), 3600 * 1000);
 });
 
-module.exports = {
+export default {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,

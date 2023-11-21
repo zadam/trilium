@@ -1,10 +1,10 @@
 "use strict";
 
-const scriptService = require('../../services/script');
-const attributeService = require('../../services/attributes');
-const becca = require('../../becca/becca');
-const syncService = require('../../services/sync');
-const sql = require('../../services/sql');
+import scriptService from '../../services/script.js'
+import attributeService from '../../services/attributes.js'
+import becca from '../../becca/becca.js'
+import syncService from '../../services/sync.js'
+import sql from '../../services/sql.js'
 
 // The async/await here is very confusing, because the body.script may, but may not be async. If it is async, then we
 // need to await it and make the complete response including metadata available in a Promise, so that the route detects
@@ -120,7 +120,7 @@ function getBundle(req) {
     return scriptService.getScriptBundleForFrontend(note, script, params);
 }
 
-module.exports = {
+export default {
     exec,
     run,
     getStartupBundles,

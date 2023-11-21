@@ -5,6 +5,8 @@ import BasicWidget from "../basic_widget.js";
 import shortcutService from "../../services/shortcuts.js";
 import server from "../../services/server.js";
 
+import {clipboard} from "electron";
+
 const TPL = `
 <div class="markdown-import-dialog modal fade mx-auto" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -69,7 +71,6 @@ export default class MarkdownImportDialog extends BasicWidget {
         }
 
         if (utils.isElectron()) {
-            const {clipboard} = utils.dynamicRequire('electron');
             const text = clipboard.readText();
 
             this.convertMarkdownToHtml(text);

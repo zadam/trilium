@@ -10,6 +10,10 @@ import bundleService from "../services/bundle.js";
 import froca from "../services/froca.js";
 import linkService from "../services/link.js";
 
+import {getCurrentWebContents, getCurrentWindow} from "@electron/remote";
+
+import {ipcRenderer} from "electron";
+
 export default class Entrypoints extends Component {
     constructor() {
         super();
@@ -24,7 +28,7 @@ export default class Entrypoints extends Component {
 
     openDevToolsCommand() {
         if (utils.isElectron()) {
-            utils.dynamicRequire('@electron/remote').getCurrentWindow().toggleDevTools();
+            getCurrentWindow().toggleDevTools();
         }
     }
 
@@ -78,7 +82,7 @@ export default class Entrypoints extends Component {
 
     toggleFullscreenCommand() {
         if (utils.isElectron()) {
-            const win = utils.dynamicRequire('@electron/remote').getCurrentWindow();
+            const win = getCurrentWindow();
 
             if (win.isFullScreenable()) {
                 win.setFullScreen(!win.isFullScreen());
@@ -101,7 +105,7 @@ export default class Entrypoints extends Component {
     backInNoteHistoryCommand() {
         if (utils.isElectron()) {
             // standard JS version does not work completely correctly in electron
-            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
+            const webContents = getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 
             webContents.goToIndex(activeIndex - 1);
@@ -114,7 +118,7 @@ export default class Entrypoints extends Component {
     forwardInNoteHistoryCommand() {
         if (utils.isElectron()) {
             // standard JS version does not work completely correctly in electron
-            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
+            const webContents = getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 
             webContents.goToIndex(activeIndex + 1);
@@ -140,8 +144,6 @@ export default class Entrypoints extends Component {
         const extraWindowHash = linkService.calculateHash({notePath, hoistedNoteId, viewScope});
 
         if (utils.isElectron()) {
-            const {ipcRenderer} = utils.dynamicRequire('electron');
-
             ipcRenderer.send('create-extra-window', { extraWindowHash });
         }
         else {

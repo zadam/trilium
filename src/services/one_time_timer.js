@@ -20,6 +20,6 @@ function scheduleExecution(name, milliseconds, cb) {
     }, milliseconds);
 }
 
-module.exports = {
+export default {
     scheduleExecution
 };

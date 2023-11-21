@@ -1,12 +1,12 @@
 "use strict";
 
-const path = require('path');
-const {ELECTRON_APP_ROOT_DIR} = require("./resource_dir");
-const log = require("./log");
-const os = require('os');
-const fs = require('fs');
-const config = require('./config');
-const utils = require('./utils');
+import path from 'path';
+import resourceDir from './resource_dir.js';
+import log from './log.js'
+import os from 'os';
+import fs from 'fs';
+import config from './config.js'
+import utils from './utils.js'
 
 const template = `[Desktop Entry]
 Type=Application
@@ -28,7 +28,7 @@ function installLocalAppIcon() {
         return;
     }
 
-    if (!fs.existsSync(path.resolve(ELECTRON_APP_ROOT_DIR, "trilium-portable.sh"))) {
+    if (!fs.existsSync(path.resolve(resourceDir.ELECTRON_APP_ROOT_DIR, "trilium-portable.sh"))) {
         // simple heuristic to detect ".tar.xz" linux build (i.e., not flatpak, not debian)
         // only in such case it's necessary to create an icon
         return;
@@ -68,6 +68,6 @@ function getExePath() {
      return path.resolve(ELECTRON_APP_ROOT_DIR, 'trilium');
 }
 
-module.exports = {
+export default {
     installLocalAppIcon
 };

@@ -1,9 +1,9 @@
-const becca = require("../becca/becca");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const BBranch = require("../becca/entities/bbranch");
-const entityChangesService = require("../services/entity_changes");
-const v = require("./validators");
+import becca from '../becca/becca.js'
+import eu from './etapi_utils.js'
+import mappers from './mappers.js'
+import BBranch from '../becca/entities/bbranch.js'
+import entityChangesService from '../services/entity_changes.js'
+import v from './validators.js'
 
 function register(router) {
     eu.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
@@ -81,6 +81,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

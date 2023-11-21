@@ -40,4 +40,4 @@ function buildComparator(operator, comparedValue) {
     }
 }
 
-module.exports = buildComparator;
+export default buildComparator;

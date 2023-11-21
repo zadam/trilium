@@ -1,7 +1,7 @@
-const becca = require('../becca/becca');
-const NotFoundError = require("../errors/not_found_error");
-const protectedSessionService = require("./protected_session");
-const utils = require("./utils");
+import becca from '../becca/becca.js'
+import NotFoundError from '../errors/not_found_error.js'
+import protectedSessionService from './protected_session.js'
+import utils from './utils.js'
 
 function getBlobPojo(entityName, entityId) {
     const entity = becca.getEntity(entityName, entityId);
@@ -50,7 +50,7 @@ function calculateContentHash({blobId, content}) {
     return utils.hash(`${blobId}|${content.toString()}`);
 }
 
-module.exports = {
+export default {
     getBlobPojo,
     processContent,
     calculateContentHash

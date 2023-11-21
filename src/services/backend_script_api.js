@@ -1,27 +1,27 @@
-const log = require('./log');
-const noteService = require('./notes');
-const sql = require('./sql');
-const utils = require('./utils');
-const attributeService = require('./attributes');
-const dateNoteService = require('./date_notes');
-const treeService = require('./tree');
-const config = require('./config');
-const axios = require('axios');
-const dayjs = require('dayjs');
-const xml2js = require('xml2js');
-const cloningService = require('./cloning');
-const appInfo = require('./app_info');
-const searchService = require('./search/services/search');
-const SearchContext = require("./search/search_context");
-const becca = require("../becca/becca");
-const ws = require("./ws");
-const SpacedUpdate = require("./spaced_update");
-const specialNotesService = require("./special_notes");
-const branchService = require("./branches");
-const exportService = require("./export/zip");
-const syncMutex = require("./sync_mutex");
-const backupService = require("./backup");
-const optionsService = require("./options");
+import log from './log.js'
+import noteService from './notes.js'
+import sql from './sql.js'
+import utils from './utils.js'
+import attributeService from './attributes.js'
+import dateNoteService from './date_notes.js'
+import treeService from './tree.js'
+import config from './config.js'
+import axios from 'axios';
+import dayjs from 'dayjs';
+import xml2js from 'xml2js';
+import cloningService from './cloning.js'
+import appInfo from './app_info.js'
+import searchService from './search/services/search.js'
+import SearchContext from './search/search_context.js'
+import becca from '../becca/becca.js'
+import ws from './ws.js'
+import SpacedUpdate from './spaced_update.js'
+import specialNotesService from './special_notes.js'
+import branchService from './branches.js'
+import exportService from './export/zip.js'
+import syncMutex from './sync_mutex.js'
+import backupService from './backup.js'
+import optionsService from './options.js'
 
 
 /**
@@ -681,4 +681,4 @@ function BackendScriptApi(currentNote, apiParams) {
     }
 }
 
-module.exports = BackendScriptApi;
+export default BackendScriptApi;

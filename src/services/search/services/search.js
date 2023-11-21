@@ -1,16 +1,20 @@
 "use strict";
 
-const normalizeString = require("normalize-strings");
-const lex = require('./lex');
-const handleParens = require('./handle_parens');
-const parse = require('./parse');
-const SearchResult = require("../search_result");
-const SearchContext = require("../search_context");
-const becca = require('../../../becca/becca');
-const beccaService = require('../../../becca/becca_service');
-const utils = require('../../utils');
-const log = require('../../log');
-const hoistedNoteService = require("../../hoisted_note");
+import normalizeString from 'normalize-strings';
+import lex from './lex.js'
+import handleParens from './handle_parens.js'
+import parse from './parse.js'
+import SearchResult from '../search_result.js'
+import SearchContext from '../search_context.js'
+import becca from '../../../becca/becca.js'
+import beccaService from '../../../becca/becca_service.js'
+import utils from '../../utils.js'
+import log from '../../log.js'
+import hoistedNoteService from '../../hoisted_note.js'
+
+import scriptService from '../../script.js' // to avoid circular dependency
+
+import sql from '../../sql.js'
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;
@@ -71,8 +75,6 @@ function searchFromRelation(note, relationName) {
 
         return [];
     }
-
-    const scriptService = require("../../script"); // to avoid circular dependency
     const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {
@@ -90,8 +92,6 @@ function searchFromRelation(note, relationName) {
 }
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql');
-
     /**
      * This complex structure is needed to calculate total occupied space by a note. Several object instances
      * (note, revisions, attachments) can point to a single blobId, and thus the blob size should count towards the total
@@ -438,7 +438,7 @@ function formatAttribute(attr) {
     }
 }
 
-module.exports = {
+export default {
     searchFromNote,
     searchNotesForAutocomplete,
     findResultsWithQuery,

@@ -27,4 +27,4 @@ class BBlob {
     }
 }
 
-module.exports = BBlob;
+export default BBlob;

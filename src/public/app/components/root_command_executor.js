@@ -8,6 +8,8 @@ import options from "../services/options.js";
 import froca from "../services/froca.js";
 import utils from "../services/utils.js";
 
+import {BrowserWindow} from "@electron/remote";
+
 export default class RootCommandExecutor extends Component {
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
@@ -158,7 +160,6 @@ export default class RootCommandExecutor extends Component {
 
     toggleTrayCommand() {
         if (!utils.isElectron()) return;
-        const {BrowserWindow} = utils.dynamicRequire('@electron/remote');
         const windows = BrowserWindow.getAllWindows();
         const isVisible = windows.every(w => w.isVisible());
         const action = isVisible ? "hide" : "show"

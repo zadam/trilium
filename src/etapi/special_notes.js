@@ -1,7 +1,7 @@
-const specialNotesService = require("../services/special_notes");
-const dateNotesService = require("../services/date_notes");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
+import specialNotesService from '../services/special_notes.js'
+import dateNotesService from '../services/date_notes.js'
+import eu from './etapi_utils.js'
+import mappers from './mappers.js'
 
 const getDateInvalidError = date => new eu.EtapiError(400, "DATE_INVALID", `Date "${date}" is not valid.`);
 const getMonthInvalidError = month => new eu.EtapiError(400, "MONTH_INVALID", `Month "${month}" is not valid.`);
@@ -72,6 +72,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

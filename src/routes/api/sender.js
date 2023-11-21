@@ -1,10 +1,10 @@
 "use strict";
 
-const imageType = require('image-type');
-const imageService = require('../../services/image');
-const noteService = require('../../services/notes');
-const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
-const specialNotesService = require("../../services/special_notes");
+import imageType from 'image-type';
+import imageService from '../../services/image.js'
+import noteService from '../../services/notes.js'
+import { sanitizeAttributeName } from '../../services/sanitize_attribute_name.js';
+import specialNotesService from '../../services/special_notes.js'
 
 function uploadImage(req) {
     const file = req.file;
@@ -60,7 +60,7 @@ function saveNote(req) {
     };
 }
 
-module.exports = {
+export default {
     uploadImage,
     saveNote
 };

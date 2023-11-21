@@ -1,5 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import {fileURLToPath} from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const specPath = path.join(__dirname, 'etapi.openapi.yaml');
 let spec = null;
@@ -15,6 +18,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

@@ -248,7 +248,7 @@ export default class TabManager extends Component {
 
     async switchToNoteContext(ntxId, notePath, viewScope = {}, hoistedNoteId = null) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
-            || await this.openEmptyTab();
+            || (await this.openEmptyTab());
 
         await this.activateNoteContext(noteContext.ntxId);
 

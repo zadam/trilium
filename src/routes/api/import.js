@@ -1,16 +1,16 @@
 "use strict";
 
-const enexImportService = require('../../services/import/enex');
-const opmlImportService = require('../../services/import/opml');
-const zipImportService = require('../../services/import/zip');
-const singleImportService = require('../../services/import/single');
-const cls = require('../../services/cls');
-const path = require('path');
-const becca = require('../../becca/becca');
-const beccaLoader = require('../../becca/becca_loader');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const ValidationError = require("../../errors/validation_error");
+import enexImportService from '../../services/import/enex.js'
+import opmlImportService from '../../services/import/opml.js'
+import zipImportService from '../../services/import/zip.js'
+import singleImportService from '../../services/import/single.js'
+import cls from '../../services/cls.js'
+import path from 'path';
+import becca from '../../becca/becca.js'
+import beccaLoader from '../../becca/becca_loader.js'
+import log from '../../services/log.js'
+import TaskContext from '../../services/task_context.js'
+import ValidationError from '../../errors/validation_error.js'
 
 async function importNotesToBranch(req) {
     const {parentNoteId} = req.params;
@@ -119,7 +119,7 @@ async function importAttachmentsToNote(req) {
     }
 }
 
-module.exports = {
+export default {
     importNotesToBranch,
     importAttachmentsToNote
 };

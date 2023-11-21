@@ -1,9 +1,9 @@
-const cls = require("../services/cls");
-const sql = require("../services/sql");
-const log = require("../services/log");
-const becca = require("../becca/becca");
-const etapiTokenService = require("../services/etapi_tokens");
-const config = require("../services/config");
+import cls from '../services/cls.js'
+import sql from '../services/sql.js'
+import log from '../services/log.js'
+import becca from '../becca/becca.js'
+import etapiTokenService from '../services/etapi_tokens.js'
+import config from '../services/config.js'
 const GENERIC_CODE = "GENERIC";
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
@@ -136,7 +136,7 @@ function validateAndPatch(target, source, allowedProperties) {
     }
 }
 
-module.exports = {
+export default {
     EtapiError,
     sendError,
     route,
@@ -147,4 +147,4 @@ module.exports = {
     getAndCheckBranch,
     getAndCheckAttribute,
     getAndCheckAttachment
-}
+};

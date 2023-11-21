@@ -97,4 +97,4 @@ class Shaca {
 
 const shaca = new Shaca();
 
-module.exports = shaca;
+export default shaca;

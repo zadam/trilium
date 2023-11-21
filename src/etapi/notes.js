@@ -1,14 +1,14 @@
-const becca = require("../becca/becca");
-const utils = require("../services/utils");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const noteService = require("../services/notes");
-const TaskContext = require("../services/task_context");
-const v = require("./validators");
-const searchService = require("../services/search/services/search");
-const SearchContext = require("../services/search/search_context");
-const zipExportService = require("../services/export/zip");
-const zipImportService = require("../services/import/zip");
+import becca from '../becca/becca.js'
+import utils from '../services/utils.js'
+import eu from './etapi_utils.js'
+import mappers from './mappers.js'
+import noteService from '../services/notes.js'
+import TaskContext from '../services/task_context.js'
+import v from './validators.js'
+import searchService from '../services/search/services/search.js'
+import SearchContext from '../services/search/search_context.js'
+import zipExportService from '../services/export/zip.js'
+import zipImportService from '../services/import/zip.js'
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
@@ -251,6 +251,6 @@ function parseInteger(obj, name) {
     return integer;
 }
 
-module.exports = {
+export default {
     register
 };

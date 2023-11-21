@@ -1,20 +1,20 @@
 "use strict";
 
-const BAttribute = require('../../becca/entities/battribute');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
-const BBranch = require('../../becca/entities/bbranch');
-const path = require('path');
-const protectedSessionService = require('../protected_session');
-const mimeService = require("./mime");
-const treeService = require("../tree");
-const yauzl = require("yauzl");
-const htmlSanitizer = require('../html_sanitizer');
-const becca = require("../../becca/becca");
-const BAttachment = require("../../becca/entities/battachment");
-const markdownService = require("./markdown");
+import BAttribute from '../../becca/entities/battribute.js'
+import utils from '../../services/utils.js'
+import log from '../../services/log.js'
+import noteService from '../../services/notes.js'
+import attributeService from '../../services/attributes.js'
+import BBranch from '../../becca/entities/bbranch.js'
+import path from 'path';
+import protectedSessionService from '../protected_session.js'
+import mimeService from './mime.js'
+import treeService from '../tree.js'
+import yauzl from 'yauzl';
+import htmlSanitizer from '../html_sanitizer.js'
+import becca from '../../becca/becca.js'
+import BAttachment from '../../becca/entities/battachment.js'
+import markdownService from './markdown.js'
 
 /**
  * @param {TaskContext} taskContext
@@ -674,6 +674,6 @@ function resolveNoteType(type) {
 }
 
 
-module.exports = {
+export default {
     importZip
 };

@@ -1,5 +1,5 @@
-const cls = require("./cls");
-const becca = require("../becca/becca");
+import cls from './cls.js'
+import becca from '../becca/becca.js'
 
 function getHoistedNoteId() {
     return cls.getHoistedNoteId();
@@ -33,7 +33,7 @@ function getWorkspaceNote() {
     }
 }
 
-module.exports = {
+export default {
     getHoistedNoteId,
     getWorkspaceNote,
     isHoistedInHiddenSubtree

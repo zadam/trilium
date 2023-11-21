@@ -1,8 +1,8 @@
 "use strict";
 
-const sql = require('../../sql');
-const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity');
+import sql from '../../sql.js'
+import utils from '../../../services/utils.js'
+import AbstractShacaEntity from './abstract_shaca_entity.js'
 
 class SAttachment extends AbstractShacaEntity {
     constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]) {
@@ -74,4 +74,4 @@ class SAttachment extends AbstractShacaEntity {
     }
 }
 
-module.exports = SAttachment;
+export default SAttachment;

@@ -1,8 +1,8 @@
-const {JSDOM} = require("jsdom");
-const shaca = require("./shaca/shaca");
-const assetPath = require("../services/asset_path");
-const shareRoot = require('./share_root');
-const escapeHtml = require('escape-html');
+import { JSDOM } from 'jsdom';
+import shaca from './shaca/shaca.js'
+import assetPath from '../services/asset_path.js'
+import shareRoot from './share_root.js'
+import escapeHtml from 'escape-html';
 
 function getContent(note) {
     if (note.isProtected) {
@@ -157,6 +157,6 @@ function renderFile(note, result) {
     }
 }
 
-module.exports = {
+export default {
     getContent
 };

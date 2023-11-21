@@ -40,4 +40,4 @@ function handleParens(tokens) {
     }
 }
 
-module.exports = handleParens;
+export default handleParens;

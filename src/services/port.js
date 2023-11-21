@@ -1,7 +1,7 @@
-const config = require('./config');
-const utils = require('./utils');
-const env = require('./env');
-const dataDir = require('./data_dir');
+import config from './config.js'
+import utils from './utils.js'
+import env from './env.js'
+import dataDir from './data_dir.js'
 
 function parseAndValidate(portStr, source) {
     const portNum = parseInt(portStr);
@@ -24,4 +24,4 @@ if (process.env.TRILIUM_PORT) {
     port = parseAndValidate(config['Network']['port'] || '3000', `Network.port in ${dataDir.CONFIG_INI_PATH}`);
 }
 
-module.exports = port;
+export default port;

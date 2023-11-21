@@ -135,7 +135,7 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        if (type !== this.note.type && !await this.confirmChangeIfContent()) {
+        if (type !== this.note.type && !(await this.confirmChangeIfContent())) {
             return;
         }
 

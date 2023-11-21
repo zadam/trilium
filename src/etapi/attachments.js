@@ -1,8 +1,8 @@
-const becca = require("../becca/becca");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const v = require("./validators");
-const utils = require("../services/utils");
+import becca from '../becca/becca.js'
+import eu from './etapi_utils.js'
+import mappers from './mappers.js'
+import v from './validators.js'
+import utils from '../services/utils.js'
 
 function register(router) {
     const ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT = {
@@ -98,6 +98,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

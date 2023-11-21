@@ -1,13 +1,13 @@
 "use strict";
 
-const utils = require('../services/utils');
-const optionService = require('../services/options');
-const myScryptService = require('../services/encryption/my_scrypt');
-const log = require('../services/log');
-const passwordService = require("../services/encryption/password");
-const assetPath = require("../services/asset_path");
-const appPath = require("../services/app_path");
-const ValidationError = require("../errors/validation_error");
+import utils from '../services/utils.js'
+import optionService from '../services/options.js'
+import myScryptService from '../services/encryption/my_scrypt.js'
+import log from '../services/log.js'
+import passwordService from '../services/encryption/password.js'
+import assetPath from '../services/asset_path.js'
+import appPath from '../services/app_path.js'
+import ValidationError from '../errors/validation_error.js'
 
 function loginPage(req, res) {
     res.render('login', {
@@ -100,7 +100,7 @@ function logout(req, res) {
 
 }
 
-module.exports = {
+export default {
     loginPage,
     setPasswordPage,
     setPassword,

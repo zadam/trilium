@@ -2,6 +2,8 @@ import options from "../services/options.js";
 import Component from "./component.js";
 import utils from "../services/utils.js";
 
+import {webFrame} from "electron";
+
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
 
@@ -24,8 +26,6 @@ class ZoomComponent extends Component {
 
     setZoomFactor(zoomFactor) {
         zoomFactor = parseFloat(zoomFactor);
-
-        const webFrame = utils.dynamicRequire('electron').webFrame;
         webFrame.setZoomFactor(zoomFactor);
     }
 
@@ -43,7 +43,7 @@ class ZoomComponent extends Component {
     }
 
     getCurrentZoom() {
-        return utils.dynamicRequire('electron').webFrame.getZoomFactor();
+        return webFrame.getZoomFactor();
     }
 
     zoomOutEvent() {
@@ -56,7 +56,7 @@ class ZoomComponent extends Component {
     zoomResetEvent() {
         this.setZoomFactorAndSave(1);
     }
-    
+
     setZoomFactorAndSaveEvent({zoomFactor}) {
         this.setZoomFactorAndSave(zoomFactor);
     }

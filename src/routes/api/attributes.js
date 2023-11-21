@@ -1,11 +1,11 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const log = require('../../services/log');
-const attributeService = require('../../services/attributes');
-const BAttribute = require('../../becca/entities/battribute');
-const becca = require("../../becca/becca");
-const ValidationError = require("../../errors/validation_error");
+import sql from '../../services/sql.js'
+import log from '../../services/log.js'
+import attributeService from '../../services/attributes.js'
+import BAttribute from '../../becca/entities/battribute.js'
+import becca from '../../becca/becca.js'
+import ValidationError from '../../errors/validation_error.js'
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);
@@ -225,7 +225,7 @@ function deleteRelation(req) {
     }
 }
 
-module.exports = {
+export default {
     updateNoteAttributes,
     updateNoteAttribute,
     setNoteAttribute,

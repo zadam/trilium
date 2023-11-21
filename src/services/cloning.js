@@ -1,11 +1,11 @@
 "use strict";
 
-const sql = require('./sql');
-const eventChangesService = require('./entity_changes');
-const treeService = require('./tree');
-const BBranch = require('../becca/entities/bbranch');
-const becca = require("../becca/becca");
-const log = require("./log");
+import sql from './sql.js'
+import eventChangesService from './entity_changes.js'
+import treeService from './tree.js'
+import BBranch from '../becca/entities/bbranch.js'
+import becca from '../becca/becca.js'
+import log from './log.js'
 
 function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {
     if (!(noteId in becca.notes) || !(parentNoteId in becca.notes)) {
@@ -175,7 +175,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
     return { success: true, branchId: branch.branchId };
 }
 
-module.exports = {
+export default {
     cloneNoteToBranch,
     cloneNoteToParentNote,
     ensureNoteIsPresentInParent,

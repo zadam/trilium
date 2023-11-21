@@ -1,4 +1,4 @@
-const log = require("../services/log");
+import log from '../services/log.js'
 
 function register(app) {
     app.use((err, req, res, next) => {
@@ -38,6 +38,6 @@ function register(app) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

@@ -1,7 +1,7 @@
 "use strict";
 
-const optionService = require('../options');
-const crypto = require('crypto');
+import optionService from '../options.js'
+import crypto from 'crypto';
 
 function getVerificationHash(password) {
     const salt = optionService.getOption('passwordVerificationSalt');
@@ -22,7 +22,7 @@ function getScryptHash(password, salt) {
     return hashed;
 }
 
-module.exports = {
+export default {
     getVerificationHash,
     getPasswordDerivedKey
 };

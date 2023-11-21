@@ -1,8 +1,8 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
+import becca from '../../../becca/becca.js'
 
 class RelationWhereExp extends Expression {
     constructor(relationName, subExpression) {
@@ -38,4 +38,4 @@ class RelationWhereExp extends Expression {
     }
 }
 
-module.exports = RelationWhereExp;
+export default RelationWhereExp;

@@ -1,7 +1,7 @@
 "use strict";
 
-const crypto = require('crypto');
-const log = require('../log');
+import crypto from 'crypto';
+import log from '../log.js'
 
 function arraysIdentical(a, b) {
     let i = a.length;
@@ -115,7 +115,7 @@ function decryptString(dataKey, cipherText) {
     return buffer.toString('utf-8');
 }
 
-module.exports = {
+export default {
     encrypt,
     decrypt,
     decryptString

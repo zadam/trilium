@@ -1,4 +1,4 @@
-const clsHooked = require('cls-hooked');
+import clsHooked from 'cls-hooked';
 const namespace = clsHooked.createNamespace("trilium");
 
 function init(callback) {
@@ -85,7 +85,7 @@ function ignoreEntityChangeIds() {
     namespace.set('ignoreEntityChangeIds', true);
 }
 
-module.exports = {
+export default {
     init,
     wrap,
     get,

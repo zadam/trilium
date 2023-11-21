@@ -1,14 +1,14 @@
 "use strict";
 
-const dateUtils = require('./date_utils');
-const optionService = require('./options');
-const fs = require('fs-extra');
-const dataDir = require('./data_dir');
-const log = require('./log');
-const syncMutexService = require('./sync_mutex');
-const cls = require('./cls');
-const sql = require('./sql');
-const path = require('path');
+import dateUtils from './date_utils.js'
+import optionService from './options.js'
+import fs from 'fs-extra';
+import dataDir from './data_dir.js'
+import log from './log.js'
+import syncMutexService from './sync_mutex.js'
+import cls from './cls.js'
+import sql from './sql.js'
+import path from 'path';
 
 function getExistingBackups() {
     if (!fs.existsSync(dataDir.BACKUP_DIR)) {
@@ -73,7 +73,7 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
     fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
 }
 
-module.exports = {
+export default {
     getExistingBackups,
     backupNow,
     regularBackup

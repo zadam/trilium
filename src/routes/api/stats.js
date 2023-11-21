@@ -1,5 +1,5 @@
-const sql = require('../../services/sql');
-const becca = require('../../becca/becca');
+import sql from '../../services/sql.js'
+import becca from '../../becca/becca.js'
 
 function getNoteSize(req) {
     const {noteId} = req.params;
@@ -44,7 +44,7 @@ function getSubtreeSize(req) {
     };
 }
 
-module.exports = {
+export default {
     getNoteSize,
     getSubtreeSize
 };

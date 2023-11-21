@@ -1,13 +1,13 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service');
-const revisionService = require('../../services/revisions');
-const utils = require('../../services/utils');
-const sql = require('../../services/sql');
-const cls = require('../../services/cls');
-const path = require('path');
-const becca = require("../../becca/becca");
-const blobService = require("../../services/blob");
+import beccaService from '../../becca/becca_service.js'
+import revisionService from '../../services/revisions.js'
+import utils from '../../services/utils.js'
+import sql from '../../services/sql.js'
+import cls from '../../services/cls.js'
+import path from 'path';
+import becca from '../../becca/becca.js'
+import blobService from '../../services/blob.js'
 
 function getRevisionBlob(req) {
     const preview = req.query.preview === 'true';
@@ -185,7 +185,7 @@ function getNotePathData(note) {
     }
 }
 
-module.exports = {
+export default {
     getRevisionBlob,
     getRevisions,
     getRevision,

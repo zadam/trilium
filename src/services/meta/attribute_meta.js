@@ -11,4 +11,4 @@ class AttributeMeta {
     position;
 }
 
-module.exports = AttributeMeta;
+export default AttributeMeta;

@@ -1,11 +1,11 @@
-const eventService = require('./events');
-const scriptService = require('./script');
-const treeService = require('./tree');
-const noteService = require('./notes');
-const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute');
-const hiddenSubtreeService = require("./hidden_subtree");
-const oneTimeTimer = require("./one_time_timer");
+import eventService from './events.js'
+import scriptService from './script.js'
+import treeService from './tree.js'
+import noteService from './notes.js'
+import becca from '../becca/becca.js'
+import BAttribute from '../becca/entities/battribute.js'
+import hiddenSubtreeService from './hidden_subtree.js'
+import oneTimeTimer from './one_time_timer.js'
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
@@ -238,6 +238,6 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
     }
 });
 
-module.exports = {
+export default {
     runAttachedRelations
 };

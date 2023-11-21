@@ -1,5 +1,9 @@
-const becca = require('../becca/becca');
-const sql = require("./sql");
+import becca from '../becca/becca.js'
+import sql from './sql.js'
+
+
+// to avoid circular dependency, need to find a better solution
+import BOption from "../becca/entities/boption.js";
 
 /** @returns {string|null} */
 function getOptionOrNull(name) {
@@ -72,9 +76,6 @@ function setOption(name, value) {
 }
 
 function createOption(name, value, isSynced) {
-    // to avoid circular dependency, need to find a better solution
-    const BOption = require('../becca/entities/boption');
-
     new BOption({
         name: name,
         value: value,
@@ -96,7 +97,7 @@ function getOptionMap() {
     return map;
 }
 
-module.exports = {
+export default {
     getOption,
     getOptionInt,
     getOptionBool,

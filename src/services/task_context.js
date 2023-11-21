@@ -1,6 +1,6 @@
 "use strict";
 
-const ws = require('./ws');
+import ws from './ws.js'
 
 // taskId => TaskContext
 const taskContexts = {};
@@ -69,4 +69,4 @@ class TaskContext {
     }
 }
 
-module.exports = TaskContext;
+export default TaskContext;

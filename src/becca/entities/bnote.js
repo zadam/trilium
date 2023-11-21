@@ -1,17 +1,29 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const log = require('../../services/log');
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const BRevision = require("./brevision");
-const BAttachment = require("./battachment");
-const TaskContext = require("../../services/task_context");
-const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc');
-const eventService = require("../../services/events");
+import protectedSessionService from '../../services/protected_session.js'
+import log from '../../services/log.js'
+import sql from '../../services/sql.js'
+import utils from '../../services/utils.js'
+import dateUtils from '../../services/date_utils.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
+import BRevision from './brevision.js'
+import BAttachment from './battachment.js'
+import TaskContext from '../../services/task_context.js'
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import eventService from '../../services/events.js'
+import searchService from '../../services/search/services/search.js'
+
+import BAttribute from './battribute.js'
+
+import cloningService from '../../services/cloning.js'
+
+import noteService from '../../services/notes.js'
+
+
+// needs to be run before branches and attributes are deleted and thus attached relations disappear
+import handlers from '../../services/handlers.js'
+
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -903,7 +915,6 @@ class BNote extends AbstractBeccaEntity {
         }
 
         try {
-            const searchService = require("../../services/search/services/search");
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
@@ -1303,8 +1314,6 @@ class BNote extends AbstractBeccaEntity {
             }
         }
         else {
-            const BAttribute = require("./battribute");
-
             new BAttribute({
                 noteId: this.noteId,
                 type: type,
@@ -1343,8 +1352,6 @@ class BNote extends AbstractBeccaEntity {
      * @returns {BAttribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = null) {
-        const BAttribute = require("./battribute");
-
         return new BAttribute({
             noteId: this.noteId,
             type: type,
@@ -1448,8 +1455,6 @@ class BNote extends AbstractBeccaEntity {
     removeRelation(name, value) { return this.removeAttribute(RELATION, name, value); }
 
     searchNotesInSubtree(searchString) {
-        const searchService = require("../../services/search/services/search");
-
         return searchService.searchNotes(searchString);
     }
 
@@ -1462,8 +1467,6 @@ class BNote extends AbstractBeccaEntity {
      * @returns {{success: boolean, message: string, branchId: string, notePath: string}}
      */
     cloneTo(parentNoteId) {
-        const cloningService = require("../../services/cloning");
-
         const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
 
         return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
@@ -1536,8 +1539,6 @@ class BNote extends AbstractBeccaEntity {
         const fixedContent = utils.replaceAll(parentContent, oldNoteUrl, newAttachmentUrl);
 
         parentNote.setContent(fixedContent);
-
-        const noteService = require("../../services/notes");
         noteService.asyncPostProcessContent(parentNote, fixedContent); // to mark an unused attachment for deletion
 
         this.deleteNote();
@@ -1563,9 +1564,6 @@ class BNote extends AbstractBeccaEntity {
         if (!taskContext) {
             taskContext = new TaskContext('no-progress-reporting');
         }
-
-        // needs to be run before branches and attributes are deleted and thus attached relations disappear
-        const handlers = require("../../services/handlers");
         handlers.runAttachedRelations(this, 'runOnNoteDeletion', this);
         taskContext.noteDeletionHandlerTriggered = true;
 
@@ -1725,4 +1723,4 @@ class BNote extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BNote;
+export default BNote;

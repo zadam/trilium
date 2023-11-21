@@ -1,7 +1,7 @@
-const becca = require("../../becca/becca");
-const blobService = require("../../services/blob");
-const ValidationError = require("../../errors/validation_error");
-const imageService = require("../../services/image.js");
+import becca from '../../becca/becca.js'
+import blobService from '../../services/blob.js'
+import ValidationError from '../../errors/validation_error.js'
+import imageService from '../../services/image.js';
 
 function getAttachmentBlob(req) {
     const preview = req.query.preview === 'true';
@@ -96,7 +96,7 @@ function convertAttachmentToNote(req) {
     return attachment.convertToNote();
 }
 
-module.exports = {
+export default {
     getAttachmentBlob,
     getAttachments,
     getAttachment,

@@ -1,4 +1,4 @@
-function sanitizeAttributeName(origName) {
+export function sanitizeAttributeName(origName) {
     let fixedName;
 
     if (origName === '') {
@@ -11,8 +11,3 @@ function sanitizeAttributeName(origName) {
 
     return fixedName;
 }
-
-
-module.exports = {
-    sanitizeAttributeName
-};

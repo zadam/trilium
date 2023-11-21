@@ -158,7 +158,7 @@ class NoteContext extends Component {
             return;
         }
 
-        if (await hoistedNoteService.checkNoteAccess(resolvedNotePath, this) === false) {
+        if ((await hoistedNoteService.checkNoteAccess(resolvedNotePath, this)) === false) {
             return; // note is outside of hoisted subtree and user chose not to unhoist
         }
 

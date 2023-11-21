@@ -1,18 +1,19 @@
-const WebSocket = require('ws');
-const utils = require('./utils');
-const log = require('./log');
-const sql = require('./sql');
-const cls = require('./cls');
-const config = require('./config');
-const syncMutexService = require('./sync_mutex');
-const protectedSessionService = require('./protected_session');
-const becca = require("../becca/becca");
-const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
+import WebSocket from 'ws';
+import utils from './utils.js'
+import log from './log.js'
+import sql from './sql.js'
+import cls from './cls.js'
+import config from './config.js'
+import syncMutexService from './sync_mutex.js'
+import protectedSessionService from './protected_session.js'
+import becca from '../becca/becca.js'
+import AbstractBeccaEntity from '../becca/entities/abstract_becca_entity.js'
+import env from './env.js'
+import chokidar from "chokidar";
 
-const env = require('./env');
+import debounce from "debounce";
+
 if (env.isDev()) {
-    const chokidar = require('chokidar');
-    const debounce = require('debounce');
     const debouncedReloadFrontend = debounce(() => reloadFrontend("source code change"), 200);
     chokidar
         .watch('src/public')
@@ -236,7 +237,7 @@ function setLastSyncedPush(entityChangeId) {
     lastSyncedPush = entityChangeId;
 }
 
-module.exports = {
+export default {
     init,
     sendMessageToAllClients,
     syncPushInProgress,

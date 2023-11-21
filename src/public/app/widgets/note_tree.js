@@ -998,8 +998,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const oldActiveNode = this.getActiveNode();
 
         const newActiveNode = this.noteContext?.notePath
-            && (!treeService.isNotePathInHiddenSubtree(this.noteContext.notePath) || await hoistedNoteService.isHoistedInHiddenSubtree())
-            && await this.getNodeFromPath(this.noteContext.notePath);
+            && (!treeService.isNotePathInHiddenSubtree(this.noteContext.notePath) || (await hoistedNoteService.isHoistedInHiddenSubtree()))
+            && (await this.getNodeFromPath(this.noteContext.notePath));
 
         if (newActiveNode !== oldActiveNode) {
             let oldActiveNodeFocused = false;

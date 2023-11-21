@@ -13,4 +13,4 @@ class AttachmentMeta {
     dataFileName;
 }
 
-module.exports = AttachmentMeta;
+export default AttachmentMeta;

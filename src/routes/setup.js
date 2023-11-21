@@ -1,16 +1,18 @@
 "use strict";
 
-const sqlInit = require('../services/sql_init');
-const setupService = require('../services/setup');
-const utils = require('../services/utils');
-const assetPath = require("../services/asset_path");
-const appPath = require("../services/app_path");
+import sqlInit from '../services/sql_init.js'
+import setupService from '../services/setup.js'
+import utils from '../services/utils.js'
+import assetPath from '../services/asset_path.js'
+import appPath from '../services/app_path.js'
+
+import windowService from '../services/window.js'
+
+import {app} from "electron";
 
 function setupPage(req, res) {
     if (sqlInit.isDbInitialized()) {
         if (utils.isElectron()) {
-            const windowService = require('../services/window');
-            const {app} = require('electron');
             windowService.createMainWindow(app);
             windowService.closeSetupWindow();
         }
@@ -37,6 +39,6 @@ function setupPage(req, res) {
     });
 }
 
-module.exports = {
+export default {
     setupPage
 };

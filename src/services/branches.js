@@ -1,5 +1,5 @@
-const treeService = require("./tree");
-const sql = require("./sql");
+import treeService from './tree.js'
+import sql from './sql.js'
 
 function moveBranchToNote(branchToMove, targetParentNoteId) {
     if (branchToMove.parentNoteId === targetParentNoteId) {
@@ -42,7 +42,7 @@ function moveBranchToBranch(branchToMove, targetParentBranch) {
     return res;
 }
 
-module.exports = {
+export default {
     moveBranchToBranch,
     moveBranchToNote
 };

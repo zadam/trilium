@@ -1,6 +1,8 @@
 import utils from "./services/utils.js";
 import macInit from './services/mac_init.js';
 
+import remote from "@electron/remote";
+
 macInit.init();
 
 function SetupModel() {
@@ -84,7 +86,6 @@ async function checkOutstandingSyncs() {
 
     if (initialized) {
         if (utils.isElectron()) {
-            const remote = utils.dynamicRequire('@electron/remote');
             remote.app.relaunch();
             remote.app.exit(0);
         }

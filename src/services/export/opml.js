@@ -1,7 +1,7 @@
 "use strict";
 
-const utils = require('../utils');
-const becca = require("../../becca/becca");
+import utils from '../utils.js'
+import becca from '../../becca/becca.js'
 
 function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {
@@ -88,6 +88,6 @@ function escapeXmlAttribute(text) {
         .replace(/'/g, '&apos;');
 }
 
-module.exports = {
+export default {
     exportToOpml
 };

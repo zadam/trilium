@@ -14,4 +14,4 @@ class Expression {
     execute(inputNoteSet, executionContext, searchContext) {}
 }
 
-module.exports = Expression;
+export default Expression;

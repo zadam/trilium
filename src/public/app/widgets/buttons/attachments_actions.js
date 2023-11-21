@@ -123,7 +123,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
     }
 
     async deleteAttachmentCommand() {
-        if (!await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
+        if (!(await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`))) {
             return;
         }
 
@@ -132,7 +132,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
     }
 
     async convertAttachmentIntoNoteCommand() {
-        if (!await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`)) {
+        if (!(await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`))) {
             return;
         }
 

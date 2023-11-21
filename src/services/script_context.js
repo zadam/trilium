@@ -1,5 +1,5 @@
-const utils = require('./utils');
-const BackendScriptApi = require('./backend_script_api');
+import utils from './utils.js'
+import BackendScriptApi from './backend_script_api.js'
 
 function ScriptContext(allNotes, apiParams = {}) {
     this.modules = {};
@@ -19,4 +19,4 @@ function ScriptContext(allNotes, apiParams = {}) {
     };
 }
 
-module.exports = ScriptContext;
+export default ScriptContext;

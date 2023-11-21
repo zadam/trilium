@@ -1,7 +1,10 @@
-const assetPath = require("../services/asset_path");
-const path = require("path");
-const express = require("express");
-const env = require("../services/env");
+import assetPath from '../services/asset_path.js'
+import path from 'path';
+import express from 'express';
+import env from '../services/env.js'
+import {fileURLToPath} from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const persistentCacheStatic = (root, options) => {
     if (!env.isDev()) {
@@ -49,6 +52,6 @@ function register(app) {
     app.use(`/${assetPath}/node_modules/katex/dist/`,
       persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/')));}
 
-module.exports = {
+export default {
     register
 };

@@ -1,10 +1,10 @@
 "use strict";
 
-const mimeTypes = require('mime-types');
-const html = require('html');
-const utils = require('../utils');
-const mdService = require('./md');
-const becca = require("../../becca/becca");
+import mimeTypes from 'mime-types';
+import html from 'html';
+import utils from '../utils.js'
+import mdService from './md.js'
+import becca from '../../becca/becca.js'
 
 function exportSingleNote(taskContext, branch, format, res) {
     const note = branch.getNote();
@@ -119,6 +119,6 @@ function inlineAttachments(content) {
     return content;
 }
 
-module.exports = {
+export default {
     exportSingleNote
 };

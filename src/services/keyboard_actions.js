@@ -1,8 +1,8 @@
 "use strict";
 
-const optionService = require('./options');
-const log = require('./log');
-const utils = require('./utils');
+import optionService from './options.js'
+import log from './log.js'
+import utils from './utils.js'
 
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();
@@ -629,7 +629,7 @@ function getKeyboardActions() {
     return actions;
 }
 
-module.exports = {
+export default {
     DEFAULT_KEYBOARD_ACTIONS,
     getKeyboardActions
 };

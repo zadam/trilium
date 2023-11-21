@@ -1,11 +1,11 @@
 "use strict";
 
-const BNote = require('./bnote');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const sql = require("../../services/sql");
-const dateUtils = require("../../services/date_utils");
-const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
-const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
+import BNote from './bnote.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
+import sql from '../../services/sql.js'
+import dateUtils from '../../services/date_utils.js'
+import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js'
+import { sanitizeAttributeName } from '../../services/sanitize_attribute_name.js';
 
 
 /**
@@ -239,4 +239,4 @@ class BAttribute extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BAttribute;
+export default BAttribute;

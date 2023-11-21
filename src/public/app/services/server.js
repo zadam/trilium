@@ -1,6 +1,8 @@
 import utils from './utils.js';
 import ValidationError from "./validation_error.js";
 
+import {ipcRenderer as ipc} from "electron";
+
 async function getHeaders(headers) {
     const appContext = (await import('../components/app_context.js')).default;
     const activeNoteContext = appContext.tabManager ? appContext.tabManager.getActiveContext() : null;
@@ -81,7 +83,6 @@ async function call(method, url, componentId, options = {}) {
     const {data} = options;
 
     if (utils.isElectron()) {
-        const ipc = utils.dynamicRequire('electron').ipcRenderer;
         const requestId = idCounter++;
 
         resp = await new Promise((resolve, reject) => {
@@ -159,8 +160,6 @@ function ajax(url, method, data, headers, silentNotFound) {
 }
 
 if (utils.isElectron()) {
-    const ipc = utils.dynamicRequire('electron').ipcRenderer;
-
     ipc.on('server-response', async (event, arg) => {
         if (arg.statusCode >= 200 && arg.statusCode < 300) {
             handleSuccessfulResponse(arg);

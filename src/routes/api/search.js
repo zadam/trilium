@@ -1,12 +1,12 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const SearchContext = require('../../services/search/search_context');
-const searchService = require('../../services/search/services/search');
-const bulkActionService = require("../../services/bulk_actions");
-const cls = require("../../services/cls");
-const {formatAttrForSearch} = require("../../services/attribute_formatter");
-const ValidationError = require("../../errors/validation_error");
+import becca from '../../becca/becca.js'
+import SearchContext from '../../services/search/search_context.js'
+import searchService from '../../services/search/services/search.js'
+import bulkActionService from '../../services/bulk_actions.js'
+import cls from '../../services/cls.js'
+import { formatAttrForSearch } from '../../services/attribute_formatter.js';
+import ValidationError from '../../errors/validation_error.js'
 
 function searchFromNote(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
@@ -123,7 +123,7 @@ function searchTemplates() {
     }).map(note => note.noteId);
 }
 
-module.exports = {
+export default {
     searchFromNote,
     searchAndExecute,
     getRelatedNotes,

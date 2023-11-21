@@ -1,9 +1,11 @@
-const optionService = require('./options');
-const appInfo = require('./app_info');
-const utils = require('./utils');
-const log = require('./log');
-const dateUtils = require('./date_utils');
-const keyboardActions = require('./keyboard_actions');
+import optionService from './options.js'
+import appInfo from './app_info.js'
+import utils from './utils.js'
+import log from './log.js'
+import dateUtils from './date_utils.js'
+import keyboardActions from './keyboard_actions.js'
+
+import {nativeTheme} from "electron";
 
 function initDocumentOptions() {
     optionService.createOption('documentId', utils.randomSecureToken(16), false);
@@ -31,8 +33,6 @@ function initNotSyncedOptions(initialized, opts = {}) {
     let theme = 'dark'; // default based on the poll in https://github.com/zadam/trilium/issues/2516
 
     if (utils.isElectron()) {
-        const {nativeTheme} = require('electron');
-
         theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
     }
 
@@ -126,7 +126,7 @@ function getKeyboardDefaultOptions() {
         }));
 }
 
-module.exports = {
+export default {
     initDocumentOptions,
     initNotSyncedOptions,
     initStartupOptions

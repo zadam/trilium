@@ -1,6 +1,6 @@
 "use strict";
 
-const AbstractShacaEntity = require('./abstract_shaca_entity');
+import AbstractShacaEntity from './abstract_shaca_entity.js'
 
 class SBranch extends AbstractShacaEntity {
     constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {
@@ -59,4 +59,4 @@ class SBranch extends AbstractShacaEntity {
     }
 }
 
-module.exports = SBranch;
+export default SBranch;

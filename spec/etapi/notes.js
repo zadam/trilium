@@ -1,13 +1,14 @@
-const crypto = require('crypto');
-const {
+import crypto from "crypto";
+
+import {
     deleteEtapi,
-    getEtapiResponse,
-    describeEtapi, postEtapi,
+    describeEtapi,
     getEtapi,
     getEtapiContent,
-    patchEtapi, putEtapi,
-    putEtapiContent
-} = require("../support/etapi");
+    getEtapiResponse,
+    patchEtapi,
+    postEtapi, putEtapi, putEtapiContent
+} from "../support/etapi";
 
 describeEtapi("notes", () => {
     it("create", async () => {

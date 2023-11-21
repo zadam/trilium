@@ -1,7 +1,7 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const becca = require("../../becca/becca");
+import sql from '../../services/sql.js'
+import becca from '../../becca/becca.js'
 
 function getSchema() {
     const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
@@ -59,7 +59,7 @@ function execute(req) {
     }
 }
 
-module.exports = {
+export default {
     getSchema,
     execute
 };

@@ -1,5 +1,5 @@
-const dayjs = require('dayjs');
-const cls = require('./cls');
+import dayjs from 'dayjs';
+import cls from './cls.js'
 
 const LOCAL_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSSZZ';
 const UTC_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ssZ';
@@ -95,7 +95,7 @@ function validateUtcDateTime(str) {
     }
 }
 
-module.exports = {
+export default {
     utcNowDateTime,
     localNowDateTime,
     localNowDate,

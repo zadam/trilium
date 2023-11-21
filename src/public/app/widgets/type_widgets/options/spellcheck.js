@@ -1,6 +1,8 @@
 import utils from "../../../services/utils.js";
 import OptionsWidget from "./options_widget.js";
 
+import {getCurrentWindow} from "@electron/remote";
+
 const TPL = `
 <div class="options-section">
     <h4>Spell Check</h4>
@@ -40,7 +42,7 @@ export default class SpellcheckOptions extends OptionsWidget {
         this.$availableLanguageCodes = this.$widget.find(".available-language-codes");
 
         if (utils.isElectron()) {
-            const { webContents } = utils.dynamicRequire('@electron/remote').getCurrentWindow();
+            const { webContents } = getCurrentWindow();
 
             this.$availableLanguageCodes.text(webContents.session.availableSpellCheckerLanguages.join(', '));
         }

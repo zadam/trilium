@@ -64,4 +64,4 @@ class SpacedUpdate {
     }
 }
 
-module.exports = SpacedUpdate;
+export default SpacedUpdate;

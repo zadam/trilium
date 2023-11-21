@@ -1,7 +1,7 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
+import dateUtils from '../../services/date_utils.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
 
 /**
  * Option represents a name-value pair, either directly configurable by the user or some system property.
@@ -47,4 +47,4 @@ class BOption extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BOption;
+export default BOption;

@@ -1,12 +1,16 @@
 "use strict";
 
-const crypto = require('crypto');
-const randtoken = require('rand-token').generator({source: 'crypto'});
-const unescape = require('unescape');
-const escape = require('escape-html');
-const sanitize = require("sanitize-filename");
-const mimeTypes = require('mime-types');
-const path = require('path');
+import crypto from 'crypto';
+import unescape from 'unescape';
+import escape from 'escape-html';
+import sanitize from 'sanitize-filename';
+import mimeTypes from 'mime-types';
+import path from 'path';
+
+import {generator} from "rand-token";
+
+import {app} from "electron";
+const randtoken = generator({source: 'crypto'});
 
 function newEntityId() {
     return randomString(12);
@@ -126,7 +130,7 @@ function escapeRegExp(str) {
 
 function crash() {
     if (isElectron()) {
-        require('electron').app.exit(1);
+        app.exit(1);
     }
     else {
         process.exit(1);
@@ -303,7 +307,7 @@ function toMap(list, key) {
     return map;
 }
 
-module.exports = {
+export default {
     randomSecureToken,
     randomString,
     md5,

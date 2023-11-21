@@ -1,9 +1,9 @@
 "use strict";
 
-const optionService = require('../../services/options');
-const log = require('../../services/log');
-const searchService = require('../../services/search/services/search');
-const ValidationError = require("../../errors/validation_error");
+import optionService from '../../services/options.js'
+import log from '../../services/log.js'
+import searchService from '../../services/search/services/search.js'
+import ValidationError from '../../errors/validation_error.js'
 
 // options allowed to be updated directly in the Options dialog
 const ALLOWED_OPTIONS = new Set([
@@ -135,7 +135,7 @@ function isAllowed(name) {
         || name.startsWith("hideArchivedNotes");
 }
 
-module.exports = {
+export default {
     getOptions,
     updateOption,
     updateOptions,

@@ -1,9 +1,9 @@
 "use strict";
 
-const imageService = require('../../services/image');
-const becca = require('../../becca/becca');
-const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
-const fs = require('fs');
+import imageService from '../../services/image.js'
+import becca from '../../becca/becca.js'
+import resourceDir from '../../services/resource_dir.js';
+import fs from 'fs';
 
 function returnImageFromNote(req, res) {
     const image = becca.getNote(req.params.noteId);
@@ -24,7 +24,7 @@ function returnImageFromRevision(req, res) {
 function returnImageInt(image, res) {
     if (!image) {
         res.set('Content-Type', 'image/png');
-        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
+        return res.send(fs.readFileSync(`${resourceDir.RESOURCE_DIR}/db/image-deleted.png`));
     } else if (!["image", "canvas", "mermaid"].includes(image.type)) {
         return res.sendStatus(400);
     }
@@ -67,7 +67,7 @@ function returnAttachedImage(req, res) {
 
     if (!attachment) {
         res.set('Content-Type', 'image/png');
-        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
+        return res.send(fs.readFileSync(`${resourceDir.RESOURCE_DIR}/db/image-deleted.png`));
     }
 
     if (!["image"].includes(attachment.role)) {
@@ -99,7 +99,7 @@ function updateImage(req) {
     return { uploaded: true };
 }
 
-module.exports = {
+export default {
     returnImageFromNote,
     returnImageFromRevision,
     returnAttachedImage,

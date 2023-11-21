@@ -4,6 +4,10 @@ import froca from "./froca.js";
 import linkService from "./link.js";
 import utils from "./utils.js";
 
+
+// https://github.com/zadam/trilium/issues/2401
+import {clipboard} from "electron";
+
 let clipboardBranchIds = [];
 let clipboardMode = null;
 
@@ -66,8 +70,6 @@ async function copy(branchIds) {
     clipboardMode = 'copy';
 
     if (utils.isElectron()) {
-        // https://github.com/zadam/trilium/issues/2401
-        const {clipboard} = require('electron');
         const links = [];
 
         for (const branch of froca.getBranches(clipboardBranchIds)) {

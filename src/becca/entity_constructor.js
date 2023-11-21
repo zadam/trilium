@@ -1,12 +1,12 @@
-const BAttachment = require("./entities/battachment");
-const BAttribute = require('./entities/battribute');
-const BBlob = require("./entities/bblob");
-const BBranch = require('./entities/bbranch');
-const BEtapiToken = require('./entities/betapi_token');
-const BNote = require('./entities/bnote');
-const BOption = require('./entities/boption');
-const BRecentNote = require('./entities/brecent_note');
-const BRevision = require('./entities/brevision');
+import BAttachment from './entities/battachment.js'
+import BAttribute from './entities/battribute.js'
+import BBlob from './entities/bblob.js'
+import BBranch from './entities/bbranch.js'
+import BEtapiToken from './entities/betapi_token.js'
+import BNote from './entities/bnote.js'
+import BOption from './entities/boption.js'
+import BRecentNote from './entities/brecent_note.js'
+import BRevision from './entities/brevision.js'
 
 const ENTITY_NAME_TO_ENTITY = {
     "attachments": BAttachment,
@@ -28,6 +28,6 @@ function getEntityFromEntityName(entityName) {
     return ENTITY_NAME_TO_ENTITY[entityName];
 }
 
-module.exports = {
+export default {
     getEntityFromEntityName
 };

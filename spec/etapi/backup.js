@@ -1,8 +1,4 @@
-const {
-    describeEtapi, postEtapi,
-    getEtapi,
-} = require("../support/etapi");
-const {putEtapiContent} = require("../support/etapi.js");
+import {describeEtapi, getEtapi, postEtapi,putEtapiContent} from "../support/etapi";
 
 describeEtapi("backup", () => {
     it("create", async () => {

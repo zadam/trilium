@@ -1,14 +1,14 @@
-const sax = require("sax");
-const stream = require('stream');
-const {Throttle} = require('stream-throttle');
-const log = require("../log");
-const utils = require("../utils");
-const sql = require("../sql");
-const noteService = require("../notes");
-const imageService = require("../image");
-const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require("../html_sanitizer");
-const {sanitizeAttributeName} = require("../sanitize_attribute_name");
+import sax from 'sax';
+import stream from 'stream';
+import { Throttle } from 'stream-throttle';
+import log from '../log.js'
+import utils from '../utils.js'
+import sql from '../sql.js'
+import noteService from '../notes.js'
+import imageService from '../image.js'
+import protectedSessionService from '../protected_session.js'
+import htmlSanitizer from '../html_sanitizer.js'
+import { sanitizeAttributeName } from '../sanitize_attribute_name.js';
 
 /**
  * date format is e.g. 20181121T193703Z or 2013-04-14T16:19:00.000Z (Mac evernote, see #3496)
@@ -368,4 +368,4 @@ function importEnex(taskContext, file, parentNote) {
     });
 }
 
-module.exports = { importEnex };
+export default { importEnex };

@@ -1,15 +1,22 @@
-const path = require('path');
-const url = require("url");
-const port = require('./port');
-const optionService = require('./options');
-const env = require('./env');
-const log = require('./log');
-const sqlInit = require('./sql_init');
-const cls = require('./cls');
-const keyboardActionsService = require('./keyboard_actions');
-const {ipcMain} = require('electron');
+import path from 'path';
+import url from 'url';
+import port from './port.js'
+import optionService from './options.js'
+import env from './env.js'
+import log from './log.js'
+import sqlInit from './sql_init.js'
+import cls from './cls.js'
+import keyboardActionsService from './keyboard_actions.js'
+import {BrowserWindow, globalShortcut, ipcMain, shell} from 'electron';
 
 // Prevent the window being garbage collected
+import windowStateKeeper from "electron-window-state"; // should not be statically imported
+
+import remote from "@electron/remote/main/index.js";
+import {fileURLToPath} from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {Electron.BrowserWindow} */
 let mainWindow;
 /** @type {Electron.BrowserWindow} */
@@ -17,8 +24,6 @@ let setupWindow;
 
 async function createExtraWindow(extraWindowHash) {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
-
-    const {BrowserWindow} = require('electron');
 
     const win = new BrowserWindow({
         width: 1000,
@@ -45,8 +50,6 @@ ipcMain.on('create-extra-window', (event, arg) => {
 });
 
 async function createMainWindow(app) {
-    const windowStateKeeper = require('electron-window-state'); // should not be statically imported
-
     const mainWindowState = windowStateKeeper({
         // default window width & height, so it's usable on a 1600 * 900 display (including some extra panels etc.)
         defaultWidth: 1200,
@@ -54,8 +57,6 @@ async function createMainWindow(app) {
     });
 
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
-
-    const {BrowserWindow} = require('electron'); // should not be statically imported
 
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
@@ -84,7 +85,7 @@ async function createMainWindow(app) {
 
     app.on('second-instance', () => {
         // Someone tried to run a second instance, we should focus our window.
-        // see www.js "requestSingleInstanceLock" for the rest of this logic with explanation
+        // see www.js.js "requestSingleInstanceLock" for the rest of this logic with explanation
         if (mainWindow) {
             if (mainWindow.isMinimized()) {
                 mainWindow.restore();
@@ -96,10 +97,10 @@ async function createMainWindow(app) {
 }
 
 function configureWebContents(webContents, spellcheckEnabled) {
-    require("@electron/remote/main").enable(webContents);
+    remote.enable(webContents);
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
-        require("electron").shell.openExternal(details.url);
+        shell.openExternal(details.url);
         return { action: 'deny' }
     });
 
@@ -128,7 +129,6 @@ function getIcon() {
 }
 
 async function createSetupWindow() {
-    const {BrowserWindow} = require('electron'); // should not be statically imported
     setupWindow = new BrowserWindow({
         width: 800,
         height: 800,
@@ -152,8 +152,6 @@ function closeSetupWindow() {
 }
 
 async function registerGlobalShortcuts() {
-    const {globalShortcut} = require('electron');
-
     await sqlInit.dbReady;
 
     const allActions = keyboardActionsService.getKeyboardActions();
@@ -190,7 +188,7 @@ function getMainWindow() {
 }
 
 
-module.exports = {
+export default {
     createMainWindow,
     createSetupWindow,
     closeSetupWindow,

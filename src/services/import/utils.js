@@ -11,6 +11,6 @@ function handleH1(content, title) {
     return content;
 }
 
-module.exports = {
+export default {
     handleH1
 };

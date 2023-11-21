@@ -1,7 +1,7 @@
-const becca = require("../becca/becca");
-const utils = require("./utils");
-const BEtapiToken = require("../becca/entities/betapi_token");
-const crypto = require("crypto");
+import becca from '../becca/becca.js'
+import utils from './utils.js'
+import BEtapiToken from '../becca/entities/betapi_token.js'
+import crypto from 'crypto';
 
 function getTokens() {
     return becca.getEtapiTokens();
@@ -114,7 +114,7 @@ function deleteToken(etapiTokenId) {
     etapiToken.markAsDeletedSimple();
 }
 
-module.exports = {
+export default {
     getTokens,
     createToken,
     renameToken,

@@ -4,6 +4,8 @@ import appContext from "../components/app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 
+import electron from "electron";
+
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9_/]*)$/.exec(url);
 
@@ -242,8 +244,6 @@ function goToLinkExt(evt, hrefLink, $link) {
             if (hrefLink.toLowerCase().startsWith('http') || hrefLink.startsWith("api/")) {
                 window.open(hrefLink, '_blank');
             } else if (hrefLink.toLowerCase().startsWith('file:') && utils.isElectron()) {
-                const electron = utils.dynamicRequire('electron');
-
                 electron.shell.openPath(hrefLink);
             }
         }

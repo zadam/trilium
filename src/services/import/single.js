@@ -1,13 +1,13 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const imageService = require('../../services/image');
-const protectedSessionService = require('../protected_session');
-const markdownService = require('./markdown');
-const mimeService = require('./mime');
-const utils = require('../../services/utils');
-const importUtils = require('./utils');
-const htmlSanitizer = require('../html_sanitizer');
+import noteService from '../../services/notes.js'
+import imageService from '../../services/image.js'
+import protectedSessionService from '../protected_session.js'
+import markdownService from './markdown.js'
+import mimeService from './mime.js'
+import utils from '../../services/utils.js'
+import importUtils from './utils.js'
+import htmlSanitizer from '../html_sanitizer.js'
 
 function importSingleFile(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
@@ -190,7 +190,7 @@ function importAttachment(taskContext, file, parentNote) {
     }
 }
 
-module.exports = {
+export default {
     importSingleFile,
     importAttachment
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-const AbstractShacaEntity = require('./abstract_shaca_entity');
+import AbstractShacaEntity from './abstract_shaca_entity.js'
 
 class SAttribute extends AbstractShacaEntity {
     constructor([attributeId, noteId, type, name, value, isInheritable, position]) {
@@ -112,4 +112,4 @@ class SAttribute extends AbstractShacaEntity {
     }
 }
 
-module.exports = SAttribute;
+export default SAttribute;

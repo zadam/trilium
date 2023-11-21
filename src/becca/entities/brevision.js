@@ -1,12 +1,12 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const becca = require('../becca');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const sql = require("../../services/sql");
-const BAttachment = require("./battachment");
+import protectedSessionService from '../../services/protected_session.js'
+import utils from '../../services/utils.js'
+import dateUtils from '../../services/date_utils.js'
+import becca from '../becca.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
+import sql from '../../services/sql.js'
+import BAttachment from './battachment.js'
 
 /**
  * Revision represents a snapshot of note's title and content at some point in the past.
@@ -205,4 +205,4 @@ class BRevision extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BRevision;
+export default BRevision;

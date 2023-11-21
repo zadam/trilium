@@ -1,4 +1,4 @@
-const optionService = require('../../services/options');
+import optionService from '../../services/options.js'
 
 function getFontCss(req, res) {
     res.setHeader('Content-Type', 'text/css');
@@ -34,6 +34,6 @@ function getFontCss(req, res) {
     res.send(style);
 }
 
-module.exports = {
+export default {
     getFontCss
 };

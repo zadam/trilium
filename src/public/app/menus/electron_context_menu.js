@@ -3,10 +3,11 @@ import options from "../services/options.js";
 import zoomService from "../components/zoom.js";
 import contextMenu from "./context_menu.js";
 
-function setupContextMenu() {
-    const electron = utils.dynamicRequire('electron');
+import electron from "electron";
 
-    const remote = utils.dynamicRequire('@electron/remote');
+import remote from "@electron/remote";
+
+function setupContextMenu() {
     const {webContents} = remote.getCurrentWindow();
 
     webContents.on('context-menu', (event, params) => {

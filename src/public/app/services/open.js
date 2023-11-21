@@ -1,6 +1,12 @@
 import utils from "./utils.js";
 import server from "./server.js";
 
+import remote from "@electron/remote";
+
+import {exec} from "child_process";
+
+import electron from "electron";
+
 function checkType(type) {
     if (type !== 'notes' && type !== 'attachments') {
         throw new Error(`Unrecognized type '${type}', should be 'notes' or 'attachments'`);
@@ -21,8 +27,6 @@ function getOpenFileUrl(type, noteId) {
 
 function download(url) {
     if (utils.isElectron()) {
-        const remote = utils.dynamicRequire('@electron/remote');
-
         remote.getCurrentWebContents().downloadURL(url);
     } else {
         window.location.href = url;
@@ -49,7 +53,6 @@ async function openCustom(type, entityId, mime) {
 
     const resp = await server.post(`${type}/${entityId}/save-to-tmp-dir`);
     let filePath = resp.tmpFilePath;
-    const {exec} = utils.dynamicRequire('child_process');
     const platform = process.platform;
 
     if (platform === 'linux') {
@@ -139,8 +142,6 @@ async function openExternally(type, entityId, mime) {
 
     if (utils.isElectron()) {
         const resp = await server.post(`${type}/${entityId}/save-to-tmp-dir`);
-
-        const electron = utils.dynamicRequire('electron');
         const res = await electron.shell.openPath(resp.tmpFilePath);
 
         if (res) {

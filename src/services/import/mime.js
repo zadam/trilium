@@ -1,7 +1,7 @@
 "use strict";
 
-const mimeTypes = require('mime-types');
-const path = require('path');
+import mimeTypes from 'mime-types';
+import path from 'path';
 
 const CODE_MIME_TYPES = {
     'text/plain': true,
@@ -107,7 +107,7 @@ function normalizeMimeType(mime) {
     }
 }
 
-module.exports = {
+export default {
     getMime,
     getType,
     normalizeMimeType

@@ -1,20 +1,24 @@
 "use strict";
 
-const sql = require('./sql');
-const sqlInit = require('./sql_init');
-const log = require('./log');
-const ws = require('./ws');
-const syncMutexService = require('./sync_mutex');
-const cls = require('./cls');
-const entityChangesService = require('./entity_changes');
-const optionsService = require('./options');
-const BBranch = require('../becca/entities/bbranch');
-const revisionService = require('./revisions');
-const becca = require("../becca/becca");
-const utils = require("../services/utils");
-const eraseService = require("../services/erase");
-const {sanitizeAttributeName} = require("./sanitize_attribute_name");
-const noteTypes = require("../services/note_types").getNoteTypeNames();
+import sql from './sql.js'
+import sqlInit from './sql_init.js'
+import log from './log.js'
+import ws from './ws.js'
+import syncMutexService from './sync_mutex.js'
+import cls from './cls.js'
+import entityChangesService from './entity_changes.js'
+import optionsService from './options.js'
+import BBranch from '../becca/entities/bbranch.js'
+import revisionService from './revisions.js'
+import becca from '../becca/becca.js'
+import utils from '../services/utils.js'
+import eraseService from '../services/erase.js'
+import { sanitizeAttributeName } from './sanitize_attribute_name.js';
+import services from '../services/note_types.js'
+
+import becca0 from '../becca/becca_loader.js'
+
+const noteTypes = services.getNoteTypeNames();
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -763,7 +767,7 @@ class ConsistencyChecks {
         }
 
         if (this.reloadNeeded) {
-            require("../becca/becca_loader").reload("consistency checks need becca reload");
+            becca0.reload("consistency checks need becca reload");
         }
 
         return !this.unrecoveredConsistencyErrors;
@@ -851,7 +855,7 @@ sqlInit.dbReady.then(() => {
     setTimeout(cls.wrap(runPeriodicChecks), 4 * 1000);
 });
 
-module.exports = {
+export default {
     runOnDemandChecks,
     runEntityChangesChecks
 };

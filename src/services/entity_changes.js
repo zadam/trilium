@@ -1,11 +1,13 @@
-const sql = require('./sql');
-const dateUtils = require('./date_utils');
-const log = require('./log');
-const cls = require('./cls');
-const utils = require('./utils');
-const instanceId = require('./instance_id');
-const becca = require("../becca/becca");
-const blobService = require("../services/blob");
+import sql from './sql.js'
+import dateUtils from './date_utils.js'
+import log from './log.js'
+import cls from './cls.js'
+import utils from './utils.js'
+import instanceId from './instance_id.js'
+import becca from '../becca/becca.js'
+import blobService from '../services/blob.js'
+
+import eventService from './events.js'
 
 let maxEntityChangeId = 0;
 
@@ -52,9 +54,6 @@ function putNoteReorderingEntityChange(parentNoteId, componentId) {
         componentId,
         instanceId
     });
-
-    const eventService = require('./events');
-
     eventService.emit(eventService.ENTITY_CHANGED, {
         entityName: 'note_reordering',
         entity: sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [parentNoteId])
@@ -189,7 +188,7 @@ function recalculateMaxEntityChangeId() {
     maxEntityChangeId = sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes");
 }
 
-module.exports = {
+export default {
     putNoteReorderingEntityChange,
     putEntityChangeForOtherInstances,
     putEntityChangeWithForcedChange,

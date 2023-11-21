@@ -1,8 +1,8 @@
 "use strict";
 
-const fs = require('fs');
-const dataDir = require('./data_dir');
-const cls = require('./cls');
+import fs from 'fs';
+import dataDir from './data_dir.js'
+import cls from './cls.js'
 
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);
@@ -116,7 +116,7 @@ function formatDate() {
     return `${pad(todaysMidnight.getFullYear())}-${pad(todaysMidnight.getMonth() + 1)}-${pad(todaysMidnight.getDate())}`;
 }
 
-module.exports = {
+export default {
     info,
     error,
     request

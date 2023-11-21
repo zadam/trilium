@@ -3,6 +3,8 @@ import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
 import options from "../../services/options.js";
 
+import {webFrame} from "electron";
+
 const TPL = `
 <div class="dropdown global-menu dropright">
     <style>
@@ -281,7 +283,7 @@ export default class GlobalMenuWidget extends BasicWidget {
             return;
         }
 
-        const zoomFactor = utils.dynamicRequire('electron').webFrame.getZoomFactor();
+        const zoomFactor = webFrame.getZoomFactor();
         const zoomPercent = Math.round(zoomFactor * 100);
 
         this.$zoomState.text(`${zoomPercent}%`);

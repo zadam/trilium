@@ -1,11 +1,11 @@
 "use strict";
 
-const fs = require('fs');
-const dateUtils = require('../../services/date_utils');
-const {LOG_DIR} = require('../../services/data_dir');
+import fs from 'fs';
+import dateUtils from '../../services/date_utils.js'
+import dataDir from '../../services/data_dir.js';
 
 function getBackendLog() {
-    const file = `${LOG_DIR}/trilium-${dateUtils.localNowDate()}.log`;
+    const file = `${dataDir.LOG_DIR}/trilium-${dateUtils.localNowDate()}.log`;
 
     try {
         return fs.readFileSync(file, 'utf8');
@@ -16,6 +16,6 @@ function getBackendLog() {
     }
 }
 
-module.exports = {
+export default {
     getBackendLog
 };

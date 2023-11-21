@@ -119,7 +119,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
     }
 
     async convertNoteIntoAttachmentCommand() {
-        if (!await dialogService.confirm(`Are you sure you want to convert note '${this.note.title}' into an attachment of the parent note?`)) {
+        if (!(await dialogService.confirm(`Are you sure you want to convert note '${this.note.title}' into an attachment of the parent note?`))) {
             return;
         }
 

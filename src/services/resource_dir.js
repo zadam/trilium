@@ -1,7 +1,9 @@
-const log = require('./log');
-const path = require('path');
-const fs = require('fs');
+import log from './log.js'
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RESOURCE_DIR = path.resolve(__dirname, "../..");
 
 // where the "trilium" executable is
@@ -20,7 +22,7 @@ if (!fs.existsSync(MIGRATIONS_DIR)) {
     process.exit(1);
 }
 
-module.exports = {
+export default {
     RESOURCE_DIR,
     MIGRATIONS_DIR,
     DB_INIT_DIR,

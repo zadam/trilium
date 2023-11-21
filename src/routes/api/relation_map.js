@@ -1,5 +1,5 @@
-const becca = require("../../becca/becca");
-const sql = require("../../services/sql");
+import becca from '../../becca/becca.js'
+import sql from '../../services/sql.js'
 
 function getRelationMap(req) {
     const {relationMapNoteId, noteIds} = req.body;
@@ -64,6 +64,6 @@ function getRelationMap(req) {
     return resp;
 }
 
-module.exports = {
+export default {
     getRelationMap
 };

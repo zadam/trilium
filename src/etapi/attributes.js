@@ -1,8 +1,8 @@
-const becca = require("../becca/becca");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const attributeService = require("../services/attributes");
-const v = require("./validators");
+import becca from '../becca/becca.js'
+import eu from './etapi_utils.js'
+import mappers from './mappers.js'
+import attributeService from '../services/attributes.js'
+import v from './validators.js'
 
 function register(router) {
     eu.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {
@@ -78,6 +78,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

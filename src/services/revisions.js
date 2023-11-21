@@ -1,9 +1,9 @@
 "use strict";
 
-const log = require('./log');
-const sql = require('./sql');
-const protectedSessionService = require("./protected_session");
-const dateUtils = require("./date_utils");
+import log from './log.js'
+import sql from './sql.js'
+import protectedSessionService from './protected_session.js'
+import dateUtils from './date_utils.js'
 
 /**
  * @param {BNote} note
@@ -57,7 +57,7 @@ function eraseRevisions(revisionIdsToErase) {
     sql.executeMany(`UPDATE entity_changes SET isErased = 1, utcDateChanged = '${dateUtils.utcNowDateTime()}' WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);
 }
 
-module.exports = {
+export default {
     protectRevisions,
     eraseRevisions
 };

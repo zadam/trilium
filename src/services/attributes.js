@@ -1,11 +1,11 @@
 "use strict";
 
-const searchService = require('./search/services/search');
-const sql = require('./sql');
-const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute');
-const {formatAttrForSearch} = require("./attribute_formatter");
-const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
+import searchService from './search/services/search.js'
+import sql from './sql.js'
+import becca from '../becca/becca.js'
+import BAttribute from '../becca/entities/battribute.js'
+import { formatAttrForSearch } from './attribute_formatter.js';
+import BUILTIN_ATTRIBUTES from './builtin_attributes.js'
 
 const ATTRIBUTE_TYPES = ['label', 'relation'];
 
@@ -110,7 +110,7 @@ function isAttributeDangerous(type, name) {
     );
 }
 
-module.exports = {
+export default {
     getNotesWithLabel,
     getNoteWithLabel,
     createLabel,

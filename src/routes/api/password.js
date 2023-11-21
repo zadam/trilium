@@ -1,7 +1,7 @@
 "use strict";
 
-const passwordService = require('../../services/encryption/password');
-const ValidationError = require("../../errors/validation_error");
+import passwordService from '../../services/encryption/password.js'
+import ValidationError from '../../errors/validation_error.js'
 
 function changePassword(req) {
     if (passwordService.isPasswordSet()) {
@@ -21,7 +21,7 @@ function resetPassword(req) {
     return passwordService.resetPassword();
 }
 
-module.exports = {
+export default {
     changePassword,
     resetPassword
 };

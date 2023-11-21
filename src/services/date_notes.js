@@ -1,13 +1,13 @@
 "use strict";
 
-const noteService = require('./notes');
-const attributeService = require('./attributes');
-const dateUtils = require('./date_utils');
-const sql = require('./sql');
-const protectedSessionService = require('./protected_session');
-const searchService = require('../services/search/services/search');
-const SearchContext = require('../services/search/search_context');
-const hoistedNoteService = require("./hoisted_note");
+import noteService from './notes.js'
+import attributeService from './attributes.js'
+import dateUtils from './date_utils.js'
+import sql from './sql.js'
+import protectedSessionService from './protected_session.js'
+import searchService from '../services/search/services/search.js'
+import SearchContext from '../services/search/search_context.js'
+import hoistedNoteService from './hoisted_note.js'
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -229,7 +229,7 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
     return getDayNote(dateStr, rootNote);
 }
 
-module.exports = {
+export default {
     getRootCalendarNote,
     getYearNote,
     getMonthNote,

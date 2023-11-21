@@ -33,4 +33,4 @@ class NoteMeta {
     children;
 }
 
-module.exports = NoteMeta;
+export default NoteMeta;

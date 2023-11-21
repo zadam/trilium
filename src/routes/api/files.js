@@ -1,16 +1,16 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const tmp = require('tmp');
-const fs = require('fs');
-const { Readable } = require('stream');
-const chokidar = require('chokidar');
-const ws = require('../../services/ws');
-const becca = require("../../becca/becca");
-const ValidationError = require("../../errors/validation_error");
+import protectedSessionService from '../../services/protected_session.js'
+import utils from '../../services/utils.js'
+import log from '../../services/log.js'
+import noteService from '../../services/notes.js'
+import tmp from 'tmp';
+import fs from 'fs';
+import { Readable } from 'stream';
+import chokidar from 'chokidar';
+import ws from '../../services/ws.js'
+import becca from '../../becca/becca.js'
+import ValidationError from '../../errors/validation_error.js'
 
 function updateFile(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);
@@ -217,7 +217,7 @@ function uploadModifiedFileToAttachment(req) {
     attachment.setContent(fileContent);
 }
 
-module.exports = {
+export default {
     updateFile,
     updateAttachment,
     openFile,

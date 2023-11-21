@@ -1,7 +1,7 @@
 "use strict";
 
-const similarityService = require('../../becca/similarity');
-const becca = require("../../becca/becca");
+import similarityService from '../../becca/similarity.js'
+import becca from '../../becca/becca.js'
 
 async function getSimilarNotes(req) {
     const noteId = req.params.noteId;
@@ -11,6 +11,6 @@ async function getSimilarNotes(req) {
     return await similarityService.findSimilarNotes(noteId);
 }
 
-module.exports = {
+export default {
     getSimilarNotes
 };

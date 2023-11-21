@@ -1,17 +1,17 @@
 "use strict";
 
-const options = require('../../services/options');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const instanceId = require('../../services/instance_id');
-const passwordEncryptionService = require('../../services/encryption/password_encryption');
-const protectedSessionService = require('../../services/protected_session');
-const appInfo = require('../../services/app_info');
-const eventService = require('../../services/events');
-const sqlInit = require('../../services/sql_init');
-const sql = require('../../services/sql');
-const ws = require("../../services/ws");
-const etapiTokenService = require("../../services/etapi_tokens");
+import options from '../../services/options.js'
+import utils from '../../services/utils.js'
+import dateUtils from '../../services/date_utils.js'
+import instanceId from '../../services/instance_id.js'
+import passwordEncryptionService from '../../services/encryption/password_encryption.js'
+import protectedSessionService from '../../services/protected_session.js'
+import appInfo from '../../services/app_info.js'
+import eventService from '../../services/events.js'
+import sqlInit from '../../services/sql_init.js'
+import sql from '../../services/sql.js'
+import ws from '../../services/ws.js'
+import etapiTokenService from '../../services/etapi_tokens.js'
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {
@@ -102,7 +102,7 @@ function token(req) {
     return { token: authToken };
 }
 
-module.exports = {
+export default {
     loginSync,
     loginToProtectedSession,
     logoutFromProtectedSession,

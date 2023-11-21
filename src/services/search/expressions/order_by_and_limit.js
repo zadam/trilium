@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+import Expression from './expression.js'
+import NoteSet from '../note_set.js'
 
 class OrderByAndLimitExp extends Expression {
     constructor(orderDefinitions, limit) {
@@ -89,4 +89,4 @@ class OrderByAndLimitExp extends Expression {
     }
 }
 
-module.exports = OrderByAndLimitExp;
+export default OrderByAndLimitExp;

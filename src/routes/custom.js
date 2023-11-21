@@ -1,9 +1,9 @@
-const log = require('../services/log');
-const fileService = require('./api/files');
-const scriptService = require('../services/script');
-const cls = require('../services/cls');
-const sql = require("../services/sql");
-const becca = require("../becca/becca");
+import log from '../services/log.js'
+import fileService from './api/files.js'
+import scriptService from '../services/script.js'
+import cls from '../services/cls.js'
+import sql from '../services/sql.js'
+import becca from '../becca/becca.js'
 
 function handleRequest(req, res) {
     // express puts content after first slash into 0 index element
@@ -83,6 +83,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export default {
     register
 };

@@ -1,22 +1,30 @@
 "use strict";
 
-const log = require('./log');
-const sql = require('./sql');
-const optionService = require('./options');
-const utils = require('./utils');
-const instanceId = require('./instance_id');
-const dateUtils = require('./date_utils');
-const syncUpdateService = require('./sync_update');
-const contentHashService = require('./content_hash');
-const appInfo = require('./app_info');
-const syncOptions = require('./sync_options');
-const syncMutexService = require('./sync_mutex');
-const cls = require('./cls');
-const request = require('./request');
-const ws = require('./ws');
-const entityChangesService = require('./entity_changes');
-const entityConstructor = require('../becca/entity_constructor');
-const becca = require("../becca/becca");
+import log from './log.js'
+import sql from './sql.js'
+import optionService from './options.js'
+import utils from './utils.js'
+import instanceId from './instance_id.js'
+import dateUtils from './date_utils.js'
+import syncUpdateService from './sync_update.js'
+import contentHashService from './content_hash.js'
+import appInfo from './app_info.js'
+import syncOptions from './sync_options.js'
+import syncMutexService from './sync_mutex.js'
+import cls from './cls.js'
+import request from './request.js'
+import ws from './ws.js'
+import entityChangesService from './entity_changes.js'
+import entityConstructor from '../becca/entity_constructor.js'
+import becca from '../becca/becca.js'
+
+import setupService from './setup.js' // circular dependency issue
+
+
+// before re-queuing sectors, make sure the entity changes are correct
+import consistencyChecks from './consistency_checks.js'
+
+import becca0 from '../becca/becca_loader.js'
 
 let proxyToggle = true;
 
@@ -84,9 +92,7 @@ async function sync() {
 }
 
 async function login() {
-    const setupService = require('./setup'); // circular dependency issue
-
-    if (!await setupService.hasSyncServerSchemaAndSeed()) {
+    if (!(await setupService.hasSyncServerSchemaAndSeed())) {
         await setupService.sendSeedToSyncServer();
     }
 
@@ -243,8 +249,6 @@ async function checkContentHash(syncContext) {
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
     if (failedChecks.length > 0) {
-        // before re-queuing sectors, make sure the entity changes are correct
-        const consistencyChecks = require("./consistency_checks");
         consistencyChecks.runEntityChangesChecks();
 
         await syncRequest(syncContext, 'POST', `/api/sync/check-entity-changes`);
@@ -399,7 +403,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require("../becca/becca_loader").beccaLoaded.then(() => {
+becca0.beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately, but should happen after initial consistency checks
@@ -409,7 +413,7 @@ require("../becca/becca_loader").beccaLoaded.then(() => {
     getLastSyncedPush();
 });
 
-module.exports = {
+export default {
     sync,
     login,
     getEntityChangeRecords,

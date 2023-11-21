@@ -4,4 +4,4 @@ class NotFoundError {
     }
 }
 
-module.exports = NotFoundError;
+export default NotFoundError;

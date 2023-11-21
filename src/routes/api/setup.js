@@ -1,9 +1,9 @@
 "use strict";
 
-const sqlInit = require('../../services/sql_init');
-const setupService = require('../../services/setup');
-const log = require('../../services/log');
-const appInfo = require('../../services/app_info');
+import sqlInit from '../../services/sql_init.js'
+import setupService from '../../services/setup.js'
+import log from '../../services/log.js'
+import appInfo from '../../services/app_info.js'
 
 function getStatus() {
     return {
@@ -50,7 +50,7 @@ function getSyncSeed() {
     };
 }
 
-module.exports = {
+export default {
     getStatus,
     setupNewDocument,
     setupSyncFromServer,

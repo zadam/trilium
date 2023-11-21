@@ -1,13 +1,13 @@
-const attributeService = require("./attributes");
-const dateNoteService = require("./date_notes");
-const becca = require("../becca/becca");
-const noteService = require("./notes");
-const dateUtils = require("./date_utils");
-const log = require("./log");
-const hoistedNoteService = require("./hoisted_note");
-const searchService = require("./search/services/search");
-const SearchContext = require("./search/search_context");
-const {LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT} = require("./hidden_subtree");
+import attributeService from './attributes.js'
+import dateNoteService from './date_notes.js'
+import becca from '../becca/becca.js'
+import noteService from './notes.js'
+import dateUtils from './date_utils.js'
+import log from './log.js'
+import hoistedNoteService from './hoisted_note.js'
+import searchService from './search/services/search.js'
+import SearchContext from './search/search_context.js'
+import hiddenSubtree from './hidden_subtree.js';
 
 function getInboxNote(date) {
     const workspaceNote = hoistedNoteService.getWorkspaceNote();
@@ -147,7 +147,7 @@ function createScriptLauncher(parentNoteId, forceNoteId = null) {
         parentNoteId: parentNoteId
     }).note;
 
-    note.addRelation('template', LBTPL_SCRIPT);
+    note.addRelation('template', hiddenSubtree.LBTPL_SCRIPT);
     return note;
 }
 
@@ -163,7 +163,7 @@ function createLauncher({parentNoteId, launcherType, noteId}) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', LBTPL_NOTE_LAUNCHER);
+        note.addRelation('template', hiddenSubtree.LBTPL_NOTE_LAUNCHER);
     } else if (launcherType === 'script') {
         note = createScriptLauncher(parentNoteId, noteId);
     } else if (launcherType === 'customWidget') {
@@ -175,7 +175,7 @@ function createLauncher({parentNoteId, launcherType, noteId}) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', LBTPL_CUSTOM_WIDGET);
+        note.addRelation('template', hiddenSubtree.LBTPL_CUSTOM_WIDGET);
     } else if (launcherType === 'spacer') {
         note = noteService.createNewNote({
             noteId: noteId,
@@ -186,7 +186,7 @@ function createLauncher({parentNoteId, launcherType, noteId}) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', LBTPL_SPACER);
+        note.addRelation('template', hiddenSubtree.LBTPL_SPACER);
     } else {
         throw new Error(`Unrecognized launcher type '${launcherType}'`);
     }
@@ -263,7 +263,7 @@ function createOrUpdateScriptLauncherFromApi(opts) {
     return launcherNote;
 }
 
-module.exports = {
+export default {
     getInboxNote,
     createSqlConsole,
     saveSqlConsole,

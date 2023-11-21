@@ -2,6 +2,8 @@ import BasicWidget from "./basic_widget.js";
 import options from "../services/options.js";
 import utils from "../services/utils.js";
 
+import remote from "@electron/remote";
+
 const TPL = `
 <div class="title-bar-buttons">
     <style>
@@ -59,7 +61,6 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         // When the window is restarted, the window will not be reset when it is set to the top,
         // so get the window status and set the icon background
         setTimeout(() => {
-            const remote = utils.dynamicRequire('@electron/remote');
             if (remote.BrowserWindow.getFocusedWindow()?.isAlwaysOnTop()) {
                 $topBtn.addClass('active');
             }
@@ -67,7 +68,6 @@ export default class TitleBarButtonsWidget extends BasicWidget {
 
         $topBtn.on('click', () => {
             $topBtn.trigger('blur');
-            const remote = utils.dynamicRequire('@electron/remote');
             const focusedWindow = remote.BrowserWindow.getFocusedWindow();
             const isAlwaysOnTop = focusedWindow.isAlwaysOnTop()
             if (isAlwaysOnTop) {
@@ -81,13 +81,11 @@ export default class TitleBarButtonsWidget extends BasicWidget {
 
         $minimizeBtn.on('click', () => {
             $minimizeBtn.trigger('blur');
-            const remote = utils.dynamicRequire('@electron/remote');
             remote.BrowserWindow.getFocusedWindow().minimize();
         });
 
         $maximizeBtn.on('click', () => {
             $maximizeBtn.trigger('blur');
-            const remote = utils.dynamicRequire('@electron/remote');
             const focusedWindow = remote.BrowserWindow.getFocusedWindow();
 
             if (focusedWindow.isMaximized()) {
@@ -99,7 +97,6 @@ export default class TitleBarButtonsWidget extends BasicWidget {
 
         $closeBtn.on('click', () => {
             $closeBtn.trigger('blur');
-            const remote = utils.dynamicRequire('@electron/remote');
             remote.BrowserWindow.getFocusedWindow().close();
         });
     }

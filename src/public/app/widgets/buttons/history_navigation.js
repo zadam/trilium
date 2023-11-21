@@ -3,6 +3,8 @@ import contextMenu from "../../menus/context_menu.js";
 import treeService from "../../services/tree.js";
 import ButtonFromNoteWidget from "./button_from_note.js";
 
+import {getCurrentWebContents} from "@electron/remote";
+
 export default class HistoryNavigationButton extends ButtonFromNoteWidget {
     constructor(launcherNote, command) {
         super();
@@ -27,7 +29,7 @@ export default class HistoryNavigationButton extends ButtonFromNoteWidget {
             return;
         }
 
-        this.webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
+        this.webContents = getCurrentWebContents();
 
         // without this, the history is preserved across frontend reloads
         this.webContents.clearHistory();

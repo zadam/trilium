@@ -1,10 +1,10 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const log = require('../../services/log');
-const backupService = require('../../services/backup');
-const anonymizationService = require('../../services/anonymization');
-const consistencyChecksService = require('../../services/consistency_checks');
+import sql from '../../services/sql.js'
+import log from '../../services/log.js'
+import backupService from '../../services/backup.js'
+import anonymizationService from '../../services/anonymization.js'
+import consistencyChecksService from '../../services/consistency_checks.js'
 
 function getExistingBackups() {
     return backupService.getExistingBackups();
@@ -44,7 +44,7 @@ function checkIntegrity() {
     };
 }
 
-module.exports = {
+export default {
     getExistingBackups,
     backupDatabase,
     vacuumDatabase,

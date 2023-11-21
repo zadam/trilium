@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     // label names
     { type: 'label', name: 'inbox' },
     { type: 'label', name: 'disableVersioning' },

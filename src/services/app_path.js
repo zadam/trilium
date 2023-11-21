@@ -1,6 +1,6 @@
-const assetPath = require("./asset_path");
-const env = require("./env");
+import assetPath from './asset_path.js'
+import env from './env.js'
 
-module.exports = env.isDev()
+export default env.isDev()
     ? assetPath + "/app"
     : assetPath + "/app-dist";

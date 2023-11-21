@@ -1,11 +1,11 @@
-const scriptService = require('./script');
-const cls = require('./cls');
-const sqlInit = require('./sql_init');
-const config = require('./config');
-const log = require('./log');
-const attributeService = require("../services/attributes");
-const protectedSessionService = require("../services/protected_session");
-const hiddenSubtreeService = require("./hidden_subtree");
+import scriptService from './script.js'
+import cls from './cls.js'
+import sqlInit from './sql_init.js'
+import config from './config.js'
+import log from './log.js'
+import attributeService from '../services/attributes.js'
+import protectedSessionService from '../services/protected_session.js'
+import hiddenSubtreeService from './hidden_subtree.js'
 
 /**
  * @param {BNote} note

@@ -1,16 +1,18 @@
 "use strict";
 
-const syncService = require('../../services/sync');
-const syncUpdateService = require('../../services/sync_update');
-const entityChangesService = require('../../services/entity_changes');
-const sql = require('../../services/sql');
-const sqlInit = require('../../services/sql_init');
-const optionService = require('../../services/options');
-const contentHashService = require('../../services/content_hash');
-const log = require('../../services/log');
-const syncOptions = require('../../services/sync_options');
-const utils = require('../../services/utils');
-const ws = require('../../services/ws');
+import syncService from '../../services/sync.js'
+import syncUpdateService from '../../services/sync_update.js'
+import entityChangesService from '../../services/entity_changes.js'
+import sql from '../../services/sql.js'
+import sqlInit from '../../services/sql_init.js'
+import optionService from '../../services/options.js'
+import contentHashService from '../../services/content_hash.js'
+import log from '../../services/log.js'
+import syncOptions from '../../services/sync_options.js'
+import utils from '../../services/utils.js'
+import ws from '../../services/ws.js'
+
+import services from '../../services/consistency_checks.js'
 
 async function testSync() {
     try {
@@ -193,10 +195,10 @@ function queueSector(req) {
 }
 
 function checkEntityChanges() {
-    require("../../services/consistency_checks").runEntityChangesChecks();
+    services.runEntityChangesChecks();
 }
 
-module.exports = {
+export default {
     testSync,
     checkSync,
     syncNow,

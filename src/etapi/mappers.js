@@ -63,7 +63,7 @@ function mapAttachmentToPojo(attachment) {
     };
 }
 
-module.exports = {
+export default {
     mapNoteToPojo,
     mapBranchToPojo,
     mapAttributeToPojo,

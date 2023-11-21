@@ -1,15 +1,29 @@
-const log = require('./log');
-const fs = require('fs');
-const resourceDir = require('./resource_dir');
-const sql = require('./sql');
-const utils = require('./utils');
-const optionService = require('./options');
-const port = require('./port');
-const BOption = require('../becca/entities/boption');
-const TaskContext = require('./task_context');
-const migrationService = require('./migration');
-const cls = require('./cls');
-const config = require('./config');
+import log from './log.js'
+import fs from 'fs';
+import resourceDir from './resource_dir.js'
+import sql from './sql.js'
+import utils from './utils.js'
+import optionService from './options.js'
+import port from './port.js'
+import BOption from '../becca/entities/boption.js'
+import TaskContext from './task_context.js'
+import migrationService from './migration.js'
+import cls from './cls.js'
+import config from './config.js'
+
+import becca from "../becca/becca_loader.js";
+
+import BNote from "../becca/entities/bnote.js";
+
+import BBranch from "../becca/entities/bbranch.js";
+
+import optionsInitService from "./options_init.js";
+
+import encryption from "./encryption/password.js";
+
+import zipImportService from "./import/zip.js";
+
+import backup from "./backup.js";
 
 const dbReady = utils.deferred();
 
@@ -60,11 +74,7 @@ async function createInitialDatabase() {
 
         sql.executeScript(schema);
 
-        require("../becca/becca_loader").load();
-
-        const BNote = require("../becca/entities/bnote");
-        const BBranch = require("../becca/entities/bbranch");
-
+        becca.load();
         log.info("Creating root note ...");
 
         rootNote = new BNote({
@@ -82,20 +92,15 @@ async function createInitialDatabase() {
             isExpanded: true,
             notePosition: 10
         }).save();
-
-        const optionsInitService = require('./options_init');
-
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
-        require("./encryption/password").resetPassword();
+        encryption.resetPassword();
     });
 
     log.info("Importing demo content ...");
 
     const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
-
-    const zipImportService = require("./import/zip");
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
@@ -104,8 +109,6 @@ async function createInitialDatabase() {
         // are not all in one transaction (because ZIP import is async and thus not transactional)
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
-
-        const optionService = require("./options");
         optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,
@@ -131,7 +134,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require('./options_init').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
+        optionsInitService.initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {
@@ -166,10 +169,10 @@ dbReady.then(() => {
         return;
     }
 
-    setInterval(() => require('./backup').regularBackup(), 4 * 60 * 60 * 1000);
+    setInterval(() => backup.regularBackup(), 4 * 60 * 60 * 1000);
 
     // kickoff first backup soon after start up
-    setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
+    setTimeout(() => backup.regularBackup(), 5 * 60 * 1000);
 
     // optimize is usually inexpensive no-op, so running it semi-frequently is not a big deal
     setTimeout(() => optimize(), 60 * 60 * 1000);
@@ -183,7 +186,7 @@ function getDbSize() {
 
 log.info(`DB size: ${getDbSize()} KB`);
 
-module.exports = {
+export default {
     dbReady,
     schemaExists,
     isDbInitialized,

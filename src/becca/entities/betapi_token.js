@@ -1,7 +1,7 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
+import dateUtils from '../../services/date_utils.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
 
 /**
  * EtapiToken is an entity representing token used to authenticate against Trilium REST API from client applications.
@@ -75,4 +75,4 @@ class BEtapiToken extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BEtapiToken;
+export default BEtapiToken;

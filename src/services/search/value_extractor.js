@@ -127,4 +127,4 @@ class ValueExtractor {
     }
 }
 
-module.exports = ValueExtractor;
+export default ValueExtractor;

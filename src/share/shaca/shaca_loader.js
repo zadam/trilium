@@ -1,14 +1,14 @@
 "use strict";
 
-const sql = require('../sql');
-const shaca = require('./shaca');
-const log = require('../../services/log');
-const SNote = require('./entities/snote');
-const SBranch = require('./entities/sbranch');
-const SAttribute = require('./entities/sattribute');
-const SAttachment = require("./entities/sattachment");
-const shareRoot = require('../share_root');
-const eventService = require("../../services/events");
+import sql from '../sql.js'
+import shaca from './shaca.js'
+import log from '../../services/log.js'
+import SNote from './entities/snote.js'
+import SBranch from './entities/sbranch.js'
+import SAttribute from './entities/sattribute.js'
+import SAttachment from './entities/sattachment.js'
+import shareRoot from '../share_root.js'
+import eventService from '../../services/events.js'
 
 function load() {
     const start = Date.now();
@@ -93,7 +93,7 @@ eventService.subscribe([ eventService.ENTITY_CREATED, eventService.ENTITY_CHANGE
     shaca.reset();
 });
 
-module.exports = {
+export default {
     load,
     ensureLoad
 };

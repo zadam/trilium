@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const TrueExp = require("./true");
+import Expression from './expression.js'
+import TrueExp from './true.js'
 
 class AndExp extends Expression {
     static of(subExpressions) {
@@ -30,4 +30,4 @@ class AndExp extends Expression {
     }
 }
 
-module.exports = AndExp;
+export default AndExp;

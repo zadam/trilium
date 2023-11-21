@@ -1,7 +1,7 @@
 "use strict";
 
-const Database = require('better-sqlite3');
-const dataDir = require('../services/data_dir');
+import Database from 'better-sqlite3';
+import dataDir from '../services/data_dir.js'
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH, { readonly: true });
 
@@ -27,7 +27,7 @@ function getColumn(query, params = []) {
     return dbConnection.prepare(query).pluck().all(params);
 }
 
-module.exports = {
+export default {
     getRawRows,
     getRow,
     getColumn

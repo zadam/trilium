@@ -1,9 +1,9 @@
-const log = require("./log");
-const revisionService = require("./revisions");
-const becca = require("../becca/becca");
-const cloningService = require("./cloning");
-const branchService = require("./branches");
-const utils = require("./utils");
+import log from './log.js'
+import revisionService from './revisions.js'
+import becca from '../becca/becca.js'
+import cloningService from './cloning.js'
+import branchService from './branches.js'
+import utils from './utils.js'
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {
@@ -150,6 +150,6 @@ function executeActions(note, searchResultNoteIds) {
     }
 }
 
-module.exports = {
+export default {
     executeActions
 };

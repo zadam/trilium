@@ -173,9 +173,9 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             type = 'readOnlyCode';
         } else if (viewScope.viewMode === 'attachments') {
             type = viewScope.attachmentId ? 'attachmentDetail' : 'attachmentList';
-        } else if (type === 'text' && await this.noteContext.isReadOnly()) {
+        } else if (type === 'text' && (await this.noteContext.isReadOnly())) {
             type = 'readOnlyText';
-        } else if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
+        } else if ((type === 'code' || type === 'mermaid') && (await this.noteContext.isReadOnly())) {
             type = 'readOnlyCode';
         } else if (type === 'text') {
             type = 'editableText';
@@ -303,7 +303,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else if (loadResults.isNoteReloaded(this.noteId, this.componentId)
-            && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
+            && (this.type !== (await this.getWidgetType()) || this.mime !== this.note.mime)) {
 
             // this needs to have a triggerEvent so that e.g., note type (not in the component subtree) is updated
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});

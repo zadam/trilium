@@ -146,4 +146,4 @@ function lex(str) {
     }
 }
 
-module.exports = lex;
+export default lex;

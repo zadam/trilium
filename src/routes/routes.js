@@ -1,75 +1,76 @@
 "use strict";
 
-const utils = require('../services/utils');
-const multer = require('multer');
-const log = require('../services/log');
-const express = require('express');
-const router = express.Router();
-const auth = require('../services/auth');
-const cls = require('../services/cls');
-const sql = require('../services/sql');
-const entityChangesService = require('../services/entity_changes');
-const csurf = require('csurf');
-const { createPartialContentHandler } = require("express-partial-content");
-const rateLimit = require("express-rate-limit");
-const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
-const NotFoundError = require("../errors/not_found_error");
-const ValidationError = require("../errors/validation_error");
+import utils from '../services/utils.js'
+import multer from 'multer';
+import log from '../services/log.js'
+import express from 'express';
+import auth from '../services/auth.js'
+import cls from '../services/cls.js'
+import sql from '../services/sql.js'
+import entityChangesService from '../services/entity_changes.js'
+import csurf from 'csurf';
+import { createPartialContentHandler } from 'express-partial-content';
+import rateLimit from 'express-rate-limit';
+import AbstractBeccaEntity from '../becca/entities/abstract_becca_entity.js'
+import NotFoundError from '../errors/not_found_error.js'
+import ValidationError from '../errors/validation_error.js'
 
 // page routes
-const setupRoute = require('./setup');
-const loginRoute = require('./login');
-const indexRoute = require('./index');
+import setupRoute from './setup.js'
+
+import loginRoute from './login.js'
+import indexRoute from './index.js'
 
 // API routes
-const treeApiRoute = require('./api/tree');
-const notesApiRoute = require('./api/notes');
-const branchesApiRoute = require('./api/branches');
-const attachmentsApiRoute = require('./api/attachments');
-const autocompleteApiRoute = require('./api/autocomplete');
-const cloningApiRoute = require('./api/cloning');
-const revisionsApiRoute = require('./api/revisions');
-const recentChangesApiRoute = require('./api/recent_changes');
-const optionsApiRoute = require('./api/options');
-const passwordApiRoute = require('./api/password');
-const syncApiRoute = require('./api/sync');
-const loginApiRoute = require('./api/login');
-const recentNotesRoute = require('./api/recent_notes');
-const appInfoRoute = require('./api/app_info');
-const exportRoute = require('./api/export');
-const importRoute = require('./api/import');
-const setupApiRoute = require('./api/setup');
-const sqlRoute = require('./api/sql');
-const databaseRoute = require('./api/database');
-const imageRoute = require('./api/image');
-const attributesRoute = require('./api/attributes');
-const scriptRoute = require('./api/script');
-const senderRoute = require('./api/sender');
-const filesRoute = require('./api/files');
-const searchRoute = require('./api/search');
-const bulkActionRoute = require('./api/bulk_action');
-const specialNotesRoute = require('./api/special_notes');
-const noteMapRoute = require('./api/note_map');
-const clipperRoute = require('./api/clipper');
-const similarNotesRoute = require('./api/similar_notes');
-const keysRoute = require('./api/keys');
-const backendLogRoute = require('./api/backend_log');
-const statsRoute = require('./api/stats');
-const fontsRoute = require('./api/fonts');
-const etapiTokensApiRoutes = require('./api/etapi_tokens');
-const relationMapApiRoute = require('./api/relation-map');
-const otherRoute = require('./api/other');
-const shareRoutes = require('../share/routes');
+import treeApiRoute from './api/tree.js'
 
-const etapiAuthRoutes = require('../etapi/auth');
-const etapiAppInfoRoutes = require('../etapi/app_info');
-const etapiAttachmentRoutes = require('../etapi/attachments');
-const etapiAttributeRoutes = require('../etapi/attributes');
-const etapiBranchRoutes = require('../etapi/branches');
-const etapiNoteRoutes = require('../etapi/notes');
-const etapiSpecialNoteRoutes = require('../etapi/special_notes');
-const etapiSpecRoute = require('../etapi/spec');
-const etapiBackupRoute = require('../etapi/backup');
+import notesApiRoute from './api/notes.js'
+import branchesApiRoute from './api/branches.js'
+import attachmentsApiRoute from './api/attachments.js'
+import autocompleteApiRoute from './api/autocomplete.js'
+import cloningApiRoute from './api/cloning.js'
+import revisionsApiRoute from './api/revisions.js'
+import recentChangesApiRoute from './api/recent_changes.js'
+import optionsApiRoute from './api/options.js'
+import passwordApiRoute from './api/password.js'
+import syncApiRoute from './api/sync.js'
+import loginApiRoute from './api/login.js'
+import recentNotesRoute from './api/recent_notes.js'
+import appInfoRoute from './api/app_info.js'
+import exportRoute from './api/export.js'
+import importRoute from './api/import.js'
+import setupApiRoute from './api/setup.js'
+import sqlRoute from './api/sql.js'
+import databaseRoute from './api/database.js'
+import imageRoute from './api/image.js'
+import attributesRoute from './api/attributes.js'
+import scriptRoute from './api/script.js'
+import senderRoute from './api/sender.js'
+import filesRoute from './api/files.js'
+import searchRoute from './api/search.js'
+import bulkActionRoute from './api/bulk_action.js'
+import specialNotesRoute from './api/special_notes.js'
+import noteMapRoute from './api/note_map.js'
+import clipperRoute from './api/clipper.js'
+import similarNotesRoute from './api/similar_notes.js'
+import keysRoute from './api/keys.js'
+import backendLogRoute from './api/backend_log.js'
+import statsRoute from './api/stats.js'
+import fontsRoute from './api/fonts.js'
+import etapiTokensApiRoutes from './api/etapi_tokens.js'
+import relationMapApiRoute from './api/relation_map.js';
+import otherRoute from './api/other.js'
+import shareRoutes from '../share/routes.js'
+import etapiAuthRoutes from '../etapi/auth.js'
+import etapiAppInfoRoutes from '../etapi/app_info.js'
+import etapiAttachmentRoutes from '../etapi/attachments.js'
+import etapiAttributeRoutes from '../etapi/attributes.js'
+import etapiBranchRoutes from '../etapi/branches.js'
+import etapiNoteRoutes from '../etapi/notes.js'
+import etapiSpecialNoteRoutes from '../etapi/special_notes.js'
+import etapiSpecRoute from '../etapi/spec.js'
+import etapiBackupRoute from '../etapi/backup.js'
+const router = express.Router();
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -510,6 +511,6 @@ function createUploadMiddleware() {
     return multer(multerOptions).single('upload');
 }
 
-module.exports = {
+export default {
     register
 };

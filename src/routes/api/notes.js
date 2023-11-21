@@ -1,15 +1,15 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const eraseService = require('../../services/erase');
-const treeService = require('../../services/tree');
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const becca = require("../../becca/becca");
-const ValidationError = require("../../errors/validation_error");
-const blobService = require("../../services/blob");
+import noteService from '../../services/notes.js'
+import eraseService from '../../services/erase.js'
+import treeService from '../../services/tree.js'
+import sql from '../../services/sql.js'
+import utils from '../../services/utils.js'
+import log from '../../services/log.js'
+import TaskContext from '../../services/task_context.js'
+import becca from '../../becca/becca.js'
+import ValidationError from '../../errors/validation_error.js'
+import blobService from '../../services/blob.js'
 
 function getNote(req) {
     return becca.getNoteOrThrow(req.params.noteId);
@@ -236,7 +236,7 @@ function convertNoteToAttachment(req) {
     };
 }
 
-module.exports = {
+export default {
     getNote,
     getNoteBlob,
     getNoteMetadata,

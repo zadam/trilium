@@ -1,17 +1,21 @@
 'use strict';
 
-const {app, globalShortcut, BrowserWindow} = require('electron');
-const sqlInit = require('./src/services/sql_init');
-const appIconService = require('./src/services/app_icon');
-const windowService = require('./src/services/window');
-const tray = require('./src/services/tray');
+import { app, globalShortcut, BrowserWindow } from 'electron';
+import sqlInit from './src/services/sql_init.js';
+import appIconService from './src/services/app_icon.js';
+import windowService from './src/services/window.js';
+import tray from './src/services/tray.js';
+import electron_debug from "electron-debug";
+import electron_dl from "electron-dl";
+
+import './src/www.js';
 
 // Adds debug features like hotkeys for triggering dev tools and reload
-require('electron-debug')();
+electron_debug();
 
 appIconService.installLocalAppIcon();
 
-require('electron-dl')({ saveAs: true });
+electron_dl({ saveAs: true });
 
 // needed for excalidraw export https://github.com/zadam/trilium/issues/4271
 app.commandLine.appendSwitch("enable-experimental-web-platform-features");
@@ -58,5 +62,3 @@ app.on('will-quit', () => {
 
 // this is to disable electron warning spam in the dev console (local development only)
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
-
-require('./src/www');

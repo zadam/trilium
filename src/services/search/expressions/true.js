@@ -1,6 +1,6 @@
 "use strict";
 
-const Expression = require('./expression');
+import Expression from './expression.js'
 
 class TrueExp extends Expression {
     execute(inputNoteSet, executionContext, searchContext) {
@@ -8,4 +8,4 @@ class TrueExp extends Expression {
     }
 }
 
-module.exports = TrueExp;
+export default TrueExp;

@@ -1,17 +1,17 @@
 "use strict";
 
-const becca = require('../becca/becca');
-const log = require('./log');
-const protectedSessionService = require('./protected_session');
-const noteService = require('./notes');
-const optionService = require('./options');
-const sql = require('./sql');
-const jimp = require('jimp');
-const imageType = require('image-type');
-const sanitizeFilename = require('sanitize-filename');
-const isSvg = require('is-svg');
-const isAnimated = require('is-animated');
-const htmlSanitizer = require("./html_sanitizer");
+import becca from '../becca/becca.js'
+import log from './log.js'
+import protectedSessionService from './protected_session.js'
+import optionService from './options.js'
+import sql from './sql.js'
+import jimp from 'jimp';
+import imageType from 'image-type';
+import sanitizeFilename from 'sanitize-filename';
+import isSvg from 'is-svg';
+import isAnimated from 'is-animated';
+import htmlSanitizer from './html_sanitizer.js'
+import noteService from '../services/notes.js'
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -154,7 +154,6 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     setTimeout(() => {
         sql.transactional(() => {
             const note = becca.getNoteOrThrow(noteId);
-            const noteService = require("../services/notes");
             noteService.asyncPostProcessContent(note, note.getContent()); // to mark an unused attachment for deletion
         });
     }, 5000);
@@ -231,7 +230,7 @@ async function resize(buffer, quality) {
     return resultBuffer;
 }
 
-module.exports = {
+export default {
     saveImage,
     saveImageToAttachment,
     updateImage

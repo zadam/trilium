@@ -1,24 +1,28 @@
 "use strict";
 
-const sql = require('../services/sql');
-const eventService = require('../services/events');
-const becca = require('./becca');
-const sqlInit = require('../services/sql_init');
-const log = require('../services/log');
-const BNote = require('./entities/bnote');
-const BBranch = require('./entities/bbranch');
-const BAttribute = require('./entities/battribute');
-const BOption = require('./entities/boption');
-const BEtapiToken = require("./entities/betapi_token");
-const cls = require("../services/cls");
-const entityConstructor = require("../becca/entity_constructor");
+import sql from '../services/sql.js'
+import eventService from '../services/events.js'
+import becca from './becca.js'
+import sqlInit from '../services/sql_init.js'
+import log from '../services/log.js'
+import BNote from './entities/bnote.js'
+import BBranch from './entities/bbranch.js'
+import BAttribute from './entities/battribute.js'
+import BOption from './entities/boption.js'
+import BEtapiToken from './entities/betapi_token.js'
+import cls from '../services/cls.js'
+import entityConstructor from '../becca/entity_constructor.js'
+
+import services from '../services/options_init.js'
+
+import services0 from '../services/ws.js'
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
         cls.init(() => {
             load();
 
-            require('../services/options_init').initStartupOptions();
+            services.initStartupOptions();
 
             res();
         });
@@ -71,7 +75,7 @@ function load() {
 function reload(reason) {
     load();
 
-    require('../services/ws').reloadFrontend(reason || "becca reloaded");
+    services0.reloadFrontend(reason || "becca reloaded");
 }
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
@@ -282,7 +286,7 @@ eventService.subscribeBeccaLoader(eventService.ENTER_PROTECTED_SESSION, () => {
 
 eventService.subscribeBeccaLoader(eventService.LEAVE_PROTECTED_SESSION, load);
 
-module.exports = {
+export default {
     load,
     reload,
     beccaLoaded

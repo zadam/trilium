@@ -1,10 +1,10 @@
-const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
-const fs = require("fs-extra");
-const dataDir = require("./data_dir");
-const dateUtils = require("./date_utils");
-const Database = require("better-sqlite3");
-const sql = require("./sql");
-const path = require("path");
+import BUILTIN_ATTRIBUTES from './builtin_attributes.js'
+import fs from 'fs-extra';
+import dataDir from './data_dir.js'
+import dateUtils from './date_utils.js'
+import Database from 'better-sqlite3';
+import sql from './sql.js'
+import path from 'path';
 
 function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
@@ -84,8 +84,8 @@ function getExistingAnonymizedDatabases() {
         }));
 }
 
-module.exports = {
+export default {
     getFullAnonymizationScript,
     createAnonymizedCopy,
     getExistingAnonymizedDatabases
-}
+};

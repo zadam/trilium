@@ -1,12 +1,12 @@
 "use strict";
 
-const zipExportService = require('../../services/export/zip');
-const singleExportService = require('../../services/export/single');
-const opmlExportService = require('../../services/export/opml');
-const becca = require('../../becca/becca');
-const TaskContext = require("../../services/task_context");
-const log = require("../../services/log");
-const NotFoundError = require("../../errors/not_found_error");
+import zipExportService from '../../services/export/zip.js'
+import singleExportService from '../../services/export/single.js'
+import opmlExportService from '../../services/export/opml.js'
+import becca from '../../becca/becca.js'
+import TaskContext from '../../services/task_context.js'
+import log from '../../services/log.js'
+import NotFoundError from '../../errors/not_found_error.js'
 
 function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;
@@ -50,6 +50,6 @@ function exportBranch(req, res) {
     }
 }
 
-module.exports = {
+export default {
     exportBranch
 };

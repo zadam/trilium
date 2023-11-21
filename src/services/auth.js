@@ -1,12 +1,12 @@
 "use strict";
 
-const etapiTokenService = require("./etapi_tokens");
-const log = require('./log');
-const sqlInit = require('./sql_init');
-const utils = require('./utils');
-const passwordEncryptionService = require('./encryption/password_encryption');
-const config = require('./config');
-const passwordService = require("./encryption/password");
+import etapiTokenService from './etapi_tokens.js'
+import log from './log.js'
+import sqlInit from './sql_init.js'
+import utils from './utils.js'
+import passwordEncryptionService from './encryption/password_encryption.js'
+import config from './config.js'
+import passwordService from './encryption/password.js'
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
@@ -124,7 +124,7 @@ function checkCredentials(req, res, next) {
     }
 }
 
-module.exports = {
+export default {
     checkAuth,
     checkApiAuth,
     checkAppInitialized,

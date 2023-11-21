@@ -1,14 +1,16 @@
 "use strict";
 
-const utils = require('../../services/utils');
-const sql = require('../../services/sql');
-const entityChangesService = require('../../services/entity_changes');
-const eventService = require("../../services/events");
-const dateUtils = require("../../services/date_utils");
-const cls = require("../../services/cls");
-const log = require("../../services/log");
-const protectedSessionService = require("../../services/protected_session");
-const blobService = require("../../services/blob");
+import utils from '../../services/utils.js'
+import sql from '../../services/sql.js'
+import entityChangesService from '../../services/entity_changes.js'
+import eventService from '../../services/events.js'
+import dateUtils from '../../services/date_utils.js'
+import cls from '../../services/cls.js'
+import log from '../../services/log.js'
+import protectedSessionService from '../../services/protected_session.js'
+import blobService from '../../services/blob.js'
+
+import becca0 from '../becca.js'
 
 let becca = null;
 
@@ -34,7 +36,7 @@ class AbstractBeccaEntity {
      */
     get becca() {
         if (!becca) {
-            becca = require('../becca');
+            becca = becca0;
         }
 
         return becca;
@@ -306,4 +308,4 @@ class AbstractBeccaEntity {
     }
 }
 
-module.exports = AbstractBeccaEntity;
+export default AbstractBeccaEntity;

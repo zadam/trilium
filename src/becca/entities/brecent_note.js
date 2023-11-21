@@ -1,7 +1,7 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
+import dateUtils from '../../services/date_utils.js'
+import AbstractBeccaEntity from './abstract_becca_entity.js'
 
 /**
  * RecentNote represents recently visited note.
@@ -32,4 +32,4 @@ class BRecentNote extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BRecentNote;
+export default BRecentNote;

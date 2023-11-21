@@ -4,11 +4,18 @@
  * @module sql
  */
 
-const log = require('./log');
-const Database = require('better-sqlite3');
-const dataDir = require('./data_dir');
-const cls = require('./cls');
-const fs = require("fs-extra");
+import log from './log.js'
+
+import Database from 'better-sqlite3';
+import dataDir from './data_dir.js'
+import cls from './cls.js'
+import fs from 'fs-extra';
+
+import ws from './ws.js'
+
+import becca from '../becca/becca_loader.js'
+
+import entity_changes from './entity_changes.js'
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
@@ -242,7 +249,7 @@ function transactional(func) {
         const ret = dbConnection.transaction(func).deferred();
 
         if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
-            require('./ws').sendTransactionEntityChangesToAllClients();
+            ws.sendTransactionEntityChangesToAllClients();
         }
 
         return ret;
@@ -253,11 +260,11 @@ function transactional(func) {
         if (entityChangeIds.length > 0) {
             log.info("Transaction rollback dirtied the becca, forcing reload.");
 
-            require('../becca/becca_loader').load();
+            becca.load();
         }
 
         // the maxEntityChangeId has been incremented during failed transaction, need to recalculate
-        require('./entity_changes').recalculateMaxEntityChangeId();
+        entity_changes.recalculateMaxEntityChangeId();
 
         throw e;
     }
@@ -308,7 +315,7 @@ function disableSlowQueryLogging(cb) {
     }
 }
 
-module.exports = {
+export default {
     dbConnection,
     insert,
     replace,

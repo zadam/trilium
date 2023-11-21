@@ -1,7 +1,8 @@
-const session = require("express-session");
-const sessionSecret = require("../services/session_secret");
-const dataDir = require("../services/data_dir");
-const FileStore = require('session-file-store')(session);
+import session from 'express-session';
+import sessionSecret from '../services/session_secret.js'
+import dataDir from '../services/data_dir.js'
+import FileStoreFactory from 'session-file-store';
+const FileStore = FileStoreFactory(session);
 
 const sessionParser = session({
     secret: sessionSecret,
@@ -19,4 +20,4 @@ const sessionParser = session({
     })
 });
 
-module.exports = sessionParser;
+export default sessionParser;

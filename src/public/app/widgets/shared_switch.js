@@ -40,7 +40,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
         if (this.note.getParentBranches().length === 1) {
             const text = "This note exists only as a shared note, unsharing would delete it. Do you want to continue and thus delete this note?";
 
-            if (!await dialogService.confirm(text)) {
+            if (!(await dialogService.confirm(text))) {
                 return;
             }
         }

@@ -1,4 +1,4 @@
-const ipcMain = require('electron').ipcMain;
+import { ipcMain } from 'electron';
 
 function init(app) {
     ipcMain.on('server-request', (event, arg) => {
@@ -45,4 +45,4 @@ function init(app) {
     });
 }
 
-module.exports = init;
+export default init;

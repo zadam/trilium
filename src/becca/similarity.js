@@ -1,8 +1,8 @@
-const becca = require('./becca');
-const log = require('../services/log');
-const beccaService = require('./becca_service');
-const dateUtils = require('../services/date_utils');
-const {JSDOM} = require("jsdom");
+import becca from './becca.js'
+import log from '../services/log.js'
+import beccaService from './becca_service.js'
+import dateUtils from '../services/date_utils.js'
+import { JSDOM } from 'jsdom';
 
 const DEBUG = false;
 
@@ -35,7 +35,7 @@ const IGNORED_ATTR_NAMES = [
 function filterUrlValue(value) {
     return value
         .replace(/https?:\/\//ig, "")
-        .replace(/www\./ig, "")
+        .replace(/www.js\./ig, "")
         .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 
@@ -456,6 +456,6 @@ function setImmediatePromise() {
     });
 }
 
-module.exports = {
+export default {
     findSimilarNotes
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-const Expression = require('./expression');
+import Expression from './expression.js'
 
 class NotExp extends Expression {
     constructor(subExpression) {
@@ -16,4 +16,4 @@ class NotExp extends Expression {
     }
 }
 
-module.exports = NotExp;
+export default NotExp;

@@ -1,5 +1,5 @@
-const becca = require("../../becca/becca");
-const bulkActionService = require("../../services/bulk_actions");
+import becca from '../../becca/becca.js'
+import bulkActionService from '../../services/bulk_actions.js'
 
 function execute(req) {
     const {noteIds, includeDescendants} = req.body;
@@ -42,7 +42,7 @@ function getAffectedNoteIds(noteIds, includeDescendants) {
     return affectedNoteIds;
 }
 
-module.exports = {
+export default {
     execute,
     getAffectedNoteCount
 };

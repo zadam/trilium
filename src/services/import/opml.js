@@ -1,9 +1,9 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const parseString = require('xml2js').parseString;
-const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require('../html_sanitizer');
+import noteService from '../../services/notes.js'
+import { parseString } from 'xml2js';
+import protectedSessionService from '../protected_session.js'
+import htmlSanitizer from '../html_sanitizer.js'
 
 /**
  * @param {TaskContext} taskContext
@@ -91,6 +91,6 @@ function toHtml(text) {
     return `<p>${text.replace(/(?:\r\n|\r|\n)/g, '</p><p>')}</p>`;
 }
 
-module.exports = {
+export default {
     importOpml
 };
