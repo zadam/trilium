@@ -28,7 +28,7 @@ const ESLINT = {js: ["libraries/eslint.js"]};
 const RELATION_MAP = {
     js: [
         "libraries/jsplumb.js",
-        "libraries/panzoom.js"
+        "node_modules/panzoom/dist/panzoom.min.js"
     ],
     css: [
         "stylesheets/relation_map.css"

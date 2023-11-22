@@ -64,6 +64,8 @@ function register(app) {
     app.use(`/${assetPath}/node_modules/print-this/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/print-this/')));
 
     app.use(`/${assetPath}/node_modules/split.js/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/split.js/dist/')));
+
+    app.use(`/${assetPath}/node_modules/panzoom/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/panzoom/dist/')));
 }
 
 module.exports = {
