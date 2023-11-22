@@ -58,6 +58,10 @@ function register(app) {
     app.use(`/${assetPath}/node_modules/mermaid/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/mermaid/dist/')));
 
     app.use(`/${assetPath}/node_modules/jquery/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/jquery/dist/')));
+
+    app.use(`/${assetPath}/node_modules/jquery-hotkeys/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/jquery-hotkeys/')));
+
+    app.use(`/${assetPath}/node_modules/print-this/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/print-this/')));
 }
 
 module.exports = {

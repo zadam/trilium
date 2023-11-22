@@ -258,10 +258,11 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
                         .append($("<h2>").text(this.note.title))
                         .append($promotedAttributes)
                         .prop('outerHTML'),
+
             footer: `
-<script src="${assetPath}/libraries/katex/katex.min.js"></script>
-<script src="${assetPath}/libraries/katex/mhchem.min.js"></script>
-<script src="${assetPath}/libraries/katex/auto-render.min.js"></script>
+<script src="${assetPath}/node_modules/katex/dist/katex.min.js"></script>
+<script src="${assetPath}/node_modules/katex/dist/contrib/mhchem.min.js"></script>
+<script src="${assetPath}/node_modules/katex/dist/contrib/auto-render.min.js"></script>
 <script>
     document.body.className += ' ck-content printed-content';
     
@@ -273,7 +274,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
                 `${assetPath}/libraries/codemirror/codemirror.css`,
                 `${assetPath}/libraries/ckeditor/ckeditor-content.css`,
                 `${assetPath}/libraries/bootstrap/css/bootstrap.min.css`,
-                `${assetPath}/libraries/katex/katex.min.css`,
+                `${assetPath}/node_modules/katex/dist/katex.min.css`,
                 `${assetPath}/stylesheets/print.css`,
                 `${assetPath}/stylesheets/relation_map.css`,
                 `${assetPath}/stylesheets/ckeditor-theme.css`

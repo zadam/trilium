@@ -35,7 +35,7 @@ const RELATION_MAP = {
     ]
 };
 
-const PRINT_THIS = {js: ["libraries/printThis.js"]};
+const PRINT_THIS = {js: ["node_modules/print-this/printThis.js"]};
 
 const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
 
