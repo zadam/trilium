@@ -55,7 +55,7 @@ const FORCE_GRAPH = {
 };
 
 const MERMAID = {
-    js: [ "libraries/mermaid.min.js" ]
+    js: [ "node_modules/mermaid/dist/mermaid.min.js" ]
 }
 
 const EXCALIDRAW = {

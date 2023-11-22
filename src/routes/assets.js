@@ -54,6 +54,8 @@ function register(app) {
 
     app.use(`/${assetPath}/node_modules/boxicons/css/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/boxicons/css/')));
     app.use(`/${assetPath}/node_modules/boxicons/fonts/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/boxicons/fonts/')));
+
+    app.use(`/${assetPath}/node_modules/mermaid/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/mermaid/dist/')));
 }
 
 module.exports = {
