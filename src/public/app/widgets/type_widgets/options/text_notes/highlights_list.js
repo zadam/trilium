@@ -17,7 +17,7 @@ const TPL = `
     <br/><br/>
     <h5>Highlights List visibility</h5>
 
-    <p>You can hide the hightlights widget per-note by adding a <code>#hideHighlightWidget</code> label.</p>
+    <p>You can hide the highlights widget per-note by adding a <code>#hideHighlightWidget</code> label.</p>
 </div>`;
 
 export default class HighlightsListOptions extends OptionsWidget {
