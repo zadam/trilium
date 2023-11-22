@@ -74,6 +74,7 @@
     "is-svg": "4.3.2",
     "jimp": "0.22.10",
     "joplin-turndown-plugin-gfm": "1.0.12",
+    "jquery": "^3.7.1",
     "jsdom": "22.1.0",
     "katex": "0.16.9",
     "marked": "9.1.6",
