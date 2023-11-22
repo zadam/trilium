@@ -51,7 +51,7 @@ const WHEEL_ZOOM = {
 };
 
 const FORCE_GRAPH = {
-    js: [ "libraries/force-graph.min.js"]
+    js: [ "node_modules/force-graph/dist/force-graph.min.js"]
 };
 
 const MERMAID = {

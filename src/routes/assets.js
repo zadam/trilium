@@ -50,6 +50,7 @@ function register(app) {
       persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/')));
 
     app.use(`/${assetPath}/node_modules/dayjs/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/dayjs/')));
+    app.use(`/${assetPath}/node_modules/force-graph/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/force-graph/dist/')));
 }
 
 module.exports = {
