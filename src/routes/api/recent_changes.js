@@ -1,9 +1,9 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const protectedSessionService = require('../../services/protected_session');
-const noteService = require('../../services/notes');
-const becca = require("../../becca/becca");
+const sql = require('../../services/sql.js');
+const protectedSessionService = require('../../services/protected_session.js');
+const noteService = require('../../services/notes.js');
+const becca = require('../../becca/becca.js');
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;

@@ -1,11 +1,11 @@
-const eventService = require('./events');
-const scriptService = require('./script');
-const treeService = require('./tree');
-const noteService = require('./notes');
-const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute');
-const hiddenSubtreeService = require("./hidden_subtree");
-const oneTimeTimer = require("./one_time_timer");
+const eventService = require('./events.js');
+const scriptService = require('./script.js');
+const treeService = require('./tree.js');
+const noteService = require('./notes.js');
+const becca = require('../becca/becca.js');
+const BAttribute = require('../becca/entities/battribute.js');
+const hiddenSubtreeService = require('./hidden_subtree.js');
+const oneTimeTimer = require('./one_time_timer.js');
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {

@@ -1,9 +1,9 @@
-const log = require("./log");
-const revisionService = require("./revisions");
-const becca = require("../becca/becca");
-const cloningService = require("./cloning");
-const branchService = require("./branches");
-const utils = require("./utils");
+const log = require('./log.js');
+const revisionService = require('./revisions.js');
+const becca = require('../becca/becca.js');
+const cloningService = require('./cloning.js');
+const branchService = require('./branches.js');
+const utils = require('./utils.js');
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {

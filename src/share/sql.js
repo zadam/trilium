@@ -1,7 +1,7 @@
 "use strict";
 
 const Database = require('better-sqlite3');
-const dataDir = require('../services/data_dir');
+const dataDir = require('../services/data_dir.js');
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH, { readonly: true });
 

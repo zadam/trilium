@@ -1,12 +1,12 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const becca = require('../becca');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const sql = require("../../services/sql");
-const BAttachment = require("./battachment");
+const protectedSessionService = require('../../services/protected_session.js');
+const utils = require('../../services/utils.js');
+const dateUtils = require('../../services/date_utils.js');
+const becca = require('../becca.js');
+const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+const sql = require('../../services/sql.js');
+const BAttachment = require('./battachment.js');
 
 /**
  * Revision represents a snapshot of note's title and content at some point in the past.

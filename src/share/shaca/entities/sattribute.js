@@ -1,6 +1,6 @@
 "use strict";
 
-const AbstractShacaEntity = require('./abstract_shaca_entity');
+const AbstractShacaEntity = require('./abstract_shaca_entity.js');
 
 class SAttribute extends AbstractShacaEntity {
     constructor([attributeId, noteId, type, name, value, isInheritable, position]) {

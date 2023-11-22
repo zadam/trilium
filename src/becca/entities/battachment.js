@@ -1,11 +1,11 @@
 "use strict";
 
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const sql = require("../../services/sql");
-const protectedSessionService = require("../../services/protected_session");
-const log = require("../../services/log");
+const utils = require('../../services/utils.js');
+const dateUtils = require('../../services/date_utils.js');
+const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+const sql = require('../../services/sql.js');
+const protectedSessionService = require('../../services/protected_session.js');
+const log = require('../../services/log.js');
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
@@ -37,7 +37,7 @@ class BAttachment extends AbstractBeccaEntity {
 
         /** @type {string} */
         this.attachmentId = row.attachmentId;
-        /** 
+        /**
          * either noteId or revisionId to which this attachment belongs
          * @type {string}
          */
@@ -153,7 +153,7 @@ class BAttachment extends AbstractBeccaEntity {
             throw new Error(`Cannot convert protected attachment outside of protected session`);
         }
 
-        const noteService = require('../../services/notes');
+        const noteService = require('../../services/notes.js');
 
         const { note, branch } = noteService.createNewNote({
             parentNoteId: this.ownerId,

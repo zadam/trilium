@@ -1,13 +1,13 @@
 "use strict";
 
-const noteService = require('./notes');
-const attributeService = require('./attributes');
-const dateUtils = require('./date_utils');
-const sql = require('./sql');
-const protectedSessionService = require('./protected_session');
-const searchService = require('../services/search/services/search');
-const SearchContext = require('../services/search/search_context');
-const hoistedNoteService = require("./hoisted_note");
+const noteService = require('./notes.js');
+const attributeService = require('./attributes.js');
+const dateUtils = require('./date_utils.js');
+const sql = require('./sql.js');
+const protectedSessionService = require('./protected_session.js');
+const searchService = require('../services/search/services/search.js');
+const SearchContext = require('../services/search/search_context.js');
+const hoistedNoteService = require('./hoisted_note.js');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';

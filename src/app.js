@@ -4,11 +4,11 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const compression = require('compression');
-const sessionParser = require('./routes/session_parser');
-const utils = require('./services/utils');
+const sessionParser = require('./routes/session_parser.js');
+const utils = require('./services/utils.js');
 
-require('./services/handlers');
-require('./becca/becca_loader');
+require('./services/handlers.js');
+require('./becca/becca_loader.js');
 
 const app = express();
 
@@ -37,21 +37,21 @@ app.use(`/robots.txt`, express.static(path.join(__dirname, 'public/robots.txt'))
 app.use(sessionParser);
 app.use(favicon(`${__dirname}/../images/app-icons/win/icon.ico`));
 
-require('./routes/assets').register(app);
-require('./routes/routes').register(app);
-require('./routes/custom').register(app);
-require('./routes/error_handlers').register(app);
+require('./routes/assets.js').register(app);
+require('./routes/routes.js').register(app);
+require('./routes/custom.js').register(app);
+require('./routes/error_handlers.js').register(app);
 
 // triggers sync timer
-require('./services/sync');
+require('./services/sync.js');
 
 // triggers backup timer
-require('./services/backup');
+require('./services/backup.js');
 
 // trigger consistency checks timer
-require('./services/consistency_checks');
+require('./services/consistency_checks.js');
 
-require('./services/scheduler');
+require('./services/scheduler.js');
 
 if (utils.isElectron()) {
     require('@electron/remote/main').initialize();

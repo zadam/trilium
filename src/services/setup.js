@@ -1,12 +1,12 @@
-const syncService = require('./sync');
-const log = require('./log');
-const sqlInit = require('./sql_init');
-const optionService = require('./options');
-const syncOptions = require('./sync_options');
-const request = require('./request');
-const appInfo = require('./app_info');
-const utils = require('./utils');
-const becca = require("../becca/becca");
+const syncService = require('./sync.js');
+const log = require('./log.js');
+const sqlInit = require('./sql_init.js');
+const optionService = require('./options.js');
+const syncOptions = require('./sync_options.js');
+const request = require('./request.js');
+const appInfo = require('./app_info.js');
+const utils = require('./utils.js');
+const becca = require('../becca/becca.js');
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');

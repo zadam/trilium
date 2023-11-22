@@ -1,20 +1,20 @@
 "use strict";
 
-const BAttribute = require('../../becca/entities/battribute');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
-const BBranch = require('../../becca/entities/bbranch');
+const BAttribute = require('../../becca/entities/battribute.js');
+const utils = require('../../services/utils.js');
+const log = require('../../services/log.js');
+const noteService = require('../../services/notes.js');
+const attributeService = require('../../services/attributes.js');
+const BBranch = require('../../becca/entities/bbranch.js');
 const path = require('path');
-const protectedSessionService = require('../protected_session');
-const mimeService = require("./mime");
-const treeService = require("../tree");
+const protectedSessionService = require('../protected_session.js');
+const mimeService = require('./mime.js');
+const treeService = require('../tree.js');
 const yauzl = require("yauzl");
-const htmlSanitizer = require('../html_sanitizer');
-const becca = require("../../becca/becca");
-const BAttachment = require("../../becca/entities/battachment");
-const markdownService = require("./markdown");
+const htmlSanitizer = require('../html_sanitizer.js');
+const becca = require('../../becca/becca.js');
+const BAttachment = require('../../becca/entities/battachment.js');
+const markdownService = require('./markdown.js');
 
 /**
  * @param {TaskContext} taskContext

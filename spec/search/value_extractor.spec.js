@@ -1,7 +1,7 @@
-const {note} = require('./becca_mocking');
-const ValueExtractor = require('../../src/services/search/value_extractor');
-const becca = require('../../src/becca/becca');
-const SearchContext = require("../../src/services/search/search_context");
+const {note} = require('./becca_mocking.js');
+const ValueExtractor = require('../../src/services/search/value_extractor.js');
+const becca = require('../../src/becca/becca.js');
+const SearchContext = require('../../src/services/search/search_context.js');
 
 const dsc = new SearchContext();
 

@@ -1,7 +1,7 @@
 "use strict";
 
-const passwordService = require('../../services/encryption/password');
-const ValidationError = require("../../errors/validation_error");
+const passwordService = require('../../services/encryption/password.js');
+const ValidationError = require('../../errors/validation_error.js');
 
 function changePassword(req) {
     if (passwordService.isPasswordSet()) {

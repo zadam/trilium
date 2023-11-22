@@ -1,9 +1,9 @@
 "use strict";
 
-const sqlInit = require('../../services/sql_init');
-const setupService = require('../../services/setup');
-const log = require('../../services/log');
-const appInfo = require('../../services/app_info');
+const sqlInit = require('../../services/sql_init.js');
+const setupService = require('../../services/setup.js');
+const log = require('../../services/log.js');
+const appInfo = require('../../services/app_info.js');
 
 function getStatus() {
     return {

@@ -1,7 +1,7 @@
 const http = require("http");
 const ini = require("ini");
 const fs = require("fs");
-const dataDir = require("./src/services/data_dir");
+const dataDir = require('./src/services/data_dir.js');
 const config = ini.parse(fs.readFileSync(dataDir.CONFIG_INI_PATH, 'utf-8'));
 
 if (config.Network.https) {
@@ -10,8 +10,8 @@ if (config.Network.https) {
     process.exit(0);
 }
 
-const port = require('./src/services/port');
-const host = require('./src/services/host');
+const port = require('./src/services/port.js');
+const host = require('./src/services/host.js');
 
 const options = { timeout: 2000 };
 

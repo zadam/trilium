@@ -1,10 +1,10 @@
 "use strict";
 
-const scriptService = require('../../services/script');
-const attributeService = require('../../services/attributes');
-const becca = require('../../becca/becca');
-const syncService = require('../../services/sync');
-const sql = require('../../services/sql');
+const scriptService = require('../../services/script.js');
+const attributeService = require('../../services/attributes.js');
+const becca = require('../../becca/becca.js');
+const syncService = require('../../services/sync.js');
+const sql = require('../../services/sql.js');
 
 // The async/await here is very confusing, because the body.script may, but may not be async. If it is async, then we
 // need to await it and make the complete response including metadata available in a Promise, so that the route detects

@@ -1,16 +1,16 @@
 "use strict";
 
 const normalizeString = require("normalize-strings");
-const lex = require('./lex');
-const handleParens = require('./handle_parens');
-const parse = require('./parse');
-const SearchResult = require("../search_result");
-const SearchContext = require("../search_context");
-const becca = require('../../../becca/becca');
-const beccaService = require('../../../becca/becca_service');
-const utils = require('../../utils');
-const log = require('../../log');
-const hoistedNoteService = require("../../hoisted_note");
+const lex = require('./lex.js');
+const handleParens = require('./handle_parens.js');
+const parse = require('./parse.js');
+const SearchResult = require('../search_result.js');
+const SearchContext = require('../search_context.js');
+const becca = require('../../../becca/becca.js');
+const beccaService = require('../../../becca/becca_service.js');
+const utils = require('../../utils.js');
+const log = require('../../log.js');
+const hoistedNoteService = require('../../hoisted_note.js');
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;
@@ -72,7 +72,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const scriptService = require("../../script"); // to avoid circular dependency
+    const scriptService = require('../../script.js'); // to avoid circular dependency
     const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {
@@ -90,7 +90,7 @@ function searchFromRelation(note, relationName) {
 }
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql');
+    const sql = require('../../sql.js');
 
     /**
      * This complex structure is needed to calculate total occupied space by a note. Several object instances

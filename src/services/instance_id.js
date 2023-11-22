@@ -1,4 +1,4 @@
-const utils = require('./utils');
+const utils = require('./utils.js');
 
 const instanceId = utils.randomString(12);
 

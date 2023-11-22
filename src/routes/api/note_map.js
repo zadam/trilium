@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require("../../becca/becca");
+const becca = require('../../becca/becca.js');
 const { JSDOM } = require("jsdom");
 
 function buildDescendantCountMap(noteIdsToCount) {

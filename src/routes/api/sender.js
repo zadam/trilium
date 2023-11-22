@@ -1,10 +1,10 @@
 "use strict";
 
 const imageType = require('image-type');
-const imageService = require('../../services/image');
-const noteService = require('../../services/notes');
-const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
-const specialNotesService = require("../../services/special_notes");
+const imageService = require('../../services/image.js');
+const noteService = require('../../services/notes.js');
+const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name.js');
+const specialNotesService = require('../../services/special_notes.js');
 
 function uploadImage(req) {
     const file = req.file;

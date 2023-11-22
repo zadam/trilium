@@ -1,7 +1,7 @@
 "use strict";
 
-const utils = require('../utils');
-const becca = require("../../becca/becca");
+const utils = require('../utils.js');
+const becca = require('../../becca/becca.js');
 
 function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {

@@ -1,9 +1,9 @@
 "use strict";
 
-const sql = require('./sql');
-const utils = require('./utils');
-const log = require('./log');
-const eraseService = require("./erase");
+const sql = require('./sql.js');
+const utils = require('./utils.js');
+const log = require('./log.js');
+const eraseService = require('./erase.js');
 
 function getEntityHashes() {
     // blob erasure is not synced, we should check before each sync if there's some blob to erase

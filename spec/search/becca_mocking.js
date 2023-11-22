@@ -1,7 +1,7 @@
-const BNote = require('../../src/becca/entities/bnote');
-const BBranch = require('../../src/becca/entities/bbranch');
-const BAttribute = require('../../src/becca/entities/battribute');
-const becca = require('../../src/becca/becca');
+const BNote = require('../../src/becca/entities/bnote.js');
+const BBranch = require('../../src/becca/entities/bbranch.js');
+const BAttribute = require('../../src/becca/entities/battribute.js');
+const becca = require('../../src/becca/becca.js');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
 /** @returns {BNote} */

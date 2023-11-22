@@ -1,5 +1,5 @@
-const appInfo = require('../services/app_info');
-const eu = require("./etapi_utils");
+const appInfo = require('../services/app_info.js');
+const eu = require('./etapi_utils.js');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/app-info', (req, res, next) => {

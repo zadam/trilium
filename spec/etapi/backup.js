@@ -1,7 +1,7 @@
 const {
     describeEtapi, postEtapi,
     getEtapi,
-} = require("../support/etapi");
+} = require('../support/etapi.js');
 const {putEtapiContent} = require("../support/etapi.js");
 
 describeEtapi("backup", () => {

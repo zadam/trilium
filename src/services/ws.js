@@ -1,15 +1,15 @@
 const WebSocket = require('ws');
-const utils = require('./utils');
-const log = require('./log');
-const sql = require('./sql');
-const cls = require('./cls');
-const config = require('./config');
-const syncMutexService = require('./sync_mutex');
-const protectedSessionService = require('./protected_session');
-const becca = require("../becca/becca");
-const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
+const utils = require('./utils.js');
+const log = require('./log.js');
+const sql = require('./sql.js');
+const cls = require('./cls.js');
+const config = require('./config.js');
+const syncMutexService = require('./sync_mutex.js');
+const protectedSessionService = require('./protected_session.js');
+const becca = require('../becca/becca.js');
+const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
 
-const env = require('./env');
+const env = require('./env.js');
 if (env.isDev()) {
     const chokidar = require('chokidar');
     const debounce = require('debounce');

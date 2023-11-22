@@ -1,11 +1,11 @@
 "use strict";
 
-const BNote = require('./bnote');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
-const sql = require("../../services/sql");
-const dateUtils = require("../../services/date_utils");
-const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
-const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
+const BNote = require('./bnote.js');
+const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+const sql = require('../../services/sql.js');
+const dateUtils = require('../../services/date_utils.js');
+const promotedAttributeDefinitionParser = require('../../services/promoted_attribute_definition_parser.js');
+const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name.js');
 
 
 /**

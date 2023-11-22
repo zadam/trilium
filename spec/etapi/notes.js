@@ -7,7 +7,7 @@ const {
     getEtapiContent,
     patchEtapi, putEtapi,
     putEtapiContent
-} = require("../support/etapi");
+} = require('../support/etapi.js');
 
 describeEtapi("notes", () => {
     it("create", async () => {

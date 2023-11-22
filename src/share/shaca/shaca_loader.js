@@ -1,14 +1,14 @@
 "use strict";
 
-const sql = require('../sql');
-const shaca = require('./shaca');
-const log = require('../../services/log');
-const SNote = require('./entities/snote');
-const SBranch = require('./entities/sbranch');
-const SAttribute = require('./entities/sattribute');
-const SAttachment = require("./entities/sattachment");
-const shareRoot = require('../share_root');
-const eventService = require("../../services/events");
+const sql = require('../sql.js');
+const shaca = require('./shaca.js');
+const log = require('../../services/log.js');
+const SNote = require('./entities/snote.js');
+const SBranch = require('./entities/sbranch.js');
+const SAttribute = require('./entities/sattribute.js');
+const SAttachment = require('./entities/sattachment.js');
+const shareRoot = require('../share_root.js');
+const eventService = require('../../services/events.js');
 
 function load() {
     const start = Date.now();

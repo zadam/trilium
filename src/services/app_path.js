@@ -1,5 +1,5 @@
-const assetPath = require("./asset_path");
-const env = require("./env");
+const assetPath = require('./asset_path.js');
+const env = require('./env.js');
 
 module.exports = env.isDev()
     ? assetPath + "/app"

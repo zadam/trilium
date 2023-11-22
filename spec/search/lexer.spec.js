@@ -1,4 +1,4 @@
-const lex = require('../../src/services/search/services/lex');
+const lex = require('../../src/services/search/services/lex.js');
 
 describe("Lexer fulltext", () => {
     it("simple lexing", () => {

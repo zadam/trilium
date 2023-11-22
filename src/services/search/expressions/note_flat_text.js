@@ -1,9 +1,9 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const utils = require("../../utils");
+const Expression = require('./expression.js');
+const NoteSet = require('../note_set.js');
+const becca = require('../../../becca/becca.js');
+const utils = require('../../utils.js');
 
 class NoteFlatTextExp extends Expression {
     constructor(tokens) {
@@ -14,7 +14,7 @@ class NoteFlatTextExp extends Expression {
 
     execute(inputNoteSet, executionContext, searchContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
-        const beccaService = require('../../../becca/becca_service');
+        const beccaService = require('../../../becca/becca_service.js');
         const resultNoteSet = new NoteSet();
 
         /**

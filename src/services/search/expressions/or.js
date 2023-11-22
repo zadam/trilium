@@ -1,8 +1,8 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const TrueExp = require("./true");
+const Expression = require('./expression.js');
+const NoteSet = require('../note_set.js');
+const TrueExp = require('./true.js');
 
 class OrExp extends Expression {
     static of(subExpressions) {

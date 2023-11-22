@@ -1,8 +1,8 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+const Expression = require('./expression.js');
+const NoteSet = require('../note_set.js');
+const becca = require('../../../becca/becca.js');
 
 class RelationWhereExp extends Expression {
     constructor(relationName, subExpression) {

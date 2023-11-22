@@ -1,24 +1,24 @@
 "use strict";
 
 const html = require('html');
-const dateUtils = require('../date_utils');
+const dateUtils = require('../date_utils.js');
 const path = require('path');
 const mimeTypes = require('mime-types');
-const mdService = require('./md');
+const mdService = require('./md.js');
 const packageInfo = require('../../../package.json');
-const utils = require('../utils');
-const protectedSessionService = require('../protected_session');
+const utils = require('../utils.js');
+const protectedSessionService = require('../protected_session.js');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
-const becca = require("../../becca/becca");
-const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
+const becca = require('../../becca/becca.js');
+const RESOURCE_DIR = require('../../services/resource_dir.js').RESOURCE_DIR;
 const archiver = require('archiver');
-const log = require("../log");
-const TaskContext = require("../task_context");
-const ValidationError = require("../../errors/validation_error");
-const NoteMeta = require("../meta/note_meta");
-const AttachmentMeta = require("../meta/attachment_meta");
-const AttributeMeta = require("../meta/attribute_meta");
+const log = require('../log.js');
+const TaskContext = require('../task_context.js');
+const ValidationError = require('../../errors/validation_error.js');
+const NoteMeta = require('../meta/note_meta.js');
+const AttachmentMeta = require('../meta/attachment_meta.js');
+const AttributeMeta = require('../meta/attribute_meta.js');
 
 /**
  * @param {TaskContext} taskContext

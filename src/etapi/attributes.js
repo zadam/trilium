@@ -1,8 +1,8 @@
-const becca = require("../becca/becca");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const attributeService = require("../services/attributes");
-const v = require("./validators");
+const becca = require('../becca/becca.js');
+const eu = require('./etapi_utils.js');
+const mappers = require('./mappers.js');
+const attributeService = require('../services/attributes.js');
+const v = require('./validators.js');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {

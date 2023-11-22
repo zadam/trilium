@@ -1,4 +1,4 @@
-const etapiTokenService = require("../../services/etapi_tokens");
+const etapiTokenService = require('../../services/etapi_tokens.js');
 
 function getTokens() {
     const tokens = etapiTokenService.getTokens();

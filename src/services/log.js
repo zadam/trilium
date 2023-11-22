@@ -1,8 +1,8 @@
 "use strict";
 
 const fs = require('fs');
-const dataDir = require('./data_dir');
-const cls = require('./cls');
+const dataDir = require('./data_dir.js');
+const cls = require('./cls.js');
 
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);

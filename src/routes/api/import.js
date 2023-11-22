@@ -1,16 +1,16 @@
 "use strict";
 
-const enexImportService = require('../../services/import/enex');
-const opmlImportService = require('../../services/import/opml');
-const zipImportService = require('../../services/import/zip');
-const singleImportService = require('../../services/import/single');
-const cls = require('../../services/cls');
+const enexImportService = require('../../services/import/enex.js');
+const opmlImportService = require('../../services/import/opml.js');
+const zipImportService = require('../../services/import/zip.js');
+const singleImportService = require('../../services/import/single.js');
+const cls = require('../../services/cls.js');
 const path = require('path');
-const becca = require('../../becca/becca');
-const beccaLoader = require('../../becca/becca_loader');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const ValidationError = require("../../errors/validation_error");
+const becca = require('../../becca/becca.js');
+const beccaLoader = require('../../becca/becca_loader.js');
+const log = require('../../services/log.js');
+const TaskContext = require('../../services/task_context.js');
+const ValidationError = require('../../errors/validation_error.js');
 
 async function importNotesToBranch(req) {
     const {parentNoteId} = req.params;

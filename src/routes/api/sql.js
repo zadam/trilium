@@ -1,7 +1,7 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const becca = require("../../becca/becca");
+const sql = require('../../services/sql.js');
+const becca = require('../../becca/becca.js');
 
 function getSchema() {
     const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);

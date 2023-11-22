@@ -1,7 +1,7 @@
 const {
     describeEtapi, postEtapi,
     postEtapiContent,
-} = require("../support/etapi");
+} = require('../support/etapi.js');
 const fs = require("fs");
 const path = require("path");
 const {getEtapiContent} = require("../support/etapi.js");

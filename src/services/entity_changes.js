@@ -1,11 +1,11 @@
-const sql = require('./sql');
-const dateUtils = require('./date_utils');
-const log = require('./log');
-const cls = require('./cls');
-const utils = require('./utils');
-const instanceId = require('./instance_id');
-const becca = require("../becca/becca");
-const blobService = require("../services/blob");
+const sql = require('./sql.js');
+const dateUtils = require('./date_utils.js');
+const log = require('./log.js');
+const cls = require('./cls.js');
+const utils = require('./utils.js');
+const instanceId = require('./instance_id.js');
+const becca = require('../becca/becca.js');
+const blobService = require('../services/blob.js');
 
 let maxEntityChangeId = 0;
 
@@ -53,7 +53,7 @@ function putNoteReorderingEntityChange(parentNoteId, componentId) {
         instanceId
     });
 
-    const eventService = require('./events');
+    const eventService = require('./events.js');
 
     eventService.emit(eventService.ENTITY_CHANGED, {
         entityName: 'note_reordering',

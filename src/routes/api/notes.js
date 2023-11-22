@@ -1,15 +1,15 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const eraseService = require('../../services/erase');
-const treeService = require('../../services/tree');
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const becca = require("../../becca/becca");
-const ValidationError = require("../../errors/validation_error");
-const blobService = require("../../services/blob");
+const noteService = require('../../services/notes.js');
+const eraseService = require('../../services/erase.js');
+const treeService = require('../../services/tree.js');
+const sql = require('../../services/sql.js');
+const utils = require('../../services/utils.js');
+const log = require('../../services/log.js');
+const TaskContext = require('../../services/task_context.js');
+const becca = require('../../becca/becca.js');
+const ValidationError = require('../../errors/validation_error.js');
+const blobService = require('../../services/blob.js');
 
 function getNote(req) {
     return becca.getNoteOrThrow(req.params.noteId);

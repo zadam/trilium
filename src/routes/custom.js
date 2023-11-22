@@ -1,9 +1,9 @@
-const log = require('../services/log');
-const fileService = require('./api/files');
-const scriptService = require('../services/script');
-const cls = require('../services/cls');
-const sql = require("../services/sql");
-const becca = require("../becca/becca");
+const log = require('../services/log.js');
+const fileService = require('./api/files.js');
+const scriptService = require('../services/script.js');
+const cls = require('../services/cls.js');
+const sql = require('../services/sql.js');
+const becca = require('../becca/becca.js');
 
 function handleRequest(req, res) {
     // express puts content after first slash into 0 index element

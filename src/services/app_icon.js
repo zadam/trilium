@@ -1,12 +1,12 @@
 "use strict";
 
 const path = require('path');
-const {ELECTRON_APP_ROOT_DIR} = require("./resource_dir");
-const log = require("./log");
+const {ELECTRON_APP_ROOT_DIR} = require('./resource_dir.js');
+const log = require('./log.js');
 const os = require('os');
 const fs = require('fs');
-const config = require('./config');
-const utils = require('./utils');
+const config = require('./config.js');
+const utils = require('./utils.js');
 
 const template = `[Desktop Entry]
 Type=Application

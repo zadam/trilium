@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+const Expression = require('./expression.js');
+const NoteSet = require('../note_set.js');
 
 class OrderByAndLimitExp extends Expression {
     constructor(orderDefinitions, limit) {

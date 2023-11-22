@@ -1,7 +1,7 @@
-const assetPath = require("../services/asset_path");
+const assetPath = require('../services/asset_path.js');
 const path = require("path");
 const express = require("express");
-const env = require("../services/env");
+const env = require('../services/env.js');
 
 const persistentCacheStatic = (root, options) => {
     if (!env.isDev()) {

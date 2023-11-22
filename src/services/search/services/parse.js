@@ -1,25 +1,25 @@
 "use strict";
 
 const dayjs = require("dayjs");
-const AndExp = require('../expressions/and');
-const OrExp = require('../expressions/or');
-const NotExp = require('../expressions/not');
-const ChildOfExp = require('../expressions/child_of');
-const DescendantOfExp = require('../expressions/descendant_of');
-const ParentOfExp = require('../expressions/parent_of');
-const RelationWhereExp = require('../expressions/relation_where');
-const PropertyComparisonExp = require('../expressions/property_comparison');
-const AttributeExistsExp = require('../expressions/attribute_exists');
-const LabelComparisonExp = require('../expressions/label_comparison');
-const NoteFlatTextExp = require('../expressions/note_flat_text');
-const NoteContentFulltextExp = require('../expressions/note_content_fulltext');
-const OrderByAndLimitExp = require('../expressions/order_by_and_limit');
-const AncestorExp = require("../expressions/ancestor");
-const buildComparator = require('./build_comparator');
-const ValueExtractor = require('../value_extractor');
-const utils = require("../../utils");
-const TrueExp = require("../expressions/true");
-const IsHiddenExp = require("../expressions/is_hidden");
+const AndExp = require('../expressions/and.js');
+const OrExp = require('../expressions/or.js');
+const NotExp = require('../expressions/not.js');
+const ChildOfExp = require('../expressions/child_of.js');
+const DescendantOfExp = require('../expressions/descendant_of.js');
+const ParentOfExp = require('../expressions/parent_of.js');
+const RelationWhereExp = require('../expressions/relation_where.js');
+const PropertyComparisonExp = require('../expressions/property_comparison.js');
+const AttributeExistsExp = require('../expressions/attribute_exists.js');
+const LabelComparisonExp = require('../expressions/label_comparison.js');
+const NoteFlatTextExp = require('../expressions/note_flat_text.js');
+const NoteContentFulltextExp = require('../expressions/note_content_fulltext.js');
+const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
+const AncestorExp = require('../expressions/ancestor.js');
+const buildComparator = require('./build_comparator.js');
+const ValueExtractor = require('../value_extractor.js');
+const utils = require('../../utils.js');
+const TrueExp = require('../expressions/true.js');
+const IsHiddenExp = require('../expressions/is_hidden.js');
 
 function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => utils.removeDiacritic(t.token));

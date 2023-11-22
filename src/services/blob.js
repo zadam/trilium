@@ -1,7 +1,7 @@
-const becca = require('../becca/becca');
-const NotFoundError = require("../errors/not_found_error");
-const protectedSessionService = require("./protected_session");
-const utils = require("./utils");
+const becca = require('../becca/becca.js');
+const NotFoundError = require('../errors/not_found_error.js');
+const protectedSessionService = require('./protected_session.js');
+const utils = require('./utils.js');
 
 function getBlobPojo(entityName, entityId) {
     const entity = becca.getEntity(entityName, entityId);

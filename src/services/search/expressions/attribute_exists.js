@@ -1,8 +1,8 @@
 "use strict";
 
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const Expression = require('./expression');
+const NoteSet = require('../note_set.js');
+const becca = require('../../../becca/becca.js');
+const Expression = require('./expression.js');
 
 class AttributeExistsExp extends Expression {
     constructor(attributeType, attributeName, prefixMatch) {

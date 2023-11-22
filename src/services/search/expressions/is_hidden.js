@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+const Expression = require('./expression.js');
+const NoteSet = require('../note_set.js');
 
 /**
  * Note is hidden when all its note paths start in hidden subtree (i.e., the note is not cloned into visible tree)

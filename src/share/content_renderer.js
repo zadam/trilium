@@ -1,7 +1,7 @@
 const {JSDOM} = require("jsdom");
-const shaca = require("./shaca/shaca");
-const assetPath = require("../services/asset_path");
-const shareRoot = require('./share_root');
+const shaca = require('./shaca/shaca.js');
+const assetPath = require('../services/asset_path.js');
+const shareRoot = require('./share_root.js');
 const escapeHtml = require('escape-html');
 
 function getContent(note) {

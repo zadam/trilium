@@ -1,7 +1,7 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require("./abstract_becca_entity");
+const dateUtils = require('../../services/date_utils.js');
+const AbstractBeccaEntity = require('./abstract_becca_entity.js');
 
 /**
  * Option represents a name-value pair, either directly configurable by the user or some system property.

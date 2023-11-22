@@ -1,27 +1,27 @@
-const sql = require('./sql');
-const optionService = require('./options');
-const dateUtils = require('./date_utils');
-const entityChangesService = require('./entity_changes');
-const eventService = require('./events');
-const cls = require('../services/cls');
-const protectedSessionService = require('../services/protected_session');
-const log = require('../services/log');
-const utils = require('../services/utils');
-const revisionService = require('./revisions');
-const request = require('./request');
+const sql = require('./sql.js');
+const optionService = require('./options.js');
+const dateUtils = require('./date_utils.js');
+const entityChangesService = require('./entity_changes.js');
+const eventService = require('./events.js');
+const cls = require('../services/cls.js');
+const protectedSessionService = require('../services/protected_session.js');
+const log = require('../services/log.js');
+const utils = require('../services/utils.js');
+const revisionService = require('./revisions.js');
+const request = require('./request.js');
 const path = require('path');
 const url = require('url');
-const becca = require('../becca/becca');
-const BBranch = require('../becca/entities/bbranch');
-const BNote = require('../becca/entities/bnote');
-const BAttribute = require('../becca/entities/battribute');
-const BAttachment = require("../becca/entities/battachment");
+const becca = require('../becca/becca.js');
+const BBranch = require('../becca/entities/bbranch.js');
+const BNote = require('../becca/entities/bnote.js');
+const BAttribute = require('../becca/entities/battribute.js');
+const BAttachment = require('../becca/entities/battachment.js');
 const dayjs = require("dayjs");
-const htmlSanitizer = require("./html_sanitizer");
-const ValidationError = require("../errors/validation_error");
-const noteTypesService = require("./note_types");
+const htmlSanitizer = require('./html_sanitizer.js');
+const ValidationError = require('../errors/validation_error.js');
+const noteTypesService = require('./note_types.js');
 const fs = require("fs");
-const ws = require("./ws");
+const ws = require('./ws.js');
 const html2plaintext = require('html2plaintext')
 
 /** @param {BNote} parentNote */
@@ -493,7 +493,7 @@ async function downloadImage(noteId, imageUrl) {
         const parsedUrl = url.parse(imageUrl);
         const title = path.basename(parsedUrl.pathname);
 
-        const imageService = require('../services/image');
+        const imageService = require('../services/image.js');
         const {attachment} = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
@@ -526,7 +526,7 @@ function downloadImages(noteId, content) {
             const imageBase64 = url.substr(inlineImageMatch[0].length);
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-            const imageService = require('../services/image');
+            const imageService = require('../services/image.js');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
             const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");

@@ -1,15 +1,15 @@
-const log = require('./log');
+const log = require('./log.js');
 const fs = require('fs');
-const resourceDir = require('./resource_dir');
-const sql = require('./sql');
-const utils = require('./utils');
-const optionService = require('./options');
-const port = require('./port');
-const BOption = require('../becca/entities/boption');
-const TaskContext = require('./task_context');
-const migrationService = require('./migration');
-const cls = require('./cls');
-const config = require('./config');
+const resourceDir = require('./resource_dir.js');
+const sql = require('./sql.js');
+const utils = require('./utils.js');
+const optionService = require('./options.js');
+const port = require('./port.js');
+const BOption = require('../becca/entities/boption.js');
+const TaskContext = require('./task_context.js');
+const migrationService = require('./migration.js');
+const cls = require('./cls.js');
+const config = require('./config.js');
 
 const dbReady = utils.deferred();
 
@@ -60,10 +60,10 @@ async function createInitialDatabase() {
 
         sql.executeScript(schema);
 
-        require("../becca/becca_loader").load();
+        require('../becca/becca_loader.js').load();
 
-        const BNote = require("../becca/entities/bnote");
-        const BBranch = require("../becca/entities/bbranch");
+        const BNote = require('../becca/entities/bnote.js');
+        const BBranch = require('../becca/entities/bbranch.js');
 
         log.info("Creating root note ...");
 
@@ -83,19 +83,19 @@ async function createInitialDatabase() {
             notePosition: 10
         }).save();
 
-        const optionsInitService = require('./options_init');
+        const optionsInitService = require('./options_init.js');
 
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
-        require("./encryption/password").resetPassword();
+        require('./encryption/password.js').resetPassword();
     });
 
     log.info("Importing demo content ...");
 
     const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
 
-    const zipImportService = require("./import/zip");
+    const zipImportService = require('./import/zip.js');
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
@@ -105,7 +105,7 @@ async function createInitialDatabase() {
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        const optionService = require("./options");
+        const optionService = require('./options.js');
         optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,
@@ -131,7 +131,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require('./options_init').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
+        require('./options_init.js').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {
@@ -166,10 +166,10 @@ dbReady.then(() => {
         return;
     }
 
-    setInterval(() => require('./backup').regularBackup(), 4 * 60 * 60 * 1000);
+    setInterval(() => require('./backup.js').regularBackup(), 4 * 60 * 60 * 1000);
 
     // kickoff first backup soon after start up
-    setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
+    setTimeout(() => require('./backup.js').regularBackup(), 5 * 60 * 1000);
 
     // optimize is usually inexpensive no-op, so running it semi-frequently is not a big deal
     setTimeout(() => optimize(), 60 * 60 * 1000);

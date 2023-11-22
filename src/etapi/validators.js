@@ -1,5 +1,5 @@
-const noteTypeService = require("../services/note_types");
-const dateUtils = require("../services/date_utils");
+const noteTypeService = require('../services/note_types.js');
+const dateUtils = require('../services/date_utils.js');
 
 function mandatory(obj) {
     if (obj === undefined ) {
@@ -64,7 +64,7 @@ function isNoteId(obj) {
         return;
     }
 
-    const becca = require('../becca/becca');
+    const becca = require('../becca/becca.js');
 
     if (typeof obj !== 'string') {
         return `'${obj}' is not a valid noteId`;

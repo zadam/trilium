@@ -1,5 +1,5 @@
 const path = require('path');
-const assetPath = require('./src/services/asset_path');
+const assetPath = require('./src/services/asset_path.js');
 
 module.exports = {
     mode: 'production',

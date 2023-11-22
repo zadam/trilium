@@ -1,8 +1,8 @@
 "use strict";
 
-const BRecentNote = require('../../becca/entities/brecent_note');
-const sql = require('../../services/sql');
-const dateUtils = require('../../services/date_utils');
+const BRecentNote = require('../../becca/entities/brecent_note.js');
+const sql = require('../../services/sql.js');
+const dateUtils = require('../../services/date_utils.js');
 
 function addRecentNote(req) {
     new BRecentNote({

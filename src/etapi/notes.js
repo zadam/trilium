@@ -1,14 +1,14 @@
-const becca = require("../becca/becca");
-const utils = require("../services/utils");
-const eu = require("./etapi_utils");
-const mappers = require("./mappers");
-const noteService = require("../services/notes");
-const TaskContext = require("../services/task_context");
-const v = require("./validators");
-const searchService = require("../services/search/services/search");
-const SearchContext = require("../services/search/search_context");
-const zipExportService = require("../services/export/zip");
-const zipImportService = require("../services/import/zip");
+const becca = require('../becca/becca.js');
+const utils = require('../services/utils.js');
+const eu = require('./etapi_utils.js');
+const mappers = require('./mappers.js');
+const noteService = require('../services/notes.js');
+const TaskContext = require('../services/task_context.js');
+const v = require('./validators.js');
+const searchService = require('../services/search/services/search.js');
+const SearchContext = require('../services/search/search_context.js');
+const zipExportService = require('../services/export/zip.js');
+const zipImportService = require('../services/import/zip.js');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {

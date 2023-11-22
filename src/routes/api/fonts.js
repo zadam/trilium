@@ -1,4 +1,4 @@
-const optionService = require('../../services/options');
+const optionService = require('../../services/options.js');
 
 function getFontCss(req, res) {
     res.setHeader('Content-Type', 'text/css');

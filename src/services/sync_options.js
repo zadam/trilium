@@ -1,7 +1,7 @@
 "use strict";
 
-const optionService = require('./options');
-const config = require('./config');
+const optionService = require('./options.js');
+const config = require('./config.js');
 
 /*
  * Primary configuration for sync is in the options (document), but we allow to override

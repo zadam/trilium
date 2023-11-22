@@ -1,5 +1,5 @@
-const sql = require('../../services/sql');
-const becca = require('../../becca/becca');
+const sql = require('../../services/sql.js');
+const becca = require('../../becca/becca.js');
 
 function getNoteSize(req) {
     const {noteId} = req.params;

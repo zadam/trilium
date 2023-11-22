@@ -1,9 +1,9 @@
 "use strict";
 
-const utils = require('./utils');
-const log = require('./log');
+const utils = require('./utils.js');
+const log = require('./log.js');
 const url = require('url');
-const syncOptions = require('./sync_options');
+const syncOptions = require('./sync_options.js');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows supporting system proxy

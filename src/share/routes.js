@@ -3,15 +3,15 @@ const path = require('path');
 const safeCompare = require('safe-compare');
 const ejs = require("ejs");
 
-const shaca = require("./shaca/shaca");
-const shacaLoader = require("./shaca/shaca_loader");
-const shareRoot = require("./share_root");
-const contentRenderer = require("./content_renderer");
-const assetPath = require("../services/asset_path");
-const appPath = require("../services/app_path");
-const searchService = require("../services/search/services/search");
-const SearchContext = require("../services/search/search_context");
-const log = require("../services/log");
+const shaca = require('./shaca/shaca.js');
+const shacaLoader = require('./shaca/shaca_loader.js');
+const shareRoot = require('./share_root.js');
+const contentRenderer = require('./content_renderer.js');
+const assetPath = require('../services/asset_path.js');
+const appPath = require('../services/app_path.js');
+const searchService = require('../services/search/services/search.js');
+const SearchContext = require('../services/search/search_context.js');
+const log = require('../services/log.js');
 
 /**
  * @param {SNote} note
@@ -236,7 +236,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        const utils = require("../services/utils");
+        const utils = require('../services/utils.js');
 
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
@@ -304,7 +304,7 @@ function register(router) {
 
         addNoIndexHeader(attachment.note, res);
 
-        const utils = require("../services/utils");
+        const utils = require('../services/utils.js');
 
         const filename = utils.formatDownloadTitle(attachment.title, null, attachment.mime);
 

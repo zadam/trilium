@@ -1,10 +1,10 @@
-const searchService = require('../../src/services/search/services/search');
-const BNote = require('../../src/becca/entities/bnote');
-const BBranch = require('../../src/becca/entities/bbranch');
-const SearchContext = require('../../src/services/search/search_context');
-const dateUtils = require('../../src/services/date_utils');
-const becca = require('../../src/becca/becca');
-const {NoteBuilder, findNoteByTitle, note} = require('./becca_mocking');
+const searchService = require('../../src/services/search/services/search.js');
+const BNote = require('../../src/becca/entities/bnote.js');
+const BBranch = require('../../src/becca/entities/bbranch.js');
+const SearchContext = require('../../src/services/search/search_context.js');
+const dateUtils = require('../../src/services/date_utils.js');
+const becca = require('../../src/becca/becca.js');
+const {NoteBuilder, findNoteByTitle, note} = require('./becca_mocking.js');
 
 describe("Search", () => {
     let rootNote;

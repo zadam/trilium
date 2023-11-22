@@ -1,10 +1,10 @@
 'use strict';
 
 const {app, globalShortcut, BrowserWindow} = require('electron');
-const sqlInit = require('./src/services/sql_init');
-const appIconService = require('./src/services/app_icon');
-const windowService = require('./src/services/window');
-const tray = require('./src/services/tray');
+const sqlInit = require('./src/services/sql_init.js');
+const appIconService = require('./src/services/app_icon.js');
+const windowService = require('./src/services/window.js');
+const tray = require('./src/services/tray.js');
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -59,4 +59,4 @@ app.on('will-quit', () => {
 // this is to disable electron warning spam in the dev console (local development only)
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
-require('./src/www');
+require('./src/www.js');

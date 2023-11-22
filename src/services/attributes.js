@@ -1,11 +1,11 @@
 "use strict";
 
-const searchService = require('./search/services/search');
-const sql = require('./sql');
-const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute');
-const {formatAttrForSearch} = require("./attribute_formatter");
-const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
+const searchService = require('./search/services/search.js');
+const sql = require('./sql.js');
+const becca = require('../becca/becca.js');
+const BAttribute = require('../becca/entities/battribute.js');
+const {formatAttrForSearch} = require('./attribute_formatter.js');
+const BUILTIN_ATTRIBUTES = require('./builtin_attributes.js');
 
 const ATTRIBUTE_TYPES = ['label', 'relation'];
 

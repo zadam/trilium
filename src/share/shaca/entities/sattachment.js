@@ -1,8 +1,8 @@
 "use strict";
 
-const sql = require('../../sql');
-const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity');
+const sql = require('../../sql.js');
+const utils = require('../../../services/utils.js');
+const AbstractShacaEntity = require('./abstract_shaca_entity.js');
 
 class SAttachment extends AbstractShacaEntity {
     constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]) {

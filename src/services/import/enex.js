@@ -1,14 +1,14 @@
 const sax = require("sax");
 const stream = require('stream');
 const {Throttle} = require('stream-throttle');
-const log = require("../log");
-const utils = require("../utils");
-const sql = require("../sql");
-const noteService = require("../notes");
-const imageService = require("../image");
-const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require("../html_sanitizer");
-const {sanitizeAttributeName} = require("../sanitize_attribute_name");
+const log = require('../log.js');
+const utils = require('../utils.js');
+const sql = require('../sql.js');
+const noteService = require('../notes.js');
+const imageService = require('../image.js');
+const protectedSessionService = require('../protected_session.js');
+const htmlSanitizer = require('../html_sanitizer.js');
+const {sanitizeAttributeName} = require('../sanitize_attribute_name.js');
 
 /**
  * date format is e.g. 20181121T193703Z or 2013-04-14T16:19:00.000Z (Mac evernote, see #3496)

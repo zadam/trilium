@@ -1,10 +1,10 @@
 "use strict";
 
-const sql = require('../sql');
-const optionService = require('../options');
-const myScryptService = require('./my_scrypt');
-const utils = require('../utils');
-const passwordEncryptionService = require('./password_encryption');
+const sql = require('../sql.js');
+const optionService = require('../options.js');
+const myScryptService = require('./my_scrypt.js');
+const utils = require('../utils.js');
+const passwordEncryptionService = require('./password_encryption.js');
 
 function isPasswordSet() {
     return !!sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");

@@ -1,8 +1,8 @@
-const becca = require("../becca/becca");
-const noteService = require("./notes");
-const BAttribute = require("../becca/entities/battribute");
-const log = require("./log");
-const migrationService = require("./migration");
+const becca = require('../becca/becca.js');
+const noteService = require('./notes.js');
+const BAttribute = require('../becca/entities/battribute.js');
+const log = require('./log.js');
+const migrationService = require('./migration.js');
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";

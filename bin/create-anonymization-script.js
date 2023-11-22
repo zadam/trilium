@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const anonymizationService = require('../src/services/anonymization');
+const anonymizationService = require('../src/services/anonymization.js');
 const fs = require('fs');
 const path = require('path');
 

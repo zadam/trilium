@@ -1,7 +1,7 @@
 "use strict";
 
-const Expression = require('./expression');
-const TrueExp = require("./true");
+const Expression = require('./expression.js');
+const TrueExp = require('./true.js');
 
 class AndExp extends Expression {
     static of(subExpressions) {

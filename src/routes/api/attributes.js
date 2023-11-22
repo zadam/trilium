@@ -1,11 +1,11 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const log = require('../../services/log');
-const attributeService = require('../../services/attributes');
-const BAttribute = require('../../becca/entities/battribute');
-const becca = require("../../becca/becca");
-const ValidationError = require("../../errors/validation_error");
+const sql = require('../../services/sql.js');
+const log = require('../../services/log.js');
+const attributeService = require('../../services/attributes.js');
+const BAttribute = require('../../becca/entities/battribute.js');
+const becca = require('../../becca/becca.js');
+const ValidationError = require('../../errors/validation_error.js');
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);

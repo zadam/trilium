@@ -1,8 +1,8 @@
 "use strict";
 
-const sql = require("../services/sql");
-const NoteSet = require("../services/search/note_set");
-const NotFoundError = require("../errors/not_found_error");
+const sql = require('../services/sql.js');
+const NoteSet = require('../services/search/note_set.js');
+const NotFoundError = require('../errors/not_found_error.js');
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -148,7 +148,7 @@ class Becca {
     getRevision(revisionId) {
         const row = sql.getRow("SELECT * FROM revisions WHERE revisionId = ?", [revisionId]);
 
-        const BRevision = require("./entities/brevision"); // avoiding circular dependency problems
+        const BRevision = require('./entities/brevision.js'); // avoiding circular dependency problems
         return row ? new BRevision(row) : null;
     }
 
@@ -163,7 +163,7 @@ class Becca {
                WHERE attachmentId = ? AND isDeleted = 0`
             : `SELECT * FROM attachments WHERE attachmentId = ? AND isDeleted = 0`;
 
-        const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
+        const BAttachment = require('./entities/battachment.js'); // avoiding circular dependency problems
 
         return sql.getRows(query, [attachmentId])
             .map(row => new BAttachment(row))[0];
@@ -180,7 +180,7 @@ class Becca {
 
     /** @returns {BAttachment[]} */
     getAttachments(attachmentIds) {
-        const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
+        const BAttachment = require('./entities/battachment.js'); // avoiding circular dependency problems
         return sql.getManyRows("SELECT * FROM attachments WHERE attachmentId IN (???) AND isDeleted = 0", attachmentIds)
             .map(row => new BAttachment(row));
     }
@@ -189,7 +189,7 @@ class Becca {
     getBlob(entity) {
         const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [entity.blobId]);
 
-        const BBlob = require("./entities/bblob"); // avoiding circular dependency problems
+        const BBlob = require('./entities/bblob.js'); // avoiding circular dependency problems
         return row ? new BBlob(row) : null;
     }
 
@@ -238,7 +238,7 @@ class Becca {
     getRecentNotesFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const BRecentNote = require("./entities/brecent_note"); // avoiding circular dependency problems
+        const BRecentNote = require('./entities/brecent_note.js'); // avoiding circular dependency problems
         return rows.map(row => new BRecentNote(row));
     }
 
@@ -246,7 +246,7 @@ class Becca {
     getRevisionsFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const BRevision = require("./entities/brevision"); // avoiding circular dependency problems
+        const BRevision = require('./entities/brevision.js'); // avoiding circular dependency problems
         return rows.map(row => new BRevision(row));
     }
 
