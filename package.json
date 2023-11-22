@@ -43,6 +43,7 @@
     "async-mutex": "0.4.0",
     "axios": "1.6.2",
     "better-sqlite3": "8.4.0",
+    "boxicons": "2.1.4",
     "chokidar": "3.5.3",
     "cls-hooked": "4.2.2",
     "compression": "1.7.4",
