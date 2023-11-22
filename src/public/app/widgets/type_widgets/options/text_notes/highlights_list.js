@@ -15,7 +15,7 @@ const TPL = `
     </div>
 
     <br/><br/>
-    <h5>Highlists List visibility</h5>
+    <h5>Highlights List visibility</h5>
 
     <p>You can hide the hightlights widget per-note by adding a <code>#hideHighlightWidget</code> label.</p>
 </div>`;
