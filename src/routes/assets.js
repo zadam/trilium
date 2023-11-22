@@ -19,6 +19,8 @@ function register(app) {
     app.use(`/${assetPath}/app-dist`, persistentCacheStatic(path.join(srcRoot, 'public/app-dist')));
     app.use(`/${assetPath}/fonts`, persistentCacheStatic(path.join(srcRoot, 'public/fonts')));
     app.use(`/assets/vX/fonts`, express.static(path.join(srcRoot, 'public/fonts')));
+    app.use(`/${assetPath}/images`, persistentCacheStatic(path.join(srcRoot, '..', 'images')));
+    app.use(`/assets/vX/images`, express.static(path.join(srcRoot, '..', 'images')));
     app.use(`/${assetPath}/stylesheets`, persistentCacheStatic(path.join(srcRoot, 'public/stylesheets')));
     app.use(`/assets/vX/stylesheets`, express.static(path.join(srcRoot, 'public/stylesheets')));
     app.use(`/${assetPath}/libraries`, persistentCacheStatic(path.join(srcRoot, '..', 'libraries')));
@@ -30,8 +32,6 @@ function register(app) {
     // expose the whole dist folder since complete assets are needed in edit and share
     app.use(`/node_modules/@excalidraw/excalidraw/dist/`, express.static(path.join(srcRoot, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
     app.use(`/${assetPath}/node_modules/@excalidraw/excalidraw/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
-    app.use(`/${assetPath}/images`, persistentCacheStatic(path.join(srcRoot, '..', 'images')));
-    app.use(`/assets/vX/images`, express.static(path.join(srcRoot, '..', 'images')));
 
     // KaTeX
     app.use(
@@ -47,7 +47,10 @@ function register(app) {
     app.use(`/node_modules/katex/dist/`,
       express.static(path.join(srcRoot, '..', 'node_modules/katex/dist/')));
     app.use(`/${assetPath}/node_modules/katex/dist/`,
-      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/')));}
+      persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/katex/dist/')));
+
+    app.use(`/${assetPath}/node_modules/dayjs/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/dayjs/')));
+}
 
 module.exports = {
     register
