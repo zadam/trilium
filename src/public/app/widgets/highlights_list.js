@@ -56,7 +56,6 @@ export default class HighlightsListWidget extends RightPanelWidget {
                 .class("icon-action"),
             new OnClickButtonWidget()
                 .icon("bx-x")
-                .title("Close Highlights List")
                 .titlePlacement("left")
                 .onClick(widget => widget.triggerCommand("closeHlt"))
                 .class("icon-action")

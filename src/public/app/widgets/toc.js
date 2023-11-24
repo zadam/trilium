@@ -68,7 +68,6 @@ export default class TocWidget extends RightPanelWidget {
                 .class("icon-action"),
             new OnClickButtonWidget()
                 .icon("bx-x")
-                .title("Close Table of Contents")
                 .titlePlacement("left")
                 .onClick(widget => widget.triggerCommand("closeToc"))
                 .class("icon-action")
