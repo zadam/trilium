@@ -889,6 +889,10 @@ function scanForLinks(note, content) {
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
 async function asyncPostProcessContent(note, content) {
+    if (note.hasStringContent() && !utils.isString(content)) {
+        content = content.toString();
+    }
+
     scanForLinks(note, content);
 }
 
