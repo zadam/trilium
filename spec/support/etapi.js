@@ -8,6 +8,8 @@ const getEtapiAuthorizationHeader = () => "Basic " + Buffer.from(`etapi:${etapiA
 const PORT = '9999';
 const HOST = 'http://localhost:' + PORT;
 
+let currentTestRootNote = null;
+
 function describeEtapi(description, specDefinitions) {
     describe(description, () => {
         let appProcess;
@@ -42,12 +44,40 @@ function describeEtapi(description, specDefinitions) {
             })).json()).authToken;
         });
 
+        beforeEach(async () => {
+            currentTestRootNote = await createTextNote('root', "test root");
+        });
+
         afterAll(() => {
             console.log("Attempting to kill the Trilium process as part of the cleanup...");
             kill(appProcess.pid, 'SIGKILL', () => { console.log("Trilium process killed.") });
         });
 
         specDefinitions();
+    });
+}
+
+async function createTextNote(parentNoteId = null, title = 'new note', content = '') {
+    if (!parentNoteId) {
+        parentNoteId = currentTestRootNote.noteId;
+    }
+
+    const {note} = await postEtapi('create-note', {
+        parentNoteId,
+        type: 'text',
+        title,
+        content
+    });
+
+    return note;
+}
+
+async function createLabel(noteId, name, value = '', isInheritable = false) {
+    return await postEtapi('attributes', {
+        type: 'label',
+        name,
+        value,
+        isInheritable
     });
 }
 
@@ -172,6 +202,9 @@ function checkStatus(response) {
 
 module.exports = {
     describeEtapi,
+    createTextNote,
+    createLabel,
+    getCurrentTestRootNote: () => currentTestRootNote,
     getEtapi,
     getEtapiResponse,
     getEtapiContent,
