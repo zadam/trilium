@@ -42,6 +42,7 @@ async function createLink(notePath, options = {}) {
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
     const showNoteIcon = options.showNoteIcon === undefined ? false : options.showNoteIcon;
     const referenceLink = options.referenceLink === undefined ? false : options.referenceLink;
+    const autoConvertToImage = options.autoConvertToImage === undefined ? false : options.autoConvertToImage;
 
     const { noteId, parentNoteId } = treeService.getNoteIdAndParentIdFromUrl(notePath);
     const viewScope = options.viewScope || {};
@@ -56,6 +57,16 @@ async function createLink(notePath, options = {}) {
         } else {
             linkTitle = await treeService.getNoteTitle(noteId, parentNoteId);
         }
+    }
+
+    const note = await froca.getNote(noteId);
+
+    if (autoConvertToImage && ['image', 'canvas', 'mermaid'].includes(note.type) && viewMode === 'default') {
+        const encodedTitle = encodeURIComponent(linkTitle);
+
+        return $("<img>")
+            .attr("src", `api/images/${noteId}/${encodedTitle}?${Math.random()}`)
+            .attr("alt", linkTitle);
     }
 
     const $container = $("<span>");
