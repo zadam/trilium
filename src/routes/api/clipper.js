@@ -153,7 +153,9 @@ function processContent(images, note, content) {
             const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
 
             const attachment = imageService.saveImageToAttachment(note.noteId, buffer, filename, true);
-            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
+
+            // We might want to replace with escape-html. For non-latin-based languages, this doesn't work well.
+            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "") || "attachment";
             const url = `api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}`;
 
             log.info(`Replacing '${imageId}' with '${url}' in note '${note.noteId}'`);

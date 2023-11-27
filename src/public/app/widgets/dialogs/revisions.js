@@ -274,16 +274,16 @@ export default class RevisionsDialog extends BasicWidget {
 
             this.$content.html($table);
         } else if (revisionItem.type === 'canvas') {
-            const sanitizedTitle = revisionItem.title.replace(/[^a-z0-9-.]/gi, "");
+            const encodedTitle = encodeURIComponent(revisionItem.title);
 
             this.$content.html($("<img>")
-                .attr("src", `api/revisions/${revisionItem.revisionId}/image/${sanitizedTitle}?${Math.random()}`)
+                .attr("src", `api/revisions/${revisionItem.revisionId}/image/${encodedTitle}?${Math.random()}`)
                 .css("max-width", "100%"));
         } else if (revisionItem.type === 'mermaid') {
-            const sanitizedTitle = revisionItem.title.replace(/[^a-z0-9-.]/gi, "");
+            const encodedTitle = encodeURIComponent(revisionItem.title);
 
             this.$content.html($("<img>")
-                .attr("src", `api/revisions/${revisionItem.revisionId}/image/${sanitizedTitle}?${Math.random()}`)
+                .attr("src", `api/revisions/${revisionItem.revisionId}/image/${encodedTitle}?${Math.random()}`)
                 .css("max-width", "100%"));
 
             this.$content.append($("<pre>").text(fullRevision.content));

@@ -117,14 +117,14 @@ async function renderCode(note, $renderedContent) {
 }
 
 function renderImage(entity, $renderedContent, options = {}) {
-    const sanitizedTitle = entity.title.replace(/[^a-z0-9-.]/gi, "");
+    const encodedTitle = encodeURIComponent(entity.title);
 
     let url;
 
     if (entity instanceof FNote) {
-        url = `api/images/${entity.noteId}/${sanitizedTitle}?${Math.random()}`;
+        url = `api/images/${entity.noteId}/${encodedTitle}?${Math.random()}`;
     } else if (entity instanceof FAttachment) {
-        url = `api/attachments/${entity.attachmentId}/image/${sanitizedTitle}?${entity.utcDateModified}">`;
+        url = `api/attachments/${entity.attachmentId}/image/${encodedTitle}?${entity.utcDateModified}">`;
     }
 
     $renderedContent // styles needed for the zoom to work well

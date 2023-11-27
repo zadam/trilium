@@ -529,7 +529,8 @@ function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
-            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
+            // We might want to replace with escape-html. For non-latin-based languages, this doesn't work well.
+            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "") || "attachment";
 
             content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
