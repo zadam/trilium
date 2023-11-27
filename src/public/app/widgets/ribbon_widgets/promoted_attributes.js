@@ -8,8 +8,14 @@ import options from "../../services/options.js";
 import utils from "../../services/utils.js";
 
 const TPL = `
-<div>
+<div class="promoted-attributes-widget">
     <style>
+    body.mobile .promoted-attributes-widget {
+        /* https://github.com/zadam/trilium/issues/4468 */
+        flex-shrink: 0.4;
+        overflow: auto;
+    }
+    
     .promoted-attributes-container {
         margin: auto;
         display: flex;

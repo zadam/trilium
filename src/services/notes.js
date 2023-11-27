@@ -529,9 +529,9 @@ function downloadImages(noteId, content) {
             const imageService = require('../services/image.js');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
-            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "");
+            const encodedTitle = encodeURIComponent(attachment.title);
 
-            content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
+            content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${encodedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
         else if (!url.includes('api/images/') && !/api\/attachments\/.+\/image\/?.*/.test(url)
             // this is an exception for the web clipper's "imageId"
@@ -889,6 +889,10 @@ function scanForLinks(note, content) {
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
 async function asyncPostProcessContent(note, content) {
+    if (note.hasStringContent() && !utils.isString(content)) {
+        content = content.toString();
+    }
+
     scanForLinks(note, content);
 }
 

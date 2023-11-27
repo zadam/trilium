@@ -402,11 +402,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     }));
 
                     if (notes.length === 1) {
-                        linkService.createLink(notes[0].noteId, {referenceLink: true})
+                        linkService.createLink(notes[0].noteId, {referenceLink: true, autoConvertToImage: true})
                             .then($link => data.dataTransfer.setData("text/html", $link[0].outerHTML));
                     }
                     else {
-                        Promise.all(notes.map(note => linkService.createLink(note.noteId, {referenceLink: true}))).then(links => {
+                        Promise.all(notes.map(note => linkService.createLink(note.noteId, {referenceLink: true, autoConvertToImage: true}))).then(links => {
                             const $list = $("<ul>").append(...links.map($link => $("<li>").append($link)));
 
                             data.dataTransfer.setData("text/html", $list[0].outerHTML);

@@ -365,12 +365,10 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const note = await froca.getNote(noteId);
 
         this.watchdog.editor.model.change( writer => {
-            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
-            const src = `api/images/${note.noteId}/${sanitizedTitle}`;
+            const encodedTitle = encodeURIComponent(note.title);
+            const src = `api/images/${note.noteId}/${encodedTitle}`;
 
-            const imageElement = writer.createElement( 'image',  { 'src': src } );
-
-            this.watchdog.editor.model.insertContent(imageElement, this.watchdog.editor.model.document.selection);
+            this.watchdog.editor.execute( 'insertImage', { source: src } );
         } );
     }
 

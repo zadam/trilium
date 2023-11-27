@@ -303,6 +303,10 @@ function toMap(list, key) {
     return map;
 }
 
+function isString(x) {
+    return Object.prototype.toString.call(x) === "[object String]";
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -335,4 +339,5 @@ module.exports = {
     normalize,
     hashedBlobId,
     toMap,
+    isString
 };
