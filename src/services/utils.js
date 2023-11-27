@@ -63,6 +63,8 @@ function isElectron() {
 }
 
 function hash(text) {
+    text = text.normalize();
+
     return crypto.createHash('sha1').update(text).digest('base64');
 }
 
