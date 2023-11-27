@@ -368,9 +368,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             const encodedTitle = encodeURIComponent(note.title);
             const src = `api/images/${note.noteId}/${encodedTitle}`;
 
-            const imageElement = writer.createElement( 'image',  { 'src': src } );
-
-            this.watchdog.editor.model.insertContent(imageElement, this.watchdog.editor.model.document.selection);
+            this.watchdog.editor.execute( 'insertImage', { source: src } );
         } );
     }
 
