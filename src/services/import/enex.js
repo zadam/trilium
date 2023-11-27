@@ -303,9 +303,8 @@ function importEnex(taskContext, file, parentNote) {
 
                     const attachment = imageService.saveImageToAttachment(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
 
-                    // We might want to replace with escape-html. For non-latin-based languages, this doesn't work well.
-                    const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "") || "attachment";
-                    const url = `api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}`;
+                    const encodedTitle = encodeURIComponent(attachment.title);
+                    const url = `api/attachments/${attachment.attachmentId}/image/${encodedTitle}`;
                     const imageLink = `<img src="${url}">`;
 
                     content = content.replace(mediaRegex, imageLink);

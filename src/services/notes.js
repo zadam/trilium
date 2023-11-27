@@ -529,10 +529,9 @@ function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
-            // We might want to replace with escape-html. For non-latin-based languages, this doesn't work well.
-            const sanitizedTitle = attachment.title.replace(/[^a-z0-9-.]/gi, "") || "attachment";
+            const encodedTitle = encodeURIComponent(attachment.title);
 
-            content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
+            content = `${content.substr(0, imageMatch.index)}<img src="api/attachments/${attachment.attachmentId}/image/${encodedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
         else if (!url.includes('api/images/') && !/api\/attachments\/.+\/image\/?.*/.test(url)
             // this is an exception for the web clipper's "imageId"
