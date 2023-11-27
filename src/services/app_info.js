@@ -11,6 +11,7 @@ const CLIPPER_PROTOCOL_VERSION = "1.0";
 module.exports = {
     appVersion: packageJson.version,
     dbVersion: APP_DB_VERSION,
+    nodeVersion: process.version,
     syncVersion: SYNC_VERSION,
     buildDate: build.buildDate,
     buildRevision: build.buildRevision,
