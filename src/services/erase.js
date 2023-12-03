@@ -29,7 +29,7 @@ function eraseNotes(noteIdsToErase) {
     const revisionIdsToErase = sql.getManyRows(`SELECT revisionId FROM revisions WHERE noteId IN (???)`, noteIdsToErase)
         .map(row => row.revisionId);
 
-    revisionService.eraseRevisions(revisionIdsToErase);
+    eraseRevisions(revisionIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
@@ -77,6 +77,18 @@ function eraseAttachments(attachmentIdsToErase) {
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attachments' AND entityId IN (???)`, attachmentIdsToErase));
 
     log.info(`Erased attachments: ${JSON.stringify(attachmentIdsToErase)}`);
+}
+
+function eraseRevisions(revisionIdsToErase) {
+    if (revisionIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM revisions WHERE revisionId IN (???)`, revisionIdsToErase);
+
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase));
+
+    log.info(`Removed revisions: ${JSON.stringify(revisionIdsToErase)}`);
 }
 
 function eraseUnusedBlobs() {
@@ -184,5 +196,6 @@ module.exports = {
     eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,
     eraseUnusedBlobs,
-    eraseAttachments
+    eraseAttachments,
+    eraseRevisions
 };

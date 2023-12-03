@@ -4,6 +4,7 @@ const becca = require("../becca/becca");
 const cloningService = require("./cloning");
 const branchService = require("./branches");
 const utils = require("./utils");
+const eraseService = require("./erase.js");
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {
@@ -18,7 +19,7 @@ const ACTION_HANDLERS = {
         note.deleteNote(deleteId);
     },
     deleteRevisions: (action, note) => {
-        revisionService.eraseRevisions(note.getRevisions().map(rev => rev.revisionId));
+        eraseService.eraseRevisions(note.getRevisions().map(rev => rev.revisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {

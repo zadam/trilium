@@ -467,7 +467,7 @@ class ConsistencyChecks {
                     WHERE blobs.blobId IS NULL`,
             ({revisionId, blobId}) => {
                 if (this.autoFix) {
-                    revisionService.eraseRevisions([revisionId]);
+                    eraseService.eraseRevisions([revisionId]);
 
                     this.reloadNeeded = true;
 
