@@ -46,18 +46,6 @@ function protectRevisions(note) {
     }
 }
 
-function eraseRevisions(revisionIdsToErase) {
-    if (revisionIdsToErase.length === 0) {
-        return;
-    }
-
-    log.info(`Removing revisions: ${JSON.stringify(revisionIdsToErase)}`);
-
-    sql.executeMany(`DELETE FROM revisions WHERE revisionId IN (???)`, revisionIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1, utcDateChanged = '${dateUtils.utcNowDateTime()}' WHERE entityName = 'revisions' AND entityId IN (???)`, revisionIdsToErase);
-}
-
 module.exports = {
-    protectRevisions,
-    eraseRevisions
+    protectRevisions
 };

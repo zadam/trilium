@@ -209,8 +209,9 @@ function sortNotesIfNeeded(parentNoteId) {
 function setNoteToParent(noteId, prefix, parentNoteId) {
     const parentNote = becca.getNote(parentNoteId);
 
-    if (!parentNote) {
-        throw new Error(`Cannot move note to deleted parent note '${parentNoteId}'`);
+    if (parentNoteId && !parentNote) {
+        // null parentNoteId is a valid value
+        throw new Error(`Cannot move note to deleted / missing parent note '${parentNoteId}'`);
     }
 
     // case where there might be more such branches is ignored. It's expected there should be just one

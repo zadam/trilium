@@ -8,6 +8,7 @@ const cls = require('../../services/cls.js');
 const path = require('path');
 const becca = require('../../becca/becca.js');
 const blobService = require('../../services/blob.js');
+const eraseService = require("../../services/erase.js");
 
 function getRevisionBlob(req) {
     const preview = req.query.preview === 'true';
@@ -88,11 +89,11 @@ function eraseAllRevisions(req) {
     const revisionIdsToErase = sql.getColumn('SELECT revisionId FROM revisions WHERE noteId = ?',
         [req.params.noteId]);
 
-    revisionService.eraseRevisions(revisionIdsToErase);
+    eraseService.eraseRevisions(revisionIdsToErase);
 }
 
 function eraseRevision(req) {
-    revisionService.eraseRevisions([req.params.revisionId]);
+    eraseService.eraseRevisions([req.params.revisionId]);
 }
 
 function restoreRevision(req) {
