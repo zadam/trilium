@@ -73,8 +73,11 @@ async function migrate() {
         }
     });
 
-    log.info("VACUUMing database, this might take a while ...");
-    sql.execute("VACUUM");
+    if (currentDbVersion === 214) {
+        // special VACUUM after the big migration
+        log.info("VACUUMing database, this might take a while ...");
+        sql.execute("VACUUM");
+    }
 }
 
 function executeMigration(mig) {
