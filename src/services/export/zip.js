@@ -181,6 +181,8 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         noteIdToMeta[note.noteId] = meta;
 
+        // sort children for having a stable / reproducible export format
+        note.sortChildren();
         const childBranches = note.getChildBranches()
             .filter(branch => branch.noteId !== '_hidden');
 
