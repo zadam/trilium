@@ -39,7 +39,13 @@ function getLightAnonymizationScript() {
                 SELECT blobId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
               UNION ALL
                 SELECT blobId FROM revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
-            );`;
+            );
+
+            UPDATE options SET value = 'anonymized' WHERE name IN
+                  ('documentId', 'documentSecret', 'encryptedDataKey',
+                   'passwordVerificationHash', 'passwordVerificationSalt',
+                   'passwordDerivedKeySalt', 'username', 'syncServerHost', 'syncProxy')
+              AND value != '';`;
 }
 
 async function createAnonymizedCopy(type) {

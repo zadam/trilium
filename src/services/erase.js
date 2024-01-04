@@ -37,6 +37,8 @@ function eraseNotes(noteIdsToErase) {
 function setEntityChangesAsErased(entityChanges) {
     for (const ec of entityChanges) {
         ec.isErased = true;
+        // we're not changing hash here, not sure if good or not
+        // content hash check takes isErased flag into account, though
         ec.utcDateChanged = dateUtils.utcNowDateTime();
 
         entityChangesService.putEntityChangeWithForcedChange(ec);

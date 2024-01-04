@@ -91,12 +91,16 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
             updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
         }
 
-        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged || localEC.hash !== remoteEC.hash) {
+        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged
+            || localEC.hash !== remoteEC.hash
+            || localEC.isErased !== remoteEC.isErased
+        ) {
             entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
         }
 
         return true;
-    } else if (localEC.hash !== remoteEC.hash && localEC.utcDateChanged > remoteEC.utcDateChanged) {
+    } else if ((localEC.hash !== remoteEC.hash || localEC.isErased !== remoteEC.isErased)
+                && localEC.utcDateChanged > remoteEC.utcDateChanged) {
         // the change on our side is newer than on the other side, so the other side should update
         entityChangesService.putEntityChangeForOtherInstances(localEC);
 
@@ -148,7 +152,7 @@ function eraseEntity(entityChange) {
     ];
 
     if (!entityNames.includes(entityName)) {
-        log.error(`Cannot erase entity '${entityName}', id '${entityId}'.`);
+        log.error(`Cannot erase ${entityName} '${entityId}'.`);
         return;
     }
 
