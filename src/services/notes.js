@@ -519,7 +519,7 @@ function downloadImages(noteId, content) {
     let imageMatch;
 
     while (imageMatch = imageRe.exec(content)) {
-        const url = imageMatch[1];
+        let url = imageMatch[1];
         const inlineImageMatch = /^data:image\/[a-z]+;base64,/.exec(url);
 
         if (inlineImageMatch) {
@@ -540,6 +540,8 @@ function downloadImages(noteId, content) {
             if (!optionService.getOptionBool("downloadImagesAutomatically")) {
                 continue;
             }
+
+            url = utils.unescapeHtml(url);
 
             if (url in imageUrlToAttachmentIdMapping) {
                 const attachment = becca.getAttachment(imageUrlToAttachmentIdMapping[url]);
