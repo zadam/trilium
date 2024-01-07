@@ -511,7 +511,7 @@ const downloadImagePromises = {};
 function replaceUrl(content, url, attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${encodeURIComponent(attachment.title)}/image"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(attachment.title)}"`);
 }
 
 function downloadImages(noteId, content) {
