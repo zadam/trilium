@@ -494,7 +494,7 @@ async function downloadImage(noteId, imageUrl) {
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image.js');
-        const {attachment} = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
+        const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
 
@@ -511,7 +511,7 @@ const downloadImagePromises = {};
 function replaceUrl(content, url, attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${encodeURIComponent(attachment.title)}/image"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(attachment.title)}"`);
 }
 
 function downloadImages(noteId, content) {
@@ -519,7 +519,7 @@ function downloadImages(noteId, content) {
     let imageMatch;
 
     while (imageMatch = imageRe.exec(content)) {
-        const url = imageMatch[1];
+        let url = imageMatch[1];
         const inlineImageMatch = /^data:image\/[a-z]+;base64,/.exec(url);
 
         if (inlineImageMatch) {
@@ -540,6 +540,8 @@ function downloadImages(noteId, content) {
             if (!optionService.getOptionBool("downloadImagesAutomatically")) {
                 continue;
             }
+
+            url = utils.unescapeHtml(url);
 
             if (url in imageUrlToAttachmentIdMapping) {
                 const attachment = becca.getAttachment(imageUrlToAttachmentIdMapping[url]);
