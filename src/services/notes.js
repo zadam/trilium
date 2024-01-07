@@ -636,6 +636,10 @@ function saveAttachments(note, content) {
         content = `${content.substr(0, attachmentMatch.index)}<a class="reference-link" href="#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}">${title}</a>${content.substr(attachmentMatch.index + attachmentMatch[0].length)}`;
     }
 
+    // removing absolute references to server to keep it working between instances,
+    // we also omit / at the beginning to keep the paths relative
+    content = content.replace(/src="[^"]*\/api\/attachments\//g, 'src="api/attachments/');
+
     return content;
 }
 
