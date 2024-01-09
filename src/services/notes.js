@@ -471,6 +471,8 @@ function findRelationMapLinks(content, foundLinks) {
 const imageUrlToAttachmentIdMapping = {};
 
 async function downloadImage(noteId, imageUrl) {
+    const unescapedUrl = utils.unescapeHtml(imageUrl);
+
     try {
         let imageBuffer;
 
@@ -487,10 +489,10 @@ async function downloadImage(noteId, imageUrl) {
                 });
             });
         } else {
-            imageBuffer = await request.getImage(imageUrl);
+            imageBuffer = await request.getImage(unescapedUrl);
         }
 
-        const parsedUrl = url.parse(imageUrl);
+        const parsedUrl = url.parse(unescapedUrl);
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image');
@@ -519,7 +521,7 @@ function downloadImages(noteId, content) {
     let imageMatch;
 
     while (imageMatch = imageRe.exec(content)) {
-        let url = imageMatch[1];
+        const url = imageMatch[1];
         const inlineImageMatch = /^data:image\/[a-z]+;base64,/.exec(url);
 
         if (inlineImageMatch) {
@@ -540,8 +542,6 @@ function downloadImages(noteId, content) {
             if (!optionService.getOptionBool("downloadImagesAutomatically")) {
                 continue;
             }
-
-            url = utils.unescapeHtml(url);
 
             if (url in imageUrlToAttachmentIdMapping) {
                 const attachment = becca.getAttachment(imageUrlToAttachmentIdMapping[url]);
