@@ -137,7 +137,7 @@ function renderCode(result) {
 
 function renderMermaid(result, note) {
     result.content = `
-<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">
+<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">
 <hr>
 <details>
     <summary>Chart source</summary>
@@ -146,7 +146,7 @@ function renderMermaid(result, note) {
 }
 
 function renderImage(result, note) {
-    result.content = `<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">`;
+    result.content = `<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">`;
 }
 
 function renderFile(note, result) {

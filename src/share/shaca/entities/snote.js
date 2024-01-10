@@ -490,6 +490,10 @@ class SNote extends AbstractShacaEntity {
         return escape(this.title);
     }
 
+    get encodedTitle() {
+        return encodeURIComponent(this.title);
+    }
+
     getPojo() {
         return {
             noteId: this.noteId,

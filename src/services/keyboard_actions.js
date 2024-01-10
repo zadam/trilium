@@ -302,7 +302,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "lastTab",
-        defaultShortcuts: ["CommandOrControl+0"],
+        defaultShortcuts: [],
         description: "Activates the last tab in the list",
         scope: "window"
     },
