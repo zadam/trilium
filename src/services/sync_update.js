@@ -73,7 +73,6 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
             if (localEC?.isErased) {
                 eraseEntity(remoteEC); // make sure it's erased anyway
                 updateContext.alreadyErased++;
-                return false; // we won't save entitychange in this case
             } else {
                 eraseEntity(remoteEC);
                 updateContext.erased++;
@@ -91,7 +90,8 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
             updateContext.updated[remoteEC.entityName].push(remoteEC.entityId);
         }
 
-        if (!localEC || localEC.utcDateChanged < remoteEC.utcDateChanged
+        if (!localEC
+            || localEC.utcDateChanged < remoteEC.utcDateChanged
             || localEC.hash !== remoteEC.hash
             || localEC.isErased !== remoteEC.isErased
         ) {
