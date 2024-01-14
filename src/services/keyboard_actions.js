@@ -219,7 +219,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "reopenLastTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Shift+T"] : [],
-        description: "Repoens the last closed tab",
+        description: "Reopens the last closed tab",
         scope: "window"
     },
     {
@@ -291,7 +291,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "eigthTab",
         defaultShortcuts: ["CommandOrControl+8"],
-        description: "Activates the eigth tab in the list",
+        description: "Activates the eighth tab in the list",
         scope: "window"
     },
     {
@@ -302,7 +302,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "lastTab",
-        defaultShortcuts: ["CommandOrControl+0"],
+        defaultShortcuts: [],
         description: "Activates the last tab in the list",
         scope: "window"
     },

@@ -427,6 +427,116 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Error'
+  /attachments:
+    post:
+      description: create an attachment
+      operationId: postAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAttachment'
+      responses:
+        '201':
+          description: attachment created
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /attachments/{attachmentId}:
+    parameters:
+      - name: attachmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+    get:
+      description: Returns an attachment identified by its ID
+      operationId: getAttachmentById
+      responses:
+        '200':
+          description: attachment response
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: patch an attachment identified by the attachmentId with changes in the body. Only role, mime, title, and position are patchable.
+      operationId: patchAttachmentById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attachment'
+      responses:
+        '200':
+          description: attribute updated
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      description: deletes an attachment based on the attachmentId supplied.
+      operationId: deleteAttachmentById
+      responses:
+        '204':
+          description: attachment deleted
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /attachments/{attachmentId}/content:
+    parameters:
+      - name: attachmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+    get:
+      description: Returns attachment content identified by its ID
+      operationId: getAttachmentContent
+      responses:
+        '200':
+          description: attachment content response
+          content:
+            text/html:
+              schema:
+                type: string
+    put:
+      description: Updates attachment content identified by its ID
+      operationId: putAttachmentContentById
+      requestBody:
+        description: html content of attachment
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '204':
+          description: attachment content updated
   /attributes:
     post:
       description: create an attribute for a given note
@@ -474,7 +584,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
-      description: patch a attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
+      description: patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
       operationId: patchAttributeById
       requestBody:
         required: true
@@ -496,7 +606,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
-      description: deletes a attribute based on the attributeId supplied.
+      description: deletes an attribute based on the attributeId supplied.
       operationId: deleteAttributeById
       responses:
         '204':
@@ -884,6 +994,57 @@ components:
           $ref: '#/components/schemas/Note'
         branch:
           $ref: '#/components/schemas/Branch'
+    Attachment:
+      type: object
+      description: Attachment is owned by a note, has title and content
+      properties:
+        attachmentId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+        ownerId:
+          $ref: '#/components/schemas/EntityId'
+          description: identifies the owner of the attachment, is either noteId or revisionId
+        role:
+          type: string
+        mime:
+          type: string
+        title:
+          type: string
+        position:
+          type: integer
+          format: int32
+        blobId:
+          type: string
+          description: ID of the blob object which effectively serves as a content hash
+        dateModified:
+          $ref: '#/components/schemas/LocalDateTime'
+          readOnly: true
+        utcDateModified:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+        utcDateScheduledForErasureSince:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+        contentLength:
+          type: integer
+          format: int32
+    CreateAttachment:
+      type: object
+      properties:
+        ownerId:
+          $ref: '#/components/schemas/EntityId'
+          description: identifies the owner of the attachment, is either noteId or revisionId
+        role:
+          type: string
+        mime:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        position:
+          type: integer
+          format: int32
     Attribute:
       type: object
       description: Attribute (Label, Relation) is a key-value record attached to a note.

@@ -471,6 +471,8 @@ function findRelationMapLinks(content, foundLinks) {
 const imageUrlToAttachmentIdMapping = {};
 
 async function downloadImage(noteId, imageUrl) {
+    const unescapedUrl = utils.unescapeHtml(imageUrl);
+
     try {
         let imageBuffer;
 
@@ -487,14 +489,14 @@ async function downloadImage(noteId, imageUrl) {
                 });
             });
         } else {
-            imageBuffer = await request.getImage(imageUrl);
+            imageBuffer = await request.getImage(unescapedUrl);
         }
 
-        const parsedUrl = url.parse(imageUrl);
+        const parsedUrl = url.parse(unescapedUrl);
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image.js');
-        const {attachment} = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
+        const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
 
@@ -511,7 +513,7 @@ const downloadImagePromises = {};
 function replaceUrl(content, url, attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${encodeURIComponent(attachment.title)}/image"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(attachment.title)}"`);
 }
 
 function downloadImages(noteId, content) {
@@ -635,6 +637,10 @@ function saveAttachments(note, content) {
 
         content = `${content.substr(0, attachmentMatch.index)}<a class="reference-link" href="#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}">${title}</a>${content.substr(attachmentMatch.index + attachmentMatch[0].length)}`;
     }
+
+    // removing absolute references to server to keep it working between instances,
+    // we also omit / at the beginning to keep the paths relative
+    content = content.replace(/src="[^"]*\/api\/attachments\//g, 'src="api/attachments/');
 
     return content;
 }
