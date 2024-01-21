@@ -895,6 +895,11 @@ function scanForLinks(note, content) {
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
 async function asyncPostProcessContent(note, content) {
+    if (cls.isMigrationRunning()) {
+        // this is rarely needed for migrations, but can cause trouble by e.g. triggering downloads
+        return;
+    }
+
     if (note.hasStringContent() && !utils.isString(content)) {
         content = content.toString();
     }

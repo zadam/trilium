@@ -5,6 +5,7 @@ const log = require('./log');
 const utils = require('./utils');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
+const cls = require('./cls.js');
 
 async function migrate() {
     const currentDbVersion = getDbVersion();
@@ -51,6 +52,9 @@ async function migrate() {
     // all migrations are executed in one transaction - upgrade either succeeds, or the user can stay at the old version
     // otherwise if half of the migrations succeed, user can't use any version - DB is too "new" for the old app,
     // and too old for the new app version.
+
+    cls.setMigrationRunning(true);
+
     sql.transactional(() => {
         for (const mig of migrations) {
             try {

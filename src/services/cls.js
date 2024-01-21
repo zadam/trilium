@@ -48,6 +48,14 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
+function setMigrationRunning(running) {
+    namespace.set('migrationRunning', !!running);
+}
+
+function isMigrationRunning() {
+    return !!namespace.get('migrationRunning');
+}
+
 function disableSlowQueryLogging(disable) {
     namespace.set('disableSlowQueryLogging', disable);
 }
@@ -102,5 +110,7 @@ module.exports = {
     putEntityChange,
     ignoreEntityChangeIds,
     disableSlowQueryLogging,
-    isSlowQueryLoggingDisabled
+    isSlowQueryLoggingDisabled,
+    setMigrationRunning,
+    isMigrationRunning
 };
