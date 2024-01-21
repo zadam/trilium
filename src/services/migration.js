@@ -11,7 +11,7 @@ async function migrate() {
     const currentDbVersion = getDbVersion();
 
     if (currentDbVersion < 214) {
-        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.60.X first and only then to this version.");
+        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.60.4 first and only then to this version.");
 
         utils.crash();
         return;
@@ -19,7 +19,7 @@ async function migrate() {
 
     // backup before attempting migration
     await backupService.backupNow(
-        // creating a special backup for versions 0.60.X, the changes in 0.61 are major.
+        // creating a special backup for version 0.60.4, the changes in 0.61 are major.
         currentDbVersion === 214
             ? `before-migration-v060`
             : 'before-migration'
