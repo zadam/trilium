@@ -22,6 +22,7 @@ jobs:
             zadam/trilium
             ghcr.io/zadam/trilium
           tags: |
+            type=raw,value=latest,enable=${{ !endsWith(github.ref, 'beta') }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}-latest
             type=match,pattern=(\d+.\d+).\d+\-beta,enable=${{ endsWith(github.ref, 'beta') }},group=1,suffix=-latest
