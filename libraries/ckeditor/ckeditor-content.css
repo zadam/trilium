@@ -5,8 +5,8 @@
 }
 
 /*
- * CKEditor 5 (v40.1.0) content styles.
- * Generated on Mon, 20 Nov 2023 08:41:49 GMT.
+ * CKEditor 5 (v41.0.0) content styles.
+ * Generated on Fri, 26 Jan 2024 10:23:49 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
@@ -42,18 +42,6 @@
     overflow-wrap: break-word;
     position: relative;
 }
-/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-selector-caption-text);
-    background-color: var(--ck-color-selector-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
-}
 /* @ckeditor/ckeditor5-table/theme/table.css */
 .ck-content .table {
     margin: 0.9em auto;
@@ -87,12 +75,17 @@
 .ck-content[dir="ltr"] .table th {
     text-align: left;
 }
-/* @ckeditor/ckeditor5-media-embed/theme/mediaembed.css */
-.ck-content .media {
-    clear: both;
-    margin: 0.9em 0;
-    display: block;
-    min-width: 15em;
+/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-selector-caption-text);
+    background-color: var(--ck-color-selector-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
 }
 /* @ckeditor/ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
@@ -129,6 +122,13 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+/* @ckeditor/ckeditor5-media-embed/theme/mediaembed.css */
+.ck-content .media {
+    clear: both;
+    margin: 0.9em 0;
+    display: block;
+    min-width: 15em;
 }
 /* @ckeditor/ckeditor5-list/theme/todolist.css */
 .ck-content .todo-list {
@@ -280,6 +280,42 @@
 .ck-editor__editable.ck-content .todo-list .todo-list__label.todo-list__label_without-description input[type=checkbox] {
     position: absolute;
 }
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ol {
+    list-style-type: decimal;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ol ol {
+    list-style-type: lower-latin;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ol ol ol {
+    list-style-type: lower-roman;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ol ol ol ol {
+    list-style-type: upper-latin;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ol ol ol ol ol {
+    list-style-type: upper-roman;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ul {
+    list-style-type: disc;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ul ul {
+    list-style-type: circle;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ul ul ul {
+    list-style-type: square;
+}
+/* @ckeditor/ckeditor5-list/theme/list.css */
+.ck-content ul ul ul ul {
+    list-style-type: square;
+}
 /* @ckeditor/ckeditor5-image/theme/image.css */
 .ck-content .image {
     display: table;
@@ -318,17 +354,6 @@
     flex-shrink: 1;
     max-width: 100%;
 }
-/* @ckeditor/ckeditor5-image/theme/imagecaption.css */
-.ck-content .image > figcaption {
-    display: table-caption;
-    caption-side: bottom;
-    word-break: break-word;
-    color: var(--ck-color-image-caption-text);
-    background-color: var(--ck-color-image-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
-}
 /* @ckeditor/ckeditor5-image/theme/imageresize.css */
 .ck-content img.image_resized {
     height: auto;
@@ -347,67 +372,16 @@
 .ck-content .image.image_resized > figcaption {
     display: block;
 }
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-yellow {
-    background-color: var(--ck-highlight-marker-yellow);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-green {
-    background-color: var(--ck-highlight-marker-green);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-pink {
-    background-color: var(--ck-highlight-marker-pink);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-blue {
-    background-color: var(--ck-highlight-marker-blue);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-red {
-    color: var(--ck-highlight-pen-red);
-    background-color: transparent;
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-green {
-    color: var(--ck-highlight-pen-green);
-    background-color: transparent;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ol {
-    list-style-type: decimal;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ol ol {
-    list-style-type: lower-latin;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ol ol ol {
-    list-style-type: lower-roman;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ol ol ol ol {
-    list-style-type: upper-latin;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ol ol ol ol ol {
-    list-style-type: upper-roman;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ul {
-    list-style-type: disc;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ul ul {
-    list-style-type: circle;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ul ul ul {
-    list-style-type: square;
-}
-/* @ckeditor/ckeditor5-list/theme/list.css */
-.ck-content ul ul ul ul {
-    list-style-type: square;
+/* @ckeditor/ckeditor5-image/theme/imagecaption.css */
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: var(--ck-color-image-caption-text);
+    background-color: var(--ck-color-image-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
 }
 /* @ckeditor/ckeditor5-image/theme/imagestyle.css */
 .ck-content .image-style-block-align-left,
@@ -469,6 +443,32 @@
 /* @ckeditor/ckeditor5-image/theme/imagestyle.css */
 .ck-content .image-inline.image-style-align-right {
     margin-left: var(--ck-inline-image-style-spacing);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-yellow {
+    background-color: var(--ck-highlight-marker-yellow);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-green {
+    background-color: var(--ck-highlight-marker-green);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-pink {
+    background-color: var(--ck-highlight-marker-pink);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-blue {
+    background-color: var(--ck-highlight-marker-blue);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-red {
+    color: var(--ck-highlight-pen-red);
+    background-color: transparent;
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-green {
+    color: var(--ck-highlight-pen-green);
+    background-color: transparent;
 }
 /* @ckeditor/ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
