@@ -5,12 +5,13 @@ const log = require('./log.js');
 const utils = require('./utils.js');
 const resourceDir = require('./resource_dir.js');
 const appInfo = require('./app_info.js');
+const cls = require('./cls.js');
 
 async function migrate() {
     const currentDbVersion = getDbVersion();
 
     if (currentDbVersion < 214) {
-        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.60.X first and only then to this version.");
+        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.60.4 first and only then to this version.");
 
         utils.crash();
         return;
@@ -18,7 +19,7 @@ async function migrate() {
 
     // backup before attempting migration
     await backupService.backupNow(
-        // creating a special backup for versions 0.60.X, the changes in 0.61 are major.
+        // creating a special backup for version 0.60.4, the changes in 0.61 are major.
         currentDbVersion === 214
             ? `before-migration-v060`
             : 'before-migration'
@@ -51,6 +52,9 @@ async function migrate() {
     // all migrations are executed in one transaction - upgrade either succeeds, or the user can stay at the old version
     // otherwise if half of the migrations succeed, user can't use any version - DB is too "new" for the old app,
     // and too old for the new app version.
+
+    cls.setMigrationRunning(true);
+
     sql.transactional(() => {
         for (const mig of migrations) {
             try {
