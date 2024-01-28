@@ -1091,7 +1091,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        const nodeCtx = this.#getActiveNodeCtx();
+        const activeNode = this.getActiveNode();
+        const activeNodeFocused = activeNode?.hasFocus();
+        const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
 
         const refreshCtx = {
             noteIdsToUpdate: new Set(),
@@ -1108,7 +1110,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         await this.#executeTreeUpdates(refreshCtx, loadResults);
 
-        await this.#setActiveNode(nodeCtx, movedActiveNode, parentsOfAddedNodes);
+        await this.#setActiveNode(activeNotePath, activeNodeFocused, movedActiveNode, parentsOfAddedNodes);
 
         if (refreshCtx.noteIdsToReload.size > 0 || refreshCtx.noteIdsToUpdate.size > 0) {
             // workaround for https://github.com/mar10/fancytree/issues/1054
@@ -1257,73 +1259,42 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
     }
 
-    #getActiveNodeCtx() {
-        const nodeCtx = {
-            activeNotePath: null,
-            activeNodeFocused: null,
-            nextNotePath: null
-        };
-
-        const activeNode = this.getActiveNode();
-        nodeCtx.activeNodeFocused = activeNode?.hasFocus();
-        nodeCtx.activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
-        const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;
-        nodeCtx.nextNotePath = nextNode ? treeService.getNotePath(nextNode) : null;
-        return nodeCtx;
-    }
-
-    async #setActiveNode(nodeCtx, movedActiveNode, parentsOfAddedNodes) {
+    async #setActiveNode(activeNotePath, activeNodeFocused, movedActiveNode, parentsOfAddedNodes) {
         if (movedActiveNode) {
             for (const parentNode of parentsOfAddedNodes) {
                 const foundNode = (parentNode.getChildren() || []).find(child => child.data.noteId === movedActiveNode.data.noteId);
                 if (foundNode) {
-                    nodeCtx.activeNotePath = treeService.getNotePath(foundNode);
+                    activeNotePath = treeService.getNotePath(foundNode);
                     break;
                 }
             }
         }
 
-        if (!nodeCtx.activeNotePath) {
+        if (!activeNotePath) {
             return;
         }
 
-        let node = await this.expandToNote(nodeCtx.activeNotePath, false);
-        if (node && node.data.noteId !== treeService.getNoteIdFromUrl(nodeCtx.activeNotePath)) {
+        let node = await this.expandToNote(activeNotePath, false);
+
+        if (node && node.data.noteId !== treeService.getNoteIdFromUrl(activeNotePath)) {
             // if the active note has been moved elsewhere then it won't be found by the path,
             // so we switch to the alternative of trying to find it by noteId
-            const notesById = this.getNodesByNoteId(treeService.getNoteIdFromUrl(nodeCtx.activeNotePath));
+            const notesById = this.getNodesByNoteId(treeService.getNoteIdFromUrl(activeNotePath));
 
             // if there are multiple clones, then we'd rather not activate anyone
             node = notesById.length === 1 ? notesById[0] : null;
         }
 
-        if (node) {
-            if (nodeCtx.activeNodeFocused) {
-                // needed by Firefox: https://github.com/zadam/trilium/issues/1865
-                this.tree.$container.focus();
-            }
-
-            await node.setActive(true, {noEvents: true, noFocus: !nodeCtx.activeNodeFocused});
-        } else {
-            // this is used when the original note has been deleted, and we want to move the focus to the note above/below
-            node = await this.expandToNote(nodeCtx.nextNotePath, false);
-
-            if (node) {
-                // FIXME: this is conceptually wrong
-                //        here note tree is responsible for updating global state of the application
-                //        this should be done by NoteContext / TabManager and note tree should only listen to
-                //        changes in active note and just set the "active" state
-                // We don't await since that can bring up infinite cycles when e.g. custom widget does some backend requests which wait for max sync ID processed
-                appContext.tabManager.getActiveContext().setNote(nodeCtx.nextNotePath).then(() => {
-                    const newActiveNode = this.getActiveNode();
-
-                    // return focus if the previously active node was also focused
-                    if (newActiveNode && nodeCtx.activeNodeFocused) {
-                        newActiveNode.setFocus(true);
-                    }
-                });
-            }
+        if (!node) {
+            return;
         }
+
+        if (activeNodeFocused) {
+            // needed by Firefox: https://github.com/zadam/trilium/issues/1865
+            this.tree.$container.focus();
+        }
+
+        await node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
     }
 
     sortChildren(node) {
