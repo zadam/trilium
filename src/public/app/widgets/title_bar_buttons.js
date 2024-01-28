@@ -30,8 +30,13 @@ const TPL = `
         height: 40px;
         width: 40px;
     }
+    
     .title-bar-buttons .top-btn.active{
         background-color:var(--accented-background-color);
+    }
+
+    .title-bar-buttons .btn.focus, .title-bar-buttons .btn:focus {
+        box-shadow: none;
     }
     </style>
 
