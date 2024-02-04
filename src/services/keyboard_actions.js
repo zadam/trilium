@@ -495,8 +495,15 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
 
     {
+        actionName: "toggleRightPane",
+        defaultShortcuts: [],
+        description: "Toggle the display of the right pane, which includes Table of Contents and Highlights",
+        scope: "window"
+    },
+    {
         actionName: "printActiveNote",
         defaultShortcuts: [],
+        description: "Print active note",
         scope: "window"
     },
     {

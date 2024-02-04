@@ -8,10 +8,13 @@ export default class RightPaneContainer extends FlexContainer {
         this.id('right-pane');
         this.css('height', '100%');
         this.collapsible();
+
+        this.rightPaneHidden = false;
     }
 
     isEnabled() {
         return super.isEnabled()
+            && !this.rightPaneHidden
             && this.children.length > 0
             && !!this.children.find(ch => ch.isEnabled() && ch.canBeShown());
     }
@@ -43,5 +46,11 @@ export default class RightPaneContainer extends FlexContainer {
 
             splitService.setupRightPaneResizer();
         }
+    }
+
+    toggleRightPaneEvent() {
+        this.rightPaneHidden = !this.rightPaneHidden;
+
+        this.reEvaluateRightPaneVisibilityCommand();
     }
 }
