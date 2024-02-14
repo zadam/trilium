@@ -9,14 +9,9 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/assets/vX/images/app-icons/ios/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "/assets/vX/images/app-icons/png/512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+          "src": "favicon.ico",
+          "sizes": "180x180 512x512",
+          "type": "image/x-icon"
     }
   ]
 }
