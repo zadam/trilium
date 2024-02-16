@@ -13,8 +13,8 @@ const csurf = require('csurf');
 const { createPartialContentHandler } = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
 const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
-const NotFoundError = require('../errors/not_found_error.js');
-const ValidationError = require('../errors/validation_error.js');
+const NotFoundError = require('../errors/not_found_error');
+const ValidationError = require('../errors/validation_error');
 
 // page routes
 const setupRoute = require('./setup.js');

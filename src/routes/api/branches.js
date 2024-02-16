@@ -9,7 +9,7 @@ const becca = require('../../becca/becca.js');
 const TaskContext = require('../../services/task_context.js');
 const branchService = require('../../services/branches.js');
 const log = require('../../services/log');
-const ValidationError = require('../../errors/validation_error.js');
+const ValidationError = require('../../errors/validation_error');
 const eventService = require("../../services/events.js");
 
 /**
