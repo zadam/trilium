@@ -2,7 +2,7 @@
 
 const ini = require('ini');
 const fs = require('fs');
-const dataDir = require('./data_dir.js');
+const dataDir = require('./data_dir.ts');
 const path = require('path');
 const resourceDir = require('./resource_dir.js');
 

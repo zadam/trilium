@@ -8,14 +8,14 @@
  * - as a fallback if the previous step fails, we'll use home dir
  */
 
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
+import os = require('os');
+import fs = require('fs');
+import path = require('path');
 
 function getAppDataDir() {
     let appDataDir = os.homedir(); // fallback if OS is not recognized
 
-    if (os.platform() === 'win32') {
+    if (os.platform() === 'win32' && process.env.APPDATA) {
         appDataDir = process.env.APPDATA;
     }
     else if (os.platform() === 'linux') {

@@ -1,6 +1,6 @@
 const BUILTIN_ATTRIBUTES = require('./builtin_attributes.js');
 const fs = require("fs-extra");
-const dataDir = require('./data_dir.js');
+const dataDir = require('./data_dir.ts');
 const dateUtils = require('./date_utils.js');
 const Database = require("better-sqlite3");
 const sql = require('./sql.js');

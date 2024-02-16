@@ -4,7 +4,9 @@
 	  "declaration": true,
 	  "sourceMap": true,
 	  "outDir": "./build",
-	  "strict": true
+	  "strict": true,
+	  "allowImportingTsExtensions": true,
+	  "noImplicitAny": true
 	},
 	"include": [
       "./src/**/*.js",
