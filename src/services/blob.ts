@@ -2,6 +2,7 @@ import becca = require('../becca/becca.js');
 import NotFoundError = require('../errors/not_found_error');
 import protectedSessionService = require('./protected_session');
 import utils = require('./utils');
+import type { Blob } from "./blob-interface";
 
 function getBlobPojo(entityName: string, entityId: string) {
     const entity = becca.getEntity(entityName, entityId);
@@ -48,11 +49,11 @@ function processContent(content: Buffer | string | null, isProtected: boolean, i
     }
 }
 
-function calculateContentHash({blobId, content}: { blobId: string, content: Buffer }) {
+function calculateContentHash({blobId, content}: Blob) {
     return utils.hash(`${blobId}|${content.toString()}`);
 }
 
-module.exports = {
+export = {
     getBlobPojo,
     processContent,
     calculateContentHash
