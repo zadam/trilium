@@ -60,3 +60,16 @@ export interface BlobRow {
     dateModified: string;
     utcDateModified: string;
 }
+
+export type AttributeType = "label" | "relation";
+
+export interface AttributeRow {
+    attributeId?: string;
+    noteId: string;
+    type: AttributeType;
+    name: string;
+    position: number;
+    value: string;
+    isInheritable: boolean;
+    utcDateModified: string;
+}

@@ -1,5 +1,5 @@
-function sanitizeAttributeName(origName) {
-    let fixedName;
+function sanitizeAttributeName(origName: string) {
+    let fixedName: string;
 
     if (origName === '') {
         fixedName = "unnamed";
@@ -13,6 +13,4 @@ function sanitizeAttributeName(origName) {
 }
 
 
-module.exports = {
-    sanitizeAttributeName
-};
+export = sanitizeAttributeName;

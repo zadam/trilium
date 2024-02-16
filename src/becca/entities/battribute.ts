@@ -1,17 +1,11 @@
 "use strict";
 
-const BNote = require('./bnote.js');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const sql = require('../../services/sql');
-const dateUtils = require('../../services/date_utils');
-const promotedAttributeDefinitionParser = require('../../services/promoted_attribute_definition_parser.js');
-const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name.js');
-
-
-/**
- * There are currently only two types of attributes, labels or relations.
- * @typedef {"label" | "relation"} AttributeType
- */
+import BNote = require('./bnote.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import dateUtils = require('../../services/date_utils');
+import promotedAttributeDefinitionParser = require('../../services/promoted_attribute_definition_parser');
+import sanitizeAttributeName = require('../../services/sanitize_attribute_name');
+import { AttributeRow, AttributeType } from './rows.js';
 
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
@@ -24,7 +18,16 @@ class BAttribute extends AbstractBeccaEntity {
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable"]; }
 
-    constructor(row) {
+    attributeId!: string;
+    noteId!: string;
+    type!: AttributeType;
+    name!: string;
+    position!: number;
+    value!: string;
+    isInheritable!: boolean;
+    utcDateModified!: string;
+
+    constructor(row: AttributeRow) {
         super();
 
         if (!row) {
@@ -35,7 +38,7 @@ class BAttribute extends AbstractBeccaEntity {
         this.init();
     }
 
-    updateFromRow(row) {
+    updateFromRow(row: AttributeRow) {
         this.update([
             row.attributeId,
             row.noteId,
@@ -48,22 +51,14 @@ class BAttribute extends AbstractBeccaEntity {
         ]);
     }
 
-    update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]) {
-        /** @type {string} */
+    update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]: any[]) {
         this.attributeId = attributeId;
-        /** @type {string} */
         this.noteId = noteId;
-        /** @type {AttributeType} */
         this.type = type;
-        /** @type {string} */
         this.name = name;
-        /** @type {int} */
         this.position = position;
-        /** @type {string} */
         this.value = value || "";
-        /** @type {boolean} */
         this.isInheritable = !!isInheritable;
-        /** @type {string} */
         this.utcDateModified = utcDateModified;
 
         return this;
@@ -226,7 +221,7 @@ class BAttribute extends AbstractBeccaEntity {
         };
     }
 
-    createClone(type, name, value, isInheritable) {
+    createClone(type: AttributeType, name: string, value: string, isInheritable: boolean) {
         return new BAttribute({
             noteId: this.noteId,
             type: type,
@@ -239,4 +234,4 @@ class BAttribute extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BAttribute;
+export = BAttribute;

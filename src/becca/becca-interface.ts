@@ -4,6 +4,7 @@ import NotFoundError = require('../errors/not_found_error');
 import BOption = require('./entities/boption');
 import BNote = require('./entities/bnote');
 import BEtapiToken = require('./entities/betapi_token');
+import BAttribute = require('./entities/battribute');
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -11,6 +12,9 @@ import BEtapiToken = require('./entities/betapi_token');
  */
 class Becca {
     notes!: Record<string, BNote>;
+    attributes!: Record<string, BAttribute>;
+    /** Points from attribute type-name to list of attributes */
+    attributeIndex!: Record<string, BAttribute[]>;
     options!: Record<string, BOption>;
     etapiTokens!: Record<string, BEtapiToken>;
 
@@ -25,9 +29,7 @@ class Becca {
         this.branches = {};
         /** @type {Object.<String, BBranch>} */
         this.childParentToBranch = {};
-        /** @type {Object.<String, BAttribute>} */
-        this.attributes = {};
-        /** @type {Object.<String, BAttribute[]>} Points from attribute type-name to list of attributes */
+        this.attributes = {};        
         this.attributeIndex = {};
         this.options = {};
         this.etapiTokens = {};

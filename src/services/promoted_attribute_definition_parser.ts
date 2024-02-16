@@ -1,6 +1,15 @@
-function parse(value) {
+interface DefinitionObject {
+    isPromoted: boolean;
+    labelType: string;
+    multiplicity: string;
+    numberPrecision: number;
+    promotedAlias: string;
+    inverseRelation: string;
+}
+
+function parse(value: string): DefinitionObject {
     const tokens = value.split(',').map(t => t.trim());
-    const defObj = {};
+    const defObj: Partial<DefinitionObject> = {};
 
     for (const token of tokens) {
         if (token === 'promoted') {
@@ -32,9 +41,9 @@ function parse(value) {
         }
     }
 
-    return defObj;
+    return defObj as DefinitionObject;
 }
 
-module.exports = {
+export = {
     parse
 };
