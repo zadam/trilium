@@ -8,7 +8,7 @@ const cls = require('../../services/cls.js');
 const path = require('path');
 const becca = require('../../becca/becca.js');
 const beccaLoader = require('../../becca/becca_loader.js');
-const log = require('../../services/log.js');
+const log = require('../../services/log.ts');
 const TaskContext = require('../../services/task_context.js');
 const ValidationError = require('../../errors/validation_error.js');
 

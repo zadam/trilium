@@ -1,4 +1,4 @@
-const log = require('../services/log.js');
+const log = require('../services/log.ts');
 const fileService = require('./api/files.js');
 const scriptService = require('../services/script.js');
 const cls = require('../services/cls.js');

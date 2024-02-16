@@ -1,7 +1,7 @@
 "use strict";
 
 const optionService = require('./options.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const utils = require('./utils.js');
 
 const isMac = process.platform === "darwin";

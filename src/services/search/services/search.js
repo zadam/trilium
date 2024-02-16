@@ -9,7 +9,7 @@ const SearchContext = require('../search_context.js');
 const becca = require('../../../becca/becca.js');
 const beccaService = require('../../../becca/becca_service.js');
 const utils = require('../../utils.js');
-const log = require('../../log.js');
+const log = require('../../log.ts');
 const hoistedNoteService = require('../../hoisted_note.js');
 
 function searchFromNote(note) {

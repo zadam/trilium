@@ -2,7 +2,7 @@
 
 const becca = require('./becca.js');
 const cls = require('../services/cls.js');
-const log = require('../services/log.js');
+const log = require('../services/log.ts');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];

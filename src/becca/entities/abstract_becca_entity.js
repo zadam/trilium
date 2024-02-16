@@ -6,7 +6,7 @@ const entityChangesService = require('../../services/entity_changes.js');
 const eventService = require('../../services/events.js');
 const dateUtils = require('../../services/date_utils.js');
 const cls = require('../../services/cls.js');
-const log = require('../../services/log.js');
+const log = require('../../services/log.ts');
 const protectedSessionService = require('../../services/protected_session.js');
 const blobService = require('../../services/blob.js');
 

@@ -2,7 +2,7 @@
 
 const protectedSessionService = require('../../services/protected_session.js');
 const utils = require('../../services/utils.js');
-const log = require('../../services/log.js');
+const log = require('../../services/log.ts');
 const noteService = require('../../services/notes.js');
 const tmp = require('tmp');
 const fs = require('fs');

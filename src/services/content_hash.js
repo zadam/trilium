@@ -2,7 +2,7 @@
 
 const sql = require('./sql.js');
 const utils = require('./utils.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const eraseService = require('./erase.js');
 
 function getEntityHashes() {

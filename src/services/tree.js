@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const BBranch = require('../becca/entities/bbranch.js');
 const entityChangesService = require('./entity_changes.js');
 const becca = require('../becca/becca.js');
