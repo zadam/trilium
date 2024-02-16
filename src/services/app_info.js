@@ -2,7 +2,7 @@
 
 const build = require('./build.js');
 const packageJson = require('../../package.json');
-const {TRILIUM_DATA_DIR} = require('./data_dir.ts');
+const {TRILIUM_DATA_DIR} = require('./data_dir');
 
 const APP_DB_VERSION = 228;
 const SYNC_VERSION = 32;

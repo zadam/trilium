@@ -5,7 +5,7 @@ const eventChangesService = require('./entity_changes.js');
 const treeService = require('./tree.js');
 const BBranch = require('../becca/entities/bbranch.js');
 const becca = require('../becca/becca.js');
-const log = require('./log.ts');
+const log = require('./log');
 
 function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {
     if (!(noteId in becca.notes) || !(parentNoteId in becca.notes)) {

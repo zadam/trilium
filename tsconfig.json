@@ -5,7 +5,6 @@
 	  "sourceMap": true,
 	  "outDir": "./build",
 	  "strict": true,
-	  "allowImportingTsExtensions": true,
 	  "noImplicitAny": true
 	},
 	"include": [

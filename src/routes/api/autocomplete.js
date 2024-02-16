@@ -2,7 +2,7 @@
 
 const beccaService = require('../../becca/becca_service.js');
 const searchService = require('../../services/search/services/search.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 const utils = require('../../services/utils.js');
 const cls = require('../../services/cls.js');
 const becca = require('../../becca/becca.js');

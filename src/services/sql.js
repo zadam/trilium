@@ -4,9 +4,9 @@
  * @module sql
  */
 
-const log = require('./log.ts');
+const log = require('./log');
 const Database = require('better-sqlite3');
-const dataDir = require('./data_dir.ts');
+const dataDir = require('./data_dir');
 const cls = require('./cls.js');
 const fs = require("fs-extra");
 

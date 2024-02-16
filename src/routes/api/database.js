@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 const backupService = require('../../services/backup.js');
 const anonymizationService = require('../../services/anonymization.js');
 const consistencyChecksService = require('../../services/consistency_checks.js');

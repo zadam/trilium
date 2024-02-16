@@ -1,4 +1,4 @@
-const log = require('./log.ts');
+const log = require('./log');
 const path = require('path');
 const fs = require('fs');
 

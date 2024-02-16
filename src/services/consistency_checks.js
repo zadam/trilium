@@ -2,7 +2,7 @@
 
 const sql = require('./sql.js');
 const sqlInit = require('./sql_init.js');
-const log = require('./log.ts');
+const log = require('./log');
 const ws = require('./ws.js');
 const syncMutexService = require('./sync_mutex.js');
 const cls = require('./cls.js');

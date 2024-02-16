@@ -2,7 +2,7 @@
 
 const BAttribute = require('../../becca/entities/battribute.js');
 const utils = require('../../services/utils.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 const noteService = require('../../services/notes.js');
 const attributeService = require('../../services/attributes.js');
 const BBranch = require('../../becca/entities/bbranch.js');
