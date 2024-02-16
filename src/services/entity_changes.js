@@ -3,7 +3,7 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 const utils = require('./utils');
-const instanceId = require('./instance_id.js');
+const instanceId = require('./instance_id');
 const becca = require('../becca/becca.js');
 const blobService = require('../services/blob.js');
 
