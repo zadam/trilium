@@ -5,12 +5,13 @@
  */
 
 import log = require('./log');
-import Database = require('better-sqlite3');
+import type { Statement, Database as DatabaseType, RunResult } from "better-sqlite3";
 import dataDir = require('./data_dir');
 import cls = require('./cls');
 import fs = require("fs-extra");
+import Database = require('better-sqlite3');
 
-const dbConnection = new Database(dataDir.DOCUMENT_PATH);
+const dbConnection: DatabaseType = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
 
 const LOG_ALL_QUERIES = false;
@@ -50,8 +51,8 @@ function insert<T extends {}>(tableName: string, rec: T, replace = false) {
     return res ? res.lastInsertRowid : null;
 }
 
-function replace<T extends {}>(tableName: string, rec: T) {
-    return insert(tableName, rec, true);
+function replace<T extends {}>(tableName: string, rec: T): number | null {
+    return insert(tableName, rec, true) as number | null;
 }
 
 function upsert<T extends {}>(tableName: string, primaryKey: string, rec: T) {
@@ -79,7 +80,7 @@ function upsert<T extends {}>(tableName: string, primaryKey: string, rec: T) {
     execute(query, rec);
 }
 
-const statementCache: Record<string, Database.Statement> = {};
+const statementCache: Record<string, Statement> = {};
 
 function stmt(sql: string) {
     if (!(sql in statementCache)) {
@@ -169,8 +170,8 @@ function getColumn(query: string, params: Params = []) {
     return wrap(query, s => s.pluck().all(params));
 }
 
-function execute(query: string, params: Params = []): Database.RunResult {
-    return wrap(query, s => s.run(params)) as Database.RunResult;
+function execute(query: string, params: Params = []): RunResult {
+    return wrap(query, s => s.run(params)) as RunResult;
 }
 
 function executeMany(query: string, params: Params) {
@@ -197,7 +198,7 @@ function executeMany(query: string, params: Params) {
     }
 }
 
-function executeScript(query: string) {
+function executeScript(query: string): DatabaseType {
     if (LOG_ALL_QUERIES) {
         console.log(query);
     }
@@ -205,7 +206,7 @@ function executeScript(query: string) {
     return dbConnection.exec(query);
 }
 
-function wrap(query: string, func: (statement: Database.Statement) => unknown): unknown {
+function wrap(query: string, func: (statement: Statement) => unknown): unknown {
     const startTimestamp = Date.now();
     let result;
 
@@ -242,7 +243,7 @@ function wrap(query: string, func: (statement: Database.Statement) => unknown): 
     return result;
 }
 
-function transactional<T>(func: (statement: Database.Statement) => T) {
+function transactional<T>(func: (statement: Statement) => T) {
     try {
         const ret = (dbConnection.transaction(func) as any).deferred();
 

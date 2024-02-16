@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
       "moduleResolution": "Node",
-	  "declaration": true,
+	  "declaration": false,
 	  "sourceMap": true,
 	  "outDir": "./build",
 	  "strict": true,
