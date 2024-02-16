@@ -68,7 +68,7 @@ const LOG_DIR = process.env.TRILIUM_LOG_DIR || `${DIR_SEP}log`;
 const ANONYMIZED_DB_DIR = process.env.TRILIUM_ANONYMIZED_DB_DIR || `${DIR_SEP}anonymized-db`;
 const CONFIG_INI_PATH = process.env.TRILIUM_CONFIG_INI_PATH || `${DIR_SEP}config.ini`;
 
-module.exports = {
+export = {
     TRILIUM_DATA_DIR,
     DOCUMENT_PATH,
     BACKUP_DIR,

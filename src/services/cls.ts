@@ -96,7 +96,7 @@ function ignoreEntityChangeIds() {
     namespace.set('ignoreEntityChangeIds', true);
 }
 
-module.exports = {
+export = {
     init,
     wrap,
     get,
