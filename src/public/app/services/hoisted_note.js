@@ -48,7 +48,7 @@ async function checkNoteAccess(notePath, noteContext) {
 
     const hoistedNoteId = noteContext.hoistedNoteId;
 
-    if (!resolvedNotePath.includes(hoistedNoteId) && (!resolvedNotePath.includes('_hidden') || resolvedNotePath.includes('_lbBookmarks')) {
+    if (!resolvedNotePath.includes(hoistedNoteId) && (!resolvedNotePath.includes('_hidden') || resolvedNotePath.includes('_lbBookmarks'))) {
         const requestedNote = await froca.getNote(treeService.getNoteIdFromUrl(resolvedNotePath));
         const hoistedNote = await froca.getNote(hoistedNoteId);
 
