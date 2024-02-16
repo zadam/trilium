@@ -6,7 +6,7 @@ const log = require('../../log');
 const becca = require('../../../becca/becca.js');
 const protectedSessionService = require('../../protected_session.js');
 const striptags = require('striptags');
-const utils = require('../../utils.js');
+const utils = require('../../utils');
 
 const ALLOWED_OPERATORS = ['=', '!=', '*=*', '*=', '=*', '%='];
 

@@ -2,7 +2,7 @@
 
 const beccaService = require('../../becca/becca_service.js');
 const revisionService = require('../../services/revisions.js');
-const utils = require('../../services/utils.js');
+const utils = require('../../services/utils');
 const sql = require('../../services/sql.js');
 const cls = require('../../services/cls');
 const path = require('path');

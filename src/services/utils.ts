@@ -1,18 +1,18 @@
 "use strict";
 
-const crypto = require('crypto');
+import crypto = require('crypto');
 const randtoken = require('rand-token').generator({source: 'crypto'});
-const unescape = require('unescape');
-const escape = require('escape-html');
-const sanitize = require("sanitize-filename");
-const mimeTypes = require('mime-types');
-const path = require('path');
+import unescape = require('unescape');
+import escape = require('escape-html');
+import sanitize = require("sanitize-filename");
+import mimeTypes = require('mime-types');
+import path = require('path');
 
 function newEntityId() {
     return randomString(12);
 }
 
-function randomString(length) {
+function randomString(length: number) {
     return randtoken.generate(length);
 }
 
@@ -20,11 +20,11 @@ function randomSecureToken(bytes = 32) {
     return crypto.randomBytes(bytes).toString('base64');
 }
 
-function md5(content) {
+function md5(content: crypto.BinaryLike) {
     return crypto.createHash('md5').update(content).digest('hex');
 }
 
-function hashedBlobId(content) {
+function hashedBlobId(content: string) {
     if (content === null || content === undefined) {
         content = "";
     }
@@ -41,19 +41,16 @@ function hashedBlobId(content) {
     return kindaBase62Hash.substr(0, 20);
 }
 
-function toBase64(plainText) {
+function toBase64(plainText: string) {
     return Buffer.from(plainText).toString('base64');
 }
 
-/**
- * @returns {Buffer}
- */
-function fromBase64(encodedText) {
+function fromBase64(encodedText: string) {
     return Buffer.from(encodedText, 'base64');
 }
 
-function hmac(secret, value) {
-    const hmac = crypto.createHmac('sha256', Buffer.from(secret.toString(), 'ASCII'));
+function hmac(secret: any, value: any) {
+    const hmac = crypto.createHmac('sha256', Buffer.from(secret.toString(), 'ascii'));
     hmac.update(value.toString());
     return hmac.digest('base64');
 }
@@ -62,30 +59,30 @@ function isElectron() {
     return !!process.versions['electron'];
 }
 
-function hash(text) {
+function hash(text: string) {
     text = text.normalize();
 
     return crypto.createHash('sha1').update(text).digest('base64');
 }
 
-function isEmptyOrWhitespace(str) {
+function isEmptyOrWhitespace(str: string) {
     return str === null || str.match(/^ *$/) !== null;
 }
 
-function sanitizeSqlIdentifier(str) {
+function sanitizeSqlIdentifier(str: string) {
     return str.replace(/[^A-Za-z0-9_]/g, "");
 }
 
-function escapeHtml(str) {
+function escapeHtml(str: string) {
     return escape(str);
 }
 
-function unescapeHtml(str) {
+function unescapeHtml(str: string) {
     return unescape(str);
 }
 
-function toObject(array, fn) {
-    const obj = {};
+function toObject<T, K extends string | number | symbol, V>(array: T[], fn: (item: T) => [K, V]): Record<K, V> {
+    const obj: Record<K, V> = {} as Record<K, V>; // FIXME: unsafe?
 
     for (const item of array) {
         const ret = fn(item);
@@ -96,12 +93,12 @@ function toObject(array, fn) {
     return obj;
 }
 
-function stripTags(text) {
+function stripTags(text: string) {
     return text.replace(/<(?:.|\n)*?>/gm, '');
 }
 
-function union(a, b) {
-    const obj = {};
+function union<T extends string | number | symbol>(a: T[], b: T[]): T[] {
+    const obj: Record<T, T> = {} as Record<T, T>; // FIXME: unsafe?
 
     for (let i = a.length-1; i >= 0; i--) {
         obj[a[i]] = a[i];
@@ -111,7 +108,7 @@ function union(a, b) {
         obj[b[i]] = b[i];
     }
 
-    const res = [];
+    const res: T[] = [];
 
     for (const k in obj) {
         if (obj.hasOwnProperty(k)) { // <-- optional
@@ -122,7 +119,7 @@ function union(a, b) {
     return res;
 }
 
-function escapeRegExp(str) {
+function escapeRegExp(str: string) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
@@ -135,7 +132,7 @@ function crash() {
     }
 }
 
-function sanitizeFilenameForHeader(filename) {
+function sanitizeFilenameForHeader(filename: string) {
     let sanitizedFilename = sanitize(filename);
 
     if (sanitizedFilename.trim().length === 0) {
@@ -145,7 +142,7 @@ function sanitizeFilenameForHeader(filename) {
     return encodeURIComponent(sanitizedFilename);
 }
 
-function getContentDisposition(filename) {
+function getContentDisposition(filename: string) {
     const sanitizedFilename = sanitizeFilenameForHeader(filename);
 
     return `file; filename="${sanitizedFilename}"; filename*=UTF-8''${sanitizedFilename}`;
@@ -159,24 +156,24 @@ const STRING_MIME_TYPES = [
     "image/svg+xml"
 ];
 
-function isStringNote(type, mime) {
+function isStringNote(type: string, mime: string) {
     // render and book are string note in the sense that they are expected to contain empty string
     return ["text", "code", "relationMap", "search", "render", "book", "mermaid", "canvas"].includes(type)
         || mime.startsWith('text/')
         || STRING_MIME_TYPES.includes(mime);
 }
 
-function quoteRegex(url) {
+function quoteRegex(url: string) {
     return url.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
 }
 
-function replaceAll(string, replaceWhat, replaceWith) {
+function replaceAll(string: string, replaceWhat: string, replaceWith: string) {
     const quotedReplaceWhat = quoteRegex(replaceWhat);
 
     return string.replace(new RegExp(quotedReplaceWhat, "g"), replaceWith);
 }
 
-function formatDownloadTitle(fileName, type, mime) {
+function formatDownloadTitle(fileName: string, type: string, mime: string) {
     if (!fileName) {
         fileName = "untitled";
     }
@@ -218,7 +215,7 @@ function formatDownloadTitle(fileName, type, mime) {
     }
 }
 
-function removeTextFileExtension(filePath) {
+function removeTextFileExtension(filePath: string) {
     const extension = path.extname(filePath).toLowerCase();
 
     if (extension === '.md' || extension === '.markdown' || extension === '.html') {
@@ -229,7 +226,7 @@ function removeTextFileExtension(filePath) {
     }
 }
 
-function getNoteTitle(filePath, replaceUnderscoresWithSpaces, noteMeta) {
+function getNoteTitle(filePath: string, replaceUnderscoresWithSpaces: boolean, noteMeta: { title: string }) {
     if (noteMeta) {
         return noteMeta.title;
     } else {
@@ -241,7 +238,7 @@ function getNoteTitle(filePath, replaceUnderscoresWithSpaces, noteMeta) {
     }
 }
 
-function timeLimit(promise, limitMs, errorMessage) {
+function timeLimit<T>(promise: Promise<T>, limitMs: number, errorMessage: string): Promise<T> {
     if (!promise || !promise.then) { // it's not actually a promise
         return promise;
     }
@@ -267,23 +264,28 @@ function timeLimit(promise, limitMs, errorMessage) {
     });
 }
 
-function deferred() {
-    return (() => {
-        let resolve, reject;
+interface DeferredPromise<T> extends Promise<T> {
+	resolve: (value: T | PromiseLike<T>) => void,
+	reject: (reason?: any) => void
+}
 
-        let promise = new Promise((res, rej) => {
+function deferred<T>(): DeferredPromise<T> {
+    return (() => {
+        let resolve!: (value: T | PromiseLike<T>) => void;
+		let reject!: (reason?: any) => void;
+
+        let promise = new Promise<T>((res, rej) => {
             resolve = res;
             reject = rej;
-        });
+        }) as DeferredPromise<T>;
 
         promise.resolve = resolve;
         promise.reject = reject;
-
-        return promise;
+        return promise as DeferredPromise<T>;
     })();
 }
 
-function removeDiacritic(str) {
+function removeDiacritic(str: string) {
     if (!str) {
         return "";
     }
@@ -291,12 +293,12 @@ function removeDiacritic(str) {
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
-function normalize(str) {
+function normalize(str: string) {
     return removeDiacritic(str).toLowerCase();
 }
 
-function toMap(list, key) {
-    const map = {};
+function toMap<T extends Record<string, any>>(list: T[], key: keyof T): Record<string, T> {
+    const map: Record<string, T> = {};
 
     for (const el of list) {
         map[el[key]] = el;
@@ -305,7 +307,7 @@ function toMap(list, key) {
     return map;
 }
 
-function isString(x) {
+function isString(x: any) {
     return Object.prototype.toString.call(x) === "[object String]";
 }
 

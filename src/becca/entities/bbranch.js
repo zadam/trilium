@@ -2,8 +2,8 @@
 
 const BNote = require('./bnote.js');
 const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const dateUtils = require('../../services/date_utils.js');
-const utils = require('../../services/utils.js');
+const dateUtils = require('../../services/date_utils');
+const utils = require('../../services/utils');
 const TaskContext = require('../../services/task_context.js');
 const cls = require('../../services/cls');
 const log = require('../../services/log');

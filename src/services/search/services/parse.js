@@ -17,7 +17,7 @@ const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
 const AncestorExp = require('../expressions/ancestor.js');
 const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor.js');
-const utils = require('../../utils.js');
+const utils = require('../../utils');
 const TrueExp = require('../expressions/true.js');
 const IsHiddenExp = require('../expressions/is_hidden.js');
 

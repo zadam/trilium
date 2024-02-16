@@ -1,8 +1,8 @@
 "use strict";
 
 const options = require('../../services/options.js');
-const utils = require('../../services/utils.js');
-const dateUtils = require('../../services/date_utils.js');
+const utils = require('../../services/utils');
+const dateUtils = require('../../services/date_utils');
 const instanceId = require('../../services/instance_id.js');
 const passwordEncryptionService = require('../../services/encryption/password_encryption.js');
 const protectedSessionService = require('../../services/protected_session.js');

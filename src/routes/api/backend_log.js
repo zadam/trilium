@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require('fs');
-const dateUtils = require('../../services/date_utils.js');
+const dateUtils = require('../../services/date_utils');
 const {LOG_DIR} = require('../../services/data_dir');
 
 function getBackendLog() {

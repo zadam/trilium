@@ -8,7 +8,7 @@ const SearchResult = require('../search_result.js');
 const SearchContext = require('../search_context.js');
 const becca = require('../../../becca/becca.js');
 const beccaService = require('../../../becca/becca_service.js');
-const utils = require('../../utils.js');
+const utils = require('../../utils');
 const log = require('../../log');
 const hoistedNoteService = require('../../hoisted_note.js');
 

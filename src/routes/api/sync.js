@@ -9,7 +9,7 @@ const optionService = require('../../services/options.js');
 const contentHashService = require('../../services/content_hash.js');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options.js');
-const utils = require('../../services/utils.js');
+const utils = require('../../services/utils');
 const ws = require('../../services/ws.js');
 
 async function testSync() {

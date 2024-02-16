@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql.js');
 const cls = require('./cls');

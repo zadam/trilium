@@ -1,5 +1,5 @@
 const becca = require('../becca/becca.js');
-const eu = require('./etapi_utils.js');
+const eu = require('./etapi_utils');
 const passwordEncryptionService = require('../services/encryption/password_encryption.js');
 const etapiTokenService = require('../services/etapi_tokens.js');
 

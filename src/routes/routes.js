@@ -1,6 +1,6 @@
 "use strict";
 
-const utils = require('../services/utils.js');
+const utils = require('../services/utils');
 const multer = require('multer');
 const log = require('../services/log');
 const express = require('express');

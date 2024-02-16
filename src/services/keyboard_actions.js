@@ -2,7 +2,7 @@
 
 const optionService = require('./options.js');
 const log = require('./log');
-const utils = require('./utils.js');
+const utils = require('./utils');
 
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();

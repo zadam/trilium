@@ -3,7 +3,7 @@
 const sql = require('../sql.js');
 const optionService = require('../options.js');
 const myScryptService = require('./my_scrypt.js');
-const utils = require('../utils.js');
+const utils = require('../utils');
 const passwordEncryptionService = require('./password_encryption.js');
 
 function isPasswordSet() {

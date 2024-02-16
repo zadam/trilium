@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const compression = require('compression');
 const sessionParser = require('./routes/session_parser.js');
-const utils = require('./services/utils.js');
+const utils = require('./services/utils');
 
 require('./services/handlers.js');
 require('./becca/becca_loader.js');

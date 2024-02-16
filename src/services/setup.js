@@ -5,7 +5,7 @@ const optionService = require('./options.js');
 const syncOptions = require('./sync_options.js');
 const request = require('./request.js');
 const appInfo = require('./app_info.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const becca = require('../becca/becca.js');
 
 async function hasSyncServerSchemaAndSeed() {

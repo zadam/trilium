@@ -1,5 +1,5 @@
 const becca = require('../becca/becca.js');
-const eu = require('./etapi_utils.js');
+const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');
 const attributeService = require('../services/attributes.js');
 const v = require('./validators.js');
