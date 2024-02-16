@@ -1,12 +1,12 @@
 "use strict";
 
-const log = require('./log');
-const dataEncryptionService = require('./encryption/data_encryption.js');
+import log = require('./log');
+import dataEncryptionService = require('./encryption/data_encryption');
 
-let dataKey = null;
+let dataKey: Buffer | null = null;
 
-function setDataKey(decryptedDataKey) {
-    dataKey = Array.from(decryptedDataKey);
+function setDataKey(decryptedDataKey: Buffer) {
+    dataKey = Buffer.from(decryptedDataKey);
 }
 
 function getDataKey() {
@@ -21,27 +21,33 @@ function isProtectedSessionAvailable() {
     return !!dataKey;
 }
 
-function encrypt(plainText) {
-    if (plainText === null) {
+function encrypt(plainText: string | Buffer) {
+    const dataKey = getDataKey();
+    if (plainText === null || dataKey === null) {
         return null;
     }
 
-    return dataEncryptionService.encrypt(getDataKey(), plainText);
+    return dataEncryptionService.encrypt(dataKey, plainText);
 }
 
-function decrypt(cipherText) {
-    if (cipherText === null) {
+function decrypt(cipherText: string | Buffer) {
+    const dataKey = getDataKey();
+    if (cipherText === null || dataKey === null) {
         return null;
     }
 
-    return dataEncryptionService.decrypt(getDataKey(), cipherText);
+    return dataEncryptionService.decrypt(dataKey, cipherText);
 }
 
-function decryptString(cipherText) {
-    return dataEncryptionService.decryptString(getDataKey(), cipherText);
+function decryptString(cipherText: string) {
+    const dataKey = getDataKey();
+    if (dataKey === null) {
+        return null;
+    }
+    return dataEncryptionService.decryptString(dataKey, cipherText);
 }
 
-let lastProtectedSessionOperationDate = null;
+let lastProtectedSessionOperationDate: number | null = null;
 
 function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {

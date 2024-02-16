@@ -7,7 +7,7 @@ const eventService = require('../../services/events.js');
 const dateUtils = require('../../services/date_utils');
 const cls = require('../../services/cls');
 const log = require('../../services/log');
-const protectedSessionService = require('../../services/protected_session.js');
+const protectedSessionService = require('../../services/protected_session');
 const blobService = require('../../services/blob.js');
 
 let becca = null;

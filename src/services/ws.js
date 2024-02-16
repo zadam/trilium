@@ -5,7 +5,7 @@ const sql = require('./sql');
 const cls = require('./cls');
 const config = require('./config.js');
 const syncMutexService = require('./sync_mutex.js');
-const protectedSessionService = require('./protected_session.js');
+const protectedSessionService = require('./protected_session');
 const becca = require('../becca/becca.js');
 const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
 

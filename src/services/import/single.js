@@ -2,7 +2,7 @@
 
 const noteService = require('../../services/notes.js');
 const imageService = require('../../services/image.js');
-const protectedSessionService = require('../protected_session.js');
+const protectedSessionService = require('../protected_session');
 const markdownService = require('./markdown.js');
 const mimeService = require('./mime.js');
 const utils = require('../../services/utils');
