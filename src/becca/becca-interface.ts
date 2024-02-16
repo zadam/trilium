@@ -1,8 +1,6 @@
-"use strict";
-
-const sql = require('../services/sql');
-const NoteSet = require('../services/search/note_set.js');
-const NotFoundError = require('../errors/not_found_error.js');
+import sql = require('../services/sql');
+import NoteSet = require('../services/search/note_set');
+import NotFoundError = require('../errors/not_found_error');
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -277,6 +275,4 @@ class Becca {
     }
 }
 
-const becca = new Becca();
-
-module.exports = becca;
+export = Becca;
