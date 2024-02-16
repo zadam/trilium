@@ -43,3 +43,12 @@ export interface OptionRow {
     isSynced: boolean;
     utcDateModified: string;
 }
+
+export interface EtapiTokenRow {
+    etapiTokenId: string;
+    name: string;
+    tokenHash: string;
+    utcDateCreated?: string;
+    utcDateModified?: string;
+    isDeleted: boolean;
+}

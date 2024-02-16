@@ -1,5 +1,7 @@
 "use strict";
 
+import { EtapiTokenRow } from "./rows";
+
 const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require('./abstract_becca_entity.js');
 
@@ -19,7 +21,14 @@ class BEtapiToken extends AbstractBeccaEntity {
     static get primaryKeyName() { return "etapiTokenId"; }
     static get hashedProperties() { return ["etapiTokenId", "name", "tokenHash", "utcDateCreated", "utcDateModified", "isDeleted"]; }
 
-    constructor(row) {
+    etapiTokenId!: string;
+    name!: string;
+    tokenHash!: string;
+    utcDateCreated!: string;
+    utcDateModified!: string;
+    isDeleted!: boolean;
+
+    constructor(row: EtapiTokenRow) {
         super();
 
         if (!row) {
@@ -30,18 +39,12 @@ class BEtapiToken extends AbstractBeccaEntity {
         this.init();
     }
 
-    updateFromRow(row) {
-        /** @type {string} */
+    updateFromRow(row: EtapiTokenRow) {
         this.etapiTokenId = row.etapiTokenId;
-        /** @type {string} */
         this.name = row.name;
-        /** @type {string} */
         this.tokenHash = row.tokenHash;
-        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified || this.utcDateCreated;
-        /** @type {boolean} */
         this.isDeleted = !!row.isDeleted;
 
         if (this.etapiTokenId) {
@@ -75,4 +78,4 @@ class BEtapiToken extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BEtapiToken;
+export = BEtapiToken;
