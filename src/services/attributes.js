@@ -1,7 +1,7 @@
 "use strict";
 
 const searchService = require('./search/services/search.js');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const becca = require('../becca/becca.js');
 const BAttribute = require('../becca/entities/battribute.js');
 const {formatAttrForSearch} = require('./attribute_formatter.js');

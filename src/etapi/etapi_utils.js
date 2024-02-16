@@ -1,5 +1,5 @@
 const cls = require('../services/cls');
-const sql = require('../services/sql.js');
+const sql = require('../services/sql');
 const log = require('../services/log');
 const becca = require('../becca/becca.js');
 const etapiTokenService = require('../services/etapi_tokens.js');

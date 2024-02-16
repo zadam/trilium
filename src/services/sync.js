@@ -1,7 +1,7 @@
 "use strict";
 
 const log = require('./log');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const optionService = require('./options.js');
 const utils = require('./utils');
 const instanceId = require('./instance_id.js');

@@ -1,4 +1,4 @@
-const sql = require('./sql.js');
+const sql = require('./sql');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');

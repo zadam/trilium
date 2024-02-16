@@ -3,7 +3,7 @@ module.exports = () => {
     const becca = require('../../src/becca/becca.js');
     const cls = require('../../src/services/cls');
     const log = require('../../src/services/log');
-    const sql = require('../../src/services/sql.js');
+    const sql = require('../../src/services/sql');
 
     cls.init(() => {
         // emergency disabling of image compression since it appears to make problems in migration to 0.61

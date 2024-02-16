@@ -112,6 +112,7 @@
     "yauzl": "2.10.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
     "@types/escape-html": "^1.0.4",
     "@types/express": "^4.17.21",
     "@types/mime-types": "^2.1.4",

@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../services/sql.js');
+const sql = require('../services/sql');
 const NoteSet = require('../services/search/note_set.js');
 const NotFoundError = require('../errors/not_found_error.js');
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const becca = require('../../becca/becca.js');
 
 function getSchema() {

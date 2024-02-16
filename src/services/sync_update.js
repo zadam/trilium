@@ -1,4 +1,4 @@
-const sql = require('./sql.js');
+const sql = require('./sql');
 const log = require('./log');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events.js');

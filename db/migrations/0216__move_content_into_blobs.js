@@ -1,5 +1,5 @@
 module.exports = () => {
-    const sql = require('../../src/services/sql.js');
+    const sql = require('../../src/services/sql');
     const utils = require('../../src/services/utils');
 
     const existingBlobIds = new Set();

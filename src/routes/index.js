@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../services/sql.js');
+const sql = require('../services/sql');
 const attributeService = require('../services/attributes.js');
 const config = require('../services/config.js');
 const optionService = require('../services/options.js');

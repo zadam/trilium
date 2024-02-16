@@ -1,5 +1,5 @@
 const backupService = require('./backup.js');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const fs = require('fs-extra');
 const log = require('./log');
 const utils = require('./utils');

@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const entityChangesService = require('../../services/entity_changes.js');
 const treeService = require('../../services/tree.js');

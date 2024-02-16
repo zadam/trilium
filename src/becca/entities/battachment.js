@@ -3,7 +3,7 @@
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session.js');
 const log = require('../../services/log');
 

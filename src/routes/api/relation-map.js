@@ -1,5 +1,5 @@
 const becca = require('../../becca/becca.js');
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 
 function getRelationMap(req) {
     const {relationMapNoteId, noteIds} = req.body;

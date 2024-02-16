@@ -1,6 +1,6 @@
 const log = require('./log');
 const noteService = require('./notes.js');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const utils = require('./utils');
 const attributeService = require('./attributes.js');
 const dateNoteService = require('./date_notes.js');
