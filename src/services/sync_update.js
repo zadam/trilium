@@ -1,5 +1,5 @@
 const sql = require('./sql.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events.js');
 const entityConstructor = require('../becca/entity_constructor.js');

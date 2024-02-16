@@ -1,6 +1,6 @@
 const cls = require('../services/cls.js');
 const sql = require('../services/sql.js');
-const log = require('../services/log.js');
+const log = require('../services/log.ts');
 const becca = require('../becca/becca.js');
 const etapiTokenService = require('../services/etapi_tokens.js');
 const config = require('../services/config.js');

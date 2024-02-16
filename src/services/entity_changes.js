@@ -1,6 +1,6 @@
 const sql = require('./sql.js');
 const dateUtils = require('./date_utils.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const cls = require('./cls.js');
 const utils = require('./utils.js');
 const instanceId = require('./instance_id.js');

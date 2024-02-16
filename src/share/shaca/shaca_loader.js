@@ -2,7 +2,7 @@
 
 const sql = require('../sql.js');
 const shaca = require('./shaca.js');
-const log = require('../../services/log.js');
+const log = require('../../services/log.ts');
 const SNote = require('./entities/snote.js');
 const SBranch = require('./entities/sbranch.js');
 const SAttribute = require('./entities/sattribute.js');

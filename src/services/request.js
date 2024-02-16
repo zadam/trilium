@@ -1,7 +1,7 @@
 "use strict";
 
 const utils = require('./utils.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const url = require('url');
 const syncOptions = require('./sync_options.js');
 

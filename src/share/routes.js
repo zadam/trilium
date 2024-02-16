@@ -11,7 +11,7 @@ const assetPath = require('../services/asset_path.js');
 const appPath = require('../services/app_path.js');
 const searchService = require('../services/search/services/search.js');
 const SearchContext = require('../services/search/search_context.js');
-const log = require('../services/log.js');
+const log = require('../services/log.ts');
 
 /**
  * @param {SNote} note

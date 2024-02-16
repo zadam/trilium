@@ -2,7 +2,7 @@
 
 const path = require('path');
 const {ELECTRON_APP_ROOT_DIR} = require('./resource_dir.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const os = require('os');
 const fs = require('fs');
 const config = require('./config.js');

@@ -1,4 +1,4 @@
-const log = require('./log.js');
+const log = require('./log.ts');
 const fs = require('fs');
 const resourceDir = require('./resource_dir.js');
 const sql = require('./sql.js');

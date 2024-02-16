@@ -8,7 +8,7 @@ const eraseService = require('../../services/erase.js');
 const becca = require('../../becca/becca.js');
 const TaskContext = require('../../services/task_context.js');
 const branchService = require('../../services/branches.js');
-const log = require('../../services/log.js');
+const log = require('../../services/log.ts');
 const ValidationError = require('../../errors/validation_error.js');
 const eventService = require("../../services/events.js");
 

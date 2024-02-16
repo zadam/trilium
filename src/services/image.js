@@ -1,7 +1,7 @@
 "use strict";
 
 const becca = require('../becca/becca.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const protectedSessionService = require('./protected_session.js');
 const noteService = require('./notes.js');
 const optionService = require('./options.js');

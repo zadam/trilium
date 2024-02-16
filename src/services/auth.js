@@ -1,7 +1,7 @@
 "use strict";
 
 const etapiTokenService = require('./etapi_tokens.js');
-const log = require('./log.js');
+const log = require('./log.ts');
 const sqlInit = require('./sql_init.js');
 const utils = require('./utils.js');
 const passwordEncryptionService = require('./encryption/password_encryption.js');

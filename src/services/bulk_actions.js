@@ -1,4 +1,4 @@
-const log = require('./log.js');
+const log = require('./log.ts');
 const revisionService = require('./revisions.js');
 const becca = require('../becca/becca.js');
 const cloningService = require('./cloning.js');

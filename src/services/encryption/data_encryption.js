@@ -1,7 +1,7 @@
 "use strict";
 
 const crypto = require('crypto');
-const log = require('../log.js');
+const log = require('../log.ts');
 
 function arraysIdentical(a, b) {
     let i = a.length;

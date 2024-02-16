@@ -4,7 +4,7 @@
  * @module sql
  */
 
-const log = require('./log.js');
+const log = require('./log.ts');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir.js');
 const cls = require('./cls.js');

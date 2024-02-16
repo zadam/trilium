@@ -1,5 +1,5 @@
 const becca = require('./becca.js');
-const log = require('../services/log.js');
+const log = require('../services/log.ts');
 const beccaService = require('./becca_service.js');
 const dateUtils = require('../services/date_utils.js');
 const {JSDOM} = require("jsdom");

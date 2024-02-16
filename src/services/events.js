@@ -1,4 +1,4 @@
-const log = require('./log.js');
+const log = require('./log.ts');
 
 const NOTE_TITLE_CHANGED = "NOTE_TITLE_CHANGED";
 const ENTER_PROTECTED_SESSION = "ENTER_PROTECTED_SESSION";
