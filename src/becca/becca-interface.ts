@@ -11,6 +11,8 @@ import BAttribute = require('./entities/battribute');
  * There's a similar frontend cache Froca, and share cache Shaca.
  */
 class Becca {
+    loaded!: boolean;
+
     notes!: Record<string, BNote>;
     attributes!: Record<string, BAttribute>;
     /** Points from attribute type-name to list of attributes */

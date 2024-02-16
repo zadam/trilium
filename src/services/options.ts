@@ -1,22 +1,21 @@
-const becca = require('../becca/becca.js');
-const sql = require('./sql');
+import becca = require('../becca/becca');
+import { OptionRow } from '../becca/entities/rows';
+import sql = require('./sql');
 
-/** @returns {string|null} */
-function getOptionOrNull(name) {
+function getOptionOrNull(name: string): string | null {
     let option;
 
     if (becca.loaded) {
         option = becca.getOption(name);
     } else {
         // e.g. in initial sync becca is not loaded because DB is not initialized
-        option = sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
+        option = sql.getRow<OptionRow>("SELECT * FROM options WHERE name = ?", [name]);
     }
 
     return option ? option.value : null;
 }
 
-/** @returns {string} */
-function getOption(name) {
+function getOption(name: string): string {
     const val = getOptionOrNull(name);
 
     if (val === null) {
@@ -26,8 +25,7 @@ function getOption(name) {
     return val;
 }
 
-/** @returns {int} */
-function getOptionInt(name, defaultValue = undefined) {
+function getOptionInt(name: string, defaultValue?: number): number {
     const val = getOption(name);
 
     const intVal = parseInt(val);
@@ -43,8 +41,7 @@ function getOptionInt(name, defaultValue = undefined) {
     return intVal;
 }
 
-/** @returns {boolean} */
-function getOptionBool(name) {
+function getOptionBool(name: string): boolean {
     const val = getOption(name);
 
     if (!['true', 'false'].includes(val)) {
@@ -54,7 +51,7 @@ function getOptionBool(name) {
     return val === 'true';
 }
 
-function setOption(name, value) {
+function setOption(name: string, value: string | boolean) {
     if (value === true || value === false) {
         value = value.toString();
     }
@@ -71,9 +68,9 @@ function setOption(name, value) {
     }
 }
 
-function createOption(name, value, isSynced) {
+function createOption(name: string, value: string, isSynced: boolean) {
     // to avoid circular dependency, need to find a better solution
-    const BOption = require('../becca/entities/boption.js');
+    const BOption = require('../becca/entities/boption');
 
     new BOption({
         name: name,
@@ -87,7 +84,7 @@ function getOptions() {
 }
 
 function getOptionMap() {
-    const map = {};
+    const map: Record<string, string> = {};
 
     for (const option of Object.values(becca.options)) {
         map[option.name] = option.value;
