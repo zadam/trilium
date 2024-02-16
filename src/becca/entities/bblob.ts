@@ -1,18 +1,21 @@
+import { BlobRow } from "./rows";
+
 class BBlob {
     static get entityName() { return "blobs"; }
     static get primaryKeyName() { return "blobId"; }
     static get hashedProperties() { return ["blobId", "content"]; }
 
-    constructor(row) {
-        /** @type {string} */
+    blobId: string;
+    content: string | Buffer;
+    contentLength: number;
+    dateModified: string;
+    utcDateModified: string;
+
+    constructor(row: BlobRow) {
         this.blobId = row.blobId;
-        /** @type {string|Buffer} */
         this.content = row.content;
-        /** @type {int} */
         this.contentLength = row.contentLength;
-        /** @type {string} */
         this.dateModified = row.dateModified;
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
 
@@ -27,4 +30,4 @@ class BBlob {
     }
 }
 
-module.exports = BBlob;
+export = BBlob;

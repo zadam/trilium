@@ -52,3 +52,11 @@ export interface EtapiTokenRow {
     utcDateModified?: string;
     isDeleted: boolean;
 }
+
+export interface BlobRow {
+    blobId: string;
+    content: string | Buffer;
+    contentLength: number;
+    dateModified: string;
+    utcDateModified: string;
+}
