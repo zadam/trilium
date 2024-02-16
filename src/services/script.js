@@ -1,5 +1,5 @@
 const ScriptContext = require('./script_context.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const log = require('./log');
 const becca = require('../becca/becca.js');
 

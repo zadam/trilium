@@ -7,7 +7,7 @@
 const log = require('./log');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const fs = require("fs-extra");
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);

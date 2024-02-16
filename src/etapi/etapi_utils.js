@@ -1,4 +1,4 @@
-const cls = require('../services/cls.js');
+const cls = require('../services/cls');
 const sql = require('../services/sql.js');
 const log = require('../services/log');
 const becca = require('../becca/becca.js');

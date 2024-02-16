@@ -8,7 +8,7 @@ const port = require('./port.js');
 const BOption = require('../becca/entities/boption.js');
 const TaskContext = require('./task_context.js');
 const migrationService = require('./migration.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const config = require('./config.js');
 
 const dbReady = utils.deferred();

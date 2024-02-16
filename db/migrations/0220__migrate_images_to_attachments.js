@@ -1,7 +1,7 @@
 module.exports = () => {
     const beccaLoader = require('../../src/becca/becca_loader.js');
     const becca = require('../../src/becca/becca.js');
-    const cls = require('../../src/services/cls.js');
+    const cls = require('../../src/services/cls');
     const log = require('../../src/services/log');
     const sql = require('../../src/services/sql.js');
 

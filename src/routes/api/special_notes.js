@@ -2,7 +2,7 @@
 
 const dateNoteService = require('../../services/date_notes.js');
 const sql = require('../../services/sql.js');
-const cls = require('../../services/cls.js');
+const cls = require('../../services/cls');
 const specialNotesService = require('../../services/special_notes.js');
 const becca = require('../../becca/becca.js');
 

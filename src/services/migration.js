@@ -5,7 +5,7 @@ const log = require('./log');
 const utils = require('./utils.js');
 const resourceDir = require('./resource_dir.js');
 const appInfo = require('./app_info.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 
 async function migrate() {
     const currentDbVersion = getDbVersion();

@@ -5,7 +5,7 @@ const AbstractBeccaEntity = require('./abstract_becca_entity.js');
 const dateUtils = require('../../services/date_utils.js');
 const utils = require('../../services/utils.js');
 const TaskContext = require('../../services/task_context.js');
-const cls = require('../../services/cls.js');
+const cls = require('../../services/cls');
 const log = require('../../services/log');
 
 /**
