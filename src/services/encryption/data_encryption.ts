@@ -1,9 +1,9 @@
 "use strict";
 
-const crypto = require('crypto');
-const log = require('../log');
+import crypto = require('crypto');
+import log = require('../log');
 
-function arraysIdentical(a, b) {
+function arraysIdentical(a: Buffer, b: Buffer) {
     let i = a.length;
     if (i !== b.length) return false;
     while (i--) {
@@ -12,12 +12,12 @@ function arraysIdentical(a, b) {
     return true;
 }
 
-function shaArray(content) {
+function shaArray(content: crypto.BinaryLike) {
     // we use this as a simple checksum and don't rely on its security, so SHA-1 is good enough
     return crypto.createHash('sha1').update(content).digest();
 }
 
-function pad(data) {
+function pad(data: Buffer): Buffer {
     if (data.length > 16) {
         data = data.slice(0, 16);
     }
@@ -30,7 +30,7 @@ function pad(data) {
     return Buffer.from(data);
 }
 
-function encrypt(key, plainText) {
+function encrypt(key: Buffer, plainText: Buffer | string) {
     if (!key) {
         throw new Error("No data key!");
     }
@@ -51,10 +51,7 @@ function encrypt(key, plainText) {
     return encryptedDataWithIv.toString('base64');
 }
 
-/**
- * @returns {Buffer|false|null}
- */
-function decrypt(key, cipherText) {
+function decrypt(key: Buffer, cipherText: string | Buffer): Buffer | false | null {
     if (cipherText === null) {
         return null;
     }
@@ -88,12 +85,12 @@ function decrypt(key, cipherText) {
 
         return payload;
     }
-    catch (e) {
+    catch (e: any) {
         // recovery from https://github.com/zadam/trilium/issues/510
         if (e.message?.includes("WRONG_FINAL_BLOCK_LENGTH") || e.message?.includes("wrong final block length")) {
             log.info("Caught WRONG_FINAL_BLOCK_LENGTH, returning cipherText instead");
 
-            return cipherText;
+            return Buffer.from(cipherText);
         }
         else {
             throw e;
@@ -101,7 +98,7 @@ function decrypt(key, cipherText) {
     }
 }
 
-function decryptString(dataKey, cipherText) {
+function decryptString(dataKey: Buffer, cipherText: string) {
     const buffer = decrypt(dataKey, cipherText);
 
     if (buffer === null) {
@@ -115,7 +112,7 @@ function decryptString(dataKey, cipherText) {
     return buffer.toString('utf-8');
 }
 
-module.exports = {
+export = {
     encrypt,
     decrypt,
     decryptString

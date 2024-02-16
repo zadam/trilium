@@ -41,7 +41,7 @@ function hashedBlobId(content: string) {
     return kindaBase62Hash.substr(0, 20);
 }
 
-function toBase64(plainText: string) {
+function toBase64(plainText: string | Buffer) {
     return Buffer.from(plainText).toString('base64');
 }
 
@@ -311,7 +311,7 @@ function isString(x: any) {
     return Object.prototype.toString.call(x) === "[object String]";
 }
 
-module.exports = {
+export = {
     randomSecureToken,
     randomString,
     md5,
