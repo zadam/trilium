@@ -67,7 +67,7 @@ abstract class AbstractBeccaEntity {
         return this.getPojo();
     }
 
-    protected abstract getPojo(): {};
+    abstract getPojo(): {};
 
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own

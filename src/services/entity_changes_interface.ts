@@ -1,7 +1,10 @@
 export interface EntityChange {
 	id?: number | null;
+	noteId?: string;
 	entityName: string;
 	entityId: string;
+	entity?: any;
+	positions?: Record<string, string>;
 	hash: string;
 	utcDateChanged: string;
 	isSynced: boolean | 1 | 0;

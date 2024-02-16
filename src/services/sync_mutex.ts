@@ -6,7 +6,7 @@
 const Mutex = require('async-mutex').Mutex;
 const instance = new Mutex();
 
-async function doExclusively(func) {
+async function doExclusively<T>(func: () => void) {
     const releaseMutex = await instance.acquire();
 
     try {
@@ -17,6 +17,6 @@ async function doExclusively(func) {
     }
 }
 
-module.exports = {
+export = {
     doExclusively
 };

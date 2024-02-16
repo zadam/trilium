@@ -1,15 +1,17 @@
-const WebSocket = require('ws');
-const utils = require('./utils');
-const log = require('./log');
-const sql = require('./sql');
-const cls = require('./cls');
-const config = require('./config.js');
-const syncMutexService = require('./sync_mutex.js');
-const protectedSessionService = require('./protected_session');
-const becca = require('../becca/becca.js');
-const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
+import WebSocket = require('ws');
+import utils = require('./utils');
+import log = require('./log');
+import sql = require('./sql');
+import cls = require('./cls');
+import config = require('./config');
+import syncMutexService = require('./sync_mutex.js');
+import protectedSessionService = require('./protected_session');
+import becca = require('../becca/becca.js');
+import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
 
-const env = require('./env.js');
+import env = require('./env');
+import { IncomingMessage, Server } from 'http';
+import { EntityChange } from './entity_changes_interface';
 if (env.isDev()) {
     const chokidar = require('chokidar');
     const debounce = require('debounce');
@@ -21,15 +23,26 @@ if (env.isDev()) {
         .on('unlink', debouncedReloadFrontend);
 }
 
-let webSocketServer;
-let lastSyncedPush = null;
+let webSocketServer!: WebSocket.Server;
+let lastSyncedPush: number | null = null;
 
-function init(httpServer, sessionParser) {
+interface Message {
+    type: string;
+    reason?: string;
+    data?: {
+        lastSyncedPush?: number,
+        entityChanges?: any[]
+    },
+    lastSyncedPush?: number
+}
+
+type SessionParser = (req: IncomingMessage, params: {}, cb: () => void) => void;
+function init(httpServer: Server, sessionParser: SessionParser) {
     webSocketServer = new WebSocket.Server({
         verifyClient: (info, done) => {
             sessionParser(info.req, {}, () => {
                 const allowed = utils.isElectron()
-                    || info.req.session.loggedIn
+                    || (info.req as any).session.loggedIn
                     || (config.General && config.General.noAuthentication);
 
                 if (!allowed) {
@@ -43,12 +56,12 @@ function init(httpServer, sessionParser) {
     });
 
     webSocketServer.on('connection', (ws, req) => {
-        ws.id = utils.randomString(10);
+        (ws as any).id = utils.randomString(10);
 
         console.log(`websocket client connected`);
 
         ws.on('message', async messageJson => {
-            const message = JSON.parse(messageJson);
+            const message = JSON.parse(messageJson as any);
 
             if (message.type === 'log-error') {
                 log.info(`JS Error: ${message.error}\r
@@ -73,7 +86,7 @@ Stack: ${message.stack}`);
     });
 }
 
-function sendMessage(client, message) {
+function sendMessage(client: WebSocket, message: Message) {
     const jsonStr = JSON.stringify(message);
 
     if (client.readyState === WebSocket.OPEN) {
@@ -81,7 +94,7 @@ function sendMessage(client, message) {
     }
 }
 
-function sendMessageToAllClients(message) {
+function sendMessageToAllClients(message: Message) {
     const jsonStr = JSON.stringify(message);
 
     if (webSocketServer) {
@@ -97,7 +110,7 @@ function sendMessageToAllClients(message) {
     }
 }
 
-function fillInAdditionalProperties(entityChange) {
+function fillInAdditionalProperties(entityChange: EntityChange) {
     if (entityChange.isErased) {
         return;
     }
@@ -123,14 +136,14 @@ function fillInAdditionalProperties(entityChange) {
         if (!entityChange.entity) {
             entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
 
-            if (entityChange.entity.isProtected) {
-                entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
+            if (entityChange.entity && entityChange.entity.isProtected) {
+                entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title || "");
             }
         }
     } else if (entityChange.entityName === 'revisions') {
-        entityChange.noteId = sql.getValue(`SELECT noteId
-                                          FROM revisions
-                                          WHERE revisionId = ?`, [entityChange.entityId]);
+        entityChange.noteId = sql.getValue<string>(`SELECT noteId
+                                                    FROM revisions
+                                                    WHERE revisionId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'note_reordering') {
         entityChange.positions = {};
 
@@ -160,7 +173,7 @@ function fillInAdditionalProperties(entityChange) {
 }
 
 // entities with higher number can reference the entities with lower number
-const ORDERING = {
+const ORDERING: Record<string, number> = {
     "etapi_tokens": 0,
     "attributes": 2,
     "branches": 2,
@@ -172,14 +185,17 @@ const ORDERING = {
     "options": 0
 };
 
-function sendPing(client, entityChangeIds = []) {
+function sendPing(client: WebSocket, entityChangeIds = []) {
     if (entityChangeIds.length === 0) {
         sendMessage(client, { type: 'ping' });
 
         return;
     }
 
-    const entityChanges = sql.getManyRows(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
+    const entityChanges = sql.getManyRows<EntityChange>(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
+    if (!entityChanges) {
+        return;
+    }
 
     // sort entity changes since froca expects "referential order", i.e. referenced entities should already exist
     // in froca.
@@ -190,7 +206,7 @@ function sendPing(client, entityChangeIds = []) {
         try {
             fillInAdditionalProperties(entityChange);
         }
-        catch (e) {
+        catch (e: any) {
             log.error(`Could not fill additional properties for entity change ${JSON.stringify(entityChange)} because of error: ${e.message}: ${e.stack}`);
         }
     }
@@ -198,7 +214,7 @@ function sendPing(client, entityChangeIds = []) {
     sendMessage(client, {
         type: 'frontend-update',
         data: {
-            lastSyncedPush,
+            lastSyncedPush: lastSyncedPush || undefined,
             entityChanges
         }
     });
@@ -213,26 +229,26 @@ function sendTransactionEntityChangesToAllClients() {
 }
 
 function syncPullInProgress() {
-    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush });
+    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush: lastSyncedPush || undefined });
 }
 
 function syncPushInProgress() {
-    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush });
+    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush: lastSyncedPush || undefined });
 }
 
 function syncFinished() {
-    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush });
+    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush: lastSyncedPush || undefined });
 }
 
 function syncFailed() {
-    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
+    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush: lastSyncedPush || undefined });
 }
 
-function reloadFrontend(reason) {
+function reloadFrontend(reason: string) {
     sendMessageToAllClients({ type: 'reload-frontend', reason });
 }
 
-function setLastSyncedPush(entityChangeId) {
+function setLastSyncedPush(entityChangeId: number) {
     lastSyncedPush = entityChangeId;
 }
 

@@ -1,10 +1,10 @@
 "use strict";
 
-const ini = require('ini');
-const fs = require('fs');
-const dataDir = require('./data_dir');
-const path = require('path');
-const resourceDir = require('./resource_dir');
+import ini = require('ini');
+import fs = require('fs');
+import dataDir = require('./data_dir');
+import path = require('path');
+import resourceDir = require('./resource_dir');
 
 const configSampleFilePath = path.resolve(resourceDir.RESOURCE_DIR, "config-sample.ini");
 
@@ -16,4 +16,4 @@ if (!fs.existsSync(dataDir.CONFIG_INI_PATH)) {
 
 const config = ini.parse(fs.readFileSync(dataDir.CONFIG_INI_PATH, 'utf-8'));
 
-module.exports = config;
+export = config;
