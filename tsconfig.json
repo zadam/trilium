@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+      "moduleResolution": "Node",
+	  "declaration": true,
+	  "sourceMap": true,
+	  "outDir": "./build",
+	  "strict": true
+	},
+	"include": [
+      "./src/**/*.js",
+	  "./src/**/*.ts"
+	],
+	"exclude": ["./node_modules/**/*"]
+  }
