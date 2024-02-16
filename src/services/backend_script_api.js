@@ -288,7 +288,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} params.parentNoteId
      * @param {string} params.title
      * @param {string|Buffer} params.content
-     * @param {NoteType} params.type - text, code, file, image, search, book, relationMap, canvas
+     * @param {NoteType} params.type - text, code, file, image, search, book, relationMap, canvas, webView
      * @param {string} [params.mime] - value is derived from default mimes for type
      * @param {boolean} [params.isProtected=false]
      * @param {boolean} [params.isExpanded=false]
