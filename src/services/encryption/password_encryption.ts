@@ -1,9 +1,9 @@
-const optionService = require('../options.js');
-const myScryptService = require('./my_scrypt.js');
-const utils = require('../utils');
-const dataEncryptionService = require('./data_encryption.js');
+import optionService = require('../options.js');
+import myScryptService = require('./my_scrypt.js');
+import utils = require('../utils');
+import dataEncryptionService = require('./data_encryption.js');
 
-function verifyPassword(password) {
+function verifyPassword(password: string) {
     const givenPasswordHash = utils.toBase64(myScryptService.getVerificationHash(password));
 
     const dbPasswordHash = optionService.getOptionOrNull('passwordVerificationHash');
@@ -15,7 +15,7 @@ function verifyPassword(password) {
     return givenPasswordHash === dbPasswordHash;
 }
 
-function setDataKey(password, plainTextDataKey) {
+function setDataKey(password: string, plainTextDataKey: string | Buffer) {
     const passwordDerivedKey = myScryptService.getPasswordDerivedKey(password);
 
     const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, plainTextDataKey);
@@ -23,8 +23,7 @@ function setDataKey(password, plainTextDataKey) {
     optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }
 
-/** @return {Buffer} */
-function getDataKey(password) {
+function getDataKey(password: string) {
     const passwordDerivedKey = myScryptService.getPasswordDerivedKey(password);
 
     const encryptedDataKey = optionService.getOption('encryptedDataKey');
@@ -34,7 +33,7 @@ function getDataKey(password) {
     return decryptedDataKey;
 }
 
-module.exports = {
+export = {
     verifyPassword,
     getDataKey,
     setDataKey

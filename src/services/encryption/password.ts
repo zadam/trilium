@@ -1,16 +1,16 @@
 "use strict";
 
-const sql = require('../sql');
-const optionService = require('../options.js');
-const myScryptService = require('./my_scrypt.js');
-const utils = require('../utils');
-const passwordEncryptionService = require('./password_encryption.js');
+import sql = require('../sql');
+import optionService = require('../options.js');
+import myScryptService = require('./my_scrypt.js');
+import utils = require('../utils');
+import passwordEncryptionService = require('./password_encryption.js');
 
 function isPasswordSet() {
     return !!sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");
 }
 
-function changePassword(currentPassword, newPassword) {
+function changePassword(currentPassword: string, newPassword: string) {
     if (!isPasswordSet()) {
         throw new Error("Password has not been set yet, so it cannot be changed. Use 'setPassword' instead.");
     }
@@ -29,8 +29,11 @@ function changePassword(currentPassword, newPassword) {
         optionService.setOption('passwordDerivedKeySalt', utils.randomSecureToken(32));
 
         const newPasswordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(newPassword));
-
-        passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
+        
+        if (decryptedDataKey) {
+            // FIXME: what should happen if the decrypted data key is null?
+            passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
+        }
 
         optionService.setOption('passwordVerificationHash', newPasswordVerificationKey);
     });
@@ -40,7 +43,7 @@ function changePassword(currentPassword, newPassword) {
     };
 }
 
-function setPassword(password) {
+function setPassword(password: string) {
     if (isPasswordSet()) {
         throw new Error("Password is set already. Either change it or perform 'reset password' first.");
     }
@@ -48,13 +51,13 @@ function setPassword(password) {
     optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
     optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
 
-    const passwordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(password), true);
+    const passwordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(password));
     optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
 
     // passwordEncryptionService expects these options to already exist
     optionService.createOption('encryptedDataKey', '', true);
 
-    passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
+    passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 
     return {
         success: true

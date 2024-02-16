@@ -313,7 +313,7 @@ function disableSlowQueryLogging<T>(cb: () => T) {
     }
 }
 
-module.exports = {
+export = {
     dbConnection,
     insert,
     replace,
