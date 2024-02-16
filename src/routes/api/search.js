@@ -6,7 +6,7 @@ const searchService = require('../../services/search/services/search.js');
 const bulkActionService = require('../../services/bulk_actions.js');
 const cls = require('../../services/cls');
 const {formatAttrForSearch} = require('../../services/attribute_formatter.js');
-const ValidationError = require('../../errors/validation_error.js');
+const ValidationError = require('../../errors/validation_error');
 
 function searchFromNote(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);

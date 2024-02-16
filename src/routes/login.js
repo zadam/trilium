@@ -7,7 +7,7 @@ const log = require('../services/log');
 const passwordService = require('../services/encryption/password.js');
 const assetPath = require('../services/asset_path.js');
 const appPath = require('../services/app_path.js');
-const ValidationError = require('../errors/validation_error.js');
+const ValidationError = require('../errors/validation_error');
 
 function loginPage(req, res) {
     res.render('login', {

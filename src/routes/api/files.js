@@ -10,7 +10,7 @@ const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws.js');
 const becca = require('../../becca/becca.js');
-const ValidationError = require('../../errors/validation_error.js');
+const ValidationError = require('../../errors/validation_error');
 
 function updateFile(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);

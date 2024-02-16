@@ -1,5 +1,7 @@
 class NotFoundError {
-    constructor(message) {
+    message: string;
+
+    constructor(message: string) {
         this.message = message;
     }
 }
