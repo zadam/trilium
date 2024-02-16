@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../../sql.js');
+const sql = require('../../sql');
 const utils = require('../../../services/utils');
 const AbstractShacaEntity = require('./abstract_shaca_entity.js');
 const escape = require('escape-html');

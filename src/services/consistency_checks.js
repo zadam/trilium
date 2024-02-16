@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('./sql.js');
+const sql = require('./sql');
 const sqlInit = require('./sql_init.js');
 const log = require('./log');
 const ws = require('./ws.js');

@@ -7,7 +7,7 @@ const dataDir = require('./data_dir');
 const log = require('./log');
 const syncMutexService = require('./sync_mutex.js');
 const cls = require('./cls');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const path = require('path');
 
 function getExistingBackups() {

@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session.js');
 const noteService = require('../../services/notes.js');
 const becca = require('../../becca/becca.js');

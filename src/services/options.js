@@ -1,5 +1,5 @@
 const becca = require('../becca/becca.js');
-const sql = require('./sql.js');
+const sql = require('./sql');
 
 /** @returns {string|null} */
 function getOptionOrNull(name) {

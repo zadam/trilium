@@ -1,4 +1,4 @@
-const sql = require("./sql.js");
+const sql = require("./sql");
 const revisionService = require("./revisions.js");
 const log = require("./log.ts");
 const entityChangesService = require("./entity_changes.js");

@@ -1,7 +1,7 @@
 "use strict";
 
 const utils = require('../../services/utils');
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const entityChangesService = require('../../services/entity_changes.js');
 const eventService = require('../../services/events.js');
 const dateUtils = require('../../services/date_utils');

@@ -1,7 +1,7 @@
 "use strict";
 
 const log = require('./log');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const protectedSessionService = require('./protected_session.js');
 const dateUtils = require('./date_utils');
 

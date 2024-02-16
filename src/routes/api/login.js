@@ -9,7 +9,7 @@ const protectedSessionService = require('../../services/protected_session.js');
 const appInfo = require('../../services/app_info.js');
 const eventService = require('../../services/events.js');
 const sqlInit = require('../../services/sql_init.js');
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const ws = require('../../services/ws.js');
 const etapiTokenService = require('../../services/etapi_tokens.js');
 

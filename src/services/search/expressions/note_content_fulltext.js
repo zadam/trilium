@@ -38,7 +38,7 @@ class NoteContentFulltextExp extends Expression {
         }
 
         const resultNoteSet = new NoteSet();
-        const sql = require('../../sql.js');
+        const sql = require('../../sql');
 
         for (const row of sql.iterateRows(`
                 SELECT noteId, type, mime, content, isProtected

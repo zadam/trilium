@@ -4,16 +4,18 @@
  * @module sql
  */
 
-const log = require('./log');
-const Database = require('better-sqlite3');
-const dataDir = require('./data_dir');
-const cls = require('./cls');
-const fs = require("fs-extra");
+import log = require('./log');
+import Database = require('better-sqlite3');
+import dataDir = require('./data_dir');
+import cls = require('./cls');
+import fs = require("fs-extra");
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
 
 const LOG_ALL_QUERIES = false;
+
+type Params = any;
 
 [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, () => {
@@ -25,7 +27,7 @@ const LOG_ALL_QUERIES = false;
     });
 });
 
-function insert(tableName, rec, replace = false) {
+function insert<T extends {}>(tableName: string, rec: T, replace = false) {
     const keys = Object.keys(rec || {});
     if (keys.length === 0) {
         log.error(`Can't insert empty object into table ${tableName}`);
@@ -48,11 +50,11 @@ function insert(tableName, rec, replace = false) {
     return res ? res.lastInsertRowid : null;
 }
 
-function replace(tableName, rec) {
+function replace<T extends {}>(tableName: string, rec: T) {
     return insert(tableName, rec, true);
 }
 
-function upsert(tableName, primaryKey, rec) {
+function upsert<T extends {}>(tableName: string, primaryKey: string, rec: T) {
     const keys = Object.keys(rec || {});
     if (keys.length === 0) {
         log.error(`Can't upsert empty object into table ${tableName}`);
@@ -70,16 +72,16 @@ function upsert(tableName, primaryKey, rec) {
 
     for (const idx in rec) {
         if (rec[idx] === true || rec[idx] === false) {
-            rec[idx] = rec[idx] ? 1 : 0;
+            (rec as any)[idx] = rec[idx] ? 1 : 0;
         }
     }
 
     execute(query, rec);
 }
 
-const statementCache = {};
+const statementCache: Record<string, Database.Statement> = {};
 
-function stmt(sql) {
+function stmt(sql: string) {
     if (!(sql in statementCache)) {
         statementCache[sql] = dbConnection.prepare(sql);
     }
@@ -87,31 +89,34 @@ function stmt(sql) {
     return statementCache[sql];
 }
 
-function getRow(query, params = []) {
-    return wrap(query, s => s.get(params));
+function getRow<T>(query: string, params: Params = []): T {
+    return wrap(query, s => s.get(params)) as T;
 }
 
-function getRowOrNull(query, params = []) {
+function getRowOrNull<T>(query: string, params: Params = []): T | null {
     const all = getRows(query, params);
+    if (!all) {
+        return null;
+    }
 
-    return all.length > 0 ? all[0] : null;
+    return (all.length > 0 ? all[0] : null) as (T | null);
 }
 
-function getValue(query, params = []) {
+function getValue(query: string, params: Params = []) {
     return wrap(query, s => s.pluck().get(params));
 }
 
 // smaller values can result in better performance due to better usage of statement cache
 const PARAM_LIMIT = 100;
 
-function getManyRows(query, params) {
-    let results = [];
+function getManyRows(query: string, params: Params) {
+    let results: unknown[] = [];
 
     while (params.length > 0) {
         const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
 
-        const curParamsObj = {};
+        const curParamsObj: Record<string, any> = {};
 
         let j = 1;
         for (const param of curParams) {
@@ -133,15 +138,15 @@ function getManyRows(query, params) {
     return results;
 }
 
-function getRows(query, params = []) {
-    return wrap(query, s => s.all(params));
+function getRows(query: string, params: Params = []): unknown[] {
+    return wrap(query, s => s.all(params)) as unknown[];
 }
 
-function getRawRows(query, params = []) {
-    return wrap(query, s => s.raw().all(params));
+function getRawRows<T extends {} | unknown[]>(query: string, params: Params = []): T[] | null {
+    return wrap(query, s => s.raw().all(params)) as T[] | null;
 }
 
-function iterateRows(query, params = []) {
+function iterateRows(query: string, params: Params = []) {
     if (LOG_ALL_QUERIES) {
         console.log(query);
     }
@@ -149,26 +154,26 @@ function iterateRows(query, params = []) {
     return stmt(query).iterate(params);
 }
 
-function getMap(query, params = []) {
-    const map = {};
-    const results = getRawRows(query, params);
+function getMap<K extends string | number | symbol, V>(query: string, params: Params = []) {
+    const map: Record<K, V> = {} as Record<K, V>;
+    const results = getRawRows<any>(query, params);
 
-    for (const row of results) {
-        map[row[0]] = row[1];
+    for (const row of results || []) {
+        map[row[0] as K] = row[1];
     }
 
     return map;
 }
 
-function getColumn(query, params = []) {
+function getColumn(query: string, params: Params = []) {
     return wrap(query, s => s.pluck().all(params));
 }
 
-function execute(query, params = []) {
-    return wrap(query, s => s.run(params));
+function execute(query: string, params: Params = []): Database.RunResult {
+    return wrap(query, s => s.run(params)) as Database.RunResult;
 }
 
-function executeMany(query, params) {
+function executeMany(query: string, params: Params) {
     if (LOG_ALL_QUERIES) {
         console.log(query);
     }
@@ -177,7 +182,7 @@ function executeMany(query, params) {
         const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
 
-        const curParamsObj = {};
+        const curParamsObj: Record<string, any> = {};
 
         let j = 1;
         for (const param of curParams) {
@@ -192,7 +197,7 @@ function executeMany(query, params) {
     }
 }
 
-function executeScript(query) {
+function executeScript(query: string) {
     if (LOG_ALL_QUERIES) {
         console.log(query);
     }
@@ -200,7 +205,7 @@ function executeScript(query) {
     return dbConnection.exec(query);
 }
 
-function wrap(query, func) {
+function wrap(query: string, func: (statement: Database.Statement) => unknown): unknown {
     const startTimestamp = Date.now();
     let result;
 
@@ -211,7 +216,7 @@ function wrap(query, func) {
     try {
         result = func(stmt(query));
     }
-    catch (e) {
+    catch (e: any) {
         if (e.message.includes("The database connection is not open")) {
             // this often happens on killing the app which puts these alerts in front of user
             // in these cases error should be simply ignored.
@@ -237,9 +242,9 @@ function wrap(query, func) {
     return result;
 }
 
-function transactional(func) {
+function transactional<T>(func: (statement: Database.Statement) => T) {
     try {
-        const ret = dbConnection.transaction(func).deferred();
+        const ret = (dbConnection.transaction(func) as any).deferred();
 
         if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
             require('./ws.js').sendTransactionEntityChangesToAllClients();
@@ -263,7 +268,7 @@ function transactional(func) {
     }
 }
 
-function fillParamList(paramIds, truncate = true) {
+function fillParamList(paramIds: string[], truncate = true) {
     if (paramIds.length === 0) {
         return;
     }
@@ -286,7 +291,7 @@ function fillParamList(paramIds, truncate = true) {
     s.run(paramIds);
 }
 
-async function copyDatabase(targetFilePath) {
+async function copyDatabase(targetFilePath: string) {
     try {
         fs.unlinkSync(targetFilePath);
     } catch (e) {
@@ -295,7 +300,7 @@ async function copyDatabase(targetFilePath) {
     await dbConnection.backup(targetFilePath);
 }
 
-function disableSlowQueryLogging(cb) {
+function disableSlowQueryLogging<T>(cb: () => T) {
     const orig = cls.isSlowQueryLoggingDisabled();
 
     try {

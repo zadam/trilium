@@ -2,7 +2,7 @@
 
 const BNote = require('./bnote.js');
 const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const sql = require('../../services/sql.js');
+const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const promotedAttributeDefinitionParser = require('../../services/promoted_attribute_definition_parser.js');
 const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name.js');

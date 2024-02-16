@@ -90,7 +90,7 @@ function searchFromRelation(note, relationName) {
 }
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql.js');
+    const sql = require('../../sql');
 
     /**
      * This complex structure is needed to calculate total occupied space by a note. Several object instances
