@@ -1,9 +1,9 @@
-const becca = require('../becca/becca.js');
-const NotFoundError = require('../errors/not_found_error.js');
-const protectedSessionService = require('./protected_session.js');
-const utils = require('./utils');
+import becca = require('../becca/becca.js');
+import NotFoundError = require('../errors/not_found_error');
+import protectedSessionService = require('./protected_session');
+import utils = require('./utils');
 
-function getBlobPojo(entityName, entityId) {
+function getBlobPojo(entityName: string, entityId: string) {
     const entity = becca.getEntity(entityName, entityId);
     if (!entity) {
         throw new NotFoundError(`Entity ${entityName} '${entityId}' was not found.`);
@@ -25,7 +25,7 @@ function getBlobPojo(entityName, entityId) {
     return pojo;
 }
 
-function processContent(content, isProtected, isStringContent) {
+function processContent(content: Buffer | string | null, isProtected: boolean, isStringContent: boolean) {
     if (isProtected) {
         if (protectedSessionService.isProtectedSessionAvailable()) {
             content = content === null ? null : protectedSessionService.decrypt(content);
@@ -48,7 +48,7 @@ function processContent(content, isProtected, isStringContent) {
     }
 }
 
-function calculateContentHash({blobId, content}) {
+function calculateContentHash({blobId, content}: { blobId: string, content: Buffer }) {
     return utils.hash(`${blobId}|${content.toString()}`);
 }
 
