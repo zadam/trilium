@@ -1,26 +1,29 @@
-const clsHooked = require('cls-hooked');
+import clsHooked = require('cls-hooked');
+import type entity_changes = require('./entity_changes');
 const namespace = clsHooked.createNamespace("trilium");
 
-function init(callback) {
+type Callback = (...args: any[]) => any;
+
+function init(callback: Callback) {
     return namespace.runAndReturn(callback);
 }
 
-function wrap(callback) {
+function wrap(callback: Callback) {
     return () => {
         try {
             init(callback);
         }
-        catch (e) {
+        catch (e: any) {
             console.log(`Error occurred: ${e.message}: ${e.stack}`);
         }
     }
 }
 
-function get(key) {
+function get(key: string) {
     return namespace.get(key);
 }
 
-function set(key, value) {
+function set(key: string, value: any) {
     namespace.set(key, value);
 }
 
@@ -48,7 +51,7 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function setMigrationRunning(running) {
+function setMigrationRunning(running: boolean) {
     namespace.set('migrationRunning', !!running);
 }
 
@@ -56,7 +59,7 @@ function isMigrationRunning() {
     return !!namespace.get('migrationRunning');
 }
 
-function disableSlowQueryLogging(disable) {
+function disableSlowQueryLogging(disable: boolean) {
     namespace.set('disableSlowQueryLogging', disable);
 }
 
@@ -72,7 +75,7 @@ function getAndClearEntityChangeIds() {
     return entityChangeIds;
 }
 
-function putEntityChange(entityChange) {
+function putEntityChange(entityChange: entity_changes.EntityChange) {
     if (namespace.get('ignoreEntityChangeIds')) {
         return;
     }
