@@ -10,7 +10,7 @@ const BBranch = require('./entities/bbranch.js');
 const BAttribute = require('./entities/battribute.js');
 const BOption = require('./entities/boption.js');
 const BEtapiToken = require('./entities/betapi_token.js');
-const cls = require('../services/cls.js');
+const cls = require('../services/cls');
 const entityConstructor = require('../becca/entity_constructor.js');
 
 const beccaLoaded = new Promise((res, rej) => {

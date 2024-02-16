@@ -5,7 +5,7 @@ const optionService = require('./options.js');
 const env = require('./env.js');
 const log = require('./log');
 const sqlInit = require('./sql_init.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const keyboardActionsService = require('./keyboard_actions.js');
 const {ipcMain} = require('electron');
 

@@ -1,7 +1,7 @@
 "use strict";
 
 const becca = require('./becca.js');
-const cls = require('../services/cls.js');
+const cls = require('../services/cls');
 const log = require('../services/log');
 
 function isNotePathArchived(notePath) {

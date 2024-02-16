@@ -3,7 +3,7 @@
 import { Request, Response } from "express";
 import fs = require("fs");
 import dataDir = require('./data_dir');
-import cls = require('./cls.js');
+import cls = require('./cls');
 
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);

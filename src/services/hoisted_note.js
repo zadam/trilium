@@ -1,4 +1,4 @@
-const cls = require('./cls.js');
+const cls = require('./cls');
 const becca = require('../becca/becca.js');
 
 function getHoistedNoteId() {

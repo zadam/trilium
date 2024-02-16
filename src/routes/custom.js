@@ -1,7 +1,7 @@
 const log = require('../services/log');
 const fileService = require('./api/files.js');
 const scriptService = require('../services/script.js');
-const cls = require('../services/cls.js');
+const cls = require('../services/cls');
 const sql = require('../services/sql.js');
 const becca = require('../becca/becca.js');
 
