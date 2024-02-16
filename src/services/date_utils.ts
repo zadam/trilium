@@ -95,7 +95,7 @@ function validateUtcDateTime(str: string) {
     }
 }
 
-module.exports = {
+export = {
     utcNowDateTime,
     localNowDateTime,
     localNowDate,

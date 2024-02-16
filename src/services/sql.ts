@@ -103,8 +103,8 @@ function getRowOrNull<T>(query: string, params: Params = []): T | null {
     return (all.length > 0 ? all[0] : null) as (T | null);
 }
 
-function getValue(query: string, params: Params = []) {
-    return wrap(query, s => s.pluck().get(params));
+function getValue<T>(query: string, params: Params = []): T {
+    return wrap(query, s => s.pluck().get(params)) as T;
 }
 
 // smaller values can result in better performance due to better usage of statement cache
@@ -139,8 +139,8 @@ function getManyRows(query: string, params: Params) {
     return results;
 }
 
-function getRows(query: string, params: Params = []): unknown[] {
-    return wrap(query, s => s.all(params)) as unknown[];
+function getRows<T>(query: string, params: Params = []): T[] {
+    return wrap(query, s => s.all(params)) as T[];
 }
 
 function getRawRows<T extends {} | unknown[]>(query: string, params: Params = []): T[] | null {
@@ -166,8 +166,8 @@ function getMap<K extends string | number | symbol, V>(query: string, params: Pa
     return map;
 }
 
-function getColumn(query: string, params: Params = []) {
-    return wrap(query, s => s.pluck().all(params));
+function getColumn<T>(query: string, params: Params = []): T[] {
+    return wrap(query, s => s.pluck().all(params)) as T[];
 }
 
 function execute(query: string, params: Params = []): RunResult {

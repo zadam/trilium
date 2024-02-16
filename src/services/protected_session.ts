@@ -30,16 +30,16 @@ function encrypt(plainText: string | Buffer) {
     return dataEncryptionService.encrypt(dataKey, plainText);
 }
 
-function decrypt(cipherText: string | Buffer) {
+function decrypt(cipherText: string | Buffer): Buffer | null {
     const dataKey = getDataKey();
     if (cipherText === null || dataKey === null) {
         return null;
     }
 
-    return dataEncryptionService.decrypt(dataKey, cipherText);
+    return dataEncryptionService.decrypt(dataKey, cipherText) || null;
 }
 
-function decryptString(cipherText: string) {
+function decryptString(cipherText: string): string | null {
     const dataKey = getDataKey();
     if (dataKey === null) {
         return null;
@@ -70,7 +70,7 @@ function checkProtectedSessionExpiration() {
     }
 }
 
-module.exports = {
+export = {
     setDataKey,
     resetDataKey,
     isProtectedSessionAvailable,
