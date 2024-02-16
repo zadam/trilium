@@ -1,3 +1,5 @@
+// FIXME: Booleans should probably be numbers instead (as SQLite does not have booleans.);
+
 export interface AttachmentRow {
     attachmentId?: string;
     ownerId: string;
@@ -33,4 +35,11 @@ export interface RecentNoteRow {
     noteId: string;
     notePath: string;
     utcDateCreated?: string;
+}
+
+export interface OptionRow {
+    name: string;
+    value: string;
+    isSynced: boolean;
+    utcDateModified: string;
 }

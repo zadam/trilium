@@ -1725,4 +1725,4 @@ class BNote extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BNote;
+export = BNote;

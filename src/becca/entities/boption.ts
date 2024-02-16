@@ -1,33 +1,33 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import dateUtils = require('../../services/date_utils');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import { OptionRow } from './rows';
 
 /**
  * Option represents a name-value pair, either directly configurable by the user or some system property.
- *
- * @extends AbstractBeccaEntity
  */
 class BOption extends AbstractBeccaEntity {
     static get entityName() { return "options"; }
     static get primaryKeyName() { return "name"; }
     static get hashedProperties() { return ["name", "value"]; }
 
-    constructor(row) {
+    name!: string;
+    value!: string;
+    isSynced!: boolean;
+    utcDateModified!: string;
+
+    constructor(row: OptionRow) {
         super();
 
         this.updateFromRow(row);
         this.becca.options[this.name] = this;
     }
 
-    updateFromRow(row) {
-        /** @type {string} */
+    updateFromRow(row: OptionRow) {
         this.name = row.name;
-        /** @type {string} */
         this.value = row.value;
-        /** @type {boolean} */
         this.isSynced = !!row.isSynced;
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
 
@@ -47,4 +47,4 @@ class BOption extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BOption;
+export = BOption;

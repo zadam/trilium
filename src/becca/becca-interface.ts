@@ -1,6 +1,8 @@
 import sql = require('../services/sql');
 import NoteSet = require('../services/search/note_set');
 import NotFoundError = require('../errors/not_found_error');
+import BOption = require('./entities/boption');
+import BNote = require('./entities/bnote');
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -8,6 +10,7 @@ import NotFoundError = require('../errors/not_found_error');
  */
 class Becca {
     notes!: Record<string, BNote>;
+    options!: Record<string, BOption>;
 
     constructor() {
         this.reset();
@@ -24,7 +27,6 @@ class Becca {
         this.attributes = {};
         /** @type {Object.<String, BAttribute[]>} Points from attribute type-name to list of attributes */
         this.attributeIndex = {};
-        /** @type {Object.<String, BOption>} */
         this.options = {};
         /** @type {Object.<String, BEtapiToken>} */
         this.etapiTokens = {};
