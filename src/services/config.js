@@ -4,7 +4,7 @@ const ini = require('ini');
 const fs = require('fs');
 const dataDir = require('./data_dir');
 const path = require('path');
-const resourceDir = require('./resource_dir.js');
+const resourceDir = require('./resource_dir');
 
 const configSampleFilePath = path.resolve(resourceDir.RESOURCE_DIR, "config-sample.ini");
 

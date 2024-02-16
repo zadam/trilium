@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require('path');
-const {ELECTRON_APP_ROOT_DIR} = require('./resource_dir.js');
+const {ELECTRON_APP_ROOT_DIR} = require('./resource_dir');
 const log = require('./log');
 const os = require('os');
 const fs = require('fs');

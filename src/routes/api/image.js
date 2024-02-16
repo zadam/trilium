@@ -2,7 +2,7 @@
 
 const imageService = require('../../services/image.js');
 const becca = require('../../becca/becca.js');
-const RESOURCE_DIR = require('../../services/resource_dir.js').RESOURCE_DIR;
+const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 function returnImageFromNote(req, res) {
