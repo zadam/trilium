@@ -1,5 +1,5 @@
-const dayjs = require('dayjs');
-const cls = require('./cls');
+import dayjs = require('dayjs');
+import cls = require('./cls');
 
 const LOCAL_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSSZZ';
 const UTC_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ssZ';
@@ -29,15 +29,15 @@ function localNowDate() {
     }
 }
 
-function pad(num) {
+function pad(num: number) {
     return num <= 9 ? `0${num}` : `${num}`;
 }
 
-function utcDateStr(date) {
+function utcDateStr(date: Date) {
     return date.toISOString().split('T')[0];
 }
 
-function utcDateTimeStr(date) {
+function utcDateTimeStr(date: Date) {
     return date.toISOString().replace('T', ' ');
 }
 
@@ -45,16 +45,16 @@ function utcDateTimeStr(date) {
  * @param str - needs to be in the ISO 8601 format "YYYY-MM-DDTHH:MM:SS.sssZ" format as outputted by dateStr().
  *              also is assumed to be GMT time (as indicated by the "Z" at the end), *not* local time
  */
-function parseDateTime(str) {
+function parseDateTime(str: string) {
     try {
         return new Date(Date.parse(str));
     }
-    catch (e) {
+    catch (e: any) {
         throw new Error(`Can't parse date from '${str}': ${e.stack}`);
     }
 }
 
-function parseLocalDate(str) {
+function parseLocalDate(str: string) {
     const datePart = str.substr(0, 10);
 
     // not specifying the timezone and specifying the time means Date.parse() will use the local timezone
@@ -65,7 +65,7 @@ function getDateTimeForFile() {
     return new Date().toISOString().substr(0, 19).replace(/:/g, '');
 }
 
-function validateLocalDateTime(str) {
+function validateLocalDateTime(str: string) {
     if (!str) {
         return;
     }
@@ -80,7 +80,7 @@ function validateLocalDateTime(str) {
     }
 }
 
-function validateUtcDateTime(str) {
+function validateUtcDateTime(str: string) {
     if (!str) {
         return;
     }
