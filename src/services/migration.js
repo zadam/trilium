@@ -3,7 +3,7 @@ const sql = require('./sql');
 const fs = require('fs-extra');
 const log = require('./log');
 const utils = require('./utils');
-const resourceDir = require('./resource_dir.js');
+const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info.js');
 const cls = require('./cls');
 

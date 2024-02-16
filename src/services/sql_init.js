@@ -1,6 +1,6 @@
 const log = require('./log');
 const fs = require('fs');
-const resourceDir = require('./resource_dir.js');
+const resourceDir = require('./resource_dir');
 const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options.js');
