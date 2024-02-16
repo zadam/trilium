@@ -1,6 +1,7 @@
 "use strict";
 
-const fs = require('fs');
+import { Request, Response } from "express";
+import * as fs from "fs";
 const dataDir = require('./data_dir.js');
 const cls = require('./cls.js');
 
@@ -8,7 +9,7 @@ if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);
 }
 
-let logFile = null;
+let logFile!: fs.WriteStream;
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -17,7 +18,7 @@ const DAY = 24 * HOUR;
 
 const NEW_LINE = process.platform === "win32" ? '\r\n' : '\n';
 
-let todaysMidnight = null;
+let todaysMidnight!: Date;
 
 initLogFile();
 
@@ -39,7 +40,7 @@ function initLogFile() {
     logFile = fs.createWriteStream(path, {flags: 'a'});
 }
 
-function checkDate(millisSinceMidnight) {
+function checkDate(millisSinceMidnight: number) {
     if (millisSinceMidnight >= DAY) {
         initLogFile();
 
@@ -49,7 +50,7 @@ function checkDate(millisSinceMidnight) {
     return millisSinceMidnight;
 }
 
-function log(str) {
+function log(str: string) {
     const bundleNoteId = cls.get("bundleNoteId");
 
     if (bundleNoteId) {
@@ -65,17 +66,17 @@ function log(str) {
     console.log(str);
 }
 
-function info(message) {
+function info(message: string) {
     log(message);
 }
 
-function error(message) {
+function error(message: string) {
     log(`ERROR: ${message}`);
 }
 
 const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets", "/api/recent-notes" ];
 
-function request(req, res, timeMs, responseLength = "?") {
+function request(req: Request, res: Response, timeMs: number, responseLength = "?") {
     for (const bl of requestBlacklist) {
         if (req.url.startsWith(bl)) {
             return;
@@ -90,13 +91,13 @@ function request(req, res, timeMs, responseLength = "?") {
         `${res.statusCode} ${req.method} ${req.url} with ${responseLength} bytes took ${timeMs}ms`);
 }
 
-function pad(num) {
+function pad(num: number) {
     num = Math.floor(num);
 
     return num < 10 ? (`0${num}`) : num.toString();
 }
 
-function padMilli(num) {
+function padMilli(num: number) {
     if (num < 10) {
         return `00${num}`;
     }
@@ -108,7 +109,7 @@ function padMilli(num) {
     }
 }
 
-function formatTime(millisSinceMidnight) {
+function formatTime(millisSinceMidnight: number) {
     return `${pad(millisSinceMidnight / HOUR)}:${pad((millisSinceMidnight % HOUR) / MINUTE)}:${pad((millisSinceMidnight % MINUTE) / SECOND)}.${padMilli(millisSinceMidnight % SECOND)}`;
 }
 
