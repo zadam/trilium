@@ -8,7 +8,7 @@ const SBranch = require('./entities/sbranch.js');
 const SAttribute = require('./entities/sattribute.js');
 const SAttachment = require('./entities/sattachment.js');
 const shareRoot = require('../share_root.js');
-const eventService = require('../../services/events.js');
+const eventService = require('../../services/events');
 
 function load() {
     const start = Date.now();
