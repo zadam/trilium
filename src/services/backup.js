@@ -1,6 +1,6 @@
 "use strict";
 
-const dateUtils = require('./date_utils.js');
+const dateUtils = require('./date_utils');
 const optionService = require('./options.js');
 const fs = require('fs-extra');
 const dataDir = require('./data_dir');

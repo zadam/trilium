@@ -1,12 +1,12 @@
 "use strict";
 
 const html = require('html');
-const dateUtils = require('../date_utils.js');
+const dateUtils = require('../date_utils');
 const path = require('path');
 const mimeTypes = require('mime-types');
 const mdService = require('./md.js');
 const packageInfo = require('../../../package.json');
-const utils = require('../utils.js');
+const utils = require('../utils');
 const protectedSessionService = require('../protected_session.js');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");

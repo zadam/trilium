@@ -5,7 +5,8 @@
 	  "sourceMap": true,
 	  "outDir": "./build",
 	  "strict": true,
-	  "noImplicitAny": true
+	  "noImplicitAny": true,
+	  "lib": ["ES2021"]
 	},
 	"include": [
       "./src/**/*.js",

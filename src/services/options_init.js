@@ -1,8 +1,8 @@
 const optionService = require('./options.js');
 const appInfo = require('./app_info.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const log = require('./log');
-const dateUtils = require('./date_utils.js');
+const dateUtils = require('./date_utils');
 const keyboardActions = require('./keyboard_actions.js');
 
 function initDocumentOptions() {

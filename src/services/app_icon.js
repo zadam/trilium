@@ -6,7 +6,7 @@ const log = require('./log');
 const os = require('os');
 const fs = require('fs');
 const config = require('./config.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 
 const template = `[Desktop Entry]
 Type=Application

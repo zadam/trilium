@@ -1,4 +1,4 @@
-const eu = require('./etapi_utils.js');
+const eu = require('./etapi_utils');
 const backupService = require('../services/backup.js');
 
 function register(router) {

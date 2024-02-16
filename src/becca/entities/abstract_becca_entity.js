@@ -1,10 +1,10 @@
 "use strict";
 
-const utils = require('../../services/utils.js');
+const utils = require('../../services/utils');
 const sql = require('../../services/sql.js');
 const entityChangesService = require('../../services/entity_changes.js');
 const eventService = require('../../services/events.js');
-const dateUtils = require('../../services/date_utils.js');
+const dateUtils = require('../../services/date_utils');
 const cls = require('../../services/cls');
 const log = require('../../services/log');
 const protectedSessionService = require('../../services/protected_session.js');

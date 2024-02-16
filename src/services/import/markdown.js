@@ -2,7 +2,7 @@
 
 const marked = require("marked");
 const htmlSanitizer = require('../html_sanitizer.js');
-const importUtils = require('./utils.js');
+const importUtils = require('./utils');
 
 function renderToHtml(content, title) {
     const html = marked.parse(content, {

@@ -2,7 +2,7 @@
 
 const noteService = require('./notes.js');
 const attributeService = require('./attributes.js');
-const dateUtils = require('./date_utils.js');
+const dateUtils = require('./date_utils');
 const sql = require('./sql.js');
 const protectedSessionService = require('./protected_session.js');
 const searchService = require('../services/search/services/search.js');

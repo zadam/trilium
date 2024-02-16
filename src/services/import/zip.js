@@ -1,7 +1,7 @@
 "use strict";
 
 const BAttribute = require('../../becca/entities/battribute.js');
-const utils = require('../../services/utils.js');
+const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes.js');
 const attributeService = require('../../services/attributes.js');

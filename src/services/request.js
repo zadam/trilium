@@ -1,6 +1,6 @@
 "use strict";
 
-const utils = require('./utils.js');
+const utils = require('./utils');
 const log = require('./log');
 const url = require('url');
 const syncOptions = require('./sync_options.js');

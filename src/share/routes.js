@@ -236,7 +236,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        const utils = require('../services/utils.js');
+        const utils = require('../services/utils');
 
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
@@ -304,7 +304,7 @@ function register(router) {
 
         addNoIndexHeader(attachment.note, res);
 
-        const utils = require('../services/utils.js');
+        const utils = require('../services/utils');
 
         const filename = utils.formatDownloadTitle(attachment.title, null, attachment.mime);
 

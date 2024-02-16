@@ -1,5 +1,5 @@
 const config = require('./config.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const env = require('./env.js');
 const dataDir = require('./data_dir');
 

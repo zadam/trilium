@@ -1,6 +1,6 @@
 const specialNotesService = require('../services/special_notes.js');
 const dateNotesService = require('../services/date_notes.js');
-const eu = require('./etapi_utils.js');
+const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');
 
 const getDateInvalidError = date => new eu.EtapiError(400, "DATE_INVALID", `Date "${date}" is not valid.`);

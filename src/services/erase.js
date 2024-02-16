@@ -3,7 +3,7 @@ const revisionService = require("./revisions.js");
 const log = require("./log.ts");
 const entityChangesService = require("./entity_changes.js");
 const optionService = require("./options.js");
-const dateUtils = require("./date_utils.js");
+const dateUtils = require("./date_utils");
 const sqlInit = require("./sql_init.js");
 const cls = require("./cls");
 

@@ -1,5 +1,5 @@
 const becca = require('../becca/becca.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const BEtapiToken = require('../becca/entities/betapi_token.js');
 const crypto = require("crypto");
 
