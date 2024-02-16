@@ -1,9 +1,9 @@
 "use strict";
 
 import { Request, Response } from "express";
-import * as fs from "fs";
-const dataDir = require('./data_dir.js');
-const cls = require('./cls.js');
+import fs = require("fs");
+import dataDir = require('./data_dir.ts');
+import cls = require('./cls.js');
 
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);

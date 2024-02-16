@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const dateUtils = require('../../services/date_utils.js');
-const {LOG_DIR} = require('../../services/data_dir.js');
+const {LOG_DIR} = require('../../services/data_dir.ts');
 
 function getBackendLog() {
     const file = `${LOG_DIR}/trilium-${dateUtils.localNowDate()}.log`;

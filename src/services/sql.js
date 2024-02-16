@@ -6,7 +6,7 @@
 
 const log = require('./log.ts');
 const Database = require('better-sqlite3');
-const dataDir = require('./data_dir.js');
+const dataDir = require('./data_dir.ts');
 const cls = require('./cls.js');
 const fs = require("fs-extra");
 
