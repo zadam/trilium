@@ -2,7 +2,7 @@
 
 const log = require('./log');
 const sql = require('./sql');
-const protectedSessionService = require('./protected_session.js');
+const protectedSessionService = require('./protected_session');
 const dateUtils = require('./date_utils');
 
 /**

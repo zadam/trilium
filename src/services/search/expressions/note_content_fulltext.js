@@ -4,7 +4,7 @@ const Expression = require('./expression.js');
 const NoteSet = require('../note_set.js');
 const log = require('../../log');
 const becca = require('../../../becca/becca.js');
-const protectedSessionService = require('../../protected_session.js');
+const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require('../../utils');
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session.js');
+const protectedSessionService = require('../../services/protected_session');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes.js');

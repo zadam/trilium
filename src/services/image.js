@@ -2,7 +2,7 @@
 
 const becca = require('../becca/becca.js');
 const log = require('./log');
-const protectedSessionService = require('./protected_session.js');
+const protectedSessionService = require('./protected_session');
 const noteService = require('./notes.js');
 const optionService = require('./options.js');
 const sql = require('./sql');

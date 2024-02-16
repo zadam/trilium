@@ -6,7 +6,7 @@ const utils = require('../utils');
 const sql = require('../sql');
 const noteService = require('../notes.js');
 const imageService = require('../image.js');
-const protectedSessionService = require('../protected_session.js');
+const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require('../html_sanitizer.js');
 const {sanitizeAttributeName} = require('../sanitize_attribute_name.js');
 
