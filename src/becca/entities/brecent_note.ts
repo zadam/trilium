@@ -1,7 +1,9 @@
 "use strict";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import { RecentNoteRow } from "./rows";
+
+import dateUtils = require('../../services/date_utils');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
 
 /**
  * RecentNote represents recently visited note.
@@ -12,14 +14,15 @@ class BRecentNote extends AbstractBeccaEntity {
     static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "noteId"; }
 
-    constructor(row) {
+    noteId: string;
+    notePath: string;
+    utcDateCreated: string;
+
+    constructor(row: RecentNoteRow) {
         super();
 
-        /** @type {string} */
         this.noteId = row.noteId;
-        /** @type {string} */
         this.notePath = row.notePath;
-        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
 

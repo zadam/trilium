@@ -1,12 +1,22 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const becca = require('../becca.js');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const sql = require('../../services/sql');
-const BAttachment = require('./battachment.js');
+import protectedSessionService = require('../../services/protected_session');
+import utils = require('../../services/utils');
+import dateUtils = require('../../services/date_utils');
+import becca = require('../becca.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import sql = require('../../services/sql');
+import BAttachment = require('./battachment.js');
+import { AttachmentRow, RevisionRow } from './rows';
+
+interface ContentOpts {
+    /** will also save this BRevision entity */
+    forceSave: boolean;
+}
+
+interface GetByIdOpts {
+    includeContentLength?: boolean;
+}
 
 /**
  * Revision represents a snapshot of note's title and content at some point in the past.
@@ -20,40 +30,39 @@ class BRevision extends AbstractBeccaEntity {
     static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated",
                                             "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"]; }
 
-    constructor(row, titleDecrypted = false) {
+    revisionId: string;
+    noteId: string;
+    type: string;
+    mime: string;
+    isProtected: boolean;
+    title: string;
+    blobId: string;
+    dateLastEdited: string;
+    dateCreated: string;
+    utcDateLastEdited: string;
+    utcDateCreated: string;
+    contentLength?: number;
+
+    constructor(row: RevisionRow, titleDecrypted = false) {
         super();
 
-        /** @type {string} */
         this.revisionId = row.revisionId;
-        /** @type {string} */
         this.noteId = row.noteId;
-        /** @type {string} */
         this.type = row.type;
-        /** @type {string} */
         this.mime = row.mime;
-        /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @type {string} */
         this.title = row.title;
-        /** @type {string} */
         this.blobId = row.blobId;
-        /** @type {string} */
         this.dateLastEdited = row.dateLastEdited;
-        /** @type {string} */
         this.dateCreated = row.dateCreated;
-        /** @type {string} */
         this.utcDateLastEdited = row.utcDateLastEdited;
-        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated;
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @type {int} */
         this.contentLength = row.contentLength;
 
         if (this.isProtected && !titleDecrypted) {
-            this.title = protectedSessionService.isProtectedSessionAvailable()
-                ? protectedSessionService.decryptString(this.title)
-                : "[protected]";
+            const decryptedTitle = protectedSessionService.isProtectedSessionAvailable() ? protectedSessionService.decryptString(this.title) : null;
+            this.title = decryptedTitle || "[protected]";
         }
     }
 
@@ -80,16 +89,13 @@ class BRevision extends AbstractBeccaEntity {
      *
      * This is the same approach as is used for Note's content.
      */
-
-    /** @returns {string|Buffer} */
-    getContent() {
+    getContent(): string | Buffer {
         return this._getContent();
     }
 
     /**
-     * @returns {*}
      * @throws Error in case of invalid JSON */
-    getJsonContent() {
+    getJsonContent(): {} | null {
         const content = this.getContent();
 
         if (!content || !content.trim()) {
@@ -99,8 +105,8 @@ class BRevision extends AbstractBeccaEntity {
         return JSON.parse(content);
     }
 
-    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
-    getJsonContentSafely() {
+    /** @returns valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely(): {} | null {
         try {
             return this.getJsonContent();
         }
@@ -109,18 +115,12 @@ class BRevision extends AbstractBeccaEntity {
         }
     }
 
-    /**
-     * @param content
-     * @param {object} [opts]
-     * @param {object} [opts.forceSave=false] - will also save this BRevision entity
-     */
-    setContent(content, opts) {
+    setContent(content: any, opts: ContentOpts) {
         this._setContent(content, opts);
     }
 
-    /** @returns {BAttachment[]} */
-    getAttachments() {
-        return sql.getRows(`
+    getAttachments(): BAttachment[] {
+        return sql.getRows<AttachmentRow>(`
                 SELECT attachments.*
                 FROM attachments 
                 WHERE ownerId = ? 
@@ -128,8 +128,7 @@ class BRevision extends AbstractBeccaEntity {
             .map(row => new BAttachment(row));
     }
 
-    /** @returns {BAttachment|null} */
-    getAttachmentById(attachmentId, opts = {}) {
+    getAttachmentById(attachmentId: String, opts: GetByIdOpts = {}): BAttachment | null {
         opts.includeContentLength = !!opts.includeContentLength;
 
         const query = opts.includeContentLength
@@ -139,13 +138,12 @@ class BRevision extends AbstractBeccaEntity {
                WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`
             : `SELECT * FROM attachments WHERE ownerId = ? AND attachmentId = ? AND isDeleted = 0`;
 
-        return sql.getRows(query, [this.revisionId, attachmentId])
+        return sql.getRows<AttachmentRow>(query, [this.revisionId, attachmentId])
             .map(row => new BAttachment(row))[0];
     }
 
-    /** @returns {BAttachment[]} */
-    getAttachmentsByRole(role) {
-        return sql.getRows(`
+    getAttachmentsByRole(role: string): BAttachment[] {
+        return sql.getRows<AttachmentRow>(`
                 SELECT attachments.*
                 FROM attachments 
                 WHERE ownerId = ? 
@@ -155,8 +153,7 @@ class BRevision extends AbstractBeccaEntity {
             .map(row => new BAttachment(row));
     }
 
-    /** @returns {BAttachment} */
-    getAttachmentByTitle(title) {
+    getAttachmentByTitle(title: string): BAttachment {
         // cannot use SQL to filter by title since it can be encrypted
         return this.getAttachments().filter(attachment => attachment.title === title)[0];
     }
@@ -174,7 +171,7 @@ class BRevision extends AbstractBeccaEntity {
             type: this.type,
             mime: this.mime,
             isProtected: this.isProtected,
-            title: this.title,
+            title: this.title || undefined,
             blobId: this.blobId,
             dateLastEdited: this.dateLastEdited,
             dateCreated: this.dateCreated,
@@ -193,7 +190,7 @@ class BRevision extends AbstractBeccaEntity {
 
         if (pojo.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                pojo.title = protectedSessionService.encrypt(this.title);
+                pojo.title = protectedSessionService.encrypt(this.title) || undefined;
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts

@@ -1,15 +1,23 @@
 "use strict";
 
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const sql = require('../../services/sql');
-const protectedSessionService = require('../../services/protected_session');
-const log = require('../../services/log');
+import utils = require('../../services/utils');
+import dateUtils = require('../../services/date_utils');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import sql = require('../../services/sql');
+import protectedSessionService = require('../../services/protected_session');
+import log = require('../../services/log');
+import { AttachmentRow } from './rows';
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
 };
+
+interface ContentOpts {
+    /** will also save this BAttachment entity */
+    forceFullSave: boolean;
+    /** override frontend heuristics on when to reload, instruct to reload */
+    forceFrontendReload: boolean;
+}
 
 /**
  * Attachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
@@ -22,7 +30,24 @@ class BAttachment extends AbstractBeccaEntity {
     static get primaryKeyName() { return "attachmentId"; }
     static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId", "utcDateScheduledForErasureSince"]; }
 
-    constructor(row) {
+    noteId?: number;
+    attachmentId?: string;
+    /** either noteId or revisionId to which this attachment belongs */
+    ownerId: string;
+    role: string;
+    mime: string;
+    title: string;
+    type?: keyof typeof attachmentRoleToNoteTypeMapping;
+    position?: number;
+    blobId: string;
+    isProtected?: boolean;
+    dateModified?: string;
+    utcDateScheduledForErasureSince?: string;
+    /** optionally added to the entity */
+    contentLength?: number;
+    isDecrypted?: boolean;
+
+    constructor(row: AttachmentRow) {
         super();
 
         if (!row.ownerId?.trim()) {
@@ -35,43 +60,23 @@ class BAttachment extends AbstractBeccaEntity {
             throw new Error("'title' must be given to initialize a Attachment entity");
         }
 
-        /** @type {string} */
         this.attachmentId = row.attachmentId;
-        /**
-         * either noteId or revisionId to which this attachment belongs
-         * @type {string}
-         */
         this.ownerId = row.ownerId;
-        /** @type {string} */
         this.role = row.role;
-        /** @type {string} */
         this.mime = row.mime;
-        /** @type {string} */
         this.title = row.title;
-        /** @type {int} */
         this.position = row.position;
-        /** @type {string} */
         this.blobId = row.blobId;
-        /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @type {string} */
         this.dateModified = row.dateModified;
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
-
-        /**
-         * optionally added to the entity
-         * @type {int}
-         */
         this.contentLength = row.contentLength;
 
         this.decrypt();
     }
 
-    /** @returns {BAttachment} */
-    copy() {
+    copy(): BAttachment {
         return new BAttachment({
             ownerId: this.ownerId,
             role: this.role,
@@ -82,13 +87,12 @@ class BAttachment extends AbstractBeccaEntity {
         });
     }
 
-    /** @returns {BNote} */
-    getNote() {
+    getNote(): BNote {
         return this.becca.notes[this.ownerId];
     }
 
-    /** @returns {boolean} true if the note has string content (not binary) */
-    hasStringContent() {
+    /** @returns true if the note has string content (not binary) */
+    hasStringContent(): boolean {
         return utils.isStringNote(this.type, this.mime);
     }
 
@@ -110,32 +114,24 @@ class BAttachment extends AbstractBeccaEntity {
 
         if (!this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
-                this.title = protectedSessionService.decryptString(this.title);
+                this.title = protectedSessionService.decryptString(this.title) || "";
                 this.isDecrypted = true;
             }
-            catch (e) {
+            catch (e: any) {
                 log.error(`Could not decrypt attachment ${this.attachmentId}: ${e.message} ${e.stack}`);
             }
         }
     }
 
-    /** @returns {string|Buffer}  */
-    getContent() {
+    getContent(): string | Buffer {
         return this._getContent();
     }
 
-    /**
-     * @param content
-     * @param {object} [opts]
-     * @param {object} [opts.forceSave=false] - will also save this BAttachment entity
-     * @param {object} [opts.forceFrontendReload=false] - override frontend heuristics on when to reload, instruct to reload
-     */
-    setContent(content, opts) {
+    setContent(content: any, opts: ContentOpts) {
         this._setContent(content, opts);
     }
 
-    /** @returns {{note: BNote, branch: BBranch}} */
-    convertToNote() {
+    convertToNote(): { note: BNote, branch: BBranch } {
         if (this.type === 'search') {
             throw new Error(`Note of type search cannot have child notes`);
         }
@@ -195,9 +191,9 @@ class BAttachment extends AbstractBeccaEntity {
         super.beforeSaving();
 
         if (this.position === undefined || this.position === null) {
-            this.position = 10 + sql.getValue(`SELECT COALESCE(MAX(position), 0)
-                                              FROM attachments
-                                              WHERE ownerId = ?`, [this.noteId]);
+            this.position = 10 + sql.getValue<number>(`SELECT COALESCE(MAX(position), 0)
+                                                       FROM attachments
+                                                       WHERE ownerId = ?`, [this.noteId]);
         }
 
         this.dateModified = dateUtils.localNowDateTime();
@@ -210,7 +206,7 @@ class BAttachment extends AbstractBeccaEntity {
             ownerId: this.ownerId,
             role: this.role,
             mime: this.mime,
-            title: this.title,
+            title: this.title || undefined,
             position: this.position,
             blobId: this.blobId,
             isProtected: !!this.isProtected,
@@ -228,7 +224,7 @@ class BAttachment extends AbstractBeccaEntity {
 
         if (pojo.isProtected) {
             if (this.isDecrypted) {
-                pojo.title = protectedSessionService.encrypt(pojo.title);
+                pojo.title = protectedSessionService.encrypt(pojo.title || "") || undefined;
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts
@@ -240,4 +236,4 @@ class BAttachment extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BAttachment;
+export = BAttachment;

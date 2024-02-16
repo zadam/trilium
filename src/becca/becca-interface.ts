@@ -7,6 +7,8 @@ import NotFoundError = require('../errors/not_found_error');
  * There's a similar frontend cache Froca, and share cache Shaca.
  */
 class Becca {
+    notes!: Record<string, BNote>;
+
     constructor() {
         this.reset();
     }

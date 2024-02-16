@@ -1,47 +1,44 @@
 "use strict";
 
-const utils = require('../../services/utils');
-const sql = require('../../services/sql');
-const entityChangesService = require('../../services/entity_changes.js');
-const eventService = require('../../services/events.js');
-const dateUtils = require('../../services/date_utils');
-const cls = require('../../services/cls');
-const log = require('../../services/log');
-const protectedSessionService = require('../../services/protected_session');
-const blobService = require('../../services/blob.js');
+import utils = require('../../services/utils');
+import sql = require('../../services/sql');
+import entityChangesService = require('../../services/entity_changes.js');
+import eventService = require('../../services/events');
+import dateUtils = require('../../services/date_utils');
+import cls = require('../../services/cls');
+import log = require('../../services/log');
+import protectedSessionService = require('../../services/protected_session');
+import blobService = require('../../services/blob.js');
+import Becca = require('../becca-interface');
 
-let becca = null;
+let becca: Becca | null = null;
 
 /**
  * Base class for all backend entities.
  */
-class AbstractBeccaEntity {
-    /** @protected */
-    beforeSaving() {
+abstract class AbstractBeccaEntity {
+
+    protected utcDateModified?: string;
+
+    protected beforeSaving() {
         if (!this[this.constructor.primaryKeyName]) {
             this[this.constructor.primaryKeyName] = utils.newEntityId();
         }
     }
 
-    /** @protected */
-    getUtcDateChanged() {
+    protected getUtcDateChanged() {
         return this.utcDateModified || this.utcDateCreated;
     }
 
-    /**
-     * @protected
-     * @returns {Becca}
-     */
-    get becca() {
+    protected get becca(): Becca {
         if (!becca) {
-            becca = require('../becca.js');
+            becca = require('../becca');
         }
 
-        return becca;
+        return becca as Becca;
     }
 
-    /** @protected */
-    putEntityChange(isDeleted) {
+    protected putEntityChange(isDeleted: boolean) {
         entityChangesService.putEntityChange({
             entityName: this.constructor.entityName,
             entityId: this[this.constructor.primaryKeyName],
@@ -52,11 +49,7 @@ class AbstractBeccaEntity {
         });
     }
 
-    /**
-     * @protected
-     * @returns {string}
-     */
-    generateHash(isDeleted) {
+    protected generateHash(isDeleted: boolean): string {
         let contentToHash = "";
 
         for (const propertyName of this.constructor.hashedProperties) {
@@ -70,25 +63,16 @@ class AbstractBeccaEntity {
         return utils.hash(contentToHash).substr(0, 10);
     }
 
-    /** @protected */
-    getPojoToSave() {
+    protected getPojoToSave() {
         return this.getPojo();
     }
 
-    /**
-     * @protected
-     * @abstract
-     */
-    getPojo() {
-        throw new Error(`Unimplemented getPojo() for entity '${this.constructor.name}'`)
-    }
+    protected abstract getPojo(): {};
 
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own
-     *
-     * @returns {this}
      */
-    save(opts = {}) {
+    save(opts = {}): this {
         const entityName = this.constructor.entityName;
         const primaryKeyName = this.constructor.primaryKeyName;
 
@@ -124,8 +108,7 @@ class AbstractBeccaEntity {
         return this;
     }
 
-    /** @protected */
-    _setContent(content, opts = {}) {
+    protected _setContent(content, opts = {}) {
         // client code asks to save entity even if blobId didn't change (something else was changed)
         opts.forceSave = !!opts.forceSave;
         opts.forceFrontendReload = !!opts.forceFrontendReload;
@@ -243,11 +226,7 @@ class AbstractBeccaEntity {
         return newBlobId;
     }
 
-    /**
-     * @protected
-     * @returns {string|Buffer}
-     */
-    _getContent() {
+    protected _getContent(): string | Buffer {
         const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!row) {
@@ -261,8 +240,6 @@ class AbstractBeccaEntity {
      * Mark the entity as (soft) deleted. It will be completely erased later.
      *
      * This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
-     *
-     * @param [deleteId=null]
      */
     markAsDeleted(deleteId = null) {
         const entityId = this[this.constructor.primaryKeyName];
@@ -306,4 +283,4 @@ class AbstractBeccaEntity {
     }
 }
 
-module.exports = AbstractBeccaEntity;
+export = AbstractBeccaEntity;

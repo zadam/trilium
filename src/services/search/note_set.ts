@@ -59,4 +59,4 @@ class NoteSet {
     }
 }
 
-module.exports = NoteSet;
+export = NoteSet;

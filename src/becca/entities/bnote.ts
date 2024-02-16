@@ -1,17 +1,17 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session.js');
-const log = require('../../services/log');
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const BRevision = require('./brevision.js');
-const BAttachment = require('./battachment.js');
-const TaskContext = require('../../services/task_context.js');
-const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc');
-const eventService = require('../../services/events.js');
+import protectedSessionService = require('../../services/protected_session');
+import log = require('../../services/log');
+import sql = require('../../services/sql');
+import utils = require('../../services/utils');
+import dateUtils = require('../../services/date_utils');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import BRevision = require('./brevision.js');
+import BAttachment = require('./battachment.ts');
+import TaskContext = require('../../services/task_context.js');
+import dayjs = require("dayjs");
+import utc = require('dayjs/plugin/utc');
+import eventService = require('../../services/events.ts');
 dayjs.extend(utc);
 
 const LABEL = 'label';
