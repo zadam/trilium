@@ -1,4 +1,4 @@
-const eventService = require('./events.js');
+const eventService = require('./events');
 const scriptService = require('./script.js');
 const treeService = require('./tree.js');
 const noteService = require('./notes.js');

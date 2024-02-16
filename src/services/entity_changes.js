@@ -53,7 +53,7 @@ function putNoteReorderingEntityChange(parentNoteId, componentId) {
         instanceId
     });
 
-    const eventService = require('./events.js');
+    const eventService = require('./events');
 
     eventService.emit(eventService.ENTITY_CHANGED, {
         entityName: 'note_reordering',

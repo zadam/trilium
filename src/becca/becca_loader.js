@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../services/sql');
-const eventService = require('../services/events.js');
+const eventService = require('../services/events');
 const becca = require('./becca.js');
 const sqlInit = require('../services/sql_init.js');
 const log = require('../services/log');

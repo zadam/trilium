@@ -11,13 +11,16 @@ const ENTITY_DELETE_SYNCED = "ENTITY_DELETE_SYNCED";
 const CHILD_NOTE_CREATED = "CHILD_NOTE_CREATED";
 const NOTE_CONTENT_CHANGE = "NOTE_CONTENT_CHANGED";
 
-const eventListeners = {};
+type EventType = string | string[];
+type EventListener = (data: any) => void;
+
+const eventListeners: Record<string, EventListener[]> = {};
 
 /**
  * @param {string|string[]}eventTypes - can be either single event or an array of events
  * @param listener
  */
-function subscribe(eventTypes, listener) {
+function subscribe(eventTypes: EventType, listener: EventListener) {
     if (!Array.isArray(eventTypes)) {
         eventTypes = [ eventTypes ];
     }
@@ -28,7 +31,7 @@ function subscribe(eventTypes, listener) {
     }
 }
 
-function subscribeBeccaLoader(eventTypes, listener) {
+function subscribeBeccaLoader(eventTypes: EventType, listener: EventListener) {
     if (!Array.isArray(eventTypes)) {
         eventTypes = [ eventTypes ];
     }
@@ -41,7 +44,7 @@ function subscribeBeccaLoader(eventTypes, listener) {
     }
 }
 
-function emit(eventType, data) {
+function emit(eventType: string, data: any) {
     const listeners = eventListeners[eventType];
 
     if (listeners) {
@@ -49,7 +52,7 @@ function emit(eventType, data) {
             try {
                 listener(data);
             }
-            catch (e) {
+            catch (e: any) {
                 log.error(`Listener threw error: ${e.message}, stack: ${e.stack}`);
                 // we won't stop execution because of listener
             }
@@ -57,7 +60,7 @@ function emit(eventType, data) {
     }
 }
 
-module.exports = {
+export = {
     subscribe,
     subscribeBeccaLoader,
     emit,
