@@ -1,7 +1,7 @@
 "use strict";
 
 const becca = require('../../becca/becca.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 const NotFoundError = require('../../errors/not_found_error.js');
 
 function getNotesAndBranchesAndAttributes(noteIds) {

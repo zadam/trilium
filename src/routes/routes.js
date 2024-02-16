@@ -2,7 +2,7 @@
 
 const utils = require('../services/utils.js');
 const multer = require('multer');
-const log = require('../services/log.ts');
+const log = require('../services/log');
 const express = require('express');
 const router = express.Router();
 const auth = require('../services/auth.js');

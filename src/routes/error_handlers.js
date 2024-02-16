@@ -1,4 +1,4 @@
-const log = require('../services/log.ts');
+const log = require('../services/log');
 
 function register(app) {
     app.use((err, req, res, next) => {

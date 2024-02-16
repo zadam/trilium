@@ -1,6 +1,6 @@
 const ScriptContext = require('./script_context.js');
 const cls = require('./cls.js');
-const log = require('./log.ts');
+const log = require('./log');
 const becca = require('../becca/becca.js');
 
 function executeNote(note, apiParams) {

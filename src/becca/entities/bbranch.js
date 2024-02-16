@@ -6,7 +6,7 @@ const dateUtils = require('../../services/date_utils.js');
 const utils = require('../../services/utils.js');
 const TaskContext = require('../../services/task_context.js');
 const cls = require('../../services/cls.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple

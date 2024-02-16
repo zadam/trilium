@@ -1,7 +1,7 @@
 const optionService = require('./options.js');
 const appInfo = require('./app_info.js');
 const utils = require('./utils.js');
-const log = require('./log.ts');
+const log = require('./log');
 const dateUtils = require('./date_utils.js');
 const keyboardActions = require('./keyboard_actions.js');
 

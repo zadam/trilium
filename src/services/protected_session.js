@@ -1,6 +1,6 @@
 "use strict";
 
-const log = require('./log.ts');
+const log = require('./log');
 const dataEncryptionService = require('./encryption/data_encryption.js');
 
 let dataKey = null;

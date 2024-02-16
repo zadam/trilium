@@ -2,7 +2,7 @@
 
 const sqlInit = require('../../services/sql_init.js');
 const setupService = require('../../services/setup.js');
-const log = require('../../services/log.ts');
+const log = require('../../services/log');
 const appInfo = require('../../services/app_info.js');
 
 function getStatus() {
