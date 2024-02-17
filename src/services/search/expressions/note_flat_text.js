@@ -14,7 +14,7 @@ class NoteFlatTextExp extends Expression {
 
     execute(inputNoteSet, executionContext, searchContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
-        const beccaService = require('../../../becca/becca_service.js');
+        const beccaService = require('../../../becca/becca_service');
         const resultNoteSet = new NoteSet();
 
         /**

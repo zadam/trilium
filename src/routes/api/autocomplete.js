@@ -1,6 +1,6 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service.js');
+const beccaService = require('../../becca/becca_service');
 const searchService = require('../../services/search/services/search.js');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
