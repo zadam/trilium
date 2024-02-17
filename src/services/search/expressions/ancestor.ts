@@ -1,12 +1,19 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const log = require('../../log');
-const becca = require('../../../becca/becca');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import log = require('../../log');
+import becca = require('../../../becca/becca');
+import SearchContext = require('../search_context');
 
 class AncestorExp extends Expression {
-    constructor(ancestorNoteId, ancestorDepth) {
+
+    private ancestorNoteId: string;
+    private ancestorDepthComparator;
+    
+    ancestorDepth: string;
+
+    constructor(ancestorNoteId: string, ancestorDepth: string) {
         super();
 
         this.ancestorNoteId = ancestorNoteId;
@@ -14,7 +21,7 @@ class AncestorExp extends Expression {
         this.ancestorDepthComparator = this.getComparator(ancestorDepth);
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const ancestorNote = becca.notes[this.ancestorNoteId];
 
         if (!ancestorNote) {
@@ -44,7 +51,7 @@ class AncestorExp extends Expression {
         return depthConformingNoteSet;
     }
 
-    getComparator(depthCondition) {
+    getComparator(depthCondition: string): ((depth: number) => boolean) | null {
         if (!depthCondition) {
             return null;
         }
