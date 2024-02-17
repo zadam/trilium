@@ -3,7 +3,7 @@
 const noteService = require('../../services/notes.js');
 const parseString = require('xml2js').parseString;
 const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require('../html_sanitizer.js');
+const htmlSanitizer = require('../html_sanitizer');
 
 /**
  * @param {TaskContext} taskContext

@@ -7,7 +7,7 @@ const markdownService = require('./markdown.js');
 const mimeService = require('./mime.js');
 const utils = require('../../services/utils');
 const importUtils = require('./utils');
-const htmlSanitizer = require('../html_sanitizer.js');
+const htmlSanitizer = require('../html_sanitizer');
 
 function importSingleFile(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;

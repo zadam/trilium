@@ -1,7 +1,7 @@
 "use strict";
 
 const marked = require("marked");
-const htmlSanitizer = require('../html_sanitizer.js');
+const htmlSanitizer = require('../html_sanitizer');
 const importUtils = require('./utils');
 
 function renderToHtml(content, title) {

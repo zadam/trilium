@@ -11,7 +11,7 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
-const htmlSanitizer = require('./html_sanitizer.js');
+const htmlSanitizer = require('./html_sanitizer');
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
