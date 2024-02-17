@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const log = require('../../services/log');
 const backupService = require('../../services/backup.js');
-const anonymizationService = require('../../services/anonymization.js');
+const anonymizationService = require('../../services/anonymization');
 const consistencyChecksService = require('../../services/consistency_checks.js');
 
 function getExistingBackups() {

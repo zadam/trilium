@@ -1,4 +1,4 @@
-const anonymizationService = require('./services/anonymization.js');
+const anonymizationService = require('./services/anonymization');
 const sqlInit = require('./services/sql_init.js');
 require('./becca/entity_constructor.js');
 

@@ -1,10 +1,10 @@
-const BUILTIN_ATTRIBUTES = require('./builtin_attributes.js');
-const fs = require("fs-extra");
-const dataDir = require('./data_dir');
-const dateUtils = require('./date_utils');
-const Database = require("better-sqlite3");
-const sql = require('./sql');
-const path = require("path");
+import BUILTIN_ATTRIBUTES = require('./builtin_attributes');
+import fs = require("fs-extra");
+import dataDir = require('./data_dir');
+import dateUtils = require('./date_utils');
+import Database = require("better-sqlite3");
+import sql = require('./sql');
+import path = require("path");
 
 function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
@@ -48,7 +48,7 @@ function getLightAnonymizationScript() {
               AND value != '';`;
 }
 
-async function createAnonymizedCopy(type) {
+async function createAnonymizedCopy(type: "full" | "light") {
     if (!['full', 'light'].includes(type)) {
         throw new Error(`Unrecognized anonymization type '${type}'`);
     }

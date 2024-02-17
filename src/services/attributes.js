@@ -5,7 +5,7 @@ const sql = require('./sql');
 const becca = require('../becca/becca');
 const BAttribute = require('../becca/entities/battribute');
 const {formatAttrForSearch} = require('./attribute_formatter.js');
-const BUILTIN_ATTRIBUTES = require('./builtin_attributes.js');
+const BUILTIN_ATTRIBUTES = require('./builtin_attributes');
 
 const ATTRIBUTE_TYPES = ['label', 'relation'];
 
