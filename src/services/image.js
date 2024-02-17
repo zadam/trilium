@@ -3,7 +3,7 @@
 const becca = require('../becca/becca');
 const log = require('./log');
 const protectedSessionService = require('./protected_session');
-const noteService = require('./notes.js');
+const noteService = require('./notes');
 const optionService = require('./options');
 const sql = require('./sql');
 const jimp = require('jimp');
@@ -154,7 +154,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     setTimeout(() => {
         sql.transactional(() => {
             const note = becca.getNoteOrThrow(noteId);
-            const noteService = require('../services/notes.js');
+            const noteService = require('../services/notes');
             noteService.asyncPostProcessContent(note, note.getContent()); // to mark an unused attachment for deletion
         });
     }, 5000);

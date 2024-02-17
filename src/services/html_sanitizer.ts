@@ -47,7 +47,7 @@ function sanitize(dirtyHtml: string) {
     });
 }
 
-module.exports = {
+export = {
     sanitize,
     sanitizeUrl: (url: string) => {
         return sanitizeUrl.sanitizeUrl(url).trim();

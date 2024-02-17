@@ -5,7 +5,7 @@ const config = require('./config');
 const log = require('./log');
 const attributeService = require('../services/attributes.js');
 const protectedSessionService = require('../services/protected_session');
-const hiddenSubtreeService = require('./hidden_subtree.js');
+const hiddenSubtreeService = require('./hidden_subtree');
 
 /**
  * @param {BNote} note

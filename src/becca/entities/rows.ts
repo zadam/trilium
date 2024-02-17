@@ -13,7 +13,7 @@ export interface AttachmentRow {
     utcDateModified?: string;
     utcDateScheduledForErasureSince?: string;
     contentLength?: number;
-    content?: string;
+    content?: Buffer | string;
 }
 
 export interface RevisionRow {
@@ -69,9 +69,9 @@ export interface AttributeRow {
     noteId: string;
     type: AttributeType;
     name: string;
-    position: number;
-    value: string;
-    isInheritable: boolean;
+    position?: number;
+    value?: string;
+    isInheritable?: boolean;
     utcDateModified?: string;
 }
 
@@ -79,9 +79,10 @@ export interface BranchRow {
     branchId?: string;
     noteId: string;
     parentNoteId: string;
-    prefix: string | null;
-    notePosition: number;
-    isExpanded: boolean;
+    prefix?: string | null;
+    notePosition: number | null;
+    isExpanded?: boolean;
+    isDeleted?: boolean;
     utcDateModified?: string;
 }
 
@@ -94,13 +95,19 @@ export type NoteType = ("file" | "image" | "search" | "noteMap" | "launcher" | "
 
 export interface NoteRow {
     noteId: string;
+    deleteId: string;
     title: string;
     type: NoteType;
     mime: string;
     isProtected: boolean;
+    isDeleted: boolean;
     blobId: string;
     dateCreated: string;
     dateModified: string;
     utcDateCreated: string;
     utcDateModified: string;
+}
+
+export interface AttributeRow {
+    
 }

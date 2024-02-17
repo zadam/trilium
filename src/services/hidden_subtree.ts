@@ -1,8 +1,10 @@
-const becca = require('../becca/becca');
-const noteService = require('./notes.js');
-const BAttribute = require('../becca/entities/battribute');
-const log = require('./log');
-const migrationService = require('./migration');
+import BAttribute = require("../becca/entities/battribute");
+import { AttributeType, NoteType } from "../becca/entities/rows";
+
+import becca = require('../becca/becca');
+import noteService = require('./notes');
+import log = require('./log');
+import migrationService = require('./migration');
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -13,13 +15,36 @@ const LBTPL_BUILTIN_WIDGET = "_lbTplBuiltinWidget";
 const LBTPL_SPACER = "_lbTplSpacer";
 const LBTPL_CUSTOM_WIDGET = "_lbTplCustomWidget";
 
+interface Attribute {
+    type: AttributeType;
+    name: string;
+    isInheritable?: boolean;
+    value?: string
+}
+
+interface Item {
+    notePosition?: number;
+    id: string;
+    title: string;
+    type: NoteType;
+    icon?: string;
+    attributes?: Attribute[];
+    children?: Item[];
+    isExpanded?: boolean;
+    baseSize?: string;
+    growthFactor?: string;
+    targetNoteId?: "_backendLog" | "_globalNoteMap";
+    builtinWidget?: "bookmarks" | "spacer" | "backInHistoryButton" | "forwardInHistoryButton" | "syncStatus" | "protectedSession" | "todayInJournal" | "calendar";
+    command?: "jumpToNote" | "searchNotes" | "createNoteIntoInbox" | "showRecentChanges";
+}
+
 /*
  * Hidden subtree is generated as a "predictable structure" which means that it avoids generating random IDs to always
  * produce the same structure. This is needed because it is run on multiple instances in the sync cluster which might produce
  * duplicate subtrees. This way, all instances will generate the same structure with the same IDs.
  */
 
-const HIDDEN_SUBTREE_DEFINITION = {
+const HIDDEN_SUBTREE_DEFINITION: Item = {
     id: '_hidden',
     title: 'Hidden Notes',
     type: 'doc',
@@ -244,7 +269,7 @@ function checkHiddenSubtree(force = false) {
     checkHiddenSubtreeRecursively('root', HIDDEN_SUBTREE_DEFINITION);
 }
 
-function checkHiddenSubtreeRecursively(parentNoteId, item) {
+function checkHiddenSubtreeRecursively(parentNoteId: string, item: Item) {
     if (!item.id || !item.type || !item.title) {
         throw new Error(`Item does not contain mandatory properties: ${JSON.stringify(item)}`);
     }
@@ -337,7 +362,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 }
 
-module.exports = {
+export = {
     checkHiddenSubtree,
     LBTPL_ROOT,
     LBTPL_BASE,

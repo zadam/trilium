@@ -5,7 +5,7 @@
 
 require('../becca/entity_constructor');
 const sqlInit = require('../services/sql_init');
-const noteService = require('../services/notes.js');
+const noteService = require('../services/notes');
 const attributeService = require('../services/attributes.js');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning.js');

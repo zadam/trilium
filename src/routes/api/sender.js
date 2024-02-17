@@ -2,7 +2,7 @@
 
 const imageType = require('image-type');
 const imageService = require('../../services/image.js');
-const noteService = require('../../services/notes.js');
+const noteService = require('../../services/notes');
 const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name');
 const specialNotesService = require('../../services/special_notes.js');
 

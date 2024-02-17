@@ -6,4 +6,4 @@ class ValidationError {
     }
 }
 
-module.exports = ValidationError;
+export = ValidationError;

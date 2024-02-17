@@ -19,6 +19,6 @@
 		"files": true
 	},
 	"files": [
-		"src/types/unescape.d.ts"
+		"src/types.d.ts"
 	]
   }

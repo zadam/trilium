@@ -45,7 +45,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     blobId?: string;
     isProtected?: boolean;
     dateModified?: string;
-    utcDateScheduledForErasureSince?: string;
+    utcDateScheduledForErasureSince?: string | null;
     /** optionally added to the entity */
     contentLength?: number;
     isDecrypted?: boolean;
@@ -126,8 +126,8 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         }
     }
 
-    getContent(): string | Buffer {
-        return this._getContent();
+    getContent(): Buffer {
+        return this._getContent() as Buffer;
     }
 
     setContent(content: any, opts: ContentOpts) {
@@ -170,6 +170,11 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
 
         if (this.role === 'image' && parentNote.type === 'text') {
             const origContent = parentNote.getContent();
+            
+            if (typeof origContent !== "string") {
+                throw new Error(`Note with ID '${note.noteId} has a text type but non-string content.`);
+            }
+
             const oldAttachmentUrl = `api/attachments/${this.attachmentId}/image/`;
             const newNoteUrl = `api/images/${note.noteId}/`;
 

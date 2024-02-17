@@ -44,6 +44,6 @@ function protectRevisions(note: BNote) {
     }
 }
 
-module.exports = {
+export = {
     protectRevisions
 };

@@ -1,5 +1,5 @@
 const log = require('./log');
-const noteService = require('./notes.js');
+const noteService = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
 const attributeService = require('./attributes.js');
