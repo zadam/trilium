@@ -1,11 +1,19 @@
 "use strict";
 
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const Expression = require('./expression');
+import NoteSet = require("../note_set");
+import SearchContext = require("../search_context");
+
+import becca = require('../../../becca/becca');
+import Expression = require('./expression');
 
 class AttributeExistsExp extends Expression {
-    constructor(attributeType, attributeName, prefixMatch) {
+
+    private attributeType: string;
+    private attributeName: string;
+    private isTemplateLabel: boolean;
+    private prefixMatch: string;
+
+    constructor(attributeType: string, attributeName: string, prefixMatch: string) {
         super();
 
         this.attributeType = attributeType;
@@ -15,7 +23,7 @@ class AttributeExistsExp extends Expression {
         this.prefixMatch = prefixMatch;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const attrs = this.prefixMatch
             ? becca.findAttributesWithPrefix(this.attributeType, this.attributeName)
             : becca.findAttributes(this.attributeType, this.attributeName);
@@ -40,4 +48,4 @@ class AttributeExistsExp extends Expression {
     }
 }
 
-module.exports = AttributeExistsExp;
+export = AttributeExistsExp;
