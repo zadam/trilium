@@ -1,6 +1,11 @@
 "use strict";
 
-class Expression {
+import NoteSet = require("../note_set");
+import SearchContext = require("../search_context");
+
+abstract class Expression {
+    name: string;
+
     constructor() {
         this.name = this.constructor.name; // for DEBUG mode to have expression name as part of dumped JSON
     }
@@ -11,7 +16,7 @@ class Expression {
      * @param {SearchContext} searchContext
      * @returns {NoteSet}
      */
-    execute(inputNoteSet, executionContext, searchContext) {}
+    abstract execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext): NoteSet;
 }
 
-module.exports = Expression;
+export = Expression;

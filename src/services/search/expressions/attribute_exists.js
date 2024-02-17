@@ -2,7 +2,7 @@
 
 const NoteSet = require('../note_set');
 const becca = require('../../../becca/becca');
-const Expression = require('./expression.js');
+const Expression = require('./expression');
 
 class AttributeExistsExp extends Expression {
     constructor(attributeType, attributeName, prefixMatch) {

@@ -1,6 +1,6 @@
 "use strict";
 
-const Expression = require('./expression.js');
+const Expression = require('./expression');
 const NoteSet = require('../note_set');
 
 class ParentOfExp extends Expression {

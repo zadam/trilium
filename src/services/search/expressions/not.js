@@ -1,6 +1,6 @@
 "use strict";
 
-const Expression = require('./expression.js');
+const Expression = require('./expression');
 
 class NotExp extends Expression {
     constructor(subExpression) {
