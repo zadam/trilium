@@ -2,7 +2,7 @@
 
 const normalizeString = require("normalize-strings");
 const lex = require('./lex.js');
-const handleParens = require('./handle_parens.js');
+const handleParens = require('./handle_parens');
 const parse = require('./parse.js');
 const SearchResult = require('../search_result');
 const SearchContext = require('../search_context');
