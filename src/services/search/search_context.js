@@ -1,6 +1,6 @@
 "use strict";
 
-const hoistedNoteService = require('../hoisted_note.js');
+const hoistedNoteService = require('../hoisted_note');
 
 class SearchContext {
     constructor(params = {}) {

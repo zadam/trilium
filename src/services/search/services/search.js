@@ -10,7 +10,7 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
-const hoistedNoteService = require('../../hoisted_note.js');
+const hoistedNoteService = require('../../hoisted_note');
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;

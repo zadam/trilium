@@ -1,5 +1,5 @@
-const cls = require('./cls');
-const becca = require('../becca/becca');
+import cls = require('./cls');
+import becca = require('../becca/becca');
 
 function getHoistedNoteId() {
     return cls.getHoistedNoteId();
@@ -26,14 +26,14 @@ function isHoistedInHiddenSubtree() {
 function getWorkspaceNote() {
     const hoistedNote = becca.getNote(cls.getHoistedNoteId());
 
-    if (hoistedNote.isRoot() || hoistedNote.hasLabel('workspace')) {
+    if (hoistedNote && (hoistedNote.isRoot() || hoistedNote.hasLabel('workspace'))) {
         return hoistedNote;
     } else {
         return becca.getRoot();
     }
 }
 
-module.exports = {
+export = {
     getHoistedNoteId,
     getWorkspaceNote,
     isHoistedInHiddenSubtree

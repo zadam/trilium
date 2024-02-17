@@ -7,7 +7,7 @@ const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
 const searchService = require('../services/search/services/search.js');
 const SearchContext = require('../services/search/search_context.js');
-const hoistedNoteService = require('./hoisted_note.js');
+const hoistedNoteService = require('./hoisted_note');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
