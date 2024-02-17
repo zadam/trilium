@@ -1,18 +1,22 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const log = require('../../log');
-const becca = require('../../../becca/becca');
-const protectedSessionService = require('../../protected_session');
-const striptags = require('striptags');
-const utils = require('../../utils');
+import { NoteRow } from "../../../becca/entities/rows";
+import SearchContext = require("../search_context");
+
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import log = require('../../log');
+import becca = require('../../../becca/becca');
+import protectedSessionService = require('../../protected_session');
+import striptags = require('striptags');
+import utils = require('../../utils');
+import sql = require("../../sql");
 
 const ALLOWED_OPERATORS = ['=', '!=', '*=*', '*=', '=*', '%='];
 
-const cachedRegexes = {};
+const cachedRegexes: Record<string, RegExp> = {};
 
-function getRegex(str) {
+function getRegex(str: string): RegExp {
     if (!(str in cachedRegexes)) {
         cachedRegexes[str] = new RegExp(str, 'ms'); // multiline, dot-all
     }
@@ -20,8 +24,22 @@ function getRegex(str) {
     return cachedRegexes[str];
 }
 
+interface ConstructorOpts {
+    tokens: string[];
+    raw: boolean;
+    flatText: boolean;
+}
+
+type SearchRow = Pick<NoteRow, "noteId" | "type" | "mime" | "content" | "isProtected">;
+
 class NoteContentFulltextExp extends Expression {
-    constructor(operator, {tokens, raw, flatText}) {
+
+    private operator: string;
+    private tokens: string[];
+    private raw: boolean;
+    private flatText: boolean;
+    
+    constructor(operator: string, {tokens, raw, flatText}: ConstructorOpts) {
         super();
 
         this.operator = operator;
@@ -30,7 +48,7 @@ class NoteContentFulltextExp extends Expression {
         this.flatText = !!flatText;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         if (!ALLOWED_OPERATORS.includes(this.operator)) {
             searchContext.addError(`Note content can be searched only with operators: ${ALLOWED_OPERATORS.join(", ")}, operator ${this.operator} given.`);
 
@@ -38,9 +56,8 @@ class NoteContentFulltextExp extends Expression {
         }
 
         const resultNoteSet = new NoteSet();
-        const sql = require('../../sql');
-
-        for (const row of sql.iterateRows(`
+        
+        for (const row of sql.iterateRows<SearchRow>(`
                 SELECT noteId, type, mime, content, isProtected
                 FROM notes JOIN blobs USING (blobId) 
                 WHERE type IN ('text', 'code', 'mermaid') AND isDeleted = 0`)) {
@@ -51,18 +68,18 @@ class NoteContentFulltextExp extends Expression {
         return resultNoteSet;
     }
 
-    findInText({noteId, isProtected, content, type, mime}, inputNoteSet, resultNoteSet) {
+    findInText({noteId, isProtected, content, type, mime}: SearchRow, inputNoteSet: NoteSet, resultNoteSet: NoteSet) {
         if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
             return;
         }
 
         if (isProtected) {
-            if (!protectedSessionService.isProtectedSessionAvailable()) {
+            if (!protectedSessionService.isProtectedSessionAvailable() || !content) {
                 return;
             }
 
             try {
-                content = protectedSessionService.decryptString(content);
+                content = protectedSessionService.decryptString(content) || undefined;
             } catch (e) {
                 log.info(`Cannot decrypt content of note ${noteId}`);
                 return;
@@ -89,7 +106,7 @@ class NoteContentFulltextExp extends Expression {
             }
         } else {
             const nonMatchingToken = this.tokens.find(token =>
-                !content.includes(token) &&
+                !content?.includes(token) &&
                 (
                     // in case of default fulltext search, we should consider both title, attrs and content
                     // so e.g. "hello world" should match when "hello" is in title and "world" in content
@@ -106,7 +123,7 @@ class NoteContentFulltextExp extends Expression {
         return content;
     }
 
-    preprocessContent(content, type, mime) {
+    preprocessContent(content: string, type: string, mime: string) {
         content = utils.normalize(content.toString());
 
         if (type === 'text' && mime === 'text/html') {
@@ -125,4 +142,4 @@ class NoteContentFulltextExp extends Expression {
     }
 }
 
-module.exports = NoteContentFulltextExp;
+export = NoteContentFulltextExp;

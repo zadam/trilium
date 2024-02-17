@@ -147,12 +147,12 @@ function getRawRows<T extends {} | unknown[]>(query: string, params: Params = []
     return (wrap(query, s => s.raw().all(params)) as T[] | null) || [];
 }
 
-function iterateRows(query: string, params: Params = []) {
+function iterateRows<T>(query: string, params: Params = []): IterableIterator<T> {
     if (LOG_ALL_QUERIES) {
         console.log(query);
     }
 
-    return stmt(query).iterate(params);
+    return stmt(query).iterate(params) as IterableIterator<T>;
 }
 
 function getMap<K extends string | number | symbol, V>(query: string, params: Params = []) {
