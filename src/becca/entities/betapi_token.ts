@@ -19,10 +19,10 @@ class BEtapiToken extends AbstractBeccaEntity<BEtapiToken> {
     static get primaryKeyName() { return "etapiTokenId"; }
     static get hashedProperties() { return ["etapiTokenId", "name", "tokenHash", "utcDateCreated", "utcDateModified", "isDeleted"]; }
 
-    etapiTokenId!: string;
+    etapiTokenId?: string;
     name!: string;
     tokenHash!: string;
-    private _isDeleted!: boolean;
+    private _isDeleted?: boolean;
 
     constructor(row: EtapiTokenRow) {
         super();
@@ -36,7 +36,7 @@ class BEtapiToken extends AbstractBeccaEntity<BEtapiToken> {
     }
 
     get isDeleted() {
-        return this._isDeleted;
+        return !!this._isDeleted;
     }
 
     updateFromRow(row: EtapiTokenRow) {
@@ -74,7 +74,9 @@ class BEtapiToken extends AbstractBeccaEntity<BEtapiToken> {
 
         super.beforeSaving();
 
-        this.becca.etapiTokens[this.etapiTokenId] = this;
+        if (this.etapiTokenId) {
+            this.becca.etapiTokens[this.etapiTokenId] = this;
+        }
     }
 }
 

@@ -11,7 +11,7 @@ const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
 const ws = require('../../services/ws');
-const etapiTokenService = require('../../services/etapi_tokens.js');
+const etapiTokenService = require('../../services/etapi_tokens');
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {

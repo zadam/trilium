@@ -46,12 +46,12 @@ export interface OptionRow {
 }
 
 export interface EtapiTokenRow {
-    etapiTokenId: string;
+    etapiTokenId?: string;
     name: string;
     tokenHash: string;
     utcDateCreated?: string;
     utcDateModified?: string;
-    isDeleted: boolean;
+    isDeleted?: boolean;
 }
 
 export interface BlobRow {
