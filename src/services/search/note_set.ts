@@ -4,9 +4,10 @@ import BNote = require("../../becca/entities/bnote");
 
 class NoteSet {
     
-    private notes: BNote[];
     private noteIdSet: Set<string>;
-    private sorted: boolean;
+    
+    notes: BNote[];
+    sorted: boolean;
 
     constructor(notes: BNote[] = []) {
         this.notes = notes;

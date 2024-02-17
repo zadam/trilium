@@ -157,10 +157,10 @@ function iterateRows(query: string, params: Params = []) {
 
 function getMap<K extends string | number | symbol, V>(query: string, params: Params = []) {
     const map: Record<K, V> = {} as Record<K, V>;
-    const results = getRawRows<any>(query, params);
+    const results = getRawRows<[K, V]>(query, params);
 
     for (const row of results || []) {
-        map[row[0] as K] = row[1];
+        map[row[0]] = row[1];
     }
 
     return map;

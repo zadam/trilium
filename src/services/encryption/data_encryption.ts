@@ -3,7 +3,7 @@
 import crypto = require('crypto');
 import log = require('../log');
 
-function arraysIdentical(a: Buffer, b: Buffer) {
+function arraysIdentical(a: any[] | Buffer, b: any[] | Buffer) {
     let i = a.length;
     if (i !== b.length) return false;
     while (i--) {

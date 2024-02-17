@@ -68,7 +68,7 @@ class Becca {
     }
 
     findAttributesWithPrefix(type: string, name: string): BAttribute[] {
-        const resArr = [];
+        const resArr: BAttribute[][] = [];
         const key = `${type}-${name}`;
 
         for (const idx in this.attributeIndex) {
@@ -105,7 +105,7 @@ class Becca {
     }
 
     getNotes(noteIds: string[], ignoreMissing: boolean = false): BNote[] {
-        const filteredNotes = [];
+        const filteredNotes: BNote[] = [];
 
         for (const noteId of noteIds) {
             const note = this.notes[noteId];
