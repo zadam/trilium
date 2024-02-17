@@ -7,10 +7,8 @@ import AbstractBeccaEntity = require('./abstract_becca_entity.js');
 
 /**
  * RecentNote represents recently visited note.
- *
- * @extends AbstractBeccaEntity
  */
-class BRecentNote extends AbstractBeccaEntity {
+class BRecentNote extends AbstractBeccaEntity<BRecentNote> {
     static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "noteId"; }
 

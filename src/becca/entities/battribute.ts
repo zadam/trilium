@@ -7,6 +7,10 @@ import promotedAttributeDefinitionParser = require('../../services/promoted_attr
 import sanitizeAttributeName = require('../../services/sanitize_attribute_name');
 import { AttributeRow, AttributeType } from './rows.js';
 
+interface SavingOpts {
+    skipValidation?: boolean;
+}
+
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
@@ -174,7 +178,7 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         return !(this.attributeId in this.becca.attributes);
     }
 
-    beforeSaving(opts = {}) {
+    beforeSaving(opts: SavingOpts = {}) {
         if (!opts.skipValidation) {
             this.validate();
         }

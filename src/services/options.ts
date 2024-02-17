@@ -93,7 +93,7 @@ function getOptionMap() {
     return map;
 }
 
-module.exports = {
+export = {
     getOption,
     getOptionInt,
     getOptionBool,

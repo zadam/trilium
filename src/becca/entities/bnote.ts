@@ -64,15 +64,16 @@ class BNote extends AbstractBeccaEntity<BNote> {
     isBeingDeleted!: boolean;
     isDecrypted!: boolean;
     
+    ownedAttributes!: BAttribute[];
+    parentBranches!: BBranch[];
+    parents!: BNote[];
+    children!: BNote[];
+    targetRelations!: BAttribute[];
+
     private __flatTextCache!: string | null;
 
-    private parentBranches!: BBranch[];
-    private parents!: BNote[];
-    private children!: BNote[];
-    private ownedAttributes!: BAttribute[];
     private __attributeCache!: BAttribute[] | null;
     private __inheritableAttributeCache!: BAttribute[] | null;
-    private targetRelations!: BAttribute[];
     private __ancestorCache!: BNote[] | null;
 
     // following attributes are filled during searching in the database
@@ -85,7 +86,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     /** number of note revisions for this note */
     private revisionCount!: number | null;
 
-    constructor(row: NoteRow) {
+    constructor(row: Partial<NoteRow>) {
         super();
 
         if (!row) {
@@ -96,7 +97,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         this.init();
     }
 
-    updateFromRow(row: NoteRow) {
+    updateFromRow(row: Partial<NoteRow>) {
         this.update([
             row.noteId,
             row.title,
@@ -215,17 +216,15 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and entity changes records)
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
-
-    /** @returns {string|Buffer}  */
-    getContent() {
-        return this._getContent();
+    // FIXME: original declaration was (string | Buffer), but everywhere it's used as a string.
+    getContent(): string {
+        return this._getContent() as string;
     }
 
     /**
-     * @returns {*}
      * @throws Error in case of invalid JSON */
-    getJsonContent() {
-        const content = this.getContent() as string;
+    getJsonContent(): {} | null {
+        const content = this.getContent();
 
         if (!content || !content.trim()) {
             return null;
@@ -1496,7 +1495,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             return null;
         }
 
-        const content = this.getContent() as string;
+        const content = this.getContent();
 
         const parentNote = this.getParentNotes()[0];
         const attachment = parentNote.saveAttachment({
@@ -1506,7 +1505,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             content: content
         });
 
-        let parentContent = parentNote.getContent() as string;
+        let parentContent = parentNote.getContent();
 
         const oldNoteUrl = `api/images/${this.noteId}/`;
         const newAttachmentUrl = `api/attachments/${attachment.attachmentId}/image/`;
@@ -1584,7 +1583,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      */
     saveRevision() {
         return sql.transactional(() => {
-            let noteContent = this.getContent() as string;
+            let noteContent = this.getContent();
 
             const revision = new BRevision({
                 noteId: this.noteId,

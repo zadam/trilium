@@ -7,7 +7,7 @@ import { OptionRow } from './rows';
 /**
  * Option represents a name-value pair, either directly configurable by the user or some system property.
  */
-class BOption extends AbstractBeccaEntity {
+class BOption extends AbstractBeccaEntity<BOption> {
     static get entityName() { return "options"; }
     static get primaryKeyName() { return "name"; }
     static get hashedProperties() { return ["name", "value"]; }

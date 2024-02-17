@@ -28,18 +28,19 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated",
                                             "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"]; }
 
-    revisionId: string;
+    revisionId?: string;
     noteId: string;
     type: string;
     mime: string;
     isProtected: boolean;
     title: string;
-    blobId: string;
-    dateLastEdited: string;
+    blobId?: string;
+    dateLastEdited?: string;
     dateCreated: string;
-    utcDateLastEdited: string;
+    utcDateLastEdited?: string;
     utcDateCreated: string;
     contentLength?: number;
+    content?: string;
 
     constructor(row: RevisionRow, titleDecrypted = false) {
         super();
@@ -68,8 +69,8 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         return becca.notes[this.noteId];
     }
 
-    /** @returns {boolean} true if the note has string content (not binary) */
-    hasStringContent() {
+    /** @returns true if the note has string content (not binary) */
+    hasStringContent(): boolean {
         return utils.isStringNote(this.type, this.mime);
     }
 
@@ -87,8 +88,9 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
      *
      * This is the same approach as is used for Note's content.
      */
-    getContent(): string | Buffer {
-        return this._getContent();
+    // FIXME: initial declaration included Buffer, but everywhere it's treated as a string.
+    getContent(): string {
+        return this._getContent() as string;
     }
 
     /**

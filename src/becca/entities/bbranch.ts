@@ -83,18 +83,18 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
         }
 
         const parentNote = this.parentNote;
-
-        if (!childNote.parents.includes(parentNote)) {
-            childNote.parents.push(parentNote);
-        }
-
-        if (!parentNote.children.includes(childNote)) {
-            parentNote.children.push(childNote);
+        if (parentNote) {
+            if (!childNote.parents.includes(parentNote)) {
+                childNote.parents.push(parentNote);
+            }
+    
+            if (!parentNote.children.includes(childNote)) {
+                parentNote.children.push(childNote);
+            }
         }
     }
 
-    /** @returns {BNote} */
-    get childNote() {
+    get childNote(): BNote {
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.noteId, new BNote({noteId: this.noteId}));
@@ -103,13 +103,12 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
         return this.becca.notes[this.noteId];
     }
 
-    /** @returns {BNote} */
-    getNote() {
+    getNote(): BNote {
         return this.childNote;
     }
 
-    /** @returns {BNote|undefined} - root branch will have undefined parent, all other branches have to have a parent note */
-    get parentNote() {
+    /** @returns root branch will have undefined parent, all other branches have to have a parent note */
+    get parentNote(): BNote | undefined {
         if (!(this.parentNoteId in this.becca.notes) && this.parentNoteId !== 'none') {
             // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new BNote({noteId: this.parentNoteId}));
@@ -119,7 +118,7 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
     }
 
     get isDeleted() {
-        return !(this.branchId in this.becca.branches);
+        return (this.branchId == undefined || !(this.branchId in this.becca.branches));
     }
 
     /**

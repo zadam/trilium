@@ -273,7 +273,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
      *
      * This is a low-level method, for notes and branches use `note.deleteNote()` and 'branch.deleteBranch()` instead.
      */
-    markAsDeleted(deleteId = null) {
+    markAsDeleted(deleteId: string | null = null) {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
         const entityId = (this as any)[constructorData.primaryKeyName];
         const entityName = constructorData.entityName;
