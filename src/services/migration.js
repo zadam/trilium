@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const log = require('./log');
 const utils = require('./utils');
 const resourceDir = require('./resource_dir');
-const appInfo = require('./app_info.js');
+const appInfo = require('./app_info');
 const cls = require('./cls');
 
 async function migrate() {

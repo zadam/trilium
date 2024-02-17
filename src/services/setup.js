@@ -4,7 +4,7 @@ const sqlInit = require('./sql_init.js');
 const optionService = require('./options');
 const syncOptions = require('./sync_options.js');
 const request = require('./request.js');
-const appInfo = require('./app_info.js');
+const appInfo = require('./app_info');
 const utils = require('./utils');
 const becca = require('../becca/becca');
 

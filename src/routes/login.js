@@ -6,7 +6,7 @@ const myScryptService = require('../services/encryption/my_scrypt');
 const log = require('../services/log');
 const passwordService = require('../services/encryption/password');
 const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path.js');
+const appPath = require('../services/app_path');
 const ValidationError = require('../errors/validation_error');
 
 function loginPage(req, res) {

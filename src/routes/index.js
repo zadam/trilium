@@ -10,7 +10,7 @@ const utils = require('../services/utils');
 const protectedSessionService = require('../services/protected_session');
 const packageJson = require('../../package.json');
 const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path.js');
+const appPath = require('../services/app_path');
 
 function index(req, res) {
     const options = optionService.getOptionMap();

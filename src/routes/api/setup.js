@@ -3,7 +3,7 @@
 const sqlInit = require('../../services/sql_init.js');
 const setupService = require('../../services/setup.js');
 const log = require('../../services/log');
-const appInfo = require('../../services/app_info.js');
+const appInfo = require('../../services/app_info');
 
 function getStatus() {
     return {

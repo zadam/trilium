@@ -28,7 +28,7 @@ import AdvancedSyncOptions from "./options/advanced/sync.js";
 import DatabaseIntegrityCheckOptions from "./options/advanced/database_integrity_check.js";
 import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
-import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization";
+import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
 import AttachmentErasureTimeoutOptions from "./options/other/attachment_erasure_timeout.js";
 import RibbonOptions from "./options/appearance/ribbon.js";

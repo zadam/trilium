@@ -35,7 +35,7 @@ const passwordApiRoute = require('./api/password');
 const syncApiRoute = require('./api/sync.js');
 const loginApiRoute = require('./api/login.js');
 const recentNotesRoute = require('./api/recent_notes.js');
-const appInfoRoute = require('./api/app_info.js');
+const appInfoRoute = require('./api/app_info');
 const exportRoute = require('./api/export.js');
 const importRoute = require('./api/import.js');
 const setupApiRoute = require('./api/setup.js');
@@ -62,7 +62,7 @@ const otherRoute = require('./api/other.js');
 const shareRoutes = require('../share/routes.js');
 
 const etapiAuthRoutes = require('../etapi/auth.js');
-const etapiAppInfoRoutes = require('../etapi/app_info.js');
+const etapiAppInfoRoutes = require('../etapi/app_info');
 const etapiAttachmentRoutes = require('../etapi/attachments.js');
 const etapiAttributeRoutes = require('../etapi/attributes.js');
 const etapiBranchRoutes = require('../etapi/branches.js');

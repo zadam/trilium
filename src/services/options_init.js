@@ -1,5 +1,5 @@
 const optionService = require('./options');
-const appInfo = require('./app_info.js');
+const appInfo = require('./app_info');
 const utils = require('./utils');
 const log = require('./log');
 const dateUtils = require('./date_utils');
