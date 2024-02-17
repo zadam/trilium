@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const TrueExp = require('./true.js');
+const TrueExp = require('./true');
 
 class OrExp extends Expression {
     static of(subExpressions) {

@@ -18,7 +18,7 @@ const AncestorExp = require('../expressions/ancestor');
 const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor');
 const utils = require('../../utils');
-const TrueExp = require('../expressions/true.js');
+const TrueExp = require('../expressions/true');
 const IsHiddenExp = require('../expressions/is_hidden.js');
 
 function getFulltext(tokens, searchContext) {
