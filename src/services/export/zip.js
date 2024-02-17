@@ -16,9 +16,9 @@ const archiver = require('archiver');
 const log = require('../log');
 const TaskContext = require('../task_context');
 const ValidationError = require('../../errors/validation_error');
-const NoteMeta = require('../meta/note_meta.js');
-const AttachmentMeta = require('../meta/attachment_meta.js');
-const AttributeMeta = require('../meta/attribute_meta.js');
+const NoteMeta = require('../meta/note_meta');
+const AttachmentMeta = require('../meta/attachment_meta');
+const AttributeMeta = require('../meta/attribute_meta');
 
 /**
  * @param {TaskContext} taskContext
