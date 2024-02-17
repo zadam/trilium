@@ -1,10 +1,14 @@
 "use strict";
 
-const Expression = require('./expression');
-const TrueExp = require('./true');
+import NoteSet = require('../note_set');
+import SearchContext = require('../search_context');
+import Expression = require('./expression');
+import TrueExp = require('./true');
 
 class AndExp extends Expression {
-    static of(subExpressions) {
+    private subExpressions: Expression[];
+
+    static of(subExpressions: Expression[]) {
         subExpressions = subExpressions.filter(exp => !!exp);
 
         if (subExpressions.length === 1) {
@@ -16,12 +20,12 @@ class AndExp extends Expression {
         }
     }
 
-    constructor(subExpressions) {
+    constructor(subExpressions: Expression[]) {
         super();
         this.subExpressions = subExpressions;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         for (const subExpression of this.subExpressions) {
             inputNoteSet = subExpression.execute(inputNoteSet, executionContext, searchContext);
         }
@@ -30,4 +34,4 @@ class AndExp extends Expression {
     }
 }
 
-module.exports = AndExp;
+export = AndExp;

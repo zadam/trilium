@@ -1,7 +1,7 @@
 "use strict";
 
 const dayjs = require("dayjs");
-const AndExp = require('../expressions/and.js');
+const AndExp = require('../expressions/and');
 const OrExp = require('../expressions/or.js');
 const NotExp = require('../expressions/not.js');
 const ChildOfExp = require('../expressions/child_of.js');
