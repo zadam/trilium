@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cloc HEAD \
+    --git --md \
+    --include-lang=javascript,typescript \
+    --found=filelist.txt \
+    --exclude-dir=public,libraries
