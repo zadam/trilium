@@ -1,14 +1,14 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const buildComparator = require('../services/build_comparator');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import buildComparator = require('../services/build_comparator');
 
 /**
  * Search string is lower cased for case-insensitive comparison. But when retrieving properties,
  * we need the case-sensitive form, so we have this translation object.
  */
-const PROP_MAPPING = {
+const PROP_MAPPING: Record<string, string> = {
     "noteid": "noteId",
     "title": "title",
     "type": "type",
@@ -36,12 +36,22 @@ const PROP_MAPPING = {
     "revisioncount": "revisionCount"
 };
 
+interface SearchContext {
+    dbLoadNeeded?: boolean;
+}
+
 class PropertyComparisonExp extends Expression {
-    static isProperty(name) {
+
+    private propertyName: string;
+    private operator: string;
+    private comparedValue: string;
+    private comparator;
+
+    static isProperty(name: string) {
         return name in PROP_MAPPING;
     }
 
-    constructor(searchContext, propertyName, operator, comparedValue) {
+    constructor(searchContext: SearchContext, propertyName: string, operator: string, comparedValue: string) {
         super();
 
         this.propertyName = PROP_MAPPING[propertyName];
@@ -54,11 +64,11 @@ class PropertyComparisonExp extends Expression {
         }
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const resNoteSet = new NoteSet();
 
         for (const note of inputNoteSet.notes) {
-            let value = note[this.propertyName];
+            let value = (note as any)[this.propertyName];
 
             if (value !== undefined && value !== null && typeof value !== 'string') {
                 value = value.toString();
@@ -68,7 +78,7 @@ class PropertyComparisonExp extends Expression {
                 value = value.toLowerCase();
             }
 
-            if (this.comparator(value)) {
+            if (this.comparator && this.comparator(value)) {
                 resNoteSet.add(note);
             }
         }
@@ -77,4 +87,4 @@ class PropertyComparisonExp extends Expression {
     }
 }
 
-module.exports = PropertyComparisonExp;
+export = PropertyComparisonExp;
