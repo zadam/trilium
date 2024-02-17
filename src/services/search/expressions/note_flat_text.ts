@@ -1,29 +1,34 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
-const utils = require('../../utils');
+import BNote = require("../../../becca/entities/bnote");
+import SearchContext = require("../search_context");
+
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import becca = require('../../../becca/becca');
+import utils = require('../../utils');
 
 class NoteFlatTextExp extends Expression {
-    constructor(tokens) {
+    private tokens: string[];
+
+    constructor(tokens: string[]) {
         super();
 
         this.tokens = tokens;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: any, searchContext: SearchContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
         const beccaService = require('../../../becca/becca_service');
         const resultNoteSet = new NoteSet();
 
         /**
-         * @param {BNote} note
-         * @param {string[]} remainingTokens - tokens still needed to be found in the path towards root
-         * @param {string[]} takenPath - path so far taken towards from candidate note towards the root.
-         *                               It contains the suffix fragment of the full note path.
+         * @param note
+         * @param remainingTokens - tokens still needed to be found in the path towards root
+         * @param takenPath - path so far taken towards from candidate note towards the root.
+         *                    It contains the suffix fragment of the full note path.
          */
-        const searchPathTowardsRoot = (note, remainingTokens, takenPath) => {
+        const searchPathTowardsRoot = (note: BNote, remainingTokens: string[], takenPath: string[]) => {
             if (remainingTokens.length === 0) {
                 // we're done, just build the result
                 const resultPath = this.getNotePath(note, takenPath);
@@ -134,12 +139,7 @@ class NoteFlatTextExp extends Expression {
         return resultNoteSet;
     }
 
-    /**
-     * @param {BNote} note
-     * @param {string[]} takenPath
-     * @returns {string[]}
-     */
-    getNotePath(note, takenPath) {
+    getNotePath(note: BNote, takenPath: string[]): string[] {
         if (takenPath.length === 0) {
             throw new Error("Path is not expected to be empty.");
         } else if (takenPath.length === 1 && takenPath[0] === note.noteId) {
@@ -147,7 +147,7 @@ class NoteFlatTextExp extends Expression {
         } else {
             // this note is the closest to root containing the last matching token(s), thus completing the requirements
             // what's in this note's predecessors does not matter, thus we'll choose the best note path
-            const topMostMatchingTokenNotePath = becca.getNote(takenPath[0]).getBestNotePath();
+            const topMostMatchingTokenNotePath = becca.getNote(takenPath[0])?.getBestNotePath() || [];
 
             return [...topMostMatchingTokenNotePath, ...takenPath.slice(1)];
         }
@@ -155,11 +155,8 @@ class NoteFlatTextExp extends Expression {
 
     /**
      * Returns noteIds which have at least one matching tokens
-     *
-     * @param {NoteSet} noteSet
-     * @returns {BNote[]}
      */
-    getCandidateNotes(noteSet) {
+    getCandidateNotes(noteSet: NoteSet): BNote[] {
         const candidateNotes = [];
 
         for (const note of noteSet.notes) {
@@ -175,4 +172,4 @@ class NoteFlatTextExp extends Expression {
     }
 }
 
-module.exports = NoteFlatTextExp;
+export = NoteFlatTextExp;
