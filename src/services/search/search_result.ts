@@ -1,10 +1,14 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service');
-const becca = require('../../becca/becca');
+import beccaService = require('../../becca/becca_service');
+import becca = require('../../becca/becca');
 
 class SearchResult {
-    constructor(notePathArray) {
+    private notePathArray: string[];
+    private notePathTitle: string;
+    private score?: number;
+
+    constructor(notePathArray: string[]) {
         this.notePathArray = notePathArray;
         this.notePathTitle = beccaService.getNoteTitleForPath(notePathArray);
     }
@@ -17,7 +21,7 @@ class SearchResult {
         return this.notePathArray[this.notePathArray.length - 1];
     }
 
-    computeScore(fulltextQuery, tokens) {
+    computeScore(fulltextQuery: string, tokens: string[]) {
         this.score = 0;
 
         const note = becca.notes[this.noteId];
@@ -42,8 +46,12 @@ class SearchResult {
         }
     }
 
-    addScoreForStrings(tokens, str, factor) {
+    addScoreForStrings(tokens: string[], str: string, factor: number) {
         const chunks = str.toLowerCase().split(" ");
+
+        if (!this.score) {
+            this.score = 0;
+        }
 
         for (const chunk of chunks) {
             for (const token of tokens) {
@@ -59,4 +67,4 @@ class SearchResult {
     }
 }
 
-module.exports = SearchResult;
+export = SearchResult;
