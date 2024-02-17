@@ -1,11 +1,19 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import becca = require('../../../becca/becca');
+import SearchContext = require('../search_context');
+
+type Comparator = (value: string) => boolean;
 
 class LabelComparisonExp extends Expression {
-    constructor(attributeType, attributeName, comparator) {
+    
+    private attributeType: string;
+    private attributeName: string;
+    private comparator: Comparator;
+
+    constructor(attributeType: string, attributeName: string, comparator: Comparator) {
         super();
 
         this.attributeType = attributeType;
@@ -13,7 +21,7 @@ class LabelComparisonExp extends Expression {
         this.comparator = comparator;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const attrs = becca.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 
@@ -38,4 +46,4 @@ class LabelComparisonExp extends Expression {
     }
 }
 
-module.exports = LabelComparisonExp;
+export = LabelComparisonExp;
