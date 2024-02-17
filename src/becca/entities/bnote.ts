@@ -450,7 +450,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         );
     }
 
-    getAttributeCaseInsensitive(type: string, name: string, value: string | null) {
+    getAttributeCaseInsensitive(type: string, name: string, value?: string | null) {
         name = name.toLowerCase();
         value = value ? value.toLowerCase() : null;
 

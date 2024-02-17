@@ -1,10 +1,12 @@
 "use strict";
 
+import BNote = require("../../becca/entities/bnote");
+
 /**
  * Search string is lower cased for case-insensitive comparison. But when retrieving properties,
  * we need a case-sensitive form, so we have this translation object.
  */
-const PROP_MAPPING = {
+const PROP_MAPPING: Record<string, string> = {
     "noteid": "noteId",
     "title": "title",
     "type": "type",
@@ -32,8 +34,14 @@ const PROP_MAPPING = {
     "revisioncount": "revisionCount"
 };
 
+interface SearchContext {
+    dbLoadNeeded: boolean;
+}
+
 class ValueExtractor {
-    constructor(searchContext, propertyPath) {
+    private propertyPath: string[];
+
+    constructor(searchContext: SearchContext, propertyPath: string[]) {
         this.propertyPath = propertyPath.map(pathEl => pathEl.toLowerCase());
 
         if (this.propertyPath[0].startsWith('#')) {
@@ -81,10 +89,10 @@ class ValueExtractor {
         }
     }
 
-    extract(note) {
-        let cursor = note;
+    extract(note: BNote) {
+        let cursor: BNote | null = note;
 
-        let i;
+        let i: number = 0;
 
         const cur = () => this.propertyPath[i];
 
@@ -105,8 +113,7 @@ class ValueExtractor {
                 i++;
 
                 const attr = cursor.getAttributeCaseInsensitive('relation', cur());
-
-                cursor = attr ? attr.targetNote : null;
+                cursor = (attr ? attr.targetNote || null : null);
             }
             else if (cur() === 'parents') {
                 cursor = cursor.parents[0];
@@ -118,7 +125,7 @@ class ValueExtractor {
                 return Math.random().toString(); // string is expected for comparison
             }
             else if (cur() in PROP_MAPPING) {
-                return cursor[PROP_MAPPING[cur()]];
+                return (cursor as any)[PROP_MAPPING[cur()]];
             }
             else {
                 // FIXME
