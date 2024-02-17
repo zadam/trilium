@@ -24,8 +24,6 @@ class BEtapiToken extends AbstractBeccaEntity {
     etapiTokenId!: string;
     name!: string;
     tokenHash!: string;
-    utcDateCreated!: string;
-    utcDateModified!: string;
     isDeleted!: boolean;
 
     constructor(row: EtapiTokenRow) {

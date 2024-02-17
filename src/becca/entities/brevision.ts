@@ -21,8 +21,6 @@ interface GetByIdOpts {
 /**
  * Revision represents a snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
- *
- * @extends AbstractBeccaEntity
  */
 class BRevision extends AbstractBeccaEntity {
     static get entityName() { return "revisions"; }

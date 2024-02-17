@@ -25,7 +25,6 @@ class BAttribute extends AbstractBeccaEntity {
     position!: number;
     value!: string;
     isInheritable!: boolean;
-    utcDateModified!: string;
 
     constructor(row: AttributeRow) {
         super();

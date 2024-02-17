@@ -24,7 +24,7 @@ function md5(content: crypto.BinaryLike) {
     return crypto.createHash('md5').update(content).digest('hex');
 }
 
-function hashedBlobId(content: string) {
+function hashedBlobId(content: string | Buffer) {
     if (content === null || content === undefined) {
         content = "";
     }
