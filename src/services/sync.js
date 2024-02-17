@@ -15,7 +15,7 @@ const cls = require('./cls');
 const request = require('./request.js');
 const ws = require('./ws');
 const entityChangesService = require('./entity_changes');
-const entityConstructor = require('../becca/entity_constructor.js');
+const entityConstructor = require('../becca/entity_constructor');
 const becca = require('../becca/becca');
 
 let proxyToggle = true;
