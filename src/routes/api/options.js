@@ -1,6 +1,6 @@
 "use strict";
 
-const optionService = require('../../services/options.js');
+const optionService = require('../../services/options');
 const log = require('../../services/log');
 const searchService = require('../../services/search/services/search.js');
 const ValidationError = require('../../errors/validation_error');

@@ -12,7 +12,7 @@ const mimeService = require('./mime.js');
 const treeService = require('../tree.js');
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const BAttachment = require('../../becca/entities/battachment.js');
 const markdownService = require('./markdown.js');
 

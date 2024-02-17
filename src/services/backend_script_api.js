@@ -13,7 +13,7 @@ const cloningService = require('./cloning.js');
 const appInfo = require('./app_info.js');
 const searchService = require('./search/services/search.js');
 const SearchContext = require('./search/search_context.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const ws = require('./ws.js');
 const SpacedUpdate = require('./spaced_update.js');
 const specialNotesService = require('./special_notes.js');
@@ -21,7 +21,7 @@ const branchService = require('./branches.js');
 const exportService = require('./export/zip.js');
 const syncMutex = require('./sync_mutex.js');
 const backupService = require('./backup.js');
-const optionsService = require('./options.js');
+const optionsService = require('./options');
 
 
 /**
@@ -678,7 +678,7 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.
      *
-     * @property {Becca} becca - provides access to the backend in-memory object graph, see {@link https://github.com/zadam/trilium/blob/master/src/becca/becca.js}
+     * @property {Becca} becca - provides access to the backend in-memory object graph, see {@link https://github.com/zadam/trilium/blob/master/src/becca/becca}
      */
     this.__private = {
         becca

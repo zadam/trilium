@@ -3,8 +3,8 @@
 const sql = require('./sql');
 const log = require('./log');
 const BBranch = require('../becca/entities/bbranch.js');
-const entityChangesService = require('./entity_changes.js');
-const becca = require('../becca/becca.js');
+const entityChangesService = require('./entity_changes');
+const becca = require('../becca/becca');
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {

@@ -2,7 +2,7 @@
 
 const log = require('./log');
 const sql = require('./sql');
-const optionService = require('./options.js');
+const optionService = require('./options');
 const utils = require('./utils');
 const instanceId = require('./instance_id');
 const dateUtils = require('./date_utils');
@@ -14,9 +14,9 @@ const syncMutexService = require('./sync_mutex.js');
 const cls = require('./cls');
 const request = require('./request.js');
 const ws = require('./ws.js');
-const entityChangesService = require('./entity_changes.js');
+const entityChangesService = require('./entity_changes');
 const entityConstructor = require('../becca/entity_constructor.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 
 let proxyToggle = true;
 

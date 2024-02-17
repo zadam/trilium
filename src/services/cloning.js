@@ -1,10 +1,10 @@
 "use strict";
 
 const sql = require('./sql');
-const eventChangesService = require('./entity_changes.js');
+const eventChangesService = require('./entity_changes');
 const treeService = require('./tree.js');
 const BBranch = require('../becca/entities/bbranch.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const log = require('./log');
 
 function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {

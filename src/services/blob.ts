@@ -1,4 +1,4 @@
-import becca = require('../becca/becca.js');
+import becca = require('../becca/becca');
 import NotFoundError = require('../errors/not_found_error');
 import protectedSessionService = require('./protected_session');
 import utils = require('./utils');

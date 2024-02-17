@@ -1,4 +1,4 @@
-import optionService = require('../options.js');
+import optionService = require('../options');
 import myScryptService = require('./my_scrypt.js');
 import utils = require('../utils');
 import dataEncryptionService = require('./data_encryption.js');

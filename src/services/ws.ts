@@ -6,7 +6,7 @@ import cls = require('./cls');
 import config = require('./config');
 import syncMutexService = require('./sync_mutex.js');
 import protectedSessionService = require('./protected_session');
-import becca = require('../becca/becca.js');
+import becca = require('../becca/becca');
 import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
 
 import env = require('./env');

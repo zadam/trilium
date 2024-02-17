@@ -1,5 +1,5 @@
-const becca = require('../../becca/becca.js');
-const blobService = require('../../services/blob.js');
+const becca = require('../../becca/becca');
+const blobService = require('../../services/blob');
 const ValidationError = require('../../errors/validation_error');
 const imageService = require("../../services/image.js");
 

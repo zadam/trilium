@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const log = require('../../services/log');
 const NotFoundError = require('../../errors/not_found_error');
 

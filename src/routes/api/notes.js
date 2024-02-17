@@ -7,9 +7,9 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const ValidationError = require('../../errors/validation_error');
-const blobService = require('../../services/blob.js');
+const blobService = require('../../services/blob');
 
 function getNote(req) {
     return becca.getNoteOrThrow(req.params.noteId);

@@ -4,8 +4,8 @@ import log = require('./log');
 import cls = require('./cls');
 import utils = require('./utils');
 import instanceId = require('./instance_id');
-import becca = require('../becca/becca.js');
-import blobService = require('../services/blob.js');
+import becca = require('../becca/becca');
+import blobService = require('../services/blob');
 import { EntityChange } from './entity_changes_interface';
 import type { Blob } from "./blob-interface";
 

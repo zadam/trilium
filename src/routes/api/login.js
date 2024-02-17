@@ -1,6 +1,6 @@
 "use strict";
 
-const options = require('../../services/options.js');
+const options = require('../../services/options');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const instanceId = require('../../services/instance_id');

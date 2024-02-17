@@ -1,7 +1,7 @@
 "use strict";
 
 const beccaService = require('../../becca/becca_service.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 
 class SearchResult {
     constructor(notePathArray) {

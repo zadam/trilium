@@ -1,6 +1,6 @@
 const attributeService = require('./attributes.js');
 const dateNoteService = require('./date_notes.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const noteService = require('./notes.js');
 const dateUtils = require('./date_utils');
 const log = require('./log');

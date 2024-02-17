@@ -5,7 +5,7 @@ const searchService = require('../../services/search/services/search.js');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const cls = require('../../services/cls');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 
 function getAutocomplete(req) {
     const query = req.query.query.trim();

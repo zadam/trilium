@@ -1,4 +1,4 @@
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const utils = require('../services/utils');
 const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');

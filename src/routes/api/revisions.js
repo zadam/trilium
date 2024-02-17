@@ -6,8 +6,8 @@ const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const cls = require('../../services/cls');
 const path = require('path');
-const becca = require('../../becca/becca.js');
-const blobService = require('../../services/blob.js');
+const becca = require('../../becca/becca');
+const blobService = require('../../services/blob');
 const eraseService = require("../../services/erase.js");
 
 function getRevisionBlob(req) {

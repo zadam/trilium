@@ -3,7 +3,7 @@
 const Expression = require('./expression.js');
 const NoteSet = require('../note_set.js');
 const log = require('../../log');
-const becca = require('../../../becca/becca.js');
+const becca = require('../../../becca/becca');
 
 class AncestorExp extends Expression {
     constructor(ancestorNoteId, ancestorDepth) {

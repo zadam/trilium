@@ -263,7 +263,7 @@ function transactional<T>(func: (statement: Statement) => T) {
         }
 
         // the maxEntityChangeId has been incremented during failed transaction, need to recalculate
-        require('./entity_changes.js').recalculateMaxEntityChangeId();
+        require('./entity_changes').recalculateMaxEntityChangeId();
 
         throw e;
     }

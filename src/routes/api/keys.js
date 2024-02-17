@@ -1,7 +1,7 @@
 "use strict";
 
 const keyboardActions = require('../../services/keyboard_actions.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 
 function getKeyboardActions() {
     return keyboardActions.getKeyboardActions();

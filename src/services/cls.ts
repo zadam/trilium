@@ -1,5 +1,5 @@
 import clsHooked = require('cls-hooked');
-import type entity_changes = require('./entity_changes');
+import { EntityChange } from './entity_changes_interface';
 const namespace = clsHooked.createNamespace("trilium");
 
 type Callback = (...args: any[]) => any;
@@ -75,7 +75,7 @@ function getAndClearEntityChangeIds() {
     return entityChangeIds;
 }
 
-function putEntityChange(entityChange: entity_changes.EntityChange) {
+function putEntityChange(entityChange: EntityChange) {
     if (namespace.get('ignoreEntityChangeIds')) {
         return;
     }

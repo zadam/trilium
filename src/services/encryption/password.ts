@@ -1,7 +1,7 @@
 "use strict";
 
 import sql = require('../sql');
-import optionService = require('../options.js');
+import optionService = require('../options');
 import myScryptService = require('./my_scrypt.js');
 import utils = require('../utils');
 import passwordEncryptionService = require('./password_encryption.js');

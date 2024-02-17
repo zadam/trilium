@@ -56,7 +56,7 @@ function touchProtectedSession() {
 }
 
 function checkProtectedSessionExpiration() {
-    const options = require('./options.js');
+    const options = require('./options');
     const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
     if (isProtectedSessionAvailable()
         && lastProtectedSessionOperationDate

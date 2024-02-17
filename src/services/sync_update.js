@@ -1,6 +1,6 @@
 const sql = require('./sql');
 const log = require('./log');
-const entityChangesService = require('./entity_changes.js');
+const entityChangesService = require('./entity_changes');
 const eventService = require('./events');
 const entityConstructor = require('../becca/entity_constructor.js');
 const ws = require('./ws.js');

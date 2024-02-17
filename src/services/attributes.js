@@ -2,7 +2,7 @@
 
 const searchService = require('./search/services/search.js');
 const sql = require('./sql');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const BAttribute = require('../becca/entities/battribute.js');
 const {formatAttrForSearch} = require('./attribute_formatter.js');
 const BUILTIN_ATTRIBUTES = require('./builtin_attributes.js');

@@ -1,7 +1,7 @@
 "use strict";
 
 const utils = require('../services/utils');
-const optionService = require('../services/options.js');
+const optionService = require('../services/options');
 const myScryptService = require('../services/encryption/my_scrypt.js');
 const log = require('../services/log');
 const passwordService = require('../services/encryption/password.js');

@@ -3,7 +3,7 @@ const fs = require('fs');
 const resourceDir = require('./resource_dir');
 const sql = require('./sql');
 const utils = require('./utils');
-const optionService = require('./options.js');
+const optionService = require('./options');
 const port = require('./port.js');
 const BOption = require('../becca/entities/boption.js');
 const TaskContext = require('./task_context.js');
@@ -105,7 +105,7 @@ async function createInitialDatabase() {
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        const optionService = require('./options.js');
+        const optionService = require('./options');
         optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,

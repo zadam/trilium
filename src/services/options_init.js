@@ -1,4 +1,4 @@
-const optionService = require('./options.js');
+const optionService = require('./options');
 const appInfo = require('./app_info.js');
 const utils = require('./utils');
 const log = require('./log');

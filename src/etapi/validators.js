@@ -64,7 +64,7 @@ function isNoteId(obj) {
         return;
     }
 
-    const becca = require('../becca/becca.js');
+    const becca = require('../becca/becca');
 
     if (typeof obj !== 'string') {
         return `'${obj}' is not a valid noteId`;

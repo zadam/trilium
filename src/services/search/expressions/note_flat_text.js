@@ -2,7 +2,7 @@
 
 const Expression = require('./expression.js');
 const NoteSet = require('../note_set.js');
-const becca = require('../../../becca/becca.js');
+const becca = require('../../../becca/becca');
 const utils = require('../../utils');
 
 class NoteFlatTextExp extends Expression {

@@ -2,7 +2,7 @@
 
 const scriptService = require('../../services/script.js');
 const attributeService = require('../../services/attributes.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const syncService = require('../../services/sync.js');
 const sql = require('../../services/sql');
 
