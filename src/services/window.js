@@ -6,7 +6,7 @@ const env = require('./env');
 const log = require('./log');
 const sqlInit = require('./sql_init.js');
 const cls = require('./cls');
-const keyboardActionsService = require('./keyboard_actions.js');
+const keyboardActionsService = require('./keyboard_actions');
 const {ipcMain} = require('electron');
 
 // Prevent the window being garbage collected
