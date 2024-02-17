@@ -12,7 +12,7 @@ import cls = require('./cls');
 import config = require('./config');
 import { OptionRow } from '../becca/entities/rows';
 
-const dbReady = utils.deferred();
+const dbReady = utils.deferred<void>();
 
 cls.init(initDbConnection);
 
@@ -43,7 +43,7 @@ async function initDbConnection() {
 
     sql.execute('CREATE TEMP TABLE "param_list" (`paramId` TEXT NOT NULL PRIMARY KEY)');
 
-    dbReady.resolve(undefined);
+    dbReady.resolve();
 }
 
 async function createInitialDatabase() {
