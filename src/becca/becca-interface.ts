@@ -6,6 +6,15 @@ import BNote = require('./entities/bnote');
 import BEtapiToken = require('./entities/betapi_token');
 import BAttribute = require('./entities/battribute');
 import BBranch = require('./entities/bbranch');
+import BRevision = require('./entities/brevision');
+import BAttachment = require('./entities/battachment');
+import { AttachmentRow, RevisionRow } from './entities/rows';
+import BBlob = require('./entities/bblob');
+import BRecentNote = require('./entities/brecent_note');
+
+interface AttachmentOpts {
+    includeContentLength?: boolean;
+}
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -23,8 +32,11 @@ class Becca {
     options!: Record<string, BOption>;
     etapiTokens!: Record<string, BEtapiToken>;
 
+    allNoteSetCache: NoteSet | null;
+
     constructor() {
         this.reset();
+        this.allNoteSetCache = null;
     }
 
     reset() {
@@ -45,8 +57,7 @@ class Becca {
         return this.getNote('root');
     }
 
-    /** @returns {BAttribute[]} */
-    findAttributes(type, name) {
+    findAttributes(type: string, name: string): BAttribute[] {
         name = name.trim().toLowerCase();
 
         if (name.startsWith('#') || name.startsWith('~')) {
@@ -56,8 +67,7 @@ class Becca {
         return this.attributeIndex[`${type}-${name}`] || [];
     }
 
-    /** @returns {BAttribute[]} */
-    findAttributesWithPrefix(type, name) {
+    findAttributesWithPrefix(type: string, name: string): BAttribute[] {
         const resArr = [];
         const key = `${type}-${name}`;
 
@@ -76,18 +86,16 @@ class Becca {
         }
     }
 
-    addNote(noteId, note) {
+    addNote(noteId: string, note: BNote) {
         this.notes[noteId] = note;
         this.dirtyNoteSetCache();
     }
 
-    /** @returns {BNote|null} */
-    getNote(noteId) {
+    getNote(noteId: string): BNote | null {
         return this.notes[noteId];
     }
 
-    /** @returns {BNote|null} */
-    getNoteOrThrow(noteId) {
+    getNoteOrThrow(noteId: string): BNote | null {
         const note = this.notes[noteId];
         if (!note) {
             throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
@@ -96,8 +104,7 @@ class Becca {
         return note;
     }
 
-    /** @returns {BNote[]} */
-    getNotes(noteIds, ignoreMissing = false) {
+    getNotes(noteIds: string[], ignoreMissing: boolean = false): BNote[] {
         const filteredNotes = [];
 
         for (const noteId of noteIds) {
@@ -117,13 +124,11 @@ class Becca {
         return filteredNotes;
     }
 
-    /** @returns {BBranch|null} */
-    getBranch(branchId) {
+    getBranch(branchId: string): BBranch | null {
         return this.branches[branchId];
     }
 
-    /** @returns {BBranch|null} */
-    getBranchOrThrow(branchId) {
+    getBranchOrThrow(branchId: string): BBranch | null {
         const branch = this.getBranch(branchId);
         if (!branch) {
             throw new NotFoundError(`Branch '${branchId}' was not found in becca.`);
@@ -131,13 +136,11 @@ class Becca {
         return branch;
     }
 
-    /** @returns {BAttribute|null} */
-    getAttribute(attributeId) {
+    getAttribute(attributeId: string): BAttribute | null {
         return this.attributes[attributeId];
     }
 
-    /** @returns {BAttribute} */
-    getAttributeOrThrow(attributeId) {
+    getAttributeOrThrow(attributeId: string): BAttribute {
         const attribute = this.getAttribute(attributeId);
         if (!attribute) {
             throw new NotFoundError(`Attribute '${attributeId}' does not exist.`);
@@ -146,21 +149,18 @@ class Becca {
         return attribute;
     }
 
-    /** @returns {BBranch|null} */
-    getBranchFromChildAndParent(childNoteId, parentNoteId) {
+    getBranchFromChildAndParent(childNoteId: string, parentNoteId: string): BBranch | null {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 
-    /** @returns {BRevision|null} */
-    getRevision(revisionId) {
+    getRevision(revisionId: string): BRevision | null {
         const row = sql.getRow("SELECT * FROM revisions WHERE revisionId = ?", [revisionId]);
 
         const BRevision = require('./entities/brevision'); // avoiding circular dependency problems
         return row ? new BRevision(row) : null;
     }
 
-    /** @returns {BAttachment|null} */
-    getAttachment(attachmentId, opts = {}) {
+    getAttachment(attachmentId: string, opts: AttachmentOpts = {}): BAttachment | null {
         opts.includeContentLength = !!opts.includeContentLength;
 
         const query = opts.includeContentLength
@@ -176,8 +176,7 @@ class Becca {
             .map(row => new BAttachment(row))[0];
     }
 
-    /** @returns {BAttachment} */
-    getAttachmentOrThrow(attachmentId, opts = {}) {
+    getAttachmentOrThrow(attachmentId: string, opts: AttachmentOpts = {}): BAttachment {
         const attachment = this.getAttachment(attachmentId, opts);
         if (!attachment) {
             throw new NotFoundError(`Attachment '${attachmentId}' has not been found.`);
@@ -185,38 +184,33 @@ class Becca {
         return attachment;
     }
 
-    /** @returns {BAttachment[]} */
-    getAttachments(attachmentIds) {
+    getAttachments(attachmentIds: string[]): BAttachment[] {
         const BAttachment = require('./entities/battachment'); // avoiding circular dependency problems
-        return sql.getManyRows("SELECT * FROM attachments WHERE attachmentId IN (???) AND isDeleted = 0", attachmentIds)
+        return sql.getManyRows<AttachmentRow>("SELECT * FROM attachments WHERE attachmentId IN (???) AND isDeleted = 0", attachmentIds)
             .map(row => new BAttachment(row));
     }
 
-    /** @returns {BBlob|null} */
-    getBlob(entity) {
+    getBlob(entity: { blobId: string }): BBlob | null {
         const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [entity.blobId]);
 
         const BBlob = require('./entities/bblob'); // avoiding circular dependency problems
         return row ? new BBlob(row) : null;
     }
 
-    /** @returns {BOption|null} */
-    getOption(name) {
+    getOption(name: string): BOption | null {
         return this.options[name];
     }
 
-    /** @returns {BEtapiToken[]} */
-    getEtapiTokens() {
+    getEtapiTokens(): BEtapiToken[] {
         return Object.values(this.etapiTokens);
     }
 
-    /** @returns {BEtapiToken|null} */
-    getEtapiToken(etapiTokenId) {
+    getEtapiToken(etapiTokenId: string): BEtapiToken | null {
         return this.etapiTokens[etapiTokenId];
     }
 
     /** @returns {AbstractBeccaEntity|null} */
-    getEntity(entityName, entityId) {
+    getEntity(entityName: string, entityId: string) {
         if (!entityName || !entityId) {
             return null;
         }
@@ -238,20 +232,18 @@ class Becca {
             throw new Error(`Unknown entity name '${camelCaseEntityName}' (original argument '${entityName}')`);
         }
 
-        return this[camelCaseEntityName][entityId];
+        return (this as any)[camelCaseEntityName][entityId];
     }
 
-    /** @returns {BRecentNote[]} */
-    getRecentNotesFromQuery(query, params = []) {
+    getRecentNotesFromQuery(query: string, params = []): BRecentNote[] {
         const rows = sql.getRows(query, params);
 
         const BRecentNote = require('./entities/brecent_note'); // avoiding circular dependency problems
         return rows.map(row => new BRecentNote(row));
     }
 
-    /** @returns {BRevision[]} */
-    getRevisionsFromQuery(query, params = []) {
-        const rows = sql.getRows(query, params);
+    getRevisionsFromQuery(query: string, params = []): BRevision[] {
+        const rows = sql.getRows<RevisionRow>(query, params);
 
         const BRevision = require('./entities/brevision'); // avoiding circular dependency problems
         return rows.map(row => new BRevision(row));
@@ -267,8 +259,8 @@ class Becca {
         if (!this.allNoteSetCache) {
             const allNotes = [];
 
-            for (const noteId in becca.notes) {
-                const note = becca.notes[noteId];
+            for (const noteId in this.notes) {
+                const note = this.notes[noteId];
 
                 // in the process of loading data sometimes we create "skeleton" note instances which are expected to be filled later
                 // in case of inconsistent data this might not work and search will then crash on these

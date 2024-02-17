@@ -110,7 +110,7 @@ function getValue<T>(query: string, params: Params = []): T {
 // smaller values can result in better performance due to better usage of statement cache
 const PARAM_LIMIT = 100;
 
-function getManyRows<T>(query: string, params: Params): T[] | null {
+function getManyRows<T>(query: string, params: Params): T[] {
     let results: unknown[] = [];
 
     while (params.length > 0) {
@@ -136,7 +136,7 @@ function getManyRows<T>(query: string, params: Params): T[] | null {
         results = results.concat(subResults);
     }
 
-    return results as (T[] | null);
+    return (results as (T[] | null) || []);
 }
 
 function getRows<T>(query: string, params: Params = []): T[] {

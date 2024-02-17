@@ -1,40 +1,45 @@
 "use strict";
 
+import BNote = require("../../becca/entities/bnote");
+
 class NoteSet {
-    constructor(notes = []) {
-        /** @type {BNote[]} */
+    
+    private notes: BNote[];
+    private noteIdSet: Set<string>;
+    private sorted: boolean;
+
+    constructor(notes: BNote[] = []) {
         this.notes = notes;
         this.noteIdSet = new Set(notes.map(note => note.noteId));
-        /** @type {boolean} */
         this.sorted = false;
     }
 
-    add(note) {
+    add(note: BNote) {
         if (!this.hasNote(note)) {
             this.notes.push(note);
             this.noteIdSet.add(note.noteId);
         }
     }
 
-    addAll(notes) {
+    addAll(notes: BNote[]) {
         for (const note of notes) {
             this.add(note);
         }
     }
 
-    hasNote(note) {
+    hasNote(note: BNote) {
         return this.hasNoteId(note.noteId);
     }
 
-    hasNoteId(noteId) {
+    hasNoteId(noteId: string) {
         return this.noteIdSet.has(noteId);
     }
 
-    mergeIn(anotherNoteSet) {
+    mergeIn(anotherNoteSet: NoteSet) {
         this.addAll(anotherNoteSet.notes);
     }
 
-    minus(anotherNoteSet) {
+    minus(anotherNoteSet: NoteSet) {
         const newNoteSet = new NoteSet();
 
         for (const note of this.notes) {
@@ -46,7 +51,7 @@ class NoteSet {
         return newNoteSet;
     }
 
-    intersection(anotherNoteSet) {
+    intersection(anotherNoteSet: NoteSet) {
         const newNoteSet = new NoteSet();
 
         for (const note of this.notes) {
