@@ -3,7 +3,7 @@
 const utils = require('./utils');
 const log = require('./log');
 const url = require('url');
-const syncOptions = require('./sync_options.js');
+const syncOptions = require('./sync_options');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows supporting system proxy

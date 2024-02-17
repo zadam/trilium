@@ -8,7 +8,7 @@ const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash.js');
 const log = require('../../services/log');
-const syncOptions = require('../../services/sync_options.js');
+const syncOptions = require('../../services/sync_options');
 const utils = require('../../services/utils');
 const ws = require('../../services/ws');
 
