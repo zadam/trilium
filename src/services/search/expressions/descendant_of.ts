@@ -1,17 +1,20 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import becca = require('../../../becca/becca');
+import SearchContext = require('../search_context');
 
 class DescendantOfExp extends Expression {
-    constructor(subExpression) {
+    private subExpression: Expression;
+
+    constructor(subExpression: Expression) {
         super();
 
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const subInputNoteSet = new NoteSet(Object.values(becca.notes));
         const subResNoteSet = this.subExpression.execute(subInputNoteSet, executionContext, searchContext);
 
@@ -25,4 +28,4 @@ class DescendantOfExp extends Expression {
     }
 }
 
-module.exports = DescendantOfExp;
+export = DescendantOfExp;
