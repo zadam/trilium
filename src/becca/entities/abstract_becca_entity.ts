@@ -29,14 +29,14 @@ interface ConstructorData<T extends AbstractBeccaEntity<T>> {
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
-    protected utcDateCreated?: string;
     protected utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
     protected isSynced?: boolean;
     
     protected blobId?: string;
- 
+    
+    utcDateCreated!: string;
     isProtected?: boolean;
 
     protected beforeSaving() {

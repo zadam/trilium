@@ -7,7 +7,8 @@
 	  "strict": true,
 	  "noImplicitAny": true,
 	  "resolveJsonModule": true,
-	  "lib": ["ES2021"]
+	  "lib": ["ES2021"],
+	  "downlevelIteration": true
 	},
 	"include": [
       "./src/**/*.js",
