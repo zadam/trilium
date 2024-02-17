@@ -1,13 +1,13 @@
 "use strict";
 
-import BNote = require('./bnote.js');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import BNote = require('./bnote');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 import dateUtils = require('../../services/date_utils');
 import utils = require('../../services/utils');
 import TaskContext = require('../../services/task_context');
 import cls = require('../../services/cls');
 import log = require('../../services/log');
-import { BranchRow } from './rows.js';
+import { BranchRow } from './rows';
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
@@ -159,7 +159,7 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
 
             if (parentBranches.length === 1 && parentBranches[0] === this) {
                 // needs to be run before branches and attributes are deleted and thus attached relations disappear
-                const handlers = require('../../services/handlers.js');
+                const handlers = require('../../services/handlers');
                 handlers.runAttachedRelations(note, 'runOnNoteDeletion', note);
             }
         }

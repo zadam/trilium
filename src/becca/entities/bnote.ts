@@ -5,7 +5,7 @@ import log = require('../../services/log');
 import sql = require('../../services/sql');
 import utils = require('../../services/utils');
 import dateUtils = require('../../services/date_utils');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 import BRevision = require('./brevision');
 import BAttachment = require('./battachment');
 import TaskContext = require('../../services/task_context');
@@ -896,7 +896,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         }
 
         try {
-            const searchService = require('../../services/search/services/search.js');
+            const searchService = require('../../services/search/services/search');
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
@@ -1284,7 +1284,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             }
         }
         else {
-            const BAttribute = require('./battribute.js');
+            const BAttribute = require('./battribute');
 
             new BAttribute({
                 noteId: this.noteId,
@@ -1321,7 +1321,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * @param value - value of the attribute - text for labels, target note ID for relations; optional.
      */
     addAttribute(type: string, name: string, value: string = "", isInheritable: boolean = false, position: number | null = null): BAttribute {
-        const BAttribute = require('./battribute.js');
+        const BAttribute = require('./battribute');
 
         return new BAttribute({
             noteId: this.noteId,
@@ -1433,7 +1433,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     searchNotesInSubtree(searchString: string) {
-        const searchService = require('../../services/search/services/search.js');
+        const searchService = require('../../services/search/services/search');
 
         return searchService.searchNotes(searchString);
     }
@@ -1443,7 +1443,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     cloneTo(parentNoteId: string) {
-        const cloningService = require('../../services/cloning.js');
+        const cloningService = require('../../services/cloning');
 
         const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
 
@@ -1514,7 +1514,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
         parentNote.setContent(fixedContent);
 
-        const noteService = require('../../services/notes.js');
+        const noteService = require('../../services/notes');
         noteService.asyncPostProcessContent(parentNote, fixedContent); // to mark an unused attachment for deletion
 
         this.deleteNote();
@@ -1541,7 +1541,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         }
 
         // needs to be run before branches and attributes are deleted and thus attached relations disappear
-        const handlers = require('../../services/handlers.js');
+        const handlers = require('../../services/handlers');
         handlers.runAttachedRelations(this, 'runOnNoteDeletion', this);
         taskContext.noteDeletionHandlerTriggered = true;
 

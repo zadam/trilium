@@ -1,6 +1,6 @@
-const becca = require('./becca.js');
+const becca = require('./becca');
 const log = require('../services/log');
-const beccaService = require('./becca_service.js');
+const beccaService = require('./becca_service');
 const dateUtils = require('../services/date_utils');
 const {JSDOM} = require("jsdom");
 
@@ -35,7 +35,7 @@ const IGNORED_ATTR_NAMES = [
 function filterUrlValue(value) {
     return value
         .replace(/https?:\/\//ig, "")
-        .replace(/www.js\./ig, "")
+        .replace(/www\./ig, "")
         .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 

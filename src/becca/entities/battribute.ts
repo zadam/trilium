@@ -1,11 +1,11 @@
 "use strict";
 
-import BNote = require('./bnote.js');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import BNote = require('./bnote');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 import dateUtils = require('../../services/date_utils');
 import promotedAttributeDefinitionParser = require('../../services/promoted_attribute_definition_parser');
 import sanitizeAttributeName = require('../../services/sanitize_attribute_name');
-import { AttributeRow, AttributeType } from './rows.js';
+import { AttributeRow, AttributeType } from './rows';
 
 interface SavingOpts {
     skipValidation?: boolean;

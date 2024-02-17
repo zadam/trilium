@@ -3,7 +3,7 @@
 import { RecentNoteRow } from "./rows";
 
 import dateUtils = require('../../services/date_utils');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 
 /**
  * RecentNote represents recently visited note.

@@ -2,13 +2,13 @@
 
 import utils = require('../../services/utils');
 import sql = require('../../services/sql');
-import entityChangesService = require('../../services/entity_changes.js');
+import entityChangesService = require('../../services/entity_changes');
 import eventService = require('../../services/events');
 import dateUtils = require('../../services/date_utils');
 import cls = require('../../services/cls');
 import log = require('../../services/log');
 import protectedSessionService = require('../../services/protected_session');
-import blobService = require('../../services/blob.js');
+import blobService = require('../../services/blob');
 import Becca = require('../becca-interface');
 
 let becca: Becca | null = null;

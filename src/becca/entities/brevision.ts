@@ -3,10 +3,10 @@
 import protectedSessionService = require('../../services/protected_session');
 import utils = require('../../services/utils');
 import dateUtils = require('../../services/date_utils');
-import becca = require('../becca.js');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import becca = require('../becca');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 import sql = require('../../services/sql');
-import BAttachment = require('./battachment.js');
+import BAttachment = require('./battachment');
 import { AttachmentRow, RevisionRow } from './rows';
 
 interface ContentOpts {

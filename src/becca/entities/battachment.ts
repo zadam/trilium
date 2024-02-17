@@ -2,7 +2,7 @@
 
 import utils = require('../../services/utils');
 import dateUtils = require('../../services/date_utils');
-import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 import sql = require('../../services/sql');
 import protectedSessionService = require('../../services/protected_session');
 import log = require('../../services/log');
@@ -152,7 +152,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
             throw new Error(`Cannot convert protected attachment outside of protected session`);
         }
 
-        const noteService = require('../../services/notes.js');
+        const noteService = require('../../services/notes');
 
         const { note, branch } = noteService.createNewNote({
             parentNoteId: this.ownerId,
