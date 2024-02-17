@@ -1,13 +1,33 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+import BNote = require("../../../becca/entities/bnote");
+import NoteSet = require("../note_set");
+import SearchContext = require("../search_context");
+import Expression = require("./expression");
+
+type Direction = "asc";
+
+interface ValueExtractor {
+    extract: (note: BNote) => number | string | null;
+}
+
+interface OrderDefinition {
+    direction: Direction;
+    smaller: number;
+    larger: number;
+    valueExtractor: ValueExtractor;
+}
 
 class OrderByAndLimitExp extends Expression {
-    constructor(orderDefinitions, limit) {
+
+    private orderDefinitions: OrderDefinition[];
+    private limit: number;
+    private subExpression: Expression | null;
+
+    constructor(orderDefinitions: Pick<OrderDefinition, "direction">[], limit: number) {
         super();
 
-        this.orderDefinitions = orderDefinitions;
+        this.orderDefinitions = orderDefinitions as unknown as OrderDefinition[];
 
         for (const od of this.orderDefinitions) {
             od.smaller = od.direction === "asc" ? -1 : 1;
@@ -16,11 +36,15 @@ class OrderByAndLimitExp extends Expression {
 
         this.limit = limit || 0;
 
-        /** @type {Expression} */
         this.subExpression = null; // it's expected to be set after construction
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
+        if (!this.subExpression) {
+            // FIXME: who is setting the subexpression?
+            throw new Error("Missing subexpression");
+        }
+
         let {notes} = this.subExpression.execute(inputNoteSet, executionContext, searchContext);
 
         notes.sort((a, b) => {
@@ -48,7 +72,8 @@ class OrderByAndLimitExp extends Expression {
                 }
 
                 // if both are numbers, then parse them for numerical comparison
-                if (this.isNumber(valA) && this.isNumber(valB)) {
+                if (typeof valA === "string" && this.isNumber(valA) &&
+                    typeof valB === "string" && this.isNumber(valB)) {
                     valA = parseFloat(valA);
                     valB = parseFloat(valB);
                 }
@@ -77,16 +102,16 @@ class OrderByAndLimitExp extends Expression {
         return noteSet;
     }
 
-    isNumber(x) {
+    isNumber(x: number | string) {
         if (typeof x === 'number') {
             return true;
         } else if (typeof x === 'string') {
             // isNaN will return false for blank string
-            return x.trim() !== "" && !isNaN(x);
+            return x.trim() !== "" && !isNaN(parseInt(x, 10));
         } else {
             return false;
         }
     }
 }
 
-module.exports = OrderByAndLimitExp;
+export = OrderByAndLimitExp;
