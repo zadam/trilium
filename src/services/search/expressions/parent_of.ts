@@ -1,16 +1,19 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import SearchContext = require('../search_context');
 
 class ParentOfExp extends Expression {
-    constructor(subExpression) {
+    private subExpression: Expression;
+
+    constructor(subExpression: Expression) {
         super();
 
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const subInputNoteSet = new NoteSet();
 
         for (const note of inputNoteSet.notes) {
@@ -33,4 +36,4 @@ class ParentOfExp extends Expression {
     }
 }
 
-module.exports = ParentOfExp;
+export = ParentOfExp;
