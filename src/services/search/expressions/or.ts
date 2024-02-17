@@ -1,11 +1,14 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const TrueExp = require('./true');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import TrueExp = require('./true');
+import SearchContext = require('../search_context');
 
 class OrExp extends Expression {
-    static of(subExpressions) {
+    private subExpressions: Expression[];
+
+    static of(subExpressions: Expression[]) {
         subExpressions = subExpressions.filter(exp => !!exp);
 
         if (subExpressions.length === 1) {
@@ -19,13 +22,13 @@ class OrExp extends Expression {
         }
     }
 
-    constructor(subExpressions) {
+    constructor(subExpressions: Expression[]) {
         super();
 
         this.subExpressions = subExpressions;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const resultNoteSet = new NoteSet();
 
         for (const subExpression of this.subExpressions) {
@@ -36,4 +39,4 @@ class OrExp extends Expression {
     }
 }
 
-module.exports = OrExp;
+export = OrExp;

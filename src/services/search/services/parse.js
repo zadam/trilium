@@ -2,7 +2,7 @@
 
 const dayjs = require("dayjs");
 const AndExp = require('../expressions/and');
-const OrExp = require('../expressions/or.js');
+const OrExp = require('../expressions/or');
 const NotExp = require('../expressions/not');
 const ChildOfExp = require('../expressions/child_of');
 const DescendantOfExp = require('../expressions/descendant_of');
