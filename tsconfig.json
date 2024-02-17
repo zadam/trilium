@@ -6,6 +6,7 @@
 	  "outDir": "./build",
 	  "strict": true,
 	  "noImplicitAny": true,
+	  "resolveJsonModule": true,
 	  "lib": ["ES2021"]
 	},
 	"include": [

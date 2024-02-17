@@ -9,7 +9,7 @@ const env = require('../services/env');
 const utils = require('../services/utils');
 const protectedSessionService = require('../services/protected_session');
 const packageJson = require('../../package.json');
-const assetPath = require('../services/asset_path.js');
+const assetPath = require('../services/asset_path');
 const appPath = require('../services/app_path.js');
 
 function index(req, res) {

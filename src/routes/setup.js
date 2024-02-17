@@ -3,7 +3,7 @@
 const sqlInit = require('../services/sql_init.js');
 const setupService = require('../services/setup.js');
 const utils = require('../services/utils');
-const assetPath = require('../services/asset_path.js');
+const assetPath = require('../services/asset_path');
 const appPath = require('../services/app_path.js');
 
 function setupPage(req, res) {
