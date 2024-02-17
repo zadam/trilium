@@ -13,4 +13,6 @@ function sanitizeAttributeName(origName: string) {
 }
 
 
-export = sanitizeAttributeName;
+export = {
+    sanitizeAttributeName
+};

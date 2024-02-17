@@ -183,7 +183,7 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
             this.validate();
         }
 
-        this.name = sanitizeAttributeName(this.name);
+        this.name = sanitizeAttributeName.sanitizeAttributeName(this.name);
 
         if (!this.value) {
             // null value isn't allowed
