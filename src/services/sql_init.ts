@@ -1,15 +1,16 @@
-const log = require('./log');
-const fs = require('fs');
-const resourceDir = require('./resource_dir');
-const sql = require('./sql');
-const utils = require('./utils');
-const optionService = require('./options');
-const port = require('./port.js');
-const BOption = require('../becca/entities/boption');
-const TaskContext = require('./task_context');
-const migrationService = require('./migration');
-const cls = require('./cls');
-const config = require('./config');
+import log = require('./log');
+import fs = require('fs');
+import resourceDir = require('./resource_dir');
+import sql = require('./sql');
+import utils = require('./utils');
+import optionService = require('./options');
+import port = require('./port');
+import BOption = require('../becca/entities/boption');
+import TaskContext = require('./task_context');
+import migrationService = require('./migration');
+import cls = require('./cls');
+import config = require('./config');
+import { OptionRow } from '../becca/entities/rows';
 
 const dbReady = utils.deferred();
 
@@ -42,7 +43,7 @@ async function initDbConnection() {
 
     sql.execute('CREATE TEMP TABLE "param_list" (`paramId` TEXT NOT NULL PRIMARY KEY)');
 
-    dbReady.resolve();
+    dbReady.resolve(undefined);
 }
 
 async function createInitialDatabase() {
@@ -50,7 +51,7 @@ async function createInitialDatabase() {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, "utf-8");
     const demoFile = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/demo.zip`);
 
     let rootNote;
@@ -119,14 +120,14 @@ async function createInitialDatabase() {
     initDbConnection();
 }
 
-function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
+function createDatabaseForSync(options: OptionRow[], syncServerHost = '', syncProxy = '') {
     log.info("Creating database for sync");
 
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, "utf8");
 
     sql.transactional(() => {
         sql.executeScript(schema);

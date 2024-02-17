@@ -4,7 +4,7 @@ const log = require("./log.ts");
 const entityChangesService = require("./entity_changes");
 const optionService = require("./options");
 const dateUtils = require("./date_utils");
-const sqlInit = require("./sql_init.js");
+const sqlInit = require("./sql_init");
 const cls = require("./cls");
 
 function eraseNotes(noteIdsToErase) {

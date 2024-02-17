@@ -1,6 +1,6 @@
 "use strict";
 
-const sqlInit = require('../services/sql_init.js');
+const sqlInit = require('../services/sql_init');
 const setupService = require('../services/setup.js');
 const utils = require('../services/utils');
 const assetPath = require('../services/asset_path');

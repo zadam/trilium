@@ -143,7 +143,7 @@ async function migrateIfNecessary() {
     }
 }
 
-module.exports = {
+export = {
     migrateIfNecessary,
     isDbUpToDate
 };

@@ -1,6 +1,6 @@
 const scriptService = require('./script.js');
 const cls = require('./cls');
-const sqlInit = require('./sql_init.js');
+const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
 const attributeService = require('../services/attributes.js');

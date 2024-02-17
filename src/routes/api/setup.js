@@ -1,6 +1,6 @@
 "use strict";
 
-const sqlInit = require('../../services/sql_init.js');
+const sqlInit = require('../../services/sql_init');
 const setupService = require('../../services/setup.js');
 const log = require('../../services/log');
 const appInfo = require('../../services/app_info');

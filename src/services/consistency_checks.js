@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const sqlInit = require('./sql_init.js');
+const sqlInit = require('./sql_init');
 const log = require('./log');
 const ws = require('./ws');
 const syncMutexService = require('./sync_mutex');

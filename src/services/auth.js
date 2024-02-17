@@ -2,7 +2,7 @@
 
 const etapiTokenService = require('./etapi_tokens.js');
 const log = require('./log');
-const sqlInit = require('./sql_init.js');
+const sqlInit = require('./sql_init');
 const utils = require('./utils');
 const passwordEncryptionService = require('./encryption/password_encryption');
 const config = require('./config');
