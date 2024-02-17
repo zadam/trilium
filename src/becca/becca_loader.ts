@@ -39,9 +39,9 @@ function load() {
             new BNote().update(row).init();
         }
 
-        const branchRows = sql.getRawRows<{ notePosition: number}>(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
+        const branchRows = sql.getRawRows<BranchRow>(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
         // in-memory sort is faster than in the DB
-        branchRows.sort((a, b) => a.notePosition - b.notePosition);
+        branchRows.sort((a, b) => (a.notePosition || 0) - (b.notePosition || 0));
 
         for (const row of branchRows) {
             new BBranch().update(row).init();
