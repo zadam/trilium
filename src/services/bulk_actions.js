@@ -1,5 +1,5 @@
 const log = require('./log');
-const revisionService = require('./revisions.js');
+const revisionService = require('./revisions');
 const becca = require('../becca/becca');
 const cloningService = require('./cloning.js');
 const branchService = require('./branches.js');

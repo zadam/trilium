@@ -1,14 +1,12 @@
 "use strict";
 
-const log = require('./log');
-const sql = require('./sql');
-const protectedSessionService = require('./protected_session');
-const dateUtils = require('./date_utils');
+import log = require('./log');
+import sql = require('./sql');
+import protectedSessionService = require('./protected_session');
+import dateUtils = require('./date_utils');
+import BNote = require('../becca/entities/bnote');
 
-/**
- * @param {BNote} note
- */
-function protectRevisions(note) {
+function protectRevisions(note: BNote) {
     if (!protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot (un)protect revisions of note '${note.noteId}' without active protected session`);
     }
@@ -18,7 +16,7 @@ function protectRevisions(note) {
             try {
                 const content = revision.getContent();
 
-                revision.isProtected = note.isProtected;
+                revision.isProtected = !!note.isProtected;
 
                 // this will force de/encryption
                 revision.setContent(content, {forceSave: true});

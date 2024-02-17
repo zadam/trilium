@@ -33,10 +33,11 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     protected utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
-    protected isProtected?: boolean;
     protected isSynced?: boolean;
-
+    
     protected blobId?: string;
+ 
+    isProtected?: boolean;
 
     protected beforeSaving() {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
