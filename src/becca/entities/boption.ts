@@ -16,10 +16,12 @@ class BOption extends AbstractBeccaEntity<BOption> {
     value!: string;
     isSynced!: boolean;
 
-    constructor(row: OptionRow) {
+    constructor(row?: OptionRow) {
         super();
 
-        this.updateFromRow(row);
+        if (row) {
+            this.updateFromRow(row);
+        }
         this.becca.options[this.name] = this;
     }
 

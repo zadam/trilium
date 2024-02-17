@@ -766,7 +766,7 @@ class ConsistencyChecks {
         }
 
         if (this.reloadNeeded) {
-            require('../becca/becca_loader.js').reload("consistency checks need becca reload");
+            require('../becca/becca_loader').reload("consistency checks need becca reload");
         }
 
         return !this.unrecoveredConsistencyErrors;

@@ -24,7 +24,7 @@ class BEtapiToken extends AbstractBeccaEntity<BEtapiToken> {
     tokenHash!: string;
     private _isDeleted?: boolean;
 
-    constructor(row: EtapiTokenRow) {
+    constructor(row?: EtapiTokenRow) {
         super();
 
         if (!row) {

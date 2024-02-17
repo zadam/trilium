@@ -70,7 +70,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     children!: BNote[];
     targetRelations!: BAttribute[];
 
-    private __flatTextCache!: string | null;
+    __flatTextCache!: string | null;
 
     private __attributeCache!: BAttribute[] | null;
     private __inheritableAttributeCache!: BAttribute[] | null;
@@ -86,7 +86,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     /** number of note revisions for this note */
     private revisionCount!: number | null;
 
-    constructor(row: Partial<NoteRow>) {
+    constructor(row?: Partial<NoteRow>) {
         super();
 
         if (!row) {

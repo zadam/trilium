@@ -61,7 +61,7 @@ async function createInitialDatabase() {
 
         sql.executeScript(schema);
 
-        require('../becca/becca_loader.js').load();
+        require('../becca/becca_loader').load();
 
         const BNote = require('../becca/entities/bnote');
         const BBranch = require('../becca/entities/bbranch');

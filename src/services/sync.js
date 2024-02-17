@@ -399,7 +399,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require('../becca/becca_loader.js').beccaLoaded.then(() => {
+require('../becca/becca_loader').beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately, but should happen after initial consistency checks

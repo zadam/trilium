@@ -28,7 +28,7 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
     value!: string;
     isInheritable!: boolean;
 
-    constructor(row: AttributeRow) {
+    constructor(row?: AttributeRow) {
         super();
 
         if (!row) {
@@ -52,7 +52,7 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         ]);
     }
 
-    update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]: any[]) {
+    update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]: any) {
         this.attributeId = attributeId;
         this.noteId = noteId;
         this.type = type;
