@@ -31,9 +31,9 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     protected utcDateCreated?: string;
     protected utcDateModified?: string;
+    protected dateCreated?: string;
     protected dateModified?: string;
     protected isProtected?: boolean;
-    protected isDeleted?: boolean;
     protected isSynced?: boolean;
 
     protected blobId?: string;
@@ -91,6 +91,8 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     abstract hasStringContent(): boolean;
 
     abstract getPojo(): {};
+
+    abstract get isDeleted(): boolean;
 
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own

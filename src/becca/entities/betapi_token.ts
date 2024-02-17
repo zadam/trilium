@@ -2,8 +2,8 @@
 
 import { EtapiTokenRow } from "./rows";
 
-const dateUtils = require('../../services/date_utils');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import dateUtils = require('../../services/date_utils');
+import AbstractBeccaEntity = require('./abstract_becca_entity');
 
 /**
  * EtapiToken is an entity representing token used to authenticate against Trilium REST API from client applications.
@@ -13,10 +13,8 @@ const AbstractBeccaEntity = require('./abstract_becca_entity.js');
  *
  * The format user is presented with is "<etapiTokenId>_<tokenHash>". This is also called "authToken" to distinguish it
  * from tokenHash and token.
- *
- * @extends AbstractBeccaEntity
  */
-class BEtapiToken extends AbstractBeccaEntity {
+class BEtapiToken extends AbstractBeccaEntity<BEtapiToken> {
     static get entityName() { return "etapi_tokens"; }
     static get primaryKeyName() { return "etapiTokenId"; }
     static get hashedProperties() { return ["etapiTokenId", "name", "tokenHash", "utcDateCreated", "utcDateModified", "isDeleted"]; }

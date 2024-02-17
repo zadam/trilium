@@ -7,25 +7,28 @@ import sql = require('../../services/sql');
 import protectedSessionService = require('../../services/protected_session');
 import log = require('../../services/log');
 import { AttachmentRow } from './rows';
+import BNote = require('./bnote');
+import BBranch = require('./bbranch');
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
 };
 
 interface ContentOpts {
+    // FIXME: Found in bnote.ts, to check if it's actually used and not a typo.
+    forceSave?: boolean;
+
     /** will also save this BAttachment entity */
-    forceFullSave: boolean;
+    forceFullSave?: boolean;
     /** override frontend heuristics on when to reload, instruct to reload */
-    forceFrontendReload: boolean;
+    forceFrontendReload?: boolean;
 }
 
 /**
  * Attachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
  * larger amounts of data and generally not accessible to the user.
- *
- * @extends AbstractBeccaEntity
  */
-class BAttachment extends AbstractBeccaEntity {
+class BAttachment extends AbstractBeccaEntity<BAttachment> {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
     static get hashedProperties() { return ["attachmentId", "ownerId", "role", "mime", "title", "blobId", "utcDateScheduledForErasureSince"]; }
@@ -39,7 +42,7 @@ class BAttachment extends AbstractBeccaEntity {
     title: string;
     type?: keyof typeof attachmentRoleToNoteTypeMapping;
     position?: number;
-    blobId: string;
+    blobId?: string;
     isProtected?: boolean;
     dateModified?: string;
     utcDateScheduledForErasureSince?: string;

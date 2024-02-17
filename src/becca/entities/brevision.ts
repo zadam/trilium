@@ -11,7 +11,7 @@ import { AttachmentRow, RevisionRow } from './rows';
 
 interface ContentOpts {
     /** will also save this BRevision entity */
-    forceSave: boolean;
+    forceSave?: boolean;
 }
 
 interface GetByIdOpts {
@@ -22,7 +22,7 @@ interface GetByIdOpts {
  * Revision represents a snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
  */
-class BRevision extends AbstractBeccaEntity {
+class BRevision extends AbstractBeccaEntity<BRevision> {
     static get entityName() { return "revisions"; }
     static get primaryKeyName() { return "revisionId"; }
     static get hashedProperties() { return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated",
@@ -113,7 +113,7 @@ class BRevision extends AbstractBeccaEntity {
         }
     }
 
-    setContent(content: any, opts: ContentOpts) {
+    setContent(content: any, opts: ContentOpts = {}) {
         this._setContent(content, opts);
     }
 
@@ -200,4 +200,4 @@ class BRevision extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BRevision;
+export = BRevision;

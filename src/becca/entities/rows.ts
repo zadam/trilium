@@ -2,30 +2,31 @@
 
 export interface AttachmentRow {
     attachmentId?: string;
-    ownerId: string;
+    ownerId?: string;
     role: string;
     mime: string;
     title?: string;
     position?: number;
-    blobId: string;
+    blobId?: string;
     isProtected?: boolean;
     dateModified?: string;
     utcDateModified?: string;
     utcDateScheduledForErasureSince?: string;
     contentLength?: number;
+    content?: string;
 }
 
 export interface RevisionRow {
-    revisionId: string;
+    revisionId?: string;
     noteId: string;
     type: string;
     mime: string;
-    isProtected: boolean;
+    isProtected?: boolean;
     title: string;
-    blobId: string;
-    dateLastEdited: string;
+    blobId?: string;
+    dateLastEdited?: string;
     dateCreated: string;
-    utcDateLastEdited: string;
+    utcDateLastEdited?: string;
     utcDateCreated: string;
     utcDateModified: string;
     contentLength?: number;
@@ -71,7 +72,7 @@ export interface AttributeRow {
     position: number;
     value: string;
     isInheritable: boolean;
-    utcDateModified: string;
+    utcDateModified?: string;
 }
 
 export interface BranchRow {
@@ -82,4 +83,24 @@ export interface BranchRow {
     notePosition: number;
     isExpanded: boolean;
     utcDateModified?: string;
+}
+
+/**
+ * There are many different Note types, some of which are entirely opaque to the
+ * end user. Those types should be used only for checking against, they are
+ * not for direct use.
+ */
+export type NoteType = ("file" | "image" | "search" | "noteMap" | "launcher" | "doc" | "contentWidget" | "text" | "relationMap" | "render" | "canvas" | "mermaid" | "book" | "webView" | "code");
+
+export interface NoteRow {
+    noteId: string;
+    title: string;
+    type: NoteType;
+    mime: string;
+    isProtected: boolean;
+    blobId: string;
+    dateCreated: string;
+    dateModified: string;
+    utcDateCreated: string;
+    utcDateModified: string;
 }

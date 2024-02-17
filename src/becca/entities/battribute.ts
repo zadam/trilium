@@ -10,10 +10,8 @@ import { AttributeRow, AttributeType } from './rows.js';
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
- *
- * @extends AbstractBeccaEntity
  */
-class BAttribute extends AbstractBeccaEntity {
+class BAttribute extends AbstractBeccaEntity<BAttribute> {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable"]; }

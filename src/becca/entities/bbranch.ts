@@ -15,10 +15,8 @@ import { BranchRow } from './rows.js';
  *
  * Note that you should not rely on the branch's identity, since it can change easily with a note's move.
  * Always check noteId instead.
- *
- * @extends AbstractBeccaEntity
  */
-class BBranch extends AbstractBeccaEntity {
+class BBranch extends AbstractBeccaEntity<BBranch> {
     static get entityName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
@@ -27,7 +25,7 @@ class BBranch extends AbstractBeccaEntity {
     branchId?: string;
     noteId!: string;
     parentNoteId!: string;
-    prefix!: string;
+    prefix!: string | null;
     notePosition!: number;
     isExpanded!: boolean;
     utcDateModified?: string;

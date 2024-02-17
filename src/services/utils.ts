@@ -12,7 +12,7 @@ function newEntityId() {
     return randomString(12);
 }
 
-function randomString(length: number) {
+function randomString(length: number): string {
     return randtoken.generate(length);
 }
 

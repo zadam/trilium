@@ -10,10 +10,10 @@ class TaskContext {
     private taskId: string;
     private taskType: string | null;
     private data: {} | null;
-    private noteDeletionHandlerTriggered: boolean;
     private progressCount: number;
     private lastSentCountTs: number;
-
+    noteDeletionHandlerTriggered: boolean;
+    
     constructor(taskId: string, taskType: string | null = null, data: {} | null = {}) {
         this.taskId = taskId;
         this.taskType = taskType;
