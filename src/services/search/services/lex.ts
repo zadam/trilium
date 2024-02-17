@@ -1,16 +1,22 @@
-function lex(str) {
+interface TokenData {
+    token: string;
+    inQuotes: boolean;
+    startIndex: number;
+    endIndex: number;
+}
+
+function lex(str: string) {
     str = str.toLowerCase();
 
     let fulltextQuery = "";
-    const fulltextTokens = [];
-    const expressionTokens = [];
+    const fulltextTokens: TokenData[] = [];
+    const expressionTokens: TokenData[] = [];
 
-    /** @type {boolean|string} */
-    let quotes = false; // otherwise contains used quote - ', " or `
+    let quotes: boolean | string = false; // otherwise contains used quote - ', " or `
     let fulltextEnded = false;
     let currentWord = '';
 
-    function isSymbolAnOperator(chr) {
+    function isSymbolAnOperator(chr: string) {
         return ['=', '*', '>', '<', '!', "-", "+", '%', ','].includes(chr);
     }
 
@@ -23,12 +29,12 @@ function lex(str) {
         }
     }
 
-    function finishWord(endIndex, createAlsoForEmptyWords = false) {
+    function finishWord(endIndex: number, createAlsoForEmptyWords = false) {
         if (currentWord === '' && !createAlsoForEmptyWords) {
             return;
         }
 
-        const rec = {
+        const rec: TokenData = {
             token: currentWord,
             inQuotes: !!quotes,
             startIndex: endIndex - currentWord.length + 1,
@@ -146,4 +152,4 @@ function lex(str) {
     }
 }
 
-module.exports = lex;
+export = lex;

@@ -1,7 +1,7 @@
 "use strict";
 
 const normalizeString = require("normalize-strings");
-const lex = require('./lex.js');
+const lex = require('./lex');
 const handleParens = require('./handle_parens');
 const parse = require('./parse.js');
 const SearchResult = require('../search_result');
