@@ -7,7 +7,7 @@ const optionService = require('./options');
 const port = require('./port.js');
 const BOption = require('../becca/entities/boption');
 const TaskContext = require('./task_context');
-const migrationService = require('./migration.js');
+const migrationService = require('./migration');
 const cls = require('./cls');
 const config = require('./config');
 

@@ -2,7 +2,7 @@ const becca = require('../becca/becca');
 const noteService = require('./notes.js');
 const BAttribute = require('../becca/entities/battribute');
 const log = require('./log');
-const migrationService = require('./migration.js');
+const migrationService = require('./migration');
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
