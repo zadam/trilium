@@ -36,7 +36,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     noteId?: number;
     attachmentId?: string;
     /** either noteId or revisionId to which this attachment belongs */
-    ownerId?: string;
+    ownerId: string;
     role: string;
     mime: string;
     title: string;

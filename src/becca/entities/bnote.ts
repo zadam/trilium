@@ -203,8 +203,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.children && this.children.length > 0;
     }
 
-    /** @returns {BBranch[]} */
-    getChildBranches() {
+    getChildBranches(): (BBranch | null)[] {
         return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
@@ -757,7 +756,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
         this.parents = this.parentBranches
             .map(branch => branch.parentNote)
-            .filter(note => !!note);
+            .filter(note => !!note) as BNote[];
     }
 
     sortChildren() {
@@ -771,7 +770,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             const aBranch = becca.getBranchFromChildAndParent(a.noteId, this.noteId);
             const bBranch = becca.getBranchFromChildAndParent(b.noteId, this.noteId);
 
-            return (aBranch?.notePosition - bBranch?.notePosition) || 0;
+            return ((aBranch?.notePosition || 0) - (bBranch?.notePosition || 0)) || 0;
         });
     }
 
@@ -900,7 +899,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
-            return searchResultNoteIds
+            return (searchResultNoteIds as string[])    // FIXME: remove cast once search is converted
                 .map(resultNoteId => becca.notes[resultNoteId])
                 .filter(note => !!note);
         }
@@ -1445,9 +1444,9 @@ class BNote extends AbstractBeccaEntity<BNote> {
     cloneTo(parentNoteId: string) {
         const cloningService = require('../../services/cloning');
 
-        const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
+        const branch = this.becca.getNote(parentNoteId)?.getParentBranches()[0];
 
-        return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
+        return cloningService.cloneNoteToBranch(this.noteId, branch?.branchId);
     }
 
     isEligibleForConversionToAttachment(opts: ConvertOpts = { autoConversion: false }) {
@@ -1603,6 +1602,11 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
             for (const noteAttachment of this.getAttachments()) {
                 const revisionAttachment = noteAttachment.copy();
+
+                if (!revision.revisionId) {
+                    throw new Error("Revision ID is missing.");
+                }
+
                 revisionAttachment.ownerId = revision.revisionId;
                 revisionAttachment.setContent(noteAttachment.getContent(), { forceSave: true });
 

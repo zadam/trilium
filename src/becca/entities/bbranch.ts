@@ -180,7 +180,9 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
             }
 
             for (const childBranch of note.getChildBranches()) {
-                childBranch.deleteBranch(deleteId, taskContext);
+                if (childBranch) {
+                    childBranch.deleteBranch(deleteId, taskContext);
+                }
             }
 
             // first delete children and then parent - this will show up better in recent changes
@@ -220,11 +222,17 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
         if (this.notePosition === undefined || this.notePosition === null) {
             let maxNotePos = 0;
 
-            for (const childBranch of this.parentNote.getChildBranches()) {
-                if (maxNotePos < childBranch.notePosition
-                    && childBranch.noteId !== '_hidden' // hidden has a very large notePosition to always stay last
-                ) {
-                    maxNotePos = childBranch.notePosition;
+            if (this.parentNote) {
+                for (const childBranch of this.parentNote.getChildBranches()) {
+                    if (!childBranch) {
+                        continue;
+                    }
+
+                    if (maxNotePos < childBranch.notePosition
+                        && childBranch.noteId !== '_hidden' // hidden has a very large notePosition to always stay last
+                    ) {
+                        maxNotePos = childBranch.notePosition;
+                    }
                 }
             }
 

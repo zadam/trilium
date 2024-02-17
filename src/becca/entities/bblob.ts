@@ -1,5 +1,6 @@
 import { BlobRow } from "./rows";
 
+// FIXME: Why this does not extend the abstract becca?
 class BBlob {
     static get entityName() { return "blobs"; }
     static get primaryKeyName() { return "blobId"; }

@@ -88,11 +88,17 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         return this.getPojo();
     }
 
-    abstract hasStringContent(): boolean;
+    hasStringContent(): boolean {
+        // FIXME: Not sure why some entities don't implement it.
+        return true;
+    }
 
     abstract getPojo(): {};
 
-    abstract get isDeleted(): boolean;
+    get isDeleted(): boolean {
+        // FIXME: Not sure why some entities don't implement it.
+        return false;
+    }
 
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own
