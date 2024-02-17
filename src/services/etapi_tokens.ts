@@ -25,7 +25,7 @@ function createToken(tokenName: string) {
     };
 }
 
-function parseAuthToken(auth: string) {
+function parseAuthToken(auth?: string | null) {
     if (!auth) {
         return null;
     }
@@ -64,7 +64,7 @@ function parseAuthToken(auth: string) {
     }
 }
 
-function isValidAuthHeader(auth: string) {
+function isValidAuthHeader(auth?: string | null) {
     const parsed = parseAuthToken(auth);
 
     if (!parsed) {
