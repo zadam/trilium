@@ -28,12 +28,18 @@ let lastSyncedPush: number | null = null;
 
 interface Message {
     type: string;
-    reason?: string;
     data?: {
         lastSyncedPush?: number,
         entityChanges?: any[]
     },
-    lastSyncedPush?: number
+    lastSyncedPush?: number,
+    
+    progressCount?: number;
+    taskId?: string;
+    taskType?: string | null;
+    message?: string;
+    reason?: string;    
+    result?: string;
 }
 
 type SessionParser = (req: IncomingMessage, params: {}, cb: () => void) => void;
@@ -252,7 +258,7 @@ function setLastSyncedPush(entityChangeId: number) {
     lastSyncedPush = entityChangeId;
 }
 
-module.exports = {
+export = {
     init,
     sendMessageToAllClients,
     syncPushInProgress,

@@ -1,12 +1,13 @@
 "use strict";
 
-const BNote = require('./bnote.js');
-const AbstractBeccaEntity = require('./abstract_becca_entity.js');
-const dateUtils = require('../../services/date_utils');
-const utils = require('../../services/utils');
-const TaskContext = require('../../services/task_context.js');
-const cls = require('../../services/cls');
-const log = require('../../services/log');
+import BNote = require('./bnote.js');
+import AbstractBeccaEntity = require('./abstract_becca_entity.js');
+import dateUtils = require('../../services/date_utils');
+import utils = require('../../services/utils');
+import TaskContext = require('../../services/task_context');
+import cls = require('../../services/cls');
+import log = require('../../services/log');
+import { BranchRow } from './rows.js';
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
@@ -23,7 +24,15 @@ class BBranch extends AbstractBeccaEntity {
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "prefix"]; }
 
-    constructor(row) {
+    branchId?: string;
+    noteId!: string;
+    parentNoteId!: string;
+    prefix!: string;
+    notePosition!: number;
+    isExpanded!: boolean;
+    utcDateModified?: string;
+
+    constructor(row: BranchRow) {
         super();
 
         if (!row) {
@@ -34,7 +43,7 @@ class BBranch extends AbstractBeccaEntity {
         this.init();
     }
 
-    updateFromRow(row) {
+    updateFromRow(row: BranchRow) {
         this.update([
             row.branchId,
             row.noteId,
@@ -46,20 +55,13 @@ class BBranch extends AbstractBeccaEntity {
         ]);
     }
 
-    update([branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified]) {
-        /** @type {string} */
+    update([branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified]: any) {
         this.branchId = branchId;
-        /** @type {string} */
         this.noteId = noteId;
-        /** @type {string} */
         this.parentNoteId = parentNoteId;
-        /** @type {string|null} */
         this.prefix = prefix;
-        /** @type {int} */
         this.notePosition = notePosition;
-        /** @type {boolean} */
         this.isExpanded = !!isExpanded;
-        /** @type {string} */
         this.utcDateModified = utcDateModified;
 
         return this;
@@ -138,12 +140,11 @@ class BBranch extends AbstractBeccaEntity {
     /**
      * Delete a branch. If this is a last note's branch, delete the note as well.
      *
-     * @param {string} [deleteId] - optional delete identified
-     * @param {TaskContext} [taskContext]
+     * @param deleteId - optional delete identified
      *
-     * @returns {boolean} - true if note has been deleted, false otherwise
+     * @returns true if note has been deleted, false otherwise
      */
-    deleteBranch(deleteId, taskContext) {
+    deleteBranch(deleteId: string, taskContext: TaskContext): boolean {
         if (!deleteId) {
             deleteId = utils.randomString(10);
         }
@@ -261,7 +262,7 @@ class BBranch extends AbstractBeccaEntity {
         };
     }
 
-    createClone(parentNoteId, notePosition) {
+    createClone(parentNoteId: string, notePosition: number) {
         const existingBranch = this.becca.getBranchFromChildAndParent(this.noteId, parentNoteId);
 
         if (existingBranch) {
@@ -279,4 +280,4 @@ class BBranch extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BBranch;
+export = BBranch;

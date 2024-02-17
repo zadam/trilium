@@ -5,6 +5,7 @@ import BOption = require('./entities/boption');
 import BNote = require('./entities/bnote');
 import BEtapiToken = require('./entities/betapi_token');
 import BAttribute = require('./entities/battribute');
+import BBranch = require('./entities/bbranch');
 
 /**
  * Becca is a backend cache of all notes, branches, and attributes.
@@ -14,6 +15,8 @@ class Becca {
     loaded!: boolean;
 
     notes!: Record<string, BNote>;
+    branches!: Record<string, BBranch>;
+    childParentToBranch!: Record<string, BBranch>;
     attributes!: Record<string, BAttribute>;
     /** Points from attribute type-name to list of attributes */
     attributeIndex!: Record<string, BAttribute[]>;
@@ -25,11 +28,8 @@ class Becca {
     }
 
     reset() {
-        /** @type {Object.<String, BNote>} */
         this.notes = {};
-        /** @type {Object.<String, BBranch>} */
         this.branches = {};
-        /** @type {Object.<String, BBranch>} */
         this.childParentToBranch = {};
         this.attributes = {};        
         this.attributeIndex = {};

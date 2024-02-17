@@ -73,3 +73,13 @@ export interface AttributeRow {
     isInheritable: boolean;
     utcDateModified: string;
 }
+
+export interface BranchRow {
+    branchId?: string;
+    noteId: string;
+    parentNoteId: string;
+    prefix: string | null;
+    notePosition: number;
+    isExpanded: boolean;
+    utcDateModified?: string;
+}

@@ -1,12 +1,20 @@
 "use strict";
 
-const ws = require('./ws.js');
+import ws = require('./ws.js');
 
 // taskId => TaskContext
-const taskContexts = {};
+const taskContexts: Record<string, TaskContext> = {};
 
 class TaskContext {
-    constructor(taskId, taskType = null, data = {}) {
+
+    private taskId: string;
+    private taskType: string | null;
+    private data: {} | null;
+    private noteDeletionHandlerTriggered: boolean;
+    private progressCount: number;
+    private lastSentCountTs: number;
+
+    constructor(taskId: string, taskType: string | null = null, data: {} | null = {}) {
         this.taskId = taskId;
         this.taskType = taskType;
         this.data = data;
@@ -23,8 +31,7 @@ class TaskContext {
         this.increaseProgressCount();
     }
 
-    /** @returns {TaskContext} */
-    static getInstance(taskId, taskType, data = null) {
+    static getInstance(taskId: string, taskType: string, data: {} | null = null): TaskContext {
         if (!taskContexts[taskId]) {
             taskContexts[taskId] = new TaskContext(taskId, taskType, data);
         }
@@ -42,31 +49,31 @@ class TaskContext {
                 type: 'taskProgressCount',
                 taskId: this.taskId,
                 taskType: this.taskType,
-                data: this.data,
+                data: this.data || undefined,
                 progressCount: this.progressCount
             });
         }
     }
 
-    reportError(message) {
+    reportError(message: string) {
         ws.sendMessageToAllClients({
             type: 'taskError',
             taskId: this.taskId,
             taskType: this.taskType,
-            data: this.data,
+            data: this.data || undefined,
             message: message
         });
     }
 
-    taskSucceeded(result) {
+    taskSucceeded(result: string) {
         ws.sendMessageToAllClients({
             type: 'taskSucceeded',
             taskId: this.taskId,
             taskType: this.taskType,
-            data: this.data,
+            data: this.data || undefined,
             result: result
         });
     }
 }
 
-module.exports = TaskContext;
+export = TaskContext;
