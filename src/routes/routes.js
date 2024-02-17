@@ -69,7 +69,7 @@ const etapiBranchRoutes = require('../etapi/branches.js');
 const etapiNoteRoutes = require('../etapi/notes.js');
 const etapiSpecialNoteRoutes = require('../etapi/special_notes.js');
 const etapiSpecRoute = require('../etapi/spec.js');
-const etapiBackupRoute = require('../etapi/backup.js');
+const etapiBackupRoute = require('../etapi/backup');
 
 const csrfMiddleware = csurf({
     cookie: true,

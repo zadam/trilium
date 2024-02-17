@@ -20,7 +20,7 @@ const specialNotesService = require('./special_notes.js');
 const branchService = require('./branches.js');
 const exportService = require('./export/zip.js');
 const syncMutex = require('./sync_mutex');
-const backupService = require('./backup.js');
+const backupService = require('./backup');
 const optionsService = require('./options');
 
 

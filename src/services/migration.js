@@ -1,4 +1,4 @@
-const backupService = require('./backup.js');
+const backupService = require('./backup');
 const sql = require('./sql');
 const fs = require('fs-extra');
 const log = require('./log');

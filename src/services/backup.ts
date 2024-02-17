@@ -1,14 +1,16 @@
 "use strict";
 
-const dateUtils = require('./date_utils');
-const optionService = require('./options');
-const fs = require('fs-extra');
-const dataDir = require('./data_dir');
-const log = require('./log');
-const syncMutexService = require('./sync_mutex');
-const cls = require('./cls');
-const sql = require('./sql');
-const path = require('path');
+import dateUtils = require('./date_utils');
+import optionService = require('./options');
+import fs = require('fs-extra');
+import dataDir = require('./data_dir');
+import log = require('./log');
+import syncMutexService = require('./sync_mutex');
+import cls = require('./cls');
+import sql = require('./sql');
+import path = require('path');
+
+type BackupType = ("daily" | "weekly" | "monthly");
 
 function getExistingBackups() {
     if (!fs.existsSync(dataDir.BACKUP_DIR)) {
@@ -35,13 +37,13 @@ function regularBackup() {
     });
 }
 
-function isBackupEnabled(backupType) {
+function isBackupEnabled(backupType: BackupType) {
     const optionName = `${backupType}BackupEnabled`;
 
     return optionService.getOptionBool(optionName);
 }
 
-function periodBackup(optionName, backupType, periodInSeconds) {
+function periodBackup(optionName: string, backupType: BackupType, periodInSeconds: number) {
     if (!isBackupEnabled(backupType)) {
         return;
     }
@@ -56,7 +58,7 @@ function periodBackup(optionName, backupType, periodInSeconds) {
     }
 }
 
-async function backupNow(name) {
+async function backupNow(name: string) {
     // we don't want to back up DB in the middle of sync with potentially inconsistent DB state
     return await syncMutexService.doExclusively(async () => {
         const backupFile = `${dataDir.BACKUP_DIR}/backup-${name}.db`;
@@ -73,7 +75,7 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
     fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
 }
 
-module.exports = {
+export = {
     getExistingBackups,
     backupNow,
     regularBackup
