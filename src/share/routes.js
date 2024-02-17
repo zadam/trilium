@@ -10,7 +10,7 @@ const contentRenderer = require('./content_renderer.js');
 const assetPath = require('../services/asset_path');
 const appPath = require('../services/app_path');
 const searchService = require('../services/search/services/search.js');
-const SearchContext = require('../services/search/search_context.js');
+const SearchContext = require('../services/search/search_context');
 const log = require('../services/log');
 
 /**

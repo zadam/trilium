@@ -1,9 +1,42 @@
 "use strict";
 
-const hoistedNoteService = require('../hoisted_note');
+import hoistedNoteService = require('../hoisted_note');
+
+interface SearchParams {
+    fastSearch?: boolean;
+    includeArchivedNotes?: boolean;
+    includeHiddenNotes?: boolean;
+    ignoreHoistedNote?: boolean;
+    ancestorNoteId?: string;
+    ancestorDepth?: number;
+    orderBy?: string;
+    orderDirection?: string;
+    limit?: number;
+    debug?: boolean;
+    fuzzyAttributeSearch?: boolean;
+}
 
 class SearchContext {
-    constructor(params = {}) {
+    
+    fastSearch: boolean;
+    includeArchivedNotes: boolean;
+    includeHiddenNotes: boolean;
+    ignoreHoistedNote: boolean;
+    ancestorNoteId?: string;
+    ancestorDepth?: number;
+    orderBy?: string;
+    orderDirection?: string;
+    limit?: number;
+    debug?: boolean;
+    debugInfo: string | null;
+    fuzzyAttributeSearch: boolean;
+    highlightedTokens: string[];
+    originalQuery: string;
+    fulltextQuery: string;
+    dbLoadNeeded: boolean;
+    private error: string | null;
+
+    constructor(params: SearchParams = {}) {
         this.fastSearch = !!params.fastSearch;
         this.includeArchivedNotes = !!params.includeArchivedNotes;
         this.includeHiddenNotes = !!params.includeHiddenNotes;
@@ -32,7 +65,7 @@ class SearchContext {
         this.error = null;
     }
 
-    addError(error) {
+    addError(error: string) {
         // we record only the first error, subsequent ones are usually a consequence of the first
         if (!this.error) {
             this.error = error;
@@ -48,4 +81,4 @@ class SearchContext {
     }
 }
 
-module.exports = SearchContext;
+export = SearchContext;
