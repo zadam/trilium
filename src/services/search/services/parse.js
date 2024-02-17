@@ -19,7 +19,7 @@ const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor');
 const utils = require('../../utils');
 const TrueExp = require('../expressions/true');
-const IsHiddenExp = require('../expressions/is_hidden.js');
+const IsHiddenExp = require('../expressions/is_hidden');
 
 function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => utils.removeDiacritic(t.token));
