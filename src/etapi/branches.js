@@ -1,7 +1,7 @@
 const becca = require('../becca/becca');
 const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');
-const BBranch = require('../becca/entities/bbranch.js');
+const BBranch = require('../becca/entities/bbranch');
 const entityChangesService = require('../services/entity_changes.js');
 const v = require('./validators.js');
 

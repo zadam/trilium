@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const eventChangesService = require('./entity_changes');
 const treeService = require('./tree.js');
-const BBranch = require('../becca/entities/bbranch.js');
+const BBranch = require('../becca/entities/bbranch');
 const becca = require('../becca/becca');
 const log = require('./log');
 

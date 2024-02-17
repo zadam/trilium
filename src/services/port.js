@@ -1,4 +1,4 @@
-const config = require('./config.js');
+const config = require('./config');
 const utils = require('./utils');
 const env = require('./env.js');
 const dataDir = require('./data_dir');

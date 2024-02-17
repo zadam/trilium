@@ -9,7 +9,7 @@ const BOption = require('../becca/entities/boption.js');
 const TaskContext = require('./task_context.js');
 const migrationService = require('./migration.js');
 const cls = require('./cls');
-const config = require('./config.js');
+const config = require('./config');
 
 const dbReady = utils.deferred();
 
@@ -63,7 +63,7 @@ async function createInitialDatabase() {
         require('../becca/becca_loader.js').load();
 
         const BNote = require('../becca/entities/bnote.js');
-        const BBranch = require('../becca/entities/bbranch.js');
+        const BBranch = require('../becca/entities/bbranch');
 
         log.info("Creating root note ...");
 

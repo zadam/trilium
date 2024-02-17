@@ -3,7 +3,7 @@ const sql = require('../services/sql');
 const log = require('../services/log');
 const becca = require('../becca/becca');
 const etapiTokenService = require('../services/etapi_tokens.js');
-const config = require('../services/config.js');
+const config = require('../services/config');
 const GENERIC_CODE = "GENERIC";
 
 const noAuthentication = config.General && config.General.noAuthentication === true;

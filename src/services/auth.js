@@ -5,7 +5,7 @@ const log = require('./log');
 const sqlInit = require('./sql_init.js');
 const utils = require('./utils');
 const passwordEncryptionService = require('./encryption/password_encryption.js');
-const config = require('./config.js');
+const config = require('./config');
 const passwordService = require('./encryption/password.js');
 
 const noAuthentication = config.General && config.General.noAuthentication === true;

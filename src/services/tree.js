@@ -2,7 +2,7 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const BBranch = require('../becca/entities/bbranch.js');
+const BBranch = require('../becca/entities/bbranch');
 const entityChangesService = require('./entity_changes');
 const becca = require('../becca/becca');
 
