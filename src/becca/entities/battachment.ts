@@ -96,7 +96,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
 
     /** @returns true if the note has string content (not binary) */
     hasStringContent(): boolean {
-        return utils.isStringNote(this.type, this.mime);
+        return this.type !== undefined && utils.isStringNote(this.type, this.mime);
     }
 
     isContentAvailable() {
@@ -135,7 +135,8 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     }
 
     convertToNote(): { note: BNote, branch: BBranch } {
-        if (this.type === 'search') {
+        // FIXME: can this ever be "search"?
+        if (this.type as string === 'search') {
             throw new Error(`Note of type search cannot have child notes`);
         }
 
@@ -157,7 +158,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         const { note, branch } = noteService.createNewNote({
             parentNoteId: this.ownerId,
             title: this.title,
-            type: attachmentRoleToNoteTypeMapping[this.role],
+            type: (attachmentRoleToNoteTypeMapping as any)[this.role],
             mime: this.mime,
             content: this.getContent(),
             isProtected: this.isProtected
