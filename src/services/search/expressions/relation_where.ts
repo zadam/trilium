@@ -1,18 +1,22 @@
 "use strict";
 
-const Expression = require('./expression');
-const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+import Expression = require('./expression');
+import NoteSet = require('../note_set');
+import becca = require('../../../becca/becca');
+import SearchContext = require('../search_context');
 
 class RelationWhereExp extends Expression {
-    constructor(relationName, subExpression) {
+    private relationName: string;
+    private subExpression: Expression;
+
+    constructor(relationName: string, subExpression: Expression) {
         super();
 
         this.relationName = relationName;
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, executionContext, searchContext) {
+    execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         const candidateNoteSet = new NoteSet();
 
         for (const attr of becca.findAttributes('relation', this.relationName)) {
@@ -38,4 +42,4 @@ class RelationWhereExp extends Expression {
     }
 }
 
-module.exports = RelationWhereExp;
+export = RelationWhereExp;
