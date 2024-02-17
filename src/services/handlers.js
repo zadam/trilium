@@ -3,7 +3,7 @@ const scriptService = require('./script.js');
 const treeService = require('./tree.js');
 const noteService = require('./notes.js');
 const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute.js');
+const BAttribute = require('../becca/entities/battribute');
 const hiddenSubtreeService = require('./hidden_subtree.js');
 const oneTimeTimer = require('./one_time_timer.js');
 

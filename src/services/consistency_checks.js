@@ -3,8 +3,8 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init.js');
 const log = require('./log');
-const ws = require('./ws.js');
-const syncMutexService = require('./sync_mutex.js');
+const ws = require('./ws');
+const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
@@ -13,7 +13,7 @@ const revisionService = require('./revisions.js');
 const becca = require('../becca/becca');
 const utils = require('../services/utils');
 const eraseService = require('../services/erase.js');
-const {sanitizeAttributeName} = require('./sanitize_attribute_name.js');
+const {sanitizeAttributeName} = require('./sanitize_attribute_name');
 const noteTypes = require('../services/note_types.js').getNoteTypeNames();
 
 class ConsistencyChecks {

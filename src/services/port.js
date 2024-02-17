@@ -1,6 +1,6 @@
 const config = require('./config');
 const utils = require('./utils');
-const env = require('./env.js');
+const env = require('./env');
 const dataDir = require('./data_dir');
 
 function parseAndValidate(portStr, source) {

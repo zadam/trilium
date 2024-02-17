@@ -1,6 +1,6 @@
 "use strict";
 
-const BAttribute = require('../../becca/entities/battribute.js');
+const BAttribute = require('../../becca/entities/battribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes.js');
@@ -13,7 +13,7 @@ const treeService = require('../tree.js');
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer.js');
 const becca = require('../../becca/becca');
-const BAttachment = require('../../becca/entities/battachment.js');
+const BAttachment = require('../../becca/entities/battachment');
 const markdownService = require('./markdown.js');
 
 /**

@@ -1,7 +1,7 @@
 "use strict";
 
 const Expression = require('./expression.js');
-const NoteSet = require('../note_set.js');
+const NoteSet = require('../note_set');
 const log = require('../../log');
 const becca = require('../../../becca/becca');
 const protectedSessionService = require('../../protected_session');

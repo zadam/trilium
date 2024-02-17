@@ -8,7 +8,7 @@ const noteService = require('../notes.js');
 const imageService = require('../image.js');
 const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require('../html_sanitizer.js');
-const {sanitizeAttributeName} = require('../sanitize_attribute_name.js');
+const {sanitizeAttributeName} = require('../sanitize_attribute_name');
 
 /**
  * date format is e.g. 20181121T193703Z or 2013-04-14T16:19:00.000Z (Mac evernote, see #3496)

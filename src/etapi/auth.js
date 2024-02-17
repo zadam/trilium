@@ -1,6 +1,6 @@
 const becca = require('../becca/becca');
 const eu = require('./etapi_utils');
-const passwordEncryptionService = require('../services/encryption/password_encryption.js');
+const passwordEncryptionService = require('../services/encryption/password_encryption');
 const etapiTokenService = require('../services/etapi_tokens.js');
 
 function register(router, loginMiddleware) {

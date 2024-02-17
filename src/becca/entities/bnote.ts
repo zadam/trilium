@@ -204,7 +204,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     getChildBranches(): (BBranch | null)[] {
-        return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
+        return this.children
+            .map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
     /*

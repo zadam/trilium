@@ -4,7 +4,7 @@ const zipExportService = require('../../services/export/zip.js');
 const singleExportService = require('../../services/export/single.js');
 const opmlExportService = require('../../services/export/opml.js');
 const becca = require('../../becca/becca');
-const TaskContext = require('../../services/task_context.js');
+const TaskContext = require('../../services/task_context');
 const log = require('../../services/log');
 const NotFoundError = require('../../errors/not_found_error');
 

@@ -9,7 +9,7 @@ const path = require('path');
 const becca = require('../../becca/becca');
 const beccaLoader = require('../../becca/becca_loader.js');
 const log = require('../../services/log');
-const TaskContext = require('../../services/task_context.js');
+const TaskContext = require('../../services/task_context');
 const ValidationError = require('../../errors/validation_error');
 
 async function importNotesToBranch(req) {

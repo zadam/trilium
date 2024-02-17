@@ -4,10 +4,10 @@ import log = require('./log');
 import sql = require('./sql');
 import cls = require('./cls');
 import config = require('./config');
-import syncMutexService = require('./sync_mutex.js');
+import syncMutexService = require('./sync_mutex');
 import protectedSessionService = require('./protected_session');
 import becca = require('../becca/becca');
-import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
+import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
 
 import env = require('./env');
 import { IncomingMessage, Server } from 'http';
@@ -157,7 +157,9 @@ function fillInAdditionalProperties(entityChange: EntityChange) {
 
         if (parentNote) {
             for (const childBranch of parentNote.getChildBranches()) {
-                entityChange.positions[childBranch.branchId] = childBranch.notePosition;
+                if (childBranch && childBranch.branchId) {
+                    entityChange.positions[childBranch.branchId] = childBranch.notePosition;
+                }
             }
         }
     } else if (entityChange.entityName === 'options') {

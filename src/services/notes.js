@@ -13,15 +13,15 @@ const path = require('path');
 const url = require('url');
 const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
-const BNote = require('../becca/entities/bnote.js');
-const BAttribute = require('../becca/entities/battribute.js');
-const BAttachment = require('../becca/entities/battachment.js');
+const BNote = require('../becca/entities/bnote');
+const BAttribute = require('../becca/entities/battribute');
+const BAttachment = require('../becca/entities/battachment');
 const dayjs = require("dayjs");
 const htmlSanitizer = require('./html_sanitizer.js');
 const ValidationError = require('../errors/validation_error');
 const noteTypesService = require('./note_types.js');
 const fs = require("fs");
-const ws = require('./ws.js');
+const ws = require('./ws');
 const html2plaintext = require('html2plaintext')
 
 /** @param {BNote} parentNote */

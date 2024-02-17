@@ -1,7 +1,7 @@
 import optionService = require('../options');
-import myScryptService = require('./my_scrypt.js');
+import myScryptService = require('./my_scrypt');
 import utils = require('../utils');
-import dataEncryptionService = require('./data_encryption.js');
+import dataEncryptionService = require('./data_encryption');
 
 function verifyPassword(password: string) {
     const givenPasswordHash = utils.toBase64(myScryptService.getVerificationHash(password));

@@ -1,6 +1,6 @@
 "use strict";
 
-const NoteSet = require('../note_set.js');
+const NoteSet = require('../note_set');
 const becca = require('../../../becca/becca');
 const Expression = require('./expression.js');
 

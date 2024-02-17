@@ -1,6 +1,6 @@
 "use strict";
 
-import ws = require('./ws.js');
+import ws = require('./ws');
 
 // taskId => TaskContext
 const taskContexts: Record<string, TaskContext> = {};

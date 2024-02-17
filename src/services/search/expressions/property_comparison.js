@@ -1,7 +1,7 @@
 "use strict";
 
 const Expression = require('./expression.js');
-const NoteSet = require('../note_set.js');
+const NoteSet = require('../note_set');
 const buildComparator = require('../services/build_comparator.js');
 
 /**

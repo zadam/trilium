@@ -23,7 +23,7 @@ class BBlob {
     getPojo() {
         return {
             blobId: this.blobId,
-            content: this.content,
+            content: this.content || null,
             contentLength: this.contentLength,
             dateModified: this.dateModified,
             utcDateModified: this.utcDateModified

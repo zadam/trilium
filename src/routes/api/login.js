@@ -4,13 +4,13 @@ const options = require('../../services/options');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const instanceId = require('../../services/instance_id');
-const passwordEncryptionService = require('../../services/encryption/password_encryption.js');
+const passwordEncryptionService = require('../../services/encryption/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info.js');
 const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init.js');
 const sql = require('../../services/sql');
-const ws = require('../../services/ws.js');
+const ws = require('../../services/ws');
 const etapiTokenService = require('../../services/etapi_tokens.js');
 
 function loginSync(req) {

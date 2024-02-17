@@ -2,9 +2,9 @@
 
 const utils = require('../services/utils');
 const optionService = require('../services/options');
-const myScryptService = require('../services/encryption/my_scrypt.js');
+const myScryptService = require('../services/encryption/my_scrypt');
 const log = require('../services/log');
-const passwordService = require('../services/encryption/password.js');
+const passwordService = require('../services/encryption/password');
 const assetPath = require('../services/asset_path.js');
 const appPath = require('../services/app_path.js');
 const ValidationError = require('../errors/validation_error');

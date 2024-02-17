@@ -2,9 +2,9 @@
 
 import sql = require('../sql');
 import optionService = require('../options');
-import myScryptService = require('./my_scrypt.js');
+import myScryptService = require('./my_scrypt');
 import utils = require('../utils');
-import passwordEncryptionService = require('./password_encryption.js');
+import passwordEncryptionService = require('./password_encryption');
 
 function isPasswordSet() {
     return !!sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");

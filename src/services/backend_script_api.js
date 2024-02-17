@@ -14,12 +14,12 @@ const appInfo = require('./app_info.js');
 const searchService = require('./search/services/search.js');
 const SearchContext = require('./search/search_context.js');
 const becca = require('../becca/becca');
-const ws = require('./ws.js');
+const ws = require('./ws');
 const SpacedUpdate = require('./spaced_update.js');
 const specialNotesService = require('./special_notes.js');
 const branchService = require('./branches.js');
 const exportService = require('./export/zip.js');
-const syncMutex = require('./sync_mutex.js');
+const syncMutex = require('./sync_mutex');
 const backupService = require('./backup.js');
 const optionsService = require('./options');
 
