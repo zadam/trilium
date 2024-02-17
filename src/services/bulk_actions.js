@@ -4,7 +4,7 @@ const becca = require('../becca/becca');
 const cloningService = require('./cloning.js');
 const branchService = require('./branches.js');
 const utils = require('./utils');
-const eraseService = require("./erase.js");
+const eraseService = require("./erase");
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {

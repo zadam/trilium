@@ -8,7 +8,7 @@ const cls = require('../../services/cls');
 const path = require('path');
 const becca = require('../../becca/becca');
 const blobService = require('../../services/blob');
-const eraseService = require("../../services/erase.js");
+const eraseService = require("../../services/erase");
 
 function getRevisionBlob(req) {
     const preview = req.query.preview === 'true';

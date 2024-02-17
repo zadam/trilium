@@ -12,7 +12,7 @@ const BBranch = require('../becca/entities/bbranch');
 const revisionService = require('./revisions');
 const becca = require('../becca/becca');
 const utils = require('../services/utils');
-const eraseService = require('../services/erase.js');
+const eraseService = require('../services/erase');
 const {sanitizeAttributeName} = require('./sanitize_attribute_name');
 const noteTypes = require('../services/note_types.js').getNoteTypeNames();
 

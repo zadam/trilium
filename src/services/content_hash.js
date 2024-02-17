@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
-const eraseService = require('./erase.js');
+const eraseService = require('./erase');
 
 function getEntityHashes() {
     // blob erasure is not synced, we should check before each sync if there's some blob to erase
