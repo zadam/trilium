@@ -1,6 +1,8 @@
 "use strict";
 
-function formatAttrForSearch(attr, searchWithValue) {
+import BAttribute = require("../becca/entities/battribute");
+
+function formatAttrForSearch(attr: BAttribute, searchWithValue: string) {
     let searchStr = '';
 
     if (attr.type === 'label') {
@@ -27,7 +29,7 @@ function formatAttrForSearch(attr, searchWithValue) {
     return searchStr;
 }
 
-function formatValue(val) {
+function formatValue(val: string) {
     if (!/[^\w]/.test(val)) {
         return val;
     }
@@ -45,6 +47,6 @@ function formatValue(val) {
     }
 }
 
-module.exports = {
+export = {
     formatAttrForSearch
 };
