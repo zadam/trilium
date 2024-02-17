@@ -184,7 +184,7 @@ function getDbSize() {
 
 log.info(`DB size: ${getDbSize()} KB`);
 
-module.exports = {
+export = {
     dbReady,
     schemaExists,
     isDbInitialized,
