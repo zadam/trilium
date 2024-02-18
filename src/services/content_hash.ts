@@ -1,9 +1,11 @@
 "use strict";
 
-const sql = require('./sql');
-const utils = require('./utils');
-const log = require('./log');
-const eraseService = require('./erase');
+import sql = require('./sql');
+import utils = require('./utils');
+import log = require('./log');
+import eraseService = require('./erase');
+
+type SectorHash = Record<string, string>;
 
 function getEntityHashes() {
     // blob erasure is not synced, we should check before each sync if there's some blob to erase
@@ -12,8 +14,9 @@ function getEntityHashes() {
     const startTime = new Date();
 
     // we know this is slow and the total content hash calculation time is logged
+    type HashRow = [ string, string, string, boolean ];
     const hashRows = sql.disableSlowQueryLogging(
-        () => sql.getRawRows(`
+        () => sql.getRawRows<HashRow>(`
             SELECT entityName,
                    entityId,
                    hash,
@@ -27,7 +30,7 @@ function getEntityHashes() {
     // sorting by entityId is enough, hashes will be segmented by entityName later on anyway
     hashRows.sort((a, b) => a[1] < b[1] ? -1 : 1);
 
-    const hashMap = {};
+    const hashMap: Record<string, SectorHash> = {};
 
     for (const [entityName, entityId, hash, isErased] of hashRows) {
         const entityHashMap = hashMap[entityName] = hashMap[entityName] || {};
@@ -51,13 +54,13 @@ function getEntityHashes() {
     return hashMap;
 }
 
-function checkContentHashes(otherHashes) {
+function checkContentHashes(otherHashes: Record<string, SectorHash>) {
     const entityHashes = getEntityHashes();
     const failedChecks = [];
 
     for (const entityName in entityHashes) {
-        const thisSectorHashes = entityHashes[entityName] || {};
-        const otherSectorHashes = otherHashes[entityName] || {};
+        const thisSectorHashes: SectorHash = entityHashes[entityName] || {};
+        const otherSectorHashes: SectorHash = otherHashes[entityName] || {};
 
         const sectors = new Set(Object.keys(thisSectorHashes).concat(Object.keys(otherSectorHashes)));
 
@@ -77,7 +80,7 @@ function checkContentHashes(otherHashes) {
     return failedChecks;
 }
 
-module.exports = {
+export = {
     getEntityHashes,
     checkContentHashes
 };
