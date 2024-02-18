@@ -899,7 +899,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
-            return (searchResultNoteIds as string[])    // FIXME: remove cast once search is converted
+            return (searchResultNoteIds as string[])    // TODO: remove cast once search is converted
                 .map(resultNoteId => becca.notes[resultNoteId])
                 .filter(note => !!note);
         }

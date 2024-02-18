@@ -39,7 +39,6 @@ class OrderByAndLimitExp extends Expression {
 
     execute(inputNoteSet: NoteSet, executionContext: {}, searchContext: SearchContext) {
         if (!this.subExpression) {
-            // FIXME: who is setting the subexpression?
             throw new Error("Missing subexpression");
         }
 

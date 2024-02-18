@@ -183,7 +183,7 @@ function noteUpdated(entityRow: NoteRow) {
     const note = becca.notes[entityRow.noteId];
 
     if (note) {
-        // FIXME, this wouldn't have worked in the original implementation since the variable was named __flatTextCache.
+        // TODO, this wouldn't have worked in the original implementation since the variable was named __flatTextCache.
         // type / mime could have been changed, and they are present in flatTextCache
         note.__flatTextCache = null;
     }

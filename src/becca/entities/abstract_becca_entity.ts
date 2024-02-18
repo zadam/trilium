@@ -90,21 +90,21 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     }
 
     hasStringContent(): boolean {
-        // FIXME: Not sure why some entities don't implement it.
+        // TODO: Not sure why some entities don't implement it.
         return true;
     }
 
     abstract getPojo(): {};
 
     get isDeleted(): boolean {
-        // FIXME: Not sure why some entities don't implement it.
+        // TODO: Not sure why some entities don't implement it.
         return false;
     }
 
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own
      */
-    // FIXME: opts not used but called a few times, maybe should be used by derived classes or passed to beforeSaving.
+    // TODO: opts not used but called a few times, maybe should be used by derived classes or passed to beforeSaving.
     save(opts?: {}): this {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
         const entityName = constructorData.entityName;

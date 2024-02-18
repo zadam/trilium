@@ -82,7 +82,7 @@ function unescapeHtml(str: string) {
 }
 
 function toObject<T, K extends string | number | symbol, V>(array: T[], fn: (item: T) => [K, V]): Record<K, V> {
-    const obj: Record<K, V> = {} as Record<K, V>; // FIXME: unsafe?
+    const obj: Record<K, V> = {} as Record<K, V>; // TODO: unsafe?
 
     for (const item of array) {
         const ret = fn(item);
@@ -98,7 +98,7 @@ function stripTags(text: string) {
 }
 
 function union<T extends string | number | symbol>(a: T[], b: T[]): T[] {
-    const obj: Record<T, T> = {} as Record<T, T>; // FIXME: unsafe?
+    const obj: Record<T, T> = {} as Record<T, T>; // TODO: unsafe?
 
     for (let i = a.length-1; i >= 0; i--) {
         obj[a[i]] = a[i];

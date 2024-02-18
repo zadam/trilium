@@ -15,7 +15,7 @@ const attachmentRoleToNoteTypeMapping = {
 };
 
 interface ContentOpts {
-    // FIXME: Found in bnote.ts, to check if it's actually used and not a typo.
+    // TODO: Found in bnote.ts, to check if it's actually used and not a typo.
     forceSave?: boolean;
 
     /** will also save this BAttachment entity */
@@ -135,7 +135,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     }
 
     convertToNote(): { note: BNote, branch: BBranch } {
-        // FIXME: can this ever be "search"?
+        // TODO: can this ever be "search"?
         if (this.type as string === 'search') {
             throw new Error(`Note of type search cannot have child notes`);
         }
