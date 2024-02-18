@@ -45,7 +45,7 @@ function startTrilium() {
      * instead of the new one. This is complicated by the fact that it is possible to run multiple instances of Trilium
      * if port and data dir are configured separately. This complication is the source of the following weird usage.
      *
-     * The line below makes sure that the "second-instance" (process in window.js) is fired. Normally it returns a boolean
+     * The line below makes sure that the "second-instance" (process in window) is fired. Normally it returns a boolean
      * indicating whether another instance is running or not, but we ignore that and kill the app only based on the port conflict.
      *
      * A bit weird is that "second-instance" is triggered also on the valid usecases (different port/data dir) and

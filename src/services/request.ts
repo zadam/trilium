@@ -230,7 +230,7 @@ function getClient(opts: ClientOpts): Client {
     // it's not clear how to explicitly configure proxy (as opposed to system proxy),
     // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
-        return require('electron').net;
+        return require('electron').net as Client;
     }
     else {
         const {protocol} = url.parse(opts.url);

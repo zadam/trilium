@@ -1,21 +1,20 @@
-const path = require('path');
-const url = require("url");
-const port = require('./port.ts');
-const optionService = require('./options');
-const env = require('./env');
-const log = require('./log');
-const sqlInit = require('./sql_init');
-const cls = require('./cls');
-const keyboardActionsService = require('./keyboard_actions');
-const {ipcMain} = require('electron');
+import path = require('path');
+import url = require("url");
+import port = require('./port');
+import optionService = require('./options');
+import env = require('./env');
+import log = require('./log');
+import sqlInit = require('./sql_init');
+import cls = require('./cls');
+import keyboardActionsService = require('./keyboard_actions');
+import remoteMain = require("@electron/remote/main")
+import { App, BrowserWindow, WebContents, ipcMain } from 'electron';
 
 // Prevent the window being garbage collected
-/** @type {Electron.BrowserWindow} */
-let mainWindow;
-/** @type {Electron.BrowserWindow} */
-let setupWindow;
+let mainWindow: BrowserWindow | null;
+let setupWindow: BrowserWindow | null;
 
-async function createExtraWindow(extraWindowHash) {
+async function createExtraWindow(extraWindowHash: string) {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
     const {BrowserWindow} = require('electron');
@@ -25,7 +24,6 @@ async function createExtraWindow(extraWindowHash) {
         height: 800,
         title: 'Trilium Notes',
         webPreferences: {
-            enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
             spellcheck: spellcheckEnabled
@@ -44,7 +42,7 @@ ipcMain.on('create-extra-window', (event, arg) => {
     createExtraWindow(arg.extraWindowHash);
 });
 
-async function createMainWindow(app) {
+async function createMainWindow(app: App) {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
 
     const mainWindowState = windowStateKeeper({
@@ -64,7 +62,6 @@ async function createMainWindow(app) {
         height: mainWindowState.height,
         title: 'Trilium Notes',
         webPreferences: {
-            enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
             spellcheck: spellcheckEnabled,
@@ -95,8 +92,12 @@ async function createMainWindow(app) {
     });
 }
 
-function configureWebContents(webContents, spellcheckEnabled) {
-    require("@electron/remote/main").enable(webContents);
+function configureWebContents(webContents: WebContents, spellcheckEnabled: boolean) {
+    if (!mainWindow) {
+        return;
+    }
+
+    remoteMain.enable(webContents);
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
         require("electron").shell.openExternal(details.url);
@@ -108,8 +109,7 @@ function configureWebContents(webContents, spellcheckEnabled) {
         const parsedUrl = url.parse(targetUrl);
 
         // we still need to allow internal redirects from setup and migration pages
-        if (!['localhost', '127.0.0.1'].includes(parsedUrl.hostname) || (parsedUrl.path && parsedUrl.path !== '/' && parsedUrl.path !== '/?')) {
-
+        if (!['localhost', '127.0.0.1'].includes(parsedUrl.hostname || "") || (parsedUrl.path && parsedUrl.path !== '/' && parsedUrl.path !== '/?')) {
             ev.preventDefault();
         }
     });
@@ -168,6 +168,10 @@ async function registerGlobalShortcuts() {
                 const translatedShortcut = shortcut.substr(7);
 
                 const result = globalShortcut.register(translatedShortcut, cls.wrap(() => {
+                    if (!mainWindow) {
+                        return;
+                    }
+
                     // window may be hidden / not in focus
                     mainWindow.focus();
 
@@ -189,8 +193,7 @@ function getMainWindow() {
     return mainWindow;
 }
 
-
-module.exports = {
+export = {
     createMainWindow,
     createSetupWindow,
     closeSetupWindow,
