@@ -3,18 +3,10 @@
 import optionService = require('./options');
 import log = require('./log');
 import utils = require('./utils');
+import { KeyboardShortcut } from './keyboard_actions_interface';
 
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();
-
-interface KeyboardShortcut {
-    separator?: string;
-    actionName?: string;
-    description?: string;
-    defaultShortcuts?: string[];
-    effectiveShortcuts?: string[];
-    scope?: string;
-}
 
 /**
  * Scope here means on which element the keyboard shortcuts are attached - this means that for the shortcut to work,

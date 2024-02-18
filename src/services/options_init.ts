@@ -1,16 +1,22 @@
-const optionService = require('./options');
-const appInfo = require('./app_info');
-const utils = require('./utils');
-const log = require('./log');
-const dateUtils = require('./date_utils');
-const keyboardActions = require('./keyboard_actions');
+import optionService = require('./options');
+import appInfo = require('./app_info');
+import utils = require('./utils');
+import log = require('./log');
+import dateUtils = require('./date_utils');
+import keyboardActions = require('./keyboard_actions');
+import { KeyboardShortcutWithRequiredActionName } from './keyboard_actions_interface';
 
 function initDocumentOptions() {
     optionService.createOption('documentId', utils.randomSecureToken(16), false);
     optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
 }
 
-function initNotSyncedOptions(initialized, opts = {}) {
+interface NotSyncedOpts {
+    syncServerHost?: string;
+    syncProxy?: string;
+}
+
+function initNotSyncedOptions(initialized: boolean, opts: NotSyncedOpts = {}) {
     optionService.createOption('openNoteContexts', JSON.stringify([
         {
             notePath: 'root',
@@ -21,7 +27,7 @@ function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('lastDailyBackupDate', dateUtils.utcNowDateTime(), false);
     optionService.createOption('lastWeeklyBackupDate', dateUtils.utcNowDateTime(), false);
     optionService.createOption('lastMonthlyBackupDate', dateUtils.utcNowDateTime(), false);
-    optionService.createOption('dbVersion', appInfo.dbVersion, false);
+    optionService.createOption('dbVersion', appInfo.dbVersion.toString(), false);
 
     optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 
@@ -117,8 +123,8 @@ function initStartupOptions() {
 }
 
 function getKeyboardDefaultOptions() {
-    return keyboardActions.DEFAULT_KEYBOARD_ACTIONS
-        .filter(ka => !!ka.actionName)
+    return (keyboardActions.DEFAULT_KEYBOARD_ACTIONS
+        .filter(ka => !!ka.actionName) as KeyboardShortcutWithRequiredActionName[])
         .map(ka => ({
             name: `keyboardShortcuts${ka.actionName.charAt(0).toUpperCase()}${ka.actionName.slice(1)}`,
             value: JSON.stringify(ka.defaultShortcuts),
@@ -126,7 +132,7 @@ function getKeyboardDefaultOptions() {
         }));
 }
 
-module.exports = {
+export = {
     initDocumentOptions,
     initNotSyncedOptions,
     initStartupOptions
