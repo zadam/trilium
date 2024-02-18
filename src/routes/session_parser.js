@@ -1,5 +1,5 @@
 const session = require("express-session");
-const sessionSecret = require('../services/session_secret.js');
+const sessionSecret = require('../services/session_secret');
 const dataDir = require('../services/data_dir');
 const FileStore = require('session-file-store')(session);
 
