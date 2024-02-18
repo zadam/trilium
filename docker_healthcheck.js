@@ -11,7 +11,7 @@ if (config.Network.https) {
 }
 
 const port = require('./src/services/port.ts');
-const host = require('./src/services/host.js');
+const host = require('./src/services/host');
 
 const options = { timeout: 2000 };
 
