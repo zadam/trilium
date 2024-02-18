@@ -216,7 +216,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and entity changes records)
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
-    // FIXME: original declaration was (string | Buffer), but everywhere it's used as a string.
+    // TODO: original declaration was (string | Buffer), but everywhere it's used as a string.
     getContent(): string {
         return this._getContent() as string;
     }
@@ -900,7 +900,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             const {searchResultNoteIds} = searchService.searchFromNote(this);
 
             const becca = this.becca;
-            return (searchResultNoteIds as string[])    // FIXME: remove cast once search is converted
+            return (searchResultNoteIds as string[])    // TODO: remove cast once search is converted
                 .map(resultNoteId => becca.notes[resultNoteId])
                 .filter(note => !!note);
         }

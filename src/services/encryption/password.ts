@@ -31,7 +31,7 @@ function changePassword(currentPassword: string, newPassword: string) {
         const newPasswordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(newPassword));
         
         if (decryptedDataKey) {
-            // FIXME: what should happen if the decrypted data key is null?
+            // TODO: what should happen if the decrypted data key is null?
             passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
         }
 
