@@ -1,7 +1,7 @@
 "use strict";
 
 const attributeService = require('../../services/attributes');
-const cloneService = require('../../services/cloning.js');
+const cloneService = require('../../services/cloning');
 const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes.js');
 const dateUtils = require('../../services/date_utils');

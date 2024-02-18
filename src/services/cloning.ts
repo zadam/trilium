@@ -7,7 +7,7 @@ const BBranch = require('../becca/entities/bbranch');
 const becca = require('../becca/becca');
 const log = require('./log');
 
-function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {
+function cloneNoteToParentNote(noteId: string, parentNoteId: string, prefix: string | null = null) {
     if (!(noteId in becca.notes) || !(parentNoteId in becca.notes)) {
         return { success: false, message: 'Note cannot be cloned because either the cloned note or the intended parent is deleted.' };
     }
@@ -43,7 +43,7 @@ function cloneNoteToParentNote(noteId, parentNoteId, prefix = null) {
     };
 }
 
-function cloneNoteToBranch(noteId, parentBranchId, prefix) {
+function cloneNoteToBranch(noteId: string, parentBranchId: string, prefix: string) {
     const parentBranch = becca.getBranch(parentBranchId);
 
     if (!parentBranch) {
@@ -58,7 +58,7 @@ function cloneNoteToBranch(noteId, parentBranchId, prefix) {
     return ret;
 }
 
-function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
+function ensureNoteIsPresentInParent(noteId: string, parentNoteId: string, prefix: string) {
     if (!(noteId in becca.notes)) {
         return { branch: null, success: false, message: `Note '${noteId}' is deleted.` };
     } else if (!(parentNoteId in becca.notes)) {
@@ -89,7 +89,7 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
     return { branch: branch, success: true };
 }
 
-function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
+function ensureNoteIsAbsentFromParent(noteId: string, parentNoteId: string) {
     const branchId = sql.getValue(`SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
     const branch = becca.getBranch(branchId);
 
@@ -109,7 +109,7 @@ function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     }
 }
 
-function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
+function toggleNoteInParent(present: boolean, noteId: string, parentNoteId: string, prefix: string) {
     if (present) {
         return ensureNoteIsPresentInParent(noteId, parentNoteId, prefix);
     }
@@ -118,7 +118,7 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
     }
 }
 
-function cloneNoteAfter(noteId, afterBranchId) {
+function cloneNoteAfter(noteId: string, afterBranchId: string) {
     if (['_hidden', 'root'].includes(noteId)) {
         return { success: false, message: `Cloning the note '${noteId}' is forbidden.` };
     }
@@ -175,7 +175,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
     return { success: true, branchId: branch.branchId };
 }
 
-module.exports = {
+export = {
     cloneNoteToBranch,
     cloneNoteToParentNote,
     ensureNoteIsPresentInParent,
