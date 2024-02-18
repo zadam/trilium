@@ -173,6 +173,7 @@ interface NoteParams {
     dateCreated?: string;
     utcDateCreated?: string;
     ignoreForbiddenParents?: boolean;
+    target?: "into";
 }
 
 function createNewNote(params: NoteParams): {

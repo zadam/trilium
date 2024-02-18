@@ -1,5 +1,5 @@
 const specialNotesService = require('../services/special_notes.js');
-const dateNotesService = require('../services/date_notes.js');
+const dateNotesService = require('../services/date_notes');
 const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');
 

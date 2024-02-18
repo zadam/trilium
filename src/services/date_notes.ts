@@ -1,13 +1,14 @@
 "use strict";
 
-const noteService = require('./notes');
-const attributeService = require('./attributes');
-const dateUtils = require('./date_utils');
-const sql = require('./sql');
-const protectedSessionService = require('./protected_session');
-const searchService = require('../services/search/services/search');
-const SearchContext = require('../services/search/search_context');
-const hoistedNoteService = require('./hoisted_note');
+import noteService = require('./notes');
+import attributeService = require('./attributes');
+import dateUtils = require('./date_utils');
+import sql = require('./sql');
+import protectedSessionService = require('./protected_session');
+import searchService = require('../services/search/services/search');
+import SearchContext = require('../services/search/search_context');
+import hoistedNoteService = require('./hoisted_note');
+import BNote = require('../becca/entities/bnote');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -17,7 +18,9 @@ const DATE_LABEL = 'dateNote';
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function createNote(parentNote, noteTitle) {
+type StartOfWeek = "monday" | "sunday";
+
+function createNote(parentNote: BNote, noteTitle: string) {
     return noteService.createNewNote({
         parentNoteId: parentNote.noteId,
         title: noteTitle,
@@ -27,13 +30,12 @@ function createNote(parentNote, noteTitle) {
     }).note;
 }
 
-/** @returns {BNote} */
-function getRootCalendarNote() {
+function getRootCalendarNote(): BNote {
     let rootNote;
 
     const workspaceNote = hoistedNoteService.getWorkspaceNote();
 
-    if (!workspaceNote.isRoot()) {
+    if (!workspaceNote || !workspaceNote.isRoot()) {
         rootNote = searchService.findFirstNoteWithQuery('#workspaceCalendarRoot', new SearchContext({ignoreHoistedNote: false}));
     }
 
@@ -57,14 +59,11 @@ function getRootCalendarNote() {
         });
     }
 
-    return rootNote;
+    return rootNote as BNote;
 }
 
-/** @returns {BNote} */
-function getYearNote(dateStr, rootNote = null) {
-    if (!rootNote) {
-        rootNote = getRootCalendarNote();
-    }
+function getYearNote(dateStr: string, _rootNote: BNote | null = null): BNote {
+    const rootNote = _rootNote || getRootCalendarNote();
 
     const yearStr = dateStr.trim().substr(0, 4);
 
@@ -88,10 +87,10 @@ function getYearNote(dateStr, rootNote = null) {
         }
     });
 
-    return yearNote;
+    return yearNote as unknown as BNote;
 }
 
-function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
+function getMonthNoteTitle(rootNote: BNote, monthNumber: string, dateObj: Date) {
     const pattern = rootNote.getOwnedLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
     const monthName = MONTHS[dateObj.getMonth()];
 
@@ -102,11 +101,8 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
         .replace(/{month}/g, monthName);
 }
 
-/** @returns {BNote} */
-function getMonthNote(dateStr, rootNote = null) {
-    if (!rootNote) {
-        rootNote = getRootCalendarNote();
-    }
+function getMonthNote(dateStr: string, _rootNote: BNote | null = null): BNote {
+    const rootNote = _rootNote || getRootCalendarNote();
 
     const monthStr = dateStr.substr(0, 7);
     const monthNumber = dateStr.substr(5, 2);
@@ -137,10 +133,10 @@ function getMonthNote(dateStr, rootNote = null) {
         }
     });
 
-    return monthNote;
+    return monthNote as unknown as BNote;
 }
 
-function getDayNoteTitle(rootNote, dayNumber, dateObj) {
+function getDayNoteTitle(rootNote: BNote, dayNumber: string, dateObj: Date) {
     const pattern = rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
     const weekDay = DAYS[dateObj.getDay()];
 
@@ -154,18 +150,15 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
 }
 
 /** produces 1st, 2nd, 3rd, 4th, 21st, 31st for 1, 2, 3, 4, 21, 31 */
-function ordinal(dayNumber) {
+function ordinal(dayNumber: number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const suffix = suffixes[(dayNumber - 20) % 10] || suffixes[dayNumber] || suffixes[0];
 
     return `${dayNumber}${suffix}`;
 }
 
-/** @returns {BNote} */
-function getDayNote(dateStr, rootNote = null) {
-    if (!rootNote) {
-        rootNote = getRootCalendarNote();
-    }
+function getDayNote(dateStr: string, _rootNote: BNote | null = null): BNote {
+    const rootNote = _rootNote || getRootCalendarNote();
 
     dateStr = dateStr.trim().substr(0, 10);
 
@@ -195,14 +188,14 @@ function getDayNote(dateStr, rootNote = null) {
         }
     });
 
-    return dateNote;
+    return dateNote as unknown as BNote;
 }
 
 function getTodayNote(rootNote = null) {
     return getDayNote(dateUtils.localNowDate(), rootNote);
 }
 
-function getStartOfTheWeek(date, startOfTheWeek) {
+function getStartOfTheWeek(date: Date, startOfTheWeek: StartOfWeek) {
     const day = date.getDay();
     let diff;
 
@@ -219,7 +212,11 @@ function getStartOfTheWeek(date, startOfTheWeek) {
     return new Date(date.setDate(diff));
 }
 
-function getWeekNote(dateStr, options = {}, rootNote = null) {
+interface WeekNoteOpts {
+    startOfTheWeek?: StartOfWeek
+}
+
+function getWeekNote(dateStr: string, options: WeekNoteOpts = {}, rootNote = null) {
     const startOfTheWeek = options.startOfTheWeek || "monday";
 
     const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);
@@ -229,7 +226,7 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
     return getDayNote(dateStr, rootNote);
 }
 
-module.exports = {
+export = {
     getRootCalendarNote,
     getYearNote,
     getMonthNote,
