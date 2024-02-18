@@ -1,7 +1,8 @@
-const treeService = require('./tree');
-const sql = require('./sql');
+import treeService = require('./tree');
+import sql = require('./sql');
+import BBranch = require('../becca/entities/bbranch.js');
 
-function moveBranchToNote(branchToMove, targetParentNoteId) {
+function moveBranchToNote(branchToMove: BBranch, targetParentNoteId: string) {
     if (branchToMove.parentNoteId === targetParentNoteId) {
         return {success: true}; // no-op
     }
@@ -12,8 +13,8 @@ function moveBranchToNote(branchToMove, targetParentNoteId) {
         return [200, validationResult];
     }
 
-    const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [targetParentNoteId]);
-    const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
+    const maxNotePos = sql.getValue<number | null>('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [targetParentNoteId]);
+    const newNotePos = !maxNotePos ? 0 : maxNotePos + 10;
 
     const newBranch = branchToMove.createClone(targetParentNoteId, newNotePos);
     newBranch.save();
@@ -26,10 +27,10 @@ function moveBranchToNote(branchToMove, targetParentNoteId) {
     };
 }
 
-function moveBranchToBranch(branchToMove, targetParentBranch) {
+function moveBranchToBranch(branchToMove: BBranch, targetParentBranch: BBranch) {
     const res = moveBranchToNote(branchToMove, targetParentBranch.noteId);
 
-    if (!res.success) {
+    if (!("success" in res) || !res.success) {
         return res;
     }
 
@@ -42,7 +43,7 @@ function moveBranchToBranch(branchToMove, targetParentBranch) {
     return res;
 }
 
-module.exports = {
+export = {
     moveBranchToBranch,
     moveBranchToNote
 };
