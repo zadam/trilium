@@ -13,3 +13,13 @@ export interface EntityChange {
 	changeId?: string | null;
 	instanceId?: string | null;
 }
+
+export interface EntityRow {
+	isDeleted?: boolean;
+	content?: Buffer | string;
+}
+
+export interface EntityChangeRecord {
+    entityChange: EntityChange;
+    entity?: EntityRow;
+}

@@ -43,7 +43,7 @@ require('./routes/custom.js').register(app);
 require('./routes/error_handlers.js').register(app);
 
 // triggers sync timer
-require('./services/sync.js');
+require('./services/sync');
 
 // triggers backup timer
 require('./services/backup');

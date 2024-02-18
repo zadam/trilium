@@ -4,17 +4,7 @@ import entityChangesService = require('./entity_changes');
 import eventService = require('./events');
 import entityConstructor = require('../becca/entity_constructor');
 import ws = require('./ws');
-import { EntityChange } from './entity_changes_interface';
-
-interface EntityRow {
-    isDeleted?: boolean;
-    content: Buffer | string;
-}
-
-interface EntityChangeInput {
-    entityChange: EntityChange;
-    entity: EntityRow;
-}
+import { EntityChange, EntityChangeRecord, EntityRow } from './entity_changes_interface';
 
 interface UpdateContext {
     alreadyErased: number;
@@ -22,7 +12,7 @@ interface UpdateContext {
     updated: Record<string, string[]>
 }
 
-function updateEntities(entityChanges: EntityChangeInput[], instanceId: string) {
+function updateEntities(entityChanges: EntityChangeRecord[], instanceId: string) {
     if (entityChanges.length === 0) {
         return;
     }
@@ -51,7 +41,9 @@ function updateEntities(entityChanges: EntityChangeInput[], instanceId: string) 
             atLeastOnePullApplied = true;
         }
 
-        updateEntity(entityChange, entity, instanceId, updateContext);
+        if (entity) {
+            updateEntity(entityChange, entity, instanceId, updateContext);
+        }
     }
 
     logUpdateContext(updateContext);

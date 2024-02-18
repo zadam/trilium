@@ -3,7 +3,7 @@
 const scriptService = require('../../services/script.js');
 const attributeService = require('../../services/attributes');
 const becca = require('../../becca/becca');
-const syncService = require('../../services/sync.js');
+const syncService = require('../../services/sync');
 const sql = require('../../services/sql');
 
 // The async/await here is very confusing, because the body.script may, but may not be async. If it is async, then we

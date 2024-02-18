@@ -238,7 +238,7 @@ function getNoteTitle(filePath: string, replaceUnderscoresWithSpaces: boolean, n
     }
 }
 
-function timeLimit<T>(promise: Promise<T>, limitMs: number, errorMessage: string): Promise<T> {
+function timeLimit<T>(promise: Promise<T>, limitMs: number, errorMessage?: string): Promise<T> {
     if (!promise || !promise.then) { // it's not actually a promise
         return promise;
     }
