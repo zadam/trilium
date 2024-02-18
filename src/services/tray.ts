@@ -1,13 +1,13 @@
-const { Menu, Tray } = require('electron');
-const path = require('path');
-const windowService = require('./window');
-const optionService = require('./options');
+import { Menu, Tray } from 'electron';
+import path = require('path');
+import windowService = require('./window');
+import optionService = require('./options');
 
 const UPDATE_TRAY_EVENTS = [
     'minimize', 'maximize', 'show', 'hide'
-]
+] as const;
 
-let tray = null;
+let tray: Tray | null = null;
 // `mainWindow.isVisible` doesn't work with `mainWindow.show` and `mainWindow.hide` - it returns `false` when the window
 // is minimized
 let isVisible = true;
@@ -37,6 +37,7 @@ const getIconPath = () => {
 }
 const registerVisibilityListener = () => {
     const mainWindow = windowService.getMainWindow();
+    if (!mainWindow) { return; }
 
     // They need to be registered before the tray updater is registered
     mainWindow.on('show', () => {
@@ -46,13 +47,14 @@ const registerVisibilityListener = () => {
         isVisible = false;
     });
 
-    UPDATE_TRAY_EVENTS.forEach(eventName => {
-        mainWindow.on(eventName, updateTrayMenu)
+    UPDATE_TRAY_EVENTS.forEach((eventName) => {
+        mainWindow.on(eventName as any, updateTrayMenu)
     });
 }
 
 const updateTrayMenu = () => {
     const mainWindow = windowService.getMainWindow();
+    if (!mainWindow) { return; }
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -83,6 +85,7 @@ const updateTrayMenu = () => {
 }
 const changeVisibility = () => {
     const window = windowService.getMainWindow();
+    if (!window) { return; }
 
     if (isVisible) {
         window.hide();
@@ -106,6 +109,6 @@ function createTray() {
     registerVisibilityListener();
 }
 
-module.exports = {
+export = {
     createTray
 }
