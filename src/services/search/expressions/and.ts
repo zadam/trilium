@@ -8,8 +8,8 @@ import TrueExp = require('./true');
 class AndExp extends Expression {
     private subExpressions: Expression[];
 
-    static of(subExpressions: Expression[]) {
-        subExpressions = subExpressions.filter(exp => !!exp);
+    static of(_subExpressions: (Expression | null | undefined)[]) {
+        const subExpressions = _subExpressions.filter((exp) => !!exp) as Expression[];
 
         if (subExpressions.length === 1) {
             return subExpressions[0];

@@ -1,11 +1,9 @@
-interface Token {
-    token: string;
-}
+import { TokenData } from "./types";
 
 /**
  * This will create a recursive object from a list of tokens - tokens between parenthesis are grouped in a single array
  */
-function handleParens(tokens: (Token | Token[])[]) {
+function handleParens(tokens: (TokenData | TokenData[])[]) {
     if (tokens.length === 0) {
         return [];
     }
@@ -45,7 +43,7 @@ function handleParens(tokens: (Token | Token[])[]) {
             ...tokens.slice(0, leftIdx),
             handleParens(tokens.slice(leftIdx + 1, rightIdx)),
             ...tokens.slice(rightIdx + 1)
-        ] as (Token | Token[])[];
+        ] as (TokenData | TokenData[])[];
     }
 }
 

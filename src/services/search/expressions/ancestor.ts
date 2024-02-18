@@ -11,9 +11,9 @@ class AncestorExp extends Expression {
     private ancestorNoteId: string;
     private ancestorDepthComparator;
     
-    ancestorDepth: string;
+    ancestorDepth?: string;
 
-    constructor(ancestorNoteId: string, ancestorDepth: string) {
+    constructor(ancestorNoteId: string, ancestorDepth?: string) {
         super();
 
         this.ancestorNoteId = ancestorNoteId;
@@ -51,7 +51,7 @@ class AncestorExp extends Expression {
         return depthConformingNoteSet;
     }
 
-    getComparator(depthCondition: string): ((depth: number) => boolean) | null {
+    getComparator(depthCondition?: string): ((depth: number) => boolean) | null {
         if (!depthCondition) {
             return null;
         }
@@ -74,4 +74,4 @@ class AncestorExp extends Expression {
     }
 }
 
-module.exports = AncestorExp;
+export = AncestorExp;

@@ -11,9 +11,9 @@ class AttributeExistsExp extends Expression {
     private attributeType: string;
     private attributeName: string;
     private isTemplateLabel: boolean;
-    private prefixMatch: string;
+    private prefixMatch: boolean;
 
-    constructor(attributeType: string, attributeName: string, prefixMatch: string) {
+    constructor(attributeType: string, attributeName: string, prefixMatch: boolean) {
         super();
 
         this.attributeType = attributeType;

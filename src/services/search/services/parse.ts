@@ -1,28 +1,31 @@
 "use strict";
 
-const dayjs = require("dayjs");
-const AndExp = require('../expressions/and');
-const OrExp = require('../expressions/or');
-const NotExp = require('../expressions/not');
-const ChildOfExp = require('../expressions/child_of');
-const DescendantOfExp = require('../expressions/descendant_of');
-const ParentOfExp = require('../expressions/parent_of');
-const RelationWhereExp = require('../expressions/relation_where');
-const PropertyComparisonExp = require('../expressions/property_comparison');
-const AttributeExistsExp = require('../expressions/attribute_exists');
-const LabelComparisonExp = require('../expressions/label_comparison');
-const NoteFlatTextExp = require('../expressions/note_flat_text');
-const NoteContentFulltextExp = require('../expressions/note_content_fulltext');
-const OrderByAndLimitExp = require('../expressions/order_by_and_limit');
-const AncestorExp = require('../expressions/ancestor');
-const buildComparator = require('./build_comparator');
-const ValueExtractor = require('../value_extractor');
-const utils = require('../../utils');
-const TrueExp = require('../expressions/true');
-const IsHiddenExp = require('../expressions/is_hidden');
+import dayjs = require("dayjs");
+import AndExp = require('../expressions/and');
+import OrExp = require('../expressions/or');
+import NotExp = require('../expressions/not');
+import ChildOfExp = require('../expressions/child_of');
+import DescendantOfExp = require('../expressions/descendant_of');
+import ParentOfExp = require('../expressions/parent_of');
+import RelationWhereExp = require('../expressions/relation_where');
+import PropertyComparisonExp = require('../expressions/property_comparison');
+import AttributeExistsExp = require('../expressions/attribute_exists');
+import LabelComparisonExp = require('../expressions/label_comparison');
+import NoteFlatTextExp = require('../expressions/note_flat_text');
+import NoteContentFulltextExp = require('../expressions/note_content_fulltext');
+import OrderByAndLimitExp = require('../expressions/order_by_and_limit');
+import AncestorExp = require('../expressions/ancestor');
+import buildComparator = require('./build_comparator');
+import ValueExtractor = require('../value_extractor');
+import utils = require('../../utils');
+import TrueExp = require('../expressions/true');
+import IsHiddenExp = require('../expressions/is_hidden');
+import SearchContext = require("../search_context");
+import { TokenData } from "./types";
+import Expression = require("../expressions/expression");
 
-function getFulltext(tokens, searchContext) {
-    tokens = tokens.map(t => utils.removeDiacritic(t.token));
+function getFulltext(_tokens: TokenData[], searchContext: SearchContext) {
+    const tokens: string[] = _tokens.map(t => utils.removeDiacritic(t.token));
 
     searchContext.highlightedTokens.push(...tokens);
 
@@ -54,7 +57,7 @@ const OPERATORS = [
     "%="
 ];
 
-function isOperator(token) {
+function isOperator(token: TokenData) {
     if (Array.isArray(token)) {
         return false;
     }
@@ -62,20 +65,20 @@ function isOperator(token) {
     return OPERATORS.includes(token.token);
 }
 
-function getExpression(tokens, searchContext, level = 0) {
+function getExpression(tokens: TokenData[], searchContext: SearchContext, level = 0) {
     if (tokens.length === 0) {
         return null;
     }
 
-    const expressions = [];
-    let op = null;
+    const expressions: Expression[] = [];
+    let op: string | null = null;
 
-    let i;
+    let i: number;
 
-    function context(i) {
+    function context(i: number) {
         let {startIndex, endIndex} = tokens[i];
-        startIndex = Math.max(0, startIndex - 20);
-        endIndex = Math.min(searchContext.originalQuery.length, endIndex + 20);
+        startIndex = Math.max(0, (startIndex || 0) - 20);
+        endIndex = Math.min(searchContext.originalQuery.length, (endIndex || Number.MAX_SAFE_INTEGER) + 20);
 
         return `"${startIndex !== 0 ? "..." : ""}${searchContext.originalQuery.substr(startIndex, endIndex - startIndex)}${endIndex !== searchContext.originalQuery.length ? "..." : ""}"`;
     }
@@ -133,7 +136,7 @@ function getExpression(tokens, searchContext, level = 0) {
         return date.format(format);
     }
 
-    function parseNoteProperty() {
+    function parseNoteProperty(): Expression | undefined | null {
         if (tokens[i].token !== '.') {
             searchContext.addError('Expected "." to separate field path');
             return;
@@ -161,19 +164,25 @@ function getExpression(tokens, searchContext, level = 0) {
         if (tokens[i].token === 'parents') {
             i += 1;
 
-            return new ChildOfExp(parseNoteProperty());
+            const expression = parseNoteProperty();
+            if (!expression) { return; }
+            return new ChildOfExp(expression);
         }
 
         if (tokens[i].token === 'children') {
             i += 1;
 
-            return new ParentOfExp(parseNoteProperty());
+            const expression = parseNoteProperty();
+            if (!expression) { return; }
+            return new ParentOfExp(expression);
         }
 
         if (tokens[i].token === 'ancestors') {
             i += 1;
 
-            return new DescendantOfExp(parseNoteProperty());
+            const expression = parseNoteProperty();
+            if (!expression) { return; }
+            return new DescendantOfExp(expression);
         }
 
         if (tokens[i].token === 'labels') {
@@ -219,6 +228,10 @@ function getExpression(tokens, searchContext, level = 0) {
             i += 2;
 
             const comparedValue = resolveConstantOperand();
+            if (!comparedValue) {
+                searchContext.addError(`Unresolved constant operand.`);
+                return;
+            }
 
             return new PropertyComparisonExp(searchContext, propertyName, operator, comparedValue);
         }
@@ -226,7 +239,7 @@ function getExpression(tokens, searchContext, level = 0) {
         searchContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
     }
 
-    function parseAttribute(name) {
+    function parseAttribute(name: string) {
         const isLabel = name.startsWith('#');
 
         name = name.substr(1);
@@ -239,10 +252,10 @@ function getExpression(tokens, searchContext, level = 0) {
 
         const subExp = isLabel ? parseLabel(name) : parseRelation(name);
 
-        return isNegated ? new NotExp(subExp) : subExp;
+        return subExp && isNegated ? new NotExp(subExp) : subExp;
     }
 
-    function parseLabel(labelName) {
+    function parseLabel(labelName: string) {
         searchContext.highlightedTokens.push(labelName);
 
         if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
@@ -274,13 +287,15 @@ function getExpression(tokens, searchContext, level = 0) {
         }
     }
 
-    function parseRelation(relationName) {
+    function parseRelation(relationName: string) {
         searchContext.highlightedTokens.push(relationName);
 
         if (i < tokens.length - 2 && tokens[i + 1].token === '.') {
             i += 1;
 
-            return new RelationWhereExp(relationName, parseNoteProperty());
+            const expression = parseNoteProperty();
+            if (!expression) { return; }
+            return new RelationWhereExp(relationName, expression);
         }
         else if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
             searchContext.addError(`Relation can be compared only with property, e.g. ~relation.title=hello in ${context(i)}`);
@@ -293,7 +308,10 @@ function getExpression(tokens, searchContext, level = 0) {
     }
 
     function parseOrderByAndLimit() {
-        const orderDefinitions = [];
+        const orderDefinitions: {
+            valueExtractor: ValueExtractor,
+            direction: string
+        }[] = [];
         let limit;
 
         if (tokens[i].token === 'orderby') {
@@ -316,8 +334,9 @@ function getExpression(tokens, searchContext, level = 0) {
 
                 const valueExtractor = new ValueExtractor(searchContext, propertyPath);
 
-                if (valueExtractor.validate()) {
-                    searchContext.addError(valueExtractor.validate());
+                const validationError = valueExtractor.validate();
+                if (validationError) {
+                    searchContext.addError(validationError);
                 }
 
                 orderDefinitions.push({
@@ -348,7 +367,10 @@ function getExpression(tokens, searchContext, level = 0) {
 
     for (i = 0; i < tokens.length; i++) {
         if (Array.isArray(tokens[i])) {
-            expressions.push(getExpression(tokens[i], searchContext, level++));
+            const expression = getExpression(tokens[i] as unknown as TokenData[], searchContext, level++);
+            if (expression) {
+                expressions.push(expression);
+            }
             continue;
         }
 
@@ -359,7 +381,10 @@ function getExpression(tokens, searchContext, level = 0) {
         }
 
         if (token.startsWith('#') || token.startsWith('~')) {
-            expressions.push(parseAttribute(token));
+            const attribute = parseAttribute(token);
+            if (attribute) {
+                expressions.push(attribute);
+            }
         }
         else if (['orderby', 'limit'].includes(token)) {
             if (level !== 0) {
@@ -384,12 +409,17 @@ function getExpression(tokens, searchContext, level = 0) {
                 continue;
             }
 
-            expressions.push(new NotExp(getExpression(tokens[i], searchContext, level++)));
+            const tokenArray = tokens[i] as unknown as TokenData[];
+            const expression = getExpression(tokenArray, searchContext, level++);
+            if (!expression) { return; }
+            expressions.push(new NotExp(expression));
         }
         else if (token === 'note') {
             i++;
 
-            expressions.push(parseNoteProperty());
+            const expression = parseNoteProperty();
+            if (!expression) { return; }
+            expressions.push(expression);
 
             continue;
         }
@@ -416,13 +446,17 @@ function getExpression(tokens, searchContext, level = 0) {
     return getAggregateExpression();
 }
 
-function parse({fulltextTokens, expressionTokens, searchContext}) {
-    let expression;
+function parse({fulltextTokens, expressionTokens, searchContext}: {
+    fulltextTokens: TokenData[],
+    expressionTokens: TokenData[],
+    searchContext: SearchContext
+}) {
+    let expression: Expression | undefined | null;
 
     try {
         expression = getExpression(expressionTokens, searchContext);
     }
-    catch (e) {
+    catch (e: any) {
         searchContext.addError(e.message);
 
         expression = new TrueExp();
@@ -443,13 +477,13 @@ function parse({fulltextTokens, expressionTokens, searchContext}) {
             direction: searchContext.orderDirection
         }], searchContext.limit);
 
-        exp.subExpression = filterExp;
+        (exp as any).subExpression = filterExp;
     }
 
     return exp;
 }
 
-function getAncestorExp({ancestorNoteId, ancestorDepth, includeHiddenNotes}) {
+function getAncestorExp({ancestorNoteId, ancestorDepth, includeHiddenNotes}: SearchContext) {
     if (ancestorNoteId && ancestorNoteId !== 'root') {
         return new AncestorExp(ancestorNoteId, ancestorDepth);
     } else if (!includeHiddenNotes) {
@@ -459,4 +493,4 @@ function getAncestorExp({ancestorNoteId, ancestorDepth, includeHiddenNotes}) {
     }
 }
 
-module.exports = parse;
+export = parse;

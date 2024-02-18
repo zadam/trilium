@@ -5,14 +5,12 @@ import NoteSet = require("../note_set");
 import SearchContext = require("../search_context");
 import Expression = require("./expression");
 
-type Direction = "asc";
-
 interface ValueExtractor {
     extract: (note: BNote) => number | string | null;
 }
 
 interface OrderDefinition {
-    direction: Direction;
+    direction?: string;
     smaller: number;
     larger: number;
     valueExtractor: ValueExtractor;
@@ -22,9 +20,9 @@ class OrderByAndLimitExp extends Expression {
 
     private orderDefinitions: OrderDefinition[];
     private limit: number;
-    private subExpression: Expression | null;
+    subExpression: Expression | null;
 
-    constructor(orderDefinitions: Pick<OrderDefinition, "direction">[], limit: number) {
+    constructor(orderDefinitions: Pick<OrderDefinition, "direction" | "valueExtractor">[], limit?: number) {
         super();
 
         this.orderDefinitions = orderDefinitions as unknown as OrderDefinition[];

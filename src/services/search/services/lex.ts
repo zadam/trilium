@@ -1,9 +1,4 @@
-interface TokenData {
-    token: string;
-    inQuotes: boolean;
-    startIndex: number;
-    endIndex: number;
-}
+import { TokenData } from "./types";
 
 function lex(str: string) {
     str = str.toLowerCase();

@@ -26,8 +26,8 @@ function getRegex(str: string): RegExp {
 
 interface ConstructorOpts {
     tokens: string[];
-    raw: boolean;
-    flatText: boolean;
+    raw?: boolean;
+    flatText?: boolean;
 }
 
 type SearchRow = Pick<NoteRow, "noteId" | "type" | "mime" | "content" | "isProtected">;

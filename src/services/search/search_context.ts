@@ -8,7 +8,7 @@ interface SearchParams {
     includeHiddenNotes?: boolean;
     ignoreHoistedNote?: boolean;
     ancestorNoteId?: string;
-    ancestorDepth?: number;
+    ancestorDepth?: string;
     orderBy?: string;
     orderDirection?: string;
     limit?: number;
@@ -23,7 +23,7 @@ class SearchContext {
     includeHiddenNotes: boolean;
     ignoreHoistedNote: boolean;
     ancestorNoteId?: string;
-    ancestorDepth?: number;
+    ancestorDepth?: string;
     orderBy?: string;
     orderDirection?: string;
     limit?: number;
