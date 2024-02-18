@@ -1,6 +1,6 @@
 const sql = require("./sql");
 const revisionService = require("./revisions.js");
-const log = require("./log.ts");
+const log = require("./log");
 const entityChangesService = require("./entity_changes");
 const optionService = require("./options");
 const dateUtils = require("./date_utils");
