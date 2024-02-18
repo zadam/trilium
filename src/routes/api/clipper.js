@@ -1,6 +1,6 @@
 "use strict";
 
-const attributeService = require('../../services/attributes.js');
+const attributeService = require('../../services/attributes');
 const cloneService = require('../../services/cloning.js');
 const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes.js');

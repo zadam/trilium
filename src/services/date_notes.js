@@ -1,7 +1,7 @@
 "use strict";
 
 const noteService = require('./notes');
-const attributeService = require('./attributes.js');
+const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');

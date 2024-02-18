@@ -66,7 +66,7 @@ export type AttributeType = "label" | "relation";
 
 export interface AttributeRow {
     attributeId?: string;
-    noteId: string;
+    noteId?: string;
     type: AttributeType;
     name: string;
     position?: number;

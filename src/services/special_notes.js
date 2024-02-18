@@ -1,4 +1,4 @@
-const attributeService = require('./attributes.js');
+const attributeService = require('./attributes');
 const dateNoteService = require('./date_notes.js');
 const becca = require('../becca/becca');
 const noteService = require('./notes');

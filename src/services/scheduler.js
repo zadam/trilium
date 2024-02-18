@@ -3,7 +3,7 @@ const cls = require('./cls');
 const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
-const attributeService = require('../services/attributes.js');
+const attributeService = require('../services/attributes');
 const protectedSessionService = require('../services/protected_session');
 const hiddenSubtreeService = require('./hidden_subtree');
 

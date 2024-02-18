@@ -1,8 +1,8 @@
 "use strict";
 
-import BAttribute = require("../becca/entities/battribute");
+import { AttributeRow } from "../becca/entities/rows";
 
-function formatAttrForSearch(attr: BAttribute, searchWithValue: string) {
+function formatAttrForSearch(attr: AttributeRow, searchWithValue: boolean) {
     let searchStr = '';
 
     if (attr.type === 'label') {
