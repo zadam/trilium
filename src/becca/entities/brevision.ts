@@ -88,7 +88,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
      *
      * This is the same approach as is used for Note's content.
      */
-    // FIXME: initial declaration included Buffer, but everywhere it's treated as a string.
+    // TODO: initial declaration included Buffer, but everywhere it's treated as a string.
     getContent(): string {
         return this._getContent() as string;
     }

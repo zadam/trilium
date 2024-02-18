@@ -90,14 +90,14 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     }
 
     hasStringContent(): boolean {
-        // FIXME: Not sure why some entities don't implement it.
+        // TODO: Not sure why some entities don't implement it.
         return true;
     }
 
     abstract getPojo(): {};
 
     get isDeleted(): boolean {
-        // FIXME: Not sure why some entities don't implement it.
+        // TODO: Not sure why some entities don't implement it.
         return false;
     }
 

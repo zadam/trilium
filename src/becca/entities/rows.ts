@@ -1,4 +1,4 @@
-// FIXME: Booleans should probably be numbers instead (as SQLite does not have booleans.);
+// TODO: Booleans should probably be numbers instead (as SQLite does not have booleans.);
 
 export interface AttachmentRow {
     attachmentId?: string;
