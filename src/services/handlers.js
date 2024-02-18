@@ -5,7 +5,7 @@ const noteService = require('./notes');
 const becca = require('../becca/becca');
 const BAttribute = require('../becca/entities/battribute');
 const hiddenSubtreeService = require('./hidden_subtree');
-const oneTimeTimer = require('./one_time_timer.js');
+const oneTimeTimer = require('./one_time_timer');
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
