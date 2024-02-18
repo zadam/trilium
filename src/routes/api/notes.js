@@ -2,7 +2,7 @@
 
 const noteService = require('../../services/notes');
 const eraseService = require('../../services/erase');
-const treeService = require('../../services/tree.js');
+const treeService = require('../../services/tree');
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');

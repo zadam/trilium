@@ -80,7 +80,7 @@ export interface BranchRow {
     noteId: string;
     parentNoteId: string;
     prefix?: string | null;
-    notePosition: number | null;
+    notePosition?: number | null;
     isExpanded?: boolean;
     isDeleted?: boolean;
     utcDateModified?: string;
