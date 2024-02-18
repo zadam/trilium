@@ -1,4 +1,4 @@
-const searchService = require('../../src/services/search/services/search.js');
+const searchService = require('../../src/services/search/services/search');
 const BNote = require('../../src/becca/entities/bnote.js');
 const BBranch = require('../../src/becca/entities/bbranch.js');
 const SearchContext = require('../../src/services/search/search_context');

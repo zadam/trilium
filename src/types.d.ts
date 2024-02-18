@@ -12,3 +12,8 @@ declare module 'html2plaintext' {
     function html2plaintext(htmlText: string): string;
     export = html2plaintext;
 }
+
+declare module 'normalize-strings' {
+    function normalizeString(string: string): string;
+    export = normalizeString;
+}

@@ -448,13 +448,14 @@ function getExpression(tokens: TokenData[], searchContext: SearchContext, level 
 
 function parse({fulltextTokens, expressionTokens, searchContext}: {
     fulltextTokens: TokenData[],
-    expressionTokens: TokenData[],
-    searchContext: SearchContext
+    expressionTokens: (TokenData | TokenData[])[],
+    searchContext: SearchContext,
+    originalQuery: string
 }) {
     let expression: Expression | undefined | null;
 
     try {
-        expression = getExpression(expressionTokens, searchContext);
+        expression = getExpression(expressionTokens as TokenData[], searchContext);
     }
     catch (e: any) {
         searchContext.addError(e.message);
@@ -475,7 +476,7 @@ function parse({fulltextTokens, expressionTokens, searchContext}: {
         exp = new OrderByAndLimitExp([{
             valueExtractor: new ValueExtractor(searchContext, ['note', searchContext.orderBy]),
             direction: searchContext.orderDirection
-        }], searchContext.limit);
+        }], searchContext.limit || undefined);
 
         (exp as any).subExpression = filterExp;
     }

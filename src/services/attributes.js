@@ -1,6 +1,6 @@
 "use strict";
 
-const searchService = require('./search/services/search.js');
+const searchService = require('./search/services/search');
 const sql = require('./sql');
 const becca = require('../becca/becca');
 const BAttribute = require('../becca/entities/battribute');

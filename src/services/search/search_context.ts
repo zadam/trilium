@@ -1,20 +1,7 @@
 "use strict";
 
 import hoistedNoteService = require('../hoisted_note');
-
-interface SearchParams {
-    fastSearch?: boolean;
-    includeArchivedNotes?: boolean;
-    includeHiddenNotes?: boolean;
-    ignoreHoistedNote?: boolean;
-    ancestorNoteId?: string;
-    ancestorDepth?: string;
-    orderBy?: string;
-    orderDirection?: string;
-    limit?: number;
-    debug?: boolean;
-    fuzzyAttributeSearch?: boolean;
-}
+import { SearchParams } from './services/types';
 
 class SearchContext {
     
@@ -26,9 +13,9 @@ class SearchContext {
     ancestorDepth?: string;
     orderBy?: string;
     orderDirection?: string;
-    limit?: number;
+    limit?: number | null;
     debug?: boolean;
-    debugInfo: string | null;
+    debugInfo: {} | null;
     fuzzyAttributeSearch: boolean;
     highlightedTokens: string[];
     originalQuery: string;

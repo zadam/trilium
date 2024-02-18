@@ -4,13 +4,15 @@ import beccaService = require('../../becca/becca_service');
 import becca = require('../../becca/becca');
 
 class SearchResult {
-    private notePathArray: string[];
-    private notePathTitle: string;
-    private score?: number;
+    notePathArray: string[];
+    score: number;
+    notePathTitle: string;
+    highlightedNotePathTitle?: string;
 
     constructor(notePathArray: string[]) {
         this.notePathArray = notePathArray;
         this.notePathTitle = beccaService.getNoteTitleForPath(notePathArray);
+        this.score = 0;
     }
 
     get notePath() {

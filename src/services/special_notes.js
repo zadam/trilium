@@ -5,7 +5,7 @@ const noteService = require('./notes');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const hoistedNoteService = require('./hoisted_note');
-const searchService = require('./search/services/search.js');
+const searchService = require('./search/services/search');
 const SearchContext = require('./search/search_context');
 const {LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT} = require('./hidden_subtree');
 

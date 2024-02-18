@@ -1,22 +1,28 @@
 "use strict";
 
-const normalizeString = require("normalize-strings");
-const lex = require('./lex');
-const handleParens = require('./handle_parens');
-const parse = require('./parse');
-const SearchResult = require('../search_result');
-const SearchContext = require('../search_context');
-const becca = require('../../../becca/becca');
-const beccaService = require('../../../becca/becca_service');
-const utils = require('../../utils');
-const log = require('../../log');
-const hoistedNoteService = require('../../hoisted_note');
+import normalizeString = require("normalize-strings");
+import lex = require('./lex');
+import handleParens = require('./handle_parens');
+import parse = require('./parse');
+import SearchResult = require('../search_result');
+import SearchContext = require('../search_context');
+import becca = require('../../../becca/becca');
+import beccaService = require('../../../becca/becca_service');
+import utils = require('../../utils');
+import log = require('../../log');
+import hoistedNoteService = require('../../hoisted_note');
+import BNote = require("../../../becca/entities/bnote");
+import BAttribute = require("../../../becca/entities/battribute");
+import { SearchParams, TokenData } from "./types";
+import Expression = require("../expressions/expression");
+import sql = require("../../sql");
 
-function searchFromNote(note) {
-    let searchResultNoteIds, highlightedTokens;
+function searchFromNote(note: BNote) {
+    let searchResultNoteIds;
+    let highlightedTokens: string[];
 
     const searchScript = note.getRelationValue('searchScript');
-    const searchString = note.getLabelValue('searchString');
+    const searchString = note.getLabelValue('searchString') || "";
     let error = null;
 
     if (searchScript) {
@@ -25,12 +31,12 @@ function searchFromNote(note) {
     } else {
         const searchContext = new SearchContext({
             fastSearch: note.hasLabel('fastSearch'),
-            ancestorNoteId: note.getRelationValue('ancestor'),
-            ancestorDepth: note.getLabelValue('ancestorDepth'),
+            ancestorNoteId: note.getRelationValue('ancestor') || undefined,
+            ancestorDepth: note.getLabelValue('ancestorDepth') || undefined,
             includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
-            orderBy: note.getLabelValue('orderBy'),
-            orderDirection: note.getLabelValue('orderDirection'),
-            limit: note.getLabelValue('limit'),
+            orderBy: note.getLabelValue('orderBy') || undefined,
+            orderDirection: note.getLabelValue('orderDirection') || undefined,
+            limit: parseInt(note.getLabelValue('limit') || "0", 10),
             debug: note.hasLabel('debug'),
             fuzzyAttributeSearch: false
         });
@@ -51,7 +57,7 @@ function searchFromNote(note) {
     };
 }
 
-function searchFromRelation(note, relationName) {
+function searchFromRelation(note: BNote, relationName: string) {
     const scriptNote = note.getRelationTarget(relationName);
 
     if (!scriptNote) {
@@ -90,18 +96,21 @@ function searchFromRelation(note, relationName) {
 }
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql');
-
     /**
      * This complex structure is needed to calculate total occupied space by a note. Several object instances
      * (note, revisions, attachments) can point to a single blobId, and thus the blob size should count towards the total
      * only once.
      *
-     * @var {Object.<string, Object.<string, int>>} - noteId => { blobId => blobSize }
+     * noteId => { blobId => blobSize }
      */
-    const noteBlobs = {};
+    const noteBlobs: Record<string, Record<string, number>> = {};
 
-    const noteContentLengths = sql.getRows(`
+    type NoteContentLengthsRow = {
+        noteId: string;
+        blobId: string;
+        length: number;
+    };
+    const noteContentLengths = sql.getRows<NoteContentLengthsRow>(`
         SELECT 
             noteId, 
             blobId,
@@ -122,7 +131,12 @@ function loadNeededInfoFromDatabase() {
         noteBlobs[noteId] = { [blobId]: length };
     }
 
-    const attachmentContentLengths = sql.getRows(`
+    type AttachmentContentLengthsRow = {
+        noteId: string;
+        blobId: string;
+        length: number;
+    };
+    const attachmentContentLengths = sql.getRows<AttachmentContentLengthsRow>(`
         SELECT
             ownerId AS noteId,
             attachments.blobId,
@@ -151,7 +165,13 @@ function loadNeededInfoFromDatabase() {
         becca.notes[noteId].contentAndAttachmentsSize = Object.values(noteBlobs[noteId]).reduce((acc, size) => acc + size, 0);
     }
 
-    const revisionContentLengths = sql.getRows(`
+    type RevisionRow = {
+        noteId: string;
+        blobId: string;
+        length: number;
+        isNoteRevision: true;
+    };
+    const revisionContentLengths = sql.getRows<RevisionRow>(`
             SELECT 
                 noteId, 
                 revisions.blobId,
@@ -186,8 +206,11 @@ function loadNeededInfoFromDatabase() {
 
         noteBlobs[noteId][blobId] = length;
 
-        if (isNoteRevision) {
-            becca.notes[noteId].revisionCount++;
+        if (isNoteRevision) { 
+            const noteRevision = becca.notes[noteId];
+            if (noteRevision && noteRevision.revisionCount) {
+                noteRevision.revisionCount++;
+            }
         }
     }
 
@@ -196,20 +219,16 @@ function loadNeededInfoFromDatabase() {
     }
 }
 
-/**
- * @param {Expression} expression
- * @param {SearchContext} searchContext
- * @returns {SearchResult[]}
- */
-function findResultsWithExpression(expression, searchContext) {
+function findResultsWithExpression(expression: Expression, searchContext: SearchContext): SearchResult[] {
     if (searchContext.dbLoadNeeded) {
         loadNeededInfoFromDatabase();
     }
 
     const allNoteSet = becca.getAllNoteSet();
 
+    const noteIdToNotePath: Record<string, string[]> = {};
     const executionContext = {
-        noteIdToNotePath: {}
+        noteIdToNotePath
     };
 
     const noteSet = expression.execute(allNoteSet, executionContext, searchContext);
@@ -250,16 +269,16 @@ function findResultsWithExpression(expression, searchContext) {
     return searchResults;
 }
 
-function parseQueryToExpression(query, searchContext) {
+function parseQueryToExpression(query: string, searchContext: SearchContext) {
     const {fulltextQuery, fulltextTokens, expressionTokens} = lex(query);
     searchContext.fulltextQuery = fulltextQuery;
 
-    let structuredExpressionTokens;
+    let structuredExpressionTokens: (TokenData | TokenData[])[];
 
     try {
         structuredExpressionTokens = handleParens(expressionTokens);
     }
-    catch (e) {
+    catch (e: any) {
         structuredExpressionTokens = [];
         searchContext.addError(e.message);
     }
@@ -284,23 +303,13 @@ function parseQueryToExpression(query, searchContext) {
     return expression;
 }
 
-/**
- * @param {string} query
- * @param {object} params - see SearchContext
- * @returns {BNote[]}
- */
-function searchNotes(query, params = {}) {
+function searchNotes(query: string, params: SearchParams = {}): BNote[] {
     const searchResults = findResultsWithQuery(query, new SearchContext(params));
 
     return searchResults.map(sr => becca.notes[sr.noteId]);
 }
 
-/**
- * @param {string} query
- * @param {SearchContext} searchContext
- * @returns {SearchResult[]}
- */
-function findResultsWithQuery(query, searchContext) {
+function findResultsWithQuery(query: string, searchContext: SearchContext): SearchResult[] {
     query = query || "";
     searchContext.originalQuery = query;
 
@@ -313,18 +322,13 @@ function findResultsWithQuery(query, searchContext) {
     return findResultsWithExpression(expression, searchContext);
 }
 
-/**
- * @param {string} query
- * @param {SearchContext} searchContext
- * @returns {BNote|null}
- */
-function findFirstNoteWithQuery(query, searchContext) {
+function findFirstNoteWithQuery(query: string, searchContext: SearchContext): BNote | null {
     const searchResults = findResultsWithQuery(query, searchContext);
 
     return searchResults.length > 0 ? becca.notes[searchResults[0].noteId] : null;
 }
 
-function searchNotesForAutocomplete(query) {
+function searchNotesForAutocomplete(query: string) {
     const searchContext = new SearchContext({
         fastSearch: true,
         includeArchivedNotes: false,
@@ -351,7 +355,7 @@ function searchNotesForAutocomplete(query) {
     });
 }
 
-function highlightSearchResults(searchResults, highlightedTokens) {
+function highlightSearchResults(searchResults: SearchResult[], highlightedTokens: string[]) {
     highlightedTokens = Array.from(new Set(highlightedTokens));
 
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
@@ -387,7 +391,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         }
     }
 
-    function wrapText(text, start, length, prefix, suffix) {
+    function wrapText(text: string, start: number, length: number, prefix: string, suffix: string) {
         return text.substring(0, start) + prefix + text.substr(start, length) + suffix + text.substring(start + length);
     }
 
@@ -403,6 +407,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
             let match;
 
             // Find all matches
+            if (!result.highlightedNotePathTitle) { continue; }
             while ((match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle))) !== null) {
                 result.highlightedNotePathTitle = wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
 
@@ -413,6 +418,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 
     for (const result of searchResults) {
+        if (!result.highlightedNotePathTitle) { continue; }
         result.highlightedNotePathTitle = result.highlightedNotePathTitle
             .replace(/"/g, "<small>")
             .replace(/'/g, "</small>")
@@ -421,7 +427,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 }
 
-function formatAttribute(attr) {
+function formatAttribute(attr: BAttribute) {
     if (attr.type === 'relation') {
         return `~${utils.escapeHtml(attr.name)}=…`;
     }
@@ -438,7 +444,7 @@ function formatAttribute(attr) {
     }
 }
 
-module.exports = {
+export = {
     searchFromNote,
     searchNotesForAutocomplete,
     findResultsWithQuery,

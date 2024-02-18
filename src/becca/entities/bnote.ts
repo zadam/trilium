@@ -78,13 +78,13 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     // following attributes are filled during searching in the database
     /** size of the content in bytes */
-    private contentSize!: number | null;
+    contentSize!: number | null;
     /** size of the note content, attachment contents in bytes */
-    private contentAndAttachmentsSize!: number | null;
+    contentAndAttachmentsSize!: number | null;
     /** size of the note content, attachment contents and revision contents in bytes */
-    private contentAndAttachmentsAndRevisionsSize!: number | null;
+    contentAndAttachmentsAndRevisionsSize!: number | null;
     /** number of note revisions for this note */
-    private revisionCount!: number | null;
+    revisionCount!: number | null;
 
     constructor(row?: Partial<NoteRow>) {
         super();

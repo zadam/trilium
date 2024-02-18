@@ -2,7 +2,7 @@
 
 const becca = require('../../becca/becca');
 const SearchContext = require('../../services/search/search_context');
-const searchService = require('../../services/search/services/search.js');
+const searchService = require('../../services/search/services/search');
 const bulkActionService = require('../../services/bulk_actions.js');
 const cls = require('../../services/cls');
 const {formatAttrForSearch} = require('../../services/attribute_formatter');
