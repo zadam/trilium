@@ -1,12 +1,30 @@
-const log = require('./log');
-const revisionService = require('./revisions');
-const becca = require('../becca/becca');
-const cloningService = require('./cloning');
-const branchService = require('./branches');
-const utils = require('./utils');
-const eraseService = require("./erase");
+import log = require('./log');
+import becca = require('../becca/becca');
+import cloningService = require('./cloning');
+import branchService = require('./branches');
+import utils = require('./utils');
+import eraseService = require("./erase");
+import BNote = require('../becca/entities/bnote');
 
-const ACTION_HANDLERS = {
+interface Action {
+    labelName: string;
+    labelValue: string;
+    oldLabelName: string;
+    newLabelName: string;
+
+
+    relationName: string;
+    oldRelationName: string;
+    newRelationName: string;
+
+    targetNoteId: string;
+    targetParentNoteId: string;
+    newTitle: string;
+    script: string;
+}
+type ActionHandler = (action: Action, note: BNote) => void;
+
+const ACTION_HANDLERS: Record<string, ActionHandler> = {
     addLabel: (action, note) => {
         note.addLabel(action.labelName, action.labelValue);
     },
@@ -19,7 +37,10 @@ const ACTION_HANDLERS = {
         note.deleteNote(deleteId);
     },
     deleteRevisions: (action, note) => {
-        eraseService.eraseRevisions(note.getRevisions().map(rev => rev.revisionId));
+        const revisionIds = note.getRevisions()
+            .map(rev => rev.revisionId)
+            .filter((rev) => !!rev) as string[];
+        eraseService.eraseRevisions(revisionIds);
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {
@@ -107,7 +128,7 @@ const ACTION_HANDLERS = {
     }
 };
 
-function getActions(note) {
+function getActions(note: BNote) {
     return note.getLabels('action')
         .map(actionLabel => {
             let action;
@@ -129,7 +150,7 @@ function getActions(note) {
         .filter(a => !!a);
 }
 
-function executeActions(note, searchResultNoteIds) {
+function executeActions(note: BNote, searchResultNoteIds: string[]) {
     const actions = getActions(note);
 
     for (const resultNoteId of searchResultNoteIds) {
@@ -144,13 +165,13 @@ function executeActions(note, searchResultNoteIds) {
                 log.info(`Applying action handler to note ${resultNote.noteId}: ${JSON.stringify(action)}`);
 
                 ACTION_HANDLERS[action.name](action, resultNote);
-            } catch (e) {
+            } catch (e: any) {
                 log.error(`ExecuteScript search action failed with ${e.message}`);
             }
         }
     }
 }
 
-module.exports = {
+export = {
     executeActions
 };
