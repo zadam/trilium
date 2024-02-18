@@ -1,7 +1,7 @@
 "use strict";
 
 const syncService = require('../../services/sync.js');
-const syncUpdateService = require('../../services/sync_update.js');
+const syncUpdateService = require('../../services/sync_update');
 const entityChangesService = require('../../services/entity_changes');
 const sql = require('../../services/sql');
 const sqlInit = require('../../services/sql_init');

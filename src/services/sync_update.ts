@@ -1,11 +1,28 @@
-const sql = require('./sql');
-const log = require('./log');
-const entityChangesService = require('./entity_changes');
-const eventService = require('./events');
-const entityConstructor = require('../becca/entity_constructor');
-const ws = require('./ws');
+import sql = require('./sql');
+import log = require('./log');
+import entityChangesService = require('./entity_changes');
+import eventService = require('./events');
+import entityConstructor = require('../becca/entity_constructor');
+import ws = require('./ws');
+import { EntityChange } from './entity_changes_interface';
 
-function updateEntities(entityChanges, instanceId) {
+interface EntityRow {
+    isDeleted?: boolean;
+    content: Buffer | string;
+}
+
+interface EntityChangeInput {
+    entityChange: EntityChange;
+    entity: EntityRow;
+}
+
+interface UpdateContext {
+    alreadyErased: number;
+    erased: number;
+    updated: Record<string, string[]>
+}
+
+function updateEntities(entityChanges: EntityChangeInput[], instanceId: string) {
     if (entityChanges.length === 0) {
         return;
     }
@@ -40,7 +57,7 @@ function updateEntities(entityChanges, instanceId) {
     logUpdateContext(updateContext);
 }
 
-function updateEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
+function updateEntity(remoteEC: EntityChange, remoteEntityRow: EntityRow, instanceId: string, updateContext: UpdateContext) {
     if (!remoteEntityRow && remoteEC.entityName === 'options') {
         return; // can be undefined for options with isSynced=false
     }
@@ -65,8 +82,12 @@ function updateEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
     }
 }
 
-function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext) {
-    const localEC = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [remoteEC.entityName, remoteEC.entityId]);
+function updateNormalEntity(remoteEC: EntityChange, remoteEntityRow: EntityRow, instanceId: string, updateContext: UpdateContext) {
+    const localEC = sql.getRow<EntityChange>(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [remoteEC.entityName, remoteEC.entityId]);
+
+    if (!localEC.utcDateChanged || !remoteEC.utcDateChanged) {
+        throw new Error("Missing date changed.");
+    }
 
     if (!localEC || localEC.utcDateChanged <= remoteEC.utcDateChanged) {
         if (remoteEC.isErased) {
@@ -110,28 +131,30 @@ function updateNormalEntity(remoteEC, remoteEntityRow, instanceId, updateContext
     return false;
 }
 
-function preProcessContent(remoteEC, remoteEntityRow) {
+function preProcessContent(remoteEC: EntityChange, remoteEntityRow: EntityRow) {
     if (remoteEC.entityName === 'blobs' && remoteEntityRow.content !== null) {
         // we always use a Buffer object which is different from normal saving - there we use a simple string type for
         // "string notes". The problem is that in general, it's not possible to detect whether a blob content
         // is string note or note (syncs can arrive out of order)
-        remoteEntityRow.content = Buffer.from(remoteEntityRow.content, 'base64');
+        if (typeof remoteEntityRow.content === "string") {
+            remoteEntityRow.content = Buffer.from(remoteEntityRow.content, 'base64');
 
-        if (remoteEntityRow.content.byteLength === 0) {
-            // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
-            // (possibly not a problem anymore with the newer better-sqlite3)
-            remoteEntityRow.content = "";
+            if (remoteEntityRow.content.byteLength === 0) {
+                // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
+                // (possibly not a problem anymore with the newer better-sqlite3)
+                remoteEntityRow.content = "";
+            }
         }
     }
 }
 
-function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
+function updateNoteReordering(remoteEC: EntityChange, remoteEntityRow: EntityRow, instanceId: string) {
     if (!remoteEntityRow) {
         throw new Error(`Empty note_reordering body for: ${JSON.stringify(remoteEC)}`);
     }
 
     for (const key in remoteEntityRow) {
-        sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remoteEntityRow[key], key]);
+        sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remoteEntityRow[key as keyof EntityRow], key]);
     }
 
     entityChangesService.putEntityChangeWithInstanceId(remoteEC, instanceId);
@@ -139,7 +162,7 @@ function updateNoteReordering(remoteEC, remoteEntityRow, instanceId) {
     return true;
 }
 
-function eraseEntity(entityChange) {
+function eraseEntity(entityChange: EntityChange) {
     const {entityName, entityId} = entityChange;
 
     const entityNames = [
@@ -161,7 +184,7 @@ function eraseEntity(entityChange) {
     sql.execute(`DELETE FROM ${entityName} WHERE ${primaryKeyName} = ?`, [entityId]);
 }
 
-function logUpdateContext(updateContext) {
+function logUpdateContext(updateContext: UpdateContext) {
     const message = JSON.stringify(updateContext)
         .replaceAll('"', '')
         .replaceAll(":", ": ")
@@ -170,6 +193,6 @@ function logUpdateContext(updateContext) {
     log.info(message.substr(1, message.length - 2));
 }
 
-module.exports = {
+export = {
     updateEntities
 };
