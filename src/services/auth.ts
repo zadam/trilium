@@ -10,7 +10,7 @@ import passwordService = require('./encryption/password');
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
-// FIXME: We are using custom types for request & response because couldn't extract those pesky express types.
+// TODO: We are using custom types for request & response because couldn't extract those pesky express types.
 interface Request {
     method: string;
     path: string;

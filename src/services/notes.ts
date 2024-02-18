@@ -761,7 +761,7 @@ function updateNoteData(noteId: string, content: string, attachments: BAttachmen
         const existingAttachmentsByTitle = utils.toMap(note.getAttachments({includeContentLength: false}), 'title');
 
         for (const attachment of attachments) {
-            // FIXME: The content property was extracted directly instead of `getContent`. To investigate.
+            // TODO: The content property was extracted directly instead of `getContent`. To investigate.
             const {attachmentId, role, mime, title, position} = attachment;
             const content = attachment.getContent();
 
@@ -834,7 +834,7 @@ function undeleteBranch(branchId: string, deleteId: string, taskContext: TaskCon
 
         for (const attributeRow of attributeRows) {
             // relation might point to a note which hasn't been undeleted yet and would thus throw up
-            // FIXME: skipValidation is not used.
+            // TODO: skipValidation is not used.
             new BAttribute(attributeRow).save({skipValidation: true});
         }
 
@@ -1014,7 +1014,7 @@ function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch, newParentNo
             }
 
             // the relation targets may not be created yet, the mapping is pre-generated
-            // FIXME: This used to be `attr.save({skipValidation: true});`, but skipValidation is in beforeSaving.
+            // TODO: This used to be `attr.save({skipValidation: true});`, but skipValidation is in beforeSaving.
             attr.save();
         }
 
