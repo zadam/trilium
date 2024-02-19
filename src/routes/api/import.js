@@ -1,7 +1,7 @@
 "use strict";
 
 const enexImportService = require('../../services/import/enex.js');
-const opmlImportService = require('../../services/import/opml.js');
+const opmlImportService = require('../../services/import/opml');
 const zipImportService = require('../../services/import/zip.js');
 const singleImportService = require('../../services/import/single.js');
 const cls = require('../../services/cls');
