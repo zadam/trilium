@@ -120,6 +120,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20.11.19",
     "@types/sanitize-html": "^2.11.0",
+    "@types/turndown": "^5.0.4",
     "@types/ws": "^8.5.10",
     "cross-env": "7.0.3",
     "electron": "25.9.8",
