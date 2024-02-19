@@ -1,12 +1,15 @@
 "use strict";
 
-const mimeTypes = require('mime-types');
-const html = require('html');
-const utils = require('../utils');
-const mdService = require('./md');
-const becca = require('../../becca/becca');
+import mimeTypes = require('mime-types');
+import html = require('html');
+import utils = require('../utils');
+import mdService = require('./md');
+import becca = require('../../becca/becca');
+import TaskContext = require('../task_context');
+import BBranch = require('../../becca/entities/bbranch');
+import { Response } from 'express';
 
-function exportSingleNote(taskContext, branch, format, res) {
+function exportSingleNote(taskContext: TaskContext, branch: BBranch, format: "html" | "markdown", res: Response) {
     const note = branch.getNote();
 
     if (note.type === 'image' || note.type === 'file') {
@@ -20,6 +23,9 @@ function exportSingleNote(taskContext, branch, format, res) {
     let payload, extension, mime;
 
     let content = note.getContent();
+    if (typeof content !== "string") {
+        throw new Error("Unsupported context type for export.");
+    }
 
     if (note.type === 'text') {
         if (format === 'html') {
@@ -64,7 +70,7 @@ function exportSingleNote(taskContext, branch, format, res) {
     taskContext.taskSucceeded();
 }
 
-function inlineAttachments(content) {
+function inlineAttachments(content: string) {
     content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9_]+)\/?[^"]+"/g, (match, noteId) => {
         const note = becca.getNote(noteId);
         if (!note || !note.mime.startsWith('image/')) {

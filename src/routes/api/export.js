@@ -1,7 +1,7 @@
 "use strict";
 
 const zipExportService = require('../../services/export/zip.js');
-const singleExportService = require('../../services/export/single.js');
+const singleExportService = require('../../services/export/single');
 const opmlExportService = require('../../services/export/opml');
 const becca = require('../../becca/becca');
 const TaskContext = require('../../services/task_context');
