@@ -96,7 +96,7 @@ async function createInitialDatabase() {
 
     const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
 
-    const zipImportService = require('./import/zip.js');
+    const zipImportService = require('./import/zip');
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {

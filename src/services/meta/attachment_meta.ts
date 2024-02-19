@@ -1,9 +1,9 @@
 interface AttachmentMeta {
-    attachmentId: string;
+    attachmentId?: string;
     title: string;
     role: string;
     mime: string;
-    position: number;
+    position?: number;
     dataFileName: string;
 }
 

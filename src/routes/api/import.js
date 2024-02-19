@@ -2,7 +2,7 @@
 
 const enexImportService = require('../../services/import/enex.js');
 const opmlImportService = require('../../services/import/opml');
-const zipImportService = require('../../services/import/zip.js');
+const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');

@@ -29,7 +29,7 @@ interface ConstructorData<T extends AbstractBeccaEntity<T>> {
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
-    protected utcDateModified?: string;
+    utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
     protected isSynced?: boolean;
