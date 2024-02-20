@@ -506,7 +506,7 @@ async function downloadImage(noteId: string, imageUrl: string) {
         const parsedUrl = url.parse(unescapedUrl);
         const title = path.basename(parsedUrl.pathname || "");
 
-        const imageService = require('../services/image.js');
+        const imageService = require('../services/image');
         const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
@@ -539,7 +539,7 @@ function downloadImages(noteId: string, content: string) {
             const imageBase64 = url.substr(inlineImageMatch[0].length);
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-            const imageService = require('../services/image.js');
+            const imageService = require('../services/image');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
             const encodedTitle = encodeURIComponent(attachment.title);

@@ -95,7 +95,7 @@ class Becca {
         return this.notes[noteId];
     }
 
-    getNoteOrThrow(noteId: string): BNote | null {
+    getNoteOrThrow(noteId: string): BNote {
         const note = this.notes[noteId];
         if (!note) {
             throw new NotFoundError(`Note '${noteId}' doesn't exist.`);

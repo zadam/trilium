@@ -1,7 +1,7 @@
 "use strict";
 
 const noteService = require('../../services/notes');
-const imageService = require('../../services/image.js');
+const imageService = require('../../services/image');
 const protectedSessionService = require('../protected_session');
 const markdownService = require('./markdown.js');
 const mimeService = require('./mime.js');

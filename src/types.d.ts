@@ -25,3 +25,8 @@ declare module 'joplin-turndown-plugin-gfm' {
     }
     export = gfm;
 }
+
+declare module 'is-animated' {
+    function isAnimated(buffer: Buffer): boolean;
+    export = isAnimated;
+}
