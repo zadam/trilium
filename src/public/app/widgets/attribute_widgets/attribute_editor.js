@@ -200,7 +200,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
             this.attributeDetailWidget.hide();
         });
 
-        this.$editor.on('blur', () => this.save());
+        this.$editor.on('blur', () => setTimeout(() => this.save(), 100)); // Timeout to fix https://github.com/zadam/trilium/issues/4160
 
         this.$addNewAttributeButton = this.$widget.find('.add-new-attribute-button');
         this.$addNewAttributeButton.on('click', e => this.addNewAttribute(e));
