@@ -5,13 +5,20 @@ import ws = require('./ws');
 // taskId => TaskContext
 const taskContexts: Record<string, TaskContext> = {};
 
+interface TaskData {
+    safeImport?: boolean;
+    textImportedAsText?: boolean;
+    codeImportedAsCode?: boolean;
+    shrinkImages?: boolean;
+}
+
 class TaskContext {
 
     private taskId: string;
     private taskType: string | null;
-    private data: {} | null;
     private progressCount: number;
     private lastSentCountTs: number;
+    data: TaskData | null;
     noteDeletionHandlerTriggered: boolean;
     
     constructor(taskId: string, taskType: string | null = null, data: {} | null = {}) {

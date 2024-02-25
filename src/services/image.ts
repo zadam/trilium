@@ -133,7 +133,7 @@ function saveImage(parentNoteId: string, uploadBuffer: Buffer, originalName: str
     };
 }
 
-function saveImageToAttachment(noteId: string, uploadBuffer: Buffer, originalName: string, shrinkImageSwitch: boolean, trimFilename = false) {
+function saveImageToAttachment(noteId: string, uploadBuffer: Buffer, originalName: string, shrinkImageSwitch?: boolean, trimFilename = false) {
     log.info(`Saving image '${originalName}' as attachment into note '${noteId}'`);
 
     if (trimFilename && originalName.length > 40) {
@@ -162,7 +162,7 @@ function saveImageToAttachment(noteId: string, uploadBuffer: Buffer, originalNam
     }, 5000);
 
     // resizing images asynchronously since JIMP does not support sync operation
-    processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
+    processImage(uploadBuffer, originalName, !!shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             // re-read, might be changed in the meantime
             if (!attachment.attachmentId) { throw new Error("Missing attachment ID."); }
@@ -234,7 +234,7 @@ async function resize(buffer: Buffer, quality: number) {
     return resultBuffer;
 }
 
-module.exports = {
+export = {
     saveImage,
     saveImageToAttachment,
     updateImage

@@ -30,7 +30,8 @@ interface Message {
     type: string;
     data?: {
         lastSyncedPush?: number,
-        entityChanges?: any[]
+        entityChanges?: any[],
+        safeImport?: boolean
     },
     lastSyncedPush?: number,
     

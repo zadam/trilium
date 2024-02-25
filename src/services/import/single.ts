@@ -1,18 +1,21 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const imageService = require('../../services/image');
-const protectedSessionService = require('../protected_session');
-const markdownService = require('./markdown');
-const mimeService = require('./mime');
-const utils = require('../../services/utils');
-const importUtils = require('./utils');
-const htmlSanitizer = require('../html_sanitizer');
+import BNote = require("../../becca/entities/bnote");
+import TaskContext = require("../task_context");
 
-function importSingleFile(taskContext, file, parentNote) {
+import noteService = require('../../services/notes');
+import imageService = require('../../services/image');
+import protectedSessionService = require('../protected_session');
+import markdownService = require('./markdown');
+import mimeService = require('./mime');
+import utils = require('../../services/utils');
+import importUtils = require('./utils');
+import htmlSanitizer = require('../html_sanitizer');
+
+function importSingleFile(taskContext: TaskContext, file, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
-    if (taskContext.data.textImportedAsText) {
+    if (taskContext?.data?.textImportedAsText) {
         if (mime === 'text/html') {
             return importHtml(taskContext, file, parentNote);
         } else if (['text/markdown', 'text/x-markdown'].includes(mime)) {
@@ -22,7 +25,7 @@ function importSingleFile(taskContext, file, parentNote) {
         }
     }
 
-    if (taskContext.data.codeImportedAsCode && mimeService.getType(taskContext.data, mime) === 'code') {
+    if (taskContext?.data?.codeImportedAsCode && mimeService.getType(taskContext.data, mime) === 'code') {
         return importCodeNote(taskContext, file, parentNote);
     }
 
@@ -33,7 +36,7 @@ function importSingleFile(taskContext, file, parentNote) {
     return importFile(taskContext, file, parentNote);
 }
 
-function importImage(file, parentNote, taskContext) {
+function importImage(file, parentNote: BNote, taskContext) {
     const {note} = imageService.saveImage(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
 
     taskContext.increaseProgressCount();
@@ -41,7 +44,7 @@ function importImage(file, parentNote, taskContext) {
     return note;
 }
 
-function importFile(taskContext, file, parentNote) {
+function importFile(taskContext: TaskContext, file, parentNote: BNote) {
     const originalName = file.originalname;
 
     const {note} = noteService.createNewNote({
@@ -60,7 +63,7 @@ function importFile(taskContext, file, parentNote) {
     return note;
 }
 
-function importCodeNote(taskContext, file, parentNote) {
+function importCodeNote(taskContext: TaskContext, file, parentNote: BNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     const content = file.buffer.toString("utf-8");
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
@@ -80,7 +83,7 @@ function importCodeNote(taskContext, file, parentNote) {
     return note;
 }
 
-function importPlainText(taskContext, file, parentNote) {
+function importPlainText(taskContext: TaskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     const plainTextContent = file.buffer.toString("utf-8");
     const htmlContent = convertTextToHtml(plainTextContent);
@@ -99,7 +102,7 @@ function importPlainText(taskContext, file, parentNote) {
     return note;
 }
 
-function convertTextToHtml(text) {
+function convertTextToHtml(text: string) {
     // 1: Plain Text Search
     text = text.replace(/&/g, "&amp;").
     replace(/</g, "&lt;").
@@ -117,13 +120,13 @@ function convertTextToHtml(text) {
     return text;
 }
 
-function importMarkdown(taskContext, file, parentNote) {
+function importMarkdown(taskContext: TaskContext, file, parentNote: BNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
     const markdownContent = file.buffer.toString("utf-8");
     let htmlContent = markdownService.renderToHtml(markdownContent, title);
 
-    if (taskContext.data.safeImport) {
+    if (taskContext.data?.safeImport) {
         htmlContent = htmlSanitizer.sanitize(htmlContent);
     }
 
@@ -141,11 +144,11 @@ function importMarkdown(taskContext, file, parentNote) {
     return note;
 }
 
-function importHtml(taskContext, file, parentNote) {
+function importHtml(taskContext: TaskContext, file, parentNote: BNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     let content = file.buffer.toString("utf-8");
 
-    if (taskContext.data.safeImport) {
+    if (taskContext?.data?.safeImport) {
         content = htmlSanitizer.sanitize(content);
     }
 
@@ -165,17 +168,11 @@ function importHtml(taskContext, file, parentNote) {
     return note;
 }
 
-/**
- * @param {TaskContext} taskContext
- * @param file
- * @param {BNote} parentNote
- * @returns {BNote}
- */
-function importAttachment(taskContext, file, parentNote) {
+function importAttachment(taskContext: TaskContext, file, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
     if (mime.startsWith("image/")) {
-        imageService.saveImageToAttachment(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
+        imageService.saveImageToAttachment(parentNote.noteId, file.buffer, file.originalname, taskContext.data?.shrinkImages);
 
         taskContext.increaseProgressCount();
     } else {
@@ -190,7 +187,7 @@ function importAttachment(taskContext, file, parentNote) {
     }
 }
 
-module.exports = {
+export = {
     importSingleFile,
     importAttachment
 };

@@ -80,8 +80,8 @@ function getMime(fileName: string) {
 }
 
 interface GetTypeOpts {
-    textImportedAsText: boolean;
-    codeImportedAsCode: boolean;
+    textImportedAsText?: boolean;
+    codeImportedAsCode?: boolean;
 }
 
 function getType(options: GetTypeOpts, mime: string) {
