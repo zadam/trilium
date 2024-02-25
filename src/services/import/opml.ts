@@ -1,20 +1,37 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const parseString = require('xml2js').parseString;
-const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require('../html_sanitizer');
+import noteService = require('../../services/notes');
+import xml2js = require("xml2js");
+import protectedSessionService = require('../protected_session');
+import htmlSanitizer = require('../html_sanitizer');
+import TaskContext = require('../task_context');
+import BNote = require('../../becca/entities/bnote');
+const parseString = xml2js.parseString;
 
-/**
- * @param {TaskContext} taskContext
- * @param {Buffer} fileBuffer
- * @param {BNote} parentNote
- * @returns {Promise<*[]|*>}
- */
-async function importOpml(taskContext, fileBuffer, parentNote) {
-    const xml = await new Promise(function(resolve, reject)
+interface OpmlXml {
+    opml: OpmlBody;
+}
+
+interface OpmlBody {
+    $: {
+        version: string
+    }
+    body: OpmlOutline[]
+}
+
+interface OpmlOutline {
+    $: {
+        title: string;
+        text: string;
+        _note: string;
+    };
+    outline: OpmlOutline[];
+}
+
+async function importOpml(taskContext: TaskContext, fileBuffer: Buffer, parentNote: BNote) {
+    const xml = await new Promise<OpmlXml>(function(resolve, reject)
     {
-        parseString(fileBuffer, function (err, result) {
+        parseString(fileBuffer, function (err: any, result: OpmlXml) {
             if (err) {
                 reject(err);
             }
@@ -30,7 +47,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
 
     const opmlVersion = parseInt(xml.opml.$.version);
 
-    function importOutline(outline, parentNoteId) {
+    function importOutline(outline: OpmlOutline, parentNoteId: string) {
         let title, content;
 
         if (opmlVersion === 1) {
@@ -83,7 +100,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
     return returnNote;
 }
 
-function toHtml(text) {
+function toHtml(text: string) {
     if (!text) {
         return '';
     }
@@ -91,6 +108,6 @@ function toHtml(text) {
     return `<p>${text.replace(/(?:\r\n|\r|\n)/g, '</p><p>')}</p>`;
 }
 
-module.exports = {
+export = {
     importOpml
 };
