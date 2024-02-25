@@ -14,7 +14,7 @@ const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require('../../becca/becca');
 const BAttachment = require('../../becca/entities/battachment');
-const markdownService = require('./markdown.js');
+const markdownService = require('./markdown');
 
 /**
  * @param {TaskContext} taskContext
