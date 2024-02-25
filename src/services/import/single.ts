@@ -12,7 +12,13 @@ import utils = require('../../services/utils');
 import importUtils = require('./utils');
 import htmlSanitizer = require('../html_sanitizer');
 
-function importSingleFile(taskContext: TaskContext, file, parentNote: BNote) {
+interface File {
+    originalname: string;
+    mimetype: string;
+    buffer: string | Buffer;
+}
+
+function importSingleFile(taskContext: TaskContext, file: File, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
     if (taskContext?.data?.textImportedAsText) {
@@ -36,15 +42,21 @@ function importSingleFile(taskContext: TaskContext, file, parentNote: BNote) {
     return importFile(taskContext, file, parentNote);
 }
 
-function importImage(file, parentNote: BNote, taskContext) {
-    const {note} = imageService.saveImage(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
+function importImage(file: File, parentNote: BNote, taskContext: TaskContext) {
+    if (typeof file.buffer === "string") {
+        throw new Error("Invalid file content for image.");
+    }
+    const {note} = imageService.saveImage(parentNote.noteId, file.buffer, file.originalname, !!taskContext.data?.shrinkImages);
 
     taskContext.increaseProgressCount();
 
     return note;
 }
 
-function importFile(taskContext: TaskContext, file, parentNote: BNote) {
+function importFile(taskContext: TaskContext, file: File, parentNote: BNote) {
+    if (typeof file.buffer !== "string") {
+        throw new Error("Invalid file content for text.");
+    }
     const originalName = file.originalname;
 
     const {note} = noteService.createNewNote({
@@ -63,8 +75,8 @@ function importFile(taskContext: TaskContext, file, parentNote: BNote) {
     return note;
 }
 
-function importCodeNote(taskContext: TaskContext, file, parentNote: BNote) {
-    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+function importCodeNote(taskContext: TaskContext, file: File, parentNote: BNote) {
+    const title = utils.getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
     const content = file.buffer.toString("utf-8");
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
@@ -83,8 +95,8 @@ function importCodeNote(taskContext: TaskContext, file, parentNote: BNote) {
     return note;
 }
 
-function importPlainText(taskContext: TaskContext, file, parentNote) {
-    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+function importPlainText(taskContext: TaskContext, file: File, parentNote: BNote) {
+    const title = utils.getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
     const plainTextContent = file.buffer.toString("utf-8");
     const htmlContent = convertTextToHtml(plainTextContent);
 
@@ -120,8 +132,8 @@ function convertTextToHtml(text: string) {
     return text;
 }
 
-function importMarkdown(taskContext: TaskContext, file, parentNote: BNote) {
-    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+function importMarkdown(taskContext: TaskContext, file: File, parentNote: BNote) {
+    const title = utils.getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
 
     const markdownContent = file.buffer.toString("utf-8");
     let htmlContent = markdownService.renderToHtml(markdownContent, title);
@@ -144,8 +156,8 @@ function importMarkdown(taskContext: TaskContext, file, parentNote: BNote) {
     return note;
 }
 
-function importHtml(taskContext: TaskContext, file, parentNote: BNote) {
-    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+function importHtml(taskContext: TaskContext, file: File, parentNote: BNote) {
+    const title = utils.getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
     let content = file.buffer.toString("utf-8");
 
     if (taskContext?.data?.safeImport) {
@@ -168,10 +180,10 @@ function importHtml(taskContext: TaskContext, file, parentNote: BNote) {
     return note;
 }
 
-function importAttachment(taskContext: TaskContext, file, parentNote: BNote) {
+function importAttachment(taskContext: TaskContext, file: File, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
-    if (mime.startsWith("image/")) {
+    if (mime.startsWith("image/") && typeof file.buffer !== "string") {
         imageService.saveImageToAttachment(parentNote.noteId, file.buffer, file.originalname, taskContext.data?.shrinkImages);
 
         taskContext.increaseProgressCount();

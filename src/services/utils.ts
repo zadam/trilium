@@ -226,7 +226,7 @@ function removeTextFileExtension(filePath: string) {
     }
 }
 
-function getNoteTitle(filePath: string, replaceUnderscoresWithSpaces: boolean, noteMeta: { title: string }) {
+function getNoteTitle(filePath: string, replaceUnderscoresWithSpaces: boolean, noteMeta?: { title: string }) {
     if (noteMeta) {
         return noteMeta.title;
     } else {

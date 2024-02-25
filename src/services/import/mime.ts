@@ -103,13 +103,15 @@ function getType(options: GetTypeOpts, mime: string) {
 
 function normalizeMimeType(mime: string) {
     mime = mime ? mime.toLowerCase() : '';
+    const mappedMime = CODE_MIME_TYPES[mime];
 
-    if (!(mime in CODE_MIME_TYPES) || CODE_MIME_TYPES[mime] === true) {
+    if (mappedMime === true) {
         return mime;
+    } else if (typeof mappedMime === "string") {
+        return mappedMime;
     }
-    else {
-        return CODE_MIME_TYPES[mime];
-    }
+
+    return undefined;
 }
 
 export = {

@@ -10,6 +10,7 @@ interface TaskData {
     textImportedAsText?: boolean;
     codeImportedAsCode?: boolean;
     shrinkImages?: boolean;
+    replaceUnderscoresWithSpaces?: boolean;
 }
 
 class TaskContext {
