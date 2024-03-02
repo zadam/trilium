@@ -4,13 +4,17 @@ if [[ $# -eq 0 ]] ; then
     echo "Missing argument of target directory"
     exit 1
 fi
+if ! [[ $(which npm) ]]; then
+    echo "Missing npm"
+    exit 1
+fi
 
-n exec 18.18.2 npm run webpack
+n exec 18.18.2 npm run webpack || npm run webpack
 
 DIR="$1"
 
 rm -rf "$DIR"
-mkdir -v "$DIR"
+mkdir -pv "$DIR"
 
 echo "Copying Trilium to build directory $DIR"
 
@@ -41,8 +45,8 @@ find $DIR/libraries -name "*.map" -type f -delete
 
 d="$DIR"/src/public
 [[ -d "$d"/app-dist ]] || mkdir -pv "$d"/app-dist
-cp -v "$d"/app/share.js "$d"/app-dist/
-cp -rv "$d"/app/doc_notes "$d"/app-dist/
+cp "$d"/app/share.js "$d"/app-dist/
+cp -r "$d"/app/doc_notes "$d"/app-dist/
 
 rm -rf "$d"/app
 unset f d DIR
