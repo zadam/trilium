@@ -44,7 +44,7 @@ const TPL = `
                             <br/>
                             <label>
                                 Link title
-                                
+
                                 <input class="link-title form-control" style="width: 100%;">
                             </label>
                         </div>
@@ -77,30 +77,52 @@ export default class AddLinkDialog extends BasicWidget {
 
                 const linkTitle = this.getLinkType() === 'reference-link' ? null : this.$linkTitle.val();
 
-                this.textTypeWidget.addLink(this.$autoComplete.getSelectedNotePath(), linkTitle);
+                if (this.textTypeWidget) {
+                    this.textTypeWidget.addLink(this.$autoComplete.getSelectedNotePath(), linkTitle);
+                }
+                if (this.resolve) {
+                    this.resolve({
+                        isExternal: false,
+                        link: this.$autoComplete.getSelectedNotePath(),
+                        title: linkTitle
+                    });
+                }
             }
             else if (this.$autoComplete.getSelectedExternalLink()) {
                 this.$widget.modal('hide');
 
-                this.textTypeWidget.addLink(this.$autoComplete.getSelectedExternalLink(), this.$linkTitle.val());
+                if (this.textTypeWidget) {
+                    this.textTypeWidget.addLink(this.$autoComplete.getSelectedExternalLink(), this.$linkTitle.val());
+                }
+                if (this.resolve) {
+                    this.resolve({
+                        isExternal: false,
+                        link: this.$autoComplete.getSelectedExternalLink(),
+                        title: this.$linkTitle.val()
+                    });
+                }
             }
             else {
                 logError("No link to add.");
+                if (this.resolve) {
+                    this.resolve(false);
+                }
             }
 
             return false;
         });
     }
 
-    async showAddLinkDialogEvent({textTypeWidget, text = ''}) {
+    async showAddLinkDialogEvent({textTypeWidget, text = '', callback}) {
         this.textTypeWidget = textTypeWidget;
+        this.resolve = callback;
 
-        this.$addLinkTitleSettings.toggle(!this.textTypeWidget.hasSelection());
+        this.$addLinkTitleSettings.toggle(this.textTypeWidget ? !this.textTypeWidget.hasSelection() : false);
 
         this.$addLinkTitleSettings.find('input[type=radio]').on('change', e => this.updateTitleSettingsVisibility(e));
 
         // with selection hyperlink is implied
-        if (this.textTypeWidget.hasSelection()) {
+        if (this.textTypeWidget && this.textTypeWidget.hasSelection()) {
             this.$addLinkTitleSettings.find("input[value='hyper-link']").prop("checked", true);
         }
         else {
@@ -121,7 +143,7 @@ export default class AddLinkDialog extends BasicWidget {
         };
 
         noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, {
-            allowExternalLinks: true,
+            allowExternalLinks: false,
             allowCreatingNotes: true
         });
 

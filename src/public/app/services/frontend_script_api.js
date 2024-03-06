@@ -373,6 +373,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showPromptDialog = dialogService.prompt;
 
     /**
+     * Show prompt for selecting a note to the user.
+     */
+    this.getNoteAutocomplete = dialogService.promptNoteAutocomplete;
+
+    /**
      * Trigger command. This is a very low-level API which should be avoided if possible.
      *
      * @method
