@@ -143,9 +143,12 @@ function getMonthNote(dateStr, rootNote = null) {
 function getDayNoteTitle(rootNote, dayNumber, dateObj) {
     const pattern = rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
     const weekDay = DAYS[dateObj.getDay()];
+    const dayVal = parseInt(dayNumber);
+    const ordinalSuffix = ordinalDaySuffix(dayVal);
 
     return pattern
-        .replace(/{ordinal}/g, ordinal(parseInt(dayNumber)))
+        .replace(/{ordinal}/g, `${dayVal}${ordinalSuffix}`)
+        .replace(/{ordinalPadded}/g, `${dayNumber}${ordinalSuffix}`)
         .replace(/{dayInMonthPadded}/g, dayNumber)
         .replace(/{isoDate}/g, dateUtils.utcDateStr(dateObj))
         .replace(/{weekDay}/g, weekDay)
@@ -153,12 +156,9 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
-/** produces 1st, 2nd, 3rd, 4th, 21st, 31st for 1, 2, 3, 4, 21, 31 */
-function ordinal(dayNumber) {
+function ordinalDaySuffix(dayNumber) {
     const suffixes = ["th", "st", "nd", "rd"];
-    const suffix = suffixes[(dayNumber - 20) % 10] || suffixes[dayNumber] || suffixes[0];
-
-    return `${dayNumber}${suffix}`;
+    return suffixes[(dayNumber - 20) % 10] || suffixes[dayNumber] || suffixes[0];
 }
 
 /** @returns {BNote} */
