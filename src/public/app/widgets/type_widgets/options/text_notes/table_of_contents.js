@@ -11,6 +11,8 @@ const TPL = `
     </div>
     
     <p>You can also use this option to effectively disable TOC by setting a very high number.</p>
+    
+    <p>You can configure a keyboard shortcut for quickly toggling the right pane (including TOC) in the Options -> Shortcuts (name "toggleRightPane").</p>
 </div>`;
 
 export default class TableOfContentsOptions extends OptionsWidget {

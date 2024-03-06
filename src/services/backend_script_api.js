@@ -43,12 +43,16 @@ const optionsService = require('./options.js');
  */
 function BackendScriptApi(currentNote, apiParams) {
     /**
-     * Note where the script started executing
+     * Note where the script started executing (entrypoint).
+     * As an analogy, in C this would be the file which contains the main() function of the current process.
      * @type {BNote}
      */
     this.startNote = apiParams.startNote;
     /**
-     * Note where the script is currently executing. Don't mix this up with the concept of active note
+     * Note where the script is currently executing. This comes into play when your script is spread in multiple code
+     * notes, the script starts in "startNote", but then through function calls may jump into another note (currentNote).
+     * A similar concept in C would be __FILE__
+     * Don't mix this up with the concept of active note.
      * @type {BNote}
      */
     this.currentNote = currentNote;
@@ -288,7 +292,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} params.parentNoteId
      * @param {string} params.title
      * @param {string|Buffer} params.content
-     * @param {NoteType} params.type - text, code, file, image, search, book, relationMap, canvas
+     * @param {NoteType} params.type - text, code, file, image, search, book, relationMap, canvas, webView
      * @param {string} [params.mime] - value is derived from default mimes for type
      * @param {boolean} [params.isProtected=false]
      * @param {boolean} [params.isExpanded=false]

@@ -21,5 +21,6 @@ CREATE INDEX `IDX_revisions_utcDateCreated` ON `revisions` (`utcDateCreated`);
 CREATE INDEX `IDX_revisions_utcDateLastEdited` ON `revisions` (`utcDateLastEdited`);
 CREATE INDEX `IDX_revisions_dateCreated` ON `revisions` (`dateCreated`);
 CREATE INDEX `IDX_revisions_dateLastEdited` ON `revisions` (`dateLastEdited`);
+CREATE INDEX IF NOT EXISTS IDX_revisions_blobId on revisions (blobId);
 
 UPDATE entity_changes SET entityName = 'revisions' WHERE entityName = 'note_revisions';

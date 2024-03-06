@@ -19,3 +19,5 @@ CREATE INDEX IDX_attachments_ownerId_role
 
 CREATE INDEX IDX_attachments_utcDateScheduledForErasureSince
     on attachments (utcDateScheduledForErasureSince);
+
+CREATE INDEX IF NOT EXISTS IDX_attachments_blobId on attachments (blobId);

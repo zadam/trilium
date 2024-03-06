@@ -8,3 +8,6 @@ CREATE TABLE IF NOT EXISTS "blobs" (
 
 ALTER TABLE notes ADD blobId TEXT DEFAULT NULL;
 ALTER TABLE note_revisions ADD blobId TEXT DEFAULT NULL;
+
+CREATE INDEX IF NOT EXISTS IDX_notes_blobId on notes (blobId);
+CREATE INDEX IF NOT EXISTS IDX_note_revisions_blobId on note_revisions (blobId);

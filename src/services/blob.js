@@ -5,12 +5,14 @@ const utils = require('./utils.js');
 
 function getBlobPojo(entityName, entityId) {
     const entity = becca.getEntity(entityName, entityId);
-
     if (!entity) {
         throw new NotFoundError(`Entity ${entityName} '${entityId}' was not found.`);
     }
 
     const blob = becca.getBlob(entity);
+    if (!blob) {
+        throw new NotFoundError(`Blob ${entity.blobId} for ${entityName} '${entityId}' was not found.`);
+    }
 
     const pojo = blob.getPojo();
 

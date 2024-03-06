@@ -105,10 +105,10 @@ function renderText(result, note) {
 
         if (result.content.includes(`<span class="math-tex">`)) {
             result.header += `
-<script src="../../${assetPath}/libraries/katex/katex.min.js"></script>
-<link rel="stylesheet" href="../../${assetPath}/libraries/katex/katex.min.css">
-<script src="../../${assetPath}/libraries/katex/auto-render.min.js"></script>
-<script src="../../${assetPath}/libraries/katex/mhchem.min.js"></script>
+<script src="../../${assetPath}/node_modules/katex/dist/katex.min.js"></script>
+<link rel="stylesheet" href="../../${assetPath}/node_modules/katex/dist/katex.min.css">
+<script src="../../${assetPath}/node_modules/katex/dist/contrib/auto-render.min.js"></script>
+<script src="../../${assetPath}/node_modules/katex/dist/contrib/mhchem.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     renderMathInElement(document.getElementById('content'));
@@ -137,7 +137,7 @@ function renderCode(result) {
 
 function renderMermaid(result, note) {
     result.content = `
-<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">
+<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">
 <hr>
 <details>
     <summary>Chart source</summary>
@@ -146,7 +146,7 @@ function renderMermaid(result, note) {
 }
 
 function renderImage(result, note) {
-    result.content = `<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">`;
+    result.content = `<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">`;
 }
 
 function renderFile(note, result) {

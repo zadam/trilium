@@ -18,6 +18,8 @@ const TPL = `
     <h5>Highlights List visibility</h5>
 
     <p>You can hide the highlights widget per-note by adding a <code>#hideHighlightWidget</code> label.</p>
+    
+    <p>You can configure a keyboard shortcut for quickly toggling the right pane (including Highlights) in the Options -> Shortcuts (name "toggleRightPane").</p>
 </div>`;
 
 export default class HighlightsListOptions extends OptionsWidget {

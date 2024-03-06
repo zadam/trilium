@@ -48,11 +48,11 @@ async function checkNoteAccess(notePath, noteContext) {
 
     const hoistedNoteId = noteContext.hoistedNoteId;
 
-    if (!resolvedNotePath.includes(hoistedNoteId) && !resolvedNotePath.includes('_hidden')) {
+    if (!resolvedNotePath.includes(hoistedNoteId) && (!resolvedNotePath.includes('_hidden') || resolvedNotePath.includes('_lbBookmarks'))) {
         const requestedNote = await froca.getNote(treeService.getNoteIdFromUrl(resolvedNotePath));
         const hoistedNote = await froca.getNote(hoistedNoteId);
 
-        if (!hoistedNote.hasAncestor('_hidden')
+        if ((!hoistedNote.hasAncestor('_hidden') || resolvedNotePath.includes('_lbBookmarks'))
             && !await dialogService.confirm(`Requested note '${requestedNote.title}' is outside of hoisted note '${hoistedNote.title}' subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?`)) {
             return false;
         }

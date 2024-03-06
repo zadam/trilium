@@ -9,6 +9,7 @@ import linkService from "./link.js";
 import treeService from "./tree.js";
 import FNote from "../entities/fnote.js";
 import FAttachment from "../entities/fattachment.js";
+import imageContextMenuService from "../menus/image_context_menu.js";
 
 let idCounter = 1;
 
@@ -148,6 +149,8 @@ function renderImage(entity, $renderedContent, options = {}) {
             });
         });
     }
+
+    imageContextMenuService.setupContextMenu($img);
 }
 
 function renderFile(entity, type, $renderedContent) {
