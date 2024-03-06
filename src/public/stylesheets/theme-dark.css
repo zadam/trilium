@@ -88,3 +88,7 @@ body .CodeMirror {
 .excalidraw.theme--dark {
     --theme-filter: invert(80%) hue-rotate(180deg) !important;
 }
+
+body .todo-list input[type="checkbox"]:not(:checked):before {
+    border-color: var(--muted-text-color) !important;
+}
