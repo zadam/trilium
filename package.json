@@ -37,7 +37,7 @@
   "dependencies": {
     "@braintree/sanitize-url": "6.0.4",
     "@electron/remote": "2.1.2",
-    "@excalidraw/excalidraw": "0.16.1",
+    "@excalidraw/excalidraw": "0.17.3",
     "archiver": "7.0.0",
     "async-mutex": "0.4.1",
     "axios": "1.6.7",

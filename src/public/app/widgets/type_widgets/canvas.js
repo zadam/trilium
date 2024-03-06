@@ -1,8 +1,8 @@
-import libraryLoader from "../../services/library_loader.js";
-import TypeWidget from "./type_widget.js";
+import libraryLoader from '../../services/library_loader.js';
+import TypeWidget from './type_widget.js';
 import utils from '../../services/utils.js';
 import linkService from '../../services/link.js';
-import debounce from "../../services/debounce.js";
+import debounce from '../../services/debounce.js';
 
 const TPL = `
     <div class="canvas-widget note-detail-canvas note-detail-printable note-detail">
@@ -246,7 +246,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
             this.excalidrawApi.updateScene(sceneData);
             this.excalidrawApi.addFiles(fileArray);
-            this.excalidrawRef.current.history.clear();
+            this.excalidrawApi.history.clear();
         }
 
         Promise.all(
@@ -283,7 +283,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const files = this.excalidrawApi.getFiles();
 
         // parallel svg export to combat bitrot and enable rendering image for note inclusion, preview, and share
-        const svg = await this.excalidrawApi.exportToSvg({
+        const svg = await ExcalidrawLib.exportToSvg({
             elements,
             appState,
             exportPadding: 5, // 5 px padding
