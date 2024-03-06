@@ -32,8 +32,7 @@
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
     "test": "npm run test-jasmine && npm run test-es6",
     "postinstall": "rimraf ./node_modules/canvas",
-    "lint": "eslint .  --cache",
-    "prepare": "husky install || echo 'Husky install failed, expected on flatpak build'"
+    "lint": "eslint .  --cache"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.4",
@@ -121,7 +120,6 @@
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsonc": "2.13.0",
     "esm": "3.2.25",
-    "husky": "8.0.3",
     "jasmine": "5.1.0",
     "jsdoc": "4.0.2",
     "jsonc-eslint-parser": "2.4.0",

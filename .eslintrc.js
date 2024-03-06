@@ -55,7 +55,6 @@ module.exports = {
               'config',
               'overrides',
               'pnpm',
-              'husky',
               'lint-staged',
               'eslintConfig',
             ],
