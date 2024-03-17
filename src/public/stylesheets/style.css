@@ -311,7 +311,7 @@ button.btn, button.btn-sm {
 }
 
 #left-pane .btn:not(.btn-primary) {
-    background-color: var(--button-background-color);
+    background-color: var(--left-pane-background-color);
     color: var(--left-pane-text-color);
 }
 
@@ -933,8 +933,9 @@ body {
     width: 100%;
 }
 
-#launcher-pane .icon-action:hover {
-    background-color: var(--hover-item-background-color);
+#launcher-pane .icon-action {
+    background-color: var(--launcher-pane-background-color);
+    color: var(--launcher-pane-text-color);
 }
 
 #left-pane {
