@@ -30,10 +30,11 @@ let lastSyncedPush: number | null = null;
 
 interface Message {
     type: string;
-    data?: TaskData | null | {
+    data?: {
         lastSyncedPush?: number | null,
         entityChanges?: any[],
-    },
+        shrinkImages?: boolean
+    } | null,
     lastSyncedPush?: number | null,
     
     progressCount?: number;

@@ -1,20 +1,23 @@
-const sax = require("sax");
-const stream = require('stream');
-const {Throttle} = require('stream-throttle');
-const log = require('../log');
-const utils = require('../utils');
-const sql = require('../sql');
-const noteService = require('../notes');
-const imageService = require('../image');
-const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require('../html_sanitizer');
-const {sanitizeAttributeName} = require('../sanitize_attribute_name');
+import sax = require("sax");
+import stream = require('stream');
+import { Throttle } from 'stream-throttle';
+import log = require('../log');
+import utils = require('../utils');
+import sql = require('../sql');
+import noteService = require('../notes');
+import imageService = require('../image');
+import protectedSessionService = require('../protected_session');
+import htmlSanitizer = require('../html_sanitizer');
+import sanitizeAttributeName = require('../sanitize_attribute_name');
+import TaskContext = require("../task_context");
+import BNote = require("../../becca/entities/bnote");
+import { File } from "./common";
 
 /**
  * date format is e.g. 20181121T193703Z or 2013-04-14T16:19:00.000Z (Mac evernote, see #3496)
  * @returns trilium date format, e.g. 2013-04-14 16:19:00.000Z
  */
-function parseDate(text) {
+function parseDate(text: string) {
     // convert ISO format to the "20181121T193703Z" format
     text = text.replace(/[-:]/g, "");
 
@@ -25,10 +28,34 @@ function parseDate(text) {
     return text;
 }
 
-let note = {};
-let resource;
+interface Attribute {
+    type: string;
+    name: string;
+    value: string;
+}
 
-function importEnex(taskContext, file, parentNote) {
+interface Resource {
+    title: string;
+    content?: Buffer | string;
+    mime?: string;
+    attributes: Attribute[];
+}
+
+interface Note {
+    title: string;
+    attributes: Attribute[];
+    utcDateCreated: string;
+    utcDateModified: string;
+    noteId: string;
+    blobId: string;
+    content: string;
+    resources: Resource[]
+}
+
+let note: Partial<Note> = {};
+let resource: Resource;
+
+function importEnex(taskContext: TaskContext, file: File, parentNote: BNote) {
     const saxStream = sax.createStream(true);
 
     const rootNoteTitle = file.originalname.toLowerCase().endsWith(".enex")
@@ -45,7 +72,7 @@ function importEnex(taskContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     }).note;
 
-    function extractContent(content) {
+    function extractContent(content: string) {
         const openingNoteIndex = content.indexOf('<en-note>');
 
         if (openingNoteIndex !== -1) {
@@ -90,7 +117,7 @@ function importEnex(taskContext, file, parentNote) {
     }
 
 
-    const path = [];
+    const path: string[] = [];
 
     function getCurrentTag() {
         if (path.length >= 1) {
@@ -108,8 +135,8 @@ function importEnex(taskContext, file, parentNote) {
         // unhandled errors will throw, since this is a proper node event emitter.
         log.error(`error when parsing ENEX file: ${e}`);
         // clear the error
-        this._parser.error = null;
-        this._parser.resume();
+        (saxStream._parser as any).error = null;
+        saxStream._parser.resume();
     });
 
     saxStream.on("text", text => {
@@ -123,13 +150,15 @@ function importEnex(taskContext, file, parentNote) {
                 labelName = 'pageUrl';
             }
 
-            labelName = sanitizeAttributeName(labelName);
+            labelName = sanitizeAttributeName.sanitizeAttributeName(labelName || "");
 
-            note.attributes.push({
-                type: 'label',
-                name: labelName,
-                value: text
-            });
+            if (note.attributes) {
+                note.attributes.push({
+                    type: 'label',
+                    name: labelName,
+                    value: text
+                });
+            }
         }
         else if (previousTag === 'resource-attributes') {
             if (currentTag === 'file-name') {
@@ -169,10 +198,10 @@ function importEnex(taskContext, file, parentNote) {
                 note.utcDateCreated = parseDate(text);
             } else if (currentTag === 'updated') {
                 note.utcDateModified = parseDate(text);
-            } else if (currentTag === 'tag') {
+            } else if (currentTag === 'tag' && note.attributes) {
                 note.attributes.push({
                     type: 'label',
-                    name: sanitizeAttributeName(text),
+                    name: sanitizeAttributeName.sanitizeAttributeName(text),
                     value: ''
                 })
             }
@@ -201,11 +230,13 @@ function importEnex(taskContext, file, parentNote) {
                 attributes: []
             };
 
-            note.resources.push(resource);
+            if (note.resources) {
+                note.resources.push(resource);
+            }
         }
     });
 
-    function updateDates(note, utcDateCreated, utcDateModified) {
+    function updateDates(note: BNote, utcDateCreated?: string, utcDateModified?: string) {
         // it's difficult to force custom dateCreated and dateModified to Note entity, so we do it post-creation with SQL
         sql.execute(`
                 UPDATE notes 
@@ -227,6 +258,10 @@ function importEnex(taskContext, file, parentNote) {
         // make a copy because stream continues with the next call and note gets overwritten
         let {title, content, attributes, resources, utcDateCreated, utcDateModified} = note;
 
+        if (!title || !content) {
+            throw new Error("Missing title or content for note.");
+        }
+
         content = extractContent(content);
 
         const noteEntity = noteService.createNewNote({
@@ -239,7 +274,7 @@ function importEnex(taskContext, file, parentNote) {
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }).note;
 
-        for (const attr of attributes) {
+        for (const attr of attributes || []) {
             noteEntity.addAttribute(attr.type, attr.name, attr.value);
         }
 
@@ -249,12 +284,14 @@ function importEnex(taskContext, file, parentNote) {
 
         taskContext.increaseProgressCount();
 
-        for (const resource of resources) {
+        for (const resource of resources || []) {
             if (!resource.content) {
                 continue;
             }
 
-            resource.content = utils.fromBase64(resource.content);
+            if (typeof resource.content === "string") {
+                resource.content = utils.fromBase64(resource.content);
+            }
 
             const hash = utils.md5(resource.content);
 
@@ -273,6 +310,10 @@ function importEnex(taskContext, file, parentNote) {
             resource.mime = resource.mime || "application/octet-stream";
 
             const createFileNote = () => {
+                if (typeof resource.content !== "string") {
+                    throw new Error("Missing or wrong content type for resource.");
+                }
+                
                 const resourceNote = noteService.createNewNote({
                     parentNoteId: noteEntity.noteId,
                     title: resource.title,
@@ -292,7 +333,7 @@ function importEnex(taskContext, file, parentNote) {
 
                 const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
 
-                content = content.replace(mediaRegex, resourceLink);
+                content = (content || "").replace(mediaRegex, resourceLink);
             };
 
             if (resource.mime && resource.mime.startsWith('image/')) {
@@ -301,7 +342,7 @@ function importEnex(taskContext, file, parentNote) {
                         ? resource.title
                         : `image.${resource.mime.substr(6)}`; // default if real name is not present
 
-                    const attachment = imageService.saveImageToAttachment(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
+                    const attachment = imageService.saveImageToAttachment(noteEntity.noteId, resource.content, originalName, !!taskContext.data?.shrinkImages);
 
                     const encodedTitle = encodeURIComponent(attachment.title);
                     const url = `api/attachments/${attachment.attachmentId}/image/${encodedTitle}`;
@@ -314,7 +355,7 @@ function importEnex(taskContext, file, parentNote) {
                         // otherwise the image would be removed since no note would include it
                         content += imageLink;
                     }
-                } catch (e) {
+                } catch (e: any) {
                     log.error(`error when saving image from ENEX file: ${e.message}`);
                     createFileNote();
                 }
@@ -368,4 +409,4 @@ function importEnex(taskContext, file, parentNote) {
     });
 }
 
-module.exports = { importEnex };
+export = { importEnex };
