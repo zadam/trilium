@@ -161,6 +161,13 @@ class BRevision extends AbstractBeccaEntity {
         return this.getAttachments().filter(attachment => attachment.title === title)[0];
     }
 
+    /**
+     * Revisions are not soft-deletable, they are immediately hard-deleted (erased).
+     */
+    eraseRevision() {
+        require("../../services/erase.js").eraseRevisions([this.revisionId]);
+    }
+
     beforeSaving() {
         super.beforeSaving();
 
