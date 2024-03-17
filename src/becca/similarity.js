@@ -35,7 +35,7 @@ const IGNORED_ATTR_NAMES = [
 function filterUrlValue(value) {
     return value
         .replace(/https?:\/\//ig, "")
-        .replace(/www\./ig, "")
+        .replace(/www.js\./ig, "")
         .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 

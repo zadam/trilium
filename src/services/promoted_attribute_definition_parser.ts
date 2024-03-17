@@ -1,15 +1,15 @@
 interface DefinitionObject {
-    isPromoted: boolean;
-    labelType: string;
-    multiplicity: string;
-    numberPrecision: number;
-    promotedAlias: string;
-    inverseRelation: string;
+    isPromoted?: boolean;
+    labelType?: string;
+    multiplicity?: string;
+    numberPrecision?: number;
+    promotedAlias?: string;
+    inverseRelation?: string;
 }
 
 function parse(value: string): DefinitionObject {
     const tokens = value.split(',').map(t => t.trim());
-    const defObj: Partial<DefinitionObject> = {};
+    const defObj: DefinitionObject = {};
 
     for (const token of tokens) {
         if (token === 'promoted') {
@@ -41,7 +41,7 @@ function parse(value: string): DefinitionObject {
         }
     }
 
-    return defObj as DefinitionObject;
+    return defObj;
 }
 
 export = {
