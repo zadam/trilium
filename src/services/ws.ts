@@ -31,7 +31,7 @@ interface Message {
     data?: {
         lastSyncedPush?: number | null,
         entityChanges?: any[]
-    },
+    } | null,
     lastSyncedPush?: number | null,
     
     progressCount?: number;
@@ -142,7 +142,7 @@ function fillInAdditionalProperties(entityChange: EntityChange) {
         if (!entityChange.entity) {
             entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
 
-            if (entityChange.entity && entityChange.entity.isProtected) {
+            if (entityChange.entity?.isProtected) {
                 entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title || "");
             }
         }
@@ -157,7 +157,7 @@ function fillInAdditionalProperties(entityChange: EntityChange) {
 
         if (parentNote) {
             for (const childBranch of parentNote.getChildBranches()) {
-                if (childBranch && childBranch.branchId) {
+                if (childBranch?.branchId) {
                     entityChange.positions[childBranch.branchId] = childBranch.notePosition;
                 }
             }
