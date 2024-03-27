@@ -487,12 +487,14 @@ function areObjectsEqual () {
 }
 
 function copyHtmlToClipboard(content) {
-    const clipboardItem = new ClipboardItem({
-        'text/html': new Blob([content], {type: 'text/html'}),
-        'text/plain': new Blob([content], {type: 'text/plain'})
-    });
-
-    navigator.clipboard.write([clipboardItem]);
+    function listener(e) {
+        e.clipboardData.setData("text/html", content);
+        e.clipboardData.setData("text/plain", content);
+        e.preventDefault();
+    }
+    document.addEventListener("copy", listener);
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener);
 }
 
 /**
