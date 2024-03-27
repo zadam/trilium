@@ -8,7 +8,8 @@ const protectedSessionService = require('../../services/protected_session.js');
 const log = require('../../services/log.js');
 
 const attachmentRoleToNoteTypeMapping = {
-    'image': 'image'
+    'image': 'image',
+    'file': 'file'
 };
 
 /**
