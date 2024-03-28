@@ -88,6 +88,6 @@ npm run start-server
 
 È possibile supportare Trilium attraverso Github Sponsors, [PayPal](https://paypal.me/za4am) o Bitcoin (bitcoin:bc1qv3svjn40v89mnkre5vyvs2xw6y8phaltl385d2).
 
-## 🔑 License
+## 🔑 Licenza
 
 Questo programma è software libero: è possibile redistribuirlo e/o modificarlo nei termini della GNU Affero General Public License come pubblicata dalla Free Software Foundation, sia la versione 3 della Licenza, o (a propria scelta) qualsiasi versione successiva.
