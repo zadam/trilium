@@ -1,6 +1,6 @@
 # Trilium Notes
 
-## Trilium è in modalità di manutenzione - vedi i dettagli in https://github.com/zadam/trilium/issues/4620
+## Trilium è in manutenzione - vedi i dettagli in https://github.com/zadam/trilium/issues/4620
 
 Le discussioni preliminari sull'organizzazione si stanno svolgendo in [Trilium Next discussions](https://github.com/orgs/TriliumNext/discussions). 
 
@@ -13,7 +13,7 @@ Vedi [fotografie](https://github.com/zadam/trilium/wiki/Screenshot-tour) per una
 
 <a href="https://github.com/zadam/trilium/wiki/Screenshot-tour"><img src="https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png" alt="Trilium Screenshot" width="1000"></a>
 
-L'Ucraina sta attualmente difendendosi dall'aggressione russa, considera [di donare all'esercito ucraino o a organizzazioni umanitarie](https://standforukraine.com/).
+L'Ucraina si sta difendendo dall'aggressione russa, considera [donare all'esercito ucraino o a organizzazioni umanitarie](https://standforukraine.com/).
 
 <p float="left">
   <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" alt="drawing" width="400"/>
@@ -27,12 +27,12 @@ L'Ucraina sta attualmente difendendosi dall'aggressione russa, considera [di don
 * Ricco editor visuale (WYSIWYG), con supporto -tra l'altro- per tabelle, immagini ed [espressioni matematiche](https://github.com/zadam/trilium/wiki/Text-notes#math-support) e con [formattazione automatica](https://github.com/zadam/trilium/wiki/Text-notes#autoformat) per markdown
 * Supporto per la modifica di [appunti con codice sorgente](https://github.com/zadam/trilium/wiki/Code-notes), con evidenziazione della sintassi
 * [Navigazione veloce](https://github.com/zadam/trilium/wiki/Note-navigation) tra gli appunti, ricerca testuale completa e [fissaggio degli appunti](https://github.com/zadam/trilium/wiki/Note-hoisting)
-* Supporto fluido per le [revisioni degli appunti](https://github.com/zadam/trilium/wiki/Note-revisions)
+* Supporto integrato ed automatico per le [revisioni degli appunti](https://github.com/zadam/trilium/wiki/Note-revisions)
 * Gli [attributi](https://github.com/zadam/trilium/wiki/Attributes) degli appunti possono essere utilizzati per l'organizzazione, per l'interrogazione e per lo scripting avanzato (prorgrammazione).
 * [Sincronizzazione](https://github.com/zadam/trilium/wiki/Synchronization) con un server di sincronizzazione auto-ospitato
   * c'è un [servizio di terze parti per ospitare server di sincronizzazione](https://trilium.cc/paid-hosting)
 * [Condivisione](https://github.com/zadam/trilium/wiki/Sharing)  (pubblicazione) di appunti sull'internet pubblico
-* Forte [crittografia degli appunti](https://github.com/zadam/trilium/wiki/Protected-notes) configurabile singolarmente per ogni appunto
+* Robusta [crittografia](https://github.com/zadam/trilium/wiki/Protected-notes) configurabile singolarmente per ogni appunto
 * Disegno di diagrammi con Excalidraw (tipo di appunto "canvas")
 * [Mappe relazionali](https://github.com/zadam/trilium/wiki/Relation-map) e [mappe di collegamenti](https://github.com/zadam/trilium/wiki/Link-map) per visualizzare gli appunti e le loro relazioni
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - vedi [Esempi avanzati](https://github.com/zadam/trilium/wiki/Advanced-showcases)
@@ -46,13 +46,13 @@ L'Ucraina sta attualmente difendendosi dall'aggressione russa, considera [di don
 
 Dai un'occhiata a [awesome-trilium](https://github.com/Nriver/awesome-trilium) per temi, script, plugin e altro di terze parti.
 
-## 🏗 Compilazioni
+## 🏗 Rilasci
 
 
 Trilium è fornito come applicazione desktop (Linux e Windows) o come applicazione web ospitata sul tuo server (Linux). La versione desktop per Mac OS è disponibile, ma [non è supportata](https://github.com/zadam/trilium/wiki/FAQ#mac-os-support).
 
-* Se vuoi usare Trilium sul tuo desktop, scarica il rilascio binario per la tua piattaforma dall'[ultima release](https://github.com/zadam/trilium/releases/latest), decomprimi l'archivio e avvia l'eseguibile ```trilium```.
-* Se vuoi installare Trilium sul server, segui [questa pagina](https://github.com/zadam/trilium/wiki/Server-installation).
+* Se vuoi usare Trilium sul tuo desktop, scarica il rilascio binario per la tua piattaforma dall'[ultimo rilascio](https://github.com/zadam/trilium/releases/latest), decomprimi l'archivio e avvia l'eseguibile ```trilium```.
+* Se vuoi installare Trilium su un server, segui [questa pagina](https://github.com/zadam/trilium/wiki/Server-installation).
   * Per ora solo Chrome e Firefox sono i browser supportati (testati).
 
 Trilium è anche disponibile su Flatpak:
@@ -77,16 +77,16 @@ npm install
 npm run start-server
 ```
 
-## 📢 Shoutouts
+## 📢 Riconoscimenti
 
 * [CKEditor 5](https://github.com/ckeditor/ckeditor5) - miglior editor visuale (WYSIWYG) sul mercato, squadra di sviluppo attenta e reattiva
 * [FancyTree](https://github.com/mar10/fancytree) -  libreria per alberi molto ricca di funzionalità, senza pari. Trilium Notes non sarebbe lo stesso senza di essa.
 * [CodeMirror](https://github.com/codemirror/CodeMirror) - editor di codice con supporto per un'enorme quantità di linguaggi.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - libreria di connettività visuale senza pari. Utilizzata per [mappe relazionali](https://github.com/zadam/trilium/wiki/Relation-map) e [mappe di collegamenti](https://github.com/zadam/trilium/wiki/Link-map).
+* [jsPlumb](https://github.com/jsplumb/jsplumb) - libreria per la  connettività visuale senza pari. Utilizzata per [mappe relazionali](https://github.com/zadam/trilium/wiki/Relation-map) e [mappe di collegamenti](https://github.com/zadam/trilium/wiki/Link-map).
 
 ## 🤝 Supporto
 
-È possibile supportare Trilium usando Github Sponsors, [PayPal](https://paypal.me/za4am) o Bitcoin (bitcoin:bc1qv3svjn40v89mnkre5vyvs2xw6y8phaltl385d2).
+È possibile supportare Trilium attraverso Github Sponsors, [PayPal](https://paypal.me/za4am) o Bitcoin (bitcoin:bc1qv3svjn40v89mnkre5vyvs2xw6y8phaltl385d2).
 
 ## 🔑 License
 
