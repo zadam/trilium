@@ -198,6 +198,10 @@ export default class RibbonContainer extends NoteContextAwareWidget {
                 }
             }
         } else {
+            const activeChild = this.getActiveRibbonWidget();
+            if (activeChild) {
+                activeChild.handleEvent('deactivated', {});
+            }
             this.lastActiveComponentId = null;
         }
     }
