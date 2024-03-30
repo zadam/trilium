@@ -115,7 +115,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         }
     }
 
-    setContent(content: any, opts: ContentOpts = {}) {
+    setContent(content: string | Buffer, opts: ContentOpts = {}) {
         this._setContent(content, opts);
     }
 

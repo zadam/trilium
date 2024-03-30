@@ -131,7 +131,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         return this._getContent();
     }
 
-    setContent(content: any, opts: ContentOpts) {
+    setContent(content: string | Buffer, opts: ContentOpts) {
         this._setContent(content, opts);
     }
 

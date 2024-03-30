@@ -11,6 +11,7 @@ import BAttachment = require('./entities/battachment');
 import { AttachmentRow, RevisionRow } from './entities/rows';
 import BBlob = require('./entities/bblob');
 import BRecentNote = require('./entities/brecent_note');
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 
 interface AttachmentOpts {
     includeContentLength?: boolean;
@@ -95,7 +96,7 @@ class Becca {
         return this.notes[noteId];
     }
 
-    getNoteOrThrow(noteId: string): BNote | null {
+    getNoteOrThrow(noteId: string): BNote {
         const note = this.notes[noteId];
         if (!note) {
             throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
@@ -190,7 +191,11 @@ class Becca {
             .map(row => new BAttachment(row));
     }
 
-    getBlob(entity: { blobId: string }): BBlob | null {
+    getBlob(entity: { blobId?: string }): BBlob | null {
+        if (!entity.blobId) {
+            return null;
+        }
+
         const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [entity.blobId]);
 
         const BBlob = require('./entities/bblob'); // avoiding circular dependency problems
@@ -209,8 +214,7 @@ class Becca {
         return this.etapiTokens[etapiTokenId];
     }
 
-    /** @returns {AbstractBeccaEntity|null} */
-    getEntity(entityName: string, entityId: string) {
+    getEntity<T extends AbstractBeccaEntity<T>>(entityName: string, entityId: string): AbstractBeccaEntity<T> | null {
         if (!entityName || !entityId) {
             return null;
         }

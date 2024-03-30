@@ -3,10 +3,10 @@
       "moduleResolution": "Node",
 	  "declaration": false,
 	  "sourceMap": true,
-	  "outDir": "./build",
+	  "outDir": "./dist",
 	  "strict": true,
 	  "noImplicitAny": true,
-	  "lib": ["ES2021"]
+	  "lib": ["ES2022"]
 	},
 	"include": [
       "./src/**/*.js",

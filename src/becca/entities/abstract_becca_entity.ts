@@ -18,6 +18,10 @@ interface ContentOpts {
     forceFrontendReload?: boolean;
 }
 
+/**
+ * This interface contains the data that is shared across all the objects of a given derived class of {@link AbstractBeccaEntity}.
+ * For example, all BAttributes will share their content, but all BBranches will have another set of this data. 
+ */
 interface ConstructorData<T extends AbstractBeccaEntity<T>> {
     primaryKeyName: string;
     entityName: string;
@@ -26,6 +30,8 @@ interface ConstructorData<T extends AbstractBeccaEntity<T>> {
 
 /**
  * Base class for all backend entities.
+ * 
+ * @type T the same entity type needed for self-reference in {@link ConstructorData}.
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
@@ -33,10 +39,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     protected utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
-    protected isProtected?: boolean;
-    protected isSynced?: boolean;
 
-    protected blobId?: string;
+    isProtected?: boolean;
+    isSynced?: boolean;
+    blobId?: string;
 
     protected beforeSaving() {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
@@ -45,7 +51,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         }
     }
 
-    protected getUtcDateChanged() {
+    getUtcDateChanged() {
         return this.utcDateModified || this.utcDateCreated;
     }
 
@@ -69,7 +75,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         });
     }
 
-    protected generateHash(isDeleted: boolean): string {
+    generateHash(isDeleted?: boolean): string {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
         let contentToHash = "";
 
