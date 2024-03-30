@@ -102,6 +102,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     abstract getPojo(): {};
 
+    abstract init(): void;
+
+    abstract updateFromRow(row: unknown): void;
+
     get isDeleted(): boolean {
         // TODO: Not sure why some entities don't implement it.
         return false;

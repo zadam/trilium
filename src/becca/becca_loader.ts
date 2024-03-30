@@ -13,6 +13,7 @@ import BEtapiToken = require('./entities/betapi_token');
 import cls = require('../services/cls');
 import entityConstructor = require('../becca/entity_constructor');
 import { AttributeRow, BranchRow, EtapiTokenRow, NoteRow, OptionRow } from './entities/rows';
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 
 const beccaLoaded = new Promise<void>((res, rej) => {
     sqlInit.dbReady.then(() => {
@@ -89,7 +90,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entity
         if (beccaEntity) {
             beccaEntity.updateFromRow(entityRow);
         } else {
-            beccaEntity = new EntityClass();
+            beccaEntity = new EntityClass() as AbstractBeccaEntity<AbstractBeccaEntity<any>>;
             beccaEntity.updateFromRow(entityRow);
             beccaEntity.init();
         }

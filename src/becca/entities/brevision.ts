@@ -29,22 +29,30 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
                                             "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"]; }
 
     revisionId?: string;
-    noteId: string;
-    type: string;
-    mime: string;
-    isProtected: boolean;
-    title: string;
+    noteId!: string;
+    type!: string;
+    mime!: string;
+    isProtected!: boolean;
+    title!: string;
     blobId?: string;
     dateLastEdited?: string;
-    dateCreated: string;
+    dateCreated!: string;
     utcDateLastEdited?: string;
-    utcDateCreated: string;
+    utcDateCreated!: string;
     contentLength?: number;
     content?: string;
 
     constructor(row: RevisionRow, titleDecrypted = false) {
         super();
 
+        this.updateFromRow(row);
+        if (this.isProtected && !titleDecrypted) {
+            const decryptedTitle = protectedSessionService.isProtectedSessionAvailable() ? protectedSessionService.decryptString(this.title) : null;
+            this.title = decryptedTitle || "[protected]";
+        }
+    }
+
+    updateFromRow(row: RevisionRow) {
         this.revisionId = row.revisionId;
         this.noteId = row.noteId;
         this.type = row.type;
@@ -58,11 +66,10 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         this.utcDateCreated = row.utcDateCreated;
         this.utcDateModified = row.utcDateModified;
         this.contentLength = row.contentLength;
+    }
 
-        if (this.isProtected && !titleDecrypted) {
-            const decryptedTitle = protectedSessionService.isProtectedSessionAvailable() ? protectedSessionService.decryptString(this.title) : null;
-            this.title = decryptedTitle || "[protected]";
-        }
+    init() {
+        // Do nothing.
     }
 
     getNote() {

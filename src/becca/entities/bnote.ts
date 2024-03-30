@@ -1657,6 +1657,10 @@ class BNote extends AbstractBeccaEntity<BNote> {
             position
         });
 
+        if (!content) {
+            throw new Error("Attempted to save an attachment with no content.");
+        }
+
         attachment.setContent(content, {forceSave: true});
 
         return attachment;

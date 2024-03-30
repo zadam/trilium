@@ -37,10 +37,10 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     noteId?: number;
     attachmentId?: string;
     /** either noteId or revisionId to which this attachment belongs */
-    ownerId: string;
-    role: string;
-    mime: string;
-    title: string;
+    ownerId!: string;
+    role!: string;
+    mime!: string;
+    title!: string;
     type?: keyof typeof attachmentRoleToNoteTypeMapping;
     position?: number;
     blobId?: string;
@@ -54,6 +54,11 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     constructor(row: AttachmentRow) {
         super();
 
+        this.updateFromRow(row);
+        this.decrypt();
+    }
+
+    updateFromRow(row: AttachmentRow): void {
         if (!row.ownerId?.trim()) {
             throw new Error("'ownerId' must be given to initialize a Attachment entity");
         } else if (!row.role?.trim()) {
@@ -76,8 +81,10 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         this.utcDateModified = row.utcDateModified;
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
         this.contentLength = row.contentLength;
+    }
 
-        this.decrypt();
+    init(): void {
+        // Do nothing.
     }
 
     copy(): BAttachment {
