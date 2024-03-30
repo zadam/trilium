@@ -1,6 +1,6 @@
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
-const sql = require('./sql');
+const sql = require('./sql.js');
 const decryptService = require('./decrypt.js');
 const dataKeyService = require('./data_key.js');
 const extensionService = require('./extension.js');
@@ -74,7 +74,7 @@ function dumpDocument(documentPath, targetPath, options) {
                 return;
             }
 
-            let {content} = sql.getRow("SELECT content FROM blobs WHERE blobId = ?", [noteRow.blobId]);
+            let { content } = sql.getRow("SELECT content FROM blobs WHERE blobId = ?", [noteRow.blobId]);
 
             if (content !== null && noteRow.isProtected && dataKey) {
                 content = decryptService.decrypt(dataKey, content);
@@ -108,7 +108,7 @@ function dumpDocument(documentPath, targetPath, options) {
             }
 
             try {
-                fs.mkdirSync(childTargetPath, {recursive: true});
+                fs.mkdirSync(childTargetPath, { recursive: true });
             }
             catch (e) {
                 console.error(`DUMPERROR: Creating directory ${childTargetPath} failed with error '${e.message}'`);
@@ -157,7 +157,7 @@ function validatePaths(documentPath, targetPath) {
     }
 
     if (!fs.existsSync(targetPath)) {
-        const ret = fs.mkdirSync(targetPath, {recursive: true});
+        const ret = fs.mkdirSync(targetPath, { recursive: true });
 
         if (!ret) {
             console.error(`Target path '${targetPath}' could not be created. Run with --help to see usage.`);

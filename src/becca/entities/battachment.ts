@@ -11,7 +11,8 @@ import BNote = require('./bnote');
 import BBranch = require('./bbranch');
 
 const attachmentRoleToNoteTypeMapping = {
-    'image': 'image'
+    'image': 'image',
+    'file': 'file'
 };
 
 interface ContentOpts {
@@ -130,7 +131,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         return this._getContent() as Buffer;
     }
 
-    setContent(content: any, opts: ContentOpts) {
+    setContent(content: string | Buffer, opts: ContentOpts) {
         this._setContent(content, opts);
     }
 

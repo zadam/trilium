@@ -115,7 +115,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         }
     }
 
-    setContent(content: any, opts: ContentOpts = {}) {
+    setContent(content: string | Buffer, opts: ContentOpts = {}) {
         this._setContent(content, opts);
     }
 
@@ -156,6 +156,13 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     getAttachmentByTitle(title: string): BAttachment {
         // cannot use SQL to filter by title since it can be encrypted
         return this.getAttachments().filter(attachment => attachment.title === title)[0];
+    }
+
+    /**
+     * Revisions are not soft-deletable, they are immediately hard-deleted (erased).
+     */
+    eraseRevision() {
+        require("../../services/erase.js").eraseRevisions([this.revisionId]);
     }
 
     beforeSaving() {
