@@ -11,7 +11,8 @@ import BNote = require('./bnote');
 import BBranch = require('./bbranch');
 
 const attachmentRoleToNoteTypeMapping = {
-    'image': 'image'
+    'image': 'image',
+    'file': 'file'
 };
 
 interface ContentOpts {
