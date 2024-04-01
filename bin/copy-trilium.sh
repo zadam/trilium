@@ -27,7 +27,7 @@ done
 cp webpack-* "$DIR"/      # here warning because there is no 'webpack-*', but webpack.config.js only
 
 # run in subshell (so we return to original dir)
-(cd $DIR && n exec 18.18.2 npm install --only=prod)
+(cd $DIR && n exec 18.18.2 npm install)
 
 if [[ -d "$DIR"/node_modules ]]; then
 # cleanup of useless files in dependencies
