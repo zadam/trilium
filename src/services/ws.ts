@@ -29,10 +29,10 @@ let lastSyncedPush: number | null = null;
 interface Message {
     type: string;
     data?: {
-        lastSyncedPush?: number,
+        lastSyncedPush?: number | null,
         entityChanges?: any[]
-    },
-    lastSyncedPush?: number,
+    } | null,
+    lastSyncedPush?: number | null,
     
     progressCount?: number;
     taskId?: string;
@@ -142,7 +142,7 @@ function fillInAdditionalProperties(entityChange: EntityChange) {
         if (!entityChange.entity) {
             entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
 
-            if (entityChange.entity && entityChange.entity.isProtected) {
+            if (entityChange.entity?.isProtected) {
                 entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title || "");
             }
         }
@@ -157,7 +157,7 @@ function fillInAdditionalProperties(entityChange: EntityChange) {
 
         if (parentNote) {
             for (const childBranch of parentNote.getChildBranches()) {
-                if (childBranch && childBranch.branchId) {
+                if (childBranch?.branchId) {
                     entityChange.positions[childBranch.branchId] = childBranch.notePosition;
                 }
             }
@@ -222,7 +222,7 @@ function sendPing(client: WebSocket, entityChangeIds = []) {
     sendMessage(client, {
         type: 'frontend-update',
         data: {
-            lastSyncedPush: lastSyncedPush || undefined,
+            lastSyncedPush,
             entityChanges
         }
     });
@@ -237,19 +237,19 @@ function sendTransactionEntityChangesToAllClients() {
 }
 
 function syncPullInProgress() {
-    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush: lastSyncedPush || undefined });
+    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush });
 }
 
 function syncPushInProgress() {
-    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush: lastSyncedPush || undefined });
+    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush });
 }
 
 function syncFinished() {
-    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush: lastSyncedPush || undefined });
+    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush });
 }
 
 function syncFailed() {
-    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush: lastSyncedPush || undefined });
+    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
 }
 
 function reloadFrontend(reason: string) {

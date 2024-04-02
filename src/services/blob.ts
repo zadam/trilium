@@ -20,7 +20,7 @@ function getBlobPojo(entityName: string, entityId: string) {
     if (!entity.hasStringContent()) {
         pojo.content = null;
     } else {
-        pojo.content = processContent(pojo.content, entity.isProtected, true);
+        pojo.content = processContent(pojo.content, !!entity.isProtected, true);
     }
 
     return pojo;

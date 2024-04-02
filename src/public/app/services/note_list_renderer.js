@@ -4,6 +4,7 @@ import froca from "./froca.js";
 import attributeRenderer from "./attribute_renderer.js";
 import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
+import utils from "./utils.js";
 
 const TPL = `
 <div class="note-list">
@@ -215,7 +216,11 @@ class NoteListRenderer {
         if (highlightedTokens.length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.MARKJS);
 
-            this.highlightRegex = new RegExp(highlightedTokens.join("|"), 'gi');
+            const regex = highlightedTokens
+                .map(token => utils.escapeRegExp(token))
+                .join("|");
+
+            this.highlightRegex = new RegExp(regex, 'gi');
         } else {
             this.highlightRegex = null;
         }

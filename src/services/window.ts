@@ -17,7 +17,7 @@ let setupWindow: BrowserWindow | null;
 async function createExtraWindow(extraWindowHash: string) {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
-    const {BrowserWindow} = require('electron');
+    const { BrowserWindow } = require('electron');
 
     const win = new BrowserWindow({
         width: 1000,
@@ -53,7 +53,7 @@ async function createMainWindow(app: App) {
 
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
-    const {BrowserWindow} = require('electron'); // should not be statically imported
+    const { BrowserWindow } = require('electron'); // should not be statically imported
 
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
@@ -128,7 +128,7 @@ function getIcon() {
 }
 
 async function createSetupWindow() {
-    const {BrowserWindow} = require('electron'); // should not be statically imported
+    const { BrowserWindow } = require('electron'); // should not be statically imported
     setupWindow = new BrowserWindow({
         width: 800,
         height: 800,
@@ -152,7 +152,7 @@ function closeSetupWindow() {
 }
 
 async function registerGlobalShortcuts() {
-    const {globalShortcut} = require('electron');
+    const { globalShortcut } = require('electron');
 
     await sqlInit.dbReady;
 

@@ -43,7 +43,7 @@ interface DateLimits {
 function filterUrlValue(value: string) {
     return value
         .replace(/https?:\/\//ig, "")
-        .replace(/www\./ig, "")
+        .replace(/www.js\./ig, "")
         .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 
