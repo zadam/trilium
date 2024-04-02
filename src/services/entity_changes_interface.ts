@@ -20,6 +20,6 @@ export interface EntityRow {
 }
 
 export interface EntityChangeRecord {
-    entityChange: EntityChange;
-    entity?: EntityRow;
+	entityChange: EntityChange;
+	entity?: EntityRow;
 }

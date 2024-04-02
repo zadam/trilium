@@ -25,7 +25,7 @@ class OrderByAndLimitExp extends Expression {
     constructor(orderDefinitions: Pick<OrderDefinition, "direction" | "valueExtractor">[], limit?: number) {
         super();
 
-        this.orderDefinitions = orderDefinitions as unknown as OrderDefinition[];
+        this.orderDefinitions = orderDefinitions as OrderDefinition[];
 
         for (const od of this.orderDefinitions) {
             od.smaller = od.direction === "asc" ? -1 : 1;
