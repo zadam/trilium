@@ -21,7 +21,7 @@ interface AttachmentOpts {
  * Becca is a backend cache of all notes, branches, and attributes.
  * There's a similar frontend cache Froca, and share cache Shaca.
  */
-class Becca {
+export default class Becca {
     loaded!: boolean;
 
     notes!: Record<string, BNote>;
@@ -280,4 +280,12 @@ class Becca {
     }
 }
 
-export = Becca;
+/**
+ * This interface contains the data that is shared across all the objects of a given derived class of {@link AbstractBeccaEntity}.
+ * For example, all BAttributes will share their content, but all BBranches will have another set of this data. 
+ */
+export interface ConstructorData<T extends AbstractBeccaEntity<T>> {
+    primaryKeyName: string;
+    entityName: string;
+    hashedProperties: (keyof T)[];
+}

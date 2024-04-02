@@ -1,13 +1,13 @@
 const path = require('path');
 const url = require("url");
-const port = require('./port.ts');
+const port = require('./port');
 const optionService = require('./options');
 const env = require('./env');
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const cls = require('./cls');
 const keyboardActionsService = require('./keyboard_actions');
-const {ipcMain} = require('electron');
+const { ipcMain } = require('electron');
 
 // Prevent the window being garbage collected
 /** @type {Electron.BrowserWindow} */
@@ -18,7 +18,7 @@ let setupWindow;
 async function createExtraWindow(extraWindowHash) {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
-    const {BrowserWindow} = require('electron');
+    const { BrowserWindow } = require('electron');
 
     const win = new BrowserWindow({
         width: 1000,
@@ -55,7 +55,7 @@ async function createMainWindow(app) {
 
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
-    const {BrowserWindow} = require('electron'); // should not be statically imported
+    const { BrowserWindow } = require('electron'); // should not be statically imported
 
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
@@ -128,7 +128,7 @@ function getIcon() {
 }
 
 async function createSetupWindow() {
-    const {BrowserWindow} = require('electron'); // should not be statically imported
+    const { BrowserWindow } = require('electron'); // should not be statically imported
     setupWindow = new BrowserWindow({
         width: 800,
         height: 800,
@@ -152,7 +152,7 @@ function closeSetupWindow() {
 }
 
 async function registerGlobalShortcuts() {
-    const {globalShortcut} = require('electron');
+    const { globalShortcut } = require('electron');
 
     await sqlInit.dbReady;
 

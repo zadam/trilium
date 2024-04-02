@@ -9,23 +9,13 @@ import cls = require('../../services/cls');
 import log = require('../../services/log');
 import protectedSessionService = require('../../services/protected_session');
 import blobService = require('../../services/blob');
-import Becca = require('../becca-interface');
+import Becca, { ConstructorData } from '../becca-interface';
 
 let becca: Becca | null = null;
 
 interface ContentOpts {
     forceSave?: boolean;
     forceFrontendReload?: boolean;
-}
-
-/**
- * This interface contains the data that is shared across all the objects of a given derived class of {@link AbstractBeccaEntity}.
- * For example, all BAttributes will share their content, but all BBranches will have another set of this data. 
- */
-interface ConstructorData<T extends AbstractBeccaEntity<T>> {
-    primaryKeyName: string;
-    entityName: string;
-    hashedProperties: (keyof T)[];
 }
 
 /**

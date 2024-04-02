@@ -107,7 +107,3 @@ export interface NoteRow {
     utcDateCreated: string;
     utcDateModified: string;
 }
-
-export interface AttributeRow {
-    
-}
