@@ -20,7 +20,7 @@ const beccaLoaded = new Promise<void>((res, rej) => {
         cls.init(() => {
             load();
 
-            require('../services/options_init.js').initStartupOptions();
+            require('../services/options_init').initStartupOptions();
 
             res();
         });

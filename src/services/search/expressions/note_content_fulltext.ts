@@ -137,7 +137,7 @@ class NoteContentFulltextExp extends Expression {
         return content.trim();
     }
 
-    stripTags(content) {
+    stripTags(content: string) {
         // we want to allow link to preserve URLs: https://github.com/zadam/trilium/issues/2412
         // we want to insert space in place of block tags (because they imply text separation)
         // but we don't want to insert text for typical formatting inline tags which can occur within one word
