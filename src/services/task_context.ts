@@ -1,17 +1,10 @@
 "use strict";
 
+import { TaskData } from './task_context_interface';
 import ws = require('./ws');
 
 // taskId => TaskContext
 const taskContexts: Record<string, TaskContext> = {};
-
-interface TaskData {
-    safeImport?: boolean;
-    textImportedAsText?: boolean;
-    codeImportedAsCode?: boolean;
-    shrinkImages?: boolean;
-    replaceUnderscoresWithSpaces?: boolean;
-}
 
 class TaskContext {
 

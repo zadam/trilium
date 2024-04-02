@@ -7,7 +7,7 @@ import importUtils = require('./utils');
 function renderToHtml(content: string, title: string) {
     const html = marked.parse(content, {
         async: false
-    });  // FIXME: mangle and headerIds does not seem to exist in marked
+    }) as string;  // FIXME: mangle and headerIds does not seem to exist in marked
     const h1Handled = importUtils.handleH1(html, title); // h1 handling needs to come before sanitization
     return htmlSanitizer.sanitize(h1Handled);
 }
