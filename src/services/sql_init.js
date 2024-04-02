@@ -1,15 +1,15 @@
-const log = require('./log.js');
+const log = require('./log');
 const fs = require('fs');
-const resourceDir = require('./resource_dir.js');
-const sql = require('./sql.js');
-const utils = require('./utils.js');
-const optionService = require('./options.js');
+const resourceDir = require('./resource_dir');
+const sql = require('./sql');
+const utils = require('./utils');
+const optionService = require('./options');
 const port = require('./port.js');
-const BOption = require('../becca/entities/boption.js');
-const TaskContext = require('./task_context.js');
+const BOption = require('../becca/entities/boption');
+const TaskContext = require('./task_context');
 const migrationService = require('./migration.js');
-const cls = require('./cls.js');
-const config = require('./config.js');
+const cls = require('./cls');
+const config = require('./config');
 
 const dbReady = utils.deferred();
 
@@ -62,8 +62,8 @@ async function createInitialDatabase() {
 
         require('../becca/becca_loader.js').load();
 
-        const BNote = require('../becca/entities/bnote.js');
-        const BBranch = require('../becca/entities/bbranch.js');
+        const BNote = require('../becca/entities/bnote');
+        const BBranch = require('../becca/entities/bbranch');
 
         log.info("Creating root note ...");
 
@@ -88,7 +88,7 @@ async function createInitialDatabase() {
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
-        require('./encryption/password.js').resetPassword();
+        require('./encryption/password').resetPassword();
     });
 
     log.info("Importing demo content ...");
@@ -105,7 +105,7 @@ async function createInitialDatabase() {
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        const optionService = require('./options.js');
+        const optionService = require('./options');
         optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,

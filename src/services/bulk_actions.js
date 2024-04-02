@@ -1,9 +1,9 @@
-const log = require('./log.js');
+const log = require('./log');
 const revisionService = require('./revisions.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const cloningService = require('./cloning.js');
 const branchService = require('./branches.js');
-const utils = require('./utils.js');
+const utils = require('./utils');
 const eraseService = require("./erase.js");
 
 const ACTION_HANDLERS = {

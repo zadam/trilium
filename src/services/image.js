@@ -1,11 +1,11 @@
 "use strict";
 
-const becca = require('../becca/becca.js');
-const log = require('./log.js');
-const protectedSessionService = require('./protected_session.js');
+const becca = require('../becca/becca');
+const log = require('./log');
+const protectedSessionService = require('./protected_session');
 const noteService = require('./notes.js');
-const optionService = require('./options.js');
-const sql = require('./sql.js');
+const optionService = require('./options');
+const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');

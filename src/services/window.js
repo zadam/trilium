@@ -1,11 +1,11 @@
 const path = require('path');
 const url = require("url");
 const port = require('./port.js');
-const optionService = require('./options.js');
-const env = require('./env.js');
-const log = require('./log.js');
+const optionService = require('./options');
+const env = require('./env');
+const log = require('./log');
 const sqlInit = require('./sql_init.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const keyboardActionsService = require('./keyboard_actions.js');
 const {ipcMain} = require('electron');
 

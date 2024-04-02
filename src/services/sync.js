@@ -1,22 +1,22 @@
 "use strict";
 
-const log = require('./log.js');
-const sql = require('./sql.js');
-const optionService = require('./options.js');
-const utils = require('./utils.js');
-const instanceId = require('./instance_id.js');
-const dateUtils = require('./date_utils.js');
+const log = require('./log');
+const sql = require('./sql');
+const optionService = require('./options');
+const utils = require('./utils');
+const instanceId = require('./instance_id');
+const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update.js');
 const contentHashService = require('./content_hash.js');
 const appInfo = require('./app_info.js');
 const syncOptions = require('./sync_options.js');
-const syncMutexService = require('./sync_mutex.js');
-const cls = require('./cls.js');
+const syncMutexService = require('./sync_mutex');
+const cls = require('./cls');
 const request = require('./request.js');
-const ws = require('./ws.js');
-const entityChangesService = require('./entity_changes.js');
+const ws = require('./ws');
+const entityChangesService = require('./entity_changes');
 const entityConstructor = require('../becca/entity_constructor.js');
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 
 let proxyToggle = true;
 

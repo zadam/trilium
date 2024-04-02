@@ -1,9 +1,9 @@
 "use strict";
 
 const Expression = require('./expression.js');
-const NoteSet = require('../note_set.js');
-const becca = require('../../../becca/becca.js');
-const utils = require('../../utils.js');
+const NoteSet = require('../note_set');
+const becca = require('../../../becca/becca');
+const utils = require('../../utils');
 
 class NoteFlatTextExp extends Expression {
     constructor(tokens) {

@@ -1,16 +1,16 @@
 "use strict";
 
-const sql = require('../../services/sql.js');
-const utils = require('../../services/utils.js');
-const entityChangesService = require('../../services/entity_changes.js');
+const sql = require('../../services/sql');
+const utils = require('../../services/utils');
+const entityChangesService = require('../../services/entity_changes');
 const treeService = require('../../services/tree.js');
 const eraseService = require('../../services/erase.js');
-const becca = require('../../becca/becca.js');
-const TaskContext = require('../../services/task_context.js');
+const becca = require('../../becca/becca');
+const TaskContext = require('../../services/task_context');
 const branchService = require('../../services/branches.js');
-const log = require('../../services/log.js');
-const ValidationError = require('../../errors/validation_error.js');
-const eventService = require("../../services/events.js");
+const log = require('../../services/log');
+const ValidationError = require('../../errors/validation_error');
+const eventService = require("../../services/events");
 
 /**
  * Code in this file deals with moving and cloning branches. The relationship between note and parent note is unique

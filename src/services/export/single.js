@@ -2,9 +2,9 @@
 
 const mimeTypes = require('mime-types');
 const html = require('html');
-const utils = require('../utils.js');
+const utils = require('../utils');
 const mdService = require('./md.js');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 
 function exportSingleNote(taskContext, branch, format, res) {
     const note = branch.getNote();

@@ -1,7 +1,7 @@
-const becca = require('./becca.js');
-const log = require('../services/log.js');
-const beccaService = require('./becca_service.js');
-const dateUtils = require('../services/date_utils.js');
+const becca = require('./becca');
+const log = require('../services/log');
+const beccaService = require('./becca_service');
+const dateUtils = require('../services/date_utils');
 const {JSDOM} = require("jsdom");
 
 const DEBUG = false;

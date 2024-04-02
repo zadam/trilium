@@ -1,7 +1,7 @@
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const noteService = require('./notes.js');
-const BAttribute = require('../becca/entities/battribute.js');
-const log = require('./log.js');
+const BAttribute = require('../becca/entities/battribute');
+const log = require('./log');
 const migrationService = require('./migration.js');
 
 const LBTPL_ROOT = "_lbTplRoot";

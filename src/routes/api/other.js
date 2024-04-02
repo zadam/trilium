@@ -1,4 +1,4 @@
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const markdownService = require('../../services/import/markdown.js');
 
 function getIconUsage() {

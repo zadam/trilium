@@ -6,10 +6,10 @@ const handleParens = require('./handle_parens.js');
 const parse = require('./parse.js');
 const SearchResult = require('../search_result.js');
 const SearchContext = require('../search_context.js');
-const becca = require('../../../becca/becca.js');
+const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service.js');
-const utils = require('../../utils.js');
-const log = require('../../log.js');
+const utils = require('../../utils');
+const log = require('../../log');
 const hoistedNoteService = require('../../hoisted_note.js');
 
 function searchFromNote(note) {
@@ -90,7 +90,7 @@ function searchFromRelation(note, relationName) {
 }
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql.js');
+    const sql = require('../../sql');
 
     /**
      * This complex structure is needed to calculate total occupied space by a note. Several object instances

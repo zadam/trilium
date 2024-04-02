@@ -109,6 +109,14 @@
     "yauzl": "3.1.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/cls-hooked": "^4.3.8",
+    "@types/escape-html": "^1.0.4",
+    "@types/express": "^4.17.21",
+    "@types/ini": "^4.1.0",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^20.11.19",
+    "@types/ws": "^8.5.10",
     "cross-env": "7.0.3",
     "electron": "25.9.8",
     "electron-builder": "24.13.3",
@@ -120,6 +128,9 @@
     "lorem-ipsum": "2.0.8",
     "nodemon": "3.1.0",
     "rcedit": "4.0.1",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
     "webpack": "5.90.3",
     "webpack-cli": "5.1.4"
   },

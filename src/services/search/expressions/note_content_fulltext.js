@@ -1,12 +1,12 @@
 "use strict";
 
 const Expression = require('./expression.js');
-const NoteSet = require('../note_set.js');
-const log = require('../../log.js');
-const becca = require('../../../becca/becca.js');
-const protectedSessionService = require('../../protected_session.js');
+const NoteSet = require('../note_set');
+const log = require('../../log');
+const becca = require('../../../becca/becca');
+const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
-const utils = require('../../utils.js');
+const utils = require('../../utils');
 
 const ALLOWED_OPERATORS = ['=', '!=', '*=*', '*=', '=*', '%='];
 
@@ -38,7 +38,7 @@ class NoteContentFulltextExp extends Expression {
         }
 
         const resultNoteSet = new NoteSet();
-        const sql = require('../../sql.js');
+        const sql = require('../../sql');
 
         for (const row of sql.iterateRows(`
                 SELECT noteId, type, mime, content, isProtected

@@ -4,13 +4,13 @@ const enexImportService = require('../../services/import/enex.js');
 const opmlImportService = require('../../services/import/opml.js');
 const zipImportService = require('../../services/import/zip.js');
 const singleImportService = require('../../services/import/single.js');
-const cls = require('../../services/cls.js');
+const cls = require('../../services/cls');
 const path = require('path');
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const beccaLoader = require('../../becca/becca_loader.js');
-const log = require('../../services/log.js');
-const TaskContext = require('../../services/task_context.js');
-const ValidationError = require('../../errors/validation_error.js');
+const log = require('../../services/log');
+const TaskContext = require('../../services/task_context');
+const ValidationError = require('../../errors/validation_error');
 
 async function importNotesToBranch(req) {
     const {parentNoteId} = req.params;

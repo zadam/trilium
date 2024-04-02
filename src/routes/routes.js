@@ -1,20 +1,20 @@
 "use strict";
 
-const utils = require('../services/utils.js');
+const utils = require('../services/utils');
 const multer = require('multer');
-const log = require('../services/log.js');
+const log = require('../services/log');
 const express = require('express');
 const router = express.Router();
 const auth = require('../services/auth.js');
-const cls = require('../services/cls.js');
-const sql = require('../services/sql.js');
-const entityChangesService = require('../services/entity_changes.js');
+const cls = require('../services/cls');
+const sql = require('../services/sql');
+const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
 const { createPartialContentHandler } = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
-const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity.js');
-const NotFoundError = require('../errors/not_found_error.js');
-const ValidationError = require('../errors/validation_error.js');
+const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
+const NotFoundError = require('../errors/not_found_error');
+const ValidationError = require('../errors/validation_error');
 
 // page routes
 const setupRoute = require('./setup.js');
@@ -31,7 +31,7 @@ const cloningApiRoute = require('./api/cloning.js');
 const revisionsApiRoute = require('./api/revisions.js');
 const recentChangesApiRoute = require('./api/recent_changes.js');
 const optionsApiRoute = require('./api/options.js');
-const passwordApiRoute = require('./api/password.js');
+const passwordApiRoute = require('./api/password');
 const syncApiRoute = require('./api/sync.js');
 const loginApiRoute = require('./api/login.js');
 const recentNotesRoute = require('./api/recent_notes.js');
@@ -39,7 +39,7 @@ const appInfoRoute = require('./api/app_info.js');
 const exportRoute = require('./api/export.js');
 const importRoute = require('./api/import.js');
 const setupApiRoute = require('./api/setup.js');
-const sqlRoute = require('./api/sql.js');
+const sqlRoute = require('./api/sql');
 const databaseRoute = require('./api/database.js');
 const imageRoute = require('./api/image.js');
 const attributesRoute = require('./api/attributes.js');

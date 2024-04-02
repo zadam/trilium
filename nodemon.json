@@ -2,12 +2,11 @@
     "restartable": "rs",
     "ignore": [".git", "node_modules/**/node_modules", "src/public/"],
     "verbose": false,
-    "execMap": {
-        "js": "node --harmony"
-    },
+    "exec": "ts-node",
     "watch": ["src/"],
+    "signal": "SIGTERM",
     "env": {
         "NODE_ENV": "development"
     },
-    "ext": "js,json"
+    "ext": "ts,js,json"
 }

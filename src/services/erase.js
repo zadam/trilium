@@ -1,11 +1,11 @@
-const sql = require("./sql.js");
+const sql = require("./sql");
 const revisionService = require("./revisions.js");
-const log = require("./log.js");
-const entityChangesService = require("./entity_changes.js");
-const optionService = require("./options.js");
-const dateUtils = require("./date_utils.js");
+const log = require("./log");
+const entityChangesService = require("./entity_changes");
+const optionService = require("./options");
+const dateUtils = require("./date_utils");
 const sqlInit = require("./sql_init.js");
-const cls = require("./cls.js");
+const cls = require("./cls");
 
 function eraseNotes(noteIdsToErase) {
     if (noteIdsToErase.length === 0) {

@@ -1,17 +1,17 @@
 "use strict";
 
-const sql = require('../services/sql.js');
-const eventService = require('../services/events.js');
-const becca = require('./becca.js');
-const sqlInit = require('../services/sql_init.js');
-const log = require('../services/log.js');
-const BNote = require('./entities/bnote.js');
-const BBranch = require('./entities/bbranch.js');
-const BAttribute = require('./entities/battribute.js');
-const BOption = require('./entities/boption.js');
-const BEtapiToken = require('./entities/betapi_token.js');
-const cls = require('../services/cls.js');
-const entityConstructor = require('../becca/entity_constructor.js');
+const sql = require('../services/sql');
+const eventService = require('../services/events');
+const becca = require('./becca');
+const sqlInit = require('../services/sql_init');
+const log = require('../services/log');
+const BNote = require('./entities/bnote');
+const BBranch = require('./entities/bbranch');
+const BAttribute = require('./entities/battribute');
+const BOption = require('./entities/boption');
+const BEtapiToken = require('./entities/betapi_token');
+const cls = require('../services/cls');
+const entityConstructor = require('../becca/entity_constructor');
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
@@ -71,10 +71,10 @@ function load() {
 function reload(reason) {
     load();
 
-    require('../services/ws.js').reloadFrontend(reason || "becca reloaded");
+    require('../services/ws').reloadFrontend(reason || "becca reloaded");
 }
 
-eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entityName, entityRow }) => {
     if (!becca.loaded) {
         return;
     }
@@ -97,7 +97,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entity
     postProcessEntityUpdate(entityName, entityRow);
 });
 
-eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
+eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     if (!becca.loaded) {
         return;
     }
@@ -124,7 +124,7 @@ function postProcessEntityUpdate(entityName, entityRow) {
     }
 }
 
-eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED], ({ entityName, entityId }) => {
     if (!becca.loaded) {
         return;
     }

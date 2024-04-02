@@ -1,9 +1,9 @@
-const sql = require('./sql.js');
-const log = require('./log.js');
-const entityChangesService = require('./entity_changes.js');
-const eventService = require('./events.js');
+const sql = require('./sql');
+const log = require('./log');
+const entityChangesService = require('./entity_changes');
+const eventService = require('./events');
 const entityConstructor = require('../becca/entity_constructor.js');
-const ws = require('./ws.js');
+const ws = require('./ws');
 
 function updateEntities(entityChanges, instanceId) {
     if (entityChanges.length === 0) {

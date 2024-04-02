@@ -1,9 +1,9 @@
 "use strict";
 
-const optionService = require('../../services/options.js');
-const log = require('../../services/log.js');
+const optionService = require('../../services/options');
+const log = require('../../services/log');
 const searchService = require('../../services/search/services/search.js');
-const ValidationError = require('../../errors/validation_error.js');
+const ValidationError = require('../../errors/validation_error');
 
 // options allowed to be updated directly in the Options dialog
 const ALLOWED_OPTIONS = new Set([

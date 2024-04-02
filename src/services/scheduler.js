@@ -1,10 +1,10 @@
 const scriptService = require('./script.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 const sqlInit = require('./sql_init.js');
-const config = require('./config.js');
-const log = require('./log.js');
+const config = require('./config');
+const log = require('./log');
 const attributeService = require('../services/attributes.js');
-const protectedSessionService = require('../services/protected_session.js');
+const protectedSessionService = require('../services/protected_session');
 const hiddenSubtreeService = require('./hidden_subtree.js');
 
 /**

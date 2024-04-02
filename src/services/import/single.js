@@ -2,11 +2,11 @@
 
 const noteService = require('../../services/notes.js');
 const imageService = require('../../services/image.js');
-const protectedSessionService = require('../protected_session.js');
+const protectedSessionService = require('../protected_session');
 const markdownService = require('./markdown.js');
 const mimeService = require('./mime.js');
-const utils = require('../../services/utils.js');
-const importUtils = require('./utils.js');
+const utils = require('../../services/utils');
+const importUtils = require('./utils');
 const htmlSanitizer = require('../html_sanitizer.js');
 
 function importSingleFile(taskContext, file, parentNote) {

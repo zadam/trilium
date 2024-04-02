@@ -1,16 +1,16 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session.js');
-const utils = require('../../services/utils.js');
-const log = require('../../services/log.js');
+const protectedSessionService = require('../../services/protected_session');
+const utils = require('../../services/utils');
+const log = require('../../services/log');
 const noteService = require('../../services/notes.js');
 const tmp = require('tmp');
 const fs = require('fs');
 const { Readable } = require('stream');
 const chokidar = require('chokidar');
-const ws = require('../../services/ws.js');
-const becca = require('../../becca/becca.js');
-const ValidationError = require('../../errors/validation_error.js');
+const ws = require('../../services/ws');
+const becca = require('../../becca/becca');
+const ValidationError = require('../../errors/validation_error');
 
 function updateFile(req) {
     const note = becca.getNoteOrThrow(req.params.noteId);

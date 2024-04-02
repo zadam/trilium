@@ -1,8 +1,8 @@
 "use strict";
 
-const sql = require('./sql.js');
-const utils = require('./utils.js');
-const log = require('./log.js');
+const sql = require('./sql');
+const utils = require('./utils');
+const log = require('./log');
 const eraseService = require('./erase.js');
 
 function getEntityHashes() {

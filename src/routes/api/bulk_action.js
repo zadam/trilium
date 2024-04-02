@@ -1,4 +1,4 @@
-const becca = require('../../becca/becca.js');
+const becca = require('../../becca/becca');
 const bulkActionService = require('../../services/bulk_actions.js');
 
 function execute(req) {

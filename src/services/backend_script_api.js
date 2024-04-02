@@ -1,11 +1,11 @@
-const log = require('./log.js');
+const log = require('./log');
 const noteService = require('./notes.js');
-const sql = require('./sql.js');
-const utils = require('./utils.js');
+const sql = require('./sql');
+const utils = require('./utils');
 const attributeService = require('./attributes.js');
 const dateNoteService = require('./date_notes.js');
 const treeService = require('./tree.js');
-const config = require('./config.js');
+const config = require('./config');
 const axios = require('axios');
 const dayjs = require('dayjs');
 const xml2js = require('xml2js');
@@ -13,15 +13,15 @@ const cloningService = require('./cloning.js');
 const appInfo = require('./app_info.js');
 const searchService = require('./search/services/search.js');
 const SearchContext = require('./search/search_context.js');
-const becca = require('../becca/becca.js');
-const ws = require('./ws.js');
+const becca = require('../becca/becca');
+const ws = require('./ws');
 const SpacedUpdate = require('./spaced_update.js');
 const specialNotesService = require('./special_notes.js');
 const branchService = require('./branches.js');
 const exportService = require('./export/zip.js');
-const syncMutex = require('./sync_mutex.js');
+const syncMutex = require('./sync_mutex');
 const backupService = require('./backup.js');
-const optionsService = require('./options.js');
+const optionsService = require('./options');
 
 
 /**

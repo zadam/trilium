@@ -1,10 +1,10 @@
 "use strict";
 
-const sql = require('./sql.js');
-const log = require('./log.js');
-const BBranch = require('../becca/entities/bbranch.js');
-const entityChangesService = require('./entity_changes.js');
-const becca = require('../becca/becca.js');
+const sql = require('./sql');
+const log = require('./log');
+const BBranch = require('../becca/entities/bbranch');
+const entityChangesService = require('./entity_changes');
+const becca = require('../becca/becca');
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {

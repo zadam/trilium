@@ -11,7 +11,7 @@ const assetPath = require('../services/asset_path.js');
 const appPath = require('../services/app_path.js');
 const searchService = require('../services/search/services/search.js');
 const SearchContext = require('../services/search/search_context.js');
-const log = require('../services/log.js');
+const log = require('../services/log');
 
 /**
  * @param {SNote} note
@@ -236,7 +236,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        const utils = require('../services/utils.js');
+        const utils = require('../services/utils');
 
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
@@ -304,7 +304,7 @@ function register(router) {
 
         addNoIndexHeader(attachment.note, res);
 
-        const utils = require('../services/utils.js');
+        const utils = require('../services/utils');
 
         const filename = utils.formatDownloadTitle(attachment.title, null, attachment.mime);
 

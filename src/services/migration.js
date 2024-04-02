@@ -1,11 +1,11 @@
 const backupService = require('./backup.js');
-const sql = require('./sql.js');
+const sql = require('./sql');
 const fs = require('fs-extra');
-const log = require('./log.js');
-const utils = require('./utils.js');
-const resourceDir = require('./resource_dir.js');
+const log = require('./log');
+const utils = require('./utils');
+const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info.js');
-const cls = require('./cls.js');
+const cls = require('./cls');
 
 async function migrate() {
     const currentDbVersion = getDbVersion();
