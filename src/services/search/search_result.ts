@@ -51,9 +51,7 @@ class SearchResult {
     addScoreForStrings(tokens: string[], str: string, factor: number) {
         const chunks = str.toLowerCase().split(" ");
 
-        if (!this.score) {
-            this.score = 0;
-        }
+        this.score = 0;
 
         for (const chunk of chunks) {
             for (const token of tokens) {
