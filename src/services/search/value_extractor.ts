@@ -113,7 +113,7 @@ class ValueExtractor {
                 i++;
 
                 const attr = cursor.getAttributeCaseInsensitive('relation', cur());
-                cursor = (attr ? attr.targetNote || null : null);
+                cursor = attr?.targetNote || null;
             }
             else if (cur() === 'parents') {
                 cursor = cursor.parents[0];

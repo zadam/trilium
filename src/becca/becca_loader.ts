@@ -13,6 +13,7 @@ import BEtapiToken = require('./entities/betapi_token');
 import cls = require('../services/cls');
 import entityConstructor = require('../becca/entity_constructor');
 import { AttributeRow, BranchRow, EtapiTokenRow, NoteRow, OptionRow } from './entities/rows';
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 
 const beccaLoaded = new Promise<void>((res, rej) => {
     sqlInit.dbReady.then(() => {
@@ -75,7 +76,7 @@ function reload(reason: string) {
     require('../services/ws').reloadFrontend(reason || "becca reloaded");
 }
 
-eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entityName, entityRow }) => {
     if (!becca.loaded) {
         return;
     }
@@ -89,7 +90,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entity
         if (beccaEntity) {
             beccaEntity.updateFromRow(entityRow);
         } else {
-            beccaEntity = new EntityClass();
+            beccaEntity = new EntityClass() as AbstractBeccaEntity<AbstractBeccaEntity<any>>;
             beccaEntity.updateFromRow(entityRow);
             beccaEntity.init();
         }
@@ -98,7 +99,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entity
     postProcessEntityUpdate(entityName, entityRow);
 });
 
-eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
+eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     if (!becca.loaded) {
         return;
     }
@@ -125,7 +126,7 @@ function postProcessEntityUpdate(entityName: string, entityRow: any) {
     }
 }
 
-eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED], ({ entityName, entityId }) => {
     if (!becca.loaded) {
         return;
     }

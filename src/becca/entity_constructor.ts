@@ -1,3 +1,5 @@
+import { ConstructorData } from './becca-interface';
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 import BAttachment = require('./entities/battachment');
 import BAttribute = require('./entities/battribute');
 import BBlob = require('./entities/bblob');
@@ -8,7 +10,9 @@ import BOption = require('./entities/boption');
 import BRecentNote = require('./entities/brecent_note');
 import BRevision = require('./entities/brevision');
 
-const ENTITY_NAME_TO_ENTITY: Record<string, any> = {
+type EntityClass = new (row?: any) => AbstractBeccaEntity<any>;
+
+const ENTITY_NAME_TO_ENTITY: Record<string, ConstructorData<any> & EntityClass> = {
     "attachments": BAttachment,
     "attributes": BAttribute,
     "blobs": BBlob,

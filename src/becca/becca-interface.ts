@@ -11,6 +11,7 @@ import BAttachment = require('./entities/battachment');
 import { AttachmentRow, RevisionRow } from './entities/rows';
 import BBlob = require('./entities/bblob');
 import BRecentNote = require('./entities/brecent_note');
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 
 interface AttachmentOpts {
     includeContentLength?: boolean;
@@ -20,7 +21,7 @@ interface AttachmentOpts {
  * Becca is a backend cache of all notes, branches, and attributes.
  * There's a similar frontend cache Froca, and share cache Shaca.
  */
-class Becca {
+export default class Becca {
     loaded!: boolean;
 
     notes!: Record<string, BNote>;
@@ -190,7 +191,11 @@ class Becca {
             .map(row => new BAttachment(row));
     }
 
-    getBlob(entity: { blobId: string }): BBlob | null {
+    getBlob(entity: { blobId?: string }): BBlob | null {
+        if (!entity.blobId) {
+            return null;
+        }
+
         const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [entity.blobId]);
 
         const BBlob = require('./entities/bblob'); // avoiding circular dependency problems
@@ -209,8 +214,7 @@ class Becca {
         return this.etapiTokens[etapiTokenId];
     }
 
-    /** @returns {AbstractBeccaEntity|null} */
-    getEntity(entityName: string, entityId: string) {
+    getEntity<T extends AbstractBeccaEntity<T>>(entityName: string, entityId: string): AbstractBeccaEntity<T> | null {
         if (!entityName || !entityId) {
             return null;
         }
@@ -276,4 +280,12 @@ class Becca {
     }
 }
 
-export = Becca;
+/**
+ * This interface contains the data that is shared across all the objects of a given derived class of {@link AbstractBeccaEntity}.
+ * For example, all BAttributes will share their content, but all BBranches will have another set of this data. 
+ */
+export interface ConstructorData<T extends AbstractBeccaEntity<T>> {
+    primaryKeyName: string;
+    entityName: string;
+    hashedProperties: (keyof T)[];
+}

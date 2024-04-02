@@ -57,7 +57,7 @@ class TaskContext {
                 type: 'taskProgressCount',
                 taskId: this.taskId,
                 taskType: this.taskType,
-                data: this.data || undefined,
+                data: this.data,
                 progressCount: this.progressCount
             });
         }
@@ -68,7 +68,7 @@ class TaskContext {
             type: 'taskError',
             taskId: this.taskId,
             taskType: this.taskType,
-            data: this.data || undefined,
+            data: this.data,
             message: message
         });
     }
@@ -78,7 +78,7 @@ class TaskContext {
             type: 'taskSucceeded',
             taskId: this.taskId,
             taskType: this.taskType,
-            data: this.data || undefined,
+            data: this.data,
             result: result
         });
     }

@@ -3,11 +3,7 @@ import path = require('path');
 import windowService = require('./window');
 import optionService = require('./options');
 
-const UPDATE_TRAY_EVENTS = [
-    'minimize', 'maximize', 'show', 'hide'
-] as const;
-
-let tray: Tray | null = null;
+let tray: Tray;
 // `mainWindow.isVisible` doesn't work with `mainWindow.show` and `mainWindow.hide` - it returns `false` when the window
 // is minimized
 let isVisible = true;
@@ -42,14 +38,15 @@ const registerVisibilityListener = () => {
     // They need to be registered before the tray updater is registered
     mainWindow.on('show', () => {
         isVisible = true;
+        updateTrayMenu();
     });
     mainWindow.on('hide', () => {
         isVisible = false;
+        updateTrayMenu();
     });
 
-    UPDATE_TRAY_EVENTS.forEach((eventName) => {
-        mainWindow.on(eventName as any, updateTrayMenu)
-    });
+    mainWindow.on("minimize", updateTrayMenu);
+    mainWindow.on("maximize", updateTrayMenu);
 }
 
 const updateTrayMenu = () => {

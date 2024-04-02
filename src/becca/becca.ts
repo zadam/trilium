@@ -1,6 +1,6 @@
 "use strict";
 
-import Becca = require("./becca-interface");
+import Becca from "./becca-interface";
 
 const becca = new Becca();
 

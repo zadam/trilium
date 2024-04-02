@@ -9,7 +9,7 @@ import cls = require('../../services/cls');
 import log = require('../../services/log');
 import protectedSessionService = require('../../services/protected_session');
 import blobService = require('../../services/blob');
-import Becca = require('../becca-interface');
+import Becca, { ConstructorData } from '../becca-interface';
 
 let becca: Becca | null = null;
 
@@ -18,26 +18,22 @@ interface ContentOpts {
     forceFrontendReload?: boolean;
 }
 
-interface ConstructorData<T extends AbstractBeccaEntity<T>> {
-    primaryKeyName: string;
-    entityName: string;
-    hashedProperties: (keyof T)[];
-}
-
 /**
  * Base class for all backend entities.
+ * 
+ * @type T the same entity type needed for self-reference in {@link ConstructorData}.
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
-    protected isSynced?: boolean;
-    
-    protected blobId?: string;
     
     utcDateCreated!: string;
+
     isProtected?: boolean;
+    isSynced?: boolean;
+    blobId?: string;
 
     protected beforeSaving() {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
@@ -46,7 +42,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         }
     }
 
-    protected getUtcDateChanged() {
+    getUtcDateChanged() {
         return this.utcDateModified || this.utcDateCreated;
     }
 
@@ -70,7 +66,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         });
     }
 
-    protected generateHash(isDeleted: boolean): string {
+    generateHash(isDeleted?: boolean): string {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
         let contentToHash = "";
 
@@ -95,6 +91,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     }
 
     abstract getPojo(): {};
+
+    abstract init(): void;
+
+    abstract updateFromRow(row: unknown): void;
 
     get isDeleted(): boolean {
         // TODO: Not sure why some entities don't implement it.

@@ -29,22 +29,30 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
                                             "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"]; }
 
     revisionId?: string;
-    noteId: string;
-    type: string;
-    mime: string;
-    isProtected: boolean;
-    title: string;
+    noteId!: string;
+    type!: string;
+    mime!: string;
+    isProtected!: boolean;
+    title!: string;
     blobId?: string;
     dateLastEdited?: string;
-    dateCreated: string;
+    dateCreated!: string;
     utcDateLastEdited?: string;
-    utcDateCreated: string;
+    utcDateCreated!: string;
     contentLength?: number;
     content?: string;
 
     constructor(row: RevisionRow, titleDecrypted = false) {
         super();
 
+        this.updateFromRow(row);
+        if (this.isProtected && !titleDecrypted) {
+            const decryptedTitle = protectedSessionService.isProtectedSessionAvailable() ? protectedSessionService.decryptString(this.title) : null;
+            this.title = decryptedTitle || "[protected]";
+        }
+    }
+
+    updateFromRow(row: RevisionRow) {
         this.revisionId = row.revisionId;
         this.noteId = row.noteId;
         this.type = row.type;
@@ -58,11 +66,10 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         this.utcDateCreated = row.utcDateCreated;
         this.utcDateModified = row.utcDateModified;
         this.contentLength = row.contentLength;
+    }
 
-        if (this.isProtected && !titleDecrypted) {
-            const decryptedTitle = protectedSessionService.isProtectedSessionAvailable() ? protectedSessionService.decryptString(this.title) : null;
-            this.title = decryptedTitle || "[protected]";
-        }
+    init() {
+        // Do nothing.
     }
 
     getNote() {
@@ -115,7 +122,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         }
     }
 
-    setContent(content: any, opts: ContentOpts = {}) {
+    setContent(content: string | Buffer, opts: ContentOpts = {}) {
         this._setContent(content, opts);
     }
 
@@ -156,6 +163,13 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     getAttachmentByTitle(title: string): BAttachment {
         // cannot use SQL to filter by title since it can be encrypted
         return this.getAttachments().filter(attachment => attachment.title === title)[0];
+    }
+
+    /**
+     * Revisions are not soft-deletable, they are immediately hard-deleted (erased).
+     */
+    eraseRevision() {
+        require("../../services/erase.js").eraseRevisions([this.revisionId]);
     }
 
     beforeSaving() {
