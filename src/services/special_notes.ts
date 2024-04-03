@@ -1,16 +1,20 @@
-const attributeService = require('./attributes');
-const dateNoteService = require('./date_notes');
-const becca = require('../becca/becca');
-const noteService = require('./notes');
-const dateUtils = require('./date_utils');
-const log = require('./log');
-const hoistedNoteService = require('./hoisted_note');
-const searchService = require('./search/services/search');
-const SearchContext = require('./search/search_context');
-const {LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT} = require('./hidden_subtree');
+import attributeService = require('./attributes');
+import dateNoteService = require('./date_notes');
+import becca = require('../becca/becca');
+import noteService = require('./notes');
+import dateUtils = require('./date_utils');
+import log = require('./log');
+import hoistedNoteService = require('./hoisted_note');
+import searchService = require('./search/services/search');
+import SearchContext = require('./search/search_context');
+import hiddenSubtree = require('./hidden_subtree');
+const { LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT } = hiddenSubtree;
 
-function getInboxNote(date) {
+function getInboxNote(date: string) {
     const workspaceNote = hoistedNoteService.getWorkspaceNote();
+    if (!workspaceNote) {
+        throw new Error("Unable to find workspace note");
+    }
 
     let inbox;
 
@@ -48,8 +52,9 @@ function createSqlConsole() {
     return note;
 }
 
-function saveSqlConsole(sqlConsoleNoteId) {
+function saveSqlConsole(sqlConsoleNoteId: string) {
     const sqlConsoleNote = becca.getNote(sqlConsoleNoteId);
+    if (!sqlConsoleNote) throw new Error(`Unable to find SQL console note ID: ${sqlConsoleNoteId}`);
     const today = dateUtils.localNowDate();
 
     const sqlConsoleHome =
@@ -59,7 +64,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
     const result = sqlConsoleNote.cloneTo(sqlConsoleHome.noteId);
 
     for (const parentBranch of sqlConsoleNote.getParentBranches()) {
-        if (parentBranch.parentNote.hasAncestor('_hidden')) {
+        if (parentBranch.parentNote?.hasAncestor('_hidden')) {
             parentBranch.markAsDeleted();
         }
     }
@@ -67,7 +72,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
     return result;
 }
 
-function createSearchNote(searchString, ancestorNoteId) {
+function createSearchNote(searchString: string, ancestorNoteId: string) {
     const {note} = noteService.createNewNote({
         parentNoteId: getMonthlyParentNoteId('_search', 'search'),
         title: `Search: ${searchString}`,
@@ -88,6 +93,9 @@ function createSearchNote(searchString, ancestorNoteId) {
 
 function getSearchHome() {
     const workspaceNote = hoistedNoteService.getWorkspaceNote();
+    if (!workspaceNote) {
+        throw new Error("Unable to find workspace note");
+    }
 
     if (!workspaceNote.isRoot()) {
         return workspaceNote.searchNoteInSubtree('#workspaceSearchHome')
@@ -101,14 +109,18 @@ function getSearchHome() {
     }
 }
 
-function saveSearchNote(searchNoteId) {
+function saveSearchNote(searchNoteId: string) {
     const searchNote = becca.getNote(searchNoteId);
+    if (!searchNote) {
+        throw new Error("Unable to find search note");
+    }
+
     const searchHome = getSearchHome();
 
     const result = searchNote.cloneTo(searchHome.noteId);
 
     for (const parentBranch of searchNote.getParentBranches()) {
-        if (parentBranch.parentNote.hasAncestor('_hidden')) {
+        if (parentBranch.parentNote?.hasAncestor('_hidden')) {
             parentBranch.markAsDeleted();
         }
     }
@@ -116,7 +128,7 @@ function saveSearchNote(searchNoteId) {
     return result;
 }
 
-function getMonthlyParentNoteId(rootNoteId, prefix) {
+function getMonthlyParentNoteId(rootNoteId: string, prefix: string) {
     const month = dateUtils.localNowDate().substring(0, 7);
     const labelName = `${prefix}MonthNote`;
 
@@ -138,7 +150,7 @@ function getMonthlyParentNoteId(rootNoteId, prefix) {
     return monthNote.noteId;
 }
 
-function createScriptLauncher(parentNoteId, forceNoteId = null) {
+function createScriptLauncher(parentNoteId: string, forceNoteId?: string) {
     const note = noteService.createNewNote({
         noteId: forceNoteId,
         title: "Script Launcher",
@@ -151,7 +163,13 @@ function createScriptLauncher(parentNoteId, forceNoteId = null) {
     return note;
 }
 
-function createLauncher({parentNoteId, launcherType, noteId}) {
+interface LauncherConfig {
+    parentNoteId: string;
+    launcherType: string;
+    noteId: string;
+}
+
+function createLauncher({ parentNoteId, launcherType, noteId }: LauncherConfig) {
     let note;
 
     if (launcherType === 'note') {
@@ -197,10 +215,10 @@ function createLauncher({parentNoteId, launcherType, noteId}) {
     };
 }
 
-function resetLauncher(noteId) {
+function resetLauncher(noteId: string) {
     const note = becca.getNote(noteId);
 
-    if (note.isLaunchBarConfig()) {
+    if (note?.isLaunchBarConfig()) {
         if (note) {
             if (noteId === '_lbRoot') {
                 // deleting hoisted notes are not allowed, so we just reset the children
@@ -228,7 +246,13 @@ function resetLauncher(noteId) {
  * Another use case was for script-packages (e.g. demo Task manager) which could this way register automatically/easily
  * into the launchbar - for this it's recommended to use backend API's createOrUpdateLauncher()
  */
-function createOrUpdateScriptLauncherFromApi(opts) {
+function createOrUpdateScriptLauncherFromApi(opts: {
+    id: string;
+    title: string;
+    action: string;
+    icon?: string;
+    shortcut?: string;
+}) {
     if (opts.id && !/^[a-z0-9]+$/i.test(opts.id)) {
         throw new Error(`Launcher ID can be alphanumeric only, '${opts.id}' given`);
     }
@@ -263,7 +287,7 @@ function createOrUpdateScriptLauncherFromApi(opts) {
     return launcherNote;
 }
 
-module.exports = {
+export = {
     getInboxNote,
     createSqlConsole,
     saveSqlConsole,

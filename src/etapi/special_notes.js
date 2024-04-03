@@ -1,4 +1,4 @@
-const specialNotesService = require('../services/special_notes.js');
+const specialNotesService = require('../services/special_notes');
 const dateNotesService = require('../services/date_notes');
 const eu = require('./etapi_utils');
 const mappers = require('./mappers.js');
@@ -17,7 +17,7 @@ function isValidDate(date) {
 
 function register(router) {
     eu.route(router, 'get', '/etapi/inbox/:date', (req, res, next) => {
-        const {date} = req.params;
+        const { date } = req.params;
 
         if (!isValidDate(date)) {
             throw getDateInvalidError(date);
@@ -28,7 +28,7 @@ function register(router) {
     });
 
     eu.route(router, 'get', '/etapi/calendar/days/:date', (req, res, next) => {
-        const {date} = req.params;
+        const { date } = req.params;
 
         if (!isValidDate(date)) {
             throw getDateInvalidError(date);
@@ -39,7 +39,7 @@ function register(router) {
     });
 
     eu.route(router, 'get', '/etapi/calendar/weeks/:date', (req, res, next) => {
-        const {date} = req.params;
+        const { date } = req.params;
 
         if (!isValidDate(date)) {
             throw getDateInvalidError(date);
@@ -50,7 +50,7 @@ function register(router) {
     });
 
     eu.route(router, 'get', '/etapi/calendar/months/:month', (req, res, next) => {
-        const {month} = req.params;
+        const { month } = req.params;
 
         if (!/[0-9]{4}-[0-9]{2}/.test(month)) {
             throw getMonthInvalidError(month);
@@ -61,7 +61,7 @@ function register(router) {
     });
 
     eu.route(router, 'get', '/etapi/calendar/years/:year', (req, res, next) => {
-        const {year} = req.params;
+        const { year } = req.params;
 
         if (!/[0-9]{4}/.test(year)) {
             throw getYearInvalidError(year);

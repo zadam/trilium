@@ -155,6 +155,7 @@ function getAndValidateParent(params: GetValidateParams) {
 interface NoteParams {
     /** optionally can force specific noteId */
     noteId?: string;
+    branchId?: string;
     parentNoteId: string;
     templateNoteId?: string;
     title: string;
