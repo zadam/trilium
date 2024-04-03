@@ -1,5 +1,5 @@
-const anonymizationService = require('./services/anonymization');
-const sqlInit = require('./services/sql_init');
+import anonymizationService = require('./services/anonymization');
+import sqlInit = require('./services/sql_init');
 require('./becca/entity_constructor');
 
 sqlInit.dbReady.then(async () => {
@@ -16,7 +16,7 @@ sqlInit.dbReady.then(async () => {
             console.log("Anonymization failed.");
         }
     }
-    catch (e) {
+    catch (e: any) {
         console.error(e.message, e.stack);
     }
 
