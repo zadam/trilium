@@ -873,7 +873,7 @@ function getUndeletedParentBranchIds(noteId: string, deleteId: string) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-function scanForLinks(note: BNote | null, content: string) {
+function scanForLinks(note: BNote, content: string) {
     if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }

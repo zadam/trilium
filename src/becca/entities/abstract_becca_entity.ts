@@ -11,7 +11,7 @@ import protectedSessionService = require('../../services/protected_session');
 import blobService = require('../../services/blob');
 import Becca, { ConstructorData } from '../becca-interface';
 
-let becca: Becca | null = null;
+let becca: Becca;
 
 interface ContentOpts {
     forceSave?: boolean;

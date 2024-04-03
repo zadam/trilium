@@ -80,7 +80,7 @@ function validateLocalDateTime(str: string | null | undefined) {
     }
 }
 
-function validateUtcDateTime(str?: string) {
+function validateUtcDateTime(str: string | undefined) {
     if (!str) {
         return;
     }

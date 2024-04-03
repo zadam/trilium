@@ -153,7 +153,7 @@ function buildRewardMap(note: BNote) {
 
 const mimeCache: Record<string, string> = {};
 
-function trimMime(mime?: string) {
+function trimMime(mime: string) {
     if (!mime || mime === 'text/html') {
         return;
     }

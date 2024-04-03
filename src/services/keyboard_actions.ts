@@ -623,7 +623,7 @@ function getKeyboardActions() {
 
     for (const option of optionService.getOptions()) {
         if (option.name.startsWith('keyboardShortcuts')) {
-            let actionName = option.name.substr(17);
+            let actionName = option.name.substring(17);
             actionName = actionName.charAt(0).toLowerCase() + actionName.slice(1);
 
             const action = actions.find(ea => ea.actionName === actionName);
