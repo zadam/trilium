@@ -11,7 +11,7 @@ import protectedSessionService = require('../../services/protected_session');
 import blobService = require('../../services/blob');
 import Becca, { ConstructorData } from '../becca-interface';
 
-let becca: Becca | null = null;
+let becca: Becca;
 
 interface ContentOpts {
     forceSave?: boolean;
@@ -92,7 +92,9 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     abstract getPojo(): {};
 
-    abstract init(): void;
+    init() {
+        // Do nothing by default, can be overriden in derived classes.
+    }
 
     abstract updateFromRow(row: unknown): void;
 

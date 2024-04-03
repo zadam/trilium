@@ -29,10 +29,6 @@ class BRecentNote extends AbstractBeccaEntity<BRecentNote> {
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
 
-    init(): void {
-        // Do nothing.
-    }
-
     getPojo() {
         return {
             noteId: this.noteId,

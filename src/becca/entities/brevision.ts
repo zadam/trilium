@@ -68,10 +68,6 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         this.contentLength = row.contentLength;
     }
 
-    init() {
-        // Do nothing.
-    }
-
     getNote() {
         return becca.notes[this.noteId];
     }
