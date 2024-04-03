@@ -17,6 +17,7 @@ interface NoteMeta {
     dirFileName?: string;
     /** this file should not be imported (e.g., HTML navigation) */
     noImport?: boolean;
+    isImportRoot?: boolean;
     attributes?: AttributeMeta[];
     attachments?: AttachmentMeta[];
     children?: NoteMeta[];

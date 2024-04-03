@@ -62,7 +62,7 @@ export interface BlobRow {
     utcDateModified: string;
 }
 
-export type AttributeType = "label" | "relation";
+export type AttributeType = "label" | "relation" | "label-definition" | "relation-definition";
 
 export interface AttributeRow {
     attributeId?: string;

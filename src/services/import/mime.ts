@@ -2,6 +2,7 @@
 
 import mimeTypes = require('mime-types');
 import path = require('path');
+import { TaskData } from '../task_context_interface';
 
 const CODE_MIME_TYPES: Record<string, boolean | string> = {
     'text/plain': true,
@@ -79,12 +80,7 @@ function getMime(fileName: string) {
     return mimeTypes.lookup(fileName);
 }
 
-interface GetTypeOpts {
-    textImportedAsText?: boolean;
-    codeImportedAsCode?: boolean;
-}
-
-function getType(options: GetTypeOpts, mime: string) {
+function getType(options: TaskData, mime: string) {
     mime = mime ? mime.toLowerCase() : '';
 
     if (options.textImportedAsText && (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime))) {
