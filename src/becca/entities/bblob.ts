@@ -26,10 +26,6 @@ class BBlob extends AbstractBeccaEntity<BBlob> {
         this.utcDateModified = row.utcDateModified;
     }
 
-    init() {
-        // Nothing to do.
-    }
-
     getPojo() {
         return {
             blobId: this.blobId,

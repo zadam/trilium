@@ -92,7 +92,9 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     abstract getPojo(): {};
 
-    abstract init(): void;
+    init() {
+        // Do nothing by default, can be overriden in derived classes.
+    }
 
     abstract updateFromRow(row: unknown): void;
 
