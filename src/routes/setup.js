@@ -1,7 +1,7 @@
 "use strict";
 
 const sqlInit = require('../services/sql_init');
-const setupService = require('../services/setup.js');
+const setupService = require('../services/setup');
 const utils = require('../services/utils');
 const assetPath = require('../services/asset_path');
 const appPath = require('../services/app_path');
@@ -10,7 +10,7 @@ function setupPage(req, res) {
     if (sqlInit.isDbInitialized()) {
         if (utils.isElectron()) {
             const windowService = require('../services/window');
-            const {app} = require('electron');
+            const { app } = require('electron');
             windowService.createMainWindow(app);
             windowService.closeSetupWindow();
         }

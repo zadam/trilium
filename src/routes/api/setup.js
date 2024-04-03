@@ -1,7 +1,7 @@
 "use strict";
 
 const sqlInit = require('../../services/sql_init');
-const setupService = require('../../services/setup.js');
+const setupService = require('../../services/setup');
 const log = require('../../services/log');
 const appInfo = require('../../services/app_info');
 
@@ -24,7 +24,7 @@ function setupSyncFromServer(req) {
 }
 
 function saveSyncSeed(req) {
-    const {options, syncVersion} = req.body;
+    const { options, syncVersion } = req.body;
 
     if (appInfo.syncVersion !== syncVersion) {
         const message = `Could not setup sync since local sync protocol version is ${appInfo.syncVersion} while remote is ${syncVersion}. To fix this issue, use same Trilium version on all instances.`;
