@@ -32,10 +32,6 @@ class BOption extends AbstractBeccaEntity<BOption> {
         this.utcDateModified = row.utcDateModified;
     }
 
-    init(): void {
-        // Do nothing.
-    }
-
     beforeSaving() {
         super.beforeSaving();
 

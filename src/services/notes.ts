@@ -745,7 +745,7 @@ function saveRevisionIfNeeded(note: BNote) {
     }
 }
 
-function updateNoteData(noteId: string, content: string, attachments: BAttachment[] = []) {
+function updateNoteData(noteId: string, content: string, attachments: AttachmentRow[] = []) {
     const note = becca.getNote(noteId);
 
     if (!note || !note.isContentAvailable()) {
@@ -761,11 +761,7 @@ function updateNoteData(noteId: string, content: string, attachments: BAttachmen
     if (attachments?.length > 0) {
         const existingAttachmentsByTitle = utils.toMap(note.getAttachments({includeContentLength: false}), 'title');
 
-        for (const attachment of attachments) {
-            // TODO: The content property was extracted directly instead of `getContent`. To investigate.
-            const {attachmentId, role, mime, title, position} = attachment;
-            const content = attachment.getContent();
-
+        for (const {attachmentId, role, mime, title, position, content} of attachments) {
             if (attachmentId || !(title in existingAttachmentsByTitle)) {
                 note.saveAttachment({attachmentId, role, mime, title, content, position});
             } else {
@@ -773,7 +769,9 @@ function updateNoteData(noteId: string, content: string, attachments: BAttachmen
                 existingAttachment.role = role;
                 existingAttachment.mime = mime;
                 existingAttachment.position = position;
-                existingAttachment.setContent(content, {forceSave: true});
+                if (content) {
+                    existingAttachment.setContent(content, {forceSave: true});
+                }
             }
         }
     }
@@ -876,7 +874,7 @@ function getUndeletedParentBranchIds(noteId: string, deleteId: string) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-function scanForLinks(note: BNote | null, content: string) {
+function scanForLinks(note: BNote, content: string) {
     if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }

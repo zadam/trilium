@@ -5,7 +5,7 @@ export interface AttachmentRow {
     ownerId?: string;
     role: string;
     mime: string;
-    title?: string;
+    title: string;
     position?: number;
     blobId?: string;
     isProtected?: boolean;

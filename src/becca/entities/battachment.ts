@@ -83,10 +83,6 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         this.contentLength = row.contentLength;
     }
 
-    init(): void {
-        // Do nothing.
-    }
-
     copy(): BAttachment {
         return new BAttachment({
             ownerId: this.ownerId,
