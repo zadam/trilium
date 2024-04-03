@@ -51,7 +51,7 @@ function getOptionBool(name: string): boolean {
     return val === 'true';
 }
 
-function setOption(name: string, value: string | boolean) {
+function setOption(name: string, value: string | number | boolean) {
     if (value === true || value === false) {
         value = value.toString();
     }

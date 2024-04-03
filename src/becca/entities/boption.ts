@@ -13,7 +13,7 @@ class BOption extends AbstractBeccaEntity<BOption> {
     static get hashedProperties() { return ["name", "value"]; }
 
     name!: string;
-    value!: string;
+    value!: string | number;
     isSynced!: boolean;
 
     constructor(row?: OptionRow) {

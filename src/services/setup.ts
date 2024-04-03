@@ -1,15 +1,16 @@
-const syncService = require('./sync');
-const log = require('./log');
-const sqlInit = require('./sql_init');
-const optionService = require('./options');
-const syncOptions = require('./sync_options');
-const request = require('./request');
-const appInfo = require('./app_info');
-const utils = require('./utils');
-const becca = require('../becca/becca');
+import syncService = require('./sync');
+import log = require('./log');
+import sqlInit = require('./sql_init');
+import optionService = require('./options');
+import syncOptions = require('./sync_options');
+import request = require('./request');
+import appInfo = require('./app_info');
+import utils = require('./utils');
+import becca = require('../becca/becca');
+import { SetupStatusResponse, SetupSyncSeedResponse } from './api-interface';
 
 async function hasSyncServerSchemaAndSeed() {
-    const response = await requestToSyncServer('GET', '/api/setup/status');
+    const response = await requestToSyncServer<SetupStatusResponse>('GET', '/api/setup/status');
 
     if (response.syncVersion !== appInfo.syncVersion) {
         throw new Error(`Could not setup sync since local sync protocol version is ${appInfo.syncVersion} while remote is ${response.syncVersion}. To fix this issue, use same Trilium version on all instances.`);
@@ -32,7 +33,7 @@ function triggerSync() {
 async function sendSeedToSyncServer() {
     log.info("Initiating sync to server");
 
-    await requestToSyncServer('POST', '/api/setup/sync-seed', {
+    await requestToSyncServer<void>('POST', '/api/setup/sync-seed', {
         options: getSyncSeedOptions(),
         syncVersion: appInfo.syncVersion
     });
@@ -43,7 +44,7 @@ async function sendSeedToSyncServer() {
     optionService.setOption('lastSyncedPull', 0);
 }
 
-async function requestToSyncServer(method, path, body = null) {
+async function requestToSyncServer<T>(method: string, path: string, body?: string | {}): Promise<T> {
     const timeout = syncOptions.getSyncTimeout();
 
     return await utils.timeLimit(request.exec({
@@ -52,10 +53,10 @@ async function requestToSyncServer(method, path, body = null) {
         body,
         proxy: syncOptions.getSyncProxy(),
         timeout: timeout
-    }), timeout);
+    }), timeout) as T;
 }
 
-async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
+async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string, password: string) {
     if (sqlInit.isDbInitialized()) {
         return {
             result: 'failure',
@@ -67,7 +68,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
         log.info("Getting document options FROM sync server.");
 
         // the response is expected to contain documentId and documentSecret options
-        const resp = await request.exec({
+        const resp = await request.exec<SetupSyncSeedResponse>({
             method: 'get',
             url: `${syncServerHost}/api/setup/sync-seed`,
             auth: { password },
@@ -92,7 +93,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
 
         return { result: 'success' };
     }
-    catch (e) {
+    catch (e: any) {
         log.error(`Sync failed: '${e.message}', stack: ${e.stack}`);
 
         return {
