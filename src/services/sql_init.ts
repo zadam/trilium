@@ -179,7 +179,7 @@ dbReady.then(() => {
 });
 
 function getDbSize() {
-    return sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()");
+    return sql.getValue<number>("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()");
 }
 
 log.info(`DB size: ${getDbSize()} KB`);

@@ -282,7 +282,7 @@ async function checkContentHash(syncContext: SyncContext) {
 
     if (failedChecks.length > 0) {
         // before re-queuing sectors, make sure the entity changes are correct
-        const consistencyChecks = require('./consistency_checks.js');
+        const consistencyChecks = require('./consistency_checks');
         consistencyChecks.runEntityChangesChecks();
 
         await syncRequest(syncContext, 'POST', `/api/sync/check-entity-changes`);

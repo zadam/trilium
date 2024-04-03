@@ -132,7 +132,7 @@ function getChanged(req) {
 const partialRequests = {};
 
 function update(req) {
-    let {body} = req;
+    let { body } = req;
 
     const pageCount = parseInt(req.get('pageCount'));
     const pageIndex = parseInt(req.get('pageIndex'));
@@ -164,7 +164,7 @@ function update(req) {
         }
     }
 
-    const {entities, instanceId} = body;
+    const { entities, instanceId } = body;
 
     sql.transactional(() => syncUpdateService.updateEntities(entities, instanceId));
 }
@@ -193,7 +193,7 @@ function queueSector(req) {
 }
 
 function checkEntityChanges() {
-    require('../../services/consistency_checks.js').runEntityChangesChecks();
+    require('../../services/consistency_checks').runEntityChangesChecks();
 }
 
 module.exports = {
