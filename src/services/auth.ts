@@ -7,7 +7,7 @@ import utils = require('./utils');
 import passwordEncryptionService = require('./encryption/password_encryption');
 import config = require('./config');
 import passwordService = require('./encryption/password');
-import type { Request } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
@@ -21,14 +21,7 @@ interface AppRequest extends Request {
     }
 }
 
-interface Response {
-    redirect(url: string): void;
-    setHeader(key: string, value: string): any
-}
-
-type Callback = () => void;
-
-function checkAuth(req: AppRequest, res: Response, next: Callback) {
+function checkAuth(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
@@ -42,7 +35,7 @@ function checkAuth(req: AppRequest, res: Response, next: Callback) {
 
 // for electron things which need network stuff
 //  currently, we're doing that for file upload because handling form data seems to be difficult
-function checkApiAuthOrElectron(req: AppRequest, res: Response, next: Callback) {
+function checkApiAuthOrElectron(req: AppRequest, res: Response, next: NextFunction) {
     if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
         reject(req, res, "Logged in session not found");
     }
@@ -51,7 +44,7 @@ function checkApiAuthOrElectron(req: AppRequest, res: Response, next: Callback) 
     }
 }
 
-function checkApiAuth(req: AppRequest, res: Response, next: Callback) {
+function checkApiAuth(req: AppRequest, res: Response, next: NextFunction) {
     if (!req.session.loggedIn && !noAuthentication) {
         reject(req, res, "Logged in session not found");
     }
@@ -60,7 +53,7 @@ function checkApiAuth(req: AppRequest, res: Response, next: Callback) {
     }
 }
 
-function checkAppInitialized(req: AppRequest, res: Response, next: Callback) {
+function checkAppInitialized(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
@@ -69,7 +62,7 @@ function checkAppInitialized(req: AppRequest, res: Response, next: Callback) {
     }
 }
 
-function checkPasswordSet(req: AppRequest, res: Response, next: Callback) {
+function checkPasswordSet(req: AppRequest, res: Response, next: NextFunction) {
     if (!utils.isElectron() && !passwordService.isPasswordSet()) {
         res.redirect("set-password");
     } else {
@@ -77,7 +70,7 @@ function checkPasswordSet(req: AppRequest, res: Response, next: Callback) {
     }
 }
 
-function checkPasswordNotSet(req: AppRequest, res: Response, next: Callback) {
+function checkPasswordNotSet(req: AppRequest, res: Response, next: NextFunction) {
     if (!utils.isElectron() && passwordService.isPasswordSet()) {
         res.redirect("login");
     } else {
@@ -85,7 +78,7 @@ function checkPasswordNotSet(req: AppRequest, res: Response, next: Callback) {
     }
 }
 
-function checkAppNotInitialized(req: AppRequest, res: Response, next: Callback) {
+function checkAppNotInitialized(req: AppRequest, res: Response, next: NextFunction) {
     if (sqlInit.isDbInitialized()) {
         reject(req, res, "App already initialized.");
     }
@@ -94,7 +87,7 @@ function checkAppNotInitialized(req: AppRequest, res: Response, next: Callback) 
     }
 }
 
-function checkEtapiToken(req: AppRequest, res: Response, next: Callback) {
+function checkEtapiToken(req: AppRequest, res: Response, next: NextFunction) {
     if (etapiTokenService.isValidAuthHeader(req.headers.authorization)) {
         next();
     }
@@ -111,7 +104,7 @@ function reject(req: AppRequest, res: Response, message: string) {
         .send(message);
 }
 
-function checkCredentials(req: AppRequest, res: Response, next: Callback) {
+function checkCredentials(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.setHeader("Content-Type", "text/plain")
             .status(400)
