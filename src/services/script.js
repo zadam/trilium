@@ -1,4 +1,4 @@
-const ScriptContext = require('./script_context.js');
+const ScriptContext = require('./script_context');
 const cls = require('./cls');
 const log = require('./log');
 const becca = require('../becca/becca');
@@ -76,7 +76,7 @@ function executeScript(script, params, startNoteId, currentNoteId, originEntityN
 }
 
 function execute(ctx, script) {
-    return function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx);
+    return function () { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx);
 }
 
 function getParams(params) {

@@ -33,6 +33,7 @@ import BOption = require('../becca/entities/boption');
 import { AttributeRow, AttributeType, NoteType } from '../becca/entities/rows';
 import Becca from '../becca/becca-interface';
 import { NoteParams } from './note-interface';
+import { ApiParams } from './backend_script_api_interface';
 
 
 /**
@@ -45,11 +46,6 @@ import { NoteParams } from './note-interface';
  * @global
  * @var {BackendScriptApi} api
  */
-
-interface ApiParams {
-    startNote: BNote;
-    originEntity: AbstractBeccaEntity<any>;
-}
 
 interface SearchParams {
     includeArchivedNotes?: boolean;
@@ -384,6 +380,7 @@ interface Api {
     };
 }
 
+// TODO: Convert to class.
 /**
  * <p>This is the main backend API interface for scripts. All the properties and methods are published in the "api" object
  * available in the JS backend notes. You can use e.g. <code>api.log(api.startNote.title);</code></p>
@@ -654,4 +651,6 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
     }
 }
 
-export = BackendScriptApi;
+export = BackendScriptApi as any as {
+    new (currentNote: BNote, apiParams: ApiParams): Api
+};
