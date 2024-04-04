@@ -1,5 +1,5 @@
 const utils = require('./utils');
-const BackendScriptApi = require('./backend_script_api.js');
+const BackendScriptApi = require('./backend_script_api');
 
 function ScriptContext(allNotes, apiParams = {}) {
     this.modules = {};

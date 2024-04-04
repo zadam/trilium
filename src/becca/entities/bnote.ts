@@ -1407,7 +1407,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * @param name - relation name
      * @param value - relation value (noteId)
      */
-    setRelation(name: string, value: string) {
+    setRelation(name: string, value?: string) {
         return this.setAttribute(RELATION, name, value);
     }
 
