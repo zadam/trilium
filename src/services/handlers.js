@@ -1,5 +1,5 @@
 const eventService = require('./events');
-const scriptService = require('./script.js');
+const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
@@ -42,7 +42,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
     }
 });
 
-eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED ], ({ entityName, entity }) => {
+eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED], ({ entityName, entity }) => {
     if (entityName === 'attributes') {
         runAttachedRelations(entity.getNote(), 'runOnAttributeChange', entity);
 
@@ -58,7 +58,7 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
     }
 });
 
-eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
+eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     if (entityName === 'branches') {
         const parentNote = becca.getNote(entity.parentNoteId);
 
@@ -74,7 +74,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
     }
 });
 
-eventService.subscribe(eventService.NOTE_CONTENT_CHANGE, ({entity}) => {
+eventService.subscribe(eventService.NOTE_CONTENT_CHANGE, ({ entity }) => {
     runAttachedRelations(entity, 'runOnNoteContentChange', entity);
 });
 

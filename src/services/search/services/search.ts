@@ -78,7 +78,7 @@ function searchFromRelation(note: BNote, relationName: string) {
         return [];
     }
 
-    const scriptService = require('../../script.js'); // to avoid circular dependency
+    const scriptService = require('../../script'); // TODO: to avoid circular dependency
     const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {

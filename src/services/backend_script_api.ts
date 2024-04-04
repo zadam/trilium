@@ -63,7 +63,7 @@ interface Api {
      * Note where the script started executing (entrypoint).
      * As an analogy, in C this would be the file which contains the main() function of the current process.
      */
-    startNote: BNote;
+    startNote?: BNote;
 
     /**
      * Note where the script is currently executing. This comes into play when your script is spread in multiple code
@@ -76,7 +76,7 @@ interface Api {
     /**
      * Entity whose event triggered this execution
      */
-    originEntity: AbstractBeccaEntity<any>;
+    originEntity?: AbstractBeccaEntity<any>;
     
     /**
      * Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
@@ -507,6 +507,10 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
     this.log = message => {
         log.info(message);
 
+        if (!this.startNote) {
+            return;
+        }
+
         const { noteId } = this.startNote;
 
         this.logMessages[noteId] = this.logMessages[noteId] || [];
@@ -621,10 +625,10 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
             type: 'execute-script',
             script: script,
             params: prepareParams(params),
-            startNoteId: this.startNote.noteId,
+            startNoteId: this.startNote?.noteId,
             currentNoteId: this.currentNote.noteId,
             originEntityName: "notes", // currently there's no other entity on the frontend which can trigger event
-            originEntityId: ("noteId" in this.originEntity && (this.originEntity as BNote)?.noteId) || null
+            originEntityId: (this.originEntity && "noteId" in this.originEntity && (this.originEntity as BNote)?.noteId) || null
         });
 
         function prepareParams(params: any[]) {

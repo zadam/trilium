@@ -1,4 +1,4 @@
-const scriptService = require('./script.js');
+const scriptService = require('./script');
 const cls = require('./cls');
 const sqlInit = require('./sql_init');
 const config = require('./config');
@@ -34,7 +34,7 @@ function runNotesWithLabel(runAttrValue) {
         if ((runOnInstances.length === 0 || runOnInstances.includes(instanceName))
             && (runAtHours.length === 0 || runAtHours.includes(currentHours))
         ) {
-            scriptService.executeNoteNoException(note, {originEntity: note});
+            scriptService.executeNoteNoException(note, { originEntity: note });
         }
     }
 }
