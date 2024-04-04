@@ -668,7 +668,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * @param name - relation name to filter
      * @returns all note's relations (attributes with type relation), excluding inherited ones
      */
-    getOwnedRelations(name: string): BAttribute[] {
+    getOwnedRelations(name?: string | null): BAttribute[] {
         return this.getOwnedAttributes(RELATION, name);
     }
 

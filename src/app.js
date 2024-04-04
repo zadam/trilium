@@ -7,7 +7,7 @@ const compression = require('compression');
 const sessionParser = require('./routes/session_parser.js');
 const utils = require('./services/utils');
 
-require('./services/handlers.js');
+require('./services/handlers');
 require('./becca/becca_loader');
 
 const app = express();

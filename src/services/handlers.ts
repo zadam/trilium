@@ -1,13 +1,18 @@
-const eventService = require('./events');
-const scriptService = require('./script');
-const treeService = require('./tree');
-const noteService = require('./notes');
-const becca = require('../becca/becca');
-const BAttribute = require('../becca/entities/battribute');
-const hiddenSubtreeService = require('./hidden_subtree');
-const oneTimeTimer = require('./one_time_timer');
+import eventService = require('./events');
+import scriptService = require('./script');
+import treeService = require('./tree');
+import noteService = require('./notes');
+import becca = require('../becca/becca');
+import BAttribute = require('../becca/entities/battribute');
+import hiddenSubtreeService = require('./hidden_subtree');
+import oneTimeTimer = require('./one_time_timer');
+import BNote = require('../becca/entities/bnote');
+import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
+import { DefinitionObject } from './promoted_attribute_definition_interface';
 
-function runAttachedRelations(note, relationName, originEntity) {
+type Handler = (definition: DefinitionObject, note: BNote, targetNote: BNote) => void;
+
+function runAttachedRelations(note: BNote, relationName: string, originEntity: AbstractBeccaEntity<any>) {
     if (!note) {
         return;
     }
@@ -16,7 +21,7 @@ function runAttachedRelations(note, relationName, originEntity) {
     const notesToRun = new Set(
         note.getRelations(relationName)
             .map(relation => relation.getTargetNote())
-            .filter(note => !!note)
+            .filter(note => !!note) as BNote[]
     );
 
     for (const noteToRun of notesToRun) {
@@ -84,6 +89,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
 
         if (entity.type === 'relation' && entity.name === 'template') {
             const note = becca.getNote(entity.noteId);
+            if (!note) {
+                return;
+            }
 
             const templateNote = becca.getNote(entity.value);
 
@@ -94,6 +102,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             const content = note.getContent();
 
             if (["text", "code"].includes(note.type)
+                && typeof content === "string"
                 // if the note has already content we're not going to overwrite it with template's one
                 && (!content || content.trim().length === 0)
                 && templateNote.hasStringContent()) {
@@ -138,7 +147,7 @@ eventService.subscribe(eventService.CHILD_NOTE_CREATED, ({ parentNote, childNote
     runAttachedRelations(parentNote, 'runOnChildNoteCreation', childNote);
 });
 
-function processInverseRelations(entityName, entity, handler) {
+function processInverseRelations(entityName: string, entity: BAttribute, handler: Handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
         const note = entity.getNote();
         const relDefinitions = note.getLabels(`relation:${entity.name}`);
@@ -149,13 +158,15 @@ function processInverseRelations(entityName, entity, handler) {
             if (definition.inverseRelation && definition.inverseRelation.trim()) {
                 const targetNote = entity.getTargetNote();
 
-                handler(definition, note, targetNote);
+                if (targetNote) {
+                    handler(definition, note, targetNote);
+                }
             }
         }
     }
 }
 
-function handleSortedAttribute(entity) {
+function handleSortedAttribute(entity: BAttribute) {
     treeService.sortNotesIfNeeded(entity.noteId);
 
     if (entity.isInheritable) {
@@ -169,7 +180,7 @@ function handleSortedAttribute(entity) {
     }
 }
 
-function handleMaybeSortingLabel(entity) {
+function handleMaybeSortingLabel(entity: BAttribute) {
     // check if this label is used for sorting, if yes force re-sort
     const note = becca.notes[entity.noteId];
 
@@ -203,7 +214,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
             new BAttribute({
                 noteId: targetNote.noteId,
                 type: 'relation',
-                name: definition.inverseRelation,
+                name: definition.inverseRelation || "",
                 value: note.noteId,
                 isInheritable: entity.isInheritable
             }).save();
@@ -215,7 +226,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
 });
 
 eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => {
-    processInverseRelations(entityName, entity, (definition, note, targetNote) => {
+    processInverseRelations(entityName, entity, (definition: DefinitionObject, note: BNote, targetNote: BNote) => {
         // if one inverse attribute is deleted, then the other should be deleted as well
         const relations = targetNote.getOwnedRelations(definition.inverseRelation);
 
@@ -238,6 +249,6 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
     }
 });
 
-module.exports = {
+export = {
     runAttachedRelations
 };
