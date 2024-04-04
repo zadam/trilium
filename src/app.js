@@ -51,7 +51,7 @@ require('./services/backup');
 // trigger consistency checks timer
 require('./services/consistency_checks');
 
-require('./services/scheduler.js');
+require('./services/scheduler');
 
 if (utils.isElectron()) {
     require('@electron/remote/main').initialize();

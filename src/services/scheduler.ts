@@ -1,28 +1,24 @@
-const scriptService = require('./script');
-const cls = require('./cls');
-const sqlInit = require('./sql_init');
-const config = require('./config');
-const log = require('./log');
-const attributeService = require('../services/attributes');
-const protectedSessionService = require('../services/protected_session');
-const hiddenSubtreeService = require('./hidden_subtree');
+import scriptService = require('./script');
+import cls = require('./cls');
+import sqlInit = require('./sql_init');
+import config = require('./config');
+import log = require('./log');
+import attributeService = require('../services/attributes');
+import protectedSessionService = require('../services/protected_session');
+import hiddenSubtreeService = require('./hidden_subtree');
+import BNote = require('../becca/entities/bnote');
 
-/**
- * @param {BNote} note
- * @return {int[]}
- */
-function getRunAtHours(note) {
+function getRunAtHours(note: BNote): number[] {
     try {
         return note.getLabelValues('runAtHour').map(hour => parseInt(hour));
-    }
-    catch (e) {
+    } catch (e: any) {
         log.error(`Could not parse runAtHour for note ${note.noteId}: ${e.message}`);
 
         return [];
     }
 }
 
-function runNotesWithLabel(runAttrValue) {
+function runNotesWithLabel(runAttrValue: string) {
     const instanceName = config.General ? config.General.instanceName : null;
     const currentHours = new Date().getHours();
     const notes = attributeService.getNotesWithLabel('run', runAttrValue);
