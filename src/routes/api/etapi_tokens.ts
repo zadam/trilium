@@ -1,4 +1,5 @@
-const etapiTokenService = require('../../services/etapi_tokens');
+import { Request } from 'express';
+import etapiTokenService = require('../../services/etapi_tokens');
 
 function getTokens() {
     const tokens = etapiTokenService.getTokens();
@@ -8,19 +9,19 @@ function getTokens() {
     return tokens;
 }
 
-function createToken(req) {
+function createToken(req: Request) {
     return etapiTokenService.createToken(req.body.tokenName);
 }
 
-function patchToken(req) {
+function patchToken(req: Request) {
     etapiTokenService.renameToken(req.params.etapiTokenId, req.body.name);
 }
 
-function deleteToken(req) {
+function deleteToken(req: Request) {
     etapiTokenService.deleteToken(req.params.etapiTokenId);
 }
 
-module.exports = {
+export = {
     getTokens,
     createToken,
     patchToken,
