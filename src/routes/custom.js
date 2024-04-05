@@ -1,5 +1,5 @@
 const log = require('../services/log');
-const fileService = require('./api/files.js');
+const fileService = require('./api/files');
 const scriptService = require('../services/script');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
