@@ -137,7 +137,10 @@ export default class Becca {
         return branch;
     }
 
-    getAttribute(attributeId: string): BAttribute | null {
+    getAttribute(attributeId: string | null): BAttribute | null {
+        if (!attributeId) {
+            return null;
+        }
         return this.attributes[attributeId];
     }
 
