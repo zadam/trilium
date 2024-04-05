@@ -242,7 +242,7 @@ export default class Becca {
         return (this as any)[camelCaseEntityName][entityId];
     }
 
-    getRecentNotesFromQuery(query: string, params = []): BRecentNote[] {
+    getRecentNotesFromQuery(query: string, params: string[] = []): BRecentNote[] {
         const rows = sql.getRows(query, params);
 
         const BRecentNote = require('./entities/brecent_note'); // avoiding circular dependency problems

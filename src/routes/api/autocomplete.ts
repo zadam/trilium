@@ -1,21 +1,26 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service');
-const searchService = require('../../services/search/services/search');
-const log = require('../../services/log');
-const utils = require('../../services/utils');
-const cls = require('../../services/cls');
-const becca = require('../../becca/becca');
+import beccaService = require('../../becca/becca_service');
+import searchService = require('../../services/search/services/search');
+import log = require('../../services/log');
+import utils = require('../../services/utils');
+import cls = require('../../services/cls');
+import becca = require('../../becca/becca');
+import { Request } from 'express';
+import ValidationError = require('../../errors/validation_error');
 
-function getAutocomplete(req) {
-    const query = req.query.query.trim();
+function getAutocomplete(req: Request) {
+    if (typeof req.query.query !== "string") {
+        throw new ValidationError("Invalid query data type.");
+    }
+    const query = (req.query.query || "").trim();
     const activeNoteId = req.query.activeNoteId || 'none';
 
     let results;
 
     const timestampStarted = Date.now();
 
-    if (query.length === 0) {
+    if (query.length === 0 && typeof activeNoteId === "string") {
         results = getRecentNotes(activeNoteId);
     }
     else {
@@ -31,7 +36,7 @@ function getAutocomplete(req) {
     return results;
 }
 
-function getRecentNotes(activeNoteId) {
+function getRecentNotes(activeNoteId: string) {
     let extraCondition = '';
     const params = [activeNoteId];
 
@@ -70,6 +75,6 @@ function getRecentNotes(activeNoteId) {
     });
 }
 
-module.exports = {
+export = {
     getAutocomplete
 };
