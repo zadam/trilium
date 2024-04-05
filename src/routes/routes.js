@@ -24,7 +24,7 @@ const indexRoute = require('./index.js');
 // API routes
 const treeApiRoute = require('./api/tree.js');
 const notesApiRoute = require('./api/notes.js');
-const branchesApiRoute = require('./api/branches.js');
+const branchesApiRoute = require('./api/branches');
 const attachmentsApiRoute = require('./api/attachments');
 const autocompleteApiRoute = require('./api/autocomplete');
 const cloningApiRoute = require('./api/cloning');
@@ -47,7 +47,7 @@ const scriptRoute = require('./api/script.js');
 const senderRoute = require('./api/sender.js');
 const filesRoute = require('./api/files.js');
 const searchRoute = require('./api/search');
-const bulkActionRoute = require('./api/bulk_action.js');
+const bulkActionRoute = require('./api/bulk_action');
 const specialNotesRoute = require('./api/special_notes');
 const noteMapRoute = require('./api/note_map.js');
 const clipperRoute = require('./api/clipper.js');

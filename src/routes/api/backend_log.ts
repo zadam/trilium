@@ -2,7 +2,7 @@
 
 import fs = require('fs');
 import dateUtils = require('../../services/date_utils');
-import dataDir = require('../../services/data_dir.js');
+import dataDir = require('../../services/data_dir');
 const { LOG_DIR } = dataDir;
 
 function getBackendLog() {

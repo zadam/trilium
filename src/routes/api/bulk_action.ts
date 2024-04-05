@@ -1,17 +1,18 @@
-const becca = require('../../becca/becca');
-const bulkActionService = require('../../services/bulk_actions');
+import { Request } from 'express';
+import becca = require('../../becca/becca');
+import bulkActionService = require('../../services/bulk_actions');
 
-function execute(req) {
+function execute(req: Request) {
     const {noteIds, includeDescendants} = req.body;
 
     const affectedNoteIds = getAffectedNoteIds(noteIds, includeDescendants);
 
-    const bulkActionNote = becca.getNote('_bulkAction');
+    const bulkActionNote = becca.getNoteOrThrow('_bulkAction');
 
     bulkActionService.executeActions(bulkActionNote, affectedNoteIds);
 }
 
-function getAffectedNoteCount(req) {
+function getAffectedNoteCount(req: Request) {
     const {noteIds, includeDescendants} = req.body;
 
     const affectedNoteIds = getAffectedNoteIds(noteIds, includeDescendants);
@@ -21,8 +22,8 @@ function getAffectedNoteCount(req) {
     };
 }
 
-function getAffectedNoteIds(noteIds, includeDescendants) {
-    const affectedNoteIds = new Set();
+function getAffectedNoteIds(noteIds: string[], includeDescendants: boolean) {
+    const affectedNoteIds = new Set<string>();
 
     for (const noteId of noteIds) {
         const note = becca.getNote(noteId);
@@ -42,7 +43,7 @@ function getAffectedNoteIds(noteIds, includeDescendants) {
     return affectedNoteIds;
 }
 
-module.exports = {
+export = {
     execute,
     getAffectedNoteCount
 };
