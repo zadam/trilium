@@ -1,23 +1,24 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const entityChangesService = require('../../services/entity_changes');
-const treeService = require('../../services/tree');
-const eraseService = require('../../services/erase');
-const becca = require('../../becca/becca');
-const TaskContext = require('../../services/task_context');
-const branchService = require('../../services/branches');
-const log = require('../../services/log');
-const ValidationError = require('../../errors/validation_error');
-const eventService = require("../../services/events");
+import sql = require('../../services/sql');
+import utils = require('../../services/utils');
+import entityChangesService = require('../../services/entity_changes');
+import treeService = require('../../services/tree');
+import eraseService = require('../../services/erase');
+import becca = require('../../becca/becca');
+import TaskContext = require('../../services/task_context');
+import branchService = require('../../services/branches');
+import log = require('../../services/log');
+import ValidationError = require('../../errors/validation_error');
+import eventService = require("../../services/events");
+import { Request } from 'express';
 
 /**
  * Code in this file deals with moving and cloning branches. The relationship between note and parent note is unique
  * for not deleted branches. There may be multiple deleted note-parent note relationships.
  */
 
-function moveBranchToParent(req) {
+function moveBranchToParent(req: Request) {
     const {branchId, parentBranchId} = req.params;
 
     const branchToMove = becca.getBranch(branchId);
@@ -30,7 +31,7 @@ function moveBranchToParent(req) {
     return branchService.moveBranchToBranch(branchToMove, targetParentBranch, branchId);
 }
 
-function moveBranchBeforeNote(req) {
+function moveBranchBeforeNote(req: Request) {
     const {branchId, beforeBranchId} = req.params;
 
     const branchToMove = becca.getBranchOrThrow(branchId);
@@ -51,7 +52,7 @@ function moveBranchBeforeNote(req) {
         [beforeBranch.parentNoteId, originalBeforeNotePosition]);
 
     // also need to update becca positions
-    const parentNote = becca.getNote(beforeBranch.parentNoteId);
+    const parentNote = becca.getNoteOrThrow(beforeBranch.parentNoteId);
 
     for (const childBranch of parentNote.getChildBranches()) {
         if (childBranch.notePosition >= originalBeforeNotePosition) {
@@ -80,11 +81,11 @@ function moveBranchBeforeNote(req) {
     return { success: true };
 }
 
-function moveBranchAfterNote(req) {
+function moveBranchAfterNote(req: Request) {
     const {branchId, afterBranchId} = req.params;
 
-    const branchToMove = becca.getBranch(branchId);
-    const afterNote = becca.getBranch(afterBranchId);
+    const branchToMove = becca.getBranchOrThrow(branchId);
+    const afterNote = becca.getBranchOrThrow(afterBranchId);
 
     const validationResult = treeService.validateParentChild(afterNote.parentNoteId, branchToMove.noteId, branchId);
 
@@ -100,7 +101,7 @@ function moveBranchAfterNote(req) {
         [afterNote.parentNoteId, originalAfterNotePosition]);
 
     // also need to update becca positions
-    const parentNote = becca.getNote(afterNote.parentNoteId);
+    const parentNote = becca.getNoteOrThrow(afterNote.parentNoteId);
 
     for (const childBranch of parentNote.getChildBranches()) {
         if (childBranch.notePosition > originalAfterNotePosition) {
@@ -131,7 +132,7 @@ function moveBranchAfterNote(req) {
     return { success: true };
 }
 
-function setExpanded(req) {
+function setExpanded(req: Request) {
     const {branchId} = req.params;
     const expanded = parseInt(req.params.expanded);
 
@@ -153,11 +154,11 @@ function setExpanded(req) {
     }
 }
 
-function setExpandedForSubtree(req) {
+function setExpandedForSubtree(req: Request) {
     const {branchId} = req.params;
     const expanded = parseInt(req.params.expanded);
 
-    let branchIds = sql.getColumn(`
+    let branchIds = sql.getColumn<string>(`
         WITH RECURSIVE
         tree(branchId, noteId) AS (
             SELECT branchId, noteId FROM branches WHERE branchId = ?
@@ -186,12 +187,12 @@ function setExpandedForSubtree(req) {
     };
 }
 
-function deleteBranch(req) {
+function deleteBranch(req: Request) {
     const last = req.query.last === 'true';
     const eraseNotes = req.query.eraseNotes === 'true';
     const branch = becca.getBranchOrThrow(req.params.branchId);
 
-    const taskContext = TaskContext.getInstance(req.query.taskId, 'deleteNotes');
+    const taskContext = TaskContext.getInstance(req.query.taskId as string, 'deleteNotes');
 
     const deleteId = utils.randomString(10);
     let noteDeleted;
@@ -214,16 +215,16 @@ function deleteBranch(req) {
     };
 }
 
-function setPrefix(req) {
+function setPrefix(req: Request) {
     const branchId = req.params.branchId;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
-    const branch = becca.getBranch(branchId);
+    const branch = becca.getBranchOrThrow(branchId);
     branch.prefix = prefix;
     branch.save();
 }
 
-module.exports = {
+export = {
     moveBranchToParent,
     moveBranchBeforeNote,
     moveBranchAfterNote,

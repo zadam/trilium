@@ -27,7 +27,8 @@ function moveBranchToNote(branchToMove: BBranch, targetParentNoteId: string) {
     };
 }
 
-function moveBranchToBranch(branchToMove: BBranch, targetParentBranch: BBranch) {
+function moveBranchToBranch(branchToMove: BBranch, targetParentBranch: BBranch, branchId: string) {
+    // TODO: Unused branch ID argument.
     const res = moveBranchToNote(branchToMove, targetParentBranch.noteId);
 
     if (!("success" in res) || !res.success) {

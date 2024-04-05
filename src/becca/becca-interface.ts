@@ -129,7 +129,7 @@ export default class Becca {
         return this.branches[branchId];
     }
 
-    getBranchOrThrow(branchId: string): BBranch | null {
+    getBranchOrThrow(branchId: string): BBranch {
         const branch = this.getBranch(branchId);
         if (!branch) {
             throw new NotFoundError(`Branch '${branchId}' was not found in becca.`);
