@@ -1,6 +1,7 @@
-const optionService = require('../../services/options');
+import { Request, Response } from 'express';
+import optionService = require('../../services/options');
 
-function getFontCss(req, res) {
+function getFontCss(req: Request, res: Response) {
     res.setHeader('Content-Type', 'text/css');
 
     if (!optionService.getOptionBool('overrideThemeFonts')) {
@@ -34,6 +35,6 @@ function getFontCss(req, res) {
     res.send(style);
 }
 
-module.exports = {
+export = {
     getFontCss
 };
