@@ -1,22 +1,32 @@
 "use strict";
 
-const attributeService = require('../../services/attributes');
-const cloneService = require('../../services/cloning');
-const noteService = require('../../services/notes');
-const dateNoteService = require('../../services/date_notes');
-const dateUtils = require('../../services/date_utils');
-const imageService = require('../../services/image');
-const appInfo = require('../../services/app_info');
-const ws = require('../../services/ws');
-const log = require('../../services/log');
-const utils = require('../../services/utils');
-const path = require('path');
-const htmlSanitizer = require('../../services/html_sanitizer');
-const {formatAttrForSearch} = require('../../services/attribute_formatter');
-const jsdom = require("jsdom");
+import { Request } from "express";
+
+import attributeService = require('../../services/attributes');
+import cloneService = require('../../services/cloning');
+import noteService = require('../../services/notes');
+import dateNoteService = require('../../services/date_notes');
+import dateUtils = require('../../services/date_utils');
+import imageService = require('../../services/image');
+import appInfo = require('../../services/app_info');
+import ws = require('../../services/ws');
+import log = require('../../services/log');
+import utils = require('../../services/utils');
+import path = require('path');
+import htmlSanitizer = require('../../services/html_sanitizer');
+import attributeFormatter = require('../../services/attribute_formatter');
+import jsdom = require("jsdom");
+import BNote = require("../../becca/entities/bnote");
+import ValidationError = require("../../errors/validation_error");
 const { JSDOM } = jsdom;
 
-function addClipping(req) {
+interface Image {
+    src: string;
+    dataUrl: string;
+    imageId: string;
+}
+
+function addClipping(req: Request) {
     // if a note under the clipperInbox has the same 'pageUrl' attribute,
     // add the content to that note and clone it under today's inbox
     // otherwise just create a new note under today's inbox
@@ -44,10 +54,14 @@ function addClipping(req) {
     const rewrittenContent = processContent(images, clippingNote, content);
 
     const existingContent = clippingNote.getContent();
+    if (typeof existingContent !== "string") {
+        throw new ValidationError("Invalid note content type.");
+    }
 
     clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br>" : ""}${rewrittenContent}`);
 
-    if (clippingNote.parentNoteId !== clipperInbox.noteId) {
+    // TODO: Is parentNoteId ever defined?
+    if ((clippingNote as any).parentNoteId !== clipperInbox.noteId) {
         cloneService.cloneNoteToParentNote(clippingNote.noteId, clipperInbox.noteId);
     }
 
@@ -56,13 +70,13 @@ function addClipping(req) {
     };
 }
 
-function findClippingNote(clipperInboxNote, pageUrl, clipType) {
+function findClippingNote(clipperInboxNote: BNote, pageUrl: string, clipType: string | null) {
     if (!pageUrl) {
         return null;
     }
 
     const notes = clipperInboxNote.searchNotesInSubtree(
-        formatAttrForSearch({
+        attributeFormatter.formatAttrForSearch({
             type: 'label',
             name: "pageUrl",
             value: pageUrl
@@ -84,7 +98,7 @@ function getClipperInboxNote() {
     return clipperInbox;
 }
 
-function createNote(req) {
+function createNote(req: Request) {
     let {title, content, pageUrl, images, clipType, labels} = req.body;
 
     if (!title || !title.trim()) {
@@ -123,6 +137,9 @@ function createNote(req) {
     }
 
     const existingContent = note.getContent();
+    if (typeof existingContent !== "string") {
+        throw new ValidationError("Invalid note content tpye.");
+    }
     const rewrittenContent = processContent(images, note, content);
     const newContent = `${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`;
     note.setContent(newContent);
@@ -134,7 +151,7 @@ function createNote(req) {
     };
 }
 
-function processContent(images, note, content) {
+function processContent(images: Image[], note: BNote, content: string) {
     let rewrittenContent = htmlSanitizer.sanitize(content);
 
     if (images) {
@@ -178,7 +195,7 @@ function processContent(images, note, content) {
     return rewrittenContent;
 }
 
-function openNote(req) {
+function openNote(req: Request) {
     if (utils.isElectron()) {
         ws.sendMessageToAllClients({
             type: 'openNote',
@@ -203,7 +220,7 @@ function handshake() {
     }
 }
 
-function findNotesByUrl(req){
+function findNotesByUrl(req: Request){
     let pageUrl = req.params.noteUrl;
     const clipperInbox = getClipperInboxNote();
     let foundPage = findClippingNote(clipperInbox, pageUrl, null);

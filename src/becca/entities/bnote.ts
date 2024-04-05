@@ -1434,7 +1434,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     searchNotesInSubtree(searchString: string) {
         const searchService = require('../../services/search/services/search');
 
-        return searchService.searchNotes(searchString);
+        return searchService.searchNotes(searchString) as BNote[];
     }
 
     searchNoteInSubtree(searchString: string) {
