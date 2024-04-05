@@ -1,8 +1,9 @@
 "use strict";
 
-const fs = require('fs');
-const dateUtils = require('../../services/date_utils');
-const {LOG_DIR} = require('../../services/data_dir');
+import fs = require('fs');
+import dateUtils = require('../../services/date_utils');
+import dataDir = require('../../services/data_dir.js');
+const { LOG_DIR } = dataDir;
 
 function getBackendLog() {
     const file = `${LOG_DIR}/trilium-${dateUtils.localNowDate()}.log`;
@@ -16,6 +17,6 @@ function getBackendLog() {
     }
 }
 
-module.exports = {
+export = {
     getBackendLog
 };
