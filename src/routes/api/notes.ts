@@ -43,7 +43,7 @@ function createNote(req: Request) {
         throw new ValidationError("Invalid target type.");
     }
 
-    if (typeof targetBranchId !== "string") {
+    if (targetBranchId && typeof targetBranchId !== "string") {
         throw new ValidationError("Missing or incorrect type for target branch ID.");
     }
 
