@@ -1,18 +1,25 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const { JSDOM } = require("jsdom");
+import becca = require('../../becca/becca');
+import { JSDOM } from "jsdom";
+import BNote = require('../../becca/entities/bnote');
+import BAttribute = require('../../becca/entities/battribute');
+import { Request } from 'express';
+import ValidationError = require('../../errors/validation_error');
 
-function buildDescendantCountMap(noteIdsToCount) {
+function buildDescendantCountMap(noteIdsToCount: string[]) {
     if (!Array.isArray(noteIdsToCount)) {
         throw new Error('noteIdsToCount: type error');
     }
 
     const noteIdToCountMap = Object.create(null);
 
-    function getCount(noteId) {
+    function getCount(noteId: string) {
         if (!(noteId in noteIdToCountMap)) {
             const note = becca.getNote(noteId);
+            if (!note) {
+                return;
+            }
 
             const hiddenImageNoteIds = note.getRelations('imageLink').map(rel => rel.value);
             const childNoteIds = note.children.map(child => child.noteId);
@@ -33,19 +40,14 @@ function buildDescendantCountMap(noteIdsToCount) {
 
     return noteIdToCountMap;
 }
-/**
- * @param {BNote} note
- * @param {int} depth
- * @returns {string[]} noteIds
- */
-function getNeighbors(note, depth) {
+function getNeighbors(note: BNote, depth: number): string[] {
     if (depth === 0) {
         return [];
     }
 
     const retNoteIds = [];
 
-    function isIgnoredRelation(relation) {
+    function isIgnoredRelation(relation: BAttribute) {
         return ['relationMapLink', 'template', 'inherit', 'image', 'ancestor'].includes(relation.name);
     }
 
@@ -90,8 +92,9 @@ function getNeighbors(note, depth) {
     return retNoteIds;
 }
 
-function getLinkMap(req) {
-    const mapRootNote = becca.getNote(req.params.noteId);
+function getLinkMap(req: Request) {
+    const mapRootNote = becca.getNoteOrThrow(req.params.noteId);
+
     // if the map root itself has "excludeFromNoteMap" attribute (journal typically) then there wouldn't be anything
     // to display, so we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.isLabelTruthy('excludeFromNoteMap');
@@ -125,7 +128,7 @@ function getLinkMap(req) {
     const noteIdsArray = Array.from(noteIds)
 
     const notes = noteIdsArray.map(noteId => {
-        const note = becca.getNote(noteId);
+        const note = becca.getNoteOrThrow(noteId);
 
         return [
             note.noteId,
@@ -144,6 +147,9 @@ function getLinkMap(req) {
         }
         else if (rel.name === 'imageLink') {
             const parentNote = becca.getNote(rel.noteId);
+            if (!parentNote) {
+                return false;
+            }
 
             return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
         }
@@ -165,8 +171,8 @@ function getLinkMap(req) {
     };
 }
 
-function getTreeMap(req) {
-    const mapRootNote = becca.getNote(req.params.noteId);
+function getTreeMap(req: Request) {
+    const mapRootNote = becca.getNoteOrThrow(req.params.noteId);
     // if the map root itself has "excludeFromNoteMap" (journal typically) then there wouldn't be anything to display,
     // so we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.isLabelTruthy('excludeFromNoteMap');
@@ -198,8 +204,8 @@ function getTreeMap(req) {
             note.getLabelValue('color')
         ]);
 
-    const noteIds = new Set();
-    notes.forEach(([noteId]) => noteIds.add(noteId));
+    const noteIds = new Set<string>();
+    notes.forEach(([noteId]) => noteId && noteIds.add(noteId));
 
     const links = [];
 
@@ -225,7 +231,7 @@ function getTreeMap(req) {
     };
 }
 
-function updateDescendantCountMapForSearch(noteIdToDescendantCountMap, relationships) {
+function updateDescendantCountMapForSearch(noteIdToDescendantCountMap: Record<string, number>, relationships: { parentNoteId: string, childNoteId: string }[]) {
     for (const {parentNoteId, childNoteId} of relationships) {
         const parentNote = becca.notes[parentNoteId];
         if (!parentNote || parentNote.type !== 'search') {
@@ -237,16 +243,17 @@ function updateDescendantCountMapForSearch(noteIdToDescendantCountMap, relations
     }
 }
 
-function removeImages(document) {
+function removeImages(document: Document) {
     const images = document.getElementsByTagName('img');
-    while (images.length > 0) {
-        images[0].parentNode.removeChild(images[0]);
+    while (images && images.length > 0) {
+        images[0]?.parentNode?.removeChild(images[0]);
     }
 }
 
 const EXCERPT_CHAR_LIMIT = 200;
+type ElementOrText = (Element | Text);
 
-function findExcerpts(sourceNote, referencedNoteId) {
+function findExcerpts(sourceNote: BNote, referencedNoteId: string) {
     const html = sourceNote.getContent();
     const document = new JSDOM(html).window.document;
 
@@ -263,25 +270,24 @@ function findExcerpts(sourceNote, referencedNoteId) {
 
         linkEl.classList.add("backlink-link");
 
-        let centerEl = linkEl;
+        let centerEl: HTMLElement = linkEl;
 
-        while (centerEl.tagName !== 'BODY' && centerEl.parentElement?.textContent?.length <= EXCERPT_CHAR_LIMIT) {
+        while (centerEl.tagName !== 'BODY' && centerEl.parentElement && (centerEl.parentElement?.textContent?.length || 0) <= EXCERPT_CHAR_LIMIT) {
             centerEl = centerEl.parentElement;
         }
 
-        /** @var {HTMLElement[]} */
-        const excerptEls = [centerEl];
-        let excerptLength = centerEl.textContent.length;
-        let left = centerEl;
-        let right = centerEl;
+        const excerptEls: ElementOrText[] = [centerEl];
+        let excerptLength = centerEl.textContent?.length || 0;
+        let left: ElementOrText = centerEl;
+        let right: ElementOrText = centerEl;
 
         while (excerptLength < EXCERPT_CHAR_LIMIT) {
             let added = false;
 
-            const prev = left.previousElementSibling;
+            const prev: Element | null = left.previousElementSibling;
 
             if (prev) {
-                const prevText = prev.textContent;
+                const prevText = prev.textContent || "";
 
                 if (prevText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
                     const prefix = prevText.substr(prevText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
@@ -298,12 +304,12 @@ function findExcerpts(sourceNote, referencedNoteId) {
                 added = true;
             }
 
-            const next = right.nextElementSibling;
+            const next: Element | null = right.nextElementSibling;
 
             if (next) {
                 const nextText = next.textContent;
 
-                if (nextText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
+                if (nextText && nextText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
                     const suffix = nextText.substr(nextText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
 
                     const textNode = document.createTextNode(`${suffix}…`);
@@ -314,7 +320,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
 
                 right = next;
                 excerptEls.push(right);
-                excerptLength += nextText.length;
+                excerptLength += nextText?.length || 0;
                 added = true;
             }
 
@@ -336,13 +342,13 @@ function findExcerpts(sourceNote, referencedNoteId) {
     return excerpts;
 }
 
-function getFilteredBacklinks(note) {
+function getFilteredBacklinks(note: BNote) {
     return note.getTargetRelations()
         // search notes have "ancestor" relations which are not interesting
         .filter(relation => !!relation.getNote() && relation.getNote().type !== 'search');
 }
 
-function getBacklinkCount(req) {
+function getBacklinkCount(req: Request) {
     const {noteId} = req.params;
 
     const note = becca.getNoteOrThrow(noteId);
@@ -352,7 +358,7 @@ function getBacklinkCount(req) {
     };
 }
 
-function getBacklinks(req) {
+function getBacklinks(req: Request) {
     const {noteId} = req.params;
     const note = becca.getNoteOrThrow(noteId);
 
@@ -379,7 +385,7 @@ function getBacklinks(req) {
     });
 }
 
-module.exports = {
+export = {
     getLinkMap,
     getTreeMap,
     getBacklinkCount,
