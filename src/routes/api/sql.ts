@@ -1,7 +1,9 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const becca = require('../../becca/becca');
+import sql = require('../../services/sql');
+import becca = require('../../becca/becca');
+import { Request } from 'express';
+import ValidationError = require('../../errors/validation_error');
 
 function getSchema() {
     const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
@@ -17,10 +19,15 @@ function getSchema() {
     return tables;
 }
 
-function execute(req) {
+function execute(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    const queries = note.getContent().split("\n---");
+    const content = note.getContent();
+    if (typeof content !== "string") {
+        throw new ValidationError("Invalid note type.");
+    }
+
+    const queries = content.split("\n---");
 
     try {
         const results = [];
@@ -51,7 +58,7 @@ function execute(req) {
             results
         };
     }
-    catch (e) {
+    catch (e: any) {
         return {
             success: false,
             error: e.message
@@ -59,7 +66,7 @@ function execute(req) {
     }
 }
 
-module.exports = {
+export = {
     getSchema,
     execute
 };
