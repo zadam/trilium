@@ -1,19 +1,20 @@
 "use strict";
 
-const options = require('../../services/options');
-const utils = require('../../services/utils');
-const dateUtils = require('../../services/date_utils');
-const instanceId = require('../../services/instance_id');
-const passwordEncryptionService = require('../../services/encryption/password_encryption');
-const protectedSessionService = require('../../services/protected_session');
-const appInfo = require('../../services/app_info');
-const eventService = require('../../services/events');
-const sqlInit = require('../../services/sql_init');
-const sql = require('../../services/sql');
-const ws = require('../../services/ws');
-const etapiTokenService = require('../../services/etapi_tokens');
+import options = require('../../services/options');
+import utils = require('../../services/utils');
+import dateUtils = require('../../services/date_utils');
+import instanceId = require('../../services/instance_id');
+import passwordEncryptionService = require('../../services/encryption/password_encryption');
+import protectedSessionService = require('../../services/protected_session');
+import appInfo = require('../../services/app_info');
+import eventService = require('../../services/events');
+import sqlInit = require('../../services/sql_init');
+import sql = require('../../services/sql');
+import ws = require('../../services/ws');
+import etapiTokenService = require('../../services/etapi_tokens');
+import { Request } from 'express';
 
-function loginSync(req) {
+function loginSync(req: Request) {
     if (!sqlInit.schemaExists()) {
         return [500, { message: "DB schema does not exist, can't sync." }];
     }
@@ -44,7 +45,7 @@ function loginSync(req) {
         return [400, { message: "Sync login credentials are incorrect. It looks like you're trying to sync two different initialized documents which is not possible." }];
     }
 
-    req.session.loggedIn = true;
+    (req as any).session.loggedIn = true;
 
     return {
         instanceId: instanceId,
@@ -52,7 +53,7 @@ function loginSync(req) {
     };
 }
 
-function loginToProtectedSession(req) {
+function loginToProtectedSession(req: Request) {
     const password = req.body.password;
 
     if (!passwordEncryptionService.verifyPassword(password)) {
@@ -63,6 +64,12 @@ function loginToProtectedSession(req) {
     }
 
     const decryptedDataKey = passwordEncryptionService.getDataKey(password);
+    if (!decryptedDataKey) {
+        return {
+            success: false,
+            message: "Unable to obtain data key."
+        }
+    }
 
     protectedSessionService.setDataKey(decryptedDataKey);
 
@@ -87,7 +94,7 @@ function touchProtectedSession() {
     protectedSessionService.touchProtectedSession();
 }
 
-function token(req) {
+function token(req: Request) {
     const password = req.body.password;
 
     if (!passwordEncryptionService.verifyPassword(password)) {
@@ -102,7 +109,7 @@ function token(req) {
     return { token: authToken };
 }
 
-module.exports = {
+export = {
     loginSync,
     loginToProtectedSession,
     logoutFromProtectedSession,

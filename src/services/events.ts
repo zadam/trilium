@@ -44,7 +44,7 @@ function subscribeBeccaLoader(eventTypes: EventType, listener: EventListener) {
     }
 }
 
-function emit(eventType: string, data: any) {
+function emit(eventType: string, data?: any) {
     const listeners = eventListeners[eventType];
 
     if (listeners) {
