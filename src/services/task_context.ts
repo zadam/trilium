@@ -66,7 +66,7 @@ class TaskContext {
         });
     }
 
-    taskSucceeded(result?: string) {
+    taskSucceeded(result?: string | Record<string, string | undefined>) {
         ws.sendMessageToAllClients({
             type: 'taskSucceeded',
             taskId: this.taskId,
