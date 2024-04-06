@@ -1,8 +1,10 @@
-const becca = require('../../becca/becca');
-const markdownService = require('../../services/import/markdown');
+import { Request } from "express";
+
+import becca = require('../../becca/becca');
+import markdownService = require('../../services/import/markdown');
 
 function getIconUsage() {
-    const iconClassToCountMap = {};
+    const iconClassToCountMap: Record<string, number> = {};
 
     for (const {value: iconClass, noteId} of becca.findAttributes('label', 'iconClass')) {
         if (noteId.startsWith("_")) {
@@ -25,7 +27,7 @@ function getIconUsage() {
     return { iconClassToCountMap };
 }
 
-function renderMarkdown(req) {
+function renderMarkdown(req: Request) {
     const { markdownContent } = req.body;
 
     return {
@@ -33,7 +35,7 @@ function renderMarkdown(req) {
     };
 }
 
-module.exports = {
+export = {
     getIconUsage,
     renderMarkdown
 };
