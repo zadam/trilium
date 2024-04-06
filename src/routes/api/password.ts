@@ -1,9 +1,10 @@
 "use strict";
 
-const passwordService = require('../../services/encryption/password');
-const ValidationError = require('../../errors/validation_error');
+import passwordService = require('../../services/encryption/password');
+import ValidationError = require('../../errors/validation_error');
+import { Request } from 'express';
 
-function changePassword(req) {
+function changePassword(req: Request) {
     if (passwordService.isPasswordSet()) {
         return passwordService.changePassword(req.body.current_password, req.body.new_password);
     }
@@ -12,7 +13,7 @@ function changePassword(req) {
     }
 }
 
-function resetPassword(req) {
+function resetPassword(req: Request) {
     // protection against accidental call (not a security measure)
     if (req.query.really !== "yesIReallyWantToResetPasswordAndLoseAccessToMyProtectedNotes") {
         throw new ValidationError("Incorrect password reset confirmation");
@@ -21,7 +22,7 @@ function resetPassword(req) {
     return passwordService.resetPassword();
 }
 
-module.exports = {
+export = {
     changePassword,
     resetPassword
 };
