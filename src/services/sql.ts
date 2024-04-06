@@ -269,8 +269,8 @@ function transactional<T>(func: (statement: Statement) => T) {
     }
 }
 
-function fillParamList(paramIds: string[], truncate = true) {
-    if (paramIds.length === 0) {
+function fillParamList(paramIds: string[] | Set<string>, truncate = true) {
+    if ("length" in paramIds && paramIds.length === 0) {
         return;
     }
 

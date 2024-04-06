@@ -23,7 +23,7 @@ const indexRoute = require('./index.js');
 
 // API routes
 const treeApiRoute = require('./api/tree.js');
-const notesApiRoute = require('./api/notes.js');
+const notesApiRoute = require('./api/notes');
 const branchesApiRoute = require('./api/branches');
 const attachmentsApiRoute = require('./api/attachments');
 const autocompleteApiRoute = require('./api/autocomplete');

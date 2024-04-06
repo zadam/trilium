@@ -1,25 +1,28 @@
 "use strict";
 
-const noteService = require('../../services/notes');
-const eraseService = require('../../services/erase');
-const treeService = require('../../services/tree');
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const becca = require('../../becca/becca');
-const ValidationError = require('../../errors/validation_error');
-const blobService = require('../../services/blob');
+import noteService = require('../../services/notes');
+import eraseService = require('../../services/erase');
+import treeService = require('../../services/tree');
+import sql = require('../../services/sql');
+import utils = require('../../services/utils');
+import log = require('../../services/log');
+import TaskContext = require('../../services/task_context');
+import becca = require('../../becca/becca');
+import ValidationError = require('../../errors/validation_error');
+import blobService = require('../../services/blob');
+import { Request } from 'express';
+import BBranch = require('../../becca/entities/bbranch');
+import { AttributeRow } from '../../becca/entities/rows';
 
-function getNote(req) {
+function getNote(req: Request) {
     return becca.getNoteOrThrow(req.params.noteId);
 }
 
-function getNoteBlob(req) {
+function getNoteBlob(req: Request) {
     return blobService.getBlobPojo('notes', req.params.noteId);
 }
 
-function getNoteMetadata(req) {
+function getNoteMetadata(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     return {
@@ -30,11 +33,19 @@ function getNoteMetadata(req) {
     };
 }
 
-function createNote(req) {
+function createNote(req: Request) {
     const params = Object.assign({}, req.body); // clone
     params.parentNoteId = req.params.parentNoteId;
 
     const { target, targetBranchId } = req.query;
+
+    if (target !== "into" && target !== "after") {
+        throw new ValidationError("Invalid target type.");
+    }
+
+    if (typeof targetBranchId !== "string") {
+        throw new ValidationError("Missing or incorrect type for target branch ID.");
+    }
 
     const { note, branch } = noteService.createNewNoteWithTarget(target, targetBranchId, params);
 
@@ -44,14 +55,14 @@ function createNote(req) {
     };
 }
 
-function updateNoteData(req) {
+function updateNoteData(req: Request) {
     const {content, attachments} = req.body;
     const {noteId} = req.params;
 
     return noteService.updateNoteData(noteId, content, attachments);
 }
 
-function deleteNote(req) {
+function deleteNote(req: Request) {
     const noteId = req.params.noteId;
     const taskId = req.query.taskId;
     const eraseNotes = req.query.eraseNotes === 'true';
@@ -60,8 +71,11 @@ function deleteNote(req) {
     // note how deleteId is separate from taskId - single taskId produces separate deleteId for each "top level" deleted note
     const deleteId = utils.randomString(10);
 
-    const note = becca.getNote(noteId);
+    const note = becca.getNoteOrThrow(noteId);
 
+    if (typeof taskId !== "string") {
+        throw new ValidationError("Missing or incorrect type for task ID.");
+    }
     const taskContext = TaskContext.getInstance(taskId, 'deleteNotes');
 
     note.deleteNote(deleteId, taskContext);
@@ -75,7 +89,7 @@ function deleteNote(req) {
     }
 }
 
-function undeleteNote(req) {
+function undeleteNote(req: Request) {
     const taskContext = TaskContext.getInstance(utils.randomString(10), 'undeleteNotes');
 
     noteService.undeleteNote(req.params.noteId, taskContext);
@@ -83,7 +97,7 @@ function undeleteNote(req) {
     taskContext.taskSucceeded();
 }
 
-function sortChildNotes(req) {
+function sortChildNotes(req: Request) {
     const noteId = req.params.noteId;
     const {sortBy, sortDirection, foldersFirst, sortNatural, sortLocale} = req.body;
 
@@ -94,11 +108,11 @@ function sortChildNotes(req) {
     treeService.sortNotes(noteId, sortBy, reverse, foldersFirst, sortNatural, sortLocale);
 }
 
-function protectNote(req) {
+function protectNote(req: Request) {
     const noteId = req.params.noteId;
     const note = becca.notes[noteId];
     const protect = !!parseInt(req.params.isProtected);
-    const includingSubTree = !!parseInt(req.query.subtree);
+    const includingSubTree = !!parseInt(req.query?.subtree as string);
 
     const taskContext = new TaskContext(utils.randomString(10), 'protectNotes', {protect});
 
@@ -107,18 +121,18 @@ function protectNote(req) {
     taskContext.taskSucceeded();
 }
 
-function setNoteTypeMime(req) {
+function setNoteTypeMime(req: Request) {
     // can't use [] destructuring because req.params is not iterable
     const {noteId} = req.params;
     const {type, mime} = req.body;
 
-    const note = becca.getNote(noteId);
+    const note = becca.getNoteOrThrow(noteId);
     note.type = type;
     note.mime = mime;
     note.save();
 }
 
-function changeTitle(req) {
+function changeTitle(req: Request) {
     const noteId = req.params.noteId;
     const title = req.body.title;
 
@@ -145,7 +159,7 @@ function changeTitle(req) {
     return note;
 }
 
-function duplicateSubtree(req) {
+function duplicateSubtree(req: Request) {
     const {noteId, parentNoteId} = req.params;
 
     return noteService.duplicateSubtree(noteId, parentNoteId);
@@ -159,14 +173,14 @@ function eraseUnusedAttachmentsNow() {
     eraseService.eraseUnusedAttachmentsNow();
 }
 
-function getDeleteNotesPreview(req) {
+function getDeleteNotesPreview(req: Request) {
     const {branchIdsToDelete, deleteAllClones} = req.body;
 
-    const noteIdsToBeDeleted = new Set();
-    const strongBranchCountToDelete = {}; // noteId => count (integer)
+    const noteIdsToBeDeleted = new Set<string>();
+    const strongBranchCountToDelete: Record<string, number> = {}; // noteId => count
 
-    function branchPreviewDeletion(branch) {
-        if (branch.isWeak) {
+    function branchPreviewDeletion(branch: BBranch) {
+        if (branch.isWeak || !branch.branchId) {
             return;
         }
 
@@ -196,18 +210,18 @@ function getDeleteNotesPreview(req) {
         branchPreviewDeletion(branch);
     }
 
-    let brokenRelations = [];
+    let brokenRelations: AttributeRow[] = [];
 
     if (noteIdsToBeDeleted.size > 0) {
         sql.fillParamList(noteIdsToBeDeleted);
 
         // FIXME: No need to do this in database, can be done with becca data
-        brokenRelations = sql.getRows(`
+        brokenRelations = sql.getRows<AttributeRow>(`
             SELECT attr.noteId, attr.name, attr.value
             FROM attributes attr
                      JOIN param_list ON param_list.paramId = attr.value
             WHERE attr.isDeleted = 0
-              AND attr.type = 'relation'`).filter(attr => !noteIdsToBeDeleted.has(attr.noteId));
+              AND attr.type = 'relation'`).filter(attr => attr.noteId && !noteIdsToBeDeleted.has(attr.noteId));
     }
 
     return {
@@ -216,7 +230,7 @@ function getDeleteNotesPreview(req) {
     };
 }
 
-function forceSaveRevision(req) {
+function forceSaveRevision(req: Request) {
     const {noteId} = req.params;
     const note = becca.getNoteOrThrow(noteId);
 
@@ -227,7 +241,7 @@ function forceSaveRevision(req) {
     note.saveRevision();
 }
 
-function convertNoteToAttachment(req) {
+function convertNoteToAttachment(req: Request) {
     const {noteId} = req.params;
     const note = becca.getNoteOrThrow(noteId);
 
@@ -236,7 +250,7 @@ function convertNoteToAttachment(req) {
     };
 }
 
-module.exports = {
+export = {
     getNote,
     getNoteBlob,
     getNoteMetadata,
