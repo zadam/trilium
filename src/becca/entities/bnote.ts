@@ -222,7 +222,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     /**
      * @throws Error in case of invalid JSON */
-    getJsonContent(): {} | null {
+    getJsonContent(): any | null {
         const content = this.getContent();
 
         if (typeof content !== "string" || !content || !content.trim()) {

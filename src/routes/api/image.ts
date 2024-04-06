@@ -1,27 +1,26 @@
 "use strict";
 
-const imageService = require('../../services/image');
-const becca = require('../../becca/becca');
+import imageService = require('../../services/image');
+import becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
-const fs = require('fs');
+import fs = require('fs');
+import { Request, Response } from 'express';
+import BNote = require('../../becca/entities/bnote');
+import BRevision = require('../../becca/entities/brevision');
 
-function returnImageFromNote(req, res) {
+function returnImageFromNote(req: Request, res: Response) {
     const image = becca.getNote(req.params.noteId);
 
     return returnImageInt(image, res);
 }
 
-function returnImageFromRevision(req, res) {
+function returnImageFromRevision(req: Request, res: Response) {
     const image = becca.getRevision(req.params.revisionId);
 
     return returnImageInt(image, res);
 }
 
-/**
- * @param {BNote|BRevision} image
- * @param res
- */
-function returnImageInt(image, res) {
+function returnImageInt(image: BNote | BRevision | null, res: Response) {
     if (!image) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
@@ -40,12 +39,13 @@ function returnImageInt(image, res) {
     }
 }
 
-function renderSvgAttachment(image, res, attachmentName) {
+function renderSvgAttachment(image: BNote | BRevision, res: Response, attachmentName: string) {
     let svgString = '<svg/>'
     const attachment = image.getAttachmentByTitle(attachmentName);
 
-    if (attachment) {
-        svgString = attachment.getContent();
+    const content = attachment.getContent();
+    if (attachment && typeof content === "string") {
+        svgString = content;
     } else {
         // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
         const contentSvg = image.getJsonContentSafely()?.svg;
@@ -62,7 +62,7 @@ function renderSvgAttachment(image, res, attachmentName) {
 }
 
 
-function returnAttachedImage(req, res) {
+function returnAttachedImage(req: Request, res: Response) {
     const attachment = becca.getAttachment(req.params.attachmentId);
 
     if (!attachment) {
@@ -81,9 +81,9 @@ function returnAttachedImage(req, res) {
     res.send(attachment.getContent());
 }
 
-function updateImage(req) {
+function updateImage(req: Request) {
     const {noteId} = req.params;
-    const {file} = req;
+    const {file} = (req as any);
 
     const note = becca.getNoteOrThrow(noteId);
 
@@ -99,7 +99,7 @@ function updateImage(req) {
     return { uploaded: true };
 }
 
-module.exports = {
+export = {
     returnImageFromNote,
     returnImageFromRevision,
     returnAttachedImage,
