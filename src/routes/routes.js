@@ -17,7 +17,7 @@ const NotFoundError = require('../errors/not_found_error');
 const ValidationError = require('../errors/validation_error');
 
 // page routes
-const setupRoute = require('./setup.js');
+const setupRoute = require('./setup');
 const loginRoute = require('./login.js');
 const indexRoute = require('./index.js');
 
@@ -38,7 +38,7 @@ const recentNotesRoute = require('./api/recent_notes');
 const appInfoRoute = require('./api/app_info');
 const exportRoute = require('./api/export');
 const importRoute = require('./api/import');
-const setupApiRoute = require('./api/setup.js');
+const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
 const databaseRoute = require('./api/database');
 const imageRoute = require('./api/image');
