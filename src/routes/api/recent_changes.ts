@@ -1,16 +1,30 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const protectedSessionService = require('../../services/protected_session');
-const noteService = require('../../services/notes');
-const becca = require('../../becca/becca');
+import sql = require('../../services/sql');
+import protectedSessionService = require('../../services/protected_session');
+import noteService = require('../../services/notes');
+import becca = require('../../becca/becca');
+import { Request } from 'express';
+import { RevisionRow } from '../../becca/entities/rows';
 
-function getRecentChanges(req) {
+interface RecentChangeRow {
+    noteId: string;
+    current_isDeleted: boolean;
+    current_deleteId: string;
+    current_title: string;
+    current_isProtected: boolean,
+    title: string;
+    utcDate: string;
+    date: string;
+    canBeUndeleted?: boolean;
+}
+
+function getRecentChanges(req: Request) {
     const {ancestorNoteId} = req.params;
 
     let recentChanges = [];
 
-    const revisionRows = sql.getRows(`
+    const revisionRows = sql.getRows<RecentChangeRow>(`
         SELECT 
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
@@ -36,7 +50,7 @@ function getRecentChanges(req) {
     // now we need to also collect date points not represented in note revisions:
     // 1. creation for all notes (dateCreated)
     // 2. deletion for deleted notes (dateModified)
-    const noteRows = sql.getRows(`
+    const noteRows = sql.getRows<RecentChangeRow>(`
             SELECT
                 notes.noteId,
                 notes.isDeleted AS current_isDeleted,
@@ -76,8 +90,8 @@ function getRecentChanges(req) {
     for (const change of recentChanges) {
         if (change.current_isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                change.title = protectedSessionService.decryptString(change.title);
-                change.current_title = protectedSessionService.decryptString(change.current_title);
+                change.title = protectedSessionService.decryptString(change.title) || "[protected]";
+                change.current_title = protectedSessionService.decryptString(change.current_title) || "[protected]";
             }
             else {
                 change.title = change.current_title = "[protected]";
@@ -97,6 +111,6 @@ function getRecentChanges(req) {
     return recentChanges;
 }
 
-module.exports = {
+export = {
     getRecentChanges
 };
