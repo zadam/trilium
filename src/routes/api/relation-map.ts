@@ -1,10 +1,22 @@
-const becca = require('../../becca/becca');
-const sql = require('../../services/sql');
+import { Request } from 'express';
+import becca = require('../../becca/becca');
+import sql = require('../../services/sql');
 
-function getRelationMap(req) {
+interface ResponseData {
+    noteTitles: Record<string, string>;
+    relations: {
+        attributeId: string,
+        sourceNoteId: string,
+        targetNoteId: string,
+        name: string
+    }[];
+    inverseRelations: Record<string, string>;
+}
+
+function getRelationMap(req: Request) {
     const {relationMapNoteId, noteIds} = req.body;
 
-    const resp = {
+    const resp: ResponseData = {
         // noteId => title
         noteTitles: {},
         relations: [],
@@ -14,13 +26,13 @@ function getRelationMap(req) {
         }
     };
 
-    if (noteIds.length === 0) {
+    if (!Array.isArray(noteIds) || noteIds.length === 0) {
         return resp;
     }
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
-    const relationMapNote = becca.getNote(relationMapNoteId);
+    const relationMapNote = becca.getNoteOrThrow(relationMapNoteId);
 
     const displayRelationsVal = relationMapNote.getLabelValue('displayRelations');
     const displayRelations = !displayRelationsVal ? [] : displayRelationsVal
@@ -32,7 +44,7 @@ function getRelationMap(req) {
         .split(",")
         .map(token => token.trim());
 
-    const foundNoteIds = sql.getColumn(`SELECT noteId FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+    const foundNoteIds = sql.getColumn<string>(`SELECT noteId FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
     const notes = becca.getNotes(foundNoteIds);
 
     for (const note of notes) {
@@ -64,6 +76,6 @@ function getRelationMap(req) {
     return resp;
 }
 
-module.exports = {
+export = {
     getRelationMap
 };
