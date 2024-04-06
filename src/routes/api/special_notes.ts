@@ -1,32 +1,33 @@
 "use strict";
 
-const dateNoteService = require('../../services/date_notes');
-const sql = require('../../services/sql');
-const cls = require('../../services/cls');
-const specialNotesService = require('../../services/special_notes');
-const becca = require('../../becca/becca');
+import dateNoteService = require('../../services/date_notes');
+import sql = require('../../services/sql');
+import cls = require('../../services/cls');
+import specialNotesService = require('../../services/special_notes');
+import becca = require('../../becca/becca');
+import { Request } from 'express';
 
-function getInboxNote(req) {
+function getInboxNote(req: Request) {
     return specialNotesService.getInboxNote(req.params.date);
 }
 
-function getDayNote(req) {
+function getDayNote(req: Request) {
     return dateNoteService.getDayNote(req.params.date);
 }
 
-function getWeekNote(req) {
+function getWeekNote(req: Request) {
     return dateNoteService.getWeekNote(req.params.date);
 }
 
-function getMonthNote(req) {
+function getMonthNote(req: Request) {
     return dateNoteService.getMonthNote(req.params.month);
 }
 
-function getYearNote(req) {
+function getYearNote(req: Request) {
     return dateNoteService.getYearNote(req.params.year);
 }
 
-function getDayNotesForMonth(req) {
+function getDayNotesForMonth(req: Request) {
     const month = req.params.month;
 
     return sql.getMap(`
@@ -42,7 +43,7 @@ function getDayNotesForMonth(req) {
             AND attr.value LIKE '${month}%'`);
 }
 
-function saveSqlConsole(req) {
+function saveSqlConsole(req: Request) {
     return specialNotesService.saveSqlConsole(req.body.sqlConsoleNoteId);
 }
 
@@ -50,14 +51,14 @@ function createSqlConsole() {
     return specialNotesService.createSqlConsole();
 }
 
-function saveSearchNote(req) {
+function saveSearchNote(req: Request) {
     return specialNotesService.saveSearchNote(req.body.searchNoteId);
 }
 
-function createSearchNote(req) {
+function createSearchNote(req: Request) {
     const hoistedNote = getHoistedNote();
     const searchString = req.body.searchString || "";
-    const ancestorNoteId = req.body.ancestorNoteId || hoistedNote.noteId;
+    const ancestorNoteId = req.body.ancestorNoteId || hoistedNote?.noteId;
 
     return specialNotesService.createSearchNote(searchString, ancestorNoteId);
 }
@@ -66,22 +67,22 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
-function createLauncher(req) {
+function createLauncher(req: Request) {
     return specialNotesService.createLauncher({
         parentNoteId: req.params.parentNoteId,
         launcherType: req.params.launcherType
     });
 }
 
-function resetLauncher(req) {
+function resetLauncher(req: Request) {
     return specialNotesService.resetLauncher(req.params.noteId);
 }
 
-function createOrUpdateScriptLauncherFromApi(req) {
+function createOrUpdateScriptLauncherFromApi(req: Request) {
     return specialNotesService.createOrUpdateScriptLauncherFromApi(req.body);
 }
 
-module.exports = {
+export = {
     getInboxNote,
     getDayNote,
     getWeekNote,

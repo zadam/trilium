@@ -166,7 +166,7 @@ function createScriptLauncher(parentNoteId: string, forceNoteId?: string) {
 interface LauncherConfig {
     parentNoteId: string;
     launcherType: string;
-    noteId: string;
+    noteId?: string;
 }
 
 function createLauncher({ parentNoteId, launcherType, noteId }: LauncherConfig) {
