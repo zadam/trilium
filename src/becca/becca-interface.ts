@@ -164,6 +164,14 @@ export default class Becca {
         return row ? new BRevision(row) : null;
     }
 
+    getRevisionOrThrow(revisionId: string): BRevision {
+        const revision = this.getRevision(revisionId);
+        if (!revision) {
+            throw new NotFoundError(`Revision '${revisionId}' has not been found.`);
+        }
+        return revision;
+    }
+
     getAttachment(attachmentId: string, opts: AttachmentOpts = {}): BAttachment | null {
         opts.includeContentLength = !!opts.includeContentLength;
 
@@ -249,7 +257,7 @@ export default class Becca {
         return rows.map(row => new BRecentNote(row));
     }
 
-    getRevisionsFromQuery(query: string, params = []): BRevision[] {
+    getRevisionsFromQuery(query: string, params: string[] = []): BRevision[] {
         const rows = sql.getRows<RevisionRow>(query, params);
 
         const BRevision = require('./entities/brevision'); // avoiding circular dependency problems
@@ -291,4 +299,18 @@ export interface ConstructorData<T extends AbstractBeccaEntity<T>> {
     primaryKeyName: string;
     entityName: string;
     hashedProperties: (keyof T)[];
+}
+
+export interface NotePojo {
+    noteId: string;
+    title?: string;
+    isProtected?: boolean;
+    type: string;
+    mime: string;
+    blobId?: string;
+    isDeleted: boolean;
+    dateCreated?: string;
+    dateModified?: string;
+    utcDateCreated: string;
+    utcDateModified?: string;
 }

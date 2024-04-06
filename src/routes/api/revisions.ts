@@ -1,22 +1,38 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service');
-const revisionService = require('../../services/revisions');
-const utils = require('../../services/utils');
-const sql = require('../../services/sql');
-const cls = require('../../services/cls');
-const path = require('path');
-const becca = require('../../becca/becca');
-const blobService = require('../../services/blob');
-const eraseService = require("../../services/erase");
+import beccaService = require('../../becca/becca_service');
+import revisionService = require('../../services/revisions');
+import utils = require('../../services/utils');
+import sql = require('../../services/sql');
+import cls = require('../../services/cls');
+import path = require('path');
+import becca = require('../../becca/becca');
+import blobService = require('../../services/blob');
+import eraseService = require("../../services/erase");
+import { Request, Response } from 'express';
+import BRevision = require('../../becca/entities/brevision');
+import BNote = require('../../becca/entities/bnote');
+import { NotePojo } from '../../becca/becca-interface';
 
-function getRevisionBlob(req) {
+interface NotePath {
+    noteId: string;
+    branchId?: string;
+    title: string;
+    notePath: string[];
+    path: string;
+}
+
+interface NotePojoWithNotePath extends NotePojo {
+    notePath?: string[] | null;
+}
+
+function getRevisionBlob(req: Request) {
     const preview = req.query.preview === 'true';
 
     return blobService.getBlobPojo('revisions', req.params.revisionId, { preview });
 }
 
-function getRevisions(req) {
+function getRevisions(req: Request) {
     return becca.getRevisionsFromQuery(`
         SELECT revisions.*,
                LENGTH(blobs.content) AS contentLength
@@ -26,12 +42,12 @@ function getRevisions(req) {
         ORDER BY revisions.utcDateCreated DESC`, [req.params.noteId]);
 }
 
-function getRevision(req) {
-    const revision = becca.getRevision(req.params.revisionId);
+function getRevision(req: Request) {
+    const revision = becca.getRevisionOrThrow(req.params.revisionId);
 
     if (revision.type === 'file') {
         if (revision.hasStringContent()) {
-            revision.content = revision.getContent().substr(0, 10000);
+            revision.content = (revision.getContent() as string).substr(0, 10000);
         }
     }
     else {
@@ -45,11 +61,7 @@ function getRevision(req) {
     return revision;
 }
 
-/**
- * @param {BRevision} revision
- * @returns {string}
- */
-function getRevisionFilename(revision) {
+function getRevisionFilename(revision: BRevision) {
     let filename = utils.formatDownloadTitle(revision.title, revision.type, revision.mime);
 
     const extension = path.extname(filename);
@@ -68,8 +80,8 @@ function getRevisionFilename(revision) {
     return filename;
 }
 
-function downloadRevision(req, res) {
-    const revision = becca.getRevision(req.params.revisionId);
+function downloadRevision(req: Request, res: Response) {
+    const revision = becca.getRevisionOrThrow(req.params.revisionId);
 
     if (!revision.isContentAvailable()) {
         return res.setHeader("Content-Type", "text/plain")
@@ -85,18 +97,18 @@ function downloadRevision(req, res) {
     res.send(revision.getContent());
 }
 
-function eraseAllRevisions(req) {
-    const revisionIdsToErase = sql.getColumn('SELECT revisionId FROM revisions WHERE noteId = ?',
+function eraseAllRevisions(req: Request) {
+    const revisionIdsToErase = sql.getColumn<string>('SELECT revisionId FROM revisions WHERE noteId = ?',
         [req.params.noteId]);
 
     eraseService.eraseRevisions(revisionIdsToErase);
 }
 
-function eraseRevision(req) {
+function eraseRevision(req: Request) {
     eraseService.eraseRevisions([req.params.revisionId]);
 }
 
-function restoreRevision(req) {
+function restoreRevision(req: Request) {
     const revision = becca.getRevision(req.params.revisionId);
 
     if (revision) {
@@ -117,7 +129,9 @@ function restoreRevision(req) {
                 noteAttachment.setContent(revisionAttachment.getContent(), { forceSave: true });
 
                 // content is rewritten to point to the restored revision attachments
-                revisionContent = revisionContent.replaceAll(`attachments/${revisionAttachment.attachmentId}`, `attachments/${noteAttachment.attachmentId}`);
+                if (typeof revisionContent === "string") {
+                    revisionContent = revisionContent.replaceAll(`attachments/${revisionAttachment.attachmentId}`, `attachments/${noteAttachment.attachmentId}`);
+                }
             }
 
             note.title = revision.title;
@@ -126,8 +140,8 @@ function restoreRevision(req) {
     }
 }
 
-function getEditedNotesOnDate(req) {
-    const noteIds = sql.getColumn(`
+function getEditedNotesOnDate(req: Request) {
+    const noteIds = sql.getColumn<string>(`
         SELECT notes.*
         FROM notes
         WHERE noteId IN (
@@ -152,7 +166,7 @@ function getEditedNotesOnDate(req) {
     return notes.map(note => {
         const notePath = getNotePathData(note);
 
-        const notePojo = note.getPojo();
+        const notePojo: NotePojoWithNotePath = note.getPojo();
         notePojo.notePath = notePath ? notePath.notePath : null;
 
         return notePojo;
@@ -160,7 +174,7 @@ function getEditedNotesOnDate(req) {
 
 }
 
-function getNotePathData(note) {
+function getNotePathData(note: BNote): NotePath | undefined {
     const retPath = note.getBestNotePath();
 
     if (retPath) {
@@ -173,7 +187,7 @@ function getNotePathData(note) {
         }
         else {
             const parentNote = note.parents[0];
-            branchId = becca.getBranchFromChildAndParent(note.noteId, parentNote.noteId).branchId;
+            branchId = becca.getBranchFromChildAndParent(note.noteId, parentNote.noteId)?.branchId;
         }
 
         return {
@@ -186,7 +200,7 @@ function getNotePathData(note) {
     }
 }
 
-module.exports = {
+export = {
     getRevisionBlob,
     getRevisions,
     getRevision,
