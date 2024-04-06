@@ -22,7 +22,7 @@ const loginRoute = require('./login.js');
 const indexRoute = require('./index.js');
 
 // API routes
-const treeApiRoute = require('./api/tree.js');
+const treeApiRoute = require('./api/tree');
 const notesApiRoute = require('./api/notes');
 const branchesApiRoute = require('./api/branches');
 const attachmentsApiRoute = require('./api/attachments');
