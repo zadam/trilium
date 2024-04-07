@@ -1,10 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+import { Router } from "express";
+
+import fs = require('fs');
+import path = require('path');
 
 const specPath = path.join(__dirname, 'etapi.openapi.yaml');
-let spec = null;
+let spec: any = null;
 
-function register(router) {
+function register(router: Router) {
     router.get('/etapi/etapi.openapi.yaml', (req, res, next) => {
         if (!spec) {
             spec = fs.readFileSync(specPath, 'utf8');
@@ -15,6 +17,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };
