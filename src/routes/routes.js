@@ -63,7 +63,7 @@ const shareRoutes = require('../share/routes.js');
 
 const etapiAuthRoutes = require('../etapi/auth.js');
 const etapiAppInfoRoutes = require('../etapi/app_info');
-const etapiAttachmentRoutes = require('../etapi/attachments.js');
+const etapiAttachmentRoutes = require('../etapi/attachments');
 const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches.js');
 const etapiNoteRoutes = require('../etapi/notes.js');

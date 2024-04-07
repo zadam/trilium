@@ -1,19 +1,19 @@
 import noteTypeService = require('../services/note_types');
 import dateUtils = require('../services/date_utils');
 
-function mandatory(obj: any | undefined) {
+function mandatory(obj: ValidatorArg) {
     if (obj === undefined) {
         return `mandatory, but not set`;
     }
 }
 
-function notNull(obj: any | null) {
+function notNull(obj: ValidatorArg) {
     if (obj === null) {
         return `cannot be null`;
     }
 }
 
-function isString(obj: object | undefined | null) {
+function isString(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -23,7 +23,7 @@ function isString(obj: object | undefined | null) {
     }
 }
 
-function isLocalDateTime(obj: object | undefined | null) {
+function isLocalDateTime(obj: ValidatorArg) {
     if (obj === undefined || obj === null || typeof obj !== "string") {
         return;
     }
@@ -31,7 +31,7 @@ function isLocalDateTime(obj: object | undefined | null) {
     return dateUtils.validateLocalDateTime(obj);
 }
 
-function isUtcDateTime(obj: object | undefined | null) {
+function isUtcDateTime(obj: ValidatorArg) {
     if (obj === undefined || obj === null || typeof obj !== "string") {
         return;
     }
@@ -39,7 +39,7 @@ function isUtcDateTime(obj: object | undefined | null) {
     return dateUtils.validateUtcDateTime(obj);
 }
 
-function isBoolean(obj: object | undefined | null) {
+function isBoolean(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -49,7 +49,7 @@ function isBoolean(obj: object | undefined | null) {
     }
 }
 
-function isInteger(obj: object | undefined | null) {
+function isInteger(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -59,7 +59,7 @@ function isInteger(obj: object | undefined | null) {
     }
 }
 
-function isNoteId(obj: object | undefined | null) {
+function isNoteId(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -75,7 +75,7 @@ function isNoteId(obj: object | undefined | null) {
     }
 }
 
-function isNoteType(obj: object | undefined | null) {
+function isNoteType(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -87,7 +87,7 @@ function isNoteType(obj: object | undefined | null) {
     }
 }
 
-function isAttributeType(obj: object | undefined | null) {
+function isAttributeType(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -97,7 +97,7 @@ function isAttributeType(obj: object | undefined | null) {
     }
 }
 
-function isValidEntityId(obj: object | undefined | null) {
+function isValidEntityId(obj: ValidatorArg) {
     if (obj === undefined || obj === null) {
         return;
     }

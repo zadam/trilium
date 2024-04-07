@@ -1,11 +1,13 @@
-const becca = require('../becca/becca');
-const eu = require('./etapi_utils');
-const mappers = require('./mappers');
-const v = require('./validators');
-const utils = require('../services/utils');
+import becca = require('../becca/becca');
+import eu = require('./etapi_utils');
+import mappers = require('./mappers');
+import v = require('./validators');
+import utils = require('../services/utils');
+import { Router } from 'express';
+import { AttachmentRow } from '../becca/entities/rows';
 
-function register(router) {
-    const ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT = {
+function register(router: Router) {
+    const ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT: ValidatorMap = {
         'ownerId': [v.notNull, v.isNoteId],
         'role': [v.notNull, v.isString],
         'mime': [v.notNull, v.isString],
@@ -15,17 +17,20 @@ function register(router) {
     };
 
     eu.route(router, 'post', '/etapi/attachments', (req, res, next) => {
-        const params = {};
-
-        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT);
+        const _params: Partial<AttachmentRow> = {};
+        eu.validateAndPatch(_params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT);
+        const params = _params as AttachmentRow;
 
         try {
+            if (!params.ownerId) {
+                throw new Error("Missing owner ID.");
+            }
             const note = becca.getNoteOrThrow(params.ownerId);
             const attachment = note.saveAttachment(params);
 
             res.status(201).json(mappers.mapAttachmentToPojo(attachment));
         }
-        catch (e) {
+        catch (e: any) {
             throw new eu.EtapiError(500, eu.GENERIC_CODE, e.message);
         }
     });

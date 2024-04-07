@@ -120,7 +120,7 @@ function getAndCheckAttribute(attributeId: string) {
     }
 }
 
-function validateAndPatch(target: Record<string, string>, source: Record<string, string>, allowedProperties: Record<string, ((value: string) => boolean)[]>) {
+function validateAndPatch(target: any, source: any, allowedProperties: ValidatorMap) {
     for (const key of Object.keys(source)) {
         if (!(key in allowedProperties)) {
             throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for this method.`);
