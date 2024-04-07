@@ -1,11 +1,14 @@
-const becca = require('../becca/becca');
-const eu = require('./etapi_utils');
-const mappers = require('./mappers');
-const BBranch = require('../becca/entities/bbranch');
-const entityChangesService = require('../services/entity_changes');
-const v = require('./validators');
+import { Router } from "express";
 
-function register(router) {
+import becca = require('../becca/becca');
+import eu = require('./etapi_utils');
+import mappers = require('./mappers');
+import BBranch = require('../becca/entities/bbranch');
+import entityChangesService = require('../services/entity_changes');
+import v = require('./validators');
+import { BranchRow } from "../becca/entities/rows";
+
+function register(router: Router) {
     eu.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
         const branch = eu.getAndCheckBranch(req.params.branchId);
 
@@ -21,16 +24,16 @@ function register(router) {
     };
 
     eu.route(router, 'post', '/etapi/branches', (req, res, next) => {
-        const params = {};
-
-        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_BRANCH);
+        const _params = {};
+        eu.validateAndPatch(_params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_BRANCH);
+        const params: BranchRow = _params as BranchRow;
 
         const existing = becca.getBranchFromChildAndParent(params.noteId, params.parentNoteId);
 
         if (existing) {
-            existing.notePosition = params.notePosition;
-            existing.prefix = params.prefix;
-            existing.isExpanded = params.isExpanded;
+            existing.notePosition = params.notePosition as number;
+            existing.prefix = params.prefix as string;
+            existing.isExpanded = params.isExpanded as boolean;
             existing.save();
 
             return res.status(200).json(mappers.mapBranchToPojo(existing));
@@ -39,7 +42,7 @@ function register(router) {
                 const branch = new BBranch(params).save();
 
                 res.status(201).json(mappers.mapBranchToPojo(branch));
-            } catch (e) {
+            } catch (e: any) {
                 throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
             }
         }
@@ -81,6 +84,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };
