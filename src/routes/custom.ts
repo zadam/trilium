@@ -1,21 +1,22 @@
-const log = require('../services/log');
-const fileService = require('./api/files');
-const scriptService = require('../services/script');
-const cls = require('../services/cls');
-const sql = require('../services/sql');
-const becca = require('../becca/becca');
+import log = require('../services/log');
+import fileService = require('./api/files');
+import scriptService = require('../services/script');
+import cls = require('../services/cls');
+import sql = require('../services/sql');
+import becca = require('../becca/becca');
+import { Request, Response, Router } from 'express';
 
-function handleRequest(req, res) {
+function handleRequest(req: Request, res: Response) {
     // express puts content after first slash into 0 index element
 
     const path = req.params.path + req.params[0];
 
-    const attributeIds = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+    const attributeIds = sql.getColumn<string>("SELECT attributeId FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
 
     const attrs = attributeIds.map(attrId => becca.getAttribute(attrId));
 
     for (const attr of attrs) {
-        if (!attr.value.trim()) {
+        if (!attr?.value.trim()) {
             continue;
         }
 
@@ -25,7 +26,7 @@ function handleRequest(req, res) {
         try {
             match = path.match(regex);
         }
-        catch (e) {
+        catch (e: any) {
             log.error(`Testing path for label '${attr.attributeId}', regex '${attr.value}' failed with error: ${e.message}, stack: ${e.stack}`);
             continue;
         }
@@ -46,7 +47,7 @@ function handleRequest(req, res) {
                     res
                 });
             }
-            catch (e) {
+            catch (e: any) {
                 log.error(`Custom handler '${note.noteId}' failed with: ${e.message}, ${e.stack}`);
 
                 res.setHeader("Content-Type", "text/plain")
@@ -72,10 +73,10 @@ function handleRequest(req, res) {
         .send(message);
 }
 
-function register(router) {
+function register(router: Router) {
     // explicitly no CSRF middleware since it's meant to allow integration from external services
 
-    router.all('/custom/:path*', (req, res, next) => {
+    router.all('/custom/:path*', (req: Request, res: Response, next) => {
         cls.namespace.bindEmitter(req);
         cls.namespace.bindEmitter(res);
 
@@ -83,6 +84,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };
