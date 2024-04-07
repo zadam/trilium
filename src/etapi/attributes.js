@@ -1,6 +1,6 @@
 const becca = require('../becca/becca');
 const eu = require('./etapi_utils');
-const mappers = require('./mappers.js');
+const mappers = require('./mappers');
 const attributeService = require('../services/attributes');
 const v = require('./validators.js');
 
@@ -21,7 +21,7 @@ function register(router) {
         'position': [v.notNull, v.isInteger]
     };
 
-    eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
+    eu.route(router, 'post', '/etapi/attributes', (req, res, next) => {
         if (req.body.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
@@ -49,7 +49,7 @@ function register(router) {
         'position': [v.notNull, v.isInteger]
     };
 
-    eu.route(router, 'patch' ,'/etapi/attributes/:attributeId', (req, res, next) => {
+    eu.route(router, 'patch', '/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = eu.getAndCheckAttribute(req.params.attributeId);
 
         if (attribute.type === 'label') {
@@ -65,7 +65,7 @@ function register(router) {
         res.json(mappers.mapAttributeToPojo(attribute));
     });
 
-    eu.route(router, 'delete' ,'/etapi/attributes/:attributeId', (req, res, next) => {
+    eu.route(router, 'delete', '/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = becca.getAttribute(req.params.attributeId);
 
         if (!attribute) {

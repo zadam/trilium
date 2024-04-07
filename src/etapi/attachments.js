@@ -1,6 +1,6 @@
 const becca = require('../becca/becca');
 const eu = require('./etapi_utils');
-const mappers = require('./mappers.js');
+const mappers = require('./mappers');
 const v = require('./validators.js');
 const utils = require('../services/utils');
 
@@ -14,7 +14,7 @@ function register(router) {
         'content': [v.isString],
     };
 
-    eu.route(router, 'post' ,'/etapi/attachments', (req, res, next) => {
+    eu.route(router, 'post', '/etapi/attachments', (req, res, next) => {
         const params = {};
 
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTACHMENT);
@@ -43,7 +43,7 @@ function register(router) {
         'position': [v.notNull, v.isInteger],
     };
 
-    eu.route(router, 'patch' ,'/etapi/attachments/:attachmentId', (req, res, next) => {
+    eu.route(router, 'patch', '/etapi/attachments/:attachmentId', (req, res, next) => {
         const attachment = eu.getAndCheckAttachment(req.params.attachmentId);
 
         if (attachment.isProtected) {
@@ -85,7 +85,7 @@ function register(router) {
         return res.sendStatus(204);
     });
 
-    eu.route(router, 'delete' ,'/etapi/attachments/:attachmentId', (req, res, next) => {
+    eu.route(router, 'delete', '/etapi/attachments/:attachmentId', (req, res, next) => {
         const attachment = becca.getAttachment(req.params.attachmentId);
 
         if (!attachment) {

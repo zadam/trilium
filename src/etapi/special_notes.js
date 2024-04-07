@@ -1,7 +1,7 @@
 const specialNotesService = require('../services/special_notes');
 const dateNotesService = require('../services/date_notes');
 const eu = require('./etapi_utils');
-const mappers = require('./mappers.js');
+const mappers = require('./mappers');
 
 const getDateInvalidError = date => new eu.EtapiError(400, "DATE_INVALID", `Date "${date}" is not valid.`);
 const getMonthInvalidError = month => new eu.EtapiError(400, "MONTH_INVALID", `Month "${month}" is not valid.`);

@@ -1,5 +1,9 @@
-/** @param {BNote} note */
-function mapNoteToPojo(note) {
+import BAttachment = require("../becca/entities/battachment");
+import BAttribute = require("../becca/entities/battribute");
+import BBranch = require("../becca/entities/bbranch");
+import BNote = require("../becca/entities/bnote");
+
+function mapNoteToPojo(note: BNote) {
     return {
         noteId: note.noteId,
         isProtected: note.isProtected,
@@ -19,8 +23,7 @@ function mapNoteToPojo(note) {
     };
 }
 
-/** @param {BBranch} branch */
-function mapBranchToPojo(branch) {
+function mapBranchToPojo(branch: BBranch) {
     return {
         branchId: branch.branchId,
         noteId: branch.noteId,
@@ -32,8 +35,7 @@ function mapBranchToPojo(branch) {
     };
 }
 
-/** @param {BAttribute} attr */
-function mapAttributeToPojo(attr) {
+function mapAttributeToPojo(attr: BAttribute) {
     return {
         attributeId: attr.attributeId,
         noteId: attr.noteId,
@@ -46,8 +48,7 @@ function mapAttributeToPojo(attr) {
     };
 }
 
-/** @param {BAttachment} attachment */
-function mapAttachmentToPojo(attachment) {
+function mapAttachmentToPojo(attachment: BAttachment) {
     return {
         attachmentId: attachment.attachmentId,
         ownerId: attachment.ownerId,
@@ -63,7 +64,7 @@ function mapAttachmentToPojo(attachment) {
     };
 }
 
-module.exports = {
+export = {
     mapNoteToPojo,
     mapBranchToPojo,
     mapAttributeToPojo,

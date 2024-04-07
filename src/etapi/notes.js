@@ -1,7 +1,7 @@
 const becca = require('../becca/becca');
 const utils = require('../services/utils');
 const eu = require('./etapi_utils');
-const mappers = require('./mappers.js');
+const mappers = require('./mappers');
 const noteService = require('../services/notes');
 const TaskContext = require('../services/task_context');
 const v = require('./validators.js');
@@ -12,7 +12,7 @@ const zipImportService = require('../services/import/zip');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
-        const {search} = req.query;
+        const { search } = req.query;
 
         if (!search?.trim()) {
             throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory.");
@@ -55,7 +55,7 @@ function register(router) {
         'utcDateCreated': [v.notNull, v.isString, v.isUtcDateTime]
     };
 
-    eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
+    eu.route(router, 'post', '/etapi/create-note', (req, res, next) => {
         const params = {};
 
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
@@ -81,7 +81,7 @@ function register(router) {
         'utcDateCreated': [v.notNull, v.isString, v.isUtcDateTime]
     };
 
-    eu.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
+    eu.route(router, 'patch', '/etapi/notes/:noteId', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
 
         if (note.isProtected) {
@@ -94,8 +94,8 @@ function register(router) {
         res.json(mappers.mapNoteToPojo(note));
     });
 
-    eu.route(router, 'delete' ,'/etapi/notes/:noteId', (req, res, next) => {
-        const {noteId} = req.params;
+    eu.route(router, 'delete', '/etapi/notes/:noteId', (req, res, next) => {
+        const { noteId } = req.params;
 
         const note = becca.getNote(noteId);
 
@@ -139,7 +139,7 @@ function register(router) {
         return res.sendStatus(204);
     });
 
-    eu.route(router, 'get' ,'/etapi/notes/:noteId/export', (req, res, next) => {
+    eu.route(router, 'get', '/etapi/notes/:noteId/export', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
         const format = req.query.format || "html";
 
@@ -156,7 +156,7 @@ function register(router) {
         zipExportService.exportToZip(taskContext, branch, format, res);
     });
 
-    eu.route(router, 'post' ,'/etapi/notes/:noteId/import', (req, res, next) => {
+    eu.route(router, 'post', '/etapi/notes/:noteId/import', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
         const taskContext = new TaskContext('no-progress-reporting');
 
@@ -168,7 +168,7 @@ function register(router) {
         }); // we need better error handling here, async errors won't be properly processed.
     });
 
-    eu.route(router, 'post' ,'/etapi/notes/:noteId/revision', (req, res, next) => {
+    eu.route(router, 'post', '/etapi/notes/:noteId/revision', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
 
         note.saveRevision();
@@ -178,7 +178,7 @@ function register(router) {
 
     eu.route(router, 'get', '/etapi/notes/:noteId/attachments', (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
-        const attachments = note.getAttachments({includeContentLength: true})
+        const attachments = note.getAttachments({ includeContentLength: true })
 
         res.json(
             attachments.map(attachment => mappers.mapAttachmentToPojo(attachment))
