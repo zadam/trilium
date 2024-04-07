@@ -7,7 +7,7 @@ import log = require('./log');
 
 const sessionSecretPath = `${dataDir.TRILIUM_DATA_DIR}/session_secret.txt`;
 
-let sessionSecret;
+let sessionSecret: string;
 
 const ENCODING = "ascii";
 

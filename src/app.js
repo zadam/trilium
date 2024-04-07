@@ -4,7 +4,7 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const compression = require('compression');
-const sessionParser = require('./routes/session_parser.js');
+const sessionParser = require('./routes/session_parser');
 const utils = require('./services/utils');
 
 require('./services/handlers');
