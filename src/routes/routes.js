@@ -61,7 +61,7 @@ const relationMapApiRoute = require('./api/relation-map');
 const otherRoute = require('./api/other');
 const shareRoutes = require('../share/routes.js');
 
-const etapiAuthRoutes = require('../etapi/auth.js');
+const etapiAuthRoutes = require('../etapi/auth');
 const etapiAppInfoRoutes = require('../etapi/app_info');
 const etapiAttachmentRoutes = require('../etapi/attachments');
 const etapiAttributeRoutes = require('../etapi/attributes');

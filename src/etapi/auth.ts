@@ -1,9 +1,10 @@
-const becca = require('../becca/becca');
-const eu = require('./etapi_utils');
-const passwordEncryptionService = require('../services/encryption/password_encryption');
-const etapiTokenService = require('../services/etapi_tokens');
+import becca = require('../becca/becca');
+import eu = require('./etapi_utils');
+import passwordEncryptionService = require('../services/encryption/password_encryption');
+import etapiTokenService = require('../services/etapi_tokens');
+import { RequestHandler, Router } from 'express';
 
-function register(router, loginMiddleware) {
+function register(router: Router, loginMiddleware: RequestHandler[]) {
     eu.NOT_AUTHENTICATED_ROUTE(router, 'post', '/etapi/auth/login', loginMiddleware, (req, res, next) => {
         const {password, tokenName} = req.body;
 
@@ -38,6 +39,6 @@ function register(router, loginMiddleware) {
     });
 }
 
-module.exports = {
+export = {
     register
 }
