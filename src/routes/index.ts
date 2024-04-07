@@ -1,18 +1,19 @@
 "use strict";
 
-const sql = require('../services/sql');
-const attributeService = require('../services/attributes');
-const config = require('../services/config');
-const optionService = require('../services/options');
-const log = require('../services/log');
-const env = require('../services/env');
-const utils = require('../services/utils');
-const protectedSessionService = require('../services/protected_session');
-const packageJson = require('../../package.json');
-const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path');
+import sql = require('../services/sql');
+import attributeService = require('../services/attributes');
+import config = require('../services/config');
+import optionService = require('../services/options');
+import log = require('../services/log');
+import env = require('../services/env');
+import utils = require('../services/utils');
+import protectedSessionService = require('../services/protected_session');
+import packageJson = require('../../package.json');
+import assetPath = require('../services/asset_path');
+import appPath = require('../services/app_path');
+import { Request, Response } from 'express';
 
-function index(req, res) {
+function index(req: Request, res: Response) {
     const options = optionService.getOptionMap();
 
     const view = (!utils.isElectron() && req.cookies['trilium-device'] === 'mobile')
@@ -43,7 +44,7 @@ function index(req, res) {
     });
 }
 
-function getThemeCssUrl(theme) {
+function getThemeCssUrl(theme: string) {
     if (theme === 'light') {
         return false; // light theme is always loaded as baseline
     } else if (theme === 'dark') {
@@ -63,6 +64,6 @@ function getAppCssNoteIds() {
     return attributeService.getNotesWithLabel('appCss').map(note => note.noteId);
 }
 
-module.exports = {
+export = {
     index
 };
