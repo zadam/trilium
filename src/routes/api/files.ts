@@ -20,6 +20,13 @@ function updateFile(req: AppRequest) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     const file = req.file;
+    if (!file) {
+        return {
+            uploaded: false,
+            message: `Missing file.`
+        };
+    }
+
     note.saveRevision();
 
     note.mime = file.mimetype.toLowerCase();
@@ -39,6 +46,12 @@ function updateFile(req: AppRequest) {
 function updateAttachment(req: AppRequest) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const file = req.file;
+    if (!file) {
+        return {
+            uploaded: false,
+            message: `Missing file.`
+        };
+    }
 
     attachment.getNote().saveRevision();
 

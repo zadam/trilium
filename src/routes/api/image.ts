@@ -88,6 +88,13 @@ function updateImage(req: AppRequest) {
 
     const note = becca.getNoteOrThrow(noteId);
 
+    if (!file) {
+        return {
+            uploaded: false,
+            message: `Missing image data.`
+        };
+    }
+
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return {
             uploaded: false,

@@ -5,6 +5,7 @@ import becca = require('../becca/becca');
 import etapiTokenService = require('../services/etapi_tokens');
 import config = require('../services/config');
 import { NextFunction, Request, RequestHandler, Response, Router } from 'express';
+import { AppRequest, AppRequestHandler } from '../routes/route-interface';
 const GENERIC_CODE = "GENERIC";
 
 type HttpMethod = "all" | "get" | "post" | "put" | "delete" | "patch" | "options" | "head";
@@ -44,7 +45,7 @@ function checkEtapiAuth(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-function processRequest(req: Request, res: Response, routeHandler: RequestHandler, next: NextFunction, method: string, path: string) {
+function processRequest(req: Request, res: Response, routeHandler: AppRequestHandler, next: NextFunction, method: string, path: string) {
     try {
         cls.namespace.bindEmitter(req);
         cls.namespace.bindEmitter(res);
@@ -53,7 +54,7 @@ function processRequest(req: Request, res: Response, routeHandler: RequestHandle
             cls.set('componentId', "etapi");
             cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
 
-            const cb = () => routeHandler(req, res, next);
+            const cb = () => routeHandler(req as AppRequest, res, next);
 
             return sql.transactional(cb);
         });
@@ -68,7 +69,7 @@ function processRequest(req: Request, res: Response, routeHandler: RequestHandle
     }
 }
 
-function route(router: Router, method: HttpMethod, path: string, routeHandler: RequestHandler) {
+function route(router: Router, method: HttpMethod, path: string, routeHandler: AppRequestHandler) {
     router[method](path, checkEtapiAuth, (req: Request, res: Response, next: NextFunction) => processRequest(req, res, routeHandler, next, method, path));
 }
 

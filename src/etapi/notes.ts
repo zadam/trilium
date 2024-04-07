@@ -1,20 +1,26 @@
-const becca = require('../becca/becca');
-const utils = require('../services/utils');
-const eu = require('./etapi_utils');
-const mappers = require('./mappers');
-const noteService = require('../services/notes');
-const TaskContext = require('../services/task_context');
-const v = require('./validators');
-const searchService = require('../services/search/services/search');
-const SearchContext = require('../services/search/search_context');
-const zipExportService = require('../services/export/zip');
-const zipImportService = require('../services/import/zip');
+import becca = require('../becca/becca');
+import utils = require('../services/utils');
+import eu = require('./etapi_utils');
+import mappers = require('./mappers');
+import noteService = require('../services/notes');
+import TaskContext = require('../services/task_context');
+import v = require('./validators');
+import searchService = require('../services/search/services/search');
+import SearchContext = require('../services/search/search_context');
+import zipExportService = require('../services/export/zip');
+import zipImportService = require('../services/import/zip');
+import { Router } from 'express';
+import { AppRequest } from '../routes/route-interface';
+import { ParsedQs } from 'qs';
+import { NoteParams } from '../services/note-interface';
+import BNote = require('../becca/entities/bnote');
+import { SearchParams } from '../services/search/services/types';
 
-function register(router) {
+function register(router: Router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
         const { search } = req.query;
 
-        if (!search?.trim()) {
+        if (typeof search !== "string" || !search?.trim()) {
             throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory.");
         }
 
@@ -24,8 +30,8 @@ function register(router) {
         const searchResults = searchService.findResultsWithQuery(search, searchContext);
         const foundNotes = searchResults.map(sr => becca.notes[sr.noteId]);
 
-        const resp = {
-            results: foundNotes.map(note => mappers.mapNoteToPojo(note))
+        const resp: any = {
+            results: foundNotes.map(note => mappers.mapNoteToPojo(note)),
         };
 
         if (searchContext.debugInfo) {
@@ -41,7 +47,7 @@ function register(router) {
         res.json(mappers.mapNoteToPojo(note));
     });
 
-    const ALLOWED_PROPERTIES_FOR_CREATE_NOTE = {
+    const ALLOWED_PROPERTIES_FOR_CREATE_NOTE: ValidatorMap = {
         'parentNoteId': [v.mandatory, v.notNull, v.isNoteId],
         'title': [v.mandatory, v.notNull, v.isString],
         'type': [v.mandatory, v.notNull, v.isNoteType],
@@ -56,9 +62,9 @@ function register(router) {
     };
 
     eu.route(router, 'post', '/etapi/create-note', (req, res, next) => {
-        const params = {};
-
-        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
+        const _params = {};
+        eu.validateAndPatch(_params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
+        const params = _params as NoteParams;
 
         try {
             const resp = noteService.createNewNote(params);
@@ -68,7 +74,7 @@ function register(router) {
                 branch: mappers.mapBranchToPojo(resp.branch)
             });
         }
-        catch (e) {
+        catch (e: any) {
             return eu.sendError(res, 500, eu.GENERIC_CODE, e.message);
         }
     });
@@ -143,7 +149,7 @@ function register(router) {
         const note = eu.getAndCheckNote(req.params.noteId);
         const format = req.query.format || "html";
 
-        if (!["html", "markdown"].includes(format)) {
+        if (typeof format !== "string" || !["html", "markdown"].includes(format)) {
             throw new eu.EtapiError(400, "UNRECOGNIZED_EXPORT_FORMAT", `Unrecognized export format '${format}', supported values are 'html' (default) or 'markdown'.`);
         }
 
@@ -153,7 +159,7 @@ function register(router) {
         // (e.g. branchIds are not seen in UI), that we export "note export" instead.
         const branch = note.getParentBranches()[0];
 
-        zipExportService.exportToZip(taskContext, branch, format, res);
+        zipExportService.exportToZip(taskContext, branch, format as "html" | "markdown", res);
     });
 
     eu.route(router, 'post', '/etapi/notes/:noteId/import', (req, res, next) => {
@@ -186,23 +192,24 @@ function register(router) {
     });
 }
 
-function parseSearchParams(req) {
-    const rawSearchParams = {
+function parseSearchParams(req: AppRequest) {
+    const rawSearchParams: SearchParams = {
         fastSearch: parseBoolean(req.query, 'fastSearch'),
         includeArchivedNotes: parseBoolean(req.query, 'includeArchivedNotes'),
-        ancestorNoteId: req.query['ancestorNoteId'],
-        ancestorDepth: req.query['ancestorDepth'], // e.g. "eq5"
-        orderBy: req.query['orderBy'],
-        orderDirection: parseOrderDirection(req.query, 'orderDirection'),
+        ancestorNoteId: parseString(req.query['ancestorNoteId']),
+        ancestorDepth: parseString(req.query['ancestorDepth']), // e.g. "eq5"
+        orderBy: parseString(req.query['orderBy']),
+        // TODO: Check why the order direction was provided as a number, but it's a string everywhere else.
+        orderDirection: parseOrderDirection(req.query, 'orderDirection') as unknown as string,
         limit: parseInteger(req.query, 'limit'),
         debug: parseBoolean(req.query, 'debug')
     };
 
-    const searchParams = {};
+    const searchParams: SearchParams = {};
 
-    for (const paramName of Object.keys(rawSearchParams)) {
+    for (const paramName of Object.keys(rawSearchParams) as (keyof SearchParams)[]) {
         if (rawSearchParams[paramName] !== undefined) {
-            searchParams[paramName] = rawSearchParams[paramName];
+            (searchParams as any)[paramName] = rawSearchParams[paramName];
         }
     }
 
@@ -211,7 +218,15 @@ function parseSearchParams(req) {
 
 const SEARCH_PARAM_ERROR = "SEARCH_PARAM_VALIDATION_ERROR";
 
-function parseBoolean(obj, name) {
+function parseString(value: string | ParsedQs | string[] | ParsedQs[] | undefined): string | undefined {
+    if (typeof value === "string") {
+        return value;
+    }
+
+    return undefined;
+}
+
+function parseBoolean(obj: any, name: string) {
     if (!(name in obj)) {
         return undefined;
     }
@@ -223,11 +238,7 @@ function parseBoolean(obj, name) {
     return obj[name] === 'true';
 }
 
-function parseOrderDirection(obj, name) {
-    if (!(name in obj)) {
-        return undefined;
-    }
-
+function parseOrderDirection(obj: any, name: string) {
     const integer = parseInt(obj[name]);
 
     if (!['asc', 'desc'].includes(obj[name])) {
@@ -237,7 +248,7 @@ function parseOrderDirection(obj, name) {
     return integer;
 }
 
-function parseInteger(obj, name) {
+function parseInteger(obj: any, name: string) {
     if (!(name in obj)) {
         return undefined;
     }
@@ -251,6 +262,6 @@ function parseInteger(obj, name) {
     return integer;
 }
 
-module.exports = {
+export = {
     register
 };
