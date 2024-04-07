@@ -1,17 +1,19 @@
-const becca = require('../becca/becca');
-const eu = require('./etapi_utils');
-const mappers = require('./mappers');
-const attributeService = require('../services/attributes');
-const v = require('./validators');
+import becca = require('../becca/becca');
+import eu = require('./etapi_utils');
+import mappers = require('./mappers');
+import attributeService = require('../services/attributes');
+import v = require('./validators');
+import { Router } from 'express';
+import { AttributeRow } from '../becca/entities/rows';
 
-function register(router) {
+function register(router: Router) {
     eu.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = eu.getAndCheckAttribute(req.params.attributeId);
 
         res.json(mappers.mapAttributeToPojo(attribute));
     });
 
-    const ALLOWED_PROPERTIES_FOR_CREATE_ATTRIBUTE = {
+    const ALLOWED_PROPERTIES_FOR_CREATE_ATTRIBUTE: ValidatorMap = {
         'attributeId': [v.mandatory, v.notNull, v.isValidEntityId],
         'noteId': [v.mandatory, v.notNull, v.isNoteId],
         'type': [v.mandatory, v.notNull, v.isAttributeType],
@@ -26,16 +28,16 @@ function register(router) {
             eu.getAndCheckNote(req.body.value);
         }
 
-        const params = {};
-
-        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTRIBUTE);
+        const _params = {};
+        eu.validateAndPatch(_params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTRIBUTE);
+        const params: AttributeRow = _params as AttributeRow;
 
         try {
             const attr = attributeService.createAttribute(params);
 
             res.status(201).json(mappers.mapAttributeToPojo(attr));
         }
-        catch (e) {
+        catch (e: any) {
             throw new eu.EtapiError(500, eu.GENERIC_CODE, e.message);
         }
     });
@@ -78,6 +80,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };
