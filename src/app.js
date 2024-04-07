@@ -37,7 +37,7 @@ app.use(`/robots.txt`, express.static(path.join(__dirname, 'public/robots.txt'))
 app.use(sessionParser);
 app.use(favicon(`${__dirname}/../images/app-icons/win/icon.ico`));
 
-require('./routes/assets.js').register(app);
+require('./routes/assets').register(app);
 require('./routes/routes.js').register(app);
 require('./routes/custom.js').register(app);
 require('./routes/error_handlers.js').register(app);
