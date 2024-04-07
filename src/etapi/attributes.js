@@ -2,7 +2,7 @@ const becca = require('../becca/becca');
 const eu = require('./etapi_utils');
 const mappers = require('./mappers');
 const attributeService = require('../services/attributes');
-const v = require('./validators.js');
+const v = require('./validators');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {

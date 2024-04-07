@@ -3,7 +3,7 @@ const eu = require('./etapi_utils');
 const mappers = require('./mappers');
 const BBranch = require('../becca/entities/bbranch');
 const entityChangesService = require('../services/entity_changes');
-const v = require('./validators.js');
+const v = require('./validators');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
