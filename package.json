@@ -120,6 +120,7 @@
     "@types/ini": "^4.1.0",
     "@types/jsdom": "^21.1.6",
     "@types/mime-types": "^2.1.4",
+    "@types/multer": "^1.4.11",
     "@types/node": "^20.11.19",
     "@types/sanitize-html": "^2.11.0",
     "@types/sax": "^1.2.7",
