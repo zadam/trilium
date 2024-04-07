@@ -1,7 +1,8 @@
-const log = require('../services/log');
+import { Application, NextFunction, Request, Response } from 'express';
+import log = require('../services/log');
 
-function register(app) {
-    app.use((err, req, res, next) => {
+function register(app: Application) {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         if (err.code !== 'EBADCSRFTOKEN') {
             return next(err);
         }
@@ -16,12 +17,12 @@ function register(app) {
     // catch 404 and forward to error handler
     app.use((req, res, next) => {
         const err = new Error(`Router not found for request ${req.method} ${req.url}`);
-        err.status = 404;
+        (err as any).status = 404;
         next(err);
     });
 
     // error handler
-    app.use((err, req, res, next) => {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         if (err && err.message && (
             (err.message.includes("Router not found for request") && err.message.includes(".js.map"))
             || (err.message.includes("Router not found for request") && err.message.includes(".css.map"))
@@ -38,6 +39,6 @@ function register(app) {
     });
 }
 
-module.exports = {
+export = {
     register
 };
