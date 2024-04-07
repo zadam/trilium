@@ -18,7 +18,7 @@ const ValidationError = require('../errors/validation_error');
 
 // page routes
 const setupRoute = require('./setup');
-const loginRoute = require('./login.js');
+const loginRoute = require('./login');
 const indexRoute = require('./index.js');
 
 // API routes

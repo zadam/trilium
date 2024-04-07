@@ -8,18 +8,9 @@ import passwordEncryptionService = require('./encryption/password_encryption');
 import config = require('./config');
 import passwordService = require('./encryption/password');
 import type { NextFunction, Request, Response } from 'express';
+import { AppRequest } from '../routes/route-interface';
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
-
-interface AppRequest extends Request {
-    headers: {
-        authorization?: string;
-        "trilium-cred"?: string;
-    }
-    session: {
-        loggedIn: boolean;        
-    }
-}
 
 function checkAuth(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
