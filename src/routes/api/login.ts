@@ -13,8 +13,9 @@ import sql = require('../../services/sql');
 import ws = require('../../services/ws');
 import etapiTokenService = require('../../services/etapi_tokens');
 import { Request } from 'express';
+import { AppRequest } from '../route-interface';
 
-function loginSync(req: Request) {
+function loginSync(req: AppRequest) {
     if (!sqlInit.schemaExists()) {
         return [500, { message: "DB schema does not exist, can't sync." }];
     }
@@ -45,7 +46,7 @@ function loginSync(req: Request) {
         return [400, { message: "Sync login credentials are incorrect. It looks like you're trying to sync two different initialized documents which is not possible." }];
     }
 
-    (req as any).session.loggedIn = true;
+    req.session.loggedIn = true;
 
     return {
         instanceId: instanceId,

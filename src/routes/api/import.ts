@@ -13,8 +13,9 @@ import TaskContext = require('../../services/task_context');
 import ValidationError = require('../../errors/validation_error');
 import { Request } from 'express';
 import BNote = require('../../becca/entities/bnote');
+import { AppRequest } from '../route-interface';
 
-async function importNotesToBranch(req: Request) {
+async function importNotesToBranch(req: AppRequest) {
     const { parentNoteId } = req.params;
     const { taskId, last } = req.body;
 
@@ -27,7 +28,7 @@ async function importNotesToBranch(req: Request) {
         replaceUnderscoresWithSpaces: req.body.replaceUnderscoresWithSpaces !== 'false'
     };
 
-    const file = (req as any).file;
+    const file = req.file;
 
     if (!file) {
         throw new ValidationError("No file has been uploaded");
@@ -49,7 +50,7 @@ async function importNotesToBranch(req: Request) {
     const taskContext = TaskContext.getInstance(taskId, 'importNotes', options);
 
     try {
-        if (extension === '.zip' && options.explodeArchives) {
+        if (extension === '.zip' && options.explodeArchives && typeof file.buffer !== "string") {
             note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
         } else if (extension === '.opml' && options.explodeArchives) {
             const importResult = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
@@ -96,7 +97,7 @@ async function importNotesToBranch(req: Request) {
     return note.getPojo();
 }
 
-async function importAttachmentsToNote(req: Request) {
+async function importAttachmentsToNote(req: AppRequest) {
     const { parentNoteId } = req.params;
     const { taskId, last } = req.body;
 
@@ -104,7 +105,7 @@ async function importAttachmentsToNote(req: Request) {
         shrinkImages: req.body.shrinkImages !== 'false',
     };
 
-    const file = (req as any).file;
+    const file = req.file;
 
     if (!file) {
         throw new ValidationError("No file has been uploaded");
