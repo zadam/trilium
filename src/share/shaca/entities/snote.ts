@@ -15,8 +15,6 @@ const CREDENTIALS = 'shareCredentials';
 
 const isCredentials = (attr: SAttribute) => attr.type === 'label' && attr.name === CREDENTIALS;
 
-type NoteRow = [ string, string, string, string, string, string, boolean ];
-
 class SNote extends AbstractShacaEntity {
     noteId: string;
     private title: string;
@@ -34,7 +32,7 @@ class SNote extends AbstractShacaEntity {
     targetRelations: SAttribute[];
     attachments: SAttachment[];
 
-    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: NoteRow) {
+    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: SNoteRow) {
         super();
 
         this.noteId = noteId;

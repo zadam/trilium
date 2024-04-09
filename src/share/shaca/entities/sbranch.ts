@@ -3,8 +3,6 @@
 import AbstractShacaEntity = require('./abstract_shaca_entity');
 import SNote = require('./snote');
 
-type BranchRow = [ string, string, string, string, string, boolean ];
-
 class SBranch extends AbstractShacaEntity {
 
     private branchId: string;
@@ -14,7 +12,7 @@ class SBranch extends AbstractShacaEntity {
     private isExpanded: boolean;
     isHidden: boolean;
 
-    constructor([branchId, noteId, parentNoteId, prefix, isExpanded]: BranchRow) {
+    constructor([branchId, noteId, parentNoteId, prefix, isExpanded]: SBranchRow) {
         super();
 
         this.branchId = branchId;

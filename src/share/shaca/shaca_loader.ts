@@ -1,14 +1,14 @@
 "use strict";
 
-const sql = require('../sql');
-const shaca = require('./shaca');
-const log = require('../../services/log');
-const SNote = require('./entities/snote');
-const SBranch = require('./entities/sbranch');
-const SAttribute = require('./entities/sattribute');
-const SAttachment = require('./entities/sattachment');
-const shareRoot = require('../share_root');
-const eventService = require('../../services/events');
+import sql = require('../sql');
+import shaca = require('./shaca');
+import log = require('../../services/log');
+import SNote = require('./entities/snote');
+import SBranch = require('./entities/sbranch');
+import SAttribute = require('./entities/sattribute');
+import SAttachment = require('./entities/sattachment');
+import shareRoot = require('../share_root');
+import eventService = require('../../services/events');
 
 function load() {
     const start = Date.now();
@@ -35,7 +35,7 @@ function load() {
 
     const noteIdStr = noteIds.map(noteId => `'${noteId}'`).join(",");
 
-    const rawNoteRows = sql.getRawRows(`
+    const rawNoteRows = sql.getRawRows<SNoteRow>(`
         SELECT noteId, title, type, mime, blobId, utcDateModified, isProtected
         FROM notes 
         WHERE isDeleted = 0 
@@ -45,7 +45,7 @@ function load() {
         new SNote(row);
     }
 
-    const rawBranchRows = sql.getRawRows(`
+    const rawBranchRows = sql.getRawRows<SBranchRow>(`
         SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified 
         FROM branches 
         WHERE isDeleted = 0 
@@ -56,7 +56,7 @@ function load() {
         new SBranch(row);
     }
 
-    const rawAttributeRows = sql.getRawRows(`
+    const rawAttributeRows = sql.getRawRows<SAttributeRow>(`
         SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified 
         FROM attributes 
         WHERE isDeleted = 0 
@@ -66,13 +66,11 @@ function load() {
         new SAttribute(row);
     }
 
-    const rawAttachmentRows = sql.getRawRows(`
+    const rawAttachmentRows = sql.getRawRows<SAttachmentRow>(`
         SELECT attachmentId, ownerId, role, mime, title, blobId, utcDateModified 
         FROM attachments 
         WHERE isDeleted = 0 
           AND ownerId IN (${noteIdStr})`);
-
-    rawAttachmentRows.sort((a, b) => a.position < b.position ? -1 : 1);
 
     for (const row of rawAttachmentRows) {
         new SAttachment(row);
@@ -93,7 +91,7 @@ eventService.subscribe([eventService.ENTITY_CREATED, eventService.ENTITY_CHANGED
     shaca.reset();
 });
 
-module.exports = {
+export = {
     load,
     ensureLoad
 };

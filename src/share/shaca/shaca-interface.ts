@@ -14,7 +14,7 @@ export default class Shaca {
     private shareRootNote!: SNote | null;
     /** true if the index of all shared subtrees is enabled */
     private shareIndexEnabled!: boolean;
-    private loaded!: boolean;
+    loaded!: boolean;
 
     constructor() {
         this.reset();

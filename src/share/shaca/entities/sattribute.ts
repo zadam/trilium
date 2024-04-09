@@ -4,8 +4,6 @@ import SNote = require("./snote");
 
 const AbstractShacaEntity = require('./abstract_shaca_entity');
 
-type AttributeRow = [ string, string, string, string, string, boolean, number ];
-
 class SAttribute extends AbstractShacaEntity {
 
     attributeId: string;
@@ -16,7 +14,7 @@ class SAttribute extends AbstractShacaEntity {
     value: string;
     isInheritable: boolean;
 
-    constructor([attributeId, noteId, type, name, value, isInheritable, position]: AttributeRow) {
+    constructor([attributeId, noteId, type, name, value, isInheritable, position]: SAttributeRow) {
         super();
 
         this.attributeId = attributeId;

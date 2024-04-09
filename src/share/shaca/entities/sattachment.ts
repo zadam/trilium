@@ -6,8 +6,6 @@ import AbstractShacaEntity = require('./abstract_shaca_entity');
 import SNote = require('./snote');
 import { Blob } from '../../../services/blob-interface';
 
-type AttachmentRow = [ string, string, string, string, string, string, string ];
-
 class SAttachment extends AbstractShacaEntity {
     private attachmentId: string;
     private ownerId: string;
@@ -18,7 +16,7 @@ class SAttachment extends AbstractShacaEntity {
     /** used for caching of images */
     private utcDateModified: string;
 
-    constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]: AttachmentRow) {
+    constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]: SAttachmentRow) {
         super();
 
         this.attachmentId = attachmentId;
