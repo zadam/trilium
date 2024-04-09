@@ -19,7 +19,7 @@ function getRawRows<T>(query: string, params = []): T[] {
     return dbConnection.prepare(query).raw().all(params) as T[];
 }
 
-function getRow<T>(query: string, params = []): T {
+function getRow<T>(query: string, params: string[] = []): T {
     return dbConnection.prepare(query).get(params) as T;
 }
 
