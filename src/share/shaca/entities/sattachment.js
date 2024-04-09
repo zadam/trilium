@@ -2,7 +2,7 @@
 
 const sql = require('../../sql');
 const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity.js');
+const AbstractShacaEntity = require('./abstract_shaca_entity');
 
 class SAttachment extends AbstractShacaEntity {
     constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]) {

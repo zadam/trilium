@@ -1,6 +1,6 @@
 "use strict";
 
-const AbstractShacaEntity = require('./abstract_shaca_entity.js');
+const AbstractShacaEntity = require('./abstract_shaca_entity');
 
 class SBranch extends AbstractShacaEntity {
     constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {

@@ -1,8 +1,8 @@
-let shaca;
+let shaca: any;
 
 class AbstractShacaEntity {
-    /** @return {Shaca} */
-    get shaca() {
+    // FIXME: Use right data type once we convert Shaca as well.
+    get shaca(): any {
         if (!shaca) {
             shaca = require('../shaca.js');
         }
@@ -11,4 +11,4 @@ class AbstractShacaEntity {
     }
 }
 
-module.exports = AbstractShacaEntity;
+export = AbstractShacaEntity;
