@@ -6,6 +6,7 @@ import AbstractShacaEntity = require('./abstract_shaca_entity');
 import escape = require('escape-html');
 import { AttributeRow } from '../../../becca/entities/rows';
 import { Blob } from '../../../services/blob-interface';
+import SAttachment = require('./sattachment');
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -30,7 +31,7 @@ class SNote extends AbstractShacaEntity {
     private __attributeCache: any[] | null; // fixme
     private __inheritableAttributeCache: any[] | null; // fixme
     private targetRelations: any[]; // fixme: SAttribute[]
-    private attachments: any[] ;        // fixme: SAttachment[]
+    private attachments: SAttachment[];
 
     constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: NoteRow) {
         super();
@@ -120,15 +121,9 @@ class SNote extends AbstractShacaEntity {
         let content = row.content;
 
         if (this.hasStringContent()) {
-            if (content == null) {
-                return "";
-            }
-
-            if (typeof content !== "string") {
-                return content.toString("utf-8");
-            }
-
-            return content;
+            return content === null
+                ? ""
+                : content.toString("utf-8");
         }
         else {
             return content;
@@ -470,17 +465,14 @@ class SNote extends AbstractShacaEntity {
         return this.targetRelations;
     }
 
-    /** @returns {SAttachment[]} */
     getAttachments() {
         return this.attachments;
     }
 
-    /** @returns {SAttachment} */
     getAttachmentByTitle(title: string) {
         return this.attachments.find(attachment => attachment.title === title);
     }
 
-    /** @returns {string} */
     get shareId() {
         if (this.hasOwnedLabel('shareRoot')) {
             return "";
@@ -519,4 +511,4 @@ class SNote extends AbstractShacaEntity {
     }
 }
 
-module.exports = SNote;
+export = SNote;

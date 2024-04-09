@@ -6,7 +6,7 @@ const log = require('../../services/log');
 const SNote = require('./entities/snote');
 const SBranch = require('./entities/sbranch.js');
 const SAttribute = require('./entities/sattribute.js');
-const SAttachment = require('./entities/sattachment.js');
+const SAttachment = require('./entities/sattachment');
 const shareRoot = require('../share_root');
 const eventService = require('../../services/events');
 
