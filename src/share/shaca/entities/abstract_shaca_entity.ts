@@ -1,10 +1,11 @@
-let shaca: any;
+import Shaca from "../shaca-interface";
+
+let shaca: Shaca;
 
 class AbstractShacaEntity {
-    // FIXME: Use right data type once we convert Shaca as well.
-    get shaca(): any {
+    get shaca(): Shaca {
         if (!shaca) {
-            shaca = require('../shaca.js');
+            shaca = require('../shaca');
         }
 
         return shaca;

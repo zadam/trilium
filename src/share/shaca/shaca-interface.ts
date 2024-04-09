@@ -1,45 +1,49 @@
-"use strict";
+import SAttachment = require("./entities/sattachment");
+import SAttribute = require("./entities/sattribute");
+import SBranch = require("./entities/sbranch");
+import SNote = require("./entities/snote");
 
-class Shaca {
+export default class Shaca {
+
+    notes!: Record<string, SNote>;
+    branches!: Record<string, SBranch>;
+    childParentToBranch!: Record<string, SBranch>;
+    private attributes!: Record<string, SAttribute>;
+    attachments!: Record<string, SAttachment>;
+    private aliasToNote!: Record<string, SNote>;
+    private shareRootNote!: SNote | null;
+    /** true if the index of all shared subtrees is enabled */
+    private shareIndexEnabled!: boolean;
+    private loaded!: boolean;
+
     constructor() {
         this.reset();
     }
 
     reset() {
-        /** @type {Object.<String, SNote>} */
         this.notes = {};
-        /** @type {Object.<String, SBranch>} */
         this.branches = {};
-        /** @type {Object.<String, SBranch>} */
         this.childParentToBranch = {};
-        /** @type {Object.<String, SAttribute>} */
         this.attributes = {};
-        /** @type {Object.<String, SAttachment>} */
         this.attachments = {};
-        /** @type {Object.<String, SNote>} */
         this.aliasToNote = {};
 
-        /** @type {SNote|null} */
         this.shareRootNote = null;
 
-        /** @type {boolean} true if the index of all shared subtrees is enabled */
         this.shareIndexEnabled = false;
 
         this.loaded = false;
     }
 
-    /** @returns {SNote|null} */
-    getNote(noteId) {
+    getNote(noteId: string) {
         return this.notes[noteId];
     }
 
-    /** @returns {boolean} */
-    hasNote(noteId) {
+    hasNote(noteId: string) {
         return noteId in this.notes;
     }
 
-    /** @returns {SNote[]} */
-    getNotes(noteIds, ignoreMissing = false) {
+    getNotes(noteIds: string[], ignoreMissing = false) {
         const filteredNotes = [];
 
         for (const noteId of noteIds) {
@@ -59,27 +63,23 @@ class Shaca {
         return filteredNotes;
     }
 
-    /** @returns {SBranch|null} */
-    getBranch(branchId) {
+    getBranch(branchId: string) {
         return this.branches[branchId];
     }
 
-    /** @returns {SBranch|null} */
-    getBranchFromChildAndParent(childNoteId, parentNoteId) {
+    getBranchFromChildAndParent(childNoteId: string, parentNoteId: string) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 
-    /** @returns {SAttribute|null} */
-    getAttribute(attributeId) {
+    getAttribute(attributeId: string) {
         return this.attributes[attributeId];
     }
 
-    /** @returns {SAttachment|null} */
-    getAttachment(attachmentId) {
+    getAttachment(attachmentId: string) {
         return this.attachments[attachmentId];
     }
 
-    getEntity(entityName, entityId) {
+    getEntity(entityName: string, entityId: string) {
         if (!entityName || !entityId) {
             return null;
         }
@@ -91,10 +91,6 @@ class Shaca {
                     .replace('_', '')
         );
 
-        return this[camelCaseEntityName][entityId];
+        return (this as any)[camelCaseEntityName][entityId];
     }
 }
-
-const shaca = new Shaca();
-
-module.exports = shaca;

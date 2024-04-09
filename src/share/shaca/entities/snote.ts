@@ -32,7 +32,7 @@ class SNote extends AbstractShacaEntity {
     private __attributeCache: SAttribute[] | null;
     private __inheritableAttributeCache: SAttribute[] | null;
     targetRelations: SAttribute[];
-    private attachments: SAttachment[];
+    attachments: SAttachment[];
 
     constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: NoteRow) {
         super();

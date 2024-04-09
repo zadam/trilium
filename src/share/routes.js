@@ -3,7 +3,7 @@ const path = require('path');
 const safeCompare = require('safe-compare');
 const ejs = require("ejs");
 
-const shaca = require('./shaca/shaca.js');
+const shaca = require('./shaca/shaca');
 const shacaLoader = require('./shaca/shaca_loader.js');
 const shareRoot = require('./share_root');
 const contentRenderer = require('./content_renderer.js');
