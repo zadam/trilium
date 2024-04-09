@@ -7,6 +7,7 @@ import escape = require('escape-html');
 import { Blob } from '../../../services/blob-interface';
 import SAttachment = require('./sattachment');
 import SAttribute = require('./sattribute');
+import SBranch = require('./sbranch');
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -24,9 +25,9 @@ class SNote extends AbstractShacaEntity {
     private blobId: string;
     private utcDateModified: string;
     private isProtected: boolean;
-    private parentBranches: any[];    // fixme: set right data type once SBranch is ported.
-    private parents: SNote[];
-    private children: SNote[];
+    parentBranches: SBranch[];
+    parents: SNote[];
+    children: SNote[];
     private ownedAttributes: SAttribute[];
     private __attributeCache: SAttribute[] | null;
     private __inheritableAttributeCache: SAttribute[] | null;
@@ -58,18 +59,15 @@ class SNote extends AbstractShacaEntity {
         this.shaca.notes[this.noteId] = this;
     }
 
-    /** @returns {SBranch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {SBranch[]} */
     getBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {SBranch[]} */
-    getChildBranches() {
+    getChildBranches(): SBranch[] {
         return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
