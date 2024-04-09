@@ -1,24 +1,30 @@
 "use strict";
 
+import SNote = require("./snote");
+
 const AbstractShacaEntity = require('./abstract_shaca_entity');
 
+type AttributeRow = [ string, string, string, string, string, boolean, number ];
+
 class SAttribute extends AbstractShacaEntity {
-    constructor([attributeId, noteId, type, name, value, isInheritable, position]) {
+
+    attributeId: string;
+    private noteId: string;
+    type: string;
+    name: string;
+    private position: number;
+    value: string;
+    isInheritable: boolean;
+
+    constructor([attributeId, noteId, type, name, value, isInheritable, position]: AttributeRow) {
         super();
 
-        /** @param {string} */
         this.attributeId = attributeId;
-        /** @param {string} */
         this.noteId = noteId;
-        /** @param {string} */
         this.type = type;
-        /** @param {string} */
         this.name = name;
-        /** @param {int} */
         this.position = position;
-        /** @param {string} */
         this.value = value;
-        /** @param {boolean} */
         this.isInheritable = !!isInheritable;
 
         this.shaca.attributes[this.attributeId] = this;
@@ -53,41 +59,34 @@ class SAttribute extends AbstractShacaEntity {
         }
     }
 
-    /** @returns {boolean} */
     get isAffectingSubtree() {
         return this.isInheritable
             || (this.type === 'relation' && ['template', 'inherit'].includes(this.name));
     }
 
-    /** @returns {string} */
     get targetNoteId() { // alias
         return this.type === 'relation' ? this.value : undefined;
     }
 
-    /** @returns {boolean} */
     isAutoLink() {
         return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
     }
 
-    /** @returns {SNote} */
-    get note() {
+    get note(): SNote {
         return this.shaca.notes[this.noteId];
     }
 
-    /** @returns {SNote|null} */
-    get targetNote() {
+    get targetNote(): SNote | null | undefined {
         if (this.type === 'relation') {
             return this.shaca.notes[this.value];
         }
     }
 
-    /** @returns {SNote|null} */
-    getNote() {
+    getNote(): SNote | null {
         return this.shaca.getNote(this.noteId);
     }
 
-    /** @returns {SNote|null} */
-    getTargetNote() {
+    getTargetNote(): SNote | null {
         if (this.type !== 'relation') {
             throw new Error(`Attribute '${this.attributeId}' is not relation`);
         }
@@ -112,4 +111,4 @@ class SAttribute extends AbstractShacaEntity {
     }
 }
 
-module.exports = SAttribute;
+export = SAttribute;

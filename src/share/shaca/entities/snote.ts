@@ -4,20 +4,20 @@ import sql = require('../../sql');
 import utils = require('../../../services/utils');
 import AbstractShacaEntity = require('./abstract_shaca_entity');
 import escape = require('escape-html');
-import { AttributeRow } from '../../../becca/entities/rows';
 import { Blob } from '../../../services/blob-interface';
 import SAttachment = require('./sattachment');
+import SAttribute = require('./sattribute');
 
 const LABEL = 'label';
 const RELATION = 'relation';
 const CREDENTIALS = 'shareCredentials';
 
-const isCredentials = (attr: AttributeRow) => attr.type === 'label' && attr.name === CREDENTIALS;
+const isCredentials = (attr: SAttribute) => attr.type === 'label' && attr.name === CREDENTIALS;
 
 type NoteRow = [ string, string, string, string, string, string, boolean ];
 
 class SNote extends AbstractShacaEntity {
-    private noteId: string;
+    noteId: string;
     private title: string;
     private type: string;
     private mime: string;
@@ -27,10 +27,10 @@ class SNote extends AbstractShacaEntity {
     private parentBranches: any[];    // fixme: set right data type once SBranch is ported.
     private parents: SNote[];
     private children: SNote[];
-    private ownedAttributes: any[];   // fixme: set right data type once SAttribute is ported.
-    private __attributeCache: any[] | null; // fixme
-    private __inheritableAttributeCache: any[] | null; // fixme
-    private targetRelations: any[]; // fixme: SAttribute[]
+    private ownedAttributes: SAttribute[];
+    private __attributeCache: SAttribute[] | null;
+    private __inheritableAttributeCache: SAttribute[] | null;
+    targetRelations: SAttribute[];
     private attachments: SAttachment[];
 
     constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: NoteRow) {
@@ -215,7 +215,6 @@ class SNote extends AbstractShacaEntity {
         return this.__attributeCache;
     }
 
-    /** @returns {SAttribute[]} */
     __getInheritableAttributes(path: string[]) {
         if (path.includes(this.noteId)) {
             return [];
@@ -279,25 +278,25 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name
-     * @returns {SAttribute|null} label if it exists, null otherwise
+     * @returns label if it exists, null otherwise
      */
     getLabel(name: string) { return this.getAttribute(LABEL, name); }
 
     /**
      * @param name - label name
-     * @returns {SAttribute|null} label if it exists, null otherwise
+     * @returns label if it exists, null otherwise
      */
     getOwnedLabel(name: string) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
      * @param name - relation name
-     * @returns {SAttribute|null} relation if it exists, null otherwise
+     * @returns relation if it exists, null otherwise
      */
     getRelation(name: string) { return this.getAttribute(RELATION, name); }
 
     /**
      * @param name - relation name
-     * @returns {SAttribute|null} relation if it exists, null otherwise
+     * @returns relation if it exists, null otherwise
      */
     getOwnedRelation(name: string) { return this.getOwnedAttribute(RELATION, name); }
 
@@ -337,8 +336,8 @@ class SNote extends AbstractShacaEntity {
     /**
      * @param type - attribute type (label, relation, etc.)
      * @param name - attribute name
-     * @returns {SAttribute} attribute of the given type and name. If there are more such attributes, first is  returned.
-     *                       Returns null if there's no such attribute belonging to this note.
+     * @returns attribute of the given type and name. If there are more such attributes, first is  returned.
+     * Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type: string, name: string) {
         const attributes = this.getAttributes();
@@ -370,7 +369,7 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name to filter
-     * @returns {SAttribute[]} all note's labels (attributes with type label), including inherited ones
+     * @returns all note's labels (attributes with type label), including inherited ones
      */
     getLabels(name: string) {
         return this.getAttributes(LABEL, name);
@@ -386,7 +385,7 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name to filter
-     * @returns {SAttribute[]} all note's labels (attributes with type label), excluding inherited ones
+     * @returns all note's labels (attributes with type label), excluding inherited ones
      */
     getOwnedLabels(name: string) {
         return this.getOwnedAttributes(LABEL, name);
@@ -402,24 +401,24 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - relation name to filter
-     * @returns {SAttribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @returns all note's relations (attributes with type relation), including inherited ones
      */
     getRelations(name: string) {
         return this.getAttributes(RELATION, name);
     }
 
     /**
-     * @param {string} name - relation name to filter
-     * @returns {SAttribute[]} all note's relations (attributes with type relation), excluding inherited ones
+     * @param name - relation name to filter
+     * @returns all note's relations (attributes with type relation), excluding inherited ones
      */
     getOwnedRelations(name: string) {
         return this.getOwnedAttributes(RELATION, name);
     }
 
     /**
-     * @param {string} type - (optional) attribute type to filter
-     * @param {string} name - (optional) attribute name to filter
-     * @returns {SAttribute[]} note's "owned" attributes - excluding inherited ones
+     * @param type - (optional) attribute type to filter
+     * @param name - (optional) attribute name to filter
+     * @returns note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type: string, name: string) {
         // it's a common mistake to include # or ~ into attribute name
@@ -442,7 +441,7 @@ class SNote extends AbstractShacaEntity {
     }
 
     /**
-     * @returns {SAttribute} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
@@ -460,7 +459,6 @@ class SNote extends AbstractShacaEntity {
         return !!this.targetRelations.find(rel => rel.name === 'template' || rel.name === 'inherit');
     }
 
-    /** @returns {SAttribute[]} */
     getTargetRelations() {
         return this.targetRelations;
     }
