@@ -10,7 +10,7 @@ class SAttachment extends AbstractShacaEntity {
     private attachmentId: string;
     private ownerId: string;
     title: string;
-    private role: string;
+    role: string;
     private mime: string;
     private blobId: string;
     /** used for caching of images */

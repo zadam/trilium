@@ -1,10 +1,17 @@
-const { JSDOM } = require("jsdom");
-const shaca = require('./shaca/shaca');
-const assetPath = require('../services/asset_path');
-const shareRoot = require('./share_root');
-const escapeHtml = require('escape-html');
+import { JSDOM } from "jsdom";
+import shaca = require('./shaca/shaca');
+import assetPath = require('../services/asset_path');
+import shareRoot = require('./share_root');
+import escapeHtml = require('escape-html');
+import SNote = require("./shaca/entities/snote");
 
-function getContent(note) {
+interface Result {
+    header: string;
+    content: string | Buffer | undefined;
+    isEmpty: boolean;
+}
+
+function getContent(note: SNote) {
     if (note.isProtected) {
         return {
             header: '',
@@ -13,7 +20,7 @@ function getContent(note) {
         };
     }
 
-    const result = {
+    const result: Result = {
         content: note.getContent(),
         header: '',
         isEmpty: false
@@ -38,7 +45,7 @@ function getContent(note) {
     return result;
 }
 
-function renderIndex(result) {
+function renderIndex(result: Result) {
     result.content += '<ul id="index">';
 
     const rootNote = shaca.getNote(shareRoot.SHARE_ROOT_NOTE_ID);
@@ -53,10 +60,10 @@ function renderIndex(result) {
     result.content += '</ul>';
 }
 
-function renderText(result, note) {
+function renderText(result: Result, note: SNote) {
     const document = new JSDOM(result.content || "").window.document;
 
-    result.isEmpty = document.body.textContent.trim().length === 0
+    result.isEmpty = document.body.textContent?.trim().length === 0
         && document.querySelectorAll("img").length === 0;
 
     if (!result.isEmpty) {
@@ -89,7 +96,9 @@ function renderText(result, note) {
                 if (linkedNote) {
                     const isExternalLink = linkedNote.hasLabel("shareExternalLink");
                     const href = isExternalLink ? linkedNote.getLabelValue("shareExternalLink") : `./${linkedNote.shareId}`;
-                    linkEl.setAttribute("href", href);
+                    if (href) {
+                        linkEl.setAttribute("href", href);
+                    }
                     if (isExternalLink) {
                         linkEl.setAttribute("target", "_blank");
                         linkEl.setAttribute("rel", "noopener noreferrer");
@@ -122,8 +131,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 }
 
-function renderCode(result) {
-    if (!result.content?.trim()) {
+function renderCode(result: Result) {
+    if (typeof result.content !== "string" || !result.content?.trim()) {
         result.isEmpty = true;
     } else {
         const document = new JSDOM().window.document;
@@ -135,7 +144,11 @@ function renderCode(result) {
     }
 }
 
-function renderMermaid(result, note) {
+function renderMermaid(result: Result, note: SNote) {
+    if (typeof result.content !== "string") {
+        return;
+    }
+
     result.content = `
 <img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">
 <hr>
@@ -145,11 +158,11 @@ function renderMermaid(result, note) {
 </details>`
 }
 
-function renderImage(result, note) {
+function renderImage(result: Result, note: SNote) {
     result.content = `<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">`;
 }
 
-function renderFile(note, result) {
+function renderFile(note: SNote, result: Result) {
     if (note.mime === 'application/pdf') {
         result.content = `<iframe class="pdf-view" src="api/notes/${note.noteId}/view"></iframe>`
     } else {
@@ -157,6 +170,6 @@ function renderFile(note, result) {
     }
 }
 
-module.exports = {
+export = {
     getContent
 };

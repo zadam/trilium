@@ -18,11 +18,11 @@ const isCredentials = (attr: SAttribute) => attr.type === 'label' && attr.name =
 class SNote extends AbstractShacaEntity {
     noteId: string;
     private title: string;
-    private type: string;
-    private mime: string;
+    type: string;
+    mime: string;
     private blobId: string;
-    private utcDateModified: string;
-    private isProtected: boolean;
+    utcDateModified: string;
+    isProtected: boolean;
     parentBranches: SBranch[];
     parents: SNote[];
     children: SNote[];
