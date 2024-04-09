@@ -5,7 +5,7 @@ const ejs = require("ejs");
 
 const shaca = require('./shaca/shaca.js');
 const shacaLoader = require('./shaca/shaca_loader.js');
-const shareRoot = require('./share_root.js');
+const shareRoot = require('./share_root');
 const contentRenderer = require('./content_renderer.js');
 const assetPath = require('../services/asset_path');
 const appPath = require('../services/app_path');
@@ -152,9 +152,9 @@ function register(router) {
             return;
         }
 
-        const {header, content, isEmpty} = contentRenderer.getContent(note);
+        const { header, content, isEmpty } = contentRenderer.getContent(note);
         const subRoot = getSharedSubTreeRoot(note);
-        const opts = {note, header, content, isEmpty, subRoot, assetPath, appPath};
+        const opts = { note, header, content, isEmpty, subRoot, assetPath, appPath };
         let useDefaultView = true;
 
         // Check if the user has their own template
@@ -176,7 +176,7 @@ function register(router) {
 
                 // Try to render user's template, w/ fallback to default view
                 try {
-                    const ejsResult = ejs.render(templateNote.getContent(), opts, {includer});
+                    const ejsResult = ejs.render(templateNote.getContent(), opts, { includer });
                     res.send(ejsResult);
                     useDefaultView = false; // Rendering went okay, don't use default view
                 }
@@ -205,7 +205,7 @@ function register(router) {
     router.get('/share/:shareId', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        const {shareId} = req.params;
+        const { shareId } = req.params;
 
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
@@ -346,13 +346,13 @@ function register(router) {
             return;
         }
 
-        const {search} = req.query;
+        const { search } = req.query;
 
         if (!search?.trim()) {
             return res.status(400).json({ message: "'search' parameter is mandatory." });
         }
 
-        const searchContext = new SearchContext({ancestorNoteId: ancestorNoteId});
+        const searchContext = new SearchContext({ ancestorNoteId: ancestorNoteId });
         const searchResults = searchService.findResultsWithQuery(search, searchContext);
         const filteredResults = searchResults.map(sr => {
             const fullNote = shaca.notes[sr.noteId];

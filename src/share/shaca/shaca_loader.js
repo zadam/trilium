@@ -7,7 +7,7 @@ const SNote = require('./entities/snote.js');
 const SBranch = require('./entities/sbranch.js');
 const SAttribute = require('./entities/sattribute.js');
 const SAttachment = require('./entities/sattachment.js');
-const shareRoot = require('../share_root.js');
+const shareRoot = require('../share_root');
 const eventService = require('../../services/events');
 
 function load() {
@@ -89,7 +89,7 @@ function ensureLoad() {
     }
 }
 
-eventService.subscribe([ eventService.ENTITY_CREATED, eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_CHANGE_SYNCED, eventService.ENTITY_DELETE_SYNCED ], ({ entityName, entity }) => {
+eventService.subscribe([eventService.ENTITY_CREATED, eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_CHANGE_SYNCED, eventService.ENTITY_DELETE_SYNCED], ({ entityName, entity }) => {
     shaca.reset();
 });
 
