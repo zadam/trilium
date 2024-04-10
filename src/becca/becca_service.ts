@@ -1,10 +1,10 @@
 "use strict";
 
-const becca = require('./becca');
-const cls = require('../services/cls');
-const log = require('../services/log');
+import becca = require('./becca');
+import cls = require('../services/cls');
+import log = require('../services/log');
 
-function isNotePathArchived(notePath) {
+function isNotePathArchived(notePath: string[]) {
     const noteId = notePath[notePath.length - 1];
     const note = becca.notes[noteId];
 
@@ -24,9 +24,9 @@ function isNotePathArchived(notePath) {
     return false;
 }
 
-function getNoteTitle(childNoteId, parentNoteId) {
+function getNoteTitle(childNoteId: string, parentNoteId?: string) {
     const childNote = becca.notes[childNoteId];
-    const parentNote = becca.notes[parentNoteId];
+    const parentNote = parentNoteId ? becca.notes[parentNoteId] : null;
 
     if (!childNote) {
         log.info(`Cannot find note '${childNoteId}'`);
@@ -40,7 +40,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
     return `${(branch && branch.prefix) ? `${branch.prefix} - ` : ''}${title}`;
 }
 
-function getNoteTitleArrayForPath(notePathArray) {
+function getNoteTitleArrayForPath(notePathArray: string[]) {
     if (!notePathArray || !Array.isArray(notePathArray)) {
         throw new Error(`${notePathArray} is not an array.`);
     }
@@ -76,13 +76,13 @@ function getNoteTitleArrayForPath(notePathArray) {
     return titles;
 }
 
-function getNoteTitleForPath(notePathArray) {
+function getNoteTitleForPath(notePathArray: string[]) {
     const titles = getNoteTitleArrayForPath(notePathArray);
 
     return titles.join(' / ');
 }
 
-module.exports = {
+export = {
     getNoteTitle,
     getNoteTitleForPath,
     isNotePathArchived

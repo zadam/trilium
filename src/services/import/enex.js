@@ -4,10 +4,10 @@ const {Throttle} = require('stream-throttle');
 const log = require('../log');
 const utils = require('../utils');
 const sql = require('../sql');
-const noteService = require('../notes.js');
+const noteService = require('../notes');
 const imageService = require('../image.js');
 const protectedSessionService = require('../protected_session');
-const htmlSanitizer = require('../html_sanitizer.js');
+const htmlSanitizer = require('../html_sanitizer');
 const {sanitizeAttributeName} = require('../sanitize_attribute_name');
 
 /**

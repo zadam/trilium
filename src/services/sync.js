@@ -8,14 +8,14 @@ const instanceId = require('./instance_id');
 const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update.js');
 const contentHashService = require('./content_hash.js');
-const appInfo = require('./app_info.js');
-const syncOptions = require('./sync_options.js');
+const appInfo = require('./app_info');
+const syncOptions = require('./sync_options');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
-const request = require('./request.js');
+const request = require('./request');
 const ws = require('./ws');
 const entityChangesService = require('./entity_changes');
-const entityConstructor = require('../becca/entity_constructor.js');
+const entityConstructor = require('../becca/entity_constructor');
 const becca = require('../becca/becca');
 
 let proxyToggle = true;
@@ -399,7 +399,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require('../becca/becca_loader.js').beccaLoaded.then(() => {
+require('../becca/becca_loader').beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately, but should happen after initial consistency checks

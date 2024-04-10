@@ -1,13 +1,14 @@
-const sql = require("./sql");
-const revisionService = require("./revisions.js");
-const log = require("./log");
-const entityChangesService = require("./entity_changes");
-const optionService = require("./options");
-const dateUtils = require("./date_utils");
-const sqlInit = require("./sql_init.js");
-const cls = require("./cls");
+import sql = require("./sql");
+import revisionService = require("./revisions");
+import log = require("./log");
+import entityChangesService = require("./entity_changes");
+import optionService = require("./options");
+import dateUtils = require("./date_utils");
+import sqlInit = require("./sql_init");
+import cls = require("./cls");
+import { EntityChange } from "./entity_changes_interface";
 
-function eraseNotes(noteIdsToErase) {
+function eraseNotes(noteIdsToErase: string[]) {
     if (noteIdsToErase.length === 0) {
         return;
     }
@@ -16,17 +17,17 @@ function eraseNotes(noteIdsToErase) {
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'notes' AND entityId IN (???)`, noteIdsToErase));
 
     // we also need to erase all "dependent" entities of the erased notes
-    const branchIdsToErase = sql.getManyRows(`SELECT branchId FROM branches WHERE noteId IN (???)`, noteIdsToErase)
+    const branchIdsToErase = sql.getManyRows<{ branchId: string }>(`SELECT branchId FROM branches WHERE noteId IN (???)`, noteIdsToErase)
         .map(row => row.branchId);
 
     eraseBranches(branchIdsToErase);
 
-    const attributeIdsToErase = sql.getManyRows(`SELECT attributeId FROM attributes WHERE noteId IN (???)`, noteIdsToErase)
+    const attributeIdsToErase = sql.getManyRows<{ attributeId: string }>(`SELECT attributeId FROM attributes WHERE noteId IN (???)`, noteIdsToErase)
         .map(row => row.attributeId);
 
     eraseAttributes(attributeIdsToErase);
 
-    const revisionIdsToErase = sql.getManyRows(`SELECT revisionId FROM revisions WHERE noteId IN (???)`, noteIdsToErase)
+    const revisionIdsToErase = sql.getManyRows<{ revisionId: string }>(`SELECT revisionId FROM revisions WHERE noteId IN (???)`, noteIdsToErase)
         .map(row => row.revisionId);
 
     eraseRevisions(revisionIdsToErase);
@@ -34,7 +35,7 @@ function eraseNotes(noteIdsToErase) {
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
-function setEntityChangesAsErased(entityChanges) {
+function setEntityChangesAsErased(entityChanges: EntityChange[]) {
     for (const ec of entityChanges) {
         ec.isErased = true;
         // we're not changing hash here, not sure if good or not
@@ -45,7 +46,7 @@ function setEntityChangesAsErased(entityChanges) {
     }
 }
 
-function eraseBranches(branchIdsToErase) {
+function eraseBranches(branchIdsToErase: string[]) {
     if (branchIdsToErase.length === 0) {
         return;
     }
@@ -57,7 +58,7 @@ function eraseBranches(branchIdsToErase) {
     log.info(`Erased branches: ${JSON.stringify(branchIdsToErase)}`);
 }
 
-function eraseAttributes(attributeIdsToErase) {
+function eraseAttributes(attributeIdsToErase: string[]) {
     if (attributeIdsToErase.length === 0) {
         return;
     }
@@ -69,7 +70,7 @@ function eraseAttributes(attributeIdsToErase) {
     log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
 }
 
-function eraseAttachments(attachmentIdsToErase) {
+function eraseAttachments(attachmentIdsToErase: string[]) {
     if (attachmentIdsToErase.length === 0) {
         return;
     }
@@ -81,7 +82,7 @@ function eraseAttachments(attachmentIdsToErase) {
     log.info(`Erased attachments: ${JSON.stringify(attachmentIdsToErase)}`);
 }
 
-function eraseRevisions(revisionIdsToErase) {
+function eraseRevisions(revisionIdsToErase: string[]) {
     if (revisionIdsToErase.length === 0) {
         return;
     }
@@ -116,7 +117,7 @@ function eraseUnusedBlobs() {
     log.info(`Erased unused blobs: ${JSON.stringify(unusedBlobIds)}`);
 }
 
-function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
+function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds: number | null = null) {
     // this is important also so that the erased entity changes are sent to the connected clients
     sql.transactional(() => {
         if (eraseEntitiesAfterTimeInSeconds === null) {
@@ -125,41 +126,33 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
 
         const cutoffDate = new Date(Date.now() - eraseEntitiesAfterTimeInSeconds * 1000);
 
-        const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
-
+        const noteIdsToErase = sql.getColumn<string>("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
         eraseNotes(noteIdsToErase);
 
-        const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
-
+        const branchIdsToErase = sql.getColumn<string>("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
         eraseBranches(branchIdsToErase);
 
-        const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
-
+        const attributeIdsToErase = sql.getColumn<string>("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
         eraseAttributes(attributeIdsToErase);
 
-        const attachmentIdsToErase = sql.getColumn("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
-
+        const attachmentIdsToErase = sql.getColumn<string>("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
         eraseAttachments(attachmentIdsToErase);
 
         eraseUnusedBlobs();
     });
 }
 
-function eraseNotesWithDeleteId(deleteId) {
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
-
+function eraseNotesWithDeleteId(deleteId: string) {
+    const noteIdsToErase = sql.getColumn<string>("SELECT noteId FROM notes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
     eraseNotes(noteIdsToErase);
 
-    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
-
+    const branchIdsToErase = sql.getColumn<string>("SELECT branchId FROM branches WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
     eraseBranches(branchIdsToErase);
 
-    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
-
+    const attributeIdsToErase = sql.getColumn<string>("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
     eraseAttributes(attributeIdsToErase);
 
-    const attachmentIdsToErase = sql.getColumn("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
-
+    const attachmentIdsToErase = sql.getColumn<string>("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
     eraseAttachments(attachmentIdsToErase);
 
     eraseUnusedBlobs();
@@ -173,13 +166,13 @@ function eraseUnusedAttachmentsNow() {
     eraseScheduledAttachments(0);
 }
 
-function eraseScheduledAttachments(eraseUnusedAttachmentsAfterSeconds = null) {
+function eraseScheduledAttachments(eraseUnusedAttachmentsAfterSeconds: number | null = null) {
     if (eraseUnusedAttachmentsAfterSeconds === null) {
         eraseUnusedAttachmentsAfterSeconds = optionService.getOptionInt('eraseUnusedAttachmentsAfterSeconds');
     }
 
     const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseUnusedAttachmentsAfterSeconds * 1000)));
-    const attachmentIdsToErase = sql.getColumn('SELECT attachmentId FROM attachments WHERE utcDateScheduledForErasureSince < ?', [cutOffDate]);
+    const attachmentIdsToErase = sql.getColumn<string>('SELECT attachmentId FROM attachments WHERE utcDateScheduledForErasureSince < ?', [cutOffDate]);
 
     eraseAttachments(attachmentIdsToErase);
 }
@@ -193,7 +186,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(() => eraseScheduledAttachments()), 3600 * 1000);
 });
 
-module.exports = {
+export = {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,

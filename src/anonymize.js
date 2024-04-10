@@ -1,6 +1,6 @@
-const anonymizationService = require('./services/anonymization.js');
-const sqlInit = require('./services/sql_init.js');
-require('./becca/entity_constructor.js');
+const anonymizationService = require('./services/anonymization');
+const sqlInit = require('./services/sql_init');
+require('./becca/entity_constructor');
 
 sqlInit.dbReady.then(async () => {
     try {

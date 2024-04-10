@@ -1,40 +1,81 @@
 "use strict";
 
-const utils = require('./utils');
-const log = require('./log');
-const url = require('url');
-const syncOptions = require('./sync_options.js');
+import utils = require('./utils');
+import log = require('./log');
+import url = require('url');
+import syncOptions = require('./sync_options');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows supporting system proxy
 
-function exec(opts) {
-    const client = getClient(opts);
+interface ExecOpts {
+    proxy: "noproxy" | null;
+    method: string;
+    url: string;
+    paging?: {
+        pageCount: number;
+        pageIndex: number;
+        requestId: string;
+    };
+    cookieJar?: {
+        header?: string;
+    };
+    auth?: {
+        password?: string;
+    },
+    timeout: number;
+    body: string;
+}
 
+interface ClientOpts {
+    method: string;
+    url: string;
+    protocol?: string | null;
+    host?: string | null;
+    port?: string | null;
+    path?: string | null;
+    timeout?: number;
+    headers?: Record<string, string | number>;
+    agent?: any;
+    proxy?: string | null;
+}
+
+type RequestEvent = ("error" | "response" | "abort");
+
+interface Request {
+    on(event: RequestEvent, cb: (e: any) => void): void;
+    end(payload?: string): void;
+}
+
+interface Client {    
+    request(opts: ClientOpts): Request;
+}
+
+function exec(opts: ExecOpts) {
+    const client = getClient(opts);
+    
     // hack for cases where electron.net does not work, but we don't want to set proxy
     if (opts.proxy === 'noproxy') {
         opts.proxy = null;
     }
 
-    if (!opts.paging) {
-        opts.paging = {
-            pageCount: 1,
-            pageIndex: 0,
-            requestId: 'n/a'
-        };
-    }
+    const paging = opts.paging || {
+        pageCount: 1,
+        pageIndex: 0,
+        requestId: 'n/a'
+    };
 
     const proxyAgent = getProxyAgent(opts);
     const parsedTargetUrl = url.parse(opts.url);
 
     return new Promise((resolve, reject) => {
         try {
-            const headers = {
+            const headers: Record<string, string | number> = {
                 Cookie: (opts.cookieJar && opts.cookieJar.header) || "",
-                'Content-Type': opts.paging.pageCount === 1 ? 'application/json' : 'text/plain',
-                pageCount: opts.paging.pageCount,
-                pageIndex: opts.paging.pageIndex,
-                requestId: opts.paging.requestId
+                'Content-Type': paging.pageCount === 1 ? 'application/json' : 'text/plain',
+                pageCount: paging.pageCount,
+                pageIndex: paging.pageIndex,
+                requestId: paging.requestId
             };
 
             if (opts.auth) {
@@ -63,9 +104,9 @@ function exec(opts) {
                 }
 
                 let responseStr = '';
-                let chunks = [];
+                let chunks: Buffer[] = [];
 
-                response.on('data', chunk => chunks.push(chunk));
+                response.on('data', (chunk: Buffer) => chunks.push(chunk));
 
                 response.on('end', () => {
                     // use Buffer instead of string concatenation to avoid implicit decoding for each chunk
@@ -77,7 +118,7 @@ function exec(opts) {
                             const jsonObj = responseStr.trim() ? JSON.parse(responseStr) : null;
 
                             resolve(jsonObj);
-                        } catch (e) {
+                        } catch (e: any) {
                             log.error(`Failed to deserialize sync response: ${responseStr}`);
 
                             reject(generateError(opts, e.message));
@@ -89,7 +130,7 @@ function exec(opts) {
                             const jsonObj = JSON.parse(responseStr);
 
                             errorMessage = jsonObj?.message || '';
-                        } catch (e) {
+                        } catch (e: any) {
                             errorMessage = responseStr.substr(0, Math.min(responseStr.length, 100));
                         }
 
@@ -108,15 +149,15 @@ function exec(opts) {
 
             request.end(payload);
         }
-        catch (e) {
+        catch (e: any) {
             reject(generateError(opts, e.message));
         }
     });
 }
 
-function getImage(imageUrl) {
+function getImage(imageUrl: string) {
     const proxyConf = syncOptions.getSyncProxy();
-    const opts = {
+    const opts: ClientOpts = {
         method: 'GET',
         url: imageUrl,
         proxy: proxyConf !== "noproxy" ? proxyConf : null
@@ -151,15 +192,15 @@ function getImage(imageUrl) {
                     reject(generateError(opts, `${response.statusCode} ${response.statusMessage}`));
                 }
 
-                const chunks = []
+                const chunks: Buffer[] = []
 
-                response.on('data', chunk => chunks.push(chunk));
+                response.on('data', (chunk: Buffer) => chunks.push(chunk));
                 response.on('end', () => resolve(Buffer.concat(chunks)));
             });
 
             request.end(undefined);
         }
-        catch (e) {
+        catch (e: any) {
             reject(generateError(opts, e.message));
         }
     });
@@ -167,14 +208,14 @@ function getImage(imageUrl) {
 
 const HTTP = 'http:', HTTPS = 'https:';
 
-function getProxyAgent(opts) {
+function getProxyAgent(opts: ClientOpts) {
     if (!opts.proxy) {
         return null;
     }
 
     const {protocol} = url.parse(opts.url);
 
-    if (![HTTP, HTTPS].includes(protocol)) {
+    if (!protocol || ![HTTP, HTTPS].includes(protocol)) {
         return null;
     }
 
@@ -185,7 +226,7 @@ function getProxyAgent(opts) {
     return new AgentClass(opts.proxy);
 }
 
-function getClient(opts) {
+function getClient(opts: ClientOpts): Client {
     // it's not clear how to explicitly configure proxy (as opposed to system proxy),
     // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
@@ -203,11 +244,14 @@ function getClient(opts) {
     }
 }
 
-function generateError(opts, message) {
+function generateError(opts: {
+    method: string;
+    url: string;
+}, message: string) {
     return new Error(`Request to ${opts.method} ${opts.url} failed, error: ${message}`);
 }
 
-module.exports = {
+export = {
     exec,
     getImage
 };

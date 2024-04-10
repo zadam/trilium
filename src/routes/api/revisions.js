@@ -1,14 +1,14 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service.js');
-const revisionService = require('../../services/revisions.js');
+const beccaService = require('../../becca/becca_service');
+const revisionService = require('../../services/revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const cls = require('../../services/cls');
 const path = require('path');
 const becca = require('../../becca/becca');
 const blobService = require('../../services/blob');
-const eraseService = require("../../services/erase.js");
+const eraseService = require("../../services/erase");
 
 function getRevisionBlob(req) {
     const preview = req.query.preview === 'true';

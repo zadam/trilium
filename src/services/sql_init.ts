@@ -1,17 +1,18 @@
-const log = require('./log');
-const fs = require('fs');
-const resourceDir = require('./resource_dir');
-const sql = require('./sql');
-const utils = require('./utils');
-const optionService = require('./options');
-const port = require('./port.js');
-const BOption = require('../becca/entities/boption');
-const TaskContext = require('./task_context');
-const migrationService = require('./migration.js');
-const cls = require('./cls');
-const config = require('./config');
+import log = require('./log');
+import fs = require('fs');
+import resourceDir = require('./resource_dir');
+import sql = require('./sql');
+import utils = require('./utils');
+import optionService = require('./options');
+import port = require('./port');
+import BOption = require('../becca/entities/boption');
+import TaskContext = require('./task_context');
+import migrationService = require('./migration');
+import cls = require('./cls');
+import config = require('./config');
+import { OptionRow } from '../becca/entities/rows';
 
-const dbReady = utils.deferred();
+const dbReady = utils.deferred<void>();
 
 cls.init(initDbConnection);
 
@@ -50,7 +51,7 @@ async function createInitialDatabase() {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, "utf-8");
     const demoFile = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/demo.zip`);
 
     let rootNote;
@@ -60,7 +61,7 @@ async function createInitialDatabase() {
 
         sql.executeScript(schema);
 
-        require('../becca/becca_loader.js').load();
+        require('../becca/becca_loader').load();
 
         const BNote = require('../becca/entities/bnote');
         const BBranch = require('../becca/entities/bbranch');
@@ -119,14 +120,14 @@ async function createInitialDatabase() {
     initDbConnection();
 }
 
-function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
+function createDatabaseForSync(options: OptionRow[], syncServerHost = '', syncProxy = '') {
     log.info("Creating database for sync");
 
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, "utf8");
 
     sql.transactional(() => {
         sql.executeScript(schema);
@@ -166,10 +167,10 @@ dbReady.then(() => {
         return;
     }
 
-    setInterval(() => require('./backup.js').regularBackup(), 4 * 60 * 60 * 1000);
+    setInterval(() => require('./backup').regularBackup(), 4 * 60 * 60 * 1000);
 
     // kickoff first backup soon after start up
-    setTimeout(() => require('./backup.js').regularBackup(), 5 * 60 * 1000);
+    setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
 
     // optimize is usually inexpensive no-op, so running it semi-frequently is not a big deal
     setTimeout(() => optimize(), 60 * 60 * 1000);
@@ -183,7 +184,7 @@ function getDbSize() {
 
 log.info(`DB size: ${getDbSize()} KB`);
 
-module.exports = {
+export = {
     dbReady,
     schemaExists,
     isDbInitialized,

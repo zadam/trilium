@@ -70,7 +70,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     children!: BNote[];
     targetRelations!: BAttribute[];
 
-    private __flatTextCache!: string | null;
+    __flatTextCache!: string | null;
 
     private __attributeCache!: BAttribute[] | null;
     private __inheritableAttributeCache!: BAttribute[] | null;
@@ -86,7 +86,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     /** number of note revisions for this note */
     private revisionCount!: number | null;
 
-    constructor(row: Partial<NoteRow>) {
+    constructor(row?: Partial<NoteRow>) {
         super();
 
         if (!row) {
@@ -216,9 +216,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and entity changes records)
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
-    // TODO: original declaration was (string | Buffer), but everywhere it's used as a string.
-    getContent(): string {
-        return this._getContent() as string;
+    getContent() {
+        return this._getContent();
     }
 
     /**
@@ -226,7 +225,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     getJsonContent(): {} | null {
         const content = this.getContent();
 
-        if (!content || !content.trim()) {
+        if (typeof content !== "string" || !content || !content.trim()) {
             return null;
         }
 
@@ -243,7 +242,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         }
     }
 
-    setContent(content: string, opts: ContentOpts = {}) {
+    setContent(content: Buffer | string, opts: ContentOpts = {}) {
         this._setContent(content, opts);
 
         eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: this });
@@ -661,7 +660,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * @param name - relation name to filter
      * @returns all note's relations (attributes with type relation), including inherited ones
      */
-    getRelations(name: string): BAttribute[] {
+    getRelations(name?: string): BAttribute[] {
         return this.getAttributes(RELATION, name);
     }
 
@@ -1510,6 +1509,10 @@ class BNote extends AbstractBeccaEntity<BNote> {
         const oldNoteUrl = `api/images/${this.noteId}/`;
         const newAttachmentUrl = `api/attachments/${attachment.attachmentId}/image/`;
 
+        if (typeof parentContent !== "string") {
+            throw new Error("Unable to convert image note into attachment because parent note does not have a string content.");
+        }
+
         const fixedContent = utils.replaceAll(parentContent, oldNoteUrl, newAttachmentUrl);
 
         parentNote.setContent(fixedContent);
@@ -1611,7 +1614,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
                 revisionAttachment.ownerId = revision.revisionId;
                 revisionAttachment.setContent(noteAttachment.getContent(), { forceSave: true });
 
-                if (this.type === 'text') {
+                if (this.type === 'text' && typeof noteContent === "string") {
                     // content is rewritten to point to the revision attachments
                     noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`,
                         `attachments/${revisionAttachment.attachmentId}`);
@@ -1654,7 +1657,10 @@ class BNote extends AbstractBeccaEntity<BNote> {
             position
         });
 
-        content = content || "";
+        if (!content) {
+            throw new Error("Attempted to save an attachment with no content.");
+        }
+
         attachment.setContent(content, {forceSave: true});
 
         return attachment;

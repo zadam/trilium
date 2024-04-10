@@ -2,17 +2,17 @@
 
 const attributeService = require('../../services/attributes.js');
 const cloneService = require('../../services/cloning.js');
-const noteService = require('../../services/notes.js');
+const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes.js');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image.js');
-const appInfo = require('../../services/app_info.js');
+const appInfo = require('../../services/app_info');
 const ws = require('../../services/ws');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const htmlSanitizer = require('../../services/html_sanitizer.js');
-const {formatAttrForSearch} = require('../../services/attribute_formatter.js');
+const htmlSanitizer = require('../../services/html_sanitizer');
+const {formatAttrForSearch} = require('../../services/attribute_formatter');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 

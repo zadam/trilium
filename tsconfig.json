@@ -6,7 +6,9 @@
 	  "outDir": "./dist",
 	  "strict": true,
 	  "noImplicitAny": true,
-	  "lib": ["ES2022"]
+	  "resolveJsonModule": true,
+	  "lib": ["ES2022"],
+	  "downlevelIteration": true
 	},
 	"include": [
       "./src/**/*.js",
@@ -17,6 +19,6 @@
 		"files": true
 	},
 	"files": [
-		"src/types/unescape.d.ts"
+		"src/types.d.ts"
 	]
   }

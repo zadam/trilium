@@ -9,23 +9,13 @@ import cls = require('../../services/cls');
 import log = require('../../services/log');
 import protectedSessionService = require('../../services/protected_session');
 import blobService = require('../../services/blob');
-import Becca = require('../becca-interface');
+import Becca, { ConstructorData } from '../becca-interface';
 
-let becca: Becca | null = null;
+let becca: Becca;
 
 interface ContentOpts {
     forceSave?: boolean;
     forceFrontendReload?: boolean;
-}
-
-/**
- * This interface contains the data that is shared across all the objects of a given derived class of {@link AbstractBeccaEntity}.
- * For example, all BAttributes will share their content, but all BBranches will have another set of this data. 
- */
-interface ConstructorData<T extends AbstractBeccaEntity<T>> {
-    primaryKeyName: string;
-    entityName: string;
-    hashedProperties: (keyof T)[];
 }
 
 /**
@@ -35,10 +25,11 @@ interface ConstructorData<T extends AbstractBeccaEntity<T>> {
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
-    protected utcDateCreated?: string;
     protected utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
+    
+    utcDateCreated!: string;
 
     isProtected?: boolean;
     isSynced?: boolean;
@@ -101,6 +92,12 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
     abstract getPojo(): {};
 
+    init() {
+        // Do nothing by default, can be overriden in derived classes.
+    }
+
+    abstract updateFromRow(row: unknown): void;
+
     get isDeleted(): boolean {
         // TODO: Not sure why some entities don't implement it.
         return false;
@@ -109,13 +106,14 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     /**
      * Saves entity - executes SQL, but doesn't commit the transaction on its own
      */
-    save(): this {
+    // TODO: opts not used but called a few times, maybe should be used by derived classes or passed to beforeSaving.
+    save(opts?: {}): this {
         const constructorData = (this.constructor as unknown as ConstructorData<T>);
         const entityName = constructorData.entityName;
         const primaryKeyName = constructorData.primaryKeyName;
 
         const isNewEntity = !(this as any)[primaryKeyName];
-
+        
         this.beforeSaving();
 
         const pojo = this.getPojoToSave();

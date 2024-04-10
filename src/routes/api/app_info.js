@@ -1,6 +1,6 @@
 "use strict";
 
-const appInfo = require('../../services/app_info.js');
+const appInfo = require('../../services/app_info');
 
 function getAppInfo() {
     return appInfo;

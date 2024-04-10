@@ -78,7 +78,7 @@ function resetPassword() {
     };
 }
 
-module.exports = {
+export = {
     isPasswordSet,
     changePassword,
     setPassword,

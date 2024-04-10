@@ -65,7 +65,7 @@ function getDateTimeForFile() {
     return new Date().toISOString().substr(0, 19).replace(/:/g, '');
 }
 
-function validateLocalDateTime(str: string) {
+function validateLocalDateTime(str: string | null | undefined) {
     if (!str) {
         return;
     }
@@ -80,7 +80,7 @@ function validateLocalDateTime(str: string) {
     }
 }
 
-function validateUtcDateTime(str: string) {
+function validateUtcDateTime(str: string | undefined) {
     if (!str) {
         return;
     }

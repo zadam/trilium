@@ -45,7 +45,7 @@ function putEntityChange(origEntityChange: EntityChange) {
     cls.putEntityChange(ec);
 }
 
-function putNoteReorderingEntityChange(parentNoteId: string, componentId: string) {
+function putNoteReorderingEntityChange(parentNoteId: string, componentId?: string) {
     putEntityChange({
         entityName: "note_reordering",
         entityId: parentNoteId,

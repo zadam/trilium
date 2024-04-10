@@ -11,14 +11,19 @@ import AbstractBeccaEntity = require('./abstract_becca_entity');
 class BRecentNote extends AbstractBeccaEntity<BRecentNote> {
     static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "noteId"; }
+    static get hashedProperties() { return ["noteId", "notePath"]; }
 
-    noteId: string;
-    notePath: string;
-    utcDateCreated: string;
+    noteId!: string;
+    notePath!: string;
+    utcDateCreated!: string;
 
     constructor(row: RecentNoteRow) {
         super();
 
+        this.updateFromRow(row);
+    }
+
+    updateFromRow(row: RecentNoteRow): void {
         this.noteId = row.noteId;
         this.notePath = row.notePath;
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();

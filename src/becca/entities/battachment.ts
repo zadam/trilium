@@ -37,16 +37,16 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     noteId?: number;
     attachmentId?: string;
     /** either noteId or revisionId to which this attachment belongs */
-    ownerId: string;
-    role: string;
-    mime: string;
-    title: string;
+    ownerId!: string;
+    role!: string;
+    mime!: string;
+    title!: string;
     type?: keyof typeof attachmentRoleToNoteTypeMapping;
     position?: number;
     blobId?: string;
     isProtected?: boolean;
     dateModified?: string;
-    utcDateScheduledForErasureSince?: string;
+    utcDateScheduledForErasureSince?: string | null;
     /** optionally added to the entity */
     contentLength?: number;
     isDecrypted?: boolean;
@@ -54,6 +54,11 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
     constructor(row: AttachmentRow) {
         super();
 
+        this.updateFromRow(row);
+        this.decrypt();
+    }
+
+    updateFromRow(row: AttachmentRow): void {
         if (!row.ownerId?.trim()) {
             throw new Error("'ownerId' must be given to initialize a Attachment entity");
         } else if (!row.role?.trim()) {
@@ -76,8 +81,6 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         this.utcDateModified = row.utcDateModified;
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
         this.contentLength = row.contentLength;
-
-        this.decrypt();
     }
 
     copy(): BAttachment {
@@ -127,8 +130,8 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
         }
     }
 
-    getContent(): string | Buffer {
-        return this._getContent();
+    getContent(): Buffer {
+        return this._getContent() as Buffer;
     }
 
     setContent(content: string | Buffer, opts: ContentOpts) {
@@ -171,6 +174,11 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
 
         if (this.role === 'image' && parentNote.type === 'text') {
             const origContent = parentNote.getContent();
+            
+            if (typeof origContent !== "string") {
+                throw new Error(`Note with ID '${note.noteId} has a text type but non-string content.`);
+            }
+
             const oldAttachmentUrl = `api/attachments/${this.attachmentId}/image/`;
             const newNoteUrl = `api/images/${note.noteId}/`;
 

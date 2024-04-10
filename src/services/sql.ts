@@ -143,8 +143,8 @@ function getRows<T>(query: string, params: Params = []): T[] {
     return wrap(query, s => s.all(params)) as T[];
 }
 
-function getRawRows<T extends {} | unknown[]>(query: string, params: Params = []): T[] | null {
-    return wrap(query, s => s.raw().all(params)) as T[] | null;
+function getRawRows<T extends {} | unknown[]>(query: string, params: Params = []): T[] {
+    return (wrap(query, s => s.raw().all(params)) as T[]) || [];
 }
 
 function iterateRows(query: string, params: Params = []) {
@@ -259,7 +259,7 @@ function transactional<T>(func: (statement: Statement) => T) {
         if (entityChangeIds.length > 0) {
             log.info("Transaction rollback dirtied the becca, forcing reload.");
 
-            require('../becca/becca_loader.js').load();
+            require('../becca/becca_loader').load();
         }
 
         // the maxEntityChangeId has been incremented during failed transaction, need to recalculate

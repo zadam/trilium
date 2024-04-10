@@ -1,4 +1,4 @@
-const noteTypeService = require('../services/note_types.js');
+const noteTypeService = require('../services/note_types');
 const dateUtils = require('../services/date_utils');
 
 function mandatory(obj) {

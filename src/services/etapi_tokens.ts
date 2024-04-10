@@ -1,17 +1,17 @@
-const becca = require('../becca/becca');
-const utils = require('./utils');
-const BEtapiToken = require('../becca/entities/betapi_token');
-const crypto = require("crypto");
+import becca = require('../becca/becca');
+import utils = require('./utils');
+import BEtapiToken = require('../becca/entities/betapi_token');
+import crypto = require("crypto");
 
 function getTokens() {
     return becca.getEtapiTokens();
 }
 
-function getTokenHash(token) {
+function getTokenHash(token: crypto.BinaryLike) {
     return crypto.createHash('sha256').update(token).digest('base64');
 }
 
-function createToken(tokenName) {
+function createToken(tokenName: string) {
     const token = utils.randomSecureToken(32);
     const tokenHash = getTokenHash(token);
 
@@ -25,7 +25,7 @@ function createToken(tokenName) {
     };
 }
 
-function parseAuthToken(auth) {
+function parseAuthToken(auth: string | undefined) {
     if (!auth) {
         return null;
     }
@@ -64,7 +64,7 @@ function parseAuthToken(auth) {
     }
 }
 
-function isValidAuthHeader(auth) {
+function isValidAuthHeader(auth: string | undefined) {
     const parsed = parseAuthToken(auth);
 
     if (!parsed) {
@@ -93,7 +93,7 @@ function isValidAuthHeader(auth) {
     }
 }
 
-function renameToken(etapiTokenId, newName) {
+function renameToken(etapiTokenId: string, newName: string) {
     const etapiToken = becca.getEtapiToken(etapiTokenId);
 
     if (!etapiToken) {
@@ -104,7 +104,7 @@ function renameToken(etapiTokenId, newName) {
     etapiToken.save();
 }
 
-function deleteToken(etapiTokenId) {
+function deleteToken(etapiTokenId: string) {
     const etapiToken = becca.getEtapiToken(etapiTokenId);
 
     if (!etapiToken) {
@@ -114,7 +114,7 @@ function deleteToken(etapiTokenId) {
     etapiToken.markAsDeletedSimple();
 }
 
-module.exports = {
+export = {
     getTokens,
     createToken,
     renameToken,

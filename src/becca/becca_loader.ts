@@ -1,19 +1,21 @@
 "use strict";
 
-const sql = require('../services/sql');
-const eventService = require('../services/events');
-const becca = require('./becca');
-const sqlInit = require('../services/sql_init');
-const log = require('../services/log');
-const BNote = require('./entities/bnote');
-const BBranch = require('./entities/bbranch');
-const BAttribute = require('./entities/battribute');
-const BOption = require('./entities/boption');
-const BEtapiToken = require('./entities/betapi_token');
-const cls = require('../services/cls');
-const entityConstructor = require('../becca/entity_constructor');
+import sql = require('../services/sql');
+import eventService = require('../services/events');
+import becca = require('./becca');
+import sqlInit = require('../services/sql_init');
+import log = require('../services/log');
+import BNote = require('./entities/bnote');
+import BBranch = require('./entities/bbranch');
+import BAttribute = require('./entities/battribute');
+import BOption = require('./entities/boption');
+import BEtapiToken = require('./entities/betapi_token');
+import cls = require('../services/cls');
+import entityConstructor = require('../becca/entity_constructor');
+import { AttributeRow, BranchRow, EtapiTokenRow, NoteRow, OptionRow } from './entities/rows';
+import AbstractBeccaEntity = require('./entities/abstract_becca_entity');
 
-const beccaLoaded = new Promise((res, rej) => {
+const beccaLoaded = new Promise<void>((res, rej) => {
     sqlInit.dbReady.then(() => {
         cls.init(() => {
             load();
@@ -38,23 +40,23 @@ function load() {
             new BNote().update(row).init();
         }
 
-        const branchRows = sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
+        const branchRows = sql.getRawRows<BranchRow>(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`);
         // in-memory sort is faster than in the DB
-        branchRows.sort((a, b) => a.notePosition - b.notePosition);
+        branchRows.sort((a, b) => (a.notePosition || 0) - (b.notePosition || 0));
 
         for (const row of branchRows) {
             new BBranch().update(row).init();
         }
 
-        for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`)) {
+        for (const row of sql.getRawRows<AttributeRow>(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`)) {
             new BAttribute().update(row).init();
         }
 
-        for (const row of sql.getRows(`SELECT name, value, isSynced, utcDateModified FROM options`)) {
+        for (const row of sql.getRows<OptionRow>(`SELECT name, value, isSynced, utcDateModified FROM options`)) {
             new BOption(row);
         }
 
-        for (const row of sql.getRows(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
+        for (const row of sql.getRows<EtapiTokenRow>(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
             new BEtapiToken(row);
         }
     });
@@ -68,7 +70,7 @@ function load() {
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
-function reload(reason) {
+function reload(reason: string) {
     load();
 
     require('../services/ws').reloadFrontend(reason || "becca reloaded");
@@ -88,7 +90,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entity
         if (beccaEntity) {
             beccaEntity.updateFromRow(entityRow);
         } else {
-            beccaEntity = new EntityClass();
+            beccaEntity = new EntityClass() as AbstractBeccaEntity<AbstractBeccaEntity<any>>;
             beccaEntity.updateFromRow(entityRow);
             beccaEntity.init();
         }
@@ -112,7 +114,7 @@ eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED, ({ entityName, en
  * @param entityRow - can be a becca entity (change comes from this trilium instance) or just a row (from sync).
  *                    It should be therefore treated as a row.
  */
-function postProcessEntityUpdate(entityName, entityRow) {
+function postProcessEntityUpdate(entityName: string, entityRow: any) {
     if (entityName === 'notes') {
         noteUpdated(entityRow);
     } else if (entityName === 'branches') {
@@ -140,13 +142,13 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENT
     }
 });
 
-function noteDeleted(noteId) {
+function noteDeleted(noteId: string) {
     delete becca.notes[noteId];
 
     becca.dirtyNoteSetCache();
 }
 
-function branchDeleted(branchId) {
+function branchDeleted(branchId: string) {
     const branch = becca.branches[branchId];
 
     if (!branch) {
@@ -173,23 +175,26 @@ function branchDeleted(branchId) {
     }
 
     delete becca.childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`];
-    delete becca.branches[branch.branchId];
-}
-
-function noteUpdated(entityRow) {
-    const note = becca.notes[entityRow.noteId];
-
-    if (note) {
-        // type / mime could have been changed, and they are present in flatTextCache
-        note.flatTextCache = null;
+    if (branch.branchId) {
+        delete becca.branches[branch.branchId];
     }
 }
 
-function branchUpdated(branchRow) {
+function noteUpdated(entityRow: NoteRow) {
+    const note = becca.notes[entityRow.noteId];
+
+    if (note) {
+        // TODO, this wouldn't have worked in the original implementation since the variable was named __flatTextCache.
+        // type / mime could have been changed, and they are present in flatTextCache
+        note.__flatTextCache = null;
+    }
+}
+
+function branchUpdated(branchRow: BranchRow) {
     const childNote = becca.notes[branchRow.noteId];
 
     if (childNote) {
-        childNote.flatTextCache = null;
+        childNote.__flatTextCache = null;
         childNote.sortParents();
 
         // notes in the subtree can get new inherited attributes
@@ -204,7 +209,7 @@ function branchUpdated(branchRow) {
     }
 }
 
-function attributeDeleted(attributeId) {
+function attributeDeleted(attributeId: string) {
     const attribute = becca.attributes[attributeId];
 
     if (!attribute) {
@@ -239,8 +244,7 @@ function attributeDeleted(attributeId) {
     }
 }
 
-/** @param {BAttribute} attributeRow */
-function attributeUpdated(attributeRow) {
+function attributeUpdated(attributeRow: BAttribute) {
     const attribute = becca.attributes[attributeRow.attributeId];
     const note = becca.notes[attributeRow.noteId];
 
@@ -253,7 +257,7 @@ function attributeUpdated(attributeRow) {
     }
 }
 
-function noteReorderingUpdated(branchIdList) {
+function noteReorderingUpdated(branchIdList: number[]) {
     const parentNoteIds = new Set();
 
     for (const branchId in branchIdList) {
@@ -267,7 +271,7 @@ function noteReorderingUpdated(branchIdList) {
     }
 }
 
-function etapiTokenDeleted(etapiTokenId) {
+function etapiTokenDeleted(etapiTokenId: string) {
     delete becca.etapiTokens[etapiTokenId];
 }
 
@@ -275,14 +279,14 @@ eventService.subscribeBeccaLoader(eventService.ENTER_PROTECTED_SESSION, () => {
     try {
         becca.decryptProtectedNotes();
     }
-    catch (e) {
+    catch (e: any) {
         log.error(`Could not decrypt protected notes: ${e.message} ${e.stack}`);
     }
 });
 
 eventService.subscribeBeccaLoader(eventService.LEAVE_PROTECTED_SESSION, load);
 
-module.exports = {
+export = {
     load,
     reload,
     beccaLoaded

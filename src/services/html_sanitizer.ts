@@ -1,18 +1,18 @@
-const sanitizeHtml = require('sanitize-html');
-const sanitizeUrl = require('@braintree/sanitize-url').sanitizeUrl;
+import sanitizeHtml = require('sanitize-html');
+import sanitizeUrl = require('@braintree/sanitize-url');
 
 // intended mainly as protection against XSS via import
 // secondarily, it (partly) protects against "CSS takeover"
 // sanitize also note titles, label values etc. - there are so many usages which make it difficult
 // to guarantee all of them are properly handled
-function sanitize(dirtyHtml) {
+function sanitize(dirtyHtml: string) {
     if (!dirtyHtml) {
         return dirtyHtml;
     }
 
     // avoid H1 per https://github.com/zadam/trilium/issues/1552
     // demote H1, and if that conflicts with existing H2, demote that, etc
-    const transformTags = {};
+    const transformTags: Record<string, string> = {};
     const lowercasedHtml = dirtyHtml.toLowerCase();
     for (let i = 1; i < 6; ++i) {
         if (lowercasedHtml.includes(`<h${i}`)) {
@@ -47,9 +47,9 @@ function sanitize(dirtyHtml) {
     });
 }
 
-module.exports = {
+export = {
     sanitize,
-    sanitizeUrl: url => {
-        return sanitizeUrl(url).trim();
+    sanitizeUrl: (url: string) => {
+        return sanitizeUrl.sanitizeUrl(url).trim();
     }
 };

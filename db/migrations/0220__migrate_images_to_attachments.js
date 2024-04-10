@@ -1,5 +1,5 @@
 module.exports = () => {
-    const beccaLoader = require('../../src/becca/becca_loader.js');
+    const beccaLoader = require('../../src/becca/becca_loader');
     const becca = require('../../src/becca/becca');
     const cls = require('../../src/services/cls');
     const log = require('../../src/services/log');

@@ -1,8 +1,9 @@
-const becca = require('./becca');
-const log = require('../services/log');
-const beccaService = require('./becca_service');
-const dateUtils = require('../services/date_utils');
-const {JSDOM} = require("jsdom");
+import becca = require('./becca');
+import log = require('../services/log');
+import beccaService = require('./becca_service');
+import dateUtils = require('../services/date_utils');
+import { JSDOM } from "jsdom";
+import BNote = require('./entities/bnote');
 
 const DEBUG = false;
 
@@ -32,21 +33,25 @@ const IGNORED_ATTR_NAMES = [
     "pageurl",
 ];
 
-function filterUrlValue(value) {
+interface DateLimits {
+    minDate: string;
+    minExcludedDate: string;
+    maxExcludedDate: string;
+    maxDate: string;
+}
+
+function filterUrlValue(value: string) {
     return value
         .replace(/https?:\/\//ig, "")
         .replace(/www.js\./ig, "")
         .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 
-/**
- * @param {BNote} note
- */
-function buildRewardMap(note) {
+function buildRewardMap(note: BNote) {
     // Need to use Map instead of object: https://github.com/zadam/trilium/issues/1895
     const map = new Map();
 
-    function addToRewardMap(text, rewardFactor) {
+    function addToRewardMap(text: string | undefined | null, rewardFactor: number) {
         if (!text) {
             return;
         }
@@ -126,7 +131,7 @@ function buildRewardMap(note) {
         const content = note.getContent();
         const dom = new JSDOM(content);
 
-        function addHeadingsToRewardMap(elName, rewardFactor) {
+        const addHeadingsToRewardMap = (elName: string, rewardFactor: number) => {
             for (const el of dom.window.document.querySelectorAll(elName)) {
                 addToRewardMap(el.textContent, rewardFactor);
             }
@@ -146,9 +151,9 @@ function buildRewardMap(note) {
     return map;
 }
 
-const mimeCache = {};
+const mimeCache: Record<string, string> = {};
 
-function trimMime(mime) {
+function trimMime(mime: string) {
     if (!mime || mime === 'text/html') {
         return;
     }
@@ -173,7 +178,7 @@ function trimMime(mime) {
     return mimeCache[mime];
 }
 
-function buildDateLimits(baseNote) {
+function buildDateLimits(baseNote: BNote): DateLimits {
     const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated).getTime();
 
     return {
@@ -193,7 +198,7 @@ const WORD_BLACKLIST = [
     "than", "then", "and", "either", "or", "neither", "nor", "both", "also"
 ];
 
-function splitToWords(text) {
+function splitToWords(text: string) {
     let words = wordCache.get(text);
 
     if (!words) {
@@ -221,13 +226,13 @@ function splitToWords(text) {
  * includeNoteLink and imageLink relation mean that notes are clearly related, but so clearly
  * that it doesn't actually need to be shown to the user.
  */
-function hasConnectingRelation(sourceNote, targetNote) {
+function hasConnectingRelation(sourceNote: BNote, targetNote: BNote) {
     return sourceNote.getAttributes().find(attr => attr.type === 'relation'
         && ['includenotelink', 'imagelink'].includes(attr.name)
         && attr.value === targetNote.noteId);
 }
 
-async function findSimilarNotes(noteId) {
+async function findSimilarNotes(noteId: string) {
     const results = [];
     let i = 0;
 
@@ -237,23 +242,23 @@ async function findSimilarNotes(noteId) {
         return [];
     }
 
-    let dateLimits;
+    let dateLimits: DateLimits;
 
     try {
         dateLimits = buildDateLimits(baseNote);
     }
-    catch (e) {
+    catch (e: any) {
         throw new Error(`Date limits failed with ${e.message}, entity: ${JSON.stringify(baseNote.getPojo())}`);
     }
 
     const rewardMap = buildRewardMap(baseNote);
-    let ancestorRewardCache = {};
+    let ancestorRewardCache: Record<string, number> = {};
     const ancestorNoteIds = new Set(baseNote.getAncestors().map(note => note.noteId));
     ancestorNoteIds.add(baseNote.noteId);
 
     let displayRewards = false;
 
-    function gatherRewards(text, factor = 1) {
+    function gatherRewards(text?: string | null, factor: number = 1) {
         if (!text) {
             return 0;
         }
@@ -279,7 +284,7 @@ async function findSimilarNotes(noteId) {
         return counter;
     }
 
-    function gatherAncestorRewards(note) {
+    function gatherAncestorRewards(note?: BNote) {
         if (!note || ancestorNoteIds.has(note.noteId)) {
             return 0;
         }
@@ -311,7 +316,7 @@ async function findSimilarNotes(noteId) {
         return ancestorRewardCache[note.noteId];
     }
 
-    function computeScore(candidateNote) {
+    function computeScore(candidateNote: BNote) {
         let score = gatherRewards(trimMime(candidateNote.mime))
             + gatherAncestorRewards(candidateNote);
 
@@ -451,11 +456,11 @@ async function findSimilarNotes(noteId) {
  * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
  */
 function setImmediatePromise() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         setTimeout(() => resolve(), 0);
     });
 }
 
-module.exports = {
+export = {
     findSimilarNotes
 };

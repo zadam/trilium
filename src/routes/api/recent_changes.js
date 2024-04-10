@@ -2,7 +2,7 @@
 
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
-const noteService = require('../../services/notes.js');
+const noteService = require('../../services/notes');
 const becca = require('../../becca/becca');
 
 function getRecentChanges(req) {

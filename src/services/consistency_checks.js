@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const sqlInit = require('./sql_init.js');
+const sqlInit = require('./sql_init');
 const log = require('./log');
 const ws = require('./ws');
 const syncMutexService = require('./sync_mutex');
@@ -9,12 +9,12 @@ const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
 const BBranch = require('../becca/entities/bbranch');
-const revisionService = require('./revisions.js');
+const revisionService = require('./revisions');
 const becca = require('../becca/becca');
 const utils = require('../services/utils');
-const eraseService = require('../services/erase.js');
+const eraseService = require('../services/erase');
 const {sanitizeAttributeName} = require('./sanitize_attribute_name');
-const noteTypes = require('../services/note_types.js').getNoteTypeNames();
+const noteTypes = require('../services/note_types').getNoteTypeNames();
 
 class ConsistencyChecks {
     /**
@@ -766,7 +766,7 @@ class ConsistencyChecks {
         }
 
         if (this.reloadNeeded) {
-            require('../becca/becca_loader.js').reload("consistency checks need becca reload");
+            require('../becca/becca_loader').reload("consistency checks need becca reload");
         }
 
         return !this.unrecoveredConsistencyErrors;

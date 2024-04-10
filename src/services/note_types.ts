@@ -16,7 +16,7 @@ const noteTypes = [
     { type: 'contentWidget', defaultMime: '' }
 ];
 
-function getDefaultMimeForNoteType(typeName) {
+function getDefaultMimeForNoteType(typeName: string) {
     const typeRec = noteTypes.find(nt => nt.type === typeName);
 
     if (!typeRec) {
@@ -26,7 +26,7 @@ function getDefaultMimeForNoteType(typeName) {
     return typeRec.defaultMime;
 }
 
-module.exports = {
+export = {
     getNoteTypeNames: () => noteTypes.map(nt => nt.type),
     getDefaultMimeForNoteType
 };

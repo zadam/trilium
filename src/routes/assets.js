@@ -1,4 +1,4 @@
-const assetPath = require('../services/asset_path.js');
+const assetPath = require('../services/asset_path');
 const path = require("path");
 const express = require("express");
 const env = require('../services/env');

@@ -1,16 +1,27 @@
 "use strict";
 
-const etapiTokenService = require('./etapi_tokens.js');
-const log = require('./log');
-const sqlInit = require('./sql_init.js');
-const utils = require('./utils');
-const passwordEncryptionService = require('./encryption/password_encryption');
-const config = require('./config');
-const passwordService = require('./encryption/password');
+import etapiTokenService = require('./etapi_tokens');
+import log = require('./log');
+import sqlInit = require('./sql_init');
+import utils = require('./utils');
+import passwordEncryptionService = require('./encryption/password_encryption');
+import config = require('./config');
+import passwordService = require('./encryption/password');
+import type { NextFunction, Request, Response } from 'express';
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
-function checkAuth(req, res, next) {
+interface AppRequest extends Request {
+    headers: {
+        authorization?: string;
+        "trilium-cred"?: string;
+    }
+    session: {
+        loggedIn: boolean;        
+    }
+}
+
+function checkAuth(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
@@ -24,7 +35,7 @@ function checkAuth(req, res, next) {
 
 // for electron things which need network stuff
 //  currently, we're doing that for file upload because handling form data seems to be difficult
-function checkApiAuthOrElectron(req, res, next) {
+function checkApiAuthOrElectron(req: AppRequest, res: Response, next: NextFunction) {
     if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
         reject(req, res, "Logged in session not found");
     }
@@ -33,7 +44,7 @@ function checkApiAuthOrElectron(req, res, next) {
     }
 }
 
-function checkApiAuth(req, res, next) {
+function checkApiAuth(req: AppRequest, res: Response, next: NextFunction) {
     if (!req.session.loggedIn && !noAuthentication) {
         reject(req, res, "Logged in session not found");
     }
@@ -42,7 +53,7 @@ function checkApiAuth(req, res, next) {
     }
 }
 
-function checkAppInitialized(req, res, next) {
+function checkAppInitialized(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
@@ -51,7 +62,7 @@ function checkAppInitialized(req, res, next) {
     }
 }
 
-function checkPasswordSet(req, res, next) {
+function checkPasswordSet(req: AppRequest, res: Response, next: NextFunction) {
     if (!utils.isElectron() && !passwordService.isPasswordSet()) {
         res.redirect("set-password");
     } else {
@@ -59,7 +70,7 @@ function checkPasswordSet(req, res, next) {
     }
 }
 
-function checkPasswordNotSet(req, res, next) {
+function checkPasswordNotSet(req: AppRequest, res: Response, next: NextFunction) {
     if (!utils.isElectron() && passwordService.isPasswordSet()) {
         res.redirect("login");
     } else {
@@ -67,7 +78,7 @@ function checkPasswordNotSet(req, res, next) {
     }
 }
 
-function checkAppNotInitialized(req, res, next) {
+function checkAppNotInitialized(req: AppRequest, res: Response, next: NextFunction) {
     if (sqlInit.isDbInitialized()) {
         reject(req, res, "App already initialized.");
     }
@@ -76,7 +87,7 @@ function checkAppNotInitialized(req, res, next) {
     }
 }
 
-function checkEtapiToken(req, res, next) {
+function checkEtapiToken(req: AppRequest, res: Response, next: NextFunction) {
     if (etapiTokenService.isValidAuthHeader(req.headers.authorization)) {
         next();
     }
@@ -85,7 +96,7 @@ function checkEtapiToken(req, res, next) {
     }
 }
 
-function reject(req, res, message) {
+function reject(req: AppRequest, res: Response, message: string) {
     log.info(`${req.method} ${req.path} rejected with 401 ${message}`);
 
     res.setHeader("Content-Type", "text/plain")
@@ -93,7 +104,7 @@ function reject(req, res, message) {
         .send(message);
 }
 
-function checkCredentials(req, res, next) {
+function checkCredentials(req: AppRequest, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         res.setHeader("Content-Type", "text/plain")
             .status(400)
@@ -109,7 +120,7 @@ function checkCredentials(req, res, next) {
     }
 
     const header = req.headers['trilium-cred'] || '';
-    const auth = new Buffer.from(header, 'base64').toString();
+    const auth = Buffer.from(header, 'base64').toString();
     const colonIndex = auth.indexOf(':');
     const password = colonIndex === -1 ? "" : auth.substr(colonIndex + 1);
     // username is ignored
@@ -124,7 +135,7 @@ function checkCredentials(req, res, next) {
     }
 }
 
-module.exports = {
+export = {
     checkAuth,
     checkApiAuth,
     checkAppInitialized,

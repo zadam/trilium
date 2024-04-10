@@ -1,7 +1,7 @@
 'use strict';
 
 const {app, globalShortcut, BrowserWindow} = require('electron');
-const sqlInit = require('./src/services/sql_init.js');
+const sqlInit = require('./src/services/sql_init');
 const appIconService = require('./src/services/app_icon.js');
 const windowService = require('./src/services/window.js');
 const tray = require('./src/services/tray.js');

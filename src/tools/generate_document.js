@@ -3,9 +3,9 @@
  * will create 1000 new notes and some clones into the current document.db
  */
 
-require('../becca/entity_constructor.js');
-const sqlInit = require('../services/sql_init.js');
-const noteService = require('../services/notes.js');
+require('../becca/entity_constructor');
+const sqlInit = require('../services/sql_init');
+const noteService = require('../services/notes');
 const attributeService = require('../services/attributes.js');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning.js');

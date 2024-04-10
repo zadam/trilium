@@ -1,52 +1,62 @@
-const sql = require('./sql');
-const optionService = require('./options');
-const dateUtils = require('./date_utils');
-const entityChangesService = require('./entity_changes');
-const eventService = require('./events');
-const cls = require('../services/cls');
-const protectedSessionService = require('../services/protected_session');
-const log = require('../services/log');
-const utils = require('../services/utils');
-const revisionService = require('./revisions.js');
-const request = require('./request.js');
-const path = require('path');
-const url = require('url');
-const becca = require('../becca/becca');
-const BBranch = require('../becca/entities/bbranch');
-const BNote = require('../becca/entities/bnote');
-const BAttribute = require('../becca/entities/battribute');
-const BAttachment = require('../becca/entities/battachment');
-const dayjs = require("dayjs");
-const htmlSanitizer = require('./html_sanitizer.js');
-const ValidationError = require('../errors/validation_error');
-const noteTypesService = require('./note_types.js');
-const fs = require("fs");
-const ws = require('./ws');
-const html2plaintext = require('html2plaintext')
+import sql = require('./sql');
+import optionService = require('./options');
+import dateUtils = require('./date_utils');
+import entityChangesService = require('./entity_changes');
+import eventService = require('./events');
+import cls = require('../services/cls');
+import protectedSessionService = require('../services/protected_session');
+import log = require('../services/log');
+import utils = require('../services/utils');
+import revisionService = require('./revisions');
+import request = require('./request');
+import path = require('path');
+import url = require('url');
+import becca = require('../becca/becca');
+import BBranch = require('../becca/entities/bbranch');
+import BNote = require('../becca/entities/bnote');
+import BAttribute = require('../becca/entities/battribute');
+import BAttachment = require('../becca/entities/battachment');
+import dayjs = require("dayjs");
+import htmlSanitizer = require('./html_sanitizer');
+import ValidationError = require('../errors/validation_error');
+import noteTypesService = require('./note_types');
+import fs = require("fs");
+import ws = require('./ws');
+import html2plaintext = require('html2plaintext');
+import { AttachmentRow, AttributeRow, BranchRow, NoteRow, NoteType } from '../becca/entities/rows';
+import TaskContext = require('./task_context');
 
-/** @param {BNote} parentNote */
-function getNewNotePosition(parentNote) {
+interface FoundLink {
+    name: "imageLink" | "internalLink" | "includeNoteLink" | "relationMapLink",
+    value: string
+}
+
+interface Attachment {
+    attachmentId?: string;
+    title: string;
+}
+
+function getNewNotePosition(parentNote: BNote) {
     if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
-            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
-            .reduce((min, note) => Math.min(min, note.notePosition), 0);
+            .filter(branch => branch?.noteId !== '_hidden') // has "always last" note position
+            .reduce((min, note) => Math.min(min, note?.notePosition || 0), 0);
 
         return minNotePos - 10;
     } else {
         const maxNotePos = parentNote.getChildBranches()
-            .filter(branch => branch.noteId !== '_hidden') // has "always last" note position
-            .reduce((max, note) => Math.max(max, note.notePosition), 0);
+            .filter(branch => branch?.noteId !== '_hidden') // has "always last" note position
+            .reduce((max, note) => Math.max(max, note?.notePosition || 0), 0);
 
         return maxNotePos + 10;
     }
 }
 
-/** @param {BNote} note */
-function triggerNoteTitleChanged(note) {
+function triggerNoteTitleChanged(note: BNote) {
     eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
 
-function deriveMime(type, mime) {
+function deriveMime(type: string, mime?: string) {
     if (!type) {
         throw new Error(`Note type is a required param`);
     }
@@ -58,11 +68,7 @@ function deriveMime(type, mime) {
     return noteTypesService.getDefaultMimeForNoteType(type);
 }
 
-/**
- * @param {BNote} parentNote
- * @param {BNote} childNote
- */
-function copyChildAttributes(parentNote, childNote) {
+function copyChildAttributes(parentNote: BNote, childNote: BNote) {
     for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
             const name = attr.name.substr(6);
@@ -86,8 +92,7 @@ function copyChildAttributes(parentNote, childNote) {
     }
 }
 
-/** @param {BNote} parentNote */
-function getNewNoteTitle(parentNote) {
+function getNewNoteTitle(parentNote: BNote) {
     let title = "new note";
 
     const titleTemplate = parentNote.getLabelValue('titleTemplate');
@@ -101,7 +106,7 @@ function getNewNoteTitle(parentNote) {
             // - parentNote
 
             title = eval(`\`${titleTemplate}\``);
-        } catch (e) {
+        } catch (e: any) {
             log.error(`Title template of note '${parentNote.noteId}' failed with: ${e.message}`);
         }
     }
@@ -114,7 +119,13 @@ function getNewNoteTitle(parentNote) {
     return title;
 }
 
-function getAndValidateParent(params) {
+interface GetValidateParams {
+    parentNoteId: string;
+    type: string;
+    ignoreForbiddenParents?: boolean;
+}
+
+function getAndValidateParent(params: GetValidateParams) {
     const parentNote = becca.notes[params.parentNoteId];
 
     if (!parentNote) {
@@ -141,24 +152,33 @@ function getAndValidateParent(params) {
     return parentNote;
 }
 
-/**
- * Following object properties are mandatory:
- * - {string} parentNoteId
- * - {string} title
- * - {*} content
- * - {string} type - text, code, file, image, search, book, relationMap, canvas, render
- *
- * The following are optional (have defaults)
- * - {string} mime - value is derived from default mimes for type
- * - {boolean} isProtected - default is false
- * - {boolean} isExpanded - default is false
- * - {string} prefix - default is empty string
- * - {int} notePosition - default is the last existing notePosition in a parent + 10
- *
- * @param params
- * @returns {{note: BNote, branch: BBranch}}
- */
-function createNewNote(params) {
+interface NoteParams {
+    /** optionally can force specific noteId */
+    noteId?: string;
+    parentNoteId: string;
+    templateNoteId?: string;
+    title: string;
+    content: string;
+    type: NoteType;
+    /** default value is derived from default mimes for type */
+    mime?: string;
+    /** default is false */
+    isProtected?: boolean;
+    /** default is false */
+    isExpanded?: boolean;
+    /** default is empty string */
+    prefix?: string;
+    /** default is the last existing notePosition in a parent + 10 */
+    notePosition?: number;
+    dateCreated?: string;
+    utcDateCreated?: string;
+    ignoreForbiddenParents?: boolean;
+}
+
+function createNewNote(params: NoteParams): {
+    note: BNote;
+    branch: BBranch;
+} {
     const parentNote = getAndValidateParent(params);
 
     if (params.title === null || params.title === undefined) {
@@ -209,7 +229,7 @@ function createNewNote(params) {
                 noteId: note.noteId,
                 parentNoteId: params.parentNoteId,
                 notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(parentNote),
-                prefix: params.prefix,
+                prefix: params.prefix || "",
                 isExpanded: !!params.isExpanded
             }).save();
         }
@@ -253,7 +273,7 @@ function createNewNote(params) {
     });
 }
 
-function createNewNoteWithTarget(target, targetBranchId, params) {
+function createNewNoteWithTarget(target: ("into" | "after"), targetBranchId: string, params: NoteParams) {
     if (!params.type) {
         const parentNote = becca.notes[params.parentNoteId];
 
@@ -285,13 +305,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
     }
 }
 
-/**
- * @param {BNote} note
- * @param {boolean} protect
- * @param {boolean} includingSubTree
- * @param {TaskContext} taskContext
- */
-function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
+function protectNoteRecursively(note: BNote, protect: boolean, includingSubTree: boolean, taskContext: TaskContext) {
     protectNote(note, protect);
 
     taskContext.increaseProgressCount();
@@ -303,11 +317,7 @@ function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
     }
 }
 
-/**
- * @param {BNote} note
- * @param {boolean} protect
- */
-function protectNote(note, protect) {
+function protectNote(note: BNote, protect: boolean) {
     if (!protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot (un)protect note '${note.noteId}' with protect flag '${protect}' without active protected session`);
     }
@@ -345,8 +355,8 @@ function protectNote(note, protect) {
     }
 }
 
-function checkImageAttachments(note, content) {
-    const foundAttachmentIds = new Set();
+function checkImageAttachments(note: BNote, content: string) {
+    const foundAttachmentIds = new Set<string>();
     let match;
 
     const imgRegExp = /src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image/g;
@@ -362,7 +372,7 @@ function checkImageAttachments(note, content) {
     const attachments = note.getAttachments();
 
     for (const attachment of attachments) {
-        const attachmentInContent = foundAttachmentIds.has(attachment.attachmentId);
+        const attachmentInContent = attachment.attachmentId && foundAttachmentIds.has(attachment.attachmentId);
 
         if (attachment.utcDateScheduledForErasureSince && attachmentInContent) {
             attachment.utcDateScheduledForErasureSince = null;
@@ -373,7 +383,7 @@ function checkImageAttachments(note, content) {
         }
     }
 
-    const existingAttachmentIds = new Set(attachments.map(att => att.attachmentId));
+    const existingAttachmentIds = new Set<string | undefined>(attachments.map(att => att.attachmentId));
     const unknownAttachmentIds = Array.from(foundAttachmentIds).filter(foundAttId => !existingAttachmentIds.has(foundAttId));
     const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
@@ -412,7 +422,7 @@ function checkImageAttachments(note, content) {
     };
 }
 
-function findImageLinks(content, foundLinks) {
+function findImageLinks(content: string, foundLinks: FoundLink[]) {
     const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
 
@@ -428,7 +438,7 @@ function findImageLinks(content, foundLinks) {
     return content.replace(/src="[^"]*\/api\/images\//g, 'src="api/images/');
 }
 
-function findInternalLinks(content, foundLinks) {
+function findInternalLinks(content: string, foundLinks: FoundLink[]) {
     const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g;
     let match;
 
@@ -443,7 +453,7 @@ function findInternalLinks(content, foundLinks) {
     return content.replace(/href="[^"]*#root/g, 'href="#root');
 }
 
-function findIncludeNoteLinks(content, foundLinks) {
+function findIncludeNoteLinks(content: string, foundLinks: FoundLink[]) {
     const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9_]+)"[^>]*>/g;
     let match;
 
@@ -457,7 +467,7 @@ function findIncludeNoteLinks(content, foundLinks) {
     return content;
 }
 
-function findRelationMapLinks(content, foundLinks) {
+function findRelationMapLinks(content: string, foundLinks: FoundLink[]) {
     const obj = JSON.parse(content);
 
     for (const note of obj.notes) {
@@ -468,9 +478,9 @@ function findRelationMapLinks(content, foundLinks) {
     }
 }
 
-const imageUrlToAttachmentIdMapping = {};
+const imageUrlToAttachmentIdMapping: Record<string, string> = {};
 
-async function downloadImage(noteId, imageUrl) {
+async function downloadImage(noteId: string, imageUrl: string) {
     const unescapedUrl = utils.unescapeHtml(imageUrl);
 
     try {
@@ -493,7 +503,7 @@ async function downloadImage(noteId, imageUrl) {
         }
 
         const parsedUrl = url.parse(unescapedUrl);
-        const title = path.basename(parsedUrl.pathname);
+        const title = path.basename(parsedUrl.pathname || "");
 
         const imageService = require('../services/image.js');
         const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
@@ -502,21 +512,21 @@ async function downloadImage(noteId, imageUrl) {
 
         log.info(`Download of '${imageUrl}' succeeded and was saved as image attachment '${attachment.attachmentId}' of note '${noteId}'`);
     }
-    catch (e) {
+    catch (e: any) {
         log.error(`Download of '${imageUrl}' for note '${noteId}' failed with error: ${e.message} ${e.stack}`);
     }
 }
 
 /** url => download promise */
-const downloadImagePromises = {};
+const downloadImagePromises: Record<string, Promise<void>> = {};
 
-function replaceUrl(content, url, attachment) {
+function replaceUrl(content: string, url: string, attachment: Attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
     return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(attachment.title)}"`);
 }
 
-function downloadImages(noteId, content) {
+function downloadImages(noteId: string, content: string) {
     const imageRe = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
     let imageMatch;
 
@@ -589,6 +599,11 @@ function downloadImages(noteId, content) {
                 const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
+                if (typeof updatedContent !== "string") {
+                    log.error(`Note '${noteId}' has a non-string content, cannot replace image link.`);
+                    return;
+                }
+
                 for (const url in imageUrlToAttachmentIdMapping) {
                     const imageNote = imageNotes.find(note => note.noteId === imageUrlToAttachmentIdMapping[url]);
 
@@ -612,11 +627,7 @@ function downloadImages(noteId, content) {
     return content;
 }
 
-/**
- * @param {BNote} note
- * @param {string} content
- */
-function saveAttachments(note, content) {
+function saveAttachments(note: BNote, content: string) {
     const inlineAttachmentRe = /<a[^>]*?\shref=['"]data:([^;'">]+);base64,([^'">]+)['"][^>]*>(.*?)<\/a>/igm;
     let attachmentMatch;
 
@@ -645,11 +656,7 @@ function saveAttachments(note, content) {
     return content;
 }
 
-/**
- * @param {BNote} note
- * @param {string} content
- */
-function saveLinks(note, content) {
+function saveLinks(note: BNote, content: string) {
     if ((note.type !== 'text' && note.type !== 'relationMap')
         || (note.isProtected && !protectedSessionService.isProtectedSessionAvailable())) {
         return {
@@ -658,7 +665,7 @@ function saveLinks(note, content) {
         };
     }
 
-    const foundLinks = [];
+    const foundLinks: FoundLink[] = [];
     let forceFrontendReload = false;
 
     if (note.type === 'text') {
@@ -716,8 +723,7 @@ function saveLinks(note, content) {
     return { forceFrontendReload, content };
 }
 
-/** @param {BNote} note */
-function saveRevisionIfNeeded(note) {
+function saveRevisionIfNeeded(note: BNote) {
     // files and images are versioned separately
     if (note.type === 'file' || note.type === 'image' || note.isLabelTruthy('disableVersioning')) {
         return;
@@ -738,10 +744,10 @@ function saveRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteData(noteId, content, attachments = []) {
+function updateNoteData(noteId: string, content: string, attachments: AttachmentRow[] = []) {
     const note = becca.getNote(noteId);
 
-    if (!note.isContentAvailable()) {
+    if (!note || !note.isContentAvailable()) {
         throw new Error(`Note '${noteId}' is not available for change!`);
     }
 
@@ -752,10 +758,9 @@ function updateNoteData(noteId, content, attachments = []) {
     note.setContent(newContent, { forceFrontendReload });
 
     if (attachments?.length > 0) {
-        /** @var {Object<string, BAttachment>} */
         const existingAttachmentsByTitle = utils.toMap(note.getAttachments({includeContentLength: false}), 'title');
 
-        for (const {attachmentId, role, mime, title, content, position} of attachments) {
+        for (const {attachmentId, role, mime, title, position, content} of attachments) {
             if (attachmentId || !(title in existingAttachmentsByTitle)) {
                 note.saveAttachment({attachmentId, role, mime, title, content, position});
             } else {
@@ -763,18 +768,16 @@ function updateNoteData(noteId, content, attachments = []) {
                 existingAttachment.role = role;
                 existingAttachment.mime = mime;
                 existingAttachment.position = position;
-                existingAttachment.setContent(content, {forceSave: true});
+                if (content) {
+                    existingAttachment.setContent(content, {forceSave: true});
+                }
             }
         }
     }
 }
 
-/**
- * @param {string} noteId
- * @param {TaskContext} taskContext
- */
-function undeleteNote(noteId, taskContext) {
-    const noteRow = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+function undeleteNote(noteId: string, taskContext: TaskContext) {
+    const noteRow = sql.getRow<NoteRow>("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!noteRow.isDeleted) {
         log.error(`Note '${noteId}' is not deleted and thus cannot be undeleted.`);
@@ -793,19 +796,14 @@ function undeleteNote(noteId, taskContext) {
     }
 }
 
-/**
- * @param {string} branchId
- * @param {string} deleteId
- * @param {TaskContext} taskContext
- */
-function undeleteBranch(branchId, deleteId, taskContext) {
-    const branchRow = sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId])
+function undeleteBranch(branchId: string, deleteId: string, taskContext: TaskContext) {
+    const branchRow = sql.getRow<BranchRow>("SELECT * FROM branches WHERE branchId = ?", [branchId])
 
     if (!branchRow.isDeleted) {
         return;
     }
 
-    const noteRow = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [branchRow.noteId]);
+    const noteRow = sql.getRow<NoteRow>("SELECT * FROM notes WHERE noteId = ?", [branchRow.noteId]);
 
     if (noteRow.isDeleted && noteRow.deleteId !== deleteId) {
         return;
@@ -818,10 +816,14 @@ function undeleteBranch(branchId, deleteId, taskContext) {
     if (noteRow.isDeleted && noteRow.deleteId === deleteId) {
         // becca entity was already created as skeleton in "new Branch()" above
         const noteEntity = becca.getNote(noteRow.noteId);
+        if (!noteEntity) {
+            throw new Error("Unable to find the just restored branch.");
+        }
+
         noteEntity.updateFromRow(noteRow);
         noteEntity.save();
 
-        const attributeRows = sql.getRows(`
+        const attributeRows = sql.getRows<AttributeRow>(`
                 SELECT * FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
@@ -830,10 +832,11 @@ function undeleteBranch(branchId, deleteId, taskContext) {
 
         for (const attributeRow of attributeRows) {
             // relation might point to a note which hasn't been undeleted yet and would thus throw up
+            // TODO: skipValidation is not used.
             new BAttribute(attributeRow).save({skipValidation: true});
         }
 
-        const attachmentRows = sql.getRows(`
+        const attachmentRows = sql.getRows<AttachmentRow>(`
             SELECT * FROM attachments
             WHERE isDeleted = 1
               AND deleteId = ?
@@ -843,7 +846,7 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             new BAttachment(attachmentRow).save();
         }
 
-        const childBranchIds = sql.getColumn(`
+        const childBranchIds = sql.getColumn<string>(`
             SELECT branches.branchId
             FROM branches
             WHERE branches.isDeleted = 1
@@ -859,8 +862,8 @@ function undeleteBranch(branchId, deleteId, taskContext) {
 /**
  * @returns return deleted branchIds of an undeleted parent note
  */
-function getUndeletedParentBranchIds(noteId, deleteId) {
-    return sql.getColumn(`
+function getUndeletedParentBranchIds(noteId: string, deleteId: string) {
+    return sql.getColumn<string>(`
                     SELECT branches.branchId
                     FROM branches
                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
@@ -870,7 +873,7 @@ function getUndeletedParentBranchIds(noteId, deleteId) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-function scanForLinks(note, content) {
+function scanForLinks(note: BNote, content: string) {
     if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }
@@ -884,17 +887,15 @@ function scanForLinks(note, content) {
             }
         });
     }
-    catch (e) {
+    catch (e: any) {
         log.error(`Could not scan for links note '${note.noteId}': ${e.message} ${e.stack}`);
     }
 }
 
 /**
- * @param {BNote} note
- * @param {string} content
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
-async function asyncPostProcessContent(note, content) {
+async function asyncPostProcessContent(note: BNote, content: string) {
     if (cls.isMigrationRunning()) {
         // this is rarely needed for migrations, but can cause trouble by e.g. triggering downloads
         return;
@@ -908,7 +909,7 @@ async function asyncPostProcessContent(note, content) {
 }
 
 // all keys should be replaced by the corresponding values
-function replaceByMap(str, mapObj) {
+function replaceByMap(str: string, mapObj: Record<string, string>) {
     if (!mapObj) {
         return str;
     }
@@ -918,7 +919,7 @@ function replaceByMap(str, mapObj) {
     return str.replace(re, matched => mapObj[matched]);
 }
 
-function duplicateSubtree(origNoteId, newParentNoteId) {
+function duplicateSubtree(origNoteId: string, newParentNoteId: string) {
     if (origNoteId === 'root') {
         throw new Error('Duplicating root is not possible');
     }
@@ -931,6 +932,10 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
 
     const noteIdMapping = getNoteIdMapping(origNote);
 
+    if (!origBranch) {
+        throw new Error("Unable to find original branch to duplicate.");
+    }
+
     const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
 
     if (!res.note.title.endsWith('(dup)')) {
@@ -942,20 +947,25 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
     return res;
 }
 
-function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
+function duplicateSubtreeWithoutRoot(origNoteId: string, newNoteId: string) {
     if (origNoteId === 'root') {
         throw new Error('Duplicating root is not possible');
     }
 
     const origNote = becca.getNote(origNoteId);
+    if (origNote == null) {
+        throw new Error("Unable to find note to duplicate.");
+    }
+    
     const noteIdMapping = getNoteIdMapping(origNote);
-
     for (const childBranch of origNote.getChildBranches()) {
-        duplicateSubtreeInner(childBranch.getNote(), childBranch, newNoteId, noteIdMapping);
+        if (childBranch) {
+            duplicateSubtreeInner(childBranch.getNote(), childBranch, newNoteId, noteIdMapping);
+        }
     }
 }
 
-function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping) {
+function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch, newParentNoteId: string, noteIdMapping: Record<string, string>) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot duplicate note '${origNote.noteId}' because it is protected and protected session is not available. Enter protected session and try again.`);
     }
@@ -981,7 +991,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
         let content = origNote.getContent();
 
-        if (['text', 'relationMap', 'search'].includes(origNote.type)) {
+        if (typeof content === "string" && ['text', 'relationMap', 'search'].includes(origNote.type)) {
             // fix links in the content
             content = replaceByMap(content, noteIdMapping);
         }
@@ -1002,11 +1012,14 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
             }
 
             // the relation targets may not be created yet, the mapping is pre-generated
-            attr.save({skipValidation: true});
+            // TODO: This used to be `attr.save({skipValidation: true});`, but skipValidation is in beforeSaving.
+            attr.save();
         }
 
         for (const childBranch of origNote.getChildBranches()) {
-            duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+            if (childBranch) {
+                duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+            }
         }
 
         return newNote;
@@ -1031,8 +1044,8 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     }
 }
 
-function getNoteIdMapping(origNote) {
-    const noteIdMapping = {};
+function getNoteIdMapping(origNote: BNote) {
+    const noteIdMapping: Record<string, string> = {};
 
     // pregenerate new noteIds since we'll need to fix relation references even for not yet created notes
     for (const origNoteId of origNote.getDescendantNoteIds()) {
@@ -1042,7 +1055,7 @@ function getNoteIdMapping(origNote) {
     return noteIdMapping;
 }
 
-module.exports = {
+export = {
     createNewNote,
     createNewNoteWithTarget,
     updateNoteData,

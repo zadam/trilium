@@ -2,7 +2,7 @@ const cls = require('../services/cls');
 const sql = require('../services/sql');
 const log = require('../services/log');
 const becca = require('../becca/becca');
-const etapiTokenService = require('../services/etapi_tokens.js');
+const etapiTokenService = require('../services/etapi_tokens');
 const config = require('../services/config');
 const GENERIC_CODE = "GENERIC";
 

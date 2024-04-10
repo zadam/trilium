@@ -1,11 +1,18 @@
-const backupService = require('./backup.js');
-const sql = require('./sql');
-const fs = require('fs-extra');
-const log = require('./log');
-const utils = require('./utils');
-const resourceDir = require('./resource_dir');
-const appInfo = require('./app_info.js');
-const cls = require('./cls');
+import backupService = require('./backup');
+import sql = require('./sql');
+import fs = require('fs-extra');
+import log = require('./log');
+import utils = require('./utils');
+import resourceDir = require('./resource_dir');
+import appInfo = require('./app_info');
+import cls = require('./cls');
+
+interface MigrationInfo {
+    dbVersion: number;
+    name: string;
+    file: string;
+    type: string;
+}
 
 async function migrate() {
     const currentDbVersion = getDbVersion();
@@ -25,7 +32,12 @@ async function migrate() {
             : 'before-migration'
     );
 
-    const migrations = fs.readdirSync(resourceDir.MIGRATIONS_DIR).map(file => {
+    const migrationFiles = fs.readdirSync(resourceDir.MIGRATIONS_DIR);
+    if (migrationFiles == null) {
+        return;
+    }
+
+    const migrations = migrationFiles.map(file => {
         const match = file.match(/^([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)$/);
         if (!match) {
             return null;
@@ -45,7 +57,7 @@ async function migrate() {
         } else {
             return null;
         }
-    }).filter(el => !!el);
+    }).filter((el): el is MigrationInfo => !!el);
 
     migrations.sort((a, b) => a.dbVersion - b.dbVersion);
 
@@ -67,7 +79,7 @@ async function migrate() {
                              WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
 
                 log.info(`Migration to version ${mig.dbVersion} has been successful.`);
-            } catch (e) {
+            } catch (e: any) {
                 log.error(`error during migration to version ${mig.dbVersion}: ${e.stack}`);
                 log.error("migration failed, crashing hard"); // this is not very user-friendly :-/
 
@@ -84,7 +96,7 @@ async function migrate() {
     }
 }
 
-function executeMigration(mig) {
+function executeMigration(mig: MigrationInfo) {
     if (mig.type === 'sql') {
         const migrationSql = fs.readFileSync(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`).toString('utf8');
 
@@ -131,7 +143,7 @@ async function migrateIfNecessary() {
     }
 }
 
-module.exports = {
+export = {
     migrateIfNecessary,
     isDbUpToDate
 };

@@ -5,7 +5,7 @@ const SearchContext = require('../../services/search/search_context.js');
 const searchService = require('../../services/search/services/search.js');
 const bulkActionService = require('../../services/bulk_actions.js');
 const cls = require('../../services/cls');
-const {formatAttrForSearch} = require('../../services/attribute_formatter.js');
+const {formatAttrForSearch} = require('../../services/attribute_formatter');
 const ValidationError = require('../../errors/validation_error');
 
 function searchFromNote(req) {

@@ -1,7 +1,7 @@
 "use strict";
 
-const optionService = require('./options');
-const config = require('./config');
+import optionService = require('./options');
+import config = require('./config');
 
 /*
  * Primary configuration for sync is in the options (document), but we allow to override
@@ -10,11 +10,11 @@ const config = require('./config');
  * to live sync server.
  */
 
-function get(name) {
+function get(name: string) {
     return (config['Sync'] && config['Sync'][name]) || optionService.getOption(name);
 }
 
-module.exports = {
+export = {
     // env variable is the easiest way to guarantee we won't overwrite prod data during development
     // after copying prod document/data directory
     getSyncServerHost: () => process.env.TRILIUM_SYNC_SERVER_HOST || get('syncServerHost'),

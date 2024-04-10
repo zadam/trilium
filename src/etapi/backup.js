@@ -1,5 +1,5 @@
 const eu = require('./etapi_utils');
-const backupService = require('../services/backup.js');
+const backupService = require('../services/backup');
 
 function register(router) {
     eu.route(router, 'put', '/etapi/backup/:backupName', async (req, res, next) => {

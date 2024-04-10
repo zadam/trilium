@@ -1,11 +1,20 @@
 "use strict";
 
-const optionService = require('./options');
-const log = require('./log');
-const utils = require('./utils');
+import optionService = require('./options');
+import log = require('./log');
+import utils = require('./utils');
 
 const isMac = process.platform === "darwin";
 const isElectron = utils.isElectron();
+
+interface KeyboardShortcut {
+    separator?: string;
+    actionName?: string;
+    description?: string;
+    defaultShortcuts?: string[];
+    effectiveShortcuts?: string[];
+    scope?: string;
+}
 
 /**
  * Scope here means on which element the keyboard shortcuts are attached - this means that for the shortcut to work,
@@ -16,7 +25,7 @@ const isElectron = utils.isElectron();
  * e.g. CTRL-C in note tree does something a bit different from CTRL-C in the text editor.
  */
 
-const DEFAULT_KEYBOARD_ACTIONS = [
+const DEFAULT_KEYBOARD_ACTIONS: KeyboardShortcut[] = [
     {
         separator: "Note navigation"
     },
@@ -606,15 +615,15 @@ for (const action of DEFAULT_KEYBOARD_ACTIONS) {
 }
 
 function getKeyboardActions() {
-    const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
+    const actions: KeyboardShortcut[] = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
     for (const action of actions) {
-        action.effectiveShortcuts = action.effectiveShortcuts ? action.defaultShortcuts.slice() : [];
+        action.effectiveShortcuts = action.defaultShortcuts ? action.defaultShortcuts.slice() : [];
     }
 
     for (const option of optionService.getOptions()) {
         if (option.name.startsWith('keyboardShortcuts')) {
-            let actionName = option.name.substr(17);
+            let actionName = option.name.substring(17);
             actionName = actionName.charAt(0).toLowerCase() + actionName.slice(1);
 
             const action = actions.find(ea => ea.actionName === actionName);
@@ -636,7 +645,7 @@ function getKeyboardActions() {
     return actions;
 }
 
-module.exports = {
+export = {
     DEFAULT_KEYBOARD_ACTIONS,
     getKeyboardActions
 };

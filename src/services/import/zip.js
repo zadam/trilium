@@ -3,7 +3,7 @@
 const BAttribute = require('../../becca/entities/battribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
-const noteService = require('../../services/notes.js');
+const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes.js');
 const BBranch = require('../../becca/entities/bbranch');
 const path = require('path');
@@ -11,7 +11,7 @@ const protectedSessionService = require('../protected_session');
 const mimeService = require('./mime.js');
 const treeService = require('../tree.js');
 const yauzl = require("yauzl");
-const htmlSanitizer = require('../html_sanitizer.js');
+const htmlSanitizer = require('../html_sanitizer');
 const becca = require('../../becca/becca');
 const BAttachment = require('../../becca/entities/battachment');
 const markdownService = require('./markdown.js');

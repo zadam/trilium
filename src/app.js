@@ -8,7 +8,7 @@ const sessionParser = require('./routes/session_parser.js');
 const utils = require('./services/utils');
 
 require('./services/handlers.js');
-require('./becca/becca_loader.js');
+require('./becca/becca_loader');
 
 const app = express();
 
@@ -46,7 +46,7 @@ require('./routes/error_handlers.js').register(app);
 require('./services/sync.js');
 
 // triggers backup timer
-require('./services/backup.js');
+require('./services/backup');
 
 // trigger consistency checks timer
 require('./services/consistency_checks.js');

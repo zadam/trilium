@@ -1,4 +1,4 @@
-const appInfo = require('../services/app_info.js');
+const appInfo = require('../services/app_info');
 const eu = require('./etapi_utils');
 
 function register(router) {
