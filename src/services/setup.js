@@ -1,4 +1,4 @@
-const syncService = require('./sync.js');
+const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const optionService = require('./options');

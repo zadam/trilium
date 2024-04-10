@@ -1,9 +1,9 @@
 "use strict";
 
 const becca = require('../../becca/becca');
-const SearchContext = require('../../services/search/search_context.js');
-const searchService = require('../../services/search/services/search.js');
-const bulkActionService = require('../../services/bulk_actions.js');
+const SearchContext = require('../../services/search/search_context');
+const searchService = require('../../services/search/services/search');
+const bulkActionService = require('../../services/bulk_actions');
 const cls = require('../../services/cls');
 const {formatAttrForSearch} = require('../../services/attribute_formatter');
 const ValidationError = require('../../errors/validation_error');

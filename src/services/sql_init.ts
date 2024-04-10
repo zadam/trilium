@@ -84,7 +84,7 @@ async function createInitialDatabase() {
             notePosition: 10
         }).save();
 
-        const optionsInitService = require('./options_init.js');
+        const optionsInitService = require('./options_init');
 
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
@@ -132,7 +132,7 @@ function createDatabaseForSync(options: OptionRow[], syncServerHost = '', syncPr
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require('./options_init.js').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
+        require('./options_init').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {

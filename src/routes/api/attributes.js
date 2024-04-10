@@ -2,7 +2,7 @@
 
 const sql = require('../../services/sql');
 const log = require('../../services/log');
-const attributeService = require('../../services/attributes.js');
+const attributeService = require('../../services/attributes');
 const BAttribute = require('../../becca/entities/battribute');
 const becca = require('../../becca/becca');
 const ValidationError = require('../../errors/validation_error');

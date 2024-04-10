@@ -1,12 +1,12 @@
 "use strict";
 
-const syncService = require('../../services/sync.js');
-const syncUpdateService = require('../../services/sync_update.js');
+const syncService = require('../../services/sync');
+const syncUpdateService = require('../../services/sync_update');
 const entityChangesService = require('../../services/entity_changes');
 const sql = require('../../services/sql');
 const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
-const contentHashService = require('../../services/content_hash.js');
+const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
 const utils = require('../../services/utils');

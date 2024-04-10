@@ -222,7 +222,7 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         };
     }
 
-    createClone(type: AttributeType, name: string, value: string, isInheritable: boolean) {
+    createClone(type: AttributeType, name: string, value: string, isInheritable?: boolean) {
         return new BAttribute({
             noteId: this.noteId,
             type: type,

@@ -1,6 +1,6 @@
 "use strict";
 
-const cloningService = require('../../services/cloning.js');
+const cloningService = require('../../services/cloning');
 
 function cloneNoteToBranch(req) {
     const {noteId, parentBranchId} = req.params;

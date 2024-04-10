@@ -5,3 +5,6 @@ cloc HEAD \
     --include-lang=javascript,typescript \
     --found=filelist.txt \
     --exclude-dir=public,libraries
+
+grep -R \.js$ filelist.txt
+rm filelist.txt

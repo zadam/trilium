@@ -66,7 +66,7 @@ export type AttributeType = "label" | "relation";
 
 export interface AttributeRow {
     attributeId?: string;
-    noteId: string;
+    noteId?: string;
     type: AttributeType;
     name: string;
     position?: number;
@@ -80,7 +80,7 @@ export interface BranchRow {
     noteId: string;
     parentNoteId: string;
     prefix?: string | null;
-    notePosition: number | null;
+    notePosition?: number | null;
     isExpanded?: boolean;
     isDeleted?: boolean;
     utcDateModified?: string;
@@ -106,4 +106,5 @@ export interface NoteRow {
     dateModified: string;
     utcDateCreated: string;
     utcDateModified: string;
+    content?: string;
 }

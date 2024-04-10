@@ -1,5 +1,5 @@
 const becca = require('../../becca/becca');
-const bulkActionService = require('../../services/bulk_actions.js');
+const bulkActionService = require('../../services/bulk_actions');
 
 function execute(req) {
     const {noteIds, includeDescendants} = req.body;

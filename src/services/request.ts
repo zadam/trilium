@@ -4,28 +4,10 @@ import utils = require('./utils');
 import log = require('./log');
 import url = require('url');
 import syncOptions = require('./sync_options');
+import { ExecOpts } from './request_interface';
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows supporting system proxy
-
-interface ExecOpts {
-    proxy: "noproxy" | null;
-    method: string;
-    url: string;
-    paging?: {
-        pageCount: number;
-        pageIndex: number;
-        requestId: string;
-    };
-    cookieJar?: {
-        header?: string;
-    };
-    auth?: {
-        password?: string;
-    },
-    timeout: number;
-    body: string;
-}
 
 interface ClientOpts {
     method: string;
@@ -230,7 +212,7 @@ function getClient(opts: ClientOpts): Client {
     // it's not clear how to explicitly configure proxy (as opposed to system proxy),
     // so in that case, we always use node's modules
     if (utils.isElectron() && !opts.proxy) {
-        return require('electron').net;
+        return require('electron').net as Client;
     }
     else {
         const {protocol} = url.parse(opts.url);

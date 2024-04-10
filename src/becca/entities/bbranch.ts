@@ -267,17 +267,19 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
         };
     }
 
-    createClone(parentNoteId: string, notePosition: number) {
+    createClone(parentNoteId: string, notePosition?: number) {
         const existingBranch = this.becca.getBranchFromChildAndParent(this.noteId, parentNoteId);
 
         if (existingBranch) {
-            existingBranch.notePosition = notePosition;
+            if (notePosition) {
+                existingBranch.notePosition = notePosition;
+            }
             return existingBranch;
         } else {
             return new BBranch({
                 noteId: this.noteId,
                 parentNoteId: parentNoteId,
-                notePosition: notePosition,
+                notePosition: notePosition || null,
                 prefix: this.prefix,
                 isExpanded: this.isExpanded
             });

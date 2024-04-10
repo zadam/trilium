@@ -45,7 +45,7 @@ function startTrilium() {
      * instead of the new one. This is complicated by the fact that it is possible to run multiple instances of Trilium
      * if port and data dir are configured separately. This complication is the source of the following weird usage.
      *
-     * The line below makes sure that the "second-instance" (process in window.js) is fired. Normally it returns a boolean
+     * The line below makes sure that the "second-instance" (process in window.ts) is fired. Normally it returns a boolean
      * indicating whether another instance is running or not, but we ignore that and kill the app only based on the port conflict.
      *
      * A bit weird is that "second-instance" is triggered also on the valid usecases (different port/data dir) and
@@ -126,26 +126,26 @@ function startHttpServer() {
     }
 
     httpServer.on('error', error => {
-            if (!listenOnTcp || error.syscall !== 'listen') {
-                throw error;
-            }
-
-            // handle specific listen errors with friendly messages
-            switch (error.code) {
-                case 'EACCES':
-                    console.error(`Port ${port} requires elevated privileges. It's recommended to use port above 1024.`);
-                    process.exit(1);
-                    break;
-
-                case 'EADDRINUSE':
-                    console.error(`Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`);
-                    process.exit(1);
-                    break;
-
-                default:
-                    throw error;
-            }
+        if (!listenOnTcp || error.syscall !== 'listen') {
+            throw error;
         }
+
+        // handle specific listen errors with friendly messages
+        switch (error.code) {
+            case 'EACCES':
+                console.error(`Port ${port} requires elevated privileges. It's recommended to use port above 1024.`);
+                process.exit(1);
+                break;
+
+            case 'EADDRINUSE':
+                console.error(`Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`);
+                process.exit(1);
+                break;
+
+            default:
+                throw error;
+        }
+    }
     )
 
     httpServer.on('listening', () => {

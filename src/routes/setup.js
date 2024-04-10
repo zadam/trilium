@@ -9,7 +9,7 @@ const appPath = require('../services/app_path');
 function setupPage(req, res) {
     if (sqlInit.isDbInitialized()) {
         if (utils.isElectron()) {
-            const windowService = require('../services/window.js');
+            const windowService = require('../services/window');
             const {app} = require('electron');
             windowService.createMainWindow(app);
             windowService.closeSetupWindow();
