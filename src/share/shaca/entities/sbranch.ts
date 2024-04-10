@@ -7,7 +7,7 @@ class SBranch extends AbstractShacaEntity {
 
     private branchId: string;
     private noteId: string;
-    private parentNoteId: string;
+    parentNoteId: string;
     private prefix: string;
     private isExpanded: boolean;
     isHidden: boolean;

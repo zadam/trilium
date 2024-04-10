@@ -8,10 +8,10 @@ import { Blob } from '../../../services/blob-interface';
 
 class SAttachment extends AbstractShacaEntity {
     private attachmentId: string;
-    private ownerId: string;
+    ownerId: string;
     title: string;
     role: string;
-    private mime: string;
+    mime: string;
     private blobId: string;
     /** used for caching of images */
     private utcDateModified: string;

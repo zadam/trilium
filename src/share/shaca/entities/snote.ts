@@ -17,7 +17,7 @@ const isCredentials = (attr: SAttribute) => attr.type === 'label' && attr.name =
 
 class SNote extends AbstractShacaEntity {
     noteId: string;
-    private title: string;
+    title: string;
     type: string;
     mime: string;
     private blobId: string;
@@ -220,6 +220,29 @@ class SNote extends AbstractShacaEntity {
             return this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         } else {
             return this.__inheritableAttributeCache;
+        }
+    }
+
+    /**
+     * @throws Error in case of invalid JSON
+     */
+    getJsonContent(): any | null {
+        const content = this.getContent();
+
+        if (typeof content !== "string" || !content || !content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(content);
+    }
+
+    /** @returns valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
         }
     }
 

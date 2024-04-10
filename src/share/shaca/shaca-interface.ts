@@ -10,10 +10,10 @@ export default class Shaca {
     childParentToBranch!: Record<string, SBranch>;
     private attributes!: Record<string, SAttribute>;
     attachments!: Record<string, SAttachment>;
-    private aliasToNote!: Record<string, SNote>;
-    private shareRootNote!: SNote | null;
+    aliasToNote!: Record<string, SNote>;
+    shareRootNote!: SNote | null;
     /** true if the index of all shared subtrees is enabled */
-    private shareIndexEnabled!: boolean;
+    shareIndexEnabled!: boolean;
     loaded!: boolean;
 
     constructor() {

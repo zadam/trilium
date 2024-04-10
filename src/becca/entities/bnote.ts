@@ -209,7 +209,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             .map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId)) as BBranch[];
     }
 
-    /*
+    /**
      * Note content has quite special handling - it's not a separate entity, but a lazily loaded
      * part of Note entity with its own sync. Reasons behind this hybrid design has been:
      *
@@ -222,7 +222,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     /**
-     * @throws Error in case of invalid JSON */
+     * @throws Error in case of invalid JSON
+     */
     getJsonContent(): any | null {
         const content = this.getContent();
 
@@ -233,7 +234,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return JSON.parse(content);
     }
 
-    /** @returns {*|null} valid object or null if the content cannot be parsed as JSON */
+    /** @returns valid object or null if the content cannot be parsed as JSON */
     getJsonContentSafely() {
         try {
             return this.getJsonContent();
