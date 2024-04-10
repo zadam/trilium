@@ -102,7 +102,7 @@ function executeScript(script: string, params: ScriptParams, startNoteId: string
     return executeBundle(bundle, { startNote, originEntity });
 }
 
-function execute(ctx: any, script: string) {
+function execute(ctx: ScriptContext, script: string) {
     return function () { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx);
 }
 
