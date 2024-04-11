@@ -38,7 +38,7 @@ app.use(sessionParser);
 app.use(favicon(`${__dirname}/../images/app-icons/win/icon.ico`));
 
 require('./routes/assets').register(app);
-require('./routes/routes.js').register(app);
+require('./routes/routes').register(app);
 require('./routes/custom').register(app);
 require('./routes/error_handlers').register(app);
 

@@ -55,6 +55,6 @@ function exportBranch(req: Request, res: Response) {
     }
 }
 
-module.exports = {
+export = {
     exportBranch
 };

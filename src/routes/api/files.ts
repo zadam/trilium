@@ -124,7 +124,7 @@ function attachmentContentProvider(req: Request) {
     return streamContent(attachment.getContent(), attachment.getFileName(), attachment.mime);
 }
 
-function streamContent(content: string | Buffer, fileName: string, mimeType: string) {
+async function streamContent(content: string | Buffer, fileName: string, mimeType: string) {
     if (typeof content === "string") {
         content = Buffer.from(content, 'utf8');
     }
