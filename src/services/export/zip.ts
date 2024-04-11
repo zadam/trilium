@@ -142,7 +142,7 @@ async function exportToZip(taskContext: TaskContext, branch: BBranch, format: "h
         meta.type = note.type;
         meta.mime = note.mime;
         meta.attributes = note.getOwnedAttributes().map(attribute => {
-            const attrMeta = {
+            const attrMeta: AttributeMeta = {
                 type: attribute.type,
                 name: attribute.name,
                 value: attribute.value,

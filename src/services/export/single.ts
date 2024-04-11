@@ -24,7 +24,7 @@ function exportSingleNote(taskContext: TaskContext, branch: BBranch, format: "ht
 
     let content = note.getContent();
     if (typeof content !== "string") {
-        throw new Error("Unsupported context type for export.");
+        throw new Error("Unsupported content type for export.");
     }
 
     if (note.type === 'text') {
