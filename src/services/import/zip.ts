@@ -35,8 +35,8 @@ async function importZip(taskContext: TaskContext, fileBuffer: Buffer, importRoo
     // path => noteId, used only when meta file is not available
     /** path => noteId | attachmentId */
     const createdPaths: Record<string, string> = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
-    let metaFile!: MetaFile;
-    let firstNote!: BNote;
+    let metaFile: MetaFile | null = null;
+    let firstNote: BNote | null = null;
     const createdNoteIds = new Set<string>();
 
     function getNewNoteId(origNoteId: string) {
@@ -99,7 +99,7 @@ async function importZip(taskContext: TaskContext, fileBuffer: Buffer, importRoo
             dataFileName: ""
         };
 
-        let parent!: NoteMeta;
+        let parent: NoteMeta | undefined = undefined;
 
         for (const segment of pathSegments) {
             if (!cursor?.children?.length) {
@@ -588,6 +588,10 @@ async function importZip(taskContext: TaskContext, fileBuffer: Buffer, importRoo
         else {
             log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);
         }
+    }
+
+    if (!firstNote) {
+        throw new Error("Unable to determine first note.");
     }
 
     return firstNote;

@@ -9,14 +9,13 @@ import cls = require('./cls');
 import entityChangesService = require('./entity_changes');
 import optionsService = require('./options');
 import BBranch = require('../becca/entities/bbranch');
-import revisionService = require('./revisions');
 import becca = require('../becca/becca');
 import utils = require('../services/utils');
 import eraseService = require('../services/erase');
 import sanitizeAttributeName = require('./sanitize_attribute_name');
 import noteTypesService = require('../services/note_types');
-import { BranchRow, NoteRow } from '../becca/entities/rows';
-import { EntityChange, EntityRow } from './entity_changes_interface';
+import { BranchRow } from '../becca/entities/rows';
+import { EntityChange } from './entity_changes_interface';
 const noteTypes = noteTypesService.getNoteTypeNames();
 
 class ConsistencyChecks {

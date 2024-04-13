@@ -3,7 +3,7 @@ export interface CookieJar {
 }
 
 export interface ExecOpts {
-    proxy: "noproxy" | string | null;
+    proxy: string | null;
     method: string;
     url: string;
     paging?: {

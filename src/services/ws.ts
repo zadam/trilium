@@ -12,7 +12,6 @@ import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
 import env = require('./env');
 import { IncomingMessage, Server } from 'http';
 import { EntityChange } from './entity_changes_interface';
-import { TaskData } from './task_context_interface';
 
 if (env.isDev()) {
     const chokidar = require('chokidar');

@@ -11,12 +11,7 @@ import mimeService = require('./mime');
 import utils = require('../../services/utils');
 import importUtils = require('./utils');
 import htmlSanitizer = require('../html_sanitizer');
-
-interface File {
-    originalname: string;
-    mimetype: string;
-    buffer: string | Buffer;
-}
+import { File } from "./common";
 
 function importSingleFile(taskContext: TaskContext, file: File, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
