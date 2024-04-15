@@ -1,9 +1,9 @@
 "use strict";
 
-const enexImportService = require('../../services/import/enex.js');
-const opmlImportService = require('../../services/import/opml.js');
-const zipImportService = require('../../services/import/zip.js');
-const singleImportService = require('../../services/import/single.js');
+const enexImportService = require('../../services/import/enex');
+const opmlImportService = require('../../services/import/opml');
+const zipImportService = require('../../services/import/zip');
+const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
 const becca = require('../../becca/becca');
@@ -13,8 +13,8 @@ const TaskContext = require('../../services/task_context');
 const ValidationError = require('../../errors/validation_error');
 
 async function importNotesToBranch(req) {
-    const {parentNoteId} = req.params;
-    const {taskId, last} = req.body;
+    const { parentNoteId } = req.params;
+    const { taskId, last } = req.body;
 
     const options = {
         safeImport: req.body.safeImport !== 'false',
@@ -81,8 +81,8 @@ async function importNotesToBranch(req) {
 }
 
 async function importAttachmentsToNote(req) {
-    const {parentNoteId} = req.params;
-    const {taskId, last} = req.body;
+    const { parentNoteId } = req.params;
+    const { taskId, last } = req.body;
 
     const options = {
         shrinkImages: req.body.shrinkImages !== 'false',

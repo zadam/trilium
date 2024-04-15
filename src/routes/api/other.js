@@ -1,5 +1,5 @@
 const becca = require('../../becca/becca');
-const markdownService = require('../../services/import/markdown.js');
+const markdownService = require('../../services/import/markdown');
 
 function getIconUsage() {
     const iconClassToCountMap = {};

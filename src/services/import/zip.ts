@@ -1,43 +1,45 @@
 "use strict";
 
-const BAttribute = require('../../becca/entities/battribute');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
-const BBranch = require('../../becca/entities/bbranch');
-const path = require('path');
-const protectedSessionService = require('../protected_session');
-const mimeService = require('./mime.js');
-const treeService = require('../tree');
-const yauzl = require("yauzl");
-const htmlSanitizer = require('../html_sanitizer');
-const becca = require('../../becca/becca');
-const BAttachment = require('../../becca/entities/battachment');
-const markdownService = require('./markdown.js');
+import BAttribute = require('../../becca/entities/battribute');
+import utils = require('../../services/utils');
+import log = require('../../services/log');
+import noteService = require('../../services/notes');
+import attributeService = require('../../services/attributes');
+import BBranch = require('../../becca/entities/bbranch');
+import path = require('path');
+import protectedSessionService = require('../protected_session');
+import mimeService = require('./mime');
+import treeService = require('../tree');
+import yauzl = require("yauzl");
+import htmlSanitizer = require('../html_sanitizer');
+import becca = require('../../becca/becca');
+import BAttachment = require('../../becca/entities/battachment');
+import markdownService = require('./markdown');
+import TaskContext = require('../task_context');
+import BNote = require('../../becca/entities/bnote');
+import NoteMeta = require('../meta/note_meta');
+import AttributeMeta = require('../meta/attribute_meta');
+import { Stream } from 'stream';
+import { NoteType } from '../../becca/entities/rows';
 
-/**
- * @param {TaskContext} taskContext
- * @param {Buffer} fileBuffer
- * @param {BNote} importRootNote
- * @returns {Promise<BNote>}
- */
-async function importZip(taskContext, fileBuffer, importRootNote) {
-    /** @type {Object.<string, string>} maps from original noteId (in ZIP file) to newly generated noteId */
-    const noteIdMap = {};
-    /** @type {Object.<string, string>} maps from original attachmentId (in ZIP file) to newly generated attachmentId */
-    const attachmentIdMap = {};
-    const attributes = [];
+interface MetaFile {
+    files: NoteMeta[]
+}
+
+async function importZip(taskContext: TaskContext, fileBuffer: Buffer, importRootNote: BNote): Promise<BNote> {
+    /** maps from original noteId (in ZIP file) to newly generated noteId */
+    const noteIdMap: Record<string, string> = {};
+    /** type maps from original attachmentId (in ZIP file) to newly generated attachmentId */
+    const attachmentIdMap: Record<string, string> = {};
+    const attributes: AttributeMeta[] = [];
     // path => noteId, used only when meta file is not available
-    /** @type {Object.<string, string>} path => noteId | attachmentId */
-    const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
-    let metaFile = null;
-    /** @type {BNote} */
-    let firstNote = null;
-    /** @type {Set.<string>} */
-    const createdNoteIds = new Set();
+    /** path => noteId | attachmentId */
+    const createdPaths: Record<string, string> = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
+    let metaFile: MetaFile | null = null;
+    let firstNote: BNote | null = null;
+    const createdNoteIds = new Set<string>();
 
-    function getNewNoteId(origNoteId) {
+    function getNewNoteId(origNoteId: string) {
         if (!origNoteId.trim()) {
             // this probably shouldn't happen, but still good to have this precaution
             return "empty_note_id";
@@ -55,7 +57,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return noteIdMap[origNoteId];
     }
 
-    function getNewAttachmentId(origAttachmentId) {
+    function getNewAttachmentId(origAttachmentId: string) {
         if (!origAttachmentId.trim()) {
             // this probably shouldn't happen, but still good to have this precaution
             return "empty_attachment_id";
@@ -68,12 +70,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return attachmentIdMap[origAttachmentId];
     }
 
-    /**
-     * @param {NoteMeta} parentNoteMeta
-     * @param {string} dataFileName
-     */
-    function getAttachmentMeta(parentNoteMeta, dataFileName) {
-        for (const noteMeta of parentNoteMeta.children) {
+    function getAttachmentMeta(parentNoteMeta: NoteMeta, dataFileName: string) {
+        for (const noteMeta of parentNoteMeta.children || []) {
             for (const attachmentMeta of noteMeta.attachments || []) {
                 if (attachmentMeta.dataFileName === dataFileName) {
                     return {
@@ -88,22 +86,20 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return {};
     }
 
-    /** @returns {{noteMeta: NoteMeta|undefined, parentNoteMeta: NoteMeta|undefined, attachmentMeta: AttachmentMeta|undefined}} */
-    function getMeta(filePath) {
+    function getMeta(filePath: string) {
         if (!metaFile) {
             return {};
         }
 
         const pathSegments = filePath.split(/[\/\\]/g);
 
-        /** @type {NoteMeta} */
-        let cursor = {
+        let cursor: NoteMeta | undefined = {
             isImportRoot: true,
-            children: metaFile.files
+            children: metaFile.files,
+            dataFileName: ""
         };
 
-        /** @type {NoteMeta} */
-        let parent;
+        let parent: NoteMeta | undefined = undefined;
 
         for (const segment of pathSegments) {
             if (!cursor?.children?.length) {
@@ -111,7 +107,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             parent = cursor;
-            cursor = parent.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
+            if (parent.children) {
+                cursor = parent.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
+            }
 
             if (!cursor) {
                 return getAttachmentMeta(parent, segment);
@@ -120,19 +118,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         return {
             parentNoteMeta: parent,
-            noteMeta: cursor
+            noteMeta: cursor,
+            attachmentMeta: null
         };
     }
 
-    /**
-     * @param {string} filePath
-     * @param {NoteMeta} parentNoteMeta
-     * @return {string}
-     */
-    function getParentNoteId(filePath, parentNoteMeta) {
+    function getParentNoteId(filePath: string, parentNoteMeta?: NoteMeta) {
         let parentNoteId;
 
-        if (parentNoteMeta) {
+        if (parentNoteMeta?.noteId) {
             parentNoteId = parentNoteMeta.isImportRoot ? importRootNote.noteId : getNewNoteId(parentNoteMeta.noteId);
         }
         else {
@@ -151,13 +145,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return parentNoteId;
     }
 
-    /**
-     * @param {NoteMeta} noteMeta
-     * @param {string} filePath
-     * @return {string}
-     */
-    function getNoteId(noteMeta, filePath) {
-        if (noteMeta) {
+    function getNoteId(noteMeta: NoteMeta | undefined, filePath: string): string {
+        if (noteMeta?.noteId) {
             return getNewNoteId(noteMeta.noteId);
         }
 
@@ -176,23 +165,19 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return noteId;
     }
 
-    function detectFileTypeAndMime(taskContext, filePath) {
+    function detectFileTypeAndMime(taskContext: TaskContext, filePath: string) {
         const mime = mimeService.getMime(filePath) || "application/octet-stream";
-        const type = mimeService.getType(taskContext.data, mime);
+        const type = mimeService.getType(taskContext.data || {}, mime);
 
         return { mime, type };
     }
 
-    /**
-     * @param {BNote} note
-     * @param {NoteMeta} noteMeta
-     */
-    function saveAttributes(note, noteMeta) {
+    function saveAttributes(note: BNote, noteMeta: NoteMeta | undefined) {
         if (!noteMeta) {
             return;
         }
 
-        for (const attr of noteMeta.attributes) {
+        for (const attr of noteMeta.attributes || []) {
             attr.noteId = note.noteId;
 
             if (attr.type === 'label-definition') {
@@ -218,11 +203,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 attr.value = getNewNoteId(attr.value);
             }
 
-            if (taskContext.data.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
+            if (taskContext.data?.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
                 attr.name = `disabled:${attr.name}`;
             }
 
-            if (taskContext.data.safeImport) {
+            if (taskContext.data?.safeImport) {
                 attr.name = htmlSanitizer.sanitize(attr.name);
                 attr.value = htmlSanitizer.sanitize(attr.value);
             }
@@ -231,7 +216,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    function saveDirectory(filePath) {
+    function saveDirectory(filePath: string) {
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
@@ -240,12 +225,16 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, !!taskContext.data?.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
+
+        if (!parentNoteId) {
+            throw new Error("Missing parent note ID.");
+        }
 
         const {note} = noteService.createNewNote({
             parentNoteId: parentNoteId,
-            title: noteTitle,
+            title: noteTitle || "",
             content: '',
             noteId: noteId,
             type: resolveNoteType(noteMeta?.type),
@@ -265,8 +254,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return noteId;
     }
 
-    /** @returns {{attachmentId: string}|{noteId: string}} */
-    function getEntityIdFromRelativeUrl(url, filePath) {
+    function getEntityIdFromRelativeUrl(url: string, filePath: string) {
         while (url.startsWith("./")) {
             url = url.substr(2);
         }
@@ -287,7 +275,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         const { noteMeta, attachmentMeta } = getMeta(absUrl);
 
-        if (attachmentMeta) {
+        if (attachmentMeta && attachmentMeta.attachmentId && noteMeta.noteId) {
             return {
                 attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
                 noteId: getNewNoteId(noteMeta.noteId)
@@ -299,15 +287,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    /**
-     * @param {string} content
-     * @param {string} noteTitle
-     * @param {string} filePath
-     * @param {NoteMeta} noteMeta
-     * @return {string}
-     */
-    function processTextNoteContent(content, noteTitle, filePath, noteMeta) {
-        function isUrlAbsolute(url) {
+    function processTextNoteContent(content: string, noteTitle: string, filePath: string, noteMeta?: NoteMeta) {
+        function isUrlAbsolute(url: string) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
         }
 
@@ -321,7 +302,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         });
 
-        if (taskContext.data.safeImport) {
+        if (taskContext.data?.safeImport) {
             content = htmlSanitizer.sanitize(content);
         }
 
@@ -336,7 +317,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             try {
                 url = decodeURIComponent(url).trim();
-            } catch (e) {
+            } catch (e: any) {
                 log.error(`Cannot parse image URL '${url}', keeping original. Error: ${e.message}.`);
                 return `src="${url}"`;
             }
@@ -359,7 +340,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         content = content.replace(/href="([^"]*)"/g, (match, url) => {
             try {
                 url = decodeURIComponent(url).trim();
-            } catch (e) {
+            } catch (e: any) {
                 log.error(`Cannot parse link URL '${url}', keeping original. Error: ${e.message}.`);
                 return `href="${url}"`;
             }
@@ -395,7 +376,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
-    function removeTriliumTags(content) {
+    function removeTriliumTags(content: string) {
         const tagsToRemove = [
             '<h1 data-trilium-h1>([^<]*)<\/h1>',
             '<title data-trilium-title>([^<]*)<\/title>'
@@ -407,26 +388,18 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
-    /**
-     * @param {NoteMeta} noteMeta
-     * @param {string} type
-     * @param {string} mime
-     * @param {string|Buffer} content
-     * @param {string} noteTitle
-     * @param {string} filePath
-     * @return {string}
-     */
-    function processNoteContent(noteMeta, type, mime, content, noteTitle, filePath) {
-        if (noteMeta?.format === 'markdown'
-            || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
+    function processNoteContent(noteMeta: NoteMeta | undefined, type: string, mime: string, content: string | Buffer, noteTitle: string, filePath: string) {
+        if ((noteMeta?.format === 'markdown'
+            || (!noteMeta && taskContext.data?.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime)))
+            && typeof content === "string") {
             content = markdownService.renderToHtml(content, noteTitle);
         }
 
-        if (type === 'text') {
+        if (type === 'text' && typeof content === "string") {
             content = processTextNoteContent(content, noteTitle, filePath, noteMeta);
         }
 
-        if (type === 'relationMap' && noteMeta) {
+        if (type === 'relationMap' && noteMeta && typeof content === "string") {
             const relationMapLinks = (noteMeta.attributes || [])
                 .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
 
@@ -440,11 +413,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
-    /**
-     * @param {string} filePath
-     * @param {Buffer} content
-     */
-    function saveNote(filePath, content) {
+    function saveNote(filePath: string, content: string | Buffer) {
         const { parentNoteMeta, noteMeta, attachmentMeta } = getMeta(filePath);
 
         if (noteMeta?.noImport) {
@@ -453,7 +422,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         const noteId = getNoteId(noteMeta, filePath);
 
-        if (attachmentMeta) {
+        if (attachmentMeta && attachmentMeta.attachmentId) {
             const attachment = new BAttachment({
                 attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
                 ownerId: noteId,
@@ -487,16 +456,20 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        let { type, mime } = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
-        type = resolveNoteType(type);
+        let { mime } = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
+        if (!mime) {
+            throw new Error("Unable to resolve mime type.");
+        }
+
+        let type = resolveNoteType(noteMeta?.type);
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("utf-8");
         }
 
-        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, taskContext.data?.replaceUnderscoresWithSpaces || false, noteMeta);
 
-        content = processNoteContent(noteMeta, type, mime, content, noteTitle, filePath);
+        content = processNoteContent(noteMeta, type, mime, content, noteTitle || "", filePath);
 
         let note = becca.getNote(noteId);
 
@@ -508,7 +481,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             if (note.type === undefined) {
                 note.type = type;
                 note.mime = mime;
-                note.title = noteTitle;
+                note.title = noteTitle || "";
                 note.isProtected = isProtected;
                 note.save();
             }
@@ -519,16 +492,20 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 new BBranch({
                     noteId,
                     parentNoteId,
-                    isExpanded: noteMeta.isExpanded,
-                    prefix: noteMeta.prefix,
-                    notePosition: noteMeta.notePosition
+                    isExpanded: noteMeta?.isExpanded,
+                    prefix: noteMeta?.prefix,
+                    notePosition: noteMeta?.notePosition
                 }).save();
             }
         }
         else {
+            if (typeof content !== "string") {
+                throw new Error("Incorrect content type.");
+            }
+
             ({note} = noteService.createNewNote({
                 parentNoteId: parentNoteId,
-                title: noteTitle,
+                title: noteTitle || "",
                 content: content,
                 noteId,
                 type,
@@ -560,7 +537,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
     // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
 
-    await readZipFile(fileBuffer, async (zipfile, entry) => {
+    await readZipFile(fileBuffer, async (zipfile: yauzl.ZipFile, entry: yauzl.Entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (filePath === '!!!meta.json') {
@@ -572,7 +549,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         zipfile.readEntry();
     });
 
-    await readZipFile(fileBuffer, async (zipfile, entry) => {
+    await readZipFile(fileBuffer, async (zipfile: yauzl.ZipFile, entry: yauzl.Entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (/\/$/.test(entry.fileName)) {
@@ -590,6 +567,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
     for (const noteId of createdNoteIds) {
         const note = becca.getNote(noteId);
+        if (!note) continue;
         await noteService.asyncPostProcessContent(note, note.getContent());
 
         if (!metaFile) {
@@ -612,11 +590,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
+    if (!firstNote) {
+        throw new Error("Unable to determine first note.");
+    }
+
     return firstNote;
 }
 
-/** @returns {string} path without leading or trailing slash and backslashes converted to forward ones */
-function normalizeFilePath(filePath) {
+/** @returns path without leading or trailing slash and backslashes converted to forward ones */
+function normalizeFilePath(filePath: string): string {
     filePath = filePath.replace(/\\/g, "/");
 
     if (filePath.startsWith("/")) {
@@ -630,29 +612,30 @@ function normalizeFilePath(filePath) {
     return filePath;
 }
 
-/** @returns {Promise<Buffer>} */
-function streamToBuffer(stream) {
-    const chunks = [];
+function streamToBuffer(stream: Stream): Promise<Buffer> {
+    const chunks: Uint8Array[] = [];
     stream.on('data', chunk => chunks.push(chunk));
 
     return new Promise((res, rej) => stream.on('end', () => res(Buffer.concat(chunks))));
 }
 
-/** @returns {Promise<Buffer>} */
-function readContent(zipfile, entry) {
+function readContent(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<Buffer> {
     return new Promise((res, rej) => {
         zipfile.openReadStream(entry, function(err, readStream) {
             if (err) rej(err);
+            if (!readStream) throw new Error("Unable to read content.");
 
             streamToBuffer(readStream).then(res);
         });
     });
 }
 
-function readZipFile(buffer, processEntryCallback) {
+function readZipFile(buffer: Buffer, processEntryCallback: (zipfile: yauzl.ZipFile, entry: yauzl.Entry) => void) {
     return new Promise((res, rej) => {
         yauzl.fromBuffer(buffer, {lazyEntries: true, validateEntrySizes: false}, function(err, zipfile) {
             if (err) throw err;
+            if (!zipfile) throw new Error("Unable to read zip file.");
+
             zipfile.readEntry();
             zipfile.on("entry", entry => processEntryCallback(zipfile, entry));
             zipfile.on("end", res);
@@ -660,20 +643,19 @@ function readZipFile(buffer, processEntryCallback) {
     });
 }
 
-function resolveNoteType(type) {
+function resolveNoteType(type: string | undefined): NoteType {
     // BC for ZIPs created in Triliun 0.57 and older
     if (type === 'relation-map') {
-        type = 'relationMap';
+        return 'relationMap';
     } else if (type === 'note-map') {
-        type = 'noteMap';
+        return 'noteMap';
     } else if (type === 'web-view') {
-        type = 'webView';
+        return 'webView';
     }
 
-    return type || "text";
+    return "text";
 }
 
-
-module.exports = {
+export = {
     importZip
 };

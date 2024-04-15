@@ -15,10 +15,10 @@ const searchService = require('./search/services/search');
 const SearchContext = require('./search/search_context');
 const becca = require('../becca/becca');
 const ws = require('./ws');
-const SpacedUpdate = require('./spaced_update.js');
-const specialNotesService = require('./special_notes.js');
+const SpacedUpdate = require('./spaced_update');
+const specialNotesService = require('./special_notes');
 const branchService = require('./branches');
-const exportService = require('./export/zip.js');
+const exportService = require('./export/zip');
 const syncMutex = require('./sync_mutex');
 const backupService = require('./backup');
 const optionsService = require('./options');
@@ -320,7 +320,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} [extraOptions.attributes.value] - attribute value
      * @returns {{note: BNote, branch: BBranch}} object contains newly created entities note and branch
      */
-    this.createNote = (parentNoteId, title, content = "", extraOptions= {}) => {
+    this.createNote = (parentNoteId, title, content = "", extraOptions = {}) => {
         extraOptions.parentNoteId = parentNoteId;
         extraOptions.title = title;
 
@@ -340,7 +340,7 @@ function BackendScriptApi(currentNote, apiParams) {
         }
 
         return sql.transactional(() => {
-            const {note, branch} = noteService.createNewNote(extraOptions);
+            const { note, branch } = noteService.createNewNote(extraOptions);
 
             for (const attr of extraOptions.attributes || []) {
                 attributeService.createAttribute({
@@ -352,7 +352,7 @@ function BackendScriptApi(currentNote, apiParams) {
                 });
             }
 
-            return {note, branch};
+            return { note, branch };
         });
     };
 
@@ -369,7 +369,7 @@ function BackendScriptApi(currentNote, apiParams) {
     this.log = message => {
         log.info(message);
 
-        const {noteId} = this.startNote;
+        const { noteId } = this.startNote;
 
         this.logMessages[noteId] = this.logMessages[noteId] || [];
         this.logSpacedUpdates[noteId] = this.logSpacedUpdates[noteId] || new SpacedUpdate(() => {
@@ -600,7 +600,7 @@ function BackendScriptApi(currentNote, apiParams) {
             launcherNote.removeLabel('iconClass');
         }
 
-        return {note: launcherNote};
+        return { note: launcherNote };
     };
 
     /**

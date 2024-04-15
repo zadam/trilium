@@ -1,10 +1,10 @@
 "use strict";
 
 const imageType = require('image-type');
-const imageService = require('../../services/image.js');
+const imageService = require('../../services/image');
 const noteService = require('../../services/notes');
-const {sanitizeAttributeName} = require('../../services/sanitize_attribute_name');
-const specialNotesService = require('../../services/special_notes.js');
+const { sanitizeAttributeName } = require('../../services/sanitize_attribute_name');
+const specialNotesService = require('../../services/special_notes');
 
 function uploadImage(req) {
     const file = req.file;
@@ -17,14 +17,14 @@ function uploadImage(req) {
 
     const parentNote = specialNotesService.getInboxNote(req.headers['x-local-date']);
 
-    const {note, noteId} = imageService.saveImage(parentNote.noteId, file.buffer, originalName, true);
+    const { note, noteId } = imageService.saveImage(parentNote.noteId, file.buffer, originalName, true);
 
     const labelsStr = req.headers['x-labels'];
 
     if (labelsStr?.trim()) {
         const labels = JSON.parse(labelsStr);
 
-        for (const {name, value} of labels) {
+        for (const { name, value } of labels) {
             note.setLabel(sanitizeAttributeName(name), value);
         }
     }
@@ -39,7 +39,7 @@ function uploadImage(req) {
 function saveNote(req) {
     const parentNote = specialNotesService.getInboxNote(req.headers['x-local-date']);
 
-    const {note, branch} = noteService.createNewNote({
+    const { note, branch } = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
         title: req.body.title,
         content: req.body.content,
@@ -49,7 +49,7 @@ function saveNote(req) {
     });
 
     if (req.body.labels) {
-        for (const {name, value} of req.body.labels) {
+        for (const { name, value } of req.body.labels) {
             note.setLabel(sanitizeAttributeName(name), value);
         }
     }

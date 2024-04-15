@@ -1,6 +1,6 @@
 "use strict";
 
-function handleH1(content, title) {
+function handleH1(content: string, title: string) {
     content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
         if (title.trim() === text.trim()) {
             return ""; // remove whole H1 tag
@@ -11,6 +11,6 @@ function handleH1(content, title) {
     return content;
 }
 
-module.exports = {
+export = {
     handleH1
 };

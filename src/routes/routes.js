@@ -41,14 +41,14 @@ const importRoute = require('./api/import.js');
 const setupApiRoute = require('./api/setup.js');
 const sqlRoute = require('./api/sql');
 const databaseRoute = require('./api/database.js');
-const imageRoute = require('./api/image.js');
+const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script.js');
 const senderRoute = require('./api/sender.js');
 const filesRoute = require('./api/files.js');
 const searchRoute = require('./api/search');
 const bulkActionRoute = require('./api/bulk_action.js');
-const specialNotesRoute = require('./api/special_notes.js');
+const specialNotesRoute = require('./api/special_notes');
 const noteMapRoute = require('./api/note_map.js');
 const clipperRoute = require('./api/clipper.js');
 const similarNotesRoute = require('./api/similar_notes.js');
@@ -67,7 +67,7 @@ const etapiAttachmentRoutes = require('../etapi/attachments.js');
 const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches.js');
 const etapiNoteRoutes = require('../etapi/notes.js');
-const etapiSpecialNoteRoutes = require('../etapi/special_notes.js');
+const etapiSpecialNoteRoutes = require('../etapi/special_notes');
 const etapiSpecRoute = require('../etapi/spec.js');
 const etapiBackupRoute = require('../etapi/backup');
 
@@ -230,7 +230,7 @@ function register(app) {
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
     // docker health check
-    route(GET, '/api/health-check', [], () => ({"status": "ok"}), apiResultHandler);
+    route(GET, '/api/health-check', [], () => ({ "status": "ok" }), apiResultHandler);
 
     // group of the services below are meant to be executed from the outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);

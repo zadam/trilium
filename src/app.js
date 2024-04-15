@@ -26,10 +26,10 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
-app.use(express.text({limit: '500mb'}));
-app.use(express.json({limit: '500mb'}));
-app.use(express.raw({limit: '500mb'}));
-app.use(express.urlencoded({extended: false}));
+app.use(express.text({ limit: '500mb' }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.raw({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public/root')));
 app.use(`/manifest.webmanifest`, express.static(path.join(__dirname, 'public/manifest.webmanifest')));
@@ -49,7 +49,7 @@ require('./services/sync');
 require('./services/backup');
 
 // trigger consistency checks timer
-require('./services/consistency_checks.js');
+require('./services/consistency_checks');
 
 require('./services/scheduler.js');
 

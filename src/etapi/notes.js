@@ -7,8 +7,8 @@ const TaskContext = require('../services/task_context');
 const v = require('./validators.js');
 const searchService = require('../services/search/services/search');
 const SearchContext = require('../services/search/search_context');
-const zipExportService = require('../services/export/zip.js');
-const zipImportService = require('../services/import/zip.js');
+const zipExportService = require('../services/export/zip');
+const zipImportService = require('../services/import/zip');
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {

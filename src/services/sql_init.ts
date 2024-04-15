@@ -96,7 +96,7 @@ async function createInitialDatabase() {
 
     const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
 
-    const zipImportService = require('./import/zip.js');
+    const zipImportService = require('./import/zip');
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
@@ -179,7 +179,7 @@ dbReady.then(() => {
 });
 
 function getDbSize() {
-    return sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()");
+    return sql.getValue<number>("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()");
 }
 
 log.info(`DB size: ${getDbSize()} KB`);

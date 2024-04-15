@@ -25,7 +25,7 @@ interface ContentOpts {
  */
 abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
-    protected utcDateModified?: string;
+    utcDateModified?: string;
     protected dateCreated?: string;
     protected dateModified?: string;
     

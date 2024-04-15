@@ -155,6 +155,7 @@ function getAndValidateParent(params: GetValidateParams) {
 interface NoteParams {
     /** optionally can force specific noteId */
     noteId?: string;
+    branchId?: string;
     parentNoteId: string;
     templateNoteId?: string;
     title: string;
@@ -167,7 +168,7 @@ interface NoteParams {
     /** default is false */
     isExpanded?: boolean;
     /** default is empty string */
-    prefix?: string;
+    prefix?: string | null;
     /** default is the last existing notePosition in a parent + 10 */
     notePosition?: number;
     dateCreated?: string;
@@ -506,7 +507,7 @@ async function downloadImage(noteId: string, imageUrl: string) {
         const parsedUrl = url.parse(unescapedUrl);
         const title = path.basename(parsedUrl.pathname || "");
 
-        const imageService = require('../services/image.js');
+        const imageService = require('../services/image');
         const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
         imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
@@ -539,7 +540,7 @@ function downloadImages(noteId: string, content: string) {
             const imageBase64 = url.substr(inlineImageMatch[0].length);
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-            const imageService = require('../services/image.js');
+            const imageService = require('../services/image');
             const attachment = imageService.saveImageToAttachment(noteId, imageBuffer, "inline image", true, true);
 
             const encodedTitle = encodeURIComponent(attachment.title);
@@ -657,7 +658,7 @@ function saveAttachments(note: BNote, content: string) {
     return content;
 }
 
-function saveLinks(note: BNote, content: string) {
+function saveLinks(note: BNote, content: string | Buffer) {
     if ((note.type !== 'text' && note.type !== 'relationMap')
         || (note.isProtected && !protectedSessionService.isProtectedSessionAvailable())) {
         return {
@@ -669,7 +670,7 @@ function saveLinks(note: BNote, content: string) {
     const foundLinks: FoundLink[] = [];
     let forceFrontendReload = false;
 
-    if (note.type === 'text') {
+    if (note.type === 'text' && typeof content === "string") {
         content = downloadImages(note.noteId, content);
         content = saveAttachments(note, content);
 
@@ -679,7 +680,7 @@ function saveLinks(note: BNote, content: string) {
 
         ({forceFrontendReload, content} = checkImageAttachments(note, content));
     }
-    else if (note.type === 'relationMap') {
+    else if (note.type === 'relationMap' && typeof content === "string") {
         findRelationMapLinks(content, foundLinks);
     }
     else {
@@ -874,7 +875,7 @@ function getUndeletedParentBranchIds(noteId: string, deleteId: string) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-function scanForLinks(note: BNote, content: string) {
+function scanForLinks(note: BNote, content: string | Buffer) {
     if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }
@@ -896,7 +897,7 @@ function scanForLinks(note: BNote, content: string) {
 /**
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
-async function asyncPostProcessContent(note: BNote, content: string) {
+async function asyncPostProcessContent(note: BNote, content: string | Buffer) {
     if (cls.isMigrationRunning()) {
         // this is rarely needed for migrations, but can cause trouble by e.g. triggering downloads
         return;

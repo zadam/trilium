@@ -17,3 +17,16 @@ declare module 'normalize-strings' {
     function normalizeString(string: string): string;
     export = normalizeString;
 }
+
+declare module 'joplin-turndown-plugin-gfm' {
+    import TurndownService = require("turndown");
+    namespace gfm {
+        function gfm(service: TurndownService): void;
+    }
+    export = gfm;
+}
+
+declare module 'is-animated' {
+    function isAnimated(buffer: Buffer): boolean;
+    export = isAnimated;
+}

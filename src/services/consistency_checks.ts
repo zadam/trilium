@@ -1,33 +1,41 @@
 "use strict";
 
-const sql = require('./sql');
-const sqlInit = require('./sql_init');
-const log = require('./log');
-const ws = require('./ws');
-const syncMutexService = require('./sync_mutex');
-const cls = require('./cls');
-const entityChangesService = require('./entity_changes');
-const optionsService = require('./options');
-const BBranch = require('../becca/entities/bbranch');
-const revisionService = require('./revisions');
-const becca = require('../becca/becca');
-const utils = require('../services/utils');
-const eraseService = require('../services/erase');
-const {sanitizeAttributeName} = require('./sanitize_attribute_name');
-const noteTypes = require('../services/note_types').getNoteTypeNames();
+import sql = require('./sql');
+import sqlInit = require('./sql_init');
+import log = require('./log');
+import ws = require('./ws');
+import syncMutexService = require('./sync_mutex');
+import cls = require('./cls');
+import entityChangesService = require('./entity_changes');
+import optionsService = require('./options');
+import BBranch = require('../becca/entities/bbranch');
+import becca = require('../becca/becca');
+import utils = require('../services/utils');
+import eraseService = require('../services/erase');
+import sanitizeAttributeName = require('./sanitize_attribute_name');
+import noteTypesService = require('../services/note_types');
+import { BranchRow } from '../becca/entities/rows';
+import { EntityChange } from './entity_changes_interface';
+const noteTypes = noteTypesService.getNoteTypeNames();
 
 class ConsistencyChecks {
+
+    private autoFix: boolean;
+    private unrecoveredConsistencyErrors: boolean;
+    private fixedIssues: boolean;    
+    private reloadNeeded: boolean;
+
     /**
      * @param autoFix - automatically fix all encountered problems. False is only for debugging during development (fail fast)
      */
-    constructor(autoFix) {
+    constructor(autoFix: boolean) {
         this.autoFix = autoFix;
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
         this.reloadNeeded = false;
     }
 
-    findAndFixIssues(query, fixerCb) {
+    findAndFixIssues(query: string, fixerCb: (res: any) => void) {
         const results = sql.getRows(query);
 
         for (const res of results) {
@@ -39,7 +47,7 @@ class ConsistencyChecks {
                 } else {
                     this.unrecoveredConsistencyErrors = true;
                 }
-            } catch (e) {
+            } catch (e: any) {
                 logError(`Fixer failed with ${e.message} ${e.stack}`);
                 this.unrecoveredConsistencyErrors = true;
             }
@@ -49,8 +57,8 @@ class ConsistencyChecks {
     }
 
     checkTreeCycles() {
-        const childToParents = {};
-        const rows = sql.getRows("SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0");
+        const childToParents: Record<string, string[]> = {};
+        const rows = sql.getRows<BranchRow>("SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0");
 
         for (const row of rows) {
             const childNoteId = row.noteId;
@@ -61,7 +69,7 @@ class ConsistencyChecks {
         }
 
         /** @returns {boolean} true if cycle was found and we should try again */
-        const checkTreeCycle = (noteId, path) => {
+        const checkTreeCycle = (noteId: string, path: string[]) => {
             if (noteId === 'root') {
                 return false;
             }
@@ -70,8 +78,10 @@ class ConsistencyChecks {
                 if (path.includes(parentNoteId)) {
                     if (this.autoFix) {
                         const branch = becca.getBranchFromChildAndParent(noteId, parentNoteId);
-                        branch.markAsDeleted('cycle-autofix');
-                        logFix(`Branch '${branch.branchId}' between child '${noteId}' and parent '${parentNoteId}' has been deleted since it was causing a tree cycle.`);
+                        if (branch) {
+                            branch.markAsDeleted('cycle-autofix');
+                            logFix(`Branch '${branch.branchId}' between child '${noteId}' and parent '${parentNoteId}' has been deleted since it was causing a tree cycle.`);
+                        }
 
                         return true;
                     }
@@ -133,6 +143,9 @@ class ConsistencyChecks {
             ({branchId, noteId}) => {
                 if (this.autoFix) {
                     const branch = becca.getBranch(branchId);
+                    if (!branch) {
+                        return;
+                    }
                     branch.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -154,12 +167,21 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     // Delete the old branch and recreate it with root as parent.
                     const oldBranch = becca.getBranch(branchId);
+                    if (!oldBranch) {
+                        return;
+                    }
+
                     const noteId = oldBranch.noteId;
                     oldBranch.markAsDeleted("missing-parent");
 
                     let message = `Branch '${branchId}' was missing parent note '${parentNoteId}', so it was deleted. `;
 
-                    if (becca.getNote(noteId).getParentBranches().length === 0) {
+                    const note = becca.getNote(noteId);
+                    if (!note) {
+                        return;
+                    }
+
+                    if (note.getParentBranches().length === 0) {
                         const newBranch = new BBranch({
                             parentNoteId: 'root',
                             noteId: noteId,
@@ -188,6 +210,9 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
+                    if (!attribute) {
+                        return;
+                    }
                     attribute.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -208,6 +233,9 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
+                    if (!attribute) {
+                        return;
+                    }
                     attribute.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -230,6 +258,9 @@ class ConsistencyChecks {
             ({attachmentId, ownerId}) => {
                 if (this.autoFix) {
                     const attachment = becca.getAttachment(attachmentId);
+                    if (!attachment) {
+                        return;
+                    }
                     attachment.markAsDeleted();
 
                     this.reloadNeeded = false;
@@ -258,6 +289,7 @@ class ConsistencyChecks {
             ({branchId, noteId}) => {
                 if (this.autoFix) {
                     const branch = becca.getBranch(branchId);
+                    if (!branch) return;
                     branch.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -278,6 +310,9 @@ class ConsistencyChecks {
         `, ({branchId, parentNoteId}) => {
             if (this.autoFix) {
                 const branch = becca.getBranch(branchId);
+                if (!branch) {
+                    return;
+                }
                 branch.markAsDeleted();
 
                 this.reloadNeeded = true;
@@ -321,7 +356,7 @@ class ConsistencyChecks {
                     HAVING COUNT(1) > 1`,
             ({noteId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branchIds = sql.getColumn(
+                    const branchIds = sql.getColumn<string>(
                             `SELECT branchId
                              FROM branches
                              WHERE noteId = ?
@@ -333,9 +368,17 @@ class ConsistencyChecks {
 
                     // it's not necessarily "original" branch, it's just the only one which will survive
                     const origBranch = branches[0];
+                    if (!origBranch) {
+                        logError(`Unable to find original branch.`);
+                        return;
+                    }
 
                     // delete all but the first branch
                     for (const branch of branches.slice(1)) {
+                        if (!branch) {
+                            continue;
+                        }
+
                         branch.markAsDeleted();
 
                         logFix(`Removing branch '${branch.branchId}' since it's a parent-child duplicate of branch '${origBranch.branchId}'`);
@@ -357,6 +400,7 @@ class ConsistencyChecks {
             ({attachmentId, noteId}) => {
                 if (this.autoFix) {
                     const attachment = becca.getAttachment(attachmentId);
+                    if (!attachment) return;
                     attachment.markAsDeleted();
 
                     this.reloadNeeded = false;
@@ -379,6 +423,7 @@ class ConsistencyChecks {
             ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
+                    if (!note) return;
                     note.type = 'file'; // file is a safe option to recover notes if the type is not known
                     note.save();
 
@@ -404,6 +449,10 @@ class ConsistencyChecks {
                     const fakeDate = "2000-01-01 00:00:00Z";
 
                     const blankContent = getBlankContent(isProtected, type, mime);
+                    if (!blankContent) {
+                        logError(`Unable to recover note ${noteId} since it's content could not be retrieved (might be protected note).`);
+                        return;
+                    }
                     const blobId = utils.hashedBlobId(blankContent);
                     const blobAlreadyExists = !!sql.getValue("SELECT 1 FROM blobs WHERE blobId = ?", [blobId]);
 
@@ -452,7 +501,11 @@ class ConsistencyChecks {
                     if (this.autoFix) {
                         const note = becca.getNote(noteId);
                         const blankContent = getBlankContent(false, type, mime);
-                        note.setContent(blankContent);
+                        if (!note) return;
+
+                        if (blankContent) {
+                            note.setContent(blankContent);
+                        }
 
                         this.reloadNeeded = true;
 
@@ -506,7 +559,7 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({parentNoteId}) => {
                 if (this.autoFix) {
-                    const branchIds = sql.getColumn(`
+                    const branchIds = sql.getColumn<string>(`
                         SELECT branchId
                         FROM branches
                         WHERE isDeleted = 0
@@ -515,6 +568,8 @@ class ConsistencyChecks {
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     for (const branch of branches) {
+                        if (!branch) continue;
+
                         // delete the old wrong branch
                         branch.markAsDeleted("parent-is-search");
 
@@ -543,6 +598,7 @@ class ConsistencyChecks {
             ({attributeId}) => {
                 if (this.autoFix) {
                     const relation = becca.getAttribute(attributeId);
+                    if (!relation) return;
                     relation.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -563,6 +619,7 @@ class ConsistencyChecks {
             ({attributeId, type}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
+                    if (!attribute) return;
                     attribute.type = 'label';
                     attribute.save();
 
@@ -584,6 +641,7 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
+                    if (!attribute) return;
                     attribute.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -605,6 +663,7 @@ class ConsistencyChecks {
             ({attributeId, targetNoteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
+                    if (!attribute) return;
                     attribute.markAsDeleted();
 
                     this.reloadNeeded = true;
@@ -616,14 +675,14 @@ class ConsistencyChecks {
             });
     }
 
-    runEntityChangeChecks(entityName, key) {
+    runEntityChangeChecks(entityName: string, key: string) {
         this.findAndFixIssues(`
             SELECT ${key} as entityId
             FROM ${entityName}
             LEFT JOIN entity_changes ec ON ec.entityName = '${entityName}' AND ec.entityId = ${entityName}.${key} 
             WHERE ec.id IS NULL`,
             ({entityId}) => {
-                const entityRow = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+                const entityRow = sql.getRow<EntityChange>(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
                 if (this.autoFix) {
                     entityChangesService.putEntityChange({
@@ -691,10 +750,10 @@ class ConsistencyChecks {
     }
 
     findWronglyNamedAttributes() {
-        const attrNames = sql.getColumn(`SELECT DISTINCT name FROM attributes`);
+        const attrNames = sql.getColumn<string>(`SELECT DISTINCT name FROM attributes`);
 
         for (const origName of attrNames) {
-            const fixedName = sanitizeAttributeName(origName);
+            const fixedName = sanitizeAttributeName.sanitizeAttributeName(origName);
 
             if (fixedName !== origName) {
                 if (this.autoFix) {
@@ -721,7 +780,7 @@ class ConsistencyChecks {
 
     findSyncIssues() {
         const lastSyncedPush = parseInt(sql.getValue("SELECT value FROM options WHERE name = 'lastSyncedPush'"));
-        const maxEntityChangeId = sql.getValue("SELECT MAX(id) FROM entity_changes");
+        const maxEntityChangeId = sql.getValue<number>("SELECT MAX(id) FROM entity_changes");
 
         if (lastSyncedPush > maxEntityChangeId) {
             if (this.autoFix) {
@@ -773,8 +832,8 @@ class ConsistencyChecks {
     }
 
     runDbDiagnostics() {
-        function getTableRowCount(tableName) {
-            const count = sql.getValue(`SELECT COUNT(1) FROM ${tableName}`);
+        function getTableRowCount(tableName: string) {
+            const count = sql.getValue<number>(`SELECT COUNT(1) FROM ${tableName}`);
 
             return `${tableName}: ${count}`;
         }
@@ -810,7 +869,7 @@ class ConsistencyChecks {
     }
 }
 
-function getBlankContent(isProtected, type, mime) {
+function getBlankContent(isProtected: boolean, type: string, mime: string) {
     if (isProtected) {
         return null; // this is wrong for protected non-erased notes, but we cannot create a valid value without a password
     }
@@ -822,11 +881,11 @@ function getBlankContent(isProtected, type, mime) {
     return ''; // empty string might be a wrong choice for some note types, but it's the best guess
 }
 
-function logFix(message) {
+function logFix(message: string) {
     log.info(`Consistency issue fixed: ${message}`);
 }
 
-function logError(message) {
+function logError(message: string) {
     log.info(`Consistency error: ${message}`);
 }
 
@@ -837,7 +896,7 @@ function runPeriodicChecks() {
     consistencyChecks.runChecks();
 }
 
-async function runOnDemandChecks(autoFix) {
+async function runOnDemandChecks(autoFix: boolean) {
     const consistencyChecks = new ConsistencyChecks(autoFix);
     await consistencyChecks.runChecks();
 }

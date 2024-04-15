@@ -12,6 +12,7 @@ import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
 import env = require('./env');
 import { IncomingMessage, Server } from 'http';
 import { EntityChange } from './entity_changes_interface';
+
 if (env.isDev()) {
     const chokidar = require('chokidar');
     const debounce = require('debounce');
@@ -30,7 +31,8 @@ interface Message {
     type: string;
     data?: {
         lastSyncedPush?: number | null,
-        entityChanges?: any[]
+        entityChanges?: any[],
+        shrinkImages?: boolean
     } | null,
     lastSyncedPush?: number | null,
     

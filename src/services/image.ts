@@ -1,19 +1,19 @@
 "use strict";
 
-const becca = require('../becca/becca');
-const log = require('./log');
-const protectedSessionService = require('./protected_session');
-const noteService = require('./notes');
-const optionService = require('./options');
-const sql = require('./sql');
-const jimp = require('jimp');
-const imageType = require('image-type');
-const sanitizeFilename = require('sanitize-filename');
-const isSvg = require('is-svg');
-const isAnimated = require('is-animated');
-const htmlSanitizer = require('./html_sanitizer');
+import becca = require('../becca/becca');
+import log = require('./log');
+import protectedSessionService = require('./protected_session');
+import noteService = require('./notes');
+import optionService = require('./options');
+import sql = require('./sql');
+import jimp = require('jimp');
+import imageType = require('image-type');
+import sanitizeFilename = require('sanitize-filename');
+import isSvg = require('is-svg');
+import isAnimated = require('is-animated');
+import htmlSanitizer = require('./html_sanitizer');
 
-async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
+async function processImage(uploadBuffer: Buffer, originalName: string, shrinkImageSwitch: boolean) {
     const compressImages = optionService.getOptionBool("compressImages");
     const origImageFormat = getImageType(uploadBuffer);
 
@@ -44,7 +44,7 @@ async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     };
 }
 
-function getImageType(buffer) {
+function getImageType(buffer: Buffer) {
     if (isSvg(buffer)) {
         return {
             ext: 'svg'
@@ -57,18 +57,19 @@ function getImageType(buffer) {
     }
 }
 
-function getImageMimeFromExtension(ext) {
+function getImageMimeFromExtension(ext: string) {
     ext = ext.toLowerCase();
 
     return `image/${ext === 'svg' ? 'svg+xml' : ext}`;
 }
 
-function updateImage(noteId, uploadBuffer, originalName) {
+function updateImage(noteId: string, uploadBuffer: Buffer, originalName: string) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
     originalName = htmlSanitizer.sanitize(originalName);
 
     const note = becca.getNote(noteId);
+    if (!note) { throw new Error("Unable to find note."); }
 
     note.saveRevision();
 
@@ -85,7 +86,7 @@ function updateImage(noteId, uploadBuffer, originalName) {
     });
 }
 
-function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
+function saveImage(parentNoteId: string, uploadBuffer: Buffer, originalName: string, shrinkImageSwitch: boolean, trimFilename = false) {
     log.info(`Saving image ${originalName} into parent ${parentNoteId}`);
 
     if (trimFilename && originalName.length > 40) {
@@ -95,6 +96,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
 
     const fileName = sanitizeFilename(originalName);
     const parentNote = becca.getNote(parentNoteId);
+    if (!parentNote) { throw new Error("Unable to find parent note."); }
 
     const {note} = noteService.createNewNote({
         parentNoteId,
@@ -131,7 +133,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
     };
 }
 
-function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
+function saveImageToAttachment(noteId: string, uploadBuffer: Buffer, originalName: string, shrinkImageSwitch?: boolean, trimFilename = false) {
     log.info(`Saving image '${originalName}' as attachment into note '${noteId}'`);
 
     if (trimFilename && originalName.length > 40) {
@@ -160,9 +162,10 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     }, 5000);
 
     // resizing images asynchronously since JIMP does not support sync operation
-    processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
+    processImage(uploadBuffer, originalName, !!shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             // re-read, might be changed in the meantime
+            if (!attachment.attachmentId) { throw new Error("Missing attachment ID."); }
             attachment = becca.getAttachmentOrThrow(attachment.attachmentId);
 
             attachment.mime = getImageMimeFromExtension(imageFormat.ext);
@@ -179,7 +182,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     return attachment;
 }
 
-async function shrinkImage(buffer, originalName) {
+async function shrinkImage(buffer: Buffer, originalName: string) {
     let jpegQuality = optionService.getOptionInt('imageJpegQuality', 0);
 
     if (jpegQuality < 10 || jpegQuality > 100) {
@@ -190,7 +193,7 @@ async function shrinkImage(buffer, originalName) {
     try {
         finalImageBuffer = await resize(buffer, jpegQuality);
     }
-    catch (e) {
+    catch (e: any) {
         log.error(`Failed to resize image '${originalName}', stack: ${e.stack}`);
 
         finalImageBuffer = buffer;
@@ -205,7 +208,7 @@ async function shrinkImage(buffer, originalName) {
     return finalImageBuffer;
 }
 
-async function resize(buffer, quality) {
+async function resize(buffer: Buffer, quality: number) {
     const imageMaxWidthHeight = optionService.getOptionInt('imageMaxWidthHeight');
 
     const start = Date.now();
@@ -231,7 +234,7 @@ async function resize(buffer, quality) {
     return resultBuffer;
 }
 
-module.exports = {
+export = {
     saveImage,
     saveImageToAttachment,
     updateImage

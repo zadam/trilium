@@ -1,9 +1,19 @@
+type Updater = () => void;
+
 class SpacedUpdate {
-    constructor(updater, updateInterval = 1000) {
+
+    private updater: Updater;
+    private lastUpdated: number;
+    private changed: boolean;
+    private updateInterval: number;
+    private changeForbidden: boolean;
+
+    constructor(updater: Updater, updateInterval = 1000) {
         this.updater = updater;
         this.lastUpdated = Date.now();
         this.changed = false;
         this.updateInterval = updateInterval;
+        this.changeForbidden = false;
     }
 
     scheduleUpdate() {
@@ -52,7 +62,7 @@ class SpacedUpdate {
         }
     }
 
-    async allowUpdateWithoutChange(callback) {
+    async allowUpdateWithoutChange(callback: () => void) {
         this.changeForbidden = true;
 
         try {
@@ -64,4 +74,4 @@ class SpacedUpdate {
     }
 }
 
-module.exports = SpacedUpdate;
+export = SpacedUpdate;

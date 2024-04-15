@@ -15,7 +15,7 @@ function getOptionOrNull(name: string): string | null {
     return option ? option.value : null;
 }
 
-function getOption(name: string): string {
+function getOption(name: string) {
     const val = getOptionOrNull(name);
 
     if (val === null) {
@@ -44,15 +44,15 @@ function getOptionInt(name: string, defaultValue?: number): number {
 function getOptionBool(name: string): boolean {
     const val = getOption(name);
 
-    if (!['true', 'false'].includes(val)) {
+    if (typeof val !== "string" || !['true', 'false'].includes(val)) {
         throw new Error(`Could not parse '${val}' into boolean for option '${name}'`);
     }
 
     return val === 'true';
 }
 
-function setOption(name: string, value: string | boolean) {
-    if (value === true || value === false) {
+function setOption(name: string, value: string | number | boolean) {
+    if (value === true || value === false || typeof value === "number") {
         value = value.toString();
     }
 
@@ -68,7 +68,7 @@ function setOption(name: string, value: string | boolean) {
     }
 }
 
-function createOption(name: string, value: string, isSynced: boolean) {
+function createOption(name: string, value: string | number, isSynced: boolean) {
     // to avoid circular dependency, need to find a better solution
     const BOption = require('../becca/entities/boption');
 
@@ -84,7 +84,7 @@ function getOptions() {
 }
 
 function getOptionMap() {
-    const map: Record<string, string> = {};
+    const map: Record<string | number, string> = {};
 
     for (const option of Object.values(becca.options)) {
         map[option.name] = option.value;

@@ -33,7 +33,7 @@ interface Client {
     request(opts: ClientOpts): Request;
 }
 
-function exec(opts: ExecOpts) {
+function exec<T>(opts: ExecOpts): Promise<T> {
     const client = getClient(opts);
     
     // hack for cases where electron.net does not work, but we don't want to set proxy
@@ -129,7 +129,7 @@ function exec(opts: ExecOpts) {
                     : opts.body;
             }
 
-            request.end(payload);
+            request.end(payload as string);
         }
         catch (e: any) {
             reject(generateError(opts, e.message));

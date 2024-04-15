@@ -1,9 +1,12 @@
 "use strict";
 
-const utils = require('../utils');
-const becca = require('../../becca/becca');
+import utils = require('../utils');
+import becca = require('../../becca/becca');
+import TaskContext = require('../task_context');
+import BBranch = require('../../becca/entities/bbranch');
+import { Response } from 'express';
 
-function exportToOpml(taskContext, branch, version, res) {
+function exportToOpml(taskContext: TaskContext, branch: BBranch, version: string, res: Response) {
     if (!['1.0', '2.0'].includes(version)) {
         throw new Error(`Unrecognized OPML version ${version}`);
     }
@@ -12,9 +15,12 @@ function exportToOpml(taskContext, branch, version, res) {
 
     const note = branch.getNote();
 
-    function exportNoteInner(branchId) {
+    function exportNoteInner(branchId: string) {
         const branch = becca.getBranch(branchId);
+        if (!branch) { throw new Error("Unable to find branch."); }
+
         const note = branch.getNote();
+        if (!note) { throw new Error("Unable to find note."); }
 
         if (note.hasOwnedLabel('excludeFromExport')) {
             return;
@@ -24,13 +30,13 @@ function exportToOpml(taskContext, branch, version, res) {
 
         if (opmlVersion === 1) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.hasStringContent() ? prepareText(note.getContent()) : '';
+            const preparedContent = note.hasStringContent() ? prepareText(note.getContent() as string) : '';
 
             res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
         }
         else if (opmlVersion === 2) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.hasStringContent() ? escapeXmlAttribute(note.getContent()) : '';
+            const preparedContent = note.hasStringContent() ? escapeXmlAttribute(note.getContent() as string) : '';
 
             res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
         }
@@ -41,7 +47,9 @@ function exportToOpml(taskContext, branch, version, res) {
         taskContext.increaseProgressCount();
 
         for (const child of note.getChildBranches()) {
-            exportNoteInner(child.branchId);
+            if (child?.branchId) {
+                exportNoteInner(child.branchId);
+            }
         }
 
         res.write('</outline>');
@@ -60,7 +68,9 @@ function exportToOpml(taskContext, branch, version, res) {
 </head>
 <body>`);
 
-    exportNoteInner(branch.branchId);
+    if (branch.branchId) {
+        exportNoteInner(branch.branchId);
+    }
 
     res.write(`</body>
 </opml>`);
@@ -69,7 +79,7 @@ function exportToOpml(taskContext, branch, version, res) {
     taskContext.taskSucceeded();
 }
 
-function prepareText(text) {
+function prepareText(text: string) {
     const newLines = text.replace(/(<p[^>]*>|<br\s*\/?>)/g, '\n')
         .replace(/&nbsp;/g, ' '); // nbsp isn't in XML standard (only HTML)
 
@@ -80,7 +90,7 @@ function prepareText(text) {
     return escaped.replace(/\n/g, '&#10;');
 }
 
-function escapeXmlAttribute(text) {
+function escapeXmlAttribute(text: string) {
     return text.replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -88,6 +98,6 @@ function escapeXmlAttribute(text) {
         .replace(/'/g, '&apos;');
 }
 
-module.exports = {
+export = {
     exportToOpml
 };

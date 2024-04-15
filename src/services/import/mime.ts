@@ -1,9 +1,10 @@
 "use strict";
 
-const mimeTypes = require('mime-types');
-const path = require('path');
+import mimeTypes = require('mime-types');
+import path = require('path');
+import { TaskData } from '../task_context_interface';
 
-const CODE_MIME_TYPES = {
+const CODE_MIME_TYPES: Record<string, boolean | string> = {
     'text/plain': true,
     'text/x-csrc': true,
     'text/x-c++src': true,
@@ -44,7 +45,7 @@ const CODE_MIME_TYPES = {
 };
 
 // extensions missing in mime-db
-const EXTENSION_TO_MIME = {
+const EXTENSION_TO_MIME: Record<string, string> = {
     ".c": "text/x-csrc",
     ".cs": "text/x-csharp",
     ".clj": "text/x-clojure",
@@ -65,7 +66,7 @@ const EXTENSION_TO_MIME = {
 };
 
 /** @returns false if MIME is not detected */
-function getMime(fileName) {
+function getMime(fileName: string) {
     if (fileName.toLowerCase() === 'dockerfile') {
         return "text/x-dockerfile";
     }
@@ -79,7 +80,7 @@ function getMime(fileName) {
     return mimeTypes.lookup(fileName);
 }
 
-function getType(options, mime) {
+function getType(options: TaskData, mime: string) {
     mime = mime ? mime.toLowerCase() : '';
 
     if (options.textImportedAsText && (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime))) {
@@ -96,18 +97,20 @@ function getType(options, mime) {
     }
 }
 
-function normalizeMimeType(mime) {
+function normalizeMimeType(mime: string) {
     mime = mime ? mime.toLowerCase() : '';
+    const mappedMime = CODE_MIME_TYPES[mime];
 
-    if (!(mime in CODE_MIME_TYPES) || CODE_MIME_TYPES[mime] === true) {
+    if (mappedMime === true) {
         return mime;
+    } else if (typeof mappedMime === "string") {
+        return mappedMime;
     }
-    else {
-        return CODE_MIME_TYPES[mime];
-    }
+
+    return undefined;
 }
 
-module.exports = {
+export = {
     getMime,
     getType,
     normalizeMimeType
