@@ -49,8 +49,12 @@ interface Message {
     messages?: string[];
     startNoteId?: string;
     currentNoteId?: string;
+    entityType?: string;
+    entityId?: string;
     originEntityName?: "notes";
     originEntityId?: string | null;
+    lastModifiedMs?: number;
+    filePath?: string;
 }
 
 type SessionParser = (req: IncomingMessage, params: {}, cb: () => void) => void;

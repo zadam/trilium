@@ -1,19 +1,20 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const log = require('../../services/log');
-const attributeService = require('../../services/attributes');
-const BAttribute = require('../../becca/entities/battribute');
-const becca = require('../../becca/becca');
-const ValidationError = require('../../errors/validation_error');
+import sql = require('../../services/sql');
+import log = require('../../services/log');
+import attributeService = require('../../services/attributes');
+import BAttribute = require('../../becca/entities/battribute');
+import becca = require('../../becca/becca');
+import ValidationError = require('../../errors/validation_error');
+import { Request } from 'express';
 
-function getEffectiveNoteAttributes(req) {
+function getEffectiveNoteAttributes(req: Request) {
     const note = becca.getNote(req.params.noteId);
 
-    return note.getAttributes();
+    return note?.getAttributes();
 }
 
-function updateNoteAttribute(req) {
+function updateNoteAttribute(req: Request) {
     const noteId = req.params.noteId;
     const body = req.body;
 
@@ -70,14 +71,17 @@ function updateNoteAttribute(req) {
     };
 }
 
-function setNoteAttribute(req) {
+function setNoteAttribute(req: Request) {
     const noteId = req.params.noteId;
     const body = req.body;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
+    const attributeId = sql.getValue<string | null>(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
 
     if (attributeId) {
         const attr = becca.getAttribute(attributeId);
+        if (!attr) {
+            throw new ValidationError(`Missing attribute with ID ${attributeId}.`);
+        }
         attr.value = body.value;
         attr.save();
     } else {
@@ -88,14 +92,14 @@ function setNoteAttribute(req) {
     }
 }
 
-function addNoteAttribute(req) {
+function addNoteAttribute(req: Request) {
     const noteId = req.params.noteId;
     const body = req.body;
 
     new BAttribute({...body, noteId}).save();
 }
 
-function deleteNoteAttribute(req) {
+function deleteNoteAttribute(req: Request) {
     const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
 
@@ -110,11 +114,14 @@ function deleteNoteAttribute(req) {
     }
 }
 
-function updateNoteAttributes(req) {
+function updateNoteAttributes(req: Request) {
     const noteId = req.params.noteId;
     const incomingAttributes = req.body;
 
     const note = becca.getNote(noteId);
+    if (!note) {
+        throw new ValidationError(`Cannot find note with ID ${noteId}.`);
+    }
 
     let existingAttrs = note.getOwnedAttributes().slice();
 
@@ -179,25 +186,29 @@ function updateNoteAttributes(req) {
     }
 }
 
-function getAttributeNames(req) {
+function getAttributeNames(req: Request) {
     const type = req.query.type;
     const query = req.query.query;
+
+    if (typeof type !== "string" || typeof query !== "string") {
+        throw new ValidationError("Invalid data type.");
+    }
 
     return attributeService.getAttributeNames(type, query);
 }
 
-function getValuesForAttribute(req) {
+function getValuesForAttribute(req: Request) {
     const attributeName = req.params.attributeName;
 
     return sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND type = 'label' AND value != '' ORDER BY value", [attributeName]);
 }
 
-function createRelation(req) {
+function createRelation(req: Request) {
     const sourceNoteId = req.params.noteId;
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    const attributeId = sql.getValue<string>(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
     let attribute = becca.getAttribute(attributeId);
 
     if (!attribute) {
@@ -212,20 +223,22 @@ function createRelation(req) {
     return attribute;
 }
 
-function deleteRelation(req) {
+function deleteRelation(req: Request) {
     const sourceNoteId = req.params.noteId;
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    const attributeId = sql.getValue<string | null>(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
     if (attributeId) {
         const attribute = becca.getAttribute(attributeId);
-        attribute.markAsDeleted();
+        if (attribute) {
+            attribute.markAsDeleted();
+        }
     }
 }
 
-module.exports = {
+export = {
     updateNoteAttributes,
     updateNoteAttribute,
     setNoteAttribute,

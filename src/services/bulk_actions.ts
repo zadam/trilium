@@ -150,7 +150,7 @@ function getActions(note: BNote) {
         .filter(a => !!a);
 }
 
-function executeActions(note: BNote, searchResultNoteIds: string[]) {
+function executeActions(note: BNote, searchResultNoteIds: string[] | Set<string>) {
     const actions = getActions(note);
 
     for (const resultNoteId of searchResultNoteIds) {

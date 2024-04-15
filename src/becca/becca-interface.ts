@@ -129,7 +129,7 @@ export default class Becca {
         return this.branches[branchId];
     }
 
-    getBranchOrThrow(branchId: string): BBranch | null {
+    getBranchOrThrow(branchId: string): BBranch {
         const branch = this.getBranch(branchId);
         if (!branch) {
             throw new NotFoundError(`Branch '${branchId}' was not found in becca.`);
@@ -239,7 +239,7 @@ export default class Becca {
         return (this as any)[camelCaseEntityName][entityId];
     }
 
-    getRecentNotesFromQuery(query: string, params = []): BRecentNote[] {
+    getRecentNotesFromQuery(query: string, params: string[] = []): BRecentNote[] {
         const rows = sql.getRows(query, params);
 
         const BRecentNote = require('./entities/brecent_note'); // avoiding circular dependency problems

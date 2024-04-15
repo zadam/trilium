@@ -4,7 +4,8 @@ import protectedSessionService = require('./protected_session');
 import utils = require('./utils');
 import type { Blob } from "./blob-interface";
 
-function getBlobPojo(entityName: string, entityId: string) {
+function getBlobPojo(entityName: string, entityId: string, opts?: { preview: boolean }) {
+    // TODO: Unused opts.
     const entity = becca.getEntity(entityName, entityId);
     if (!entity) {
         throw new NotFoundError(`Entity ${entityName} '${entityId}' was not found.`);

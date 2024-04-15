@@ -1,10 +1,12 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const log = require('../../services/log');
-const backupService = require('../../services/backup');
-const anonymizationService = require('../../services/anonymization');
-const consistencyChecksService = require('../../services/consistency_checks');
+import sql = require('../../services/sql');
+import log = require('../../services/log');
+import backupService = require('../../services/backup');
+import anonymizationService = require('../../services/anonymization');
+import consistencyChecksService = require('../../services/consistency_checks');
+import { Request } from 'express';
+import ValidationError = require('../../errors/validation_error');
 
 function getExistingBackups() {
     return backupService.getExistingBackups();
@@ -30,7 +32,10 @@ function getExistingAnonymizedDatabases() {
     return anonymizationService.getExistingAnonymizedDatabases();
 }
 
-async function anonymize(req) {
+async function anonymize(req: Request) {
+    if (req.params.type !== "full" && req.params.type !== "light") {
+        throw new ValidationError("Invalid type provided.");
+    }
     return await anonymizationService.createAnonymizedCopy(req.params.type);
 }
 
@@ -44,7 +49,7 @@ function checkIntegrity() {
     };
 }
 
-module.exports = {
+export = {
     getExistingBackups,
     backupDatabase,
     vacuumDatabase,

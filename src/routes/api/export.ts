@@ -1,14 +1,16 @@
 "use strict";
 
-const zipExportService = require('../../services/export/zip');
-const singleExportService = require('../../services/export/single');
-const opmlExportService = require('../../services/export/opml');
-const becca = require('../../becca/becca');
-const TaskContext = require('../../services/task_context');
-const log = require('../../services/log');
-const NotFoundError = require('../../errors/not_found_error');
+import zipExportService = require('../../services/export/zip');
+import singleExportService = require('../../services/export/single');
+import opmlExportService = require('../../services/export/opml');
+import becca = require('../../becca/becca');
+import TaskContext = require('../../services/task_context');
+import log = require('../../services/log');
+import NotFoundError = require('../../errors/not_found_error');
+import { Request, Response } from 'express';
+import ValidationError = require('../../errors/validation_error');
 
-function exportBranch(req, res) {
+function exportBranch(req: Request, res: Response) {
     const {branchId, type, format, version, taskId} = req.params;
     const branch = becca.getBranch(branchId);
 
@@ -29,6 +31,9 @@ function exportBranch(req, res) {
             zipExportService.exportToZip(taskContext, branch, format, res);
         }
         else if (type === 'single') {
+            if (format !== "html" && format !== "markdown") {
+                throw new ValidationError("Invalid export type.");
+            }
             singleExportService.exportSingleNote(taskContext, branch, format, res);
         }
         else if (format === 'opml') {
@@ -38,7 +43,7 @@ function exportBranch(req, res) {
             throw new NotFoundError(`Unrecognized export format '${format}'`);
         }
     }
-    catch (e) {
+    catch (e: any) {
         const message = `Export failed with following error: '${e.message}'. More details might be in the logs.`;
         taskContext.reportError(message);
 

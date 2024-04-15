@@ -203,9 +203,9 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.children && this.children.length > 0;
     }
 
-    getChildBranches(): (BBranch | null)[] {
+    getChildBranches(): BBranch[] {
         return this.children
-            .map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
+            .map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId)) as BBranch[];
     }
 
     /*
@@ -1434,7 +1434,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     searchNotesInSubtree(searchString: string) {
         const searchService = require('../../services/search/services/search');
 
-        return searchService.searchNotes(searchString);
+        return searchService.searchNotes(searchString) as BNote[];
     }
 
     searchNoteInSubtree(searchString: string) {

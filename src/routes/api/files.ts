@@ -1,21 +1,24 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const tmp = require('tmp');
-const fs = require('fs');
-const { Readable } = require('stream');
-const chokidar = require('chokidar');
-const ws = require('../../services/ws');
-const becca = require('../../becca/becca');
-const ValidationError = require('../../errors/validation_error');
+import protectedSessionService = require('../../services/protected_session');
+import utils = require('../../services/utils');
+import log = require('../../services/log');
+import noteService = require('../../services/notes');
+import tmp = require('tmp');
+import fs = require('fs');
+import { Readable } from 'stream';
+import chokidar = require('chokidar');
+import ws = require('../../services/ws');
+import becca = require('../../becca/becca');
+import ValidationError = require('../../errors/validation_error');
+import { Request, Response } from 'express';
+import BNote = require('../../becca/entities/bnote');
+import BAttachment = require('../../becca/entities/battachment');
 
-function updateFile(req) {
+function updateFile(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    const file = req.file;
+    const file = (req as any).file;
     note.saveRevision();
 
     note.mime = file.mimetype.toLowerCase();
@@ -32,9 +35,9 @@ function updateFile(req) {
     };
 }
 
-function updateAttachment(req) {
+function updateAttachment(req: Request) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
-    const file = req.file;
+    const file = (req as any).file;
 
     attachment.getNote().saveRevision();
 
@@ -46,12 +49,7 @@ function updateAttachment(req) {
     };
 }
 
-/**
- * @param {BNote|BAttachment} noteOrAttachment
- * @param res
- * @param {boolean} contentDisposition
- */
-function downloadData(noteOrAttachment, res, contentDisposition) {
+function downloadData(noteOrAttachment: BNote | BAttachment, res: Response, contentDisposition: boolean) {
     if (noteOrAttachment.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         return res.status(401).send("Protected session not available");
     }
@@ -68,7 +66,7 @@ function downloadData(noteOrAttachment, res, contentDisposition) {
     res.send(noteOrAttachment.getContent());
 }
 
-function downloadNoteInt(noteId, res, contentDisposition = true) {
+function downloadNoteInt(noteId: string, res: Response, contentDisposition = true) {
     const note = becca.getNote(noteId);
 
     if (!note) {
@@ -80,7 +78,7 @@ function downloadNoteInt(noteId, res, contentDisposition = true) {
     return downloadData(note, res, contentDisposition);
 }
 
-function downloadAttachmentInt(attachmentId, res, contentDisposition = true) {
+function downloadAttachmentInt(attachmentId: string, res: Response, contentDisposition = true) {
     const attachment = becca.getAttachment(attachmentId);
 
     if (!attachment) {
@@ -92,34 +90,34 @@ function downloadAttachmentInt(attachmentId, res, contentDisposition = true) {
     return downloadData(attachment, res, contentDisposition);
 }
 
-const downloadFile = (req, res) => downloadNoteInt(req.params.noteId, res, true);
-const openFile = (req, res) => downloadNoteInt(req.params.noteId, res, false);
+const downloadFile = (req: Request, res: Response) => downloadNoteInt(req.params.noteId, res, true);
+const openFile = (req: Request, res: Response) => downloadNoteInt(req.params.noteId, res, false);
 
-const downloadAttachment = (req, res) => downloadAttachmentInt(req.params.attachmentId, res, true);
-const openAttachment = (req, res) => downloadAttachmentInt(req.params.attachmentId, res, false);
+const downloadAttachment = (req: Request, res: Response) => downloadAttachmentInt(req.params.attachmentId, res, true);
+const openAttachment = (req: Request, res: Response) => downloadAttachmentInt(req.params.attachmentId, res, false);
 
-function fileContentProvider(req) {
+function fileContentProvider(req: Request) {
     // Read the file name from route params.
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     return streamContent(note.getContent(), note.getFileName(), note.mime);
 }
 
-function attachmentContentProvider(req) {
+function attachmentContentProvider(req: Request) {
     // Read the file name from route params.
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
 
     return streamContent(attachment.getContent(), attachment.getFileName(), attachment.mime);
 }
 
-function streamContent(content, fileName, mimeType) {
+function streamContent(content: string | Buffer, fileName: string, mimeType: string) {
     if (typeof content === "string") {
         content = Buffer.from(content, 'utf8');
     }
 
     const totalSize = content.byteLength;
 
-    const getStream = range => {
+    const getStream = (range: { start: number, end: number }) => {
         if (!range) {
             // Request if for complete content.
             return Readable.from(content);
@@ -138,7 +136,7 @@ function streamContent(content, fileName, mimeType) {
     };
 }
 
-function saveNoteToTmpDir(req) {
+function saveNoteToTmpDir(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
     const fileName = note.getFileName();
     const content = note.getContent();
@@ -146,18 +144,26 @@ function saveNoteToTmpDir(req) {
     return saveToTmpDir(fileName, content, 'notes', note.noteId);
 }
 
-function saveAttachmentToTmpDir(req) {
+function saveAttachmentToTmpDir(req: Request) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const fileName = attachment.getFileName();
     const content = attachment.getContent();
 
+    if (!attachment.attachmentId) {
+        throw new ValidationError("Missing attachment ID.");
+    }
     return saveToTmpDir(fileName, content, 'attachments', attachment.attachmentId);
 }
 
-function saveToTmpDir(fileName, content, entityType, entityId) {
+function saveToTmpDir(fileName: string, content: string | Buffer, entityType: string, entityId: string) {
     const tmpObj = tmp.fileSync({ postfix: fileName });
 
-    fs.writeSync(tmpObj.fd, content);
+    if (typeof content === "string") {
+        fs.writeSync(tmpObj.fd, content);
+    } else {
+        fs.writeSync(tmpObj.fd, content);   
+    }
+
     fs.closeSync(tmpObj.fd);
 
     log.info(`Saved temporary file ${tmpObj.name}`);
@@ -168,7 +174,7 @@ function saveToTmpDir(fileName, content, entityType, entityId) {
                 type: 'openedFileUpdated',
                 entityType: entityType,
                 entityId: entityId,
-                lastModifiedMs: stats.atimeMs,
+                lastModifiedMs: stats?.atimeMs,
                 filePath: tmpObj.name
             });
         });
@@ -179,7 +185,7 @@ function saveToTmpDir(fileName, content, entityType, entityId) {
     };
 }
 
-function uploadModifiedFileToNote(req) {
+function uploadModifiedFileToNote(req: Request) {
     const noteId = req.params.noteId;
     const {filePath} = req.body;
 
@@ -198,7 +204,7 @@ function uploadModifiedFileToNote(req) {
     note.setContent(fileContent);
 }
 
-function uploadModifiedFileToAttachment(req) {
+function uploadModifiedFileToAttachment(req: Request) {
     const {attachmentId} = req.params;
     const {filePath} = req.body;
 
@@ -217,7 +223,7 @@ function uploadModifiedFileToAttachment(req) {
     attachment.setContent(fileContent);
 }
 
-module.exports = {
+export = {
     updateFile,
     updateAttachment,
     openFile,
