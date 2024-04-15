@@ -128,7 +128,7 @@ function getNotesAndBranchesAndAttributes(_noteIds: string[] | Set<string>) {
 }
 
 function getTree(req: Request) {
-    const subTreeNoteId = req.query.subTreeNoteId === "string" ? req.query.subTreeNoteId : "" || 'root';
+    const subTreeNoteId = typeof req.query.subTreeNoteId === "string" ? req.query.subTreeNoteId : 'root';
     const collectedNoteIds = new Set<string>([subTreeNoteId]);
 
     function collect(parentNote: BNote) {
