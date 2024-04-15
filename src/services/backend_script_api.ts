@@ -80,7 +80,6 @@ interface Api {
     
     /**
      * Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
-     * @type {axios}
      * @deprecated use native (browser compatible) fetch() instead
      */
     axios: typeof axios;
@@ -122,9 +121,6 @@ interface Api {
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See {@link https://github.com/zadam/trilium/wiki/Search} for full documentation for all options
-     *
-     * @param {string} query
-     * @param {Object} [searchParams]
      */
     searchForNote(query: string, searchParams: SearchParams): BNote | null;
     
