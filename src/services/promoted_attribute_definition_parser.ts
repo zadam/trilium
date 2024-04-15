@@ -1,11 +1,4 @@
-interface DefinitionObject {
-    isPromoted?: boolean;
-    labelType?: string;
-    multiplicity?: string;
-    numberPrecision?: number;
-    promotedAlias?: string;
-    inverseRelation?: string;
-}
+import { DefinitionObject } from "./promoted_attribute_definition_interface";
 
 function parse(value: string): DefinitionObject {
     const tokens = value.split(',').map(t => t.trim());

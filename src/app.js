@@ -7,7 +7,7 @@ const compression = require('compression');
 const sessionParser = require('./routes/session_parser.js');
 const utils = require('./services/utils');
 
-require('./services/handlers.js');
+require('./services/handlers');
 require('./becca/becca_loader');
 
 const app = express();
@@ -51,7 +51,7 @@ require('./services/backup');
 // trigger consistency checks timer
 require('./services/consistency_checks');
 
-require('./services/scheduler.js');
+require('./services/scheduler');
 
 if (utils.isElectron()) {
     require('@electron/remote/main').initialize();

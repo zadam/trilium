@@ -1,6 +1,6 @@
 "use strict";
 
-const scriptService = require('../../services/script.js');
+const scriptService = require('../../services/script');
 const attributeService = require('../../services/attributes');
 const becca = require('../../becca/becca');
 const syncService = require('../../services/sync');
@@ -11,7 +11,7 @@ const sql = require('../../services/sql');
 // this and does result.then().
 async function exec(req) {
     try {
-        const {body} = req;
+        const { body } = req;
 
         const execute = body => scriptService.executeScript(
             body.script,
@@ -115,7 +115,7 @@ function getRelationBundles(req) {
 
 function getBundle(req) {
     const note = becca.getNote(req.params.noteId);
-    const {script, params} = req.body;
+    const { script, params } = req.body;
 
     return scriptService.getScriptBundleForFrontend(note, script, params);
 }

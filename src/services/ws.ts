@@ -42,6 +42,15 @@ interface Message {
     message?: string;
     reason?: string;    
     result?: string;
+
+    script?: string;
+    params?: any[];
+    noteId?: string;
+    messages?: string[];
+    startNoteId?: string;
+    currentNoteId?: string;
+    originEntityName?: "notes";
+    originEntityId?: string | null;
 }
 
 type SessionParser = (req: IncomingMessage, params: {}, cb: () => void) => void;

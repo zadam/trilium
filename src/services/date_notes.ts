@@ -191,7 +191,7 @@ function getDayNote(dateStr: string, _rootNote: BNote | null = null): BNote {
     return dateNote as unknown as BNote;
 }
 
-function getTodayNote(rootNote = null) {
+function getTodayNote(rootNote: BNote | null = null) {
     return getDayNote(dateUtils.localNowDate(), rootNote);
 }
 
@@ -216,7 +216,7 @@ interface WeekNoteOpts {
     startOfTheWeek?: StartOfWeek
 }
 
-function getWeekNote(dateStr: string, options: WeekNoteOpts = {}, rootNote = null) {
+function getWeekNote(dateStr: string, options: WeekNoteOpts = {}, rootNote: BNote | null = null) {
     const startOfTheWeek = options.startOfTheWeek || "monday";
 
     const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);
