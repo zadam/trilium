@@ -1,18 +1,20 @@
 "use strict";
 
-const enexImportService = require('../../services/import/enex');
-const opmlImportService = require('../../services/import/opml');
-const zipImportService = require('../../services/import/zip');
-const singleImportService = require('../../services/import/single');
-const cls = require('../../services/cls');
-const path = require('path');
-const becca = require('../../becca/becca');
-const beccaLoader = require('../../becca/becca_loader');
-const log = require('../../services/log');
-const TaskContext = require('../../services/task_context');
-const ValidationError = require('../../errors/validation_error');
+import enexImportService = require('../../services/import/enex');
+import opmlImportService = require('../../services/import/opml');
+import zipImportService = require('../../services/import/zip');
+import singleImportService = require('../../services/import/single');
+import cls = require('../../services/cls');
+import path = require('path');
+import becca = require('../../becca/becca');
+import beccaLoader = require('../../becca/becca_loader');
+import log = require('../../services/log');
+import TaskContext = require('../../services/task_context');
+import ValidationError = require('../../errors/validation_error');
+import { Request } from 'express';
+import BNote = require('../../becca/entities/bnote');
 
-async function importNotesToBranch(req) {
+async function importNotesToBranch(req: Request) {
     const { parentNoteId } = req.params;
     const { taskId, last } = req.body;
 
@@ -25,7 +27,7 @@ async function importNotesToBranch(req) {
         replaceUnderscoresWithSpaces: req.body.replaceUnderscoresWithSpaces !== 'false'
     };
 
-    const file = req.file;
+    const file = (req as any).file;
 
     if (!file) {
         throw new ValidationError("No file has been uploaded");
@@ -42,7 +44,7 @@ async function importNotesToBranch(req) {
     // eliminate flickering during import
     cls.ignoreEntityChangeIds();
 
-    let note; // typically root of the import - client can show it after finishing the import
+    let note: BNote | null; // typically root of the import - client can show it after finishing the import
 
     const taskContext = TaskContext.getInstance(taskId, 'importNotes', options);
 
@@ -50,14 +52,24 @@ async function importNotesToBranch(req) {
         if (extension === '.zip' && options.explodeArchives) {
             note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
         } else if (extension === '.opml' && options.explodeArchives) {
-            note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
+            const importResult = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
+            if (!Array.isArray(importResult)) {
+                note = importResult;
+            } else {
+                return importResult;
+            }
         } else if (extension === '.enex' && options.explodeArchives) {
-            note = await enexImportService.importEnex(taskContext, file, parentNote);
+            const importResult = await enexImportService.importEnex(taskContext, file, parentNote);
+            if (!Array.isArray(importResult)) {
+                note = importResult;
+            } else {
+                return importResult;
+            }
         } else {
             note = await singleImportService.importSingleFile(taskContext, file, parentNote);
         }
     }
-    catch (e) {
+    catch (e: any) {
         const message = `Import failed with following error: '${e.message}'. More details might be in the logs.`;
         taskContext.reportError(message);
 
@@ -66,11 +78,15 @@ async function importNotesToBranch(req) {
         return [500, message];
     }
 
+    if (!note) {
+        return [500, "No note was generated as a result of the import."];
+    }
+
     if (last === "true") {
         // small timeout to avoid race condition (the message is received before the transaction is committed)
         setTimeout(() => taskContext.taskSucceeded({
             parentNoteId: parentNoteId,
-            importedNoteId: note.noteId
+            importedNoteId: note?.noteId
         }), 1000);
     }
 
@@ -80,7 +96,7 @@ async function importNotesToBranch(req) {
     return note.getPojo();
 }
 
-async function importAttachmentsToNote(req) {
+async function importAttachmentsToNote(req: Request) {
     const { parentNoteId } = req.params;
     const { taskId, last } = req.body;
 
@@ -88,7 +104,7 @@ async function importAttachmentsToNote(req) {
         shrinkImages: req.body.shrinkImages !== 'false',
     };
 
-    const file = req.file;
+    const file = (req as any).file;
 
     if (!file) {
         throw new ValidationError("No file has been uploaded");
@@ -102,7 +118,7 @@ async function importAttachmentsToNote(req) {
     try {
         await singleImportService.importAttachment(taskContext, file, parentNote);
     }
-    catch (e) {
+    catch (e: any) {
         const message = `Import failed with following error: '${e.message}'. More details might be in the logs.`;
         taskContext.reportError(message);
 
@@ -119,7 +135,7 @@ async function importAttachmentsToNote(req) {
     }
 }
 
-module.exports = {
+export = {
     importNotesToBranch,
     importAttachmentsToNote
 };

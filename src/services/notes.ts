@@ -251,7 +251,7 @@ function createNewNote(params: NoteParams): {
     });
 }
 
-function createNewNoteWithTarget(target: ("into" | "after"), targetBranchId: string, params: NoteParams) {
+function createNewNoteWithTarget(target: ("into" | "after"), targetBranchId: string | undefined, params: NoteParams) {
     if (!params.type) {
         const parentNote = becca.notes[params.parentNoteId];
 
@@ -263,7 +263,7 @@ function createNewNoteWithTarget(target: ("into" | "after"), targetBranchId: str
     if (target === 'into') {
         return createNewNote(params);
     }
-    else if (target === 'after') {
+    else if (target === 'after' && targetBranchId) {
         const afterBranch = becca.branches[targetBranchId];
 
         // not updating utcDateModified to avoid having to sync whole rows

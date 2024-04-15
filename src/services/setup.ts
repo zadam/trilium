@@ -110,7 +110,7 @@ function getSyncSeedOptions() {
     ];
 }
 
-module.exports = {
+export = {
     hasSyncServerSchemaAndSeed,
     triggerSync,
     sendSeedToSyncServer,

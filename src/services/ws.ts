@@ -41,7 +41,7 @@ interface Message {
     taskType?: string | null;
     message?: string;
     reason?: string;    
-    result?: string;
+    result?: string | Record<string, string | undefined>;
 
     script?: string;
     params?: any[];

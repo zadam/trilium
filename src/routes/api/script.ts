@@ -1,19 +1,30 @@
 "use strict";
 
-const scriptService = require('../../services/script');
-const attributeService = require('../../services/attributes');
-const becca = require('../../becca/becca');
-const syncService = require('../../services/sync');
-const sql = require('../../services/sql');
+import scriptService = require('../../services/script');
+import attributeService = require('../../services/attributes');
+import becca = require('../../becca/becca');
+import syncService = require('../../services/sync');
+import sql = require('../../services/sql');
+import { Request } from 'express';
+
+interface ScriptBody {
+    script: string;
+    params: any[];
+    startNoteId: string;
+    currentNoteId: string;
+    originEntityName: string;
+    originEntityId: string;
+    transactional: boolean;
+}
 
 // The async/await here is very confusing, because the body.script may, but may not be async. If it is async, then we
 // need to await it and make the complete response including metadata available in a Promise, so that the route detects
 // this and does result.then().
-async function exec(req) {
+async function exec(req: Request) {
     try {
-        const { body } = req;
+        const body = (req.body as ScriptBody);
 
-        const execute = body => scriptService.executeScript(
+        const execute = (body: ScriptBody) => scriptService.executeScript(
             body.script,
             body.params,
             body.startNoteId,
@@ -32,20 +43,20 @@ async function exec(req) {
             maxEntityChangeId: syncService.getMaxEntityChangeId()
         };
     }
-    catch (e) {
+    catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
-function run(req) {
-    const note = becca.getNote(req.params.noteId);
+function run(req: Request) {
+    const note = becca.getNoteOrThrow(req.params.noteId);
 
     const result = scriptService.executeNote(note, { originEntity: note });
 
     return { executionResult: result };
 }
 
-function getBundlesWithLabel(label, value) {
+function getBundlesWithLabel(label: string, value?: string) {
     const notes = attributeService.getNotesWithLabel(label, value);
 
     const bundles = [];
@@ -61,7 +72,7 @@ function getBundlesWithLabel(label, value) {
     return bundles;
 }
 
-function getStartupBundles(req) {
+function getStartupBundles(req: Request) {
     if (!process.env.TRILIUM_SAFE_MODE) {
         if (req.query.mobile === "true") {
             return getBundlesWithLabel("run", "mobileStartup");
@@ -84,9 +95,9 @@ function getWidgetBundles() {
     }
 }
 
-function getRelationBundles(req) {
+function getRelationBundles(req: Request) {
     const noteId = req.params.noteId;
-    const note = becca.getNote(noteId);
+    const note = becca.getNoteOrThrow(noteId);
     const relationName = req.params.relationName;
 
     const attributes = note.getAttributes();
@@ -97,7 +108,7 @@ function getRelationBundles(req) {
     const bundles = [];
 
     for (const noteId of uniqueNoteIds) {
-        const note = becca.getNote(noteId);
+        const note = becca.getNoteOrThrow(noteId);
 
         if (!note.isJavaScript() || note.getScriptEnv() !== 'frontend') {
             continue;
@@ -113,14 +124,14 @@ function getRelationBundles(req) {
     return bundles;
 }
 
-function getBundle(req) {
-    const note = becca.getNote(req.params.noteId);
+function getBundle(req: Request) {
+    const note = becca.getNoteOrThrow(req.params.noteId);
     const { script, params } = req.body;
 
     return scriptService.getScriptBundleForFrontend(note, script, params);
 }
 
-module.exports = {
+export = {
     exec,
     run,
     getStartupBundles,

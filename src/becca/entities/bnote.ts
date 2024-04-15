@@ -15,6 +15,7 @@ import eventService = require('../../services/events');
 import { AttachmentRow, NoteRow, NoteType, RevisionRow } from './rows';
 import BBranch = require('./bbranch');
 import BAttribute = require('./battribute');
+import { NotePojo } from '../becca-interface';
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -222,7 +223,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     /**
      * @throws Error in case of invalid JSON */
-    getJsonContent(): {} | null {
+    getJsonContent(): any | null {
         const content = this.getContent();
 
         if (typeof content !== "string" || !content || !content.trim()) {
@@ -1679,7 +1680,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
-    getPojo() {
+    getPojo(): NotePojo {
         return {
             noteId: this.noteId,
             title: this.title || undefined,

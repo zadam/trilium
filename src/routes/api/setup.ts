@@ -1,9 +1,10 @@
 "use strict";
 
-const sqlInit = require('../../services/sql_init');
-const setupService = require('../../services/setup');
-const log = require('../../services/log');
-const appInfo = require('../../services/app_info');
+import sqlInit = require('../../services/sql_init');
+import setupService = require('../../services/setup');
+import log = require('../../services/log');
+import appInfo = require('../../services/app_info');
+import { Request } from 'express';
 
 function getStatus() {
     return {
@@ -17,13 +18,13 @@ async function setupNewDocument() {
     await sqlInit.createInitialDatabase();
 }
 
-function setupSyncFromServer(req) {
+function setupSyncFromServer(req: Request) {
     const { syncServerHost, syncProxy, password } = req.body;
 
     return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password);
 }
 
-function saveSyncSeed(req) {
+function saveSyncSeed(req: Request) {
     const { options, syncVersion } = req.body;
 
     if (appInfo.syncVersion !== syncVersion) {
@@ -50,7 +51,7 @@ function getSyncSeed() {
     };
 }
 
-module.exports = {
+export = {
     getStatus,
     setupNewDocument,
     setupSyncFromServer,

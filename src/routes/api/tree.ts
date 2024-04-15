@@ -1,16 +1,18 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const log = require('../../services/log');
-const NotFoundError = require('../../errors/not_found_error');
+import becca = require('../../becca/becca');
+import log = require('../../services/log');
+import NotFoundError = require('../../errors/not_found_error');
+import { Request } from 'express';
+import BNote = require('../../becca/entities/bnote');
 
-function getNotesAndBranchesAndAttributes(noteIds) {
-    noteIds = new Set(noteIds);
-    const collectedNoteIds = new Set();
-    const collectedAttributeIds = new Set();
-    const collectedBranchIds = new Set();
+function getNotesAndBranchesAndAttributes(_noteIds: string[] | Set<string>) {
+    const noteIds = new Set(_noteIds);
+    const collectedNoteIds = new Set<string>();
+    const collectedAttributeIds = new Set<string>();
+    const collectedBranchIds = new Set<string>();
 
-    function collectEntityIds(note) {
+    function collectEntityIds(note?: BNote) {
         if (!note || collectedNoteIds.has(note.noteId)) {
             return;
         }
@@ -18,15 +20,18 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         collectedNoteIds.add(note.noteId);
 
         for (const branch of note.getParentBranches()) {
-            collectedBranchIds.add(branch.branchId);
+            if (branch.branchId) {
+                collectedBranchIds.add(branch.branchId);
+            }
 
             collectEntityIds(branch.parentNote);
         }
 
         for (const childNote of note.children) {
             const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, note.noteId);
-
-            collectedBranchIds.add(childBranch.branchId);
+            if (childBranch && childBranch.branchId) {
+                collectedBranchIds.add(childBranch.branchId);
+            }
         }
 
         for (const attr of note.ownedAttributes) {
@@ -122,11 +127,11 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     };
 }
 
-function getTree(req) {
-    const subTreeNoteId = req.query.subTreeNoteId || 'root';
-    const collectedNoteIds = new Set([subTreeNoteId]);
+function getTree(req: Request) {
+    const subTreeNoteId = typeof req.query.subTreeNoteId === "string" ? req.query.subTreeNoteId : 'root';
+    const collectedNoteIds = new Set<string>([subTreeNoteId]);
 
-    function collect(parentNote) {
+    function collect(parentNote: BNote) {
         if (!parentNote) {
             console.trace(parentNote);
         }
@@ -136,7 +141,7 @@ function getTree(req) {
 
             const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId);
 
-            if (childBranch.isExpanded) {
+            if (childBranch?.isExpanded) {
                 collect(childBranch.childNote);
             }
         }
@@ -151,11 +156,11 @@ function getTree(req) {
     return getNotesAndBranchesAndAttributes(collectedNoteIds);
 }
 
-function load(req) {
+function load(req: Request) {
     return getNotesAndBranchesAndAttributes(req.body.noteIds);
 }
 
-module.exports = {
+export = {
     getTree,
     load
 };

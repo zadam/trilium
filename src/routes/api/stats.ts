@@ -1,10 +1,11 @@
-const sql = require('../../services/sql');
-const becca = require('../../becca/becca');
+import sql = require('../../services/sql');
+import becca = require('../../becca/becca');
+import { Request } from 'express';
 
-function getNoteSize(req) {
+function getNoteSize(req: Request) {
     const {noteId} = req.params;
 
-    const blobSizes = sql.getMap(`
+    const blobSizes = sql.getMap<string, number>(`
         SELECT blobs.blobId, LENGTH(content)
         FROM blobs
         LEFT JOIN notes ON notes.blobId = blobs.blobId AND notes.noteId = ? AND notes.isDeleted = 0
@@ -21,14 +22,14 @@ function getNoteSize(req) {
     };
 }
 
-function getSubtreeSize(req) {
+function getSubtreeSize(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     const subTreeNoteIds = note.getSubtreeNoteIds();
 
     sql.fillParamList(subTreeNoteIds);
 
-    const blobSizes = sql.getMap(`
+    const blobSizes = sql.getMap<string, number>(`
         SELECT blobs.blobId, LENGTH(content)
         FROM param_list
         JOIN notes ON notes.noteId = param_list.paramId AND notes.isDeleted = 0
@@ -44,7 +45,7 @@ function getSubtreeSize(req) {
     };
 }
 
-module.exports = {
+export = {
     getNoteSize,
     getSubtreeSize
 };

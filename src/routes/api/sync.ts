@@ -1,16 +1,19 @@
 "use strict";
 
-const syncService = require('../../services/sync');
-const syncUpdateService = require('../../services/sync_update');
-const entityChangesService = require('../../services/entity_changes');
-const sql = require('../../services/sql');
-const sqlInit = require('../../services/sql_init');
-const optionService = require('../../services/options');
-const contentHashService = require('../../services/content_hash');
-const log = require('../../services/log');
-const syncOptions = require('../../services/sync_options');
-const utils = require('../../services/utils');
-const ws = require('../../services/ws');
+import syncService = require('../../services/sync');
+import syncUpdateService = require('../../services/sync_update');
+import entityChangesService = require('../../services/entity_changes');
+import sql = require('../../services/sql');
+import sqlInit = require('../../services/sql_init');
+import optionService = require('../../services/options');
+import contentHashService = require('../../services/content_hash');
+import log = require('../../services/log');
+import syncOptions = require('../../services/sync_options');
+import utils = require('../../services/utils');
+import ws = require('../../services/ws');
+import { Request } from 'express';
+import { EntityChange, EntityChangeRecord } from '../../services/entity_changes_interface';
+import ValidationError = require('../../errors/validation_error');
 
 async function testSync() {
     try {
@@ -26,7 +29,7 @@ async function testSync() {
 
         return { success: true, message: "Sync server handshake has been successful, sync has been started." };
     }
-    catch (e) {
+    catch (e: any) {
         return {
             success: false,
             message: e.message
@@ -82,15 +85,19 @@ function forceFullSync() {
     syncService.sync();
 }
 
-function getChanged(req) {
+function getChanged(req: Request) {
     const startTime = Date.now();
 
-    let lastEntityChangeId = parseInt(req.query.lastEntityChangeId);
+    if (typeof req.query.lastEntityChangeId !== "string") {
+        throw new ValidationError("Missing or invalid last entity change ID.");
+    }
+
+    let lastEntityChangeId: number | null | undefined = parseInt(req.query.lastEntityChangeId);
     const clientInstanceId = req.query.instanceId;
-    let filteredEntityChanges = [];
+    let filteredEntityChanges: EntityChange[] = [];
 
     do {
-        const entityChanges = sql.getRows(`
+        const entityChanges: EntityChange[] = sql.getRows<EntityChange>(`
             SELECT *
             FROM entity_changes
             WHERE isSynced = 1
@@ -129,16 +136,22 @@ function getChanged(req) {
     };
 }
 
-const partialRequests = {};
+const partialRequests: Record<string, {
+    createdAt: number,
+    payload: string
+}> = {};
 
-function update(req) {
+function update(req: Request) {
     let { body } = req;
 
-    const pageCount = parseInt(req.get('pageCount'));
-    const pageIndex = parseInt(req.get('pageIndex'));
+    const pageCount = parseInt(req.get('pageCount') as string);
+    const pageIndex = parseInt(req.get('pageIndex') as string);
 
     if (pageCount !== 1) {
         const requestId = req.get('requestId');
+        if (!requestId) {
+            throw new Error("Missing request ID.");
+        }
 
         if (pageIndex === 0) {
             partialRequests[requestId] = {
@@ -185,7 +198,7 @@ function syncFinished() {
     sqlInit.setDbAsInitialized();
 }
 
-function queueSector(req) {
+function queueSector(req: Request) {
     const entityName = utils.sanitizeSqlIdentifier(req.params.entityName);
     const sector = utils.sanitizeSqlIdentifier(req.params.sector);
 
@@ -196,7 +209,7 @@ function checkEntityChanges() {
     require('../../services/consistency_checks').runEntityChangesChecks();
 }
 
-module.exports = {
+export = {
     testSync,
     checkSync,
     syncNow,

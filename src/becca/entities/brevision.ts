@@ -40,7 +40,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     utcDateLastEdited?: string;
     utcDateCreated!: string;
     contentLength?: number;
-    content?: string;
+    content?: string | Buffer;
 
     constructor(row: RevisionRow, titleDecrypted = false) {
         super();
@@ -91,9 +91,8 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
      *
      * This is the same approach as is used for Note's content.
      */
-    // TODO: initial declaration included Buffer, but everywhere it's treated as a string.
-    getContent(): string {
-        return this._getContent() as string;
+    getContent(): string | Buffer {
+        return this._getContent();
     }
 
     /**
@@ -101,7 +100,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     getJsonContent(): {} | null {
         const content = this.getContent();
 
-        if (!content || !content.trim()) {
+        if (!content || typeof content !== "string" || !content.trim()) {
             return null;
         }
 

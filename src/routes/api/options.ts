@@ -1,9 +1,10 @@
 "use strict";
 
-const optionService = require('../../services/options');
-const log = require('../../services/log');
-const searchService = require('../../services/search/services/search');
-const ValidationError = require('../../errors/validation_error');
+import optionService = require('../../services/options');
+import log = require('../../services/log');
+import searchService = require('../../services/search/services/search');
+import ValidationError = require('../../errors/validation_error');
+import { Request } from 'express';
 
 // options allowed to be updated directly in the Options dialog
 const ALLOWED_OPTIONS = new Set([
@@ -62,7 +63,7 @@ const ALLOWED_OPTIONS = new Set([
 
 function getOptions() {
     const optionMap = optionService.getOptionMap();
-    const resultMap = {};
+    const resultMap: Record<string, string> = {};
 
     for (const optionName in optionMap) {
         if (isAllowed(optionName)) {
@@ -75,7 +76,7 @@ function getOptions() {
     return resultMap;
 }
 
-function updateOption(req) {
+function updateOption(req: Request) {
     const {name, value} = req.params;
 
     if (!update(name, value)) {
@@ -83,7 +84,7 @@ function updateOption(req) {
     }
 }
 
-function updateOptions(req) {
+function updateOptions(req: Request) {
     for (const optionName in req.body) {
         if (!update(optionName, req.body[optionName])) {
             // this should be improved
@@ -93,7 +94,7 @@ function updateOptions(req) {
     }
 }
 
-function update(name, value) {
+function update(name: string, value: string) {
     if (!isAllowed(name)) {
         return false;
     }
@@ -128,14 +129,14 @@ function getUserThemes() {
     return ret;
 }
 
-function isAllowed(name) {
+function isAllowed(name: string) {
     return ALLOWED_OPTIONS.has(name)
         || name.startsWith("keyboardShortcuts")
         || name.endsWith("Collapsed")
         || name.startsWith("hideArchivedNotes");
 }
 
-module.exports = {
+export = {
     getOptions,
     updateOption,
     updateOptions,

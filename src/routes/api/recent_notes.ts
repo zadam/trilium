@@ -1,10 +1,11 @@
 "use strict";
 
-const BRecentNote = require('../../becca/entities/brecent_note');
-const sql = require('../../services/sql');
-const dateUtils = require('../../services/date_utils');
+import BRecentNote = require('../../becca/entities/brecent_note');
+import sql = require('../../services/sql');
+import dateUtils = require('../../services/date_utils');
+import { Request } from 'express';
 
-function addRecentNote(req) {
+function addRecentNote(req: Request) {
     new BRecentNote({
         noteId: req.body.noteId,
         notePath: req.body.notePath
@@ -18,6 +19,6 @@ function addRecentNote(req) {
     }
 }
 
-module.exports = {
+export = {
     addRecentNote
 };

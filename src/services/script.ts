@@ -106,7 +106,7 @@ function execute(ctx: ScriptContext, script: string) {
     return function () { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx);
 }
 
-function getParams(params: ScriptParams) {
+function getParams(params?: ScriptParams) {
     if (!params) {
         return params;
     }
@@ -121,7 +121,7 @@ function getParams(params: ScriptParams) {
     }).join(",");
 }
 
-function getScriptBundleForFrontend(note: BNote, script: string, params: ScriptParams) {
+function getScriptBundleForFrontend(note: BNote, script?: string, params?: ScriptParams) {
     let overrideContent = null;
 
     if (script) {

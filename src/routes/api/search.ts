@@ -1,14 +1,17 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const SearchContext = require('../../services/search/search_context');
-const searchService = require('../../services/search/services/search');
-const bulkActionService = require('../../services/bulk_actions');
-const cls = require('../../services/cls');
-const {formatAttrForSearch} = require('../../services/attribute_formatter');
-const ValidationError = require('../../errors/validation_error');
+import { Request } from "express";
 
-function searchFromNote(req) {
+import becca = require('../../becca/becca');
+import SearchContext = require('../../services/search/search_context');
+import searchService = require('../../services/search/services/search');
+import bulkActionService = require('../../services/bulk_actions');
+import cls = require('../../services/cls');
+import attributeFormatter = require('../../services/attribute_formatter');
+import ValidationError = require('../../errors/validation_error');
+import SearchResult = require("../../services/search/search_result");
+
+function searchFromNote(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     if (!note) {
@@ -23,7 +26,7 @@ function searchFromNote(req) {
     return searchService.searchFromNote(note);
 }
 
-function searchAndExecute(req) {
+function searchAndExecute(req: Request) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
     if (!note) {
@@ -40,7 +43,7 @@ function searchAndExecute(req) {
     bulkActionService.executeActions(note, searchResultNoteIds);
 }
 
-function quickSearch(req) {
+function quickSearch(req: Request) {
     const {searchString} = req.params;
 
     const searchContext = new SearchContext({
@@ -58,7 +61,7 @@ function quickSearch(req) {
     };
 }
 
-function search(req) {
+function search(req: Request) {
     const {searchString} = req.params;
 
     const searchContext = new SearchContext({
@@ -72,7 +75,7 @@ function search(req) {
         .map(sr => sr.noteId);
 }
 
-function getRelatedNotes(req) {
+function getRelatedNotes(req: Request) {
     const attr = req.body;
 
     const searchSettings = {
@@ -81,10 +84,10 @@ function getRelatedNotes(req) {
         fuzzyAttributeSearch: false
     };
 
-    const matchingNameAndValue = searchService.findResultsWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
-    const matchingName = searchService.findResultsWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
+    const matchingNameAndValue = searchService.findResultsWithQuery(attributeFormatter.formatAttrForSearch(attr, true), new SearchContext(searchSettings));
+    const matchingName = searchService.findResultsWithQuery(attributeFormatter.formatAttrForSearch(attr, false), new SearchContext(searchSettings));
 
-    const results = [];
+    const results: SearchResult[] = [];
 
     const allResults = matchingNameAndValue.concat(matchingName);
 
@@ -123,7 +126,7 @@ function searchTemplates() {
     }).map(note => note.noteId);
 }
 
-module.exports = {
+export = {
     searchFromNote,
     searchAndExecute,
     getRelatedNotes,
