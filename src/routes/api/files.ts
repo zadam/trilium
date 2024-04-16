@@ -14,11 +14,12 @@ import ValidationError = require('../../errors/validation_error');
 import { Request, Response } from 'express';
 import BNote = require('../../becca/entities/bnote');
 import BAttachment = require('../../becca/entities/battachment');
+import { AppRequest } from '../route-interface';
 
-function updateFile(req: Request) {
+function updateFile(req: AppRequest) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    const file = (req as any).file;
+    const file = req.file;
     note.saveRevision();
 
     note.mime = file.mimetype.toLowerCase();
@@ -35,9 +36,9 @@ function updateFile(req: Request) {
     };
 }
 
-function updateAttachment(req: Request) {
+function updateAttachment(req: AppRequest) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
-    const file = (req as any).file;
+    const file = req.file;
 
     attachment.getNote().saveRevision();
 

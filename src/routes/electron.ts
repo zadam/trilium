@@ -1,6 +1,17 @@
+import { Application } from "express";
+
 const ipcMain = require('electron').ipcMain;
 
-function init(app) {
+interface Response {
+    statusCode: number;
+    getHeader: (name: string) => string;
+    setHeader: (name: string, value: string) => Response;
+    header: (name: string, value: string) => Response;
+    status: (statusCode: number) => Response;
+    send: (obj: {}) => void;
+}
+
+function init(app: Application) {
     ipcMain.on('server-request', (event, arg) => {
         const req = {
             url: arg.url,
@@ -12,9 +23,9 @@ function init(app) {
             }
         };
 
-        const respHeaders = {};
+        const respHeaders: Record<string, string> = {};
 
-        const res = {
+        const res: Response = {
             statusCode: 200,
             getHeader: name => respHeaders[name],
             setHeader: (name, value) => {
@@ -45,4 +56,4 @@ function init(app) {
     });
 }
 
-module.exports = init;
+export = init;

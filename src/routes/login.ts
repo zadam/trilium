@@ -1,15 +1,17 @@
 "use strict";
 
-const utils = require('../services/utils');
-const optionService = require('../services/options');
-const myScryptService = require('../services/encryption/my_scrypt');
-const log = require('../services/log');
-const passwordService = require('../services/encryption/password');
-const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path');
-const ValidationError = require('../errors/validation_error');
+import utils = require('../services/utils');
+import optionService = require('../services/options');
+import myScryptService = require('../services/encryption/my_scrypt');
+import log = require('../services/log');
+import passwordService = require('../services/encryption/password');
+import assetPath = require('../services/asset_path');
+import appPath = require('../services/app_path');
+import ValidationError = require('../errors/validation_error');
+import { Request, Response } from 'express';
+import { AppRequest } from './route-interface';
 
-function loginPage(req, res) {
+function loginPage(req: Request, res: Response) {
     res.render('login', {
         failedAuth: false,
         assetPath: assetPath,
@@ -17,7 +19,7 @@ function loginPage(req, res) {
     });
 }
 
-function setPasswordPage(req, res) {
+function setPasswordPage(req: Request, res: Response) {
     res.render('set_password', {
         error: false,
         assetPath: assetPath,
@@ -25,7 +27,7 @@ function setPasswordPage(req, res) {
     });
 }
 
-function setPassword(req, res) {
+function setPassword(req: Request, res: Response) {
     if (passwordService.isPasswordSet()) {
         throw new ValidationError("Password has been already set");
     }
@@ -55,7 +57,7 @@ function setPassword(req, res) {
     res.redirect('login');
 }
 
-function login(req, res) {
+function login(req: AppRequest, res: Response) {
     const guessedPassword = req.body.password;
 
     if (verifyPassword(guessedPassword)) {
@@ -83,7 +85,7 @@ function login(req, res) {
     }
 }
 
-function verifyPassword(guessedPassword) {
+function verifyPassword(guessedPassword: string) {
     const hashed_password = utils.fromBase64(optionService.getOption('passwordVerificationHash'));
 
     const guess_hashed = myScryptService.getVerificationHash(guessedPassword);
@@ -91,7 +93,7 @@ function verifyPassword(guessedPassword) {
     return guess_hashed.equals(hashed_password);
 }
 
-function logout(req, res) {
+function logout(req: AppRequest, res: Response) {
     req.session.regenerate(() => {
         req.session.loggedIn = false;
 
@@ -100,7 +102,7 @@ function logout(req, res) {
 
 }
 
-module.exports = {
+export = {
     loginPage,
     setPasswordPage,
     setPassword,

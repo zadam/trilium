@@ -1,12 +1,13 @@
 "use strict";
 
-const sqlInit = require('../services/sql_init');
-const setupService = require('../services/setup');
-const utils = require('../services/utils');
-const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path');
+import sqlInit = require('../services/sql_init');
+import setupService = require('../services/setup');
+import utils = require('../services/utils');
+import assetPath = require('../services/asset_path');
+import appPath = require('../services/app_path');
+import { Request, Response } from 'express';
 
-function setupPage(req, res) {
+function setupPage(req: Request, res: Response) {
     if (sqlInit.isDbInitialized()) {
         if (utils.isElectron()) {
             const windowService = require('../services/window');
@@ -37,6 +38,6 @@ function setupPage(req, res) {
     });
 }
 
-module.exports = {
+export = {
     setupPage
 };

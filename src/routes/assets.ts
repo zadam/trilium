@@ -1,9 +1,10 @@
-const assetPath = require('../services/asset_path');
-const path = require("path");
-const express = require("express");
-const env = require('../services/env');
+import assetPath = require('../services/asset_path');
+import path = require("path");
+import express = require("express");
+import env = require('../services/env');
+import serveStatic = require('serve-static');
 
-const persistentCacheStatic = (root, options) => {
+const persistentCacheStatic = (root: string, options?: serveStatic.ServeStaticOptions<express.Response<any, Record<string, any>>>) => {
     if (!env.isDev()) {
         options = {
             maxAge: '1y',
@@ -13,7 +14,7 @@ const persistentCacheStatic = (root, options) => {
     return express.static(root, options);
 };
 
-function register(app) {
+function register(app: express.Application) {
     const srcRoot = path.join(__dirname, '..');
     app.use(`/${assetPath}/app`, persistentCacheStatic(path.join(srcRoot, 'public/app')));
     app.use(`/${assetPath}/app-dist`, persistentCacheStatic(path.join(srcRoot, 'public/app-dist')));
@@ -70,6 +71,6 @@ function register(app) {
     app.use(`/${assetPath}/node_modules/panzoom/dist/`, persistentCacheStatic(path.join(srcRoot, '..', 'node_modules/panzoom/dist/')));
 }
 
-module.exports = {
+export = {
     register
 };

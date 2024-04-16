@@ -6,12 +6,16 @@ import noteService = require('../../services/notes');
 import sanitize_attribute_name = require('../../services/sanitize_attribute_name');
 import specialNotesService = require('../../services/special_notes');
 import { Request } from 'express';
+import { AppRequest } from '../route-interface';
 
-function uploadImage(req: Request) {
-    const file = (req as any).file;
+function uploadImage(req: AppRequest) {
+    const file = req.file;
 
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return [400, `Unknown image type: ${file.mimetype}`];
+    }
+    if (typeof file.buffer === "string") {
+        return [400, "Invalid image content type."];
     }
 
     const uploadedImageType = imageType(file.buffer);
@@ -20,12 +24,8 @@ function uploadImage(req: Request) {
     }
     const originalName = `Sender image.${uploadedImageType.ext}`;
 
-    if (!req.headers["x-local-date"] || Array.isArray(req.headers["x-local-date"])) {
+    if (!req.headers["x-local-date"]) {
         return [400, "Invalid local date"];
-    }
-
-    if (Array.isArray(req.headers["x-labels"])) {
-        return [400, "Invalid value type."];
     }
 
     const parentNote = specialNotesService.getInboxNote(req.headers['x-local-date']);
