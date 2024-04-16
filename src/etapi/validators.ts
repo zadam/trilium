@@ -24,7 +24,7 @@ function isString(obj: ValidatorArg) {
 }
 
 function isLocalDateTime(obj: ValidatorArg) {
-    if (obj === undefined || obj === null || typeof obj !== "string") {
+    if (typeof obj !== "string") {
         return;
     }
 
@@ -32,7 +32,7 @@ function isLocalDateTime(obj: ValidatorArg) {
 }
 
 function isUtcDateTime(obj: ValidatorArg) {
-    if (obj === undefined || obj === null || typeof obj !== "string") {
+    if (typeof obj !== "string") {
         return;
     }
 

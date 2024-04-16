@@ -4,7 +4,7 @@ import fs = require('fs');
 import path = require('path');
 
 const specPath = path.join(__dirname, 'etapi.openapi.yaml');
-let spec: any = null;
+let spec: string | null = null;
 
 function register(router: Router) {
     router.get('/etapi/etapi.openapi.yaml', (req, res, next) => {

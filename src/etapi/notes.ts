@@ -239,6 +239,10 @@ function parseBoolean(obj: any, name: string) {
 }
 
 function parseOrderDirection(obj: any, name: string) {
+    if (!(name in obj)) {
+        return undefined;
+    }
+
     const integer = parseInt(obj[name]);
 
     if (!['asc', 'desc'].includes(obj[name])) {
