@@ -69,35 +69,29 @@ class SNote extends AbstractShacaEntity {
         return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
-    /** @returns {SBranch[]} */
     getVisibleChildBranches() {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden
                 && !branch.getNote().isLabelTruthy('shareHiddenFromTree'));
     }
 
-    /** @returns {SNote[]} */
     getParentNotes() {
         return this.parents;
     }
 
-    /** @returns {SNote[]} */
     getChildNotes() {
         return this.children;
     }
 
-    /** @returns {SNote[]} */
     getVisibleChildNotes() {
         return this.getVisibleChildBranches()
             .map(branch => branch.getNote());
     }
 
-    /** @returns {boolean} */
     hasChildren() {
         return this.children && this.children.length > 0;
     }
 
-    /** @returns {boolean} */
     hasVisibleChildren() {
         return this.getVisibleChildNotes().length > 0;
     }
@@ -250,7 +244,6 @@ class SNote extends AbstractShacaEntity {
         return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
     }
 
-    /** @returns {SNote|null} */
     getRelationTarget(name: string) {
         const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
 
@@ -265,7 +258,7 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name
-     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     * @returns true if label exists (including inherited) and does not have "false" value.
      */
     isLabelTruthy(name: string) {
         const label = this.getLabel(name);
@@ -321,25 +314,25 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name
-     * @returns {string|null} label value if label exists, null otherwise
+     * @returns label value if label exists, null otherwise
      */
     getLabelValue(name: string) { return this.getAttributeValue(LABEL, name); }
 
     /**
      * @param name - label name
-     * @returns {string|null} label value if label exists, null otherwise
+     * @returns label value if label exists, null otherwise
      */
     getOwnedLabelValue(name: string) { return this.getOwnedAttributeValue(LABEL, name); }
 
     /**
      * @param name - relation name
-     * @returns {string|null} relation value if relation exists, null otherwise
+     * @returns relation value if relation exists, null otherwise
      */
     getRelationValue(name: string) { return this.getAttributeValue(RELATION, name); }
 
     /**
      * @param name - relation name
-     * @returns {string|null} relation value if relation exists, null otherwise
+     * @returns relation value if relation exists, null otherwise
      */
     getOwnedRelationValue(name: string) { return this.getOwnedAttributeValue(RELATION, name); }
 
@@ -367,7 +360,7 @@ class SNote extends AbstractShacaEntity {
     /**
      * @param type - attribute type (label, relation, etc.)
      * @param name - attribute name
-     * @returns {string|null} attribute value of the given type and name or null if no such attribute exists.
+     * @returns attribute value of the given type and name or null if no such attribute exists.
      */
     getAttributeValue(type: string, name: string) {
         const attr = this.getAttribute(type, name);
@@ -412,7 +405,7 @@ class SNote extends AbstractShacaEntity {
 
     /**
      * @param name - label name to filter
-     * @returns {string[]} all note's label values, excluding inherited ones
+     * @returns all note's label values, excluding inherited ones
      */
     getOwnedLabelValues(name: string) {
         return this.getOwnedAttributes(LABEL, name).map(l => l.value);

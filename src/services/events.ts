@@ -17,8 +17,7 @@ type EventListener = (data: any) => void;
 const eventListeners: Record<string, EventListener[]> = {};
 
 /**
- * @param {string|string[]}eventTypes - can be either single event or an array of events
- * @param listener
+ * @param eventTypes - can be either single event or an array of events
  */
 function subscribe(eventTypes: EventType, listener: EventListener) {
     if (!Array.isArray(eventTypes)) {

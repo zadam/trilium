@@ -167,39 +167,32 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.isContentAvailable() ? this.title : '[protected]';
     }
 
-    /** @returns {BBranch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
     /**
      * Returns <i>strong</i> (as opposed to <i>weak</i>) parent branches. See isWeak for details.
-     *
-     * @returns {BBranch[]}
      */
     getStrongParentBranches() {
         return this.getParentBranches().filter(branch => !branch.isWeak);
     }
 
     /**
-     * @returns {BBranch[]}
      * @deprecated use getParentBranches() instead
      */
     getBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {BNote[]} */
     getParentNotes() {
         return this.parents;
     }
 
-    /** @returns {BNote[]} */
     getChildNotes() {
         return this.children;
     }
 
-    /** @returns {boolean} */
     hasChildren() {
         return this.children && this.children.length > 0;
     }
@@ -270,17 +263,17 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.utcDateModified === null ? null : dayjs.utc(this.utcDateModified);
     }
 
-    /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
+    /** @returns true if this note is the root of the note tree. Root note has "root" noteId */
     isRoot() {
         return this.noteId === 'root';
     }
 
-    /** @returns {boolean} true if this note is of application/json content type */
+    /** @returns true if this note is of application/json content type */
     isJson() {
         return this.mime === "application/json";
     }
 
-    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    /** @returns true if this note is JavaScript (code or attachment) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")
@@ -288,13 +281,13 @@ class BNote extends AbstractBeccaEntity<BNote> {
                 || this.mime === "text/javascript");
     }
 
-    /** @returns {boolean} true if this note is HTML */
+    /** @returns true if this note is HTML */
     isHtml() {
         return ["code", "file", "render"].includes(this.type)
             && this.mime === "text/html";
     }
 
-    /** @returns {boolean} true if this note is an image */
+    /** @returns true if this note is an image */
     isImage() {
         return this.type === 'image'
             || (this.type === 'file' && this.mime?.startsWith('image/'));
@@ -305,12 +298,12 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.hasStringContent();
     }
 
-    /** @returns {boolean} true if the note has string content (not binary) */
+    /** @returns true if the note has string content (not binary) */
     hasStringContent() {
         return utils.isStringNote(this.type, this.mime);
     }
 
-    /** @returns {string|null} JS script environment - either "frontend" or "backend" */
+    /** @returns JS script environment - either "frontend" or "backend" */
     getScriptEnv() {
         if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
             return "frontend";
@@ -519,8 +512,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     /**
-     * @param {string} name - label name
-     * @returns {BAttribute|null} label if it exists, null otherwise
+     * @param name - label name
+     * @returns label if it exists, null otherwise
      */
     getLabel(name: string): BAttribute | null {
         return this.getAttribute(LABEL, name);
@@ -681,7 +674,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * @param type - (optional) attribute type to filter
      * @param name - (optional) attribute name to filter
      * @param value - (optional) attribute value to filter
-     * @returns {BAttribute[]} note's "owned" attributes - excluding inherited ones
+     * @returns note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type: string | null = null, name: string | null = null, value: string | null = null) {
         this.__validateTypeName(type, name);
@@ -704,7 +697,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     /**
-     * @returns {BAttribute} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
@@ -781,7 +774,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * - fast searching
      * - note similarity evaluation
      *
-     * @returns {string} - returns flattened textual representation of note, prefixes and attributes
+     * @returns - returns flattened textual representation of note, prefixes and attributes
      */
     getFlatText() {
         if (!this.__flatTextCache) {
@@ -972,7 +965,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         };
     }
 
-    /** @returns {string[]} - includes the subtree root note as well */
+    /** @returns includes the subtree root note as well */
     getSubtreeNoteIds({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
         return this.getSubtree({includeArchived, includeHidden, resolveSearch})
             .notes
@@ -1032,7 +1025,6 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.getOwnedAttributes().length;
     }
 
-    /** @returns {BNote[]} */
     getAncestors() {
         if (!this.__ancestorCache) {
             const noteIds = new Set();
@@ -1076,7 +1068,6 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.noteId === '_hidden' || this.hasAncestor('_hidden');
     }
 
-    /** @returns {BAttribute[]} */
     getTargetRelations() {
         return this.targetRelations;
     }
@@ -1118,7 +1109,6 @@ class BNote extends AbstractBeccaEntity<BNote> {
             .map(row => new BRevision(row));
     }
 
-    /** @returns {BAttachment[]} */
     getAttachments(opts: AttachmentOpts = {}) {
         opts.includeContentLength = !!opts.includeContentLength;
         // from testing, it looks like calculating length does not make a difference in performance even on large-ish DB
@@ -1136,7 +1126,6 @@ class BNote extends AbstractBeccaEntity<BNote> {
             .map(row => new BAttachment(row));
     }
 
-    /** @returns {BAttachment|null} */
     getAttachmentById(attachmentId: string, opts: AttachmentOpts = {}) {
         opts.includeContentLength = !!opts.includeContentLength;
 
@@ -1583,10 +1572,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
 
-    /**
-     * @returns {BRevision|null}
-     */
-    saveRevision() {
+    saveRevision(): BRevision {
         return sql.transactional(() => {
             let noteContent = this.getContent();
 
@@ -1633,9 +1619,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     /**
-     * @param {string} matchBy - choose by which property we detect if to update an existing attachment.
- *                               Supported values are either 'attachmentId' (default) or 'title'
-     * @returns {BAttachment}
+     * @param matchBy - choose by which property we detect if to update an existing attachment.
+ *                      Supported values are either 'attachmentId' (default) or 'title'
      */
     saveAttachment({attachmentId, role, mime, title, content, position}: AttachmentRow, matchBy = 'attachmentId') {
         if (!['attachmentId', 'title'].includes(matchBy)) {

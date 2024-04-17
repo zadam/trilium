@@ -125,9 +125,6 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         }
     }
 
-    /**
-     * @returns {BNote|null}
-     */
     getNote() {
         const note = this.becca.getNote(this.noteId);
 
@@ -138,9 +135,6 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         return note;
     }
 
-    /**
-     * @returns {BNote|null}
-     */
     getTargetNote() {
         if (this.type !== 'relation') {
             throw new Error(`Attribute '${this.attributeId}' is not a relation.`);
@@ -153,9 +147,6 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         return this.becca.getNote(this.value);
     }
 
-    /**
-     * @returns {boolean}
-     */
     isDefinition() {
         return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));
     }

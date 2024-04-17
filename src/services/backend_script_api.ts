@@ -122,17 +122,14 @@ interface Api {
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See {@link https://github.com/zadam/trilium/wiki/Search} for full documentation for all options
-     *
-     * @param {string} query
-     * @param {Object} [searchParams]
      */
     searchForNote(query: string, searchParams: SearchParams): BNote | null;
     
     /**
      * Retrieves notes with given label name & value
      *
-     * @param  name - attribute name
-     * @param  value - attribute value
+     * @param name - attribute name
+     * @param value - attribute value
      */
     getNotesWithLabel(name: string, value?: string): BNote[];
 

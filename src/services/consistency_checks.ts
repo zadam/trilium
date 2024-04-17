@@ -69,7 +69,7 @@ class ConsistencyChecks {
             childToParents[childNoteId].push(parentNoteId);
         }
 
-        /** @returns {boolean} true if cycle was found and we should try again */
+        /** @returns true if cycle was found and we should try again */
         const checkTreeCycle = (noteId: string, path: string[]) => {
             if (noteId === 'root') {
                 return false;
