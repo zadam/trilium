@@ -169,7 +169,7 @@ class SNote extends AbstractShacaEntity {
                 }
             }
 
-            const templateAttributes = [];
+            const templateAttributes: SAttribute[] = [];
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
                 if (ownedAttr.type === 'relation' && ['template', 'inherit'].includes(ownedAttr.name)) {

@@ -1,7 +1,7 @@
-import express = require('express');
-import path = require('path');
 import safeCompare = require('safe-compare');
 import ejs = require("ejs");
+
+import type { Request, Response, Router } from "express";
 
 import shaca = require('./shaca/shaca');
 import shacaLoader = require('./shaca/shaca_loader');
@@ -15,8 +15,6 @@ import log = require('../services/log');
 import SNote = require('./shaca/entities/snote');
 import SBranch = require('./shaca/entities/sbranch');
 import SAttachment = require('./shaca/entities/sattachment');
-import BNote = require('../becca/entities/bnote');
-import BRevision = require('../becca/entities/brevision');
 
 function getSharedSubTreeRoot(note: SNote): { note?: SNote; branch?: SBranch } {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
@@ -38,18 +36,18 @@ function getSharedSubTreeRoot(note: SNote): { note?: SNote; branch?: SBranch } {
     return getSharedSubTreeRoot(parentBranch.getParentNote());
 }
 
-function addNoIndexHeader(note: SNote, res: express.Response) {
+function addNoIndexHeader(note: SNote, res: Response) {
     if (note.isLabelTruthy('shareDisallowRobotIndexing')) {
         res.setHeader('X-Robots-Tag', 'noindex');
     }
 }
 
-function requestCredentials(res: express.Response) {
+function requestCredentials(res: Response) {
     res.setHeader('WWW-Authenticate', 'Basic realm="User Visible Realm", charset="UTF-8"')
         .sendStatus(401);
 }
 
-function checkAttachmentAccess(attachmentId: string, req: express.Request, res: express.Response) {
+function checkAttachmentAccess(attachmentId: string, req: Request, res: Response) {
     const attachment = shaca.getAttachment(attachmentId);
 
     if (!attachment) {
@@ -65,7 +63,7 @@ function checkAttachmentAccess(attachmentId: string, req: express.Request, res: 
     return note ? attachment : false;
 }
 
-function checkNoteAccess(noteId: string, req: express.Request, res: express.Response) {
+function checkNoteAccess(noteId: string, req: Request, res: Response) {
     const note = shaca.getNote(noteId);
 
     if (!note) {
@@ -108,7 +106,7 @@ function checkNoteAccess(noteId: string, req: express.Request, res: express.Resp
     return false;
 }
 
-function renderImageAttachment(image: SNote, res: express.Response, attachmentName: string) {
+function renderImageAttachment(image: SNote, res: Response, attachmentName: string) {
     let svgString = '<svg/>'
     const attachment = image.getAttachmentByTitle(attachmentName);
     if (!attachment) {
@@ -133,8 +131,8 @@ function renderImageAttachment(image: SNote, res: express.Response, attachmentNa
     res.send(svg);
 }
 
-function register(router: express.Router) {
-    function renderNote(note: SNote, req: express.Request, res: express.Response) {
+function register(router: Router) {
+    function renderNote(note: SNote, req: Request, res: Response) {
         if (!note) {
             res.status(404).render("share/404");
             return;
