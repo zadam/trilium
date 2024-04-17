@@ -70,14 +70,13 @@ import etapiNoteRoutes = require('../etapi/notes');
 import etapiSpecialNoteRoutes = require('../etapi/special_notes');
 import etapiSpecRoute = require('../etapi/spec');
 import etapiBackupRoute = require('../etapi/backup');
-import { RequestHandlerParams } from 'express-serve-static-core';
 import { AppRequest, AppRequestHandler } from './route-interface';
 
 const csrfMiddleware = csurf({
-    cookie: true,
-    path: '' // empty, so cookie is valid only for the current path
-    // TODO: Typescript complains that path does not exist in csurf options, but it's still in the
-} as any);
+    cookie: {
+        path: ""       // empty, so cookie is valid only for the current path
+    }
+});
 
 const MAX_ALLOWED_FILE_SIZE_MB = 250;
 const GET = 'get', PST = 'post', PUT = 'put', PATCH = 'patch', DEL = 'delete';
