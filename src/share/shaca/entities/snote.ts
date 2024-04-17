@@ -211,10 +211,10 @@ class SNote extends AbstractShacaEntity {
         }
 
         if (!this.__inheritableAttributeCache) {
-            return this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
-        } else {
-            return this.__inheritableAttributeCache;
+            this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
+
+        return this.__inheritableAttributeCache || [];
     }
 
     /**
