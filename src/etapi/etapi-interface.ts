@@ -1,4 +1,4 @@
-type ValidatorArg = object | undefined | null;
+type ValidatorArg = object | string | undefined | null;
 
 type ValidatorFunc = (obj: ValidatorArg) => (string | undefined);
 
