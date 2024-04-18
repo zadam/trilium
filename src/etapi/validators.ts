@@ -1,19 +1,19 @@
 import noteTypeService = require('../services/note_types');
 import dateUtils = require('../services/date_utils');
 
-function mandatory(obj: ValidatorArg) {
+function mandatory(obj: unknown) {
     if (obj === undefined) {
         return `mandatory, but not set`;
     }
 }
 
-function notNull(obj: ValidatorArg) {
+function notNull(obj: unknown) {
     if (obj === null) {
         return `cannot be null`;
     }
 }
 
-function isString(obj: ValidatorArg) {
+function isString(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -23,7 +23,7 @@ function isString(obj: ValidatorArg) {
     }
 }
 
-function isLocalDateTime(obj: ValidatorArg) {
+function isLocalDateTime(obj: unknown) {
     if (typeof obj !== "string") {
         return;
     }
@@ -31,7 +31,7 @@ function isLocalDateTime(obj: ValidatorArg) {
     return dateUtils.validateLocalDateTime(obj);
 }
 
-function isUtcDateTime(obj: ValidatorArg) {
+function isUtcDateTime(obj: unknown) {
     if (typeof obj !== "string") {
         return;
     }
@@ -39,7 +39,7 @@ function isUtcDateTime(obj: ValidatorArg) {
     return dateUtils.validateUtcDateTime(obj);
 }
 
-function isBoolean(obj: ValidatorArg) {
+function isBoolean(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -49,7 +49,7 @@ function isBoolean(obj: ValidatorArg) {
     }
 }
 
-function isInteger(obj: ValidatorArg) {
+function isInteger(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -59,7 +59,7 @@ function isInteger(obj: ValidatorArg) {
     }
 }
 
-function isNoteId(obj: ValidatorArg) {
+function isNoteId(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -75,7 +75,7 @@ function isNoteId(obj: ValidatorArg) {
     }
 }
 
-function isNoteType(obj: ValidatorArg) {
+function isNoteType(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -87,7 +87,7 @@ function isNoteType(obj: ValidatorArg) {
     }
 }
 
-function isAttributeType(obj: ValidatorArg) {
+function isAttributeType(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -97,7 +97,7 @@ function isAttributeType(obj: ValidatorArg) {
     }
 }
 
-function isValidEntityId(obj: ValidatorArg) {
+function isValidEntityId(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
