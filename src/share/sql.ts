@@ -1,7 +1,7 @@
 "use strict";
 
-const Database = require('better-sqlite3');
-const dataDir = require('../services/data_dir');
+import Database = require('better-sqlite3');
+import dataDir = require('../services/data_dir');
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH, { readonly: true });
 
@@ -15,19 +15,19 @@ const dbConnection = new Database(dataDir.DOCUMENT_PATH, { readonly: true });
     });
 });
 
-function getRawRows(query, params = []) {
-    return dbConnection.prepare(query).raw().all(params);
+function getRawRows<T>(query: string, params = []): T[] {
+    return dbConnection.prepare(query).raw().all(params) as T[];
 }
 
-function getRow(query, params = []) {
-    return dbConnection.prepare(query).get(params);
+function getRow<T>(query: string, params: string[] = []): T {
+    return dbConnection.prepare(query).get(params) as T;
 }
 
-function getColumn(query, params = []) {
-    return dbConnection.prepare(query).pluck().all(params);
+function getColumn<T>(query: string, params: string[] = []): T[] {
+    return dbConnection.prepare(query).pluck().all(params) as T[];
 }
 
-module.exports = {
+export = {
     getRawRows,
     getRow,
     getColumn

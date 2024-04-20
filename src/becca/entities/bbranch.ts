@@ -127,8 +127,6 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
      * An example is shared or bookmarked clones - they are created automatically and exist for technical reasons,
      * not as user-intended actions. From user perspective, they don't count as real clones and for the purpose
      * of deletion should not act as a clone.
-     *
-     * @returns {boolean}
      */
     get isWeak() {
         return ['_share', '_lbBookmarks'].includes(this.parentNoteId);

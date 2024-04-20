@@ -59,7 +59,7 @@ const fontsRoute = require('./api/fonts');
 const etapiTokensApiRoutes = require('./api/etapi_tokens');
 const relationMapApiRoute = require('./api/relation-map');
 const otherRoute = require('./api/other');
-const shareRoutes = require('../share/routes.js');
+const shareRoutes = require('../share/routes');
 
 const etapiAuthRoutes = require('../etapi/auth');
 const etapiAppInfoRoutes = require('../etapi/app_info');

@@ -1,22 +1,25 @@
 "use strict";
 
-const AbstractShacaEntity = require('./abstract_shaca_entity.js');
+import AbstractShacaEntity = require('./abstract_shaca_entity');
+import SNote = require('./snote');
 
 class SBranch extends AbstractShacaEntity {
-    constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {
+
+    private branchId: string;
+    private noteId: string;
+    parentNoteId: string;
+    private prefix: string;
+    private isExpanded: boolean;
+    isHidden: boolean;
+
+    constructor([branchId, noteId, parentNoteId, prefix, isExpanded]: SBranchRow) {
         super();
 
-        /** @param {string} */
         this.branchId = branchId;
-        /** @param {string} */
         this.noteId = noteId;
-        /** @param {string} */
         this.parentNoteId = parentNoteId;
-        /** @param {string} */
         this.prefix = prefix;
-        /** @param {boolean} */
         this.isExpanded = !!isExpanded;
-        /** @param {boolean} */
         this.isHidden = false;
 
         const childNote = this.childNote;
@@ -38,25 +41,21 @@ class SBranch extends AbstractShacaEntity {
         this.shaca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
-    /** @returns {SNote} */
-    get childNote() {
+    get childNote(): SNote {
         return this.shaca.notes[this.noteId];
     }
 
-    /** @returns {SNote} */
     getNote() {
         return this.childNote;
     }
 
-    /** @returns {SNote} */
-    get parentNote() {
+    get parentNote(): SNote {
         return this.shaca.notes[this.parentNoteId];
     }
 
-    /** @returns {SNote} */
     getParentNote() {
         return this.parentNote;
     }
 }
 
-module.exports = SBranch;
+export = SBranch;

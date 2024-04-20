@@ -1,39 +1,42 @@
 "use strict";
 
-const sql = require('../../sql');
-const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity.js');
+import sql = require('../../sql');
+import utils = require('../../../services/utils');
+import AbstractShacaEntity = require('./abstract_shaca_entity');
+import SNote = require('./snote');
+import { Blob } from '../../../services/blob-interface';
 
 class SAttachment extends AbstractShacaEntity {
-    constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]) {
+    private attachmentId: string;
+    ownerId: string;
+    title: string;
+    role: string;
+    mime: string;
+    private blobId: string;
+    /** used for caching of images */
+    private utcDateModified: string;
+
+    constructor([attachmentId, ownerId, role, mime, title, blobId, utcDateModified]: SAttachmentRow) {
         super();
 
-        /** @param {string} */
         this.attachmentId = attachmentId;
-        /** @param {string} */
         this.ownerId = ownerId;
-        /** @param {string} */
         this.title = title;
-        /** @param {string} */
         this.role = role;
-        /** @param {string} */
         this.mime = mime;
-        /** @param {string} */
         this.blobId = blobId;
-        /** @param {string} */
-        this.utcDateModified = utcDateModified; // used for caching of images
+        this.utcDateModified = utcDateModified;
 
         this.shaca.attachments[this.attachmentId] = this;
         this.shaca.notes[this.ownerId].attachments.push(this);
     }
 
-    /** @returns {SNote} */
-    get note() {
+    get note(): SNote {
         return this.shaca.notes[this.ownerId];
     }
 
     getContent(silentNotFoundError = false) {
-        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
+        const row = sql.getRow<Pick<Blob, "content">>(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!row) {
             if (silentNotFoundError) {
@@ -56,7 +59,7 @@ class SAttachment extends AbstractShacaEntity {
         }
     }
 
-    /** @returns {boolean} true if the attachment has string content (not binary) */
+    /** @returns true if the attachment has string content (not binary) */
     hasStringContent() {
         return utils.isStringNote(null, this.mime);
     }
@@ -67,11 +70,10 @@ class SAttachment extends AbstractShacaEntity {
             role: this.role,
             mime: this.mime,
             title: this.title,
-            position: this.position,
             blobId: this.blobId,
             utcDateModified: this.utcDateModified
         };
     }
 }
 
-module.exports = SAttachment;
+export = SAttachment;

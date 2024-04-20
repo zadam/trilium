@@ -127,8 +127,8 @@ interface Api {
     /**
      * Retrieves notes with given label name & value
      *
-     * @param  name - attribute name
-     * @param  value - attribute value
+     * @param name - attribute name
+     * @param value - attribute value
      */
     getNotesWithLabel(name: string, value?: string): BNote[];
 

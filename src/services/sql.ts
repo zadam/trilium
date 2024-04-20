@@ -323,9 +323,9 @@ export = {
      * Get single value from the given query - first column from first returned row.
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
-     * @returns [object] - single value
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
+     * @returns single value
      */
     getValue,
 
@@ -333,9 +333,9 @@ export = {
      * Get first returned row.
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
-     * @returns {object} - map of column name to column value
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
+     * @returns - map of column name to column value
      */
     getRow,
     getRowOrNull,
@@ -344,9 +344,9 @@ export = {
      * Get all returned rows.
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
-     * @returns {object[]} - array of all rows, each row is a map of column name to column value
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
+     * @returns - array of all rows, each row is a map of column name to column value
      */
     getRows,
     getRawRows,
@@ -357,9 +357,9 @@ export = {
      * Get a map of first column mapping to second column.
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
-     * @returns {object} - map of first column to second column
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
+     * @returns - map of first column to second column
      */
     getMap,
 
@@ -367,9 +367,9 @@ export = {
      * Get a first column in an array.
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
-     * @returns {object[]} - array of first column of all returned rows
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
+     * @returns array of first column of all returned rows
      */
     getColumn,
 
@@ -377,8 +377,8 @@ export = {
      * Execute SQL
      *
      * @method
-     * @param {string} query - SQL query with ? used as parameter placeholder
-     * @param {object[]} [params] - array of params if needed
+     * @param query - SQL query with ? used as parameter placeholder
+     * @param params - array of params if needed
      */
     execute,
     executeMany,

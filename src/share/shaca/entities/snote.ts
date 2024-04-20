@@ -1,108 +1,103 @@
 "use strict";
 
-const sql = require('../../sql');
-const utils = require('../../../services/utils');
-const AbstractShacaEntity = require('./abstract_shaca_entity.js');
-const escape = require('escape-html');
+import sql = require('../../sql');
+import utils = require('../../../services/utils');
+import AbstractShacaEntity = require('./abstract_shaca_entity');
+import escape = require('escape-html');
+import { Blob } from '../../../services/blob-interface';
+import SAttachment = require('./sattachment');
+import SAttribute = require('./sattribute');
+import SBranch = require('./sbranch');
 
 const LABEL = 'label';
 const RELATION = 'relation';
 const CREDENTIALS = 'shareCredentials';
 
-const isCredentials = attr => attr.type === 'label' && attr.name === CREDENTIALS;
+const isCredentials = (attr: SAttribute) => attr.type === 'label' && attr.name === CREDENTIALS;
 
 class SNote extends AbstractShacaEntity {
-    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]) {
+    noteId: string;
+    title: string;
+    type: string;
+    mime: string;
+    private blobId: string;
+    utcDateModified: string;
+    isProtected: boolean;
+    parentBranches: SBranch[];
+    parents: SNote[];
+    children: SNote[];
+    private ownedAttributes: SAttribute[];
+    private __attributeCache: SAttribute[] | null;
+    private __inheritableAttributeCache: SAttribute[] | null;
+    targetRelations: SAttribute[];
+    attachments: SAttachment[];
+
+    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: SNoteRow) {
         super();
 
-        /** @param {string} */
         this.noteId = noteId;
-        /** @param {string} */
         this.title = isProtected ? "[protected]" : title;
-        /** @param {string} */
         this.type = type;
-        /** @param {string} */
         this.mime = mime;
-        /** @param {string} */
         this.blobId = blobId;
-        /** @param {string} */
         this.utcDateModified = utcDateModified; // used for caching of images
-        /** @param {boolean} */
         this.isProtected = isProtected;
 
-        /** @param {SBranch[]} */
         this.parentBranches = [];
-        /** @param {SNote[]} */
         this.parents = [];
-        /** @param {SNote[]} */
         this.children = [];
-        /** @param {SAttribute[]} */
         this.ownedAttributes = [];
 
-        /** @param {SAttribute[]|null} */
         this.__attributeCache = null;
-        /** @param {SAttribute[]|null} */
         this.__inheritableAttributeCache = null;
 
-        /** @param {SAttribute[]} */
         this.targetRelations = [];
-
-        /** @param {SAttachment[]} */
         this.attachments = [];
 
         this.shaca.notes[this.noteId] = this;
     }
 
-    /** @returns {SBranch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {SBranch[]} */
     getBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {SBranch[]} */
-    getChildBranches() {
+    getChildBranches(): SBranch[] {
         return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
-    /** @returns {SBranch[]} */
     getVisibleChildBranches() {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden
                 && !branch.getNote().isLabelTruthy('shareHiddenFromTree'));
     }
 
-    /** @returns {SNote[]} */
     getParentNotes() {
         return this.parents;
     }
 
-    /** @returns {SNote[]} */
     getChildNotes() {
         return this.children;
     }
 
-    /** @returns {SNote[]} */
     getVisibleChildNotes() {
         return this.getVisibleChildBranches()
             .map(branch => branch.getNote());
     }
 
-    /** @returns {boolean} */
     hasChildren() {
         return this.children && this.children.length > 0;
     }
 
-    /** @returns {boolean} */
     hasVisibleChildren() {
         return this.getVisibleChildNotes().length > 0;
     }
 
     getContent(silentNotFoundError = false) {
-        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
+        const row = sql.getRow<Pick<Blob, "content">>(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!row) {
             if (silentNotFoundError) {
@@ -125,43 +120,41 @@ class SNote extends AbstractShacaEntity {
         }
     }
 
-    /** @returns {boolean} true if the note has string content (not binary) */
+    /** @returns true if the note has string content (not binary) */
     hasStringContent() {
         return utils.isStringNote(this.type, this.mime);
     }
 
     /**
-     * @param {string} [type] - (optional) attribute type to filter
-     * @param {string} [name] - (optional) attribute name to filter
-     * @returns {SAttribute[]} all note's attributes, including inherited ones
+     * @param type - (optional) attribute type to filter
+     * @param name - (optional) attribute name to filter
+     * @returns all note's attributes, including inherited ones
      */
-    getAttributes(type, name) {
-        if (!this.__attributeCache) {
-            this.__getAttributes([]);
+    getAttributes(type?: string, name?: string) {
+        let attributeCache = this.__attributeCache;
+        if (!attributeCache) {
+            attributeCache = this.__getAttributes([]);
         }
 
         if (type && name) {
-            return this.__attributeCache.filter(attr => attr.type === type && attr.name === name && !isCredentials(attr));
+            return attributeCache.filter(attr => attr.type === type && attr.name === name && !isCredentials(attr));
         }
         else if (type) {
-            return this.__attributeCache.filter(attr => attr.type === type && !isCredentials(attr));
+            return attributeCache.filter(attr => attr.type === type && !isCredentials(attr));
         }
         else if (name) {
-            return this.__attributeCache.filter(attr => attr.name === name && !isCredentials(attr));
+            return attributeCache.filter(attr => attr.name === name && !isCredentials(attr));
         }
         else {
-            return this.__attributeCache.filter(attr => !isCredentials(attr));
+            return attributeCache.filter(attr => !isCredentials(attr));
         }
     }
 
-    /** @returns {SAttribute[]} */
     getCredentials() {
-        this.__getAttributes([]);
-
-        return this.__attributeCache.filter(isCredentials);
+        return this.__getAttributes([]).filter(isCredentials);
     }
 
-    __getAttributes(path) {
+    __getAttributes(path: string[]) {
         if (path.includes(this.noteId)) {
             return [];
         }
@@ -176,7 +169,7 @@ class SNote extends AbstractShacaEntity {
                 }
             }
 
-            const templateAttributes = [];
+            const templateAttributes: SAttribute[] = [];
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
                 if (ownedAttr.type === 'relation' && ['template', 'inherit'].includes(ownedAttr.name)) {
@@ -212,8 +205,7 @@ class SNote extends AbstractShacaEntity {
         return this.__attributeCache;
     }
 
-    /** @returns {SAttribute[]} */
-    __getInheritableAttributes(path) {
+    __getInheritableAttributes(path: string[]) {
         if (path.includes(this.noteId)) {
             return [];
         }
@@ -222,204 +214,225 @@ class SNote extends AbstractShacaEntity {
             this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
 
-        return this.__inheritableAttributeCache;
+        return this.__inheritableAttributeCache || [];
     }
 
-    /** @returns {boolean} */
-    hasAttribute(type, name) {
+    /**
+     * @throws Error in case of invalid JSON
+     */
+    getJsonContent(): any | null {
+        const content = this.getContent();
+
+        if (typeof content !== "string" || !content || !content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(content);
+    }
+
+    /** @returns valid object or null if the content cannot be parsed as JSON */
+    getJsonContentSafely() {
+        try {
+            return this.getJsonContent();
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
+    hasAttribute(type: string, name: string) {
         return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
     }
 
-    /** @returns {SNote|null} */
-    getRelationTarget(name) {
+    getRelationTarget(name: string) {
         const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
 
         return relation ? relation.targetNote : null;
     }
 
     /**
-     * @param {string} name - label name
-     * @returns {boolean} true if label exists (including inherited)
+     * @param name - label name
+     * @returns true if label exists (including inherited)
      */
-    hasLabel(name) { return this.hasAttribute(LABEL, name); }
+    hasLabel(name: string) { return this.hasAttribute(LABEL, name); }
 
     /**
-     * @param {string} name - label name
-     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     * @param name - label name
+     * @returns true if label exists (including inherited) and does not have "false" value.
      */
-    isLabelTruthy(name) {
+    isLabelTruthy(name: string) {
         const label = this.getLabel(name);
 
         if (!label) {
             return false;
         }
 
-        return label && label.value !== 'false';
+        return !!label && label.value !== 'false';
     }
 
     /**
-     * @param {string} name - label name
-     * @returns {boolean} true if label exists (excluding inherited)
+     * @param name - label name
+     * @returns true if label exists (excluding inherited)
      */
-    hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
+    hasOwnedLabel(name: string) { return this.hasOwnedAttribute(LABEL, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {boolean} true if relation exists (including inherited)
+     * @param name - relation name
+     * @returns true if relation exists (including inherited)
      */
-    hasRelation(name) { return this.hasAttribute(RELATION, name); }
+    hasRelation(name: string) { return this.hasAttribute(RELATION, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {boolean} true if relation exists (excluding inherited)
+     * @param name - relation name
+     * @returns true if relation exists (excluding inherited)
      */
-    hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
+    hasOwnedRelation(name: string) { return this.hasOwnedAttribute(RELATION, name); }
 
     /**
-     * @param {string} name - label name
-     * @returns {SAttribute|null} label if it exists, null otherwise
+     * @param name - label name
+     * @returns label if it exists, null otherwise
      */
-    getLabel(name) { return this.getAttribute(LABEL, name); }
+    getLabel(name: string) { return this.getAttribute(LABEL, name); }
 
     /**
-     * @param {string} name - label name
-     * @returns {SAttribute|null} label if it exists, null otherwise
+     * @param name - label name
+     * @returns label if it exists, null otherwise
      */
-    getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
+    getOwnedLabel(name: string) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {SAttribute|null} relation if it exists, null otherwise
+     * @param name - relation name
+     * @returns relation if it exists, null otherwise
      */
-    getRelation(name) { return this.getAttribute(RELATION, name); }
+    getRelation(name: string) { return this.getAttribute(RELATION, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {SAttribute|null} relation if it exists, null otherwise
+     * @param name - relation name
+     * @returns relation if it exists, null otherwise
      */
-    getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
+    getOwnedRelation(name: string) { return this.getOwnedAttribute(RELATION, name); }
 
     /**
-     * @param {string} name - label name
-     * @returns {string|null} label value if label exists, null otherwise
+     * @param name - label name
+     * @returns label value if label exists, null otherwise
      */
-    getLabelValue(name) { return this.getAttributeValue(LABEL, name); }
+    getLabelValue(name: string) { return this.getAttributeValue(LABEL, name); }
 
     /**
-     * @param {string} name - label name
-     * @returns {string|null} label value if label exists, null otherwise
+     * @param name - label name
+     * @returns label value if label exists, null otherwise
      */
-    getOwnedLabelValue(name) { return this.getOwnedAttributeValue(LABEL, name); }
+    getOwnedLabelValue(name: string) { return this.getOwnedAttributeValue(LABEL, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {string|null} relation value if relation exists, null otherwise
+     * @param name - relation name
+     * @returns relation value if relation exists, null otherwise
      */
-    getRelationValue(name) { return this.getAttributeValue(RELATION, name); }
+    getRelationValue(name: string) { return this.getAttributeValue(RELATION, name); }
 
     /**
-     * @param {string} name - relation name
-     * @returns {string|null} relation value if relation exists, null otherwise
+     * @param name - relation name
+     * @returns relation value if relation exists, null otherwise
      */
-    getOwnedRelationValue(name) { return this.getOwnedAttributeValue(RELATION, name); }
+    getOwnedRelationValue(name: string) { return this.getOwnedAttributeValue(RELATION, name); }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
-     * @param {string} name - attribute name
-     * @returns {boolean} true if note has an attribute with given type and name (excluding inherited)
+     * @param type - attribute type (label, relation, etc.)
+     * @param name - attribute name
+     * @returns true if note has an attribute with given type and name (excluding inherited)
      */
-    hasOwnedAttribute(type, name) {
+    hasOwnedAttribute(type: string, name: string) {
         return !!this.getOwnedAttribute(type, name);
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
-     * @param {string} name - attribute name
-     * @returns {SAttribute} attribute of the given type and name. If there are more such attributes, first is  returned.
-     *                       Returns null if there's no such attribute belonging to this note.
+     * @param type - attribute type (label, relation, etc.)
+     * @param name - attribute name
+     * @returns attribute of the given type and name. If there are more such attributes, first is  returned.
+     * Returns null if there's no such attribute belonging to this note.
      */
-    getAttribute(type, name) {
+    getAttribute(type: string, name: string) {
         const attributes = this.getAttributes();
 
         return attributes.find(attr => attr.type === type && attr.name === name);
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
-     * @param {string} name - attribute name
-     * @returns {string|null} attribute value of the given type and name or null if no such attribute exists.
+     * @param type - attribute type (label, relation, etc.)
+     * @param name - attribute name
+     * @returns attribute value of the given type and name or null if no such attribute exists.
      */
-    getAttributeValue(type, name) {
+    getAttributeValue(type: string, name: string) {
         const attr = this.getAttribute(type, name);
 
         return attr ? attr.value : null;
     }
 
     /**
-     * @param {string} type - attribute type (label, relation, etc.)
-     * @param {string} name - attribute name
-     * @returns {string|null} attribute value of the given type and name or null if no such attribute exists.
+     * @param type - attribute type (label, relation, etc.)
+     * @param name - attribute name
+     * @returns attribute value of the given type and name or null if no such attribute exists.
      */
-    getOwnedAttributeValue(type, name) {
+    getOwnedAttributeValue(type: string, name: string) {
         const attr = this.getOwnedAttribute(type, name);
 
-        return attr ? attr.value : null;
+        return attr ? attr.value as string : null; // FIXME
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {SAttribute[]} all note's labels (attributes with type label), including inherited ones
+     * @param name - label name to filter
+     * @returns all note's labels (attributes with type label), including inherited ones
      */
-    getLabels(name) {
+    getLabels(name: string) {
         return this.getAttributes(LABEL, name);
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {string[]} all note's label values, including inherited ones
+     * @param name - label name to filter
+     * @returns all note's label values, including inherited ones
      */
-    getLabelValues(name) {
-        return this.getLabels(name).map(l => l.value);
+    getLabelValues(name: string) {
+        return this.getLabels(name).map(l => l.value) as string[]; // FIXME
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {SAttribute[]} all note's labels (attributes with type label), excluding inherited ones
+     * @param name - label name to filter
+     * @returns all note's labels (attributes with type label), excluding inherited ones
      */
-    getOwnedLabels(name) {
+    getOwnedLabels(name: string) {
         return this.getOwnedAttributes(LABEL, name);
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {string[]} all note's label values, excluding inherited ones
+     * @param name - label name to filter
+     * @returns all note's label values, excluding inherited ones
      */
-    getOwnedLabelValues(name) {
+    getOwnedLabelValues(name: string) {
         return this.getOwnedAttributes(LABEL, name).map(l => l.value);
     }
 
     /**
-     * @param {string} [name] - relation name to filter
-     * @returns {SAttribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @param name - relation name to filter
+     * @returns all note's relations (attributes with type relation), including inherited ones
      */
-    getRelations(name) {
+    getRelations(name: string) {
         return this.getAttributes(RELATION, name);
     }
 
     /**
-     * @param {string} [name] - relation name to filter
-     * @returns {SAttribute[]} all note's relations (attributes with type relation), excluding inherited ones
+     * @param name - relation name to filter
+     * @returns all note's relations (attributes with type relation), excluding inherited ones
      */
-    getOwnedRelations(name) {
+    getOwnedRelations(name: string) {
         return this.getOwnedAttributes(RELATION, name);
     }
 
     /**
-     * @param {string} [type] - (optional) attribute type to filter
-     * @param {string} [name] - (optional) attribute name to filter
-     * @returns {SAttribute[]} note's "owned" attributes - excluding inherited ones
+     * @param type - (optional) attribute type to filter
+     * @param name - (optional) attribute name to filter
+     * @returns note's "owned" attributes - excluding inherited ones
      */
-    getOwnedAttributes(type, name) {
+    getOwnedAttributes(type: string, name: string) {
         // it's a common mistake to include # or ~ into attribute name
         if (name && ["#", "~"].includes(name[0])) {
             name = name.substr(1);
@@ -440,42 +453,36 @@ class SNote extends AbstractShacaEntity {
     }
 
     /**
-     * @returns {SAttribute} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
-    getOwnedAttribute(type, name) {
+    getOwnedAttribute(type: string, name: string) {
         const attrs = this.getOwnedAttributes(type, name);
 
         return attrs.length > 0 ? attrs[0] : null;
     }
 
-    /** @returns {boolean} */
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
 
-    /** @returns {boolean} */
     isInherited() {
         return !!this.targetRelations.find(rel => rel.name === 'template' || rel.name === 'inherit');
     }
 
-    /** @returns {SAttribute[]} */
     getTargetRelations() {
         return this.targetRelations;
     }
 
-    /** @returns {SAttachment[]} */
     getAttachments() {
         return this.attachments;
     }
 
-    /** @returns {SAttachment} */
-    getAttachmentByTitle(title) {
+    getAttachmentByTitle(title: string) {
         return this.attachments.find(attachment => attachment.title === title);
     }
 
-    /** @returns {string} */
     get shareId() {
         if (this.hasOwnedLabel('shareRoot')) {
             return "";
@@ -514,4 +521,4 @@ class SNote extends AbstractShacaEntity {
     }
 }
 
-module.exports = SNote;
+export = SNote;

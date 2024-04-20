@@ -1,23 +1,22 @@
-const express = require('express');
-const path = require('path');
-const safeCompare = require('safe-compare');
-const ejs = require("ejs");
+import safeCompare = require('safe-compare');
+import ejs = require("ejs");
 
-const shaca = require('./shaca/shaca.js');
-const shacaLoader = require('./shaca/shaca_loader.js');
-const shareRoot = require('./share_root.js');
-const contentRenderer = require('./content_renderer.js');
-const assetPath = require('../services/asset_path');
-const appPath = require('../services/app_path');
-const searchService = require('../services/search/services/search');
-const SearchContext = require('../services/search/search_context');
-const log = require('../services/log');
+import type { Request, Response, Router } from "express";
 
-/**
- * @param {SNote} note
- * @return {{note: SNote, branch: SBranch}|{}}
- */
-function getSharedSubTreeRoot(note) {
+import shaca = require('./shaca/shaca');
+import shacaLoader = require('./shaca/shaca_loader');
+import shareRoot = require('./share_root');
+import contentRenderer = require('./content_renderer');
+import assetPath = require('../services/asset_path');
+import appPath = require('../services/app_path');
+import searchService = require('../services/search/services/search');
+import SearchContext = require('../services/search/search_context');
+import log = require('../services/log');
+import SNote = require('./shaca/entities/snote');
+import SBranch = require('./shaca/entities/sbranch');
+import SAttachment = require('./shaca/entities/sattachment');
+
+function getSharedSubTreeRoot(note: SNote): { note?: SNote; branch?: SBranch } {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
         // share root itself is not shared
         return {};
@@ -37,19 +36,18 @@ function getSharedSubTreeRoot(note) {
     return getSharedSubTreeRoot(parentBranch.getParentNote());
 }
 
-function addNoIndexHeader(note, res) {
+function addNoIndexHeader(note: SNote, res: Response) {
     if (note.isLabelTruthy('shareDisallowRobotIndexing')) {
         res.setHeader('X-Robots-Tag', 'noindex');
     }
 }
 
-function requestCredentials(res) {
+function requestCredentials(res: Response) {
     res.setHeader('WWW-Authenticate', 'Basic realm="User Visible Realm", charset="UTF-8"')
         .sendStatus(401);
 }
 
-/** @returns {SAttachment|boolean} */
-function checkAttachmentAccess(attachmentId, req, res) {
+function checkAttachmentAccess(attachmentId: string, req: Request, res: Response) {
     const attachment = shaca.getAttachment(attachmentId);
 
     if (!attachment) {
@@ -65,8 +63,7 @@ function checkAttachmentAccess(attachmentId, req, res) {
     return note ? attachment : false;
 }
 
-/** @returns {SNote|boolean} */
-function checkNoteAccess(noteId, req, res) {
+function checkNoteAccess(noteId: string, req: Request, res: Response) {
     const note = shaca.getNote(noteId);
 
     if (!note) {
@@ -109,12 +106,16 @@ function checkNoteAccess(noteId, req, res) {
     return false;
 }
 
-function renderImageAttachment(image, res, attachmentName) {
+function renderImageAttachment(image: SNote, res: Response, attachmentName: string) {
     let svgString = '<svg/>'
     const attachment = image.getAttachmentByTitle(attachmentName);
-
-    if (attachment) {
-        svgString = attachment.getContent();
+    if (!attachment) {
+        res.status(404).render("share/404");
+        return;
+    }
+    const content = attachment.getContent();
+    if (typeof content === "string") {
+        svgString = content;
     } else {
         // backwards compatibility, before attachments, the SVG was stored in the main note content as a separate key
         const contentSvg = image.getJsonContentSafely()?.svg;
@@ -130,8 +131,8 @@ function renderImageAttachment(image, res, attachmentName) {
     res.send(svg);
 }
 
-function register(router) {
-    function renderNote(note, req, res) {
+function register(router: Router) {
+    function renderNote(note: SNote, req: Request, res: Response) {
         if (!note) {
             res.status(404).render("share/404");
             return;
@@ -152,35 +153,42 @@ function register(router) {
             return;
         }
 
-        const {header, content, isEmpty} = contentRenderer.getContent(note);
+        const { header, content, isEmpty } = contentRenderer.getContent(note);
         const subRoot = getSharedSubTreeRoot(note);
-        const opts = {note, header, content, isEmpty, subRoot, assetPath, appPath};
+        const opts = { note, header, content, isEmpty, subRoot, assetPath, appPath };
         let useDefaultView = true;
 
         // Check if the user has their own template
         if (note.hasRelation('shareTemplate')) {
             // Get the template note and content
-            const templateId = note.getRelation('shareTemplate').value;
-            const templateNote = shaca.getNote(templateId);
+            const templateId = note.getRelation('shareTemplate')?.value;
+            const templateNote = templateId && shaca.getNote(templateId);
 
             // Make sure the note type is correct
-            if (templateNote.type === 'code' && templateNote.mime === 'application/x-ejs') {
+            if (templateNote && templateNote.type === 'code' && templateNote.mime === 'application/x-ejs') {
 
                 // EJS caches the result of this so we don't need to pre-cache
-                const includer = (path) => {
+                const includer = (path: string) => {
                     const childNote = templateNote.children.find(n => path === n.title);
-                    if (!childNote) return null;
-                    if (childNote.type !== 'code' || childNote.mime !== 'application/x-ejs') return null;
-                    return { template: childNote.getContent() };
+                    if (!childNote) throw new Error("Unable to find child note.");
+                    if (childNote.type !== 'code' || childNote.mime !== 'application/x-ejs') throw new Error("Incorrect child note type.");
+
+                    const template = childNote.getContent();
+                    if (typeof template !== "string") throw new Error("Invalid template content type.");
+
+                    return { template };
                 };
 
                 // Try to render user's template, w/ fallback to default view
                 try {
-                    const ejsResult = ejs.render(templateNote.getContent(), opts, {includer});
-                    res.send(ejsResult);
-                    useDefaultView = false; // Rendering went okay, don't use default view
+                    const content = templateNote.getContent();
+                    if (typeof content === "string") {
+                        const ejsResult = ejs.render(content, opts, { includer });
+                        res.send(ejsResult);
+                        useDefaultView = false; // Rendering went okay, don't use default view
+                    }
                 }
-                catch (e) {
+                catch (e: any) {
                     log.error(`Rendering user provided share template (${templateId}) threw exception ${e.message} with stacktrace: ${e.stack}`);
                 }
             }
@@ -199,13 +207,18 @@ function register(router) {
 
         shacaLoader.ensureLoad();
 
+        if (!shaca.shareRootNote) {
+            return res.status(404)
+                .json({ message: "Share root note not found" });
+        }
+
         renderNote(shaca.shareRootNote, req, res);
     });
 
     router.get('/share/:shareId', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        const {shareId} = req.params;
+        const { shareId } = req.params;
 
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
@@ -214,7 +227,7 @@ function register(router) {
 
     router.get('/share/api/notes/:noteId', (req, res, next) => {
         shacaLoader.ensureLoad();
-        let note;
+        let note: SNote | boolean;
 
         if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
             return;
@@ -228,7 +241,7 @@ function register(router) {
     router.get('/share/api/notes/:noteId/download', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        let note;
+        let note: SNote | boolean;
 
         if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
             return;
@@ -252,7 +265,7 @@ function register(router) {
     router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        let image;
+        let image: SNote | boolean;
 
         if (!(image = checkNoteAccess(req.params.noteId, req, res))) {
             return;
@@ -277,7 +290,7 @@ function register(router) {
     router.get('/share/api/attachments/:attachmentId/image/:filename', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        let attachment;
+        let attachment: SAttachment | boolean;
 
         if (!(attachment = checkAttachmentAccess(req.params.attachmentId, req, res))) {
             return;
@@ -296,7 +309,7 @@ function register(router) {
     router.get('/share/api/attachments/:attachmentId/download', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        let attachment;
+        let attachment: SAttachment | boolean;
 
         if (!(attachment = checkAttachmentAccess(req.params.attachmentId, req, res))) {
             return;
@@ -320,7 +333,7 @@ function register(router) {
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        let note;
+        let note: SNote | boolean;
 
         if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
             return;
@@ -341,18 +354,22 @@ function register(router) {
         const ancestorNoteId = req.query.ancestorNoteId ?? "_share";
         let note;
 
+        if (typeof ancestorNoteId !== "string") {
+            return res.status(400).json({ message: "'ancestorNoteId' parameter is mandatory." });
+        }
+
         // This will automatically return if no ancestorNoteId is provided and there is no shareIndex
         if (!(note = checkNoteAccess(ancestorNoteId, req, res))) {
             return;
         }
 
-        const {search} = req.query;
+        const { search } = req.query;
 
-        if (!search?.trim()) {
+        if (typeof search !== "string" || !search?.trim()) {
             return res.status(400).json({ message: "'search' parameter is mandatory." });
         }
 
-        const searchContext = new SearchContext({ancestorNoteId: ancestorNoteId});
+        const searchContext = new SearchContext({ ancestorNoteId: ancestorNoteId });
         const searchResults = searchService.findResultsWithQuery(search, searchContext);
         const filteredResults = searchResults.map(sr => {
             const fullNote = shaca.notes[sr.noteId];
@@ -366,6 +383,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 }
