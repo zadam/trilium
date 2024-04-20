@@ -67,7 +67,7 @@ function login(req: AppRequest, res: Response) {
             if (rememberMe) {
                 req.session.cookie.maxAge = 21 * 24 * 3600000;  // 3 weeks
             } else {
-                req.session.cookie.expires = false;
+                req.session.cookie.expires = null;
             }
 
             req.session.loggedIn = true;

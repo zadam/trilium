@@ -11,6 +11,13 @@ import { AppRequest } from '../route-interface';
 function uploadImage(req: AppRequest) {
     const file = req.file;
 
+    if (!file) {
+        return {
+            uploaded: false,
+            message: `Missing image data.`
+        };
+    }
+
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return [400, `Unknown image type: ${file.mimetype}`];
     }

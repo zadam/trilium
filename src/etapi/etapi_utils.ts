@@ -1,15 +1,22 @@
-const cls = require('../services/cls');
-const sql = require('../services/sql');
-const log = require('../services/log');
-const becca = require('../becca/becca');
-const etapiTokenService = require('../services/etapi_tokens');
-const config = require('../services/config');
+import cls = require('../services/cls');
+import sql = require('../services/sql');
+import log = require('../services/log');
+import becca = require('../becca/becca');
+import etapiTokenService = require('../services/etapi_tokens');
+import config = require('../services/config');
+import { NextFunction, Request, RequestHandler, Response, Router } from 'express';
+import { AppRequest, AppRequestHandler } from '../routes/route-interface';
 const GENERIC_CODE = "GENERIC";
+
+type HttpMethod = "all" | "get" | "post" | "put" | "delete" | "patch" | "options" | "head";
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
 class EtapiError extends Error {
-    constructor(statusCode, code, message) {
+    statusCode: number;
+    code: string;
+
+    constructor(statusCode: number, code: string, message: string) {
         super();
 
         this.statusCode = statusCode;
@@ -18,7 +25,7 @@ class EtapiError extends Error {
     }
 }
 
-function sendError(res, statusCode, code, message) {
+function sendError(res: Response, statusCode: number, code: string, message: string) {
     return res
         .set('Content-Type', 'application/json')
         .status(statusCode)
@@ -29,7 +36,7 @@ function sendError(res, statusCode, code, message) {
         }));
 }
 
-function checkEtapiAuth(req, res, next) {
+function checkEtapiAuth(req: Request, res: Response, next: NextFunction) {
     if (noAuthentication || etapiTokenService.isValidAuthHeader(req.headers.authorization)) {
         next();
     }
@@ -38,7 +45,7 @@ function checkEtapiAuth(req, res, next) {
     }
 }
 
-function processRequest(req, res, routeHandler, next, method, path) {
+function processRequest(req: Request, res: Response, routeHandler: AppRequestHandler, next: NextFunction, method: string, path: string) {
     try {
         cls.namespace.bindEmitter(req);
         cls.namespace.bindEmitter(res);
@@ -47,11 +54,11 @@ function processRequest(req, res, routeHandler, next, method, path) {
             cls.set('componentId', "etapi");
             cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
 
-            const cb = () => routeHandler(req, res, next);
+            const cb = () => routeHandler(req as AppRequest, res, next);
 
             return sql.transactional(cb);
         });
-    } catch (e) {
+    } catch (e: any) {
         log.error(`${method} ${path} threw exception ${e.message} with stacktrace: ${e.stack}`);
 
         if (e instanceof EtapiError) {
@@ -62,15 +69,15 @@ function processRequest(req, res, routeHandler, next, method, path) {
     }
 }
 
-function route(router, method, path, routeHandler) {
-    router[method](path, checkEtapiAuth, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
+function route(router: Router, method: HttpMethod, path: string, routeHandler: AppRequestHandler) {
+    router[method](path, checkEtapiAuth, (req: Request, res: Response, next: NextFunction) => processRequest(req, res, routeHandler, next, method, path));
 }
 
-function NOT_AUTHENTICATED_ROUTE(router, method, path, middleware, routeHandler) {
-    router[method](path, ...middleware, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
+function NOT_AUTHENTICATED_ROUTE(router: Router, method: HttpMethod, path: string, middleware: RequestHandler[], routeHandler: RequestHandler) {
+    router[method](path, ...middleware, (req: Request, res: Response, next: NextFunction) => processRequest(req, res, routeHandler, next, method, path));
 }
 
-function getAndCheckNote(noteId) {
+function getAndCheckNote(noteId: string) {
     const note = becca.getNote(noteId);
 
     if (note) {
@@ -81,7 +88,7 @@ function getAndCheckNote(noteId) {
     }
 }
 
-function getAndCheckAttachment(attachmentId) {
+function getAndCheckAttachment(attachmentId: string) {
     const attachment = becca.getAttachment(attachmentId, {includeContentLength: true});
 
     if (attachment) {
@@ -92,7 +99,7 @@ function getAndCheckAttachment(attachmentId) {
     }
 }
 
-function getAndCheckBranch(branchId) {
+function getAndCheckBranch(branchId: string) {
     const branch = becca.getBranch(branchId);
 
     if (branch) {
@@ -103,7 +110,7 @@ function getAndCheckBranch(branchId) {
     }
 }
 
-function getAndCheckAttribute(attributeId) {
+function getAndCheckAttribute(attributeId: string) {
     const attribute = becca.getAttribute(attributeId);
 
     if (attribute) {
@@ -114,7 +121,7 @@ function getAndCheckAttribute(attributeId) {
     }
 }
 
-function validateAndPatch(target, source, allowedProperties) {
+function validateAndPatch(target: any, source: any, allowedProperties: ValidatorMap) {
     for (const key of Object.keys(source)) {
         if (!(key in allowedProperties)) {
             throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for this method.`);
@@ -136,7 +143,7 @@ function validateAndPatch(target, source, allowedProperties) {
     }
 }
 
-module.exports = {
+export = {
     EtapiError,
     sendError,
     route,

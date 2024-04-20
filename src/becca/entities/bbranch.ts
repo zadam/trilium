@@ -141,7 +141,7 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
      *
      * @returns true if note has been deleted, false otherwise
      */
-    deleteBranch(deleteId: string, taskContext: TaskContext): boolean {
+    deleteBranch(deleteId?: string, taskContext?: TaskContext): boolean {
         if (!deleteId) {
             deleteId = utils.randomString(10);
         }

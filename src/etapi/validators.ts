@@ -1,19 +1,19 @@
-const noteTypeService = require('../services/note_types');
-const dateUtils = require('../services/date_utils');
+import noteTypeService = require('../services/note_types');
+import dateUtils = require('../services/date_utils');
 
-function mandatory(obj) {
-    if (obj === undefined ) {
+function mandatory(obj: unknown) {
+    if (obj === undefined) {
         return `mandatory, but not set`;
     }
 }
 
-function notNull(obj) {
+function notNull(obj: unknown) {
     if (obj === null) {
         return `cannot be null`;
     }
 }
 
-function isString(obj) {
+function isString(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -23,23 +23,23 @@ function isString(obj) {
     }
 }
 
-function isLocalDateTime(obj) {
-    if (obj === undefined || obj === null) {
+function isLocalDateTime(obj: unknown) {
+    if (typeof obj !== "string") {
         return;
     }
 
     return dateUtils.validateLocalDateTime(obj);
 }
 
-function isUtcDateTime(obj) {
-    if (obj === undefined || obj === null) {
+function isUtcDateTime(obj: unknown) {
+    if (typeof obj !== "string") {
         return;
     }
 
     return dateUtils.validateUtcDateTime(obj);
 }
 
-function isBoolean(obj) {
+function isBoolean(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -49,7 +49,7 @@ function isBoolean(obj) {
     }
 }
 
-function isInteger(obj) {
+function isInteger(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -59,7 +59,7 @@ function isInteger(obj) {
     }
 }
 
-function isNoteId(obj) {
+function isNoteId(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -75,29 +75,29 @@ function isNoteId(obj) {
     }
 }
 
-function isNoteType(obj) {
+function isNoteType(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
 
     const noteTypes = noteTypeService.getNoteTypeNames();
 
-    if (!noteTypes.includes(obj)) {
+    if (typeof obj !== "string" || !noteTypes.includes(obj)) {
         return `'${obj}' is not a valid note type, allowed types are: ${noteTypes.join(", ")}`;
     }
 }
 
-function isAttributeType(obj) {
+function isAttributeType(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
 
-    if (!['label', 'relation'].includes(obj)) {
+    if (typeof obj !== "string" || !['label', 'relation'].includes(obj)) {
         return `'${obj}' is not a valid attribute type, allowed types are: label, relation`;
     }
 }
 
-function isValidEntityId(obj) {
+function isValidEntityId(obj: unknown) {
     if (obj === undefined || obj === null) {
         return;
     }
@@ -107,7 +107,7 @@ function isValidEntityId(obj) {
     }
 }
 
-module.exports = {
+export = {
     mandatory,
     notNull,
     isString,

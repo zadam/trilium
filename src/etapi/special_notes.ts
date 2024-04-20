@@ -1,13 +1,14 @@
-const specialNotesService = require('../services/special_notes');
-const dateNotesService = require('../services/date_notes');
-const eu = require('./etapi_utils');
-const mappers = require('./mappers.js');
+import specialNotesService = require('../services/special_notes');
+import dateNotesService = require('../services/date_notes');
+import eu = require('./etapi_utils');
+import mappers = require('./mappers');
+import { Router } from 'express';
 
-const getDateInvalidError = date => new eu.EtapiError(400, "DATE_INVALID", `Date "${date}" is not valid.`);
-const getMonthInvalidError = month => new eu.EtapiError(400, "MONTH_INVALID", `Month "${month}" is not valid.`);
-const getYearInvalidError = year => new eu.EtapiError(400, "YEAR_INVALID", `Year "${year}" is not valid.`);
+const getDateInvalidError = (date: string) => new eu.EtapiError(400, "DATE_INVALID", `Date "${date}" is not valid.`);
+const getMonthInvalidError = (month: string)=> new eu.EtapiError(400, "MONTH_INVALID", `Month "${month}" is not valid.`);
+const getYearInvalidError = (year: string) => new eu.EtapiError(400, "YEAR_INVALID", `Year "${year}" is not valid.`);
 
-function isValidDate(date) {
+function isValidDate(date: string) {
     if (!/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(date)) {
         return false;
     }
@@ -15,7 +16,7 @@ function isValidDate(date) {
     return !!Date.parse(date);
 }
 
-function register(router) {
+function register(router: Router) {
     eu.route(router, 'get', '/etapi/inbox/:date', (req, res, next) => {
         const { date } = req.params;
 
@@ -72,6 +73,6 @@ function register(router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };

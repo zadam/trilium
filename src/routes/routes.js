@@ -61,14 +61,14 @@ const relationMapApiRoute = require('./api/relation-map');
 const otherRoute = require('./api/other');
 const shareRoutes = require('../share/routes.js');
 
-const etapiAuthRoutes = require('../etapi/auth.js');
+const etapiAuthRoutes = require('../etapi/auth');
 const etapiAppInfoRoutes = require('../etapi/app_info');
-const etapiAttachmentRoutes = require('../etapi/attachments.js');
+const etapiAttachmentRoutes = require('../etapi/attachments');
 const etapiAttributeRoutes = require('../etapi/attributes');
-const etapiBranchRoutes = require('../etapi/branches.js');
-const etapiNoteRoutes = require('../etapi/notes.js');
+const etapiBranchRoutes = require('../etapi/branches');
+const etapiNoteRoutes = require('../etapi/notes');
 const etapiSpecialNoteRoutes = require('../etapi/special_notes');
-const etapiSpecRoute = require('../etapi/spec.js');
+const etapiSpecRoute = require('../etapi/spec');
 const etapiBackupRoute = require('../etapi/backup');
 
 const csrfMiddleware = csurf({

@@ -1,5 +1,5 @@
-import { Request } from "express";
-import { File } from "../services/import/common";
+import { NextFunction, Request, Response } from "express";
+import { Session, SessionData } from "express-session";
 
 export interface AppRequest extends Request {
     headers: {
@@ -7,14 +7,15 @@ export interface AppRequest extends Request {
         "trilium-cred"?: string;
         "x-local-date"?: string;
         "x-labels"?: string;
+        "trilium-local-now-datetime"?: string;
     }
-    session: {
-        loggedIn: boolean;   
-        cookie: {
-            maxAge: number;
-            expires: boolean
-        };
-        regenerate: (callback: () => void) => void;     
+    session: Session & Partial<SessionData> & {
+        loggedIn: boolean;
     }
-    file: File;
 }
+
+export type AppRequestHandler = (
+    req: AppRequest,
+    res: Response,
+    next: NextFunction
+) => void;
