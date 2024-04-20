@@ -103,6 +103,6 @@ function register(router: Router) {
     });
 }
 
-module.exports = {
+export = {
     register
 };

@@ -1,87 +1,94 @@
 "use strict";
 
-const utils = require('../services/utils');
-const multer = require('multer');
-const log = require('../services/log');
-const express = require('express');
+import utils = require('../services/utils');
+import multer = require('multer');
+import log = require('../services/log');
+import express = require('express');
 const router = express.Router();
-const auth = require('../services/auth');
-const cls = require('../services/cls');
-const sql = require('../services/sql');
-const entityChangesService = require('../services/entity_changes');
-const csurf = require('csurf');
-const { createPartialContentHandler } = require("express-partial-content");
-const rateLimit = require("express-rate-limit");
-const AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
-const NotFoundError = require('../errors/not_found_error');
-const ValidationError = require('../errors/validation_error');
+import auth = require('../services/auth');
+import cls = require('../services/cls');
+import sql = require('../services/sql');
+import entityChangesService = require('../services/entity_changes');
+import csurf = require('csurf');
+import { createPartialContentHandler } from "express-partial-content";
+import rateLimit = require("express-rate-limit");
+import AbstractBeccaEntity = require('../becca/entities/abstract_becca_entity');
+import NotFoundError = require('../errors/not_found_error');
+import ValidationError = require('../errors/validation_error');
 
 // page routes
-const setupRoute = require('./setup');
-const loginRoute = require('./login');
-const indexRoute = require('./index');
+import setupRoute = require('./setup');
+import loginRoute = require('./login');
+import indexRoute = require('./index');
 
 // API routes
-const treeApiRoute = require('./api/tree');
-const notesApiRoute = require('./api/notes');
-const branchesApiRoute = require('./api/branches');
-const attachmentsApiRoute = require('./api/attachments');
-const autocompleteApiRoute = require('./api/autocomplete');
-const cloningApiRoute = require('./api/cloning');
-const revisionsApiRoute = require('./api/revisions');
-const recentChangesApiRoute = require('./api/recent_changes');
-const optionsApiRoute = require('./api/options');
-const passwordApiRoute = require('./api/password');
-const syncApiRoute = require('./api/sync');
-const loginApiRoute = require('./api/login');
-const recentNotesRoute = require('./api/recent_notes');
-const appInfoRoute = require('./api/app_info');
-const exportRoute = require('./api/export');
-const importRoute = require('./api/import');
-const setupApiRoute = require('./api/setup');
-const sqlRoute = require('./api/sql');
-const databaseRoute = require('./api/database');
-const imageRoute = require('./api/image');
-const attributesRoute = require('./api/attributes');
-const scriptRoute = require('./api/script');
-const senderRoute = require('./api/sender');
-const filesRoute = require('./api/files');
-const searchRoute = require('./api/search');
-const bulkActionRoute = require('./api/bulk_action');
-const specialNotesRoute = require('./api/special_notes');
-const noteMapRoute = require('./api/note_map');
-const clipperRoute = require('./api/clipper');
-const similarNotesRoute = require('./api/similar_notes');
-const keysRoute = require('./api/keys');
-const backendLogRoute = require('./api/backend_log');
-const statsRoute = require('./api/stats');
-const fontsRoute = require('./api/fonts');
-const etapiTokensApiRoutes = require('./api/etapi_tokens');
-const relationMapApiRoute = require('./api/relation-map');
-const otherRoute = require('./api/other');
-const shareRoutes = require('../share/routes');
+import treeApiRoute = require('./api/tree');
+import notesApiRoute = require('./api/notes');
+import branchesApiRoute = require('./api/branches');
+import attachmentsApiRoute = require('./api/attachments');
+import autocompleteApiRoute = require('./api/autocomplete');
+import cloningApiRoute = require('./api/cloning');
+import revisionsApiRoute = require('./api/revisions');
+import recentChangesApiRoute = require('./api/recent_changes');
+import optionsApiRoute = require('./api/options');
+import passwordApiRoute = require('./api/password');
+import syncApiRoute = require('./api/sync');
+import loginApiRoute = require('./api/login');
+import recentNotesRoute = require('./api/recent_notes');
+import appInfoRoute = require('./api/app_info');
+import exportRoute = require('./api/export');
+import importRoute = require('./api/import');
+import setupApiRoute = require('./api/setup');
+import sqlRoute = require('./api/sql');
+import databaseRoute = require('./api/database');
+import imageRoute = require('./api/image');
+import attributesRoute = require('./api/attributes');
+import scriptRoute = require('./api/script');
+import senderRoute = require('./api/sender');
+import filesRoute = require('./api/files');
+import searchRoute = require('./api/search');
+import bulkActionRoute = require('./api/bulk_action');
+import specialNotesRoute = require('./api/special_notes');
+import noteMapRoute = require('./api/note_map');
+import clipperRoute = require('./api/clipper');
+import similarNotesRoute = require('./api/similar_notes');
+import keysRoute = require('./api/keys');
+import backendLogRoute = require('./api/backend_log');
+import statsRoute = require('./api/stats');
+import fontsRoute = require('./api/fonts');
+import etapiTokensApiRoutes = require('./api/etapi_tokens');
+import relationMapApiRoute = require('./api/relation-map');
+import otherRoute = require('./api/other');
+import shareRoutes = require('../share/routes');
 
-const etapiAuthRoutes = require('../etapi/auth');
-const etapiAppInfoRoutes = require('../etapi/app_info');
-const etapiAttachmentRoutes = require('../etapi/attachments');
-const etapiAttributeRoutes = require('../etapi/attributes');
-const etapiBranchRoutes = require('../etapi/branches');
-const etapiNoteRoutes = require('../etapi/notes');
-const etapiSpecialNoteRoutes = require('../etapi/special_notes');
-const etapiSpecRoute = require('../etapi/spec');
-const etapiBackupRoute = require('../etapi/backup');
+import etapiAuthRoutes = require('../etapi/auth');
+import etapiAppInfoRoutes = require('../etapi/app_info');
+import etapiAttachmentRoutes = require('../etapi/attachments');
+import etapiAttributeRoutes = require('../etapi/attributes');
+import etapiBranchRoutes = require('../etapi/branches');
+import etapiNoteRoutes = require('../etapi/notes');
+import etapiSpecialNoteRoutes = require('../etapi/special_notes');
+import etapiSpecRoute = require('../etapi/spec');
+import etapiBackupRoute = require('../etapi/backup');
+import { AppRequest, AppRequestHandler } from './route-interface';
 
 const csrfMiddleware = csurf({
-    cookie: true,
-    path: '' // empty, so cookie is valid only for the current path
+    cookie: {
+        path: ""       // empty, so cookie is valid only for the current path
+    }
 });
 
 const MAX_ALLOWED_FILE_SIZE_MB = 250;
 const GET = 'get', PST = 'post', PUT = 'put', PATCH = 'patch', DEL = 'delete';
 
+type ApiResultHandler = (req: express.Request, res: express.Response, result: unknown) => number;
+
+// TODO: Deduplicate with etapi_utils.ts afterwards.
+type HttpMethod = "all" | "get" | "post" | "put" | "delete" | "patch" | "options" | "head";
+
 const uploadMiddleware = createUploadMiddleware();
 
-const uploadMiddlewareWithErrorHandling = function (req, res, next) {
+const uploadMiddlewareWithErrorHandling = function (req: express.Request, res: express.Response, next: express.NextFunction) {
     uploadMiddleware(req, res, function (err) {
         if (err?.code === 'LIMIT_FILE_SIZE') {
             res.setHeader("Content-Type", "text/plain")
@@ -94,12 +101,12 @@ const uploadMiddlewareWithErrorHandling = function (req, res, next) {
     });
 };
 
-function register(app) {
+function register(app: express.Application) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
     route(GET, '/login', [auth.checkAppInitialized, auth.checkPasswordSet], loginRoute.loginPage);
     route(GET, '/set-password', [auth.checkAppInitialized, auth.checkPasswordNotSet], loginRoute.setPasswordPage);
 
-    const loginRateLimiter = rateLimit({
+    const loginRateLimiter = rateLimit.rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
         max: 10, // limit each IP to 10 requests per windowMs
         skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However, successful auth to /login is still counted!
@@ -353,7 +360,7 @@ function register(app) {
 }
 
 /** Handling common patterns. If entity is not caught, serialization to JSON will fail */
-function convertEntitiesToPojo(result) {
+function convertEntitiesToPojo(result: unknown) {
     if (result instanceof AbstractBeccaEntity) {
         result = result.getPojo();
     }
@@ -364,24 +371,24 @@ function convertEntitiesToPojo(result) {
             }
         }
     }
-    else {
-        if (result && result.note instanceof AbstractBeccaEntity) {
+    else if (result && typeof result === "object") {
+        if ("note" in result && result.note instanceof AbstractBeccaEntity) {
             result.note = result.note.getPojo();
         }
 
-        if (result && result.branch instanceof AbstractBeccaEntity) {
+        if ("branch" in result && result.branch instanceof AbstractBeccaEntity) {
             result.branch = result.branch.getPojo();
         }
     }
 
-    if (result && result.executionResult) { // from runOnBackend()
+    if (result && typeof result === "object" && "executionResult" in result) { // from runOnBackend()
         result.executionResult = convertEntitiesToPojo(result.executionResult);
     }
 
     return result;
 }
 
-function apiResultHandler(req, res, result) {
+function apiResultHandler(req: express.Request, res: express.Response, result: unknown) {
     res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
 
     result = convertEntitiesToPojo(result);
@@ -404,7 +411,7 @@ function apiResultHandler(req, res, result) {
     }
 }
 
-function send(res, statusCode, response) {
+function send(res: express.Response, statusCode: number, response: unknown) {
     if (typeof response === 'string') {
         if (statusCode >= 400) {
             res.setHeader("Content-Type", "text/plain");
@@ -424,12 +431,12 @@ function send(res, statusCode, response) {
     }
 }
 
-function apiRoute(method, path, routeHandler) {
+function apiRoute(method: HttpMethod, path: string, routeHandler: express.Handler) {
     route(method, path, [auth.checkApiAuth, csrfMiddleware], routeHandler, apiResultHandler);
 }
 
-function route(method, path, middleware, routeHandler, resultHandler = null, transactional = true) {
-    router[method](path, ...middleware, (req, res, next) => {
+function route(method: HttpMethod, path: string, middleware: (express.Handler | AppRequestHandler)[], routeHandler: AppRequestHandler, resultHandler: ApiResultHandler | null = null, transactional = true) {
+    router[method](path, ...(middleware as express.Handler[]), (req: express.Request, res: express.Response, next: express.NextFunction) => {
         const start = Date.now();
 
         try {
@@ -441,7 +448,7 @@ function route(method, path, middleware, routeHandler, resultHandler = null, tra
                 cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
                 cls.set('hoistedNoteId', req.headers['trilium-hoisted-note-id'] || 'root');
 
-                const cb = () => routeHandler(req, res, next);
+                const cb = () => routeHandler(req as AppRequest, res, next);
 
                 return transactional ? sql.transactional(cb) : cb();
             });
@@ -452,8 +459,8 @@ function route(method, path, middleware, routeHandler, resultHandler = null, tra
 
             if (result?.then) { // promise
                 result
-                    .then(promiseResult => handleResponse(resultHandler, req, res, promiseResult, start))
-                    .catch(e => handleException(e, method, path, res));
+                    .then((promiseResult: unknown) => handleResponse(resultHandler, req, res, promiseResult, start))
+                    .catch((e: any) => handleException(e, method, path, res));
             } else {
                 handleResponse(resultHandler, req, res, result, start)
             }
@@ -464,13 +471,13 @@ function route(method, path, middleware, routeHandler, resultHandler = null, tra
     });
 }
 
-function handleResponse(resultHandler, req, res, result, start) {
+function handleResponse(resultHandler: ApiResultHandler, req: express.Request, res: express.Response, result: unknown, start: number) {
     const responseLength = resultHandler(req, res, result);
 
     log.request(req, res, Date.now() - start, responseLength);
 }
 
-function handleException(e, method, path, res) {
+function handleException(e: any, method: HttpMethod, path: string, res: express.Response) {
     log.error(`${method} ${path} threw exception: '${e.message}', stack: ${e.stack}`);
 
     if (e instanceof ValidationError) {
@@ -492,8 +499,8 @@ function handleException(e, method, path, res) {
 }
 
 function createUploadMiddleware() {
-    const multerOptions = {
-        fileFilter: (req, file, cb) => {
+    const multerOptions: multer.Options = {
+        fileFilter: (req: express.Request, file, cb) => {
             // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
             // See https://github.com/expressjs/multer/pull/1102.
             file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
@@ -510,6 +517,6 @@ function createUploadMiddleware() {
     return multer(multerOptions).single('upload');
 }
 
-module.exports = {
+export = {
     register
 };

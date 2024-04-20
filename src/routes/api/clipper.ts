@@ -229,7 +229,7 @@ function findNotesByUrl(req: Request){
     }
 }
 
-module.exports = {
+export = {
     createNote,
     addClipping,
     openNote,

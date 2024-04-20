@@ -76,7 +76,7 @@ function error(message: string) {
 
 const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets", "/api/recent-notes" ];
 
-function request(req: Request, res: Response, timeMs: number, responseLength = "?") {
+function request(req: Request, res: Response, timeMs: number, responseLength: number | string = "?") {
     for (const bl of requestBlacklist) {
         if (req.url.startsWith(bl)) {
             return;

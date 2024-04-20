@@ -81,7 +81,7 @@ async function createMainWindow(app: App) {
 
     app.on('second-instance', () => {
         // Someone tried to run a second instance, we should focus our window.
-        // see www.js "requestSingleInstanceLock" for the rest of this logic with explanation
+        // see www.ts "requestSingleInstanceLock" for the rest of this logic with explanation
         if (mainWindow) {
             if (mainWindow.isMinimized()) {
                 mainWindow.restore();

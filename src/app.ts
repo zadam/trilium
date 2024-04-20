@@ -1,11 +1,11 @@
-const express = require('express');
-const path = require('path');
-const favicon = require('serve-favicon');
-const cookieParser = require('cookie-parser');
-const helmet = require('helmet');
-const compression = require('compression');
-const sessionParser = require('./routes/session_parser');
-const utils = require('./services/utils');
+import express = require('express');
+import path = require('path');
+import favicon = require('serve-favicon');
+import cookieParser = require('cookie-parser');
+import helmet = require('helmet');
+import compression = require('compression');
+import sessionParser = require('./routes/session_parser');
+import utils = require('./services/utils');
 
 require('./services/handlers');
 require('./becca/becca_loader');
@@ -20,7 +20,7 @@ if (!utils.isElectron()) {
     app.use(compression()); // HTTP compression
 }
 
-app.use(helmet({
+app.use(helmet.default({
     hidePoweredBy: false, // errors out in electron
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
@@ -38,7 +38,7 @@ app.use(sessionParser);
 app.use(favicon(`${__dirname}/../images/app-icons/win/icon.ico`));
 
 require('./routes/assets').register(app);
-require('./routes/routes.js').register(app);
+require('./routes/routes').register(app);
 require('./routes/custom').register(app);
 require('./routes/error_handlers').register(app);
 
@@ -57,4 +57,4 @@ if (utils.isElectron()) {
     require('@electron/remote/main').initialize();
 }
 
-module.exports = app;
+export = app;

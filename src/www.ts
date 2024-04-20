@@ -18,19 +18,19 @@ function exit() {
 process.on('SIGINT', exit);
 process.on('SIGTERM', exit);
 
-const app = require('./app');
-const sessionParser = require('./routes/session_parser');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const config = require('./services/config');
-const log = require('./services/log');
-const appInfo = require('./services/app_info');
-const ws = require('./services/ws');
-const utils = require('./services/utils');
-const port = require('./services/port');
-const host = require('./services/host');
-const semver = require('semver');
+import app = require('./app');
+import sessionParser = require('./routes/session_parser');
+import fs = require('fs');
+import http = require('http');
+import https = require('https');
+import config = require('./services/config');
+import log = require('./services/log');
+import appInfo = require('./services/app_info');
+import ws = require('./services/ws');
+import utils = require('./services/utils');
+import port = require('./services/port');
+import host = require('./services/host');
+import semver = require('semver');
 
 if (!semver.satisfies(process.version, ">=10.5.0")) {
     console.error("Trilium only supports node.js 10.5 and later");
@@ -66,7 +66,7 @@ function startTrilium() {
 
     const httpServer = startHttpServer();
 
-    ws.init(httpServer, sessionParser);
+    ws.init(httpServer, sessionParser as any); // TODO: Not sure why session parser is incompatible.
 
     if (utils.isElectron()) {
         const electronRouting = require('./routes/electron');
@@ -126,25 +126,23 @@ function startHttpServer() {
     }
 
     httpServer.on('error', error => {
-        if (!listenOnTcp || error.syscall !== 'listen') {
+        if (!listenOnTcp || ("syscall" in error && error.syscall !== 'listen')) {
             throw error;
         }
 
         // handle specific listen errors with friendly messages
-        switch (error.code) {
-            case 'EACCES':
-                console.error(`Port ${port} requires elevated privileges. It's recommended to use port above 1024.`);
-                process.exit(1);
-                break;
-
-            case 'EADDRINUSE':
-                console.error(`Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`);
-                process.exit(1);
-                break;
-
-            default:
-                throw error;
+        if ("code" in error) {
+            switch (error.code) {
+                case 'EACCES':
+                    console.error(`Port ${port} requires elevated privileges. It's recommended to use port above 1024.`);
+                    process.exit(1);
+                case 'EADDRINUSE':
+                    console.error(`Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`);
+                    process.exit(1);
+            }
         }
+
+        throw error;
     }
     )
 
