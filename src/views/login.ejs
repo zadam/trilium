@@ -41,6 +41,21 @@
               />
             </div>
           </div>
+          <% if( totpEnabled ) { %>
+            <div class="form-group">
+                <label for="otp-token">OTP Token</label>
+                <div class="controls">
+                <input
+                    id="token"
+                    name="token"
+                    placeholder=""
+                    class="form-control"
+                    type="number"
+                    maxlength="6"
+                    required
+                />
+            </div>
+        <% } %>
           <div class="form-group">
             <div class="checkbox">
               <label>

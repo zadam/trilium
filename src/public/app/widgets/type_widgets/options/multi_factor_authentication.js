@@ -17,6 +17,26 @@ const TPL = `
       Use TOTP (Time-based One-Time Password) to safeguard your data in this application because it adds an additional layer of security by generating unique passcodes that expire quickly, making it harder for unauthorized access. TOTP also reduces the risk of account compromise through common threats like phishing attacks or password breaches.
     </div>
     
+  <br>
+  <h4>TOTP Settings</h4>
+    <div>
+      <label>
+          Enable TOTP
+      </label>
+      <input type="checkbox" class="totp-enabled" />
+    </div>
+
+<br>
+    <div class="options-section">
+      <label>
+      TOTP Secret
+      </label>
+      <input class="totp-secret-input form-control" disabled="true" type="text">
+      <button class="save-totp" disabled="true"> Save TOTP Secret </button>
+    </div>
+
+    <br>
+ <h4> Generate TOTP Secret </h4>
     <span class="totp-secret" >  </span>
     <br>
     <button class="regenerate-totp"> Regenerate TOTP Secret </button>
@@ -28,13 +48,20 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
 
     this.$mfaHeadding = this.$widget.find(".mfa-heading");
     this.$regenerateTotpButton = this.$widget.find(".regenerate-totp");
+    this.$totpEnabled = this.$widget.find(".totp-enabled");
     this.$totpSecret = this.$widget.find(".totp-secret");
+    this.$totpSecretInput = this.$widget.find(".totp-secret-input");
+    this.$saveTotpButton = this.$widget.find(".save-totp");
 
     this.$mfaHeadding.text("Multi-Factor Authentication");
     this.generateKey();
 
     // var gen = require("speakeasy");
     // toastService.showMessage("***REMOVED***");
+
+    this.$totpEnabled.on("change", async () => {
+      this.updateCheckboxOption("totpEnabled", this.$totpEnabled);
+    });
 
     this.$regenerateTotpButton.on("click", async () => {
       this.generateKey();
@@ -54,7 +81,6 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
   async generateKey() {
     server.get("totp/generate").then((result) => {
       if (result.success) {
-        // password changed so current protected session is invalid and needs to be cleared
         this.$totpSecret.text(result.message);
       } else {
         toastService.showError(result.message);
@@ -62,13 +88,40 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     });
   }
 
-  optionsLoaded(options) {
-    const isPasswordSet = options.isPasswordSet === "true";
+  // async toggleTOTP() {
+  //   if (this.$totpEnabled)
+  //     server.post("totp/enable").then((result) => {
+  //       if (!result.success) toastService.showError(result.message);
+  //     });
+  //   else
+  //     server.post("totp/disable").then((result) => {
+  //       if (!result.success) toastService.showError(result.message);
+  //     });
+  // }
 
-    this.$widget.find(".old-password-form-group").toggle(isPasswordSet);
-    this.$savePasswordButton.text(
-      isPasswordSet ? "Change fff Password" : "Set Password"
-    );
+  optionsLoaded(options) {
+    // I need to make sure that this is actually pinging the server and that this information is being pulled
+    // because it is telling me "totpEnabled is not allowed to be changed" in a toast every time I check the box
+    server.get("totp/enabled").then((result) => {
+      if (result.success) {
+        console.log("Result message: " + typeof result.message);
+        console.log("Result message: " + result.message);
+        this.setCheckboxState(this.$totpEnabled, result.message);
+
+        console.log("TOTP Status: " + typeof result.message);
+
+        if (result.message) {
+          this.$totpSecretInput.prop("disabled", false);
+          this.$saveTotpButton.prop("disabled", false);
+        } else {
+          this.$totpSecretInput.prop("disabled", true);
+          this.$saveTotpButton.prop("disabled", true);
+        }
+      } else {
+        toastService.showError(result.message);
+      }
+    });
+
     this.$protectedSessionTimeout.val(options.protectedSessionTimeout);
   }
 

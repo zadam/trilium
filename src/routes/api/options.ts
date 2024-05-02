@@ -86,6 +86,7 @@ function updateOption(req: Request) {
 
 function updateOptions(req: Request) {
     for (const optionName in req.body) {
+        console.log( optionName )
         if (!update(optionName, req.body[optionName])) {
             // this should be improved
             // it should return 400 instead of current 500, but at least it now rollbacks transaction

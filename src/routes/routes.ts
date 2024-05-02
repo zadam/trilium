@@ -156,6 +156,9 @@ function register(app: express.Application) {
   route(GET, "/setup", [], setupRoute.setupPage);
 
   apiRoute(GET, "/api/totp/generate", totp.generateSecret);
+  apiRoute(GET, "/api/totp/enabled", totp.checkForTOTP);
+  apiRoute(GET, "/api/totp/enable", totp.enableTOTP);
+  apiRoute(GET, "/api/totp/disable", totp.disableTOTP);
 
   apiRoute(GET, "/api/tree", treeApiRoute.getTree);
   apiRoute(PST, "/api/tree/load", treeApiRoute.load);

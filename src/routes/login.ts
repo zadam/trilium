@@ -14,6 +14,8 @@ import { AppRequest } from './route-interface';
 function loginPage(req: Request, res: Response) {
     res.render('login', {
         failedAuth: false,
+        // totpEnabled: optionService.getOption("hasOTPEnabled"),
+        totpEnabled: false,
         assetPath: assetPath,
         appPath: appPath
     });
@@ -59,6 +61,7 @@ function setPassword(req: Request, res: Response) {
 
 function login(req: AppRequest, res: Response) {
     const guessedPassword = req.body.password;
+    const guessedTotp = req.body.token;
 
     if (verifyPassword(guessedPassword)) {
         const rememberMe = req.body.rememberMe;
