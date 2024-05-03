@@ -111,7 +111,17 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
   }
 
   save() {
-    // TODO: CHECK VALIDITY OF SECRET
+    const key = this.$totpSecretInput.val();
+    const regex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+    if (key.length != 52) {
+      toastService.showError("Invalid Secret", 2000);
+      return;
+    }
+    if (regex.test(key)) {
+      toastService.showError("Invalid Secret", 2000);
+      return;
+    }
 
     server
       .post("totp/set", {

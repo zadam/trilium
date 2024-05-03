@@ -1,13 +1,10 @@
 import options = require("../../services/options");
 import totp_secret = require("../../services/encryption/totp_secret");
 import { Request } from "express";
-import totp_fs = require("../../services/totp_secret")
+import totp_fs = require("../../services/totp_secret");
 const speakeasy = require("speakeasy");
 
 function verifyOTPToken(guessedToken: any) {
-  console.log("[" + guessedToken + "]");
-  console.log(typeof guessedToken);
-
   const tokenValidates = speakeasy.totp.verify({
     secret: process.env.MFA_SECRET,
     encoding: "base32",
@@ -39,13 +36,15 @@ function disableTOTP() {
 }
 
 function setTotpSecret(req: Request) {
-  // TODO: CHECK VALIDITY OF SECRET
-  options.setOption
-  totp_fs.saveTotpSecret(req.body.secret)
+  const regex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+  if (req.body.secret.length != 52) return;
+  if (regex.test(req.body.secret)) return;
+
+  totp_fs.saveTotpSecret(req.body.secret);
 }
 
 function getSecret() {
-  return totp_fs.getTotpSecret()
+  return totp_fs.getTotpSecret();
 }
 
 export = {
