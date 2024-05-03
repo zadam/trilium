@@ -57,7 +57,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     this.generateKey();
 
     this.$totpEnabled.on("change", async () => {
-      this.updateCheckboxOption("totpEnabled", this.$totpEnabled);
+      this.updateSecret();
     });
 
     this.$regenerateTotpButton.on("click", async () => {
@@ -79,6 +79,11 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     );
   }
 
+  async updateSecret() {
+    if (this.$totpEnabled.prop("checked")) server.post("totp/enable");
+    else server.post("totp/disable");
+  }
+
   async generateKey() {
     server.get("totp/generate").then((result) => {
       if (result.success) {
@@ -88,17 +93,6 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
       }
     });
   }
-
-  // async toggleTOTP() {
-  //   if (this.$totpEnabled)
-  //     server.post("totp/enable").then((result) => {
-  //       if (!result.success) toastService.showError(result.message);
-  //     });
-  //   else
-  //     server.post("totp/disable").then((result) => {
-  //       if (!result.success) toastService.showError(result.message);
-  //     });
-  // }
 
   optionsLoaded(options) {
     server.get("totp/enabled").then((result) => {
@@ -110,10 +104,6 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
       } else {
         toastService.showError(result.message);
       }
-    });
-
-    server.get("totp/get").then((result) => {
-      this.$totpSecretInput.text(result.secret);
     });
 
     this.$protectedSessionTimeout.val(options.protectedSessionTimeout);

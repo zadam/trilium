@@ -97,7 +97,7 @@ const defaultOptions = [
     { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: true },
     { name: 'promotedAttributesOpenInRibbon', value: 'true', isSynced: true },
     { name: 'editedNotesOpenInRibbon', value: 'true', isSynced: true },
-    // { name: 'totpEnabled', value: 'false', isSynced: false }
+    { name: 'totpEnabled', value: 'false', isSynced: true }
 ];
 
 function initStartupOptions() {
