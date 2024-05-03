@@ -157,8 +157,10 @@ function register(app: express.Application) {
 
   apiRoute(GET, "/api/totp/generate", totp.generateSecret);
   apiRoute(GET, "/api/totp/enabled", totp.checkForTOTP);
-  apiRoute(GET, "/api/totp/enable", totp.enableTOTP);
-  apiRoute(GET, "/api/totp/disable", totp.disableTOTP);
+  apiRoute(PST, "/api/totp/enable", totp.enableTOTP);
+  apiRoute(PST, "/api/totp/disable", totp.disableTOTP);
+  apiRoute(PST, "/api/totp/set", totp.setTotpSecret);
+  apiRoute(GET, "/api/totp/get", totp.getSecret);
 
   apiRoute(GET, "/api/tree", treeApiRoute.getTree);
   apiRoute(PST, "/api/tree/load", treeApiRoute.load);
@@ -185,7 +187,7 @@ function register(app: express.Application) {
   apiRoute(PUT, "/api/notes/:noteId/title", notesApiRoute.changeTitle);
   apiRoute(
     PST,
-    "/api/notes/:noteId/duplicate/:parentNoteId",
+    "/api/notes/:noteId/duplicPOSTate/:parentNoteId",
     notesApiRoute.duplicateSubtree
   );
   apiRoute(

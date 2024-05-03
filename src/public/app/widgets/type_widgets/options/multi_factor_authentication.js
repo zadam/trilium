@@ -39,7 +39,7 @@ const TPL = `
  <h4> Generate TOTP Secret </h4>
     <span class="totp-secret" >  </span>
     <br>
-    <button class="regenerate-totp"> Regenerate TOTP Secret </button>
+    <button class="regenerate-totp" disabled="true"> Regenerate TOTP Secret </button>
 </div>`;
 
 export default class MultiFactorAuthenticationOptions extends OptionsWidget {
@@ -56,15 +56,16 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     this.$mfaHeadding.text("Multi-Factor Authentication");
     this.generateKey();
 
-    // var gen = require("speakeasy");
-    // toastService.showMessage("***REMOVED***");
-
     this.$totpEnabled.on("change", async () => {
       this.updateCheckboxOption("totpEnabled", this.$totpEnabled);
     });
 
     this.$regenerateTotpButton.on("click", async () => {
       this.generateKey();
+    });
+
+    this.$saveTotpButton.on("click", async () => {
+      this.save();
     });
 
     this.$protectedSessionTimeout = this.$widget.find(
@@ -100,49 +101,30 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
   // }
 
   optionsLoaded(options) {
-    // I need to make sure that this is actually pinging the server and that this information is being pulled
-    // because it is telling me "totpEnabled is not allowed to be changed" in a toast every time I check the box
     server.get("totp/enabled").then((result) => {
       if (result.success) {
-        console.log("Result message: " + typeof result.message);
-        console.log("Result message: " + result.message);
-        this.setCheckboxState(this.$totpEnabled, result.message);
-
-        console.log("TOTP Status: " + typeof result.message);
-
-        if (result.message) {
-          this.$totpSecretInput.prop("disabled", false);
-          this.$saveTotpButton.prop("disabled", false);
-        } else {
-          this.$totpSecretInput.prop("disabled", true);
-          this.$saveTotpButton.prop("disabled", true);
-        }
+        this.$totpEnabled.prop("checked", result.message);
+        this.$totpSecretInput.prop("disabled", !result.message);
+        this.$saveTotpButton.prop("disabled", !result.message);
+        this.$totpSecret.prop("disapbled", !result.message);
       } else {
         toastService.showError(result.message);
       }
+    });
+
+    server.get("totp/get").then((result) => {
+      this.$totpSecretInput.text(result.secret);
     });
 
     this.$protectedSessionTimeout.val(options.protectedSessionTimeout);
   }
 
   save() {
-    const oldPassword = this.$oldPassword.val();
-    const newPassword1 = this.$newPassword1.val();
-    const newPassword2 = this.$newPassword2.val();
-
-    this.$oldPassword.val("");
-    this.$newPassword1.val("");
-    this.$newPassword2.val("");
-
-    if (newPassword1 !== newPassword2) {
-      toastService.showError("New passwords are not the same.");
-      return false;
-    }
+    // TODO: CHECK VALIDITY OF SECRET
 
     server
-      .post("password/change", {
-        current_password: oldPassword,
-        new_password: newPassword1,
+      .post("totp/set", {
+        secret: this.$totpSecretInput.val(),
       })
       .then((result) => {
         if (result.success) {

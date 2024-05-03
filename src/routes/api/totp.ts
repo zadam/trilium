@@ -1,4 +1,6 @@
 import options = require("../../services/options");
+import totp_secret = require("../../services/encryption/totp_secret");
+import { Request } from "express";
 const speakeasy = require("speakeasy");
 
 function verifyOTPToken(guessedToken: any) {
@@ -20,18 +22,27 @@ function generateSecret() {
 }
 
 function checkForTOTP() {
-  const totpEnabled = options.getOptionBool("totpEnabled")
+  const totpEnabled = options.getOptionBool("totpEnabled");
   return { success: "true", message: totpEnabled };
 }
 
 function enableTOTP() {
-  options.setOption("totpEnabled", true)
+  options.setOption("totpEnab| voidled", true);
   return { success: "true" };
 }
 
 function disableTOTP() {
-  options.setOption("totpEnabled", false)
+  options.setOption("totpEnabled", false);
   return { success: "true" };
+}
+
+function setTotpSecret(req: Request) {
+  console.log("TODO: Save Secret");
+  // totp_secret.setTotpSecret(req.body.secret);
+}
+
+function getSecret() {
+  return "TODO: Get Secret";
 }
 
 export = {
@@ -39,5 +50,7 @@ export = {
   generateSecret,
   checkForTOTP,
   enableTOTP,
-  disableTOTP
+  disableTOTP,
+  setTotpSecret,
+  getSecret,
 };
