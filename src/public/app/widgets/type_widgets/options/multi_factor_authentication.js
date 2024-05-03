@@ -101,6 +101,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
         this.$totpSecretInput.prop("disabled", !result.message);
         this.$saveTotpButton.prop("disabled", !result.message);
         this.$totpSecret.prop("disapbled", !result.message);
+        this.$regenerateTotpButton.prop("disabled", !result.message);
       } else {
         toastService.showError(result.message);
       }

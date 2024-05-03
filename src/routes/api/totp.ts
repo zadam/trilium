@@ -39,6 +39,7 @@ function disableTOTP() {
 }
 
 function setTotpSecret(req: Request) {
+  // TODO: CHECK VALIDITY OF SECRET
   options.setOption
   totp_fs.saveTotpSecret(req.body.secret)
 }
