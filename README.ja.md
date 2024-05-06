@@ -1,6 +1,6 @@
 # Trilium Notes
 
-[English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md) | [Japanese](https://github.com/zadam/trilium/blob/master/README.ja.md)
+[English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md) | [Japanese](https://github.com/zadam/trilium/blob/master/README.ja.md) | [Italian](https://github.com/zadam/trilium/blob/master/README.it.md)
 
 Trilium Notes は、大規模な個人知識ベースの構築に焦点を当てた、階層型ノートアプリケーションです。概要は[スクリーンショット](https://github.com/zadam/trilium/wiki/Screenshot-tour)をご覧ください：
 
