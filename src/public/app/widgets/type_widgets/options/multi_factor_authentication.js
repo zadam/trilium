@@ -2,19 +2,13 @@ import server from "../../../services/server.js";
 import protectedSessionHolder from "../../../services/protected_session_holder.js";
 import toastService from "../../../services/toast.js";
 import OptionsWidget from "./options_widget.js";
-// import { randomBytes } from "crypto";
-
-// import { generateSecret } from "../../../services/totp.js";
-
-// const speakeasy = require("speakeasy");
-// ${speakeasy.generateSecret().base32}
 
 const TPL = `
 <div class="options-section">
     <h4 class="mfa-heading"></h4>
     
     <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
-      Use TOTP (Time-based One-Time Password) to safeguard your data in this application because it adds an additional layer of security by generating unique passcodes that expire quickly, making it harder for unauthorized access. TOTP also reduces the risk of account compromise through common threats like phishing attacks or password breaches.
+      Use TOTP to safeguard your data in this application because it adds an additional layer of security by generating unique passcodes that expire quickly, making it harder for unauthorized access. TOTP also reduces the risk of account compromise through common threats like phishing attacks or password breaches.
     </div>
     
   <br>
@@ -27,14 +21,19 @@ const TPL = `
     </div>
 
 <br>
-    <div class="options-section">
-      <label>
-      TOTP Secret
-      </label>
-      <input class="totp-secret-input form-control" disabled="true" type="text">
-      <button class="save-totp" disabled="true"> Save TOTP Secret </button>
-    </div>
-
+  <div>
+      <div class="form-group">
+        <label>Password confirmation</label>
+        <input class="password form-control" type="password">
+      </div>
+      <div class="options-section">
+        <label>
+        TOTP Secret
+        </label>
+        <input class="totp-secret-input form-control" disabled="true" type="text">
+        <button class="save-totp" disabled="true"> Save TOTP Secret </button>
+      </div>
+  </div>
     <br>
  <h4> Generate TOTP Secret </h4>
     <span class="totp-secret" >  </span>
@@ -52,8 +51,9 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     this.$totpSecret = this.$widget.find(".totp-secret");
     this.$totpSecretInput = this.$widget.find(".totp-secret-input");
     this.$saveTotpButton = this.$widget.find(".save-totp");
+    this.$password = this.$widget.find(".password");
 
-    this.$mfaHeadding.text("Multi-Factor Authentication");
+    this.$mfaHeadding.text("Time-Based One Time Password (TOTP)");
     this.generateKey();
 
     this.$totpEnabled.on("change", async () => {
@@ -65,7 +65,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     });
 
     this.$saveTotpButton.on("click", async () => {
-      this.save();
+      this.saveTotpSecret();
     });
 
     this.$protectedSessionTimeout = this.$widget.find(
@@ -102,6 +102,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
         this.$saveTotpButton.prop("disabled", !result.message);
         this.$totpSecret.prop("disapbled", !result.message);
         this.$regenerateTotpButton.prop("disabled", !result.message);
+        this.$password.prop("disabled", !result.message);
       } else {
         toastService.showError(result.message);
       }
@@ -110,7 +111,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     this.$protectedSessionTimeout.val(options.protectedSessionTimeout);
   }
 
-  save() {
+  saveTotpSecret() {
     const key = this.$totpSecretInput.val();
     const regex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
 
@@ -126,6 +127,7 @@ export default class MultiFactorAuthenticationOptions extends OptionsWidget {
     server
       .post("totp/set", {
         secret: this.$totpSecretInput.val(),
+        password: this.$password.val(),
       })
       .then((result) => {
         if (result.success) {

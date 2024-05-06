@@ -1,7 +1,9 @@
 import options = require("../../services/options");
 import totp_secret = require("../../services/encryption/totp_secret");
+import passwordEncryptionService = require('../../services/encryption/password_encryption');
 import { Request } from "express";
 import totp_fs = require("../../services/totp_secret");
+import ValidationError = require('../../errors/validation_error');
 const speakeasy = require("speakeasy");
 
 function verifyOTPToken(guessedToken: any) {
@@ -36,6 +38,10 @@ function disableTOTP() {
 }
 
 function setTotpSecret(req: Request) {
+
+  if(!passwordEncryptionService.verifyPassword(req.body.password))
+    throw new ValidationError("Incorrect password reset confirmation");
+
   const regex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
   if (req.body.secret.length != 52) return;
   if (regex.test(req.body.secret)) return;
