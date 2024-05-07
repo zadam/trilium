@@ -8,7 +8,7 @@ const TPL = `
     <h4 class="mfa-heading"></h4>
     
     <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
-      Use TOTP to safeguard your data in this application because it adds an additional layer of security by generating unique passcodes that expire quickly, making it harder for unauthorized access. TOTP also reduces the risk of account compromise through common threats like phishing attacks or password breaches.
+      Use TOTP to add an additional layer of security to safeguard your data.
     </div>
     
   <br>
