@@ -48,6 +48,7 @@ LINUX_X64_BUILD=trilium-linux-x64-$VERSION.tar.xz
 DEBIAN_X64_BUILD=trilium_${VERSION}_amd64.deb
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.zip
 MAC_X64_BUILD=trilium-mac-x64-$VERSION.zip
+MAC_ARM64_BUILD=trilium-mac-arm64-$VERSION.zip
 SERVER_BUILD=trilium-linux-x64-server-$VERSION.tar.xz
 
 echo "Creating release in GitHub"
@@ -68,4 +69,5 @@ gh release create "$TAG" \
     "dist/$LINUX_X64_BUILD" \
     "dist/$WINDOWS_X64_BUILD" \
     "dist/$MAC_X64_BUILD" \
+    "dist/$MAC_ARM64_BUILD" \
     "dist/$SERVER_BUILD"
