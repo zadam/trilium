@@ -2,7 +2,6 @@ import libraryLoader from '../../services/library_loader.js';
 import TypeWidget from './type_widget.js';
 import utils from '../../services/utils.js';
 import linkService from '../../services/link.js';
-import debounce from '../../services/debounce.js';
 
 const TPL = `
     <div class="canvas-widget note-detail-canvas note-detail-printable note-detail">
@@ -103,8 +102,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.SCENE_VERSION_INITIAL = -1; // -1 indicates that it is fresh. excalidraw scene version is always >0
         this.SCENE_VERSION_ERROR = -2; // -2 indicates error
 
-        // config
-        this.DEBOUNCE_TIME_ONCHANGEHANDLER = 750; // ms
         // ensure that assets are loaded from trilium
         window.EXCALIDRAW_ASSET_PATH = `${window.location.origin}/node_modules/@excalidraw/excalidraw/dist/`;
 
@@ -116,11 +113,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$render;
         this.$widget;
         this.reactHandlers; // used to control react state
-
-        // binds
-        this.createExcalidrawReactApp = this.createExcalidrawReactApp.bind(this);
-        this.onChangeHandler = this.onChangeHandler.bind(this);
-        this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
 
         this.libraryChanged = false;
     }
@@ -153,7 +145,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                 ReactDOM.unmountComponentAtNode(renderElement);
                 const root = ReactDOM.createRoot(renderElement);
-                root.render(React.createElement(this.createExcalidrawReactApp));
+                root.render(React.createElement(() => this.createExcalidrawReactApp()));
             });
 
         return this.$widget;
@@ -445,7 +437,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                         this.saveData();
                     },
-                    onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
+                    onChange: () => this.onChangeHandler(),
                     viewModeEnabled: false,
                     zenModeEnabled: false,
                     gridModeEnabled: false,
