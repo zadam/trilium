@@ -23,9 +23,15 @@ async function prompt(props) {
         appContext.triggerCommand("showPromptDialog", {...props, callback: res}));
 }
 
+async function promptNoteAutocomplete(props) {
+    return new Promise(res =>
+        appContext.triggerCommand("showAddLinkDialog", {...props, callback: res}));
+}
+
 export default {
     info,
     confirm,
     confirmDeleteNoteBoxWithNote,
-    prompt
+    prompt,
+    promptNoteAutocomplete
 };
