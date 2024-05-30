@@ -138,6 +138,11 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         this.renderData(data);
     }
 
+    deactivatedEvent() {
+        this.graph.stopAnimation();
+        this.graph = null;
+    }
+
     getMapRootNoteId() {
         if (this.widgetMode === 'ribbon') {
             return this.noteId;

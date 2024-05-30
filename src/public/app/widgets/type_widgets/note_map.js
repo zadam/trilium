@@ -23,4 +23,8 @@ export default class NoteMapTypeWidget extends TypeWidget {
     async doRefresh(note) {
         await this.noteMapWidget.refresh();
     }
+
+    deactivatedEvent() {
+        this.noteMapWidget.deactivatedEvent();
+    }
 }
