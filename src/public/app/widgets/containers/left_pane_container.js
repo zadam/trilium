@@ -7,7 +7,7 @@ export default class LeftPaneContainer extends FlexContainer {
         super('column');
 
         this.id('left-pane');
-        this.css('height', '100%');
+        this.css('height', '100%').css('max-width', '33%');
         this.collapsible();
     }
 
