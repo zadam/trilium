@@ -11,7 +11,9 @@ const cls = require('./cls.js');
 const fs = require("fs-extra");
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
-dbConnection.pragma('journal_mode = WAL');
+if (process.env.TRILIUM_DB_DISABLE_WAL !== "1") {
+    dbConnection.pragma('journal_mode = WAL');
+}
 
 const LOG_ALL_QUERIES = false;
 
