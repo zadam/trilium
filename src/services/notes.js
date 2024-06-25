@@ -458,13 +458,18 @@ function findIncludeNoteLinks(content, foundLinks) {
 }
 
 function findRelationMapLinks(content, foundLinks) {
-    const obj = JSON.parse(content);
+    try {
+        const obj = JSON.parse(content);
 
-    for (const note of obj.notes) {
-        foundLinks.push({
-            name: 'relationMapLink',
-            value: note.noteId
-        });
+        for (const note of obj.notes) {
+            foundLinks.push({
+                name: 'relationMapLink',
+                value: note.noteId
+            });
+        }
+    }
+    catch (e) {
+        log.error("Could not scan for relation map links: " + e.message);
     }
 }
 

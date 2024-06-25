@@ -184,8 +184,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
     }
 
     async loadMapData() {
-        toastService.showMessage("Relation Map has been deprecated since Trilium 0.63 and will be removed in a future version. Migrate your content to some other note type (e.g. canvas) as soon as possible.", 5000);
-
         this.mapData = {
             notes: [],
             // it is important to have this exact value here so that initial transform is the same as this
