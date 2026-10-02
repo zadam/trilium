@@ -23,6 +23,35 @@ export function getMermaidConfig(): MermaidConfig {
     };
 }
 
+let renderCount = 0;
+
+/**
+ * Draws a Mermaid diagram as the app's diagram editor shows it and stores its preview, in `theme`
+ * when given and otherwise in the one the app's theme sets. An empty source draws nothing, and a
+ * source Mermaid cannot parse rejects with Mermaid's error.
+ */
+export async function renderMermaidSvg(
+    source: string, theme?: MermaidConfig["theme"]
+): Promise<string> {
+    const mermaid = (await import("mermaid")).default;
+
+    if (!source.trim()) {
+        return "";
+    }
+
+    mermaid.initialize({
+        startOnLoad: false,
+        // A source Mermaid cannot parse rejects without leaving its error drawing in the body.
+        suppressErrorRendering: true,
+        ...getMermaidConfig(),
+        ...(theme ? { theme } : {})
+    });
+
+    renderCount++;
+    const { svg } = await mermaid.render(`mermaid-graph-${renderCount}`, source);
+    return postprocessMermaidSvg(svg);
+}
+
 /**
  * Processes the output of a Mermaid SVG render before it should be delivered to the user.
  *

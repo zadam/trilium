@@ -17,7 +17,7 @@ import { isElectron } from "./utils.js";
  *  - `/api/clipper` — the web clipper endpoint the browser extension talks to.
  *  - `/etapi` — the token-authenticated External API used by local automation.
  *
- * Everything else (the SPA + login, `/share`, the authenticated `/api`, static
+ * Everything else (the SPA + login, `/share`, `/collab`, the authenticated `/api`, static
  * assets) is "web access to the desktop instance" and is served only once the user
  * opts into network access.
  */

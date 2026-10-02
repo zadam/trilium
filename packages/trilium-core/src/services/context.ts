@@ -53,6 +53,28 @@ export function getComponentId() {
     return getContext().get("componentId");
 }
 
+export type GuestCapability = "view" | "edit" | "create";
+
+/** Who a request acts as: the host (every request today) or a guest of one collaboration. */
+export type Principal =
+    | { kind: "host" }
+    | {
+        kind: "guest";
+        collabId: string;
+        guestId: string;
+        capabilities: readonly GuestCapability[];
+    };
+
+const HOST_PRINCIPAL: Principal = { kind: "host" };
+
+export function setPrincipal(principal: Principal) {
+    getContext().set("principal", principal);
+}
+
+export function getPrincipal(): Principal {
+    return getContext().get<Principal>("principal") ?? HOST_PRINCIPAL;
+}
+
 export function isEntityEventsDisabled() {
     return !!getContext().get("disableEntityEvents");
 }

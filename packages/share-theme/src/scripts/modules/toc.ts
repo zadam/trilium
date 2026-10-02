@@ -1,3 +1,5 @@
+let previousRun: AbortController | null = null;
+
 /**
  * The ToC is now generated in the page template so
  * it even exists for users without client-side js
@@ -9,12 +11,19 @@
  * entry as the user scrolls.
  */
 export default function setupToC() {
+    // A collaboration page swaps its note in place and runs this again; ending the previous run's
+    // listeners keeps them from stacking up.
+    previousRun?.abort();
+    previousRun = new AbortController();
+    const { signal } = previousRun;
+
     const container = document.getElementById("right-pane");
     const toc = document.getElementById("toc");
-    if (!toc || !container) return;
+    const content = document.getElementById("content");
+    if (!toc || !container || !content) return;
 
     // Get all relevant elements
-    const sections = document.getElementById("content")!.querySelectorAll("h2, h3, h4, h5, h6");
+    const sections = content.querySelectorAll("h2, h3, h4, h5, h6");
     const links = toc.querySelectorAll("a");
 
     // Setup smooth scroll on click
@@ -26,11 +35,13 @@ export default function setupToC() {
             e.stopPropagation();
 
             target.scrollIntoView({behavior: "smooth"});
-        });
+        }, { signal });
     }
 
     // Setup a moving "active" in the ToC that adjusts with the scroll state
     function changeLinkState() {
+        if (sections.length === 0 || links.length === 0) return;
+
         let index = sections.length;
 
         // Work backwards to find the first matching section
@@ -38,10 +49,10 @@ export default function setupToC() {
 
         // Update the "active" item in ToC
         links.forEach((link) => link.classList.remove("active"));
-        links[index].classList.add("active");
+        links[index]?.classList.add("active");
     }
 
     // Initial render
     changeLinkState();
-    container.addEventListener("scroll", changeLinkState);
+    container.addEventListener("scroll", changeLinkState, { signal });
 }

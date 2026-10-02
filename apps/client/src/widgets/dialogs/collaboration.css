@@ -1,0 +1,32 @@
+.modal.collaboration-dialog {
+    .collaboration-intro {
+        margin-bottom: 1em;
+    }
+
+    .collaboration-link {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5em;
+        align-items: flex-end;
+        margin-bottom: 1em;
+
+        .form-group {
+            flex: 1 1 18em;
+            margin-bottom: 0;
+        }
+    }
+
+    .collaboration-presence {
+        width: 100%;
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    .collaboration-capability {
+        margin-top: 1em;
+    }
+
+    .collaboration-stop {
+        margin-right: auto;
+    }
+}

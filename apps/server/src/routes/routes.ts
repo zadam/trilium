@@ -15,9 +15,11 @@ import etapiSpecialNoteRoutes from "../etapi/special_notes.js";
 import auth from "../services/auth.js";
 import openID from '../services/open_id.js';
 import { isElectron } from "../services/utils.js";
+import collabRoutes from "../collab/routes.js";
 import shareRoutes from "../share/routes.js";
 import clipperRoute from "./api/clipper.js";
 import databaseRoute from "./api/database.js";
+import collaborationsApiRoute from "./api/collaborations.js";
 import etapiTokensApiRoutes from "./api/etapi_tokens.js";
 import filesRoute from "./api/files.js";
 // API routes
@@ -40,6 +42,7 @@ import setupRoute from "./setup.js";
 
 const GET = "get",
     PST = "post",
+    PUT = "put",
     PATCH = "patch",
     DEL = "delete";
 
@@ -129,6 +132,17 @@ function register(app: express.Application) {
     apiRoute(PATCH, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.patchToken);
     apiRoute(DEL, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.deleteToken);
 
+    apiRoute(GET, "/api/collaborations", collaborationsApiRoute.getCollaborations);
+    asyncApiRoute(PST, "/api/collaborations", collaborationsApiRoute.createCollaboration);
+    asyncApiRoute(PATCH, "/api/collaborations/:collabId",
+        collaborationsApiRoute.updateCollaboration);
+    apiRoute(GET, "/api/collaborations/:collabId/presence", collaborationsApiRoute.getPresence);
+    apiRoute(PUT, "/api/collaborations/:collabId/people/:personId",
+        collaborationsApiRoute.renamePerson);
+    apiRoute(DEL, "/api/collaborations/:collabId/people/:personId",
+        collaborationsApiRoute.removePerson);
+    apiRoute(DEL, "/api/collaborations/:collabId", collaborationsApiRoute.deleteCollaboration);
+
     // in case of local electron, local calls are allowed unauthenticated, for server they need auth
     const clipperMiddleware = isElectron ? [] : [auth.checkEtapiToken];
 
@@ -176,6 +190,7 @@ function register(app: express.Application) {
     asyncApiRoute(PST, "/api/onenote-import/import", onenoteImportRoute.runImport);
 
     shareRoutes.register(router);
+    collabRoutes.register(loginRateLimiter);
 
     etapiAuthRoutes.register(router, [loginRateLimiter]);
     etapiAppInfoRoutes.register(router);

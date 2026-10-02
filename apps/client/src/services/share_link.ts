@@ -10,15 +10,27 @@
 export function buildShareLink(shareId: string, syncServerHost: string | null | undefined): string {
     // A shareId is either a noteId or a free-form shareAlias, so it can hold spaces, quotes and
     // path separators. Encoding keeps it a single segment the /share/:shareId route decodes back.
-    const encodedShareId = encodeURIComponent(shareId);
+    return buildPublicLink(`share/${encodeURIComponent(shareId)}`, syncServerHost);
+}
 
+/**
+ * The guest URL of a collaboration, by its id or link name. Its page links resolve against the
+ * trailing slash.
+ */
+export function buildCollabLink(
+    idOrSlug: string, syncServerHost: string | null | undefined
+): string {
+    return buildPublicLink(`collab/${encodeURIComponent(idOrSlug)}/`, syncServerHost);
+}
+
+function buildPublicLink(path: string, syncServerHost: string | null | undefined): string {
     if (syncServerHost) {
-        return new URL(`/share/${encodedShareId}`, syncServerHost).href;
+        return new URL(`/${path}`, syncServerHost).href;
     }
 
     if (window.glob.httpBaseUrl) {
-        return new URL(`/share/${encodedShareId}`, window.glob.httpBaseUrl).href;
+        return new URL(`/${path}`, window.glob.httpBaseUrl).href;
     }
 
-    return `${location.protocol}//${location.host}${location.pathname}share/${encodedShareId}`;
+    return `${location.protocol}//${location.host}${location.pathname}${path}`;
 }

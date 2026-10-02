@@ -53,6 +53,11 @@ interface ContentNoteIdToComponentIdRow {
 
 interface OptionRow {}
 
+interface CollaborationRow {
+    collabId: string;
+    noteId?: string;
+}
+
 interface NoteReorderingRow {}
 
 
@@ -65,6 +70,7 @@ type EntityRowMappings = {
     revisions: RevisionRow;
     note_reordering: NoteReorderingRow;
     etapi_tokens: EtapiTokenRow;
+    collaborations: CollaborationRow;
 };
 
 export type EntityRowNames = keyof EntityRowMappings;
@@ -80,6 +86,7 @@ export default class LoadResults {
     private contentNoteIdToComponentId: ContentNoteIdToComponentIdRow[];
     private optionNames: OptionNames[];
     private attachmentRows: AttachmentRow[];
+    private collaborationRows: CollaborationRow[];
     public hasEtapiTokenChanges: boolean = false;
 
     constructor(entityChanges: EntityChange[]) {
@@ -109,6 +116,8 @@ export default class LoadResults {
         this.optionNames = [];
 
         this.attachmentRows = [];
+
+        this.collaborationRows = [];
     }
 
     getEntityRow<T extends EntityRowNames>(entityName: T, entityId: string): EntityRowMappings[T] {
@@ -226,6 +235,18 @@ export default class LoadResults {
         return this.attachmentRows;
     }
 
+    addCollaboration(collabId: string, noteId?: string) {
+        this.collaborationRows.push({ collabId, noteId });
+    }
+
+    getCollaborationRows() {
+        return this.collaborationRows;
+    }
+
+    hasCollaborationForNote(noteId: string | null | undefined) {
+        return !!noteId && this.collaborationRows.some((row) => row.noteId === noteId);
+    }
+
     /**
      * @returns {boolean} true if there are changes which could affect the attributes (including inherited ones)
      *          notably changes in note itself should not have any effect on attributes
@@ -244,6 +265,7 @@ export default class LoadResults {
             this.contentNoteIdToComponentId.length === 0 &&
             this.optionNames.length === 0 &&
             this.attachmentRows.length === 0 &&
+            this.collaborationRows.length === 0 &&
             !this.hasEtapiTokenChanges
         );
     }

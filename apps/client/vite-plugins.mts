@@ -102,23 +102,26 @@ function replaceOnce(code: string, pattern: RegExp, replacer: (match: string, ..
 /** The name of the entry the share theme loads mermaid through, `src/share_mermaid.ts`. */
 export const SHARE_MERMAID_ENTRY = "share_mermaid";
 
+/** The name of the entry a collaboration page loads its editor through, `src/collab_editor.ts`. */
+export const COLLAB_EDITOR_ENTRY = "collab_editor";
+
 /**
- * Adds `src/share_mermaid.ts` as the `share_mermaid` entry and writes its
- * {@link ShareMermaidManifest} to `manifestPath`. Shared pages read the manifest to import the
- * entry, and the share-theme export reads it to copy the files.
+ * Adds `src/<entry>.ts` as an entry of its own and writes its {@link ShareMermaidManifest} to
+ * `manifestPath`. Share-theme pages read the manifest to import the entry, and the share-theme
+ * export reads it to copy the files.
  *
  * The entry is emitted here rather than listed in `input` because an app build drops the exports
- * of its entries, and shared pages import the entry's default export.
+ * of its entries, and the pages import the entry's default export.
  */
-export function shareMermaidManifest(manifestPath: string): Plugin {
+export function clientEntryManifest(entry: string, manifestPath: string): Plugin {
     return {
-        name: "share-mermaid-manifest",
+        name: `client-entry-manifest-${entry}`,
         apply: "build",
         buildStart() {
             this.emitFile({
                 type: "chunk",
-                id: fileURLToPath(new URL("./src/share_mermaid.ts", import.meta.url)),
-                name: SHARE_MERMAID_ENTRY,
+                id: fileURLToPath(new URL(`./src/${entry}.ts`, import.meta.url)),
+                name: entry,
                 preserveSignature: "exports-only"
             });
         },
@@ -126,10 +129,14 @@ export function shareMermaidManifest(manifestPath: string): Plugin {
             this.emitFile({
                 type: "asset",
                 fileName: manifestPath,
-                source: JSON.stringify(buildShareMermaidManifest(bundle, manifestPath))
+                source: JSON.stringify(buildClientEntryManifest(bundle, manifestPath, entry))
             });
         }
     };
+}
+
+export function shareMermaidManifest(manifestPath: string): Plugin {
+    return clientEntryManifest(SHARE_MERMAID_ENTRY, manifestPath);
 }
 
 type BundleOutput =
@@ -144,18 +151,26 @@ type BundleOutput =
         viteMetadata?: { importedCss: Set<string>; importedAssets: Set<string> };
     };
 
-/**
- * Collects the `share_mermaid` entry and everything it imports, statically or dynamically,
- * including the CSS and assets Vite preloads alongside a chunk.
- */
 export function buildShareMermaidManifest(
     bundle: Record<string, BundleOutput>,
     manifestPath: string
 ): ShareMermaidManifest {
+    return buildClientEntryManifest(bundle, manifestPath, SHARE_MERMAID_ENTRY);
+}
+
+/**
+ * Collects the named entry and everything it imports, statically or dynamically, including the
+ * CSS and assets Vite preloads alongside a chunk.
+ */
+export function buildClientEntryManifest(
+    bundle: Record<string, BundleOutput>,
+    manifestPath: string,
+    entryName: string
+): ShareMermaidManifest {
     const entry = Object.values(bundle).find((output) =>
-        output.type === "chunk" && output.isEntry && output.name === SHARE_MERMAID_ENTRY);
+        output.type === "chunk" && output.isEntry && output.name === entryName);
     if (!entry) {
-        throw new Error(`The bundle has no '${SHARE_MERMAID_ENTRY}' entry.`);
+        throw new Error(`The bundle has no '${entryName}' entry.`);
     }
 
     const files = new Set<string>();
@@ -177,10 +192,11 @@ export function buildShareMermaidManifest(
         }
     }
 
-    const directories = new Set([ ...files ].map((fileName) => posix.dirname(fileName)));
-    if (directories.size !== 1) {
-        const list = [ ...directories ].join(", ");
-        throw new Error(`The '${SHARE_MERMAID_ENTRY}' files span several directories: ${list}.`);
+    const entryDir = posix.dirname(entry.fileName);
+    const outside = [ ...files ].filter((fileName) => posix.dirname(fileName) !== entryDir);
+    if (outside.length > 0) {
+        throw new Error(`The '${entryName}' files span several directories: `
+            + `${outside.join(", ")} sit outside ${entryDir}.`);
     }
 
     const manifestDir = posix.dirname(manifestPath);

@@ -9,6 +9,47 @@ export function getMaxMigrationVersion() {
 
 // Migrations should be kept in descending order, so the latest migration is first.
 export const MIGRATIONS: (SqlMigration | JsMigration)[] = [
+    // The name the host goes by on a collaboration's pages; null shows the default
+    {
+        version: 243,
+        sql: /*sql*/`
+            ALTER TABLE collaborations ADD COLUMN hostName TEXT DEFAULT NULL;
+        `,
+        ignoreErrors: true
+    },
+    // Cap how many guests a collaboration admits at the same time
+    {
+        version: 242,
+        sql: /*sql*/`
+            ALTER TABLE collaborations ADD COLUMN maxGuests INT NOT NULL DEFAULT 10;
+        `,
+        ignoreErrors: true
+    },
+    // Guest access to a note or subtree at /collab/:collabId, each capability either open or
+    // behind a password whose scrypt hash the row holds
+    {
+        version: 241,
+        sql: /*sql*/`
+            CREATE TABLE IF NOT EXISTS "collaborations" (
+                collabId TEXT PRIMARY KEY NOT NULL,
+                noteId TEXT NOT NULL,
+                includeSubtree INT NOT NULL DEFAULT 0,
+                viewMode TEXT NOT NULL,
+                editMode TEXT NOT NULL,
+                createMode TEXT NOT NULL,
+                viewPasswordHash TEXT DEFAULT NULL,
+                viewPasswordSalt TEXT DEFAULT NULL,
+                editPasswordHash TEXT DEFAULT NULL,
+                editPasswordSalt TEXT DEFAULT NULL,
+                createPasswordHash TEXT DEFAULT NULL,
+                createPasswordSalt TEXT DEFAULT NULL,
+                slug TEXT DEFAULT NULL,
+                utcDateCreated TEXT NOT NULL,
+                utcDateModified TEXT NOT NULL,
+                isDeleted INT NOT NULL DEFAULT 0);
+            CREATE INDEX IF NOT EXISTS IDX_collaborations_noteId ON collaborations (noteId);
+        `
+    },
     // Give every board its own select definition for the label it groups by, so the columns stop
     // living only in the board.json attachment
     {

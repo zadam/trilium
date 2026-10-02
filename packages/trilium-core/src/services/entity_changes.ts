@@ -241,6 +241,7 @@ function fillAllEntityChanges() {
         fillEntityChanges("blobs", "blobId");
         fillEntityChanges("attributes", "attributeId");
         fillEntityChanges("etapi_tokens", "etapiTokenId");
+        fillEntityChanges("collaborations", "collabId");
         fillEntityChanges("options", "name", "WHERE isSynced = 1");
     });
 }

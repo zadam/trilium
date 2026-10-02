@@ -7,15 +7,12 @@ import appContext from "../../../components/app_context";
 import { buildNotes } from "../../../test/easy-froca";
 import { renderInto } from "../../../test/render";
 import type { AddLinkOpts } from "../../dialogs/add_link";
-import { uploadNodeImage } from "./images";
+import { uploadNodeImage } from "./image_upload";
 import NodePanel, { applyTagTexts, DEFAULT_FONT_SIZE, gatherTags, getCommonValue, MIXED, NODE_BACKGROUND_COLORS, NODE_COLORS, withIconAt } from "./NodePanel";
 
-// Storing a picture is the one thing the panel does that leaves the browser; the rest of the module
-// (the sizes, the proportions) is the real one, being what the panel is checked against here.
-vi.mock("./images", async (importOriginal) => ({
-    ...await importOriginal<typeof import("./images")>(),
-    uploadNodeImage: vi.fn()
-}));
+// Storing a picture is the one thing the panel does that leaves the browser; the sizes and the
+// proportions in `./images` are the real ones, being what the panel is checked against here.
+vi.mock("./image_upload", () => ({ uploadNodeImage: vi.fn() }));
 
 // The memo field is a CKEditor, which wants a browser to build itself in; what it is handed and
 // what it gives back is checked around it instead (see `toMemoHtml` below). The stand-in reports

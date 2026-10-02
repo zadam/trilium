@@ -491,7 +491,9 @@
     "source_description_etapi": "Created via the External Trilium API",
     "source_description_llm": "Created by the AI assistant",
     "source_description_restore": "Saved before restoring a previous revision",
-    "source_description_unknown": "Source not available"
+    "source_description_unknown": "Source not available",
+    "source_collab": "Guest edit",
+    "source_description_collab": "Saved before a guest edited the note through a collaboration link"
   },
   "sort_child_notes": {
     "sort_children_by": "Sort children by...",
@@ -1174,7 +1176,8 @@
     "export_as_image": "Export as image",
     "export_as_image_png": "PNG (raster)",
     "export_as_image_svg": "SVG (vector)",
-    "note_map": "Note map"
+    "note_map": "Note map",
+    "collaborate": "Collaborate…"
   },
   "onclick_button": {
     "no_click_handler": "Button widget '{{componentId}}' has no defined click handler"
@@ -3866,7 +3869,13 @@
     "shared_preview": "Share preview",
     "shared_preview_description": "Only this browser can open the shared page, and only while Trilium is open in it. To publish it, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
     "shared_export_only": "Not published",
-    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server."
+    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
+    "collaboration": "Collaboration",
+    "collaboration_description": "Guests can open this note through a collaboration link.",
+    "collaboration_copy_link": "Copy collaboration link",
+    "collaboration_open": "Open as a guest",
+    "collaboration_settings": "Collaboration settings…",
+    "collaboration_stop": "Stop collaboration"
   },
   "status_bar": {
     "language_title": "Change content language",
@@ -4513,5 +4522,62 @@
   },
   "split_button": {
     "more_actions": "More actions"
+  },
+  "collaboration": {
+    "title": "Collaborate on \"{{title}}\"",
+    "intro": "Guests open the link in a browser. There are no accounts: each capability is either open to anyone with the link or needs a password you set here.",
+    "link": "Link",
+    "copy_link": "Copy link",
+    "open_link": "Open",
+    "include_subtree": "Include child notes",
+    "include_subtree_hint": "Guests also see the notes under this one.",
+    "view": "View",
+    "edit": "Edit",
+    "add_child_notes": "Add child notes",
+    "add_child_notes_hint": "Only available when child notes are included and editing is allowed.",
+    "off": "Off",
+    "anyone_with_link": "Anyone with the link",
+    "with_password": "With a password",
+    "open_edit_warning": "Anyone who gets the link can change this note. Share it only where you would share the note itself.",
+    "slug": "Link name",
+    "slug_hint": "Optional readable name used in the link instead of the generated id. Letters, digits, - and _ only.",
+    "presence": "Guests on the page right now: {{count}}",
+    "start": "Start collaboration",
+    "save": "Save",
+    "close": "Close",
+    "stop": "Stop collaboration",
+    "stop_confirm": "Stop this collaboration? The link stops working for every guest at once and the note becomes private again.",
+    "saved": "Collaboration settings saved.",
+    "stopped": "Collaboration stopped.",
+    "password_required": "Set a password for every capability that needs one.",
+    "max_guests": "Guest limit",
+    "max_guests_hint": "How many guests can be connected at the same time, up to {{max}}. Anyone beyond that is asked to come back later.",
+    "max_guests_invalid": "Enter a whole number of guests.",
+    "separate_edit_password": "Use a separate password for editing",
+    "separate_edit_password_hint": "Guests with the view password can only read; those with the edit password can also change notes.",
+    "password_for_view": "View password",
+    "password_for_view_edit": "Password (to view and edit)",
+    "password_for_view_edit_create": "Password (to view, edit and add notes)",
+    "password_for_edit": "Edit password",
+    "password_for_edit_create": "Password (to edit and add notes)",
+    "password_for_create": "Password for adding notes",
+    "separate_create_password": "Use a separate password for adding notes",
+    "separate_create_password_hint": "Guests with the edit password can change notes; only those with this password can also add notes.",
+    "host_name": "Your name",
+    "host_name_hint": "How guests see you in the list of people and beside your cursor.",
+    "host_name_placeholder": "Host"
+  },
+  "collab_people": {
+    "tooltip": "The people on the collaboration's pages",
+    "host": "Host",
+    "rename": "Rename",
+    "remove": "Remove",
+    "rename_title": "Rename",
+    "rename_message": "The name everyone on the collaboration's pages sees",
+    "remove_confirm": "Remove {{name}} from the collaboration? They are signed out and their pages close. The link still works for them: an open one takes them back as a new guest, and a password one asks for the password again."
+  },
+  "password_box": {
+    "show": "Show password",
+    "hide": "Hide password"
   }
 }

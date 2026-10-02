@@ -722,6 +722,42 @@
                                             "format": "markdown",
                                             "dataFileName": "user_data.md",
                                             "attachments": []
+                                        },
+                                        {
+                                            "isClone": false,
+                                            "noteId": "CJLIsJnT3hdu",
+                                            "notePath": [
+                                                "jdjRLhLV3TtI",
+                                                "MhwWMgxwDTZL",
+                                                "pRZhrVIGCbMu",
+                                                "vNMojjUN76jc",
+                                                "CJLIsJnT3hdu"
+                                            ],
+                                            "title": "collaborations",
+                                            "notePosition": 86,
+                                            "prefix": null,
+                                            "isExpanded": false,
+                                            "type": "text",
+                                            "mime": "text/html",
+                                            "attributes": [
+                                                {
+                                                    "type": "label",
+                                                    "name": "shareAlias",
+                                                    "value": "collaborations",
+                                                    "isInheritable": false,
+                                                    "position": 10
+                                                },
+                                                {
+                                                    "type": "label",
+                                                    "name": "iconClass",
+                                                    "value": "bx bx-table",
+                                                    "isInheritable": false,
+                                                    "position": 20
+                                                }
+                                            ],
+                                            "format": "markdown",
+                                            "dataFileName": "collaborations.md",
+                                            "attachments": []
                                         }
                                     ]
                                 }

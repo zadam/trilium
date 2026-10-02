@@ -213,6 +213,10 @@ export type CommandMappings = {
         selectedOrActiveNoteIds?: string[];
     };
     editBranchPrefix: ContextMenuCommandData;
+    /** Opens the dialog that starts, changes or stops the collaboration on a note. */
+    openCollaborationDialog: {
+        noteId: string;
+    };
     convertNoteToAttachment: ContextMenuCommandData;
     duplicateSubtree: ContextMenuCommandData;
     expandSubtree: ContextMenuCommandData;

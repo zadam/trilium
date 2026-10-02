@@ -18,6 +18,9 @@ function getFullAnonymizationScript() {
 
     const anonymizeScript = /*sql*/`\
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
+UPDATE collaborations SET viewPasswordHash = NULL, viewPasswordSalt = NULL,
+    editPasswordHash = NULL, editPasswordSalt = NULL,
+    createPasswordHash = NULL, createPasswordSalt = NULL, slug = NULL;
 UPDATE notes SET title = 'title' WHERE title NOT IN ('root', '_hidden', '_share');
 UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
 UPDATE revisions SET title = 'title';

@@ -83,6 +83,9 @@ async function register(app: express.Application) {
         app.get(`/share/assets/client/share_mermaid.json`, (_req, res) => {
             res.json({ entry: `/${assetUrlFragment}/src/share_mermaid.ts`, files: [] });
         });
+        app.get(`/share/assets/client/collab_editor.json`, (_req, res) => {
+            res.json({ entry: `/${assetUrlFragment}/src/collab_editor.ts`, files: [] });
+        });
     } else {
         const publicDir = path.join(resourceDir, "public");
         if (!existsSync(publicDir)) {

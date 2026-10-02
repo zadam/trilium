@@ -1,3 +1,4 @@
+import type { CollabCursorOwner, CollabPerson, CollabSelection } from "./collab.js";
 import type { LlmStreamChunk } from "./llm_api.js";
 
 export interface EntityChange {
@@ -128,14 +129,75 @@ type AllTaskDefinitions =
     | TaskDefinition<"importNotes">
     | TaskDefinition<"importAttachments">;
 
+/** One note of a collaboration that changed in a transaction, as its guests are told. */
+export interface CollabNoteUpdate {
+    noteId: string;
+    title: string;
+    /** The note's type and MIME, so a page can follow a switch between text and code. */
+    type: string;
+    mime: string;
+    blobId: string | null;
+    utcDateModified: string;
+    isDeleted: boolean;
+    /** The component that made the change, so a guest editor can tell its own save from others'. */
+    componentId: string;
+}
+
 export type WebSocketMessage = AllTaskDefinitions | {
+    /** A transaction touched a collaboration's scope. Sent to its guest sockets only. */
+    type: "collab-update";
+    collabId: string;
+    notes: CollabNoteUpdate[];
+    /** A branch under the collaboration changed, so the page's tree is stale. */
+    treeChanged: boolean;
+    /** The host changed what the pages offer: the subtree, or how a capability is opened. */
+    settingsChanged: boolean;
+} | {
+    /** Who is on a collaboration's pages now. Sent to its guests and to the host's clients. */
+    type: "collab-presence";
+    collabId: string;
+    /** How many guests are connected, counted as the guest limit counts them. */
+    guests: number;
+    people: CollabPerson[];
+} | {
+    /**
+     * Another person's selection in a note, or null once they left the note. Sent to the guest
+     * pages on that note and to the host's clients that show it.
+     */
+    type: "collab-remote-cursor";
+    collabId: string;
+    noteId: string;
+    person: CollabCursorOwner;
+    selection: CollabSelection | null;
+} | {
+    /** Client to server, from a guest socket: the note the guest is editing, or null for none. */
+    type: "collab-editing";
+    noteId: string | null;
+} | {
+    /** Client to server, from a guest socket: the note the page shows. */
+    type: "collab-viewing";
+    noteId: string;
+} | {
+    /**
+     * Client to server, from a guest who can edit or from the host's app: the sender's selection
+     * in a note, or null once it left the note.
+     */
+    type: "collab-cursor";
+    noteId: string;
+    selection: CollabSelection | null;
+} | {
     type: "ping",
     /**
      * Live protected-session state of the backend, present on server→client pings. Lets the client
      * detect a protected-session expiry whose `reload-frontend` broadcast never arrived (e.g. the
      * WebSocket was dead at expiry time) and reload itself. Absent on client→server pings.
      */
-    protectedSessionAvailable?: boolean
+    protectedSessionAvailable?: boolean;
+    /**
+     * On the host's client→server pings: the note the app shows, or null while it shows none, so
+     * the people on a collaboration's pages see the host on it.
+     */
+    collabViewing?: string | null;
 } | {
     type: "frontend-update",
     data: {

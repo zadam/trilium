@@ -120,6 +120,20 @@ describe("LoadResults", () => {
         expect(lr.getAttachmentRows()).toEqual([attachment]);
     });
 
+    it("records collaboration changes by note", () => {
+        const lr = new LoadResults([]);
+        lr.addCollaboration("col1", "n1");
+        lr.addCollaboration("col2");
+
+        expect(lr.getCollaborationRows()).toEqual([
+            { collabId: "col1", noteId: "n1" },
+            { collabId: "col2", noteId: undefined }
+        ]);
+        expect(lr.hasCollaborationForNote("n1")).toBe(true);
+        expect(lr.hasCollaborationForNote("n2")).toBe(false);
+        expect(lr.hasCollaborationForNote(null)).toBe(false);
+    });
+
     it("reports attribute-related changes from branches or attributes", () => {
         const fromBranch = new LoadResults([]);
         fromBranch.addBranch("b1", "comp1");
@@ -145,6 +159,7 @@ describe("LoadResults", () => {
             (lr) => lr.addNoteContent("n1", "c"),
             (lr) => lr.addOption("eraseEntitiesAfterTimeInSeconds"),
             (lr) => lr.addAttachmentRow({ attachmentId: "att1" } as never),
+            (lr) => lr.addCollaboration("col1", "n1"),
             (lr) => { lr.hasEtapiTokenChanges = true; }
         ];
 
@@ -160,6 +175,7 @@ describe("LoadResults", () => {
         treeIgnored.addNoteContent("n1", "c");
         treeIgnored.addOption("eraseEntitiesAfterTimeInSeconds");
         treeIgnored.hasEtapiTokenChanges = true;
+        treeIgnored.addCollaboration("col1", "n1");
         expect(treeIgnored.isEmptyForTree()).toBe(true);
 
         const treeAffecting = new LoadResults([]);

@@ -58,22 +58,20 @@ describe("Debouncer", () => {
         expect(callback).toHaveBeenCalledTimes(1);
     });
 
-    it("destroy() with no pending update does nothing (timeoutId === null)", () => {
+    it("destroy() with no pending update does nothing", () => {
         const callback = vi.fn();
         const debouncer = new Debouncer<string>(100, callback);
 
-        // Never scheduled anything, and after a flush the next destroy is a no-op too.
         debouncer.destroy();
         expect(callback).not.toHaveBeenCalled();
 
+        // An update already reported is no longer pending, so destroy() does not send it again;
+        // a color picker closed after a pick would otherwise re-apply that color over a later one.
         debouncer.updateValue("x");
         vi.advanceTimersByTime(100);
         expect(callback).toHaveBeenCalledTimes(1);
 
-        // timeoutId is still set after a natural fire (it is not reset to null), but the
-        // flushed value remains "x"; a second destroy flushes the same last value again.
         debouncer.destroy();
-        expect(callback).toHaveBeenCalledTimes(2);
-        expect(callback).toHaveBeenLastCalledWith("x");
+        expect(callback).toHaveBeenCalledTimes(1);
     });
 });

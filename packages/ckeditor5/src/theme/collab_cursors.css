@@ -1,0 +1,40 @@
+/* `--collab-color` is the person's color, set on each caret and selection. */
+.ck-collab-caret {
+    position: relative;
+    display: inline-block;
+    width: 0;
+    height: 1.2em;
+    margin: 0 -1px;
+    border-left: 2px solid var(--collab-color);
+    vertical-align: text-bottom;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* A moved caret is a new element, so the name shows again whenever its person moves. */
+.ck-collab-caret__label {
+    position: absolute;
+    bottom: 100%;
+    left: -2px;
+    padding: 0 4px;
+    border-radius: 3px 3px 3px 0;
+    background: var(--collab-color);
+    color: #fff;
+    font-family: var(--main-font-family, sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 1.6;
+    white-space: nowrap;
+    animation: ck-collab-caret-label-fade 0.4s ease 3s forwards;
+}
+
+@keyframes ck-collab-caret-label-fade {
+    to {
+        opacity: 0;
+    }
+}
+
+.ck-collab-selection {
+    background-color: color-mix(in srgb, var(--collab-color) 25%, transparent);
+}

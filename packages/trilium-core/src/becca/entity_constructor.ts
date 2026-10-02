@@ -4,6 +4,7 @@ import BAttachment from "./entities/battachment.js";
 import BAttribute from "./entities/battribute.js";
 import BBlob from "./entities/bblob.js";
 import BBranch from "./entities/bbranch.js";
+import BCollaboration from "./entities/bcollaboration.js";
 import BEtapiToken from "./entities/betapi_token.js";
 import BNote from "./entities/bnote.js";
 import BOption from "./entities/boption.js";
@@ -17,6 +18,7 @@ const ENTITY_NAME_TO_ENTITY: Record<string, ConstructorData<any> & EntityClass> 
     attributes: BAttribute,
     blobs: BBlob,
     branches: BBranch,
+    collaborations: BCollaboration,
     etapi_tokens: BEtapiToken,
     notes: BNote,
     options: BOption,

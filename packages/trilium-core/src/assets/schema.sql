@@ -18,6 +18,26 @@ CREATE TABLE IF NOT EXISTS "etapi_tokens"
     utcDateCreated TEXT NOT NULL,
     utcDateModified TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS "collaborations"
+(
+    collabId TEXT PRIMARY KEY NOT NULL,
+    noteId TEXT NOT NULL,
+    includeSubtree INT NOT NULL DEFAULT 0,
+    viewMode TEXT NOT NULL,
+    editMode TEXT NOT NULL,
+    createMode TEXT NOT NULL,
+    viewPasswordHash TEXT DEFAULT NULL,
+    viewPasswordSalt TEXT DEFAULT NULL,
+    editPasswordHash TEXT DEFAULT NULL,
+    editPasswordSalt TEXT DEFAULT NULL,
+    createPasswordHash TEXT DEFAULT NULL,
+    createPasswordSalt TEXT DEFAULT NULL,
+    slug TEXT DEFAULT NULL,
+    maxGuests INT NOT NULL DEFAULT 10,
+    hostName TEXT DEFAULT NULL,
+    utcDateCreated TEXT NOT NULL,
+    utcDateModified TEXT NOT NULL,
+    isDeleted INT NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "branches" (
                                           `branchId`	TEXT NOT NULL,
                                           `noteId`	TEXT NOT NULL,
@@ -156,6 +176,7 @@ CREATE INDEX IDX_branches_isDeleted_utcDateModified ON branches (isDeleted, utcD
 CREATE INDEX IDX_attributes_isDeleted_utcDateModified ON attributes (isDeleted, utcDateModified);
 CREATE INDEX IDX_attachments_isDeleted_utcDateModified ON attachments (isDeleted, utcDateModified);
 CREATE INDEX IDX_attachments_utcDateScheduledForErasureSince ON attachments (utcDateScheduledForErasureSince);
+CREATE INDEX IDX_collaborations_noteId ON collaborations (noteId);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,

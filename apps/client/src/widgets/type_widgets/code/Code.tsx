@@ -3,13 +3,15 @@ import "./code.css";
 import { default as VanillaCodeMirror, getThemeById } from "@triliumnext/codemirror";
 import { NoteType } from "@triliumnext/commons";
 import { Ref } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
+import { codeCursorAdapter } from "../../../collab/cursor_sync";
 import { CommandListenerData } from "../../../components/app_context";
 import FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
 import { consumeSearchTerms } from "../../../services/search_jump";
 import utils from "../../../services/utils";
+import { useCollabCursors } from "../../collab/collaboration";
 import { useColorScheme, useEditorSpacedUpdate, useKeyboardShortcuts, useLegacyImperativeHandlers, useNoteBlob, useNoteLabel, useNoteLabelInt, useNoteLabelOptionalBool, useNoteProperty, useSearchTermsConsumer, useSyncedRef, useTriliumEvent, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import { refToJQuerySelector } from "../../react/react_utils";
 import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
@@ -126,6 +128,9 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     });
 
     useSearchTermsConsumer(note, noteContext, ntxId);
+
+    const cursorAdapter = useMemo(() => editorView && codeCursorAdapter(editorView), [ editorView ]);
+    useCollabCursors(note, cursorAdapter);
 
     // make sure that script is saved before running it #4028
     useLegacyImperativeHandlers({

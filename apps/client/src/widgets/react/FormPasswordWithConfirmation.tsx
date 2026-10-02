@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import { t } from "../../services/i18n";
 import FormGroup from "./FormGroup";
+import FormPasswordBox from "./FormPasswordBox";
 import FormTextBox from "./FormTextBox";
 
 export interface FormPasswordWithConfirmationProps {
@@ -18,6 +19,8 @@ export interface FormPasswordWithConfirmationProps {
      * against the `null` of one that is half-typed.
      */
     optional?: boolean;
+    /** Gives each field an eye that shows the password in clear while the field has the focus. */
+    revealable?: boolean;
     /**
      * Receives the password once both fields agree and neither is empty, and `null` at every other
      * moment. A host enables its confirm action on a non-null value and needs no validation of its
@@ -33,9 +36,10 @@ export interface FormPasswordWithConfirmationProps {
  * password yet", not which of the two fields is behind. The mismatch is stated on the second field,
  * where it is caused.
  */
-export default function FormPasswordWithConfirmation({ label, confirmationLabel, inputRef, optional, onChange }: FormPasswordWithConfirmationProps) {
+export default function FormPasswordWithConfirmation({ label, confirmationLabel, inputRef, optional, revealable, onChange }: FormPasswordWithConfirmationProps) {
     const [password, setPassword] = useState("");
     const [confirmation, setConfirmation] = useState("");
+    const Field = revealable ? FormPasswordBox : FormTextBox;
 
     // Held in a ref so an inline callback does not re-run the effect on every render of the host.
     const onChangeRef = useRef(onChange);
@@ -54,7 +58,7 @@ export default function FormPasswordWithConfirmation({ label, confirmationLabel,
     return (
         <>
             <FormGroup name="password" label={label ?? t("password_with_confirmation.password")}>
-                <FormTextBox
+                <Field
                     inputRef={inputRef}
                     type="password"
                     autoComplete="new-password"
@@ -68,7 +72,7 @@ export default function FormPasswordWithConfirmation({ label, confirmationLabel,
                 label={confirmationLabel ?? t("password_with_confirmation.repeat_password")}
                 error={confirmation.length > 0 && password !== confirmation ? t("password_with_confirmation.mismatch") : undefined}
             >
-                <FormTextBox
+                <Field
                     type="password"
                     autoComplete="new-password"
                     currentValue={confirmation}

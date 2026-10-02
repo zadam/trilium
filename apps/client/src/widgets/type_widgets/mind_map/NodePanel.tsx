@@ -18,7 +18,8 @@ import { IconPickerButton } from "../../react/IconPicker";
 import OverlayPanel, { OverlayPanelBody, OverlayPanelSection, OverlayPanelTitle } from "../../react/OverlayPanel";
 import SegmentedChoice from "../../react/SegmentedChoice";
 import TabStrip, { type TabStripTabDefinition } from "../../react/TabStrip";
-import { fitNodeImage, getNodeImageShape, nearestNodeImageWidth, NODE_IMAGE_SHAPES, NODE_IMAGE_WIDTHS, type NodeImage as NodeImageData, type NodeImageShape, shapeNodeImage, uploadNodeImage } from "./images";
+import { uploadNodeImage } from "./image_upload";
+import { fitNodeImage, getNodeImageShape, nearestNodeImageWidth, NODE_IMAGE_SHAPES, NODE_IMAGE_WIDTHS, type NodeImage as NodeImageData, type NodeImageShape, shapeNodeImage } from "./images";
 import { describeExternalLink, linkFromSuggestion, suggestionFromLink } from "./links";
 import NodeMemo, { getNodeMemo } from "./NodeMemo";
 

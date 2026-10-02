@@ -1,0 +1,92 @@
+.collab-mermaid-host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    min-height: 60vh;
+
+    .collab-mermaid-source,
+    .collab-mermaid-diagram {
+        min-width: 0;
+        border: 1px solid var(--main-border-color);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    /* The source fills its pane, so the line numbers run down all of it. */
+    .collab-mermaid-source .cm-editor {
+        height: 100%;
+    }
+
+    /* As in the app's style.css, the editor draws no focus outline of its own. */
+    .collab-mermaid-source .cm-editor.cm-focused {
+        outline: none;
+    }
+
+    .collab-mermaid-diagram {
+        padding: 0.75rem;
+        overflow: auto;
+        text-align: center;
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+
+    .collab-mermaid-diagram.collab-mermaid-error {
+        color: var(--error-color, #c0392b);
+        font-family: var(--monospace-font-family, monospace);
+        white-space: pre-wrap;
+        text-align: start;
+    }
+}
+
+.collab-mermaid-host[data-view="source"],
+.collab-mermaid-host[data-view="preview"] {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.collab-mermaid-host[data-view="source"] .collab-mermaid-diagram,
+.collab-mermaid-host[data-view="preview"] .collab-mermaid-source {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    .collab-mermaid-host {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* The app's display mode buttons beside the note options button, sized as that button is. */
+.collab-view-modes {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 10px;
+    background: var(--background-secondary);
+
+    .collab-view-mode {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 28px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        background: none;
+        color: var(--launcher-button-color, var(--text-menu));
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .collab-view-mode:hover {
+        color: var(--launcher-button-hover-color, var(--text-primary));
+    }
+
+    .collab-view-mode[aria-pressed="true"] {
+        background: var(--launcher-button-hover-background, var(--background-highlight));
+        color: var(--launcher-button-hover-color, var(--text-primary));
+    }
+}

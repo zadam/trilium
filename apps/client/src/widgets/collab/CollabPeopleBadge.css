@@ -1,0 +1,53 @@
+/* A person's row in the badge's menu, which renders in a portal; `--collab-color` is their color. */
+.collab-people-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.collab-people-initial {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--collab-color);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.collab-people-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.collab-people-line {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+}
+
+.collab-people-label,
+.collab-people-note {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.collab-people-host {
+    padding: 0 5px;
+    border-radius: 6px;
+    background: var(--accented-background-color);
+    font-size: 0.8em;
+}
+
+.collab-people-note {
+    color: var(--muted-text-color);
+    font-size: 0.85em;
+}

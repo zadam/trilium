@@ -340,6 +340,16 @@ describe("froca_updater - revisions / options / etapi_tokens", () => {
         expect(triggerSpy).toHaveBeenCalledTimes(1);
     });
 
+    it("records a collaboration change for its note", async () => {
+        await process([
+            ec({ entityName: "collaborations" as never, entityId: "col1", noteId: "n1" })
+        ]);
+        expect(triggerSpy).toHaveBeenCalledTimes(1);
+        const loadResults = triggerSpy.mock.calls[0][1].loadResults as LoadResults;
+        expect(loadResults.getCollaborationRows()).toEqual([ { collabId: "col1", noteId: "n1" } ]);
+        expect(loadResults.hasCollaborationForNote("n1")).toBe(true);
+    });
+
     it("marks etapi token changes", async () => {
         await process([ec({ entityName: "etapi_tokens", entityId: "tok1", entity: { isDeleted: false } as any })]);
         expect(triggerSpy).toHaveBeenCalledTimes(1);

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildShareLink } from "./share_link";
+import { buildCollabLink, buildShareLink } from "./share_link";
 
 describe("buildShareLink", () => {
     const originalGlob = window.glob;
@@ -50,5 +50,24 @@ describe("buildShareLink", () => {
 
         setGlob({});
         expect(buildShareLink(shareId, null)).toBe(`http://localhost:3000/share/${encoded}`);
+    });
+});
+
+describe("buildCollabLink", () => {
+    const originalGlob = window.glob;
+
+    afterEach(() => {
+        window.glob = originalGlob;
+    });
+
+    it("points under /collab/ with the trailing slash its page links need", () => {
+        window.glob = { httpBaseUrl: "http://127.0.0.1:37742" } as unknown as typeof window.glob;
+        expect(buildCollabLink("abc123", "https://notes.example.com"))
+            .toBe("https://notes.example.com/collab/abc123/");
+        expect(buildCollabLink("team notes", undefined))
+            .toBe("http://127.0.0.1:37742/collab/team%20notes/");
+
+        window.glob = {} as unknown as typeof window.glob;
+        expect(buildCollabLink("abc123", null)).toBe("http://localhost:3000/collab/abc123/");
     });
 });

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="shortcut icon" href="<%= faviconUrl %>">
+    <% for (const url of cssToLoad) { %>
+        <link href="<%= url %>" rel="stylesheet">
+    <% } %>
+    <% for (const url of jsToLoad) { %>
+        <script type="module" src="<%= url %>"></script>
+    <% } %>
+    <title><%= t("collab_theme.full_title") %></title>
+    <script>
+        let theme = localStorage.getItem("theme");
+        if (!theme) {
+            theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+        }
+        document.documentElement.classList.add(`theme-${theme}`);
+    </script>
+</head>
+<body class="collab collab-login">
+<main class="collab-login-page">
+    <img class="collab-login-logo" src="<%= logoUrl %>" width="64" height="64" alt="">
+    <h1><%= t("collab_theme.full_title") %></h1>
+    <p class="collab-login-hint"><%= t("collab_theme.full_hint", { count: maxGuests }) %></p>
+    <a href="" class="collab-retry collab-login-submit"><%= t("collab_theme.retry") %></a>
+</main>
+</body>
+</html>

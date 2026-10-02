@@ -56,6 +56,7 @@ describe("isLocalIntegrationPath", () => {
         expect(isLocalIntegrationPath("/bootstrap")).toBe(false);
         expect(isLocalIntegrationPath("/api/tree")).toBe(false);
         expect(isLocalIntegrationPath("/share/abc")).toBe(false);
+        expect(isLocalIntegrationPath("/collab/abc")).toBe(false);
         // Must not be fooled by a prefix that isn't a path segment boundary.
         expect(isLocalIntegrationPath("/mcp-evil")).toBe(false);
         expect(isLocalIntegrationPath("/api/clipperx")).toBe(false);
@@ -96,6 +97,7 @@ describe("shouldBlockDesktopWebRequest", () => {
         expect(shouldBlockDesktopWebRequest({ ...base, path: "/bootstrap" })).toBe(true);
         expect(shouldBlockDesktopWebRequest({ ...base, path: "/api/tree" })).toBe(true);
         expect(shouldBlockDesktopWebRequest({ ...base, path: "/share/abc" })).toBe(true);
+        expect(shouldBlockDesktopWebRequest({ ...base, path: "/collab/abc/" })).toBe(true);
     });
 
     it("still allows the localhost integrations (MCP, clipper, ETAPI) from a loopback host", () => {

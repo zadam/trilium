@@ -5,7 +5,7 @@ import { join } from 'path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
-import { shareMermaidManifest, stripUniverEmojiData, stripUniverHyphenation } from './vite-plugins.mjs';
+import { clientEntryManifest, COLLAB_EDITOR_ENTRY, shareMermaidManifest, stripUniverEmojiData, stripUniverHyphenation } from './vite-plugins.mjs';
 
 const assets = [ "assets", "stylesheets", "fonts", "translations" ];
 
@@ -26,6 +26,7 @@ if (isDev) {
         stripUniverHyphenation(),
         stripUniverEmojiData(),
         shareMermaidManifest("src/share_mermaid.json"),
+        clientEntryManifest(COLLAB_EDITOR_ENTRY, "src/collab_editor.json"),
         viteStaticCopy({
             targets: assets.map((asset) => ({
                 src: `src/${asset}/**/*`,

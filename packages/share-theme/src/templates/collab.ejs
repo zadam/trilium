@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="shortcut icon" href="<%= faviconUrl %>">
+    <% for (const url of cssToLoad) { %>
+        <link href="<%= url %>" rel="stylesheet">
+    <% } %>
+    <% for (const url of jsToLoad) { %>
+        <script type="module" src="<%= url %>"></script>
+    <% } %>
+    <% const pageTitle = `${note.title}${note.noteId !== rootNote.noteId ? ` - ${rootNote.title}` : ""}`; %>
+    <title><%= pageTitle %></title>
+    <script type="application/json" id="collab-bootstrap"><%- bootstrapJson %></script>
+    <script>
+        // Load dark/light theme as soon as possible to avoid color flashes.
+        let theme = localStorage.getItem("theme");
+        if (!theme) {
+            theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+        }
+        document.documentElement.classList.add(`theme-${theme}`);
+
+        window.glob = {
+            isStatic: false,
+            theme
+        };
+        window.collab = JSON.parse(document.getElementById("collab-bootstrap").textContent);
+
+        (function() {
+            const leftCollapsed = localStorage.getItem("left-pane-collapsed") === "true";
+            const tocCollapsed = localStorage.getItem("toc-pane-collapsed") === "true";
+            if (leftCollapsed) document.documentElement.classList.add("left-pane-collapsed");
+            if (tocCollapsed) document.documentElement.classList.add("toc-pane-collapsed");
+        })();
+    </script>
+    <style id="trilium-icon-packs">
+      <%- utils.escapeInlineStylesheet(iconPackCss) %>
+    </style>
+</head>
+<%
+const headingRe = /(<h[1-6]>)(.+?)(<\/h[1-6]>)/g;
+const headingMatches = [...content.matchAll(headingRe)];
+// Unique slug per heading (in document order) so duplicate titles get distinct
+// anchor IDs and the ToC links point to the right occurrence.
+const headingSlugs = utils.slugifyHeadings(headingMatches.map((m) => m[2]));
+let headingIndex = 0;
+content = content.replaceAll(headingRe, (...match) => {
+    const slug = headingSlugs[headingIndex++];
+    match[0] = match[0].replace(match[3], `<a id="${slug}" class="toc-anchor" name="${slug}" href="#${slug}">#</a>${match[3]}`);
+    return match[0];
+});
+const childNotes = visibleChildren(note);
+%>
+<body data-note-id="<%= note.noteId %>" class="collab type-<%= note.type %>" data-ancestor-note-id="<%= rootNote.noteId %>">
+<div id="header">
+    <button aria-label="<%= t("share_theme.toggle-navigation") %>" id="left-pane-toggle-button" class="header-button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"></path></svg></button>
+    <a href="./" id="header-logo">
+            <img src="<%= logoUrl %>" width="32" alt="<%= t("share_theme.logo-alt") %>" />
+        <%= rootNote.title %>
+    </a>
+    <div class="collab-header-actions">
+        <button aria-label="<%= t("share_theme.toggle-toc") %>" id="toc-pane-toggle-button" class="header-button"<% if (headingMatches.length <= 1) { %> hidden<% } %>><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h14v-2H3v2zm16 0h2v-2h-2v2zm0-10V7h2v2h-2zm0 6h2v-2h-2v2z"></path></svg></button>
+        <% if (canLogout) { %>
+            <form class="collab-logout" method="post" action="logout">
+                <input type="hidden" name="x-csrf-token" value="<%= csrfToken %>">
+                <button type="submit" class="header-button collab-logout-button bx bx-log-out" title="<%= t("collab_theme.logout") %>" aria-label="<%= t("collab_theme.logout") %>"></button>
+            </form>
+        <% } %>
+    </div>
+</div>
+<div id="split-pane">
+    <div id="left-pane">
+        <div id="navigation">
+            <div id="site-header">
+                <div class="theme-selection">
+                    <span id="sitetheme"><%= t("share_theme.site-theme") %></span>
+                    <label class="switch">
+                      <input type="checkbox" aria-labelledby="sitetheme">
+                      <span class="slider"></span>
+                      <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.742 13.045a8.088 8.088 0 0 1-2.077.271c-2.135 0-4.14-.83-5.646-2.336a8.025 8.025 0 0 1-2.064-7.723A1 1 0 0 0 9.73 2.034a10.014 10.014 0 0 0-4.489 2.582c-3.898 3.898-3.898 10.243 0 14.143a9.937 9.937 0 0 0 7.072 2.93 9.93 9.93 0 0 0 7.07-2.929 10.007 10.007 0 0 0 2.583-4.491 1.001 1.001 0 0 0-1.224-1.224zm-2.772 4.301a7.947 7.947 0 0 1-5.656 2.343 7.953 7.953 0 0 1-5.658-2.344c-3.118-3.119-3.118-8.195 0-11.314a7.923 7.923 0 0 1 2.06-1.483 10.027 10.027 0 0 0 2.89 7.848 9.972 9.972 0 0 0 7.848 2.891 8.036 8.036 0 0 1-1.484 2.059z"></path></svg>
+                      <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.993 12c0 2.761 2.246 5.007 5.007 5.007s5.007-2.246 5.007-5.007S14.761 6.993 12 6.993 6.993 9.239 6.993 12zM12 8.993c1.658 0 3.007 1.349 3.007 3.007S13.658 15.007 12 15.007 8.993 13.658 8.993 12 10.342 8.993 12 8.993zM10.998 19h2v3h-2zm0-17h2v3h-2zm-9 9h3v2h-3zm17 0h3v2h-3zM4.219 18.363l2.12-2.122 1.415 1.414-2.12 2.122zM16.24 6.344l2.122-2.122 1.414 1.414-2.122 2.122zM6.342 7.759 4.22 5.637l1.415-1.414 2.12 2.122zm13.434 10.605-1.414 1.414-2.122-2.122 1.414-1.414z"></path></svg>
+                    </label>
+                    <script>
+                        const el = document.querySelector(".theme-selection input");
+                        el.checked = (glob.theme === "dark");
+                    </script>
+                </div>
+            </div>
+            <nav id="menu">
+                <%- include("collab_tree", { activeNote, rootNote, ancestors, visibleChildren, iconPackSupportedPrefixes, canCreate, noteColor }) %>
+            </nav>
+        </div>
+    </div>
+    <div id="right-pane">
+        <div id="main">
+            <% if (unlockable.length > 0) { %>
+                <form class="collab-unlock" method="post" action="login">
+                    <input type="hidden" name="returnTo" value="<%= returnTo %>">
+                    <label>
+                        <span><%= t(unlockable.includes("edit") ? "collab_theme.unlock_edit_prompt" : "collab_theme.unlock_create_prompt") %></span>
+                        <%- include("collab_password", { autofocus: false }) %>
+                    </label>
+                    <button type="submit"><%= t("collab_theme.unlock") %></button>
+                </form>
+            <% } %>
+            <header class="collab-note-header">
+                <div class="collab-title-row"<% if (titleColor) { %> data-color="<%= titleColor %>"<% if (titleHasHue) { %> data-color-hue<% } %> style="--note-color: <%= titleColor %>"<% } %>>
+                    <% if (canChangeAppearance) { %>
+                        <button type="button" class="collab-note-icon <%= noteIconClass %>" data-note-id="<%= note.noteId %>" data-icon-class="<%= noteIconClass %>" title="<%= t("collab_theme.change_icon") %>" aria-label="<%= t("collab_theme.change_icon") %>"></button>
+                    <% } else { %>
+                        <span class="collab-note-icon <%= noteIconClass %>" data-icon-class="<%= noteIconClass %>" aria-hidden="true"></span>
+                    <% } %>
+                    <h1 id="title"><%= note.title %></h1>
+                    <button type="button" class="collab-note-options bx bx-dots-horizontal-rounded" title="<%= t("collab_theme.options") %>" aria-label="<%= t("collab_theme.options") %>" aria-haspopup="menu"></button>
+                </div>
+                <div class="collab-note-info">
+                    <span><%= t("collab_theme.note_type") %>: <%= typeLabel %></span>
+                    <span><%= t("collab_theme.created") %> <time datetime="<%= note.utcDateCreated.replace(" ", "T") %>"><%= note.dateCreated %></time></span>
+                    <span><%= t("collab_theme.modified") %> <time datetime="<%= (note.utcDateModified ?? note.utcDateCreated).replace(" ", "T") %>"><%= note.dateModified ?? note.dateCreated %></time></span>
+                </div>
+            </header>
+            <div id="content" class="type-<%= note.type %><% if (note.type === "text" || (note.type === "code" && note.mime === "text/x-markdown")) { %> ck-content<% } %><% if (isEmpty) { %> no-content<% } %>">
+                <% if (isEmpty && childNotes.length === 0 && note.type !== "book") { %>
+                    <p><%= t("share_page.no-content") %></p>
+                <% } else { %>
+                    <%
+                    content = content.replace(/<img /g, `<img alt="${t("share_theme.image_alt")}" loading="lazy" `);
+                    %>
+                    <%- content %>
+                <% } %>
+            </div>
+
+            <%- include("collab_note_list", { cards: childCards }) %>
+
+            <footer id="content-footer">
+                <% if (!isEmpty) { %>
+                    <div class="updated">
+                        <% const lastUpdated = new Date(note.utcDateModified); %>
+                        <%- t("share_theme.last-updated", { date: `<time datetime="${lastUpdated.toISOString()}">${lastUpdated.toLocaleDateString("en-US")}</time>`}) %>
+                    </div>
+                <% } %>
+
+            </footer>
+        </div>
+        <%
+        if (headingMatches.length > 1) {
+            const level = (m) => parseInt(m[1].replace(/[<h>]+/g, ""));
+
+            const makeEntry = (i) => ({level: level(headingMatches[i]), name: headingMatches[i][2], slug: headingSlugs[i], children: []});
+            const toc = [ makeEntry(0) ];
+            const last = (arr = toc) => arr[arr.length - 1];
+            const getLevelArr = (lvl, arr = toc) => {
+                if (arr[0].level === lvl) return arr;
+                const top = last(arr);
+                return top.children.length ? getLevelArr(lvl, top.children) : top.children;
+            };
+
+            for (let m = 1; m < headingMatches.length; m++) {
+                const target = getLevelArr(level(headingMatches[m]));
+                target.push(makeEntry(m));
+            }
+        %>
+            <div id="toc-pane">
+                <h3><%= t("share_theme.on-this-page") %></h3>
+                <ul id="toc">
+                    <% for (const entry of toc) { %>
+                        <%- include("toc_item", {entry}) %>
+                    <% } %>
+                </ul>
+            </div>
+        <% } %>
+    </div>
+</div>
+</body>
+</html>

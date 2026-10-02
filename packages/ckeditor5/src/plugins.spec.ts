@@ -1,12 +1,28 @@
-import { BalloonToolbar, BlockToolbar, Bold, Code, Italic, Strikethrough } from "ckeditor5";
+import {
+    AutoLink, BalloonToolbar, BlockToolbar, Bold, CKFinderUploadAdapter, Code, GeneralHtmlSupport,
+    ImageUpload, Italic, Link, MentionEditing, Strikethrough
+} from "ckeditor5";
 import { describe, expect, it } from "vitest";
 
-import { createTestEditor } from "../test/editor-kit.js";
-import { AttributeEditor } from "./index.js";
+import { createTestEditor, createTestEditorOf } from "../test/editor-kit.js";
+import { AttributeEditor, GuestEditor } from "./index.js";
+import TriliumAiAssistant from "./plugins/ai_assistant/ai_assistant.js";
+import ClipboardBareImage from "./plugins/clipboard_bare_image.js";
+import ClipboardImageEmbed from "./plugins/clipboard_image_embed.js";
+import CollabCursors from "./plugins/collab_cursors.js";
+import InsertDateTimePlugin from "./plugins/insert_date_time.js";
+import MarkdownImportPlugin from "./plugins/markdownimport.js";
+import Math from "./plugins/math/math.js";
+import TriliumMentionUI from "./plugins/mention/trilium_mention_ui.js";
+import Mermaid from "./plugins/mermaid/mermaid.js";
+import UploadimagePlugin from "./plugins/uploadimage.js";
 import Admonition from "./plugins/admonition/admonition.js";
 import ItalicAsEmPlugin from "./plugins/italic_as_em.js";
 import StrikethroughAsDel from "./plugins/strikethrough_as_del.js";
-import { CHAT_INPUT_PLUGINS, COMMON_PLUGINS, CORE_PLUGINS, MEMO_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
+import {
+    CHAT_INPUT_PLUGINS, COMMON_PLUGINS, CORE_PLUGINS, GUEST_PLUGINS, MEMO_PLUGINS,
+    POPUP_EDITOR_PLUGINS
+} from "./plugins.js";
 import CutToNotePlugin from "./plugins/cuttonote.js";
 import Uploadfileplugin from "./plugins/file_upload/uploadfileplugin.js";
 import FindInLinkWidgets from "./plugins/find_in_link_widgets.js";
@@ -82,6 +98,7 @@ describe("plugin lists", () => {
         expect(COMMON_PLUGINS).toContain(LinkEmbed);
         expect(COMMON_PLUGINS).toContain(FindInLinkWidgets);
         expect(COMMON_PLUGINS).toContain(Uploadfileplugin);
+        expect(COMMON_PLUGINS).toContain(CollabCursors);
     });
 
     it("COMMON_PLUGINS includes the external widget plugins", () => {
@@ -117,6 +134,42 @@ describe("plugin lists", () => {
         // stores both; they are downcast converters and do nothing without the marks above.
         expect(MEMO_PLUGINS).toContain(ItalicAsEmPlugin);
         expect(MEMO_PLUGINS).toContain(StrikethroughAsDel);
+    });
+});
+
+describe("GUEST_PLUGINS", () => {
+    it("carries formatting and links, nothing that reaches the host or creates notes", () => {
+        for (const plugin of [ Bold, Link, AutoLink, GeneralHtmlSupport, CollabCursors ]) {
+            expect(GUEST_PLUGINS).toContain(plugin);
+        }
+
+        for (const plugin of [
+            UploadimagePlugin, Uploadfileplugin, CKFinderUploadAdapter, ImageUpload,
+            ClipboardImageEmbed, ClipboardBareImage, CutToNotePlugin, InternalLinkPlugin,
+            IncludeNote, ReferenceLink, MentionEditing, TriliumMentionUI, TriliumSlashCommands,
+            LinkEmbed, TriliumAiAssistant, TriliumSnippets, MarkdownImportPlugin, Mermaid, Math,
+            InsertDateTimePlugin, FindInLinkWidgets
+        ]) {
+            expect(GUEST_PLUGINS).not.toContain(plugin);
+        }
+    });
+
+    it("raises a GuestEditor that keeps the markup of the features it does not carry", async () => {
+        const editor = await createTestEditorOf(GuestEditor, GUEST_PLUGINS, {
+            htmlSupport: {
+                allow: [ { name: /.*/, attributes: true, classes: true, styles: true } ]
+            }
+        });
+
+        editor.setData([
+            "<p>Hi <a href=\"https://example.com\">site</a></p>",
+            "<section class=\"include-note\" data-note-id=\"abc\"><p>inner</p></section>"
+        ].join(""));
+
+        const data = editor.getData();
+        expect(data).toContain("<a href=\"https://example.com\">site</a>");
+        expect(data).toContain("include-note");
+        expect(data).toContain("data-note-id=\"abc\"");
     });
 });
 

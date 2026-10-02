@@ -1,4 +1,6 @@
-import type { BranchRow, EtapiTokenRow, NoteRow, OptionRow } from "@triliumnext/commons";
+import type {
+    BranchRow, CollaborationRow, EtapiTokenRow, NoteRow, OptionRow
+} from "@triliumnext/commons";
 import eventService from "../services/events";
 
 import entityConstructor from "../becca/entity_constructor.js";
@@ -9,6 +11,7 @@ import becca from "./becca.js";
 import type AbstractBeccaEntity from "./entities/abstract_becca_entity.js";
 import BAttribute from "./entities/battribute.js";
 import BBranch from "./entities/bbranch.js";
+import BCollaboration from "./entities/bcollaboration.js";
 import BEtapiToken from "./entities/betapi_token.js";
 import BNote from "./entities/bnote.js";
 import BOption from "./entities/boption.js";
@@ -67,6 +70,19 @@ function load() {
             new BEtapiToken(row);
         }
 
+        // Migration 220 reloads becca while upgrading an older database, before migration 241
+        // has created the table.
+        const hasCollaborations = sql.getValue<number>(/*sql*/`SELECT COUNT(*) FROM sqlite_master
+            WHERE type = 'table' AND name = 'collaborations'`);
+
+        if (hasCollaborations) {
+            const collaborationsQuery = /*sql*/`SELECT ${COLLABORATION_COLUMNS.join(", ")}
+                FROM collaborations WHERE isDeleted = 0`;
+
+            for (const row of sql.getRows<CollaborationRow>(collaborationsQuery)) {
+                new BCollaboration(row);
+            }
+        }
     });
 
     for (const noteId in becca.notes) {
@@ -90,6 +106,16 @@ const BRANCH_COLUMNS = [
 const ATTRIBUTE_COLUMNS = [
     "attributeId", "noteId", "type", "name", "value", "isInheritable", "position", "utcDateModified"
 ];
+/** The entity tables becca keeps in memory and refreshes from synced rows. */
+const CACHED_ENTITY_NAMES = [
+    "notes", "branches", "attributes", "etapi_tokens", "collaborations", "options"
+];
+const COLLABORATION_COLUMNS = [
+    "collabId", "noteId", "includeSubtree", "viewMode", "editMode", "createMode",
+    "viewPasswordHash", "viewPasswordSalt", "editPasswordHash", "editPasswordSalt",
+    "createPasswordHash", "createPasswordSalt", "slug", "maxGuests", "hostName",
+    "utcDateCreated", "utcDateModified"
+];
 
 function reload(reason: string) {
     load();
@@ -102,7 +128,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entity
         return;
     }
 
-    if (["notes", "branches", "attributes", "etapi_tokens", "options"].includes(entityName)) {
+    if (CACHED_ENTITY_NAMES.includes(entityName)) {
         const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
         const primaryKeyName = EntityClass.primaryKeyName;
 
@@ -160,6 +186,8 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENT
         attributeDeleted(entityId);
     } else if (entityName === "etapi_tokens") {
         etapiTokenDeleted(entityId);
+    } else if (entityName === "collaborations") {
+        collaborationDeleted(entityId);
     }
 });
 
@@ -312,6 +340,10 @@ function noteReorderingUpdated(branchIdList: number[]) {
 
 function etapiTokenDeleted(etapiTokenId: string) {
     delete becca.etapiTokens[etapiTokenId];
+}
+
+function collaborationDeleted(collabId: string) {
+    delete becca.collaborations[collabId];
 }
 
 

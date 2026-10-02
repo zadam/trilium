@@ -6,7 +6,9 @@ const CLOSED = 3;
 
 type Handler = (...args: any[]) => void;
 
-const { state, getLogMock, configMock, randomStringMock, WebSocketServerMock } = vi.hoisted(() => {
+const {
+    state, getLogMock, configMock, randomStringMock, admitGuestSocketMock, WebSocketServerMock
+} = vi.hoisted(() => {
     const state: { instances: any[] } = { instances: [] };
 
     class WebSocketServerMock {
@@ -36,7 +38,8 @@ const { state, getLogMock, configMock, randomStringMock, WebSocketServerMock } =
         WebSocketServerMock,
         getLogMock: { error: vi.fn(), info: vi.fn() },
         configMock: { General: { noAuthentication: false } as { noAuthentication: boolean } | undefined },
-        randomStringMock: vi.fn(() => "client-id")
+        randomStringMock: vi.fn(() => "client-id"),
+        admitGuestSocketMock: vi.fn((): unknown => false)
     };
 });
 
@@ -45,6 +48,10 @@ vi.mock("ws", () => ({
     WebSocket: { OPEN: 1 } // keep in sync with the module-level OPEN constant
 }));
 vi.mock("./config.js", () => ({ default: configMock }));
+vi.mock("../collab/guest_socket.js", () => ({
+    admitGuestSocket: admitGuestSocketMock, COLLAB_FULL_CLOSE_CODE: 4503,
+    COLLAB_REMOVED_CLOSE_CODE: 4401
+}));
 vi.mock("./utils.js", () => ({ randomString: randomStringMock }));
 vi.mock("@triliumnext/core", async () => {
     // use the real shouldLogMessage so the suppression tests cover the actual filter
@@ -55,6 +62,8 @@ vi.mock("@triliumnext/core", async () => {
 });
 
 import WebSocketMessagingProvider, { isHttpAttachableMessagingProvider } from "./ws_messaging_provider.js";
+
+const MESSAGE = { type: "reload-frontend", reason: "x" } as WebSocketMessage;
 
 function makeSocket(readyState = OPEN) {
     const handlers: Record<string, Handler> = {};
@@ -85,6 +94,8 @@ describe("WebSocketMessagingProvider", () => {
         getLogMock.info.mockClear();
         configMock.General = { noAuthentication: false };
         randomStringMock.mockReturnValue("client-id");
+        admitGuestSocketMock.mockReset();
+        admitGuestSocketMock.mockReturnValue(false);
         vi.spyOn(console, "log").mockImplementation(() => {});
     });
 
@@ -142,6 +153,151 @@ describe("WebSocketMessagingProvider", () => {
             // `config.General && config.General.noAuthentication` short-circuits to a
             // falsy value, so the connection is not allowed.
             expect(done.mock.calls[0][0]).toBeFalsy();
+        });
+    });
+
+    describe("guest sockets of collaborations", () => {
+        it("admits one through the collaboration check, apart from host broadcasts", () => {
+            const connection = {
+                collabId: "abc", guestId: "g1", unlocked: [], name: null, viewingNoteId: null,
+                editingNoteId: null, isHost: false
+            };
+            admitGuestSocketMock.mockReturnValueOnce(connection);
+            const { server } = init();
+            const changed = vi.fn();
+            provider.onCollabClientsChanged(changed);
+
+            const done = vi.fn();
+            const req: any = { url: "/?collab=abc", session: {} };
+            server.options.verifyClient({ req }, done);
+            expect(admitGuestSocketMock).toHaveBeenCalledWith("/?collab=abc", {});
+            expect(done).toHaveBeenCalledWith(true);
+
+            const guest = Object.assign(makeSocket(), { close: vi.fn() });
+            server.emit("connection", guest, req);
+            server.clients.add(guest);
+            const host = makeSocket();
+            server.clients.add(host);
+
+            expect(changed).toHaveBeenCalledWith("abc");
+            expect(provider.hasCollabClients()).toBe(true);
+            expect(provider.getCollabClients("abc")).toEqual([ {
+                guestId: "g1", unlocked: [], name: null, viewingNoteId: null, editingNoteId: null,
+                isHost: false
+            } ]);
+            expect(provider.getClientCollab("client-id")).toEqual(connection);
+
+            provider.sendMessageToAllClients({ type: "reload-frontend", reason: "x" });
+            expect(host.sent).toHaveLength(1);
+            expect(guest.sent).toHaveLength(0);
+
+            provider.sendMessageToCollabClients("abc", {
+                type: "collab-presence", collabId: "abc", guests: 1, people: []
+            });
+            expect(guest.sent).toHaveLength(1);
+            expect(host.sent).toHaveLength(1);
+
+            provider.setCollabEditing("client-id", "n1");
+            expect(provider.getCollabClients("abc")[0].editingNoteId).toBe("n1");
+
+            provider.closeCollabClients("abc");
+            expect(guest.close).toHaveBeenCalledWith(1000, "collaboration ended");
+
+            guest.emit("close");
+            expect(changed).toHaveBeenCalledTimes(2);
+            expect(provider.hasCollabClients()).toBe(false);
+            expect(provider.getClientCollab("client-id")).toBeNull();
+        });
+
+        it("narrows a message to the pages on a note, renames a guest and drops a removed one",
+            async () => {
+                const { server } = init();
+                const changed = vi.fn();
+                const handler = vi.fn();
+                provider.onCollabClientsChanged(changed);
+                provider.setClientMessageHandler(handler);
+                const connect = (clientId: string, guestId: string) => {
+                    randomStringMock.mockReturnValueOnce(clientId);
+                    admitGuestSocketMock.mockReturnValueOnce({
+                        collabId: "abc", guestId, unlocked: [], name: null, viewingNoteId: null,
+                        editingNoteId: null, isHost: false
+                    });
+                    const req: any = { url: "/?collab=abc", session: {} };
+                    server.options.verifyClient({ req }, vi.fn());
+                    const socket = Object.assign(makeSocket(), {
+                        close: vi.fn(() => {
+                            socket.readyState = CLOSED;
+                        })
+                    });
+                    server.emit("connection", socket, req);
+                    server.clients.add(socket);
+                    return socket;
+                };
+                const sender = connect("c1", "g1");
+                const elsewhere = connect("c2", "g1");
+                const editor = connect("c3", "g2");
+                provider.setCollabViewing("c1", "n1");
+                provider.setCollabViewing("c2", "n2");
+                provider.setCollabEditing("c3", "n1");
+
+                provider.sendMessageToCollabClients("abc", MESSAGE,
+                    { noteId: "n1", exceptClientId: "c1" });
+                expect([ sender.sent, elsewhere.sent, editor.sent ].map((sent) => sent.length))
+                    .toEqual([ 0, 0, 1 ]);
+
+                provider.setCollabGuestName("abc", "g1", "Grace");
+                expect(provider.getCollabClients("abc").map((client) => client.name))
+                    .toEqual([ "Grace", "Grace", null ]);
+
+                // A removed guest leaves the list at once, and the presence that follows
+                // reaches only the others.
+                changed.mockClear();
+                changed.mockImplementation(() =>
+                    provider.sendMessageToCollabClients("abc", MESSAGE));
+                provider.closeCollabGuest("abc", "g1");
+                expect([ sender.sent, elsewhere.sent, editor.sent ].map((sent) => sent.length))
+                    .toEqual([ 0, 0, 3 ]);
+                expect(sender.close).toHaveBeenCalledWith(4401, "removed");
+                expect(elsewhere.close).toHaveBeenCalledWith(4401, "removed");
+                expect(editor.close).not.toHaveBeenCalled();
+                expect(provider.getCollabClients("abc").map((client) => client.guestId))
+                    .toEqual([ "g2" ]);
+                expect(changed).toHaveBeenCalledWith("abc");
+
+                // What its socket still sends speaks for nobody, the host least of all.
+                await Promise.resolve(sender.emit("message", JSON.stringify({ type: "ping" })));
+                expect(handler).not.toHaveBeenCalled();
+                await Promise.resolve(editor.emit("message", JSON.stringify({ type: "ping" })));
+                expect(handler).toHaveBeenCalledWith("c3", { type: "ping" });
+            });
+
+        it("closes a socket the collaboration has no seat for, with the close code", () => {
+            admitGuestSocketMock.mockReturnValueOnce({ refused: "full", collabId: "abc" });
+            const { server } = init();
+            const changed = vi.fn();
+            provider.onCollabClientsChanged(changed);
+
+            const done = vi.fn();
+            const req: any = { url: "/?collab=abc", session: {} };
+            server.options.verifyClient({ req }, done);
+            expect(done).toHaveBeenCalledWith(true);
+
+            const guest = Object.assign(makeSocket(), { close: vi.fn() });
+            server.emit("connection", guest, req);
+
+            expect(guest.close).toHaveBeenCalledWith(4503, "collaboration full");
+            expect(changed).not.toHaveBeenCalled();
+            expect(provider.hasCollabClients()).toBe(false);
+            expect(provider.getClientCount()).toBe(0);
+        });
+
+        it("refuses one the collaboration check rejects", () => {
+            admitGuestSocketMock.mockReturnValueOnce(null);
+            const { server } = init();
+            const done = vi.fn();
+            server.options.verifyClient({ req: { url: "/?collab=nope", session: {} } }, done);
+            expect(done).toHaveBeenCalledWith(false);
+            expect(getLogMock.error).toHaveBeenCalled();
         });
     });
 

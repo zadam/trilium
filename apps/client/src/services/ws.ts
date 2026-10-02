@@ -3,6 +3,7 @@ import { WebSocketMessage } from "@triliumnext/commons";
 import appContext from "../components/app_context.js";
 import type { EntityChange } from "../server_types.js";
 import bundleService from "./bundle.js";
+import { publishRemoteCursor, setCollabPresence } from "./collab_presence.js";
 import froca from "./froca.js";
 import frocaUpdater from "./froca_updater.js";
 import { t } from "./i18n.js";
@@ -26,7 +27,7 @@ let lastProcessedEntityChangeId = window.glob.maxEntityChangeIdAtLoad ?? 0;
 let lastPingTs: number;
 let frontendUpdateDataQueue: EntityChange[] = [];
 
-function sendOutgoing(message: object): boolean {
+export function sendOutgoing(message: object): boolean {
     if (ipcWs) {
         ipcWs.send(message);
         return true;
@@ -112,6 +113,10 @@ export async function dispatchMessage(message: WebSocketMessage) {
         toastService.showError(t("ws.consistency-checks-failed"), 50 * 60000);
     } else if (messageType === "api-log-messages") {
         appContext.triggerEvent("apiLogMessages", { noteId: msg.noteId, messages: msg.messages });
+    } else if (messageType === "collab-presence") {
+        setCollabPresence(msg.collabId, { guests: msg.guests, people: msg.people });
+    } else if (messageType === "collab-remote-cursor") {
+        publishRemoteCursor(msg);
     } else if (messageType === "toast") {
         toastService.showMessage(msg.message, msg.timeout);
     } else if (messageType === "unhandled-error") {
@@ -285,7 +290,11 @@ async function sendPing() {
         // IPC transport: no socket to disconnect, so we only need to nudge
         // the server for pending entity changes. No lost-connection toast
         // and no reconnect.
-        sendOutgoing({ type: "ping", lastEntityChangeId: lastAcceptedEntityChangeId });
+        sendOutgoing({
+            type: "ping",
+            lastEntityChangeId: lastAcceptedEntityChangeId,
+            collabViewing: getCollabViewing()
+        });
         return;
     }
 
@@ -309,7 +318,8 @@ async function sendPing() {
         ws.send(
             JSON.stringify({
                 type: "ping",
-                lastEntityChangeId: lastAcceptedEntityChangeId
+                lastEntityChangeId: lastAcceptedEntityChangeId,
+                collabViewing: getCollabViewing()
             })
         );
     } else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
@@ -317,6 +327,20 @@ async function sendPing() {
 
         ws = connectWebSocket();
     }
+}
+
+/**
+ * The note the app shows, so the people on its collaborations' pages see the host there. Null while
+ * the window is hidden, and while a sync server serves the collaborations, whose guests never reach
+ * this instance.
+ */
+function getCollabViewing(): string | null {
+    if (document.visibilityState === "hidden" || options.get("syncServerHost")) {
+        return null;
+    }
+
+    // Pings start before `appContext.start()` creates the tab manager.
+    return appContext.tabManager?.getActiveContextNoteId() ?? null;
 }
 
 setTimeout(() => {
@@ -365,6 +389,7 @@ export function throwError(message: string) {
 
 export default {
     logError,
+    sendOutgoing,
     subscribeToMessages,
     waitForMaxKnownEntityChangeId,
     getMaxKnownEntityChangeSyncId: () => lastAcceptedEntityChangeSyncId

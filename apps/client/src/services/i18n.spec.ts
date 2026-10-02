@@ -402,3 +402,19 @@ describe("i18n", () => {
         });
     });
 });
+
+describe("module loading", () => {
+    it("loads without the jQuery global, which a collaboration's guest page lacks", async () => {
+        const holder = globalThis as { $?: unknown };
+        const jquery = holder.$;
+        delete holder.$;
+
+        try {
+            vi.resetModules();
+            const reloaded = await import("./i18n");
+            expect(typeof reloaded.translationsInitializedPromise.then).toBe("function");
+        } finally {
+            holder.$ = jquery;
+        }
+    });
+});

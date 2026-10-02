@@ -1,5 +1,6 @@
 @import "./boxicons-compat.css";
 @import "./adaptive-colors.css";
+@import "./codemirror-placeholder.css";
 
 @font-face {
     font-family: Montserrat;
@@ -627,23 +628,6 @@ body.mobile .dropdown-menu .dropdown-submenu {
 
 .cm-scroller {
     font-family: var(--monospace-font-family) !important;
-}
-
-.cm-editor .cm-placeholder {
-    color: inherit;
-    opacity: 0.5;
-    /* Out of flow, so the caret takes its height from the line rather than from the hint. */
-    position: absolute;
-}
-
-/* Firefox draws the caret against the spacer CodeMirror puts before the placeholder widget,
-   short (https://bugzilla.mozilla.org/show_bug.cgi?id=904846). The spacer must stay in layout:
-   CodeMirror measures a position next to a widget from its rect, and a hidden one reads as
-   zeros, which hides the completion popup as off-screen. */
-@supports (-moz-appearance: none) {
-    .cm-editor .cm-widgetBuffer:has(+ .cm-placeholder) {
-        vertical-align: baseline;
-    }
 }
 
 /* `getTooltipHost()` renders CodeMirror tooltips here, outside the clipping `.cm-editor`.

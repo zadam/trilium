@@ -1,0 +1,5 @@
+<ul>
+    <li class="<% if (visibleChildren(rootNote).length > 0) { %>submenu-<% } %>item expanded">
+        <%- include("collab_tree_item", { note: rootNote, activeNote, rootNote, ancestors, visibleChildren, iconPackSupportedPrefixes, canCreate, noteColor }) %>
+    </li>
+</ul>

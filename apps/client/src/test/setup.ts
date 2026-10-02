@@ -55,11 +55,18 @@ function mockWebsocket() {
     // Awaited before reading back what the server wrote. No write happens under test.
     async function waitForMaxKnownEntityChangeId() {}
 
+    // Nothing is connected under test, so nothing goes out.
+    function sendOutgoing(_message: object) {
+        return false;
+    }
+
     return {
         default: {
+            sendOutgoing,
             subscribeToMessages,
             waitForMaxKnownEntityChangeId
         },
+        sendOutgoing,
         // consumers also import these as named exports (e.g. useNoteIds); leaving them out makes
         // the subscription effect throw, which silently skips every later effect of the component
         subscribeToMessages,
@@ -122,6 +129,7 @@ function mockServer() {
             // these; without them the write rejects and surfaces as an unhandled rejection rather
             // than as whatever the test was actually asserting.
             async put(_url: string, _data?: object) {},
+            async patch(_url: string, _data?: object) {},
             async remove(_url: string) {}
         }
     };

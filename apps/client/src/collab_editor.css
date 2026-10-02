@@ -1,0 +1,188 @@
+/* The guest editor a collaboration page mounts into the share theme's content column. */
+
+/* The app's CKEditor theme reads these names; the share theme's palette fills them in. Set on the
+   root because CKEditor appends its panels to the body, outside the content column. */
+html {
+    --main-text-color: var(--text-primary);
+    --main-background-color: var(--background-primary);
+    --accented-background-color: var(--background-secondary);
+    --more-accented-background-color: var(--background-highlight);
+    --main-border-color: rgba(128, 128, 128, 0.35);
+    --muted-text-color: var(--text-menu);
+    --link-color: var(--text-link);
+    --input-focus-outline-color: var(--text-link);
+    --primary-button-background-color: var(--text-link);
+    --main-font-family: 'Montserrat', 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+    --bs-border-radius: 6px;
+    --bs-border-radius-lg: 8px;
+}
+
+.collab-status {
+    display: flex;
+    gap: 0.75em;
+    align-items: center;
+    margin: 0 0 0.5em;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* At the end of the line with the note's type and dates, in its small, muted text. */
+.collab-note-info .collab-status {
+    margin: 0 0 0 auto;
+    font-size: 1em;
+    opacity: 1;
+}
+
+.collab-conflict {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75em;
+    align-items: center;
+    margin: 0.5em 0;
+    padding: 0.75em 1em;
+    border: 1px solid var(--error-color, #c0392b);
+    border-radius: 6px;
+    background: var(--background-secondary);
+}
+
+/* `display: flex` above would otherwise beat the `hidden` attribute the editor sets. */
+.collab-conflict[hidden] {
+    display: none;
+}
+
+.collab-conflict button {
+    font: inherit;
+    padding: 0.4em 1em;
+    border: 1px solid var(--main-border-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--background-highlight);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.collab-editor-toolbar {
+    margin-top: 0.5em;
+}
+
+/* As in the app's style.css. */
+.ck-powered-by-balloon {
+    display: none !important;
+}
+
+.collab-editor-toolbar .ck.ck-toolbar {
+    border-radius: var(--bs-border-radius);
+}
+
+.collab-editor-host {
+    min-height: 50vh;
+    padding: 0.5em 0;
+}
+
+/* The content column has no frame in the share theme, so the editable gets none either. The
+   selectors outrank CKEditor's own focused-editable rule, which draws the focus ring. */
+.ck.ck-editor__editable.collab-editor-host,
+.ck.ck-editor__editable.collab-editor-host.ck-editor__editable_inline,
+.ck.ck-editor__editable.collab-editor-host:not(.ck-editor__nested-editable).ck-focused {
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.collab-code-host .cm-editor {
+    border: 1px solid var(--main-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* As in the app's style.css, the editor draws no focus outline of its own. */
+.collab-code-host .cm-editor.cm-focused {
+    outline: none;
+}
+
+/* The editor grows with the note here, so CodeMirror's heights relative to it never resolve. The
+   scroller keeps the height a short note gets, and stretches the line numbers and the text down
+   all of it; CodeMirror's own rule, which it marks important, keeps them to their content. */
+.collab-code-host .cm-editor .cm-scroller {
+    min-height: 50vh;
+    align-items: stretch !important;
+}
+
+.collab-code-host .cm-editor .cm-gutters {
+    height: auto;
+}
+
+#title[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+}
+
+/* The tree's right-click menu and the pickers it turns into. */
+.collab-context-menu {
+    position: fixed;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 11em;
+    padding: 0.3em;
+    border: 1px solid var(--main-border-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--accented-background-color);
+    color: var(--main-text-color);
+    box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.25);
+}
+
+.collab-context-item {
+    padding: 0.4em 0.75em;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.collab-context-item:hover,
+.collab-context-item:focus-visible {
+    background: var(--more-accented-background-color);
+    outline: none;
+}
+
+.collab-context-panel {
+    gap: 0.5em;
+    padding: 0.75em;
+    max-width: min(22em, 90vw);
+}
+
+.collab-icon-search {
+    font: inherit;
+    padding: 0.35em 0.6em;
+    border: 1px solid var(--main-border-color);
+    border-radius: 4px;
+    background: var(--main-background-color);
+    color: inherit;
+}
+
+.collab-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2em, 1fr));
+    gap: 2px;
+    max-height: 14em;
+    overflow-y: auto;
+}
+
+.collab-icon-choice {
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+.collab-icon-choice:hover,
+.collab-icon-choice:focus-visible {
+    background: var(--more-accented-background-color);
+    outline: none;
+}

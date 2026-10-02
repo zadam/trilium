@@ -1,5 +1,7 @@
 import type { WebSocketMessage } from "@triliumnext/commons";
-import type { ClientMessageHandler, MessagingProvider } from "@triliumnext/core";
+import type {
+    ClientMessageHandler, CollabClientFilter, CollabClientInfo, CollabConnection, MessagingProvider
+} from "@triliumnext/core";
 import type WebSocketMessagingProvider from "@triliumnext/server/src/services/ws_messaging_provider.js";
 import type express from "express";
 import type { Server as HttpServer } from "http";
@@ -57,6 +59,63 @@ export default class CompositeMessagingProvider implements MessagingProvider {
     getClientCount(): number {
         // Both concrete legs implement these unconditionally, so no optional-call guard.
         return this.ipc.getClientCount() + this.ws.getClientCount();
+    }
+
+    // Guest sockets of collaborations only ever exist on the WebSocket leg.
+
+    sendMessageToCollabClients(
+        collabId: string, message: WebSocketMessage, filter?: CollabClientFilter
+    ): void {
+        const exceptClientId = filter?.exceptClientId?.startsWith(WS_PREFIX)
+            ? filter.exceptClientId.slice(WS_PREFIX.length)
+            : undefined;
+
+        this.ws.sendMessageToCollabClients(collabId, message,
+            filter && { noteId: filter.noteId, exceptClientId });
+    }
+
+    hasCollabClients(): boolean {
+        return this.ws.hasCollabClients();
+    }
+
+    getCollabClients(collabId: string): CollabClientInfo[] {
+        return this.ws.getCollabClients(collabId);
+    }
+
+    getClientCollab(clientId: string): CollabConnection | null {
+        if (!clientId.startsWith(WS_PREFIX)) {
+            return null;
+        }
+
+        return this.ws.getClientCollab(clientId.slice(WS_PREFIX.length));
+    }
+
+    setCollabEditing(clientId: string, noteId: string | null): void {
+        if (clientId.startsWith(WS_PREFIX)) {
+            this.ws.setCollabEditing(clientId.slice(WS_PREFIX.length), noteId);
+        }
+    }
+
+    setCollabViewing(clientId: string, noteId: string | null): void {
+        if (clientId.startsWith(WS_PREFIX)) {
+            this.ws.setCollabViewing(clientId.slice(WS_PREFIX.length), noteId);
+        }
+    }
+
+    setCollabGuestName(collabId: string, guestId: string, name: string | null): void {
+        this.ws.setCollabGuestName(collabId, guestId, name);
+    }
+
+    closeCollabClients(collabId: string): void {
+        this.ws.closeCollabClients(collabId);
+    }
+
+    closeCollabGuest(collabId: string, guestId: string): void {
+        this.ws.closeCollabGuest(collabId, guestId);
+    }
+
+    onCollabClientsChanged(callback: (collabId: string) => void): void {
+        this.ws.onCollabClientsChanged(callback);
     }
 
     dispose(): void {

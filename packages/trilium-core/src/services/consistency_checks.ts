@@ -807,6 +807,7 @@ class ConsistencyChecks {
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");
+        this.runEntityChangeChecks("collaborations", "collabId");
         this.runEntityChangeChecks("options", "name");
     }
 
@@ -899,7 +900,10 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = ["notes", "revisions", "attachments", "branches", "attributes", "etapi_tokens", "blobs"];
+        const tables = [
+            "notes", "revisions", "attachments", "branches", "attributes",
+            "etapi_tokens", "collaborations", "blobs"
+        ];
 
         getLog().info(`Table counts: ${tables.map((tableName) => getTableRowCount(tableName)).join(", ")}`);
     }

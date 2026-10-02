@@ -19,6 +19,10 @@ function makeFakeLeg() {
         getClientCount: vi.fn(() => 0),
         dispose: vi.fn(),
         attachToHttpServer: vi.fn(),
+        sendMessageToCollabClients: vi.fn(),
+        setCollabViewing: vi.fn(),
+        setCollabGuestName: vi.fn(),
+        closeCollabGuest: vi.fn(),
         /** Simulate an inbound message arriving on this transport. */
         emit(id: string, message: unknown) { void handler?.(id, message); }
     };
@@ -89,6 +93,31 @@ describe("CompositeMessagingProvider", () => {
         expect(ipc.dispose).toHaveBeenCalled();
         expect(ws.dispose).toHaveBeenCalled();
     });
+
+    it("hands the collaborations' guest sockets to the WebSocket leg, in its own client ids",
+        () => {
+            const { ipc, ws, composite } = build();
+
+            composite.sendMessageToCollabClients("abc", MESSAGE,
+                { noteId: "n1", exceptClientId: "ws:c1" });
+            expect(ws.sendMessageToCollabClients).toHaveBeenLastCalledWith("abc", MESSAGE,
+                { noteId: "n1", exceptClientId: "c1" });
+            // The host's app sends over IPC, which holds no guest socket to leave out.
+            composite.sendMessageToCollabClients("abc", MESSAGE,
+                { noteId: "n1", exceptClientId: "ipc:5" });
+            expect(ws.sendMessageToCollabClients).toHaveBeenLastCalledWith("abc", MESSAGE,
+                { noteId: "n1", exceptClientId: undefined });
+
+            composite.setCollabViewing("ws:c1", "n1");
+            composite.setCollabViewing("ipc:5", "n1");
+            expect(ws.setCollabViewing.mock.calls).toEqual([ [ "c1", "n1" ] ]);
+
+            composite.setCollabGuestName("abc", "g1", "Grace");
+            composite.closeCollabGuest("abc", "g1");
+            expect(ws.setCollabGuestName).toHaveBeenCalledWith("abc", "g1", "Grace");
+            expect(ws.closeCollabGuest).toHaveBeenCalledWith("abc", "g1");
+            expect(ipc.sendMessageToClient).not.toHaveBeenCalled();
+        });
 
     it("attaches only the WebSocket leg to the HTTP server", () => {
         const { ipc, ws, composite } = build();

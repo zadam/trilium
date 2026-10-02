@@ -42,6 +42,8 @@ Common request is to allow multiple users collaborate, share notes etc. So far I
 *   given its size it would probably pivot the attention away from my main focus which is a personal note-taking
 *   the assumption that only single person has access to the app simplifies many things, or just outright makes them possible. In multi-user app, our [scripting](Scripting.md)support would be a XSS security hole, while with the single user assumption it's an endless customizable tool.
 
+What Trilium does offer is [collaboration](Advanced%20Usage/Collaboration.md) on individual notes: a note, or a note with its subtree, is opened to guests through a link, and each capability (viewing, editing, adding child notes) is either open or behind a password the host sets. Guests have no accounts, never reach the rest of the application and never run scripts, so the single-user assumption above still holds.
+
 ## How to open multiple documents in one Trilium instance
 
 This is normally not supported - one Trilium process can open only a single instance of a [database](Advanced%20Usage/Database.md). However, you can run two Trilium processes (from one installation), each connected to a separate document. To achieve this, you need to set a location for the [data directory](Installation%20%26%20Setup/Data%20directory.md) in the `TRILIUM_DATA_DIR` environment variable and separate port on `TRILIUM_PORT` environment variable. How to do that depends on the platform, in Unix-based systems you can achieve that by running command such as this:

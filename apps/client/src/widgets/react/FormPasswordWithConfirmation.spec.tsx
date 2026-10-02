@@ -64,20 +64,43 @@ describe("FormPasswordWithConfirmation", () => {
     });
 
     it("masks both fields", () => {
-        const { password, confirmation } = renderFields();
+        const { password, confirmation, container } = renderFields();
 
         expect(password.type).toBe("password");
         expect(confirmation.type).toBe("password");
+        expect(container.querySelector(".tn-password-box")).toBeNull();
+    });
+
+    it("offers an eye on each revealable field that shows and hides its password", () => {
+        const { container, password, confirmation, onChange } = renderFields({ revealable: true });
+        const toggles = [ ...container.querySelectorAll<HTMLButtonElement>(".tn-password-box-toggle") ];
+        expect(toggles).toHaveLength(2);
+        expect(toggles[0].classList.contains("bx-show")).toBe(true);
+
+        type(password, "hunter2");
+        act(() => toggles[0].click());
+        expect(password.type).toBe("text");
+        expect(password.value).toBe("hunter2");
+        expect(password.closest(".tn-password-box")?.classList.contains("revealed")).toBe(true);
+        expect(toggles[0].classList.contains("bx-hide")).toBe(true);
+        // The other field keeps its own mask.
+        expect(confirmation.type).toBe("password");
+
+        act(() => toggles[0].click());
+        expect(password.type).toBe("password");
+
+        type(confirmation, "hunter2");
+        expect(onChange).toHaveBeenLastCalledWith("hunter2");
     });
 
 });
 
-function renderFields() {
+function renderFields(props: { revealable?: boolean } = {}) {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const onChange = vi.fn();
 
-    act(() => render(<FormPasswordWithConfirmation onChange={onChange} />, container));
+    act(() => render(<FormPasswordWithConfirmation onChange={onChange} {...props} />, container));
 
     const inputs = [...container.querySelectorAll("input")];
 

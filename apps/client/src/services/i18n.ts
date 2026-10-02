@@ -3,10 +3,15 @@ import i18next from "i18next";
 import i18nextHttpBackend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
+let markTranslationsInitialized: () => void = () => {};
+
 /**
- * A deferred promise that resolves when translations are initialized.
+ * Resolves when translations are initialized. A native promise, so that pages without jQuery,
+ * such as a collaboration's guest page, can load this module.
  */
-export const translationsInitializedPromise = $.Deferred();
+export const translationsInitializedPromise = new Promise<void>((resolve) => {
+    markTranslationsInitialized = resolve;
+});
 
 /** Every string in the app proper: 200-300 KB depending on the language. */
 const APP_NAMESPACE = "translation";
@@ -48,7 +53,7 @@ export async function initLocale(locale: LOCALE_IDS = "en", scope: "app" | "entr
     });
 
     await setDayjsLocale(locale);
-    translationsInitializedPromise.resolve();
+    markTranslationsInitialized();
 }
 
 /**

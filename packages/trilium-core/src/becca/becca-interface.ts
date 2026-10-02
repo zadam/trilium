@@ -4,6 +4,7 @@ import { formatSize } from "../services/utils/index.js";
 import type BOption from "./entities/boption.js";
 import type BNote from "./entities/bnote.js";
 import type BEtapiToken from "./entities/betapi_token.js";
+import type BCollaboration from "./entities/bcollaboration.js";
 import type BAttribute from "./entities/battribute.js";
 import type BBranch from "./entities/bbranch.js";
 import BRevision from "./entities/brevision.js";
@@ -30,6 +31,7 @@ export default class Becca {
     attributeIndex!: Record<string, BAttribute[]>;
     options!: Record<string, BOption>;
     etapiTokens!: Record<string, BEtapiToken>;
+    collaborations!: Record<string, BCollaboration>;
 
     allNoteSetCache: NoteSet | null;
 
@@ -59,6 +61,7 @@ export default class Becca {
         this.attributeIndex = {};
         this.options = {};
         this.etapiTokens = {};
+        this.collaborations = {};
 
         this.dirtyNoteSetCache();
 
@@ -221,6 +224,31 @@ export default class Becca {
 
     getEtapiToken(etapiTokenId: string): BEtapiToken | null {
         return Object.hasOwn(this.etapiTokens, etapiTokenId) ? this.etapiTokens[etapiTokenId] : null;
+    }
+
+    getCollaborations(): BCollaboration[] {
+        return Object.values(this.collaborations);
+    }
+
+    getCollaboration(collabId: string): BCollaboration | null {
+        return Object.hasOwn(this.collaborations, collabId) ? this.collaborations[collabId] : null;
+    }
+
+    /** Returns the newest live collaboration on the note, or null while the note is private. */
+    getActiveCollaborationForNote(noteId: string): BCollaboration | null {
+        let active: BCollaboration | null = null;
+
+        for (const collab of Object.values(this.collaborations)) {
+            if (collab.noteId !== noteId || collab.isDeleted) {
+                continue;
+            }
+
+            if (!active || collab.utcDateCreated > active.utcDateCreated) {
+                active = collab;
+            }
+        }
+
+        return active;
     }
 
     getEntity<T extends AbstractBeccaEntity<T>>(entityName: string, entityId: string): AbstractBeccaEntity<T> | null {

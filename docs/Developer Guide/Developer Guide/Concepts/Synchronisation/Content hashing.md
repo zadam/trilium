@@ -9,6 +9,7 @@ Entity hashing is done in `content_hash#getEntityHashes`.
     *   `notes`
     *   `branches`
     *   `etapi_tokens`
+    *   `collaborations`
     *   `options`
 *   For some reason `note_reordering` entities are ignored specifically.
 *   All the rows in `entity_changes` are then ordered alphabetically, based on their `entityId`.

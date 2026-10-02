@@ -37,6 +37,18 @@ export declare module "express-session" {
         /** Set during /bootstrap to mark the session as modified so express-session persists it and sends the cookie. */
         csrfInitialized?: true;
         /**
+         * The capabilities a guest unlocked on each collaboration, keyed by collabId. `guestId`
+         * is random per browser session and only attributes edits and presence; it is never an
+         * account.
+         */
+        collab?: Record<string, {
+            guestId: string;
+            capabilities: ("view" | "edit" | "create")[];
+            since: string;
+            /** The name the guest chose; left out, the guest goes by their number. */
+            name?: string;
+        }>;
+        /**
          * One-shot SSO rejection reason set by the OIDC afterCallback when a login is refused (wrong account,
          * or an attempt before enrollment). Read and cleared by the login page so the message shows once.
          */

@@ -20,9 +20,19 @@ vi.mock("../../services/i18n", () => ({
     t: (key: string) => key
 }));
 
+// The collaboration badge reads the note's collaboration through a hook that calls the server;
+// the spec sets it directly.
+const collab = vi.hoisted(() => ({
+    current: null as { collabId: string; slug: string | null } | null
+}));
+vi.mock("../collab/collaboration", () => ({
+    useCollaboration: () => collab.current,
+    stopCollaboration: vi.fn()
+}));
+
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
-import { OfficePreviewBadge } from "./NoteBadges";
+import { CollabBadge, OfficePreviewBadge } from "./NoteBadges";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -51,4 +61,19 @@ describe("OfficePreviewBadge", () => {
         shownNote.viewScope = viewScope;
         return renderInto(<OfficePreviewBadge />).querySelector(".office-preview-badge");
     }
+});
+
+describe("CollabBadge", () => {
+    it("shows only on a collaborated note, leaving who is there to the people badge", () => {
+        shownNote.current = buildNote({ title: "Plan" });
+        shownNote.viewScope = { viewMode: "default" };
+
+        collab.current = null;
+        expect(renderInto(<CollabBadge />).querySelector(".collab-badge")).toBeNull();
+
+        collab.current = { collabId: "c1", slug: null };
+        const badge = renderInto(<CollabBadge />).querySelector(".collab-badge");
+        expect(badge?.textContent).toBe("breadcrumb_badges.collaboration");
+        expect(badge?.querySelector(".bx-group")).not.toBeNull();
+    });
 });

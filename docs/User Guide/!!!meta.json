@@ -9318,6 +9318,40 @@
                         },
                         {
                             "isClone": false,
+                            "noteId": "K6T774UbIrux",
+                            "notePath": [
+                                "pOsGYCXsbNQG",
+                                "tC7s2alapj8V",
+                                "K6T774UbIrux"
+                            ],
+                            "title": "Collaboration",
+                            "notePosition": 80,
+                            "prefix": null,
+                            "isExpanded": false,
+                            "type": "text",
+                            "mime": "text/html",
+                            "attributes": [
+                                {
+                                    "type": "label",
+                                    "name": "shareAlias",
+                                    "value": "collaboration",
+                                    "isInheritable": false,
+                                    "position": 10
+                                },
+                                {
+                                    "type": "label",
+                                    "name": "iconClass",
+                                    "value": "bx bx-group",
+                                    "isInheritable": false,
+                                    "position": 20
+                                }
+                            ],
+                            "format": "markdown",
+                            "dataFileName": "Collaboration.md",
+                            "attachments": []
+                        },
+                        {
+                            "isClone": false,
                             "noteId": "5668rwcirq1t",
                             "notePath": [
                                 "pOsGYCXsbNQG",

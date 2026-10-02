@@ -1,3 +1,5 @@
+import { loadClientEntry } from "./client_entry.js";
+
 export default async function setupMermaid() {
     const mermaidEls = document.querySelectorAll("#content pre code.language-mermaid");
     if (mermaidEls.length === 0) {
@@ -30,18 +32,7 @@ interface Mermaid {
     init(): void;
 }
 
-/**
- * Imports the client's mermaid, which the server, the standalone build and the share-theme export
- * each place at `client/` next to this script, described by `share_mermaid.json`.
- */
+/** Imports the client's mermaid through its manifest, `client/share_mermaid.json`. */
 export async function loadMermaid(): Promise<Mermaid> {
-    const manifestUrl = new URL("client/share_mermaid.json", import.meta.url);
-    const response = await fetch(manifestUrl);
-    if (!response.ok) {
-        throw new Error(`Failed to load ${manifestUrl.href}: HTTP ${response.status}.`);
-    }
-
-    const { entry } = await response.json() as { entry: string };
-    const module = await import(new URL(entry, manifestUrl).href) as { default: Mermaid };
-    return module.default;
+    return loadClientEntry<Mermaid>("share_mermaid");
 }

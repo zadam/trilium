@@ -4,12 +4,18 @@ import { isOfficeMimeType } from "@triliumnext/commons";
 import { clsx } from "clsx";
 import { useEffect, useState } from "preact/hooks";
 
+import appContext from "../../components/app_context";
 import { copyTextWithToast } from "../../services/clipboard_ext";
+import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { goToLinkExt } from "../../services/link";
+import { buildCollabLink } from "../../services/share_link";
+import toast from "../../services/toast";
+import { stopCollaboration, useCollaboration } from "../collab/collaboration";
+import CollabPeopleBadge from "../collab/CollabPeopleBadge";
 import { Badge, BadgeWithDropdown } from "../react/Badge";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
-import { useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty } from "../react/hooks";
+import { useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty, useTriliumOption } from "../react/hooks";
 import { useShareState } from "../ribbon/BasicPropertiesTab";
 import { type ShareScope, useShareInfo } from "../shared_info";
 import { ActiveContentBadges } from "./ActiveContentBadges";
@@ -22,6 +28,8 @@ export default function NoteBadges() {
             <ReadOnlyBadge />
             <OfficePreviewBadge />
             <ShareBadge />
+            <CollabBadge />
+            <CollabPeopleBadge />
             <ClippedNoteBadge />
             <ExecuteBadge />
             <SnippetBadge />
@@ -107,6 +115,51 @@ function ShareBadge() {
                 icon="bx bx-unlink"
                 onClick={() => switchShareState(false)}
             >{t("breadcrumb_badges.shared_unshare")}</FormListItem>
+        </BadgeWithDropdown>
+    );
+}
+
+/** Marks a note guests can open through a collaboration link, with how many are on it now. */
+export function CollabBadge() {
+    const { note } = useNoteContext();
+    const collaboration = useCollaboration(note);
+    const [ syncServerHost ] = useTriliumOption("syncServerHost");
+
+    if (!note || !collaboration) {
+        return;
+    }
+
+    const { collabId } = collaboration;
+    const link = buildCollabLink(collaboration.slug ?? collabId, syncServerHost);
+
+    async function stop() {
+        if (await dialog.confirm(t("collaboration.stop_confirm"))) {
+            await stopCollaboration(collabId);
+            toast.showMessage(t("collaboration.stopped"));
+        }
+    }
+
+    return (
+        <BadgeWithDropdown
+            icon="bx bx-group"
+            text={t("breadcrumb_badges.collaboration")}
+            tooltip={t("breadcrumb_badges.collaboration_description")}
+            className="collab-badge"
+        >
+            <FormListItem icon="bx bx-copy" onClick={() => copyTextWithToast(link)}>
+                {t("breadcrumb_badges.collaboration_copy_link")}
+            </FormListItem>
+            <FormListItem icon="bx bx-link-external" onClick={(e) => goToLinkExt(e, link)}>
+                {t("breadcrumb_badges.collaboration_open")}
+            </FormListItem>
+            <FormListItem
+                icon="bx bx-cog"
+                onClick={() => appContext.triggerCommand("openCollaborationDialog", { noteId: note.noteId })}
+            >{t("breadcrumb_badges.collaboration_settings")}</FormListItem>
+            <FormDropdownDivider />
+            <FormListItem icon="bx bx-stop-circle" onClick={() => void stop()}>
+                {t("breadcrumb_badges.collaboration_stop")}
+            </FormListItem>
         </BadgeWithDropdown>
     );
 }

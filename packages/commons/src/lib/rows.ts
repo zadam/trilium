@@ -21,7 +21,7 @@ export interface AttachmentRow {
     encoding?: "base64";
 }
 
-export const REVISION_SOURCES = ["auto", "manual", "etapi", "llm", "restore"] as const;
+export const REVISION_SOURCES = [ "auto", "manual", "etapi", "llm", "restore", "collab" ] as const;
 export type RevisionSource = (typeof REVISION_SOURCES)[number];
 
 export interface RevisionRow {
@@ -68,6 +68,42 @@ export interface EtapiTokenRow {
     etapiTokenId?: string;
     name: string;
     tokenHash: string;
+    utcDateCreated?: string;
+    utcDateModified?: string;
+    isDeleted?: boolean;
+}
+
+export const COLLABORATION_VIEW_MODES = [ "open", "password" ] as const;
+export const COLLABORATION_EDIT_MODES = [ "none", "open", "password" ] as const;
+export const COLLABORATION_CREATE_MODES = [ "none", "password" ] as const;
+export type CollaborationViewMode = (typeof COLLABORATION_VIEW_MODES)[number];
+export type CollaborationEditMode = (typeof COLLABORATION_EDIT_MODES)[number];
+export type CollaborationCreateMode = (typeof COLLABORATION_CREATE_MODES)[number];
+
+/** How many guests a collaboration admits at the same time unless the host sets a limit. */
+export const DEFAULT_COLLABORATION_MAX_GUESTS = 10;
+/** The largest guest limit a host can set. */
+export const MAX_COLLABORATION_MAX_GUESTS = 1000;
+
+/** A guest grant on a note or subtree; the password columns hold scrypt hashes, never plaintext. */
+export interface CollaborationRow {
+    collabId?: string;
+    noteId: string;
+    includeSubtree: boolean;
+    viewMode: CollaborationViewMode;
+    editMode: CollaborationEditMode;
+    createMode: CollaborationCreateMode;
+    viewPasswordHash?: string | null;
+    viewPasswordSalt?: string | null;
+    editPasswordHash?: string | null;
+    editPasswordSalt?: string | null;
+    createPasswordHash?: string | null;
+    createPasswordSalt?: string | null;
+    slug?: string | null;
+    /** Missing on a row written before the column existed; the entity then applies the default. */
+    maxGuests?: number;
+    /** The name the host goes by on the guest pages; null shows the default name. */
+    hostName?: string | null;
     utcDateCreated?: string;
     utcDateModified?: string;
     isDeleted?: boolean;

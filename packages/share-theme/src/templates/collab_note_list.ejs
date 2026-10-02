@@ -1,0 +1,15 @@
+<% if (cards.length > 0) { %>
+<section class="collab-note-list" aria-label="<%= t("collab_theme.child_notes") %>">
+    <% for (const card of cards) { %>
+        <div class="collab-note-card type-<%= card.type %>" data-note-id="<%= card.noteId %>"<% if (card.color) { %> data-color="<%= card.color %>" style="--note-color: <%= card.color %>"<% } %>>
+            <h5 class="collab-note-card-header">
+                <span class="<%= card.iconClass %>"></span>
+                <a class="collab-note-card-title" href="./<%= card.noteId %>"><%= card.title %></a>
+            </h5>
+            <% if (card.preview) { %>
+                <div class="collab-note-card-content<% if (card.type === "text") { %> ck-content<% } %>"><%- card.preview %></div>
+            <% } %>
+        </div>
+    <% } %>
+</section>
+<% } %>

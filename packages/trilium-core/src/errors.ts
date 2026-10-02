@@ -54,6 +54,16 @@ export class GoneError extends HttpError {
 
 }
 
+/** The body is larger than what the route accepts. */
+export class PayloadTooLargeError extends HttpError {
+
+    constructor(message: string) {
+        super(message, 413);
+        this.name = "PayloadTooLargeError";
+    }
+
+}
+
 export class OpenIdError {
     message: string;
 

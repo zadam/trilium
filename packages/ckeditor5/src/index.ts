@@ -7,12 +7,13 @@ import "./theme/code_block_toolbar.css";
 import "./theme/link_embed_form.css";
 import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
 import type { PasteTarget } from "./plugins/cuttonote.js";
-import { COMMON_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
+import { COMMON_PLUGINS, CORE_PLUGINS, GUEST_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
 import { BalloonEditor, DecoupledEditor, FindAndReplaceEditing, FindCommand } from "ckeditor5";
 export { default as EditorWatchdog } from "./custom_watchdog";
-export { CHAT_INPUT_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
+export { CHAT_INPUT_PLUGINS, GUEST_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
 export type { EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription, WatchdogConfig, WatchdogState } from "ckeditor5";
 export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+export type { RemoteCursor } from "./plugins/collab_cursors.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
 export type { AttachmentLinkChange } from "./plugins/referencelink.js";
@@ -27,6 +28,7 @@ export { MESSAGE_KEY_PREFIX, MESSAGE_OVERRIDES, slugify } from "./messages.js";
 export * from "./utils.js";
 
 // Import with sideffects to ensure that type augmentations are present.
+import "./plugins/collab_cursors.js";
 import "./plugins/file_upload/uploadfileplugin.js";
 import "./plugins/math/math.js";
 import "./plugins/mermaid/mermaid.js";
@@ -68,6 +70,18 @@ export class ClassicEditor extends DecoupledEditor {
     static override get builtinPlugins() {
         return COMMON_PLUGINS;
     }
+}
+
+/**
+ * The editor a guest edits a collaborated note with: {@link GUEST_PLUGINS}, so nothing in it
+ * reaches the host's API.
+ */
+export class GuestEditor extends DecoupledEditor {
+
+    static override get builtinPlugins() {
+        return GUEST_PLUGINS;
+    }
+
 }
 
 /**

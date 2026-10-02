@@ -20,7 +20,7 @@ const utilsCtrl = vi.hoisted(() => ({
     reloadFrontendApp: vi.fn(),
     timeLimit: vi.fn(async (p: Promise<unknown>, _ms?: number) => p)
 }));
-const optionsCtrl = vi.hoisted(() => ({ is: vi.fn(() => false) }));
+const optionsCtrl = vi.hoisted(() => ({ is: vi.fn(() => false), get: vi.fn(() => "") }));
 
 vi.mock("./toast.js", () => ({ default: toast, showUnhandledError }));
 vi.mock("./bundle.js", () => ({ default: bundle }));
@@ -52,6 +52,7 @@ const baseGlob = { isMainWindow: true } as any;
 beforeEach(() => {
     vi.clearAllMocks();
     optionsCtrl.is.mockReturnValue(false);
+    optionsCtrl.get.mockReturnValue("");
     utilsCtrl.timeLimit.mockImplementation(async (p: Promise<unknown>) => p);
     frocaUpdater.processEntityChanges.mockImplementation(async () => {});
     (window as any).glob = { ...baseGlob };
@@ -99,6 +100,32 @@ describe("dispatchMessage", () => {
 
         await ws.dispatchMessage({ type: "unhandled-error", message: "Note 'abc' doesn't exist.", stack: "at getNoteOrThrow" } as any);
         expect(showUnhandledError).toHaveBeenCalledWith("Note 'abc' doesn't exist.", "at getNoteOrThrow");
+    });
+
+    it("keeps who is on a collaboration's pages, and hands on the cursors they share", async () => {
+        const ws = await loadWs();
+        const store = await import("./collab_presence.js");
+        const people = [ {
+            id: "p1", name: "Grace", color: "#2066df", isHost: false, noteId: "n1", editing: true
+        } ];
+
+        await ws.dispatchMessage({ type: "collab-presence", collabId: "c1", guests: 1, people });
+        expect(store.getCollabPresence("c1")).toEqual({ guests: 1, people });
+        expect(store.hasCollabGuests()).toBe(true);
+
+        const cursors: unknown[] = [];
+        const stop = store.subscribeToRemoteCursors((message) => cursors.push(message));
+        const cursor = {
+            type: "collab-remote-cursor", collabId: "c1", noteId: "n1",
+            person: { id: "p1", name: "Grace", color: "#2066df" }, selection: null
+        } as const;
+        await ws.dispatchMessage(cursor);
+        stop();
+        await ws.dispatchMessage(cursor);
+        expect(cursors).toEqual([ cursor ]);
+        await ws.dispatchMessage(
+            { type: "collab-presence", collabId: "c1", guests: 0, people: [] });
+        expect(store.hasCollabGuests()).toBe(false);
     });
 
     it("execute-script resolves the origin entity from froca when an id is present", async () => {
@@ -375,6 +402,39 @@ describe("WebSocket transport", () => {
         const ping = JSON.parse(lastSocket.sent.at(-1)!);
         expect(ping.type).toBe("ping");
     });
+
+    it("tells the server the note the app shows, unless hidden or the guests are on a sync server",
+        async () => {
+            const context = appCtx as { tabManager?: { getActiveContextNoteId(): string | null } };
+            context.tabManager = { getActiveContextNoteId: () => "n1" };
+            const lastPing = () => JSON.parse(lastSocket.sent.at(-1) ?? "{}");
+
+            try {
+                await loadWsFresh();
+                vi.advanceTimersByTime(0);
+                lastSocket.readyState = FakeSocket.OPEN;
+                vi.advanceTimersByTime(1000);
+                expect(lastPing()).toMatchObject({ type: "ping", collabViewing: "n1" });
+
+                optionsCtrl.get.mockReturnValue("https://sync.example");
+                vi.advanceTimersByTime(1000);
+                expect(lastPing().collabViewing).toBeNull();
+                optionsCtrl.get.mockReturnValue("");
+
+                const visibility = vi.spyOn(document, "visibilityState", "get")
+                    .mockReturnValue("hidden");
+                vi.advanceTimersByTime(1000);
+                expect(lastPing().collabViewing).toBeNull();
+                visibility.mockRestore();
+
+                // Before the app starts, there is no tab manager to ask.
+                delete context.tabManager;
+                vi.advanceTimersByTime(1000);
+                expect(lastPing().collabViewing).toBeNull();
+            } finally {
+                delete context.tabManager;
+            }
+        });
 
     it("shows a persistent toast after the connection is considered lost", async () => {
         await loadWsFresh();

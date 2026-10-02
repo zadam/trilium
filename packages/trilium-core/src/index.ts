@@ -111,6 +111,7 @@ export { default as BAttachment } from "./becca/entities/battachment";
 export { default as BAttribute } from "./becca/entities/battribute";
 export { default as BBlob } from "./becca/entities/bblob";
 export { default as BBranch } from "./becca/entities/bbranch";
+export { default as BCollaboration } from "./becca/entities/bcollaboration";
 export { default as BEtapiToken } from "./becca/entities/betapi_token";
 export { default as BNote } from "./becca/entities/bnote";
 export { default as BOption } from "./becca/entities/boption";

@@ -1,6 +1,8 @@
 # Sharing
 Trilium allows you to share selected notes as **publicly accessible** read-only documents. This feature is particularly useful for publishing content directly from your Trilium notes, making it accessible to others online.
 
+To let others edit a note instead, see [Collaboration](Collaboration.md): a separate feature with its own link and password-protected capabilities.
+
 <figure class="image"><img style="aspect-ratio:1144/660;" src="Sharing_image.png" width="1144" height="660"></figure>
 
 ## Features, interaction and limitations

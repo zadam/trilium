@@ -56,6 +56,7 @@ import IncludeNoteToolbar from "./plugins/include_note_toolbar.js";
 import LinkEmbedToolbar from "./plugins/link_embed/link_embed_toolbar.js";
 import TodoListMultistate from "./plugins/todo_list_multistate/todo_list_multistate.js";
 import TodoListUncheckOnEnter from "./plugins/todo_list_uncheck_on_enter.js";
+import CollabCursors from "./plugins/collab_cursors.js";
 import CollapsibleListItems from "./plugins/collapsible_list_items.js";
 import TableIndent from "./plugins/table_indent.js";
 import TableContextMenu from "./plugins/table_context_menu.js";
@@ -70,6 +71,7 @@ import ToolbarGroupMenu from "./plugins/toolbar_group_menu.js";
  * Plugins that are specific to Trilium and not part of the CKEditor 5 core, included in both text editors but not in the attribute editor.
  */
 const TRILIUM_PLUGINS: typeof Plugin[] = [
+    CollabCursors,
     UploadimagePlugin,
     CutToNotePlugin,
     ItalicAsEmPlugin,
@@ -265,6 +267,30 @@ export const COMMON_PLUGINS: typeof Plugin[] = [
 
     ...TRILIUM_PLUGINS,
     ...EXTERNAL_PLUGINS
+];
+
+/**
+ * What a guest editing a note through a collaboration link gets: the formatting of
+ * {@link COMMON_PLUGINS} without anything that calls the host's API, creates notes or attachments,
+ * or runs a feature the host configures. `GeneralHtmlSupport` is what keeps the markup of the
+ * features left out, such as an include-note or a link preview, intact through a guest's edit.
+ */
+export const GUEST_PLUGINS: typeof Plugin[] = [
+    Clipboard, Enter, SelectAll, ShiftEnter, Typing, Undo, Paragraph,
+    Autoformat, Bold, Italic, ItalicAsEmPlugin, Underline, Strikethrough, StrikethroughAsDel,
+    Code, Superscript, Subscript,
+    BlockQuote, Heading, HeadingButtonsUI, ParagraphButtonUI,
+    Image, ImageCaption, ImageStyle, ImageToolbar, ImageResize, ImageInline, PictureEditing,
+    Link, AutoLink, List, ListProperties, TodoList, TodoListUncheckOnEnter, CollapsibleListItems,
+    PasteFromOffice,
+    Table, TableToolbar, TableProperties, TableCellProperties, TableSelection, TableCaption,
+    TableColumnResize, TableIndent,
+    Alignment, Indent, IndentBlock, IndentBlockShortcutPlugin, TextTransformation,
+    Font, FontColor, FontBackgroundColor,
+    CodeBlock, CodeBlockHljsClass, HorizontalLine, RemoveFormat, RemoveFormatLinksPlugin,
+    SpecialCharacters, SpecialCharactersEssentials, PageBreak, GeneralHtmlSupport,
+    TextPartLanguage, Bookmark,
+    Kbd, Admonition, Collapsible, Footnotes, AdaptiveColors, CollabCursors
 ];
 
 /**

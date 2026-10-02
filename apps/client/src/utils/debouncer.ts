@@ -17,13 +17,18 @@ export default class Debouncer<T> {
         if (this.timeoutId !== null) {
             clearTimeout(this.timeoutId);
         }
-        this.timeoutId = setTimeout(this.reportUpdate.bind(this), this.debounceInterval);
+        this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+            this.reportUpdate();
+        }, this.debounceInterval);
     }
 
+    /** Reports an update still waiting for its interval, and nothing once it has been reported. */
     destroy() {
         if (this.timeoutId !== null) {
-            this.reportUpdate();
             clearTimeout(this.timeoutId);
+            this.timeoutId = null;
+            this.reportUpdate();
         }
     }
 

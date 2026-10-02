@@ -1,0 +1,7 @@
+.collab-canvas-host {
+    height: 70vh;
+    min-height: 420px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}

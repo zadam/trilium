@@ -1,5 +1,8 @@
 import type { Locale } from "./i18n.js";
-import { AttachmentRow, AttributeRow, BranchRow, NoteRow, NoteType, OptionRow, RevisionSource } from "./rows.js";
+import {
+    AttachmentRow, AttributeRow, BranchRow, CollaborationCreateMode, CollaborationEditMode,
+    CollaborationViewMode, NoteRow, NoteType, OptionRow, RevisionSource
+} from "./rows.js";
 import type { SetupTargetScreen } from "./setup_marker.js";
 
 type Response = {
@@ -188,6 +191,23 @@ export interface EtapiToken {
     name: string;
     utcDateCreated: string;
     etapiTokenId?: string;
+}
+
+/** A collaboration as the host's client sees it: the settings, never the password hashes. */
+export interface Collaboration {
+    collabId: string;
+    noteId: string;
+    includeSubtree: boolean;
+    viewMode: CollaborationViewMode;
+    editMode: CollaborationEditMode;
+    createMode: CollaborationCreateMode;
+    slug: string | null;
+    /** How many guests can be connected at the same time. */
+    maxGuests: number;
+    /** The name the host goes by on the guest pages, or null for the default name. */
+    hostName: string | null;
+    utcDateCreated: string;
+    utcDateModified: string;
 }
 
 export interface PostTokensResponse {

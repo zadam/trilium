@@ -352,7 +352,10 @@ export function getContent(note: SNote | BNote, options: ShareRenderOptions = {}
     } else if (note.type === "file") {
         renderFile(note, result);
     } else if (note.type === "book") {
+        // A collection shows its child notes. What its content still holds from a type it was
+        // switched from is never written into the page, which prints it as HTML.
         result.isEmpty = true;
+        result.content = "";
     } else if (note.type === "webView") {
         renderWebView(note, result);
     } else if (note.type === "spreadsheet") {

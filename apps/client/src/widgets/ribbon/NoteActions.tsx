@@ -266,6 +266,11 @@ function NoteBasicProperties({ note, focus }: {
             disabled={["root", "_share", "_hidden"].includes(note?.noteId ?? "") || note?.noteId.startsWith("_options")}
             itemRef={itemToFocusRef}
         />
+        <FormListItem
+            icon="bx bx-group"
+            disabled={["root", "_share", "_hidden"].includes(note?.noteId ?? "") || note?.noteId.startsWith("_")}
+            onClick={() => appContext.triggerCommand("openCollaborationDialog", { noteId: note.noteId })}
+        >{t("note_actions.collaborate")}</FormListItem>
         <FormListToggleableItem
             icon="bx bx-lock-alt"
             title={t("protect_note.toggle-on")}
