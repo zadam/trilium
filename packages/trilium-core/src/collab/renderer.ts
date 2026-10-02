@@ -1,3 +1,4 @@
+import { NOTE_TYPE_ICONS } from "@triliumnext/commons";
 import ejs from "ejs";
 import { t } from "i18next";
 import { parse } from "node-html-parser";
@@ -10,7 +11,8 @@ import * as task_states from "../services/task_states.js";
 import * as utils from "../services/utils/index.js";
 import { assetUrlFragment, getContent, readShareTemplate } from "../share/content_renderer.js";
 import {
-    getGuestCodeLanguages, type GuestCodeLanguage, isGuestEditableNote, isSafeColor
+    getGuestCodeLanguages, getNoteIndentation, type GuestCodeLanguage, isGuestEditableNote,
+    isSafeColor, type NoteIndentation
 } from "./guest_writes.js";
 import { getPasswordGatedCapabilities, isNoteInCollabScope } from "./service.js";
 
@@ -35,6 +37,13 @@ export interface CollabBootstrap {
     editable: boolean;
     /** The languages a code note can switch to, for a guest who can edit; empty otherwise. */
     codeLanguages: GuestCodeLanguage[];
+    /** How a code note indents, which the status bar shows and an editor can change. */
+    indentation: NoteIndentation | null;
+    /** The note's type as the page names it, and the app's icon for it, for the note info. */
+    typeLabel: string;
+    typeIcon: string;
+    utcDateCreated: string;
+    utcDateModified: string;
     includeSubtree: boolean;
     capabilities: readonly GuestCapability[];
     csrfToken: string | null;
@@ -54,16 +63,26 @@ export interface CollabPageOptions {
 }
 
 const EDITOR_STRING_KEYS = [
-    "saving", "saved", "save_failed", "conflict", "reload", "overwrite", "note_changed", "ended",
+    "saving", "saved", "save_failed", "conflict", "reload", "overwrite", "ended",
     "removed", "people", "you", "host_tag", "rename_self", "your_name", "editing_now",
+    "change_own_color", "change_person_color", "default_color", "color_blue", "color_red",
+    "color_green", "color_purple", "color_orange", "color_teal", "color_magenta", "color_olive",
     "add_child_note", "editing_hint", "full", "tabs", "close_tab",
     "change_color", "change_icon", "search_icons", "reset_icon",
     "clear_color", "set_color", "custom_color", "text_placeholder", "code_placeholder",
     "diagram_placeholder", "diagram_preview", "view_source", "view_split", "view_preview",
     "mind_map_new_topic", "options", "note_type_heading", "type_text", "type_code",
     "type_markdown", "type_mermaid", "type_canvas", "type_mind_map", "type_book", "language",
-    "search_languages", "language_runs", "copy_link", "link_copied", "download", "print"
+    "search_languages", "language_runs", "copy_link", "link_copied", "download", "print",
+    "note_path", "tab_width_title", "tab_width_spaces_short", "tab_width_tabs",
+    "tab_width_style_header", "tab_width_style_spaces", "tab_width_style_tabs",
+    "tab_width_display_header", "tab_width_reindent_header", "note_info", "info_created",
+    "info_modified", "info_type", "info_mime", "info_note_id", "info_note_size",
+    "info_note_size_hint", "info_calculate"
 ];
+
+/** The indentation widths the status bar offers, as the app's does. */
+const TAB_WIDTHS = [ 1, 2, 3, 4, 6, 8 ];
 
 export interface GuestTreeNode {
     noteId: string;
@@ -117,6 +136,11 @@ export function renderCollabPage(
         blobId: note.blobId ?? null,
         editable: isGuestEditableNote(note),
         codeLanguages: options.capabilities.includes("edit") ? getGuestCodeLanguages() : [],
+        indentation: getNoteIndentation(note),
+        typeLabel: getTypeLabel(note),
+        typeIcon: NOTE_TYPE_ICONS[note.type as keyof typeof NOTE_TYPE_ICONS] ?? "bx bx-note",
+        utcDateCreated: toIsoDate(note.utcDateCreated),
+        utcDateModified: toIsoDate(note.utcDateModified ?? note.utcDateCreated),
         includeSubtree: collab.includeSubtree,
         capabilities: options.capabilities,
         csrfToken: options.csrfToken,
@@ -124,6 +148,8 @@ export function renderCollabPage(
         strings: {
             ...Object.fromEntries(
                 EDITOR_STRING_KEYS.map((key) => [ key, t(`collab_theme.${key}`) ])),
+            ...Object.fromEntries(TAB_WIDTHS.map((width) =>
+                [ `tab_width_${width}`, t("collab_theme.tab_width_spaces", { count: width }) ])),
             back: t("hidden-subtree.go-to-previous-note-title"),
             forward: t("hidden-subtree.go-to-next-note-title")
         }
@@ -150,6 +176,7 @@ export function renderCollabPage(
         bootstrapJson: toInlineJson(bootstrap),
         ...getPageAssets(),
         iconPackCss: [
+            INTER_FONT_FACE,
             ...iconPacks.map((pack) => iconPackService.generateCss(pack, getFontUrl(pack))),
             iconPackService.generateIconTransformCss(),
             task_states.generateTaskStateCss()
@@ -373,6 +400,11 @@ function getTypeLabel(note: BNote): string {
     return key ? t(`collab_theme.${key}`) : note.type;
 }
 
+/** A UTC date as Trilium stores it, `2026-10-02 14:03:17.123Z`, in the ISO form a page parses. */
+function toIsoDate(utcDate: string | undefined) {
+    return (utcDate ?? "").replace(" ", "T");
+}
+
 /** The note's `color` label when it is a plain CSS color, which the page can put in a style. */
 function getNoteColor(note: BNote): string | null {
     const color = note.getLabelValue("color");
@@ -427,6 +459,16 @@ function getPageAssets() {
         logoUrl: `${BASE_PATH}${assetUrlFragment}/images/icon-color.svg`
     };
 }
+
+/** The app's own font, which the page's tree is set in as the app's tree is. */
+const INTER_FONT_FACE = `@font-face {
+    font-family: "Inter";
+    src: url("${BASE_PATH}share/assets/fonts/Inter/Inter-VariableFont_opsz,wght.woff2")
+        format("woff2-variations");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}`;
 
 function getFontUrl(pack: iconPackService.ProcessedIconPack): string {
     const extension = iconPackService.MIME_TO_EXTENSION_MAPPINGS[pack.fontMime];

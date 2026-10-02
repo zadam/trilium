@@ -1,14 +1,17 @@
 import "./CollabPeopleBadge.css";
 
-import type { Collaboration, CollabPerson } from "@triliumnext/commons";
+import {
+    COLLAB_PERSON_COLOR_NAMES, COLLAB_PERSON_COLORS, type Collaboration, type CollabPerson
+} from "@triliumnext/commons";
 
 import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { BadgeWithDropdown } from "../react/Badge";
-import { FormDropdownSubmenu, FormListItem } from "../react/FormList";
+import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../react/FormList";
 import { useNoteContext, useNoteTitle, useTriliumOption } from "../react/hooks";
 import {
-    removeCollabPerson, renameCollabPerson, useCollaborationsInScope, useCollabPresences
+    recolorCollabPerson, removeCollabPerson, renameCollabPerson, useCollaborationsInScope,
+    useCollabPresences
 } from "./collaboration";
 
 /**
@@ -68,6 +71,24 @@ function PersonSubmenu({ collab, person }: { collab: Collaboration; person: Coll
             <FormListItem icon="bx bx-rename" onClick={() => void rename(collab, person)}>
                 {t("collab_people.rename")}
             </FormListItem>
+            <FormDropdownSubmenu icon="bx bx-palette" title={t("collab_people.color")}>
+                <FormListItem
+                    icon="bx bx-reset"
+                    onClick={() => void recolorCollabPerson(collab.collabId, person.id, null)}
+                >{t("collab_people.default_color")}</FormListItem>
+                <FormDropdownDivider />
+                {COLLAB_PERSON_COLORS.map((color, index) => (
+                    <FormListItem
+                        key={color}
+                        checkable
+                        checked={color === person.color}
+                        onClick={() => void recolorCollabPerson(collab.collabId, person.id, color)}
+                    >
+                        <span className="collab-people-swatch" style={`--collab-color: ${color}`} />
+                        {t(`collab_people.colors.${COLLAB_PERSON_COLOR_NAMES[index]}`)}
+                    </FormListItem>
+                ))}
+            </FormDropdownSubmenu>
             {!person.isHost && (
                 <FormListItem icon="bx bx-user-x" onClick={() => void remove(collab, person)}>
                     {t("collab_people.remove")}

@@ -9,6 +9,14 @@ export function getMaxMigrationVersion() {
 
 // Migrations should be kept in descending order, so the latest migration is first.
 export const MIGRATIONS: (SqlMigration | JsMigration)[] = [
+    // The color the host goes by on a collaboration's pages; null shows the default
+    {
+        version: 244,
+        sql: /*sql*/`
+            ALTER TABLE collaborations ADD COLUMN hostColor TEXT DEFAULT NULL;
+        `,
+        ignoreErrors: true
+    },
     // The name the host goes by on a collaboration's pages; null shows the default
     {
         version: 243,

@@ -1,3 +1,14 @@
+/* A dot of a color in the badge's color menu, before the color's name. */
+.collab-people-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-inline-end: 8px;
+    border-radius: 50%;
+    background: var(--collab-color);
+    vertical-align: -1px;
+}
+
 /* A person's row in the badge's menu, which renders in a portal; `--collab-color` is their color. */
 .collab-people-name {
     display: inline-flex;

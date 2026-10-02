@@ -326,9 +326,10 @@ html body .dropdown-item[disabled] {
     border-top: 1px solid var(--menu-item-delimiter-color);
 }
 
-/* Menu item arrow */
-body.mobile .dropdown-submenu .dropdown-toggle::after,
-body.desktop .dropdown-submenu:not(.dropstart) .dropdown-toggle::after {
+/* Menu item arrow. Each row's own toggle only: a submenu's layer sits in a `.dropdown-submenu`
+   too, which would otherwise give the rows of a nested submenu both arrows. */
+body.mobile .dropdown-submenu > .dropdown-toggle::after,
+body.desktop .dropdown-submenu:not(.dropstart) > .dropdown-toggle::after {
     content: "\ed3b" !important;
     position: absolute;
     display: flex !important;
@@ -344,11 +345,11 @@ body.desktop .dropdown-submenu:not(.dropstart) .dropdown-toggle::after {
     color: var(--menu-item-arrow-color) !important;
 }
 
-body.mobile .dropdown-submenu.dropstart .dropdown-toggle::before {
+body.mobile .dropdown-submenu.dropstart > .dropdown-toggle::before {
     content: unset;
 }
 
-body.desktop .dropdown-submenu.dropstart .dropdown-toggle::before {
+body.desktop .dropdown-submenu.dropstart > .dropdown-toggle::before {
     content: "\ea4d" !important;
     position: absolute;
     display: flex !important;
@@ -364,12 +365,19 @@ body.desktop .dropdown-submenu.dropstart .dropdown-toggle::before {
     color: var(--menu-item-arrow-color) !important;
 }
 
+/* On the desktop the row holds only its own line or lines, so the arrow spans the row and is
+   centered on rows of more than one line too. A phone unfolds the submenu inside the row. */
+body.desktop .dropdown-submenu:not(.dropstart) > .dropdown-toggle::after,
+body.desktop .dropdown-submenu.dropstart > .dropdown-toggle::before {
+    bottom: 0;
+}
+
 /* Right to left, the end side is the left, so both arrows point the other way. */
-body.desktop[dir=rtl] .dropdown-submenu:not(.dropstart) .dropdown-toggle::after {
+body.desktop[dir=rtl] .dropdown-submenu:not(.dropstart) > .dropdown-toggle::after {
     content: "\ea4d" !important;
 }
 
-body.desktop[dir=rtl] .dropdown-submenu.dropstart .dropdown-toggle::before {
+body.desktop[dir=rtl] .dropdown-submenu.dropstart > .dropdown-toggle::before {
     content: "\ed3b" !important;
 }
 

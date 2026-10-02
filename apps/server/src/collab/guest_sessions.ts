@@ -1,3 +1,5 @@
+import { normalizeCollabColor, normalizeCollabName } from "@triliumnext/commons";
+
 import sql from "../services/sql.js";
 
 /** A guest's grant on one collaboration, as their session stores it. */
@@ -6,6 +8,37 @@ export interface GuestGrant {
     capabilities: ("view" | "edit" | "create")[];
     since: string;
     name?: string;
+    color?: string;
+}
+
+/** A change to how a person appears: a field left out stays, null goes back to the default. */
+export interface PersonChanges {
+    name?: string | null;
+    color?: string | null;
+}
+
+/**
+ * Picks the name and the color out of an untrusted body, each only when it is there: a blank name
+ * and a color off the palette both mean the default.
+ */
+export function readPersonChanges(body: Record<string, unknown> | undefined): PersonChanges {
+    return {
+        ...(body && "name" in body ? { name: normalizeCollabName(body.name) } : {}),
+        ...(body && "color" in body ? { color: normalizeCollabColor(body.color) } : {})
+    };
+}
+
+/** The grant with the changes made; a default leaves the field out. */
+export function applyPersonChanges(grant: GuestGrant, changes: PersonChanges): GuestGrant {
+    const next = { ...grant };
+
+    for (const field of [ "name", "color" ] as const) {
+        if (field in changes) {
+            next[field] = changes[field] ?? undefined;
+        }
+    }
+
+    return next;
 }
 
 /**

@@ -1,7 +1,11 @@
 .collab-canvas-host {
     height: 70vh;
     min-height: 420px;
-    border: 1px solid var(--main-border-color);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
+}
+
+/* As in the app's theme-next-dark.css, which draws a dark canvas lighter than Excalidraw does. */
+.collab-canvas-host .excalidraw.theme--dark {
+    --theme-filter: invert(80%) hue-rotate(180deg) !important;
 }

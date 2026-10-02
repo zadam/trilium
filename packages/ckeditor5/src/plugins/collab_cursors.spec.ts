@@ -127,4 +127,32 @@ describe("CollabCursors", () => {
             { selectionAttributes: {}, lastRangeBackward: true });
         expect(plugin.getLocalSelection()).toEqual({ anchor: [ 1, 2 ], head: [ 0, 3 ] });
     });
+
+    it("takes another person's version block by block, keeping the caret by its text", () => {
+        setModelData(editor.model, "<paragraph>One</paragraph>"
+            + "<paragraph>Two wor[]ld</paragraph><paragraph>Three</paragraph>");
+        const untouched = editor.model.document.getRoot()?.getChild(2);
+        editor.commands.get("undo")?.clearStack();
+        show(at([ 1, 2 ]));
+
+        plugin.applyRemoteData("<p>One!</p><p>Big two world</p><p>Three</p>");
+
+        expect(editor.getData()).toBe("<p>One!</p><p>Big two world</p><p>Three</p>");
+        expect(plugin.getLocalSelection()).toEqual({ anchor: [ 1, 11 ], head: [ 1, 11 ] });
+        expect(editor.model.document.getRoot()?.getChild(2)).toBe(untouched);
+        expect(editor.commands.get("undo")?.isEnabled).toBe(false);
+        // Grace's caret, in a block the update replaced, is drawn again.
+        expect(carets()).toHaveLength(1);
+    });
+
+    it("leaves a caret in an unchanged block where it is when blocks come and go before it", () => {
+        setModelData(editor.model, "<paragraph>A</paragraph><paragraph>B[]b</paragraph>");
+
+        plugin.applyRemoteData("<p>A</p><p>new</p><p>Bb</p>");
+        expect(plugin.getLocalSelection()).toEqual({ anchor: [ 2, 1 ], head: [ 2, 1 ] });
+
+        plugin.applyRemoteData("<p>Bb</p>");
+        expect(plugin.getLocalSelection()).toEqual({ anchor: [ 0, 1 ], head: [ 0, 1 ] });
+        expect(editor.getData()).toBe("<p>Bb</p>");
+    });
 });

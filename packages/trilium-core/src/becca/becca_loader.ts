@@ -113,7 +113,7 @@ const CACHED_ENTITY_NAMES = [
 const COLLABORATION_COLUMNS = [
     "collabId", "noteId", "includeSubtree", "viewMode", "editMode", "createMode",
     "viewPasswordHash", "viewPasswordSalt", "editPasswordHash", "editPasswordSalt",
-    "createPasswordHash", "createPasswordSalt", "slug", "maxGuests", "hostName",
+    "createPasswordHash", "createPasswordSalt", "slug", "maxGuests", "hostName", "hostColor",
     "utcDateCreated", "utcDateModified"
 ];
 

@@ -198,11 +198,32 @@ function createNote(req: Request) {
     } satisfies CreateChildrenResponse;
 }
 
+/**
+ * Saves a note's content. With `baseBlobId`, the content only lands when the note still holds
+ * that version: the answer is then the new `blobId`, and otherwise `stale`, the version the note
+ * holds now, for the editor to merge its edits into.
+ */
 function updateNoteData(req: Request<{ noteId: string }>) {
-    const { content, attachments } = req.body;
+    const { content, attachments, baseBlobId } = req.body;
     const { noteId } = req.params;
 
-    return noteService.updateNoteData(noteId, content, attachments);
+    if (typeof baseBlobId !== "string") {
+        return noteService.updateNoteData(noteId, content, attachments);
+    }
+
+    const note = becca.getNote(noteId);
+
+    if (note?.isContentAvailable() && note.blobId !== baseBlobId) {
+        const current = note.getContent();
+
+        return {
+            stale: { blobId: note.blobId, content: typeof current === "string" ? current : "" }
+        };
+    }
+
+    noteService.updateNoteData(noteId, content, attachments);
+
+    return { blobId: becca.getNoteOrThrow(noteId).blobId };
 }
 
 /**

@@ -160,6 +160,12 @@ export function renameCollabPerson(collabId: string, personId: string, name: str
         { name });
 }
 
+/** Recolors someone for everyone on the collaboration's pages; null goes back to the default. */
+export function recolorCollabPerson(collabId: string, personId: string, color: string | null) {
+    return server.put(`collaborations/${collabId}/people/${encodeURIComponent(personId)}`,
+        { color });
+}
+
 /** Signs a guest out of the collaboration and closes their pages. */
 export function removeCollabPerson(collabId: string, personId: string) {
     return server.remove(`collaborations/${collabId}/people/${encodeURIComponent(personId)}`);
@@ -168,7 +174,8 @@ export function removeCollabPerson(collabId: string, personId: string) {
 /**
  * Shares the host's selection in an editor of the note with the people on the pages of the
  * collaborations that show it, and draws theirs. Off while a sync server serves the
- * collaborations, whose guests never reach this instance.
+ * collaborations, whose guests never reach this instance. Returns whether guests can edit the
+ * note now, for the editor to merge their versions in live.
  */
 export function useCollabCursors(note: FNote | null | undefined, adapter: CursorAdapter | null) {
     const collaborations = useCollaborationsInScope(note);
@@ -207,6 +214,8 @@ export function useCollabCursors(note: FNote | null | undefined, adapter: Cursor
     useEffect(() => {
         syncRef.current?.setPeople(people);
     }, [ people ]);
+
+    return shared;
 }
 
 /** Re-renders the component after each presence the server sends; returns how many arrived. */

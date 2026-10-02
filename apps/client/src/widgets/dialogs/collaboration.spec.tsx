@@ -24,6 +24,7 @@ const EXISTING: Collaboration = {
     slug: "team",
     maxGuests: 25,
     hostName: "Ada",
+    hostColor: null,
     utcDateCreated: "2026-10-01 10:00:00.000Z",
     utcDateModified: "2026-10-01 10:00:00.000Z"
 };

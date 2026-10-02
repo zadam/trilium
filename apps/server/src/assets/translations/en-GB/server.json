@@ -110,5 +110,10 @@
   },
   "hidden-subtree": {
     "task-state-cancelled": "Cancelled"
+  },
+  "collab_theme": {
+    "change_own_color": "Change your colour",
+    "change_person_color": "Change this person's colour on your page",
+    "default_color": "Default colour"
   }
 }

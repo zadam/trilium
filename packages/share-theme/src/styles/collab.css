@@ -145,14 +145,60 @@
     display: inline;
 }
 
-/* A grid keeps the logo centred however many buttons stand at the header's right. */
-.collab #header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+/* The app's vertical launcher bar: the logo at its top, the page's buttons at its foot. */
+#collab-launcher {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    width: var(--collab-launcher-width);
+    height: 100%;
+    padding: 10px 0;
+    box-sizing: border-box;
+    background: var(--collab-launcher-background);
 }
 
-.collab #header > :first-child {
-    justify-self: start;
+.collab {
+    --collab-launcher-width: 52px;
+}
+
+.collab-launcher-logo {
+    display: flex;
+    padding: 4px;
+}
+
+.collab-launcher-logo img {
+    width: 32px;
+}
+
+.collab-launcher-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+#collab-launcher .header-button {
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    color: var(--launcher-button-color);
+    font-size: 24px;
+    transition: background-color 300ms ease-out, color 300ms ease-out;
+}
+
+#collab-launcher .header-button:hover {
+    background: var(--launcher-button-hover-background);
+    color: var(--launcher-button-hover-color);
+    transition: none;
+}
+
+#collab-launcher .header-button svg {
+    width: 24px;
+    height: 24px;
 }
 
 /* Rendered on every page so its listener stays, and hidden where the note has no contents. */
@@ -160,22 +206,84 @@
     display: none;
 }
 
-.collab-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    justify-self: end;
-}
-
 .collab-logout {
     display: flex;
     margin: 0;
 }
 
-/* The size of the header's other icons, which are 24px drawings. */
 .collab-logout-button {
-    font-size: 24px;
     cursor: pointer;
+}
+
+/* The double arrow points the way the sidebar goes next, and turns as it opens or closes. */
+.collab-launcher-toggle .bx {
+    transition: transform 300ms ease;
+}
+
+.left-pane-collapsed .collab-launcher-toggle .bx {
+    transform: rotate(180deg);
+}
+
+/* The sidebar takes the width the guest dragged its edge to. The edge stands in for the theme's
+   border, and shows the drag cursor. */
+.collab #left-pane {
+    width: var(--collab-left-pane-width, 20vw);
+    border-right: 0;
+}
+
+/* The edge is the sidebar's own color, and shows as a bar only while it is hovered or dragged. */
+.collab-left-pane-resizer {
+    flex-shrink: 0;
+    width: 5px;
+    background: var(--background-secondary);
+    cursor: col-resize;
+    transition: background-color 150ms ease;
+}
+
+.collab-left-pane-resizer:hover,
+.collab-left-pane-resizer:focus-visible,
+.collab-resizing .collab-left-pane-resizer {
+    background: var(--background-highlight);
+    outline: none;
+}
+
+.left-pane-collapsed .collab #left-pane {
+    width: 0;
+    margin-left: 0;
+}
+
+.left-pane-collapsed .collab-left-pane-resizer {
+    display: none;
+}
+
+/* The width follows the pointer at once while dragged, and the text stays unselected. */
+.collab-resizing .collab #left-pane {
+    transition: none;
+}
+
+.collab-resizing body {
+    user-select: none;
+    cursor: col-resize;
+}
+
+/* On a phone the sidebar is a drawer that opens beside the bar, closed until asked for. */
+@media (max-width: 48em) {
+    .collab-launcher-toggle .bx {
+        transform: rotate(180deg);
+    }
+
+    .menu-open .collab-launcher-toggle .bx {
+        transform: none;
+    }
+
+    .collab #left-pane {
+        left: var(--collab-launcher-width);
+        width: 80%;
+    }
+
+    .collab-left-pane-resizer {
+        display: none;
+    }
 }
 
 .collab-presence {
@@ -190,15 +298,43 @@
     border-radius: 6px;
 }
 
-/* The people on the collaboration's pages, at the foot of the sidebar; `--collab-color` is each
-   person's color. */
+/* The button beside the note options that opens the list of people. */
+.collab-people-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--launcher-button-color, var(--text-menu));
+    font-size: 14px;
+    cursor: pointer;
+
+    .bx-user {
+        font-size: 18px;
+    }
+
+    .bx-chevron-down {
+        font-size: 16px;
+        opacity: 0.7;
+    }
+}
+
+.collab-people-toggle:hover,
+.collab-people-toggle[aria-expanded="true"] {
+    background: var(--launcher-button-hover-background, var(--background-highlight));
+    color: var(--launcher-button-hover-color, var(--text-primary));
+}
+
+/* The people on the collaboration's pages, in a panel drawn as the menus are; `--collab-color` is
+   each person's color. */
 .collab-people {
-    position: sticky;
-    bottom: 0;
-    margin-top: auto;
+    width: min(300px, calc(100vw - 16px));
     padding: 8px 12px 12px;
-    border-top: 1px solid var(--background-highlight);
-    background: var(--background-secondary);
+    user-select: text;
 
     .collab-people-heading {
         display: flex;
@@ -223,7 +359,7 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        max-height: 30vh;
+        max-height: 50vh;
         margin: 0;
         padding: 0;
         overflow-y: auto;
@@ -292,6 +428,7 @@
         font-size: 15px;
     }
 
+    .collab-person-color,
     .collab-person-rename {
         padding: 2px;
         border: 0;
@@ -302,6 +439,8 @@
         cursor: pointer;
     }
 
+    .collab-person-color:hover,
+    .collab-person-color:focus-visible,
     .collab-person-rename:hover,
     .collab-person-rename:focus-visible {
         background: var(--background-highlight);
@@ -320,42 +459,282 @@
     }
 }
 
-/* The "+" on a tree row, offered while the row is pointed at or focused, as in the app's tree. */
-#menu a .collab-add-button {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 2px;
+/* The app's tree: its font at its size, near the sidebar's edge, rows of its height with the
+   chevron in a column of its own, and each level ten pixels in from the one above. */
+.collab #navigation {
+    padding: 12px 6px 40px;
+}
+
+.collab .theme-selection {
+    justify-content: flex-start;
+    padding-inline: 8px;
+}
+
+.collab #menu {
+    color: var(--left-pane-text-color);
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+}
+
+.collab #menu ul {
+    padding-left: 10px;
+}
+
+.collab #menu li {
+    max-width: none;
+}
+
+.collab #menu a {
+    gap: 0;
+    min-height: calc(1lh + 14px);
+    box-sizing: border-box;
+    padding: 4px;
     border: 0;
-    background: none;
+    border-radius: 6px;
     color: inherit;
-    opacity: 0;
+}
+
+.collab #menu li.item > a {
+    padding-left: 28px;
+}
+
+.collab #menu .collapse-button {
+    flex-shrink: 0;
+    width: 24px;
+}
+
+.collab #menu .collapse-button svg {
+    width: 16px;
+}
+
+.collab #menu a > span > i {
+    margin-inline-end: 3px;
+    font-size: 1.2em;
+    vertical-align: -3px;
+}
+
+/* As the app's tree, the open notes' children hang without a guide line beside them. */
+.collab #menu li ul::before {
+    display: none;
+}
+
+/* The "+" on a tree row, shown while the row is pointed at or focused, drawn as the app's tree
+   draws its button: a round chip of the icon's size, which lightens and lifts when pointed at. */
+#menu a .collab-add-button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    margin-inline: auto 6px;
+    padding: 1px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--left-pane-item-action-button-background);
+    color: var(--left-pane-item-action-button-color);
+    font-size: 120%;
     cursor: pointer;
+    transition: background-color 200ms ease-out, box-shadow 200ms ease-out;
 }
 
 #menu a:hover .collab-add-button,
-#menu a:focus-within .collab-add-button,
-#menu a.active .collab-add-button {
-    opacity: 0.8;
+#menu a:focus-within .collab-add-button {
+    display: inline-flex;
 }
 
 #menu a .collab-add-button:hover,
 #menu a .collab-add-button:focus-visible {
-    opacity: 1;
+    background: var(--left-pane-item-action-button-hover-background);
+    box-shadow: var(--left-pane-item-action-button-hover-shadow);
+    transition: background-color 100ms ease-in, box-shadow 100ms ease-in;
 }
 
-#menu a .collab-add-button svg {
-    width: 14px;
+/* The app's note background, which the dark share theme draws lighter. */
+html.theme-dark .collab {
+    --background-primary: #242424;
 }
 
-/* The tab row and the editor's toolbar stay in view while the note scrolls, as in the app. */
+/* The note fills the width the panes leave it, with the app's padding at its sides. */
+.collab #main {
+    max-width: none;
+    padding: 16px 29px 16px 24px;
+}
+
+@media (max-width: 48em) {
+    .collab #main {
+        padding: 1rem;
+    }
+}
+
+/* The scrolling note above the status bar, which stays at the foot of the window. */
+#collab-center {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    background: var(--background-secondary);
+}
+
+/* The header goes on a row of its own, above the note and its contents panel. The note's corner
+   by the sidebar and the status bar is rounded, as the app rounds its note's. */
+.collab #right-pane {
+    flex: 1;
+    border-bottom-left-radius: var(--collab-note-corner-radius);
+    background: var(--background-primary);
+    flex-wrap: wrap;
+    align-content: flex-start;
+    min-height: 0;
+}
+
+/* The app's status bar: the note's path, and the controls for its content at the end. */
+.collab {
+    --collab-status-bar-height: 32px;
+    --collab-note-corner-radius: 12px;
+}
+
+#collab-status-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    height: var(--collab-status-bar-height);
+    position: relative;
+    padding: 0 13px 0 8px;
+    background: var(--background-secondary);
+    color: var(--text-menu);
+    font-size: 0.85em;
+}
+
+/* The line along the bar's top starts where the note's rounded corner ends. */
+#collab-status-bar::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: var(--collab-note-corner-radius);
+    border-top: 1px solid var(--collab-status-bar-border-color);
+    content: "";
+}
+
+.collab-breadcrumb {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.collab-breadcrumb-item {
+    display: block;
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 220px;
+    padding: 2px 6px;
+    overflow: hidden;
+    border-radius: 6px;
+    color: inherit;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.collab-breadcrumb-item .bx {
+    margin-inline-end: 4px;
+    vertical-align: -2px;
+}
+
+.collab-breadcrumb-separator {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.collab-status-bar-end {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+}
+
+.collab-status-bar-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    white-space: nowrap;
+}
+
+.collab-breadcrumb-item:hover,
+button.collab-status-bar-item:hover,
+button.collab-status-bar-item[aria-expanded="true"] {
+    background: var(--launcher-button-hover-background);
+    color: var(--launcher-button-hover-color);
+    text-decoration: none;
+}
+
+button.collab-status-bar-item {
+    cursor: pointer;
+}
+
+.collab-note-info-button .bx {
+    font-size: 1.25em;
+}
+
+/* The app's note info: names on the left in the muted color, values beside them. */
+.collab-note-info-panel {
+    width: max-content;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 12px 16px;
+}
+
+.collab-info-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 24px;
+    margin: 0;
+}
+
+.collab-info-list dt {
+    color: var(--muted-text-color, var(--text-menu));
+    font-weight: 600;
+}
+
+.collab-info-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+
+.collab-info-list dd .bx {
+    vertical-align: -2px;
+}
+
+.collab-info-calculate {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-link);
+    font: inherit;
+    cursor: pointer;
+}
+
+.collab-info-calculate:hover {
+    text-decoration: underline;
+}
+
+/* The tab row and the editor's toolbar stay in view while the note scrolls. Like the app's tab
+   bar, they span the page on the sidebar's background. */
 #collab-header {
     position: sticky;
     top: 0;
     z-index: 5;
-    margin-bottom: 1em;
-    padding-top: 0.5em;
-    background: var(--background-primary);
+    flex: 0 0 100%;
+    order: 1;
+    min-width: 0;
+    background: var(--background-secondary);
 }
 
 #collab-header:empty {
@@ -381,6 +760,14 @@ html.theme-dark .collab {
     --launcher-button-color: #b8b8b8;
     --launcher-button-hover-color: #ffffff;
     --launcher-button-hover-background: #ffffff1c;
+    --collab-launcher-background: #1a1a1a;
+    --collab-status-bar-border-color: #ffffff14;
+    --left-pane-item-hover-background: #ffffff0d;
+    --left-pane-text-color: #aaaaaa;
+    --left-pane-item-action-button-background: #ffffff73;
+    --left-pane-item-action-button-color: black;
+    --left-pane-item-action-button-hover-background: #ffffffad;
+    --left-pane-item-action-button-hover-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
 }
 
 html.theme-light .collab {
@@ -395,6 +782,14 @@ html.theme-light .collab {
     --launcher-button-color: #000000bd;
     --launcher-button-hover-color: black;
     --launcher-button-hover-background: #0000001a;
+    --collab-launcher-background: #e8e8e8;
+    --collab-status-bar-border-color: #00000014;
+    --left-pane-item-hover-background: rgba(0, 0, 0, 0.032);
+    --left-pane-text-color: #383838;
+    --left-pane-item-action-button-background: rgba(0, 0, 0, 0.11);
+    --left-pane-item-action-button-color: var(--text-menu);
+    --left-pane-item-action-button-hover-background: white;
+    --left-pane-item-action-button-hover-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
 }
 
 .collab-tab-row {
@@ -402,6 +797,7 @@ html.theme-light .collab {
     align-items: center;
     gap: 4px;
     min-height: 50px;
+    padding: 4px 13px 0 8px;
 }
 
 .collab-history-button {
@@ -427,25 +823,43 @@ html.theme-light .collab {
     transition: none;
 }
 
+/* The icon shrinks a little while the button is pressed. `scale` rather than `transform` keeps the
+   flip that `bx-flip-horizontal` sets. */
+.collab-history-button::before,
+.collab-history-button > .bx,
+.collab-panel-close::before {
+    display: inline-block;
+    transition: scale 75ms ease-out;
+}
+
+.collab-history-button:active:not(:disabled)::before,
+.collab-history-button:active > .bx,
+.collab-panel-close:active::before {
+    scale: 0.9;
+}
+
 .collab-history-button:disabled {
     opacity: 0.35;
     cursor: default;
 }
 
 /* The notes opened in this browser session, kept across page loads so a guest can switch. */
+/* Tabs that do not fit scroll sideways, rather than widen the page. */
 .collab-tabs {
     display: flex;
     flex: 1;
     gap: 4px;
     min-width: 0;
     margin-inline-start: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
 .collab-tab {
     display: flex;
     flex: 0 1 240px;
     align-items: center;
-    min-width: 0;
+    min-width: 120px;
     height: 36px;
     box-sizing: border-box;
     padding: 7px 5px 7px 11px;
@@ -510,10 +924,26 @@ html.theme-light .collab {
 .collab #menu a.active {
     background: var(--background-highlight);
     color: var(--text-primary);
+    font-weight: normal;
 }
 
 .collab #menu a.active .collapse-button {
     color: inherit;
+}
+
+/* A hovered row takes the app's tree tint rather than the share theme's outline. */
+.collab #menu a:hover {
+    border-color: transparent;
+    background: var(--left-pane-item-hover-background);
+}
+
+.collab #menu a.active:hover {
+    background: var(--background-highlight);
+}
+
+/* The chevron sits on the row's own background, hovered or not, as in the app's tree. */
+.collab #menu .collapse-button {
+    background: none;
 }
 
 /* A note's `color` label on its tree row, icon and title alike, toned per theme as the app's tree
@@ -543,22 +973,42 @@ html.theme-light .collab {
     }
 }
 
+/* The app's inline title: the icon beside the title in its font, with the dates under it, and
+   the note's buttons on a row of their own above, at its end. */
 .collab-note-header {
     margin-bottom: 1em;
-    padding-bottom: 0.5em;
-    border-bottom: 1px solid var(--background-highlight);
+    padding-top: 8px;
+}
+
+.collab-title-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 32px;
+    margin-bottom: 20px;
 }
 
 .collab-title-row {
     display: flex;
     align-items: center;
-    gap: 0.6em;
+    gap: 16px;
+}
+
+.collab-title-text {
+    flex: 1;
+    min-width: 0;
+    font-family: "Inter", sans-serif;
 }
 
 .collab-title-row #title {
-    flex: 1;
-    min-width: 0;
-    padding-top: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: inherit;
+    font-size: 1.8em;
+    font-weight: normal;
+    line-height: 1.2;
 }
 
 /* The note's icon beside its title, drawn as the app's title draws it: the glyph on a round tile,
@@ -595,11 +1045,11 @@ html.theme-dark .collab-title-row {
     box-sizing: content-box;
     width: 1em;
     height: 1em;
-    padding: 8px;
+    padding: 10px;
     border: 0;
     border-radius: 50%;
     background: transparent;
-    font-size: 24px;
+    font-size: 35px;
     line-height: 1;
 }
 
@@ -634,11 +1084,33 @@ button.collab-note-icon:focus-visible {
 
 .collab-note-info {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4em 1.25em;
-    margin: 0.35em 0 0;
-    font-size: 0.85em;
-    opacity: 0.7;
+    flex-wrap: nowrap;
+    gap: 0.25em;
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1;
+    opacity: 0.5;
+    white-space: nowrap;
+}
+
+.collab-note-info time {
+    font-weight: 500;
+}
+
+/* As the app's title on a narrow pane: a smaller icon and title, and no dates. */
+@media (max-width: 48em) {
+    .collab-note-icon {
+        padding: 6px;
+        font-size: 25px;
+    }
+
+    .collab-title-row #title {
+        font-size: 1.5em;
+    }
+
+    .collab-note-info {
+        display: none;
+    }
 }
 
 /* The note's children under its body, as cards like the app's grid view. */
@@ -899,6 +1371,22 @@ html.theme-dark .collab-menu {
     border-top: 1px solid var(--menu-item-delimiter-color);
 }
 
+/* As the app's `FormListHeader`: a small, spaced-out title with a rule under it. */
+.collab-menu-header {
+    margin: 6px -8px 4px;
+    padding: 6px 16px 6px;
+    border-bottom: 1px solid var(--menu-item-delimiter-color);
+    color: var(--muted-text-color, var(--text-menu));
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.collab-menu-header:first-child {
+    margin-top: 0;
+}
+
 .collab-menu-search {
     margin-bottom: 4px;
     padding: 2px 8px;
@@ -939,4 +1427,128 @@ html.theme-dark .collab-menu {
     background: var(--background-active);
     color: var(--background-secondary);
     transform: translateX(-50%);
+}
+
+/* A heading scrolled to from the contents stops below the header rather than under it. */
+.collab #content :is(h2, h3, h4, h5, h6) {
+    scroll-margin-top: calc(var(--collab-header-height, 0px) + 12px);
+}
+
+/* The contents panel, drawn as the app's right pane: the table of contents is a section that
+   folds, with the panel's close button beside its header. */
+@media (min-width: 48.0625em) {
+    .collab #toc-pane {
+        position: sticky;
+        top: var(--collab-header-height, 0px);
+        width: 280px;
+        height: calc(100vh - var(--collab-header-height, 0px) - var(--collab-status-bar-height));
+        max-height: none;
+        padding: 0;
+        box-sizing: border-box;
+        border-inline-start: 8px solid var(--background-secondary);
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    /* The contents keep the open panel's width while it opens or closes, so the panel's edge
+       uncovers them instead of the text wrapping anew at every step. */
+    .collab #toc-pane > .collab-panel-card {
+        flex-shrink: 0;
+        width: calc(280px - 8px);
+    }
+
+    .toc-pane-collapsed .collab #toc-pane {
+        width: 0;
+        border: 0;
+        overflow: hidden;
+    }
+}
+
+/* The section's header, with the panel's close button at its end. */
+.collab-panel-card-row {
+    display: flex;
+    align-items: center;
+    padding-inline-end: 6px;
+}
+
+.collab-panel-close {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--launcher-button-color);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.collab-panel-close:hover {
+    background: var(--launcher-button-hover-background);
+    color: var(--launcher-button-hover-color);
+}
+
+.collab-panel-card-header {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px 10px 6px;
+    border: 0;
+    background: none;
+    color: var(--text-menu);
+    font: inherit;
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.collab-panel-card-header .bx {
+    font-size: 1.4em;
+    transition: transform 0.15s ease;
+}
+
+.collab-panel-card.collapsed .collab-panel-card-header .bx {
+    transform: rotate(-90deg);
+}
+
+.collab-panel-card.collapsed #toc {
+    display: none;
+}
+
+/* The app's table of contents: entries in the text's color, the one in view in bold, and a line
+   down the side of each level under another. */
+.collab #toc {
+    padding: 0 12px 12px 30px;
+}
+
+.collab #toc::before,
+.collab #toc li a::before {
+    display: none;
+}
+
+.collab #toc ul {
+    margin-left: 4px;
+    padding-left: 16px;
+    border-left: 1px solid var(--background-highlight);
+}
+
+.collab #toc li a {
+    padding: 3px 0;
+    color: var(--text-primary);
+    white-space: normal;
+}
+
+.collab #toc li a:hover,
+.collab #toc li a.active {
+    color: var(--text-primary);
+    font-weight: bold;
 }

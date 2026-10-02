@@ -1,4 +1,5 @@
 import "@excalidraw/excalidraw/index.css";
+import "../../stylesheets/theme-next/notes/canvas.css";
 import "./canvas_editor.css";
 
 import {
@@ -11,6 +12,8 @@ import type {
 import { render } from "preact";
 
 import type { EditorHandle } from "../../collab_editor.js";
+import { mergeCanvasScene } from "../canvas_merge.js";
+import { canvasCursorAdapter, createCanvasPointer } from "../cursor_sync.js";
 import type { GuestSaver } from "../guest_saver.js";
 import { isPageDark, onPageThemeChange } from "../page_theme.js";
 
@@ -106,11 +109,15 @@ export default function mountCanvasEditor(
         saver.scheduleContent(serialize);
     };
 
+    const pointer = createCanvasPointer();
+    host.addEventListener("pointerleave", () => pointer.update(null));
+
     const draw = (pageTheme: "light" | "dark") => render(
         <Excalidraw
             initialData={initialData}
             excalidrawAPI={setApi}
             onChange={onChange}
+            onPointerUpdate={({ pointer: point }) => pointer.update(point)}
             theme={pageTheme}
             UIOptions={UI_OPTIONS}
             onLinkOpen={openLink}
@@ -152,7 +159,17 @@ export default function mountCanvasEditor(
             // The scene the server holds is no edit to save back.
             sceneVersion = getSceneVersion(api.getSceneElements());
         },
-        focusStart: () => host.querySelector<HTMLElement>(".excalidraw")?.focus()
+        merge: (base, theirs) => {
+            if (!api || !mergeCanvasScene(api, base, theirs)) {
+                return false;
+            }
+
+            // Their shapes are no edit to save back; the guest's own still wait for their save.
+            sceneVersion = getSceneVersion(api.getSceneElements());
+            return true;
+        },
+        focusStart: () => host.querySelector<HTMLElement>(".excalidraw")?.focus(),
+        cursors: canvasCursorAdapter({ updateScene: (scene) => api?.updateScene(scene) }, pointer)
     };
 }
 

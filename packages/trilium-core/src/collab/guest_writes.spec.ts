@@ -132,6 +132,47 @@ describe("guest writes", () => {
         expect(note.getLabelValue("iconClass")).toBe("bx bx-star");
     });
 
+    it("sets a code note's indentation labels, falling back to the code-notes options", () => {
+        const note = createNote("root", "code", "a");
+        note.mime = "text/x-python";
+        getContext().init(() => {
+            options.setOption("codeNoteTabWidth", "4");
+            options.setOption("codeNoteIndentWithTabs", "false");
+        });
+        expect(guestWrites.getNoteIndentation(note)).toEqual({ width: 4, useTabs: false });
+
+        const set = getContext().init(() =>
+            guestWrites.updateIndentationAsGuest(note, { width: 2, useTabs: true }));
+        expect(set).toEqual({ width: 2, useTabs: true });
+        // The labels the app's status bar writes, in its format.
+        expect(note.getLabelValue("tabWidth")).toBe("2");
+        expect(note.getLabelValue("indentWithTabs")).toBe("true");
+
+        // A field left out stays; null goes back to the option.
+        expect(getContext().init(() =>
+            guestWrites.updateIndentationAsGuest(note, { useTabs: null })))
+            .toEqual({ width: 2, useTabs: false });
+        expect(note.getLabelValue("indentWithTabs")).toBeNull();
+
+        for (const width of [ 0, 17, 2.5, Number.NaN ]) {
+            expect(() => getContext().init(() =>
+                guestWrites.updateIndentationAsGuest(note, { width }))).toThrow(/width/);
+        }
+
+        // Only code notes have an indentation, as in the app's status bar, and only code a guest
+        // can edit has one of theirs to set.
+        for (const type of [ "text", "mermaid", "canvas" ] as const) {
+            const other = createNote("root", type, type === "text" ? "<p>a</p>" : "{}");
+            expect(guestWrites.getNoteIndentation(other), type).toBeNull();
+            expect(() => getContext().init(() =>
+                guestWrites.updateIndentationAsGuest(other, { width: 2 })), type).toThrow();
+        }
+        const script = createNote("root", "code", "api.log(1)");
+        script.mime = "application/javascript;env=backend";
+        expect(() => getContext().init(() =>
+            guestWrites.updateIndentationAsGuest(script, { width: 2 }))).toThrow();
+    });
+
     it("switches a note between text and the offered languages, never into runnable code", () => {
         const note = createNote("root");
 
@@ -371,8 +412,8 @@ describe("guest writes", () => {
                 .map((language) => language.mime));
             expect(defaults.filter((language) => language.runs).map((language) => language.title))
                 .toEqual([
-                    "HTML", "JavaScript", "JavaScript (Trilium backend)",
-                    "JavaScript (Trilium frontend)", "JSX", "SQLite (Trilium)"
+                    "HTML", "JavaScript (Trilium backend)", "JavaScript (Trilium frontend)", "JSX",
+                    "SQLite (Trilium)"
                 ]);
         } finally {
             setLanguages(previous);
@@ -382,7 +423,7 @@ describe("guest writes", () => {
     it("leaves code the host's app runs or renders to the host", () => {
         const runnable = [
             "application/javascript;env=frontend", "application/javascript;env=backend",
-            "text/javascript", "text/jsx", "text/x-sqlite;schema=trilium", "text/html"
+            "text/jsx", "text/x-sqlite;schema=trilium", "text/html"
         ];
 
         for (const mime of runnable) {
@@ -394,6 +435,27 @@ describe("guest writes", () => {
             expect(() => getContext().init(() =>
                 guestWrites.changeTypeAsGuest(script, "code", "text/plain")), mime).toThrow();
         }
+
+        // Plain JavaScript is code Trilium never runs, so a guest edits it and can pick it where
+        // the code-notes options list it.
+        const previous = options.getOption("codeNotesMimeTypes");
+        const plain = createNote("root", "code", "let a = 1;");
+        plain.mime = "text/plain";
+
+        try {
+            getContext().init(() => {
+                options.setOption("codeNotesMimeTypes", JSON.stringify([ "text/javascript" ]));
+                guestWrites.changeTypeAsGuest(plain, "code", "text/javascript");
+            });
+        } finally {
+            getContext().init(() => options.setOption("codeNotesMimeTypes", previous));
+        }
+
+        expect(plain.mime).toBe("text/javascript");
+        expect(guestWrites.isGuestEditableNote(plain)).toBe(true);
+        expect(getContext().init(() =>
+            guestWrites.updateContentAsGuest(plain, "let a = 2;", plain.blobId ?? null)).ok)
+            .toBe(true);
     });
 
     it("refuses a stale save with the current content, then accepts the reconciled one", () => {

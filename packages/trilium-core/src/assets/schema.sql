@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS "collaborations"
     slug TEXT DEFAULT NULL,
     maxGuests INT NOT NULL DEFAULT 10,
     hostName TEXT DEFAULT NULL,
+    hostColor TEXT DEFAULT NULL,
     utcDateCreated TEXT NOT NULL,
     utcDateModified TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);

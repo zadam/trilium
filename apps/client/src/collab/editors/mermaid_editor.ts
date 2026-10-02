@@ -7,6 +7,7 @@ import { renderMermaidSvg } from "../../services/mermaid.js";
 import mermaidLinter from "../../widgets/type_widgets/linters/mermaid.js";
 import { codeCursorAdapter } from "../cursor_sync.js";
 import type { GuestSaver } from "../guest_saver.js";
+import { mergeCode } from "../live_merge.js";
 import { isPageDark, onPageThemeChange, themeCodeEditor } from "../page_theme.js";
 
 /** How long the diagram waits after the last keystroke before it is drawn again. */
@@ -115,6 +116,15 @@ export default function mountMermaidEditor(
     return {
         get: () => editor.getText(),
         set,
+        merge: (base, theirs) => mergeCode(editor, base, theirs, (apply) => {
+            applyingRemote = true;
+
+            try {
+                apply();
+            } finally {
+                applyingRemote = false;
+            }
+        }),
         focusStart: () => editor.focus(),
         cursors: codeCursorAdapter(editor)
     };

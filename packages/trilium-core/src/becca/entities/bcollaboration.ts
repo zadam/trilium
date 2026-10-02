@@ -30,7 +30,7 @@ class BCollaboration extends AbstractBeccaEntity<BCollaboration> {
             "collabId", "noteId", "includeSubtree", "viewMode", "editMode", "createMode",
             "viewPasswordHash", "viewPasswordSalt", "editPasswordHash", "editPasswordSalt",
             "createPasswordHash", "createPasswordSalt", "slug", "maxGuests", "hostName",
-            "utcDateCreated", "utcDateModified", "isDeleted"
+            "hostColor", "utcDateCreated", "utcDateModified", "isDeleted"
         ];
     }
 
@@ -51,6 +51,8 @@ class BCollaboration extends AbstractBeccaEntity<BCollaboration> {
     maxGuests!: number;
     /** The name the host goes by on the guest pages, or null for the default name. */
     hostName!: string | null;
+    /** The host's color on the guest pages, or null for the default. */
+    hostColor!: string | null;
     private _isDeleted?: boolean;
 
     constructor(row?: CollaborationRow) {
@@ -84,6 +86,7 @@ class BCollaboration extends AbstractBeccaEntity<BCollaboration> {
         this.slug = row.slug ?? null;
         this.maxGuests = row.maxGuests ?? DEFAULT_COLLABORATION_MAX_GUESTS;
         this.hostName = row.hostName ?? null;
+        this.hostColor = row.hostColor ?? null;
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
         this.utcDateModified = row.utcDateModified || this.utcDateCreated;
         this._isDeleted = !!row.isDeleted;
@@ -121,6 +124,7 @@ class BCollaboration extends AbstractBeccaEntity<BCollaboration> {
             slug: this.slug,
             maxGuests: this.maxGuests,
             hostName: this.hostName,
+            hostColor: this.hostColor,
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified,
             isDeleted: this.isDeleted

@@ -8,6 +8,7 @@ import { renderMindMapPreviewSvg } from "../../widgets/type_widgets/mind_map/exp
 import { renderNodeLinks } from "../../widgets/type_widgets/mind_map/links.js";
 import { sanitizeMindMapData } from "../../widgets/type_widgets/mind_map/sanitize.js";
 import type { GuestSaver } from "../guest_saver.js";
+import { mergeText } from "../live_merge.js";
 import { isPageDark, onPageThemeChange } from "../page_theme.js";
 
 /**
@@ -55,22 +56,53 @@ export default function mountMindMapEditor(
 
     saver.preview = () => renderMindMapPreviewSvg(mind);
 
+    const applyRemote = (apply: () => void) => {
+        applyingRemote = true;
+
+        try {
+            apply();
+        } finally {
+            applyingRemote = false;
+        }
+    };
+
     return {
         get: () => mind.getDataString(),
-        set: (text) => {
-            applyingRemote = true;
+        set: (text) => applyRemote(() => load(text)),
+        merge: (base, theirs) => {
+            const merged = mergeMindMaps(base, mind.getDataString(), theirs);
 
-            try {
-                load(text);
-            } finally {
-                applyingRemote = false;
+            if (merged) {
+                // Unlike a new start, a refresh keeps the map where the guest moved it.
+                applyRemote(() => {
+                    mind.refresh(parseMindMap(merged, newTopic));
+                    renderNodeLinks(mind.nodes);
+                });
             }
+
+            return merged !== null;
         },
         focusStart: () => {
             mind.selectNode(mind.findEle(mind.nodeData.id));
             mind.map.focus();
         }
     };
+}
+
+/**
+ * Merges two people's edits of a map, each written out one field to a line so that edits of
+ * different nodes fall on different lines. Returns null when they changed the same part, or the
+ * merge is no map.
+ */
+export function mergeMindMaps(base: string, mine: string, theirs: string): string | null {
+    try {
+        const lines = (text: string) => JSON.stringify(JSON.parse(text), null, 1);
+        const merged = mergeText(lines(base), lines(mine), lines(theirs));
+
+        return merged === null ? null : JSON.stringify(JSON.parse(merged));
+    } catch {
+        return null;
+    }
 }
 
 /**

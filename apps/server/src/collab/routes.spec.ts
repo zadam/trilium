@@ -222,10 +222,14 @@ describe("collaboration guest routes", () => {
         const page = await guest.get(`/collab/${collabId}/`).expect(200);
         expect(page.text).toContain("Root body text");
         expect(page.text).toContain(`"capabilities":["view"]`);
-        // Logging out is an icon at the right of the page's header, not a link in the footer.
-        const actions = page.text.slice(page.text.indexOf(`class="collab-header-actions"`));
-        expect(actions).toMatch(/^[^]*?<form class="collab-logout"[^]*?collab-logout-button/);
+        // The launcher bar at the left has the logo at its top, and at its foot logging out, right
+        // above the button that opens and closes the sidebar. No bar runs across the top.
+        const launcher = page.text.slice(page.text.indexOf(`id="collab-launcher"`));
+        expect(launcher).toMatch(new RegExp(String.raw`^[^]*?class="collab-launcher-logo"`
+            + String.raw`[^]*?<form class="collab-logout"[^]*?collab-logout-button[^]*?</form>`
+            + String.raw`\s*<button[^>]*id="left-pane-toggle-button"`));
         expect(page.text.match(/class="collab-logout"/g)).toHaveLength(1);
+        expect(page.text).not.toContain(`id="header"`);
 
         // The guest session is not a host session. The spec config runs without authentication,
         // so switch it on for this one check.
@@ -477,7 +481,11 @@ describe("collaboration guest routes", () => {
         // The title row tints the icon with the color's hue, as the app's title does.
         expect(child.text).toMatch(/class="collab-title-row" data-color="#ff8800" data-color-hue/);
         expect(child.text).toContain("bx bx-star");
-        expect(child.text).toContain("collab-note-info");
+        // As the app's title: the dates under the title, and no type among them.
+        const info = child.text.match(new RegExp(String.raw`class="collab-title-text">\s*`
+            + String.raw`<h1 id="title">[^<]*</h1>\s*<div class="collab-note-info">([^]*?)</div>`));
+        expect(info?.[1]).toMatch(/^\s*<span>Created on <time[^]*Modified on <time/);
+        expect(info?.[1]).not.toContain("Type");
 
         await guest.put(url)
             .set("x-csrf-token", csrfToken)
@@ -491,6 +499,15 @@ describe("collaboration guest routes", () => {
             .set("x-csrf-token", csrfToken)
             .send({ color: null })
             .expect(404);
+
+        // The note info of the status bar: the page's dates and type, and its size on request,
+        // as the app's statistics count it.
+        expect(child.text).toMatch(/"typeLabel":"[^"]+","typeIcon":"bx bx-note"/);
+        expect(child.text).toMatch(/"utcDateCreated":"\d{4}-/);
+        const size = await guest.get(`/collab/${collabId}/api/notes/${fixture.childNoteId}/size`)
+            .expect(200);
+        expect(size.body.noteSize).toBeGreaterThan(0);
+        await guest.get(`/collab/${collabId}/api/notes/${fixture.siblingNoteId}/size`).expect(404);
 
         const icons = await guest.get(`/collab/${collabId}/api/icons`).expect(200);
         expect(icons.body.sources.length).toBeGreaterThan(0);
@@ -514,6 +531,25 @@ describe("collaboration guest routes", () => {
             .send({ type: "code", mime: "text/x-python" })
             .expect(200);
         expect(switched.body).toEqual({ type: "code", mime: "text/x-python" });
+
+        // A code note's page carries its indentation, which an editor sets as the app does.
+        const codePage = await guest.get(`/collab/${collabId}/${fixture.childNoteId}`).expect(200);
+        expect(codePage.text).toContain(`"indentation":{"width":4,"useTabs":false}`);
+        const indentation = `/collab/${collabId}/api/notes/${fixture.childNoteId}/indentation`;
+        const indented = await guest.put(indentation)
+            .set("x-csrf-token", csrfToken)
+            .send({ width: 2, useTabs: true })
+            .expect(200);
+        expect(indented.body).toEqual({ width: 2, useTabs: true });
+        await guest.put(indentation)
+            .set("x-csrf-token", csrfToken)
+            .send({ width: "2" })
+            .expect(400);
+        await guest.put(indentation)
+            .set("x-csrf-token", csrfToken)
+            .send({ useTabs: "yes" })
+            .expect(400);
+
         await guest.put(url)
             .set("x-csrf-token", csrfToken)
             .send({ type: "code", mime: "application/javascript;env=backend" })
@@ -528,6 +564,10 @@ describe("collaboration guest routes", () => {
         expect(viewer.text).toContain(`"codeLanguages":[]`);
         await supertest(ctx.app).put(`/collab/${viewOnly}/api/notes/${fixture.childNoteId}/type`)
             .send({ type: "code", mime: "text/plain" })
+            .expect(403);
+        await supertest(ctx.app)
+            .put(`/collab/${viewOnly}/api/notes/${fixture.childNoteId}/indentation`)
+            .send({ width: 2 })
             .expect(403);
     });
 
@@ -554,10 +594,10 @@ describe("collaboration guest routes", () => {
         }).expect(200);
         await put("/content", { content: "graph TD; A-->C", preview: 42 }).expect(400);
 
-        // The page names the type as the app does, and the parent's card shows the picture.
+        // The note info names the type as the app does, and the parent's card shows the picture.
         const diagramPage = await guest.get(`/collab/${collabId}/${fixture.childNoteId}`)
             .expect(200);
-        expect(diagramPage.text).toMatch(/Type: Mermaid Diagram<\/span>/);
+        expect(diagramPage.text).toContain(`"typeLabel":"Mermaid Diagram"`);
         const parentPage = await guest.get(`/collab/${collabId}/`).expect(200);
         expect(parentPage.text).toContain(`<img src="api/images/${fixture.childNoteId}/`);
 
@@ -645,16 +685,23 @@ describe("collaboration guest routes", () => {
             expect(readBootstrap(joinedPage.text).selfId).toBe(joined.body.selfId);
 
             const rename = vi.spyOn(ws, "renameCollabGuest");
-            const renameSelf = (name: unknown, csrfToken: string) =>
+            const updateSelf = (body: object, csrfToken: string) =>
                 guest.put(`/collab/${collabId}/api/me`)
                     .set("x-csrf-token", csrfToken)
-                    .send({ name });
+                    .send(body);
             await guest.put(`/collab/${collabId}/api/me`).send({ name: "Grace" }).expect(403);
-            expect((await renameSelf("  Grace \u202EHopper ", joined.body.csrfToken)
-                .expect(200)).body).toEqual({ name: "Grace Hopper" });
+            expect((await updateSelf({ name: "  Grace \u202EHopper " }, joined.body.csrfToken)
+                .expect(200)).body).toEqual({ name: "Grace Hopper", color: null });
             expect(readGrant(collabId))
                 .toMatchObject({ guestId: grant?.guestId, name: "Grace Hopper" });
             expect(rename).toHaveBeenCalledWith(collabId, grant?.guestId, "Grace Hopper");
+
+            // A color alone leaves the name as it is; only the palette's colors are taken.
+            const recolor = vi.spyOn(ws, "recolorCollabGuest");
+            expect((await updateSelf({ color: "#127D3E" }, joined.body.csrfToken)
+                .expect(200)).body).toEqual({ name: "Grace Hopper", color: "#127d3e" });
+            expect(recolor).toHaveBeenCalledWith(collabId, grant?.guestId, "#127d3e");
+            expect(readGrant(collabId)).toMatchObject({ name: "Grace Hopper", color: "#127d3e" });
 
             // Unlocking editing keeps who the guest is.
             await guest.post(`/collab/${collabId}/login`)
@@ -667,8 +714,8 @@ describe("collaboration guest routes", () => {
             // A blank name goes back to the numbered one. Unlocking gave the session a new id,
             // and with it the page a new token.
             const unlocked = await guest.get(`/collab/${collabId}/`).expect(200);
-            expect((await renameSelf(" ", readBootstrap(unlocked.text).csrfToken)
-                .expect(200)).body).toEqual({ name: null });
+            expect((await updateSelf({ name: " " }, readBootstrap(unlocked.text).csrfToken)
+                .expect(200)).body).toEqual({ name: null, color: "#127d3e" });
             expect(readGrant(collabId)?.name).toBeUndefined();
         });
 
@@ -686,9 +733,10 @@ describe("collaboration guest routes", () => {
             const page = await guest.get(`/collab/${collabId}/`).expect(200);
             const personId = readBootstrap(page.text).selfId as string;
             const people = `/api/collaborations/${collabId}/people`;
-            const renamePerson = (id: string, name: unknown) => ctx.agent.put(`${people}/${id}`)
+            const updatePerson = (id: string, body: object) => ctx.agent.put(`${people}/${id}`)
                 .set("x-csrf-token", ctx.csrfToken)
-                .send({ name });
+                .send(body);
+            const renamePerson = (id: string, name: unknown) => updatePerson(id, { name });
             const removePerson = (id: string) => ctx.agent.delete(`${people}/${id}`)
                 .set("x-csrf-token", ctx.csrfToken);
 
@@ -703,12 +751,18 @@ describe("collaboration guest routes", () => {
             expect(rename).toHaveBeenCalledWith(collabId, guestId, "Grace");
             await renamePerson("someone-else", "Grace").expect(404);
 
+            const recolor = vi.spyOn(ws, "recolorCollabGuest");
+            await updatePerson(personId, { color: "#8F44E4" }).expect(204);
+            expect(readGrant(collabId)).toMatchObject({ guestId, name: "Grace", color: "#8f44e4" });
+            expect(recolor).toHaveBeenCalledWith(collabId, guestId, "#8f44e4");
+
             // The host's own entry is renamed through the collaboration, and never removed.
             await renamePerson("host", "Ada").expect(204);
+            await updatePerson("host", { color: "#12797D" }).expect(204);
             const listed = await ctx.agent.get("/api/collaborations")
                 .query({ noteId: fixture.rootNoteId })
                 .expect(200);
-            expect(listed.body[0].hostName).toBe("Ada");
+            expect(listed.body[0]).toMatchObject({ hostName: "Ada", hostColor: "#12797d" });
             await removePerson("host").expect(400);
 
             const remove = vi.spyOn(ws, "removeCollabGuest");

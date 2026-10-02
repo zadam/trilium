@@ -6,6 +6,7 @@ import { Ref } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { codeCursorAdapter } from "../../../collab/cursor_sync";
+import { mergeCode } from "../../../collab/live_merge";
 import { CommandListenerData } from "../../../components/app_context";
 import FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
@@ -108,6 +109,12 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
     const [ customRequestHandler ] = useNoteLabel(note, "customRequestHandler");
     const mime = useNoteProperty(note, "mime");
+    const cursorAdapter = useMemo(() => editorView && codeCursorAdapter(editorView), [ editorView ]);
+    const live = useCollabCursors(note, cursorAdapter);
+    const mergeRemoteContent = useMemo(() => (live
+        ? (base: string, theirs: string) => !!editorRef.current
+            && mergeCode(editorRef.current, base, theirs, (apply) => apply())
+        : null), [ live ]);
     const spacedUpdate = useEditorSpacedUpdate({
         note,
         noteType,
@@ -124,13 +131,12 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
             consumeSearchTerms(noteContext, ntxId);
         },
         dataSaved,
-        updateInterval
+        updateInterval,
+        mergeRemoteContent
     });
 
     useSearchTermsConsumer(note, noteContext, ntxId);
 
-    const cursorAdapter = useMemo(() => editorView && codeCursorAdapter(editorView), [ editorView ]);
-    useCollabCursors(note, cursorAdapter);
 
     // make sure that script is saved before running it #4028
     useLegacyImperativeHandlers({
@@ -168,7 +174,8 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
             vimKeybindings={vimKeymapEnabled}
             tabIndex={300}
             onContentChanged={() => {
-                if (debounceUpdate) {
+                // While others edit too, saves go out as the user types.
+                if (debounceUpdate && !live) {
                     spacedUpdate.resetUpdateTimer();
                 }
                 spacedUpdate.scheduleUpdate();

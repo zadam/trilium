@@ -198,8 +198,8 @@ export default class WebSocketMessagingProvider implements HttpAttachableMessagi
     getCollabClients(collabId: string): CollabClientInfo[] {
         return [ ...this.collabConnections.values() ]
             .filter((connection) => connection.collabId === collabId)
-            .map(({ guestId, unlocked, name, viewingNoteId, editingNoteId, isHost }) =>
-                ({ guestId, unlocked, name, viewingNoteId, editingNoteId, isHost }));
+            .map(({ guestId, unlocked, name, color, viewingNoteId, editingNoteId, isHost }) =>
+                ({ guestId, unlocked, name, color, viewingNoteId, editingNoteId, isHost }));
     }
 
     getClientCollab(clientId: string): CollabConnection | null {
@@ -226,6 +226,14 @@ export default class WebSocketMessagingProvider implements HttpAttachableMessagi
         for (const connection of this.collabConnections.values()) {
             if (connection.collabId === collabId && connection.guestId === guestId) {
                 connection.name = name;
+            }
+        }
+    }
+
+    setCollabGuestColor(collabId: string, guestId: string, color: string | null): void {
+        for (const connection of this.collabConnections.values()) {
+            if (connection.collabId === collabId && connection.guestId === guestId) {
+                connection.color = color;
             }
         }
     }

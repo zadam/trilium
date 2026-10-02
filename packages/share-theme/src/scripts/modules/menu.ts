@@ -12,6 +12,8 @@ export type MenuRow =
         kind: "item";
         label: string;
         icon?: string;
+        /** A color for the icon, and for the check of a chosen row, as a color picker shows. */
+        iconColor?: string;
         checked?: boolean;
         /** Shown, with `title` saying why, but not to be picked. */
         disabled?: boolean;
@@ -19,7 +21,9 @@ export type MenuRow =
         run: () => void;
     }
     | { kind: "submenu"; label: string; icon?: string; search?: string; rows: () => MenuRow[] }
-    | { kind: "divider" };
+    | { kind: "divider" }
+    /** The title of the rows under it, as the app's `FormListHeader`. */
+    | { kind: "header"; label: string };
 
 type SubmenuRow = Extract<MenuRow, { kind: "submenu" }>;
 
@@ -96,6 +100,15 @@ export function buildMenu(rows: MenuRow[], close: () => void, label?: string): H
                 continue;
             }
 
+            if (spec.kind === "header") {
+                const header = document.createElement("div");
+                header.className = "collab-menu-header";
+                header.setAttribute("role", "presentation");
+                header.textContent = spec.label;
+                list.append(header);
+                continue;
+            }
+
             const row = renderRow(spec);
             list.append(row);
 
@@ -152,11 +165,20 @@ export function buildMenu(rows: MenuRow[], close: () => void, label?: string): H
 
 /**
  * Places a menu under `anchor` with its right edge at the anchor's, as the app's note menu opens,
- * and turns its submenus to the side they open on. As in the app, they open on the right unless
- * only the left has room for one as wide as the menu, and their rows' arrows point that way.
+ * or above it when the room below is too small for the menu and the room above is larger. It also
+ * turns its submenus to the side they open on. As in the app, they open on the right unless only
+ * the left has room for one as wide as the menu, and their rows' arrows point that way.
  */
 export function placeMenu(menu: HTMLElement, anchor: DOMRect) {
-    menu.style.top = `${anchor.bottom + 4}px`;
+    const height = menu.offsetHeight;
+    const below = anchor.bottom + 4;
+    const roomBelow = window.innerHeight - VIEWPORT_MARGIN - below;
+    const roomAbove = anchor.top - 4 - VIEWPORT_MARGIN;
+    const top = height <= roomBelow || roomBelow >= roomAbove
+        ? below
+        : Math.max(VIEWPORT_MARGIN, anchor.top - 4 - height);
+
+    menu.style.top = `${top}px`;
     menu.style.left = `${Math.max(VIEWPORT_MARGIN, anchor.right - menu.offsetWidth)}px`;
 
     const frame = menu.getBoundingClientRect();
@@ -184,7 +206,7 @@ function createMenuElement(label?: string): HTMLElement {
     return element;
 }
 
-function renderRow(spec: Exclude<MenuRow, { kind: "divider" }>): HTMLButtonElement {
+function renderRow(spec: Exclude<MenuRow, { kind: "divider" | "header" }>): HTMLButtonElement {
     const row = document.createElement("button");
     row.type = "button";
     row.className = "collab-menu-item";
@@ -207,6 +229,11 @@ function renderRow(spec: Exclude<MenuRow, { kind: "divider" }>): HTMLButtonEleme
     // keeps the column, so the labels line up.
     const icon = document.createElement("span");
     icon.className = `collab-menu-icon ${checked ? "bx bx-check" : spec.icon ?? ""}`.trim();
+
+    if (spec.kind === "item" && spec.iconColor) {
+        icon.style.color = spec.iconColor;
+    }
+
     const text = document.createElement("span");
     text.className = "collab-menu-label";
     text.textContent = spec.label;

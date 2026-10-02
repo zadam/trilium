@@ -3,8 +3,8 @@ import type { CollabPerson, CollabSelection } from "@triliumnext/commons";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-    codeCursorAdapter, createCursorSync, type CursorAdapter, type RemoteCursorMessage,
-    type RemoteSelection, textCursorAdapter
+    canvasCursorAdapter, codeCursorAdapter, createCanvasPointer, createCursorSync,
+    type CursorAdapter, type RemoteCursorMessage, type RemoteSelection, textCursorAdapter
 } from "./cursor_sync.js";
 
 const CARET: CollabSelection = { kind: "code", anchor: 1, head: 1 };
@@ -249,5 +249,39 @@ describe("cursor adapters", () => {
         stop();
         expect(selection.listeners.size + document.listeners.size + viewDocument.listeners.size)
             .toBe(0);
+    });
+
+    it("reads the pointer over a canvas and draws the others' as Excalidraw collaborators", () => {
+        const pointer = createCanvasPointer();
+        const updateScene = vi.fn();
+        const adapter = canvasCursorAdapter({ updateScene }, pointer);
+        const listener = vi.fn();
+        const stop = adapter.listen(listener);
+
+        expect(adapter.read()).toBeNull();
+        pointer.update({ x: -12.5, y: 40 });
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect(adapter.read()).toEqual({ kind: "canvas", x: -12.5, y: 40 });
+        // Off the canvas, the pointer is no longer shared.
+        pointer.update(null);
+        expect(adapter.read()).toBeNull();
+        stop();
+        pointer.update({ x: 1, y: 1 });
+        expect(listener).toHaveBeenCalledTimes(2);
+
+        adapter.draw([
+            {
+                id: "p2", name: "Grace", color: "#2066df",
+                selection: { kind: "canvas", x: 5, y: 6 }
+            },
+            { id: "p3", name: "Alan", color: "#d22a1e", selection: CARET }
+        ]);
+        const { collaborators } = updateScene.mock.calls[0][0] as {
+            collaborators: Map<string, unknown>
+        };
+        expect([ ...collaborators ]).toEqual([ [ "p2", {
+            id: "p2", username: "Grace", color: { background: "#2066df", stroke: "#2066df" },
+            pointer: { x: 5, y: 6, tool: "pointer" }
+        } ] ]);
     });
 });

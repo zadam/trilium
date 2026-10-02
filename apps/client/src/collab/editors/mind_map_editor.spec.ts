@@ -6,7 +6,7 @@ vi.mock("../../widgets/type_widgets/mind_map/sanitize.js", () => ({
 }));
 
 import { sanitizeMindMapData } from "../../widgets/type_widgets/mind_map/sanitize.js";
-import { parseMindMap } from "./mind_map_editor.js";
+import { mergeMindMaps, parseMindMap } from "./mind_map_editor.js";
 
 describe("parseMindMap", () => {
     it("cleans a stored map as the app does, and starts a new one for what is not a map", () => {
@@ -25,5 +25,21 @@ describe("parseMindMap", () => {
             expect(parseMindMap(content, "New topic").nodeData.topic, content).toBe("New topic");
         }
         expect(sanitizeMindMapData).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("mergeMindMaps", () => {
+    const map = (rootTopic: string, childTopic: string) => JSON.stringify({
+        nodeData: { id: "root", topic: rootTopic, children: [ { id: "c1", topic: childTopic } ] }
+    });
+
+    it("keeps both people's edits of different nodes, and gives up on edits of the same", () => {
+        const merged = mergeMindMaps(map("Root", "Child"), map("My root", "Child"),
+            map("Root", "Their child"));
+
+        expect(merged && JSON.parse(merged)).toEqual(JSON.parse(map("My root", "Their child")));
+        expect(mergeMindMaps(map("Root", "Child"), map("Mine", "Child"), map("Theirs", "Child")))
+            .toBeNull();
+        expect(mergeMindMaps("not a map", map("A", "B"), map("C", "D"))).toBeNull();
     });
 });

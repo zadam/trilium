@@ -43,9 +43,13 @@ export default function setupToC() {
         if (sections.length === 0 || links.length === 0) return;
 
         let index = sections.length;
+        // A collaboration page's header stays over the top of the note while it scrolls.
+        const top = (container?.scrollTop ?? 0) + 50
+            + (document.getElementById("collab-header")?.offsetHeight ?? 0);
 
         // Work backwards to find the first matching section
-        while (--index && container!.scrollTop + 50 < (sections[index] as HTMLElement).offsetTop) {} // eslint-disable-line no-empty
+        // eslint-disable-next-line no-empty
+        while (--index && top < (sections[index] as HTMLElement).offsetTop) {}
 
         // Update the "active" item in ToC
         links.forEach((link) => link.classList.remove("active"));

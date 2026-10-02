@@ -26,11 +26,15 @@ html {
     opacity: 0.8;
 }
 
-/* At the end of the line with the note's type and dates, in its small, muted text. */
-.collab-note-info .collab-status {
-    margin: 0 0 0 auto;
-    font-size: 1em;
-    opacity: 1;
+/* Before the buttons over the title, small and muted, as the app's save state. */
+.collab-title-actions .collab-status {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .collab-conflict {
@@ -60,8 +64,43 @@ html {
     cursor: pointer;
 }
 
+/* The values of the app's default theme that its toolbars and canvas read. */
+html.theme-dark {
+    --hover-item-background-color: #ffffff16;
+    --hover-item-text-color: #efefef;
+    --menu-text-color: #e3e3e3;
+    --menu-item-icon-color: #8c8c8c;
+    --menu-item-delimiter-color: #ffffff1c;
+    --floating-button-background-color: #494949d2;
+    --floating-button-shadow-color: #00000080;
+    --ck-editor-toolbar-button-on-background: #ffffff3b;
+    --ck-editor-toolbar-button-on-color: white;
+    --ck-editor-toolbar-button-on-shadow: 1px 1px 2px rgba(0, 0, 0, .75);
+    --ck-editor-toolbar-dropdown-button-open-background: #ffffff14;
+    --collab-toolbar-background: #ffffff0d;
+}
+
+html.theme-light {
+    --hover-item-background-color: #0000001a;
+    --hover-item-text-color: black;
+    --menu-text-color: #272727;
+    --menu-item-icon-color: #727272;
+    --menu-item-delimiter-color: #00000030;
+    --floating-button-background-color: #eaeaeacc;
+    --floating-button-shadow-color: #00000042;
+    --ck-editor-toolbar-button-on-background: #00000030;
+    --ck-editor-toolbar-button-on-color: black;
+    --ck-editor-toolbar-button-on-shadow: none;
+    --ck-editor-toolbar-dropdown-button-open-background: #0000000f;
+    --collab-toolbar-background: #ffffffa1;
+}
+
+/* A strip across the page under the tabs, as the app's formatting toolbar, its corner by the
+   sidebar rounded as the app rounds it. */
 .collab-editor-toolbar {
-    margin-top: 0.5em;
+    padding: 2px 13px 2px 8px;
+    border-top-left-radius: var(--collab-note-corner-radius, 12px);
+    background: var(--collab-toolbar-background);
 }
 
 /* As in the app's style.css. */
@@ -69,8 +108,32 @@ html {
     display: none !important;
 }
 
+/* The app's toolbar buttons, from its notes/text.css: flat until hovered or switched on. */
 .collab-editor-toolbar .ck.ck-toolbar {
-    border-radius: var(--bs-border-radius);
+    --ck-color-toolbar-background: transparent;
+    --ck-color-toolbar-border: transparent;
+    --ck-color-button-default-background: transparent;
+    --ck-color-button-default-hover-background: var(--hover-item-background-color);
+    --ck-color-button-default-disabled-background: transparent;
+    --ck-color-button-on-background: transparent;
+    --ck-color-button-on-hover-background: var(--hover-item-background-color);
+    --ck-color-button-default-active-background: var(--hover-item-background-color);
+    --ck-color-split-button-hover-background:
+        var(--ck-editor-toolbar-dropdown-button-open-background);
+    --ck-border-radius: 6px;
+    border: 0;
+}
+
+.collab-editor-toolbar .ck.ck-toolbar
+    .ck-button.ck-on:not(.ck-dropdown__button):not(.ck-list-item-button):not(.ck-button_with-text) {
+    --ck-color-button-on-background: var(--ck-editor-toolbar-button-on-background);
+    --ck-color-button-on-color: var(--ck-editor-toolbar-button-on-color);
+    box-shadow: var(--ck-editor-toolbar-button-on-shadow);
+}
+
+.collab-editor-toolbar .ck.ck-toolbar .ck-button.ck-dropdown__button {
+    --ck-color-button-on-background: var(--ck-editor-toolbar-dropdown-button-open-background);
+    --ck-color-button-on-color: currentColor;
 }
 
 .collab-editor-host {

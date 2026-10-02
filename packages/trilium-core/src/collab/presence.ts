@@ -7,7 +7,7 @@ import becca from "../becca/becca.js";
 import type BCollaboration from "../becca/entities/bcollaboration.js";
 import type { CollabClientInfo } from "../services/messaging/types.js";
 import { hash } from "../services/utils/index.js";
-import { getHostDisplayName, isNoteInCollabScope } from "./service.js";
+import { getHostColor, getHostDisplayName, isNoteInCollabScope } from "./service.js";
 
 /** How long a guest keeps their number after their last page closed, so a reload keeps it. */
 const NUMBER_KEPT_MS = 2 * 60 * 1000;
@@ -66,7 +66,8 @@ export function buildCollabPeople(
         people.push({
             id: collabPersonId(collabId, guestId),
             name: pages.find((page) => page.name)?.name ?? t("collab_theme.guest_name", { number }),
-            color: COLLAB_PERSON_COLORS[1 + (number - 1) % (COLLAB_PERSON_COLORS.length - 1)],
+            color: pages.find((page) => page.color)?.color
+                ?? COLLAB_PERSON_COLORS[1 + (number - 1) % (COLLAB_PERSON_COLORS.length - 1)],
             isHost: false,
             ...describePages(pages)
         });
@@ -179,7 +180,7 @@ function buildHost(
     return {
         id: COLLAB_HOST_PERSON_ID,
         name: getHostDisplayName(collab),
-        color: COLLAB_PERSON_COLORS[0],
+        color: getHostColor(collab),
         isHost: true,
         ...(appView ? { noteId: appView.noteId, editing: true } : describePages(hostPages))
     };

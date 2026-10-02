@@ -39,3 +39,15 @@ export function convertIndentation(content: string, from: IndentStyle, to: Inden
         return toUnit.repeat(levels) + " ".repeat(remainder);
     });
 }
+
+/** Re-indents a code editor's text, as an edit of its own, when the conversion changes it. */
+export function reindentEditorText(
+    editor: { getText(): string; setText(text: string): void }, from: IndentStyle, to: IndentStyle
+) {
+    const text = editor.getText();
+    const converted = convertIndentation(text, from, to);
+
+    if (converted !== text) {
+        editor.setText(converted);
+    }
+}

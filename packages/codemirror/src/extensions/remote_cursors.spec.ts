@@ -1,9 +1,10 @@
+import { history, undo, undoDepth } from "@codemirror/commands";
 import { EditorSelection } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
-    getLocalCodeSelection, type RemoteCodeCursor, setRemoteCursors
+    applyRemoteChanges, getLocalCodeSelection, type RemoteCodeCursor, setRemoteCursors
 } from "./remote_cursors.js";
 
 const GRACE = { id: "p1", name: "Grace", color: "#2066df" };
@@ -80,6 +81,28 @@ describe("remote cursors", () => {
         target.dispatch({ changes: { from: 0, insert: ">> " } });
 
         expect(textBefore(target, "Grace")).toBe(">> hello ");
+    });
+
+    it("takes another person's edits around the caret, out of the undo history", () => {
+        const target = new EditorView({ doc: "hello world", extensions: [ history() ],
+            parent: document.body });
+        view = target;
+        target.dispatch({ selection: EditorSelection.cursor(6), userEvent: "select" });
+        target.dispatch({ changes: { from: 11, insert: "!" }, userEvent: "input.type" });
+        setRemoteCursors(target, [ at(5) ]);
+
+        applyRemoteChanges(target, [
+            { from: 0, to: 0, insert: ">> " }, { from: 6, to: 11, insert: "there" }
+        ]);
+
+        expect(target.state.doc.toString()).toBe(">> hello there!");
+        // The caret was at the start of the replaced word, which keeps it before the new one.
+        expect(getLocalCodeSelection(target)).toEqual({ anchor: 9, head: 9 });
+        expect(textBefore(target, "Grace")).toBe(">> hello");
+        // Undo reverts only the editor's own typing.
+        expect(undoDepth(target.state)).toBe(1);
+        undo(target);
+        expect(target.state.doc.toString()).toBe(">> hello there");
     });
 
     it("reads the editor's own selection, its head where it ends", () => {

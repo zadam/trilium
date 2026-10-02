@@ -15,6 +15,7 @@ import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { textCursorAdapter } from "../../../collab/cursor_sync";
+import { mergeTextEditor } from "../../../collab/live_merge";
 import appContext from "../../../components/app_context";
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import dateNoteService from "../../../services/date_notes";
@@ -64,7 +65,13 @@ export default function EditableText({ note, parentComponent, ntxId, noteContext
     /** The editor once ready, again after a crash restarts it, for the collaborators' cursors. */
     const [ readyEditor, setReadyEditor ] = useState<CKTextEditor | null>(null);
     const cursorAdapter = useMemo(() => readyEditor && textCursorAdapter(readyEditor), [ readyEditor ]);
-    useCollabCursors(note, cursorAdapter);
+    const live = useCollabCursors(note, cursorAdapter);
+    const mergeRemoteContent = useMemo(() => (live
+        ? (base: string, theirs: string) => {
+            const editor = watchdogRef.current?.editor as CKTextEditor | undefined;
+            return !!editor && mergeTextEditor(editor, base, theirs, (apply) => apply());
+        }
+        : null), [ live ]);
     const [ language ] = useNoteLabel(note, "language");
     const [ textNoteEditorType ] = useTriliumOption("textNoteEditorType");
     const [ codeBlockWordWrap ] = useTriliumOptionBool("codeBlockWordWrap");
@@ -122,7 +129,8 @@ export default function EditableText({ note, parentComponent, ntxId, noteContext
             // Store back the saved data in order to retrieve it in case the CKEditor crashes.
             contentRef.current = savedData.content;
             contentNoteIdRef.current = note?.noteId;
-        }
+        },
+        mergeRemoteContent
     });
     const templates = useTemplates();
 

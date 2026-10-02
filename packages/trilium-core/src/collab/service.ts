@@ -8,7 +8,9 @@ import {
     type CollaborationRow,
     type CollaborationViewMode,
     DEFAULT_COLLABORATION_MAX_GUESTS,
+    COLLAB_PERSON_COLORS,
     MAX_COLLABORATION_MAX_GUESTS,
+    normalizeCollabColor,
     normalizeCollabName
 } from "@triliumnext/commons";
 import { t } from "i18next";
@@ -114,6 +116,17 @@ export function getHostDisplayName(collab: BCollaboration): string {
     return collab.hostName ?? t("collab_theme.host_name");
 }
 
+/** Recolors the host on the collaboration's pages; a color off the palette means the default. */
+export function setHostColor(collab: BCollaboration, color: unknown) {
+    collab.hostColor = normalizeCollabColor(color);
+    collab.save();
+}
+
+/** The host's color on the collaboration's pages: the palette's first, or the one they picked. */
+export function getHostColor(collab: BCollaboration): string {
+    return collab.hostColor ?? COLLAB_PERSON_COLORS[0];
+}
+
 /** The settings as the host's client sees them, without the password hashes. */
 export function toCollaborationDto(collab: BCollaboration): Collaboration {
     return {
@@ -126,6 +139,7 @@ export function toCollaborationDto(collab: BCollaboration): Collaboration {
         slug: collab.slug,
         maxGuests: collab.maxGuests,
         hostName: collab.hostName,
+        hostColor: collab.hostColor,
         utcDateCreated: collab.utcDateCreated,
         utcDateModified: collab.utcDateModified ?? collab.utcDateCreated
     };
@@ -412,6 +426,8 @@ export default {
     toCollaborationDto,
     setHostName,
     getHostDisplayName,
+    setHostColor,
+    getHostColor,
     getAccessSignature,
     stopCollaboration,
     resolveCollaboration,

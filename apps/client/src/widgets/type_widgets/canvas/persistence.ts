@@ -6,6 +6,7 @@ import { RefObject } from "preact";
 import { useRef } from "preact/hooks";
 
 import NoteContext from "../../../components/note_context";
+import { mergeCanvasScene } from "../../../collab/canvas_merge";
 import FNote from "../../../entities/fnote";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
@@ -25,7 +26,15 @@ export interface CanvasContent {
 /** Subset of the app state that should be persisted whenever they change. This explicitly excludes transient state like the current selection or zoom level. */
 type ImportantAppState = Pick<AppState, "gridModeEnabled" | "viewBackgroundColor">;
 
-export default function useCanvasPersistence(note: FNote, noteContext: NoteContext | null | undefined, apiRef: RefObject<ExcalidrawImperativeAPI>, theme: AppState["theme"], isReadOnly: boolean): Partial<ExcalidrawProps> {
+/**
+ * Loads and saves a canvas note. `live` is set while guests can edit the note too: their versions
+ * are then merged into the scene, and the canvas saves while the user draws.
+ */
+export default function useCanvasPersistence(
+    note: FNote, noteContext: NoteContext | null | undefined,
+    apiRef: RefObject<ExcalidrawImperativeAPI>, theme: AppState["theme"], isReadOnly: boolean,
+    live = false
+): Partial<ExcalidrawProps> {
     const libraryChanged = useRef(false);
 
     /**
@@ -271,8 +280,21 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
         },
         dataSaved() {
             libraryChanged.current = false;
-        }
+        },
+        mergeRemoteContent: live ? mergeRemoteScene : null
     });
+
+    function mergeRemoteScene(base: string, theirs: string) {
+        const api = apiRef.current;
+
+        if (!api || !initialDataResolvedRef.current || !mergeCanvasScene(api, base, theirs)) {
+            return false;
+        }
+
+        // Their shapes are no edit to save back; the user's own are already scheduled.
+        currentSceneVersion.current = getSceneVersion(api.getSceneElements());
+        return true;
+    }
 
     return {
         initialData,
@@ -316,7 +338,10 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
             }
 
             if (hasChanges) {
-                spacedUpdate.resetUpdateTimer();
+                // While guests edit too, saves go out as the user draws.
+                if (!live) {
+                    spacedUpdate.resetUpdateTimer();
+                }
                 spacedUpdate.scheduleUpdate();
                 currentSceneVersion.current = newSceneVersion;
             }

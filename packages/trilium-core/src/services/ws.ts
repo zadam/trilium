@@ -1,5 +1,5 @@
 import {
-    COLLAB_HOST_PERSON_ID, COLLAB_PERSON_COLORS, type CollabCursorOwner, type CollabPerson,
+    COLLAB_HOST_PERSON_ID, type CollabCursorOwner, type CollabPerson,
     type CollabSelection, type EntityChange, parseCollabSelection, type SyncPullProgress,
     WebSocketMessage
 } from "@triliumnext/commons";
@@ -12,8 +12,8 @@ import {
     getHostViewers, hasHostViews, recordHostView, revokeCollabGuest
 } from "../collab/presence.js";
 import {
-    getAccessSignature, getCollaborationsForNote, getEffectiveCapabilities, getHostDisplayName,
-    isNoteInCollabScope
+    getAccessSignature, getCollaborationsForNote, getEffectiveCapabilities, getHostColor,
+    getHostDisplayName, isNoteInCollabScope
 } from "../collab/service.js";
 import * as cls from "./context.js";
 import { getLog } from "./log.js";
@@ -536,7 +536,7 @@ function relayHostCursor(clientId: string, message: any) {
         relayCursor(collab, message, {
             id: COLLAB_HOST_PERSON_ID,
             name: getHostDisplayName(collab),
-            color: COLLAB_PERSON_COLORS[0]
+            color: getHostColor(collab)
         });
     }
 }
@@ -622,6 +622,12 @@ function renameCollabGuest(collabId: string, guestId: string, name: string | nul
     broadcastCollabPresence(collabId);
 }
 
+/** Recolors a guest on their open pages, once the server stored the color in their grant. */
+function recolorCollabGuest(collabId: string, guestId: string, color: string | null) {
+    messagingProvider?.setCollabGuestColor?.(collabId, guestId, color);
+    broadcastCollabPresence(collabId);
+}
+
 /** Disconnects a guest the host removed and keeps them out of the collaboration from now on. */
 function removeCollabGuest(collabId: string, guestId: string) {
     revokeCollabGuest(collabId, guestId);
@@ -677,6 +683,7 @@ export default {
     isCollabFull,
     findCollabGuestId,
     renameCollabGuest,
+    recolorCollabGuest,
     removeCollabGuest,
     setLastSyncedPush,
     reloadFrontend

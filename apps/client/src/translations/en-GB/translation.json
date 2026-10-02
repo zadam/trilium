@@ -246,5 +246,9 @@
   },
   "sync_2": {
     "effective_server_disabled": "Synchronisation is turned off."
+  },
+  "collab_people": {
+    "color": "Colour",
+    "default_color": "Default colour"
   }
 }

@@ -1,4 +1,6 @@
-import { type EditorState, type Range, StateEffect, StateField } from "@codemirror/state";
+import {
+    type EditorState, type Range, StateEffect, StateField, Transaction
+} from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
 
 /** Another person's selection in the document, with the ends as character offsets. */
@@ -40,6 +42,24 @@ export function setRemoteCursors(view: EditorView, cursors: readonly RemoteCodeC
     }
 
     view.dispatch({ effects: setCursors.of(cursors) });
+}
+
+/** A replacement of the text between two offsets of the document before any of the changes. */
+export interface RemoteCodeChange {
+    from: number;
+    to: number;
+    insert: string;
+}
+
+/**
+ * Applies another person's edits to the document. The selection and the carets shown move with
+ * the text around them, and undo skips the edits, so it reverts only the editor's own typing.
+ */
+export function applyRemoteChanges(view: EditorView, changes: readonly RemoteCodeChange[]) {
+    view.dispatch({
+        changes: [ ...changes ],
+        annotations: [ Transaction.addToHistory.of(false), Transaction.remote.of(true) ]
+    });
 }
 
 /** The editor's own main selection, as character offsets. */

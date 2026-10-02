@@ -1,7 +1,8 @@
 import type { CollabPerson } from "@triliumnext/commons/src/lib/collab.js";
 
 import { loadClientEntry } from "./client_entry.js";
-import { ensureJoined, setupPeople } from "./collab_people.js";
+import { ensureJoined, setupPeople, withLocalColors } from "./collab_people.js";
+import { type Indentation, setupStatusBar } from "./collab_status_bar.js";
 import setupExpanders from "./expanders.js";
 import setupFaviconContrast from "./favicon_contrast.js";
 import setupMath from "./math.js";
@@ -22,6 +23,8 @@ interface CollabBootstrap {
     editable?: boolean;
     /** The app's list for code notes; the ones Trilium runs are the host's alone to choose. */
     codeLanguages?: { mime: string; title: string; runs?: boolean }[];
+    /** A code note's indentation, which the status bar shows; null for other notes. */
+    indentation?: Indentation | null;
     includeSubtree: boolean;
     capabilities: string[];
     csrfToken: string | null;
@@ -94,8 +97,12 @@ export default async function setupCollab() {
 
     const canEdit = hasEditor(bootstrap);
     ensureHeader();
+    setupContentsPanel();
+    setupLogoutConfirmation();
+    setupSidebarResize();
     setupPeople(bootstrap, events);
     setupTabs(bootstrap, events);
+    setupStatusBar(bootstrap, events);
     setupAddButtons(bootstrap);
     setupNoteOptions(bootstrap, events);
     followTreeChanges(bootstrap, events);
@@ -150,27 +157,82 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
 
     const key = `collab-tabs:${bootstrap.collabId}`;
     const tabs = readTabs(key);
-    const current = tabs.find((tab) => tab.noteId === bootstrap.noteId);
+    // A note can have several tabs, so the active one is a tab rather than a note. The tab the
+    // guest picked is kept across page loads, and followed when the page opens its note.
+    let picked: CollabTab | undefined = tabs[readActiveTab(key)];
+    let active = showNote();
 
-    if (current) {
-        current.title = bootstrap.title;
-        current.iconClass = bootstrap.iconClass;
-    } else {
-        tabs.push({
-            noteId: bootstrap.noteId, title: bootstrap.title, iconClass: bootstrap.iconClass
-        });
+    /** The tab of the shown note: the one picked, else its first, else a new one at the end. */
+    function showNote() {
+        let tab = picked?.noteId === bootstrap.noteId && tabs.includes(picked)
+            ? picked
+            : tabs.find((candidate) => candidate.noteId === bootstrap.noteId);
+
+        if (!tab) {
+            tab = { noteId: bootstrap.noteId, title: bootstrap.title };
+            tabs.push(tab);
+        }
+
+        tab.title = bootstrap.title;
+        tab.iconClass = bootstrap.iconClass;
+        picked = undefined;
+
+        return tab;
     }
 
     const bar = document.createElement("nav");
     bar.className = "collab-tabs";
     bar.setAttribute("aria-label", bootstrap.strings.tabs ?? "");
 
+    // As in the app, ⌘+click (Ctrl+click elsewhere) or a middle click on a note in the tree opens
+    // it in a tab behind the open one.
+    const openBehind = (event: MouseEvent) => {
+        const target = event.target as Element | null;
+        const link = target?.closest?.<HTMLElement>("#menu a[data-note-id]");
+        const noteId = link?.dataset.noteId;
+
+        if (!link || !noteId || target?.closest("button")) {
+            return;
+        }
+
+        event.preventDefault();
+        tabs.push({
+            noteId,
+            title: link.textContent?.trim() ?? "",
+            iconClass: link.dataset.iconClass
+        });
+        render();
+    };
+    document.addEventListener("click", (event) => {
+        if (event.button === 0 && (event.metaKey || event.ctrlKey)) {
+            openBehind(event);
+        }
+    });
+    document.addEventListener("auxclick", (event) => {
+        if (event.button === 1) {
+            openBehind(event);
+        }
+    });
+
+    // The bar hides its scrollbar, so the wheel moves it sideways.
+    bar.addEventListener("wheel", (event) => {
+        if (bar.scrollWidth > bar.clientWidth && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+            bar.scrollLeft += event.deltaY;
+            event.preventDefault();
+        }
+    }, { passive: false });
+
     const render = () => {
-        writeTabs(key, tabs);
+        writeTabs(key, tabs, tabs.indexOf(active));
         bar.replaceChildren(...tabs.map((tab) => {
             const link = document.createElement("a");
-            link.className = `collab-tab${tab.noteId === bootstrap.noteId ? " active" : ""}`;
+            link.className = `collab-tab${tab === active ? " active" : ""}`;
             link.href = noteUrl(bootstrap.rootNoteId, tab.noteId);
+            // The page that opens, in place or loaded anew, marks this tab active.
+            link.addEventListener("click", () => {
+                picked = tab;
+                writeTabs(key, tabs, tabs.indexOf(tab));
+            });
             const icon = document.createElement("span");
             icon.className = `collab-tab-icon ${tab.iconClass ?? "bx bx-note"}`;
             const title = document.createElement("span");
@@ -189,10 +251,11 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
                     event.stopPropagation();
                     const index = tabs.indexOf(tab);
                     tabs.splice(index, 1);
-                    writeTabs(key, tabs);
 
-                    if (tab.noteId === bootstrap.noteId) {
+                    if (tab === active) {
                         const next = tabs[Math.min(index, tabs.length - 1)];
+                        picked = next;
+                        writeTabs(key, tabs, tabs.indexOf(next));
                         openNote(bootstrap, noteUrl(bootstrap.rootNoteId, next.noteId));
                         return;
                     }
@@ -204,6 +267,8 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
 
             return link;
         }));
+        bar.querySelector(".collab-tab.active")
+            ?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
     };
 
     render();
@@ -212,23 +277,28 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
     const row = document.createElement("div");
     row.className = "collab-tab-row";
     row.append(...pageHistory.buttons, bar);
+
+    // The button that shows the contents, at the right of the tab row as the app has its own.
+    const contents = document.getElementById("toc-pane-toggle-button");
+
+    if (contents) {
+        contents.classList.add("collab-history-button");
+        row.append(contents);
+    }
+
     ensureHeader()?.append(row);
 
     // A note opened in place: its tab, and where it stands among the pages seen.
     events.addEventListener("collab-navigated", (event) => {
         const { navigation } = (event as CustomEvent<{ navigation: string }>).detail;
         pageHistory.record(location.pathname, navigation);
-        const tab = tabs.find((candidate) => candidate.noteId === bootstrap.noteId);
 
-        if (tab) {
-            tab.title = bootstrap.title;
-            tab.iconClass = bootstrap.iconClass;
-        } else {
-            tabs.push({
-                noteId: bootstrap.noteId, title: bootstrap.title, iconClass: bootstrap.iconClass
-            });
+        // Back or forward to the note of the active tab stays on that tab.
+        if (active.noteId === bootstrap.noteId && !picked && tabs.includes(active)) {
+            picked = active;
         }
 
+        active = showNote();
         render();
     });
 
@@ -238,11 +308,12 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
         let changed = false;
 
         for (const note of update.notes) {
-            const tab = tabs.find((candidate) => candidate.noteId === note.noteId);
-
-            if (tab && typeof note.title === "string" && tab.title !== note.title) {
-                tab.title = note.title;
-                changed = true;
+            for (const tab of tabs) {
+                if (tab.noteId === note.noteId && typeof note.title === "string"
+                    && tab.title !== note.title) {
+                    tab.title = note.title;
+                    changed = true;
+                }
             }
         }
 
@@ -253,10 +324,14 @@ export function setupTabs(bootstrap: CollabBootstrap, events: EventTarget) {
     // The shown note's new icon, from a refresh of the page.
     events.addEventListener("collab-appearance", (event) => {
         const { iconClass } = (event as CustomEvent<{ iconClass: string }>).detail;
-        const tab = tabs.find((candidate) => candidate.noteId === bootstrap.noteId);
+        const shown = tabs.filter((tab) => tab.noteId === bootstrap.noteId
+            && tab.iconClass !== iconClass);
 
-        if (tab && tab.iconClass !== iconClass) {
+        for (const tab of shown) {
             tab.iconClass = iconClass;
+        }
+
+        if (shown.length > 0) {
             render();
         }
     });
@@ -324,9 +399,9 @@ export function advanceHistory(
  */
 function createHistoryButtons(bootstrap: CollabBootstrap) {
     const key = `collab-history:${bootstrap.collabId}`;
-    const back = historyButton("bx bxs-chevron-left", bootstrap.strings.back ?? "",
+    const back = historyButton("bx bx-left-arrow-alt", bootstrap.strings.back ?? "",
         () => window.history.back());
-    const forward = historyButton("bx bxs-chevron-right", bootstrap.strings.forward ?? "",
+    const forward = historyButton("bx bx-right-arrow-alt", bootstrap.strings.forward ?? "",
         () => window.history.forward());
 
     const record = (path: string, navigation: string) => {
@@ -376,30 +451,145 @@ function readHistory(key: string): PageHistory {
     return { entries: [], index: -1 };
 }
 
-/** The sticky header at the top of the page: the tab row, and the editor's toolbar under it. */
+/**
+ * The sticky header at the top of the page, over the note and its contents panel: the tab row, and
+ * the editor's toolbar under it. Its height is `--collab-header-height`, where the panel starts.
+ */
 function ensureHeader(): HTMLElement | null {
     const existing = document.getElementById("collab-header");
-    const main = document.getElementById("main");
+    const host = document.getElementById("right-pane") ?? document.getElementById("main");
 
-    if (existing || !main) {
+    if (existing || !host) {
         return existing;
     }
 
     const header = document.createElement("div");
     header.id = "collab-header";
-    main.prepend(header);
+    host.prepend(header);
+
+    if (typeof ResizeObserver !== "undefined") {
+        new ResizeObserver(() => document.documentElement.style.setProperty(
+            "--collab-header-height", `${header.offsetHeight}px`)).observe(header);
+    }
 
     return header;
 }
 
-function insertBelowHeader(element: HTMLElement) {
-    const header = ensureHeader();
+/** Where the browser keeps the sidebar width the guest dragged to; the page applies it first. */
+const SIDEBAR_WIDTH_KEY = "collab-left-pane-width";
+const SIDEBAR_MIN_WIDTH = 160;
+const SIDEBAR_KEY_STEP = 16;
 
-    if (header) {
-        header.after(element);
-    } else {
-        document.getElementById("main")?.prepend(element);
+/**
+ * Lets the guest drag the sidebar's edge, or move it with the arrow keys once focused, to make
+ * the tree wider or narrower; a double click goes back to the theme's width. The width goes into
+ * `--collab-left-pane-width`, and into local storage for the next page.
+ */
+export function setupSidebarResize() {
+    const pane = document.getElementById("left-pane");
+    const handle = document.querySelector<HTMLElement>(".collab-left-pane-resizer");
+
+    if (!pane || !handle) {
+        return;
     }
+
+    const root = document.documentElement;
+    const apply = (width: number) => {
+        const clamped = Math.round(
+            Math.min(Math.max(width, SIDEBAR_MIN_WIDTH), window.innerWidth / 2));
+        root.style.setProperty("--collab-left-pane-width", `${clamped}px`);
+        return clamped;
+    };
+    const remember = (width: number | null) => {
+        try {
+            if (width === null) {
+                localStorage.removeItem(SIDEBAR_WIDTH_KEY);
+            } else {
+                localStorage.setItem(SIDEBAR_WIDTH_KEY, String(width));
+            }
+        } catch {
+            // Without storage, the width holds for this page only.
+        }
+    };
+    let dragging = false;
+    // Set once the pointer moves: a press alone, as in a double click, keeps the width.
+    let width: number | null = null;
+
+    handle.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) {
+            return;
+        }
+
+        dragging = true;
+        width = null;
+        handle.setPointerCapture(event.pointerId);
+        root.classList.add("collab-resizing");
+        event.preventDefault();
+    });
+    handle.addEventListener("pointermove", (event) => {
+        if (dragging) {
+            width = apply(event.clientX - pane.getBoundingClientRect().left);
+        }
+    });
+    const stop = () => {
+        if (dragging) {
+            dragging = false;
+            root.classList.remove("collab-resizing");
+
+            if (width !== null) {
+                remember(width);
+            }
+        }
+    };
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
+    handle.addEventListener("keydown", (event) => {
+        const step = { ArrowLeft: -SIDEBAR_KEY_STEP, ArrowRight: SIDEBAR_KEY_STEP }[event.key];
+
+        if (step) {
+            event.preventDefault();
+            remember(apply(pane.getBoundingClientRect().width + step));
+        }
+    });
+    handle.addEventListener("dblclick", () => {
+        root.style.removeProperty("--collab-left-pane-width");
+        remember(null);
+    });
+}
+
+/** Asks before logging out: a slip of the mouse would otherwise cost the guest their password. */
+export function setupLogoutConfirmation() {
+    const form = document.querySelector<HTMLFormElement>("form.collab-logout");
+
+    form?.addEventListener("submit", (event) => {
+        if (!window.confirm(form.dataset.confirm ?? "")) {
+            event.preventDefault();
+        }
+    });
+}
+
+/**
+ * Makes the contents panel's buttons work: its × closes it as the tab row's button does, and a
+ * section's header folds the section. The page swaps the panel on each note it opens in place, so
+ * the listener sits on the document.
+ */
+export function setupContentsPanel() {
+    document.addEventListener("click", (event) => {
+        const target = event.target as Element | null;
+
+        if (target?.closest(".collab-panel-close")) {
+            document.getElementById("toc-pane-toggle-button")?.click();
+            return;
+        }
+
+        const header = target?.closest(".collab-panel-card-header");
+        const card = header?.closest(".collab-panel-card");
+
+        if (header && card) {
+            const collapsed = card.classList.toggle("collapsed");
+            header.setAttribute("aria-expanded", String(!collapsed));
+        }
+    });
 }
 
 /** A note's page within the collaboration; the root note's page is the collaboration's own. */
@@ -407,11 +597,21 @@ function noteUrl(rootNoteId: string, noteId: string) {
     return noteId === rootNoteId ? "./" : `./${encodeURIComponent(noteId)}`;
 }
 
-function writeTabs(key: string, tabs: CollabTab[]) {
+function writeTabs(key: string, tabs: CollabTab[], activeIndex: number) {
     try {
         sessionStorage.setItem(key, JSON.stringify(tabs));
+        sessionStorage.setItem(`${key}:active`, String(activeIndex));
     } catch {
         // Storage can be unavailable; the bar then lives for this page only.
+    }
+}
+
+/** Which tab was active, by its place in the bar, or -1. */
+function readActiveTab(key: string) {
+    try {
+        return Number(sessionStorage.getItem(`${key}:active`) ?? -1);
+    } catch {
+        return -1;
     }
 }
 
@@ -1083,15 +1283,9 @@ function swapInfoLine(page: Document) {
     const info = document.querySelector(".collab-note-info");
     const fresh = page.querySelector(".collab-note-info");
 
-    if (!info || !fresh) {
-        return;
-    }
-
-    const status = info.querySelector(".collab-status");
-    info.replaceChildren(...[ ...fresh.childNodes ].map((node) => document.importNode(node, true)));
-
-    if (status) {
-        info.append(status);
+    if (info && fresh) {
+        info.replaceChildren(
+            ...[ ...fresh.childNodes ].map((node) => document.importNode(node, true)));
     }
 }
 
@@ -1120,7 +1314,10 @@ export function formatTimes(root: ParentNode) {
         const date = new Date(element.dateTime);
 
         if (!isNaN(date.getTime())) {
-            element.textContent = date.toLocaleDateString();
+            // As the app's title shows the dates: the medium date, and the full one on hover.
+            element.textContent = date.toLocaleDateString(undefined, { dateStyle: "medium" });
+            element.title =
+                date.toLocaleString(undefined, { dateStyle: "full", timeStyle: "long" });
         }
     }
 }
@@ -1195,7 +1392,8 @@ export function connectGuestSocket(
                 const message = JSON.parse(String(event.data)) as { type?: string };
 
                 if (message?.type) {
-                    events.dispatchEvent(new CustomEvent(message.type, { detail: message }));
+                    events.dispatchEvent(new CustomEvent(message.type,
+                        { detail: withLocalColors(bootstrap.collabId, message) }));
                 }
             } catch (e) {
                 console.error(e); // eslint-disable-line no-console
@@ -1248,7 +1446,7 @@ function showNotice(text: string): HTMLElement {
     const notice = document.createElement("div");
     notice.className = "collab-presence collab-notice";
     notice.textContent = text;
-    insertBelowHeader(notice);
+    document.getElementById("main")?.prepend(notice);
 
     return notice;
 }

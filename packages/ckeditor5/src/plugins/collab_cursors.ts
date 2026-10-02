@@ -1,6 +1,8 @@
 import "../theme/collab_cursors.css";
 
-import { type ModelElement, type ModelPosition, type ModelWriter, Plugin } from "ckeditor5";
+import {
+    type ModelElement, type ModelNode, type ModelPosition, type ModelWriter, Plugin
+} from "ckeditor5";
 
 /** Another person's selection in the note, with the ends as model paths in the `main` root. */
 export interface RemoteCursor {
@@ -86,6 +88,94 @@ export default class CollabCursors extends Plugin {
         this.draw();
     }
 
+    /**
+     * Replaces the content with another person's version of it, `html`, changing only the blocks
+     * that differ. A selection in an unchanged block stays in place. A caret in a changed block
+     * keeps its place in the text, moved by what was inserted or deleted before it there. Undo
+     * skips the change.
+     */
+    applyRemoteData(html: string) {
+        const editor = this.editor;
+        const model = editor.model;
+        const root = model.document.getRoot("main");
+
+        if (!root) {
+            return;
+        }
+
+        const before = [ ...root.getChildren() ];
+        const after = [ ...editor.data.parse(html).getChildren() ];
+        const beforeKeys = before.map(blockKey);
+        const afterKeys = after.map(blockKey);
+        const shorter = Math.min(before.length, after.length);
+        let prefix = 0;
+
+        while (prefix < shorter && beforeKeys[prefix] === afterKeys[prefix]) {
+            prefix++;
+        }
+
+        let suffix = 0;
+
+        while (suffix < shorter - prefix
+            && beforeKeys[before.length - 1 - suffix] === afterKeys[after.length - 1 - suffix]) {
+            suffix++;
+        }
+
+        const removedEnd = before.length - suffix;
+        const insertedEnd = after.length - suffix;
+
+        if (prefix === removedEnd && prefix === insertedEnd) {
+            return;
+        }
+
+        const selection = this.getLocalSelection();
+        const mapPath = (path: number[]) => {
+            const [ index, offset ] = path;
+
+            if (index < prefix || index >= removedEnd) {
+                return null;
+            }
+
+            // Blocks replaced one for one keep a caret by the text around it.
+            if (path.length === 2 && removedEnd - prefix === insertedEnd - prefix) {
+                return [ index, mapOffset(blockText(before[index]), blockText(after[index]),
+                    offset) ];
+            }
+
+            return [ Math.min(index, Math.max(prefix, insertedEnd - 1)), ...path.slice(1) ];
+        };
+        const anchor = selection && mapPath(selection.anchor);
+        const head = selection && mapPath(selection.head);
+
+        model.enqueueChange({ isUndoable: false }, (writer) => {
+            writer.remove(writer.createRange(
+                writer.createPositionAt(root, prefix), writer.createPositionAt(root, removedEnd)));
+
+            for (const [ index, block ] of after.slice(prefix, insertedEnd).entries()) {
+                writer.insert(block, root, prefix + index);
+            }
+
+            if (selection && (anchor || head)) {
+                const anchorAt = this.positionNear(anchor ?? selection.anchor);
+                const headAt = this.positionNear(head ?? selection.head);
+
+                if (anchorAt.isEqual(headAt)) {
+                    writer.setSelection(model.schema.getNearestSelectionRange(headAt)
+                        ?? model.createRange(headAt));
+                } else {
+                    const backward = headAt.isBefore(anchorAt);
+                    writer.setSelection(backward
+                        ? model.createRange(headAt, anchorAt)
+                        : model.createRange(anchorAt, headAt), { backward });
+                }
+            }
+        });
+
+        // The markers in the replaced blocks went with them.
+        this.drawn.clear();
+        this.draw();
+    }
+
     /** This editor's own selection as model paths, or null without one. */
     getLocalSelection(): { anchor: number[]; head: number[] } | null {
         const { anchor, focus } = this.editor.model.document.selection;
@@ -163,6 +253,49 @@ export default class CollabCursors extends Plugin {
         return model.createPositionAt(parent, 0);
     }
 
+}
+
+/** What a block holds, to tell an unchanged one from a changed one. */
+function blockKey(node: ModelNode) {
+    return JSON.stringify(node.toJSON());
+}
+
+/** A block's text, each element in it standing as one character, as model offsets count it. */
+function blockText(node: ModelNode | undefined) {
+    if (!node?.is("element")) {
+        return "";
+    }
+
+    let text = "";
+
+    for (const child of node.getChildren()) {
+        text += child.is("$text") ? child.data : "\uFFFC";
+    }
+
+    return text;
+}
+
+/** Moves an offset in `before` to the same place in `after`, by the text they share at each end. */
+function mapOffset(before: string, after: string, offset: number) {
+    const shorter = Math.min(before.length, after.length);
+    let prefix = 0;
+
+    while (prefix < shorter && before[prefix] === after[prefix]) {
+        prefix++;
+    }
+
+    let suffix = 0;
+
+    while (suffix < shorter - prefix
+        && before[before.length - 1 - suffix] === after[after.length - 1 - suffix]) {
+        suffix++;
+    }
+
+    if (offset <= prefix) {
+        return offset;
+    }
+
+    return offset >= before.length - suffix ? offset + after.length - before.length : prefix;
 }
 
 function removeMarkers(writer: ModelWriter, id: string) {

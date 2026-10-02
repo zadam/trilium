@@ -3,9 +3,14 @@ import type { Request } from "../../http_interface";
 import { NoteSizeResponse, SubtreeSizeResponse } from "@triliumnext/commons";
 import { getSql } from "../../services/sql/index.js";
 
-function getNoteSize(req: Request) {
-    const { noteId } = req.params;
+function getNoteSize(req: Request<{ noteId: string }>) {
+    return {
+        noteSize: computeNoteSize(req.params.noteId)
+    } satisfies NoteSizeResponse;
+}
 
+/** The bytes a note's content, attachments and revisions take, each blob counted once. */
+export function computeNoteSize(noteId: string): number {
     const blobSizes = getSql().getMap<string, number>(
         `
         SELECT blobs.blobId, LENGTH(content)
@@ -19,11 +24,7 @@ function getNoteSize(req: Request) {
         [noteId, noteId, noteId]
     );
 
-    const noteSize = Object.values(blobSizes).reduce((acc, blobSize) => acc + blobSize, 0);
-
-    return {
-        noteSize
-    } satisfies NoteSizeResponse;
+    return Object.values(blobSizes).reduce((acc, blobSize) => acc + blobSize, 0);
 }
 
 function getSubtreeSize(req: Request<{ noteId: string }>) {

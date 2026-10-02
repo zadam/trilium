@@ -9,7 +9,7 @@ const iconClass = note.getIcon(iconPackSupportedPrefixes);
     <a class="<%= linkClass %>" href="<%= href %>" data-note-id="<%= note.noteId %>" data-icon-class="<%= iconClass %>"<% if (color) { %> data-color="<%= color %>" style="--note-color: <%= color %>"<% } %>>
         <% if (children.length > 0) { %><button class="collapse-button" aria-label="<%= t("share_theme.expand") %>"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8"></path></svg></button><% } %>
         <span><i class="<%= iconClass %>"></i> <%= note.title %></span>
-        <% if (canCreate) { %><button type="button" class="collab-add-button" data-note-id="<%= note.noteId %>" aria-label="<%= t("collab_theme.add_child_note") %>"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="svg-icon"><path d="M12 5v14M5 12h14"></path></svg></button><% } %>
+        <% if (canCreate) { %><button type="button" class="collab-add-button" data-note-id="<%= note.noteId %>" aria-label="<%= t("collab_theme.add_child_note") %>"><span class="bx bx-plus" aria-hidden="true"></span></button><% } %>
     </a>
 
 <% if (children.length > 0) { %>

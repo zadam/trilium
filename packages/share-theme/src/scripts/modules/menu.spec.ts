@@ -24,6 +24,21 @@ function key(target: Element | null | undefined, name: string) {
     target?.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true }));
 }
 
+describe("menu headers", () => {
+    it("titles a group of rows without being a row of its own", () => {
+        const menu = buildMenu([
+            { kind: "header", label: "Indent using" },
+            { kind: "item", label: "Spaces", checked: true, run: () => {} }
+        ], () => {});
+
+        const header = menu.querySelector(".collab-menu-header");
+        expect(header?.textContent).toBe("Indent using");
+        expect(header?.getAttribute("role")).toBe("presentation");
+        expect([ ...menu.querySelectorAll(".collab-menu-item") ].map((row) => row.textContent))
+            .toEqual([ "Spaces" ]);
+    });
+});
+
 describe("buildMenu", () => {
     const picked: string[] = [];
     const close = vi.fn();
@@ -189,6 +204,27 @@ describe("buildMenu", () => {
         expect(menu.classList.contains("collab-menu-drop-start")).toBe(false);
         expect(arrows()).toEqual([ "bx-chevron-right", "bx-chevron-right" ]);
         Reflect.deleteProperty(document.documentElement, "clientWidth");
+    });
+
+    it("opens below its button, or above it when only above has room for it", () => {
+        // The test environment lays nothing out, so the window and the menu are given heights.
+        Object.defineProperty(window, "innerHeight", { configurable: true, get: () => 800 });
+        Object.defineProperty(menu, "offsetHeight", { configurable: true, get: () => 300 });
+        const placeUnder = (top: number) => {
+            placeMenu(menu, new DOMRect(100, top, 40, 32));
+            return menu.style.top;
+        };
+
+        expect(placeUnder(40)).toBe("76px");
+        // At the foot of the window, as the list of people is.
+        expect(placeUnder(700)).toBe("396px");
+        // Too tall for either side, it takes the roomier one and stays inside the window.
+        Object.defineProperty(menu, "offsetHeight", { configurable: true, get: () => 900 });
+        expect(placeUnder(500)).toBe("8px");
+        expect(placeUnder(200)).toBe("236px");
+
+        Reflect.deleteProperty(window, "innerHeight");
+        Reflect.deleteProperty(menu, "offsetHeight");
     });
 
     it("narrows a searchable submenu to what is typed, Enter picking the first row left", () => {

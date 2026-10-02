@@ -45,6 +45,8 @@ export interface CollabClientInfo {
     unlocked: readonly GuestCapability[];
     /** The name the guest chose, or null for their numbered default. */
     name: string | null;
+    /** The color the guest chose from the palette, or null for their numbered default. */
+    color: string | null;
     /** The note the page said it shows, or null. */
     viewingNoteId: string | null;
     /** The note the guest said it is editing, or null. */
@@ -106,6 +108,8 @@ export interface MessagingProvider {
     setCollabViewing?(clientId: string, noteId: string | null): void;
     /** Renames the guest on every socket of theirs in the collaboration. */
     setCollabGuestName?(collabId: string, guestId: string, name: string | null): void;
+    /** Recolors the guest on every socket of theirs in the collaboration. */
+    setCollabGuestColor?(collabId: string, guestId: string, color: string | null): void;
     /** Disconnects a collaboration's guests, after the host ended it. */
     closeCollabClients?(collabId: string): void;
     /** Disconnects one guest's sockets of the collaboration, after the host removed them. */

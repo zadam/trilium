@@ -54,13 +54,14 @@ export function isGuestEditableNote(note: BNote): boolean {
 }
 
 /**
- * Code the host's app runs or renders as a page: JavaScript and JSX scripts, the SQL console, and
- * HTML, which a Render note shows. A guest never edits such a note or turns a note into one.
+ * Code the host's app runs or renders as a page: Trilium's frontend and backend scripts, JSX, the
+ * SQL console, and HTML, which a Render note shows. A guest never edits such a note or turns a
+ * note into one. Plain JavaScript (`text/javascript`) has no script environment, so
+ * `BNote.getScriptEnv()` leaves it out of every run and script bundle, and a guest can edit it.
  */
 function isRunnableCode(mime: string): boolean {
     return mime.startsWith("application/javascript") || mime === "application/x-javascript"
-        || mime === "text/javascript" || mime === "text/jsx"
-        || mime === "text/x-sqlite;schema=trilium" || mime === "text/html";
+        || mime === "text/jsx" || mime === "text/x-sqlite;schema=trilium" || mime === "text/html";
 }
 
 /** A language of the app's list for code notes. */
@@ -440,8 +441,9 @@ export function isSafeColor(value: string | null | undefined): value is string {
 }
 
 /**
- * Sets or clears the note's `color` and `iconClass` labels, the two attributes a guest can touch;
- * a field left undefined stays as it is. Returns what the note now carries.
+ * Sets or clears the note's `color` and `iconClass` labels; besides a code note's indentation
+ * labels, these are the only attributes a guest can touch. A field left undefined stays as it is.
+ * Returns what the note now carries.
  */
 export function updateAppearanceAsGuest(
     note: BNote, appearance: GuestAppearance
@@ -470,6 +472,70 @@ export function updateAppearanceAsGuest(
         color: note.getLabelValue("color"),
         iconClass: note.getLabelValue("iconClass")
     };
+}
+
+/** How a code note indents: its width in columns, and whether a level is a tab. */
+export interface NoteIndentation {
+    width: number;
+    useTabs: boolean;
+}
+
+/** The widest indentation a guest can set, past any of the app's offered widths. */
+const MAX_TAB_WIDTH = 16;
+
+/**
+ * A code note's indentation, as the app's status bar reads it: the note's `tabWidth` and
+ * `indentWithTabs` labels, else the code-notes options. Null for the other note types, which the
+ * app's status bar offers no indentation for.
+ */
+export function getNoteIndentation(note: BNote): NoteIndentation | null {
+    if (note.type !== "code") {
+        return null;
+    }
+
+    const labelWidth = Number.parseInt(note.getLabelValue("tabWidth") ?? "", 10);
+    const labelTabs = note.getLabelValue("indentWithTabs");
+    const optionWidth =
+        Number.parseInt(optionService.getOptionOrNull("codeNoteTabWidth") ?? "", 10);
+
+    return {
+        width: labelWidth > 0 ? labelWidth : (optionWidth > 0 ? optionWidth : 4),
+        useTabs: labelTabs !== null
+            ? labelTabs !== "false"
+            : optionService.getOptionOrNull("codeNoteIndentWithTabs") === "true"
+    };
+}
+
+/**
+ * Sets or clears a code note's `tabWidth` and `indentWithTabs` labels, which only change how the
+ * note indents; a field left undefined stays, and null goes back to the code-notes options.
+ * Returns the indentation the note now has.
+ */
+export function updateIndentationAsGuest(
+    note: BNote, indentation: { width?: number | null; useTabs?: boolean | null }
+): NoteIndentation {
+    assertGuestEditable(note);
+
+    if (note.type !== "code") {
+        throw new ValidationError("Only code notes have an indentation to set.");
+    }
+
+    const { width, useTabs } = indentation;
+
+    if (width !== undefined && width !== null
+        && !(Number.isInteger(width) && width >= 1 && width <= MAX_TAB_WIDTH)) {
+        throw new ValidationError(`width must be a whole number from 1 to ${MAX_TAB_WIDTH}.`);
+    }
+
+    if (width !== undefined) {
+        setOrRemoveLabel(note, "tabWidth", width === null ? null : String(width));
+    }
+
+    if (useTabs !== undefined) {
+        setOrRemoveLabel(note, "indentWithTabs", useTabs === null ? null : String(useTabs));
+    }
+
+    return getNoteIndentation(note) ?? { width: 4, useTabs: false };
 }
 
 /** The icons a guest can pick: the built-in packs, never the host's own icon pack notes. */
@@ -517,6 +583,8 @@ function readText(note: BNote): string {
 export default {
     changeTypeAsGuest,
     getGuestCodeLanguages,
+    getNoteIndentation,
+    updateIndentationAsGuest,
     updateAppearanceAsGuest,
     getGuestIconRegistry,
     isGuestEditableNote,

@@ -22,6 +22,7 @@ function makeFakeLeg() {
         sendMessageToCollabClients: vi.fn(),
         setCollabViewing: vi.fn(),
         setCollabGuestName: vi.fn(),
+        setCollabGuestColor: vi.fn(),
         closeCollabGuest: vi.fn(),
         /** Simulate an inbound message arriving on this transport. */
         emit(id: string, message: unknown) { void handler?.(id, message); }
@@ -115,6 +116,8 @@ describe("CompositeMessagingProvider", () => {
             composite.setCollabGuestName("abc", "g1", "Grace");
             composite.closeCollabGuest("abc", "g1");
             expect(ws.setCollabGuestName).toHaveBeenCalledWith("abc", "g1", "Grace");
+            composite.setCollabGuestColor("abc", "g1", "#d22a1e");
+            expect(ws.setCollabGuestColor).toHaveBeenCalledWith("abc", "g1", "#d22a1e");
             expect(ws.closeCollabGuest).toHaveBeenCalledWith("abc", "g1");
             expect(ipc.sendMessageToClient).not.toHaveBeenCalled();
         });

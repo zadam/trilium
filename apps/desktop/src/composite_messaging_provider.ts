@@ -106,6 +106,10 @@ export default class CompositeMessagingProvider implements MessagingProvider {
         this.ws.setCollabGuestName(collabId, guestId, name);
     }
 
+    setCollabGuestColor(collabId: string, guestId: string, color: string | null): void {
+        this.ws.setCollabGuestColor(collabId, guestId, color);
+    }
+
     closeCollabClients(collabId: string): void {
         this.ws.closeCollabClients(collabId);
     }

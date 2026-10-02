@@ -159,7 +159,8 @@ describe("WebSocketMessagingProvider", () => {
     describe("guest sockets of collaborations", () => {
         it("admits one through the collaboration check, apart from host broadcasts", () => {
             const connection = {
-                collabId: "abc", guestId: "g1", unlocked: [], name: null, viewingNoteId: null,
+                collabId: "abc", guestId: "g1", unlocked: [], name: null, color: null,
+                viewingNoteId: null,
                 editingNoteId: null, isHost: false
             };
             admitGuestSocketMock.mockReturnValueOnce(connection);
@@ -182,7 +183,8 @@ describe("WebSocketMessagingProvider", () => {
             expect(changed).toHaveBeenCalledWith("abc");
             expect(provider.hasCollabClients()).toBe(true);
             expect(provider.getCollabClients("abc")).toEqual([ {
-                guestId: "g1", unlocked: [], name: null, viewingNoteId: null, editingNoteId: null,
+                guestId: "g1", unlocked: [], name: null, color: null, viewingNoteId: null,
+                editingNoteId: null,
                 isHost: false
             } ]);
             expect(provider.getClientCollab("client-id")).toEqual(connection);
@@ -219,7 +221,8 @@ describe("WebSocketMessagingProvider", () => {
                 const connect = (clientId: string, guestId: string) => {
                     randomStringMock.mockReturnValueOnce(clientId);
                     admitGuestSocketMock.mockReturnValueOnce({
-                        collabId: "abc", guestId, unlocked: [], name: null, viewingNoteId: null,
+                        collabId: "abc", guestId, unlocked: [], name: null, color: null,
+                        viewingNoteId: null,
                         editingNoteId: null, isHost: false
                     });
                     const req: any = { url: "/?collab=abc", session: {} };
@@ -248,6 +251,9 @@ describe("WebSocketMessagingProvider", () => {
                 provider.setCollabGuestName("abc", "g1", "Grace");
                 expect(provider.getCollabClients("abc").map((client) => client.name))
                     .toEqual([ "Grace", "Grace", null ]);
+                provider.setCollabGuestColor("abc", "g1", "#d22a1e");
+                expect(provider.getCollabClients("abc").map((client) => client.color))
+                    .toEqual([ "#d22a1e", "#d22a1e", null ]);
 
                 // A removed guest leaves the list at once, and the presence that follows
                 // reaches only the others.

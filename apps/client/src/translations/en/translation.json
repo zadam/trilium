@@ -4574,6 +4574,18 @@
     "remove": "Remove",
     "rename_title": "Rename",
     "rename_message": "The name everyone on the collaboration's pages sees",
+    "color": "Color",
+    "default_color": "Default color",
+    "colors": {
+      "blue": "Blue",
+      "red": "Red",
+      "green": "Green",
+      "purple": "Purple",
+      "orange": "Orange",
+      "teal": "Teal",
+      "magenta": "Magenta",
+      "olive": "Olive"
+    },
     "remove_confirm": "Remove {{name}} from the collaboration? They are signed out and their pages close. The link still works for them: an open one takes them back as a new guest, and a password one asks for the password again."
   },
   "password_box": {

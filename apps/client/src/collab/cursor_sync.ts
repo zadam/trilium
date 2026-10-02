@@ -1,3 +1,4 @@
+import type { Collaborator, SocketId } from "@excalidraw/excalidraw/types";
 import type { GuestEditor } from "@triliumnext/ckeditor5";
 import type CodeMirror from "@triliumnext/codemirror";
 import { getLocalCodeSelection, setRemoteCursors } from "@triliumnext/codemirror";
@@ -182,5 +183,56 @@ export function codeCursorAdapter(view: CodeMirror): CursorAdapter {
                 listener();
             }
         })
+    };
+}
+
+/** Where the pointer is over a canvas, in scene coordinates, or null while it is elsewhere. */
+export interface CanvasPointer {
+    read(): { x: number; y: number } | null;
+    /** Takes the position from Excalidraw's `onPointerUpdate`, or null when the pointer leaves. */
+    update(point: { x: number; y: number } | null): void;
+    listen(listener: () => void): () => void;
+}
+
+export function createCanvasPointer(): CanvasPointer {
+    let current: { x: number; y: number } | null = null;
+    const listeners = new Set<() => void>();
+
+    return {
+        read: () => current,
+        update(point) {
+            current = point && { x: point.x, y: point.y };
+
+            for (const listener of listeners) {
+                listener();
+            }
+        },
+        listen(listener) {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        }
+    };
+}
+
+/** Shares the pointer over an Excalidraw canvas, and draws the others' as its collaborators. */
+export function canvasCursorAdapter(
+    api: { updateScene(scene: { collaborators: Map<SocketId, Collaborator> }): void },
+    pointer: CanvasPointer
+): CursorAdapter {
+    return {
+        read: () => {
+            const point = pointer.read();
+            return point && { kind: "canvas", x: point.x, y: point.y };
+        },
+        draw: (selections) => api.updateScene({
+            collaborators: new Map(selections.flatMap(({ selection, id, name, color }) =>
+                (selection.kind === "canvas"
+                    ? [ [ id as SocketId, {
+                        id, username: name, color: { background: color, stroke: color },
+                        pointer: { x: selection.x, y: selection.y, tool: "pointer" }
+                    } satisfies Collaborator ] as const ]
+                    : [])))
+        }),
+        listen: (listener) => pointer.listen(listener)
     };
 }

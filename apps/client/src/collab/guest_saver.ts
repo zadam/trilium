@@ -12,6 +12,8 @@ export interface GuestSaverOptions {
     noteId: string;
     /** The blob the loaded content came from; every save names it so a stale save is refused. */
     blobId: string | null;
+    /** The content of `blobId`, which the guest's edits start from. */
+    content: string | null;
     csrfToken: string;
     /** Identifies this editor in entity changes, so its own saves do not come back as updates. */
     componentId: string;
@@ -21,14 +23,15 @@ export interface GuestSaverOptions {
     onState?: (state: GuestSaveState) => void;
 }
 
-const DEFAULT_DELAY_MS = 1000;
+const DEFAULT_DELAY_MS = 250;
 const DEFAULT_RETRY_MS = 5000;
 
 /**
- * Saves a guest's edits through the collaboration API: debounced, one request at a time, and
- * carrying the blob id the content was loaded from, so that a save over someone else's change is
- * refused with their version instead of overwriting it. After a conflict nothing is sent until
- * the guest takes the server's version or insists on their own.
+ * Saves a guest's edits through the collaboration API: at most once every `delayMs` while they
+ * keep coming, one request at a time, and carrying the blob id the content was loaded from, so
+ * that a save over someone else's change is refused with their version instead of overwriting it.
+ * {@link reconcile} merges the edits into that version, and the save goes out again. When it
+ * cannot, nothing is sent until the guest takes the server's version or insists on their own.
  */
 export class GuestSaver {
 
@@ -38,9 +41,16 @@ export class GuestSaver {
      */
     preview: ((content: string) => Promise<string | null>) | null = null;
 
+    /**
+     * Puts the guest's edits since `base` into `theirs`, the version saved meanwhile, in the
+     * editor. Returns false when the two cannot be merged.
+     */
+    reconcile: ((base: string, theirs: string) => boolean) | null = null;
+
     private readonly options: GuestSaverOptions;
     private noteId: string;
     private blobId: string | null;
+    private base: string | null;
     private pendingContent: (() => string) | null = null;
     private pendingTitle: (() => string) | null = null;
     private timer: ReturnType<typeof setTimeout> | null = null;
@@ -52,6 +62,7 @@ export class GuestSaver {
         this.options = options;
         this.noteId = options.noteId;
         this.blobId = options.blobId;
+        this.base = options.content;
     }
 
     get state() {
@@ -64,6 +75,11 @@ export class GuestSaver {
 
     get currentBlobId() {
         return this.blobId;
+    }
+
+    /** The content of {@link currentBlobId}, as far as this page knows it. */
+    get baseContent() {
+        return this.base;
     }
 
     get componentId() {
@@ -117,6 +133,7 @@ export class GuestSaver {
         }
 
         this.blobId = this._conflict.blobId;
+        this.base = this._conflict.content;
         this._conflict = null;
         this.pendingContent = null;
         this.setState("idle");
@@ -129,14 +146,26 @@ export class GuestSaver {
         }
 
         this.blobId = this._conflict.blobId;
+        this.base = this._conflict.content;
         this._conflict = null;
         this.pendingContent = read;
         await this.flush();
     }
 
-    /** A live update replaced the content in the editor with the server's version of `blobId`. */
+    /** The server's version of the note is the guest's own last save, now stored as `blobId`. */
     adoptBlobId(blobId: string) {
         this.blobId = blobId;
+    }
+
+    /** The editor took in `content`, the server's version of the note stored as `blobId`. */
+    adoptServerVersion(blobId: string, content: string) {
+        this.blobId = blobId;
+        this.base = content;
+    }
+
+    /** Resolves once the request on its way, if any, has its answer. */
+    async settled(): Promise<void> {
+        await this.inFlight;
     }
 
     dispose() {
@@ -148,8 +177,15 @@ export class GuestSaver {
             return;
         }
 
-        this.clearTimer();
+        const retrying = this._state === "error";
         this.setState("pending");
+
+        // Edits made while a save waits go out with it; a retry after an error waits no longer.
+        if (this.timer && !retrying) {
+            return;
+        }
+
+        this.clearTimer();
         this.timer = setTimeout(() => void this.flush(), delayMs);
     }
 
@@ -165,7 +201,9 @@ export class GuestSaver {
      * content the editor shows next. Resolves `false`, staying on the open note, while a save of
      * it has failed or conflicts.
      */
-    async switchNote(noteId: string, blobId: string | null): Promise<boolean> {
+    async switchNote(
+        noteId: string, blobId: string | null, content: string | null
+    ): Promise<boolean> {
         await this.flush();
 
         if (this._conflict || this.state === "error") {
@@ -174,6 +212,7 @@ export class GuestSaver {
 
         this.noteId = noteId;
         this.blobId = blobId;
+        this.base = content;
         this.pendingContent = null;
         this.pendingTitle = null;
         this.setState("idle");
@@ -222,6 +261,14 @@ export class GuestSaver {
 
                 if (response.status === 409) {
                     const current = await response.json() as GuestSaveConflict;
+
+                    if (this.base !== null && this.reconcile?.(this.base, current.content)) {
+                        this.adoptServerVersion(current.blobId, current.content);
+                        this.pendingContent ??= content;
+                        this.setState("pending");
+                        return;
+                    }
+
                     this._conflict = { blobId: current.blobId, content: current.content };
                     this.pendingContent = content;
                     this.setState("conflict");
@@ -234,6 +281,7 @@ export class GuestSaver {
 
                 const saved = await response.json() as { blobId: string };
                 this.blobId = saved.blobId;
+                this.base = text;
             }
 
             this.setState("saved");

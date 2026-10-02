@@ -16,7 +16,8 @@ export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThe
 export { isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND } from "./type_completion/index.js";
 export { triliumLogHighlighter } from "./extensions/trilium_log_highlighter.js";
 export {
-    getLocalCodeSelection, type RemoteCodeCursor, setRemoteCursors
+    applyRemoteChanges, getLocalCodeSelection, type RemoteCodeChange, type RemoteCodeCursor,
+    setRemoteCursors
 } from "./extensions/remote_cursors.js";
 
 // Custom keymap to prevent Ctrl+Enter from inserting a newline

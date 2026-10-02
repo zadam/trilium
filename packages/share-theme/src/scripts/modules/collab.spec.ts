@@ -6,8 +6,82 @@ vi.mock("./client_entry.js", () => ({ loadClientEntry: vi.fn() }));
 
 import {
     advanceHistory, collabNoteTarget, connectGuestSocket, followPageChanges, followTreeChanges,
-    setupAddButtons, setupNavigation, setupNoteOptions, setupPasswordReveal, setupTabs
+    formatTimes,
+    setupAddButtons, setupContentsPanel, setupLogoutConfirmation, setupNavigation, setupNoteOptions,
+    setupPasswordReveal, setupSidebarResize, setupTabs
 } from "./collab.js";
+
+describe("formatTimes", () => {
+    it("writes a date as the app's title does, with the full date and time on hover", () => {
+        document.body.innerHTML = `<time datetime="2026-10-01T21:03:17.000Z">2026-10-01</time>`;
+        formatTimes(document);
+        const time = document.querySelector("time");
+        const date = new Date("2026-10-01T21:03:17.000Z");
+
+        expect(time?.textContent).toBe(date.toLocaleDateString(undefined, { dateStyle: "medium" }));
+        expect(time?.title)
+            .toBe(date.toLocaleString(undefined, { dateStyle: "full", timeStyle: "long" }));
+    });
+});
+
+describe("setupSidebarResize", () => {
+    it("widens the sidebar by its edge or the arrow keys, within bounds, and remembers it", () => {
+        localStorage.clear();
+        document.body.innerHTML = `<div id="left-pane"></div>
+            <div class="collab-left-pane-resizer" tabindex="0"></div>`;
+        const pane = document.getElementById("left-pane");
+        const handle = document.querySelector<HTMLElement>(".collab-left-pane-resizer");
+        if (!pane || !handle) throw new Error("no sidebar");
+        pane.getBoundingClientRect = () => ({ left: 52, width: 250 }) as DOMRect;
+        handle.setPointerCapture = vi.fn();
+        const width = () => document.documentElement.style.getPropertyValue(
+            "--collab-left-pane-width");
+        setupSidebarResize();
+
+        handle.dispatchEvent(new PointerEvent("pointerdown", { button: 0, clientX: 302 }));
+        expect(document.documentElement.classList.contains("collab-resizing")).toBe(true);
+        handle.dispatchEvent(new PointerEvent("pointermove", { clientX: 352 }));
+        expect(width()).toBe("300px");
+        // Never narrower than a row of the tree can be read in.
+        handle.dispatchEvent(new PointerEvent("pointermove", { clientX: 60 }));
+        expect(width()).toBe("160px");
+        handle.dispatchEvent(new PointerEvent("pointerup", { clientX: 60 }));
+        expect(document.documentElement.classList.contains("collab-resizing")).toBe(false);
+        expect(localStorage.getItem("collab-left-pane-width")).toBe("160");
+
+        // A press that does not move, as in a double click, keeps what was remembered.
+        handle.dispatchEvent(new PointerEvent("pointerdown", { button: 0, clientX: 212 }));
+        handle.dispatchEvent(new PointerEvent("pointerup", { clientX: 212 }));
+        expect(localStorage.getItem("collab-left-pane-width")).toBe("160");
+
+        handle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+        expect(width()).toBe("266px");
+        // A double click goes back to the theme's width.
+        handle.dispatchEvent(new MouseEvent("dblclick"));
+        expect(width()).toBe("");
+        expect(localStorage.getItem("collab-left-pane-width")).toBeNull();
+    });
+});
+
+describe("setupLogoutConfirmation", () => {
+    it("logs out only once the guest confirms it", () => {
+        document.body.innerHTML = `<form class="collab-logout" data-confirm="Log out?">
+            <button type="submit"></button></form>`;
+        const confirm = vi.fn().mockReturnValueOnce(false).mockReturnValueOnce(true);
+        vi.stubGlobal("confirm", confirm);
+        setupLogoutConfirmation();
+        const submit = () => {
+            const event = new Event("submit", { cancelable: true });
+            document.querySelector("form")?.dispatchEvent(event);
+            return event.defaultPrevented;
+        };
+
+        expect(submit()).toBe(true);
+        expect(confirm).toHaveBeenCalledWith("Log out?");
+        expect(submit()).toBe(false);
+        vi.unstubAllGlobals();
+    });
+});
 
 describe("setupPasswordReveal", () => {
     it("shows and hides the password from the eye, keeping the labels in step", () => {
@@ -54,14 +128,16 @@ describe("setupTabs", () => {
 
     it("keeps the opened notes as tabs across page loads and closes one on request", () => {
         sessionStorage.clear();
-        document.body.innerHTML = `<div id="main"></div>`;
+        document.body.innerHTML = `<div id="right-pane"><div id="main"></div></div>`;
         setupTabs(bootstrap("root", "Root"), new EventTarget());
         expect(tabTitles()).toEqual([ "Root" ]);
         // The tab row sits in the header after back and forward, which have nowhere to go yet.
-        const row = document.querySelector("#main > #collab-header > .collab-tab-row");
+        // The header runs across the top of the note and its contents panel alike.
+        const row = document.querySelector("#right-pane > #collab-header:first-child"
+            + " > .collab-tab-row");
         expect([ ...row?.children ?? [] ].map((child) => child.className)).toEqual([
-            "collab-history-button bx bxs-chevron-left",
-            "collab-history-button bx bxs-chevron-right",
+            "collab-history-button bx bx-left-arrow-alt",
+            "collab-history-button bx bx-right-arrow-alt",
             "collab-tabs"
         ]);
         expect([ ...row?.querySelectorAll("button") ?? [] ].map((button) => button.disabled))
@@ -71,9 +147,15 @@ describe("setupTabs", () => {
         expect(document.querySelector(".collab-tab-close")).toBeNull();
 
         // The next page load, on a child, adds it beside the root and marks it active.
-        document.body.innerHTML = `<div id="main"></div>`;
+        document.body.innerHTML = `<nav id="collab-launcher">
+            <button id="toc-pane-toggle-button" class="header-button"></button></nav>
+            <div id="main"></div>`;
+        const toc = document.getElementById("toc-pane-toggle-button");
         const events = new EventTarget();
         setupTabs(bootstrap("child", "Child"), events);
+        // The button that shows the contents moves to the end of the tab row, as in the app.
+        expect(document.querySelector(".collab-tab-row")?.lastElementChild).toBe(toc);
+        expect(toc?.classList.contains("collab-history-button")).toBe(true);
         const tabs = [ ...document.querySelectorAll<HTMLAnchorElement>(".collab-tab") ];
         expect(tabTitles()).toEqual([ "Root", "Child" ]);
         expect(tabs[0].getAttribute("href")).toBe("./");
@@ -100,6 +182,118 @@ describe("setupTabs", () => {
     function tabTitles() {
         return [ ...document.querySelectorAll(".collab-tab-title") ].map((tab) => tab.textContent);
     }
+
+    it("closes the contents panel from its own button and folds its sections", () => {
+        document.body.innerHTML = `<button id="toc-pane-toggle-button"></button>
+            <div id="toc-pane"><section class="collab-panel-card">
+                <div class="collab-panel-card-row">
+                    <button class="collab-panel-card-header" aria-expanded="true"></button>
+                    <button class="collab-panel-close"></button>
+                </div><ul id="toc"></ul></section></div>`;
+        const toggle = vi.fn();
+        document.getElementById("toc-pane-toggle-button")?.addEventListener("click", toggle);
+        const card = document.querySelector(".collab-panel-card");
+        const header = document.querySelector<HTMLButtonElement>(".collab-panel-card-header");
+        setupContentsPanel();
+
+        document.querySelector<HTMLButtonElement>(".collab-panel-close")?.click();
+        expect(toggle).toHaveBeenCalledTimes(1);
+
+        header?.click();
+        expect(card?.classList.contains("collapsed")).toBe(true);
+        expect(header?.getAttribute("aria-expanded")).toBe("false");
+        // A pane swapped in by an in-place navigation answers too.
+        document.getElementById("toc-pane")?.replaceWith(
+            document.getElementById("toc-pane")?.cloneNode(true) ?? "");
+        document.querySelector<HTMLButtonElement>(".collab-panel-card-header")?.click();
+        expect(document.querySelector(".collab-panel-card")?.classList.contains("collapsed"))
+            .toBe(false);
+    });
+
+    it("scrolls the tabs sideways with the wheel and keeps the open one in view", () => {
+        sessionStorage.setItem("collab-tabs:c1", JSON.stringify([
+            { noteId: "root", title: "Root" }, { noteId: "n1", title: "One" }
+        ]));
+        const scrolled = vi.spyOn(HTMLElement.prototype, "scrollIntoView")
+            .mockImplementation(() => {});
+        document.body.innerHTML = `<div id="right-pane"><div id="main"></div></div>`;
+        setupTabs(bootstrap("n1", "One"), new EventTarget());
+        expect(scrolled.mock.contexts.at(-1)).toBe(document.querySelector(".collab-tab.active"));
+        scrolled.mockRestore();
+
+        const bar = document.querySelector<HTMLElement>(".collab-tabs");
+        if (!bar) throw new Error("no tab bar");
+        Object.defineProperty(bar, "scrollWidth", { value: 900 });
+        Object.defineProperty(bar, "clientWidth", { value: 300 });
+        const wheel = new WheelEvent("wheel", { deltaY: 120, cancelable: true });
+        bar.dispatchEvent(wheel);
+
+        expect(bar.scrollLeft).toBe(120);
+        expect(wheel.defaultPrevented).toBe(true);
+    });
+
+    it("opens a note from the tree in a tab behind the open one on a modified or middle click",
+        () => {
+            sessionStorage.clear();
+            document.body.innerHTML = `<div id="right-pane"><div id="main"></div></div>
+                <nav id="menu"><a href="./n2" data-note-id="n2" data-icon-class="bx bx-file">
+                    <span><i></i> Two</span></a>
+                <a href="./n3" data-note-id="n3"><span><i></i> Three</span></a></nav>`;
+            setupTabs(bootstrap("root", "Root"), new EventTarget());
+            const press = (id: string, init: MouseEventInit, type = "click") => {
+                const event = new MouseEvent(type, { bubbles: true, cancelable: true, ...init });
+                document.querySelector(`[data-note-id="${id}"] span`)?.dispatchEvent(event);
+                return event.defaultPrevented;
+            };
+
+            expect(press("n2", { button: 0 })).toBe(false);
+            expect(tabTitles()).toEqual([ "Root" ]);
+
+            expect(press("n2", { button: 0, metaKey: true })).toBe(true);
+            expect(press("n3", { button: 1 }, "auxclick")).toBe(true);
+            // A note can have more than one tab.
+            expect(press("n2", { button: 0, ctrlKey: true })).toBe(true);
+            expect(tabTitles()).toEqual([ "Root", "Two", "Three", "Two" ]);
+            expect(document.querySelector(".collab-tab.active .collab-tab-title")?.textContent)
+                .toBe("Root");
+            expect(document.querySelectorAll(".collab-tab-icon")[1]?.className)
+                .toBe("collab-tab-icon bx bx-file");
+        });
+
+    it("marks the very tab that was opened as active, of a note's several", () => {
+        sessionStorage.setItem("collab-tabs:c1", JSON.stringify([
+            { noteId: "root", title: "Root" }, { noteId: "n2", title: "Two" },
+            { noteId: "n2", title: "Two" }
+        ]));
+        document.body.innerHTML = `<div id="right-pane"><div id="main"></div></div>`;
+        const events = new EventTarget();
+        const page = bootstrap("root", "Root");
+        setupTabs(page, events);
+        const active = () => [ ...document.querySelectorAll(".collab-tab") ]
+            .map((tab) => tab.classList.contains("active"));
+        // The page does not follow the link here; the guest page's navigation does.
+        const stay = (event: Event) => event.preventDefault();
+        document.addEventListener("click", stay);
+
+        document.querySelectorAll<HTMLElement>(".collab-tab")[2]?.click();
+        page.noteId = "n2";
+        events.dispatchEvent(new CustomEvent("collab-navigated", {
+            detail: { navigation: "push" }
+        }));
+        expect(active()).toEqual([ false, false, true ]);
+
+        // A rename reaches every tab of the note.
+        events.dispatchEvent(new CustomEvent("collab-update", {
+            detail: { notes: [ { noteId: "n2", title: "Deux" } ] }
+        }));
+        expect(tabTitles()).toEqual([ "Root", "Deux", "Deux" ]);
+
+        // The next page load keeps the same tab active.
+        document.body.innerHTML = `<div id="right-pane"><div id="main"></div></div>`;
+        setupTabs(bootstrap("n2", "Deux"), new EventTarget());
+        expect(active()).toEqual([ false, false, true ]);
+        document.removeEventListener("click", stay);
+    });
 
     it("shows no tabs without a subtree", () => {
         document.body.innerHTML = `<div id="main"></div>`;
@@ -431,9 +625,9 @@ describe("in-place navigation", () => {
             <script type="application/json" id="collab-bootstrap">
                 ${JSON.stringify(bootstrap)}</script>
             </head><body data-note-id="${note.id}" class="collab type-text">
-            <div id="header"><div class="collab-header-actions">
+            <nav id="collab-launcher"><div class="collab-launcher-bottom">
                 <button id="toc-pane-toggle-button"${note.toc ? "" : " hidden"}></button>
-            </div></div>
+            </div></nav>
             <div id="left-pane"><nav id="menu"><ul><li class="submenu-item expanded">
                 ${treeRow("root", "Root", note.id)}
                 <ul><li class="item">${treeRow("n1", "One", note.id)}</li>

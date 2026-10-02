@@ -32,16 +32,20 @@ describe("admitGuestSocket", () => {
         expect(admitGuestSocket("/", {})).toBe(false);
         expect(admitGuestSocket("/?collab=unknown", {})).toBeNull();
         expect(admitGuestSocket(url, { loggedIn: true })).toEqual({
-            collabId, guestId: null, unlocked: [], name: null, viewingNoteId: null,
+            collabId, guestId: null, unlocked: [], name: null, color: null, viewingNoteId: null,
             editingNoteId: null, isHost: true
         });
 
         // A page joins before it connects, so a socket without a grant has no page behind it.
         expect(admitGuestSocket(url, {})).toBeNull();
         expect(admitGuestSocket(url, grant({ name: " Grace‮ " }))).toEqual({
-            collabId, guestId: "g1", unlocked: [], name: "Grace", viewingNoteId: null,
+            collabId, guestId: "g1", unlocked: [], name: "Grace", color: null, viewingNoteId: null,
             editingNoteId: null, isHost: false
         });
+        // A color off the palette in a grant reads as the default.
+        expect(admitGuestSocket(url, grant({ color: "#D22A1E" })))
+            .toMatchObject({ color: "#d22a1e" });
+        expect(admitGuestSocket(url, grant({ color: "red" }))).toMatchObject({ color: null });
 
         vi.spyOn(ws, "isCollabFull").mockReturnValueOnce(true);
         expect(admitGuestSocket(url, grant())).toEqual({ refused: "full", collabId });

@@ -22,7 +22,8 @@ function startCollab() {
 
 function page(guestId: string): CollabClientInfo {
     return {
-        guestId, unlocked: [], name: null, viewingNoteId: null, editingNoteId: null, isHost: false
+        guestId, unlocked: [], name: null, color: null, viewingNoteId: null, editingNoteId: null,
+        isHost: false
     };
 }
 

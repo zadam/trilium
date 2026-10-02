@@ -108,7 +108,18 @@ export interface SavedData {
     }[];
 }
 
-export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval }: {
+/** How often an editor saves while the user types, when others edit the same note. */
+export const LIVE_UPDATE_INTERVAL = 250;
+const DEFAULT_UPDATE_INTERVAL = 1000;
+
+/** The answer to a save that names the version it started from. */
+interface LiveSaveResult {
+    blobId?: string;
+    /** The version saved meanwhile, which the save did not overwrite. */
+    stale?: { blobId: string; content: string };
+}
+
+export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, mergeRemoteContent }: {
     noteType: NoteType;
     note: FNote | null | undefined,
     noteContext: NoteContext | null | undefined,
@@ -116,9 +127,21 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     onContentChange: (newContent: string) => void,
     dataSaved?: (savedData: SavedData) => void,
     updateInterval?: number;
+    /**
+     * Given while others edit the note at the same time: puts the edits made since `base` into
+     * `theirs`, another person's version, in the editor, keeping the caret in place. Returns
+     * false when both changed the same part. With it, the editor saves every
+     * {@link LIVE_UPDATE_INTERVAL} ms while the user types, each save names the version it
+     * started from, and a version saved meanwhile is merged rather than overwritten.
+     */
+    mergeRemoteContent?: ((base: string, theirs: string) => boolean) | null;
 }) {
     const parentComponent = useContext(ParentComponent);
     const blob = useNoteBlob(note, parentComponent?.componentId, { reportLoadStateTo: noteContext });
+    const mergeRef = useRef(mergeRemoteContent);
+    mergeRef.current = mergeRemoteContent;
+    /** The version of the note the editor's edits start from. */
+    const baseRef = useRef<{ noteId: string; blobId: string; content: string }>();
 
     // The note whose content is currently loaded in the editor. Editor instances are reused
     // across note switches, so until the new note's blob arrives the editor still holds the
@@ -136,7 +159,38 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
 
         protected_session_holder.touchProtectedSessionIfNecessary(note);
 
-        await server.put(`notes/${note.noteId}/data`, data, parentComponent?.componentId);
+        const url = `notes/${note.noteId}/data`;
+        const merge = mergeRef.current;
+        const base = baseRef.current;
+
+        if (merge && base?.noteId === note.noteId) {
+            const saved = await server.put<LiveSaveResult>(url, { ...data, baseBlobId: base.blobId },
+                parentComponent?.componentId);
+            const stale = saved?.stale;
+
+            if (stale) {
+                // The editor might have taken this version in already, while the save was out.
+                const current = baseRef.current;
+                const from = current?.blobId === stale.blobId ? current.content : base.content;
+
+                if (merge(from, stale.content)) {
+                    baseRef.current = { noteId: note.noteId, ...stale };
+                    spacedUpdateRef.current?.scheduleUpdate();
+                    return;
+                }
+
+                // Both changed the same part: this editor's version wins, as without others.
+                const forced = await server.put<LiveSaveResult>(url,
+                    { ...data, baseBlobId: stale.blobId }, parentComponent?.componentId);
+                baseRef.current = forced?.blobId
+                    ? { noteId: note.noteId, blobId: forced.blobId, content: data.content }
+                    : undefined;
+            } else if (saved?.blobId) {
+                baseRef.current = { noteId: note.noteId, blobId: saved.blobId, content: data.content };
+            }
+        } else {
+            await server.put(url, data, parentComponent?.componentId);
+        }
 
         noteSavedDataStore.set(note.noteId, data.content);
         dataSaved?.(data);
@@ -169,19 +223,28 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         spacedUpdate.rebind(note?.noteId ?? null, prepare, commit);
     });
 
-    // React to note/blob changes.
+    // React to note/blob changes. Another person's version of the loaded note is merged in place
+    // while others edit it too.
     useEffect(() => {
         if (!blob || !note) return;
         noteSavedDataStore.set(note.noteId, blob.content);
-        spacedUpdate.allowUpdateWithoutChange(() => onContentChange(blob.content));
+        const base = baseRef.current;
+        const reloaded = loadedNoteIdRef.current === note.noteId && base?.noteId === note.noteId;
+        baseRef.current = { noteId: note.noteId, blobId: blob.blobId, content: blob.content };
+        spacedUpdate.allowUpdateWithoutChange(() => {
+            if (!reloaded || !mergeRef.current?.(base.content, blob.content)) {
+                onContentChange(blob.content);
+            }
+        });
         loadedNoteIdRef.current = note.noteId;
     }, [ blob ]);
 
     // React to update interval changes.
+    const live = !!mergeRemoteContent;
     useEffect(() => {
-        if (!updateInterval) return;
-        spacedUpdate.setUpdateInterval(updateInterval);
-    }, [ updateInterval ]);
+        if (!updateInterval && !live) return;
+        spacedUpdate.setUpdateInterval(live ? LIVE_UPDATE_INTERVAL : updateInterval ?? DEFAULT_UPDATE_INTERVAL);
+    }, [ updateInterval, live ]);
 
     // Save if needed upon switching tabs.
     useTriliumEvent("beforeNoteSwitch", async ({ noteContext: eventNoteContext }) => {

@@ -138,7 +138,7 @@ function register(app: express.Application) {
         collaborationsApiRoute.updateCollaboration);
     apiRoute(GET, "/api/collaborations/:collabId/presence", collaborationsApiRoute.getPresence);
     apiRoute(PUT, "/api/collaborations/:collabId/people/:personId",
-        collaborationsApiRoute.renamePerson);
+        collaborationsApiRoute.updatePerson);
     apiRoute(DEL, "/api/collaborations/:collabId/people/:personId",
         collaborationsApiRoute.removePerson);
     apiRoute(DEL, "/api/collaborations/:collabId", collaborationsApiRoute.deleteCollaboration);

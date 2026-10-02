@@ -47,6 +47,8 @@ export declare module "express-session" {
             since: string;
             /** The name the guest chose; left out, the guest goes by their number. */
             name?: string;
+            /** The palette color the guest chose; left out, their number decides it. */
+            color?: string;
         }>;
         /**
          * One-shot SSO rejection reason set by the OIDC afterCallback when a login is refused (wrong account,

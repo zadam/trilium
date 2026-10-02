@@ -206,6 +206,8 @@ export interface Collaboration {
     maxGuests: number;
     /** The name the host goes by on the guest pages, or null for the default name. */
     hostName: string | null;
+    /** The host's color on the guest pages, or null for the default. */
+    hostColor: string | null;
     utcDateCreated: string;
     utcDateModified: string;
 }

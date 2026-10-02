@@ -13,6 +13,7 @@ function buildSaver(fetchMock: ReturnType<typeof vi.fn>, states: GuestSaveState[
         apiBase: "api/",
         noteId: "n1",
         blobId: "blob-0",
+        content: "<p>base</p>",
         csrfToken: "csrf",
         componentId: "collab-x",
         delayMs: 100,
@@ -41,7 +42,7 @@ describe("GuestSaver", () => {
         vi.useRealTimers();
     });
 
-    it("debounces edits into one save naming the loaded blob and adopts the new one", async () => {
+    it("gathers edits into one save naming the loaded blob and adopts the new one", async () => {
         const fetchMock = vi.fn(async () => reply(200, { blobId: "blob-1" }));
         const states: GuestSaveState[] = [];
         const saver = buildSaver(fetchMock, states);
@@ -59,7 +60,60 @@ describe("GuestSaver", () => {
         expect(headers["trilium-component-id"]).toBe("collab-x");
         expect(body).toEqual({ content: "<p>ab</p>", baseBlobId: "blob-0" });
         expect(saver.currentBlobId).toBe("blob-1");
+        expect(saver.baseContent).toBe("<p>ab</p>");
         expect(states).toEqual([ "pending", "pending", "saving", "saved" ]);
+    });
+
+    it("saves at most once an interval while the edits keep coming", async () => {
+        const fetchMock = vi.fn(async () => reply(200, { blobId: "blob-1" }));
+        const saver = buildSaver(fetchMock, []);
+        let text = "a";
+
+        for (let typed = 0; typed < 5; typed++) {
+            text += "b";
+            saver.scheduleContent(() => text);
+            await vi.advanceTimersByTimeAsync(60);
+        }
+
+        // Typing every 60 ms sends twice in 300 ms, rather than once the typing stops.
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(100);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(sentBody(fetchMock, 2).body.content).toBe("abbbbb");
+    });
+
+    it("merges its edits into a version saved meanwhile instead of stopping", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(reply(409, { blobId: "blob-theirs", content: "<p>theirs</p>" }))
+            .mockResolvedValue(reply(200, { blobId: "blob-2" }));
+        const states: GuestSaveState[] = [];
+        const saver = buildSaver(fetchMock, states);
+        let editor = "<p>mine</p>";
+        const reconcile = vi.fn((base: string, theirs: string) => {
+            editor = `${theirs}+${editor}`;
+            return base === "<p>base</p>";
+        });
+        saver.reconcile = reconcile;
+
+        saver.scheduleContent(() => editor);
+        await vi.advanceTimersByTimeAsync(100);
+
+        expect(reconcile).toHaveBeenCalledWith("<p>base</p>", "<p>theirs</p>");
+        expect(saver.conflict).toBeNull();
+        expect(saver.currentBlobId).toBe("blob-theirs");
+        expect(saver.baseContent).toBe("<p>theirs</p>");
+
+        await vi.advanceTimersByTimeAsync(100);
+
+        expect(sentBody(fetchMock, 1).body)
+            .toEqual({ content: "<p>theirs</p>+<p>mine</p>", baseBlobId: "blob-theirs" });
+        expect(states).not.toContain("conflict");
+        expect(saver.state).toBe("saved");
+
+        // A version the editor took in meanwhile is the base of the next save.
+        saver.adoptServerVersion("blob-4", "<p>four</p>");
+        expect(saver.currentBlobId).toBe("blob-4");
+        expect(saver.baseContent).toBe("<p>four</p>");
     });
 
     it("sends the preview of the content it saves, and saves without one that fails", async () => {
@@ -201,7 +255,7 @@ describe("GuestSaver", () => {
         let text = "<p>typed in n1</p>";
         saver.scheduleContent(() => text);
 
-        expect(await saver.switchNote("n2", "blob-b0")).toBe(true);
+        expect(await saver.switchNote("n2", "blob-b0", "<p>b</p>")).toBe(true);
         expect(sentBody(fetchMock, 0)).toMatchObject({
             url: "api/notes/n1/content",
             body: { content: "<p>typed in n1</p>", baseBlobId: "blob-0" }
@@ -222,7 +276,7 @@ describe("GuestSaver", () => {
         saver.scheduleContent(() => "<p>again</p>");
         await vi.advanceTimersByTimeAsync(100);
         expect(saver.conflict).not.toBeNull();
-        expect(await saver.switchNote("n3", "blob-c0")).toBe(false);
+        expect(await saver.switchNote("n3", "blob-c0", "<p>c</p>")).toBe(false);
         expect(saver.state).toBe("conflict");
     });
 });

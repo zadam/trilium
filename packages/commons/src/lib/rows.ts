@@ -104,6 +104,8 @@ export interface CollaborationRow {
     maxGuests?: number;
     /** The name the host goes by on the guest pages; null shows the default name. */
     hostName?: string | null;
+    /** One of the people colors, the host's on the guest pages; null shows the default. */
+    hostColor?: string | null;
     utcDateCreated?: string;
     utcDateModified?: string;
     isDeleted?: boolean;

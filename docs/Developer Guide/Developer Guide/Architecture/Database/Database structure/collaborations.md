@@ -18,6 +18,7 @@ A collaboration opens one note, or its whole subtree, to guests at `/collab/:col
 | `slug` | Text | Nullable | null | An optional readable alias that can replace `collabId` in the link. |
 | `maxGuests` | Integer | Non-null | 10 | How many guests can hold a connection at the same time; a guest with a session counts once, the host's own session never. |
 | `hostName` | Text | Nullable | null | The name the host goes by on the guest pages and beside their cursor; `null` shows the translated default, “Host”. |
+| `hostColor` | Text | Nullable | null | One of the people colors, the host's on the guest pages and on their cursor; `null` shows the first color of the palette. |
 | `utcDateCreated` | Text | Non-null |  | Creation date in UTC format (e.g. `2023-11-08 16:43:44.204Z`) |
 | `utcDateModified` | Text | Non-null |  | Modification date in UTC format (e.g. `2023-11-08 16:43:44.204Z`) |
 | `isDeleted` | Integer | Non-null | 0 | `1` if the entity is [deleted](../../../Concepts/Deleted%20notes.md), `0` otherwise. |

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    COLLAB_PERSON_COLORS, MAX_COLLAB_NAME_LENGTH, normalizeCollabName, parseCollabSelection
+    COLLAB_PERSON_COLOR_NAMES, COLLAB_PERSON_COLORS, MAX_COLLAB_NAME_LENGTH, normalizeCollabColor,
+    normalizeCollabName, parseCollabSelection
 } from "./collab.js";
 
 describe("normalizeCollabName", () => {
@@ -20,12 +21,26 @@ describe("normalizeCollabName", () => {
     });
 });
 
+describe("normalizeCollabColor", () => {
+    it("takes a palette color in any letter case and nothing else", () => {
+        expect(normalizeCollabColor("#D22A1E")).toBe("#d22a1e");
+        expect(COLLAB_PERSON_COLORS.map(normalizeCollabColor)).toEqual([ ...COLLAB_PERSON_COLORS ]);
+
+        for (const other of [ "#123456", "red", "#d22a1e; background: url(x)", null, 42 ]) {
+            expect(normalizeCollabColor(other), String(other)).toBeNull();
+        }
+    });
+});
+
 describe("parseCollabSelection", () => {
     it("keeps only a selection's own fields and refuses anything else", () => {
         expect(parseCollabSelection({ kind: "code", anchor: 3, head: 9, extra: "x".repeat(1000) }))
             .toEqual({ kind: "code", anchor: 3, head: 9 });
         expect(parseCollabSelection({ kind: "text", anchor: [ 1, 4 ], head: [ 2, 0 ], extra: 1 }))
             .toEqual({ kind: "text", anchor: [ 1, 4 ], head: [ 2, 0 ] });
+        // A canvas pointer is a point of the scene, which can lie left of or above its origin.
+        expect(parseCollabSelection({ kind: "canvas", x: -120.5, y: 48, tool: "laser" }))
+            .toEqual({ kind: "canvas", x: -120.5, y: 48 });
 
         for (const invalid of [
             null, "code", [ 1, 2 ],
@@ -33,6 +48,10 @@ describe("parseCollabSelection", () => {
             { kind: "code", anchor: 1.5, head: 2 },
             { kind: "code", anchor: 1e9, head: 0 },
             { kind: "code", anchor: "1", head: 1 },
+            { kind: "canvas", x: Number.NaN, y: 0 },
+            { kind: "canvas", x: Number.POSITIVE_INFINITY, y: 0 },
+            { kind: "canvas", x: 0, y: 1e12 },
+            { kind: "canvas", x: "0", y: 0 },
             { kind: "text", anchor: [], head: [ 0 ] },
             { kind: "text", anchor: [ 0 ], head: 0 },
             { kind: "text", anchor: Array(17).fill(0), head: [ 0 ] },
@@ -52,6 +71,7 @@ describe("COLLAB_PERSON_COLORS", () => {
         }
 
         expect(new Set(COLLAB_PERSON_COLORS).size).toBe(COLLAB_PERSON_COLORS.length);
+        expect(COLLAB_PERSON_COLOR_NAMES).toHaveLength(COLLAB_PERSON_COLORS.length);
     });
 });
 

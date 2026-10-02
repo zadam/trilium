@@ -1,6 +1,5 @@
 import {
-    COLLAB_HOST_PERSON_ID, isImageAttachmentRole, isSvgMime, normalizeCollabName,
-    NOTE_TYPE_IMAGE_ATTACHMENTS
+    COLLAB_HOST_PERSON_ID, isImageAttachmentRole, isSvgMime, NOTE_TYPE_IMAGE_ATTACHMENTS
 } from "@triliumnext/commons";
 import {
     type BAttachment, becca, type BNote, cls, routes, utils as coreUtils, ws
@@ -14,6 +13,7 @@ import guestWrites, {
 } from "@triliumnext/core/src/collab/guest_writes.js";
 import { collabPersonId } from "@triliumnext/core/src/collab/presence.js";
 import collabService from "@triliumnext/core/src/collab/service.js";
+import { computeNoteSize } from "@triliumnext/core/src/routes/api/stats.js";
 import type { GuestCapability } from "@triliumnext/core/src/services/context.js";
 import { ensureShareHighlighting } from "@triliumnext/core/src/share/index.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
@@ -29,6 +29,7 @@ import {
     collabAccess, type CollabRequestState, getCollabState, getScopedNote, isNoteIdParam,
     sendNotFound
 } from "./auth.js";
+import { applyPersonChanges, readPersonChanges } from "./guest_sessions.js";
 
 type CollabRequest = Request<{ collabId: string; noteId?: string; attachmentId?: string }>;
 
@@ -71,6 +72,7 @@ function register(loginRateLimiter: RequestHandler) {
     route("get", `${API}/notes/:noteId/view`, view, viewNote, null);
     route("get", `${API}/notes/:noteId/image-attachments`, view, getImageAttachments,
         guestResultHandler);
+    route("get", `${API}/notes/:noteId/size`, view, getNoteSize, guestResultHandler);
     route("get", `${API}/images/:noteId/:filename`, view, getImage, null);
     route("get", `${API}/attachments/:attachmentId/image/:filename`, view,
         getAttachmentImage, null);
@@ -78,15 +80,20 @@ function register(loginRateLimiter: RequestHandler) {
 
     // Caps how fast one address can write through any collaboration.
     const writeRateLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300 });
-    const edit = [ collabAccess("edit"), rejectWhenFull, csrfMiddleware, writeRateLimiter ];
+    // An editor saves four times a second while its guest types, for each guest behind the address.
+    const typingRateLimiter = rateLimit({ windowMs: 60 * 1000, max: 1200 });
+    const editor = [ collabAccess("edit"), rejectWhenFull, csrfMiddleware ];
+    const edit = [ ...editor, writeRateLimiter ];
+    const type = [ ...editor, typingRateLimiter ];
     const create = [ collabAccess("create"), rejectWhenFull, csrfMiddleware, writeRateLimiter ];
 
-    route("put", `${API}/notes/:noteId/content`, edit, updateContent, guestResultHandler);
-    route("put", `${API}/notes/:noteId/title`, edit, updateTitle, guestResultHandler);
+    route("put", `${API}/notes/:noteId/content`, type, updateContent, guestResultHandler);
+    route("put", `${API}/notes/:noteId/title`, type, updateTitle, guestResultHandler);
     route("put", `${API}/notes/:noteId/appearance`, edit, updateAppearance, guestResultHandler);
+    route("put", `${API}/notes/:noteId/indentation`, edit, updateIndentation, guestResultHandler);
     route("put", `${API}/notes/:noteId/type`, edit, changeType, guestResultHandler);
     route("put", `${API}/me`, [ collabAccess("view"), csrfMiddleware, writeRateLimiter ],
-        renameSelf, guestResultHandler);
+        updateSelf, guestResultHandler);
     route("get", `${API}/icons`, view, getIcons, guestResultHandler);
     route("get", `${API}/tree-menu`, view, getTreeMenu, guestResultHandler);
     route("post", `${API}/notes/:noteId/children`, create, createChild, guestResultHandler);
@@ -159,18 +166,25 @@ function join(req: CollabRequest, res: Response) {
 }
 
 /**
- * Renames the page's own person: a guest in their grant, the host on the collaboration. A blank
- * name goes back to the default one.
+ * Renames or recolors the page's own person: a guest in their grant, the host on the
+ * collaboration. Each of the name and the color changes only when the body holds it, and a blank
+ * name or a color off the palette goes back to the default.
  */
-function renameSelf(req: CollabRequest, res: Response) {
+function updateSelf(req: CollabRequest, res: Response) {
     const state = enterGuestContext(req, res);
     const collabId = state.collab.collabId ?? "";
-    const name = normalizeCollabName(req.body?.name);
+    const changes = readPersonChanges(req.body);
 
     if (req.session.loggedIn) {
-        collabService.setHostName(state.collab, name);
+        if ("name" in changes) {
+            collabService.setHostName(state.collab, changes.name);
+        }
 
-        return { name };
+        if ("color" in changes) {
+            collabService.setHostColor(state.collab, changes.color);
+        }
+
+        return { name: state.collab.hostName, color: state.collab.hostColor };
     }
 
     const grant = req.session.collab?.[collabId];
@@ -179,13 +193,18 @@ function renameSelf(req: CollabRequest, res: Response) {
         return [ 409, { message: "Join the collaboration first." } ];
     }
 
-    req.session.collab = {
-        ...req.session.collab,
-        [collabId]: { ...grant, name: name ?? undefined }
-    };
-    ws.renameCollabGuest(collabId, grant.guestId, name);
+    const next = applyPersonChanges(grant, changes);
+    req.session.collab = { ...req.session.collab, [collabId]: next };
 
-    return { name };
+    if ("name" in changes) {
+        ws.renameCollabGuest(collabId, grant.guestId, next.name ?? null);
+    }
+
+    if ("color" in changes) {
+        ws.recolorCollabGuest(collabId, grant.guestId, next.color ?? null);
+    }
+
+    return { name: next.name ?? null, color: next.color ?? null };
 }
 
 /** The person a page is in the list: the host, the session's guest, or nobody yet. */
@@ -281,6 +300,43 @@ function updateAppearance(req: CollabRequest, res: Response) {
     }
 
     return guestWrites.updateAppearanceAsGuest(note, appearance);
+}
+
+/** What the note's content, attachments and revisions take, as the app's note info counts it. */
+function getNoteSize(req: CollabRequest, res: Response) {
+    const state = enterGuestContext(req, res);
+    const note = getScopedNote(state, req.params.noteId);
+
+    if (!note) {
+        return [ 404, { message: "Not found." } ];
+    }
+
+    return { noteSize: computeNoteSize(note.noteId) };
+}
+
+function updateIndentation(req: CollabRequest, res: Response) {
+    const state = enterGuestContext(req, res);
+    const note = getScopedNote(state, req.params.noteId);
+
+    if (!note) {
+        return [ 404, { message: "Not found." } ];
+    }
+
+    const body = req.body ?? {};
+    const { width, useTabs } = body;
+
+    if ("width" in body && width !== null && typeof width !== "number") {
+        return [ 400, { message: "width must be a number or null." } ];
+    }
+
+    if ("useTabs" in body && useTabs !== null && typeof useTabs !== "boolean") {
+        return [ 400, { message: "useTabs must be a boolean or null." } ];
+    }
+
+    return guestWrites.updateIndentationAsGuest(note, {
+        ...("width" in body ? { width } : {}),
+        ...("useTabs" in body ? { useTabs } : {})
+    });
 }
 
 /** The rendered tree with `active` marked, and that note's icon and color, for a live refresh. */

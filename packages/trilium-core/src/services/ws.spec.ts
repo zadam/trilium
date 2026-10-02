@@ -291,6 +291,13 @@ describe("collaboration updates and presence", () => {
                 }
             }
         }),
+        setCollabGuestColor: vi.fn((collabId: string, guestId: string, color: string | null) => {
+            for (const connection of connections) {
+                if (connection.collabId === collabId && connection.guestId === guestId) {
+                    connection.color = color;
+                }
+            }
+        }),
         closeCollabClients: vi.fn(),
         closeCollabGuest: vi.fn((collabId: string, guestId: string) => {
             const staying = connections.filter((connection) =>
@@ -305,8 +312,8 @@ describe("collaboration updates and presence", () => {
 
     function connect(clientId: string, collabId: string, fields: Partial<CollabClientInfo> = {}) {
         connections.push({
-            clientId, collabId, guestId: null, unlocked: [], name: null, viewingNoteId: null,
-            editingNoteId: null, isHost: false, ...fields
+            clientId, collabId, guestId: null, unlocked: [], name: null, color: null,
+            viewingNoteId: null, editingNoteId: null, isHost: false, ...fields
         });
     }
 
@@ -563,6 +570,7 @@ describe("collaboration updates and presence", () => {
             })).note;
             const collab = await startCollab(parent.noteId,
                 { includeSubtree: true, hostName: "Ada" });
+            cls.init(() => collabService.setHostColor(collab, COLLAB_PERSON_COLORS[3]));
             const collabId = collab.collabId ?? "";
             const guestId = collabPersonId(collabId, "g-host-guest");
             connect("host-guest", collabId,
@@ -573,7 +581,7 @@ describe("collaboration updates and presence", () => {
             try {
                 await handler("app-host", { type: "ping", collabViewing: child.noteId });
                 expect(lastPresence(collabId)?.people[0]).toEqual({
-                    id: "host", name: "Ada", color: COLLAB_PERSON_COLORS[0], isHost: true,
+                    id: "host", name: "Ada", color: COLLAB_PERSON_COLORS[3], isHost: true,
                     noteId: child.noteId, editing: true
                 });
 
@@ -585,7 +593,7 @@ describe("collaboration updates and presence", () => {
                     collabId,
                     message: {
                         type: "collab-remote-cursor", collabId, noteId: child.noteId,
-                        person: { id: "host", name: "Ada", color: COLLAB_PERSON_COLORS[0] },
+                        person: { id: "host", name: "Ada", color: COLLAB_PERSON_COLORS[3] },
                         selection
                     },
                     filter: { noteId: child.noteId }
@@ -617,7 +625,7 @@ describe("collaboration updates and presence", () => {
             }
         });
 
-    it("renames a guest on all their pages, and removes one, keeping them out", async () => {
+    it("renames and recolors a guest on all their pages, and removes one for good", async () => {
         const collab = await startCollab(createNote("ws-rename").noteId);
         const collabId = collab.collabId ?? "";
         connect("rename-1", collabId, { guestId: "g-rename" });
@@ -629,6 +637,10 @@ describe("collaboration updates and presence", () => {
             .map((connection) => connection.name)).toEqual([ "Grace", "Grace" ]);
         expect(lastPresence(collabId)?.people.map((person) => person.name))
             .toEqual([ "Grace", guestName(2) ]);
+
+        ws.recolorCollabGuest(collabId, "g-rename", COLLAB_PERSON_COLORS[5]);
+        expect(lastPresence(collabId)?.people.map((person) => person.color))
+            .toEqual([ COLLAB_PERSON_COLORS[5], COLLAB_PERSON_COLORS[2] ]);
 
         ws.removeCollabGuest(collabId, "g-rename");
         expect(collabProvider.closeCollabGuest).toHaveBeenCalledWith(collabId, "g-rename");

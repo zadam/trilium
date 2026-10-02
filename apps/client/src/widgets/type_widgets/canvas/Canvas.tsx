@@ -2,7 +2,7 @@ import { Excalidraw } from "@excalidraw/excalidraw";
 import { TypeWidgetProps } from "../type_widget";
 import "@excalidraw/excalidraw/index.css";
 import { useColorScheme, useEffectiveReadOnly, useTriliumOption } from "../../react/hooks";
-import { useCallback, useMemo, useRef } from "preact/hooks";
+import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 import { type ExcalidrawImperativeAPI, type AppState } from "@excalidraw/excalidraw/types";
 import options from "../../../services/options";
 import "./Canvas.css";
@@ -14,6 +14,8 @@ import { LANGUAGE_MAPPINGS } from "./i18n";
 import { DISPLAYABLE_LOCALE_IDS } from "@triliumnext/commons";
 import tree from "../../../services/tree";
 import NoteEmbeddable from "./NoteEmbeddable";
+import { canvasCursorAdapter, createCanvasPointer } from "../../../collab/cursor_sync";
+import { useCollabCursors } from "../../collab/collaboration";
 
 // currently required by excalidraw, in order to allows self-hosting fonts locally.
 // this avoids making excalidraw load the fonts from an external CDN.
@@ -24,7 +26,15 @@ export default function Canvas({ note, noteContext }: TypeWidgetProps) {
     const isReadOnly = useEffectiveReadOnly(note, noteContext);
     const colorScheme = useColorScheme();
     const [ locale ] = useTriliumOption("locale");
-    const persistence = useCanvasPersistence(note, noteContext, apiRef, colorScheme, isReadOnly);
+    const pointer = useMemo(() => createCanvasPointer(), []);
+    const [ api, setApi ] = useState<ExcalidrawImperativeAPI | null>(null);
+    const cursorAdapter = useMemo(() => api && canvasCursorAdapter(api, pointer), [ api, pointer ]);
+    const live = useCollabCursors(note, cursorAdapter);
+    const persistence = useCanvasPersistence(note, noteContext, apiRef, colorScheme, isReadOnly, live);
+    const onApi = useCallback((instance: ExcalidrawImperativeAPI) => {
+        persistence.excalidrawAPI?.(instance);
+        setApi(instance);
+    }, [ persistence.excalidrawAPI ]);
     const noteDrop = useCanvasNoteDrop(apiRef, isReadOnly);
 
     /** Use excalidraw's native zoom instead of the global zoom. */
@@ -63,7 +73,7 @@ export default function Canvas({ note, noteContext }: TypeWidgetProps) {
     }, []);
 
     return (
-        <div className="canvas-render" onWheel={onWheel}>
+        <div className="canvas-render" onWheel={onWheel} onPointerLeave={() => pointer.update(null)}>
             <div className="excalidraw-wrapper" {...noteDrop}>
                 <Excalidraw
                     theme={colorScheme}
@@ -84,6 +94,8 @@ export default function Canvas({ note, noteContext }: TypeWidgetProps) {
                     validateEmbeddable={validateEmbeddable}
                     renderEmbeddable={renderEmbeddable}
                     {...persistence}
+                    excalidrawAPI={onApi}
+                    onPointerUpdate={({ pointer: point }) => pointer.update(point)}
                 />
             </div>
         </div>

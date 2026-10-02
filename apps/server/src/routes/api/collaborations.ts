@@ -1,11 +1,11 @@
-import {
-    COLLAB_HOST_PERSON_ID, type Collaboration, normalizeCollabName
-} from "@triliumnext/commons";
+import { COLLAB_HOST_PERSON_ID, type Collaboration } from "@triliumnext/commons";
 import { becca, NotFoundError, ValidationError, ws } from "@triliumnext/core";
 import collabService, { type CollaborationSettings } from "@triliumnext/core/src/collab/service.js";
 import type { Request } from "express";
 
-import { updateGuestGrant } from "../../collab/guest_sessions.js";
+import {
+    applyPersonChanges, readPersonChanges, updateGuestGrant
+} from "../../collab/guest_sessions.js";
 
 type PersonRequest = Request<{ collabId: string; personId: string }>;
 
@@ -53,21 +53,38 @@ function getPresence(req: Request<{ collabId: string }>) {
     return ws.getCollabPresence(getLiveCollaboration(req.params.collabId).collabId ?? "");
 }
 
-/** Renames someone in the list: the host on the collaboration, a guest in their grant. */
-function renamePerson(req: PersonRequest) {
+/**
+ * Renames or recolors someone in the list, for everyone: the host on the collaboration, a guest in
+ * their grant. Each of the name and the color changes only when the body holds it.
+ */
+function updatePerson(req: PersonRequest) {
     const collab = getLiveCollaboration(req.params.collabId);
     const collabId = collab.collabId ?? "";
-    const name = normalizeCollabName(req.body?.name);
+    const changes = readPersonChanges(req.body);
 
     if (req.params.personId === COLLAB_HOST_PERSON_ID) {
-        collabService.setHostName(collab, name);
+        if ("name" in changes) {
+            collabService.setHostName(collab, changes.name);
+        }
+
+        if ("color" in changes) {
+            collabService.setHostColor(collab, changes.color);
+        }
+
         return;
     }
 
     const guestId = getConnectedGuestId(collabId, req.params.personId);
 
-    updateGuestGrant(collabId, guestId, (grant) => ({ ...grant, name: name ?? undefined }));
-    ws.renameCollabGuest(collabId, guestId, name);
+    updateGuestGrant(collabId, guestId, (grant) => applyPersonChanges(grant, changes));
+
+    if ("name" in changes) {
+        ws.renameCollabGuest(collabId, guestId, changes.name ?? null);
+    }
+
+    if ("color" in changes) {
+        ws.recolorCollabGuest(collabId, guestId, changes.color ?? null);
+    }
 }
 
 /**
@@ -101,7 +118,7 @@ export default {
     createCollaboration,
     updateCollaboration,
     getPresence,
-    renamePerson,
+    updatePerson,
     removePerson,
     deleteCollaboration
 };

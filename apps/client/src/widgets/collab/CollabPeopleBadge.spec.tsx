@@ -20,6 +20,7 @@ const state = vi.hoisted(() => ({
 }));
 const actions = vi.hoisted(() => ({
     renameCollabPerson: vi.fn(async () => {}),
+    recolorCollabPerson: vi.fn(async () => {}),
     removeCollabPerson: vi.fn(async () => {}),
     prompt: vi.fn(async (): Promise<string | null> => null),
     confirm: vi.fn(async () => false)
@@ -28,6 +29,7 @@ vi.mock("./collaboration", () => ({
     useCollaborationsInScope: () => state.collaborations,
     useCollabPresences: () => state.presences,
     renameCollabPerson: actions.renameCollabPerson,
+    recolorCollabPerson: actions.recolorCollabPerson,
     removeCollabPerson: actions.removeCollabPerson
 }));
 vi.mock("../../services/dialog", () => ({
@@ -138,6 +140,20 @@ describe("CollabPeopleBadge", () => {
         actions.confirm.mockResolvedValueOnce(true);
         await clickItem("collab_people.remove");
         expect(actions.removeCollabPerson).toHaveBeenCalledWith("c1", "p-grace");
+
+        // The host recolors anyone, themselves included, from the palette.
+        await openPerson(container, "Grace");
+        const colors = [ ...document.querySelectorAll<HTMLElement>(".dropdown-item.dropdown-submenu") ]
+            .find((row) => row.textContent === "collab_people.color");
+        if (!colors) throw new Error("no color submenu");
+        await act(async () => {
+            colors.click();
+        });
+        const blue = [ ...document.querySelectorAll<HTMLElement>(".dropdown-item") ]
+            .find((row) => row.textContent === "collab_people.colors.blue");
+        expect(blue?.getAttribute("aria-checked")).toBe("true");
+        await clickItem("collab_people.colors.red");
+        expect(actions.recolorCollabPerson).toHaveBeenCalledWith("c1", "p-grace", "#d22a1e");
 
         // A rename the host cancels changes nothing.
         actions.renameCollabPerson.mockClear();

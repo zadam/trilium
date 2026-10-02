@@ -12,8 +12,10 @@ import {
 } from "./collab/cursor_sync.js";
 import { GuestSaver, type GuestSaveState } from "./collab/guest_saver.js";
 import { focusTitleIfNew, makeTitleEditable, type TitleHandoff } from "./collab/guest_title.js";
+import { mergeCode, mergeTextEditor } from "./collab/live_merge.js";
 import { setupNoteAppearance } from "./collab/note_appearance.js";
 import { themeCodeEditor } from "./collab/page_theme.js";
+import { type IndentStyle, reindentEditorText } from "./widgets/layout/reindentation.js";
 
 /** What `collab.ejs` writes to `window.collab`. */
 export interface CollabBootstrap {
@@ -33,6 +35,8 @@ export interface CollabBootstrap {
     selfId?: string | null;
     /** Who is on the collaboration's pages, from the last presence. */
     people?: CollabPerson[];
+    /** A code note's indentation, which the status bar changes; null for other notes. */
+    indentation?: IndentStyle | null;
     strings: Record<string, string>;
     /** The server's live messages, dispatched as `CustomEvent`s named by message type. */
     events?: EventTarget;
@@ -68,18 +72,28 @@ export interface EditorHandle extends TitleHandoff {
     set(content: string): void;
     /** Highlights a code note's content as `mime`. */
     setMime?(mime: string): void;
+    /** Indents a code note as `indentation` says from now on. */
+    setIndentation?(indentation: IndentStyle): void;
+    /** Rewrites the content's indentation from one style to another, as an edit to save. */
+    reindent?(from: IndentStyle, to: IndentStyle): void;
+    /**
+     * Puts the edits made since `base` into `theirs`, another person's version, in place: the
+     * caret stays where it is and undo skips their edits. Returns false, changing nothing, when
+     * both changed the same part.
+     */
+    merge?(base: string, theirs: string): boolean;
     /** Where the editor reads its own selection and draws the others', when it shows them. */
     cursors?: CursorAdapter;
 }
 
 const TOOLBAR_ITEMS = [
-    "undo", "redo", "|",
     "heading", "|",
     "bold", "italic", "underline", "strikethrough", "code", "|",
     "link", "bulletedList", "numberedList", "todoList", "|",
     "blockQuote", "codeBlock", "insertTable", "horizontalLine", "|",
     "alignment", "outdent", "indent", "|",
-    "removeFormat"
+    "removeFormat", "|",
+    "undo", "redo"
 ];
 
 /** The types whose editor loads another note of its type in place, keeping its toolbar. */
@@ -117,6 +131,7 @@ export default async function mountGuestEditor(bootstrap: CollabBootstrap): Prom
         apiBase: "api/",
         noteId: bootstrap.noteId,
         blobId: note.blobId,
+        content: note.content,
         csrfToken,
         componentId: `collab-${Math.random().toString(36).slice(2, 10)}`,
         onState: (state) => chrome.showState(state)
@@ -130,8 +145,18 @@ export default async function mountGuestEditor(bootstrap: CollabBootstrap): Prom
         followCursors(bootstrap, editor.cursors);
     }
 
+    saver.reconcile = (base, theirs) => editor?.merge?.(base, theirs) ?? false;
+
     // A removed guest's edits have nowhere to go.
     bootstrap.events?.addEventListener("collab-removed", () => saver.dispose());
+
+    // The status bar's indentation menu.
+    bootstrap.events?.addEventListener("collab-indentation", (event) =>
+        editor?.setIndentation?.((event as CustomEvent<IndentStyle>).detail));
+    bootstrap.events?.addEventListener("collab-reindent", (event) => {
+        const { from, to } = (event as CustomEvent<{ from: IndentStyle; to: IndentStyle }>).detail;
+        editor?.reindent?.(from, to);
+    });
 
     chrome.onReload = () => {
         const conflict = saver.conflict;
@@ -149,7 +174,7 @@ export default async function mountGuestEditor(bootstrap: CollabBootstrap): Prom
 
     makeTitleEditable(saver, editor ?? { focusStart: () => {} });
 
-    followRemoteChanges(bootstrap, editor, saver, chrome);
+    followRemoteChanges(bootstrap, editor, saver);
     focusTitleIfNew(bootstrap.noteId);
 
     // Another note opened in place takes this editor and its toolbar. Setting the content clears
@@ -162,12 +187,17 @@ export default async function mountGuestEditor(bootstrap: CollabBootstrap): Prom
 
         const nextNote = await fetchGuestNote(next.noteId);
 
-        if (nextNote.content === null || !await saver.switchNote(next.noteId, nextNote.blobId)) {
+        if (nextNote.content === null
+            || !await saver.switchNote(next.noteId, nextNote.blobId, nextNote.content)) {
             return false;
         }
 
         editor.set(nextNote.content);
         editor.setMime?.(next.mime);
+
+        if (next.indentation) {
+            editor.setIndentation?.(next.indentation);
+        }
 
         return true;
     };
@@ -215,17 +245,37 @@ function followCursors(bootstrap: CollabBootstrap, adapter: CursorAdapter) {
 }
 
 /**
- * Keeps the editor on the server's version while the guest is idle: another save of this note
- * replaces the content and the blob the next save names, so the guest's base never goes stale
- * unnoticed. While the guest has edits pending the update waits, and the next save's conflict
- * answer shows the other version instead.
+ * Keeps the editor on the server's version as others save it, a few times a second while they
+ * type: their edits are merged into the guest's own around the caret, and the saves that follow
+ * name the merged version as their base. Only edits that touch the same text as someone else's
+ * wait for the conflict answer of the next save.
  */
 function followRemoteChanges(
-    bootstrap: CollabBootstrap, editor: EditorHandle | null, saver: GuestSaver, chrome: Chrome
+    bootstrap: CollabBootstrap, editor: EditorHandle | null, saver: GuestSaver
 ) {
     const announce = () => bootstrap.send?.({ type: "collab-editing", noteId: bootstrap.noteId });
     announce();
     bootstrap.events?.addEventListener("collab-open", announce);
+
+    let following: Promise<void> | null = null;
+    let again = false;
+    const follow = () => {
+        if (following) {
+            again = true;
+            return;
+        }
+
+        following = takeServerVersion(bootstrap, editor, saver)
+            .catch((e) => console.error(e)) // eslint-disable-line no-console
+            .finally(() => {
+                following = null;
+
+                if (again) {
+                    again = false;
+                    follow();
+                }
+            });
+    };
 
     bootstrap.events?.addEventListener("collab-update", (event) => {
         const update = (event as CustomEvent<CollabUpdate>).detail;
@@ -264,30 +314,37 @@ function followRemoteChanges(
             return;
         }
 
-        if (saver.state === "pending" || saver.state === "saving" || saver.conflict) {
-            return;
+        if (!saver.conflict) {
+            follow();
         }
-
-        void adoptServerVersion(bootstrap, editor, saver, chrome, mine.blobId);
     });
 }
 
-async function adoptServerVersion(
-    bootstrap: CollabBootstrap, editor: EditorHandle, saver: GuestSaver, chrome: Chrome,
-    blobId: string
+/** Loads the server's version of the open note into the editor, merged with the guest's edits. */
+async function takeServerVersion(
+    bootstrap: CollabBootstrap, editor: EditorHandle | null, saver: GuestSaver
 ) {
-    const note = await fetchGuestNote(bootstrap.noteId);
+    // A save on its way names the current base; its answer moves the base on first.
+    await saver.settled();
+    const noteId = bootstrap.noteId;
+    const known = saver.currentBlobId;
+    const note = await fetchGuestNote(noteId);
 
-    if (saver.state === "pending" || saver.state === "saving" || saver.conflict) {
+    // A save that started meanwhile, or a switch of note, brings its own answer.
+    if (!editor || note.content === null || !note.blobId || noteId !== bootstrap.noteId
+        || note.blobId === known || known !== saver.currentBlobId || saver.conflict
+        || saver.state === "saving") {
         return;
     }
 
-    if (note.content !== null && note.content !== editor.get()) {
-        editor.set(note.content);
-        chrome.notice(bootstrap.strings.note_changed ?? "");
-    }
+    const base = saver.baseContent;
 
-    saver.adoptBlobId(note.blobId ?? blobId);
+    if (base !== null && editor.merge?.(base, note.content)) {
+        saver.adoptServerVersion(note.blobId, note.content);
+    } else if (saver.state !== "pending") {
+        editor.set(note.content);
+        saver.adoptServerVersion(note.blobId, note.content);
+    }
 }
 
 async function fetchGuestNote(noteId: string): Promise<GuestNote> {
@@ -336,7 +393,7 @@ async function mountContentEditor(
         }
         default:
             return mountCodeEditor(host, content, bootstrap.mime, saver,
-                strings.code_placeholder ?? "");
+                strings.code_placeholder ?? "", bootstrap.indentation);
     }
 }
 
@@ -376,18 +433,20 @@ async function mountTextEditor(
             saver.scheduleContent(() => editor.getData());
         }
     });
+    const applyRemote = (apply: () => void) => {
+        applyingRemote = true;
+
+        try {
+            apply();
+        } finally {
+            applyingRemote = false;
+        }
+    };
 
     return {
         get: () => editor.getData(),
-        set: (html) => {
-            applyingRemote = true;
-
-            try {
-                editor.setData(html);
-            } finally {
-                applyingRemote = false;
-            }
-        },
+        set: (html) => applyRemote(() => editor.setData(html)),
+        merge: (base, theirs) => mergeTextEditor(editor, base, theirs, applyRemote),
         focusStart: () => {
             placeCursorInNewTopParagraph(editor);
             editor.editing.view.focus();
@@ -397,7 +456,8 @@ async function mountTextEditor(
 }
 
 function mountCodeEditor(
-    host: HTMLElement, content: string, mime: string, saver: GuestSaver, placeholder: string
+    host: HTMLElement, content: string, mime: string, saver: GuestSaver, placeholder: string,
+    indentation: IndentStyle | null | undefined
 ): EditorHandle {
     host.classList.add("collab-code-host");
     host.replaceChildren();
@@ -407,6 +467,7 @@ function mountCodeEditor(
         parent: host,
         lineWrapping: true,
         placeholder,
+        ...(indentation ? { indentSize: indentation.width, useTabs: indentation.useTabs } : {}),
         onContentChanged: () => {
             if (!applyingRemote) {
                 saver.scheduleContent(() => editor.getText());
@@ -431,8 +492,19 @@ function mountCodeEditor(
     return {
         get: () => editor.getText(),
         set,
+        merge: (base, theirs) => mergeCode(editor, base, theirs, (apply) => {
+            applyingRemote = true;
+
+            try {
+                apply();
+            } finally {
+                applyingRemote = false;
+            }
+        }),
         focusStart: () => editor.focus(),
         setMime: (nextMime) => void editor.setMimeType(nextMime),
+        setIndentation: ({ width, useTabs }) => editor.setIndent(width, useTabs),
+        reindent: (from, to) => reindentEditorText(editor, from, to),
         cursors: codeCursorAdapter(editor)
     };
 }
@@ -471,16 +543,14 @@ function buildChrome(
 
     const host = document.createElement("div");
 
-    // At the end of the line with the note's type and dates, when the page has one.
-    const info = document.querySelector(".collab-note-info");
-
-    if (info) {
-        info.append(status);
-    }
+    // In the row of buttons over the title, before them, where the app shows a note's save state.
+    const actions = document.querySelector(".collab-title-actions .collab-people-toggle")
+        ?? document.querySelector(".collab-title-actions .collab-note-options");
+    actions?.before(status);
 
     if (ownsContent) {
-        content.replaceChildren(...(info ? [] : [ status ]), conflict, host);
-    } else if (!info) {
+        content.replaceChildren(...(actions ? [] : [ status ]), conflict, host);
+    } else if (!actions) {
         content.prepend(status);
     }
 

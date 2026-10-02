@@ -170,6 +170,26 @@ describe("Notes API (core)", () => {
             const blob = await api.get<{ content: string }>(`/api/notes/${noteId}/blob`);
             expect(blob.body.content).toContain("new");
         });
+
+        it("saves content over the version it names, or hands back a newer one", async () => {
+            const { noteId } = await createTextNote(api, { content: "<p>one</p>" });
+            const first = becca.getNoteOrThrow(noteId).blobId;
+
+            const saved = await api.put<{ blobId: string }>(`/api/notes/${noteId}/data`, {
+                body: { content: "<p>two</p>", baseBlobId: first }
+            });
+            expect(saved.status).toBe(200);
+            expect(saved.body.blobId).toBe(becca.getNoteOrThrow(noteId).blobId);
+            expect(saved.body.blobId).not.toBe(first);
+
+            // Saved from the first version, after someone else saved the second.
+            const stale = await api.put<{ stale?: { blobId: string; content: string } }>(
+                `/api/notes/${noteId}/data`,
+                { body: { content: "<p>three</p>", baseBlobId: first } });
+            expect(stale.status).toBe(200);
+            expect(stale.body.stale).toEqual({ blobId: saved.body.blobId, content: "<p>two</p>" });
+            expect(becca.getNoteOrThrow(noteId).getContent()).toBe("<p>two</p>");
+        });
     });
 
     describe("deleting and undeleting", () => {

@@ -1,4 +1,4 @@
-import { normalizeCollabName } from "@triliumnext/commons";
+import { normalizeCollabColor, normalizeCollabName } from "@triliumnext/commons";
 import { type CollabConnection, ws } from "@triliumnext/core";
 import { isCollabGuestRevoked } from "@triliumnext/core/src/collab/presence.js";
 import collabService from "@triliumnext/core/src/collab/service.js";
@@ -14,7 +14,9 @@ export type GuestSocketAdmission = CollabConnection | { refused: "full"; collabI
 
 interface GuestSession {
     loggedIn?: boolean;
-    collab?: Record<string, { guestId: string; capabilities: GuestCapability[]; name?: string }>;
+    collab?: Record<string, {
+        guestId: string; capabilities: GuestCapability[]; name?: string; color?: string;
+    }>;
 }
 
 /**
@@ -43,7 +45,9 @@ export function admitGuestSocket(
     const place = { viewingNoteId: null, editingNoteId: null };
 
     if (session?.loggedIn) {
-        return { collabId, guestId: null, unlocked: [], name: null, isHost: true, ...place };
+        return {
+            collabId, guestId: null, unlocked: [], name: null, color: null, isHost: true, ...place
+        };
     }
 
     const grant = session?.collab?.[collabId];
@@ -65,6 +69,7 @@ export function admitGuestSocket(
         guestId: grant.guestId,
         unlocked: grant.capabilities,
         name: normalizeCollabName(grant.name),
+        color: normalizeCollabColor(grant.color),
         isHost: false,
         ...place
     };

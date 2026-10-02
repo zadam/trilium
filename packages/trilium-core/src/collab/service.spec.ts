@@ -1,3 +1,4 @@
+import { COLLAB_PERSON_COLORS } from "@triliumnext/commons";
 import { t } from "i18next";
 import { describe, expect, it, vi } from "vitest";
 
@@ -120,16 +121,26 @@ describe("collaboration service", () => {
 
             getContext().init(() => collabService.setHostName(collab, "Grace"));
             expect(collab.hostName).toBe("Grace");
+
+            // The host's color is one of the palette's, the first unless the host picks another.
+            expect(collabService.getHostColor(collab)).toBe(COLLAB_PERSON_COLORS[0]);
+            getContext().init(() => collabService.setHostColor(collab, "#D22A1E"));
+            expect(collab.hostColor).toBe("#d22a1e");
+            expect(collabService.getHostColor(collab)).toBe("#d22a1e");
+            expect(collabService.toCollaborationDto(collab).hostColor).toBe("#d22a1e");
+            getContext().init(() => collabService.setHostColor(collab, "#123456"));
+            expect(collab.hostColor).toBeNull();
         });
 
     it("keeps its settings when becca loads them again, as after a restart", async () => {
         const collab = await create(createNote("root").noteId,
             { ...OPEN_VIEW, maxGuests: 25, hostName: "Ada" });
+        getContext().init(() => collabService.setHostColor(collab, COLLAB_PERSON_COLORS[2]));
 
         getContext().init(() => load());
 
         expect(becca.getCollaboration(collab.collabId ?? "")).toMatchObject({
-            maxGuests: 25, hostName: "Ada"
+            maxGuests: 25, hostName: "Ada", hostColor: COLLAB_PERSON_COLORS[2]
         });
     });
 
