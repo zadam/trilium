@@ -106,7 +106,7 @@ describe("popup", () => {
         expect(container.querySelector(".connection .status-ok")).not.toBeNull();
         expect(captureButtons().every((button) => !button.disabled)).toBe(true);
         expect(button("Save page to Trilium")?.title).toBe("");
-        expect(button("Crop screenshot")?.title).toBe("Crop screenshot (Ctrl+Shift+E)");
+        expect(button("Area screenshot")?.title).toBe("Area screenshot (Ctrl+Shift+E)");
         expect(sendMessage).toHaveBeenCalledWith({ name: "trigger-trilium-search-note-url" });
 
         await receive({
@@ -186,7 +186,7 @@ describe("popup", () => {
     });
 
     it("sends the capture actions, closing the popup only to crop on the page", async () => {
-        await click("Crop screenshot");
+        await click("Area screenshot");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-cropped-screenshot" });
         expect(closeWindow).toHaveBeenCalledOnce();
         await click("Visible area screenshot");
@@ -196,7 +196,7 @@ describe("popup", () => {
         await flush();
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-full-page-screenshot" });
 
-        await click("All tabs in window");
+        await click("All tabs in this window");
         await flush();
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-tabs" });
         await click("Check the connection again");
@@ -214,10 +214,10 @@ describe("popup", () => {
         expect(getAllCommands).toHaveBeenCalledOnce();
         expect(shortcutOf("Save page to Trilium")).toEqual({ text: "Alt+Shift+S", keys: [ "Alt", "Shift", "S" ] });
         expect(toolbar()).toEqual([
-            { label: "Crop", title: "Crop screenshot (Ctrl+Shift+E)" },
-            { label: "Screenshot", title: "Visible area screenshot" },
+            { label: "Area", title: "Area screenshot (Ctrl+Shift+E)" },
+            { label: "Visible", title: "Visible area screenshot" },
             { label: "Full page", title: "Full page screenshot" },
-            { label: "Tabs", title: "All tabs in window" }
+            { label: "All tabs", title: "All tabs in this window" }
         ]);
         expect(container.querySelectorAll(".toolbar-action kbd")).toHaveLength(0);
 
@@ -382,7 +382,7 @@ describe("popup", () => {
         );
         expect(container.querySelector(".page-preview")).toBeNull();
         expect(captureButtons().map((action) => action.disabled)).toEqual([ true, true, true, false ]);
-        expect(button("Crop screenshot")?.title).toBe(UNREACHABLE);
+        expect(button("Area screenshot")?.title).toBe(UNREACHABLE);
         expect(button("Visible area screenshot")?.title).toBe(UNREACHABLE);
 
         tabsQuery.mockResolvedValueOnce([ {} ]);
@@ -451,7 +451,7 @@ describe("popup", () => {
         vi.stubGlobal("alert", alertMock);
         sendMessage.mockRejectedValueOnce(new Error("Receiving end does not exist."));
 
-        await click("All tabs in window");
+        await click("All tabs in this window");
 
         expect(alertMock).toHaveBeenCalledWith("Calling browser runtime failed. Refreshing page might help.");
     });
@@ -815,8 +815,8 @@ describe("popup", () => {
             expect(fetchMock).toHaveBeenCalledWith(PDF_TAB.url, { method: "HEAD", credentials: "include" });
             expect(container.querySelector(".capture-actions > .no-items")).toBeNull();
             expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
-            expect(button("Crop screenshot")?.disabled).toBe(true);
-            expect(button("All tabs in window")?.disabled).toBe(false);
+            expect(button("Area screenshot")?.disabled).toBe(true);
+            expect(button("All tabs in this window")?.disabled).toBe(false);
 
             sendMessage.mockResolvedValueOnce({ error: "Saving a PDF needs a newer version of Trilium." });
             await click("Save PDF to Trilium");
@@ -842,14 +842,14 @@ describe("popup", () => {
         expect(container.querySelector(".already-visited")).not.toBeNull();
         let answerSave: (answer: unknown) => void = () => {};
         sendMessage.mockReturnValueOnce(new Promise((resolve) => answerSave = resolve));
-        await click("All tabs in window");
+        await click("All tabs in this window");
         expect(saveStatus()).toEqual({ kind: "callout callout-info save-status", text: "Saving to Trilium…" });
         expect(container.querySelector(".already-visited")).toBeNull();
         expect(container.querySelector(".capture-actions .save-status")).toBeNull();
         for (const action of captureButtons()) {
             expect(action.disabled, action.getAttribute("aria-label") ?? "").toBe(true);
         }
-        expect(button("Crop screenshot")?.title).toBe("Trilium is saving the last clipping.");
+        expect(button("Area screenshot")?.title).toBe("Trilium is saving the last clipping.");
 
         answerSave({ noteId: "n1", message: "2 links have been saved to Trilium.", tabIds: [ 7, 8 ] });
         await flush();
@@ -867,7 +867,7 @@ describe("popup", () => {
         await flush();
         expect(saveStatus()?.text).toBe("Page has been saved to Trilium.Open note");
         expect(button("Save page to Trilium")?.disabled).toBe(true);
-        expect(button("All tabs in window")?.disabled).toBe(false);
+        expect(button("All tabs in this window")?.disabled).toBe(false);
         await clickLink("Open note");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "openNoteInTrilium", noteId: "n2" });
         expect(closeWindow).toHaveBeenCalledTimes(2);

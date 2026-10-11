@@ -63,7 +63,7 @@ export default defineConfig({
                 }
             },
             saveCroppedScreenshot: {
-                description: "Take a cropped screenshot of the current page",
+                description: "Take a screenshot of an area of the current page",
                 suggested_key: {
                     default: "Ctrl+Shift+E"
                 }

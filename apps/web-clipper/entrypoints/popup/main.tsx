@@ -7,21 +7,21 @@ import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
 import Calendar from "@boxicons/js/icons/Calendar";
 import Cog from "@boxicons/js/icons/Cog";
-import Crop from "@boxicons/js/icons/Crop";
 import FileDetail from "@boxicons/js/icons/FileDetail";
+import Fullscreen from "@boxicons/js/icons/Fullscreen";
+import GalleryVertical from "@boxicons/js/icons/GalleryVertical";
 import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
 import History from "@boxicons/js/icons/History";
-import ImagePortrait from "@boxicons/js/icons/ImagePortrait";
 import InfoCircle from "@boxicons/js/icons/InfoCircle";
 import Lock from "@boxicons/js/icons/Lock";
 import Paperclip from "@boxicons/js/icons/Paperclip";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
-import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
 import User from "@boxicons/js/icons/User";
+import WindowIcon from "@boxicons/js/icons/Window";
 import Youtube from "@boxicons/js/icons/Youtube";
 import monospaceFontUrl from "@triliumnext/client/src/fonts/JetBrainsMono-Light.woff2?url";
 import type { ComponentChildren } from "preact";
@@ -331,22 +331,22 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange, saveState, 
 
             <div className="toolbar">
                 <ToolbarAction
-                    icon={Crop} label="Crop" name="Crop screenshot"
+                    icon={Screenshot} label="Area" name="Area screenshot"
                     shortcut={shortcuts.saveCroppedScreenshot} disabledReason={pageDisabledReason}
                     onClick={cropScreenshot}
                 />
                 <ToolbarAction
-                    icon={Screenshot} label="Screenshot" name="Visible area screenshot"
+                    icon={Fullscreen} label="Visible" name="Visible area screenshot"
                     disabledReason={pageDisabledReason}
                     onClick={() => save({ name: "save-whole-screenshot" })}
                 />
                 <ToolbarAction
-                    icon={ImagePortrait} label="Full page" name="Full page screenshot"
+                    icon={GalleryVertical} label="Full page" name="Full page screenshot"
                     shortcut={shortcuts.saveFullPageScreenshot} disabledReason={pageDisabledReason}
                     onClick={() => save({ name: "save-full-page-screenshot" })}
                 />
                 <ToolbarAction
-                    icon={Tabs} label="Tabs" name="All tabs in window"
+                    icon={WindowIcon} label="All tabs" name="All tabs in this window"
                     shortcut={shortcuts.saveTabs} disabledReason={disabledReason}
                     onClick={() => save({ name: "save-tabs" })}
                 />
