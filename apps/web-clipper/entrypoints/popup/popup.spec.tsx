@@ -28,8 +28,10 @@ const PAGE = {
     labels: { pageAuthor: "Jane Doe", publishedDate: "2024-05-01", modifiedDate: "2024-06-12" }
 };
 const WHOLE_PAGE = { ...PAGE, content: `<nav>Menu</nav><p>Body</p><img src="i1">` };
-/** What `readable-page.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
-const executeScript = vi.fn(async (): Promise<unknown> => extracted(PAGE));
+/** How `readable-page.js` reads the tab, by variant, as `browser.scripting.executeScript()` answers. */
+let pageReadings: Record<string, unknown> = {};
+const executeScript = vi.fn(async ({ args }: { args?: [ string ] }): Promise<unknown> =>
+    args ? [ { result: pageReadings[args[0]] } ] : []);
 const tabsQuery = vi.fn(async (): Promise<{ id?: number, title?: string, url?: string }[]> => [ { id: 7 } ]);
 const SELECTION = {
     title: "Page title",
@@ -56,6 +58,7 @@ describe("popup", () => {
         fakeBrowser.reset();
         selection = undefined;
         metadata = {};
+        pageReadings = { article: PAGE, wholePage: WHOLE_PAGE };
         Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage });
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
@@ -235,13 +238,30 @@ describe("popup", () => {
         expect(button("Save page to Trilium")?.disabled).toBe(false);
     });
 
-    it("switches the page between its article and the whole page, and keeps the choice", async () => {
+    it("reads the whole page when the user switches to it, once, and keeps the choice", async () => {
         expect(variants()).toEqual([ [ "Article", "true", false ], [ "Whole page", "false", false ] ]);
         expect(container.querySelector(".page-variant")?.getAttribute("aria-label")).toBe("How to read the page");
+        expect(wholePageReads()).toBe(0);
 
+        let finishReading: () => void = () => {};
+        executeScript
+            .mockResolvedValueOnce([])
+            .mockReturnValueOnce(new Promise((resolve) => {
+                finishReading = () => resolve([ { result: WHOLE_PAGE } ]);
+            }));
         await click("Whole page");
         expect(variants()).toEqual([ [ "Article", "false", false ], [ "Whole page", "true", false ] ]);
+        expect(placeholder()).toBe("Reading the page…");
+        expect(button("Save page to Trilium")?.disabled).toBe(true);
+
+        await act(() => finishReading());
+        await flush();
         expect(frameDocument()).toBe(previewDocument(WHOLE_PAGE));
+        await click("Article");
+        expect(frameDocument()).toBe(previewDocument(PAGE));
+        await click("Whole page");
+        expect(frameDocument()).toBe(previewDocument(WHOLE_PAGE));
+        expect(wholePageReads()).toBe(1);
 
         await click("Bookmark");
         expect(container.querySelector(".page-variant")).toBeNull();
@@ -249,6 +269,7 @@ describe("popup", () => {
         await receive({ name: "trilium-search-status", triliumSearch: { status: "found-desktop", port: 37840, url: "" } });
         await flush();
         await click("Page");
+        await flush();
         expect(variants()).toEqual([ [ "Article", "false", false ], [ "Whole page", "true", false ] ]);
 
         await type(".page-title", "Gallery");
@@ -259,8 +280,23 @@ describe("popup", () => {
         expect(frameDocument()).toBe(previewDocument(PAGE));
     });
 
+    it("goes back to the article when the whole page shows nothing or cannot be read", async () => {
+        pageReadings = { article: PAGE };
+        await click("Whole page");
+        await flush();
+        expect(variants()).toEqual([ [ "Article", "true", false ], [ "Whole page", "false", true ] ]);
+        expect(button("Whole page")?.title).toBe("Trilium found nothing to save on this page.");
+        expect(frameDocument()).toBe(previewDocument(PAGE));
+
+        await rerender();
+        executeScript.mockRejectedValueOnce(new Error("The tab was closed."));
+        await click("Whole page");
+        await flush();
+        expect(variants()).toEqual([ [ "Article", "true", false ], [ "Whole page", "false", true ] ]);
+    });
+
     it("opens a page without an article on the whole page", async () => {
-        executeScript.mockResolvedValueOnce(extracted(undefined));
+        pageReadings = { wholePage: WHOLE_PAGE };
         await rerender();
         expect(modes()).toEqual([ [ "Page", "true" ], [ "Bookmark", "false" ] ]);
         expect(variants()).toEqual([ [ "Article", "false", true ], [ "Whole page", "true", false ] ]);
@@ -284,7 +320,7 @@ describe("popup", () => {
     });
 
     it("leaves out the dates of a page that states none", async () => {
-        executeScript.mockResolvedValueOnce(extracted({ ...PAGE, labels: {} }));
+        pageReadings = { article: { ...PAGE, labels: {} }, wholePage: WHOLE_PAGE };
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(2);
@@ -302,13 +338,13 @@ describe("popup", () => {
         expect(cardParts()).toEqual([ "page-body", "btn btn-primary primary-action" ]);
         expect(button("Save page to Trilium")?.disabled).toBe(true);
 
-        resolvePage(extracted(PAGE));
+        resolvePage([]);
         await flush();
         expect(container.querySelector(".page-body iframe")).not.toBeNull();
     });
 
     it("opens a page with nothing to save on a bookmark, and keeps every other action", async () => {
-        executeScript.mockResolvedValueOnce([ { result: null } ]);
+        pageReadings = {};
         await rerender();
         expect(container.querySelector(".no-items")).toBeNull();
         expect(container.querySelector(".clip-mode")).toBeNull();
@@ -334,7 +370,7 @@ describe("popup", () => {
         tabsQuery.mockResolvedValueOnce([ {} ]);
         await rerender();
         expect(unavailable()).toContain("The extension cannot access this page.");
-        expect(executeScript).toHaveBeenCalledTimes(2);
+        expect(executeScript).toHaveBeenCalledTimes(3);
         expect(tabsSendMessage).toHaveBeenCalledTimes(4);
     });
 
@@ -365,7 +401,7 @@ describe("popup", () => {
 
     it("saves the selection of a page with nothing else to save, and ignores an empty one", async () => {
         selection = SELECTION;
-        executeScript.mockResolvedValueOnce([ { result: null } ]);
+        pageReadings = {};
         await rerender();
         expect(container.querySelector(".no-items")).toBeNull();
         expect(modes()).toEqual([ [ "Selection", "true" ], [ "Bookmark", "false" ] ]);
@@ -375,6 +411,7 @@ describe("popup", () => {
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-selection", selection: SELECTION });
 
         selection = { ...SELECTION, content: " <p> </p>", images: [] };
+        pageReadings = { article: PAGE, wholePage: WHOLE_PAGE };
         await rerender();
         expect(modes()).toEqual([ [ "Page", "true" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(PAGE));
@@ -531,7 +568,7 @@ describe("popup", () => {
         expect(author()).toBeNull();
 
         selection = undefined;
-        executeScript.mockResolvedValueOnce(extracted({ ...PAGE, labels: {} }));
+        pageReadings = { article: { ...PAGE, labels: {} }, wholePage: WHOLE_PAGE };
         await rerender();
         expect(author()?.value).toBe("");
         await type(".page-author", "Written by hand");
@@ -838,16 +875,17 @@ function modes() {
         .map((option) => [ option.textContent, option.getAttribute("aria-pressed") ]);
 }
 
+/** How many times the popup read the whole page. */
+function wholePageReads() {
+    return executeScript.mock.calls.filter(([ injection ]) => injection.args?.[0] === "wholePage").length;
+}
+
 /** The page variant switch's options, each with whether it is the current one and whether it is disabled. */
 function variants() {
     return [ ...container.querySelectorAll<HTMLButtonElement>(".page-body > .page-variant button") ]
         .map((option) => [ option.textContent, option.getAttribute("aria-pressed"), option.disabled ]);
 }
 
-/** What `executeScript()` answers for a page with `article`, whose whole page is `WHOLE_PAGE`. */
-function extracted(article: object | undefined) {
-    return [ { result: { article, wholePage: WHOLE_PAGE } } ];
-}
 
 function frameDocument() {
     const frame = container.querySelector(".page-body iframe.page-content");

@@ -347,11 +347,14 @@ export default defineBackground(() => {
 
     async function readActivePage() {
         const activeTab = await getActiveTab();
-        const page = activeTab.id === undefined ? undefined : await extractPage(activeTab.id);
-        if (!page) {
-            throw new Error("Trilium found nothing to save on this page.");
+        const tabId = activeTab.id;
+        if (tabId !== undefined) {
+            const article = await extractPage(tabId, "article");
+            if (article) return article;
+            const wholePage = await extractPage(tabId, "wholePage");
+            if (wholePage) return wholePage;
         }
-        return page.article ?? page.wholePage;
+        throw new Error("Trilium found nothing to save on this page.");
     }
 
     async function saveLinkWithNote(title: string, content: string, description?: string) {

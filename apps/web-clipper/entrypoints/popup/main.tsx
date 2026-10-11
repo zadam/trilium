@@ -24,7 +24,7 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { type ExtractedPage, extractPage, type ReadablePage } from "@/utils";
+import { extractPage, type PageVariant, type ReadablePage } from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
@@ -52,8 +52,11 @@ interface SelectedContent {
     labels?: Record<string, string>;
 }
 
-/** The current page: its article and its whole page, or why there is nothing to save. */
-type PageState = ExtractedPage | "unreadable" | "inaccessible";
+/** The tab, and each reading of its page: `undefined` until it is read, `null` when it shows nothing. */
+type PageReadings = { tabId: number } & Record<PageVariant, ReadablePage | null | undefined>;
+
+/** The current page: its readings, or why there is nothing to save. */
+type PageState = PageReadings | "unreadable" | "inaccessible";
 
 /** What the active tab offers to save. */
 interface TabContent {
@@ -72,9 +75,6 @@ interface TabContent {
  * link to it (`clipType: "note"`), which the popup calls a bookmark.
  */
 type ClipMode = "selection" | "page" | "note";
-
-/** Which reading of the page the `page` mode saves. */
-type PageVariant = keyof ExtractedPage;
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
@@ -129,6 +129,12 @@ const PREVIEW_STYLE = `
 const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
 
 const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
+
+/** Why a reading of the page is unavailable. */
+const VARIANT_UNAVAILABLE: Record<PageVariant, string> = {
+    article: "Trilium found no article on this page.",
+    wholePage: "Trilium found nothing to save on this page."
+};
 
 /** The save button of each mode, with the command whose shortcut it shows, or its own shortcut. */
 const SAVE_BUTTONS: Record<ClipMode, { icon: IconDefinition, label: string, command: string, shortcut?: string }> = {
@@ -347,19 +353,32 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
 }) {
     const { mode: chosenMode, variant: chosenVariant, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    /** The readings of the page made after the popup opened, when the user switched to them. */
+    const [ laterReadings, setLaterReadings ] = useState<Partial<PageReadings>>({});
 
-    const page = typeof tab?.page === "object" ? tab.page : undefined;
-    const variant = chosenVariant && page?.[chosenVariant] ? chosenVariant : page?.article ? "article" : "wholePage";
-    const pageClip = page?.[variant];
+    const page = typeof tab?.page === "object" ? { ...tab.page, ...laterReadings } : undefined;
+    const variant = chosenVariant && page?.[chosenVariant] !== null ? chosenVariant : page?.article ? "article" : "wholePage";
+    const pageClip = page?.[variant] ?? undefined;
+    /** Either reading: both carry the same title and labels. */
+    const pageReading = page?.article ?? page?.wholePage ?? undefined;
     const selection = tab?.selection ?? undefined;
-    const modes = tab ? availableModes(pageClip, selection) : [];
+    const modes = tab ? availableModes(!!page, selection) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
-    const shownTitle = title ?? (pageClip ?? selection)?.title ?? tab?.title ?? "";
+    const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription = description ?? tab?.description ?? "";
     const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
-    const shownAuthor = author ?? pageClip?.labels.pageAuthor ?? "";
+    const shownAuthor = author ?? pageReading?.labels.pageAuthor ?? "";
     const savedAuthor = shownAuthor.replace(/\s+/g, " ").trim();
+
+    const tabId = page?.tabId;
+    const unreadVariant = mode === "page" && page?.[variant] === undefined ? variant : undefined;
+    useEffect(() => {
+        if (tabId === undefined || !unreadVariant) return;
+        void readVariant(tabId, unreadVariant).then((reading) => {
+            setLaterReadings((readings) => ({ ...readings, [unreadVariant]: reading }));
+        });
+    }, [ tabId, unreadVariant ]);
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -404,7 +423,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
-    const pageLabels = mode === "page" ? pageClip?.labels : undefined;
+    const pageLabels = mode === "page" ? pageReading?.labels : undefined;
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
@@ -521,8 +540,8 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             <button
                                 key={option}
                                 aria-pressed={option === variant}
-                                disabled={!page[option]}
-                                title={page[option] ? undefined : "Trilium found no article on this page."}
+                                disabled={page[option] === null}
+                                title={page[option] === null ? VARIANT_UNAVAILABLE[option] : undefined}
                                 onClick={() => onDraftChange({ ...draft, variant: option })}
                             >
                                 {VARIANT_LABELS[option]}
@@ -539,12 +558,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                         onLoad={(e) => fitToContent(e.currentTarget)}
                     />
                 )}
-                {!mode && <div className="page-preview-placeholder">Reading the page…</div>}
+                {(!mode || (mode === "page" && !clip)) && <div className="page-preview-placeholder">Reading the page…</div>}
             </div>
 
             <button
                 className="btn btn-primary primary-action"
-                disabled={disabled || !mode}
+                disabled={disabled || !onSave}
                 title={disabled ? DISCONNECTED_TITLE : undefined}
                 onClick={onSave}
             >
@@ -580,10 +599,10 @@ function fitToContent(frame: HTMLIFrameElement) {
 }
 
 /** The modes the page offers, the default first: the selection, then the page, then a note. */
-function availableModes(page: ReadablePage | undefined, selection: SelectedContent | undefined): ClipMode[] {
+function availableModes(hasPage: boolean, selection: SelectedContent | undefined): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
-    if (page) modes.push("page");
+    if (hasPage) modes.push("page");
     modes.push("note");
     return modes;
 }
@@ -651,14 +670,25 @@ async function readActiveTab(): Promise<TabContent> {
 }
 
 /**
- * `extractPage()` answers `undefined` when the page shows nothing, and fails where the extension
- * cannot run scripts.
+ * Reads the article, and the whole page only when there is no article: the user can ask for it
+ * later. `extractPage()` fails where the extension cannot run scripts.
  */
 async function readPage(tabId: number): Promise<PageState> {
     try {
-        return await extractPage(tabId) ?? "unreadable";
+        const article = await extractPage(tabId, "article") ?? null;
+        const wholePage = article ? undefined : await extractPage(tabId, "wholePage") ?? null;
+        return article || wholePage ? { tabId, article, wholePage } : "unreadable";
     } catch {
         return "inaccessible";
+    }
+}
+
+/** The page as `variant` reads it, or `null` when that reading shows nothing or fails. */
+async function readVariant(tabId: number, variant: PageVariant) {
+    try {
+        return await extractPage(tabId, variant) ?? null;
+    } catch {
+        return null;
     }
 }
 

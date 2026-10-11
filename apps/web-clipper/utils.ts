@@ -13,22 +13,27 @@ export interface ReadablePage {
     labels: Record<string, string>;
 }
 
-/** The two ways to clip a page: its article, when Defuddle finds one, and all of it. */
-export interface ExtractedPage {
-    article?: ReadablePage;
-    wholePage: ReadablePage;
+/** The two ways to read a page: its article, as Defuddle finds it, and all of it. */
+export type PageVariant = "article" | "wholePage";
+
+declare global {
+    /** Registered in the tab's isolated world by `entrypoints/readable-page/index.ts`. */
+    var triliumReadPage: (variant: PageVariant) => ReadablePage | undefined;
 }
 
 /**
- * Runs `entrypoints/readable-page/index.ts` in the tab and returns the page it read, or `undefined`
- * when the page shows nothing. Throws where the extension cannot run scripts, such as browser pages.
+ * Injects `entrypoints/readable-page/index.ts` into the tab and reads the page as `variant`, or
+ * returns `undefined` when that reading shows nothing. Throws where the extension cannot run
+ * scripts, such as browser pages.
  */
-export async function extractPage(tabId: number): Promise<ExtractedPage | undefined> {
+export async function extractPage(tabId: number, variant: PageVariant): Promise<ReadablePage | undefined> {
+    await browser.scripting.executeScript({ target: { tabId }, files: [ "/readable-page.js" ] });
     const [ injection ] = await browser.scripting.executeScript({
         target: { tabId },
-        files: [ "/readable-page.js" ]
+        func: (variant: PageVariant) => globalThis.triliumReadPage(variant),
+        args: [ variant ]
     });
-    return (injection?.result ?? undefined) as ExtractedPage | undefined;
+    return (injection?.result ?? undefined) as ReadablePage | undefined;
 }
 
 export function randomString(len: number) {

@@ -1,7 +1,7 @@
 import type { Window as HappyDOMWindow } from "happy-dom";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { ExtractedPage } from "@/utils";
+import type { PageVariant } from "@/utils";
 
 import readablePage from "./index";
 
@@ -37,7 +37,7 @@ describe("readable page", () => {
             </article>`;
         const pageBefore = document.documentElement.outerHTML;
 
-        const page = readPage()?.article;
+        const page = readPage("article");
 
         expect(page).toMatchObject({
             title: "Article title",
@@ -74,12 +74,12 @@ describe("readable page", () => {
         document.head.innerHTML = `<title>Post title</title>${structuredData("2025-12-24T08:00:00Z")}
             <meta property="article:published_time" content="">`;
         document.body.innerHTML = article;
-        expect(readPage()?.article?.labels).toEqual({ publishedDate: "2025-12-24" });
+        expect(readPage("article")?.labels).toEqual({ publishedDate: "2025-12-24" });
 
         document.head.innerHTML = `<title>Post title</title>${structuredData("next week")}
             <meta property="article:modified_time" content="not a date">`;
         document.body.innerHTML = article;
-        expect(readPage()?.article?.labels).toEqual({});
+        expect(readPage("article")?.labels).toEqual({});
     });
 
     it("keeps the day the page states, whatever its offset from UTC", () => {
@@ -88,25 +88,25 @@ describe("readable page", () => {
             <meta property="article:published_time" content="2022-02-09T00:30:00+01:00">
             <meta property="article:modified_time" content="2022-02-10T23:30:00-05:00">`;
         document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p></article>`;
-        expect(readPage()?.article?.labels).toEqual({ publishedDate: "2022-02-09", modifiedDate: "2022-02-10" });
+        expect(readPage("article")?.labels).toEqual({ publishedDate: "2022-02-09", modifiedDate: "2022-02-10" });
 
         document.head.innerHTML = "<title>Post title</title>";
         document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p>
             <p>Published <time>February 8, 2022</time></p></article>`;
-        expect(readPage()?.article?.labels).toEqual({});
+        expect(readPage("article")?.labels).toEqual({});
     });
 
     it("keeps an article that is only a picture, and the whole page of a page without one", () => {
         document.body.innerHTML = `<article><img src="photo.jpg" width="800" height="600"></article>`;
-        expect(readPage()?.article?.images.map(({ src }) => src)).toEqual([ "https://example.com/blog/photo.jpg" ]);
+        expect(readPage("article")?.images.map(({ src }) => src)).toEqual([ "https://example.com/blog/photo.jpg" ]);
 
         document.body.innerHTML = "<nav><a href=\"/\">Home</a> <a href=\"/archive\">Archive</a></nav>";
-        const page = readPage();
-        expect(page?.article).toBeUndefined();
-        expect(page?.wholePage.content).toContain("href=\"https://example.com/archive\"");
+        expect(readPage("article")).toBeUndefined();
+        expect(readPage("wholePage")?.content).toContain("href=\"https://example.com/archive\"");
 
         document.body.innerHTML = "<div> </div>";
-        expect(readPage()).toBeUndefined();
+        expect(readPage("article")).toBeUndefined();
+        expect(readPage("wholePage")).toBeUndefined();
     });
 
     it("keeps every card of a card grid in the whole page, without hidden elements", () => {
@@ -132,7 +132,8 @@ describe("readable page", () => {
             <div style="display: none">Cookie banner</div>
             <script>window.tracked = true;</script>`;
 
-        const { article, wholePage } = readPage() ?? {};
+        const article = readPage("article");
+        const wholePage = readPage("wholePage");
 
         expect(article?.images.length).toBeLessThan(4);
         expect(article?.content).not.toContain("What to check");
@@ -151,6 +152,7 @@ describe("readable page", () => {
     });
 });
 
-function readPage() {
-    return readablePage.main() as ExtractedPage | undefined;
+function readPage(variant: PageVariant) {
+    readablePage.main();
+    return globalThis.triliumReadPage(variant);
 }

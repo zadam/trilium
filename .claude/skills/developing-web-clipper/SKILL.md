@@ -18,7 +18,7 @@ repository.
 | `entrypoints/background/index.ts` | service worker (MV3) / background page (MV2) | context menus, keyboard commands, every save, image download, toasts |
 | `entrypoints/background/trilium_server_facade.ts` | background | finds Trilium, authenticates, `callService()` |
 | `entrypoints/content/index.ts` | every page (`<all_urls>`) | selection, page description, crop overlay, toast UI |
-| `entrypoints/readable-page/index.ts` | the tab, injected on demand | Defuddle extraction of the page, as an article and as a whole; its `main()` value is the `executeScript()` result |
+| `entrypoints/readable-page/index.ts` | the tab, injected on demand | registers `triliumReadPage()`: Defuddle extraction of the page, as an article or as a whole |
 | `entrypoints/popup/main.tsx` | the toolbar popup | Preact `Popup`: capture buttons, link-with-note form, connection status |
 | `entrypoints/options/main.tsx` | the options page | Preact `Options`: desktop port, server login |
 | `entrypoints/offscreen/` | MV3 only (Chrome) | crops screenshots on a canvas, since an MV3 service worker has no DOM |
@@ -38,11 +38,14 @@ Everything goes through `browser.runtime.sendMessage` / `browser.tabs.sendMessag
   (`message`, `noteId`, `tabIds`).
 - **background → offscreen:** `{ type: "CROP_IMAGE" }`, the one message keyed by `type`.
 
-The readable page is not a message: the popup and the background call `extractPage(tabId)`
-(`utils.ts`), which injects `/readable-page.js` with `browser.scripting.executeScript()` (the
-`scripting` permission, in both builds), so Defuddle stays out of the content script that loads
-on every page. Specs mock it with `Object.assign(fakeBrowser, { scripting: { executeScript } })`,
-answering `[ { result: { article, wholePage } } ]` (`ExtractedPage`).
+The readable page is not a message: the popup and the background call
+`extractPage(tabId, variant)` (`utils.ts`), which injects `/readable-page.js` with
+`browser.scripting.executeScript()` (the `scripting` permission, in both builds), so Defuddle stays
+out of the content script that loads on every page. A file injection takes no arguments, so the
+script only registers `globalThis.triliumReadPage()` and a second `executeScript({ func, args })`
+calls it in the same isolated world. Specs mock it with
+`Object.assign(fakeBrowser, { scripting: { executeScript } })`, answering `[]` to the file and
+`[ { result: page } ]` to the call, by `args[0]`.
 
 Every user action in the background runs inside `showFailures()`, which turns an exception into a
 toast. A new action belongs inside it too, or it fails silently. A toast cannot show on browser
@@ -120,16 +123,20 @@ against older versions of the other.** Prefer changes that need nothing new from
     made with `cloneNode()` does not have. `url` makes links and images absolute.
   - Its HTML is parsed with `DOMParser`, a document that loads no image and runs no code, before
     `getImages()` swaps the sources for placeholders.
-  - `readPage()` parses twice: the article, and the whole page (`WHOLE_PAGE_OPTIONS`:
+  - A page reads two ways: `"article"`, and `"wholePage"` (`WHOLE_PAGE_OPTIONS`:
     `contentSelector: "body"` with scoring and the clutter selectors off, hidden-element removal
     and standardization kept). Defuddle drops a grid of cards with little text under each heading
     as "related articles" (`isCardGrid()`) and any `.footer`, which on a gallery or test page is the
-    content (#9611). The popup offers both (`Article` / `Whole page`); the shortcut and the menu
-    save the article, or the whole page when there is none.
-  - A page without an article comes back as `<body></body>`, which `readPage()` turns into
-    `article: undefined`; only a page whose whole page is empty too returns `undefined` (the
-    popup's bookmark mode). Defuddle's own retries relax its rules on a very short page ("possible
-    index page"), so a spec fixture of a card grid needs a paragraph of text to stay above that.
+    content (#9611). Each reading is one parse, made only when needed: the popup and the shortcut
+    read the article, and the whole page only when there is no article — or, in the popup, when
+    the user switches to `Whole page` (`laterReadings` in `PagePreview`).
+  - A reading that shows nothing (an article-less page comes back as `<body></body>`) is
+    `undefined`; the popup stores it as `null`, keeping `undefined` for "not read yet". A page
+    whose two readings both show nothing opens on Bookmark. Defuddle's own retries relax its rules
+    on a very short page ("possible index page"), so a spec fixture of a card grid needs a
+    paragraph of text to stay above that.
+  - v8 can record a negative count for the code after `x ?? await y()`, which fails the branch
+    gate with every case tested; write such a fallback as consecutive `if`s.
   - Use `parse()`, never `parseAsync()`: the async extractors fetch third-party APIs.
   - **happy-dom drops lazy images** (`data-src` behind a `data:image/svg+xml` placeholder) that
     Chromium and linkedom promote to `src`; test such Defuddle behavior in a real browser, not

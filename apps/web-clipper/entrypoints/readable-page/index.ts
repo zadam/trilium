@@ -1,13 +1,15 @@
 import Defuddle from "defuddle";
 
-import { descriptionLabels, type ExtractedPage, getImages, getPageLocationOrigin, type ReadablePage } from "@/utils";
+import { descriptionLabels, getImages, getPageLocationOrigin, type PageVariant, type ReadablePage } from "@/utils";
 
 /**
- * Reads the page with Defuddle, as an article and as a whole. `extractPage()` injects it into the
- * tab only when a page is read, so Defuddle does not load with the content script on every page. The
- * value `main()` returns is the result of `executeScript()`.
+ * Registers `triliumReadPage()` in the tab, which reads the page with Defuddle, as an article or as a
+ * whole. `extractPage()` injects it into the tab only when a page is read, so Defuddle does not load
+ * with the content script on every page, then calls it with the reading it needs.
  */
-export default defineUnlistedScript(readPage);
+export default defineUnlistedScript(() => {
+    globalThis.triliumReadPage = readPage;
+});
 
 /**
  * Keeps all of `<body>`: Defuddle still removes hidden elements, makes links absolute and converts
@@ -22,35 +24,28 @@ const WHOLE_PAGE_OPTIONS = {
     removeSmallImages: false
 };
 
-function readPage(): ExtractedPage | undefined {
+/** The page as `variant` reads it, or `undefined` when that reading shows nothing. */
+function readPage(variant: PageVariant): ReadablePage | undefined {
     // `parse()` works on a copy of the document and reads styles and image sizes from the page,
     // so it is given the live document.
-    const article = new Defuddle(document, { url: location.href }).parse();
-    const wholePage = new Defuddle(document, { url: location.href, ...WHOLE_PAGE_OPTIONS }).parse();
+    const options = variant === "wholePage" ? WHOLE_PAGE_OPTIONS : {};
+    const result = new Defuddle(document, { url: location.href, ...options }).parse();
 
-    const page = {
-        title: article.title,
-        pageUrl: getPageLocationOrigin() + location.pathname + location.search,
-        clipType: "page" as const,
-        labels: pageLabels(article)
-    };
-    const whole = withContent(page, wholePage.content);
-    if (!whole) {
-        return undefined;
-    }
-    return { article: withContent(page, article.content), wholePage: whole };
-}
-
-/** The clip of `html`, its images replaced by placeholders, or `undefined` when it shows nothing. */
-function withContent(page: Omit<ReadablePage, "content" | "images">, html: string): ReadablePage | undefined {
     // A document of its own loads none of the page's images and runs none of its code.
-    const body = new DOMParser().parseFromString(html, "text/html").body;
+    const body = new DOMParser().parseFromString(result.content, "text/html").body;
     if (!body.textContent.trim() && !body.querySelector("img")) {
         return undefined;
     }
 
     const images = getImages(body);
-    return { ...page, content: body.innerHTML, images };
+    return {
+        title: result.title,
+        content: body.innerHTML,
+        images,
+        pageUrl: getPageLocationOrigin() + location.pathname + location.search,
+        clipType: "page",
+        labels: pageLabels(result)
+    };
 }
 
 function pageLabels(article: { author: string, published: string }) {

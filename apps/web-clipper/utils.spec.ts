@@ -44,20 +44,29 @@ describe("createLink", () => {
 describe("extractPage", () => {
     afterEach(() => {
         Reflect.deleteProperty(fakeBrowser, "scripting");
+        Reflect.deleteProperty(globalThis, "triliumReadPage");
     });
 
-    it("runs the readable-page script in the tab and returns its result", async () => {
+    it("injects the readable-page script, then reads the page as asked", async () => {
         const page = { title: "Article", content: "<p>Body</p>" };
-        const executeScript = vi.fn()
-            .mockResolvedValueOnce([ { result: page } ])
-            .mockResolvedValueOnce([ { result: null } ])
-            .mockResolvedValueOnce([]);
+        const readPage = vi.fn((variant: string) => variant === "article" ? page : undefined);
+        const executeScript = vi.fn(async ({ func, args }: { func?: (variant: string) => unknown, args?: [ string ] }) => {
+            if (!func || !args) return [];
+            Object.assign(globalThis, { triliumReadPage: readPage });
+            return [ { result: func(...args) } ];
+        });
         Object.assign(fakeBrowser, { scripting: { executeScript } });
 
-        expect(await extractPage(7)).toBe(page);
-        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
-        expect(await extractPage(7)).toBeUndefined();
-        expect(await extractPage(7)).toBeUndefined();
+        expect(await extractPage(7, "article")).toBe(page);
+        expect(executeScript.mock.calls.map(([ injection ]) => injection)).toEqual([
+            { target: { tabId: 7 }, files: [ "/readable-page.js" ] },
+            { target: { tabId: 7 }, func: expect.any(Function), args: [ "article" ] }
+        ]);
+        expect(await extractPage(7, "wholePage")).toBeUndefined();
+        expect(readPage.mock.calls).toEqual([ [ "article" ], [ "wholePage" ] ]);
+
+        executeScript.mockResolvedValue([]);
+        expect(await extractPage(7, "article")).toBeUndefined();
     });
 });
 

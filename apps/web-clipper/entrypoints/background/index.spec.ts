@@ -56,9 +56,9 @@ let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
-/** What `readable-page.js` returns in the active tab; nothing to save unless a test says so. */
-let extractedPage: unknown;
-const executeScript = vi.fn(async () => [ { result: extractedPage } ]);
+/** How `readable-page.js` reads the active tab, by variant; nothing to save unless a test says so. */
+let pageReadings: Record<string, unknown>;
+const executeScript = vi.fn(async ({ args }: { args?: [ string ] }) => args ? [ { result: pageReadings[args[0]] } ] : []);
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
@@ -76,7 +76,7 @@ describe("background", () => {
         fakeBrowser.reset();
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
-        extractedPage = undefined;
+        pageReadings = {};
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -283,14 +283,15 @@ describe("background", () => {
     describe("saving the whole page", () => {
         it("saves the article from the shortcut, the menu and the popup", async () => {
             const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
-            extractedPage = { article: page, wholePage: { ...page, content: "<nav>Menu</nav><p>Body</p>" } };
+            pageReadings = { article: page, wholePage: { ...page, content: "<nav>Menu</nav><p>Body</p>" } };
 
             await onCommand("saveWholePage");
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
             await sendRuntimeMessage({ name: "save-whole-page" });
 
-            expect(executeScript).toHaveBeenCalledTimes(3);
+            expect(executeScript).toHaveBeenCalledTimes(6);
             expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
+            expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ args: [ "wholePage" ] }));
             expect(facade.callService).toHaveBeenCalledTimes(3);
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", page);
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
@@ -303,7 +304,7 @@ describe("background", () => {
 
         it("saves the whole page from the shortcut when the page has no article", async () => {
             const wholePage = { title: "Gallery", content: "<h2>Card</h2>", images: [], clipType: "page" };
-            extractedPage = { wholePage };
+            pageReadings = { wholePage };
 
             await onCommand("saveWholePage");
 
@@ -318,7 +319,7 @@ describe("background", () => {
                 message: "Saving to Trilium failed: Trilium found nothing to save on this page."
             });
 
-            extractedPage = { wholePage: { title: "Article", content: "<p>Body</p>", images: [] } };
+            pageReadings = { wholePage: { title: "Article", content: "<p>Body</p>", images: [] } };
             tabs = [ { title: "Tab without id" } ];
             await onCommand("saveWholePage");
 
@@ -330,7 +331,7 @@ describe("background", () => {
                 message: "Saving to Trilium failed: Cannot access a chrome:// URL"
             });
 
-            expect(executeScript).toHaveBeenCalledTimes(2);
+            expect(executeScript).toHaveBeenCalledTimes(5);
             expect(facade.callService).not.toHaveBeenCalled();
         });
 
