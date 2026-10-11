@@ -1232,9 +1232,16 @@ function connect(name: string) {
     return port;
 }
 
+/**
+ * Sends a message as Chrome delivers it: Chrome ignores a promise the listener returns, and waits for
+ * `sendResponse()` only when the listener returns `true`.
+ */
 async function sendRuntimeMessage(message: object) {
-    const [ result ] = await fakeBrowser.runtime.onMessage.trigger(message, {}, () => {});
-    return result;
+    let sendResponse: (response: unknown) => void = () => {};
+    const response = new Promise((resolve) => sendResponse = resolve);
+    const [ result ] = await fakeBrowser.runtime.onMessage.trigger(message, {}, sendResponse);
+    expect(result).toBe(true);
+    return await response;
 }
 
 function lastPayload() {

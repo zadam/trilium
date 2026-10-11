@@ -38,6 +38,13 @@ Everything goes through `browser.runtime.sendMessage` / `browser.tabs.sendMessag
   (`message`, `noteId`, `tabIds`).
 - **background → offscreen:** `{ type: "CROP_IMAGE" }`, the one message keyed by `type`.
 
+**A listener answers through `sendResponse()` and returns `true`, never by returning a promise.**
+WXT 0.20 dropped `webextension-polyfill`, and Chrome ignores a promise an `onMessage` listener
+returns, so the sender gets `undefined` while Firefox works. The popup showed "the extension's
+background script gave no answer" after every successful save in Chrome for that reason. The
+background spec's `sendRuntimeMessage()` delivers messages the Chrome way and fails on a listener
+that does not return `true`.
+
 The readable page is not a message: the popup and the background call
 `extractPage(tabId, variant)` (`utils.ts`), which injects `/readable-page.js` with
 `browser.scripting.executeScript()` (the `scripting` permission, in both builds), so Defuddle stays

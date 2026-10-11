@@ -769,7 +769,13 @@ export default defineBackground(() => {
         }
     }));
 
-    browser.runtime.onMessage.addListener((request) => showFailures(async () => {
+    // Chrome ignores a promise the listener returns: it answers through `sendResponse()`, after `true`.
+    browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+        void showFailures(() => handleMessage(request)).then(sendResponse);
+        return true;
+    });
+
+    async function handleMessage(request: any) {
         console.log("Received", request);
 
         if (request.name === 'openNoteInTrilium') {
@@ -835,7 +841,7 @@ export default defineBackground(() => {
                 triliumServerFacade.triggerSearchNoteByUrl(activeTab.url);
             }
         }
-    }));
+    }
 });
 
 function savedMessage(subject: string, failedImages: number) {
