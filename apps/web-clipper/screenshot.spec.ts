@@ -107,6 +107,21 @@ describe("ScreenshotStitcher", () => {
         expect(canvas.events).toEqual([ "draw 0: slice 0+692 at 7500", "encode 0" ]);
     });
 
+    it("crops the last image to the rows captured when the page stops scrolling early", async () => {
+        stubImages({ naturalWidth: 100, naturalHeight: 500 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ pageHeight: 5000, devicePixelRatio: 1 });
+
+        await stitcher.add({ dataUrl: "top", y: 0 });
+        await stitcher.add({ dataUrl: "next", y: 500 });
+
+        expect(stitcher.finish()).toEqual([ "part-1" ]);
+        expect(canvas.sizes()).toEqual([ [ 100, 5000 ], [ 100, 1000 ] ]);
+        expect(canvas.events).toEqual([
+            "draw 0: top 0+500 at 0", "draw 0: next 0+500 at 500", "draw 1: canvas 0 0+1000 at 0", "encode 1"
+        ]);
+    });
+
     it("fails without captures, without a canvas, or on a capture that cannot be read", async () => {
         const request = { pageHeight: 100, devicePixelRatio: 1 };
         stubImages({ naturalWidth: 100, naturalHeight: 100 });
@@ -150,8 +165,12 @@ function stubCanvas() {
         const index = canvases.push(this) - 1;
         return {
             drawImage: (
-                image: { src: string }, _sx: number, sy: number, _sw: number, sh: number, _dx: number, dy: number
-            ) => events.push(`draw ${index}: ${image.src} ${sy}+${sh} at ${dy}`)
+                image: { src: string } | HTMLCanvasElement,
+                _sx: number, sy: number, _sw: number, sh: number, _dx: number, dy: number
+            ) => {
+                const source = "src" in image ? image.src : `canvas ${canvases.indexOf(image)}`;
+                events.push(`draw ${index}: ${source} ${sy}+${sh} at ${dy}`);
+            }
         } as unknown as CanvasRenderingContext2D;
     });
     vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockImplementation(function (this: HTMLCanvasElement) {

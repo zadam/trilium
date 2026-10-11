@@ -60,12 +60,23 @@ export class ScreenshotStitcher {
         this.drawnTo = Math.max(this.drawnTo, bottom);
     }
 
-    /** Returns the images as PNG data URLs, from the top of the page. */
+    /**
+     * Returns the images as PNG data URLs, from the top of the page. The last one ends at the last
+     * row captured, which is short of the page's height when the page stopped scrolling early.
+     */
     finish() {
         if (!this.part) {
             throw new Error("There is no screenshot to stitch.");
         }
-        this.closePart(this.part);
+        const { canvas } = this.part;
+        const rows = this.drawnTo - this.part.index * MAX_PART_HEIGHT;
+        if (rows < canvas.height) {
+            const cropped = createCanvas(canvas.width, rows);
+            cropped.context.drawImage(canvas, 0, 0, canvas.width, rows, 0, 0, canvas.width, rows);
+            this.closePart(cropped);
+        } else {
+            this.closePart(this.part);
+        }
         return this.parts;
     }
 
@@ -73,15 +84,9 @@ export class ScreenshotStitcher {
         if (this.part?.index === index) return this.part.context;
         if (this.part) this.closePart(this.part);
 
-        const canvas = document.createElement("canvas");
-        canvas.width = this.width;
-        canvas.height = Math.min(MAX_PART_HEIGHT, this.height - index * MAX_PART_HEIGHT);
-        const context = canvas.getContext("2d");
-        if (!context) {
-            throw new Error("The screenshot could not be drawn.");
-        }
-        this.part = { index, canvas, context };
-        return context;
+        const height = Math.min(MAX_PART_HEIGHT, this.height - index * MAX_PART_HEIGHT);
+        this.part = { index, ...createCanvas(this.width, height) };
+        return this.part.context;
     }
 
     private closePart(part: { canvas: HTMLCanvasElement }) {
@@ -89,6 +94,17 @@ export class ScreenshotStitcher {
         this.part = undefined;
     }
 
+}
+
+function createCanvas(width: number, height: number) {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+        throw new Error("The screenshot could not be drawn.");
+    }
+    return { canvas, context };
 }
 
 function loadImage(src: string) {
