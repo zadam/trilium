@@ -28,6 +28,11 @@
     overflow: auto;
 }
 
+/* The grid is as tall as its rows, so it grows by the `top` offset the cells take. */
+.icon-picker .icon-list > [role="grid"] {
+    padding-bottom: var(--scroll-fade-top);
+}
+
 .icon-picker .icon-list span {
     display: inline-block;
     padding: 10px;
