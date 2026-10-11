@@ -52,6 +52,15 @@ By default, that's the <a class="reference-link" href="../Advanced%20Usage/Adva
 
 Further clippings of the same kind from the same page are added to the note created by the first one, even on a later day or after that note was moved out of the clipper inbox. The note stays where it is and is not cloned back into the inbox.
 
+The icon of a clipped note shows what was saved:
+
+*   <span class="tn-icon bx bx-paperclip"></span> a selection, a screenshot or a link from the context menu;
+*   <span class="tn-icon bx bx-globe"></span> a page (_Article_ or _Whole page_);
+*   <span class="tn-icon bx bx-bookmark"></span> a bookmark;
+*   <span class="tn-icon bx bx-window-alt"></span> the tabs of a window.
+
+The icon is derived from the note's `#clipType` label, so setting an `#iconClass` label on the note replaces it.
+
 ## Embedded videos
 
 A YouTube video embedded in a clipped page is saved as a <a class="reference-link" href="../Note%20Types/Text/Link%20Previews.md">Link Previews</a> embed, with the video's title and thumbnail. As with a link preview added in the editor, the video plays only when clicked. Other embedded content (such as videos from other websites) is not saved.

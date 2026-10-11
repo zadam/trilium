@@ -41,7 +41,6 @@ async function addClipping(req: Request) {
 
         clippingNote.setLabel("clipType", "clippings");
         clippingNote.setLabel("pageUrl", pageUrl);
-        clippingNote.setLabel("iconClass", "bx bx-globe");
     }
 
     setLabels(clippingNote, labels);
@@ -118,7 +117,6 @@ async function createNote(req: Request) {
 
         if (pageUrl) {
             note.setLabel("pageUrl", pageUrl);
-            note.setLabel("iconClass", "bx bx-globe");
         }
     }
 

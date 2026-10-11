@@ -134,6 +134,14 @@ export const GEO_SHAPE_ICONS: Record<string, string> = {
     circle: "bx bx-shape-circle"
 };
 
+/** The icon of a note made by the web clipper, keyed by its `#clipType` label. */
+export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
+    [ "clippings", "bx bx-paperclip" ],
+    [ "page", "bx bx-globe" ],
+    [ "note", "bx bx-bookmark" ],
+    [ "tabs", "bx bx-window-alt" ]
+]);
+
 /**
  * The icon a note is drawn under: its own `#iconClass` where it has one, and a default read off
  * what the note is otherwise.
@@ -143,7 +151,8 @@ export const GEO_SHAPE_ICONS: Record<string, string> = {
  * The geo map therefore writes no `#iconClass` onto a marker or a shape it creates, so an icon it
  * hands down through
  * `#child:iconClass` or a template still applies, and redrawing a shape as another kind changes the
- * icon with it. `iconClass` stays an argument rather than being read here because the share tree
+ * icon with it. A note the web clipper made is drawn by its `#clipType` ({@link CLIP_TYPE_ICONS}).
+ * `iconClass` stays an argument rather than being read here because the share tree
  * narrows it to the prefixes an icon pack supplies.
  */
 export function getNoteIcon({
@@ -176,6 +185,10 @@ export function getNoteIcon({
         const shape = getLabelValue(GEO_SHAPE_ATTRIBUTE) || getLabelValue(MAP_SHAPE_ATTRIBUTE);
         if (shape) {
             return GEO_SHAPE_ICONS[shape.split(":", 1)[0]] ?? GEO_SHAPE_ICONS.line;
+        }
+        const clipIcon = CLIP_TYPE_ICONS.get(getLabelValue("clipType") ?? "");
+        if (clipIcon) {
+            return clipIcon;
         }
         if (isFolder()) {
             return "bx bx-folder";

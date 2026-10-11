@@ -111,6 +111,21 @@ describe("getNoteIcon", () => {
         }))).toBe("bx bx-trip");
     });
 
+    it("draws a web clipping by its clip type, behind its own icon", () => {
+        const clipped = (clipType: string) => (name: string) => name === "clipType" ? clipType : null;
+
+        expect([ "clippings", "page", "note", "tabs" ].map((clipType) =>
+            getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))))
+            .toEqual([ "bx bx-paperclip", "bx bx-globe", "bx bx-bookmark", "bx bx-window-alt" ]);
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), isFolder: () => true })))
+            .toBe("bx bx-globe");
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), iconClass: "bx bx-star" })))
+            .toBe("bx bx-star");
+        for (const clipType of [ "unknown", "constructor" ]) {
+            expect(getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))).toBe("bx bx-note");
+        }
+    });
+
     it("draws a shape note as the shape its label names, by the same rules as a pin", () => {
         const drawn = (value: string) =>
             (name: string) => name === GEO_SHAPE_ATTRIBUTE ? value : null;
