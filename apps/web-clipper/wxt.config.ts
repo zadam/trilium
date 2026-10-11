@@ -1,10 +1,16 @@
 import { copyFile, readFile, rm, writeFile } from "fs/promises";
 import JSZip from "jszip";
+import { resolve } from "path";
 import { defineConfig } from "wxt";
 
 let originalTsConfig: object;
 
 export default defineConfig({
+    webExt: {
+        // A persistent profile keeps the toolbar pin and the extension's settings across dev runs.
+        chromiumProfile: resolve(".wxt/chrome-data"),
+        keepProfileChanges: true
+    },
     vite: () => ({
         oxc: {
             jsx: {
@@ -71,6 +77,13 @@ export default defineConfig({
         artifactTemplate: "trilium-web-clipper-{{version}}-{{browser}}.zip"
     },
     hooks: {
+        "build:manifestGenerated": (wxt, manifest) => {
+            // Firefox places a new extension's button in the extensions panel unless asked otherwise.
+            const action = manifest.browser_action ?? manifest.action;
+            if (wxt.config.command === "serve" && wxt.config.browser === "firefox" && action) {
+                Object.assign(action, { default_area: "navbar" });
+            }
+        },
         'zip:sources:start': async () => {
             // Rewrite tsconfig.base.json into the web-clipper app folder
             await copyFile("../../tsconfig.base.json", "./tsconfig.base.json");
