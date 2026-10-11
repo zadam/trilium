@@ -16,6 +16,7 @@ import Screenshot from "@boxicons/js/icons/Screenshot";
 import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
 import Youtube from "@boxicons/js/icons/Youtube";
+import monospaceFontUrl from "@triliumnext/client/src/fonts/JetBrainsMono-Light.woff2?url";
 import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -83,12 +84,32 @@ interface Draft {
     text: string;
 }
 
+/** The code styles of the share theme, `packages/share-theme/src/content/content.css`. */
 const PREVIEW_STYLE = `
-    :root { color-scheme: light dark; }
+    @font-face { font-family: JetBrainsLight; src: url("${monospaceFontUrl}") format("woff2"); }
+    :root {
+        color-scheme: light dark;
+        --code-block-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), 0px 0px 2px rgba(0, 0, 0, 0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { --code-block-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); }
+    }
     body { margin: 8px; font: 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
     h1 { font-size: 1.3em; } h2 { font-size: 1.15em; } h3, h4, h5, h6 { font-size: 1em; }
     img, video, svg { max-width: 100%; height: auto; }
-    pre { white-space: pre-wrap; }
+    pre, code, kbd, samp { font-family: JetBrainsLight, ui-monospace, monospace; }
+    code:not(pre code) {
+        padding: 0.1em 0.35em; border-radius: 5px; font-size: 0.8em; overflow-wrap: break-word;
+        background-color: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    }
+    pre {
+        margin-top: 2px; padding: 0.6em 0.75em; border-radius: 6px;
+        box-shadow: var(--code-block-box-shadow);
+        background-color: light-dark(#f3f3f3, #1f1f1f); color: light-dark(#000000, #cccccc);
+        white-space: pre; tab-size: 4; text-align: left; direction: ltr;
+    }
+    pre:has(> code) { padding: 0; }
+    pre code { display: block; padding: 0.6em 0.75em; overflow: auto; }
     a { color: light-dark(#0076af, #95c3d9); text-decoration: none; }
     .embed-chip {
         display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 2px 10px 2px 8px;
