@@ -1,7 +1,9 @@
 import {
     MAX_PART_HEIGHT, type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
-import { extractPage, isPdfTab, randomString, type Rect, type SaveOutcome, type Saved } from "@/utils";
+import {
+    extractPage, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS, randomString, type Rect, type SaveOutcome, type Saved
+} from "@/utils";
 
 import setupContextMenu from "./context_menu";
 import TriliumServerFacade, { TriliumError } from "./trilium_server_facade";
@@ -439,8 +441,8 @@ export default defineBackground(() => {
         });
     }
 
-    async function fetchImage(url: string) {
-        const resp = await fetch(url);
+    async function fetchImage(url: string, init?: RequestInit) {
+        const resp = await fetch(url, init);
         if (!resp.ok) {
             throw new Error(`HTTP ${resp.status}`);
         }
@@ -709,7 +711,7 @@ export default defineBackground(() => {
     async function fetchFavicon(url: string | undefined) {
         if (!url) return undefined;
         try {
-            return await fetchImage(url);
+            return await fetchImage(url, { signal: AbortSignal.timeout(OPTIONAL_REQUEST_TIMEOUT_MS) });
         } catch {
             return undefined;
         }

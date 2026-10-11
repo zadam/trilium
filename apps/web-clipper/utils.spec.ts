@@ -2,7 +2,9 @@ import type { Window as HappyDOMWindow } from "happy-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
-import { createLink, extractPage, getPageLocationOrigin, isPdfTab, randomString } from "./utils";
+import {
+    createLink, extractPage, getPageLocationOrigin, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS, randomString
+} from "./utils";
 
 describe("randomString", () => {
     it("returns alphanumeric strings of the requested length", () => {
@@ -114,7 +116,9 @@ describe("isPdfTab", () => {
 
         answer("Application/PDF; qs=0.001");
         expect(await isPdfTab(TAB)).toBe(true);
-        expect(fetchMock).toHaveBeenCalledWith(TAB.url, { method: "HEAD", credentials: "include" });
+        expect(fetchMock).toHaveBeenCalledWith(TAB.url, {
+            method: "HEAD", credentials: "include", signal: expect.any(AbortSignal)
+        });
 
         answer("text/html");
         expect(await isPdfTab(TAB)).toBe(false);
@@ -122,6 +126,17 @@ describe("isPdfTab", () => {
         expect(await isPdfTab(TAB)).toBe(false);
         fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
         expect(await isPdfTab(TAB)).toBe(false);
+    });
+
+    it("gives up on a website that does not answer in time", async () => {
+        executeScript.mockRejectedValue(new Error("Missing host permission for the tab"));
+        const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(() => AbortSignal.abort());
+        fetchMock.mockImplementation((_url: string, init?: RequestInit) => (init?.signal?.aborted
+            ? Promise.reject(new DOMException("The operation timed out.", "TimeoutError"))
+            : new Promise(() => {})));
+
+        expect(await isPdfTab(TAB)).toBe(false);
+        expect(timeout).toHaveBeenCalledWith(OPTIONAL_REQUEST_TIMEOUT_MS);
     });
 
     it("checks only web pages in a tab it can address", async () => {

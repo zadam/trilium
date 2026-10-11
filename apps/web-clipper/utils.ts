@@ -1,5 +1,8 @@
 export type Rect = { x: number, y: number, width: number, height: number };
 
+/** How long a request the extension can do without, such as a favicon, has to answer, in milliseconds. */
+export const OPTIONAL_REQUEST_TIMEOUT_MS = 3000;
+
 /** An image of a clipping; the clipping's `content` references it by `imageId`. */
 export type ClippedImage = { imageId: string, src: string };
 
@@ -54,7 +57,8 @@ export async function isPdfTab({ id, url }: { id?: number, url?: string }) {
         return injection?.result === true;
     } catch {
         try {
-            const response = await fetch(url, { method: "HEAD", credentials: "include" });
+            const signal = AbortSignal.timeout(OPTIONAL_REQUEST_TIMEOUT_MS);
+            const response = await fetch(url, { method: "HEAD", credentials: "include", signal });
             return isPdfType(response.headers.get("content-type"));
         } catch {
             return false;

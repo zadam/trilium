@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
+import { OPTIONAL_REQUEST_TIMEOUT_MS } from "@/utils";
+
 const { facade, TriliumError } = vi.hoisted(() => ({
     facade: {
         callService: vi.fn<(method: string, path: string, body?: unknown) => Promise<any>>(),
@@ -866,7 +868,7 @@ describe("background", () => {
                 srcUrl: "https://example.com/cat.png",
                 pageUrl: PAGE_URL
             });
-            expect(fetchMock).toHaveBeenCalledWith("https://example.com/cat.png");
+            expect(fetchMock).toHaveBeenCalledWith("https://example.com/cat.png", undefined);
             expect(lastPayload()).toMatchObject({
                 title: "Active page",
                 images: [ {
@@ -1050,6 +1052,22 @@ describe("background", () => {
                 { url: "https://c.com/", title: "Inline", favicon: "data:image/svg+xml;base64,PHN2Zy8+" },
                 { url: "chrome://newtab/", title: "Browser page", favicon: undefined }
             ]);
+        });
+
+        it("saves the tabs without a favicon that does not arrive in time", async () => {
+            tabs = [
+                { id: 1, title: "Slow", url: "https://a.com/", favIconUrl: "https://a.com/favicon.ico" }
+            ];
+            const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(() => AbortSignal.abort());
+            fetchMock.mockImplementationOnce((_url: string, init?: RequestInit) => (init?.signal?.aborted
+                ? Promise.reject(new DOMException("The operation timed out.", "TimeoutError"))
+                : new Promise(() => {})));
+
+            await onCommand("saveTabs");
+
+            expect(timeout).toHaveBeenCalledWith(OPTIONAL_REQUEST_TIMEOUT_MS);
+            expect((lastPayload() as { tabs: unknown }).tabs)
+                .toEqual([ { url: "https://a.com/", title: "Slow", favicon: undefined } ]);
         });
 
         it("adds no ellipsis for up to three tabs and shows why saving failed", async () => {
