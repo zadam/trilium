@@ -602,10 +602,10 @@ describe("background", () => {
 
             vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
             offscreen.slices = [];
-            simulatePage({ viewportHeight: 2000, pageHeight: 100001, devicePixelRatio: 4 });
+            simulatePage({ viewportHeight: 2000, pageHeight: 200001, devicePixelRatio: 4 });
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
-            expect(offscreen.request).toEqual({ pageHeight: 100000, devicePixelRatio: 4 });
-            expect(sliceTops()).toEqual(Array.from({ length: 50 }, (_, index) => index * 2000));
+            expect(offscreen.request).toEqual({ pageHeight: 200000, devicePixelRatio: 4 });
+            expect(sliceTops()).toEqual(Array.from({ length: 100 }, (_, index) => index * 2000));
             expect(await lastToast()).toMatchObject({
                 message: "Screenshot has been saved to Trilium, but the page was too long to capture in full."
             });

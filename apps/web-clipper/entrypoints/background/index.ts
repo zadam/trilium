@@ -50,8 +50,8 @@ interface Stitcher {
 const CAPTURE_INTERVAL_MS = 550;
 /** How long a scrolled page gets to draw what came into view before it is captured. */
 const SCROLL_SETTLE_MS = 150;
-/** The most captures a full-page screenshot takes, about 30 seconds; a longer page is cut off. */
-const MAX_SCREENSHOT_CAPTURES = 50;
+/** The most captures a full-page screenshot takes, about a minute; a longer page is cut off. */
+const MAX_SCREENSHOT_CAPTURES = 100;
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
 type ClippedImage = { imageId: string, src: string, dataUrl?: string };
