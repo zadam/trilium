@@ -3,6 +3,8 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
 vi.mock("@/lib/toast", () => ({}));
+const setFloatingElements = vi.hoisted(() => vi.fn());
+vi.mock("@/floating_elements.js", () => ({ setFloatingElements }));
 
 import contentScript from "./index";
 
@@ -258,6 +260,14 @@ describe("content script", () => {
 
         expect(await send({ name: "trilium-scroll-to", x: 5, y: 240 })).toEqual(position);
         expect(scrollTo).toHaveBeenCalledWith({ left: 5, top: 240, behavior: "instant" });
+    });
+
+    it("changes or restores the floating elements for a full-page screenshot", async () => {
+        expect(await send({ name: "trilium-set-floating-elements", step: "rest" })).toBe(true);
+        expect(setFloatingElements).toHaveBeenCalledWith("rest");
+
+        expect(await send({ name: "trilium-set-floating-elements" })).toBeUndefined();
+        expect(setFloatingElements).toHaveBeenCalledOnce();
     });
 
     it("answers unknown messages with nothing", async () => {

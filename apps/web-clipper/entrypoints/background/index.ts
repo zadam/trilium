@@ -18,6 +18,10 @@ type BackgroundMessage = {
 } | {
     name: "trilium-get-page-metadata";
 } | {
+    /** Changes the page's fixed and sticky elements for a full-page screenshot, or restores them. */
+    name: "trilium-set-floating-elements";
+    step: "first" | "rest" | "restore";
+} | {
     /** Scrolls the page to `x`, `y` when given, and answers with a {@link ScrollPosition}. */
     name: "trilium-scroll-to";
     x?: number;
@@ -169,6 +173,9 @@ export default defineBackground(() => {
                 const previous = slices.at(-1);
                 // The page stopped scrolling short of the height it reported.
                 if (previous && position.scrollY <= previous.y) break;
+                if (!previous) {
+                    await setFloatingElements(tabId, "first");
+                }
 
                 await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
                 const tab = await browser.tabs.get(tabId);
@@ -179,9 +186,13 @@ export default defineBackground(() => {
                 lastCaptureAt = Date.now();
                 const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: "png" });
                 slices.push({ dataUrl, y: position.scrollY });
+                if (!previous) {
+                    await setFloatingElements(tabId, "rest");
+                }
                 y = position.scrollY + start.viewportHeight;
             }
         } finally {
+            await setFloatingElements(tabId, "restore").catch(() => undefined);
             await scrollTab(tabId, start.scrollX, start.scrollY).catch(() => undefined);
         }
 
@@ -196,6 +207,15 @@ export default defineBackground(() => {
             throw new Error("The page could not be read. Reload it and try again.");
         }
         return position;
+    }
+
+    /**
+     * Asks the page to change or restore its fixed and sticky elements. A content script from an
+     * earlier version of the extension does not know the message, and the page stays as it is.
+     */
+    async function setFloatingElements(tabId: number, step: "first" | "rest" | "restore") {
+        const message: BackgroundMessage = { name: "trilium-set-floating-elements", step };
+        await browser.tabs.sendMessage(tabId, message);
     }
 
     async function stitch(request: StitchRequest) {

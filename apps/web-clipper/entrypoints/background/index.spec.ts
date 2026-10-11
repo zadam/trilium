@@ -525,12 +525,15 @@ describe("background", () => {
             vi.useRealTimers();
         }
 
-        /** The positions the page was asked to scroll to; `undefined` only asks where it is. */
-        function scrolls() {
+        /**
+         * What the page was asked to do, in order: the positions it was scrolled to (`undefined`
+         * only asks where it is) and the steps of changing its floating elements.
+         */
+        function pageSteps() {
             return tabsSendMessage.mock.calls
-                .map(([ , message ]) => message as { name: string, y?: number })
-                .filter((message) => message.name === "trilium-scroll-to")
-                .map((message) => message.y);
+                .map(([ , message ]) => message as { name: string, y?: number, step?: string })
+                .filter((message) => [ "trilium-scroll-to", "trilium-set-floating-elements" ].includes(message.name))
+                .map((message) => (message.name === "trilium-scroll-to" ? message.y : message.step));
         }
 
         function stitchRequest() {
@@ -549,7 +552,7 @@ describe("background", () => {
 
             await run(onCommand("saveFullPageScreenshot"));
 
-            expect(scrolls()).toEqual([ undefined, 0, 500, 1000, 300 ]);
+            expect(pageSteps()).toEqual([ undefined, 0, "first", "rest", 500, 1000, "restore", 300 ]);
             expect(stitchRequest()).toEqual({
                 slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ],
                 viewportHeight: 500,
@@ -581,7 +584,8 @@ describe("background", () => {
             simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
             const scrollPage = tabMessageHandler;
             tabMessageHandler = (message) => {
-                if ((message as { y?: number }).y === 300) throw new Error("The tab is gone.");
+                const { y, step } = message as { y?: number, step?: string };
+                if (y === 300 || step === "restore") throw new Error("The tab is gone.");
                 return scrollPage(message);
             };
             tabActive = false;
@@ -589,7 +593,7 @@ describe("background", () => {
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
 
             expect(captureVisibleTab).not.toHaveBeenCalled();
-            expect(scrolls()).toEqual([ undefined, 0, 300 ]);
+            expect(pageSteps()).toEqual([ undefined, 0, "first", "restore", 300 ]);
             expect(await lastToast()).toMatchObject({
                 message: "Saving to Trilium failed: The screenshot was stopped because another tab was opened."
             });

@@ -1,3 +1,4 @@
+import { type FloatingElementsStep, setFloatingElements } from "@/floating_elements.js";
 import {
     createLink, descriptionLabels, getImages, getPageDescription, getPageLocationOrigin,
     makeLinksAbsolute, type Rect
@@ -142,7 +143,8 @@ export default defineContentScript({
         }
 
         async function prepareMessageResponse(message: {
-            name: string, noteId?: string, message?: string, tabIds?: string[], x?: number, y?: number
+            name: string, noteId?: string, message?: string, tabIds?: string[], x?: number, y?: number,
+            step?: FloatingElementsStep
         }) {
             console.info(`Message: ${  message.name}`);
 
@@ -225,6 +227,10 @@ export default defineContentScript({
                     pageHeight: document.documentElement.scrollHeight,
                     devicePixelRatio: window.devicePixelRatio
                 };
+            }
+            else if (message.name === "trilium-set-floating-elements" && message.step) {
+                setFloatingElements(message.step);
+                return true;
             }
             else if (message.name === "trilium-get-page-metadata") {
                 return { description: getPageDescription() };
