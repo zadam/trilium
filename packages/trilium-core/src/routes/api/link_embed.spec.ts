@@ -929,6 +929,22 @@ describe("storeFavicon", () => {
         expect(awaitImageWrite).toHaveBeenCalledWith("att1");
     });
 
+    it("stores the PNG inside a one-picture icon as a PNG", async () => {
+        // Browsers re-encode a favicon into such a file, writing 0 (256) as its size whatever the
+        // PNG holds, and Chromium then draws nothing.
+        const png = Buffer.from(await new Jimp({ width: 48, height: 48, color: 0xff0000ff }).getBuffer("image/png"));
+        const directory = Buffer.alloc(22);
+        directory.writeUInt16LE(1, 2);
+        directory.writeUInt16LE(1, 4);
+        directory.writeUInt32LE(png.byteLength, 14);
+        directory.writeUInt32LE(directory.byteLength, 18);
+
+        const url = await storeFavicon("note1", "https://example.com/", Buffer.concat([ directory, png ]));
+
+        expect(url).toMatch(/\/image\/example\.com\.png$/);
+        expect(stored("favicon")?.buffer.equals(png)).toBe(true);
+    });
+
     it("stores nothing for bytes that are not a picture or too large", async () => {
         const huge = makeMultiSizeIco([ { edge: 256, bytes: 100 * 1024 } ]);
 

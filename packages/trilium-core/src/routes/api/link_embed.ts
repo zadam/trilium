@@ -9,7 +9,7 @@ import type { Request } from "../../http_interface";
 import { parse } from "node-html-parser";
 
 import { ValidationError } from "../../errors.js";
-import { trimIcoToSmallestEntry } from "../../services/ico.js";
+import { pngInsideIco, trimIcoToSmallestEntry } from "../../services/ico.js";
 import imageService from "../../services/image.js";
 import { storePictureBytes } from "../../services/image_download.js";
 import { type InspectedImage, inspectImage, UNKNOWN_FORMAT } from "../../services/image_inspect.js";
@@ -204,11 +204,13 @@ async function downloadFavicon(faviconUrl: string): Promise<DownloadedPicture | 
 }
 
 /**
- * Keeps the part of a favicon a preview draws: the smallest entry of an icon directory, any other
- * picture as it is. Returns undefined if the bytes are not a picture or what is kept is too large.
+ * Keeps the part of a favicon a preview draws: the smallest entry of an icon directory, as a plain
+ * PNG when that entry is one, and any other picture as it is. Returns undefined if the bytes are
+ * not a picture or what is kept is too large.
  */
 function asFavicon(bytes: Uint8Array): DownloadedPicture | undefined {
-    const kept = trimIcoToSmallestEntry(bytes, FAVICON_TARGET_EDGE) ?? bytes;
+    const trimmed = trimIcoToSmallestEntry(bytes, FAVICON_TARGET_EDGE) ?? bytes;
+    const kept = pngInsideIco(trimmed) ?? trimmed;
 
     // The limit applies to what is kept, so an icon directory with one large entry is refused.
     return kept.byteLength <= MAX_FAVICON_SIZE ? asPicture(kept) : undefined;
