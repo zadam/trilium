@@ -213,6 +213,22 @@ describe("clipper route handlers", () => {
         expect(clipped.getParentNotes().map((p) => p.noteId)).not.toEqual([ "root" ]);
     });
 
+    it("creates a new note for each clipping that names no page", async () => {
+        const save = () => cls.init(() => clipperRoute.createNote({
+            body: { title: "Tabs", content: "<p>tabs</p>", clipType: "tabs" }
+        } as unknown as Request));
+
+        const first = await save();
+        const second = await save();
+
+        expect(second.noteId).not.toBe(first.noteId);
+        for (const { noteId } of [ first, second ]) {
+            const note = becca.getNoteOrThrow(noteId);
+            expect(note.hasLabel("pageUrl")).toBe(false);
+            expect(note.getContent()).toBe("<p>tabs</p>");
+        }
+    });
+
     it("returns a null noteId when no clipping matches the URL", async () => {
         const found = await cls.init(() => clipperRoute.findNotesByUrl({ params: { noteUrl: "https://nope.example/none" } } as unknown as Request<{ noteUrl: string }>));
         expect(found.noteId).toBeNull();

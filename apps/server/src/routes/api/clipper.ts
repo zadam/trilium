@@ -91,7 +91,7 @@ async function createNote(req: Request) {
     const { content, images, labels } = req.body;
 
     const clipType = sanitize.sanitizeHtml(req.body.clipType);
-    const pageUrl = sanitize.sanitizeUrl(req.body.pageUrl);
+    const pageUrl = req.body.pageUrl ? sanitize.sanitizeUrl(req.body.pageUrl) : "";
 
     const trimmedTitle = (typeof req.body.title === "string") ? req.body.title.trim() : "";
     const title = trimmedTitle || `Clipped note from ${pageUrl}`;
