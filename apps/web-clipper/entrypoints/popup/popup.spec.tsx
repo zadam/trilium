@@ -769,6 +769,7 @@ describe("popup", () => {
             expect(container.querySelector(".note-text")).toBeNull();
             expect(container.querySelector(".page-author")).toBeNull();
             expect(container.querySelector(".page-content")).toBeNull();
+            expect(container.querySelector(".page-body")?.className).toBe("page-body pdf");
             expect(placeholder()).toBeUndefined();
             expect(shortcutOf("Save PDF to Trilium").text).toBe("Alt+Shift+S");
 

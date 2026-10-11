@@ -571,7 +571,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
             )}
             {mode === "pdf" && <div className="clip-hint">The PDF is saved as a file in Trilium.</div>}
 
-            <div className="page-body">
+            <div className={mode === "pdf" ? "page-body pdf" : "page-body"}>
                 {mode && (
                     <div className={mode === "note" ? "page-fields bookmark" : "page-fields"}>
                         {mode !== "pdf" && (

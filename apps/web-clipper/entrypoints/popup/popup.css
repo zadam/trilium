@@ -186,6 +186,14 @@ body {
             border-radius: 6px;
             background: var(--main-background-color);
 
+            &.pdf {
+                height: auto;
+
+                .page-fields {
+                    border-bottom: 0;
+                }
+            }
+
             &:has(.page-content)::after {
                 content: "";
                 flex: none;
