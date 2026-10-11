@@ -183,7 +183,7 @@ export async function processContent(images: Image[], note: BNote, content: stri
     // fallback if parsing/downloading images fails for some reason on the extension side (
     rewrittenContent = noteService.downloadImages(note.noteId, rewrittenContent);
     // Check if rewrittenContent contains at least one HTML tag
-    if (!/<.+?>/.test(rewrittenContent)) {
+    if (!/<[^<>]+>/.test(rewrittenContent)) {
         rewrittenContent = `<p>${rewrittenContent}</p>`;
     }
     // Create a JSDOM object from the existing HTML content
