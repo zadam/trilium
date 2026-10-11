@@ -20,7 +20,22 @@ describe("ScreenshotStitcher", () => {
         expect(stitcher.finish()).toEqual([ "part-0" ]);
         expect(canvas.sizes()).toEqual([ [ 1600, 2400 ] ]);
         expect(canvas.events).toEqual([
-            "draw 0: slice-0 at 0", "draw 0: slice-500 at 1000", "draw 0: slice-700 at 1400", "encode 0"
+            "draw 0: slice-0 0+1000 at 0", "draw 0: slice-500 0+1000 at 1000", "draw 0: slice-700 600+400 at 2000",
+            "encode 0"
+        ]);
+    });
+
+    it("keeps the rows an earlier capture drew, such as a fixed header only the first one shows", async () => {
+        stubImages({ naturalWidth: 800, naturalHeight: 500 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ pageHeight: 520, devicePixelRatio: 1 });
+
+        await stitcher.add({ dataUrl: "header", y: 0 });
+        await stitcher.add({ dataUrl: "no-header", y: 20 });
+        stitcher.finish();
+
+        expect(canvas.events).toEqual([
+            "draw 0: header 0+500 at 0", "draw 0: no-header 480+20 at 500", "encode 0"
         ]);
     });
 
@@ -37,8 +52,8 @@ describe("ScreenshotStitcher", () => {
 
         expect(canvas.sizes()).toEqual([ [ 600, 3300 ] ]);
         expect(canvas.events).toEqual([
-            "draw 0: slice-0 at 0", "draw 0: slice-701 at 1052", "draw 0: slice-1402 at 2103",
-            "draw 0: slice-1499 at 2249", "encode 0"
+            "draw 0: slice-0 0+1052 at 0", "draw 0: slice-701 0+1052 at 1052", "draw 0: slice-1402 1+1051 at 2104",
+            "draw 0: slice-1499 906+145 at 3155", "encode 0"
         ]);
     });
 
@@ -54,12 +69,12 @@ describe("ScreenshotStitcher", () => {
         expect(stitcher.finish()).toEqual([ "part-0", "part-1", "part-2" ]);
         expect(canvas.sizes()).toEqual([ [ 900, MAX_PART_HEIGHT ], [ 900, MAX_PART_HEIGHT ], [ 900, 1616 ] ]);
         expect(canvas.events).toEqual([
-            "draw 0: slice-0 at 0", "draw 0: slice-1000 at 3000", "draw 0: slice-2000 at 6000",
+            "draw 0: slice-0 0+3000 at 0", "draw 0: slice-1000 0+3000 at 3000", "draw 0: slice-2000 0+2192 at 6000",
             "encode 0",
-            "draw 1: slice-2000 at -2192", "draw 1: slice-3000 at 808", "draw 1: slice-4000 at 3808",
-            "draw 1: slice-5000 at 6808",
+            "draw 1: slice-2000 2192+808 at 0", "draw 1: slice-3000 0+3000 at 808",
+            "draw 1: slice-4000 0+3000 at 3808", "draw 1: slice-5000 0+1384 at 6808",
             "encode 1",
-            "draw 2: slice-5000 at -1384",
+            "draw 2: slice-5000 1384+1616 at 0",
             "encode 2"
         ]);
     });
@@ -75,8 +90,8 @@ describe("ScreenshotStitcher", () => {
         stitcher.finish();
 
         expect(canvas.events.slice(-5)).toEqual([
-            "draw 0: slice-7500 at 7500", "encode 0", "draw 1: slice-7500 at -692", "draw 1: slice-7900 at -292",
-            "encode 1"
+            "draw 0: slice-7500 0+692 at 7500", "encode 0", "draw 1: slice-7500 692+808 at 0",
+            "draw 1: slice-7900 1100+400 at 808", "encode 1"
         ]);
     });
 
@@ -89,6 +104,7 @@ describe("ScreenshotStitcher", () => {
 
         expect(stitcher.finish()).toEqual([ "part-0" ]);
         expect(canvas.sizes()).toEqual([ [ 100, MAX_PART_HEIGHT ] ]);
+        expect(canvas.events).toEqual([ "draw 0: slice 0+692 at 7500", "encode 0" ]);
     });
 
     it("fails without captures, without a canvas, or on a capture that cannot be read", async () => {
@@ -126,14 +142,16 @@ function stubImages({ naturalWidth, naturalHeight, fail = false }: {
     });
 }
 
-/** Records, in order, what is drawn on which canvas and when each is encoded. */
+/** Records, in order, which rows of which capture are drawn where, and when each canvas is encoded. */
 function stubCanvas() {
     const canvases: HTMLCanvasElement[] = [];
     const events: string[] = [];
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(function (this: HTMLCanvasElement) {
         const index = canvases.push(this) - 1;
         return {
-            drawImage: (image: { src: string }, _x: number, y: number) => events.push(`draw ${index}: ${image.src} at ${y}`)
+            drawImage: (
+                image: { src: string }, _sx: number, sy: number, _sw: number, sh: number, _dx: number, dy: number
+            ) => events.push(`draw ${index}: ${image.src} ${sy}+${sh} at ${dy}`)
         } as unknown as CanvasRenderingContext2D;
     });
     vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockImplementation(function (this: HTMLCanvasElement) {

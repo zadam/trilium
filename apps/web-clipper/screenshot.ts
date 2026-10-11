@@ -33,6 +33,8 @@ export class ScreenshotStitcher {
 
     private width = 0;
     private readonly height: number;
+    /** The device pixel row above which the captures have drawn the page. */
+    private drawnTo = 0;
     private part: { index: number, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D } | undefined;
     private readonly parts: string[] = [];
 
@@ -45,12 +47,17 @@ export class ScreenshotStitcher {
         this.width ||= image.naturalWidth;
 
         const top = Math.round(y * this.request.devicePixelRatio);
+        // An overlapping capture draws only the rows below `drawnTo`: only the first shows a fixed header.
+        const start = Math.max(top, this.drawnTo);
         const bottom = Math.min(top + image.naturalHeight, this.height);
-        for (let index = Math.floor(top / MAX_PART_HEIGHT); index * MAX_PART_HEIGHT < bottom; index++) {
-            // The last capture overlaps the one before it, which already drew any part it reaches back into.
-            if (this.part && index < this.part.index) continue;
-            this.openPart(index).drawImage(image, 0, top - index * MAX_PART_HEIGHT);
+        for (let index = Math.floor(start / MAX_PART_HEIGHT); index * MAX_PART_HEIGHT < bottom; index++) {
+            const from = Math.max(start, index * MAX_PART_HEIGHT);
+            const rows = Math.min(bottom, (index + 1) * MAX_PART_HEIGHT) - from;
+            this.openPart(index).drawImage(image,
+                0, from - top, image.naturalWidth, rows,
+                0, from - index * MAX_PART_HEIGHT, image.naturalWidth, rows);
         }
+        this.drawnTo = Math.max(this.drawnTo, bottom);
     }
 
     /** Returns the images as PNG data URLs, from the top of the page. */
