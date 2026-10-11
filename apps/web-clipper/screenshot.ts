@@ -25,12 +25,6 @@ export type StitchMessage =
 export const MAX_PART_HEIGHT = 8192;
 
 /**
- * The longest page a screenshot captures, in device pixels. It bounds the memory and the time a
- * capture takes: about a second per two viewports.
- */
-export const MAX_SCREENSHOT_HEIGHT = 60_000;
-
-/**
  * Draws the captures of a scrolled page, given in order from the top, into images of at most
  * {@link MAX_PART_HEIGHT}. Each image is encoded as soon as the next one begins, so only one is
  * held as pixels.

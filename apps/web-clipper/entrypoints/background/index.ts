@@ -1,5 +1,5 @@
 import {
-    MAX_SCREENSHOT_HEIGHT, type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
+    type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
 import { extractPage, randomString, type Rect } from "@/utils";
 
@@ -50,6 +50,8 @@ interface Stitcher {
 const CAPTURE_INTERVAL_MS = 550;
 /** How long a scrolled page gets to draw what came into view before it is captured. */
 const SCROLL_SETTLE_MS = 150;
+/** The most captures a full-page screenshot takes, about 30 seconds; a longer page is cut off. */
+const MAX_SCREENSHOT_CAPTURES = 50;
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
 type ClippedImage = { imageId: string, src: string, dataUrl?: string };
@@ -177,7 +179,7 @@ export default defineBackground(() => {
             await setFloatingElements(tabId, "first");
             // Measured once the page is prepared: without its scrollbars, it can lay out differently.
             const page = await scrollTab(tabId, start.scrollX, 0);
-            const height = Math.min(page.pageHeight, MAX_SCREENSHOT_HEIGHT / page.devicePixelRatio);
+            const height = Math.min(page.pageHeight, MAX_SCREENSHOT_CAPTURES * page.viewportHeight);
             const stitcher = await createStitcher({ pageHeight: height, devicePixelRatio: page.devicePixelRatio });
 
             let position = page;
