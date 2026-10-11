@@ -46,8 +46,10 @@ function metaContent(property: string) {
     return document.querySelector(`meta[property='${property}']`)?.getAttribute("content") ?? undefined;
 }
 
-/** The day of `value` as `YYYY-MM-DD`, or `undefined` when it is missing or not a date. */
+/**
+ * The `YYYY-MM-DD` that `value` starts with, or `undefined` when it does not start with one. The day
+ * is the one the page states: converting a timestamp to UTC can move it to the day before or after.
+ */
 function isoDate(value: string | undefined) {
-    const date = new Date(value ?? "");
-    return Number.isNaN(date.getTime()) ? undefined : date.toISOString().substring(0, 10);
+    return /^\d{4}-\d{2}-\d{2}/.exec(value?.trim() ?? "")?.[0];
 }

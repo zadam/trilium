@@ -80,6 +80,20 @@ describe("readable page", () => {
         expect(readPage()?.labels).toEqual({});
     });
 
+    it("keeps the day the page states, whatever its offset from UTC", () => {
+        document.head.innerHTML = `
+            <title>Post title</title>
+            <meta property="article:published_time" content="2022-02-09T00:30:00+01:00">
+            <meta property="article:modified_time" content="2022-02-10T23:30:00-05:00">`;
+        document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p></article>`;
+        expect(readPage()?.labels).toEqual({ publishedDate: "2022-02-09", modifiedDate: "2022-02-10" });
+
+        document.head.innerHTML = "<title>Post title</title>";
+        document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p>
+            <p>Published <time>February 8, 2022</time></p></article>`;
+        expect(readPage()?.labels).toEqual({});
+    });
+
     it("keeps an article that is only a picture, and returns nothing for a page without one", () => {
         document.body.innerHTML = `<article><img src="photo.jpg" width="800" height="600"></article>`;
         expect(readPage()?.images.map(({ src }) => src)).toEqual([ "https://example.com/blog/photo.jpg" ]);
