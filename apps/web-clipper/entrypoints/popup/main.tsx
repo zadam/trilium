@@ -24,7 +24,7 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { extractReadablePage, type ReadablePage } from "@/utils";
+import { type ExtractedPage, extractPage, type ReadablePage } from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
@@ -52,8 +52,8 @@ interface SelectedContent {
     labels?: Record<string, string>;
 }
 
-/** The current page: its readable version, or why there is none. */
-type PageState = ReadablePage | "unreadable" | "inaccessible";
+/** The current page: its article and its whole page, or why there is nothing to save. */
+type PageState = ExtractedPage | "unreadable" | "inaccessible";
 
 /** What the active tab offers to save. */
 interface TabContent {
@@ -68,14 +68,18 @@ interface TabContent {
 }
 
 /**
- * What the card saves: the selection, the readable page (`clipType: "page"`), or a note about the
- * page with a link to it (`clipType: "note"`), which the popup calls a bookmark.
+ * What the card saves: the selection, the page (`clipType: "page"`), or a note about the page with a
+ * link to it (`clipType: "note"`), which the popup calls a bookmark.
  */
 type ClipMode = "selection" | "page" | "note";
+
+/** Which reading of the page the `page` mode saves. */
+type PageVariant = keyof ExtractedPage;
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
     mode?: ClipMode;
+    variant?: PageVariant;
     /** `undefined` until the user edits the title. */
     title?: string;
     /** `undefined` until the user edits the page's description. */
@@ -123,6 +127,8 @@ const PREVIEW_STYLE = `
 `;
 
 const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
+
+const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
 
 /** The save button of each mode, with the command whose shortcut it shows, or its own shortcut. */
 const SAVE_BUTTONS: Record<ClipMode, { icon: IconDefinition, label: string, command: string, shortcut?: string }> = {
@@ -339,18 +345,20 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
 }) {
-    const { mode: chosenMode, title, description, author, text } = draft;
+    const { mode: chosenMode, variant: chosenVariant, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-    const article = typeof tab?.page === "object" ? tab.page : undefined;
+    const page = typeof tab?.page === "object" ? tab.page : undefined;
+    const variant = chosenVariant && page?.[chosenVariant] ? chosenVariant : page?.article ? "article" : "wholePage";
+    const pageClip = page?.[variant];
     const selection = tab?.selection ?? undefined;
-    const modes = tab ? availableModes(article, selection) : [];
+    const modes = tab ? availableModes(pageClip, selection) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
-    const clip = mode === "selection" ? selection : mode === "page" ? article : undefined;
-    const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
+    const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
+    const shownTitle = title ?? (pageClip ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription = description ?? tab?.description ?? "";
     const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
-    const shownAuthor = author ?? article?.labels.pageAuthor ?? "";
+    const shownAuthor = author ?? pageClip?.labels.pageAuthor ?? "";
     const savedAuthor = shownAuthor.replace(/\s+/g, " ").trim();
 
     useEffect(() => {
@@ -396,7 +404,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
-    const pageLabels = mode === "page" ? article?.labels : undefined;
+    const pageLabels = mode === "page" ? pageClip?.labels : undefined;
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
@@ -432,7 +440,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             )}
 
             {mode === "note" && modes.length === 1 && (
-                <div className="clip-hint">This page has no article; save it as a bookmark.</div>
+                <div className="clip-hint">This page has nothing to save; save it as a bookmark.</div>
             )}
 
             <div className="page-body">
@@ -507,6 +515,21 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                         onKeyDown={saveNoteOnCtrlEnter}
                     />
                 )}
+                {mode === "page" && page && (
+                    <div className="page-variant" role="group" aria-label="How to read the page">
+                        {(Object.keys(VARIANT_LABELS) as PageVariant[]).map((option) => (
+                            <button
+                                key={option}
+                                aria-pressed={option === variant}
+                                disabled={!page[option]}
+                                title={page[option] ? undefined : "Trilium found no article on this page."}
+                                onClick={() => onDraftChange({ ...draft, variant: option })}
+                            >
+                                {VARIANT_LABELS[option]}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 {clip && (
                     <iframe
                         className="page-content"
@@ -556,11 +579,11 @@ function fitToContent(frame: HTMLIFrameElement) {
     }).observe(root);
 }
 
-/** The modes the page offers, the default first: the selection, then the article, then a note. */
-function availableModes(article: ReadablePage | undefined, selection: SelectedContent | undefined): ClipMode[] {
+/** The modes the page offers, the default first: the selection, then the page, then a note. */
+function availableModes(page: ReadablePage | undefined, selection: SelectedContent | undefined): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
-    if (article) modes.push("page");
+    if (page) modes.push("page");
     modes.push("note");
     return modes;
 }
@@ -622,18 +645,18 @@ async function readActiveTab(): Promise<TabContent> {
     if (tab?.id === undefined) return { page: "inaccessible", selection: null };
 
     const [ page, selection, description ] = await Promise.all([
-        extractPage(tab.id), readSelection(tab.id), readDescription(tab.id)
+        readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
     ]);
     return { page, selection, title: tab.title, url: tab.url, description };
 }
 
 /**
- * `extractReadablePage()` answers `undefined` when Readability cannot parse the page, and fails
- * where the extension cannot run scripts.
+ * `extractPage()` answers `undefined` when the page shows nothing, and fails where the extension
+ * cannot run scripts.
  */
-async function extractPage(tabId: number): Promise<PageState> {
+async function readPage(tabId: number): Promise<PageState> {
     try {
-        return await extractReadablePage(tabId) ?? "unreadable";
+        return await extractPage(tabId) ?? "unreadable";
     } catch {
         return "inaccessible";
     }

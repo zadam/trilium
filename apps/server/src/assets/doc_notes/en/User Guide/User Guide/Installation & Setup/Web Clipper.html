@@ -38,16 +38,22 @@
     <ul>
       <li><em>Selection</em>, when text is selected on the page: <em>Save selection</em> saves
         it into the note of that page's clippings, as the context menu does.</li>
-      <li><em>Page</em>, when the page has an article: <em>Save page to Trilium</em> saves
-        the article's text and images. The author the page names shows under the
-        description, marked by the <span class="tn-icon bx bx-user"></span> icon.
-        It can be edited or cleared before saving, or written in when the page
-        names none, and is saved in the <code>#pageAuthor</code> label of the note.
-        When the page states when it was published, that date shows under the author,
-        marked by the <span class="tn-icon bx bx-calendar"></span> icon, and is saved
-        in the <code>#publishedDate</code> label of the note. When it states when
-        it was last modified, that date shows below, marked by the <span class="tn-icon bx bx-history"></span> icon,
-        and is saved in the <code>#modifiedDate</code> label.</li>
+      <li><em>Page</em>: <em>Save page to Trilium</em> saves the page's text and images.
+        A smaller switch at the top of the preview chooses how much of the page
+        to keep: <em>Article</em> keeps only the page's main text, without its menus,
+        sidebars and footers, and <em>Whole page</em> keeps everything the page shows. <em>Whole page</em> is
+        for pages that are not an article (such as a gallery or a page of cards),
+        where <em>Article</em> can leave out part of the content; the preview shows
+        what each one keeps. <em>Article</em> is unavailable on a page where Trilium
+        finds no article. The author the page names shows under the description,
+        marked by the <span class="tn-icon bx bx-user"></span> icon. It can be edited
+        or cleared before saving, or written in when the page names none, and is
+        saved in the <code>#pageAuthor</code> label of the note. When the page states
+        when it was published, that date shows under the author, marked by the <span
+        class="tn-icon bx bx-calendar"></span> icon, and is saved in the <code>#publishedDate</code> label
+        of the note. When it states when it was last modified, that date shows
+        below, marked by the <span class="tn-icon bx bx-history"></span> icon, and
+        is saved in the <code>#modifiedDate</code> label.</li>
       <li><em>Bookmark</em>, always: a text box for a note about the page replaces
         the preview, and <em>Save bookmark</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>)
         saves a link to the page with that note. Left empty, the title stays the
@@ -60,10 +66,12 @@
       of the note. Clippings saved with the keyboard shortcuts or the context
       menu, screenshots and images included, get the description as the page
       gives it. Each clipping that brings a description updates the label.</p>
-    <p>The popup opens on the selection if there is one, otherwise on the article.
-      On a page with no article and no selection, it opens on <em>Bookmark</em> and
-      says the page has no article. The keyboard shortcuts and the context menu
-      still save right away, without a preview.</p>
+    <p>The popup opens on the selection if there is one, otherwise on <em>Page</em>,
+      showing the article, or the whole page when the page has no article. On
+      a page that shows nothing to save, it opens on <em>Bookmark</em> and says
+      so. The keyboard shortcuts and the context menu still save right away,
+      without a preview: saving the whole page that way saves the article, or
+      the whole page when the page has no article.</p>
   </li>
   <li>
     <p>Pages the extension cannot access (the browser's own pages, the extension

@@ -56,9 +56,9 @@ let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
-/** What `readable-page.js` returns in the active tab; no article unless a test says so. */
-let readablePage: unknown;
-const executeScript = vi.fn(async () => [ { result: readablePage } ]);
+/** What `readable-page.js` returns in the active tab; nothing to save unless a test says so. */
+let extractedPage: unknown;
+const executeScript = vi.fn(async () => [ { result: extractedPage } ]);
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
@@ -76,7 +76,7 @@ describe("background", () => {
         fakeBrowser.reset();
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
-        readablePage = undefined;
+        extractedPage = undefined;
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -281,9 +281,9 @@ describe("background", () => {
     });
 
     describe("saving the whole page", () => {
-        it("saves the readable page from the shortcut, the menu and the popup", async () => {
+        it("saves the article from the shortcut, the menu and the popup", async () => {
             const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
-            readablePage = page;
+            extractedPage = { article: page, wholePage: { ...page, content: "<nav>Menu</nav><p>Body</p>" } };
 
             await onCommand("saveWholePage");
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
@@ -301,14 +301,24 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
         });
 
-        it("saves nothing from a page without an article or out of reach", async () => {
+        it("saves the whole page from the shortcut when the page has no article", async () => {
+            const wholePage = { title: "Gallery", content: "<h2>Card</h2>", images: [], clipType: "page" };
+            extractedPage = { wholePage };
+
+            await onCommand("saveWholePage");
+
+            expect(facade.callService).toHaveBeenCalledWith("POST", "notes", wholePage);
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "saved" });
+        });
+
+        it("saves nothing from a page that shows nothing or is out of reach", async () => {
             await onCommand("saveWholePage");
             expect(await lastToast()).toMatchObject({
                 ...GENERIC_FAILURE_TOAST,
-                message: "Saving to Trilium failed: Trilium could not find an article on this page."
+                message: "Saving to Trilium failed: Trilium found nothing to save on this page."
             });
 
-            readablePage = { title: "Article", content: "<p>Body</p>", images: [] };
+            extractedPage = { wholePage: { title: "Article", content: "<p>Body</p>", images: [] } };
             tabs = [ { title: "Tab without id" } ];
             await onCommand("saveWholePage");
 

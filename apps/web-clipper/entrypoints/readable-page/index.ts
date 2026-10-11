@@ -1,27 +1,59 @@
 import Defuddle from "defuddle";
 
-import { descriptionLabels, getImages, getPageLocationOrigin, type ReadablePage } from "@/utils";
+import { descriptionLabels, type ExtractedPage, getImages, getPageLocationOrigin, type ReadablePage } from "@/utils";
 
 /**
- * Extracts the readable page with Defuddle. `extractReadablePage()` injects it into the tab only
- * when a page is read, so Defuddle does not load with the content script on every page. The value
- * `main()` returns is the result of `executeScript()`.
+ * Reads the page with Defuddle, as an article and as a whole. `extractPage()` injects it into the
+ * tab only when a page is read, so Defuddle does not load with the content script on every page. The
+ * value `main()` returns is the result of `executeScript()`.
  */
 export default defineUnlistedScript(readPage);
 
-function readPage(): ReadablePage | undefined {
+/**
+ * Keeps all of `<body>`: Defuddle still removes hidden elements, makes links absolute and converts
+ * embeds, but none of what it scores as clutter, which on a page without an article is the content.
+ */
+const WHOLE_PAGE_OPTIONS = {
+    contentSelector: "body",
+    removeLowScoring: false,
+    removeExactSelectors: false,
+    removePartialSelectors: false,
+    removeContentPatterns: false,
+    removeSmallImages: false
+};
+
+function readPage(): ExtractedPage | undefined {
     // `parse()` works on a copy of the document and reads styles and image sizes from the page,
     // so it is given the live document.
     const article = new Defuddle(document, { url: location.href }).parse();
+    const wholePage = new Defuddle(document, { url: location.href, ...WHOLE_PAGE_OPTIONS }).parse();
 
-    // A document of its own loads none of the article's images and runs none of its code.
-    const body = new DOMParser().parseFromString(article.content, "text/html").body;
+    const page = {
+        title: article.title,
+        pageUrl: getPageLocationOrigin() + location.pathname + location.search,
+        clipType: "page" as const,
+        labels: pageLabels(article)
+    };
+    const whole = withContent(page, wholePage.content);
+    if (!whole) {
+        return undefined;
+    }
+    return { article: withContent(page, article.content), wholePage: whole };
+}
+
+/** The clip of `html`, its images replaced by placeholders, or `undefined` when it shows nothing. */
+function withContent(page: Omit<ReadablePage, "content" | "images">, html: string): ReadablePage | undefined {
+    // A document of its own loads none of the page's images and runs none of its code.
+    const body = new DOMParser().parseFromString(html, "text/html").body;
     if (!body.textContent.trim() && !body.querySelector("img")) {
         return undefined;
     }
 
     const images = getImages(body);
+    return { ...page, content: body.innerHTML, images };
+}
 
+function pageLabels(article: { author: string, published: string }) {
     const labels = descriptionLabels();
     const author = article.author.replace(/\s+/g, " ").trim();
     if (author) {
@@ -35,15 +67,7 @@ function readPage(): ReadablePage | undefined {
     if (modifiedDate) {
         labels['modifiedDate'] = modifiedDate;
     }
-
-    return {
-        title: article.title,
-        content: body.innerHTML,
-        images,
-        pageUrl: getPageLocationOrigin() + location.pathname + location.search,
-        clipType: 'page',
-        labels
-    };
+    return labels;
 }
 
 function metaContent(property: string) {

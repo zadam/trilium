@@ -3,7 +3,7 @@ export type Rect = { x: number, y: number, width: number, height: number };
 /** An image of a clipping; the clipping's `content` references it by `imageId`. */
 export type ClippedImage = { imageId: string, src: string };
 
-/** The readable version of a page, as `entrypoints/readable-page/index.ts` extracts it. */
+/** A page clip, as `entrypoints/readable-page/index.ts` extracts it. */
 export interface ReadablePage {
     title: string;
     content: string;
@@ -13,17 +13,22 @@ export interface ReadablePage {
     labels: Record<string, string>;
 }
 
+/** The two ways to clip a page: its article, when Defuddle finds one, and all of it. */
+export interface ExtractedPage {
+    article?: ReadablePage;
+    wholePage: ReadablePage;
+}
+
 /**
  * Runs `entrypoints/readable-page/index.ts` in the tab and returns the page it read, or `undefined`
- * when the page has no article. Throws where the extension cannot run scripts, such as browser
- * pages.
+ * when the page shows nothing. Throws where the extension cannot run scripts, such as browser pages.
  */
-export async function extractReadablePage(tabId: number): Promise<ReadablePage | undefined> {
+export async function extractPage(tabId: number): Promise<ExtractedPage | undefined> {
     const [ injection ] = await browser.scripting.executeScript({
         target: { tabId },
         files: [ "/readable-page.js" ]
     });
-    return (injection?.result ?? undefined) as ReadablePage | undefined;
+    return (injection?.result ?? undefined) as ExtractedPage | undefined;
 }
 
 export function randomString(len: number) {

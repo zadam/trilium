@@ -2,7 +2,7 @@ import type { Window as HappyDOMWindow } from "happy-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
-import { createLink, extractReadablePage, getPageLocationOrigin, randomString } from "./utils";
+import { createLink, extractPage, getPageLocationOrigin, randomString } from "./utils";
 
 describe("randomString", () => {
     it("returns alphanumeric strings of the requested length", () => {
@@ -41,7 +41,7 @@ describe("createLink", () => {
 });
 
 
-describe("extractReadablePage", () => {
+describe("extractPage", () => {
     afterEach(() => {
         Reflect.deleteProperty(fakeBrowser, "scripting");
     });
@@ -54,10 +54,10 @@ describe("extractReadablePage", () => {
             .mockResolvedValueOnce([]);
         Object.assign(fakeBrowser, { scripting: { executeScript } });
 
-        expect(await extractReadablePage(7)).toBe(page);
+        expect(await extractPage(7)).toBe(page);
         expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
-        expect(await extractReadablePage(7)).toBeUndefined();
-        expect(await extractReadablePage(7)).toBeUndefined();
+        expect(await extractPage(7)).toBeUndefined();
+        expect(await extractPage(7)).toBeUndefined();
     });
 });
 

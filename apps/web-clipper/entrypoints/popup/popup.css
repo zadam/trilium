@@ -100,15 +100,12 @@ body {
         border-radius: 8px;
         background: var(--card-background-color);
 
-        .clip-mode {
+        .clip-mode,
+        .page-variant {
             display: flex;
             gap: 2px;
-            padding: 2px;
-            border-radius: 8px;
-            background: var(--input-background-color);
 
             button {
-                flex: 1;
                 padding: 3px 8px;
                 border: 0;
                 border-radius: 6px;
@@ -117,8 +114,13 @@ body {
                 font-size: 0.9em;
                 cursor: pointer;
 
-                &:hover {
+                &:hover:not(:disabled) {
                     color: var(--main-text-color);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: default;
                 }
 
                 &[aria-pressed="true"] {
@@ -126,6 +128,32 @@ body {
                     box-shadow: 1px 1px 1px var(--cmd-button-shadow-color);
                     color: var(--cmd-button-text-color);
                 }
+            }
+        }
+
+        .clip-mode {
+            padding: 2px;
+            border-radius: 8px;
+            background: var(--input-background-color);
+
+            button {
+                flex: 1;
+            }
+        }
+
+        .page-variant {
+            flex: none;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            justify-content: flex-end;
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--main-border-color);
+            background: var(--main-background-color);
+
+            button {
+                padding: 1px 8px;
+                font-size: 0.8em;
             }
         }
 
