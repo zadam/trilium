@@ -52,8 +52,12 @@ pages or the extension stores, where no content script runs.
 
 - **Desktop first.** `getPort()` returns the port from the options page, or **37840** (production)
   / **37743** (development build, the port `pnpm desktop:start` uses). It tries that one port — there is no port scan — with
-  `GET http://127.0.0.1:<port>/api/clipper/handshake`, then falls back to the configured server.
-  It repeats every 60 seconds, and on the popup's **check** button.
+  `GET http://127.0.0.1:<port>/api/clipper/handshake` and asks the configured server at the same
+  time, with timeouts of 2 s and 10 s; the desktop app wins when both answer. It repeats every
+  60 seconds in the background, keeping the last status, and only the popup's **check** button
+  shows "searching". The last status is kept in `browser.storage.session`, so an MV3 service
+  worker that Chrome restarted does not start from "searching"; `callService()` waits for the
+  latest search, and an older search that ends later is discarded (`searchCount`).
 - **Version check.** The handshake returns `protocolVersion` (`CLIPPER_PROTOCOL_VERSION` in
   `packages/trilium-core/src/services/app_info.ts`); the extension compares the major version and
   reports `version-mismatch`.
