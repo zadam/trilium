@@ -100,6 +100,14 @@ describe("ClippedNoteBadge", () => {
         ]);
     });
 
+    it("stays open for a click inside, so its text can be selected", async () => {
+        const details = await openDetails({ "#pageUrl": PAGE_URL, "#pageAuthor": "Ada Lovelace" });
+
+        act(() => details.querySelector("dd")?.click());
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(document.querySelector(".tn-popup .clipped-note-details")).not.toBeNull();
+    });
+
     it("lists the dates of a page that has no description", async () => {
         const details = await openDetails({ "#pageUrl": PAGE_URL, "#modifiedDate": "2024-06-12" });
 

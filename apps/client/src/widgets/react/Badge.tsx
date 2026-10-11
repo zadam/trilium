@@ -147,7 +147,10 @@ function htmlToText(html: string) {
 export function BadgeWithDropdown({ text, children, tooltip, className, dropdownProps, panel, ...props }: BadgeProps & {
     children?: ComponentChildren,
     dropdownProps?: Partial<DropdownPanelProps>,
-    /** Opens a {@link DropdownPanel} instead of a menu, for content other than menu rows. */
+    /**
+     * Opens a {@link DropdownPanel} instead of a menu, for content other than menu rows. It closes
+     * only on a click outside, so its text can be selected.
+     */
     panel?: boolean
 }) {
     const Toggle = panel ? DropdownPanel : Dropdown;
@@ -166,6 +169,7 @@ export function BadgeWithDropdown({ text, children, tooltip, className, dropdown
             hideToggleArrow
             title={tooltip}
             titlePosition="bottom"
+            autoClose={panel ? "outside" : undefined}
             {...dropdownProps}
             placement="bottom"
         >{children}</Toggle>
