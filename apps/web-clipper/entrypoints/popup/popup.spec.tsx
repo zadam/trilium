@@ -460,24 +460,37 @@ describe("popup", () => {
         }
     });
 
-    it("sizes the preview to the page, so that it scrolls with the description", async () => {
+    it("keeps the preview as tall as the page, so that it scrolls with the description", async () => {
         const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
         expect(frame).not.toBeNull();
         if (!frame) return;
-        Object.defineProperty(frame, "contentDocument", {
-            configurable: true,
-            value: { documentElement: { scrollHeight: 640 } }
-        });
+        let height = 640;
+        const root = { getBoundingClientRect: () => ({ height }) };
+        let onResize: (() => void) | undefined;
+        const observe = vi.fn();
+        class ResizeObserver {
+            constructor(callback: () => void) { onResize = callback; }
+            observe = observe;
+        }
+        Object.defineProperty(frame, "contentDocument", { configurable: true, value: { documentElement: root } });
+        Object.defineProperty(frame, "contentWindow", { configurable: true, value: { ResizeObserver } });
         await act(() => {
             frame.dispatchEvent(new Event("load"));
         });
+        expect(observe).toHaveBeenCalledWith(root);
+        onResize?.();
         expect(frame.style.height).toBe("640px");
+
+        // The page grows when it rewraps beside the card's scrollbar, or when an image loads.
+        height = 712.4;
+        onResize?.();
+        expect(frame.style.height).toBe("713px");
 
         Object.defineProperty(frame, "contentDocument", { configurable: true, value: null });
         await act(() => {
             frame.dispatchEvent(new Event("load"));
         });
-        expect(frame.style.height).toBe("640px");
+        expect(frame.style.height).toBe("713px");
     });
 
     it("keeps a draft bookmark while Trilium is briefly not found", async () => {

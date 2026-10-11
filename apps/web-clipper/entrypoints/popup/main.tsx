@@ -90,6 +90,7 @@ const PREVIEW_STYLE = `
     @media (prefers-color-scheme: dark) {
         :root { --code-block-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); }
     }
+    html { overflow: hidden; }
     body { margin: 8px; font: 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
     h1 { font-size: 1.3em; } h2 { font-size: 1.15em; } h3, h4, h5, h6 { font-size: 1em; }
     img, video, svg { max-width: 100%; height: auto; }
@@ -489,14 +490,20 @@ function withDescription(labels: Record<string, string> | undefined, description
 }
 
 /**
- * Makes the preview as tall as the page it shows, so that the page scrolls in `.page-body` together
- * with the description above it. `allow-same-origin` lets the popup read the height, and gives the
- * frame the extension's origin. The sandbox must not get `allow-scripts` too: with both, the clipped
- * page's HTML runs as the extension, with its browser APIs.
+ * Keeps the preview as tall as the page it shows, so that the page scrolls in `.page-body` together
+ * with the description above it. The page grows after `load` when it rewraps beside the scrollbar of
+ * `.page-body` or a lazy image loads, so a `ResizeObserver` from the frame's own window refits it.
+ * `allow-same-origin` lets the popup read the height, and gives the frame the extension's origin.
+ * The sandbox must not get `allow-scripts` too: with both, the clipped page's HTML runs as the
+ * extension, with its browser APIs.
  */
 function fitToContent(frame: HTMLIFrameElement) {
-    const height = frame.contentDocument?.documentElement.scrollHeight;
-    if (height) frame.style.height = `${height}px`;
+    const root = frame.contentDocument?.documentElement;
+    const view = frame.contentWindow as (Window & typeof globalThis) | null;
+    if (!root || !view) return;
+    new view.ResizeObserver(() => {
+        frame.style.height = `${Math.ceil(root.getBoundingClientRect().height)}px`;
+    }).observe(root);
 }
 
 /** The modes the page offers, the default first: the selection, then the article, then a note. */
