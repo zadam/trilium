@@ -241,6 +241,9 @@
     one the message names.</li>
   <li>Trilium rejected the request: the message includes the reason Trilium
     gave.</li>
+  <li>The popup could not reach the extension's background script, or it gave
+    no answer: close the popup and open it again. If the extension was just
+    updated or reloaded, reload the page as well.</li>
   <li>A PDF could not be saved: Trilium is older than v0.107.0, the website
     refused to send the PDF again, or the PDF is larger than 100 MB. The extension
     downloads the PDF with the browser's cookies for that website, so a PDF

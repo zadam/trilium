@@ -28,7 +28,9 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { extractPage, isPdfTab, type PageVariant, type ReadablePage, type SaveOutcome } from "@/utils";
+import {
+    describeError, extractPage, isPdfTab, type PageVariant, type ReadablePage, type SaveOutcome
+} from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
@@ -211,8 +213,7 @@ export function Popup() {
     /** Keeps the popup open while Trilium saves, and shows how it went. */
     async function save(message: object, clip?: ClipChoice) {
         setSaveState({ status: "saving", clip });
-        const outcome = await sendMessage(message) as SaveOutcome | undefined;
-        setSaveState({ ...outcome ?? { error: "Saving to Trilium failed." }, clip });
+        setSaveState({ ...await requestSave(message), clip });
     }
 
     const status = describeStatus(searchStatus);
@@ -953,6 +954,22 @@ export function iconVariant(icon: IconDefinition, pack: IconPack = "basic"): Ico
 /** A version mismatch counts as connected, so the buttons stay enabled and report it on use. */
 function isConnected(status: TriliumSearchStatus) {
     return status.status === "found-desktop" || status.status === "found-server" || status.status === "version-mismatch";
+}
+
+/** Sends a save to the background, and answers how it went, or why the background did not answer. */
+async function requestSave(message: object): Promise<SaveOutcome> {
+    let outcome: SaveOutcome | undefined;
+    try {
+        console.log("Sending message", message);
+        outcome = await browser.runtime.sendMessage(message);
+    } catch (e) {
+        console.error("Sending the save to the background script failed:", e);
+        return {
+            error: "Saving to Trilium failed: the popup could not reach the extension's background script"
+                + ` (${describeError(e)}).`
+        };
+    }
+    return outcome ?? { error: "Saving to Trilium failed: the extension's background script gave no answer." };
 }
 
 async function sendMessage(message: object) {

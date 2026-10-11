@@ -106,6 +106,7 @@ After each clipping made with a keyboard shortcut or the context menu, a notific
 *   Trilium was not found: start the desktop application, or check the server address and token in the extension's options.
 *   The versions of Trilium and the extension are not compatible: update the one the message names.
 *   Trilium rejected the request: the message includes the reason Trilium gave.
+*   The popup could not reach the extension's background script, or it gave no answer: close the popup and open it again. If the extension was just updated or reloaded, reload the page as well.
 *   A PDF could not be saved: Trilium is older than v0.107.0, the website refused to send the PDF again, or the PDF is larger than 100 MB. The extension downloads the PDF with the browser's cookies for that website, so a PDF behind a login can be saved while you are logged in.
 
 The extension downloads the images of a clipping itself, so that they are stored in Trilium together with the note. If some of them cannot be downloaded (for example because the website refuses the request), the clipping is still saved, and the notification says how many images are missing. Those images keep their address on the original website: Trilium tries to download them once more if _Download images automatically_ is enabled in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Media_, and otherwise the note shows them from the website for as long as it serves them.

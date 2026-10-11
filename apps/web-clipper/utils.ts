@@ -77,6 +77,17 @@ export function isPdfType(contentType: string | null) {
     return contentType?.split(";")[0]?.trim().toLowerCase() === "application/pdf";
 }
 
+/**
+ * The cause of a thrown value, which might be an error from another realm, which `instanceof Error`
+ * rejects, an error without a message, or not an error at all.
+ */
+export function describeError(error: unknown) {
+    if (error instanceof Error) return error.message || error.name;
+    const message = (error as { message?: unknown } | null | undefined)?.message;
+    if (typeof message === "string" && message) return message;
+    return String(error);
+}
+
 export function randomString(len: number) {
     let text = "";
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

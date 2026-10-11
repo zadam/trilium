@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
 import {
-    createLink, extractPage, getPageLocationOrigin, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS, randomString
+    createLink, describeError, extractPage, getPageLocationOrigin, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS,
+    randomString
 } from "./utils";
 
 describe("randomString", () => {
@@ -72,6 +73,17 @@ describe("extractPage", () => {
     });
 });
 
+
+describe("describeError", () => {
+    it("names the cause of whatever was thrown", () => {
+        expect(describeError(new TypeError("Failed to fetch"))).toBe("Failed to fetch");
+        expect(describeError(new DOMException("", "AbortError"))).toBe("AbortError");
+        expect(describeError({ message: "Could not establish connection." })).toBe("Could not establish connection.");
+        expect(describeError({ message: "" })).toBe("[object Object]");
+        expect(describeError("Too tall")).toBe("Too tall");
+        expect(describeError(undefined)).toBe("undefined");
+    });
+});
 
 describe("isPdfTab", () => {
     const TAB = { id: 7, url: "https://example.com/report" };

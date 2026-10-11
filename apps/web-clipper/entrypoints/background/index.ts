@@ -2,7 +2,7 @@ import {
     MAX_PART_HEIGHT, type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
 import {
-    extractPage, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS, randomString, type Rect, type SaveOutcome, type Saved
+    describeError, extractPage, isPdfTab, OPTIONAL_REQUEST_TIMEOUT_MS, randomString, type Rect, type SaveOutcome, type Saved
 } from "@/utils";
 
 import setupContextMenu from "./context_menu";
@@ -883,8 +883,7 @@ function decodeComponent(value: string) {
 
 function failureMessage(error: unknown) {
     if (error instanceof TriliumError) return error.message;
-    const details = error instanceof Error ? error.message : "";
-    return details ? `Saving to Trilium failed: ${details}` : "Saving to Trilium failed.";
+    return `Saving to Trilium failed: ${describeError(error)}`;
 }
 
 function delay(ms: number) {

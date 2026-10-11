@@ -447,13 +447,21 @@ describe("popup", () => {
         expect(frameDocument()).toBe(previewDocument(selection as typeof SELECTION));
     });
 
-    it("tells the user when the background script cannot be reached", async () => {
+    it("tells the user when the background script cannot be reached, with the reason for a save", async () => {
         const alertMock = vi.fn();
         vi.stubGlobal("alert", alertMock);
         sendMessage.mockRejectedValueOnce(new Error("Receiving end does not exist."));
-
         await click("All tabs in this window");
+        await flush();
+        expect(saveStatus()).toEqual({
+            kind: "callout callout-error save-status",
+            text: "Saving to Trilium failed: the popup could not reach the extension's background script"
+                + " (Receiving end does not exist.)."
+        });
+        expect(alertMock).not.toHaveBeenCalled();
 
+        sendMessage.mockRejectedValueOnce(new Error("Receiving end does not exist."));
+        await click("Check the connection again");
         expect(alertMock).toHaveBeenCalledWith("Calling browser runtime failed. Refreshing page might help.");
     });
 
@@ -832,7 +840,8 @@ describe("popup", () => {
             sendMessage.mockResolvedValueOnce(undefined);
             await click("Save PDF to Trilium");
             await flush();
-            expect(saveStatus()?.text).toBe("Saving to Trilium failed.");
+            expect(saveStatus()?.text)
+                .toBe("Saving to Trilium failed: the extension's background script gave no answer.");
             expect(sendMessageCalls("save-pdf")).toBe(2);
             expect(closeWindow).not.toHaveBeenCalled();
         });

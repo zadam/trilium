@@ -294,7 +294,14 @@ describe("background", () => {
             await onCommand("saveSelection");
             expect(await lastToast()).toMatchObject({
                 ...GENERIC_FAILURE_TOAST,
-                message: expect.stringContaining("unexpected")
+                message: "Saving to Trilium failed: unexpected"
+            });
+
+            // An error from another realm, or a value that is not an error at all, still names its cause.
+            facade.callService.mockRejectedValue({ message: "Could not establish connection." });
+            await onCommand("saveSelection");
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: Could not establish connection."
             });
         });
 
