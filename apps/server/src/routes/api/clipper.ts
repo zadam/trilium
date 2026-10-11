@@ -114,8 +114,7 @@ async function createNote(req: Request) {
 
     if (labels) {
         for (const labelName in labels) {
-            const labelValue = sanitize.sanitizeHtml(labels[labelName]);
-            note.setLabel(labelName, labelValue);
+            note.setLabel(labelName, sanitizeLabelValue(labels[labelName]));
         }
     }
 
@@ -132,6 +131,15 @@ async function createNote(req: Request) {
     return {
         noteId: note.noteId
     };
+}
+
+/**
+ * Label values are plain text, so every tag is removed. `sanitize-html` writes `&` as `&amp;`;
+ * turning it back cannot produce markup, since no `<` comes out of it.
+ */
+function sanitizeLabelValue(value: string) {
+    return sanitize.sanitizeHtmlCustom(value, { allowedTags: [], allowedAttributes: {} })
+        .replaceAll("&amp;", "&");
 }
 
 export async function processContent(images: Image[], note: BNote, content: string) {

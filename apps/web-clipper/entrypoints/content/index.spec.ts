@@ -149,6 +149,27 @@ describe("content script", () => {
         });
     });
 
+    describe("page metadata", () => {
+        it("reads the description from the first description tag that has one", async () => {
+            const getMetadata = () => send({ name: "trilium-get-page-metadata" });
+            document.head.innerHTML = `
+                <meta name="twitter:description" content="From Twitter">
+                <meta property="og:description" content="From Open Graph">
+                <meta name="description" content="  Spread
+                    over lines  ">`;
+            expect(await getMetadata()).toEqual({ description: "Spread over lines" });
+
+            document.querySelector("meta[name='description']")?.remove();
+            expect(await getMetadata()).toEqual({ description: "From Open Graph" });
+
+            document.querySelector("meta[property='og:description']")?.setAttribute("content", " ");
+            expect(await getMetadata()).toEqual({ description: "From Twitter" });
+
+            document.head.innerHTML = "<meta name=\"description\">";
+            expect(await getMetadata()).toEqual({});
+        });
+    });
+
     describe("screenshot area", () => {
         it("returns the dragged rectangle once the overlay is gone", async () => {
             vi.useFakeTimers();

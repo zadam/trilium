@@ -43,7 +43,10 @@
       <li><em>Bookmark</em>, always: a text box for a note about the page replaces
         the preview, and <em>Save bookmark</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>)
         saves a link to the page with that note. Left empty, the title stays the
-        page's title.</li>
+        page's title. If the page describes itself (in its <code>description</code> meta
+        tag, or the one it gives social sites), the description is shown above
+        the text box, where it can be edited or cleared, and is saved in the note's <code>#pageDescription</code> label.
+        The label is updated when the page is bookmarked again.</li>
     </ul>
     <p>The popup opens on the selection if there is one, otherwise on the article.
       On a page with no article (Readability cannot find one) and no selection,

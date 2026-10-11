@@ -36,8 +36,16 @@ const SELECTION = {
 };
 /** What the content script answers to `trilium-save-selection`; nothing is selected unless a test says so. */
 let selection: unknown;
-const tabsSendMessage = vi.fn(async (_tabId: number, message: { name: string }): Promise<unknown> =>
-    message.name === "trilium-save-page" ? PAGE : selection);
+/** What the content script answers to `trilium-get-page-metadata`, or the error it fails with; no description unless a test says so. */
+let metadata: unknown;
+const tabsSendMessage = vi.fn(async (_tabId: number, message: { name: string }): Promise<unknown> => {
+    if (message.name === "trilium-save-page") return PAGE;
+    if (message.name === "trilium-get-page-metadata") {
+        if (metadata instanceof Error) throw metadata;
+        return metadata;
+    }
+    return selection;
+});
 const closeWindow = vi.fn();
 let container: HTMLElement;
 
@@ -45,6 +53,7 @@ describe("popup", () => {
     beforeEach(async () => {
         fakeBrowser.reset();
         selection = undefined;
+        metadata = {};
         Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage });
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
@@ -271,7 +280,7 @@ describe("popup", () => {
         tabsQuery.mockResolvedValueOnce([ {} ]);
         await rerender();
         expect(unavailable()).toContain("The extension cannot access this page.");
-        expect(tabsSendMessage).toHaveBeenCalledTimes(4);
+        expect(tabsSendMessage).toHaveBeenCalledTimes(6);
     });
 
     it("previews the selection first, and switches to the whole page", async () => {
@@ -360,6 +369,50 @@ describe("popup", () => {
             content: "<p>Worth a read</p>"
         });
         expect(closeWindow).toHaveBeenCalledOnce();
+    });
+
+    it("shows the page's description in a bookmark, and saves it as edited", async () => {
+        metadata = { description: "All about the post" };
+        await rerender();
+        expect(container.querySelector(".page-description")).toBeNull();
+
+        await click("Bookmark");
+        expect(cardParts()).toEqual([
+            "page-heading", "clip-mode", "page-description", "page-body", "btn btn-primary primary-action"
+        ]);
+        const description = container.querySelector<HTMLTextAreaElement>(".page-description");
+        expect(description?.value).toBe("All about the post");
+        expect(description?.getAttribute("aria-label")).toBe("Page description");
+
+        await type(".page-description", "  Edited\n  description ");
+        sendMessage.mockResolvedValueOnce(undefined);
+        await ctrlEnter(".page-description");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-link-with-note",
+            title: "An article",
+            content: "",
+            description: "Edited description"
+        });
+
+        // A cleared description stays in the card while it is edited, and is not saved.
+        await type(".page-description", " ");
+        expect(container.querySelector(".page-description")).not.toBeNull();
+        await click("Save bookmark");
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-link-with-note", title: "An article", content: "" });
+    });
+
+    it("shows no description where the page gives none or cannot be asked for one", async () => {
+        // An outdated content script answers nothing.
+        metadata = undefined;
+        await rerender();
+        await click("Bookmark");
+        expect(container.querySelector(".page-description")).toBeNull();
+
+        metadata = new Error("Could not establish connection.");
+        await rerender();
+        await click("Bookmark");
+        expect(container.querySelector(".page-description")).toBeNull();
+        expect(container.querySelector(".page-body textarea")).not.toBeNull();
     });
 
     it("keeps a draft bookmark while Trilium is briefly not found", async () => {

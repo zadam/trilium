@@ -50,6 +50,21 @@ export default defineContentScript({
             return { publishedDate, modifiedDate };
         }
 
+        /** The page's own summary, preferred to the one it gives social sites, on a single line. */
+        function getPageDescription() {
+            const selectors = [
+                "meta[name='description']",
+                "meta[property='og:description']",
+                "meta[name='twitter:description']"
+            ];
+            for (const selector of selectors) {
+                const description = document.querySelector(selector)?.getAttribute("content")
+                    ?.replace(/\s+/g, " ").trim();
+                if (description) return description;
+            }
+            return undefined;
+        }
+
         function getRectangleArea() {
             return new Promise<Rect | null>((resolve) => {
                 const overlay = document.createElement('div');
@@ -308,6 +323,9 @@ export default defineContentScript({
                     clipType: 'page',
                     labels
                 };
+            }
+            else if (message.name === "trilium-get-page-metadata") {
+                return { description: getPageDescription() };
             }
             else {
                 throw new Error(`Unknown command: ${  JSON.stringify(message)}`);

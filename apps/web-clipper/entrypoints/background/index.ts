@@ -326,7 +326,7 @@ export default defineBackground(() => {
         toast(savedMessage("Page", failedImages), resp.noteId);
     }
 
-    async function saveLinkWithNote(title: string, content: string) {
+    async function saveLinkWithNote(title: string, content: string, description?: string) {
         const activeTab = await getActiveTab();
 
         if (!title.trim()) {
@@ -337,7 +337,8 @@ export default defineBackground(() => {
             title,
             content,
             clipType: 'note',
-            pageUrl: activeTab.url
+            pageUrl: activeTab.url,
+            ...(description && { labels: { pageDescription: description } })
         });
 
         toast("Link with note has been saved to Trilium.", resp.noteId);
@@ -466,7 +467,7 @@ export default defineBackground(() => {
             return await saveSelection(request.selection);
         }
         else if (request.name === 'save-link-with-note') {
-            return await saveLinkWithNote(request.title, request.content);
+            return await saveLinkWithNote(request.title, request.content, request.description);
         }
         else if (request.name === 'save-tabs') {
             return await saveTabs();

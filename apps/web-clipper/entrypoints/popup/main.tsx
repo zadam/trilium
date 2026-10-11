@@ -60,6 +60,8 @@ interface TabContent {
     /** The tab's own title and address, which a note clip saves. */
     title?: string;
     url?: string;
+    /** What the page says about itself, which a note clip saves in its `#pageDescription` label. */
+    description?: string;
 }
 
 /**
@@ -73,6 +75,8 @@ interface Draft {
     mode?: ClipMode;
     /** `undefined` until the user edits the title. */
     title?: string;
+    /** `undefined` until the user edits the page's description. */
+    description?: string;
     text: string;
 }
 
@@ -302,7 +306,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
 }) {
-    const { mode: chosenMode, title, text } = draft;
+    const { mode: chosenMode, title, description, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     const article = typeof tab?.page === "object" ? tab.page : undefined;
@@ -311,6 +315,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? article : undefined;
     const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
+    const shownDescription = description ?? tab?.description;
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -319,10 +324,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     /** Keeps the popup open when the note could not be saved, so its text is not lost. */
     async function saveNote() {
         const content = text.trim();
+        const pageDescription = shownDescription?.replace(/\s+/g, " ").trim();
         const result = await sendMessage({
             name: "save-link-with-note",
             title: shownTitle.trim(),
-            content: content ? textToHtml(content) : ""
+            content: content ? textToHtml(content) : "",
+            ...(pageDescription && { description: pageDescription })
         });
         if (result) window.close();
     }
@@ -389,6 +396,17 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
 
             {mode === "note" && modes.length === 1 && (
                 <div className="clip-hint">This page has no article; save it as a bookmark.</div>
+            )}
+
+            {mode === "note" && shownDescription !== undefined && (
+                <textarea
+                    className="page-description"
+                    aria-label="Page description"
+                    rows={2}
+                    value={shownDescription}
+                    onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
+                    onKeyDown={saveNoteOnCtrlEnter}
+                />
             )}
 
             <div className="page-body">
@@ -485,8 +503,10 @@ async function readActiveTab(): Promise<TabContent> {
     const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
     if (tab?.id === undefined) return { page: "inaccessible", selection: null };
 
-    const [ page, selection ] = await Promise.all([ extractPage(tab.id), readSelection(tab.id) ]);
-    return { page, selection, title: tab.title, url: tab.url };
+    const [ page, selection, description ] = await Promise.all([
+        extractPage(tab.id), readSelection(tab.id), readDescription(tab.id)
+    ]);
+    return { page, selection, title: tab.title, url: tab.url, description };
 }
 
 /**
@@ -514,6 +534,20 @@ async function readSelection(tabId: number): Promise<SelectedContent | null> {
         return text.trim() || selection.images.length ? selection : null;
     } catch {
         return null;
+    }
+}
+
+/**
+ * The page's description, or `undefined` when it has none. A content script from before an update
+ * answers nothing, and none runs on the browser's own pages.
+ */
+async function readDescription(tabId: number): Promise<string | undefined> {
+    try {
+        const metadata: { description?: string } | undefined =
+            await browser.tabs.sendMessage(tabId, { name: "trilium-get-page-metadata" });
+        return metadata?.description;
+    } catch {
+        return undefined;
     }
 }
 

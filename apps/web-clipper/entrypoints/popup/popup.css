@@ -172,6 +172,19 @@ body {
             }
         }
 
+        .page-description {
+            --input-background-color: transparent;
+
+            display: block;
+            width: 100%;
+            padding: 2px 6px;
+            border: 0;
+            border-radius: 6px;
+            color: var(--muted-text-color);
+            font-size: 0.85em;
+            resize: none;
+        }
+
         .clip-hint {
             padding-inline: 6px;
             color: var(--muted-text-color);

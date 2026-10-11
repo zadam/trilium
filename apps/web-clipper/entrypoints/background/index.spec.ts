@@ -613,6 +613,17 @@ describe("background", () => {
             expect(lastPayload()).toMatchObject({ title: "" });
         });
 
+        it("labels a bookmark with the description the popup sends", async () => {
+            const save = (description?: string) => sendRuntimeMessage(
+                { name: "save-link-with-note", title: "T", content: "", description });
+
+            await save("About the page");
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+
+            await save();
+            expect(lastPayload()).not.toHaveProperty("labels");
+        });
+
         it("opens a note in the browser when the desktop app cannot", async () => {
             const create = vi.fn(async (_properties: { url: string }) => ({}));
             Object.assign(fakeBrowser.tabs, { create });

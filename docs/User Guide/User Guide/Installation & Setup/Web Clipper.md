@@ -33,7 +33,7 @@ Clicking the extension's button in the browser toolbar opens its popup:
     
     *   _Selection_, when text is selected on the page: _Save selection_ saves it into the note of that page's clippings, as the context menu does.
     *   _Page_, when the page has an article: _Save page to Trilium_ saves the article's text and images, and the publication date shows next to the website when the page states one.
-    *   _Bookmark_, always: a text box for a note about the page replaces the preview, and _Save bookmark_ (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) saves a link to the page with that note. Left empty, the title stays the page's title.
+    *   _Bookmark_, always: a text box for a note about the page replaces the preview, and _Save bookmark_ (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) saves a link to the page with that note. Left empty, the title stays the page's title. If the page describes itself (in its `description` meta tag, or the one it gives social sites), the description is shown above the text box, where it can be edited or cleared, and is saved in the note's `#pageDescription` label. The label is updated when the page is bookmarked again.
     
     The popup opens on the selection if there is one, otherwise on the article. On a page with no article (Readability cannot find one) and no selection, it opens on _Bookmark_ and says the page has no article. The keyboard shortcuts and the context menu still save right away, without a preview.
 *   Pages the extension cannot access (the browser's own pages, the extension stores, and pages that were open before the extension was installed until they are reloaded) cannot be saved or captured, so the popup says so in place of the preview, and only _Tabs_ remains available there.

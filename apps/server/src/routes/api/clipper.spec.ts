@@ -119,10 +119,15 @@ describe("clipper route handlers", () => {
                 images: [],
                 clipType: "note",
                 pageUrl: "https://example.com/page",
-                labels: { source: "web" }
+                labels: {
+                    source: "web",
+                    pageDescription: "Tom & <b>Jerry</b><script>alert(1)</script>"
+                }
             }
         } as unknown as Request));
-        expect(result.noteId).toBeTruthy();
+        const note = becca.getNoteOrThrow(result.noteId);
+        expect(note.getLabelValue("source")).toBe("web");
+        expect(note.getLabelValue("pageDescription")).toBe("Tom & Jerry");
     });
 
     it("clips to the top level when there is no clipper inbox and no journal", async () => {
