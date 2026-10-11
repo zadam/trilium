@@ -803,6 +803,38 @@ describe("background", () => {
             expect(backgroundStitcher.add).toHaveBeenCalledWith({ dataUrl: PNG, y: 0 });
             expect(lastPayload()).toMatchObject({ images: [ { dataUrl: CROPPED_PNG } ] });
         });
+
+        it("captures the page by area with Firefox's captureTab, without scrolling through it", async () => {
+            vi.stubGlobal("__MANIFEST_VERSION__", 2);
+            backgroundStitcher.finish.mockReturnValue([ CROPPED_PNG ]);
+            const captureTab = vi.fn(async () => PNG);
+            Object.assign(fakeBrowser.tabs, { captureTab });
+            try {
+                simulatePage({ startY: 300, viewportHeight: 500, viewportWidth: 800, pageHeight: 12000, devicePixelRatio: 2 });
+                await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+                expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "restore", 300 ]);
+                // 4,096 CSS px is 8,192 device pixels; each area reaches a pixel into the next.
+                expect(captureTab.mock.calls).toEqual([ 0, 4096, 8192 ].map((y) => [ 7, {
+                    format: "png",
+                    rect: { x: 0, y, width: 800, height: Math.min(4097, 12000 - y) }
+                } ]));
+                expect(backgroundStitcher.created).toHaveBeenCalledWith({ pageHeight: 12000, devicePixelRatio: 2 });
+                expect(backgroundStitcher.add.mock.calls).toEqual([ 0, 4096, 8192 ].map((y) => [ { dataUrl: PNG, y } ]));
+                expect(captureVisibleTab).not.toHaveBeenCalled();
+                expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+
+                // A page loaded before the extension was updated does not give its width.
+                vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+                captureTab.mockClear();
+                simulatePage({ viewportHeight: 500, pageHeight: 500 });
+                await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+                expect(captureTab).not.toHaveBeenCalled();
+                expect(captureVisibleTab).toHaveBeenCalledOnce();
+            } finally {
+                Reflect.deleteProperty(fakeBrowser.tabs, "captureTab");
+            }
+        });
     });
 
     describe("context menu", () => {
@@ -1182,9 +1214,11 @@ async function lastToast() {
  * `scrollLimit`, starting at `startY`. `prepared` is the size it has once its scrollbars are
  * hidden.
  */
-function simulatePage({ startY = 0, viewportHeight, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1, prepared }: {
-    startY?: number, viewportHeight: number, pageHeight: number, scrollLimit?: number, devicePixelRatio?: number,
-    prepared?: { viewportHeight: number, pageHeight: number }
+function simulatePage({
+    startY = 0, viewportHeight, viewportWidth, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1, prepared
+}: {
+    startY?: number, viewportHeight: number, viewportWidth?: number, pageHeight: number, scrollLimit?: number,
+    devicePixelRatio?: number, prepared?: { viewportHeight: number, pageHeight: number }
 }) {
     let scrollY = startY;
     let size = { viewportHeight, pageHeight, scrollLimit };
@@ -1197,7 +1231,10 @@ function simulatePage({ startY = 0, viewportHeight, pageHeight, scrollLimit = pa
         if (y !== undefined) {
             scrollY = Math.max(0, Math.min(y, size.scrollLimit - size.viewportHeight));
         }
-        return { scrollX: 0, scrollY, viewportHeight: size.viewportHeight, pageHeight: size.pageHeight, devicePixelRatio };
+        return {
+            scrollX: 0, scrollY, viewportHeight: size.viewportHeight, pageHeight: size.pageHeight, devicePixelRatio,
+            ...(viewportWidth && { viewportWidth })
+        };
     };
 }
 

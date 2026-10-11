@@ -251,6 +251,7 @@ describe("content script", () => {
             scrollX: window.scrollX,
             scrollY: 240,
             viewportHeight: window.innerHeight,
+            viewportWidth: window.innerWidth,
             pageHeight: 3000,
             devicePixelRatio: window.devicePixelRatio
         };

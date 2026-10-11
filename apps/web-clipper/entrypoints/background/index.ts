@@ -1,5 +1,5 @@
 import {
-    type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
+    MAX_PART_HEIGHT, type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
 import { extractPage, isPdfTab, randomString, type Rect, type SaveOutcome, type Saved } from "@/utils";
 
@@ -36,9 +36,18 @@ type ScrollPosition = {
     scrollX: number;
     scrollY: number;
     viewportHeight: number;
+    /** Not given by a content script from an earlier version of the extension. */
+    viewportWidth?: number;
     pageHeight: number;
     devicePixelRatio: number;
 };
+
+/**
+ * Firefox's `tabs.captureTab()`, which captures any area of the page, in CSS pixels from its top,
+ * at the page's pixel ratio. Chrome has no such function.
+ */
+type CaptureTab = (tabId: number, options: { format: "png", rect: CaptureRect }) => Promise<string>;
+type CaptureRect = { x: number, y: number, width: number, height: number };
 
 /** Draws the captures of a full-page screenshot into images, wherever the canvas is. */
 interface Stitcher {
@@ -195,34 +204,74 @@ export default defineBackground(() => {
             const height = Math.min(page.pageHeight, MAX_SCREENSHOT_CAPTURES * page.viewportHeight);
             const stitcher = await createStitcher({ pageHeight: height, devicePixelRatio: page.devicePixelRatio });
 
-            let position = page;
-            let lastCaptureAt = 0;
-            for (;;) {
-                await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
-                const tab = await browser.tabs.get(tabId);
-                if (!tab.active) {
-                    throw new Error("The screenshot was stopped because another tab was opened.");
-                }
-
-                lastCaptureAt = Date.now();
-                const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: "png" });
-                await stitcher.add({ dataUrl, y: position.scrollY });
-                if (position === page) {
-                    await setFloatingElements(tabId, "rest");
-                }
-
-                const y = position.scrollY + page.viewportHeight;
-                if (y >= height) break;
-                const next = await scrollTab(tabId, start.scrollX, y);
-                // The page stopped scrolling short of the height it reported.
-                if (next.scrollY <= position.scrollY) break;
-                position = next;
+            const { captureTab } = browser.tabs as typeof browser.tabs & { captureTab?: CaptureTab };
+            if (captureTab && page.viewportWidth) {
+                const captureRect = (rect: CaptureRect) => captureTab.call(browser.tabs, tabId, { format: "png", rect });
+                await captureByArea(tabId, { ...page, viewportWidth: page.viewportWidth }, height, stitcher, captureRect);
+            } else {
+                await captureByScrolling(tabId, windowId, page, height, stitcher);
             }
 
             return { parts: await stitcher.finish(), cutOff: height < page.pageHeight };
         } finally {
             await setFloatingElements(tabId, "restore").catch(() => undefined);
             await scrollTab(tabId, start.scrollX, start.scrollY).catch(() => undefined);
+        }
+    }
+
+    /** Scrolls through the page a viewport at a time, capturing each, as often as Chrome allows. */
+    async function captureByScrolling(
+        tabId: number, windowId: number, page: ScrollPosition, height: number, stitcher: Stitcher
+    ) {
+        let position = page;
+        let lastCaptureAt = 0;
+        for (;;) {
+            await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
+            await assertTabActive(tabId);
+
+            lastCaptureAt = Date.now();
+            const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: "png" });
+            await stitcher.add({ dataUrl, y: position.scrollY });
+            if (position === page) {
+                await setFloatingElements(tabId, "rest");
+            }
+
+            const y = position.scrollY + page.viewportHeight;
+            if (y >= height) break;
+            const next = await scrollTab(tabId, page.scrollX, y);
+            // The page stopped scrolling short of the height it reported.
+            if (next.scrollY <= position.scrollY) break;
+            position = next;
+        }
+    }
+
+    /**
+     * Captures the page from the top with Firefox's `tabs.captureTab()`, an area of up to one image
+     * at a time, without scrolling. A fixed header is drawn where it is, at the top. Each area reaches
+     * a CSS pixel into the next, so a fractional pixel ratio leaves no gap between them.
+     */
+    async function captureByArea(
+        tabId: number,
+        page: ScrollPosition & { viewportWidth: number },
+        height: number,
+        stitcher: Stitcher,
+        captureRect: (rect: CaptureRect) => Promise<string>
+    ) {
+        const step = Math.floor(MAX_PART_HEIGHT / page.devicePixelRatio);
+        await delay(SCROLL_SETTLE_MS);
+        for (let y = 0; y < height; y += step) {
+            await assertTabActive(tabId);
+            const dataUrl = await captureRect({
+                x: page.scrollX, y, width: page.viewportWidth, height: Math.min(step + 1, height - y)
+            });
+            await stitcher.add({ dataUrl, y });
+        }
+    }
+
+    async function assertTabActive(tabId: number) {
+        const tab = await browser.tabs.get(tabId);
+        if (!tab.active) {
+            throw new Error("The screenshot was stopped because another tab was opened.");
         }
     }
 

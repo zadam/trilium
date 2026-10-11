@@ -224,6 +224,7 @@ export default defineContentScript({
                     scrollX: window.scrollX,
                     scrollY: window.scrollY,
                     viewportHeight: window.innerHeight,
+                    viewportWidth: window.innerWidth,
                     pageHeight: document.documentElement.scrollHeight,
                     devicePixelRatio: window.devicePixelRatio
                 };
