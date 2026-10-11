@@ -552,7 +552,7 @@ describe("background", () => {
 
             await run(onCommand("saveFullPageScreenshot"));
 
-            expect(pageSteps()).toEqual([ undefined, 0, "first", "rest", 500, 1000, "restore", 300 ]);
+            expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300 ]);
             expect(stitchRequest()).toEqual({
                 slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ],
                 viewportHeight: 500,
@@ -580,6 +580,18 @@ describe("background", () => {
             expect(stitchRequest()).toMatchObject({ slices: [ { y: 0 }, { y: 2000 }, { y: 4000 } ] });
         });
 
+        it("captures the page as it is laid out once its scrollbars are hidden", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 1200, prepared: { viewportHeight: 515, pageHeight: 1100 } });
+
+            await run(onCommand("saveFullPageScreenshot"));
+
+            expect(stitchRequest()).toEqual({
+                slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 515 }, { dataUrl: PNG, y: 585 } ],
+                viewportHeight: 515,
+                pageHeight: 1100
+            });
+        });
+
         it("stops and scrolls back when another tab is opened, even if scrolling back fails", async () => {
             simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
             const scrollPage = tabMessageHandler;
@@ -593,7 +605,7 @@ describe("background", () => {
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
 
             expect(captureVisibleTab).not.toHaveBeenCalled();
-            expect(pageSteps()).toEqual([ undefined, 0, "first", "restore", 300 ]);
+            expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "restore", 300 ]);
             expect(await lastToast()).toMatchObject({
                 message: "Saving to Trilium failed: The screenshot was stopped because another tab was opened."
             });
@@ -949,17 +961,27 @@ async function lastToast() {
  * Answers the content script's scroll messages for a page of `pageHeight` that scrolls no further
  * than `scrollLimit`, starting at `startY`.
  */
-function simulatePage({ startY = 0, viewportHeight, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1 }: {
-    startY?: number, viewportHeight: number, pageHeight: number, scrollLimit?: number, devicePixelRatio?: number
+/**
+ * Answers the content script's messages for a page of `pageHeight` that scrolls no further than
+ * `scrollLimit`, starting at `startY`. `prepared` is the size it has once its scrollbars are
+ * hidden.
+ */
+function simulatePage({ startY = 0, viewportHeight, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1, prepared }: {
+    startY?: number, viewportHeight: number, pageHeight: number, scrollLimit?: number, devicePixelRatio?: number,
+    prepared?: { viewportHeight: number, pageHeight: number }
 }) {
     let scrollY = startY;
+    let size = { viewportHeight, pageHeight, scrollLimit };
     tabMessageHandler = (message) => {
-        if (message.name !== "trilium-scroll-to") return undefined;
-        const { y } = message as { y?: number };
-        if (y !== undefined) {
-            scrollY = Math.max(0, Math.min(y, scrollLimit - viewportHeight));
+        const { y, step } = message as { y?: number, step?: string };
+        if (step === "first" && prepared) {
+            size = { ...prepared, scrollLimit: prepared.pageHeight };
         }
-        return { scrollX: 0, scrollY, viewportHeight, pageHeight, devicePixelRatio };
+        if (message.name !== "trilium-scroll-to") return undefined;
+        if (y !== undefined) {
+            scrollY = Math.max(0, Math.min(y, size.scrollLimit - size.viewportHeight));
+        }
+        return { scrollX: 0, scrollY, viewportHeight: size.viewportHeight, pageHeight: size.pageHeight, devicePixelRatio };
     };
 }
 

@@ -18,7 +18,10 @@ type BackgroundMessage = {
 } | {
     name: "trilium-get-page-metadata";
 } | {
-    /** Changes the page's fixed and sticky elements for a full-page screenshot, or restores them. */
+    /**
+     * Changes the page for a full-page screenshot (its scrollbars, fixed and sticky elements), or
+     * restores it.
+     */
     name: "trilium-set-floating-elements";
     step: "first" | "rest" | "restore";
 } | {
@@ -162,19 +165,22 @@ export default defineBackground(() => {
         }
 
         const start = await scrollTab(tabId);
-        const height = Math.min(start.pageHeight, MAX_SCREENSHOT_HEIGHT / start.devicePixelRatio);
+        // Measured again once the page is prepared: without its scrollbars, it can lay out differently.
+        let page = start;
         const slices: ScreenshotSlice[] = [];
         let lastCaptureAt = 0;
 
         try {
             let y = 0;
-            while (y < height) {
-                const position = await scrollTab(tabId, start.scrollX, y);
+            while (y < Math.min(page.pageHeight, MAX_SCREENSHOT_HEIGHT / page.devicePixelRatio)) {
+                let position = await scrollTab(tabId, start.scrollX, y);
                 const previous = slices.at(-1);
                 // The page stopped scrolling short of the height it reported.
                 if (previous && position.scrollY <= previous.y) break;
                 if (!previous) {
                     await setFloatingElements(tabId, "first");
+                    position = await scrollTab(tabId, start.scrollX, y);
+                    page = position;
                 }
 
                 await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
@@ -189,14 +195,14 @@ export default defineBackground(() => {
                 if (!previous) {
                     await setFloatingElements(tabId, "rest");
                 }
-                y = position.scrollY + start.viewportHeight;
+                y = position.scrollY + page.viewportHeight;
             }
         } finally {
             await setFloatingElements(tabId, "restore").catch(() => undefined);
             await scrollTab(tabId, start.scrollX, start.scrollY).catch(() => undefined);
         }
 
-        return await stitch({ slices, viewportHeight: start.viewportHeight, pageHeight: start.pageHeight });
+        return await stitch({ slices, viewportHeight: page.viewportHeight, pageHeight: page.pageHeight });
     }
 
     /** Scrolls the tab when given a position, and answers where it is scrolled to. */

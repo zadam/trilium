@@ -1,7 +1,7 @@
 /**
  * The steps of a full-page screenshot that change the page:
- * - `first`, before the first capture, pins sticky elements where they are in the page and hides
- *   the fixed elements that are not at the top of the viewport;
+ * - `first`, before the first capture, hides the scrollbars, pins sticky elements where they are
+ *   in the page and hides the fixed elements that are not at the top of the viewport;
  * - `rest`, after the first capture, hides the fixed elements at the top too, so a header appears
  *   once, at the top of the screenshot;
  * - `restore` puts back every inline style the other steps changed.
@@ -22,6 +22,15 @@ const PINNED_STICKY: [ string, string ][] = [
 ];
 const HIDDEN: [ string, string ][] = [ [ "display", "none" ] ];
 
+/**
+ * Hides the page's scrollbars, which would otherwise be in every capture. The page can still be
+ * scrolled. `scrollbar-width` is for Firefox and Chrome 121 or later, `::-webkit-scrollbar` for
+ * older Chrome.
+ */
+const HIDE_SCROLLBARS_CSS = `
+    html, body { scrollbar-width: none !important; }
+    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; }`;
+
 interface SavedStyle {
     /** The element's `style` attribute before any change, or null when it had none. */
     attribute: string | null;
@@ -33,6 +42,7 @@ interface SavedStyle {
 const saved = new Map<HTMLElement, SavedStyle>();
 let topFixedElements: HTMLElement[] = [];
 let restoreTimer: ReturnType<typeof setTimeout> | undefined;
+let scrollbarStyle: HTMLStyleElement | undefined;
 
 export function setFloatingElements(step: FloatingElementsStep) {
     if (step === "first") {
@@ -50,6 +60,10 @@ export function setFloatingElements(step: FloatingElementsStep) {
 }
 
 function prepareFirstCapture() {
+    scrollbarStyle = document.createElement("style");
+    scrollbarStyle.textContent = HIDE_SCROLLBARS_CSS;
+    document.documentElement.append(scrollbarStyle);
+
     for (const element of document.body.querySelectorAll<HTMLElement>("*")) {
         const style = getComputedStyle(element);
         if (style.display === "none") continue;
@@ -100,6 +114,8 @@ function override(element: HTMLElement, properties: [ string, string ][]) {
 function restoreFloatingElements() {
     clearTimeout(restoreTimer);
     restoreTimer = undefined;
+    scrollbarStyle?.remove();
+    scrollbarStyle = undefined;
 
     for (const [ element, original ] of saved) {
         for (const [ name, { value, priority } ] of original.properties) {

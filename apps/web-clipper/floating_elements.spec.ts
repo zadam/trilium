@@ -44,6 +44,19 @@ describe("setFloatingElements", () => {
         expect(styleOf(".gone")).toBeNull();
     });
 
+    it("hides the scrollbars until the page is restored", () => {
+        const scrollbarStyles = () => [ ...document.querySelectorAll("style") ]
+            .filter((style) => style.textContent?.includes("scrollbar-width: none !important"));
+
+        setFloatingElements("first");
+        setFloatingElements("first");
+        expect(scrollbarStyles()).toHaveLength(1);
+        expect(scrollbarStyles()[0]?.textContent).toContain("html::-webkit-scrollbar");
+
+        setFloatingElements("restore");
+        expect(scrollbarStyles()).toHaveLength(0);
+    });
+
     it("puts back every inline style as it was", () => {
         const before = [ ...document.body.querySelectorAll("*") ].map((element) => element.getAttribute("style"));
 
