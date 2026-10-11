@@ -11,6 +11,7 @@ import Crop from "@boxicons/js/icons/Crop";
 import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
+import History from "@boxicons/js/icons/History";
 import Lock from "@boxicons/js/icons/Lock";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
@@ -387,7 +388,9 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
-    const published = mode === "page" ? article?.labels.publishedDate : undefined;
+    const pageLabels = mode === "page" ? article?.labels : undefined;
+    const published = pageLabels?.publishedDate;
+    const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
 
     return (
@@ -452,7 +455,18 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 >
                                     <Icon icon={Calendar} />
                                 </span>
-                                <span className="page-date">Published {published}</span>
+                                <span className="page-date page-published-date">Published {published}</span>
+                            </div>
+                        )}
+                        {modified && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The date the page was last modified. It is saved in the #modifiedDate label of the note."
+                                >
+                                    <Icon icon={History} />
+                                </span>
+                                <span className="page-date page-modified-date">Updated {modified}</span>
                             </div>
                         )}
                     </div>

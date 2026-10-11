@@ -25,7 +25,7 @@ const PAGE = {
     images: [ { imageId: "i1", src: "https://example.com/a.png" } ],
     pageUrl: "https://example.com/post?id=1",
     clipType: "page",
-    labels: { publishedDate: "2024-05-01" }
+    labels: { publishedDate: "2024-05-01", modifiedDate: "2024-06-12" }
 };
 /** What `readable-page.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
 const executeScript = vi.fn(async (): Promise<unknown> => [ { result: PAGE } ]);
@@ -221,6 +221,11 @@ describe("popup", () => {
         expect(dateIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(dateIcon?.title).toBe(
             "The date the page was published. It is saved in the #publishedDate label of the note.");
+        expect(modifiedDate()).toBe("Updated 2024-06-12");
+        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
+        expect(modifiedIcon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(modifiedIcon?.title).toBe(
+            "The date the page was last modified. It is saved in the #modifiedDate label of the note.");
         const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
         expect(frame?.getAttribute("sandbox")).toBe("allow-same-origin");
         expect(frame?.getAttribute("srcdoc")).toBe(previewDocument(PAGE));
@@ -240,12 +245,13 @@ describe("popup", () => {
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
     });
 
-    it("leaves out the date of a page that has none", async () => {
+    it("leaves out the dates of a page that states none", async () => {
         executeScript.mockResolvedValueOnce([ { result: { ...PAGE, labels: {} } } ]);
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(1);
         expect(publishedDate()).toBeUndefined();
+        expect(modifiedDate()).toBeUndefined();
     });
 
     it("says so while the page is read", async () => {
@@ -303,6 +309,7 @@ describe("popup", () => {
         expect(shortcutOf("Save selection").keys).toEqual([ "Ctrl", "Shift", "S" ]);
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBeUndefined();
+        expect(modifiedDate()).toBeUndefined();
 
         await click("Page");
         expect(modes()).toEqual([ [ "Selection", "false" ], [ "Page", "true" ], [ "Bookmark", "false" ] ]);
@@ -365,6 +372,7 @@ describe("popup", () => {
         expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBeUndefined();
+        expect(modifiedDate()).toBeUndefined();
         expect(shortcutOf("Save bookmark")).toEqual({ text: "Ctrl+Enter", keys: [ "Ctrl", "Enter" ] });
 
         await type(".page-body .note-text", "Worth a read");
@@ -409,7 +417,7 @@ describe("popup", () => {
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({
             name: "save-whole-page",
-            page: { ...PAGE, labels: { publishedDate: "2024-05-01", pageDescription: "Edited description" } }
+            page: { ...PAGE, labels: { ...PAGE.labels, pageDescription: "Edited description" } }
         });
 
         await click("Bookmark");
@@ -432,7 +440,7 @@ describe("popup", () => {
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({
             name: "save-whole-page",
-            page: { ...PAGE, labels: { publishedDate: "2024-05-01" } }
+            page: PAGE
         });
     });
 
@@ -446,7 +454,7 @@ describe("popup", () => {
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({
             name: "save-whole-page",
-            page: { ...PAGE, labels: { publishedDate: "2024-05-01", pageDescription: "Written by hand" } }
+            page: { ...PAGE, labels: { ...PAGE.labels, pageDescription: "Written by hand" } }
         });
 
         metadata = new Error("Could not establish connection.");
@@ -778,5 +786,9 @@ function status() {
 }
 
 function publishedDate() {
-    return container.querySelector(".page-fields .page-date")?.textContent;
+    return container.querySelector(".page-fields .page-published-date")?.textContent;
+}
+
+function modifiedDate() {
+    return container.querySelector(".page-fields .page-modified-date")?.textContent;
 }
