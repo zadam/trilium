@@ -1,4 +1,5 @@
-import { app_info as appInfo, attribute_formatter as attributeFormatter, attributes as attributeService, becca, type BNote, date_notes as dateNoteService, date_utils as dateUtils, getLog, note_service as noteService, sanitize, search as searchService, ValidationError, ws } from "@triliumnext/core";
+import { escapeHtml, extractYouTubeVideoId, type LinkEmbedMetadata } from "@triliumnext/commons";
+import { app_info as appInfo, attribute_formatter as attributeFormatter, attributes as attributeService, becca, type BNote, date_notes as dateNoteService, date_utils as dateUtils, getLog, note_service as noteService, resolveYouTubePreview, sanitize, search as searchService, ValidationError, ws } from "@triliumnext/core";
 import type { Request } from "express";
 import { parse } from "node-html-parser";
 import path from "path";
@@ -16,7 +17,7 @@ async function addClipping(req: Request) {
     // if a #clipType=clippings note exists with the same 'pageUrl' attribute,
     // append the content to that note
     // otherwise create a new note under clipperInbox (or today's note)
-    const { title, content, images } = req.body;
+    const { title, content, images, labels } = req.body;
     const clipType = "clippings";
 
     const pageUrl = sanitize.sanitizeUrl(req.body.pageUrl);
@@ -35,6 +36,8 @@ async function addClipping(req: Request) {
         clippingNote.setLabel("pageUrl", pageUrl);
         clippingNote.setLabel("iconClass", "bx bx-globe");
     }
+
+    setLabels(clippingNote, labels);
 
     const rewrittenContent = await processContent(images, clippingNote, content);
 
@@ -112,12 +115,7 @@ async function createNote(req: Request) {
         }
     }
 
-    if (labels) {
-        for (const labelName in labels) {
-            const labelValue = sanitize.sanitizeHtml(labels[labelName]);
-            note.setLabel(labelName, labelValue);
-        }
-    }
+    setLabels(note, labels);
 
     const existingContent = note.getContent();
     if (typeof existingContent !== "string") {
@@ -134,8 +132,24 @@ async function createNote(req: Request) {
     };
 }
 
+/** Sets each label the extension sends, replacing the value a previous clipping set. */
+function setLabels(note: BNote, labels: Record<string, string> | undefined) {
+    for (const labelName in labels) {
+        note.setLabel(labelName, sanitizeLabelValue(labels[labelName]));
+    }
+}
+
+/**
+ * Label values are plain text, so every tag is removed. `sanitize-html` writes `&` as `&amp;`;
+ * turning it back cannot produce markup, since no `<` comes out of it.
+ */
+function sanitizeLabelValue(value: string) {
+    return sanitize.sanitizeHtmlCustom(value, { allowedTags: [], allowedAttributes: {} })
+        .replaceAll("&amp;", "&");
+}
+
 export async function processContent(images: Image[], note: BNote, content: string) {
-    let rewrittenContent = sanitize.sanitizeHtml(content);
+    let rewrittenContent = sanitize.sanitizeHtml(await replaceYouTubePlayers(note, content));
 
     if (images) {
         for (const { src, dataUrl, imageId } of images) {
@@ -169,7 +183,7 @@ export async function processContent(images: Image[], note: BNote, content: stri
     // fallback if parsing/downloading images fails for some reason on the extension side (
     rewrittenContent = noteService.downloadImages(note.noteId, rewrittenContent);
     // Check if rewrittenContent contains at least one HTML tag
-    if (!/<.+?>/.test(rewrittenContent)) {
+    if (!/<[^<>]+>/.test(rewrittenContent)) {
         rewrittenContent = `<p>${rewrittenContent}</p>`;
     }
     // Create a JSDOM object from the existing HTML content
@@ -179,6 +193,53 @@ export async function processContent(images: Image[], note: BNote, content: stri
     rewrittenContent = dom.innerHTML ?? "";
 
     return rewrittenContent;
+}
+
+/**
+ * Replaces each embedded YouTube player with a link preview, which the sanitizer keeps and which
+ * starts playing only when clicked. The sanitizer removes every other iframe.
+ */
+async function replaceYouTubePlayers(note: BNote, content: string) {
+    if (typeof content !== "string" || !content.includes("<iframe")) {
+        return content;
+    }
+
+    const dom = parse(content);
+    const players = dom.querySelectorAll("iframe").flatMap((iframe) => {
+        const videoId = extractYouTubeVideoId(iframe.getAttribute("src") ?? "");
+        return videoId ? [ { iframe, videoId } ] : [];
+    });
+
+    await Promise.all(players.map(async ({ iframe, videoId }) => {
+        const url = `https://www.youtube.com/watch?v=${videoId}`;
+        let metadata: LinkEmbedMetadata;
+        try {
+            metadata = await resolveYouTubePreview(note.noteId, url, videoId);
+        } catch (e) {
+            getLog().info(`Could not resolve the preview of a clipped YouTube video: ${e}`);
+            metadata = { url, embedType: "youtube" };
+        }
+        iframe.replaceWith(renderLinkEmbed(metadata));
+    }));
+
+    return dom.toString();
+}
+
+/** The markup the text editor stores for a block link preview. */
+function renderLinkEmbed(metadata: LinkEmbedMetadata) {
+    const attributes = ([
+        [ "data-url", metadata.url ],
+        [ "data-embed-type", metadata.embedType ],
+        [ "data-title", metadata.title ],
+        [ "data-description", metadata.description ],
+        [ "data-favicon", metadata.favicon ],
+        [ "data-site-name", metadata.siteName ],
+        [ "data-image", metadata.image ]
+    ] as const)
+        .filter(([ , value ]) => value)
+        .map(([ name, value ]) => ` ${name}="${escapeHtml(value ?? "")}"`)
+        .join("");
+    return `<section class="link-embed"${attributes}></section>`;
 }
 
 function openNote(req: Request<{ noteId: string }>) {

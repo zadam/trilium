@@ -586,7 +586,7 @@ async function getMetadata(req: Request) {
     // A YouTube link stays resolved even when oEmbed is unreachable: the player embeds from the
     // video ID alone, so the preview is worth showing with or without the title and channel.
     if (videoId) {
-        return await storePictures(noteIdParam, url, await fetchYouTubeMetadata(url, videoId));
+        return await resolveYouTubePreview(noteIdParam, url, videoId);
     }
 
     try {
@@ -615,6 +615,14 @@ async function getMetadata(req: Request) {
         getLog().info(`Failed to fetch link preview metadata: ${e}`);
         return unresolvedMetadata(validatedUrl);
     }
+}
+
+/**
+ * The metadata of a preview for a YouTube video, with its thumbnail and favicon stored as attachments
+ * of the note `noteId`.
+ */
+export async function resolveYouTubePreview(noteId: string, url: string, videoId: string) {
+    return await storePictures(noteId, url, await fetchYouTubeMetadata(url, videoId));
 }
 
 /**

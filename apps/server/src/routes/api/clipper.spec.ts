@@ -6,6 +6,13 @@ import clipperRoute, { processContent } from "./clipper";
 
 const { buildNote } = becca_easy_mocking;
 
+const resolveYouTubePreview = vi.hoisted(() => vi.fn());
+
+vi.mock("@triliumnext/core", async (importOriginal) => ({
+    ...await importOriginal<typeof import("@triliumnext/core")>(),
+    resolveYouTubePreview
+}));
+
 vi.mock("../../services/image.js", () => ({
     default: {
         saveImageToAttachment() {
@@ -57,6 +64,42 @@ describe("processContent", () => {
             expect(processed).toStrictEqual(`<img src="OKZxZA3MonZJkwFcEhId" >`);
         }
     });
+
+    it("turns embedded YouTube players into link previews", async () => {
+        resolveYouTubePreview.mockImplementation(async (_noteId: string, url: string) => ({
+            url,
+            embedType: "youtube",
+            title: "Tom & \"Jerry\"",
+            siteName: "YouTube",
+            image: "api/attachments/thumb/image/cover.jpg"
+        }));
+
+        const processed = await cls.init(() => processContent([], note, [
+            `<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"></iframe>`,
+            `<iframe src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw"></iframe>`,
+            `<iframe src="https://player.vimeo.com/video/76979871"></iframe>`
+        ].join("")));
+
+        expect(resolveYouTubePreview.mock.calls).toEqual([
+            [ note.noteId, "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ" ],
+            [ note.noteId, "https://www.youtube.com/watch?v=jNQXAC9IVRw", "jNQXAC9IVRw" ]
+        ]);
+        expect(processed).toStrictEqual([ "dQw4w9WgXcQ", "jNQXAC9IVRw" ].map((id) =>
+            `<section class="link-embed" data-url="https://www.youtube.com/watch?v=${id}"`
+            + ` data-embed-type="youtube" data-title="Tom &amp; &quot;Jerry&quot;"`
+            + ` data-site-name="YouTube" data-image="api/attachments/thumb/image/cover.jpg"></section>`
+        ).join(""));
+    });
+
+    it("keeps a YouTube player as a bare link preview when its metadata cannot be stored", async () => {
+        resolveYouTubePreview.mockRejectedValue(new Error("offline"));
+
+        const processed = await cls.init(() => processContent([], note,
+            `<p>Watch:</p><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>`));
+
+        expect(processed).toStrictEqual(`<p>Watch:</p><section class="link-embed"`
+            + ` data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" data-embed-type="youtube"></section>`);
+    });
 });
 
 // These exercise the route handlers against the real in-memory DB.
@@ -89,6 +132,23 @@ describe("clipper route handlers", () => {
         expect(found.noteId).toBe(first.noteId);
     });
 
+    it("labels a clipping note, refreshed by each clipping that brings labels", async () => {
+        const pageUrl = "https://example.com/described";
+        const clip = (labels?: Record<string, string>) => cls.init(() => clipperRoute.addClipping({
+            body: { title: "Described", content: "<p>x</p>", images: [], pageUrl, labels }
+        } as unknown as Request));
+
+        const { noteId } = await clip({ pageDescription: "Tom & <b>Jerry</b>" });
+        const clipping = becca.getNoteOrThrow(noteId);
+        expect(clipping.getLabelValue("pageDescription")).toBe("Tom & Jerry");
+
+        await clip({ pageDescription: "Updated" });
+        expect(clipping.getLabelValue("pageDescription")).toBe("Updated");
+
+        await clip();
+        expect(clipping.getLabelValue("pageDescription")).toBe("Updated");
+    });
+
     it("appends to a clipping note moved out of the inbox without cloning it back", async () => {
         const pageUrl = "https://example.com/moved";
         const first = await cls.init(() => clipperRoute.addClipping({
@@ -119,10 +179,15 @@ describe("clipper route handlers", () => {
                 images: [],
                 clipType: "note",
                 pageUrl: "https://example.com/page",
-                labels: { source: "web" }
+                labels: {
+                    source: "web",
+                    pageDescription: "Tom & <b>Jerry</b><script>alert(1)</script>"
+                }
             }
         } as unknown as Request));
-        expect(result.noteId).toBeTruthy();
+        const note = becca.getNoteOrThrow(result.noteId);
+        expect(note.getLabelValue("source")).toBe("web");
+        expect(note.getLabelValue("pageDescription")).toBe("Tom & Jerry");
     });
 
     it("clips to the top level when there is no clipper inbox and no journal", async () => {

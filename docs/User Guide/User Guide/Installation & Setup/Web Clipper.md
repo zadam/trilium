@@ -29,13 +29,15 @@ The extension is available from the official browser web stores:
 
 Clicking the extension's button in the browser toolbar opens its popup:
 
-*   The popup shows what will be saved from the current page: the note's title, which can be edited before saving, the website, and below them a preview. A switch above the preview chooses what to save, among what the page offers:
+*   The popup shows what will be saved from the current page: the note's title, which can be edited before saving, the website, and below them a preview, which starts with the page's description. A switch above the preview chooses what to save, among what the page offers:
     
     *   _Selection_, when text is selected on the page: _Save selection_ saves it into the note of that page's clippings, as the context menu does.
-    *   _Page_, when the page has an article: _Save page to Trilium_ saves the article's text and images, and the publication date shows next to the website when the page states one.
+    *   _Page_: _Save page to Trilium_ saves the page's text and images. A smaller switch at the top of the preview chooses how much of the page to keep: _Article_ keeps only the page's main text, without its menus, sidebars and footers, and _Whole page_ keeps everything the page shows. _Whole page_ is for pages that are not an article (such as a gallery or a page of cards), where _Article_ can leave out part of the content; the preview shows what each one keeps. _Article_ is unavailable on a page where Trilium finds no article. The author the page names shows under the description, marked by the <span class="tn-icon bx bx-user"></span> icon. It can be edited or cleared before saving, or written in when the page names none, and is saved in the `#pageAuthor` label of the note. When the page states when it was published, that date shows under the author, marked by the <span class="tn-icon bx bx-calendar"></span> icon, and is saved in the `#publishedDate` label of the note. When it states when it was last modified, that date shows below, marked by the <span class="tn-icon bx bx-history"></span> icon, and is saved in the `#modifiedDate` label.
     *   _Bookmark_, always: a text box for a note about the page replaces the preview, and _Save bookmark_ (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) saves a link to the page with that note. Left empty, the title stays the page's title.
     
-    The popup opens on the selection if there is one, otherwise on the article. On a page with no article (Readability cannot find one) and no selection, it opens on _Bookmark_ and says the page has no article. The keyboard shortcuts and the context menu still save right away, without a preview.
+    The description, marked by the <span class="tn-icon bx bx-align-left"></span> icon, comes from the page's `description` meta tag, or the one it gives social sites. It can be edited or cleared before saving, or written in when the page has none, and is saved in the `#pageDescription` label of the note. Clippings saved with the keyboard shortcuts or the context menu, screenshots and images included, get the description as the page gives it. Each clipping that brings a description updates the label.
+    
+    The popup opens on the selection if there is one, otherwise on _Page_, showing the article, or the whole page when the page has no article. On a page that shows nothing to save, it opens on _Bookmark_ and says so. The keyboard shortcuts and the context menu still save right away, without a preview: saving the whole page that way saves the article, or the whole page when the page has no article.
 *   Pages the extension cannot access (the browser's own pages, the extension stores, and pages that were open before the extension was installed until they are reloaded) cannot be saved or captured, so the popup says so in place of the preview, and only _Tabs_ remains available there.
 *   Below the preview, a row of buttons offers the other actions: _Crop_ (a screenshot of an area you select), _Screenshot_ (of the visible part of the page) and _Tabs_ (saves the links of every tab in the current window as a list). Hovering over a button shows its full name and, if it has one, its keyboard shortcut.
 *   If the current page was already clipped, a notice at the top offers to open the note in Trilium.
@@ -49,6 +51,12 @@ Trilium will save these clippings as a new child note under a "clipper inbox" no
 By default, that's the <a class="reference-link" href="../Advanced%20Usage/Advanced%20Showcases/Day%20Notes.md">Day Notes</a> but you can override that by setting the [label](../Advanced%20Usage/Attributes.md) `clipperInbox`, on any other note.
 
 Further clippings of the same kind from the same page are added to the note created by the first one, even on a later day or after that note was moved out of the clipper inbox. The note stays where it is and is not cloned back into the inbox.
+
+## Embedded videos
+
+A YouTube video embedded in a clipped page is saved as a <a class="reference-link" href="../Note%20Types/Text/Link%20Previews.md">Link Previews</a> embed, with the video's title and thumbnail. As with a link preview added in the editor, the video plays only when clicked. Other embedded content (such as videos from other websites) is not saved.
+
+The popup's preview shows each such video as a chip with the YouTube icon and the video's short link, and leaves out the embedded content that will not be saved.
 
 ## Keyboard shortcuts
 

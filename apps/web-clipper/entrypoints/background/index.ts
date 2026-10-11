@@ -1,4 +1,4 @@
-import { randomString, type Rect } from "@/utils";
+import { extractPage, randomString, type Rect } from "@/utils";
 
 import setupContextMenu from "./context_menu";
 import TriliumServerFacade, { TriliumError } from "./trilium_server_facade";
@@ -13,7 +13,7 @@ type BackgroundMessage = {
 } | {
     name: "trilium-get-rectangle-for-screenshot";
 } | {
-    name: "trilium-save-page";
+    name: "trilium-get-page-metadata";
 };
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
@@ -203,7 +203,7 @@ export default defineBackground(() => {
         }
 
         const blob = await resp.blob();
-        if (!blob.type.startsWith("image/")) {
+        if (!/^image\/[\w.+-]+/.test(blob.type)) {
             throw new Error(`Not an image: '${blob.type}'`);
         }
 
@@ -215,23 +215,24 @@ export default defineBackground(() => {
         return dataUrl;
     }
 
-    /** Inlines the image as a data URL, and returns whether it could be downloaded. */
+    /**
+     * Inlines the image as a base64 data URL, and returns whether it could be read. A `data:` URL
+     * goes through `fetch()` too, which decodes a URL-encoded one; Trilium reads only base64.
+     */
     async function postProcessImage(image: ClippedImage) {
-        if (image.src.startsWith("data:image/")) {
-            image.dataUrl = image.src;
-            const mimeSubtype = image.src.match(/data:image\/(.*?);/)?.[1];
-            if (!mimeSubtype) return true;
-            image.src = `inline.${mimeSubtype}`; // this should extract file type - png/jpg
-            return true;
-        }
-
         try {
             image.dataUrl = await fetchImage(image.src);
-            return true;
         } catch (e) {
-            console.error(`Cannot fetch image from ${image.src}`, e);
+            console.error(`Cannot fetch image from ${image.src.substring(0, 100)}`, e);
             return false;
         }
+
+        if (image.src.startsWith("data:")) {
+            // A `data:` URL names no file: Trilium names the attachment `inline.<type>`.
+            const type = image.dataUrl.substring("data:image/".length).split(/[+;,]/)[0];
+            image.src = `inline.${type}`;
+        }
+        return true;
     }
 
     /**
@@ -270,16 +271,31 @@ export default defineBackground(() => {
     async function getImagePayloadFromSrc(src: string, pageUrl: string | null | undefined) {
         const imageId = randomString(20);
         const activeTab = await getActiveTab();
+        const { description } = await readPageMetadata();
         const payload = {
             title: activeTab.title,
             content: `<img src="${imageId}">`,
             images: [ { imageId, src } ],
-            pageUrl
+            pageUrl,
+            ...(description && { labels: { pageDescription: description } })
         };
 
         const failedImages = await postProcessImages(payload);
 
         return { payload, failedImages };
+    }
+
+    /**
+     * What the page says about itself. A screenshot or an image is saved without it where no
+     * content script answers: on browser pages, and on a page loaded before the extension was
+     * updated.
+     */
+    async function readPageMetadata(): Promise<{ description?: string }> {
+        try {
+            return await sendMessageToActiveTab({ name: "trilium-get-page-metadata" }) ?? {};
+        } catch {
+            return {};
+        }
     }
 
     async function saveCroppedScreenshot(pageUrl: string | null | undefined) {
@@ -315,9 +331,12 @@ export default defineBackground(() => {
         toast(savedMessage("Image", failedImages), resp.noteId);
     }
 
-    /** Saves the readable page, or the page the popup already extracted and the user edited. */
+    /**
+     * Saves the page the popup already extracted and the user edited, or else the article, or the
+     * whole page when it has none.
+     */
     async function saveWholePage(page?: object) {
-        const payload = page ?? await requestFromPage({name: 'trilium-save-page'});
+        const payload = page ?? await readActivePage();
 
         const failedImages = await postProcessImages(payload);
 
@@ -326,7 +345,19 @@ export default defineBackground(() => {
         toast(savedMessage("Page", failedImages), resp.noteId);
     }
 
-    async function saveLinkWithNote(title: string, content: string) {
+    async function readActivePage() {
+        const activeTab = await getActiveTab();
+        const tabId = activeTab.id;
+        if (tabId !== undefined) {
+            const article = await extractPage(tabId, "article");
+            if (article) return article;
+            const wholePage = await extractPage(tabId, "wholePage");
+            if (wholePage) return wholePage;
+        }
+        throw new Error("Trilium found nothing to save on this page.");
+    }
+
+    async function saveLinkWithNote(title: string, content: string, description?: string) {
         const activeTab = await getActiveTab();
 
         if (!title.trim()) {
@@ -337,7 +368,8 @@ export default defineBackground(() => {
             title,
             content,
             clipType: 'note',
-            pageUrl: activeTab.url
+            pageUrl: activeTab.url,
+            ...(description && { labels: { pageDescription: description } })
         });
 
         toast("Link with note has been saved to Trilium.", resp.noteId);
@@ -466,7 +498,7 @@ export default defineBackground(() => {
             return await saveSelection(request.selection);
         }
         else if (request.name === 'save-link-with-note') {
-            return await saveLinkWithNote(request.title, request.content);
+            return await saveLinkWithNote(request.title, request.content, request.description);
         }
         else if (request.name === 'save-tabs') {
             return await saveTabs();

@@ -22,6 +22,7 @@ export default defineConfig({
             "tabs",
             "storage",
             "contextMenus",
+            "scripting",
             manifestVersion === 3 && "offscreen"
         ].filter(Boolean),
         host_permissions: [

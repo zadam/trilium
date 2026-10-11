@@ -11,12 +11,9 @@ type Clipping = {
     title: string,
     content: string,
     images: { imageId: string, src: string }[],
-    pageUrl: string
+    pageUrl: string,
+    labels: Record<string, string>
 };
-
-const PARAGRAPH = "Trilium is a hierarchical note taking application with focus on "
-    + "building large personal knowledge bases. It supports rich text, code, canvas and many "
-    + "other note types, scripting and sync. ";
 
 describe("content script", () => {
     beforeAll(() => {
@@ -45,11 +42,14 @@ describe("content script", () => {
                 <img src="/cat.png">
                 <img>
                 <p id="end">After</p>`;
+            document.head.insertAdjacentHTML(
+                "beforeend", "<meta name=\"description\" content=\"About the post\">");
             selectRange("start", "end");
 
             const response = await send<Clipping>({ name: "trilium-save-selection" });
 
             expect(response.title).toBe("Post title");
+            expect(response.labels).toEqual({ pageDescription: "About the post" });
             expect(response.pageUrl).toBe("https://example.com/blog/post.html?id=1#comments");
             expect(response.images.map((image) => image.src)).toEqual([
                 "https://example.com/cat.png",
@@ -65,6 +65,36 @@ describe("content script", () => {
                 response.images[0]?.imageId,
                 null
             ]);
+        });
+
+        it("takes the address a lazy image has not loaded yet from where the page keeps it", async () => {
+            const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E";
+            document.body.innerHTML = `
+                <p id="start">Photos</p>
+                <img src="${placeholder}" data-src="/photos/one.jpg">
+                <img data-original="https://cdn.example.com/two.jpg">
+                <img src="${placeholder}" data-lazy-src="three.jpg">
+                <img src="/photos/one.jpg" data-src="/photos/one.jpg">
+                <img src="/loaded.png" data-src="javascript:alert(1)">
+                <img src="/kept.png" data-src="">
+                <img src="/malformed.png" data-src="http://[">
+                <p id="end">End</p>`;
+            selectRange("start", "end");
+
+            const response = await send<Clipping>({ name: "trilium-save-selection" });
+
+            expect(response.images.map((image) => image.src)).toEqual([
+                "https://example.com/photos/one.jpg",
+                "https://cdn.example.com/two.jpg",
+                "https://example.com/blog/three.jpg",
+                "https://example.com/loaded.png",
+                "https://example.com/kept.png",
+                "https://example.com/malformed.png"
+            ]);
+            const container = document.createElement("div");
+            container.innerHTML = response.content;
+            expect(attributes(container, "img", "src")).toEqual(
+                [ 0, 1, 2, 0, 3, 4, 5 ].map((index) => response.images[index]?.imageId));
         });
 
         it("keeps links to schemes other than the web as they are", async () => {
@@ -91,7 +121,9 @@ describe("content script", () => {
             document.body.innerHTML = "<p id=\"p\">Text</p>";
             selectRange("p", "p");
             expect(document.getElementsByTagName("title")).toHaveLength(0);
-            expect(await send({ name: "trilium-save-selection" })).toMatchObject({ title: "" });
+            const untitled = await send<Clipping>({ name: "trilium-save-selection" });
+            expect(untitled.title).toBe("");
+            expect(untitled.labels).toEqual({});
 
             document.title = " Fallback ";
             expect(await send({ name: "trilium-save-selection" }))
@@ -103,49 +135,24 @@ describe("content script", () => {
         });
     });
 
-    describe("saving the page", () => {
-        it("returns the readable article with its publication dates as labels", async () => {
+    describe("page metadata", () => {
+        it("reads the description from the first description tag that has one", async () => {
+            const getMetadata = () => send({ name: "trilium-get-page-metadata" });
             document.head.innerHTML = `
-                <title>Article title</title>
-                <meta property="article:published_time" content="2026-01-02T10:00:00Z">
-                <meta property="article:modified_time" content="2026-02-03T10:00:00Z">`;
-            document.body.innerHTML = `
-                <nav><a href="/">Home</a></nav>
-                <article>
-                    <h1>Article title</h1>
-                    <p>${PARAGRAPH.repeat(3)}<a href="/docs">Docs</a>
-                        <a href="mailto:jane@example.com">Jane</a></p>
-                    <p>${PARAGRAPH.repeat(3)}</p>
-                    <img src="figure.png">
-                    <p>${PARAGRAPH.repeat(3)}</p>
-                </article>`;
+                <meta name="twitter:description" content="From Twitter">
+                <meta property="og:description" content="From Open Graph">
+                <meta name="description" content="  Spread
+                    over lines  ">`;
+            expect(await getMetadata()).toEqual({ description: "Spread over lines" });
 
-            const response = await send<Record<string, unknown>>({ name: "trilium-save-page" });
+            document.querySelector("meta[name='description']")?.remove();
+            expect(await getMetadata()).toEqual({ description: "From Open Graph" });
 
-            expect(response).toMatchObject({
-                title: "Article title",
-                pageUrl: "https://example.com/blog/post.html?id=1",
-                clipType: "page",
-                labels: { publishedDate: "2026-01-02", modifiedDate: "2026-02-03" },
-                images: [ {
-                    imageId: expect.any(String),
-                    src: "https://example.com/blog/figure.png"
-                } ]
-            });
-            expect(response.content).toContain("href=\"https://example.com/docs\"");
-            expect(response.content).toContain("href=\"mailto:jane@example.com\"");
-            expect(response.content).not.toContain("Home");
-            expect(document.querySelector("nav")).not.toBeNull();
-        });
+            document.querySelector("meta[property='og:description']")?.setAttribute("content", " ");
+            expect(await getMetadata()).toEqual({ description: "From Twitter" });
 
-        it("adds no labels without dates and fails when Readability finds no article", async () => {
-            document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p></article>`;
-            expect(await send({ name: "trilium-save-page" })).toMatchObject({ labels: {} });
-
-            document.body.innerHTML = "";
-            vi.spyOn(Document.prototype, "cloneNode")
-                .mockReturnValue(document.implementation.createHTMLDocument(""));
-            expect(await send({ name: "trilium-save-page" })).toBeUndefined();
+            document.head.innerHTML = "<meta name=\"description\">";
+            expect(await getMetadata()).toEqual({});
         });
     });
 

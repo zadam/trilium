@@ -56,19 +56,27 @@ let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
+/** How `readable-page.js` reads the active tab, by variant; nothing to save unless a test says so. */
+let pageReadings: Record<string, unknown>;
+const executeScript = vi.fn(async ({ args }: { args?: [ string ] }) => args ? [ { result: pageReadings[args[0]] } ] : []);
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
 const createDocument = vi.fn(async () => {});
 const runtimeSendMessage = vi.fn(async (_message: unknown): Promise<unknown> => PNG);
-const fetchMock = vi.fn(
-    async (_url: string) => new Response(new Blob([ "img" ], { type: "image/png" })));
+/** Answers a picture for a web address, and decodes a `data:` URL as the browser does. */
+const browserFetch = globalThis.fetch;
+const fetchMock = vi.fn(async (url: string) => (url.startsWith("data:")
+    ? browserFetch(url)
+    : new Response(new Blob([ "img" ], { type: "image/png" }))));
+const SVG = "<svg xmlns='http://www.w3.org/2000/svg'></svg>";
 
 describe("background", () => {
     beforeEach(async () => {
         fakeBrowser.reset();
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
+        pageReadings = {};
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -95,7 +103,7 @@ describe("background", () => {
             captureVisibleTab: async () => PNG
         });
         Object.assign(fakeBrowser.runtime, { getContexts, sendMessage: runtimeSendMessage });
-        Object.assign(fakeBrowser, { offscreen: { createDocument } });
+        Object.assign(fakeBrowser, { offscreen: { createDocument }, scripting: { executeScript } });
 
         background.main();
         await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(6));
@@ -127,7 +135,7 @@ describe("background", () => {
                 images: [
                     { imageId: "i2", src: "https://example.com/a.png" },
                     { imageId: "i3", src: "data:image/jpeg;base64,/9j/4AAQ" },
-                    { imageId: "i4", src: "data:image/;base64,AAAA" }
+                    { imageId: "i4", src: `data:image/svg+xml,${encodeURIComponent(SVG)}` }
                 ]
             });
 
@@ -150,8 +158,8 @@ describe("background", () => {
                     },
                     {
                         imageId: "i4",
-                        src: "data:image/;base64,AAAA",
-                        dataUrl: "data:image/;base64,AAAA"
+                        src: "inline.svg",
+                        dataUrl: `data:image/svg+xml;base64,${btoa(SVG)}`
                     }
                 ]
             });
@@ -170,12 +178,13 @@ describe("background", () => {
                 .mockResolvedValueOnce(new Response("<html>", { headers: { "Content-Type": "text/html" } }));
             tabMessageHandler = () => ({
                 title: "Page",
-                content: `<img src="i1"><img src="i2"><img src="i3"><img src="i4">`,
+                content: `<img src="i1"><img src="i2"><img src="i3"><img src="i4"><img src="i5">`,
                 images: [
                     { imageId: "i1", src: "https://example.com/blocked$&$$.png" },
                     { imageId: "i2", src: "https://example.com/forbidden.png?a=1&b=\"2\"" },
                     { imageId: "i3", src: "https://example.com/page.html" },
-                    { imageId: "i4", src: "https://example.com/ok.png" }
+                    { imageId: "i4", src: "https://example.com/ok.png" },
+                    { imageId: "i5", src: "data:image/;base64,AAAA" }
                 ]
             });
 
@@ -185,16 +194,17 @@ describe("background", () => {
                 title: "Page",
                 content: `<img src="https://example.com/blocked$&amp;$$.png">`
                     + `<img src="https://example.com/forbidden.png?a=1&amp;b=&quot;2&quot;">`
-                    + `<img src="https://example.com/page.html"><img src="i4">`,
+                    + `<img src="https://example.com/page.html"><img src="i4">`
+                    + `<img src="data:image/;base64,AAAA">`,
                 images: [ {
                     imageId: "i4",
                     src: "https://example.com/ok.png",
                     dataUrl: expect.stringMatching(PNG_DATA_URL)
                 } ]
             });
-            expect(console.error).toHaveBeenCalledTimes(3);
+            expect(console.error).toHaveBeenCalledTimes(4);
             expect(await lastToast()).toMatchObject({
-                message: "Selection has been saved to Trilium, but 3 images could not be downloaded.",
+                message: "Selection has been saved to Trilium, but 4 images could not be downloaded.",
                 noteId: "saved"
             });
         });
@@ -271,14 +281,17 @@ describe("background", () => {
     });
 
     describe("saving the whole page", () => {
-        it("saves the readable page from the shortcut, the menu and the popup", async () => {
+        it("saves the article from the shortcut, the menu and the popup", async () => {
             const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
-            tabMessageHandler = () => page;
+            pageReadings = { article: page, wholePage: { ...page, content: "<nav>Menu</nav><p>Body</p>" } };
 
             await onCommand("saveWholePage");
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
             await sendRuntimeMessage({ name: "save-whole-page" });
 
+            expect(executeScript).toHaveBeenCalledTimes(6);
+            expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
+            expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ args: [ "wholePage" ] }));
             expect(facade.callService).toHaveBeenCalledTimes(3);
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", page);
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
@@ -287,6 +300,39 @@ describe("background", () => {
             tabsSendMessage.mockClear();
             await onCommand("saveWholePage");
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
+        });
+
+        it("saves the whole page from the shortcut when the page has no article", async () => {
+            const wholePage = { title: "Gallery", content: "<h2>Card</h2>", images: [], clipType: "page" };
+            pageReadings = { wholePage };
+
+            await onCommand("saveWholePage");
+
+            expect(facade.callService).toHaveBeenCalledWith("POST", "notes", wholePage);
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "saved" });
+        });
+
+        it("saves nothing from a page that shows nothing or is out of reach", async () => {
+            await onCommand("saveWholePage");
+            expect(await lastToast()).toMatchObject({
+                ...GENERIC_FAILURE_TOAST,
+                message: "Saving to Trilium failed: Trilium found nothing to save on this page."
+            });
+
+            pageReadings = { wholePage: { title: "Article", content: "<p>Body</p>", images: [] } };
+            tabs = [ { title: "Tab without id" } ];
+            await onCommand("saveWholePage");
+
+            tabs = [ ACTIVE_TAB ];
+            executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
+            await onCommand("saveWholePage");
+            expect(await lastToast()).toMatchObject({
+                ...GENERIC_FAILURE_TOAST,
+                message: "Saving to Trilium failed: Cannot access a chrome:// URL"
+            });
+
+            expect(executeScript).toHaveBeenCalledTimes(5);
+            expect(facade.callService).not.toHaveBeenCalled();
         });
 
         it("saves the page the popup extracted, with the user's title, without reading it again", async () => {
@@ -301,7 +347,7 @@ describe("background", () => {
 
             await sendRuntimeMessage({ name: "save-whole-page", page });
 
-            expect(tabsSendMessage).not.toHaveBeenCalledWith(7, { name: "trilium-save-page" });
+            expect(executeScript).not.toHaveBeenCalled();
             expect(facade.callService).toHaveBeenCalledWith("POST", "notes", {
                 ...page,
                 images: [ { ...page.images[0], dataUrl: expect.stringMatching(PNG_DATA_URL) } ]
@@ -488,6 +534,37 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
         });
 
+        it("labels screenshots and images with the page's description", async () => {
+            tabMessageHandler = (message) => message.name === "trilium-get-page-metadata"
+                ? { description: "About the page" }
+                : undefined;
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+            await onContextMenuClicked({
+                menuItemId: "trilium-save-image",
+                srcUrl: "https://example.com/cat.png",
+                pageUrl: PAGE_URL
+            });
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+
+            tabMessageHandler = () => ({});
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+
+            // An outdated content script answers nothing; none runs on browser pages.
+            tabMessageHandler = () => undefined;
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+
+            tabMessageHandler = () => {
+                throw new Error("Could not establish connection.");
+            };
+            facade.callService.mockClear();
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+            expect(facade.callService).toHaveBeenCalledOnce();
+        });
+
         it("saves a link, with its URL as the text when the browser gives none", async () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-link", pageUrl: PAGE_URL });
             expect(facade.callService).not.toHaveBeenCalled();
@@ -611,6 +688,17 @@ describe("background", () => {
             tabs = [ { id: 7, url: "https://example.com/untitled" } ];
             await saveWithTitle("");
             expect(lastPayload()).toMatchObject({ title: "" });
+        });
+
+        it("labels a bookmark with the description the popup sends", async () => {
+            const save = (description?: string) => sendRuntimeMessage(
+                { name: "save-link-with-note", title: "T", content: "", description });
+
+            await save("About the page");
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+
+            await save();
+            expect(lastPayload()).not.toHaveProperty("labels");
         });
 
         it("opens a note in the browser when the desktop app cannot", async () => {

@@ -1,6 +1,6 @@
 ---
 name: developing-web-clipper
-description: Use when working on Trilium's browser extension, the web clipper (`apps/web-clipper`, built with WXT for Chrome MV3 and Firefox MV2) — its background script, content script (Readability, screenshots, toasts), the Preact popup and options page, `wxt.config.ts` (manifest, keyboard `commands`, the Firefox sources zip), or the server side it talks to (`apps/server/src/routes/api/clipper.ts`, `/api/login/token`, the desktop port). Covers the message protocol between the extension's parts, how it finds and authenticates to Trilium, the compatibility rule with older Trilium versions, styling the pages in the Next theme from the client's own stylesheets, running and building it, the `fakeBrowser` spec patterns and the 100% coverage gate, and the traps already hit (undeclared commands, image placeholders, `$&` in `replaceAll()` replacements, `javascript:` links, the sources zip).
+description: Use when working on Trilium's browser extension, the web clipper (`apps/web-clipper`, built with WXT for Chrome MV3 and Firefox MV2) — its background script, content script (selection, screenshots, toasts), the injected Defuddle script, the Preact popup and options page, `wxt.config.ts` (manifest, keyboard `commands`, the Firefox sources zip), or the server side it talks to (`apps/server/src/routes/api/clipper.ts`, `/api/login/token`, the desktop port). Covers the message protocol between the extension's parts, how it finds and authenticates to Trilium, the compatibility rule with older Trilium versions, styling the pages in the Next theme from the client's own stylesheets, running and building it, the `fakeBrowser` spec patterns and the 100% coverage gate, and the traps already hit (undeclared commands, image placeholders, `$&` in `replaceAll()` replacements, `javascript:` links, the sources zip).
 ---
 
 # Developing the web clipper
@@ -17,7 +17,8 @@ repository.
 |---|---|---|
 | `entrypoints/background/index.ts` | service worker (MV3) / background page (MV2) | context menus, keyboard commands, every save, image download, toasts |
 | `entrypoints/background/trilium_server_facade.ts` | background | finds Trilium, authenticates, `callService()` |
-| `entrypoints/content/index.ts` | every page (`<all_urls>`) | Readability extraction, selection, crop overlay, toast UI |
+| `entrypoints/content/index.ts` | every page (`<all_urls>`) | selection, page description, crop overlay, toast UI |
+| `entrypoints/readable-page/index.ts` | the tab, injected on demand | registers `triliumReadPage()`: Defuddle extraction of the page, as an article or as a whole |
 | `entrypoints/popup/main.tsx` | the toolbar popup | Preact `Popup`: capture buttons, link-with-note form, connection status |
 | `entrypoints/options/main.tsx` | the options page | Preact `Options`: desktop port, server login |
 | `entrypoints/offscreen/` | MV3 only (Chrome) | crops screenshots on a canvas, since an MV3 service worker has no DOM |
@@ -32,10 +33,19 @@ Everything goes through `browser.runtime.sendMessage` / `browser.tabs.sendMessag
 - **background → popup:** `trilium-search-status` (`triliumSearch: TriliumSearchStatus`, which
   starts as `searching`) and `trilium-previously-visited` (`searchNote`). Both types
   are exported from `trilium_server_facade.ts`; the popup imports them.
-- **background → content script:** `trilium-save-selection`, `trilium-save-page`,
+- **background → content script:** `trilium-save-selection`,
   `trilium-get-rectangle-for-screenshot` (the content script answers with the payload), and `toast`
   (`message`, `noteId`, `tabIds`).
 - **background → offscreen:** `{ type: "CROP_IMAGE" }`, the one message keyed by `type`.
+
+The readable page is not a message: the popup and the background call
+`extractPage(tabId, variant)` (`utils.ts`), which injects `/readable-page.js` with
+`browser.scripting.executeScript()` (the `scripting` permission, in both builds), so Defuddle stays
+out of the content script that loads on every page. A file injection takes no arguments, so the
+script only registers `globalThis.triliumReadPage()` and a second `executeScript({ func, args })`
+calls it in the same isolated world. Specs mock it with
+`Object.assign(fakeBrowser, { scripting: { executeScript } })`, answering `[]` to the file and
+`[ { result: page } ]` to the call, by `args[0]`.
 
 Every user action in the background runs inside `showFailures()`, which turns an exception into a
 toast. A new action belongs inside it too, or it fails silently. A toast cannot show on browser
@@ -45,8 +55,12 @@ pages or the extension stores, where no content script runs.
 
 - **Desktop first.** `getPort()` returns the port from the options page, or **37840** (production)
   / **37743** (development build, the port `pnpm desktop:start` uses). It tries that one port — there is no port scan — with
-  `GET http://127.0.0.1:<port>/api/clipper/handshake`, then falls back to the configured server.
-  It repeats every 60 seconds, and on the popup's **check** button.
+  `GET http://127.0.0.1:<port>/api/clipper/handshake` and asks the configured server at the same
+  time, with timeouts of 2 s and 10 s; the desktop app wins when both answer. It repeats every
+  60 seconds in the background, keeping the last status, and only the popup's **check** button
+  shows "searching". The last status is kept in `browser.storage.session`, so an MV3 service
+  worker that Chrome restarted does not start from "searching"; `callService()` waits for the
+  latest search, and an older search that ends later is discarded (`searchCount`).
 - **Version check.** The handshake returns `protocolVersion` (`CLIPPER_PROTOCOL_VERSION` in
   `packages/trilium-core/src/services/app_info.ts`); the extension compares the major version and
   reports `version-mismatch`.
@@ -86,16 +100,47 @@ against older versions of the other.** Prefer changes that need nothing new from
   20-character URLs on purpose, so **an image left with its placeholder is a broken image**.
   `postProcessImages()` therefore restores the original URL (escaped with `escapeHtml()`) for every
   image it cannot download and reports the count in the toast.
+- A selection copies the page's DOM as it is, so an image not yet scrolled into view still has a
+  placeholder (often a `data:image/svg+xml` URL) in `src`. `getImages()` lists it under the web
+  address in `data-src`, `data-original` or `data-lazy-src` (the attributes Defuddle reads), and
+  ignores one that is not `http(s)` or does not parse.
 - **A `replaceAll()`/`replace()` replacement built from page data is a callback**
   (`replaceAll(id, () => escapeHtml(src))`). A string replacement reads `$&`, `$$`, `` $` `` and
   `$'` as patterns, so an image URL containing `$&` came back with the placeholder inside it.
 - **HTML built by concatenation escapes every page-derived value** with `escapeHtml()` — the
   save-tabs list once put tab titles in raw. Tabs can also lack a `url` (still loading), and
   `new URL("")` throws, so `saveTabs()` filters them out.
-- `fetchImage()` rejects a non-OK response and a non-image `Content-Type` — otherwise an error page
-  gets saved as the "image".
-- Readability is `@mozilla/readability`, installed from npm; Firefox
+- `fetchImage()` rejects a non-OK response and a type that is not `image/<subtype>` — otherwise an
+  error page gets saved as the "image".
+- **`data:` images go through `fetchImage()` too.** The server decodes every `dataUrl` as base64,
+  and a `data:image/svg+xml,…` or `;utf8,` URL is not; `fetch()` decodes either and `FileReader`
+  re-encodes it. Node's `fetch()` types `data:image/;base64,…` as `image/` where browsers say
+  `text/plain`, hence the subtype in the check.
+- The page is extracted with `defuddle`, installed from npm and pinned; Firefox
   review flags its `innerHTML` use, which the README explains to the reviewer.
+  - `new Defuddle(document, { url })` takes the **live** document: it clones it itself, leaves
+    the page unchanged, and reads computed styles and image sizes from the original, which a copy
+    made with `cloneNode()` does not have. `url` makes links and images absolute.
+  - Its HTML is parsed with `DOMParser`, a document that loads no image and runs no code, before
+    `getImages()` swaps the sources for placeholders.
+  - A page reads two ways: `"article"`, and `"wholePage"` (`WHOLE_PAGE_OPTIONS`:
+    `contentSelector: "body"` with scoring and the clutter selectors off, hidden-element removal
+    and standardization kept). Defuddle drops a grid of cards with little text under each heading
+    as "related articles" (`isCardGrid()`) and any `.footer`, which on a gallery or test page is the
+    content (#9611). Each reading is one parse, made only when needed: the popup and the shortcut
+    read the article, and the whole page only when there is no article — or, in the popup, when
+    the user switches to `Whole page` (`laterReadings` in `PagePreview`).
+  - A reading that shows nothing (an article-less page comes back as `<body></body>`) is
+    `undefined`; the popup stores it as `null`, keeping `undefined` for "not read yet". A page
+    whose two readings both show nothing opens on Bookmark. Defuddle's own retries relax its rules
+    on a very short page ("possible index page"), so a spec fixture of a card grid needs a
+    paragraph of text to stay above that.
+  - v8 can record a negative count for the code after `x ?? await y()`, which fails the branch
+    gate with every case tested; write such a fallback as consecutive `if`s.
+  - Use `parse()`, never `parseAsync()`: the async extractors fetch third-party APIs.
+  - **happy-dom drops lazy images** (`data-src` behind a `data:image/svg+xml` placeholder) that
+    Chromium and linkedom promote to `src`; test such Defuddle behavior in a real browser, not
+    in a spec.
 
 ## The popup and options page: Preact in the Next theme
 

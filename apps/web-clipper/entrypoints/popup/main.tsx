@@ -1,22 +1,30 @@
 import "@/assets/theme.css";
 import "./popup.css";
 
-import type { IconData, IconDefinition } from "@boxicons/js";
+import type { IconData, IconDefinition, IconPack } from "@boxicons/js";
+import AlignLeft from "@boxicons/js/icons/AlignLeft";
 import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
+import Calendar from "@boxicons/js/icons/Calendar";
 import Cog from "@boxicons/js/icons/Cog";
 import Crop from "@boxicons/js/icons/Crop";
 import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
+import History from "@boxicons/js/icons/History";
 import Lock from "@boxicons/js/icons/Lock";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
 import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
+import User from "@boxicons/js/icons/User";
+import Youtube from "@boxicons/js/icons/Youtube";
+import monospaceFontUrl from "@triliumnext/client/src/fonts/JetBrainsMono-Light.woff2?url";
 import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
+
+import { extractPage, type PageVariant, type ReadablePage } from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
@@ -41,16 +49,14 @@ interface SelectedContent {
     content: string;
     images: { imageId: string, src: string }[];
     pageUrl: string;
+    labels?: Record<string, string>;
 }
 
-/** The readable page, as the content script extracts it. */
-interface ExtractedPage extends SelectedContent {
-    clipType: "page";
-    labels: Record<string, string>;
-}
+/** The tab, and each reading of its page: `undefined` until it is read, `null` when it shows nothing. */
+type PageReadings = { tabId: number } & Record<PageVariant, ReadablePage | null | undefined>;
 
-/** The current page: its readable version, or why there is none. */
-type PageState = ExtractedPage | "unreadable" | "inaccessible";
+/** The current page: its readings, or why there is nothing to save. */
+type PageState = PageReadings | "unreadable" | "inaccessible";
 
 /** What the active tab offers to save. */
 interface TabContent {
@@ -60,32 +66,75 @@ interface TabContent {
     /** The tab's own title and address, which a note clip saves. */
     title?: string;
     url?: string;
+    /** What the page says about itself, which a note clip saves in its `#pageDescription` label. */
+    description?: string;
 }
 
 /**
- * What the card saves: the selection, the readable page (`clipType: "page"`), or a note about the
- * page with a link to it (`clipType: "note"`), which the popup calls a bookmark.
+ * What the card saves: the selection, the page (`clipType: "page"`), or a note about the page with a
+ * link to it (`clipType: "note"`), which the popup calls a bookmark.
  */
 type ClipMode = "selection" | "page" | "note";
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
     mode?: ClipMode;
+    variant?: PageVariant;
     /** `undefined` until the user edits the title. */
     title?: string;
+    /** `undefined` until the user edits the page's description. */
+    description?: string;
+    /** `undefined` until the user edits the author of the page. */
+    author?: string;
     text: string;
 }
 
+/** The code styles of the share theme, `packages/share-theme/src/content/content.css`. */
 const PREVIEW_STYLE = `
-    :root { color-scheme: light dark; }
+    @font-face { font-family: JetBrainsLight; src: url("${monospaceFontUrl}") format("woff2"); }
+    :root {
+        color-scheme: light dark;
+        --code-block-box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), 0px 0px 2px rgba(0, 0, 0, 0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { --code-block-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); }
+    }
+    html { overflow: hidden; }
     body { margin: 8px; font: 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
     h1 { font-size: 1.3em; } h2 { font-size: 1.15em; } h3, h4, h5, h6 { font-size: 1em; }
-    img, video, svg, iframe { max-width: 100%; height: auto; }
-    pre { white-space: pre-wrap; }
+    img, video, svg { max-width: 100%; height: auto; }
+    pre, code, kbd, samp { font-family: JetBrainsLight, ui-monospace, monospace; }
+    code:not(pre code) {
+        padding: 0.1em 0.35em; border-radius: 5px; font-size: 0.8em; overflow-wrap: break-word;
+        background-color: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    }
+    pre {
+        margin-top: 2px; padding: 0.6em 0.75em; border-radius: 6px;
+        box-shadow: var(--code-block-box-shadow);
+        background-color: light-dark(#f3f3f3, #1f1f1f); color: light-dark(#000000, #cccccc);
+        white-space: pre; tab-size: 4; text-align: left; direction: ltr;
+    }
+    pre:has(> code) { padding: 0; }
+    pre code { display: block; padding: 0.6em 0.75em; overflow: auto; }
     a { color: light-dark(#0076af, #95c3d9); text-decoration: none; }
+    .embed-chip {
+        display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 2px 10px 2px 8px;
+        border-radius: 999px; white-space: nowrap;
+        background: light-dark(#0000000f, #ffffff28); color: light-dark(#000000ad, #ffffffc2);
+    }
+    .embed-chip svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .embed-chip-detail { color: light-dark(#666, #bbb); }
 `;
 
 const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
+
+const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
+
+/** Why a reading of the page is unavailable. */
+const VARIANT_UNAVAILABLE: Record<PageVariant, string> = {
+    article: "Trilium found no article on this page.",
+    wholePage: "Trilium found nothing to save on this page."
+};
 
 /** The save button of each mode, with the command whose shortcut it shows, or its own shortcut. */
 const SAVE_BUTTONS: Record<ClipMode, { icon: IconDefinition, label: string, command: string, shortcut?: string }> = {
@@ -302,15 +351,35 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
 }) {
-    const { mode: chosenMode, title, text } = draft;
+    const { mode: chosenMode, variant: chosenVariant, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    /** The readings of the page made after the popup opened, when the user switched to them. */
+    const [ laterReadings, setLaterReadings ] = useState<Partial<PageReadings>>({});
 
-    const article = typeof tab?.page === "object" ? tab.page : undefined;
+    const page = typeof tab?.page === "object" ? { ...tab.page, ...laterReadings } : undefined;
+    const variant = chosenVariant && page?.[chosenVariant] !== null ? chosenVariant : page?.article ? "article" : "wholePage";
+    const pageClip = page?.[variant] ?? undefined;
+    /** Either reading: both carry the same title and labels. */
+    const pageReading = page?.article ?? page?.wholePage ?? undefined;
     const selection = tab?.selection ?? undefined;
-    const modes = tab ? availableModes(article, selection) : [];
+    const modes = tab ? availableModes(!!page, selection) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
-    const clip = mode === "selection" ? selection : mode === "page" ? article : undefined;
-    const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
+    const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
+    const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
+    const shownDescription =
+        description ?? tab?.description ?? pageReading?.labels.pageDescription ?? "";
+    const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
+    const shownAuthor = author ?? pageReading?.labels.pageAuthor ?? "";
+    const savedAuthor = shownAuthor.replace(/\s+/g, " ").trim();
+
+    const tabId = page?.tabId;
+    const unreadVariant = mode === "page" && page?.[variant] === undefined ? variant : undefined;
+    useEffect(() => {
+        if (tabId === undefined || !unreadVariant) return;
+        void readVariant(tabId, unreadVariant).then((reading) => {
+            setLaterReadings((readings) => ({ ...readings, [unreadVariant]: reading }));
+        });
+    }, [ tabId, unreadVariant ]);
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -322,13 +391,18 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         const result = await sendMessage({
             name: "save-link-with-note",
             title: shownTitle.trim(),
-            content: content ? textToHtml(content) : ""
+            content: content ? textToHtml(content) : "",
+            ...(savedDescription && { description: savedDescription })
         });
         if (result) window.close();
     }
 
     function saveClip(content: SelectedContent) {
-        const titled = { ...content, title: shownTitle.trim() || content.title };
+        let labels = withLabel(content.labels, "pageDescription", savedDescription);
+        if (mode === "page") {
+            labels = withLabel(labels, "pageAuthor", savedAuthor);
+        }
+        const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
         void sendMessage(mode === "selection"
             ? { name: "save-selection", selection: titled }
             : { name: "save-whole-page", page: titled });
@@ -350,7 +424,9 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
-    const published = mode === "page" ? article?.labels.publishedDate : undefined;
+    const pageLabels = mode === "page" ? pageReading?.labels : undefined;
+    const published = pageLabels?.publishedDate;
+    const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
 
     return (
@@ -368,11 +444,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             onInput={(e) => onDraftChange({ ...draft, title: e.currentTarget.value })}
                             onKeyDown={saveNoteOnCtrlEnter}
                         />
-                        {pageUrl && (
-                            <div className="page-meta">
-                                {new URL(pageUrl).hostname}{published && ` · Published ${published}`}
-                            </div>
-                        )}
+                        {pageUrl && <div className="page-meta">{new URL(pageUrl).hostname}</div>}
                     </div>
                 </div>
             )}
@@ -388,10 +460,71 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             )}
 
             {mode === "note" && modes.length === 1 && (
-                <div className="clip-hint">This page has no article; save it as a bookmark.</div>
+                <div className="clip-hint">This page has nothing to save; save it as a bookmark.</div>
             )}
 
             <div className="page-body">
+                {mode && (
+                    <div className="page-fields">
+                        <div className="page-field">
+                            <span
+                                className="page-field-icon"
+                                title="The page's description. It is saved in the #pageDescription label of the note."
+                            >
+                                <Icon icon={AlignLeft} />
+                            </span>
+                            <textarea
+                                className="page-description"
+                                aria-label="Page description"
+                                placeholder="Add a description"
+                                rows={2}
+                                value={shownDescription}
+                                onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
+                                onKeyDown={saveNoteOnCtrlEnter}
+                            />
+                        </div>
+                        {mode === "page" && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The page's author. It is saved in the #pageAuthor label of the note."
+                                >
+                                    <Icon icon={User} />
+                                </span>
+                                <input
+                                    type="text"
+                                    className="page-author"
+                                    aria-label="Author"
+                                    placeholder="Add an author"
+                                    value={shownAuthor}
+                                    onInput={(e) => onDraftChange({ ...draft, author: e.currentTarget.value })}
+                                />
+                            </div>
+                        )}
+                        {published && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The date the page was published. It is saved in the #publishedDate label of the note."
+                                >
+                                    <Icon icon={Calendar} />
+                                </span>
+                                <span className="page-date page-published-date">Published {published}</span>
+                            </div>
+                        )}
+                        {modified && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The date the page was last modified. It is saved in the #modifiedDate label of the note."
+                                >
+                                    <Icon icon={History} />
+                                </span>
+                                <span className="page-date page-modified-date">Updated {modified}</span>
+                            </div>
+                        )}
+                    </div>
+                )}
                 {mode === "note" && (
                     <textarea
                         ref={textAreaRef}
@@ -402,13 +535,36 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                         onKeyDown={saveNoteOnCtrlEnter}
                     />
                 )}
-                {clip && <iframe className="page-content" title="Preview of the page" sandbox="" srcDoc={previewDocument(clip)} />}
-                {!mode && <div className="page-preview-placeholder">Reading the page…</div>}
+                {mode === "page" && page && (
+                    <div className="page-variant" role="group" aria-label="How to read the page">
+                        {(Object.keys(VARIANT_LABELS) as PageVariant[]).map((option) => (
+                            <button
+                                key={option}
+                                aria-pressed={option === variant}
+                                disabled={page[option] === null}
+                                title={page[option] === null ? VARIANT_UNAVAILABLE[option] : undefined}
+                                onClick={() => onDraftChange({ ...draft, variant: option })}
+                            >
+                                {VARIANT_LABELS[option]}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {clip && (
+                    <iframe
+                        className="page-content"
+                        title="Preview of the page"
+                        sandbox="allow-same-origin"
+                        srcDoc={previewDocument(clip)}
+                        onLoad={(e) => fitToContent(e.currentTarget)}
+                    />
+                )}
+                {(!mode || (mode === "page" && !clip)) && <div className="page-preview-placeholder">Reading the page…</div>}
             </div>
 
             <button
                 className="btn btn-primary primary-action"
-                disabled={disabled || !mode}
+                disabled={disabled || !onSave}
                 title={disabled ? DISCONNECTED_TITLE : undefined}
                 onClick={onSave}
             >
@@ -420,11 +576,34 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     );
 }
 
-/** The modes the page offers, the default first: the selection, then the article, then a note. */
-function availableModes(article: ExtractedPage | undefined, selection: SelectedContent | undefined): ClipMode[] {
+/** A clip's labels with the label `name` as the user left it, or without it when `value` is empty. */
+function withLabel(labels: Record<string, string> | undefined, name: string, value: string) {
+    const { [name]: _, ...others } = labels ?? {};
+    return value ? { ...others, [name]: value } : labels && others;
+}
+
+/**
+ * Keeps the preview as tall as the page it shows, so that the page scrolls in `.page-body` together
+ * with the description above it. The page grows after `load` when it rewraps beside the scrollbar of
+ * `.page-body` or a lazy image loads, so a `ResizeObserver` from the frame's own window refits it.
+ * `allow-same-origin` lets the popup read the height, and gives the frame the extension's origin.
+ * The sandbox must not get `allow-scripts` too: with both, the clipped page's HTML runs as the
+ * extension, with its browser APIs.
+ */
+function fitToContent(frame: HTMLIFrameElement) {
+    const root = frame.contentDocument?.documentElement;
+    const view = frame.contentWindow as (Window & typeof globalThis) | null;
+    if (!root || !view) return;
+    new view.ResizeObserver(() => {
+        frame.style.height = `${Math.ceil(root.getBoundingClientRect().height)}px`;
+    }).observe(root);
+}
+
+/** The modes the page offers, the default first: the selection, then the page, then a note. */
+function availableModes(hasPage: boolean, selection: SelectedContent | undefined): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
-    if (article) modes.push("page");
+    if (hasPage) modes.push("page");
     modes.push("note");
     return modes;
 }
@@ -485,19 +664,32 @@ async function readActiveTab(): Promise<TabContent> {
     const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
     if (tab?.id === undefined) return { page: "inaccessible", selection: null };
 
-    const [ page, selection ] = await Promise.all([ extractPage(tab.id), readSelection(tab.id) ]);
-    return { page, selection, title: tab.title, url: tab.url };
+    const [ page, selection, description ] = await Promise.all([
+        readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
+    ]);
+    return { page, selection, title: tab.title, url: tab.url, description };
 }
 
 /**
- * The content script answers `undefined` when Readability cannot parse the page, and the message
- * fails where no content script runs.
+ * Reads the article, and the whole page only when there is no article: the user can ask for it
+ * later. `extractPage()` fails where the extension cannot run scripts.
  */
-async function extractPage(tabId: number): Promise<PageState> {
+async function readPage(tabId: number): Promise<PageState> {
     try {
-        return await browser.tabs.sendMessage(tabId, { name: "trilium-save-page" }) ?? "unreadable";
+        const article = await extractPage(tabId, "article") ?? null;
+        const wholePage = article ? undefined : await extractPage(tabId, "wholePage") ?? null;
+        return article || wholePage ? { tabId, article, wholePage } : "unreadable";
     } catch {
         return "inaccessible";
+    }
+}
+
+/** The page as `variant` reads it, or `null` when that reading shows nothing or fails. */
+async function readVariant(tabId: number, variant: PageVariant) {
+    try {
+        return await extractPage(tabId, variant) ?? null;
+    } catch {
+        return null;
     }
 }
 
@@ -517,8 +709,22 @@ async function readSelection(tabId: number): Promise<SelectedContent | null> {
     }
 }
 
+/**
+ * The page's description, or `undefined` when it has none. A content script from before an update
+ * answers nothing, and none runs on the browser's own pages.
+ */
+async function readDescription(tabId: number): Promise<string | undefined> {
+    try {
+        const metadata: { description?: string } | undefined =
+            await browser.tabs.sendMessage(tabId, { name: "trilium-get-page-metadata" });
+        return metadata?.description;
+    } catch {
+        return undefined;
+    }
+}
+
 /** A standalone document showing the page's content, its images loaded from the website. */
-export function previewDocument({ content, images }: Pick<ExtractedPage, "content" | "images">) {
+export function previewDocument({ content, images }: Pick<ReadablePage, "content" | "images">) {
     const doc = new DOMParser().parseFromString(content, "text/html");
     for (const img of doc.querySelectorAll("img")) {
         const image = images.find(({ imageId }) => imageId === img.getAttribute("src"));
@@ -526,7 +732,7 @@ export function previewDocument({ content, images }: Pick<ExtractedPage, "conten
             img.setAttribute("src", image.src);
         }
     }
-    // An empty `sandbox` still lets the frame navigate itself: through a link, which the keyboard
+    // The sandbox still lets the frame navigate itself: through a link, which the keyboard
     // can follow, or through a `<meta http-equiv="refresh">`.
     for (const link of doc.querySelectorAll("a[href], area[href]")) {
         link.removeAttribute("href");
@@ -534,9 +740,34 @@ export function previewDocument({ content, images }: Pick<ExtractedPage, "conten
     for (const meta of doc.querySelectorAll("meta[http-equiv]")) {
         meta.remove();
     }
+    // Trilium saves a YouTube player as a link preview and drops every other iframe.
+    for (const frame of doc.querySelectorAll("iframe")) {
+        const videoId = extractYouTubeVideoId(frame.getAttribute("src") ?? "");
+        if (videoId) {
+            frame.replaceWith(youTubeChip(doc, videoId));
+        } else {
+            frame.remove();
+        }
+    }
 
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PREVIEW_STYLE}</style></head>`
         + `<body>${doc.body.innerHTML}</body></html>`;
+}
+
+/** Stands in for an embedded YouTube player, which the sandboxed preview cannot run. */
+function youTubeChip(doc: Document, videoId: string) {
+    const { viewBox, content } = iconVariant(Youtube, "brands");
+    const chip = doc.createElement("span");
+    chip.className = "embed-chip";
+    chip.innerHTML = `<svg viewBox="${viewBox}" fill="currentColor" aria-hidden="true">${content}</svg>`
+        + `<span>YouTube video</span><span class="embed-chip-detail">youtu.be/${videoId}</span>`;
+    return chip;
+}
+
+/** Matches the same URLs as `YOUTUBE_REGEX` in `packages/commons/src/lib/link_embed.ts`. */
+function extractYouTubeVideoId(url: string) {
+    const match = url.match(/(?:youtube\.com\/watch\?[^\s#]*v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+    return match?.[1];
 }
 
 /** Maps each bound command to its shortcut, as the browser shows it. */
@@ -552,7 +783,7 @@ export function shortcutsByCommand(commands: { name?: string, shortcut?: string 
 
 /** A Boxicons v3 icon, drawn inline in the current text color. */
 function Icon({ icon }: { icon: IconDefinition }) {
-    const { viewBox, content } = basicIcon(icon);
+    const { viewBox, content } = iconVariant(icon);
     return (
         <svg
             className="icon"
@@ -564,11 +795,11 @@ function Icon({ icon }: { icon: IconDefinition }) {
     );
 }
 
-/** The outlined variant of an icon, the one matching the app's Boxicons. */
-export function basicIcon(icon: IconDefinition): IconData {
-    const data = icon.packs.basic;
+/** A variant of an icon, by default the outlined one, which matches the app's Boxicons. */
+export function iconVariant(icon: IconDefinition, pack: IconPack = "basic"): IconData {
+    const data = icon.packs[pack];
     if (!data) {
-        throw new Error(`Boxicons has no basic variant of '${icon.name}'.`);
+        throw new Error(`Boxicons has no ${pack} variant of '${icon.name}'.`);
     }
     return data;
 }
