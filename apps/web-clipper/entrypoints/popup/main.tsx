@@ -5,6 +5,7 @@ import type { IconData, IconDefinition, IconPack } from "@boxicons/js";
 import AlignLeft from "@boxicons/js/icons/AlignLeft";
 import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
+import Calendar from "@boxicons/js/icons/Calendar";
 import Cog from "@boxicons/js/icons/Cog";
 import Crop from "@boxicons/js/icons/Crop";
 import Globe from "@boxicons/js/icons/Globe";
@@ -404,11 +405,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             onInput={(e) => onDraftChange({ ...draft, title: e.currentTarget.value })}
                             onKeyDown={saveNoteOnCtrlEnter}
                         />
-                        {pageUrl && (
-                            <div className="page-meta">
-                                {new URL(pageUrl).hostname}{published && ` · Published ${published}`}
-                            </div>
-                        )}
+                        {pageUrl && <div className="page-meta">{new URL(pageUrl).hostname}</div>}
                     </div>
                 </div>
             )}
@@ -429,22 +426,35 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
 
             <div className="page-body">
                 {mode && (
-                    <div className="page-description-row">
-                        <span
-                            className="page-description-icon"
-                            title="The page's description. It is saved in the #pageDescription label of the note."
-                        >
-                            <Icon icon={AlignLeft} />
-                        </span>
-                        <textarea
-                            className="page-description"
-                            aria-label="Page description"
-                            placeholder="Add a description"
-                            rows={2}
-                            value={shownDescription}
-                            onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
-                            onKeyDown={saveNoteOnCtrlEnter}
-                        />
+                    <div className="page-fields">
+                        <div className="page-field">
+                            <span
+                                className="page-field-icon"
+                                title="The page's description. It is saved in the #pageDescription label of the note."
+                            >
+                                <Icon icon={AlignLeft} />
+                            </span>
+                            <textarea
+                                className="page-description"
+                                aria-label="Page description"
+                                placeholder="Add a description"
+                                rows={2}
+                                value={shownDescription}
+                                onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
+                                onKeyDown={saveNoteOnCtrlEnter}
+                            />
+                        </div>
+                        {published && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The date the page was published. It is saved in the #publishedDate label of the note."
+                                >
+                                    <Icon icon={Calendar} />
+                                </span>
+                                <span className="page-date">Published {published}</span>
+                            </div>
+                        )}
                     </div>
                 )}
                 {mode === "note" && (

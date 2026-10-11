@@ -215,12 +215,17 @@ describe("popup", () => {
         expect(heading).not.toBeNull();
         expect(heading?.querySelector(".page-icon svg path")).not.toBeNull();
         expect(heading?.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
-        expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com · Published 2024-05-01");
+        expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com");
+        expect(publishedDate()).toBe("Published 2024-05-01");
+        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
+        expect(dateIcon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(dateIcon?.title).toBe(
+            "The date the page was published. It is saved in the #publishedDate label of the note.");
         const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
         expect(frame?.getAttribute("sandbox")).toBe("allow-same-origin");
         expect(frame?.getAttribute("srcdoc")).toBe(previewDocument(PAGE));
         expect([ ...container.querySelector(".page-body")?.children ?? [] ].map((part) => part.className))
-            .toEqual([ "page-description-row", "page-content" ]);
+            .toEqual([ "page-fields", "page-content" ]);
         expect(button("Save page to Trilium")?.disabled).toBe(false);
     });
 
@@ -239,6 +244,8 @@ describe("popup", () => {
         executeScript.mockResolvedValueOnce([ { result: { ...PAGE, labels: {} } } ]);
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
+        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(1);
+        expect(publishedDate()).toBeUndefined();
     });
 
     it("says so while the page is read", async () => {
@@ -295,11 +302,12 @@ describe("popup", () => {
         expect(frameDocument()).toBe(previewDocument(SELECTION));
         expect(shortcutOf("Save selection").keys).toEqual([ "Ctrl", "Shift", "S" ]);
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
+        expect(publishedDate()).toBeUndefined();
 
         await click("Page");
         expect(modes()).toEqual([ [ "Selection", "false" ], [ "Page", "true" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(PAGE));
-        expect(container.querySelector(".page-meta")?.textContent).toBe("example.com · Published 2024-05-01");
+        expect(publishedDate()).toBe("Published 2024-05-01");
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
 
@@ -356,6 +364,7 @@ describe("popup", () => {
         expect(container.querySelector(".page-body iframe")).toBeNull();
         expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
+        expect(publishedDate()).toBeUndefined();
         expect(shortcutOf("Save bookmark")).toEqual({ text: "Ctrl+Enter", keys: [ "Ctrl", "Enter" ] });
 
         await type(".page-body .note-text", "Worth a read");
@@ -380,11 +389,11 @@ describe("popup", () => {
         selection = SELECTION;
         await rerender();
         const description = () =>
-            container.querySelector<HTMLTextAreaElement>(".page-body > .page-description-row .page-description");
+            container.querySelector<HTMLTextAreaElement>(".page-body > .page-fields .page-description");
         expect(description()?.value).toBe("All about the post");
         expect(description()?.getAttribute("aria-label")).toBe("Page description");
         expect(description()?.getAttribute("placeholder")).toBe("Add a description");
-        const icon = container.querySelector<HTMLElement>(".page-description-row .page-description-icon");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:first-child > .page-field-icon");
         expect(icon?.querySelector("svg.icon path")).not.toBeNull();
         expect(icon?.title).toBe(
             "The page's description. It is saved in the #pageDescription label of the note.");
@@ -766,4 +775,8 @@ function status() {
         dot: container.querySelector<HTMLElement>(".connection > span > .status-dot")?.className,
         text: container.querySelector(".connection > span")?.textContent
     };
+}
+
+function publishedDate() {
+    return container.querySelector(".page-fields .page-date")?.textContent;
 }

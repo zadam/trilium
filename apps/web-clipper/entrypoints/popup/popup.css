@@ -149,16 +149,19 @@ body {
             }
         }
 
-        .page-description-row {
-            display: flex;
+        .page-fields {
             flex: none;
-            align-items: flex-start;
-            gap: 4px;
             padding: 6px 8px 6px 6px;
             border-bottom: 1px solid var(--main-border-color);
         }
 
-        .page-description-icon {
+        .page-field {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .page-field-icon {
             display: flex;
             flex: none;
             padding: 3px 2px;
@@ -189,6 +192,13 @@ body {
                 outline: 0;
                 box-shadow: inset 0 0 0 2px var(--input-focus-outline-color);
             }
+        }
+
+        .page-date {
+            padding: 4px 6px;
+            color: var(--muted-text-color);
+            font-size: 0.85em;
+            line-height: 1.3;
         }
 
         .page-content {
