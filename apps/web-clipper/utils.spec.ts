@@ -46,7 +46,7 @@ describe("extractReadablePage", () => {
         Reflect.deleteProperty(fakeBrowser, "scripting");
     });
 
-    it("runs the readability script in the tab and returns its result", async () => {
+    it("runs the readable-page script in the tab and returns its result", async () => {
         const page = { title: "Article", content: "<p>Body</p>" };
         const executeScript = vi.fn()
             .mockResolvedValueOnce([ { result: page } ])
@@ -55,7 +55,7 @@ describe("extractReadablePage", () => {
         Object.assign(fakeBrowser, { scripting: { executeScript } });
 
         expect(await extractReadablePage(7)).toBe(page);
-        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
+        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
         expect(await extractReadablePage(7)).toBeUndefined();
         expect(await extractReadablePage(7)).toBeUndefined();
     });

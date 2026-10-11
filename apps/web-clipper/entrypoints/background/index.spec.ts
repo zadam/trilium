@@ -56,7 +56,7 @@ let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
-/** What `readability.js` returns in the active tab; no article unless a test says so. */
+/** What `readable-page.js` returns in the active tab; no article unless a test says so. */
 let readablePage: unknown;
 const executeScript = vi.fn(async () => [ { result: readablePage } ]);
 const contextMenusCreate = vi.fn();
@@ -284,7 +284,7 @@ describe("background", () => {
             await sendRuntimeMessage({ name: "save-whole-page" });
 
             expect(executeScript).toHaveBeenCalledTimes(3);
-            expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
+            expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
             expect(facade.callService).toHaveBeenCalledTimes(3);
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", page);
             expect(await lastToast()).toMatchObject({ noteId: "saved" });

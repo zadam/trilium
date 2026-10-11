@@ -27,7 +27,7 @@ const PAGE = {
     clipType: "page",
     labels: { publishedDate: "2024-05-01" }
 };
-/** What `readability.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
+/** What `readable-page.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
 const executeScript = vi.fn(async (): Promise<unknown> => [ { result: PAGE } ]);
 const tabsQuery = vi.fn(async (): Promise<{ id?: number, title?: string, url?: string }[]> => [ { id: 7 } ]);
 const SELECTION = {
@@ -207,7 +207,7 @@ describe("popup", () => {
 
     it("previews the readable page with its title, source and date", () => {
         expect(tabsQuery).toHaveBeenCalledWith({ active: true, currentWindow: true });
-        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
+        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
 
         expect(cardParts()).toEqual([ "page-heading", "clip-mode", "page-body", "btn btn-primary primary-action" ]);
         expect(modes()).toEqual([ [ "Page", "true" ], [ "Bookmark", "false" ] ]);

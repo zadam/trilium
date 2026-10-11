@@ -6,7 +6,7 @@ The Web Clipper is an extension for the Trilium Notes application, an open-sourc
 
 The source is extracted from the official monorepo, where it can be found under `apps/web-clipper`. The only change made to the provided source code is to have `tsconfig.base.json` in the same directory as the Web Clipper. The submitted source code is a snapshot of the following commit: [https://github.com/TriliumNext/Trilium/commit/1cf93ff0dec89ee1a80654934cb30fad74920043](https://github.com/TriliumNext/Trilium/commit/1cf93ff0dec89ee1a80654934cb30fad74920043) 
 
-There are some warnings regarding the use of `innerHTML`. They come from `@mozilla/readability`, Mozilla's own article extraction library behind Firefox's Reader View, which the extension installs unmodified from npm.
+There are some warnings regarding the use of `innerHTML`. They come from [`defuddle`](https://github.com/kepano/defuddle), the article extraction library behind the Obsidian Web Clipper, which the extension installs unmodified from npm. It runs only when the user opens the popup or saves a page, and it removes scripts, event handler attributes and `javascript:` URLs from the article it returns.
 
 ## Building from source
 
