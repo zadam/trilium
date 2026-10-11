@@ -11,7 +11,7 @@ export type FloatingElementsStep = "first" | "rest" | "restore";
 /** A fixed element covering this much of the viewport's width and height is a backdrop and stays. */
 const BACKDROP_COVERAGE = 0.9;
 /** How long changes are kept when the background script does not ask to restore them. */
-const RESTORE_TIMEOUT_MS = 60_000;
+const RESTORE_TIMEOUT_MS = 180_000;
 
 const PINNED_STICKY: [ string, string ][] = [
     [ "position", "relative" ],

@@ -17,10 +17,19 @@ const { facade, TriliumError } = vi.hoisted(() => ({
     }
 }));
 
-const stitchScreenshots = vi.hoisted(() => vi.fn());
+const backgroundStitcher = vi.hoisted(() => ({ created: vi.fn(), add: vi.fn(), finish: vi.fn() }));
 vi.mock("@/screenshot", async (importOriginal) => ({
     ...await importOriginal<typeof import("@/screenshot")>(),
-    stitchScreenshots
+    ScreenshotStitcher: class {
+
+        add = backgroundStitcher.add;
+        finish = backgroundStitcher.finish;
+
+        constructor(request: unknown) {
+            backgroundStitcher.created(request);
+        }
+
+    }
 }));
 
 vi.mock("./trilium_server_facade", () => ({
@@ -500,17 +509,29 @@ describe("background", () => {
     describe("full page screenshots", () => {
         const captureVisibleTab = vi.fn(async () => PNG);
         let tabActive: boolean;
+        /** What the offscreen document was asked to stitch, and the images it answers with. */
+        let offscreen: { request?: unknown, slices: { y: number }[], parts: string[] };
 
         beforeEach(() => {
             vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
             tabActive = true;
+            offscreen = { slices: [], parts: [ CROPPED_PNG ] };
             Object.assign(fakeBrowser.tabs, {
                 get: async () => ({ active: tabActive }),
                 captureVisibleTab
             });
-            runtimeSendMessage.mockImplementation(async (message) => (
-                (message as { type?: string }).type === "STITCH_IMAGES" ? { dataUrl: CROPPED_PNG } : PNG
-            ));
+            runtimeSendMessage.mockImplementation(async (message) => {
+                const { type, request, slice, index = 0 } = message as {
+                    type?: string, request?: unknown, slice: { y: number }, index?: number
+                };
+                switch (type) {
+                    case "STITCH_BEGIN": offscreen.request = request; return {};
+                    case "STITCH_ADD": offscreen.slices.push(slice); return {};
+                    case "STITCH_FINISH": return { count: offscreen.parts.length };
+                    case "STITCH_PART": return { dataUrl: offscreen.parts[index] };
+                    default: return PNG;
+                }
+            });
         });
 
         afterEach(() => {
@@ -536,13 +557,9 @@ describe("background", () => {
                 .map((message) => (message.name === "trilium-scroll-to" ? message.y : message.step));
         }
 
-        function stitchRequest() {
-            const call = runtimeSendMessage.mock.calls.find(([ message ]) =>
-                (message as { type?: string }).type === "STITCH_IMAGES");
-            return (call?.[0] as { request?: unknown } | undefined)?.request;
-        }
+        const sliceTops = () => offscreen.slices.map((slice) => slice.y);
 
-        it("captures the page a viewport at a time, then stitches the captures offscreen", async () => {
+        it("captures the page a viewport at a time, stitching each capture offscreen", async () => {
             simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
             const captureTimes: number[] = [];
             captureVisibleTab.mockImplementation(async () => {
@@ -553,31 +570,45 @@ describe("background", () => {
             await run(onCommand("saveFullPageScreenshot"));
 
             expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300 ]);
-            expect(stitchRequest()).toEqual({
-                slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ],
-                viewportHeight: 500,
-                pageHeight: 1200
-            });
+            expect(offscreen.request).toEqual({ viewportHeight: 500, pageHeight: 1200 });
+            expect(offscreen.slices).toEqual([ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ]);
             const intervals = captureTimes.slice(1).map((time, index) => time - (captureTimes[index] ?? 0));
             expect(intervals.every((interval) => interval >= 550)).toBe(true);
             expect(lastPayload()).toMatchObject({
+                content: expect.stringMatching(/^<img src="[A-Za-z0-9]{20}">$/),
                 images: [ { src: "inline.png", dataUrl: CROPPED_PNG } ],
                 pageUrl: PAGE_URL
             });
             expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
         });
 
-        it("stops where the page stops scrolling, and at the height a screenshot can hold", async () => {
+        it("saves a page stitched into several images as one image after another", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+            offscreen.parts = [ PNG, CROPPED_PNG ];
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            const { content, images } = lastPayload() as { content: string, images: { imageId: string, dataUrl: string }[] };
+            expect(images.map((image) => image.dataUrl)).toEqual([ PNG, CROPPED_PNG ]);
+            expect(content).toBe(images.map((image) => `<img src="${image.imageId}">`).join(""));
+        });
+
+        it("stops where the page stops scrolling, and says when a page is too long to capture in full", async () => {
             simulatePage({ viewportHeight: 500, pageHeight: 5000, scrollLimit: 1000 });
             await run(onContextMenuClicked({ menuItemId: "trilium-save-full-page-screenshot", pageUrl: MENU_URL }));
-            expect(stitchRequest()).toMatchObject({ slices: [ { y: 0 }, { y: 500 } ] });
+            expect(sliceTops()).toEqual([ 0, 500 ]);
             expect(lastPayload()).toMatchObject({ pageUrl: MENU_URL });
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
 
             vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
-            runtimeSendMessage.mockClear();
+            offscreen.slices = [];
             simulatePage({ viewportHeight: 2000, pageHeight: 100000, devicePixelRatio: 4 });
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
-            expect(stitchRequest()).toMatchObject({ slices: [ { y: 0 }, { y: 2000 }, { y: 4000 } ] });
+            expect(offscreen.request).toEqual({ viewportHeight: 2000, pageHeight: 15000 });
+            expect(sliceTops()).toEqual([ 0, 2000, 4000, 6000, 8000, 10000, 12000, 14000 ]);
+            expect(await lastToast()).toMatchObject({
+                message: "Screenshot has been saved to Trilium, but the page was too long to capture in full."
+            });
         });
 
         it("captures the page as it is laid out once its scrollbars are hidden", async () => {
@@ -585,11 +616,8 @@ describe("background", () => {
 
             await run(onCommand("saveFullPageScreenshot"));
 
-            expect(stitchRequest()).toEqual({
-                slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 515 }, { dataUrl: PNG, y: 585 } ],
-                viewportHeight: 515,
-                pageHeight: 1100
-            });
+            expect(offscreen.request).toEqual({ viewportHeight: 515, pageHeight: 1100 });
+            expect(sliceTops()).toEqual([ 0, 515, 585 ]);
         });
 
         it("stops and scrolls back when another tab is opened, even if scrolling back fails", async () => {
@@ -630,17 +658,14 @@ describe("background", () => {
 
         it("stitches in the background page under Manifest V2", async () => {
             vi.stubGlobal("__MANIFEST_VERSION__", 2);
-            stitchScreenshots.mockResolvedValue(CROPPED_PNG);
+            backgroundStitcher.finish.mockReturnValue([ CROPPED_PNG ]);
             simulatePage({ viewportHeight: 500, pageHeight: 500 });
 
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
 
             expect(runtimeSendMessage).not.toHaveBeenCalled();
-            expect(stitchScreenshots).toHaveBeenCalledWith({
-                slices: [ { dataUrl: PNG, y: 0 } ],
-                viewportHeight: 500,
-                pageHeight: 500
-            });
+            expect(backgroundStitcher.created).toHaveBeenCalledWith({ viewportHeight: 500, pageHeight: 500 });
+            expect(backgroundStitcher.add).toHaveBeenCalledWith({ dataUrl: PNG, y: 0 });
             expect(lastPayload()).toMatchObject({ images: [ { dataUrl: CROPPED_PNG } ] });
         });
     });

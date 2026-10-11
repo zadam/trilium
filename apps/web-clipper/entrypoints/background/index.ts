@@ -1,5 +1,5 @@
 import {
-    MAX_SCREENSHOT_HEIGHT, type ScreenshotSlice, stitchScreenshots, type StitchRequest
+    MAX_SCREENSHOT_HEIGHT, type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
 import { extractPage, randomString, type Rect } from "@/utils";
 
@@ -40,6 +40,12 @@ type ScrollPosition = {
     devicePixelRatio: number;
 };
 
+/** Draws the captures of a full-page screenshot into images, wherever the canvas is. */
+interface Stitcher {
+    add(slice: ScreenshotSlice): Promise<void>;
+    finish(): Promise<string[]> | string[];
+}
+
 /** Chrome allows two `captureVisibleTab()` calls a second, and fails a third. */
 const CAPTURE_INTERVAL_MS = 550;
 /** How long a scrolled page gets to draw what came into view before it is captured. */
@@ -73,7 +79,7 @@ export default defineBackground(() => {
             }
             case "saveFullPageScreenshot": {
                 const activeTab = await getActiveTab();
-                await saveScreenshot(await takeFullPageScreenshot(), activeTab.url);
+                await saveFullPageScreenshot(activeTab.url);
                 break;
             }
             default:
@@ -156,7 +162,8 @@ export default defineBackground(() => {
 
     /**
      * Scrolls the active tab from the top, one viewport at a time, captures each, and stitches the
-     * captures into one image. The tab is scrolled back to where it was afterwards.
+     * captures into images of the page from the top. The tab is scrolled back to where it was
+     * afterwards. `cutOff` says the page was longer than a screenshot holds.
      */
     async function takeFullPageScreenshot() {
         const { id: tabId, windowId } = await getActiveTab();
@@ -165,24 +172,17 @@ export default defineBackground(() => {
         }
 
         const start = await scrollTab(tabId);
-        // Measured again once the page is prepared: without its scrollbars, it can lay out differently.
-        let page = start;
-        const slices: ScreenshotSlice[] = [];
-        let lastCaptureAt = 0;
-
         try {
-            let y = 0;
-            while (y < Math.min(page.pageHeight, MAX_SCREENSHOT_HEIGHT / page.devicePixelRatio)) {
-                let position = await scrollTab(tabId, start.scrollX, y);
-                const previous = slices.at(-1);
-                // The page stopped scrolling short of the height it reported.
-                if (previous && position.scrollY <= previous.y) break;
-                if (!previous) {
-                    await setFloatingElements(tabId, "first");
-                    position = await scrollTab(tabId, start.scrollX, y);
-                    page = position;
-                }
+            await scrollTab(tabId, start.scrollX, 0);
+            await setFloatingElements(tabId, "first");
+            // Measured once the page is prepared: without its scrollbars, it can lay out differently.
+            const page = await scrollTab(tabId, start.scrollX, 0);
+            const height = Math.min(page.pageHeight, MAX_SCREENSHOT_HEIGHT / page.devicePixelRatio);
+            const stitcher = await createStitcher({ viewportHeight: page.viewportHeight, pageHeight: height });
 
+            let position = page;
+            let lastCaptureAt = 0;
+            for (;;) {
                 await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
                 const tab = await browser.tabs.get(tabId);
                 if (!tab.active) {
@@ -191,18 +191,31 @@ export default defineBackground(() => {
 
                 lastCaptureAt = Date.now();
                 const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: "png" });
-                slices.push({ dataUrl, y: position.scrollY });
-                if (!previous) {
+                await stitcher.add({ dataUrl, y: position.scrollY });
+                if (position === page) {
                     await setFloatingElements(tabId, "rest");
                 }
-                y = position.scrollY + page.viewportHeight;
+
+                const y = position.scrollY + page.viewportHeight;
+                if (y >= height) break;
+                const next = await scrollTab(tabId, start.scrollX, y);
+                // The page stopped scrolling short of the height it reported.
+                if (next.scrollY <= position.scrollY) break;
+                position = next;
             }
+
+            return { parts: await stitcher.finish(), cutOff: height < page.pageHeight };
         } finally {
             await setFloatingElements(tabId, "restore").catch(() => undefined);
             await scrollTab(tabId, start.scrollX, start.scrollY).catch(() => undefined);
         }
+    }
 
-        return await stitch({ slices, viewportHeight: page.viewportHeight, pageHeight: page.pageHeight });
+    async function saveFullPageScreenshot(pageUrl: string | null | undefined) {
+        const { parts, cutOff } = await takeFullPageScreenshot();
+        await saveScreenshot(parts, pageUrl, cutOff
+            ? "Screenshot has been saved to Trilium, but the page was too long to capture in full."
+            : undefined);
     }
 
     /** Scrolls the tab when given a position, and answers where it is scrolled to. */
@@ -224,17 +237,38 @@ export default defineBackground(() => {
         await browser.tabs.sendMessage(tabId, message);
     }
 
-    async function stitch(request: StitchRequest) {
+    /**
+     * Stitches in the background page under Manifest V2, and in the offscreen document under V3,
+     * where the service worker has no canvas.
+     */
+    async function createStitcher(request: StitchRequest): Promise<Stitcher> {
         if (import.meta.env.MANIFEST_VERSION !== 3) {
-            return await stitchScreenshots(request);
+            return new ScreenshotStitcher(request);
         }
 
         await ensureOffscreenDocument();
-        const { dataUrl, error } = await browser.runtime.sendMessage({ type: "STITCH_IMAGES", request });
-        if (error) {
-            throw new Error(error);
+        await askOffscreen({ type: "STITCH_BEGIN", request });
+        return {
+            add: async (slice) => {
+                await askOffscreen({ type: "STITCH_ADD", slice });
+            },
+            finish: async () => {
+                const { count } = await askOffscreen({ type: "STITCH_FINISH" });
+                const parts: string[] = [];
+                for (let index = 0; index < count; index++) {
+                    parts.push((await askOffscreen({ type: "STITCH_PART", index })).dataUrl);
+                }
+                return parts;
+            }
+        };
+    }
+
+    async function askOffscreen(message: StitchMessage) {
+        const response = await browser.runtime.sendMessage(message);
+        if (response.error) {
+            throw new Error(response.error);
         }
-        return dataUrl as string;
+        return response;
     }
 
     async function getActiveTab() {
@@ -381,14 +415,15 @@ export default defineBackground(() => {
         toast(savedMessage("Selection", failedImages), resp.noteId);
     }
 
-    async function getImagePayloadFromSrc(src: string, pageUrl: string | null | undefined) {
-        const imageId = randomString(20);
+    /** A clipping of the images, one after another. */
+    async function getImagePayload(srcs: string[], pageUrl: string | null | undefined) {
+        const images = srcs.map((src) => ({ imageId: randomString(20), src }));
         const activeTab = await getActiveTab();
         const { description } = await readPageMetadata();
         const payload = {
             title: activeTab.title,
-            content: `<img src="${imageId}">`,
-            images: [ { imageId, src } ],
+            content: images.map(({ imageId }) => `<img src="${imageId}">`).join(""),
+            images,
             pageUrl,
             ...(description && { labels: { pageDescription: description } })
         };
@@ -417,19 +452,23 @@ export default defineBackground(() => {
         });
         if (!rect) return;
 
-        await saveScreenshot(await takeCroppedScreenshot(rect, devicePixelRatio), pageUrl);
+        await saveScreenshot([ await takeCroppedScreenshot(rect, devicePixelRatio) ], pageUrl);
     }
 
-    async function saveScreenshot(src: string, pageUrl: string | null | undefined) {
-        const { payload } = await getImagePayloadFromSrc(src, pageUrl);
+    async function saveScreenshot(
+        srcs: string[],
+        pageUrl: string | null | undefined,
+        message = "Screenshot has been saved to Trilium."
+    ) {
+        const { payload } = await getImagePayload(srcs, pageUrl);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
 
-        toast("Screenshot has been saved to Trilium.", resp.noteId);
+        toast(message, resp.noteId);
     }
 
     async function saveImage(srcUrl: string, pageUrl: string | null | undefined) {
-        const { payload, failedImages } = await getImagePayloadFromSrc(srcUrl, pageUrl);
+        const { payload, failedImages } = await getImagePayload([ srcUrl ], pageUrl);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
 
@@ -547,10 +586,10 @@ export default defineBackground(() => {
             await saveCroppedScreenshot(info.pageUrl);
         }
         else if (info.menuItemId === 'trilium-save-whole-screenshot') {
-            await saveScreenshot(await takeWholeScreenshot(), info.pageUrl);
+            await saveScreenshot([ await takeWholeScreenshot() ], info.pageUrl);
         }
         else if (info.menuItemId === 'trilium-save-full-page-screenshot') {
-            await saveScreenshot(await takeFullPageScreenshot(), info.pageUrl);
+            await saveFullPageScreenshot(info.pageUrl);
         }
         else if (info.menuItemId === 'trilium-save-image') {
             if (!info.srcUrl) return;
@@ -614,12 +653,12 @@ export default defineBackground(() => {
         else if (request.name === 'save-whole-screenshot') {
             const activeTab = await getActiveTab();
 
-            return await saveScreenshot(await takeWholeScreenshot(), activeTab.url);
+            return await saveScreenshot([ await takeWholeScreenshot() ], activeTab.url);
         }
         else if (request.name === 'save-full-page-screenshot') {
             const activeTab = await getActiveTab();
 
-            return await saveScreenshot(await takeFullPageScreenshot(), activeTab.url);
+            return await saveFullPageScreenshot(activeTab.url);
         }
         else if (request.name === 'save-whole-page') {
             return await saveWholePage(request.page);

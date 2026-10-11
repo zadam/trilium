@@ -97,11 +97,11 @@ describe("setFloatingElements", () => {
         expect(styleOf("th")).toBe("top: 10px; color: red");
     });
 
-    it("restores the page on its own when it is not asked to within a minute", () => {
+    it("restores the page on its own when it is not asked to within three minutes", () => {
         vi.useFakeTimers();
         setFloatingElements("first");
 
-        vi.advanceTimersByTime(59_999);
+        vi.advanceTimersByTime(179_999);
         expect(styleOf(".cookies")).toBe("display: none !important;");
 
         vi.advanceTimersByTime(1);

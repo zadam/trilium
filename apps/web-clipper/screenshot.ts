@@ -5,51 +5,93 @@ export interface ScreenshotSlice {
 }
 
 export interface StitchRequest {
-    slices: ScreenshotSlice[];
     /** The height of the page's viewport, in CSS pixels. */
     viewportHeight: number;
-    /** The height of the whole page, in CSS pixels. */
+    /** The height of the page to stitch, in CSS pixels. */
     pageHeight: number;
 }
 
-/**
- * The tallest image the stitched screenshot can be, in device pixels. Browsers refuse to draw a
- * canvas much taller than this, and Chrome's limit is the lowest.
- */
-export const MAX_SCREENSHOT_HEIGHT = 16384;
+/** How the background script has the offscreen document stitch a screenshot, one step a message. */
+export type StitchMessage =
+    | { type: "STITCH_BEGIN", request: StitchRequest }
+    | { type: "STITCH_ADD", slice: ScreenshotSlice }
+    | { type: "STITCH_FINISH" }
+    | { type: "STITCH_PART", index: number };
 
 /**
- * Draws the captures of a scrolled page onto one canvas, each at the position it was taken at, and
- * returns the result as a PNG data URL. The last capture overlaps the one before it when the page
- * height is not a multiple of the viewport height, and is drawn over it.
+ * The tallest image of a screenshot, in device pixels; a longer page is saved as several images.
+ * Small enough for one image, as a PNG data URL, to fit in one extension message (64 MiB in Chrome).
  */
-export async function stitchScreenshots({ slices, viewportHeight, pageHeight }: StitchRequest) {
-    const loaded = await Promise.all(slices.map(async (slice) => ({
-        image: await loadImage(slice.dataUrl),
-        y: slice.y
-    })));
-    const first = loaded[0]?.image;
-    if (!first) {
-        throw new Error("There is no screenshot to stitch.");
+export const MAX_PART_HEIGHT = 8192;
+
+/**
+ * The longest page a screenshot captures, in device pixels. It bounds the memory and the time a
+ * capture takes: about a second per two viewports.
+ */
+export const MAX_SCREENSHOT_HEIGHT = 60_000;
+
+/**
+ * Draws the captures of a scrolled page, given in order from the top, into images of at most
+ * {@link MAX_PART_HEIGHT}. Each image is encoded as soon as the next one begins, so only one is
+ * held as pixels.
+ */
+export class ScreenshotStitcher {
+
+    private scale = 0;
+    private width = 0;
+    private height = 0;
+    private part: { index: number, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D } | undefined;
+    private readonly parts: string[] = [];
+
+    constructor(private readonly request: StitchRequest) {}
+
+    async add({ dataUrl, y }: ScreenshotSlice) {
+        const image = await loadImage(dataUrl);
+        if (!this.scale) {
+            // The captures are in device pixels, which include the page zoom and the display's scaling.
+            this.scale = image.naturalHeight / this.request.viewportHeight;
+            this.width = image.naturalWidth;
+            this.height = Math.round(this.request.pageHeight * this.scale);
+        }
+
+        const top = Math.round(y * this.scale);
+        const bottom = Math.min(top + image.naturalHeight, this.height);
+        for (let index = Math.floor(top / MAX_PART_HEIGHT); index * MAX_PART_HEIGHT < bottom; index++) {
+            // The last capture overlaps the one before it, which already drew any part it reaches back into.
+            if (this.part && index < this.part.index) continue;
+            this.openPart(index).drawImage(image, 0, top - index * MAX_PART_HEIGHT);
+        }
     }
 
-    // The captures are in device pixels, which include the page zoom and the display's scaling.
-    const scale = first.naturalHeight / viewportHeight;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = first.naturalWidth;
-    canvas.height = Math.min(Math.round(pageHeight * scale), MAX_SCREENSHOT_HEIGHT);
-
-    const context = canvas.getContext("2d");
-    if (!context) {
-        throw new Error("The screenshot could not be drawn.");
+    /** Returns the images as PNG data URLs, from the top of the page. */
+    finish() {
+        if (!this.part) {
+            throw new Error("There is no screenshot to stitch.");
+        }
+        this.closePart(this.part);
+        return this.parts;
     }
 
-    for (const { image, y } of loaded) {
-        context.drawImage(image, 0, Math.round(y * scale));
+    private openPart(index: number) {
+        if (this.part?.index === index) return this.part.context;
+        if (this.part) this.closePart(this.part);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = this.width;
+        canvas.height = Math.min(MAX_PART_HEIGHT, this.height - index * MAX_PART_HEIGHT);
+        const context = canvas.getContext("2d");
+        if (!context) {
+            throw new Error("The screenshot could not be drawn.");
+        }
+        this.part = { index, canvas, context };
+        return context;
     }
 
-    return canvas.toDataURL("image/png");
+    private closePart(part: { canvas: HTMLCanvasElement }) {
+        this.parts.push(part.canvas.toDataURL("image/png"));
+        this.part = undefined;
+    }
+
 }
 
 function loadImage(src: string) {

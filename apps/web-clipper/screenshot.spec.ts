@@ -1,56 +1,91 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MAX_SCREENSHOT_HEIGHT, stitchScreenshots } from "./screenshot";
+import { MAX_PART_HEIGHT, ScreenshotStitcher } from "./screenshot";
 
-const STITCHED = "data:image/png;base64,U1RJVENI";
-
-describe("stitchScreenshots", () => {
+describe("ScreenshotStitcher", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
     it("draws each capture where it was taken, scaled to device pixels", async () => {
-        const images = stubImages({ naturalWidth: 1600, naturalHeight: 1000 });
-        const { canvas, drawImage } = stubCanvas();
+        stubImages({ naturalWidth: 1600, naturalHeight: 1000 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ viewportHeight: 500, pageHeight: 1200 });
 
-        const result = await stitchScreenshots({
-            slices: [ { dataUrl: "first", y: 0 }, { dataUrl: "second", y: 500 }, { dataUrl: "last", y: 700 } ],
-            viewportHeight: 500,
-            pageHeight: 1200
-        });
+        for (const y of [ 0, 500, 700 ]) {
+            await stitcher.add({ dataUrl: `slice-${y}`, y });
+        }
 
-        expect(result).toBe(STITCHED);
-        expect(images.map((image) => image.src)).toEqual([ "first", "second", "last" ]);
-        expect([ canvas().width, canvas().height ]).toEqual([ 1600, 2400 ]);
-        expect(drawImage.mock.calls).toEqual([
-            [ images[0], 0, 0 ],
-            [ images[1], 0, 1000 ],
-            [ images[2], 0, 1400 ]
+        expect(stitcher.finish()).toEqual([ "part-0" ]);
+        expect(canvas.sizes()).toEqual([ [ 1600, 2400 ] ]);
+        expect(canvas.events).toEqual([
+            "draw 0: slice-0 at 0", "draw 0: slice-500 at 1000", "draw 0: slice-700 at 1400", "encode 0"
         ]);
     });
 
-    it("keeps the canvas within the height a browser can draw", async () => {
-        stubImages({ naturalWidth: 800, naturalHeight: 4000 });
-        const { canvas } = stubCanvas();
+    it("splits a long page into images, encoding each before the next is drawn", async () => {
+        stubImages({ naturalWidth: 900, naturalHeight: 3000 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ viewportHeight: 1000, pageHeight: 6000 });
 
-        await stitchScreenshots({ slices: [ { dataUrl: "a", y: 0 } ], viewportHeight: 1000, pageHeight: 10000 });
+        for (const y of [ 0, 1000, 2000, 3000, 4000, 5000 ]) {
+            await stitcher.add({ dataUrl: `slice-${y}`, y });
+        }
 
-        expect(canvas().height).toBe(MAX_SCREENSHOT_HEIGHT);
+        expect(stitcher.finish()).toEqual([ "part-0", "part-1", "part-2" ]);
+        expect(canvas.sizes()).toEqual([ [ 900, MAX_PART_HEIGHT ], [ 900, MAX_PART_HEIGHT ], [ 900, 1616 ] ]);
+        expect(canvas.events).toEqual([
+            "draw 0: slice-0 at 0", "draw 0: slice-1000 at 3000", "draw 0: slice-2000 at 6000",
+            "encode 0",
+            "draw 1: slice-2000 at -2192", "draw 1: slice-3000 at 808", "draw 1: slice-4000 at 3808",
+            "draw 1: slice-5000 at 6808",
+            "encode 1",
+            "draw 2: slice-5000 at -1384",
+            "encode 2"
+        ]);
+    });
+
+    it("leaves out the part of the last capture that reaches back into an image already encoded", async () => {
+        stubImages({ naturalWidth: 100, naturalHeight: 1500 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ viewportHeight: 1500, pageHeight: 9400 });
+
+        for (const y of [ 0, 1500, 3000, 4500, 6000, 7500, 7900 ]) {
+            await stitcher.add({ dataUrl: `slice-${y}`, y });
+        }
+        stitcher.finish();
+
+        expect(canvas.events.slice(-5)).toEqual([
+            "draw 0: slice-7500 at 7500", "encode 0", "draw 1: slice-7500 at -692", "draw 1: slice-7900 at -292",
+            "encode 1"
+        ]);
+    });
+
+    it("ignores what a capture shows below the height it was given", async () => {
+        stubImages({ naturalWidth: 100, naturalHeight: 1000 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ viewportHeight: 1000, pageHeight: MAX_PART_HEIGHT });
+
+        await stitcher.add({ dataUrl: "slice", y: 7500 });
+
+        expect(stitcher.finish()).toEqual([ "part-0" ]);
+        expect(canvas.sizes()).toEqual([ [ 100, MAX_PART_HEIGHT ] ]);
     });
 
     it("fails without captures, without a canvas, or on a capture that cannot be read", async () => {
-        const request = { slices: [ { dataUrl: "a", y: 0 } ], viewportHeight: 100, pageHeight: 100 };
+        const request = { viewportHeight: 100, pageHeight: 100 };
         stubImages({ naturalWidth: 100, naturalHeight: 100 });
 
-        await expect(stitchScreenshots({ ...request, slices: [] }))
-            .rejects.toThrow("There is no screenshot to stitch.");
+        expect(() => new ScreenshotStitcher(request).finish()).toThrow("There is no screenshot to stitch.");
 
         vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-        await expect(stitchScreenshots(request)).rejects.toThrow("The screenshot could not be drawn.");
+        await expect(new ScreenshotStitcher(request).add({ dataUrl: "a", y: 0 }))
+            .rejects.toThrow("The screenshot could not be drawn.");
 
         stubImages({ naturalWidth: 100, naturalHeight: 100, fail: true });
-        await expect(stitchScreenshots(request)).rejects.toThrow("A part of the screenshot could not be read.");
+        await expect(new ScreenshotStitcher(request).add({ dataUrl: "a", y: 0 }))
+            .rejects.toThrow("A part of the screenshot could not be read.");
     });
 });
 
@@ -58,7 +93,6 @@ describe("stitchScreenshots", () => {
 function stubImages({ naturalWidth, naturalHeight, fail = false }: {
     naturalWidth: number, naturalHeight: number, fail?: boolean
 }) {
-    const images: { src?: string }[] = [];
     vi.stubGlobal("Image", class {
 
         naturalWidth = naturalWidth;
@@ -66,23 +100,28 @@ function stubImages({ naturalWidth, naturalHeight, fail = false }: {
         onload?: () => void;
         onerror?: () => void;
 
-        constructor() {
-            images.push(this);
-        }
-
         set src(value: string) {
             Object.defineProperty(this, "src", { value });
             setTimeout(() => (fail ? this.onerror?.() : this.onload?.()));
         }
 
     });
-    return images;
 }
 
+/** Records, in order, what is drawn on which canvas and when each is encoded. */
 function stubCanvas() {
-    const drawImage = vi.fn();
-    const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext")
-        .mockReturnValue({ drawImage } as unknown as CanvasRenderingContext2D);
-    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue(STITCHED);
-    return { drawImage, canvas: () => getContext.mock.contexts[0] as HTMLCanvasElement };
+    const canvases: HTMLCanvasElement[] = [];
+    const events: string[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(function (this: HTMLCanvasElement) {
+        const index = canvases.push(this) - 1;
+        return {
+            drawImage: (image: { src: string }, _x: number, y: number) => events.push(`draw ${index}: ${image.src} at ${y}`)
+        } as unknown as CanvasRenderingContext2D;
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockImplementation(function (this: HTMLCanvasElement) {
+        const index = canvases.indexOf(this);
+        events.push(`encode ${index}`);
+        return `part-${index}`;
+    });
+    return { events, sizes: () => canvases.map((canvas) => [ canvas.width, canvas.height ]) };
 }
