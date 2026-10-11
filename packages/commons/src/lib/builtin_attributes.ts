@@ -210,6 +210,11 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "language", valueType: "text", hasUserValue: true },
     { type: "label", name: "originalFileName", valueType: "text", hasUserValue: true },
     { type: "label", name: "pageUrl", valueType: "url", hasUserValue: true },
+    // Metadata the web clipper saves with a page; shown in the "Web clip" badge's details.
+    { type: "label", name: "pageDescription", valueType: "text", hasUserValue: true },
+    { type: "label", name: "pageAuthor", valueType: "text", hasUserValue: true },
+    { type: "label", name: "publishedDate", valueType: "date", hasUserValue: true },
+    { type: "label", name: "modifiedDate", valueType: "date", hasUserValue: true },
     { type: "label", name: "command", valueType: "text", hasUserValue: true },
     // Which half of the split editor a code-like note opens on; without it the read-only state decides.
     { type: "label", name: "displayMode", valueType: "select", hasUserValue: true, selectOptions: [
