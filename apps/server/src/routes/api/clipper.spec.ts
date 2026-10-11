@@ -107,6 +107,7 @@ describe("clipper route handlers", () => {
             body: { title: "Moved", content: "<p>second</p>", images: [], pageUrl }
         } as unknown as Request));
         expect(second.noteId).toBe(first.noteId);
+        expect(clipping.getContent()).toBe("<p>first</p><br><p>second</p>");
         expect(clipping.getParentNotes().map((p) => p.noteId)).toEqual([ folder.noteId ]);
     });
 
