@@ -86,16 +86,20 @@ export function makeLinksAbsolute(container: HTMLElement) {
     }
 }
 
-/** Replaces the `src` of each image in `container` with an `imageId`, the same one for the same image. */
+/**
+ * Replaces the `src` of each image in `container` with an `imageId`, the same one for the same image.
+ * An image waiting to be lazy-loaded is listed under the address the page keeps for later.
+ */
 export function getImages(container: HTMLElement) {
     const images: ClippedImage[] = [];
 
     for (const img of container.getElementsByTagName('img')) {
-        if (!img.src) {
+        const src = lazyImageSource(img) ?? img.src;
+        if (!src) {
             continue;
         }
 
-        const existingImage = images.find(image => image.src === img.src);
+        const existingImage = images.find(image => image.src === src);
 
         if (existingImage) {
             img.src = existingImage.imageId;
@@ -105,7 +109,7 @@ export function getImages(container: HTMLElement) {
 
             images.push({
                 imageId,
-                src: img.src
+                src
             });
 
             img.src = imageId;
@@ -113,4 +117,26 @@ export function getImages(container: HTMLElement) {
     }
 
     return images;
+}
+
+/** The attributes lazy-loading scripts keep an image's address in, the same ones Defuddle reads. */
+const LAZY_SOURCE_ATTRIBUTES = [ "data-src", "data-original", "data-lazy-src" ];
+
+/** The web address in the first lazy-loading attribute of `img` that holds one. */
+function lazyImageSource(img: HTMLImageElement) {
+    for (const attribute of LAZY_SOURCE_ATTRIBUTES) {
+        const value = img.getAttribute(attribute)?.trim();
+        if (!value) continue;
+
+        let url: URL;
+        try {
+            url = new URL(value, img.baseURI);
+        } catch {
+            continue;
+        }
+        if (url.protocol === "http:" || url.protocol === "https:") {
+            return url.href;
+        }
+    }
+    return undefined;
 }

@@ -93,6 +93,10 @@ against older versions of the other.** Prefer changes that need nothing new from
   20-character URLs on purpose, so **an image left with its placeholder is a broken image**.
   `postProcessImages()` therefore restores the original URL (escaped with `escapeHtml()`) for every
   image it cannot download and reports the count in the toast.
+- A selection copies the page's DOM as it is, so an image not yet scrolled into view still has a
+  placeholder (often a `data:image/svg+xml` URL) in `src`. `getImages()` lists it under the web
+  address in `data-src`, `data-original` or `data-lazy-src` (the attributes Defuddle reads), and
+  ignores one that is not `http(s)` or does not parse.
 - **A `replaceAll()`/`replace()` replacement built from page data is a callback**
   (`replaceAll(id, () => escapeHtml(src))`). A string replacement reads `$&`, `$$`, `` $` `` and
   `$'` as patterns, so an image URL containing `$&` came back with the placeholder inside it.

@@ -67,6 +67,36 @@ describe("content script", () => {
             ]);
         });
 
+        it("takes the address a lazy image has not loaded yet from where the page keeps it", async () => {
+            const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E";
+            document.body.innerHTML = `
+                <p id="start">Photos</p>
+                <img src="${placeholder}" data-src="/photos/one.jpg">
+                <img data-original="https://cdn.example.com/two.jpg">
+                <img src="${placeholder}" data-lazy-src="three.jpg">
+                <img src="/photos/one.jpg" data-src="/photos/one.jpg">
+                <img src="/loaded.png" data-src="javascript:alert(1)">
+                <img src="/kept.png" data-src="">
+                <img src="/malformed.png" data-src="http://[">
+                <p id="end">End</p>`;
+            selectRange("start", "end");
+
+            const response = await send<Clipping>({ name: "trilium-save-selection" });
+
+            expect(response.images.map((image) => image.src)).toEqual([
+                "https://example.com/photos/one.jpg",
+                "https://cdn.example.com/two.jpg",
+                "https://example.com/blog/three.jpg",
+                "https://example.com/loaded.png",
+                "https://example.com/kept.png",
+                "https://example.com/malformed.png"
+            ]);
+            const container = document.createElement("div");
+            container.innerHTML = response.content;
+            expect(attributes(container, "img", "src")).toEqual(
+                [ 0, 1, 2, 0, 3, 4, 5 ].map((index) => response.images[index]?.imageId));
+        });
+
         it("keeps links to schemes other than the web as they are", async () => {
             const links = [
                 "mailto:jane@example.com",
