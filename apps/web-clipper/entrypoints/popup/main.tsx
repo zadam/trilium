@@ -83,6 +83,9 @@ interface TabContent {
  */
 type ClipMode = "selection" | "page" | "pdf" | "note";
 
+/** How saving the PDF went, once the user saved it: the note it made, or why it failed. */
+type PdfSave = { status: "saving" } | { status: "saved", noteId: string } | { status: "failed", message: string };
+
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
     mode?: ClipMode;
@@ -372,6 +375,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     /** The readings of the page made after the popup opened, when the user switched to them. */
     const [ laterReadings, setLaterReadings ] = useState<Partial<PageReadings>>({});
+    const [ pdfSave, setPdfSave ] = useState<PdfSave>();
 
     const page = typeof tab?.page === "object" ? { ...tab.page, ...laterReadings } : undefined;
     const variant = chosenVariant && page?.[chosenVariant] !== null ? chosenVariant : page?.article ? "article" : "wholePage";
@@ -431,13 +435,22 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         window.close();
     }
 
-    function savePdf() {
-        void sendMessage({
+    /** Keeps the popup open while the PDF downloads, which can take a while, and shows the outcome. */
+    async function savePdf() {
+        setPdfSave({ status: "saving" });
+        const answer = await sendMessage({
             name: "save-pdf",
             url: tab?.url,
             title: shownTitle.trim(),
             ...(savedDescription && { description: savedDescription })
-        });
+        }) as { noteId?: string, error?: string } | undefined;
+        setPdfSave(answer?.noteId
+            ? { status: "saved", noteId: answer.noteId }
+            : { status: "failed", message: answer?.error ?? "Saving to Trilium failed." });
+    }
+
+    function openSavedNote(noteId: string) {
+        void sendMessage({ name: "openNoteInTrilium", noteId });
         window.close();
     }
 
@@ -445,7 +458,9 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     if (mode === "note") {
         onSave = () => void saveNote();
     } else if (mode === "pdf") {
-        onSave = savePdf;
+        if (pdfSave?.status !== "saving" && pdfSave?.status !== "saved") {
+            onSave = () => void savePdf();
+        }
     } else if (clip) {
         onSave = () => saveClip(clip);
     }
@@ -462,6 +477,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
+    const buttonLabel = mode === "pdf" && pdfSave?.status === "saving" ? "Saving PDF…" : button.label;
 
     return (
         <div className="page-preview">
@@ -610,6 +626,22 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                 {(!mode || (mode === "page" && !clip)) && <div className="page-preview-placeholder">Reading the page…</div>}
             </div>
 
+            {mode === "pdf" && pdfSave?.status === "saved" && (
+                <div className="callout callout-info save-result">
+                    <span>PDF has been saved to Trilium.</span>
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            openSavedNote(pdfSave.noteId);
+                        }}
+                    >Open in Trilium</a>
+                </div>
+            )}
+            {mode === "pdf" && pdfSave?.status === "failed" && (
+                <div className="callout callout-warning save-result">{pdfSave.message}</div>
+            )}
+
             <button
                 className="btn btn-primary primary-action"
                 disabled={disabled || !onSave}
@@ -617,7 +649,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                 onClick={onSave}
             >
                 <Icon icon={button.icon} />
-                <span className="action-label">{button.label}</span>
+                <span className="action-label">{buttonLabel}</span>
                 <Shortcut keys={button.shortcut ?? shortcuts[button.command]} />
             </button>
         </div>

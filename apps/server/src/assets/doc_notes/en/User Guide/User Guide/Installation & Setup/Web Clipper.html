@@ -59,8 +59,10 @@
       <li><em>PDF</em>, when the tab shows a PDF in the browser's viewer: <em>Save PDF to Trilium</em> downloads
         the PDF and saves it as a file note, which Trilium opens in its&nbsp;<a
         class="reference-link" href="#root/_help_XJGJrpu7F9sh">PDFs</a> viewer.
-        Only the title and the description can be edited, since a file note has
-        no text of its own for your note. The page's address is saved in the note's <code>#pageUrl</code> label
+        The popup stays open while the PDF downloads, then says that it was saved,
+        with a link to open the note, or why it was not. Only the title and the
+        description can be edited, since a file note has no text of its own for
+        your note. The page's address is saved in the note's <code>#pageUrl</code> label
         and the PDF's file name in <code>#originalFileName</code>. Saving a PDF
         needs Trilium v0.107.0 or later.</li>
       <li><em>Bookmark</em>, always: there is no preview, and <em>Save bookmark</em> saves
@@ -237,8 +239,9 @@
   and otherwise the note shows them from the website for as long as it serves
   them.</p>
 <p>The notification is shown on the page itself, so it does not appear on
-  pages where extensions cannot run (such as the browser's own settings pages
-  and the extension stores).</p>
+  pages where extensions cannot run (such as the browser's own settings pages,
+  the extension stores and Firefox's PDF viewer). A PDF saved from the popup
+  reports the outcome in the popup instead.</p>
 <h2>Testing development versions</h2>
 <p>Development versions are version pre-release versions, generally meant
   for testing purposes. These are not available in the Google or Firefox

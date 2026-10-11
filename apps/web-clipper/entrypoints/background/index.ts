@@ -323,10 +323,14 @@ export default defineBackground(() => {
         try {
             return await action();
         } catch (e) {
-            console.error("Web clipper action failed", e);
-            toast(failureMessage(e));
+            reportFailure(e);
             return undefined;
         }
+    }
+
+    function reportFailure(error: unknown) {
+        console.error("Web clipper action failed", error);
+        toast(failureMessage(error));
     }
 
     async function requestFromPage(message: BackgroundMessage) {
@@ -518,6 +522,7 @@ export default defineBackground(() => {
         });
 
         toast(savedMessage("PDF", 0), resp.noteId);
+        return resp.noteId as string;
     }
 
     async function downloadPdf(url: string) {
@@ -720,7 +725,13 @@ export default defineBackground(() => {
             return await saveWholePage(request.page);
         }
         else if (request.name === 'save-pdf') {
-            return await savePdf(request.url, request.title, request.description);
+            // The popup stays open while the PDF downloads, and shows the outcome.
+            try {
+                return { noteId: await savePdf(request.url, request.title, request.description) };
+            } catch (e) {
+                reportFailure(e);
+                return { error: failureMessage(e) };
+            }
         }
         else if (request.name === 'save-selection') {
             return await saveSelection(request.selection);

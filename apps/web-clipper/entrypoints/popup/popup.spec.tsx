@@ -768,13 +768,30 @@ describe("popup", () => {
 
             await type(".page-title", "Edited");
             await type(".page-description", " Key   figures ");
+            let answerSave: (answer: unknown) => void = () => {};
+            sendMessage.mockReturnValueOnce(new Promise((resolve) => answerSave = resolve));
             await click("Save PDF to Trilium");
             expect(sendMessage).toHaveBeenLastCalledWith({
                 name: "save-pdf", url: PDF_TAB.url, title: "Edited", description: "Key figures"
             });
+            expect(button("Saving PDF…")?.disabled).toBe(true);
+            await ctrlEnter(".page-title");
+            expect(sendMessageCalls("save-pdf")).toBe(1);
+            expect(saveResult()).toBeUndefined();
+
+            answerSave({ noteId: "n1" });
+            await flush();
+            expect(saveResult()).toEqual({ kind: "callout callout-info save-result", text: "PDF has been saved to Trilium.Open in Trilium" });
+            expect(button("Save PDF to Trilium")?.disabled).toBe(true);
+            expect(closeWindow).not.toHaveBeenCalled();
+
+            const open = container.querySelector<HTMLAnchorElement>(".save-result a");
+            await act(() => open?.click());
+            expect(sendMessage).toHaveBeenLastCalledWith({ name: "openNoteInTrilium", noteId: "n1" });
             expect(closeWindow).toHaveBeenCalledOnce();
 
             await click("Bookmark");
+            expect(saveResult()).toBeUndefined();
             expect(container.querySelector(".note-text")).not.toBeNull();
             expect(container.querySelector(".clip-hint")).toBeNull();
         });
@@ -795,8 +812,21 @@ describe("popup", () => {
             expect(button("Crop screenshot")?.disabled).toBe(true);
             expect(button("All tabs in window")?.disabled).toBe(false);
 
+            sendMessage.mockResolvedValueOnce({ error: "Saving a PDF needs a newer version of Trilium." });
             await click("Save PDF to Trilium");
             expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-pdf", url: PDF_TAB.url, title: "report.pdf" });
+            await flush();
+            expect(saveResult()).toEqual({
+                kind: "callout callout-warning save-result",
+                text: "Saving a PDF needs a newer version of Trilium."
+            });
+
+            sendMessage.mockResolvedValueOnce(undefined);
+            await click("Save PDF to Trilium");
+            await flush();
+            expect(saveResult()?.text).toBe("Saving to Trilium failed.");
+            expect(sendMessageCalls("save-pdf")).toBe(2);
+            expect(closeWindow).not.toHaveBeenCalled();
         });
     });
 
@@ -917,6 +947,16 @@ async function receive(message: object) {
     await act(async () => {
         await fakeBrowser.runtime.onMessage.trigger(message, {}, () => {});
     });
+}
+
+/** The outcome of saving a PDF, as the card shows it: its kind of callout and its text. */
+function saveResult() {
+    const result = container.querySelector(".page-preview .save-result");
+    return result ? { kind: result.className, text: result.textContent } : undefined;
+}
+
+function sendMessageCalls(name: string) {
+    return sendMessage.mock.calls.filter(([ message ]) => (message as { name?: string }).name === name).length;
 }
 
 /** Lets the promises the effects start, such as reading the shortcuts, settle. */

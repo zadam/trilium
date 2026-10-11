@@ -437,7 +437,8 @@ describe("background", () => {
             answerPdf();
             const pdfUrl = "https://example.com/files/report";
 
-            await sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "Edited", description: "Summary" });
+            await expect(sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "Edited", description: "Summary" }))
+                .resolves.toEqual({ noteId: "saved" });
 
             expect(fetchMock).toHaveBeenCalledWith(pdfUrl, { credentials: "include" });
             expect(lastPayload()).toEqual({
@@ -472,9 +473,11 @@ describe("background", () => {
             const failure = async (message: object) => {
                 facade.callService.mockClear();
                 tabsSendMessage.mockClear();
-                await sendRuntimeMessage({ name: "save-pdf", url: PAGE_URL, title: "T", ...message });
+                const answer = await sendRuntimeMessage({ name: "save-pdf", url: PAGE_URL, title: "T", ...message });
                 expect(facade.callService).not.toHaveBeenCalled();
-                return (await lastToast() as { message?: string } | undefined)?.message;
+                const toastMessage = (await lastToast() as { message?: string } | undefined)?.message;
+                expect(answer).toEqual({ error: toastMessage });
+                return toastMessage;
             };
 
             facade.requireMinorVersion.mockRejectedValueOnce(

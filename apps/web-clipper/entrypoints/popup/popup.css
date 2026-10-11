@@ -36,6 +36,10 @@ body {
         background: color-mix(in srgb, var(--admonition-warning-accent-color) 15%, var(--main-background-color));
     }
 
+    .save-result {
+        border-radius: 6px;
+    }
+
     .capture-actions {
         display: flex;
         flex-direction: column;
