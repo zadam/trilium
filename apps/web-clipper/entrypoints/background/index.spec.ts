@@ -31,7 +31,7 @@ vi.mock("./trilium_server_facade", () => ({
 
 import background from "./index";
 
-type Tab = { id?: number, title?: string, url?: string };
+type Tab = { id?: number, title?: string, url?: string, favIconUrl?: string };
 type ContextMenuClick = {
     menuItemId: string,
     pageUrl?: string,
@@ -66,9 +66,10 @@ const createDocument = vi.fn(async () => {});
 const runtimeSendMessage = vi.fn(async (_message: unknown): Promise<unknown> => PNG);
 /** Answers a picture for a web address, and decodes a `data:` URL as the browser does. */
 const browserFetch = globalThis.fetch;
-const fetchMock = vi.fn(async (url: string) => (url.startsWith("data:")
+const fetchMockDefault = async (url: string) => (url.startsWith("data:")
     ? browserFetch(url)
-    : new Response(new Blob([ "img" ], { type: "image/png" }))));
+    : new Response(new Blob([ "img" ], { type: "image/png" })));
+const fetchMock = vi.fn(fetchMockDefault);
 const SVG = "<svg xmlns='http://www.w3.org/2000/svg'></svg>";
 
 describe("background", () => {
@@ -623,7 +624,12 @@ describe("background", () => {
                     + "<li><a href=\"https://c.com/1\">C1</a></li>"
                     + "<li><a href=\"https://d.com/1\">D1</a></li>"
                     + "</ul>",
-                clipType: "tabs"
+                clipType: "tabs",
+                tabs: [ "a.com/1", "b.com/1", "b.com/2", "c.com/1", "d.com/1" ].map((path) => ({
+                    url: `https://${path}`,
+                    title: path.replace(/^(\w)\.com\//, (_, letter: string) => letter.toUpperCase()),
+                    favicon: undefined
+                }))
             });
             expect(await lastToast()).toMatchObject({ noteId: "saved", tabIds: [ 1, 2, 4, 5 ] });
         });
@@ -642,12 +648,41 @@ describe("background", () => {
                 content: "<ul><li><a href=\"https://a.com/?x=1&amp;y=&quot;2&quot;\">"
                     + "&lt;b&gt;Bold&lt;/b&gt; &amp; &quot;quoted&quot;</a></li>"
                     + "<li><a href=\"https://a.com/untitled\">https://a.com/untitled</a></li></ul>",
-                clipType: "tabs"
+                clipType: "tabs",
+                tabs: [
+                    { url: "https://a.com/?x=1&y=\"2\"", title: "<b>Bold</b> & \"quoted\"" },
+                    { url: "https://a.com/untitled", title: "https://a.com/untitled" }
+                ]
             });
             expect(await lastToast()).toMatchObject({
                 message: "2 links have been saved to Trilium.",
                 tabIds: [ 2, 3 ]
             });
+        });
+
+        it("sends each favicon it can read as a data URL", async () => {
+            tabs = [
+                { id: 1, title: "Missing", url: "https://a.com/", favIconUrl: "https://a.com/missing.ico" },
+                { id: 2, title: "Fetched", url: "https://b.com/", favIconUrl: "https://b.com/favicon.png" },
+                { id: 3, title: "Inline", url: "https://c.com/", favIconUrl: "data:image/svg+xml,<svg/>" },
+                { id: 4, title: "Browser page", url: "chrome://newtab/", favIconUrl: "chrome://theme/icon" }
+            ];
+            // The favicons are fetched in tab order; the second and third get the default answer.
+            fetchMock.mockImplementationOnce(async () => new Response("Not found", { status: 404 }));
+            fetchMock.mockImplementationOnce(fetchMockDefault);
+            fetchMock.mockImplementationOnce(fetchMockDefault);
+            fetchMock.mockImplementationOnce(async () => {
+                throw new TypeError("Failed to fetch");
+            });
+
+            await onCommand("saveTabs");
+
+            expect((lastPayload() as { tabs: unknown }).tabs).toEqual([
+                { url: "https://a.com/", title: "Missing", favicon: undefined },
+                { url: "https://b.com/", title: "Fetched", favicon: "data:image/png;base64,aW1n" },
+                { url: "https://c.com/", title: "Inline", favicon: "data:image/svg+xml;base64,PHN2Zy8+" },
+                { url: "chrome://newtab/", title: "Browser page", favicon: undefined }
+            ]);
         });
 
         it("adds no ellipsis for up to three tabs and shows why saving failed", async () => {

@@ -398,11 +398,28 @@ export default defineBackground(() => {
 
         if (tabs.length > 3) { topDomains += '...'; }
 
+        // Trilium builds link mentions from `tabs` when link previews are turned on; older versions
+        // ignore it and save `content`.
         return {
             title: `${tabs.length} browser tabs: ${topDomains}`,
             content,
-            clipType: 'tabs'
+            clipType: 'tabs',
+            tabs: await Promise.all(tabs.map(async tab => ({
+                url: tab.url,
+                title: tab.title ?? tab.url,
+                favicon: await fetchFavicon(tab.favIconUrl)
+            })))
         };
+    }
+
+    /** The tab's favicon as a base64 data URL, or `undefined` if there is none it can read. */
+    async function fetchFavicon(url: string | undefined) {
+        if (!url) return undefined;
+        try {
+            return await fetchImage(url);
+        } catch {
+            return undefined;
+        }
     }
 
     async function saveTabs() {

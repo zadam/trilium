@@ -1,4 +1,4 @@
-import { BBranch, becca, becca_easy_mocking, BNote, branches, cls } from "@triliumnext/core";
+import { BBranch, becca, becca_easy_mocking, BNote, branches, cls, options } from "@triliumnext/core";
 import type { Request } from "express";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -7,10 +7,12 @@ import clipperRoute, { processContent } from "./clipper";
 const { buildNote } = becca_easy_mocking;
 
 const resolveYouTubePreview = vi.hoisted(() => vi.fn());
+const storeFavicon = vi.hoisted(() => vi.fn());
 
 vi.mock("@triliumnext/core", async (importOriginal) => ({
     ...await importOriginal<typeof import("@triliumnext/core")>(),
-    resolveYouTubePreview
+    resolveYouTubePreview,
+    storeFavicon
 }));
 
 vi.mock("../../services/image.js", () => ({
@@ -169,6 +171,58 @@ describe("clipper route handlers", () => {
         expect(second.noteId).toBe(first.noteId);
         expect(clipping.getContent()).toBe("<p>first</p><br><p>second</p>");
         expect(clipping.getParentNotes().map((p) => p.noteId)).toEqual([ folder.noteId ]);
+    });
+
+    describe("saving tabs", () => {
+        const PLAIN_LIST = `<ul><li><a href="https://a.com/">A</a></li></ul>`;
+        const FAVICON = "data:image/png;base64,iVBORw0KGgo=";
+
+        function saveTabs(tabs: unknown) {
+            return cls.init(async () => {
+                const { noteId } = await clipperRoute.createNote({
+                    body: { title: "2 browser tabs", content: PLAIN_LIST, clipType: "tabs", tabs }
+                } as unknown as Request);
+                const note = becca.getNoteOrThrow(noteId);
+                expect(note.hasLabel("pageUrl")).toBe(false);
+                return note.getContent();
+            });
+        }
+
+        it("saves the tabs as link mentions with their favicons", async () => {
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "true"));
+            storeFavicon.mockReset();
+            storeFavicon.mockImplementation(async (_noteId: string, pageUrl: string) =>
+                (pageUrl.startsWith("https://a.com") ? "api/attachments/fav/image/a.com.png" : undefined));
+
+            const content = await saveTabs([
+                { url: "https://a.com/1", title: "Tom & \"Jerry\"", favicon: FAVICON },
+                { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", title: "Video", favicon: "chrome://favicon" },
+                { url: "https://b.com/", favicon: FAVICON },
+                { title: "No URL" },
+                null
+            ]);
+
+            expect(content).toBe("<ul>"
+                + `<li><span class="link-mention" data-url="https://a.com/1" data-embed-type="opengraph"`
+                + ` data-title="Tom &amp; &quot;Jerry&quot;"`
+                + ` data-favicon="api/attachments/fav/image/a.com.png"></span></li>`
+                + `<li><span class="link-mention" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"`
+                + ` data-embed-type="youtube" data-title="Video"></span></li>`
+                + `<li><span class="link-mention" data-url="https://b.com/" data-embed-type="opengraph"></span></li>`
+                + "</ul>");
+            const stored = storeFavicon.mock.calls.map(([ , pageUrl, bytes ]) =>
+                [ pageUrl, Buffer.from(bytes).toString("base64") ]);
+            expect(stored).toEqual([ [ "https://a.com/1", "iVBORw0KGgo=" ], [ "https://b.com/", "iVBORw0KGgo=" ] ]);
+        });
+
+        it("keeps the plain list when previews are off or the extension sent no usable tabs", async () => {
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "true"));
+            expect(await saveTabs(undefined)).toBe(PLAIN_LIST);
+            expect(await saveTabs([ { title: "No URL" } ])).toBe(PLAIN_LIST);
+
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "false"));
+            expect(await saveTabs([ { url: "https://a.com/", title: "A" } ])).toBe(PLAIN_LIST);
+        });
     });
 
     it("creates a standalone note with labels", async () => {

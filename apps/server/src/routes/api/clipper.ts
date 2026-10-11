@@ -1,11 +1,18 @@
 import { escapeHtml, extractYouTubeVideoId, type LinkEmbedMetadata } from "@triliumnext/commons";
-import { app_info as appInfo, attribute_formatter as attributeFormatter, attributes as attributeService, becca, type BNote, date_notes as dateNoteService, date_utils as dateUtils, getLog, note_service as noteService, resolveYouTubePreview, sanitize, search as searchService, ValidationError, ws } from "@triliumnext/core";
+import { app_info as appInfo, attribute_formatter as attributeFormatter, attributes as attributeService, becca, type BNote, date_notes as dateNoteService, date_utils as dateUtils, getLog, note_service as noteService, options, resolveYouTubePreview, sanitize, search as searchService, storeFavicon, ValidationError, ws } from "@triliumnext/core";
 import type { Request } from "express";
 import { parse } from "node-html-parser";
 import path from "path";
 
 import imageService from "../../services/image.js";
 import utils from "../../services/utils.js";
+
+/** A browser tab as the extension sends it when saving the tabs of a window. */
+interface ClippedTab {
+    url?: unknown;
+    title?: unknown;
+    favicon?: unknown;
+}
 
 interface Image {
     src: string;
@@ -121,7 +128,10 @@ async function createNote(req: Request) {
     if (typeof existingContent !== "string") {
         throw new ValidationError("Invalid note content type.");
     }
-    const rewrittenContent = await processContent(images, note, content);
+    const tabMentions = clipType === "tabs"
+        ? await renderTabMentions(note, req.body.tabs)
+        : undefined;
+    const rewrittenContent = await processContent(images, note, tabMentions ?? content);
     const newContent = `${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`;
     note.setContent(newContent);
 
@@ -130,6 +140,46 @@ async function createNote(req: Request) {
     return {
         noteId: note.noteId
     };
+}
+
+/**
+ * Renders saved browser tabs as a list of link mentions, each with the tab's favicon stored as an
+ * attachment of `note`. Returns undefined when automatic link previews are turned off or the
+ * extension sent no tabs, so the plain list of links in `content` is kept.
+ */
+async function renderTabMentions(note: BNote, tabs: unknown) {
+    if (!options.getOptionBool("textNoteAutoLinkPreviewsEnabled") || !Array.isArray(tabs)) {
+        return undefined;
+    }
+
+    const items: string[] = [];
+    for (const tab of tabs as (ClippedTab | null)[]) {
+        if (typeof tab?.url !== "string") {
+            continue;
+        }
+
+        const url = sanitize.sanitizeUrl(tab.url);
+        const favicon = await storeTabFavicon(note, url, tab.favicon);
+        const mention = renderLinkPreview("span", "link-mention", {
+            url,
+            embedType: extractYouTubeVideoId(url) ? "youtube" : "opengraph",
+            title: typeof tab.title === "string" ? tab.title : undefined,
+            favicon
+        });
+        items.push(`<li>${mention}</li>`);
+    }
+
+    return items.length ? `<ul>${items.join("")}</ul>` : undefined;
+}
+
+/** Stores a tab's favicon, sent as a base64 `data:image/…` URL, and returns its attachment URL. */
+async function storeTabFavicon(note: BNote, pageUrl: string, dataUrl: unknown) {
+    if (typeof dataUrl !== "string" || !/^data:image\/[^,]*;base64,/.test(dataUrl)) {
+        return undefined;
+    }
+
+    const bytes = Buffer.from(dataUrl.substring(dataUrl.indexOf(",") + 1), "base64");
+    return await storeFavicon(note.noteId, pageUrl, bytes);
 }
 
 /** Sets each label the extension sends, replacing the value a previous clipping set. */
@@ -219,14 +269,18 @@ async function replaceYouTubePlayers(note: BNote, content: string) {
             getLog().info(`Could not resolve the preview of a clipped YouTube video: ${e}`);
             metadata = { url, embedType: "youtube" };
         }
-        iframe.replaceWith(renderLinkEmbed(metadata));
+        iframe.replaceWith(renderLinkPreview("section", "link-embed", metadata));
     }));
 
     return dom.toString();
 }
 
-/** The markup the text editor stores for a block link preview. */
-function renderLinkEmbed(metadata: LinkEmbedMetadata) {
+/** The markup the text editor stores for a link preview, a block `section` or an inline `span`. */
+function renderLinkPreview(
+    tagName: "section" | "span",
+    className: string,
+    metadata: LinkEmbedMetadata
+) {
     const attributes = ([
         [ "data-url", metadata.url ],
         [ "data-embed-type", metadata.embedType ],
@@ -239,7 +293,7 @@ function renderLinkEmbed(metadata: LinkEmbedMetadata) {
         .filter(([ , value ]) => value)
         .map(([ name, value ]) => ` ${name}="${escapeHtml(value ?? "")}"`)
         .join("");
-    return `<section class="link-embed"${attributes}></section>`;
+    return `<${tagName} class="${className}"${attributes}></${tagName}>`;
 }
 
 function openNote(req: Request<{ noteId: string }>) {
