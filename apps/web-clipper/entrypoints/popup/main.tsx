@@ -13,6 +13,7 @@ import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
 import History from "@boxicons/js/icons/History";
 import Lock from "@boxicons/js/icons/Lock";
+import Paperclip from "@boxicons/js/icons/Paperclip";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
 import Tabs from "@boxicons/js/icons/Tabs";
@@ -127,6 +128,8 @@ const PREVIEW_STYLE = `
 `;
 
 const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
+/** The icon of the note each mode saves, as Trilium draws it from the note's `#clipType`. */
+const MODE_ICONS: Record<ClipMode, IconDefinition> = { selection: Paperclip, page: Globe, note: Bookmark };
 
 const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
 
@@ -433,7 +436,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         <div className="page-preview">
             {mode && (
                 <div className="page-heading">
-                    <span className="page-icon"><Icon icon={Globe} /></span>
+                    <span className="page-icon"><Icon icon={MODE_ICONS[mode]} /></span>
                     <div className="page-heading-text">
                         <input
                             type="text"

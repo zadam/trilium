@@ -1,4 +1,7 @@
+import Bookmark from "@boxicons/js/icons/Bookmark";
 import Crop from "@boxicons/js/icons/Crop";
+import Globe from "@boxicons/js/icons/Globe";
+import Paperclip from "@boxicons/js/icons/Paperclip";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { render } from "preact";
@@ -380,6 +383,8 @@ describe("popup", () => {
         expect(tabsSendMessage).toHaveBeenCalledWith(7, { name: "trilium-save-selection" });
         expect(modes()).toEqual([ [ "Selection", "true" ], [ "Page", "false" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(SELECTION));
+        // The heading shows the icon Trilium gives the note each mode saves.
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Paperclip).content));
         expect(shortcutOf("Save selection").keys).toEqual([ "Ctrl", "Shift", "S" ]);
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBeUndefined();
@@ -388,9 +393,13 @@ describe("popup", () => {
         await click("Page");
         expect(modes()).toEqual([ [ "Selection", "false" ], [ "Page", "true" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(PAGE));
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Globe).content));
         expect(publishedDate()).toBe("Published 2024-05-01");
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+
+        await click("Bookmark");
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Bookmark).content));
 
         await click("Selection");
         await type(".page-title", " Quote ");
@@ -888,6 +897,18 @@ function toolbar() {
 function modes() {
     return [ ...container.querySelectorAll(".clip-mode button") ]
         .map((option) => [ option.textContent, option.getAttribute("aria-pressed") ]);
+}
+
+/** The path data of the icon in the preview heading. */
+function headingIcon() {
+    const icon = container.querySelector(".page-heading .page-icon svg.icon");
+    expect(icon).not.toBeNull();
+    return pathsOf(icon?.innerHTML ?? "");
+}
+
+/** The path data of an icon's markup, which the DOM serializes differently from Boxicons. */
+function pathsOf(markup: string) {
+    return [ ...markup.matchAll(/ d="([^"]*)"/g) ].map(([ , d ]) => d);
 }
 
 /** How many times the popup read the whole page. */
