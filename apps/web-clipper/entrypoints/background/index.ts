@@ -1,7 +1,7 @@
 import {
     type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
-import { extractPage, isPdfTab, randomString, type Rect } from "@/utils";
+import { extractPage, isPdfTab, randomString, type Rect, type SaveOutcome, type Saved } from "@/utils";
 
 import setupContextMenu from "./context_menu";
 import TriliumServerFacade, { TriliumError } from "./trilium_server_facade";
@@ -63,27 +63,35 @@ type ContextMenuInfo = Browser.contextMenus.OnClickData & { linkText?: string };
 
 export default defineBackground(() => {
     const triliumServerFacade = new TriliumServerFacade();
+    /** How many popups are open: each keeps a port named "popup" connected while it is. */
+    let openPopups = 0;
+
+    browser.runtime.onConnect.addListener((port) => {
+        if (port.name !== "popup") return;
+        openPopups++;
+        port.onDisconnect.addListener(() => openPopups--);
+    });
 
     // Keyboard shortcuts
     browser.commands.onCommand.addListener((command) => showFailures(async () => {
         switch (command) {
             case "saveSelection":
-                await saveSelection();
+                notify(await saveSelection());
                 break;
             case "saveWholePage":
-                await saveWholePage();
+                notify(await saveWholePage());
                 break;
             case "saveTabs":
-                await saveTabs();
+                notify(await saveTabs());
                 break;
             case "saveCroppedScreenshot": {
                 const activeTab = await getActiveTab();
-                await saveCroppedScreenshot(activeTab.url);
+                notify(await saveCroppedScreenshot(activeTab.url));
                 break;
             }
             case "saveFullPageScreenshot": {
                 const activeTab = await getActiveTab();
-                await saveFullPageScreenshot(activeTab.url);
+                notify(await saveFullPageScreenshot(activeTab.url));
                 break;
             }
             default:
@@ -217,7 +225,7 @@ export default defineBackground(() => {
 
     async function saveFullPageScreenshot(pageUrl: string | null | undefined) {
         const { parts, cutOff } = await takeFullPageScreenshot();
-        await saveScreenshot(parts, pageUrl, cutOff
+        return await saveScreenshot(parts, pageUrl, cutOff
             ? "Screenshot has been saved to Trilium, but the page was too long to capture in full."
             : undefined);
     }
@@ -318,19 +326,36 @@ export default defineBackground(() => {
         });
     }
 
+    function notify(saved: Saved | undefined) {
+        if (saved) toast(saved.message, saved.noteId, saved.tabIds);
+    }
+
     /** Runs a user action, and reports its failure in a toast instead of rejecting. */
     async function showFailures<T>(action: () => Promise<T>) {
         try {
             return await action();
         } catch (e) {
-            reportFailure(e);
+            console.error("Web clipper action failed", e);
+            toast(failureMessage(e));
             return undefined;
         }
     }
 
-    function reportFailure(error: unknown) {
-        console.error("Web clipper action failed", error);
-        toast(failureMessage(error));
+    /**
+     * Runs a save the popup asked for, and answers it with the outcome, which the popup shows. A
+     * popup closed before the save ends (as it is to crop a screenshot) shows nothing, so the page
+     * shows a toast instead.
+     */
+    async function saveForPopup(save: () => Promise<Saved | undefined>): Promise<SaveOutcome | undefined> {
+        try {
+            const saved = await save();
+            if (!openPopups) notify(saved);
+            return saved;
+        } catch (e) {
+            console.error("Web clipper action failed", e);
+            if (!openPopups) toast(failureMessage(e));
+            return { error: failureMessage(e) };
+        }
     }
 
     async function requestFromPage(message: BackgroundMessage) {
@@ -413,14 +438,14 @@ export default defineBackground(() => {
     }
 
     /** Saves the selection on the page, or the one the popup already read and the user titled. */
-    async function saveSelection(selection?: object) {
+    async function saveSelection(selection?: object): Promise<Saved> {
         const payload = selection ?? await requestFromPage({name: 'trilium-save-selection'});
 
         const failedImages = await postProcessImages(payload);
 
         const resp = await triliumServerFacade.callService('POST', 'clippings', payload);
 
-        toast(savedMessage("Selection", failedImages), resp.noteId);
+        return { noteId: resp.noteId, message: savedMessage("Selection", failedImages) };
     }
 
     /** A clipping of the images, one after another. */
@@ -458,42 +483,41 @@ export default defineBackground(() => {
         const { rect, devicePixelRatio } = await requestFromPage({
             name: 'trilium-get-rectangle-for-screenshot'
         });
-        if (!rect) return;
+        if (!rect) return undefined;
 
-        await saveScreenshot([ await takeCroppedScreenshot(rect, devicePixelRatio) ], pageUrl);
+        return await saveScreenshot([ await takeCroppedScreenshot(rect, devicePixelRatio) ], pageUrl);
     }
 
     async function saveScreenshot(
         srcs: string[],
         pageUrl: string | null | undefined,
         message = "Screenshot has been saved to Trilium."
-    ) {
+    ): Promise<Saved> {
         const { payload } = await getImagePayload(srcs, pageUrl);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
 
-        toast(message, resp.noteId);
+        return { noteId: resp.noteId, message };
     }
 
-    async function saveImage(srcUrl: string, pageUrl: string | null | undefined) {
+    async function saveImage(srcUrl: string, pageUrl: string | null | undefined): Promise<Saved> {
         const { payload, failedImages } = await getImagePayload([ srcUrl ], pageUrl);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
 
-        toast(savedMessage("Image", failedImages), resp.noteId);
+        return { noteId: resp.noteId, message: savedMessage("Image", failedImages) };
     }
 
     /**
      * Saves the page the popup already extracted and the user edited, or else the article, or the
      * whole page when it has none.
      */
-    async function saveWholePage(page?: object) {
+    async function saveWholePage(page?: object): Promise<Saved> {
         let payload = page;
         if (!payload) {
             const activeTab = await getActiveTab();
             if (activeTab.url && await isPdfTab(activeTab)) {
-                await savePdf(activeTab.url, activeTab.title);
-                return;
+                return await savePdf(activeTab.url, activeTab.title);
             }
             payload = await readPage(activeTab);
         }
@@ -502,14 +526,14 @@ export default defineBackground(() => {
 
         const resp = await triliumServerFacade.callService('POST', 'notes', payload);
 
-        toast(savedMessage("Page", failedImages), resp.noteId);
+        return { noteId: resp.noteId, message: savedMessage("Page", failedImages) };
     }
 
     /**
      * Downloads the PDF at `url`, as the browser does, with the website's cookies, and saves it as a
      * file note. Trilium has the route for it since protocol version 1.1.
      */
-    async function savePdf(url: string, title: string | undefined, description?: string) {
+    async function savePdf(url: string, title: string | undefined, description?: string): Promise<Saved> {
         await triliumServerFacade.requireMinorVersion(1, "Saving a PDF");
         const { dataUrl, fileName } = await downloadPdf(url);
 
@@ -521,8 +545,7 @@ export default defineBackground(() => {
             ...(description && { labels: { pageDescription: description } })
         });
 
-        toast(savedMessage("PDF", 0), resp.noteId);
-        return resp.noteId as string;
+        return { noteId: resp.noteId, message: savedMessage("PDF", 0) };
     }
 
     async function downloadPdf(url: string) {
@@ -562,7 +585,7 @@ export default defineBackground(() => {
         throw new Error("Trilium found nothing to save on this page.");
     }
 
-    async function saveLinkWithNote(title: string, content: string, description?: string) {
+    async function saveLinkWithNote(title: string, content: string, description?: string): Promise<Saved> {
         const activeTab = await getActiveTab();
 
         if (!title.trim()) {
@@ -577,9 +600,7 @@ export default defineBackground(() => {
             ...(description && { labels: { pageDescription: description } })
         });
 
-        toast("Link with note has been saved to Trilium.", resp.noteId);
-
-        return true;
+        return { noteId: resp.noteId, message: "Link with note has been saved to Trilium." };
     }
 
     async function getTabsPayload(tabs: (Browser.tabs.Tab & { url: string })[]) {
@@ -627,7 +648,7 @@ export default defineBackground(() => {
         }
     }
 
-    async function saveTabs() {
+    async function saveTabs(): Promise<Saved> {
         const tabs = (await getWindowTabs())
             .filter((tab): tab is Browser.tabs.Tab & { url: string } => !!tab.url);
 
@@ -636,25 +657,25 @@ export default defineBackground(() => {
         const resp = await triliumServerFacade.callService('POST', 'notes', payload);
 
         const tabIds = tabs.map(tab => tab.id).filter(id => id !== undefined) as number[];
-        toast(`${tabs.length} links have been saved to Trilium.`, resp.noteId, tabIds);
+        return { noteId: resp.noteId, message: `${tabs.length} links have been saved to Trilium.`, tabIds };
     }
 
     browser.contextMenus.onClicked.addListener((info: ContextMenuInfo) => showFailures(async () => {
         if (info.menuItemId === 'trilium-save-selection') {
-            await saveSelection();
+            notify(await saveSelection());
         }
         else if (info.menuItemId === 'trilium-save-cropped-screenshot') {
-            await saveCroppedScreenshot(info.pageUrl);
+            notify(await saveCroppedScreenshot(info.pageUrl));
         }
         else if (info.menuItemId === 'trilium-save-whole-screenshot') {
-            await saveScreenshot([ await takeWholeScreenshot() ], info.pageUrl);
+            notify(await saveScreenshot([ await takeWholeScreenshot() ], info.pageUrl));
         }
         else if (info.menuItemId === 'trilium-save-full-page-screenshot') {
-            await saveFullPageScreenshot(info.pageUrl);
+            notify(await saveFullPageScreenshot(info.pageUrl));
         }
         else if (info.menuItemId === 'trilium-save-image') {
             if (!info.srcUrl) return;
-            await saveImage(info.srcUrl, info.pageUrl);
+            notify(await saveImage(info.srcUrl, info.pageUrl));
         }
         else if (info.menuItemId === 'trilium-save-link') {
             if (!info.linkUrl) return;
@@ -669,10 +690,10 @@ export default defineBackground(() => {
                 pageUrl: info.pageUrl
             });
 
-            toast("Link has been saved to Trilium.", resp.noteId);
+            notify({ noteId: resp.noteId, message: "Link has been saved to Trilium." });
         }
         else if (info.menuItemId === 'trilium-save-page') {
-            await saveWholePage();
+            notify(await saveWholePage());
         }
         else {
             console.log("Unrecognized menuItemId", info.menuItemId);
@@ -707,40 +728,31 @@ export default defineBackground(() => {
             return await browser.tabs.remove(request.tabIds);
         }
         else if (request.name === 'save-cropped-screenshot') {
-            const activeTab = await getActiveTab();
-
-            return await saveCroppedScreenshot(activeTab.url);
+            return await saveForPopup(async () => saveCroppedScreenshot((await getActiveTab()).url));
         }
         else if (request.name === 'save-whole-screenshot') {
-            const activeTab = await getActiveTab();
-
-            return await saveScreenshot([ await takeWholeScreenshot() ], activeTab.url);
+            return await saveForPopup(async () => {
+                const activeTab = await getActiveTab();
+                return saveScreenshot([ await takeWholeScreenshot() ], activeTab.url);
+            });
         }
         else if (request.name === 'save-full-page-screenshot') {
-            const activeTab = await getActiveTab();
-
-            return await saveFullPageScreenshot(activeTab.url);
+            return await saveForPopup(async () => saveFullPageScreenshot((await getActiveTab()).url));
         }
         else if (request.name === 'save-whole-page') {
-            return await saveWholePage(request.page);
+            return await saveForPopup(() => saveWholePage(request.page));
         }
         else if (request.name === 'save-pdf') {
-            // The popup stays open while the PDF downloads, and shows the outcome.
-            try {
-                return { noteId: await savePdf(request.url, request.title, request.description) };
-            } catch (e) {
-                reportFailure(e);
-                return { error: failureMessage(e) };
-            }
+            return await saveForPopup(() => savePdf(request.url, request.title, request.description));
         }
         else if (request.name === 'save-selection') {
-            return await saveSelection(request.selection);
+            return await saveForPopup(() => saveSelection(request.selection));
         }
         else if (request.name === 'save-link-with-note') {
-            return await saveLinkWithNote(request.title, request.content, request.description);
+            return await saveForPopup(() => saveLinkWithNote(request.title, request.content, request.description));
         }
         else if (request.name === 'save-tabs') {
-            return await saveTabs();
+            return await saveForPopup(saveTabs);
         }
         else if (request.name === 'trigger-trilium-search') {
             triliumServerFacade.triggerSearchForTrilium();

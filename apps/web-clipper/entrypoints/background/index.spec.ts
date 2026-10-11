@@ -69,6 +69,7 @@ const GENERIC_FAILURE_TOAST = { name: "toast", message: expect.any(String), note
 
 let onCommand: (command: string) => Promise<void>;
 let onContextMenuClicked: (info: ContextMenuClick) => Promise<void>;
+let onConnect: (port: FakePort) => void;
 let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
@@ -126,7 +127,15 @@ describe("background", () => {
             getZoom: async () => 1.5,
             captureVisibleTab: async () => PNG
         });
-        Object.assign(fakeBrowser.runtime, { getContexts, sendMessage: runtimeSendMessage });
+        Object.assign(fakeBrowser.runtime, {
+            getContexts,
+            sendMessage: runtimeSendMessage,
+            onConnect: {
+                addListener: (listener: typeof onConnect) => {
+                    onConnect = listener;
+                }
+            }
+        });
         Object.assign(fakeBrowser, { offscreen: { createDocument }, scripting: { executeScript } });
 
         background.main();
@@ -438,7 +447,7 @@ describe("background", () => {
             const pdfUrl = "https://example.com/files/report";
 
             await expect(sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "Edited", description: "Summary" }))
-                .resolves.toEqual({ noteId: "saved" });
+                .resolves.toEqual({ noteId: "saved", message: "PDF has been saved to Trilium." });
 
             expect(fetchMock).toHaveBeenCalledWith(pdfUrl, { credentials: "include" });
             expect(lastPayload()).toEqual({
@@ -1011,7 +1020,9 @@ describe("background", () => {
                 content
             });
 
-            await expect(saveWithTitle("  ", "Note")).resolves.toBe(true);
+            await expect(saveWithTitle("  ", "Note")).resolves.toEqual({
+                noteId: "saved", message: "Link with note has been saved to Trilium."
+            });
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", {
                 title: "Active page",
                 content: "Note",
@@ -1021,12 +1032,51 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
 
             facade.callService.mockRejectedValue(TRILIUM_FAILURE);
-            await expect(saveWithTitle("Mine")).resolves.toBeUndefined();
+            await expect(saveWithTitle("Mine")).resolves.toEqual({ error: "Trilium was not found." });
             expect(lastPayload()).toMatchObject({ title: "Mine" });
 
             tabs = [ { id: 7, url: "https://example.com/untitled" } ];
             await saveWithTitle("");
             expect(lastPayload()).toMatchObject({ title: "" });
+        });
+
+        it("answers the popup with the outcome of each save, toasting only once it is closed", async () => {
+            const popup = connect("popup");
+            connect("other");
+            const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
+            const selectionClip = { title: "Quote", content: "<p>Quote</p>", images: [] };
+            tabs = [ ACTIVE_TAB, { id: 8, title: "Other", url: "https://example.org/" } ];
+
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toEqual({
+                noteId: "saved", message: "Page has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-selection", selection: selectionClip })).resolves.toEqual({
+                noteId: "saved", message: "Selection has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-whole-screenshot" })).resolves.toEqual({
+                noteId: "saved", message: "Screenshot has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-tabs" })).resolves.toEqual({
+                noteId: "saved", message: "2 links have been saved to Trilium.", tabIds: [ 7, 8 ]
+            });
+            facade.callService.mockRejectedValueOnce(TRILIUM_FAILURE);
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toEqual({
+                error: "Trilium was not found."
+            });
+            expect(await lastToast()).toBeUndefined();
+
+            popup.disconnect();
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toMatchObject({ noteId: "saved" });
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "saved" });
+            facade.callService.mockRejectedValueOnce(TRILIUM_FAILURE);
+            await sendRuntimeMessage({ name: "save-whole-page", page });
+            expect(await lastToast()).toMatchObject(FAILURE_TOAST);
+        });
+
+        it("answers nothing for a crop the user cancels", async () => {
+            tabMessageHandler = () => ({ rect: null });
+            await expect(sendRuntimeMessage({ name: "save-cropped-screenshot" })).resolves.toBeUndefined();
+            expect(facade.callService).not.toHaveBeenCalled();
         });
 
         it("labels a bookmark with the description the popup sends", async () => {
@@ -1088,6 +1138,20 @@ describe("background", () => {
         });
     });
 });
+
+type FakePort = { name: string, onDisconnect: { addListener(listener: () => void): void }, disconnect(): void };
+
+/** Connects a page of the extension to the background, as the popup does while it is open. */
+function connect(name: string) {
+    let onDisconnect = () => {};
+    const port: FakePort = {
+        name,
+        onDisconnect: { addListener: (listener) => onDisconnect = listener },
+        disconnect: () => onDisconnect()
+    };
+    onConnect(port);
+    return port;
+}
 
 async function sendRuntimeMessage(message: object) {
     const [ result ] = await fakeBrowser.runtime.onMessage.trigger(message, {}, () => {});

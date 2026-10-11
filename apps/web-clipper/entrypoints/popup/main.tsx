@@ -28,13 +28,14 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { extractPage, isPdfTab, type PageVariant, type ReadablePage } from "@/utils";
+import { extractPage, isPdfTab, type PageVariant, type ReadablePage, type SaveOutcome } from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
 const HELP_URL = "https://docs.triliumnotes.org/user-guide/setup/web-clipper";
 const DISCONNECTED_TITLE = "This action can't be performed without active connection to Trilium.";
 const UNREACHABLE_TITLE = "This action is not available on this page.";
+const SAVING_TITLE = "Trilium is saving the last clipping.";
 
 type PopupMessage = {
     name: "trilium-search-status";
@@ -83,8 +84,14 @@ interface TabContent {
  */
 type ClipMode = "selection" | "page" | "pdf" | "note";
 
-/** How saving the PDF went, once the user saved it: the note it made, or why it failed. */
-type PdfSave = { status: "saving" } | { status: "saved", noteId: string } | { status: "failed", message: string };
+/**
+ * A save the popup asked for, in progress or as it went. `mode` is the card's mode when the card
+ * saved, which keeps the card from saving the same clip twice.
+ */
+type SaveState = ({ status: "saving" } | SaveOutcome) & { mode?: ClipMode };
+
+/** Sends a save to the background, and the card's mode when the card saves. */
+type SaveHandler = (message: object, mode?: ClipMode) => void;
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
@@ -168,6 +175,7 @@ export function Popup() {
     const [ clippedNoteId, setClippedNoteId ] = useState<string | null>(null);
     const [ shortcuts, setShortcuts ] = useState<Shortcuts>({});
     const [ draft, setDraft ] = useState<Draft>({ text: "" });
+    const [ saveState, setSaveState ] = useState<SaveState>();
 
     useEffect(() => {
         function onMessage(message: PopupMessage) {
@@ -184,11 +192,23 @@ export function Popup() {
         }
 
         browser.runtime.onMessage.addListener(onMessage);
+        // Tells the background that the popup is open, so it leaves the outcome of a save to it.
+        const port = browser.runtime.connect({ name: "popup" });
         void sendMessage({ name: "send-trilium-search-status" });
         void browser.commands.getAll().then((commands) => setShortcuts(shortcutsByCommand(commands)));
 
-        return () => browser.runtime.onMessage.removeListener(onMessage);
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+            port.disconnect();
+        };
     }, []);
+
+    /** Keeps the popup open while Trilium saves, and shows how it went. */
+    async function save(message: object, mode?: ClipMode) {
+        setSaveState({ status: "saving", mode });
+        const outcome = await sendMessage(message) as SaveOutcome | undefined;
+        setSaveState({ ...outcome ?? { error: "Saving to Trilium failed." }, mode });
+    }
 
     const status = describeStatus(searchStatus);
     const isMismatch = searchStatus?.status === "version-mismatch";
@@ -203,15 +223,18 @@ export function Popup() {
                 shortcuts={shortcuts}
                 draft={draft}
                 onDraftChange={setDraft}
+                saveState={saveState}
+                onSave={(message, mode) => void save(message, mode)}
             />
         );
     }
 
     return (
         <div className="popup">
-            {(clippedNoteId || isMismatch) && (
+            {(saveState || clippedNoteId || isMismatch) && (
                 <div className="notices">
-                    {clippedNoteId && (
+                    {saveState && <SaveStatus state={saveState} />}
+                    {!saveState && clippedNoteId && (
                         <div className="callout callout-info already-visited">
                             <span>Web page already clipped.</span>
                             <a
@@ -261,11 +284,13 @@ export function Popup() {
     );
 }
 
-function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
+function CaptureActions({ disabled, shortcuts, draft, onDraftChange, saveState, onSave: save }: {
     disabled: boolean;
     shortcuts: Shortcuts;
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
+    saveState: SaveState | undefined;
+    onSave: SaveHandler;
 }) {
     /** `undefined` while the page is read. */
     const [ tab, setTab ] = useState<TabContent>();
@@ -274,12 +299,14 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
         void readActiveTab().then(setTab);
     }, []);
 
-    function sendAndClose(name: string) {
-        void sendMessage({ name });
+    /** Cropping happens on the page, which the popup would cover, so it closes. */
+    function cropScreenshot() {
+        void sendMessage({ name: "save-cropped-screenshot" });
         window.close();
     }
 
-    const disabledReason = disabled ? DISCONNECTED_TITLE : undefined;
+    const saving = saveState && "status" in saveState;
+    const disabledReason = disabled ? DISCONNECTED_TITLE : saving ? SAVING_TITLE : undefined;
     const pageDisabledReason = disabledReason ?? (tab?.page === "inaccessible" ? UNREACHABLE_TITLE : undefined);
 
     let main: ComponentChildren;
@@ -290,7 +317,12 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
             </EmptyState>
         );
     } else {
-        main = <PagePreview tab={tab} disabled={disabled} shortcuts={shortcuts} draft={draft} onDraftChange={onDraftChange} />;
+        main = (
+            <PagePreview
+                tab={tab} disabled={disabled} shortcuts={shortcuts} draft={draft} onDraftChange={onDraftChange}
+                saveState={saveState} onSave={save}
+            />
+        );
     }
 
     return (
@@ -301,25 +333,63 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
                 <ToolbarAction
                     icon={Crop} label="Crop" name="Crop screenshot"
                     shortcut={shortcuts.saveCroppedScreenshot} disabledReason={pageDisabledReason}
-                    onClick={() => sendAndClose("save-cropped-screenshot")}
+                    onClick={cropScreenshot}
                 />
                 <ToolbarAction
                     icon={Screenshot} label="Screenshot" name="Visible area screenshot"
                     disabledReason={pageDisabledReason}
-                    onClick={() => sendAndClose("save-whole-screenshot")}
+                    onClick={() => save({ name: "save-whole-screenshot" })}
                 />
                 <ToolbarAction
                     icon={ImagePortrait} label="Full page" name="Full page screenshot"
                     shortcut={shortcuts.saveFullPageScreenshot} disabledReason={pageDisabledReason}
-                    onClick={() => sendAndClose("save-full-page-screenshot")}
+                    onClick={() => save({ name: "save-full-page-screenshot" })}
                 />
                 <ToolbarAction
                     icon={Tabs} label="Tabs" name="All tabs in window"
                     shortcut={shortcuts.saveTabs} disabledReason={disabledReason}
-                    onClick={() => sendMessage({ name: "save-tabs" })}
+                    onClick={() => save({ name: "save-tabs" })}
                 />
             </div>
         </div>
+    );
+}
+
+/**
+ * The save in progress, or how the last one went, with links to the note and the saved tabs. It
+ * takes the place of the notice that the page was already clipped.
+ */
+function SaveStatus({ state }: { state: SaveState }) {
+    if ("status" in state) {
+        return <div className="callout callout-info save-status">Saving to Trilium…</div>;
+    }
+    if ("error" in state) {
+        return <div className="callout callout-error save-status">{state.error}</div>;
+    }
+
+    const { noteId, tabIds } = state;
+    return (
+        <div className="callout callout-success save-status">
+            <span>{state.message}</span>
+            <span className="save-status-links">
+                <ActionLink message={{ name: "openNoteInTrilium", noteId }}>Open note</ActionLink>
+                {tabIds && <ActionLink message={{ name: "closeTabs", tabIds }}>Close saved tabs</ActionLink>}
+            </span>
+        </div>
+    );
+}
+
+/** A link that sends `message` to the background, and closes the popup. */
+function ActionLink({ message, children }: { message: object, children: ComponentChildren }) {
+    return (
+        <a
+            href="#"
+            onClick={(e) => {
+                e.preventDefault();
+                void sendMessage(message);
+                window.close();
+            }}
+        >{children}</a>
     );
 }
 
@@ -363,19 +433,20 @@ function EmptyState({ icon, className, children }: {
  * page offers. The page's HTML comes from an arbitrary website, so it is shown only in a sandboxed
  * frame.
  */
-function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
+function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState, onSave: save }: {
     /** `undefined` while the page is read. */
     tab: TabContent | undefined;
     disabled: boolean;
     shortcuts: Shortcuts;
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
+    saveState: SaveState | undefined;
+    onSave: SaveHandler;
 }) {
     const { mode: chosenMode, variant: chosenVariant, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     /** The readings of the page made after the popup opened, when the user switched to them. */
     const [ laterReadings, setLaterReadings ] = useState<Partial<PageReadings>>({});
-    const [ pdfSave, setPdfSave ] = useState<PdfSave>();
 
     const page = typeof tab?.page === "object" ? { ...tab.page, ...laterReadings } : undefined;
     const variant = chosenVariant && page?.[chosenVariant] !== null ? chosenVariant : page?.article ? "article" : "wholePage";
@@ -406,16 +477,14 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         textAreaRef.current?.focus();
     }, [ mode ]);
 
-    /** Keeps the popup open when the note could not be saved, so its text is not lost. */
-    async function saveNote() {
+    function saveNote() {
         const content = text.trim();
-        const result = await sendMessage({
+        save({
             name: "save-link-with-note",
             title: shownTitle.trim(),
             content: content ? textToHtml(content) : "",
             ...(savedDescription && { description: savedDescription })
-        });
-        if (result) window.close();
+        }, mode);
     }
 
     function saveClip(content: SelectedContent) {
@@ -429,41 +498,30 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             content: withNote(content.content, text),
             ...(labels && { labels })
         };
-        void sendMessage(mode === "selection"
+        save(mode === "selection"
             ? { name: "save-selection", selection: titled }
-            : { name: "save-whole-page", page: titled });
-        window.close();
+            : { name: "save-whole-page", page: titled }, mode);
     }
 
-    /** Keeps the popup open while the PDF downloads, which can take a while, and shows the outcome. */
-    async function savePdf() {
-        setPdfSave({ status: "saving" });
-        const answer = await sendMessage({
+    function savePdf() {
+        save({
             name: "save-pdf",
             url: tab?.url,
             title: shownTitle.trim(),
             ...(savedDescription && { description: savedDescription })
-        }) as { noteId?: string, error?: string } | undefined;
-        setPdfSave(answer?.noteId
-            ? { status: "saved", noteId: answer.noteId }
-            : { status: "failed", message: answer?.error ?? "Saving to Trilium failed." });
+        }, mode);
     }
 
-    function openSavedNote(noteId: string) {
-        void sendMessage({ name: "openNoteInTrilium", noteId });
-        window.close();
-    }
-
+    const busy = saveState && ("status" in saveState || ("noteId" in saveState && saveState.mode === mode));
     let onSave: (() => void) | undefined;
     if (mode === "note") {
-        onSave = () => void saveNote();
+        onSave = saveNote;
     } else if (mode === "pdf") {
-        if (pdfSave?.status !== "saving" && pdfSave?.status !== "saved") {
-            onSave = () => void savePdf();
-        }
+        onSave = savePdf;
     } else if (clip) {
         onSave = () => saveClip(clip);
     }
+    if (busy) onSave = undefined;
 
     function saveOnCtrlEnter(e: KeyboardEvent) {
         if (onSave && e.key === "Enter" && e.ctrlKey) {
@@ -477,7 +535,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
-    const buttonLabel = mode === "pdf" && pdfSave?.status === "saving" ? "Saving PDF…" : button.label;
 
     return (
         <div className="page-preview">
@@ -626,22 +683,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                 {(!mode || (mode === "page" && !clip)) && <div className="page-preview-placeholder">Reading the page…</div>}
             </div>
 
-            {mode === "pdf" && pdfSave?.status === "saved" && (
-                <div className="callout callout-info save-result">
-                    <span>PDF has been saved to Trilium.</span>
-                    <a
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            openSavedNote(pdfSave.noteId);
-                        }}
-                    >Open in Trilium</a>
-                </div>
-            )}
-            {mode === "pdf" && pdfSave?.status === "failed" && (
-                <div className="callout callout-warning save-result">{pdfSave.message}</div>
-            )}
-
             <button
                 className="btn btn-primary primary-action"
                 disabled={disabled || !onSave}
@@ -649,7 +690,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                 onClick={onSave}
             >
                 <Icon icon={button.icon} />
-                <span className="action-label">{buttonLabel}</span>
+                <span className="action-label">{button.label}</span>
                 <Shortcut keys={button.shortcut ?? shortcuts[button.command]} />
             </button>
         </div>

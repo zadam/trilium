@@ -13,6 +13,12 @@ export interface ReadablePage {
     labels: Record<string, string>;
 }
 
+/** What a save made: the note, the message that reports it, and the tabs it saved, if any. */
+export type Saved = { noteId: string, message: string, tabIds?: number[] };
+
+/** How a save the popup asked for went, as the background answers it. */
+export type SaveOutcome = Saved | { error: string };
+
 /** The two ways to read a page: its article, as Defuddle finds it, and all of it. */
 export type PageVariant = "article" | "wholePage";
 

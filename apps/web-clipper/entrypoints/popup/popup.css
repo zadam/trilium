@@ -17,12 +17,12 @@ body {
         padding: 10px 12px;
     }
 
-    .callout-info {
+    .callout-info,
+    .save-status {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        background: color-mix(in srgb, var(--admonition-note-accent-color) 15%, var(--main-background-color));
 
         a {
             flex-shrink: 0;
@@ -32,12 +32,29 @@ body {
         }
     }
 
+    .callout-info {
+        background: color-mix(in srgb, var(--admonition-note-accent-color) 15%, var(--main-background-color));
+    }
+
+    .callout-success {
+        background: color-mix(in srgb, var(--status-ok-color) 18%, var(--main-background-color));
+    }
+
     .callout-warning {
         background: color-mix(in srgb, var(--admonition-warning-accent-color) 15%, var(--main-background-color));
     }
 
-    .save-result {
-        border-radius: 6px;
+    .callout-error {
+        background: color-mix(in srgb, var(--status-error-color) 18%, var(--main-background-color));
+    }
+
+    .save-status-links {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        align-items: flex-end;
+        gap: 6px;
+        white-space: nowrap;
     }
 
     .capture-actions {
