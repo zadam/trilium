@@ -85,13 +85,18 @@ interface TabContent {
 type ClipMode = "selection" | "page" | "pdf" | "note";
 
 /**
- * A save the popup asked for, in progress or as it went. `mode` is the card's mode when the card
+ * What the card saves: its mode, and in Page mode also the reading of the page, as in `page:article`.
+ */
+type ClipChoice = Exclude<ClipMode, "page"> | `page:${PageVariant}`;
+
+/**
+ * A save the popup asked for, in progress or as it went. `clip` is what the card chose when the card
  * saved, which keeps the card from saving the same clip twice.
  */
-type SaveState = ({ status: "saving" } | SaveOutcome) & { mode?: ClipMode };
+type SaveState = ({ status: "saving" } | SaveOutcome) & { clip?: ClipChoice };
 
-/** Sends a save to the background, and the card's mode when the card saves. */
-type SaveHandler = (message: object, mode?: ClipMode) => void;
+/** Sends a save to the background, and what the card chose when the card saves. */
+type SaveHandler = (message: object, clip?: ClipChoice) => void;
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
@@ -204,10 +209,10 @@ export function Popup() {
     }, []);
 
     /** Keeps the popup open while Trilium saves, and shows how it went. */
-    async function save(message: object, mode?: ClipMode) {
-        setSaveState({ status: "saving", mode });
+    async function save(message: object, clip?: ClipChoice) {
+        setSaveState({ status: "saving", clip });
         const outcome = await sendMessage(message) as SaveOutcome | undefined;
-        setSaveState({ ...outcome ?? { error: "Saving to Trilium failed." }, mode });
+        setSaveState({ ...outcome ?? { error: "Saving to Trilium failed." }, clip });
     }
 
     const status = describeStatus(searchStatus);
@@ -224,7 +229,7 @@ export function Popup() {
                 draft={draft}
                 onDraftChange={setDraft}
                 saveState={saveState}
-                onSave={(message, mode) => void save(message, mode)}
+                onSave={(message, clip) => void save(message, clip)}
             />
         );
     }
@@ -457,6 +462,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
     const modes = tab ? availableModes(!!page, selection, tab.pdf) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
+    const choice: ClipChoice | undefined = mode === "page" ? `page:${variant}` : mode;
     const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription =
         description ?? tab?.description ?? pageReading?.labels.pageDescription ?? "";
@@ -484,7 +490,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
             title: shownTitle.trim(),
             content: content ? textToHtml(content) : "",
             ...(savedDescription && { description: savedDescription })
-        }, mode);
+        }, choice);
     }
 
     function saveClip(content: SelectedContent) {
@@ -500,7 +506,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
         };
         save(mode === "selection"
             ? { name: "save-selection", selection: titled }
-            : { name: "save-whole-page", page: titled }, mode);
+            : { name: "save-whole-page", page: titled }, choice);
     }
 
     function savePdf() {
@@ -509,10 +515,11 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
             url: tab?.url,
             title: shownTitle.trim(),
             ...(savedDescription && { description: savedDescription })
-        }, mode);
+        }, choice);
     }
 
-    const busy = saveState && ("status" in saveState || ("noteId" in saveState && saveState.mode === mode));
+    const busy = saveState
+        && ("status" in saveState || ("noteId" in saveState && saveState.clip === choice));
     let onSave: (() => void) | undefined;
     if (mode === "note") {
         onSave = saveNote;

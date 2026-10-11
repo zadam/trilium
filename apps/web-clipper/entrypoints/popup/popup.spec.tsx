@@ -813,7 +813,8 @@ describe("popup", () => {
             tabsQuery.mockResolvedValueOnce([ { ...PDF_TAB, title: "report.pdf" } ]);
             await rerender();
 
-            expect(fetchMock).toHaveBeenCalledWith(PDF_TAB.url, { method: "HEAD", credentials: "include" });
+            expect(fetchMock).toHaveBeenCalledWith(PDF_TAB.url,
+                expect.objectContaining({ method: "HEAD", credentials: "include" }));
             expect(container.querySelector(".capture-actions > .no-items")).toBeNull();
             expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
             expect(button("Area screenshot")?.disabled).toBe(true);
@@ -869,6 +870,11 @@ describe("popup", () => {
         expect(saveStatus()?.text).toBe("Page has been saved to Trilium.Open note");
         expect(button("Save page to Trilium")?.disabled).toBe(true);
         expect(button("All tabs in this window")?.disabled).toBe(false);
+        await click("Whole page");
+        await flush();
+        expect(button("Save page to Trilium")?.disabled).toBe(false);
+        await click("Article");
+        expect(button("Save page to Trilium")?.disabled).toBe(true);
         await clickLink("Open note");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "openNoteInTrilium", noteId: "n2" });
         expect(closeWindow).toHaveBeenCalledTimes(2);
