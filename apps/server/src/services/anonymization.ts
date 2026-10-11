@@ -9,8 +9,10 @@ import sql from "./sql.js";
 
 function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
-    // on the other hand builtin/system attrs should not contain any sensitive info
-    const builtinAttrNames = BUILTIN_ATTRIBUTES.filter((attr) => !["shareCredentials", "shareAlias"].includes(attr.name))
+    // on the other hand builtin/system attrs should not contain any sensitive info -- except for the
+    // ones whose name is system-defined but whose value is authored by the user (`#shareCredentials`,
+    // `#geolocation`, ...), which `hasUserValue` marks so they get scrubbed like any other attribute
+    const builtinAttrNames = BUILTIN_ATTRIBUTES.filter((attr) => !("hasUserValue" in attr && attr.hasUserValue))
         .map((attr) => `'${attr.name}'`)
         .join(", ");
 
@@ -84,11 +86,14 @@ function getExistingAnonymizedDatabases() {
 
     return fs
         .readdirSync(dataDir.ANONYMIZED_DB_DIR)
-        .filter((fileName) => fileName.includes("anonymized"))
-        .map((fileName) => ({
-            fileName,
-            filePath: path.resolve(dataDir.ANONYMIZED_DB_DIR, fileName)
-        })) satisfies AnonymizedDbResponse[];
+        // The .db check excludes intermediate SQLite files (e.g. *.db-journal) created while an anonymization is in progress.
+        .filter((fileName) => fileName.includes("anonymized") && fileName.endsWith(".db"))
+        .map((fileName) => {
+            const filePath = path.resolve(dataDir.ANONYMIZED_DB_DIR, fileName);
+            const stat = fs.statSync(filePath);
+
+            return { fileName, filePath, mtime: stat.mtime, fileSize: stat.size };
+        }) satisfies AnonymizedDbResponse[];
 }
 
 export default {

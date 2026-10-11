@@ -5,16 +5,19 @@ Trilium comes with a couple pre-installed color themes, with the default being a
 
 ![Dark Theme](Themes_dark-theme.png)
 
+While a dark theme is active, Trilium asks the Dark Reader browser extension not to darken the page a second time. Dark Reader still darkens the light themes. After switching from a dark theme to a light one, reload the page (<kbd>Ctrl</kbd>+<kbd>R</kbd>) for Dark Reader to take effect again.
+
 ## Creating Custom CSS Themes
 
 Trilium supports custom user themes, allowing you to personalize the application's appearance. To create a custom theme, follow these steps:
 
 1.  **Create a CSS Code Note**: Start by creating a new [code note](../Note%20Types/Code.md) with the `CSS` type.
 2.  **Annotate with** `#appTheme`: Add the [attribute](../Advanced%20Usage/Attributes.md) `#appTheme=my-theme-name` to your note, where `my-theme-name` is the name of your custom theme.
-3.  **Define Your Styles**: Write your custom CSS within the note. Below is an example of a custom theme:
+3.  **Define Your Styles**: Write your custom CSS within the note.
 
-```
-@font-face {
+<details open="">
+    <summary>Example of a custom theme</summary>
+    <pre><code class="language-text-x-trilium-auto">@font-face {
   font-family: 'Raleway';
   font-style: normal;
   font-weight: 400;
@@ -66,8 +69,11 @@ body .note-detail-text {
 
 body .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
-}
-```
+}</code></pre>
+    <p>&nbsp;</p>
+</details>
+
+ 
 
 ### Activating Your Custom Theme
 
@@ -77,7 +83,7 @@ Once you've created your custom theme:
 2.  In the theme selection dropdown, you should see your custom theme listed under the name you provided with the `#appTheme` [label](../Advanced%20Usage/Attributes.md).
 3.  Select your custom theme to activate it.
 
-If you make changes to your theme, press <kbd>Ctrl</kbd> + <kbd>R</kbd> to reload the frontend and apply your updates.
+If you make changes to your theme, press Ctrl + R to reload the frontend and apply your updates.
 
 ### Sharing and Importing Themes
 
@@ -110,7 +116,7 @@ For example:
 
 When Trilium's frontend starts, all notes labeled with `appCss` are automatically included in the style element of the HTML page.
 
-After making changes, press <kbd>Ctrl</kbd> + <kbd>R</kbd> to reload the frontend and apply your new styles.
+After making changes, press Ctrl + R to reload the frontend and apply your new styles.
 
 ![](Themes_image.png)
 

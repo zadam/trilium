@@ -27,27 +27,84 @@
   <li>save screenshot (with crop tool) from either popup or context menu</li>
   <li>create short text note from popup</li>
 </ul>
+<h2>The popup</h2>
+<p>Clicking the extension's button in the browser toolbar opens its popup:</p>
+<ul>
+  <li>
+    <p>The popup shows what will be saved from the current page: the note's title,
+      which can be edited before saving, the website, and below them a preview.
+      A switch above the preview chooses what to save, among what the page offers:</p>
+    <ul>
+      <li><em>Selection</em>, when text is selected on the page: <em>Save selection</em> saves
+        it into the note of that page's clippings, as the context menu does.</li>
+      <li><em>Page</em>, when the page has an article: <em>Save page to Trilium</em> saves
+        the article's text and images, and the publication date shows next to the
+        website when the page states one.</li>
+      <li><em>Bookmark</em>, always: a text box for a note about the page replaces
+        the preview, and <em>Save bookmark</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>)
+        saves a link to the page with that note. Left empty, the title stays the
+        page's title.</li>
+    </ul>
+    <p>The popup opens on the selection if there is one, otherwise on the article.
+      On a page with no article (Readability cannot find one) and no selection,
+      it opens on <em>Bookmark</em> and says the page has no article. The keyboard
+      shortcuts and the context menu still save right away, without a preview.</p>
+  </li>
+  <li>
+    <p>Pages the extension cannot access (the browser's own pages, the extension
+      stores, and pages that were open before the extension was installed until
+      they are reloaded) cannot be saved or captured, so the popup says so in
+      place of the preview, and only <em>Tabs</em> remains available there.</p>
+  </li>
+  <li>
+    <p>Below the preview, a row of buttons offers the other actions: <em>Crop</em> (a
+      screenshot of an area you select), <em>Screenshot</em> (of the visible part
+      of the page) and <em>Tabs</em> (saves the links of every tab in the current
+      window as a list). Hovering over a button shows its full name and, if it
+      has one, its keyboard shortcut.</p>
+  </li>
+  <li>
+    <p>If the current page was already clipped, a notice at the top offers to
+      open the note in Trilium.</p>
+  </li>
+  <li>
+    <p>If Trilium cannot be found, the popup explains why instead of showing
+      the actions, with buttons to look for Trilium again and to open the options.</p>
+  </li>
+  <li>
+    <p>The bottom of the popup shows whether the extension is connected to Trilium,
+      as a colored dot (green when connected, amber when the versions are not
+      compatible, red when Trilium was not found) next to a description of the
+      connection, followed by the buttons for the extension's options and for
+      this help page. A button to check the connection again appears next to
+      them when hovering over the bar, and stays visible while Trilium cannot
+      be reached or is not compatible.</p>
+  </li>
+</ul>
 <h2>Location of clippings</h2>
 <p>Trilium will save these clippings as a new child note under a "clipper
   inbox" note.</p>
-<p>By default, that's the <a href="#root/_help_l0tKav7yLHGF">day note</a> but you
-  can override that by setting the <a href="#root/_help_zEY4DaJG4YT5">label</a> 
-  <code
-  spellcheck="false">clipperInbox</code>, on any other note.</p>
-<p>If there's multiple clippings from the same page (and on the same day),
-  then they will be added to the same note.</p>
+<p>By default, that's the&nbsp;<a class="reference-link" href="#root/_help_l0tKav7yLHGF">Day Notes</a>&nbsp;but
+  you can override that by setting the <a href="#root/_help_zEY4DaJG4YT5">label</a>  <code>clipperInbox</code>,
+  on any other note.</p>
+<p>Further clippings of the same kind from the same page are added to the
+  note created by the first one, even on a later day or after that note was
+  moved out of the clipper inbox. The note stays where it is and is not cloned
+  back into the inbox.</p>
 <h2>Keyboard shortcuts</h2>
 <p>Keyboard shortcuts are available for most functions:</p>
 <ul>
   <li>Save selected text: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (Mac: <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>S</kbd>)</li>
   <li>Save whole page: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (Mac: <kbd>⌥</kbd>+<kbd>⇧</kbd>+<kbd>S</kbd>)</li>
   <li>Save screenshot: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> (Mac: <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>E</kbd>)</li>
+  <li>Save all tabs of the current window: no default shortcut, but one can
+    be assigned as described below.</li>
 </ul>
 <p>To set custom shortcuts, follow the directions for your browser.</p>
 <ul>
-  <li><strong>Firefox</strong>: <code spellcheck="false">about:addons</code> →
-    Gear icon ⚙️ → Manage extension shortcuts</li>
-  <li><strong>Chrome</strong>: <code spellcheck="false">chrome://extensions/shortcuts</code>
+  <li><strong>Firefox</strong>: <code>about:addons</code> → Gear icon ⚙️ → Manage
+    extension shortcuts</li>
+  <li><strong>Chrome</strong>: <code>chrome://extensions/shortcuts</code>
   </li>
 </ul>
 <aside class="admonition note">
@@ -58,10 +115,46 @@
 </aside>
 <h2>Configuration</h2>
 <p>The extension needs to connect to a running Trilium instance. By default,
-  it scans a port range on the local computer to find a desktop Trilium instance.</p>
+  it looks for the desktop application on port 37840 of the local computer.
+  If the desktop application runs on a different port (for example because
+  it was started with the <code>TRILIUM_PORT</code> environment variable),
+  enter that port in the extension's options. The extension checks for Trilium
+  again every minute, or right away when pressing the refresh button at the
+  bottom of its popup.</p>
 <p>It's also possible to configure the <a href="#root/_help_WOcw2SLH6tbX">server</a> address
   if you don't run the desktop application, or want it to work without the
   desktop application running.</p>
+<p>To connect to a server, enter its address and your password in the extension's
+  options and press <em>Login to the server instance</em>. If the server uses <a
+  href="#root/_help_7DAiwaf8Z7Rz">multi-factor authentication</a>, also fill
+  in <em>Authentication code</em> with the current code from your authenticator
+  app (or one of your recovery codes); otherwise leave it empty. The password
+  and the code are used only once, to obtain a token for the extension, and
+  are not stored.</p>
+<h3>When a clipping fails</h3>
+<p>After each clipping, a notification in the corner of the page confirms
+  that it was saved, with a link to open the new note in Trilium. If the
+  clipping could not be saved, the notification says why instead:</p>
+<ul>
+  <li>Trilium was not found: start the desktop application, or check the server
+    address and token in the extension's options.</li>
+  <li>The versions of Trilium and the extension are not compatible: update the
+    one the message names.</li>
+  <li>Trilium rejected the request: the message includes the reason Trilium
+    gave.</li>
+</ul>
+<p>The extension downloads the images of a clipping itself, so that they
+  are stored in Trilium together with the note. If some of them cannot be
+  downloaded (for example because the website refuses the request), the clipping
+  is still saved, and the notification says how many images are missing.
+  Those images keep their address on the original website: Trilium tries
+  to download them once more if <em>Download images automatically</em> is enabled
+  in <a class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Media</em>,
+  and otherwise the note shows them from the website for as long as it serves
+  them.</p>
+<p>The notification is shown on the page itself, so it does not appear on
+  pages where extensions cannot run (such as the browser's own settings pages
+  and the extension stores).</p>
 <h2>Testing development versions</h2>
 <p>Development versions are version pre-release versions, generally meant
   for testing purposes. These are not available in the Google or Firefox
@@ -72,35 +165,43 @@
   </li>
   <li>Artifacts in GitHub Actions, by looking for the <a href="https://github.com/TriliumNext/Trilium/actions/workflows/web-clipper.yml"><em>Deploy web clipper extension</em> workflow</a>.
     Once a workflow run is selected, the ZIP files are available in the <em>Artifacts</em> section,
-    under the name <code spellcheck="false">web-clipper-extension</code>.</li>
+    under the name <code>web-clipper-extension</code>.</li>
 </ul>
-<h3>For Chrome</h3>
-<ol>
-  <li>Download <code spellcheck="false">trilium-web-clipper-[x.y.z]-chrome.zip</code>.</li>
-  <li>Extract the archive.</li>
-  <li>In Chrome, navigate to <code spellcheck="false">chrome://extensions/</code>
-  </li>
-  <li>Toggle <em>Developer Mode</em> in top-right of the page.</li>
-  <li>Press the <em>Load unpacked</em> button near the header.</li>
-  <li>Point to the extracted directory from step (2).</li>
-</ol>
-<h3>For Firefox</h3>
-<aside class="admonition warning">
-  <p>Firefox prevents installation of unsigned packages in the “retail” version.
-    To be able to install extensions from disk, consider using <em>Firefox Developer Edition</em> or
-    a non-branded version of Firefox (e.g. <em>GNU IceCat</em>).</p>
-  <p>One time, go to <code spellcheck="false">about:config</code> and change
-    <code
-    spellcheck="false">xpinstall.signatures.required</code>to <code spellcheck="false">false</code>.</p>
-</aside>
-<ol>
-  <li>Navigate to <code spellcheck="false">about:addons</code>.</li>
-  <li>Select <em>Extensions</em> in the left-side navigation.</li>
-  <li>Press the <em>Gear</em> icon on the right of the <em>Manage Your Extensions</em> title.</li>
-  <li>Select <em>Install Add-on From File…</em>
-  </li>
-  <li>Point it to <code spellcheck="false">trilium-web-clipper-[x.y.z]-firefox.zip</code>.</li>
-  <li>Press the <em>Add</em> button to confirm.</li>
-</ol>
+<div class="trilium-tabs">
+  <section class="trilium-tab">
+    <p class="trilium-tab-title"><span class="tn-icon bx bxl-chrome"></span>&nbsp;Chrome</p>
+    <div class="trilium-tab-panel">
+      <ol>
+        <li>Download <code>trilium-web-clipper-[x.y.z]-chrome.zip</code>.</li>
+        <li>Extract the archive.</li>
+        <li>In Chrome, navigate to <code>chrome://extensions/</code>
+        </li>
+        <li>Toggle <em>Developer Mode</em> in top-right of the page.</li>
+        <li>Press the <em>Load unpacked</em> button near the header.</li>
+        <li>Point to the extracted directory from step (2).</li>
+      </ol>
+    </div>
+  </section>
+  <section class="trilium-tab">
+    <p class="trilium-tab-title"><span class="tn-icon bx bxl-firefox"></span>&nbsp;Firefox</p>
+    <div class="trilium-tab-panel">
+      <aside class="admonition warning">
+        <p>Firefox prevents installation of unsigned packages in the “retail” version.
+          To be able to install extensions from disk, consider using <em>Firefox Developer Edition</em> or
+          a non-branded version of Firefox (e.g. <em>GNU IceCat</em>).</p>
+        <p>One time, go to <code>about:config</code> and change <code>xpinstall.signatures.required</code> to <code>false</code>.</p>
+      </aside>
+      <ol>
+        <li>Navigate to <code>about:addons</code>.</li>
+        <li>Select <em>Extensions</em> in the left-side navigation.</li>
+        <li>Press the <em>Gear</em> icon on the right of the <em>Manage Your Extensions</em> title.</li>
+        <li>Select <em>Install Add-on From File…</em>
+        </li>
+        <li>Point it to <code>trilium-web-clipper-[x.y.z]-firefox.zip</code>.</li>
+        <li>Press the <em>Add</em> button to confirm.</li>
+      </ol>
+    </div>
+  </section>
+</div>
 <h2>Credits</h2>
 <p>Some parts of the code are based on the <a href="https://github.com/laurent22/joplin/tree/master/Clipper">Joplin Notes browser extension</a>.</p>

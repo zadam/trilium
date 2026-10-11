@@ -1,7 +1,7 @@
 import { type AttributeRow, dayjs, formatLogMessage } from "@triliumnext/commons";
+import type { BackendApi as PublicBackendApi, ScriptBNote as PublicScriptBNote, ScriptRequest, ScriptResponse } from "@triliumnext/commons/src/lib/script_api.js";
 import AbstractBeccaEntity from "../becca/entities/abstract_becca_entity";
 import Becca from "../becca/becca-interface";
-import * as cheerio from "cheerio";
 import * as htmlParser from "node-html-parser";
 import xml2js from "xml2js";
 import branchService from "./branches";
@@ -34,6 +34,8 @@ import { getSql } from "./sql/index";
 import treeService from "./tree.js";
 import { escapeHtml, randomString, unescapeHtml } from "./utils/index";
 import ws from "./ws.js";
+import markdownExport from "./export/markdown.js";
+import markdownImport from "./import/markdown.js";
 
 /**
  * A whole number
@@ -59,23 +61,77 @@ interface NoteAndBranch {
 
 export interface Api {
     /**
-     * Note where the script started executing (entrypoint).
-     * As an analogy, in C this would be the file which contains the main() function of the current process.
+     * Converts the given HTML string to Markdown.
+     *
+     * @param html - HTML content to convert
+     * @returns Markdown representation of the input HTML
+     */
+    htmlToMarkdown(html: string): string;
+
+    /**
+     * Converts the given Markdown string to HTML.
+     *
+     * @param markdown - Markdown content to convert
+     * @returns HTML representation of the input Markdown
+     */
+    markdownToHtml(markdown: string): string;
+
+    /**
+     * Note where the script execution started — the entry point of the current script bundle
+     * (in C terms, the file containing `main()`). When a script is spread across multiple code
+     * notes (descendant code notes loaded as modules via `require()`), every note in the
+     * bundle shares the same `startNote`, while {@link currentNote} differs per note.
+     * Messages from `api.log()` are grouped under this note.
+     *
+     * When a frontend script calls `api.runOnBackend()`, the frontend's `startNote` is
+     * preserved here; since that note may not be resolvable on the backend, this can be null.
      */
     startNote?: BNote | null;
 
     /**
-     * Note where the script is currently executing. This comes into play when your script is spread in multiple code
-     * notes, the script starts in "startNote", but then through function calls may jump into another note (currentNote).
-     * A similar concept in C would be __FILE__
-     * Don't mix this up with the concept of active note.
+     * Note containing the source code that is currently executing (in C terms, `__FILE__`).
+     * Equal to {@link startNote} unless execution has moved into a descendant module note
+     * loaded via `require()`. Don't confuse this with the concept of the active note in
+     * the UI.
      */
     currentNote: BNote;
 
     /**
-     * Entity whose event triggered this execution
+     * Entity whose event triggered this execution; `undefined` when the run was not
+     * event-driven (e.g. started manually via "Execute script" or `note.executeScript()`).
+     *
+     * What it holds depends on the trigger:
+     * - `~runOnNoteCreation`, `~runOnNoteChange`, `~runOnNoteTitleChange`,
+     *   `~runOnNoteContentChange` — the affected note ({@link BNote});
+     * - `~runOnChildNoteCreation` — the newly created child note;
+     * - `~runOnAttributeCreation`, `~runOnAttributeChange` — the attribute;
+     * - `~runOnBranchCreation`, `~runOnBranchChange`, `~runOnBranchDeletion` — the branch;
+     * - scheduled scripts (`#run=backendStartup` / `#run=hourly` / `#run=daily`) — the
+     *   script note itself;
+     * - search scripts (`~searchScript`) — the search note.
      */
     originEntity?: AbstractBeccaEntity<any> | null;
+
+    // Note: these are optional here (unlike the gated public surface in
+    // `@triliumnext/commons`, where they're required) because this interface types
+    // *every* backend script, and they're only populated for custom request handlers.
+    /**
+     * The request. Only present when the script runs as a custom request handler (a note with the
+     * `#customRequestHandler` label invoked via `/custom/...`); `undefined` for every other backend
+     * script. {@link ScriptRequest} is the same subset the in-editor language service offers; the
+     * object itself is Express's `req`, whose full API the Custom Request Handler guide points to.
+     */
+    req?: ScriptRequest;
+    /**
+     * The response to write the HTTP reply to, under the same conditions as {@link ApiParams.req}
+     * and likewise Express's own `res` at runtime.
+     */
+    res?: ScriptResponse;
+    /**
+     * Capture groups from the `#customRequestHandler` regex that matched this request's
+     * URL, in order. Only present in custom request handlers.
+     */
+    pathParams?: string[];
 
     /**
      * @deprecated Axios was deprecated since April 2024 and has now been removed following the March 2026 supply chain attack.
@@ -95,14 +151,13 @@ export interface Api {
     xml2js: typeof xml2js;
 
     /**
-     * cheerio library for HTML parsing and manipulation. See {@link https://cheerio.js.org} for documentation
-     * @deprecated cheerio will be removed in a future version. Use api.htmlParser (node-html-parser) instead.
+     * @deprecated cheerio was deprecated in v0.103.0 and has now been removed.
+     * Use api.htmlParser (node-html-parser) instead.
      */
-    cheerio: typeof cheerio;
+    cheerio: undefined;
 
     /**
-     * node-html-parser library for HTML parsing. See {@link https://github.com/piotr-nicol/node-html-parser} for documentation.
-     * This is the recommended replacement for cheerio.
+     * node-html-parser library for HTML parsing. See {@link https://github.com/taoqf/node-fast-html-parser} for documentation.
      */
     htmlParser: typeof htmlParser;
 
@@ -289,9 +344,10 @@ export interface Api {
     sortNotes(
         parentNoteId: string,
         sortConfig: {
-            /** 'title', 'dateCreated', 'dateModified' or a label name
-             * See {@link https://triliumnext.github.io/Docs/Wiki/sorting.html} for details. */
+            /** The `#sorted` grammar: 'title', 'dateCreated', 'dateModified' or a label name per
+             * level, each optionally followed by 'asc' or 'desc', e.g. 'priority desc, dueDate'. */
             sortBy?: string;
+            /** Descending for levels without their own direction, the folders grouping and ties. */
             reverse?: boolean;
             foldersFirst?: boolean;
         }
@@ -453,9 +509,16 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
         get: axiosError,
         apply: axiosError
     }) as unknown as undefined;
+    // Throw when cheerio is used (removed in favor of node-html-parser, which core already uses)
+    const cheerioError = () => {
+        throw new Error("api.cheerio was deprecated since v0.103.0 and has been removed. Please update your script to use api.htmlParser (node-html-parser) instead.");
+    };
+    this.cheerio = new Proxy(cheerioError, {
+        get: cheerioError,
+        apply: cheerioError
+    }) as unknown as undefined;
     this.dayjs = dayjs;
     this.xml2js = xml2js;
-    this.cheerio = cheerio;
     this.htmlParser = htmlParser;
     this.getInstanceName = () => (config.General ? config.General.instanceName : null);
     this.getNote = (noteId) => becca.getNote(noteId);
@@ -468,6 +531,9 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
     this.getOption = (optionName) => becca.getOption(optionName);
     this.getOptions = () => optionsService.getOptions();
     this.getAttribute = (attributeId) => becca.getAttribute(attributeId);
+
+    this.htmlToMarkdown = (html) => markdownExport.toMarkdown(html);
+    this.markdownToHtml = (markdown) => markdownImport.renderToHtml(markdown, "");
 
     this.searchForNotes = (query, searchParams = {}) => {
         if (searchParams.includeArchivedNotes === undefined) {
@@ -601,7 +667,7 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
     this.sortNotes = (parentNoteId, sortConfig = {}) => treeService.sortNotes(parentNoteId, sortConfig.sortBy || "title", !!sortConfig.reverse, !!sortConfig.foldersFirst);
 
     this.setNoteToParent = treeService.setNoteToParent;
-    this.transactional = sql.transactional;
+    this.transactional = sql.transactional.bind(sql);
     this.randomString = randomString;
     this.escapeHtml = escapeHtml;
     this.unescapeHtml = unescapeHtml;
@@ -729,3 +795,16 @@ function BackendScriptApi(this: Api, currentNote: BNote, apiParams: ApiParams) {
 export default BackendScriptApi as any as {
     new(currentNote: BNote, apiParams: ApiParams): Api;
 };
+
+// --- Drift guards -----------------------------------------------------------
+// The public backend script API surface lives in @triliumnext/commons (self-
+// contained so it can feed the in-editor language service and the script-
+// deployer). These checks fail to compile — naming the offending member — if
+// that public surface claims an `api`/`BNote` member that has since been renamed
+// or removed here.
+type _MissingBackendApiMembers = Exclude<keyof PublicBackendApi, keyof Api>;
+type _MissingBNoteMembers = Exclude<keyof PublicScriptBNote, keyof BNote>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _backendApiDriftGuard: [_MissingBackendApiMembers] extends [never] ? true : _MissingBackendApiMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _bnoteDriftGuard: [_MissingBNoteMembers] extends [never] ? true : _MissingBNoteMembers = true;

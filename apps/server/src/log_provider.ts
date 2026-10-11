@@ -14,7 +14,9 @@ const requestBlacklist = [
     "/images",
     "/stylesheets",
     "/api/recent-notes",
-    "/api/backend-log"
+    "/api/backend-log",
+    // Docker probes this every 30 seconds, and the container runtime captures the echo too.
+    "/api/health-check"
 ];
 
 export default class ServerLogService extends FileBasedLogService {
@@ -52,6 +54,20 @@ export default class ServerLogService extends FileBasedLogService {
 
     protected override writeEntry(entry: string): void {
         this.logFile?.write(entry);
+    }
+
+    protected override echoToConsole(str: string): void {
+        // Under vitest every console call is forwarded to the main process over the worker RPC, and
+        // this suite emits tens of thousands of them — the hidden-subtree bootstrap alone logs a
+        // line per created note, for each of the ~60 spec files that build the app. A call still in
+        // flight when its worker tears down surfaces as an unhandled
+        // `EnvironmentTeardownError: Closing rpc while "onUserConsoleLog" was pending`, which fails
+        // the run even though every test passed. The entry is still written to the log file, so
+        // nothing that reads the log is affected.
+        if (process.env.VITEST) {
+            return;
+        }
+        super.echoToConsole(str);
     }
 
     protected override readLogFile(fileName: string): string | null {

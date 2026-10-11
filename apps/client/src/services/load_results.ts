@@ -79,7 +79,7 @@ export default class LoadResults {
     private noteReorderings: string[];
     private contentNoteIdToComponentId: ContentNoteIdToComponentIdRow[];
     private optionNames: OptionNames[];
-    private attachmentRows: AttachmentRow[];
+    private attachmentRows: { attachment: AttachmentRow; componentId?: string | null }[];
     public hasEtapiTokenChanges: boolean = false;
 
     constructor(entityChanges: EntityChange[]) {
@@ -125,6 +125,7 @@ export default class LoadResults {
 
             this.componentIdToNoteIds[componentId] = this.componentIdToNoteIds[componentId] || [];
 
+            /* v8 ignore next 3 -- redundant guard: the array is guaranteed by the assignment above (arrays are always truthy) */
             if (this.componentIdToNoteIds[componentId]) {
                 this.componentIdToNoteIds[componentId].push(noteId);
             }
@@ -217,12 +218,15 @@ export default class LoadResults {
         return this.optionNames;
     }
 
-    addAttachmentRow(attachment: AttachmentRow) {
-        this.attachmentRows.push(attachment);
+    addAttachmentRow(attachment: AttachmentRow, componentId?: string | null) {
+        this.attachmentRows.push({ attachment, componentId });
     }
 
-    getAttachmentRows() {
-        return this.attachmentRows;
+    /** The changed attachments, without the ones that the component `componentId` changed. */
+    getAttachmentRows(componentId?: string) {
+        return this.attachmentRows
+            .filter((row) => !componentId || row.componentId !== componentId)
+            .map((row) => row.attachment);
     }
 
     /**

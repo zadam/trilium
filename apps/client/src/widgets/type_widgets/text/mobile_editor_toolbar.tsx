@@ -1,10 +1,12 @@
 import "./mobile_editor_toolbar.css";
 
-import { CKTextEditor, ClassicEditor } from "@triliumnext/ckeditor5";
-import { MutableRef, useCallback, useEffect, useRef, useState } from "preact/hooks";
+import type { CKTextEditor, ClassicEditor } from "@triliumnext/ckeditor5";
+import { RefObject } from "preact";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { isIOS } from "../../../services/utils";
 import { useIsNoteReadOnly, useNoteContext, useNoteProperty, useTriliumEvent } from "../../react/hooks";
+import { useNestedEditor } from "./editable_embed";
 
 interface MobileEditorToolbarProps {
     inPopupEditor?: boolean;
@@ -23,24 +25,36 @@ export default function MobileEditorToolbar({ inPopupEditor }: MobileEditorToolb
     const { isReadOnly } = useIsNoteReadOnly(note, noteContext);
     const shouldDisplay = noteType === "text" && isReadOnly === false;
     const [ dropdownActive, setDropdownActive ] = useState(false);
+    const [ noteEditor, setNoteEditor ] = useState<CKTextEditor>();
+    const nestedEditor = useNestedEditor(ntxId);
+    const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
 
     usePositioningOniOS(!inPopupEditor, containerRef);
 
     // Attach the toolbar from the CKEditor.
     useTriliumEvent("textEditorRefreshed", ({ ntxId: eventNtxId, editor }) => {
-        if (eventNtxId !== ntxId || !containerRef.current) return;
-        const toolbar = editor.ui.view.toolbar?.element;
+        if (eventNtxId !== ntxId) return;
 
         if (!inPopupEditor) {
             repositionDropdowns(editor);
         }
-
-        if (toolbar) {
-            containerRef.current.replaceChildren(toolbar);
-        } else {
-            containerRef.current.replaceChildren();
-        }
+        setNoteEditor(editor);
     });
+
+    useEffect(() => {
+        if (nestedEditor && !inPopupEditor) {
+            repositionDropdowns(nestedEditor);
+        }
+    }, [ nestedEditor, inPopupEditor ]);
+
+    useEffect(() => {
+        const toolbar = editor?.ui.view.toolbar?.element;
+        if (toolbar) {
+            containerRef.current?.replaceChildren(toolbar);
+        } else {
+            containerRef.current?.replaceChildren();
+        }
+    }, [ editor ]);
 
     // Observe when a dropdown is expanded to apply a style that allows the dropdown to be visible, since we can't have the element both visible and the toolbar scrollable.
     useEffect(() => {
@@ -65,36 +79,42 @@ export default function MobileEditorToolbar({ inPopupEditor }: MobileEditorToolb
     );
 }
 
-function usePositioningOniOS(enabled: boolean, wrapperRef: MutableRef<HTMLDivElement | null>) {
-    // Capture the baseline offset (Safari nav bar height) before the keyboard opens.
-    const baselineOffset = useRef(window.innerHeight - (window.visualViewport?.height ?? window.innerHeight));
-
+function usePositioningOniOS(enabled: boolean, wrapperRef: RefObject<HTMLDivElement | null>) {
+    // Fallback path for plain mobile Safari (no Capacitor): the WKWebView
+    // isn't resized when the keyboard opens, so visualViewport.height
+    // shrinks while window.innerHeight stays the same. Push the toolbar
+    // up by the difference. Under Capacitor `resize: native` both values
+    // shrink together, so `obscured` is 0 and we leave CSS in charge.
     const adjustPosition = useCallback(() => {
         if (!wrapperRef.current) return;
         const viewport = window.visualViewport;
         if (!viewport) return;
-        // Subtract the baseline so only the keyboard's contribution remains.
-        const bottom = window.innerHeight - viewport.height - viewport.offsetTop;
-        if (bottom - baselineOffset.current <= 0) {
-            // Keyboard is hidden — clear the inline style so CSS controls positioning.
+
+        const obscured = Math.max(0, Math.round(
+            window.innerHeight - viewport.height - viewport.offsetTop
+        ));
+
+        if (obscured <= 1) {
             wrapperRef.current.style.removeProperty("bottom");
         } else {
-            wrapperRef.current.style.bottom = `${bottom}px`;
+            wrapperRef.current.style.bottom = `${obscured}px`;
         }
     }, [ wrapperRef ]);
 
     useEffect(() => {
         if (!isIOS() || !enabled) return;
-
+        // Run once in case the keyboard is already up when mounting
+        // (e.g. returning from a dialog).
+        adjustPosition();
         window.visualViewport?.addEventListener("resize", adjustPosition);
-        window.addEventListener("scroll", adjustPosition);
-
         return () => {
             window.visualViewport?.removeEventListener("resize", adjustPosition);
-            window.removeEventListener("scroll", adjustPosition);
         };
     }, [ enabled, adjustPosition ]);
 }
+
+/** The editors whose toolbar dropdowns open upwards already. */
+const repositionedEditors = new WeakSet<CKTextEditor>();
 
 /**
  * Reposition all dropdowns to point upwards instead of downwards.
@@ -102,6 +122,9 @@ function usePositioningOniOS(enabled: boolean, wrapperRef: MutableRef<HTMLDivEle
  * @param editor
  */
 function repositionDropdowns(editor: CKTextEditor) {
+    if (repositionedEditors.has(editor)) return;
+    repositionedEditors.add(editor);
+
     const toolbarView = (editor as ClassicEditor).ui.view.toolbar;
     for (const item of toolbarView.items) {
         if (!("panelView" in item)) continue;

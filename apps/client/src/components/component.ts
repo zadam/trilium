@@ -1,7 +1,7 @@
 import utils from "../services/utils.js";
 import type { CommandMappings, CommandNames, EventData, EventNames } from "./app_context.js";
 
-type EventHandler = ((data: any) => void);
+type EventHandler = ((data: any) => unknown);
 
 /**
  * Abstract class for all components in the Trilium's frontend.
@@ -21,7 +21,10 @@ export class TypedComponent<ChildT extends TypedComponent<ChildT>> {
     initialized: Promise<void> | null;
     parent?: TypedComponent<any>;
     _position!: number;
-    private listeners: Record<string, EventHandler[]> | null = {};
+    // Held in a set so that registering and removing cost the same whatever the list already
+    // holds: every froca hook re-subscribes whenever its handler changes identity, and a view of
+    // thousands of components keeps thousands of handlers for one event.
+    private listeners: Record<string, Set<EventHandler>> | null = {};
 
     constructor() {
         this.componentId = `${this.sanitizedClassName}-${utils.randomString(8)}`;
@@ -91,10 +94,20 @@ export class TypedComponent<ChildT extends TypedComponent<ChildT>> {
     handleEventInChildren<T extends EventNames>(name: T, data: EventData<T>): Promise<unknown[] | unknown> | null {
         const promises: Promise<unknown>[] = [];
 
-        // Handle React children.
+        // Handle React children. Iterate over a copy: a listener can cause handlers to be
+        // (un)registered while the event is being distributed.
         if (this.listeners?.[name]) {
-            for (const listener of this.listeners[name]) {
-                listener(data);
+            for (const listener of [ ...this.listeners[name] ]) {
+                const ret = listener(data);
+
+                // Collect the promise so that awaiting triggerEvent() waits for async React
+                // listeners too (the contract documented on this class). Failures are logged
+                // rather than propagated, so one broken listener cannot abort the operation
+                // (e.g. a note switch) for everyone else.
+                if (ret instanceof Promise) {
+                    promises.push(ret.catch((e) =>
+                        console.error(`Handling of event '${name}' failed in a React listener with error`, e)));
+                }
             }
         }
 
@@ -150,26 +163,22 @@ export class TypedComponent<ChildT extends TypedComponent<ChildT>> {
         }
 
         if (!this.listeners[name]) {
-            this.listeners[name] = [];
+            this.listeners[name] = new Set();
         }
 
-        if (this.listeners[name].includes(handler)) {
-            return;
-        }
-
-        this.listeners[name].push(handler);
+        this.listeners[name].add(handler);
     }
 
     removeHandler<T extends EventNames>(name: T, handler: EventHandler) {
-        if (!this.listeners?.[name]?.includes(handler)) {
+        const listeners = this.listeners?.[name];
+        if (!listeners) {
             return;
         }
 
-        this.listeners[name] = this.listeners[name]
-            .filter(listener => listener !== handler);
+        listeners.delete(handler);
 
-        if (!this.listeners[name].length) {
-            delete this.listeners[name];
+        if (!listeners.size) {
+            delete this.listeners?.[name];
         }
     }
 }

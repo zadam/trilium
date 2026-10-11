@@ -1,0 +1,921 @@
+import { SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
+import { cls, options as optionService } from "@triliumnext/core";
+import { parse } from "node-html-parser";
+import { beforeAll, describe, expect, it } from "vitest";
+
+import converter from "./converter.js";
+
+beforeAll(() => {
+    // The shared fixture DB predates `<u>` being allowlisted; align the sanitizer's allowed tags with
+    // the current default so the test asserts the end result a fresh install would store.
+    cls.init(() => optionService.setOption("allowedHtmlTags", JSON.stringify(SANITIZER_DEFAULT_ALLOWED_TAGS)));
+});
+
+// A representative OneNote page as returned by the Graph API: margin-0 paragraphs, a numbered and
+// two bulleted lists, a trailing empty list item, and bare block-level <br> elements that OneNote
+// uses for vertical spacing between blocks.
+const SAMPLE = `<html lang="en-US">
+    <head>
+        <title>2020-09-02. Customer Daily</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="created" content="2020-09-02T09:37:00.0000000" />
+    </head>
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:576px">
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold">Participants:</span></p>
+            <ol>
+                <li>Participant 1</li>
+                <li>Participant 2</li>
+            </ol>
+            <br />
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold">Agenda:</span></p>
+            <ul>
+                <li>ACME-1234</li>
+                <li>ACME-1235</li>
+                <li><br />
+                </li>
+            </ul>
+            <br />
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold">Discussion:</span></p>
+            <ul>
+                <li>Subject 1</li>
+                <li>Subject 2</li>
+            </ul>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): bold/italic/underline are carried as inline styles on
+// <span>, individually and combined on a single span.
+const FORMATTING_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:54px;top:134px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Normal text.</p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold">Bold text.</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-style:italic">Italic text.</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="text-decoration:underline">Under line text.</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold;font-style:italic">Bold and italic text.</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold;text-decoration:underline">Bold and underline text</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-weight:bold;font-style:italic;text-decoration:underline">Bold, italic and underline text</span></p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): subscript/superscript are real <sub>/<sup> tags, while
+// strikethrough is carried as a text-decoration inline style.
+const SUPERSCRIPT_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Normal <sub>sub</sub> <sup>sup</sup> <span style="text-decoration:line-through">strikethrough</span></p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): highlight and font color use CSS *named* colors, which the
+// sanitizer's colorRegex (hex/rgb/hsl only) would otherwise strip.
+const HIGHLIGHT_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="background-color:yellow">Yellow</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:white;background-color:fuchsia">Magenta</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:black;background-color:silver">Light Gray</span></p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): named styles are mostly real tags (h1-h6, cite) plus inline
+// styling. The sanitizer demotes a contiguous heading run by one level (h1 is reserved for the note
+// title), and font-style:italic is handled by convertInlineFormatting.
+const STYLES_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <h1 style="font-size:16pt;color:#1e4e79;margin-top:0pt;margin-bottom:0pt">Heading 1</h1>
+            <h2 style="font-size:14pt;color:#2e75b5;margin-top:0pt;margin-bottom:0pt">Heading 2</h2>
+            <h3 style="font-size:12pt;color:#1f3763;margin-top:0pt;margin-bottom:0pt">Heading 3</h3>
+            <h4 style="font-size:12pt;color:#2f5496;font-style:italic;margin-top:0pt;margin-bottom:0pt">Heading 4</h4>
+            <h5 style="color:#2e75b5;margin-top:0pt;margin-bottom:0pt">Heading 5</h5>
+            <h6 style="color:#2e75b5;font-style:italic;margin-top:0pt;margin-bottom:0pt">Heading 6</h6>
+            <cite style="font-size:9pt;color:#595959;margin-top:0pt;margin-bottom:0pt">Citation</cite>
+            <p style="color:#595959;font-style:italic;margin-top:0pt;margin-bottom:0pt">Quote</p>
+            <p style="font-family:Calibri Light;font-size:20pt;margin-top:0pt;margin-bottom:0pt">Title</p>
+            <p style="font-family:Consolas;margin-top:0pt;margin-bottom:0pt">Code</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): the full font-size scale, from 8pt up to 72pt on an 11pt
+// base. OneNote carries each size as a `font-size:Npt` inline style on a <span>.
+const FONT_SIZES_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:131px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:8pt">Smallest (8)</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:9pt">Still small (9)</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:10pt">Size 10</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt">Size 11</p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:12pt">Size 12</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:14pt">Size 14</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:16pt">Size 16</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:18pt">Size 18</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:20pt">Size 20</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:24pt">Size 24</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:26pt">Size 26</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:28pt">Size 28</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:36pt">Size 36</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:48pt">Size 48</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:72pt">Size 72</span></p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): to-do items are paragraphs tagged with data-tag="to-do" /
+// "to-do:completed", not list markup.
+const TAGS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p data-tag="to-do" style="margin-top:0pt;margin-bottom:0pt">To do</p>
+            <p data-tag="to-do" style="margin-top:0pt;margin-bottom:0pt">Another todo</p>
+            <p data-tag="to-do:completed" style="margin-top:0pt;margin-bottom:0pt">Completed todo</p>
+            <p data-tag="to-do" style="margin-top:0pt;margin-bottom:0pt">Another non-completed TODO</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (web-OneNote Graph export): the decorative (non-checkbox) note tags. Each is a
+// paragraph carrying a `data-tag` that OneNote renders as an icon — we render it as an icon prefix.
+const DECORATIVE_TAGS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p data-tag="important" style="margin-top:0pt;margin-bottom:0pt">Important</p>
+            <p data-tag="question" style="margin-top:0pt;margin-bottom:0pt">Question</p>
+            <p data-tag="idea" style="margin-top:0pt;margin-bottom:0pt">Idea</p>
+            <p data-tag="password" style="margin-top:0pt;margin-bottom:0pt">Password</p>
+            <p data-tag="phone-number" style="margin-top:0pt;margin-bottom:0pt">Phone number</p>
+        </div>
+    </body>
+</html>`;
+
+// Constructed from the same shapes: the Project A/B tags, whose glyph is a character Boxicons has no
+// icon for.
+const CHARACTER_TAGS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p data-tag="project-a" style="margin-top:0pt;margin-bottom:0pt">First project</p>
+            <p data-tag="project-b" style="margin-top:0pt;margin-bottom:0pt">Second project</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (web-OneNote Graph export): checkbox note tags other than plain to-do
+// (priorities, discussions, meetings, client requests). All render as task-list items, and the
+// `:completed` status checks the box.
+const CHECKBOX_TAGS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p data-tag="to-do-priority-1" style="margin-top:0pt;margin-bottom:0pt">Priority 1</p>
+            <p data-tag="schedule-meeting:completed" style="margin-top:0pt;margin-bottom:0pt">Schedule meeting</p>
+            <p data-tag="discuss-with-manager" style="margin-top:0pt;margin-bottom:0pt">Discuss with Manager</p>
+            <p data-tag="client-request" style="margin-top:0pt;margin-bottom:0pt">Client Request</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (web-OneNote Graph export): a paragraph can carry several comma-separated tags
+// at once — a checkbox tag combined with decorative ones, or several decorative ones together.
+const MULTI_TAGS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p data-tag="to-do,important,question" style="margin-top:0pt;margin-bottom:0pt">Todo plus star plus question</p>
+            <p data-tag="movie-to-see,book-to-read" style="margin-top:0pt;margin-bottom:0pt">Movie and book</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): a free-form page with four absolutely-positioned text boxes
+// whose document order differs from their visual (top-to-bottom) reading order.
+const ALIGNMENT_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:512px;top:210px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">The quick</p>
+        </div>
+        <div style="position:absolute;left:318px;top:333px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Brown fox</p>
+        </div>
+        <div style="position:absolute;left:579px;top:441px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Jumps over the lazy dog</p>
+        </div>
+        <div style="position:absolute;left:222px;top:277px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">And then it jumps again.</p>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): an inline image and a file attachment, both served from
+// authenticated Graph `/resources/{id}/$value` URLs. The image carries an extra full-resolution
+// `data-fullres-src`; the attachment is an <object> the sanitizer would otherwise drop entirely.
+const RESOURCE_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <object data-attachment="HelloWorld.txt" type="text/plain" data="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-aaa!1-BBB!sccc/$value" />
+            <br />
+        </div>
+        <div style="position:absolute;left:569px;top:116px;width:624px">
+            <img width="480" height="441" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-ddd!1-BBB!sccc/$value" data-src-type="image/png" data-fullres-src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-eee!1-BBB!sccc/$value" data-fullres-src-type="image/png" />
+            <br />
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): a "screen clipping" page — two standalone images, each
+// floating directly in the outline <div> and separated from its <cite> caption by OneNote's <br>
+// spacing. Left verbatim the caption renders as loose body text next to the image.
+const SCREEN_CLIPPING_SAMPLE = `<html lang="ro-RO">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:720px">
+            <img width="577.5" height="277.5" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-aaa!1-BBB!sccc/$value" data-src-type="image/png" data-fullres-src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-aaa!1-BBB!sccc/$value" data-fullres-src-type="image/png" />
+            <br />
+            <cite lang="en-US" style="font-size:9pt;color:#595959;margin-top:0pt;margin-bottom:0pt">Screen clipping taken: 23.07.2026 21:40</cite>
+            <br />
+            <br />
+            <img width="385" height="509" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-ddd!1-BBB!sccc/$value" data-src-type="image/png" data-fullres-src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-ddd!1-BBB!sccc/$value" data-fullres-src-type="image/png" />
+            <br />
+            <cite lang="en-US" style="font-size:9pt;color:#595959;margin-top:0pt;margin-bottom:0pt">Screen clipping taken: 23.07.2026 21:40</cite>
+            <br />
+            <br />
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): OneNote puts the list marker type on each <li> and wraps
+// item text in a margin-0 <p>. The marker type belongs on the <ul>/<ol> (CKEditor's representation),
+// and OneNote's lower-alpha/upper-alpha map to CKEditor's lower-latin/upper-latin.
+const LISTS_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Normal:</p>
+            <br />
+            <ul>
+                <li><p style="margin-top:0pt;margin-bottom:0pt">Normal bullet</p>
+                <ul>
+                    <li style="list-style-type:circle"><p style="margin-top:0pt;margin-bottom:0pt">Sub-bullet</p></li>
+                </ul>
+                </li>
+            </ul>
+            <p style="margin-top:0pt;margin-bottom:0pt">Hollow:</p>
+            <ul>
+                <li style="list-style-type:circle">Hollow</li>
+            </ul>
+            <p style="margin-top:0pt;margin-bottom:0pt">Alpha:</p>
+            <ol>
+                <li value="1" style="list-style-type:lower-alpha">A</li>
+                <li style="list-style-type:lower-alpha">B</li>
+            </ol>
+            <p style="margin-top:0pt;margin-bottom:0pt">Roman:</p>
+            <ol>
+                <li value="1" style="list-style-type:upper-roman">A</li>
+            </ol>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): a table with visible borders and one with hidden borders
+// (border:0px). OneNote carries borders as a `border` shorthand + border-collapse.
+const TABLE_SAMPLE = `<html lang="en-US">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:624px">
+            <table style="border:1px solid;border-collapse:collapse">
+                <tr><td style="background-color:#d8d8d8;border:1px solid">A</td><td style="border:1px solid">B</td></tr>
+                <tr><td style="border:1px solid">1</td><td style="border:1px solid">Content</td></tr>
+            </table>
+        </div>
+        <div style="position:absolute;left:211px;top:382px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt">Hidden borders</p>
+            <br />
+            <table style="border:0px">
+                <tr><td style="background-color:#d8d8d8;border:0px">A</td><td style="border:0px">B</td></tr>
+                <tr><td style="border:0px">1</td><td style="border:0px">Content</td></tr>
+            </table>
+        </div>
+    </body>
+</html>`;
+
+// Real OneNote source (debug-captured): a column-resized table. OneNote stamps the resized width as a
+// bare pixel `width` on every cell of the column (150/49/399/136 across the four columns), a form the
+// sanitizer drops — so the widths are lost unless translated to CKEditor's colgroup representation.
+const TABLE_RESIZE_SAMPLE = `<html lang="ro-RO">
+    <body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+        <div style="position:absolute;left:48px;top:115px;width:689px">
+            <table style="border:1px solid;border-collapse:collapse">
+                <tr>
+                    <td style="width:150;border:1px solid"><span lang="en-US">Mid</span></td>
+                    <td style="width:49;border:1px solid"><span lang="en-US">SM</span></td>
+                    <td style="width:399;border:1px solid"><span lang="en-US">Large</span></td>
+                    <td style="width:136;border:1px solid"><br /></td>
+                </tr>
+                <tr>
+                    <td style="width:150;border:1px solid"><span lang="en-US">Mid</span></td>
+                    <td style="width:49;border:1px solid"><span lang="en-US">SM</span></td>
+                    <td style="width:399;border:1px solid"><span lang="en-US">Large</span></td>
+                    <td style="width:136;border:1px solid"><br /></td>
+                </tr>
+                <tr>
+                    <td style="width:150;border:1px solid"><br /></td>
+                    <td style="width:49;border:1px solid"><br /></td>
+                    <td style="width:399;border:1px solid"><br /></td>
+                    <td style="width:136;border:1px solid"><br /></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>`;
+
+// Tests assert the end result (the HTML actually stored on the note, i.e. after sanitization).
+describe("convertPageHtml", () => {
+    it("strips OneNote's block-level <br> spacing and empty list items, keeping real content", () => {
+        const out = converter.convertPageHtml(SAMPLE);
+        const root = parse(out);
+
+        // The two bare <br> after </ol>/</ul> and the <br> in the empty <li> are all gone.
+        expect(root.querySelectorAll("br")).toHaveLength(0);
+
+        // The trailing empty Agenda item is removed; the three lists keep their real items.
+        const ol = root.querySelectorAll("ol");
+        const uls = root.querySelectorAll("ul");
+        expect(ol).toHaveLength(1);
+        expect(uls).toHaveLength(2);
+        expect(ol[0].querySelectorAll("li")).toHaveLength(2); // Participants 1-2
+        expect(uls[0].querySelectorAll("li")).toHaveLength(2); // Agenda: ACME-1234/1235 (empty dropped)
+        expect(uls[1].querySelectorAll("li")).toHaveLength(2); // Discussion 1-2
+
+        // Headings and list contents survive.
+        expect(out).toContain("Participants:");
+        expect(out).toContain("Participant 1");
+        expect(out).toContain("ACME-1234");
+        expect(out).toContain("Discussion:");
+        expect(out).toContain("Subject 2");
+    });
+
+    it("keeps genuine soft line breaks inside a paragraph", () => {
+        const out = converter.convertPageHtml(`<body><p>line one<br />line two</p></body>`);
+        expect(parse(out).querySelectorAll("br")).toHaveLength(1);
+    });
+
+    it("orders absolutely-positioned text boxes by position (top, then left)", () => {
+        const out = converter.convertPageHtml(ALIGNMENT_SAMPLE);
+        const paragraphs = parse(out).querySelectorAll("p").map((p) => p.textContent.trim());
+        expect(paragraphs).toEqual([
+            "The quick",
+            "And then it jumps again.",
+            "Brown fox",
+            "Jumps over the lazy dog"
+        ]);
+    });
+
+    it("sorts outlines missing position coordinates as 0 and breaks top ties by left", () => {
+        const sample = `<body>
+            <div style="position:absolute;left:200px;top:100px"><p>right</p></div>
+            <div style="position:absolute;left:50px;top:100px"><p>left</p></div>
+            <div style="position:absolute"><p>unplaced</p></div>
+        </body>`;
+        const paragraphs = parse(converter.convertPageHtml(sample)).querySelectorAll("p").map((p) => p.textContent.trim());
+        expect(paragraphs).toEqual(["unplaced", "left", "right"]);
+    });
+
+    it("moves OneNote list marker types from <li> onto the list, mapping alpha to latin", () => {
+        const out = converter.convertPageHtml(LISTS_SAMPLE);
+        const root = parse(out);
+        const uls = root.querySelectorAll("ul"); // [Normal-top, Normal-nested, Hollow]
+        const ols = root.querySelectorAll("ol"); // [Alpha, Roman]
+
+        // Top-level list takes its marker from the first item; nested list drops it; default = no style.
+        expect(uls[0].getAttribute("style") ?? "").not.toContain("list-style-type"); // Normal (default)
+        expect(uls[1].getAttribute("style") ?? "").not.toContain("list-style-type"); // nested → dropped
+        expect(uls[2].getAttribute("style")).toContain("list-style-type:circle"); // Hollow
+        expect(ols[0].getAttribute("style")).toContain("list-style-type:lower-latin"); // lower-alpha → latin
+        expect(ols[1].getAttribute("style")).toContain("list-style-type:upper-roman");
+
+        // The per-item markers and the wrapping <p> are gone.
+        expect(root.querySelectorAll("li").every((li) => !(li.getAttribute("style") ?? "").includes("list-style-type"))).toBe(true);
+        expect(root.querySelectorAll("li p")).toHaveLength(0);
+        expect(out).toContain("Normal bullet");
+    });
+
+    it("drops visible table borders and maps OneNote's hidden (0px) borders to transparent", () => {
+        const out = converter.convertPageHtml(TABLE_SAMPLE);
+        const root = parse(out);
+        const tables = root.querySelectorAll("table");
+
+        // Visible-border table: border shorthand / collapse dropped (CKEditor draws default borders).
+        expect(tables[0].getAttribute("style") ?? "").not.toContain("border");
+        // Hidden-border table: border:0px -> transparent border.
+        expect(tables[1].getAttribute("style")).toContain("border-color:transparent");
+        expect(tables[1].getAttribute("style")).toContain("border-style:solid");
+
+        const visibleCells = tables[0].querySelectorAll("td");
+        expect(visibleCells[0].getAttribute("style")).toContain("background-color:#d8d8d8");
+        expect(visibleCells[0].getAttribute("style") ?? "").not.toContain("border");
+
+        const hiddenCells = tables[1].querySelectorAll("td");
+        expect(hiddenCells[0].getAttribute("style")).toContain("background-color:#d8d8d8");
+        expect(hiddenCells[0].getAttribute("style")).toContain("border-color:transparent");
+        expect(hiddenCells[1].getAttribute("style")).toContain("border-color:transparent");
+
+        expect(out).not.toContain("border:0px");
+        expect(out).not.toContain("border-collapse");
+    });
+
+    it("preserves OneNote per-column widths as a CKEditor resized-table colgroup", () => {
+        const out = converter.convertPageHtml(TABLE_RESIZE_SAMPLE);
+        const root = parse(out);
+
+        // The table becomes a full-width table figure, tagged as column-resized, with its rows in a
+        // <tbody> beneath the <colgroup> — CKEditor's resized-table shape.
+        const figure = root.querySelector("figure.table");
+        expect(figure?.getAttribute("style")).toContain("width:100%");
+        expect(figure?.querySelector("table")?.getAttribute("class")).toContain("ck-table-resized");
+        expect(root.querySelector("figure.table table colgroup")).toBeTruthy();
+        expect(root.querySelectorAll("figure.table table tbody tr")).toHaveLength(3);
+
+        // Each column's pixel width (150/49/399/136 of 734) becomes a proportional percentage in the
+        // colgroup, and the set sums to exactly 100 (the rounding remainder settles on the last column).
+        const cols = root.querySelectorAll("colgroup col").map((col) => col.getAttribute("style"));
+        expect(cols).toEqual(["width:20.44%", "width:6.68%", "width:54.36%", "width:18.52%"]);
+
+        // The now-redundant per-cell widths are gone, and the cell content survives.
+        expect(root.querySelectorAll("td").every((td) => !(td.getAttribute("style") ?? "").includes("width"))).toBe(true);
+        expect(out).toContain("Mid");
+        expect(out).toContain("Large");
+    });
+
+    it("leaves a table without a full set of column widths unresized", () => {
+        // Only the first column carries a width — the resize would be ambiguous, so the table is left as-is.
+        const sample = `<body><div><table style="border:1px solid;border-collapse:collapse"><tr><td style="width:220;border:1px solid">A</td><td style="border:1px solid">B</td></tr></table></div></body>`;
+        const root = parse(converter.convertPageHtml(sample));
+
+        expect(root.querySelector("figure.table")).toBeFalsy();
+        expect(root.querySelector("colgroup")).toBeFalsy();
+        expect(root.querySelector("table")?.getAttribute("class") ?? "").not.toContain("ck-table-resized");
+    });
+
+    it("does not resize a table that merges cells (colspan/rowspan)", () => {
+        const sample = `<body><div><table><tr><td colspan="2" style="width:100">A</td></tr><tr><td style="width:50">B</td><td style="width:50">C</td></tr></table></div></body>`;
+        expect(parse(converter.convertPageHtml(sample)).querySelector("colgroup")).toBeFalsy();
+    });
+
+    it("keeps a resized cell's other styles and appends to the table's existing class", () => {
+        // Both columns carry a width on the first row; the second row's cells have no style at all.
+        // Stripping the redundant widths must keep the shaded cell's background, leave the style-less
+        // cells alone, and append the resized marker to the table's pre-existing class.
+        const sample = `<body><div><table class="layout"><tr><td style="width:100;background-color:#b6d9a1">A</td><td style="width:300">B</td></tr><tr><td>C</td><td>D</td></tr></table></div></body>`;
+        const root = parse(converter.convertPageHtml(sample));
+
+        expect(root.querySelector("table")?.getAttribute("class")).toContain("ck-table-resized");
+        const cols = root.querySelectorAll("colgroup col").map((col) => col.getAttribute("style"));
+        expect(cols).toEqual(["width:25%", "width:75%"]);
+
+        const shaded = root.querySelectorAll("td").find((td) => td.textContent === "A");
+        expect(shaded?.getAttribute("style")).toContain("background-color:#b6d9a1");
+        expect(shaded?.getAttribute("style") ?? "").not.toContain("width");
+    });
+
+    it("recovers OneNote's over-darkened table cell shading by reflecting its lightness", () => {
+        // OneNote's Graph export returns cell shading as a dark shade of the colour it displays (same
+        // hue and saturation, inverted lightness): a cell shown as #b6d9a1 comes back as #375623.
+        // Reflecting the lightness recovers the light tint (#bddca9, a barely-perceptible delta off).
+        const sample = `<body><div><table><tr><td style="background-color:#375623"><span lang="en-US">A</span></td><td>B</td></tr></table></div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        expect(out).toContain("background-color:#bddca9");
+        expect(out).not.toContain("#375623");
+    });
+
+    it("leaves an already-light table cell shading untouched", () => {
+        // A light background is plausible shading as-is (and correctly-exported colours arrive light),
+        // so only dark cell backgrounds are reflected.
+        const sample = `<body><div><table><tr><td style="background-color:#b6d9a1">A</td><td>B</td></tr></table></div></body>`;
+        expect(converter.convertPageHtml(sample)).toContain("background-color:#b6d9a1");
+    });
+
+    it("reflects dark shading across the hue wheel, including grays and short hex", () => {
+        // One dark cell per rgbToHsl hue sector (the green-dominant sector is covered above): plain
+        // dark red, a magenta whose hue wraps past the top of the wheel, a blue-dominant navy, and an
+        // achromatic gray in the short #rgb form.
+        const sample = `<body><div><table><tr>
+            <td style="background-color:#8b0000">Dark red</td>
+            <td style="background-color:#400040">Dark magenta</td>
+            <td style="background-color:#000080">Navy</td>
+            <td style="background-color:#333">Dark gray</td>
+        </tr></table></div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        expect(out).toContain("background-color:#ff7474"); // dark red -> light red, hue preserved
+        expect(out).toContain("background-color:#ffbfff"); // dark magenta -> light magenta
+        expect(out).toContain("background-color:#7f7fff"); // navy -> light blue
+        expect(out).toContain("background-color:#cccccc"); // gray stays achromatic, just lightened
+    });
+
+    it("converts OneNote to-do tags into a Trilium task list", () => {
+        const out = converter.convertPageHtml(TAGS_SAMPLE);
+        const root = parse(out);
+
+        // Consecutive to-do paragraphs become one CKEditor todo-list, not literal "[ ]" text.
+        expect(root.querySelectorAll("ul.todo-list")).toHaveLength(1);
+        expect(root.querySelectorAll("li")).toHaveLength(4);
+        expect(root.querySelectorAll(`input[type="checkbox"]`)).toHaveLength(4);
+        expect(root.querySelectorAll("span.todo-list__label__description")).toHaveLength(4);
+
+        // Exactly the one completed item is checked.
+        expect(root.querySelectorAll("input[checked]")).toHaveLength(1);
+
+        expect(out).toContain("Completed todo");
+        expect(out).not.toContain("[ ]");
+        expect(out).not.toContain("[x]");
+    });
+
+    it("treats every checkbox-style tag (priority/meeting/discussion/request) as a task item", () => {
+        const out = converter.convertPageHtml(CHECKBOX_TAGS_SAMPLE);
+        const root = parse(out);
+
+        // All four checkbox-style tags collapse into a single task list with one item each.
+        expect(root.querySelectorAll("ul.todo-list")).toHaveLength(1);
+        expect(root.querySelectorAll(`input[type="checkbox"]`)).toHaveLength(4);
+        // Only the schedule-meeting:completed item is checked.
+        expect(root.querySelectorAll("input[checked]")).toHaveLength(1);
+        // Each meaningful checkbox tag keeps an inner glyph alongside the checkbox — an icon, or the
+        // emoji for the priorities, whose glyph is a numeral.
+        expect(out).toContain("1️⃣ Priority 1");
+        expect(out).toContain(`${icon("bx-calendar")} Schedule meeting`);
+        expect(out).toContain(`${icon("bx-conversation")} Discuss with Manager`);
+        expect(out).toContain(`${icon("bx-clipboard")} Client Request`);
+        // The raw data-tag attribute is consumed, not left on the output.
+        expect(out).not.toContain("data-tag");
+    });
+
+    it("renders decorative tags as an icon prefix, leaving the paragraph in place", () => {
+        const out = converter.convertPageHtml(DECORATIVE_TAGS_SAMPLE);
+        const root = parse(out);
+
+        // No checkbox tags here, so nothing becomes a task list.
+        expect(root.querySelectorAll("ul.todo-list")).toHaveLength(0);
+        expect(root.querySelectorAll("p")).toHaveLength(5);
+        expect(out).toContain(`${icon("bx-star")} Important`);
+        expect(out).toContain(`${icon("bx-help-circle")} Question`);
+        expect(out).toContain(`${icon("bx-bulb")} Idea`);
+        expect(out).toContain(`${icon("bx-key")} Password`);
+        expect(out).toContain(`${icon("bx-phone")} Phone number`);
+        expect(out).not.toContain("data-tag");
+
+        // The sanitizer keeps the empty span and its classes, which is the whole of an icon.
+        expect(root.querySelectorAll("span.tn-icon")).toHaveLength(5);
+    });
+
+    it("keeps an emoji for the tags whose glyph is a character", () => {
+        const out = converter.convertPageHtml(CHARACTER_TAGS_SAMPLE);
+
+        // Boxicons has no alphabet, so Project A/B stay the boxed letters OneNote draws.
+        expect(out).toContain("🅰️ First project");
+        expect(out).toContain("🅱️ Second project");
+        expect(out).not.toContain("tn-icon");
+    });
+
+    it("supports multiple comma-separated tags on one paragraph", () => {
+        const out = converter.convertPageHtml(MULTI_TAGS_SAMPLE);
+        const root = parse(out);
+
+        // The checkbox tag turns its paragraph into a task item, prefixed with the decorative icons.
+        expect(root.querySelectorAll("ul.todo-list")).toHaveLength(1);
+        expect(root.querySelectorAll(`input[type="checkbox"]`)).toHaveLength(1);
+        expect(root.querySelectorAll("input[checked]")).toHaveLength(0);
+        expect(out).toContain(`${icon("bx-star")}${icon("bx-help-circle")} Todo plus star plus question`);
+
+        // The decorative-only paragraph stays a <p>, prefixed with both icons.
+        expect(out).toContain(`${icon("bx-movie")}${icon("bx-book")} Movie and book`);
+    });
+
+    it("normalizes OneNote resource references so the importer can rewrite them", () => {
+        const out = converter.convertPageHtml(RESOURCE_SAMPLE);
+        const root = parse(out);
+
+        // The <object> attachment (which the sanitizer would drop) becomes a marker anchor carrying the
+        // Graph URL, mime and filename.
+        const anchor = root.querySelector("a.onenote-attachment");
+        expect(anchor?.getAttribute("href")).toContain("/resources/0-aaa!1-BBB!sccc/$value");
+        expect(anchor?.getAttribute("data-mime")).toBe("text/plain");
+        expect(anchor?.textContent).toBe("HelloWorld.txt");
+        expect(out).not.toContain("<object");
+
+        // The image keeps its display-resolution src but sheds the extra full-resolution data-* URLs.
+        const img = root.querySelector("img");
+        expect(img?.getAttribute("src")).toContain("/resources/0-ddd!1-BBB!sccc/$value");
+        expect(out).not.toContain("data-fullres-src");
+        expect(out).not.toContain("data-src-type");
+        expect(out).not.toContain("0-eee"); // the full-resolution resource id is gone
+    });
+
+    it("fills in defaults for an attachment object with missing metadata", () => {
+        // An <object> tagged as an attachment but with an empty name and no type/data still becomes a
+        // marker anchor, with placeholder filename and mime.
+        const out = converter.convertPageHtml(`<body><div><object data-attachment="" /></div></body>`);
+        const anchor = parse(out).querySelector("a.onenote-attachment");
+
+        expect(anchor?.textContent).toBe("attachment");
+        expect(anchor?.getAttribute("data-mime")).toBe("application/octet-stream");
+    });
+
+    it("wraps a floating image and its trailing cite caption into a figure with a figcaption", () => {
+        const out = converter.convertPageHtml(SCREEN_CLIPPING_SAMPLE);
+        const root = parse(out);
+
+        // Each standalone image becomes a CKEditor block image (<figure class="image">).
+        const figures = root.querySelectorAll("figure.image");
+        expect(figures).toHaveLength(2);
+
+        const firstImg = figures[0].querySelector("img");
+        // The display dimensions are kept and carried into an aspect-ratio (CKEditor's stored form).
+        expect(firstImg?.getAttribute("width")).toBe("577.5");
+        expect(firstImg?.getAttribute("height")).toBe("277.5");
+        expect(firstImg?.getAttribute("style")).toContain("aspect-ratio:577.5/277.5");
+        // The Graph URL is left intact for the importer to swap for a local attachment reference.
+        expect(firstImg?.getAttribute("src")).toContain("/resources/0-aaa!1-BBB!sccc/$value");
+
+        // The caption is pulled in as the figure's <figcaption>, small and wrapped in a bare <cite>.
+        const figcaption = figures[0].querySelector("figcaption");
+        expect(figcaption?.querySelector("span.text-small cite")?.textContent).toContain("Screen clipping taken: 23.07.2026 21:40");
+        // OneNote's grey caption colour is dropped so the caption inherits the theme foreground.
+        expect(figcaption?.querySelector("cite")?.getAttribute("style") ?? "").not.toContain("color");
+
+        // Both captions are absorbed into a figcaption — none left floating as body text — and the
+        // <br> spacing between image and caption is gone.
+        expect(root.querySelectorAll("cite")).toHaveLength(2);
+        expect(root.querySelectorAll("figcaption cite")).toHaveLength(2);
+        expect(root.querySelectorAll("br")).toHaveLength(0);
+    });
+
+    it("wraps a caption-less floating image in a figure carrying its aspect ratio", () => {
+        const out = converter.convertPageHtml(`<body><div><img width="480" height="441" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-x!1-y!sz/$value" /><br /></div></body>`);
+        const figure = parse(out).querySelector("figure.image");
+
+        expect(figure).toBeTruthy();
+        expect(figure?.querySelector("figcaption")).toBeFalsy();
+        expect(figure?.querySelector("img")?.getAttribute("style")).toContain("aspect-ratio:480/441");
+    });
+
+    it("leaves an inline image (inside a paragraph) unwrapped", () => {
+        const out = converter.convertPageHtml(`<body><div><p>before <img width="16" height="16" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-x!1-y!sz/$value" /> after</p></div></body>`);
+        const root = parse(out);
+
+        expect(root.querySelectorAll("figure")).toHaveLength(0);
+        expect(root.querySelector("p img")).toBeTruthy();
+    });
+
+    it("keeps an unstyled trailing caption as a bare cite (no font-size wrapper)", () => {
+        // A cite with no style has no font-size class, so the figcaption holds the cite directly.
+        const out = converter.convertPageHtml(`<body><div><img width="10" height="10" src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-x!1-y!sz/$value" /><br /><cite>Plain caption</cite></div></body>`);
+        const figcaption = parse(out).querySelector("figure.image figcaption");
+
+        expect(figcaption?.querySelector("cite")?.textContent).toBe("Plain caption");
+        expect(figcaption?.querySelector("span")).toBeFalsy();
+    });
+
+    it("leaves an image and break with no block container (fragment root) untouched", () => {
+        // Content directly at the fragment root (no <body>, no outline <div>) has no recognized block
+        // parent: the image is not wrapped into a figure and the break is not treated as block spacing.
+        const out = converter.convertPageHtml(`<img src="https://graph.microsoft.com/v1.0/users('me')/onenote/resources/0-x!1-y!sz/$value" /><br />`);
+        const root = parse(out);
+
+        expect(root.querySelector("figure")).toBeFalsy();
+        expect(root.querySelector("img")).toBeTruthy();
+        expect(root.querySelectorAll("br")).toHaveLength(1);
+    });
+
+    it("converts inline-style formatting (bold/italic/underline) to semantic tags", () => {
+        const out = converter.convertPageHtml(FORMATTING_SAMPLE);
+        expect(out).toContain("<strong>Bold text.</strong>");
+        expect(out).toContain("<em>Italic text.</em>");
+        expect(out).toContain("<u>Under line text.</u>");
+        expect(out).toContain("<strong><em>Bold and italic text.</em></strong>");
+        expect(out).toContain("<strong><u>Bold and underline text</u></strong>");
+        expect(out).toContain("<strong><em><u>Bold, italic and underline text</u></em></strong>");
+    });
+
+    it("preserves superscript/subscript and converts strikethrough", () => {
+        const out = converter.convertPageHtml(SUPERSCRIPT_SAMPLE);
+        expect(out).toContain("<sub>sub</sub>");
+        expect(out).toContain("<sup>sup</sup>");
+        expect(out).toContain("<del>strikethrough</del>");
+    });
+
+    it("maps OneNote named highlight/font colors to hex so they survive sanitization", () => {
+        const out = converter.convertPageHtml(HIGHLIGHT_SAMPLE);
+        expect(out).toContain("background-color:#ffff00"); // yellow
+        expect(out).toContain("color:#ffffff"); // white
+        expect(out).toContain("background-color:#ff00ff"); // fuchsia
+        expect(out).not.toContain("color:#000000"); // black is the default color and is stripped (see below)
+        expect(out).toContain("background-color:#c0c0c0"); // silver kept even though its text was black
+        expect(out).toContain("Yellow");
+        expect(out).toContain("Magenta");
+        expect(out).toContain("Light Gray");
+    });
+
+    // OneNote stamps an explicit color:#000000 (its automatic color, since a page is a white canvas) on
+    // essentially every run of body text. Kept verbatim it overrides the theme foreground and renders as
+    // unreadable black-on-dark under a dark theme, so default black is treated as "automatic" and dropped.
+    it("strips OneNote's default black text color so text inherits the theme foreground", () => {
+        const sample = `<html><body><div style="position:absolute;left:48px;top:115px;width:624px">
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:#000000">Default body text</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:#000000"><strong>Bold black</strong></span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:black">Named black</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:#7030a0"><strong>Purple</strong></span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="color:#000000;background-color:#ffff00">Black on yellow</span></p>
+        </div></body></html>`;
+        const out = converter.convertPageHtml(sample);
+
+        // No black color survives, in either hex or named form.
+        expect(out).not.toContain("color:#000000");
+        expect(out).not.toContain("color:black");
+
+        // The now-attribute-less spans are unwrapped, leaving the text (and its formatting) directly.
+        expect(out).toContain("Default body text");
+        expect(out).toContain("<strong>Bold black</strong>");
+        expect(out).toContain("Named black");
+
+        // Deliberate non-black colors are untouched.
+        expect(out).toContain("color:#7030a0");
+        // A span that also carries a highlight keeps the highlight but loses the black text color.
+        expect(out).toContain("background-color:#ffff00");
+        expect(out).toContain("Black on yellow");
+    });
+
+    it("keeps OneNote heading styles (level-shifted), cite, italic and font colors", () => {
+        const out = converter.convertPageHtml(STYLES_SAMPLE);
+        const root = parse(out);
+
+        // Headings survive but shift down one level (h1 reserved for the note title).
+        expect(root.querySelectorAll("h2")[0]?.textContent).toContain("Heading 1");
+        expect(root.querySelectorAll("h3")[0]?.textContent).toContain("Heading 2");
+        // Italic headings/quote get an <em> wrap; heading colors (hex) survive.
+        expect(out).toContain("<em>Heading 4</em>");
+        expect(out).toContain("<em>Quote</em>");
+        expect(out).toContain("#1e4e79");
+        // <cite> is allowlisted and kept.
+        expect(root.querySelector("cite")?.textContent).toContain("Citation");
+    });
+
+    it("maps OneNote font sizes onto CKEditor's tiny/small/big/huge scale", () => {
+        const out = converter.convertPageHtml(FONT_SIZES_SAMPLE);
+
+        // 8pt -> tiny, 9-10pt -> small.
+        expect(out).toContain(`<span class="text-tiny">Smallest (8)</span>`);
+        expect(out).toContain(`<span class="text-small">Still small (9)</span>`);
+        expect(out).toContain(`<span class="text-small">Size 10</span>`);
+
+        // 11-16pt stay at the base size (no size class wrap).
+        expect(out).toContain("Size 11");
+        for (const text of ["Size 11", "Size 12", "Size 14", "Size 16"]) {
+            expect(out).not.toMatch(new RegExp(`text-\\w+">${text}<`));
+        }
+
+        // 18-26pt -> big, 28pt and up -> huge.
+        expect(out).toContain(`<span class="text-big">Size 18</span>`);
+        expect(out).toContain(`<span class="text-big">Size 26</span>`);
+        expect(out).toContain(`<span class="text-huge">Size 28</span>`);
+        expect(out).toContain(`<span class="text-huge">Size 72</span>`);
+    });
+
+    it("converts px font sizes on the pt scale and ignores unparseable ones", () => {
+        const sample = `<body><div style="position:absolute;left:0px;top:0px">
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:24px">Pixel size</span></p>
+            <p style="margin-top:0pt;margin-bottom:0pt"><span style="font-size:medium">Named size</span></p>
+        </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        // 24px = 18pt, the bottom of the big band; a named (unparseable) size gets no size class.
+        expect(out).toContain(`<span class="text-big">Pixel size</span>`);
+        expect(out).toContain("Named size");
+        expect(out).not.toMatch(/text-\w+">Named size</);
+    });
+
+    it("keeps a non-span element that loses its default black color, with its other styles", () => {
+        const sample = `<body><div style="position:absolute;left:0px;top:0px">
+            <p style="color:#000000">Black paragraph</p>
+            <ul><li style="list-style-type:circle;background-color:#ffff00">Styled item</li></ul>
+        </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        // The default black is dropped but the <p> itself stays (only bare <span>s are unwrapped).
+        expect(out).toContain("Black paragraph");
+        expect(out).not.toContain("color:#000000");
+        // A list item keeps its remaining styles once its marker type moves onto the list.
+        expect(out).toContain("background-color:#ffff00");
+        expect(out).not.toMatch(/<li[^>]*list-style-type/);
+    });
+
+    it("maps the 20pt Title style to text-big and the Code style to <code>", () => {
+        const out = converter.convertPageHtml(STYLES_SAMPLE);
+        expect(out).toContain(`<span class="text-big">Title</span>`);
+        expect(out).toContain("<code>Code</code>");
+    });
+
+    it("merges a run of all-Consolas paragraphs into a code block, keeping true inline code", () => {
+        // Mirrors a real OneNote export: an inline Consolas span, a three-line code passage, and a
+        // trailing paragraph whose Consolas paragraph mark is dead styling (every text run
+        // overrides it back to Calibri) — the latter must not become code at all.
+        const sample = `<body data-absolute-enabled="true" style="font-family:Calibri;font-size:11pt">
+            <div style="position:absolute;left:48px;top:115px;width:720px">
+                <p style="margin-top:0pt;margin-bottom:0pt">This is normal text, with <span style="font-family:Consolas">monospace text</span>.</p>
+                <br />
+                <p style="font-family:Consolas;margin-top:0pt;margin-bottom:0pt">void main() {</p>
+                <p style="font-family:Consolas;margin-top:0pt;margin-bottom:0pt">printf(&quot;Hello world.&quot;);</p>
+                <p style="font-family:Consolas;margin-top:0pt;margin-bottom:0pt">}</p>
+                <br />
+                <p style="font-family:Consolas;margin-top:0pt;margin-bottom:0pt"><span style="font-family:Calibri">Back to normal text.</span></p>
+            </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        // The &quot; entities come out as literal quotes: decoded when the line text is extracted,
+        // and the sanitizer only re-escapes &<> in text content.
+        expect(out).toContain(`<pre><code class="language-text-x-trilium-auto">void main() {\nprintf("Hello world.");\n}</code></pre>`);
+        expect(out).toContain("<code>monospace text</code>");
+        // The dead-font paragraph stays plain text: exactly one block + one inline <code> overall.
+        expect(out).toContain("Back to normal text.");
+        expect(out.match(/<code/g) ?? []).toHaveLength(2);
+    });
+
+    it("bridges block-level <br> gaps inside a code run as blank lines, flattening formatting", () => {
+        // The bold span's formatting is dropped (code blocks are plain text), the <br> between the
+        // code lines becomes an empty line, and a paragraph that is all-Consolas only through its
+        // spans still joins the run.
+        const sample = `<body><div>
+            <p style="font-family:Consolas"><span style="font-weight:bold">let x</span> = 1;</p>
+            <br />
+            <p><span style="font-family:Consolas">return x;</span></p>
+        </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        expect(out).toContain(`<pre><code class="language-text-x-trilium-auto">let x = 1;\n\nreturn x;</code></pre>`);
+        expect(out).not.toContain("<strong>");
+    });
+
+    it("leaves a lone all-Consolas paragraph as inline code and breaks runs on normal text", () => {
+        // A single code-styled line reads fine inline; the intervening normal paragraph keeps the
+        // two Consolas lines from merging across it.
+        const sample = `<body><div>
+            <p style="font-family:Consolas">npm install</p>
+            <p>Then run it:</p>
+            <p style="font-family:Consolas">npm start</p>
+        </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        expect(out).not.toContain("<pre>");
+        expect(out).toContain("<code>npm install</code>");
+        expect(out).toContain("<code>npm start</code>");
+    });
+
+    it("sees through formatting wrappers and whitespace when judging what renders in Consolas", () => {
+        // Text inside a formatting child with no font-family of its own still renders in the
+        // paragraph's Consolas, so the lone paragraph becomes inline code with the wrapper kept.
+        const wrapped = converter.convertPageHtml(
+            `<body><div><p style="font-family:Consolas"><strong>ls -la</strong></p></div></body>`
+        );
+        expect(wrapped).toContain("<code><strong>ls -la</strong></code>");
+
+        // Whitespace-only direct text is not "text rendering in Consolas": with the only real text
+        // overridden to Calibri, the paragraph is not code at all — neither block nor inline.
+        const whitespace = converter.convertPageHtml(
+            `<body><div><p style="font-family:Consolas"> <span style="font-family:Calibri">plain</span></p></div></body>`
+        );
+        expect(whitespace).toContain("plain");
+        expect(whitespace).not.toContain("<code>");
+    });
+
+    it("treats an empty Consolas paragraph inside a run as a blank code line", () => {
+        // The empty paragraph has no text to judge, so only its own Consolas paragraph mark lets it
+        // join the run — as an empty line between the two code lines.
+        const sample = `<body><div>
+            <p style="font-family:Consolas">a</p>
+            <p style="font-family:Consolas"></p>
+            <p style="font-family:Consolas">b</p>
+        </div></body>`;
+        const out = converter.convertPageHtml(sample);
+
+        expect(out).toContain(`<pre><code class="language-text-x-trilium-auto">a\n\nb</code></pre>`);
+    });
+});
+
+describe("extractPageCreatedDate", () => {
+    it("returns the authored timestamp from the document's created meta header", () => {
+        expect(converter.extractPageCreatedDate(SAMPLE)).toBe("2020-09-02T09:37:00.0000000");
+    });
+
+    it("returns undefined when the meta is absent, empty or unparseable", () => {
+        // A body-only document (as placeholder-adjacent captures can be) has no head to read.
+        expect(converter.extractPageCreatedDate(FORMATTING_SAMPLE)).toBeUndefined();
+        expect(converter.extractPageCreatedDate(`<html><head><meta name="created" content="" /></head><body></body></html>`)).toBeUndefined();
+        expect(converter.extractPageCreatedDate(`<html><head><meta name="created" content="not a date" /></head><body></body></html>`)).toBeUndefined();
+        expect(converter.extractPageCreatedDate(`<html><head><meta name="created" /></head><body></body></html>`)).toBeUndefined();
+    });
+});
+
+/** One note tag's icon, in the markup a text note stores icons as. */
+function icon(name: string) {
+    return `<span class="tn-icon bx ${name}"></span>`;
+}

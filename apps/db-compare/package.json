@@ -4,13 +4,17 @@
   "private": true,
   "description": "Tool to compare content of Trilium databases. Useful for debugging sync problems.",
   "dependencies": {
-    "colors": "1.4.0",
+    "better-sqlite3": "13.0.3",
     "diff": "9.0.0",
-    "sqlite": "5.1.1",
-    "sqlite3": "6.0.1"
+    "picocolors": "1.1.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "vitest": "5.0.3"
   },
   "scripts": {
     "dev": "tsx src/compare.ts",
-    "build": "esbuild --platform=node --format=cjs --outdir=dist src/compare.ts"
+    "build": "esbuild --platform=node --format=cjs --outdir=dist src/compare.ts",
+    "test": "vitest run"
   }
 }

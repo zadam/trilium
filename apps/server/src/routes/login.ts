@@ -1,37 +1,27 @@
-import { i18n, password as passwordService, password_encryption, ValidationError } from "@triliumnext/core";
+import { password as passwordService, ValidationError } from "@triliumnext/core";
 import type { Request, Response } from 'express';
+import rateLimit from "express-rate-limit";
 
-import appPath from "../services/app_path.js";
-import assetPath, { assetUrlFragment } from "../services/asset_path.js";
+import { verifyLoginCredentials } from "../services/auth.js";
 import openIDEncryption from '../services/encryption/open_id_encryption.js';
-import recoveryCodeService from '../services/encryption/recovery_codes.js';
 import { getLog } from "@triliumnext/core";
 import openID from '../services/open_id.js';
 import totp from '../services/totp.js';
 
 function loginPage(req: Request, res: Response) {
-    // Login page is triggered twice. Once here, and another time (see sendLoginError) if the password is failed.
-    res.render('login', {
-        wrongPassword: false,
-        wrongTotp: false,
-        totpEnabled: totp.isTotpEnabled(),
-        ssoEnabled: openID.isOpenIDEnabled(),
-        ssoIssuerName: openID.getSSOIssuerName(),
-        ssoIssuerIcon: openID.getSSOIssuerIcon(),
-        assetPath,
-        assetPathFragment: assetUrlFragment,
-        appPath,
-        currentLocale: i18n.getCurrentLocale()
-    });
+    // The login screen is served by the SPA at the root now (driven by the bootstrap
+    // `loggedIn: false` payload, which also surfaces any one-shot SSO error left by a
+    // failed OIDC round-trip); redirect any direct hits there. The `?login` marker
+    // tells checkAuth this is an explicit login navigation, so it isn't mistaken for
+    // a bare-domain hit and bounced to the share page (#10552). A direct hit on
+    // "/login/" (trailing slash) needs ".." — "." would resolve onto itself and loop.
+    res.redirect(req.path.endsWith("/") ? "../?login" : "./?login");
 }
 
 function setPasswordPage(req: Request, res: Response) {
-    res.render("set_password", {
-        error: false,
-        assetPath,
-        appPath,
-        currentLocale: i18n.getCurrentLocale()
-    });
+    // The set-password screen is served by the SPA at the root now (driven by the
+    // bootstrap `passwordSet: false` flag); redirect any direct hits there.
+    res.redirect(".");
 }
 
 async function setPassword(req: Request, res: Response) {
@@ -43,22 +33,12 @@ async function setPassword(req: Request, res: Response) {
     password1 = password1.trim();
     password2 = password2.trim();
 
-    let error;
-
+    // The client validates these before submitting; the server checks are a safety
+    // net, so a violation here is an exceptional case rather than normal flow.
     if (password1 !== password2) {
-        error = "Entered passwords don't match.";
+        throw new ValidationError("Entered passwords don't match.");
     } else if (password1.length < 4) {
-        error = "Password must be at least 4 characters long.";
-    }
-
-    if (error) {
-        res.render("set_password", {
-            error,
-            assetPath,
-            appPath,
-            currentLocale: i18n.getCurrentLocale()
-        });
-        return;
+        throw new ValidationError("Password must be at least 4 characters long.");
     }
 
     await passwordService.setPassword(password1);
@@ -98,28 +78,16 @@ async function setPassword(req: Request, res: Response) {
  */
 async function login(req: Request, res: Response) {
     if (openID.isOpenIDEnabled()) {
-        res.oidc.login({
-            returnTo: '/',
-            authorizationParams: {
-                prompt: 'consent',
-                access_type: 'offline'
-            }
-        });
+        void res.oidc.login({ returnTo: '/' });
         return;
     }
 
     const submittedPassword = req.body.password;
     const submittedTotpToken = req.body.totpToken;
 
-    if (totp.isTotpEnabled()) {
-        if (!verifyTOTP(submittedTotpToken)) {
-            sendLoginError(req, res, 'totp');
-            return;
-        }
-    }
-
-    if (!(await password_encryption.verifyPassword(submittedPassword))) {
-        sendLoginError(req, res, 'password');
+    const failedFactor = await verifyLoginCredentials(submittedPassword, submittedTotpToken);
+    if (failedFactor) {
+        sendLoginError(req, res, failedFactor);
         return;
     }
 
@@ -139,16 +107,11 @@ async function login(req: Request, res: Response) {
         };
 
         req.session.loggedIn = true;
+        // The client submits via fetch (following this redirect, which applies the new
+        // session cookie) and then navigates to the app. The 302 also keeps the login
+        // rate limiter skipping successful attempts (it only counts >= 400 responses).
         res.redirect('.');
     });
-}
-
-function verifyTOTP(submittedTotpToken: string) {
-    if (totp.validateTOTP(submittedTotpToken)) return true;
-
-    const recoveryCodeValidates = recoveryCodeService.verifyRecoveryCode(submittedTotpToken);
-
-    return recoveryCodeValidates;
 }
 
 function sendLoginError(req: Request, res: Response, errorType: 'password' | 'totp' = 'password') {
@@ -159,27 +122,44 @@ function sendLoginError(req: Request, res: Response, errorType: 'password' | 'to
         getLog().info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
     }
 
-    res.status(401).render('login', {
-        wrongPassword: errorType === 'password',
-        wrongTotp: errorType === 'totp',
-        totpEnabled: totp.isTotpEnabled(),
-        ssoEnabled: openID.isOpenIDEnabled(),
-        assetPath,
-        assetPathFragment: assetUrlFragment,
-        appPath,
-        currentLocale: i18n.getCurrentLocale()
-    });
+    // The client submits via fetch; report the failed factor as JSON. The 401 keeps the
+    // login rate limiter counting failed attempts (it skips successful, <400 responses).
+    res.status(401).json({ success: false, factor: errorType });
 }
 
 function logout(req: Request, res: Response) {
     req.session.regenerate(() => {
         req.session.loggedIn = false;
 
-        if (openID.isOpenIDEnabled() && openIDEncryption.isSubjectIdentifierSaved()) {
-            res.oidc.logout({ returnTo: '/' });
+        if (openID.isOpenIDEnabled() && openIDEncryption.isSubjectIdentifierSaved() && res.oidc) {
+            // oidc.logout() already issues the redirect (to the provider's end-session
+            // endpoint, or locally), so we must not send our own response afterwards.
+            // res.oidc is only present once the OIDC middleware has initialised; if it
+            // hasn't (e.g. a failed lazy init), fall through to the local redirect below.
+            void res.oidc.logout({ returnTo: '/' });
+            return;
         }
 
         res.redirect('login');
+    });
+}
+
+/**
+ * Caps password guessing per IP across every route that checks a credential: `/login`,
+ * `/api/login/*`, `/api/setup/auth` and the ETAPI login.
+ *
+ * `skipSuccessfulRequests` refunds the hit from a `res.on("finish")` handler, and
+ * express-rate-limit decides what to refund with `requestWasSuccessful`, which defaults to
+ * `response.statusCode < 400`. So every route behind this MUST answer a failed credential with a
+ * status of 400 or above, or its attempts are refunded as fast as they are counted and the limit is
+ * never reached. A successful login to `/login` is counted all the same: it redirects, and a 302 is
+ * below 400.
+ */
+export function createLoginRateLimiter() {
+    return rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 10, // limit each IP to 10 requests per windowMs
+        skipSuccessfulRequests: true
     });
 }
 

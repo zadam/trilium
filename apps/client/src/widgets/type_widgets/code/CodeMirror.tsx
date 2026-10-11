@@ -10,11 +10,16 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
     editorRef?: Ref<VanillaCodeMirror>;
     containerRef?: Ref<HTMLPreElement>;
     onInitialized?: () => void;
+    /**
+     * Whether the edited note is a custom request handler (has `#customRequestHandler`).
+     * Gates the `api.req`/`api.res`/`api.pathParams` completions for backend scripts.
+     */
+    customRequestHandler?: boolean;
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, allowKeyboardSuggestions, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
-    const codeEditorRef = useRef<VanillaCodeMirror>();
+    const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
 
     // Create CodeMirror instance.
     useEffect(() => {
@@ -22,6 +27,7 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
 
         const codeEditor = new VanillaCodeMirror({
             parent: parentRef.current,
+            allowKeyboardSuggestions,
             ...extraOpts
         });
         codeEditorRef.current = codeEditor;
@@ -44,6 +50,15 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
     useEffect(() => {
         codeEditorRef.current?.setMimeType(mime);
     }, [ mime ]);
+
+    // React to custom-request-handler status, which gates the backend api.req/res/pathParams completions.
+    useEffect(() => {
+        codeEditorRef.current?.setScriptApiContext({ customRequestHandler: !!customRequestHandler });
+    }, [ customRequestHandler ]);
+
+    // React to the language switching between prose and code, which decides whether the
+    // on-screen keyboard is allowed to suggest words.
+    useEffect(() => codeEditorRef.current?.setAllowKeyboardSuggestions(!!allowKeyboardSuggestions), [ allowKeyboardSuggestions ]);
 
     // React to line wrapping.
     useEffect(() => codeEditorRef.current?.setLineWrapping(!!lineWrapping), [ lineWrapping ]);

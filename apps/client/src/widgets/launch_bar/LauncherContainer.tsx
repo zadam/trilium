@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from "preact/hooks";
+import { useCallback, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../entities/fnote";
 import { isExperimentalFeatureEnabled } from "../../services/experimental_features";
@@ -9,6 +9,7 @@ import { useTriliumEvent } from "../react/hooks";
 import { onWheelHorizontalScroll } from "../widget_utils";
 import BookmarkButtons from "./BookmarkButtons";
 import CalendarWidget from "./CalendarWidget";
+import ColorSchemeSwitcher from "./ColorSchemeSwitcher";
 import HistoryNavigationButton from "./HistoryNavigation";
 import { LaunchBarContext } from "./launch_bar_widgets";
 import { CommandButton, CustomWidget, NoteLauncher, QuickSearchLauncherWidget, ScriptLauncher, TodayLauncher } from "./LauncherDefinitions";
@@ -19,9 +20,11 @@ import SyncStatus from "./SyncStatus";
 
 export default function LauncherContainer({ isHorizontalLayout }: { isHorizontalLayout: boolean }) {
     const childNotes = useLauncherChildNotes();
+    const containerRef = useLauncherScrollbarCompensation(isHorizontalLayout, childNotes);
 
     return (
         <div
+            ref={containerRef}
             id="launcher-container"
             style={{
                 display: "flex",
@@ -102,20 +105,23 @@ function initBuiltinWidget(note: FNote, isHorizontalLayout: boolean) {
             return <TabSwitcher launcherNote={note} />;
         case "sidebarChat":
             return isExperimentalFeatureEnabled("llm") ? <SidebarChatButton launcherNote={note} /> : undefined;
+        case "colorSchemeSwitcher":
+            return <ColorSchemeSwitcher launcherNote={note} />;
         default:
             console.warn(`Unrecognized builtin widget ${builtinWidget} for launcher ${note.noteId} "${note.title}"`);
     }
 }
 
-function useLauncherChildNotes() {
+export function useLauncherChildNotes() {
     const [ visibleLaunchersRoot, setVisibleLaunchersRoot ] = useState<FNote | undefined | null>();
     const [ childNotes, setChildNotes ] = useState<FNote[]>();
 
     // Load the root note.
-    useLayoutEffect(() => {
+    const loadRoot = useCallback(() => {
         const visibleLaunchersRootId = isMobile() ? "_lbMobileVisibleLaunchers" : "_lbVisibleLaunchers";
         froca.getNote(visibleLaunchersRootId, true).then(setVisibleLaunchersRoot);
     }, []);
+    useLayoutEffect(loadRoot, [ loadRoot ]);
 
     // Load the children.
     const refresh = useCallback(() => {
@@ -123,6 +129,12 @@ function useLauncherChildNotes() {
         visibleLaunchersRoot.getChildNotes().then(setChildNotes);
     }, [ visibleLaunchersRoot, setChildNotes ]);
     useLayoutEffect(refresh, [ visibleLaunchersRoot ]);
+
+    // Swap to fresh FNote refs after a full froca reload (e.g. entering a protected session
+    // clears the cache and creates new instances — old refs are orphaned with stale titles,
+    // leaving launcher tooltips stuck at "[protected]" when the launchers themselves are
+    // protected notes). Re-resolving the root also refreshes the children via the effect above.
+    useTriliumEvent("frocaReloaded", loadRoot);
 
     // React to position changes.
     useTriliumEvent("entitiesReloaded", ({loadResults}) => {
@@ -132,4 +144,42 @@ function useLauncherChildNotes() {
     });
 
     return childNotes;
+}
+
+// Measures the scrollbar's actual consumed size (which varies by browser and the OS "show scroll
+// bars" setting) and publishes it as `--launcher-scrollbar-size`; shell.css reserves that much on
+// the opposite edge so the bar never shifts the centred buttons. Recomputed on resize and whenever
+// the set of launchers changes; scroll position doesn't affect the measurement.
+// Recomputed on resize and whenever the set of launchers changes (which is what makes the rail
+// start or stop overflowing); scroll position doesn't affect the measurement.
+function useLauncherScrollbarCompensation(isHorizontalLayout: boolean, childNotes: FNote[] | undefined) {
+    const ref = useRef<HTMLDivElement>(null);
+
+    const update = useCallback(() => {
+        const el = ref.current;
+        if (!el) return;
+
+        // `offsetSize - clientSize` is the space taken by the scrollbar (the container has no
+        // border); 0 when the bar overlays or the rail doesn't overflow. Unaffected by the padding
+        // we set, so this can't feed back on itself.
+        const scrollbarSize = isHorizontalLayout
+            ? el.offsetHeight - el.clientHeight
+            : el.offsetWidth - el.clientWidth;
+        const value = `${scrollbarSize}px`;
+        if (el.style.getPropertyValue("--launcher-scrollbar-size") !== value) {
+            el.style.setProperty("--launcher-scrollbar-size", value);
+        }
+    }, [ isHorizontalLayout ]);
+
+    useLayoutEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+
+        update();
+        const observer = new ResizeObserver(update);
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [ update, childNotes ]);
+
+    return ref;
 }

@@ -13,20 +13,55 @@ import {
 import appContext from "../components/app_context.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
-import { showError } from "./toast.js";
+import toastService from "./toast.js";
 
-let validationReported = false;
+const VALIDATION_TOAST_ID = "task-states-validation";
 
-/** Surfaces dropped-task-state warnings once per session — as a toast and in the console. */
+/** The last reported error set, so the toast only re-surfaces when the situation changes. */
+let lastReportedSignature: string | null = null;
+
+/**
+ * Surfaces dropped-task-state warnings as a single persistent toast listing the offending
+ * definition notes as reference links, each annotated with its rejection reason. Re-shown only
+ * when the error set changes; closed as soon as validation comes back clean, so fixing the
+ * definitions gives immediate feedback.
+ */
 function reportValidationErrors(errors: TaskStateValidationError[]) {
-    if (validationReported || errors.length === 0) {
+    const signature = errors.map((error) => `${error.id}:${error.reason}`).sort().join(",");
+    if (signature === lastReportedSignature) {
         return;
     }
-    validationReported = true;
-    for (const error of errors) {
-        const reason = t(`text-editor.validation-errors.${error.reason}`);
-        showError(t("text-editor.task-state-dropped", {title: error.title, id: error.id, reason}));
+    lastReportedSignature = signature;
+
+    if (errors.length === 0) {
+        toastService.closePersistent(VALIDATION_TOAST_ID);
+        return;
     }
+
+    toastService.showPersistent({
+        id: VALIDATION_TOAST_ID,
+        icon: "bx bx-list-check",
+        title: t("text-editor.task-state-dropped-title"),
+        message: t("text-editor.task-state-dropped-message", { count: errors.length }),
+        notesHeading: t("text-editor.task-state-dropped-heading"),
+        notes: errors
+            .filter((error) => error.id)
+            .map((error) => ({
+                noteId: error.id,
+                description: t(`text-editor.validation-errors.${error.reason}`)
+            })),
+        wide: true,
+        timeout: 60_000,
+        buttons: [
+            {
+                text: t("text-editor.task-state-dropped-configure"),
+                onClick: ({ dismissToast }) => {
+                    openCustomTaskStateConfig();
+                    dismissToast();
+                }
+            }
+        ]
+    });
 }
 
 /**
@@ -70,7 +105,10 @@ export async function getTaskStateDefinitions(): Promise<TaskStateDef[]> {
     return valid.length ? valid : DEFAULT_TASK_STATES;
 }
 
-/** Opens the "Task States" configuration note in a new tab, hoisted to it. */
+/** Opens the "Task States" configuration subtree in a tree-sidebar popup, hoisted to it. */
 export function openCustomTaskStateConfig(): void {
-    void appContext.tabManager.openInNewTab(TASK_STATES_CONTAINER_ID, TASK_STATES_CONTAINER_ID, true);
+    void appContext.triggerCommand("openInTreePopup", {
+        noteIdOrPath: TASK_STATES_CONTAINER_ID,
+        hoistedNoteId: TASK_STATES_CONTAINER_ID
+    });
 }

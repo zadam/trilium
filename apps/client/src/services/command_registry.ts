@@ -10,6 +10,7 @@ export interface CommandDefinition {
     name: string;
     description?: string;
     icon?: string;
+    /** The primary keyboard shortcut as stored, such as `CommandOrControl+N`. */
     shortcut?: string;
     commandName?: CommandNames;
     handler?: () => Promise<unknown> | null | undefined | void;
@@ -19,7 +20,7 @@ export interface CommandDefinition {
     keyboardAction?: ActionKeyboardShortcut;
 }
 
-class CommandRegistry {
+export class CommandRegistry {
     private commands: Map<string, CommandDefinition> = new Map();
     private aliases: Map<string, string> = new Map();
 
@@ -95,6 +96,32 @@ class CommandRegistry {
             icon: "bx bx-sidebar",
             handler: () => appContext.triggerCommand("showLaunchBarSubtree")
         });
+
+        this.register({
+            id: "pin-active-tab",
+            name: t("command_palette.pin_tab_title"),
+            description: t("command_palette.pin_tab_description"),
+            icon: "bx bx-pin",
+            handler: () => {
+                const ntxId = appContext.tabManager.getActiveMainContext()?.ntxId;
+                if (ntxId) {
+                    appContext.triggerCommand("pinTab", { ntxId });
+                }
+            }
+        });
+
+        this.register({
+            id: "unpin-active-tab",
+            name: t("command_palette.unpin_tab_title"),
+            description: t("command_palette.unpin_tab_description"),
+            icon: "bx bx-pin",
+            handler: () => {
+                const ntxId = appContext.tabManager.getActiveMainContext()?.ntxId;
+                if (ntxId) {
+                    appContext.triggerCommand("unpinTab", { ntxId });
+                }
+            }
+        });
     }
 
     private async loadKeyboardActionsAsync() {
@@ -110,11 +137,6 @@ class CommandRegistry {
         for (const action of actions) {
             // Skip actions that we've already manually registered
             if (this.commands.has(action.actionName)) {
-                continue;
-            }
-
-            // Skip actions that don't have a description (likely separators)
-            if (!action.description) {
                 continue;
             }
 
@@ -142,7 +164,7 @@ class CommandRegistry {
                 name,
                 description: action.description,
                 icon: action.iconClass,
-                shortcut: primaryShortcut ? this.formatShortcut(primaryShortcut) : undefined,
+                shortcut: primaryShortcut,
                 commandName: action.actionName as CommandNames,
                 source: "keyboard-action",
                 keyboardAction: action
@@ -150,13 +172,6 @@ class CommandRegistry {
 
             this.register(commandDef);
         }
-    }
-
-    private formatShortcut(shortcut: string): string {
-        // Convert electron accelerator format to display format
-        return shortcut
-            .replace(/CommandOrControl/g, 'Ctrl')
-            .replace(/\+/g, ' + ');
     }
 
     register(command: CommandDefinition) {

@@ -1,0 +1,121 @@
+.options-page-header-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: var(--options-card-max-width);
+    margin: 0 auto;
+}
+
+/* Title row: the page title/icon and the page's primary actions side by side. */
+.options-page-header-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.options-page-header-titles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+}
+
+/* Circular icon badge, reusing the quick-edit popup's note-icon theme tokens: the glyph (::before)
+   is painted above a circular background (::after). */
+.options-page-header-icon {
+    --badge-size: 40px;
+
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--badge-size);
+    height: var(--badge-size);
+    font-size: 22px;
+    line-height: 1;
+}
+
+.options-page-header-icon::before {
+    position: relative;
+    z-index: 1;
+    color: var(--note-icon-color);
+}
+
+.options-page-header-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--note-icon-background-color);
+}
+
+.options-page-header-title {
+    margin: 0;
+    font-size: 1.4rem;
+    /* Match the note's own title chrome (input.note-title, which inherits the normal body weight)
+       shown when the page is opened standalone, rather than the browser's bold <h2> default. */
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.options-page-header-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* A card option without a card, so it needs the room a segment would have given it. */
+.options-header-switch {
+    padding-block: 4px;
+}
+
+/* A full-width bar that sticks to the top of the scrolling content, so cards scroll cleanly beneath
+   it. The background is painted per context (below) so the sticky bar matches its surroundings. */
+.options-page-header {
+    position: sticky;
+    top: 0;
+    /* Above the 1–5 Bootstrap gives a control to lift it over its neighbours, below a dropdown
+       menu (999), which is meant to open over the header. */
+    z-index: 10;
+    border-bottom: 1px solid var(--main-border-color);
+    padding-block: 10px;
+}
+
+/* Matches the options page's inline padding in pages.css. */
+.options-page-header {
+    margin-inline: -25px;
+    padding-inline: 25px;
+}
+
+/* In the settings dialog the content area is painted with the modal background. */
+.modal.options-dialog .options-page-header {
+    background: var(--modal-background-color);
+}
+
+/* Standalone (page opened in a tab): the content uses the main background, and this header stands in
+   for the note's own title chrome, which InlineTitle suppresses for options pages. */
+.note-split .options-page-header {
+    background: var(--main-background-color);
+    margin-bottom: 1em;
+}
+
+/* In the mobile master-detail flow the page is already named beside the way back, in the dialog's own
+   header (see MasterDetailHeader) — the small title a phone has the width for. The banner drops its
+   copy rather than saying it twice down the screen. */
+.modal.mobile-master-detail {
+    .options-page-header-icon,
+    .options-page-header-title {
+        display: none;
+    }
+
+    /* The name was all it carried, so it stands down rather than leaving an empty band above the
+       first card. Its help mark, where it had one, is handed to the header holding the name. */
+    .options-page-header-title-only {
+        display: none;
+    }
+}

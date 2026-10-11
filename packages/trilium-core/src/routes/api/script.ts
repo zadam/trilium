@@ -1,13 +1,16 @@
 
 
-import type { Request } from "express";
+import type { Request } from "../../http_interface";
 
 import becca from "../../becca/becca.js";
 import attributeService from "../../services/attributes.js";
-import scriptService, { type Bundle } from "../../services/script.js";
+import { getLog } from "../../services/log.js";
+import { getPlatform } from "../../services/platform.js";
+import scriptService, { type Bundle, describeScriptFailure } from "../../services/script.js";
 import syncService from "../../services/sync.js";
-import { safeExtractMessageAndStackFromError } from "../../services/utils/index.js";
+import { assertScriptingEnabled } from "../../services/scripting_guard.js";
 import { getSql } from "../../services/sql/index.js";
+import { safeExtractMessageAndStackFromError } from "../../services/utils/index.js";
 
 interface ScriptBody {
     script: string;
@@ -23,6 +26,7 @@ interface ScriptBody {
 // need to await it and make the complete response including metadata available in a Promise, so that the route detects
 // this and does result.then().
 async function exec(req: Request) {
+    assertScriptingEnabled();
     try {
         const body = req.body as ScriptBody;
 
@@ -47,9 +51,21 @@ async function exec(req: Request) {
 function run(req: Request<{ noteId: string }>) {
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    const result = scriptService.executeNote(note, { originEntity: note });
+    try {
+        assertScriptingEnabled();
+        // A nested `transactional()` is a savepoint, so a script that throws leaves nothing it
+        // wrote behind even though the route returns rather than throws.
+        const executionResult = getSql().transactional(
+            () => scriptService.executeNote(note, { originEntity: note }));
+        return { executionResult };
+    } catch (e) {
+        const [ message, stack ] = safeExtractMessageAndStackFromError(e);
+        getLog().error(`Script note ${note.noteId} failed: '${message}', stack: ${stack}`);
 
-    return { executionResult: result };
+        // The client reads the failing note from the body, as the cause chain is not serialized.
+        const failure = describeScriptFailure(e);
+        return [ 500, { ...failure, noteId: failure.noteId ?? note.noteId } ];
+    }
 }
 
 function getBundlesWithLabel(label: string, value?: string) {
@@ -69,7 +85,7 @@ function getBundlesWithLabel(label: string, value?: string) {
 }
 
 function getStartupBundles(req: Request) {
-    if (!process.env.TRILIUM_SAFE_MODE) {
+    if (!getPlatform().getEnv("TRILIUM_SAFE_MODE")) {
         if (req.query.mobile === "true") {
             return getBundlesWithLabel("run", "mobileStartup");
         }
@@ -80,7 +96,7 @@ function getStartupBundles(req: Request) {
 }
 
 function getWidgetBundles() {
-    if (!process.env.TRILIUM_SAFE_MODE) {
+    if (!getPlatform().getEnv("TRILIUM_SAFE_MODE")) {
         return getBundlesWithLabel("widget");
     }
     return [];

@@ -8,24 +8,20 @@ import ocrService from "./ocr/ocr_service.js";
 
 function scheduleOcrForNote(noteId: string) {
     if (optionService.getOptionBool("ocrAutoProcessImages")) {
-        setImmediate(async () => {
-            try {
-                await ocrService.processNoteOCR(noteId);
-            } catch (error) {
+        setImmediate(() => {
+            void ocrService.processNoteOCR(noteId).catch((error) => {
                 getLog().error(`Failed to process OCR for note ${noteId}: ${error}`);
-            }
+            });
         });
     }
 }
 
 function scheduleOcrForAttachment(attachmentId: string | undefined) {
     if (attachmentId && optionService.getOptionBool("ocrAutoProcessImages")) {
-        setImmediate(async () => {
-            try {
-                await ocrService.processAttachmentOCR(attachmentId);
-            } catch (error) {
+        setImmediate(() => {
+            void ocrService.processAttachmentOCR(attachmentId).catch((error) => {
                 getLog().error(`Failed to process OCR for attachment ${attachmentId}: ${error}`);
-            }
+            });
         });
     }
 }
@@ -61,6 +57,9 @@ function updateImage(noteId: string, uploadBuffer: Uint8Array, originalName: str
 }
 
 export default {
+    // Passed straight through: waiting for an image to be stored is the same act whether or not
+    // this layer had OCR to schedule for it.
+    awaitImageWrite: imageService.awaitImageWrite,
     saveImage,
     saveImageToAttachment,
     updateImage

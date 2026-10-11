@@ -1,24 +1,53 @@
-<p>The Trilium desktop app opens a TCP port (usually <code spellcheck="false">37840</code>)
-  for the following reasons:</p>
-<ul>
-  <li>Integration with the&nbsp;<a class="reference-link" href="#root/jdjRLhLV3TtI/yeqU0zo0ZQ83/_help_YTAxJMA3uWwn">Web Clipper</a>.</li>
-  <li>Desktop-to-desktop&nbsp;<a class="reference-link" href="#root/_help_cbkrhQjrkKrh">Synchronization</a>.</li>
-  <li>Making Trilium accessible over the web, similar to a&nbsp;<a class="reference-link"
-    href="#root/_help_WOcw2SLH6tbX">Server Installation</a>. See&nbsp;<a class="reference-link"
-    href="#root/_help_nRqcgfTb97uV">Using the desktop application as a server</a>.</li>
-</ul>
-<h2>Enabling access on the LAN</h2>
-<p>Before v0.104.0, this port was open for the entire local network. After
-  v0.104.0 the port is open only on <code spellcheck="false">localhost</code> (127.0.0.1).
-  This prevents other devices on the same network — and websites you open
-  in another browser on the same machine — from reaching the Trilium API.
-  If you don't use the desktop as a sync source, remote server, you don't
-  need to change anything.</p>
-<p>To open the port on all networks, modify <a href="#root/_help_Gzjqa934BdH4">config.ini</a>&nbsp;as
-  follows:</p><pre><code class="language-text-x-trilium-auto">[Network]
-host=0.0.0.0</code></pre>
-<aside class="admonition note">
-  <p>If you use the&nbsp;<a class="reference-link" href="#root/jdjRLhLV3TtI/yeqU0zo0ZQ83/_help_YTAxJMA3uWwn">Web Clipper</a>&nbsp;on
-    the same device as the one running the desktop application, there is no
-    need to enable access on the LAN.</p>
-</aside>
+<p>Prior to v0.104.0, the <a href="#root/_help_poXkQfguuA0U">desktop application</a> would
+  also open a network port so that it can offer access to&nbsp;<a class="reference-link"
+  href="#root/_help_pgxEVkzLl1OP">ETAPI (REST API)</a>&nbsp;or even use it
+  as a web server (see&nbsp;<a class="reference-link" href="#root/_help_nRqcgfTb97uV">Using the desktop application as a server</a>).</p>
+<p>In order to reduce the attack surface, Trilium now enables these services
+  only for the local device (e.g. <code>localhost</code>) instead of serving
+  them over the LAN.</p>
+<p>To better understand what is affected, refer to the following table:</p>
+<figure
+class="table">
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Network access OFF</th>
+        <th>Network access ON</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="reference-link" href="#root/_help_MtPxeAWVAzMg">Web Clipper</a>
+        </td>
+        <td>🔒️ <code>localhost</code> only (still accessible to the browser extension
+          on the same device)</td>
+        <td>🌐 <code>localhost</code> + LAN</td>
+      </tr>
+      <tr>
+        <td><a class="reference-link" href="#root/_help_pgxEVkzLl1OP">ETAPI (REST API)</a>
+        </td>
+        <td>🔒️ <code>localhost</code> only</td>
+        <td>🌐 <code>localhost</code> + LAN</td>
+      </tr>
+      <tr>
+        <td><a href="#root/_help_GBBMSlVSOIGP">LLM MCP</a> (only if enabled in settings)</td>
+        <td>🔒️ <code>localhost</code> only (needs auth)</td>
+        <td>🌐 <code>localhost</code> + LAN (needs auth)</td>
+      </tr>
+      <tr>
+        <td><a href="#root/_help_nRqcgfTb97uV">Web app</a>
+        </td>
+        <td>❌️ completely disabled (403), only the desktop app is usable.</td>
+        <td>🌐 <code>localhost</code> + LAN</td>
+      </tr>
+      <tr>
+        <td><a class="reference-link" href="#root/_help_R9pX4DGra2Vt">Sharing</a>&nbsp;notes</td>
+        <td>❌️ completely disabled (403), if you are using&nbsp;<a class="reference-link"
+          href="#root/_help_cbkrhQjrkKrh">Synchronization</a>&nbsp;this will still
+          work as part of the <a href="#root/_help_WOcw2SLH6tbX">server</a>.</td>
+        <td>🌐 <code>localhost</code> + LAN</td>
+      </tr>
+    </tbody>
+  </table>
+</figure>

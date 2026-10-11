@@ -1,0 +1,12 @@
+/* The badge itself: a colored outline whose hue is driven by --color per tone. */
+.mfa-status-badge.active {
+    --color: var(--admonition-tip-accent-color, #40c025);
+}
+
+.mfa-status-badge.pending {
+    --color: var(--admonition-warning-accent-color, #e0a800);
+}
+
+.mfa-status-badge.inactive {
+    --color: var(--muted-text-color, #888);
+}

@@ -1,0 +1,190 @@
+# Testing Preact components (`apps/client/src/widgets/react/`)
+
+You can render real components **with zero new dependencies**. The test env is already `happy-dom`, esbuild compiles JSX with `jsxImportSource: "preact"`, and `apps/client/src/test/setup.ts` already injects `$`/`glob`/`ws` and auto-mocks `services/server`. Rendering uses Preact's own `render()` — the exact mechanism the app uses in `apps/client/src/widgets/react/react_utils.tsx`.
+
+> This recipe is **proven**: Icon, Button, FormTextBox, FormSelect, and ActionButton were rendered and asserted (events + DOM) with all tests passing.
+
+## The render helper
+
+Put this in a shared `apps/client/src/test/render.ts` (recommended) or inline per spec:
+
+```ts
+import { render } from "preact";
+import { act } from "preact/test-utils";
+import { afterEach } from "vitest";
+
+let container: HTMLDivElement | undefined;
+export function renderInto(vnode: any) {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    render(vnode, container);
+    return container;
+}
+// Always tear down, or bootstrap Tooltips / listeners leak between tests.
+afterEach(() => {
+    const mounted = container;
+    if (mounted) {
+        act(() => render(null, mounted));
+        mounted.remove();
+        container = undefined;
+    }
+});
+```
+
+**Unmount inside `act()`.** Preact 11 runs a removed component's `useEffect` cleanups after the next
+paint, as React does. `act()` flushes them on the spot; a bare `render(null, container)` leaves them
+to fire during the *next* test, after its `beforeEach` has cleared the mocks, so that test sees a call
+it never made (`Modal`'s `hide()`, a font unregistering). The same goes for an unmount inside a test
+followed by an assertion on the cleanup. Copy a `let container` into a `const` first: TypeScript's
+narrowing does not reach into the arrow function.
+
+Spec files that use JSX must be named `*.spec.tsx`.
+
+## Firing events — match Preact's delegated event names
+
+Set the value, then dispatch the **native** event Preact listens for, always with `{ bubbles: true }`.
+`setup.ts` loads `preact/compat` for every spec, as the app always has it loaded, and compat's
+`options.vnode` hook renames several handlers. Dispatch what the renamed handler listens to:
+
+| Handler | Dispatch | Notes |
+|---|---|---|
+| `onClick` | `el.click()` | simplest |
+| `onInput` | `new Event("input", { bubbles: true })` | text inputs |
+| **`onChange` on a text-like `<input>`/`<textarea>`** | **`new Event("input", { bubbles: true })`** | ⚠️ compat maps it to `input` for every type but checkbox, radio and file — that includes `range` and `color`. A `"change"` event does **nothing** |
+| `onChange` on `<select>`, checkbox, radio, file | `new Event("change", { bubbles: true })` | |
+| **`onFocus` / `onBlur`** | **`new Event("focusin"/"focusout", { bubbles: true })`** | ⚠️ compat maps them to the bubbling events; `"focus"`/`"blur"` silently do **nothing** |
+| any other `on<Name>` | the lowercase DOM name (`dragover`, `dragstart`, `drop`) | Preact 11 always lowercases a camel-case handler. Preact 10 kept `DragOver` where the DOM had no `ondragover` property, as under happy-dom — don't bring that casing back |
+
+## Tier A — presentational (props → DOM + click)
+
+```tsx
+import { describe, expect, it, vi } from "vitest";
+import { renderInto } from "../../test/render";
+import Icon from "./Icon";
+import Button from "./Button";
+
+describe("Icon", () => {
+    it("composes icon + extra classes and passes through title", () => {
+        const span = renderInto(<Icon icon="bx bx-search" className="extra" title="Search" />).querySelector("span")!;
+        expect(span.className).toBe("bx bx-search extra tn-icon");
+        expect(span.getAttribute("title")).toBe("Search");
+    });
+    it("falls back to bx-empty when no icon given", () => {
+        expect(renderInto(<Icon />).querySelector("span")!.className).toBe("bx bx-empty tn-icon");
+    });
+});
+
+describe("Button", () => {
+    it("applies kind class, becomes type=button with a handler, fires onClick", () => {
+        const onClick = vi.fn();
+        const btn = renderInto(<Button text="Save" onClick={onClick} kind="primary" />).querySelector("button")!;
+        expect(btn.className).toContain("btn-primary");
+        expect(btn.getAttribute("type")).toBe("button");   // submit only when no handler/command
+        btn.click();
+        expect(onClick).toHaveBeenCalledTimes(1);
+    });
+    it("does not fire onClick when disabled", () => {
+        const onClick = vi.fn();
+        renderInto(<Button text="Nope" disabled onClick={onClick} />).querySelector("button")!.click();
+        expect(onClick).not.toHaveBeenCalled();
+    });
+});
+```
+
+## Tier B — stateful / controlled form components
+
+```tsx
+import { describe, expect, it, vi } from "vitest";
+import { renderInto } from "../../test/render";
+import FormTextBox from "./FormTextBox";
+import FormSelect from "./FormSelect";
+
+function typeInto(input: HTMLInputElement, value: string) {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+describe("FormTextBox", () => {
+    it("clamps number inputs to [min,max] on change", () => {
+        const onChange = vi.fn();
+        const input = renderInto(<FormTextBox type="number" min={1} max={10} currentValue="5" onChange={onChange} />).querySelector("input")!;
+        typeInto(input, "999");
+        expect(onChange).toHaveBeenLastCalledWith("10", expect.anything());   // applyLimits() clamps
+    });
+    it("fires onBlur with the clamped value", () => {
+        const onBlur = vi.fn();
+        const input = renderInto(<FormTextBox type="number" min={2} onBlur={onBlur} />).querySelector("input")!;
+        input.value = "0";
+        input.dispatchEvent(new Event("focusout", { bubbles: true }));   // NOT "blur"
+        expect(onBlur).toHaveBeenCalledWith("2");
+    });
+});
+
+describe("FormSelect", () => {
+    it("renders options, marks current, emits key on change", () => {
+        const onChange = vi.fn();
+        const values = [{ key: "a", label: "Apple" }, { key: "b", label: "Banana" }];
+        const select = renderInto(<FormSelect values={values} keyProperty="key" titleProperty="label" currentValue="b" onChange={onChange} />).querySelector("select")!;
+        expect(select.value).toBe("b");
+        select.value = "a";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        expect(onChange).toHaveBeenCalledWith("a");
+    });
+});
+```
+
+## Tier C — components importing services / i18n / bootstrap
+
+`vi.mock` the side-effectful service and partial-mock `./hooks` so the real DOM still renders:
+
+```tsx
+import { describe, expect, it, vi } from "vitest";
+import { renderInto } from "../../test/render";
+
+vi.mock("../../services/keyboard_actions", () => ({
+    default: { getAction: vi.fn().mockResolvedValue({ effectiveShortcuts: [] }) }
+}));
+vi.mock("./hooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("./hooks")>()),
+    useStaticTooltip: vi.fn()        // stub only the bootstrap-Tooltip hook
+}));
+import ActionButton from "./ActionButton";   // import AFTER the mocks (they're hoisted)
+
+describe("ActionButton", () => {
+    it("renders icon-action button and forwards trigger command", () => {
+        const onClick = vi.fn();
+        const btn = renderInto(<ActionButton text="Delete" icon="bx bx-trash" triggerCommand="saveToNoteMap" onClick={onClick} />).querySelector("button")!;
+        expect(btn.className).toContain("icon-action");
+        expect(btn.getAttribute("data-trigger-command")).toBe("saveToNoteMap");
+        btn.click();
+        expect(onClick).toHaveBeenCalledTimes(1);
+    });
+});
+```
+
+## Component-specific gotchas
+
+- **`isMobile()`/`isDesktop()` are cached at module load** (`const cachedIsMobile = isMobile()` in `Button`/`ActionButton`). To exercise both branches, `vi.mock("../../services/utils")` **before** importing the component — a runtime spy is too late.
+- **`Modal`** visibility is driven by the bootstrap Modal instance + `openDialog` (jQuery) inside `useEffect`; show/hide won't behave under happy-dom. Treat it as integration-tier; in happy-dom only assert its static structure with `show`.
+- **Preact runs `useEffect` after the next frame**, so a listener registered there is not in place when a spec dispatches an event right after `render`, and `await new Promise(r => setTimeout(r))` is not long enough. Register listeners the first interaction needs in `useLayoutEffect` (as `FormList` and `Popup` do), or `vi.waitFor` the effect's result.
+- **`t()` returns `undefined`** without an initialized i18next, and Preact then drops the attribute. To assert on a translated label, `vi.mock("../../services/i18n", () => ({ t: (key: string) => key }))` and expect the key.
+- **Popups placed by Floating UI** (`Popup`, `Menu`, `Dropdown`, `Popover`) need sizes, since happy-dom lays out nothing: stub `document.documentElement`'s `clientWidth`/`clientHeight` and `HTMLElement.prototype`'s `offsetWidth`/`offsetHeight`, and give the anchor a rect with `vi.spyOn(anchor, "getBoundingClientRect")`. Don't stub `getBoundingClientRect` on the whole prototype: Floating UI also measures `<html>`, and the popup lands somewhere else. Where several elements need rects, stub by selector (`this.matches(".tn-menu, .dropdown-item")`) and fall back to the original. Worked examples: `Popup.spec.tsx`, `Menu.spec.tsx`, `Dropdown.spec.tsx`.
+- **Preact runs no handler on an element it has removed.** Interact only with what is drawn now: a
+  menu closes on a pick, so a second pick needs the menu opened again and its item looked up again.
+  A reference taken before the first click points at a detached node, and clicking it does nothing
+  (Preact 10 still ran its handler, which let such a spec pass for the wrong reason). Assert the
+  re-queried element exists before clicking it.
+- **Bootstrap's transition timers outlive a spec.** happy-dom runs no transitions, so Bootstrap
+  finishes each fade with a ~5 ms `setTimeout()` of its own that the environment's teardown does
+  not cancel. `setup.ts` waits them out in a global `afterAll()`; without it a file ending mid-fade
+  throws `parameter 1 is not of type 'Event'` against whichever file runs next in that worker.
+- **Bootstrap's dropdown key handler is live in specs** (`setup.ts` imports Bootstrap). It captures Up, Down and Escape at `document` for any `.dropdown-menu` and throws when no `data-bs-toggle` is next to it, so a spec that presses those keys in a toggle-less `.dropdown-menu` fails with `reading 'parentNode'` unless the component captures them first.
+- Pre-existing stderr noise (KaTeX "quirks mode", the `setup.ts` "vi.mock not at top level" warning) is **not** a failure — ignore it.
+
+## Optional ergonomic upgrade
+
+Once the raw approach is established, you may add `@testing-library/preact` (+ `@testing-library/jest-dom`) as client devDeps. The concrete win: `fireEvent.blur()` hides the focusout gotcha, `cleanup` removes the manual `afterEach`, and `getByRole`/jest-dom matchers (`toBeDisabled`, `toHaveValue`) read better. It's a convenience layer, not a requirement — neither is installed today.
+
+## Best first targets (high branch density)
+
+`Icon` → `Button` (kind/size/type/`<kbd>` branches) → `FormTextBox` (`applyLimits` clamping) → `FormSelect` (optgroups) → `ActionButton` / `Badge` (Tier C). Defer `Modal`.

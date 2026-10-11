@@ -1,3 +1,5 @@
+import type { SecurityToggleApi } from "./security_settings.js";
+
 /**
  * Parameters delivered by the main process to the renderer when the user opens
  * the system context menu (right-click) somewhere inside a web view.
@@ -36,6 +38,16 @@ export interface ElectronContextMenuParams {
 }
 
 /**
+ * Startup milestones the renderer may report to the main process for startup
+ * timing instrumentation (see `apps/desktop/src/services/startup_metrics.ts`).
+ *
+ * - `client-full-render` — the client finished its initial render: the layout
+ *   widgets are attached to the DOM, the froca note cache is loaded, and a
+ *   frame of the rendered layout has been painted.
+ */
+export type RendererStartupMetric = "client-full-render";
+
+/**
  * Window-level controls: zoom, theme, title bar, full screen, lifecycle, and
  * a handful of main → renderer event subscriptions.
  */
@@ -66,14 +78,18 @@ export interface ElectronWindowApi {
     // #region Title bar
 
     /**
-     * Customizes the colors of the Windows native title bar overlay
-     * (the area containing the minimize / maximize / close buttons).
+     * Customizes the Windows and Linux native title bar overlay (the area containing the
+     * minimize / maximize / close buttons). `height` also controls their vertical placement,
+     * since the buttons are centred within the overlay. It is given in device-independent
+     * pixels, which the page zoom does not scale — see {@link setWindowButtonPosition}.
      */
-    setTitleBarOverlay(options: { color: string; symbolColor: string }): void;
+    setTitleBarOverlay(options: { color: string; symbolColor: string; height?: number }): void;
 
     /**
-     * Repositions the macOS traffic-light window buttons.
-     * Coordinates are in CSS pixels relative to the window's top-left corner.
+     * Repositions the macOS traffic-light window buttons. Coordinates are relative to the
+     * window's top-left corner and given in device-independent pixels: the buttons are drawn by
+     * the system rather than by the page, so unlike the surrounding chrome they are unaffected by
+     * the page zoom factor and callers have to scale the offsets themselves.
      */
     setWindowButtonPosition(position: { x: number; y: number }): void;
 
@@ -112,12 +128,6 @@ export interface ElectronWindowApi {
     /** Closes the current window. */
     closeWindow(): void;
 
-    /**
-     * Opens a new top-level Trilium window navigated to the given hash route.
-     * @param extraWindowHash The URL hash fragment (without the leading `#`) for the new window.
-     */
-    createExtraWindow(extraWindowHash: string): void;
-
     /** Synchronously returns whether the window is pinned above all others. */
     isAlwaysOnTop(): boolean;
 
@@ -126,6 +136,12 @@ export interface ElectronWindowApi {
 
     /** Opens or closes Chromium DevTools for the current window. */
     toggleDevTools(): void;
+
+    /**
+     * Synchronously returns whether DevTools is currently open and docked into this window
+     * (as opposed to detached into a separate window).
+     */
+    isDevToolsDocked(): boolean;
 
     // #endregion
 
@@ -165,6 +181,14 @@ export interface ElectronWindowApi {
     /** Brings the main window to the foreground, restoring it if minimized. */
     showWindow(): void;
 
+    /**
+     * Reports a renderer startup milestone to the main process, which records
+     * it relative to OS process creation alongside the main-process startup
+     * metrics. Only the first report of each metric is recorded; later reports
+     * (e.g. after a window reload or from extra windows) are ignored.
+     */
+    reportStartupMetric(metric: RendererStartupMetric): void;
+
     // #endregion
 
     // #region Main → renderer events
@@ -181,6 +205,13 @@ export interface ElectronWindowApi {
      */
     onOpenInSameTab(callback: (noteId: string) => void): void;
 
+    /**
+     * Subscribes to changes of the DevTools docking state. `docked` is `true` only while
+     * DevTools is attached to this window — where Chromium disables the native window
+     * material (Mica / vibrancy) — and `false` when it is closed or in a separate window.
+     */
+    onDevToolsDockChanged(callback: (docked: boolean) => void): void;
+
     // #endregion
 }
 
@@ -191,6 +222,20 @@ export interface ElectronClipboardApi {
      * pasted into other applications as an image rather than as a file.
      */
     copyImageToClipboard(buffer: Uint8Array): void;
+
+    /**
+     * Reads plain text from the system clipboard via the main-process
+     * `electron.clipboard`. Used instead of `navigator.clipboard.readText()`
+     * so the renderer's deny-by-default permission policy does not have to
+     * grant the sensitive `clipboard-read` permission to the whole session.
+     */
+    readText(): Promise<string>;
+
+    /**
+     * Reads the HTML flavor of the system clipboard, the same way as {@link readText}. Empty when
+     * the clipboard has no HTML.
+     */
+    readHTML(): Promise<string>;
 }
 
 /**
@@ -231,10 +276,28 @@ export interface ElectronShellApi {
     openPath(path: string): Promise<string>;
 
     /**
+     * Shows a local file in the OS file manager, with the file itself selected,
+     * via `electron.shell.showItemInFolder`. For pointing at a file the user is
+     * not meant to open — the database, whose reader is Trilium itself.
+     *
+     * **Security:** the same sandbox as {@link openPath}, with the database
+     * file added as a root of its own, since `TRILIUM_DOCUMENT_PATH` may put it
+     * outside the data directory. Revealing is the milder act of the two, the
+     * file being selected rather than launched, but a path the renderer names
+     * is still a path the renderer must not be free to choose.
+     *
+     * Nothing is reported back: the OS is asked to bring a window forward, and
+     * whether it did is not something Electron answers.
+     */
+    showItemInFolder(path: string): void;
+
+    /**
      * Opens a `file://` URL with its default OS handler. Exists as a separate
-     * channel from {@link openExternal} because Electron's `shell.openExternal`
-     * mishandles Unicode characters in `file:` URLs on Windows; converting to
-     * a filesystem path and calling `shell.openPath` works correctly.
+     * channel from {@link openExternal} because neither Electron API opens every
+     * target correctly on Windows: `shell.openExternal` mishandles Unicode
+     * characters in `file:` URLs, while `shell.openPath` opens a directory with
+     * the Explorer-specific `explore` verb, bypassing the user's file manager.
+     * The main process picks between them per target.
      *
      * **Security:** the URL must use the `file:` scheme and must have an
      * empty hostname. UNC paths (`file://attacker.example/share/x`) are
@@ -301,12 +364,27 @@ export interface ElectronSpellcheckApi {
 
     /** Returns the BCP-47 language tags Chromium can spell-check on this platform. */
     getAvailableSpellCheckerLanguages(): string[];
+
+    /**
+     * Applies the spell-check language list to every open window's session
+     * immediately, without an application restart. No-op on macOS, where the OS
+     * spell checker auto-detects the language.
+     */
+    setSpellCheckerLanguages(languageCodes: string[]): void;
+
+    /**
+     * Enables or disables the built-in spell checker on every open window's
+     * session immediately, without an application restart.
+     */
+    setSpellCheckerEnabled(enabled: boolean): void;
 }
 
-/** System tray controls. */
-export interface ElectronTrayApi {
+/** OS integration controls — system tray and autostart / launch-on-login. */
+export interface ElectronSystemIntegrationApi {
     /** Rebuilds the tray icon and menu — call after changing tray-related settings. */
     reloadTray(): void;
+    /** Re-applies the OS autostart entry after the `launchOnStartup` / `hideOnAutoStart` options change. */
+    reapplyLaunchOnStartup(): void;
 }
 
 /**
@@ -341,7 +419,7 @@ export interface ElectronPrintingApi {
     exportAsPdfPreview(opts: Record<string, unknown>): void;
 
     /** Subscribes to the result of an {@link exportAsPdfPreview} call. */
-    onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array; error?: string }) => void): void;
+    onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array; error?: string; requestId?: number }) => void): void;
 
     /** Removes the listener registered via {@link onExportAsPdfPreviewResult}. */
     removeExportAsPdfPreviewResultListener(): void;
@@ -413,6 +491,226 @@ export interface ElectronNavigationApi {
 }
 
 /**
+ * Security settings that live outside the database (in `data_dir/security.json`)
+ * to prevent malicious scripts from modifying them. Changes require a native
+ * OS confirmation dialog and an app restart to take effect.
+ */
+export interface ElectronSecurityApi extends SecurityToggleApi {
+    /**
+     * Requests enabling/disabling LAN access. When enabled, the desktop binds
+     * its TCP listener to all interfaces (instead of loopback) so other devices
+     * can reach it — e.g. to sync from another device. Same confirmation +
+     * restart flow as above.
+     */
+    setLanAccessEnabled(enabled: boolean): Promise<boolean>;
+}
+
+/** What the Options UI needs to know about the stored backup passphrase. */
+export interface BackupPassphraseStatus {
+    /**
+     * Whether the OS offers a keyring to keep the passphrase in. Without one it cannot be stored
+     * safely, and since unattended backups cannot ask for it, encryption is unavailable altogether.
+     */
+    available: boolean;
+    /** Whether a passphrase is currently stored. */
+    set: boolean;
+}
+
+/** What became of a request to change the stored backup passphrase. */
+export type BackupPassphraseChange =
+    /** The change was confirmed and carried out. */
+    | "applied"
+    /** The user declined the OS confirmation, so nothing changed. */
+    | "cancelled"
+    /** There is no keyring on this system to keep a passphrase in. */
+    | "unavailable";
+
+/**
+ * The backup passphrase, kept encrypted by the OS keyring in a file outside the database (the
+ * database is what ends up inside the backup, so a passphrase stored there would ride along inside
+ * the very container it protects).
+ *
+ * Deliberately write-only: there is no way to read the passphrase back, so a frontend script cannot
+ * exfiltrate it. Only the main process ever sees the plaintext again, when it writes a backup.
+ *
+ * Both changes are also gated on a native OS confirmation, which a script can request but cannot
+ * answer. Without that, a script could quietly swap in a passphrase of its own and every later
+ * backup would be encrypted to it.
+ */
+export interface ElectronBackupPassphraseApi {
+    /** Whether a passphrase can be stored on this system, and whether one already is. */
+    getStatus(): Promise<BackupPassphraseStatus>;
+    /** Stores a passphrase, replacing any existing one, once the user has confirmed it. */
+    set(passphrase: string): Promise<BackupPassphraseChange>;
+    /**
+     * Forgets the stored passphrase. Existing backups keep the passphrase they were written with.
+     */
+    clear(): Promise<BackupPassphraseChange>;
+}
+
+/** Outcome of a {@link ElectronOneNoteApi.login} attempt. */
+export interface OneNoteLoginResult {
+    /** True if sign-in completed and a Microsoft Graph token was stored. */
+    connected: boolean;
+    /** The connected Microsoft account, present when `connected` is true. */
+    account?: { name: string; email: string };
+    /** A human-readable failure reason when `connected` is false (absent on user cancellation). */
+    error?: string;
+}
+
+/** Desktop-only OneNote importer sign-in, driven from the main process via a loopback OAuth redirect. */
+export interface ElectronOneNoteApi {
+    /**
+     * Runs the Microsoft delegated-Graph OAuth flow: opens the system browser, captures the redirect
+     * on a throwaway loopback server, exchanges the code, and stores the token process-side. Resolves
+     * once the desktop session is connected (or with `connected: false` on failure/timeout).
+     */
+    login(): Promise<OneNoteLoginResult>;
+}
+
+/** Outcome of a {@link ElectronNativeExportApi.exportSubtreeToFile} request. */
+export interface NativeExportResult {
+    status: "saved" | "cancelled" | "error";
+    /** Absolute path the archive was written to (when `status === "saved"`). */
+    filePath?: string;
+    /** Failure detail (when `status === "error"`). */
+    message?: string;
+}
+
+/** Desktop-native subtree export that streams a `.zip` straight to a file. */
+export interface ElectronNativeExportApi {
+    /**
+     * Prompts a native "save as" dialog, then streams a subtree (branch) export
+     * to the chosen path on disk. This bypasses the in-memory download path, so
+     * memory stays bounded regardless of archive size. Progress/success/error
+     * are reported over the WebSocket via `taskId`. Resolves once the dialog is
+     * dismissed (`cancelled`) or the export finishes (`saved` / `error`).
+     */
+    exportSubtreeToFile(opts: { branchId: string; format: string; title: string; taskId: string }): Promise<NativeExportResult>;
+}
+
+/** Import flags forwarded to the native importer (mirrors the HTTP route's options; no path). */
+export interface NativeImportOptions {
+    safeImport: boolean;
+    shrinkImages: boolean;
+    textImportedAsText: boolean;
+    codeImportedAsCode: boolean;
+    spreadsheetImportedAsSpreadsheet: boolean;
+    explodeArchives: boolean;
+    replaceUnderscoresWithSpaces: boolean;
+}
+
+/** A single user-chosen file: a capability token (redeemed to import it) and its display name — never a path. */
+export interface NativeImportPickedFile {
+    /** Single-use, short-lived grant for the chosen file. */
+    token: string;
+    /** Display name of the chosen file. */
+    fileName: string;
+}
+
+/** Outcome of {@link ElectronNativeImportApi.pickFiles}: capability tokens, never paths. */
+export interface NativeImportPickResult {
+    status: "selected" | "cancelled";
+    /** The user-chosen files (when `status === "selected"`); one or more, since the dialog allows multi-select. */
+    files?: NativeImportPickedFile[];
+}
+
+/** Outcome of {@link ElectronNativeImportApi.importFromToken}. */
+export interface NativeImportResult {
+    status: "imported" | "error";
+    /** Root note of the import (when `status === "imported"`). */
+    importedNoteId?: string;
+    /** Failure detail (when `status === "error"`). */
+    message?: string;
+}
+
+/**
+ * Desktop-native import that reads the user's file **in place** (bounded memory, no temp copy) — the whole
+ * point being multi-GB `.zip` archives, though any importable file is accepted. The renderer never handles
+ * a filesystem path: {@link pickFiles} runs the OS dialog in the main process and returns opaque capability
+ * tokens, which {@link importFromToken} redeems. A script can't forge a token or pass a path, so it can
+ * never read an arbitrary file.
+ */
+export interface ElectronNativeImportApi {
+    /** Prompts a native "open file" dialog (multi-select, any type) and returns single-use tokens for the chosen files. */
+    pickFiles(): Promise<NativeImportPickResult>;
+    /**
+     * Resolves files the user dropped onto a drop zone to capability tokens, so a drag-and-drop import takes
+     * the same in-place (streamed) path as the dialog. The `File` is the unforgeable capability: the path is
+     * obtained via `webUtils.getPathForFile`, which yields a real path only for a genuinely user-supplied
+     * file and an empty string for anything a script constructed — so a script can't smuggle in an arbitrary
+     * path. Returns `cancelled` when no dropped file resolved (e.g. dragged from a browser, not the OS), so
+     * the caller falls back to the normal upload route.
+     */
+    grantDroppedFiles(files: File[]): Promise<NativeImportPickResult>;
+    /**
+     * Imports the file behind `token` into `parentNoteId`. Progress/success/error are reported over the
+     * WebSocket via `taskId`, matching the HTTP import path. When importing several files in one batch, set
+     * `last` only on the final call so the success toast fires once, after everything is in. `format` routes
+     * the file to a specific importer (e.g. "obsidian"), mirroring the HTTP route's format tag.
+     */
+    importFromToken(opts: { token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }): Promise<NativeImportResult>;
+}
+
+/**
+ * Outcome of {@link ElectronRestoreApi.pickBackup}: what the chosen backup is, never where it is.
+ *
+ * The file itself stays with the main process, which holds it as the one waiting to be restored, so
+ * the renderer is given only what the screen has to show and decide with.
+ */
+export interface NativeBackupPickResult {
+    status: "selected" | "cancelled" | "error";
+    /** Display name of the chosen backup (when `status === "selected"`). */
+    fileName?: string;
+    /** Whether a passphrase has to be asked for before it can be restored. */
+    encrypted?: boolean;
+    /** Failure detail (when `status === "error"`), e.g. setup already being busy. */
+    message?: string;
+}
+
+/**
+ * Choosing a backup to restore from the desktop, where the file is already on the same disk as the
+ * database it is going to replace and has no business being uploaded to reach it.
+ *
+ * Only usable during setup: what it puts forward is restored by the ordinary
+ * `POST /api/setup/restore/start`, which refuses once the application is initialized.
+ */
+export interface ElectronRestoreApi {
+    /**
+     * Prompts a native "open file" dialog for a `.db` or `.tnbackup` backup and, if one is chosen,
+     * makes it the backup waiting to be restored.
+     */
+    pickBackup(): Promise<NativeBackupPickResult>;
+}
+
+/** Outcome of {@link ElectronDialogApi.pickDirectory}. */
+export interface NativeDirectoryPickResult {
+    status: "selected" | "cancelled";
+    /** Absolute path of the chosen directory (when `status === "selected"`). */
+    path?: string;
+}
+
+/** Native OS pickers that hand the renderer a location the user chose themselves. */
+export interface ElectronDialogApi {
+    /**
+     * Prompts a native "select folder" dialog, starting at `defaultPath` when it is given. The renderer
+     * cannot supply the answer: a script can at most pop the dialog, which the user still has to accept
+     * before any path comes back.
+     */
+    pickDirectory(opts?: { defaultPath?: string }): Promise<NativeDirectoryPickResult>;
+
+    /**
+     * Prompts a native message box before the application restarts into the setup screen, where the
+     * user may replace or erase their knowledge base.
+     *
+     * An OS dialog rather than one of the application's own, for the reason the security toggles use
+     * one: a note script can reach every dialog the app draws for itself, and this one guards the
+     * path to losing everything. It is never suppressible, so there is no "don't ask again" here.
+     */
+    confirmStartOver(): Promise<boolean>;
+}
+
+/**
  * The complete surface exposed to the renderer as `window.electronApi` via
  * `contextBridge`. The renderer must access Electron-only functionality through
  * this object — direct `require("electron")` and `@electron/remote` are
@@ -434,12 +732,26 @@ export interface ElectronApi {
     contextMenu: ElectronContextMenuApi;
     /** Chromium spell checker controls (dictionary, language list). */
     spellcheck: ElectronSpellcheckApi;
-    /** System tray menu controls. */
-    tray: ElectronTrayApi;
+    /** OS integration — system tray and autostart / launch-on-login. */
+    systemIntegration: ElectronSystemIntegrationApi;
     /** Printing and PDF export pipeline. */
     printing: ElectronPrintingApi;
     /** Read/write access to Chromium's back/forward navigation history. */
     navigation: ElectronNavigationApi;
     /** In-process bridge that replaces the renderer↔server WebSocket. */
     ws: ElectronWsApi;
+    /** Security settings (backend scripting, SQL console) stored outside the DB. */
+    security: ElectronSecurityApi;
+    /** Write-only access to the backup passphrase, kept in the OS keyring. */
+    backupPassphrase: ElectronBackupPassphraseApi;
+    /** OneNote importer sign-in via a loopback OAuth redirect (desktop only). */
+    onenote: ElectronOneNoteApi;
+    /** Desktop-native subtree export that streams a `.zip` straight to a file. */
+    nativeExport: ElectronNativeExportApi;
+    /** Desktop-native large-`.zip` import that reads the user's file in place via a capability token. */
+    nativeImport: ElectronNativeImportApi;
+    /** Native OS pickers that hand the renderer a location the user chose themselves. */
+    dialog: ElectronDialogApi;
+    /** Choosing a backup to restore during setup, read where it lies rather than uploaded. */
+    restore: ElectronRestoreApi;
 }

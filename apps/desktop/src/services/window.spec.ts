@@ -1,0 +1,1284 @@
+import type { MenuItemConstructorOptions } from "electron";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+type Handler = (...args: unknown[]) => unknown;
+
+// Mutable hoisted state controlling the mocked core + electron surfaces. Reset
+// in `beforeEach` so each test starts from a known platform / option baseline.
+const state = vi.hoisted(() => ({
+    isDev: true,
+    isMac: false,
+    isWindows: false,
+    isLinux: false,
+    supportsBackgroundMaterial: false,
+    /** Whether a `setup.json` marker sent this start to the wizard, rather than a first run. */
+    isSetupRequested: false,
+    appVersion: "1.0.0",
+    options: {} as Record<string, string>,
+    optionBools: {} as Record<string, boolean>,
+    keyboardActions: [] as unknown[],
+    log: { info: vi.fn(), error: vi.fn() },
+    // captured IPC handlers
+    ipcOn: new Map<string, Handler>(),
+    ipcHandle: new Map<string, Handler>(),
+    ipcEmit: vi.fn(),
+    // captured electron.app event handlers (e.g. before-quit)
+    appOn: new Map<string, Handler>(),
+    // captured events.subscribe callbacks keyed by event name
+    eventSubs: new Map<string, Handler>(),
+    // captured BrowserWindow instances
+    windows: [] as FakeBrowserWindow[],
+    // controllable return for BrowserWindow.fromWebContents
+    fromWebContentsResult: undefined as undefined | "null" | FakeBrowserWindow,
+    // controllable globalShortcut.register results, consumed in order
+    registerResults: [] as boolean[],
+    // controllable nativeImage isEmpty / throw
+    nativeImageEmpty: false,
+    nativeImageThrow: false,
+    windowStateManage: vi.fn(),
+    // when set, every new FakeWebContents reuses this session object
+    sharedSession: undefined as undefined | FakeSession
+}));
+
+interface FakeSession {
+    clearCache: ReturnType<typeof vi.fn>;
+    availableSpellCheckerLanguages: string[];
+    setSpellCheckerLanguages: ReturnType<typeof vi.fn>;
+    setSpellCheckerEnabled: ReturnType<typeof vi.fn>;
+    on: ReturnType<typeof vi.fn>;
+}
+
+class FakeWebContents {
+    public send = vi.fn();
+    public on = vi.fn((event: string, cb: Handler) => {
+        const list = this.listeners.get(event) ?? [];
+        list.push(cb);
+        this.listeners.set(event, list);
+        return this;
+    });
+    public once = vi.fn((event: string, cb: Handler) => this.on(event, cb));
+    public listeners = new Map<string, Handler[]>();
+    public toggleDevTools = vi.fn();
+    public isDevToolsOpened = vi.fn(() => false);
+    public devToolsWebContents: FakeWebContents | null = null;
+    public cut = vi.fn();
+    public copy = vi.fn();
+    public paste = vi.fn();
+    public pasteAndMatchStyle = vi.fn();
+    public insertText = vi.fn();
+    public session: FakeSession = state.sharedSession ?? {
+        clearCache: vi.fn(() => Promise.resolve()),
+        availableSpellCheckerLanguages: ["en-US", "de"],
+        setSpellCheckerLanguages: vi.fn(),
+        setSpellCheckerEnabled: vi.fn(),
+        on: vi.fn()
+    };
+    public navigationHistory = {
+        canGoBack: vi.fn(() => true),
+        canGoForward: vi.fn(() => false),
+        getAllEntries: vi.fn(() => [{ url: "a" }]),
+        getActiveIndex: vi.fn(() => 0),
+        length: vi.fn(() => 1),
+        goToIndex: vi.fn(),
+        clear: vi.fn()
+    };
+    public getURL = vi.fn(() => "trilium-app://app/");
+
+    fire(event: string, ...args: unknown[]) {
+        const list = this.listeners.get(event);
+        if (!list || list.length === 0) throw new Error(`no webContents listener for ${event}`);
+        let result: unknown;
+        for (const cb of list) result = cb(...args);
+        return result;
+    }
+}
+
+class FakeBrowserWindow {
+    public webContents = new FakeWebContents();
+    public listeners = new Map<string, Handler[]>();
+    public on = vi.fn((event: string, cb: Handler) => {
+        const list = this.listeners.get(event) ?? [];
+        list.push(cb);
+        this.listeners.set(event, list);
+        return this;
+    });
+    public once = vi.fn((event: string, cb: Handler) => this.on(event, cb));
+    public setMenuBarVisibility = vi.fn();
+    public removeMenu = vi.fn();
+    public loadURL = vi.fn(() => Promise.resolve());
+    public setTitleBarOverlay = vi.fn();
+    public setWindowButtonPosition = vi.fn();
+    public setBackgroundMaterial = vi.fn();
+    public setVibrancy = vi.fn();
+    public show = vi.fn();
+    public focus = vi.fn();
+    public minimize = vi.fn();
+    public maximize = vi.fn();
+    public unmaximize = vi.fn();
+    public isMaximized = vi.fn(() => true);
+    public isMinimized = vi.fn(() => true);
+    public restore = vi.fn();
+    public close = vi.fn();
+    public reload = vi.fn();
+    public isAlwaysOnTop = vi.fn(() => true);
+    public setAlwaysOnTop = vi.fn();
+    public isFullScreen = vi.fn(() => true);
+    public setFullScreen = vi.fn();
+    public isVisible = vi.fn(() => true);
+    public hide = vi.fn();
+    public isDestroyed = vi.fn(() => false);
+    public id = 1;
+
+    constructor(public readonly opts?: unknown) {
+        state.windows.push(this);
+    }
+
+    fire(event: string, ...args: unknown[]) {
+        const list = this.listeners.get(event);
+        if (!list || list.length === 0) throw new Error(`no window listener for ${event}`);
+        let result: unknown;
+        for (const cb of list) result = cb(...args);
+        return result;
+    }
+}
+
+const fakeBrowserWindowClass = Object.assign(FakeBrowserWindow, {
+    getAllWindows: () => state.windows,
+    fromWebContents: (_wc: unknown) => {
+        if (state.fromWebContentsResult === "null") return null;
+        if (state.fromWebContentsResult instanceof FakeBrowserWindow) {
+            return state.fromWebContentsResult;
+        }
+        return state.windows[state.windows.length - 1] ?? null;
+    }
+});
+
+const fakeShell = { openExternal: vi.fn(() => Promise.resolve()) };
+const fakeGlobalShortcut = {
+    register: vi.fn((_shortcut: string, _cb: Handler) =>
+        (state.registerResults.length ? state.registerResults.shift() : true))
+};
+const fakeNativeImage = {
+    createFromBuffer: vi.fn(() => {
+        if (state.nativeImageThrow) throw new Error("bad buffer");
+        return { isEmpty: () => state.nativeImageEmpty, toPNG: () => Buffer.from([137, 80, 78, 71]) };
+    })
+};
+
+class FakeClipboardItem {
+    constructor(readonly items: Record<string, unknown>) {}
+
+    get types() {
+        return Object.keys(this.items);
+    }
+
+    getType(type: string) {
+        return Promise.resolve(this.items[type]);
+    }
+}
+
+const fakeApp = {
+    setUserTasks: vi.fn(),
+    relaunch: vi.fn(),
+    exit: vi.fn(),
+    quit: vi.fn(),
+    on: vi.fn((event: string, cb: Handler) => state.appOn.set(event, cb)),
+    whenReady: vi.fn(() => Promise.resolve())
+};
+
+const electronSurface = {
+    app: fakeApp,
+    shell: fakeShell,
+    globalShortcut: fakeGlobalShortcut,
+    nativeImage: fakeNativeImage,
+    clipboard: {
+        write: vi.fn((_items: FakeClipboardItem[]) => Promise.resolve()),
+        readText: vi.fn(() => Promise.resolve("")),
+        read: vi.fn((): Promise<FakeClipboardItem[]> => Promise.resolve([]))
+    },
+    ClipboardItem: FakeClipboardItem,
+    nativeTheme: { themeSource: "system" },
+    BrowserWindow: fakeBrowserWindowClass,
+    Menu: {
+        setApplicationMenu: vi.fn(),
+        buildFromTemplate: vi.fn((template: MenuItemConstructorOptions[]) => ({ template }))
+    },
+    ipcMain: {
+        on: (channel: string, fn: Handler) => state.ipcOn.set(channel, fn),
+        handle: (channel: string, fn: Handler) => state.ipcHandle.set(channel, fn),
+        emit: (...args: unknown[]) => state.ipcEmit(...args)
+    }
+};
+
+vi.mock("electron", () => ({
+    default: electronSurface,
+    BrowserWindow: fakeBrowserWindowClass,
+    shell: fakeShell,
+    globalShortcut: fakeGlobalShortcut
+}));
+
+vi.mock("electron-window-state", () => ({
+    default: () => ({ x: 0, y: 0, width: 1200, height: 800, manage: state.windowStateManage })
+}));
+
+// setupWindowing() installs the WebContents security policy; that behaviour has
+// its own suite (web_contents_security.spec.ts), so stub it out here to keep the
+// windowing tests focused and free of the extra electron app/session surface.
+vi.mock("./web_contents_security", () => ({ setupWebContentsSecurity: vi.fn() }));
+
+// Startup timing has its own suite (startup_metrics.spec.ts); here we only
+// verify that window creation marks the right milestones.
+vi.mock("./startup_metrics", () => ({ markStartupMetric: vi.fn() }));
+
+// The real value is an import-time constant derived from the OS running the tests;
+// route it through mutable state so Windows 10 and 11 scenarios are both testable.
+vi.mock("@triliumnext/server/src/services/utils.js", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@triliumnext/server/src/services/utils.js")>();
+    return {
+        ...actual,
+        get supportsBackgroundMaterial() { return state.supportsBackgroundMaterial; }
+    };
+});
+
+vi.mock("@triliumnext/core", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@triliumnext/core")>();
+    return {
+        ...actual,
+        getLog: () => state.log,
+        app_info: { ...actual.app_info, get appVersion() { return state.appVersion; } },
+        utils: {
+            ...actual.utils,
+            isDev: () => state.isDev,
+            isMac: () => state.isMac,
+            isWindows: () => state.isWindows,
+            isLinux: () => state.isLinux
+        },
+        options: {
+            ...actual.options,
+            getOption: (name: string) => state.options[name] ?? "",
+            getOptionBool: (name: string) => state.optionBools[name] ?? false
+        },
+        sql_init: { ...actual.sql_init, dbReady: Promise.resolve() },
+        isSetupRequested: () => state.isSetupRequested,
+        keyboard_actions: { ...actual.keyboard_actions, getKeyboardActions: () => state.keyboardActions },
+        cls: { ...actual.cls, wrap: (fn: Handler) => fn },
+        events: {
+            ...actual.events,
+            DB_INITIALIZED: "DB_INITIALIZED",
+            subscribe: (event: string, cb: Handler) => state.eventSubs.set(event, cb)
+        }
+    };
+});
+
+const windowService = (await import("./window.js")).default;
+const { setupWindowing } = await import("./window.js");
+const { markStartupMetric } = await import("./startup_metrics.js");
+const { setupWebContentsSecurity } = await import("./web_contents_security.js");
+
+function fireOn(channel: string, event: unknown, ...args: unknown[]) {
+    const fn = state.ipcOn.get(channel);
+    if (!fn) throw new Error(`no on-handler for ${channel}`);
+    return fn(event, ...args);
+}
+
+function fireHandle(channel: string, event: unknown, ...args: unknown[]) {
+    const fn = state.ipcHandle.get(channel);
+    if (!fn) throw new Error(`no handle-handler for ${channel}`);
+    return fn(event, ...args);
+}
+
+function makeEvent() {
+    const win = state.windows[state.windows.length - 1] ?? new FakeBrowserWindow();
+    return { sender: win.webContents, returnValue: undefined as unknown };
+}
+
+// `window.ts` keeps `mainWindow` / `allWindows` in module-level state that
+// survives between tests. Drain it by marking every window we created as
+// destroyed and replaying its `closed` handler (which runs the destroyed-window
+// filter inside the module, clearing `allWindows` and nulling `mainWindow`).
+function resetModuleWindowState() {
+    for (const win of state.windows) {
+        win.isDestroyed.mockReturnValue(true);
+        const closed = win.listeners.get("closed");
+        if (closed) {
+            for (const cb of closed) cb();
+        }
+    }
+}
+
+beforeEach(() => {
+    resetModuleWindowState();
+    vi.clearAllMocks();
+    state.isDev = true;
+    state.isMac = false;
+    state.isWindows = false;
+    state.isLinux = false;
+    state.supportsBackgroundMaterial = false;
+    state.isSetupRequested = false;
+    state.appVersion = "1.0.0";
+    state.options = { spellCheckLanguageCode: "en-US, de , " };
+    state.optionBools = {};
+    state.keyboardActions = [];
+    state.windows = [];
+    state.fromWebContentsResult = undefined;
+    state.appOn.clear();
+    state.registerResults = [];
+    state.nativeImageEmpty = false;
+    state.nativeImageThrow = false;
+    state.sharedSession = undefined;
+    process.env.NODE_ENV = "development";
+});
+
+afterEach(() => {
+    process.env.NODE_ENV = "development";
+});
+
+describe("window service", () => {
+    describe("createMainWindow", () => {
+        it("creates the main window with setUserTasks and Linux frame defaults", async () => {
+            await windowService.createMainWindow();
+
+            expect(fakeApp.setUserTasks).toHaveBeenCalled();
+            const win = state.windows[state.windows.length - 1];
+            expect(win.setMenuBarVisibility).toHaveBeenCalledWith(false);
+            expect(win.loadURL).toHaveBeenCalledWith("trilium-app://app/");
+            // closed handler nulls out mainWindow
+            win.fire("closed");
+            expect(windowService.getMainWindow()).toBeNull();
+        });
+
+        it("skips setUserTasks when not present on app", async () => {
+            const orig = fakeApp.setUserTasks;
+            delete (fakeApp as Record<string, unknown>).setUserTasks;
+            await windowService.createMainWindow();
+            (fakeApp as Record<string, unknown>).setUserTasks = orig;
+            expect(state.windows.length).toBeGreaterThan(0);
+        });
+
+        it("applies macOS hidden-inset title bar + vibrancy effects", async () => {
+            state.isMac = true;
+            state.optionBools = { backgroundEffects: true, spellCheckEnabled: true };
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.titleBarStyle).toBe("hiddenInset");
+            expect(opts.transparent).toBe(true);
+            expect(opts.visualEffectState).toBe("active");
+        });
+
+        it("applies Windows hidden title bar + mica material", async () => {
+            state.isWindows = true;
+            state.supportsBackgroundMaterial = true;
+            state.optionBools = { backgroundEffects: true };
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.titleBarStyle).toBe("hidden");
+            expect(opts.backgroundMaterial).toBe("auto");
+        });
+
+        it("omits the window material on Windows builds without backdrop support (Win10 / Win11 21H2)", async () => {
+            state.isWindows = true;
+            state.supportsBackgroundMaterial = false;
+            state.optionBools = { backgroundEffects: true };
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.titleBarStyle).toBe("hidden");
+            expect(opts.backgroundMaterial).toBeUndefined();
+        });
+
+        it("applies the Linux window controls overlay without a transparent effect", async () => {
+            state.isLinux = true;
+            state.optionBools = { backgroundEffects: true };
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.titleBarStyle).toBe("hidden");
+            expect(opts.titleBarOverlay).toBe(true);
+            expect(opts.transparent).toBe(undefined);
+        });
+
+        it("falls back to a frameless window on platforms without a controls overlay", async () => {
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.frame).toBe(false);
+        });
+
+        it("keeps native title bar when option enabled", async () => {
+            state.optionBools = { nativeTitleBarVisible: true };
+            await windowService.createMainWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.frame).toBeUndefined();
+        });
+
+        it("restores hidden state before reveal and does not manage a window that stays hidden", async () => {
+            await windowService.createMainWindow(true);
+            const closedWindow = state.windows[state.windows.length - 1];
+
+            closedWindow.fire("closed");
+            expect(state.windowStateManage).not.toHaveBeenCalled();
+
+            await windowService.createMainWindow(true);
+            const hiddenWindow = state.windows[state.windows.length - 1];
+            expect((hiddenWindow.opts as Record<string, unknown>).show).toBe(false);
+            expect(state.windowStateManage).not.toHaveBeenCalled();
+
+            windowService.showAndFocusWindow(hiddenWindow as never);
+            expect(state.windowStateManage).toHaveBeenCalledOnce();
+            expect(state.windowStateManage).toHaveBeenCalledWith(hiddenWindow);
+            expect(state.windowStateManage.mock.invocationCallOrder[0])
+                .toBeLessThan(hiddenWindow.show.mock.invocationCallOrder[0]);
+
+            hiddenWindow.fire("show");
+            expect(state.windowStateManage).toHaveBeenCalledOnce();
+
+            await windowService.createMainWindow();
+            const visibleWindow = state.windows[state.windows.length - 1];
+            expect((visibleWindow.opts as Record<string, unknown>).show).toBe(true);
+            expect(state.windowStateManage).toHaveBeenLastCalledWith(visibleWindow);
+        });
+
+        it("uses the show event as a one-time fallback", async () => {
+            await windowService.createMainWindow(true);
+            const hiddenWindow = state.windows[state.windows.length - 1];
+
+            hiddenWindow.fire("show");
+            hiddenWindow.fire("show");
+
+            expect(state.windowStateManage).toHaveBeenCalledOnce();
+            expect(state.windowStateManage).toHaveBeenCalledWith(hiddenWindow);
+        });
+
+        it("manages state once when restoration emits show synchronously", async () => {
+            await windowService.createMainWindow(true);
+            const hiddenWindow = state.windows[state.windows.length - 1];
+            state.windowStateManage.mockImplementationOnce(() => hiddenWindow.fire("show"));
+
+            windowService.showAndFocusWindow(hiddenWindow as never);
+
+            expect(state.windowStateManage).toHaveBeenCalledOnce();
+        });
+
+        it("marks startup metrics for creation, first paint, and load finish", async () => {
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+
+            expect(markStartupMetric).toHaveBeenCalledWith("main-window-created");
+
+            win.fire("ready-to-show");
+            expect(markStartupMetric).toHaveBeenCalledWith("main-window-first-paint");
+
+            win.webContents.fire("did-finish-load");
+            expect(markStartupMetric).toHaveBeenCalledWith("main-window-load-finished");
+        });
+    });
+
+    describe("createExtraWindow", () => {
+        it("creates an extra window and configures web contents", async () => {
+            state.optionBools = { spellCheckEnabled: true };
+            await windowService.createExtraWindow("#root/abc");
+            const win = state.windows[state.windows.length - 1];
+            expect(win.loadURL).toHaveBeenCalledWith("trilium-app://app/?extraWindow=1#root/abc");
+            expect(win.webContents.session.setSpellCheckerLanguages).toHaveBeenCalled();
+        });
+
+        it("adopts a window the renderer opened through window.open", async () => {
+            state.optionBools = { spellCheckEnabled: false };
+            await windowService.createExtraWindow("#opener");
+            const opener = state.windows[state.windows.length - 1];
+
+            const child = new FakeBrowserWindow();
+            opener.webContents.fire("did-create-window", child);
+
+            expect(child.setMenuBarVisibility).toHaveBeenCalledWith(false);
+            expect(child.webContents.session.setSpellCheckerEnabled).toHaveBeenCalledWith(false);
+            state.ipcEmit.mockClear();
+            child.fire("focus");
+            expect(state.ipcEmit).toHaveBeenCalledWith("reload-tray");
+        });
+    });
+
+    describe("createSetupWindow / closeSetupWindow", () => {
+        it("creates and closes a setup window (Linux)", async () => {
+            await windowService.createSetupWindow();
+            const win = state.windows[state.windows.length - 1];
+            expect(win.removeMenu).toHaveBeenCalled();
+            windowService.closeSetupWindow();
+            expect(win.close).toHaveBeenCalled();
+            // closed handler clears setupWindow; closing again is a no-op
+            win.fire("closed");
+            windowService.closeSetupWindow();
+        });
+
+        it("applies Windows mica background to the setup window only where supported", async () => {
+            state.isWindows = true;
+            state.supportsBackgroundMaterial = true;
+            await windowService.createSetupWindow();
+            let opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.backgroundMaterial).toBe("mica");
+
+            // Windows 10: no DWM backdrop — a material would leave the window black (#10590).
+            state.supportsBackgroundMaterial = false;
+            await windowService.createSetupWindow();
+            opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.backgroundMaterial).toBeUndefined();
+        });
+
+        it("applies macOS vibrancy to the setup window", async () => {
+            state.isMac = true;
+            await windowService.createSetupWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(opts.vibrancy).toBe("under-window");
+        });
+
+        it("names the window for what it is: getting started, or starting over", async () => {
+            // Asserted as the resolved English rather than as the key, which also proves both
+            // entries are really in the catalog the Electron main process reads.
+            await windowService.createSetupWindow();
+            expect((state.windows[state.windows.length - 1].opts as Record<string, unknown>).title)
+                .toBe("Getting Started - Trilium Notes");
+
+            state.isSetupRequested = true;
+            await windowService.createSetupWindow();
+            expect((state.windows[state.windows.length - 1].opts as Record<string, unknown>).title)
+                .toBe("Start Over - Trilium Notes");
+        });
+
+        it("keeps that title, which the page it loads would otherwise replace with the app name", async () => {
+            await windowService.createSetupWindow();
+            const preventDefault = vi.fn();
+
+            state.windows[state.windows.length - 1].fire("page-title-updated", { preventDefault });
+
+            expect(preventDefault).toHaveBeenCalled();
+        });
+    });
+
+    describe("getIcon (via createSetupWindow)", () => {
+        it("uses the test asset icon when version contains 'test'", async () => {
+            process.env.NODE_ENV = "production";
+            state.appVersion = "1.0.0-test";
+            await windowService.createSetupWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(String(opts.icon)).toContain("icon-dev.png");
+        });
+
+        it("uses the production icon for a normal version", async () => {
+            process.env.NODE_ENV = "production";
+            state.appVersion = "1.0.0";
+            await windowService.createSetupWindow();
+            const opts = state.windows[state.windows.length - 1].opts as Record<string, unknown>;
+            expect(String(opts.icon)).toContain("icon.png");
+        });
+    });
+
+    describe("configureWebContents", () => {
+        beforeEach(async () => {
+            state.optionBools = { spellCheckEnabled: true };
+            await windowService.createMainWindow();
+        });
+
+        // Window-open and navigation policy is installed globally by
+        // web_contents_security.ts and tested in web_contents_security.spec.ts.
+
+        it("forwards full-screen, navigation and context-menu events", () => {
+            const win = state.windows[state.windows.length - 1];
+            const wc = win.webContents;
+
+            win.fire("enter-full-screen");
+            win.fire("leave-full-screen");
+            wc.fire("did-navigate");
+            wc.fire("did-navigate-in-page");
+            wc.fire("context-menu", {}, {
+                x: 1, y: 2, linkURL: "u", linkText: "t", mediaType: "none",
+                isEditable: true, selectionText: "s", misspelledWord: "",
+                dictionarySuggestions: [],
+                editFlags: { canCut: true, canCopy: true, canPaste: false }
+            });
+
+            expect(wc.send).toHaveBeenCalledWith("enter-full-screen");
+            expect(wc.send).toHaveBeenCalledWith("leave-full-screen");
+            expect(wc.send).toHaveBeenCalledWith("did-navigate");
+            expect(wc.send).toHaveBeenCalledWith("did-navigate-in-page");
+            expect(wc.send).toHaveBeenCalledWith("context-menu", expect.objectContaining({ x: 1 }));
+        });
+
+        it("forwards the DevTools dock state to the renderer", () => {
+            const win = state.windows[state.windows.length - 1];
+            const wc = win.webContents;
+
+            // Docked: the DevTools contents resolves to the same BrowserWindow as the page.
+            wc.isDevToolsOpened.mockReturnValue(true);
+            wc.devToolsWebContents = new FakeWebContents();
+            wc.fire("devtools-opened");
+            expect(wc.send).toHaveBeenCalledWith("dev-tools-dock-changed", true);
+
+            // Detached: the DevTools contents has no owning BrowserWindow.
+            wc.send.mockClear();
+            state.fromWebContentsResult = "null";
+            wc.fire("devtools-focused");
+            expect(wc.send).toHaveBeenCalledWith("dev-tools-dock-changed", false);
+
+            // Closed.
+            wc.send.mockClear();
+            state.fromWebContentsResult = undefined;
+            wc.isDevToolsOpened.mockReturnValue(false);
+            wc.fire("devtools-closed");
+            expect(wc.send).toHaveBeenCalledWith("dev-tools-dock-changed", false);
+        });
+
+        it("skips full-screen wiring when no window resolves", async () => {
+            state.fromWebContentsResult = "null";
+            // configureWebContents is invoked during createExtraWindow
+            await windowService.createExtraWindow("#x");
+            // no throw means the null branch was taken
+            expect(true).toBe(true);
+        });
+
+        it("applies the disabled spell-check state to the session", async () => {
+            state.optionBools = { spellCheckEnabled: false };
+            await windowService.createExtraWindow("#y");
+            const wc = state.windows[state.windows.length - 1].webContents;
+            // The subsystem is always attached (webPreferences.spellcheck: true); the
+            // option drives the runtime enabled state instead of window creation.
+            expect(wc.session.setSpellCheckerEnabled).toHaveBeenCalledWith(false);
+        });
+
+        it("applies the enabled spell-check state to the session", async () => {
+            state.optionBools = { spellCheckEnabled: true };
+            await windowService.createExtraWindow("#z");
+            const wc = state.windows[state.windows.length - 1].webContents;
+            expect(wc.session.setSpellCheckerEnabled).toHaveBeenCalledWith(true);
+        });
+
+        // Regression for issue #10569: Electron's setSpellCheckerLanguages() force-sets the
+        // enabled pref to !languages.empty(), so loading a (non-empty) language list AFTER
+        // disabling would silently re-enable spell check on every launch. The enabled state
+        // must therefore be applied last.
+        it("loads languages before applying the disabled state so it is not re-enabled", async () => {
+            state.optionBools = { spellCheckEnabled: false };
+            state.options = { spellCheckLanguageCode: "en-US" };
+            await windowService.createExtraWindow("#order");
+            const session = state.windows[state.windows.length - 1].webContents.session;
+
+            expect(session.setSpellCheckerLanguages).toHaveBeenCalledWith(["en-US"]);
+            expect(session.setSpellCheckerEnabled).toHaveBeenCalledWith(false);
+            const languagesOrder = session.setSpellCheckerLanguages.mock.invocationCallOrder[0];
+            const enabledOrder = session.setSpellCheckerEnabled.mock.invocationCallOrder[0];
+            expect(languagesOrder).toBeLessThan(enabledOrder);
+        });
+
+        it("loads spellcheck languages once per session", async () => {
+            state.optionBools = { spellCheckEnabled: true };
+            state.options = { spellCheckLanguageCode: "en-US, de , " };
+            await windowService.createExtraWindow("#a");
+            const wc = state.windows[state.windows.length - 1].webContents;
+            expect(wc.session.setSpellCheckerLanguages).toHaveBeenCalledWith(["en-US", "de"]);
+
+            // Re-using the same session object skips the second load (WeakSet guard)
+            wc.session.setSpellCheckerLanguages.mockClear();
+            await windowService.createExtraWindow("#b");
+            // new window => new session, so it loads again; verify a fresh call happened
+            const wc2 = state.windows[state.windows.length - 1].webContents;
+            expect(wc2.session.setSpellCheckerLanguages).toHaveBeenCalled();
+        });
+    });
+
+    describe("setupSpellcheckForSession WeakSet guard", () => {
+        it("loads the session once and skips it on subsequent windows sharing it", async () => {
+            state.optionBools = { spellCheckEnabled: true };
+            state.options = { spellCheckLanguageCode: "en-US, fr" };
+            // Force every new window's webContents to share one session so the
+            // second configureWebContents call hits the WeakSet `has` guard.
+            const shared = {
+                clearCache: vi.fn(() => Promise.resolve()),
+                availableSpellCheckerLanguages: ["en-US"],
+                setSpellCheckerLanguages: vi.fn(),
+                setSpellCheckerEnabled: vi.fn(),
+                on: vi.fn()
+            };
+            state.sharedSession = shared;
+
+            await windowService.createExtraWindow("#one");
+            expect(shared.setSpellCheckerLanguages).toHaveBeenCalledTimes(1);
+            expect(shared.setSpellCheckerLanguages).toHaveBeenCalledWith(["en-US", "fr"]);
+
+            await windowService.createExtraWindow("#two");
+            // Same session => guard short-circuits, no second load.
+            expect(shared.setSpellCheckerLanguages).toHaveBeenCalledTimes(1);
+
+            state.sharedSession = undefined;
+        });
+    });
+
+    describe("registerGlobalShortcuts", () => {
+        it("registers global shortcuts and logs success/failure", async () => {
+            state.keyboardActions = [
+                { actionName: "noShortcuts" },
+                { actionName: "emptyShortcuts", effectiveShortcuts: undefined },
+                { actionName: "localOnly", effectiveShortcuts: ["ctrl+a"] },
+                { actionName: "openApp", effectiveShortcuts: ["global:Ctrl+Shift+O"] },
+                { actionName: "toggleTray", effectiveShortcuts: ["global:Ctrl+Shift+T"] }
+            ];
+            // First register succeeds, second fails.
+            state.registerResults = [true, false];
+
+            await windowService.createMainWindow();
+            await windowService.registerGlobalShortcuts();
+
+            expect(fakeGlobalShortcut.register).toHaveBeenCalledTimes(2);
+            expect(state.log.info).toHaveBeenCalledWith(expect.stringContaining("Registered global shortcut"));
+            expect(state.log.info).toHaveBeenCalledWith(expect.stringContaining("Could not register"));
+        });
+
+        it("invokes the shortcut callback for toggleTray and normal actions", async () => {
+            state.keyboardActions = [
+                { actionName: "toggleTray", effectiveShortcuts: ["global:Ctrl+Shift+T"] },
+                { actionName: "openApp", effectiveShortcuts: ["global:Ctrl+Shift+O"] }
+            ];
+            await windowService.createMainWindow();
+            const mainWin = state.windows[state.windows.length - 1];
+            // Make this window the last focused.
+            mainWin.fire("focus");
+            await windowService.registerGlobalShortcuts();
+
+            const trayCb = fakeGlobalShortcut.register.mock.calls[0][1] as Handler;
+            const openCb = fakeGlobalShortcut.register.mock.calls[1][1] as Handler;
+
+            mainWin.isMinimized.mockReturnValue(false);
+            trayCb();
+            expect(mainWin.focus).toHaveBeenCalled();
+            expect(mainWin.webContents.send).toHaveBeenCalledWith("globalShortcut", "toggleTray");
+
+            // Minimized => showAndFocusWindow restores before showing.
+            mainWin.isMinimized.mockReturnValue(true);
+            openCb();
+            expect(mainWin.restore).toHaveBeenCalled();
+            expect(mainWin.show).toHaveBeenCalled();
+            expect(mainWin.webContents.send).toHaveBeenCalledWith("globalShortcut", "openApp");
+
+            // Not minimized => skips restore.
+            mainWin.restore.mockClear();
+            mainWin.isMinimized.mockReturnValue(false);
+            openCb();
+            expect(mainWin.restore).not.toHaveBeenCalled();
+        });
+
+        it("falls back to mainWindow and guards destroyed windows", async () => {
+            state.keyboardActions = [
+                { actionName: "openApp", effectiveShortcuts: ["global:Ctrl+Shift+O"] }
+            ];
+            await windowService.createMainWindow();
+            const mainWin = state.windows[state.windows.length - 1];
+            await windowService.registerGlobalShortcuts();
+            const cb = fakeGlobalShortcut.register.mock.calls[0][1] as Handler;
+
+            // No focused window => fall back to mainWindow, which is destroyed => early return.
+            mainWin.isDestroyed.mockReturnValue(true);
+            cb();
+            expect(mainWin.show).not.toHaveBeenCalled();
+
+            // Now with neither focused nor main window (close main): callback returns early.
+            mainWin.fire("closed");
+        });
+    });
+
+    describe("showAndFocusWindow / getters", () => {
+        it("restores, shows and focuses a minimized window", async () => {
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+            win.isMinimized.mockReturnValue(true);
+
+            windowService.showAndFocusWindow(win as never);
+
+            expect(win.restore).toHaveBeenCalled();
+            expect(win.show).toHaveBeenCalled();
+            expect(win.focus).toHaveBeenCalled();
+            expect(win.restore.mock.invocationCallOrder[0])
+                .toBeLessThan(win.show.mock.invocationCallOrder[0]);
+            expect(win.show.mock.invocationCallOrder[0])
+                .toBeLessThan(win.focus.mock.invocationCallOrder[0]);
+
+            win.fire("focus");
+            expect(windowService.getLastFocusedWindow()).toBe(win);
+            expect(windowService.getAllWindows()).toContain(win);
+            expect(windowService.getMainWindow()).toBe(win);
+        });
+
+        it("returns null for last focused window when none exist", () => {
+            expect(windowService.getLastFocusedWindow()).toBeNull();
+        });
+    });
+
+    describe("trackWindowFocus", () => {
+        it("reloads the tray on focus/closed when tray enabled", async () => {
+            state.optionBools = { disableTray: false };
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+            win.fire("focus");
+            win.fire("closed");
+            expect(state.ipcEmit).toHaveBeenCalledWith("reload-tray");
+        });
+
+        it("does not reload the tray when tray disabled", async () => {
+            state.optionBools = { disableTray: true };
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+            state.ipcEmit.mockClear();
+            win.fire("focus");
+            win.fire("closed");
+            expect(state.ipcEmit).not.toHaveBeenCalledWith("reload-tray");
+        });
+
+        it("dedupes re-focus and drops destroyed windows from the focus list", async () => {
+            await windowService.createMainWindow();
+            const winA = state.windows[state.windows.length - 1];
+            await windowService.createExtraWindow("#b");
+            const winB = state.windows[state.windows.length - 1];
+
+            winA.fire("focus");
+            winB.fire("focus");
+            // Re-focusing winB exercises the `w !== win` filter branch (it removes itself).
+            winB.fire("focus");
+            expect(windowService.getLastFocusedWindow()).toBe(winB);
+
+            // Destroy winA, then focus winB so the `!w.isDestroyed()` branch drops winA.
+            winA.isDestroyed.mockReturnValue(true);
+            winB.fire("focus");
+            expect(windowService.getAllWindows()).not.toContain(winA);
+        });
+    });
+
+    describe("setupWindowing IPC handlers", () => {
+        beforeEach(() => {
+            state.ipcOn.clear();
+            state.ipcHandle.clear();
+            state.eventSubs.clear();
+            setupWindowing();
+            // Provide a window so fromWebContents resolves.
+            new FakeBrowserWindow();
+        });
+
+        it("hands the window-open policy the extra-window options, preload included", () => {
+            const [options] = vi.mocked(setupWebContentsSecurity).mock.calls.at(-1) ?? [];
+            const extraWindowOptions = options?.extraWindowOptions();
+            expect(extraWindowOptions?.width).toBe(1000);
+            const preload = extraWindowOptions?.webPreferences?.preload;
+            expect(preload).toMatch(/preload\.(compiled\.)?cjs$/);
+            expect(extraWindowOptions?.webPreferences?.nodeIntegration).toBe(false);
+        });
+
+        it("reload-all-windows reloads every window", () => {
+            const win = state.windows[state.windows.length - 1];
+            fireOn("reload-all-windows", makeEvent());
+            expect(win.reload).toHaveBeenCalled();
+        });
+
+        it("restart-app relaunches and exits", () => {
+            fireOn("restart-app", makeEvent());
+            expect(fakeApp.relaunch).toHaveBeenCalled();
+            expect(fakeApp.exit).toHaveBeenCalled();
+        });
+
+        it("copy-image-to-clipboard writes a PNG clipboard item", async () => {
+            await fireOn("copy-image-to-clipboard", makeEvent(), new Uint8Array([1, 2, 3]));
+            const [items] = electronSurface.clipboard.write.mock.calls[0] as [FakeClipboardItem[]];
+            expect(items[0]).toBeInstanceOf(FakeClipboardItem);
+            const blob = items[0].items["image/png"] as Blob;
+            expect(blob.type).toBe("image/png");
+            expect(blob.size).toBe(4);
+        });
+
+        it("copy-image-to-clipboard logs when the image is empty", async () => {
+            state.nativeImageEmpty = true;
+            await fireOn("copy-image-to-clipboard", makeEvent(), new Uint8Array([1]));
+            expect(state.log.error).toHaveBeenCalledWith(expect.stringContaining("nativeImage is empty"));
+            expect(electronSurface.clipboard.write).not.toHaveBeenCalled();
+        });
+
+        it("copy-image-to-clipboard logs when conversion throws", async () => {
+            state.nativeImageThrow = true;
+            await fireOn("copy-image-to-clipboard", makeEvent(), new Uint8Array([1]));
+            expect(state.log.error).toHaveBeenCalledWith(expect.stringContaining("failed"));
+        });
+
+        it("read-clipboard-text and read-clipboard-html return the clipboard flavors", async () => {
+            const html = new Blob(["<b>html</b>"], { type: "text/html" });
+            const text = new Blob(["text"], { type: "text/plain" });
+            electronSurface.clipboard.readText.mockReturnValueOnce(Promise.resolve("text"));
+            electronSurface.clipboard.read
+                .mockResolvedValueOnce([
+                    new FakeClipboardItem({ "text/plain": text, "text/html": html })
+                ])
+                .mockResolvedValueOnce([new FakeClipboardItem({ "text/plain": text })]);
+
+            expect(await fireHandle("read-clipboard-text", makeEvent())).toBe("text");
+            expect(await fireHandle("read-clipboard-html", makeEvent())).toBe("<b>html</b>");
+            expect(await fireHandle("read-clipboard-html", makeEvent())).toBe("");
+        });
+
+        it("show-window shows the resolved window (and tolerates null)", () => {
+            const win = state.windows[state.windows.length - 1];
+            fireOn("show-window", makeEvent());
+            expect(win.show).toHaveBeenCalled();
+            expect(win.focus).not.toHaveBeenCalled();
+
+            state.fromWebContentsResult = "null";
+            fireOn("show-window", makeEvent());
+        });
+
+        it("clear-cache clears the session cache", async () => {
+            const ev = makeEvent();
+            await fireHandle("clear-cache", ev);
+            expect(ev.sender.session.clearCache).toHaveBeenCalled();
+        });
+
+        it("toggle-all-windows hides when all visible and shows when hidden", () => {
+            const win = state.windows[state.windows.length - 1];
+            win.isVisible.mockReturnValue(true);
+            fireOn("toggle-all-windows", makeEvent());
+            expect(win.hide).toHaveBeenCalled();
+
+            win.isVisible.mockReturnValue(false);
+            fireOn("toggle-all-windows", makeEvent());
+            expect(win.show).toHaveBeenCalled();
+            expect(win.focus).not.toHaveBeenCalled();
+        });
+
+        it("get-available-spellchecker-languages returns the list", () => {
+            const ev = makeEvent();
+            fireOn("get-available-spellchecker-languages", ev);
+            expect(ev.returnValue).toEqual(["en-US", "de"]);
+        });
+
+        it("set-spellchecker-languages applies the codes to every open window's session", () => {
+            new FakeBrowserWindow();
+            fireOn("set-spellchecker-languages", makeEvent(), ["en-US", "fr"]);
+            for (const win of state.windows) {
+                expect(win.webContents.session.setSpellCheckerLanguages).toHaveBeenCalledWith(["en-US", "fr"]);
+            }
+        });
+
+        // Regression for issue #10569: setSpellCheckerLanguages() force-enables spell check, so a
+        // live language change while the option is disabled must re-assert the disabled state after.
+        it("set-spellchecker-languages re-asserts the disabled option after setting the codes", () => {
+            state.optionBools = { spellCheckEnabled: false };
+            new FakeBrowserWindow();
+            fireOn("set-spellchecker-languages", makeEvent(), ["en-US", "fr"]);
+            for (const win of state.windows) {
+                const session = win.webContents.session;
+                expect(session.setSpellCheckerLanguages).toHaveBeenCalledWith(["en-US", "fr"]);
+                expect(session.setSpellCheckerEnabled).toHaveBeenCalledWith(false);
+                const languagesOrder = session.setSpellCheckerLanguages.mock.invocationCallOrder[0];
+                const enabledOrder = session.setSpellCheckerEnabled.mock.invocationCallOrder[0];
+                expect(languagesOrder).toBeLessThan(enabledOrder);
+            }
+        });
+
+        it("set-spellchecker-enabled applies the state to every open window's session", () => {
+            new FakeBrowserWindow();
+            fireOn("set-spellchecker-enabled", makeEvent(), false);
+            for (const win of state.windows) {
+                expect(win.webContents.session.setSpellCheckerEnabled).toHaveBeenCalledWith(false);
+            }
+        });
+
+        it("title bar / material / vibrancy / button position setters", () => {
+            const win = state.windows[state.windows.length - 1];
+            fireOn("set-title-bar-overlay", makeEvent(), { color: "#fff", symbolColor: "#000" });
+            fireOn("set-window-button-position", makeEvent(), { x: 1, y: 2 });
+            fireOn("set-background-material", makeEvent(), "mica");
+            fireOn("set-vibrancy", makeEvent(), "sidebar");
+            fireOn("clear-navigation-history", makeEvent());
+            expect(win.setTitleBarOverlay).toHaveBeenCalled();
+            expect(win.setWindowButtonPosition).toHaveBeenCalled();
+            expect(win.setBackgroundMaterial).toHaveBeenCalledWith("mica");
+            expect(win.setVibrancy).toHaveBeenCalledWith("sidebar");
+            expect(win.webContents.navigationHistory.clear).toHaveBeenCalled();
+        });
+
+        it("title bar setters tolerate a null window", () => {
+            state.fromWebContentsResult = "null";
+            fireOn("set-title-bar-overlay", makeEvent(), { color: "#fff", symbolColor: "#000" });
+            fireOn("set-window-button-position", makeEvent(), { x: 1, y: 2 });
+            fireOn("set-background-material", makeEvent(), "mica");
+            fireOn("set-vibrancy", makeEvent(), "sidebar");
+            fireOn("clear-navigation-history", makeEvent());
+            // no throw
+        });
+
+        it("set-native-theme-source updates the theme", () => {
+            fireOn("set-native-theme-source", makeEvent(), "dark");
+            expect(electronSurface.nativeTheme.themeSource).toBe("dark");
+        });
+
+        it("toggle-dev-tools toggles dev tools on the sender", () => {
+            const ev = makeEvent();
+            fireOn("toggle-dev-tools", ev);
+            expect(ev.sender.toggleDevTools).toHaveBeenCalled();
+        });
+
+        it("is-dev-tools-docked reports whether DevTools shares the sender's window", () => {
+            const closed = makeEvent();
+            fireOn("is-dev-tools-docked", closed);
+            expect(closed.returnValue).toBe(false);
+
+            const docked = makeEvent();
+            docked.sender.isDevToolsOpened.mockReturnValue(true);
+            docked.sender.devToolsWebContents = new FakeWebContents();
+            fireOn("is-dev-tools-docked", docked);
+            expect(docked.returnValue).toBe(true);
+        });
+
+        it("window state queries and mutations", () => {
+            const win = state.windows[state.windows.length - 1];
+            const fs1 = makeEvent();
+            fireOn("is-full-screen", fs1);
+            expect(fs1.returnValue).toBe(true);
+            fireOn("set-full-screen", makeEvent(), true);
+            fireOn("minimize-window", makeEvent());
+            fireOn("maximize-window", makeEvent());
+            fireOn("unmaximize-window", makeEvent());
+            const mx = makeEvent();
+            fireOn("is-maximized", mx);
+            expect(mx.returnValue).toBe(true);
+            fireOn("close-window", makeEvent());
+            const aot = makeEvent();
+            fireOn("is-always-on-top", aot);
+            expect(aot.returnValue).toBe(true);
+            fireOn("set-always-on-top", makeEvent(), true);
+
+            expect(win.setFullScreen).toHaveBeenCalledWith(true);
+            expect(win.minimize).toHaveBeenCalled();
+            expect(win.maximize).toHaveBeenCalled();
+            expect(win.unmaximize).toHaveBeenCalled();
+            expect(win.close).toHaveBeenCalled();
+            expect(win.setAlwaysOnTop).toHaveBeenCalledWith(true);
+        });
+
+        it("window state queries return defaults when window is null", () => {
+            state.fromWebContentsResult = "null";
+            const fs1 = makeEvent();
+            fireOn("is-full-screen", fs1);
+            expect(fs1.returnValue).toBe(false);
+            const mx = makeEvent();
+            fireOn("is-maximized", mx);
+            expect(mx.returnValue).toBe(false);
+            const aot = makeEvent();
+            fireOn("is-always-on-top", aot);
+            expect(aot.returnValue).toBe(false);
+            // mutations tolerate null
+            fireOn("set-full-screen", makeEvent(), true);
+            fireOn("minimize-window", makeEvent());
+            fireOn("maximize-window", makeEvent());
+            fireOn("unmaximize-window", makeEvent());
+            fireOn("close-window", makeEvent());
+            fireOn("set-always-on-top", makeEvent(), true);
+        });
+
+        it("web-contents-action covers every case", () => {
+            const ev = makeEvent();
+            fireOn("web-contents-action", ev, "cut");
+            fireOn("web-contents-action", ev, "copy");
+            fireOn("web-contents-action", ev, "paste");
+            fireOn("web-contents-action", ev, "pasteAndMatchStyle");
+            fireOn("web-contents-action", ev, "insertText", "hello");
+            fireOn("web-contents-action", ev, "insertText"); // no text => skipped
+            fireOn("web-contents-action", ev, "unknown"); // default => nothing
+
+            expect(ev.sender.cut).toHaveBeenCalled();
+            expect(ev.sender.copy).toHaveBeenCalled();
+            expect(ev.sender.paste).toHaveBeenCalled();
+            expect(ev.sender.pasteAndMatchStyle).toHaveBeenCalled();
+            expect(ev.sender.insertText).toHaveBeenCalledTimes(1);
+            expect(ev.sender.insertText).toHaveBeenCalledWith("hello");
+        });
+
+        it("navigation-history covers every method and the default", () => {
+            const back = makeEvent();
+            fireOn("navigation-history", back, "canGoBack");
+            expect(back.returnValue).toBe(true);
+            const fwd = makeEvent();
+            fireOn("navigation-history", fwd, "canGoForward");
+            expect(fwd.returnValue).toBe(false);
+            const all = makeEvent();
+            fireOn("navigation-history", all, "getAllEntries");
+            expect(all.returnValue).toEqual([{ url: "a" }]);
+            const idx = makeEvent();
+            fireOn("navigation-history", idx, "getActiveIndex");
+            expect(idx.returnValue).toBe(0);
+            const len = makeEvent();
+            fireOn("navigation-history", len, "length");
+            expect(len.returnValue).toBe(1);
+            const def = makeEvent();
+            fireOn("navigation-history", def, "bogus");
+            expect(def.returnValue).toBeNull();
+        });
+
+        it("navigation-history-go-to-index delegates to the sender", () => {
+            const ev = makeEvent();
+            fireOn("navigation-history-go-to-index", ev, 3);
+            expect(ev.sender.navigationHistory.goToIndex).toHaveBeenCalledWith(3);
+        });
+    });
+
+    describe("application menu", () => {
+        const realPlatform = process.platform;
+
+        async function setupWindowingOn(platform: NodeJS.Platform) {
+            vi.clearAllMocks();
+            Object.defineProperty(process, "platform", { value: platform, configurable: true });
+            setupWindowing();
+            await Promise.resolve(); // let whenReady().then(...) run
+        }
+
+        function flattenItems(items: MenuItemConstructorOptions[]): MenuItemConstructorOptions[] {
+            return items.flatMap((item) => [
+                item,
+                ...(Array.isArray(item.submenu) ? flattenItems(item.submenu) : [])
+            ]);
+        }
+
+        afterEach(() => {
+            Object.defineProperty(process, "platform", { value: realPlatform, configurable: true });
+        });
+
+        it("installs a menu without the minimize accelerator, except on macOS", async () => {
+            const { buildFromTemplate, setApplicationMenu } = electronSurface.Menu;
+
+            for (const platform of ["linux", "win32"] as const) {
+                await setupWindowingOn(platform);
+
+                expect(buildFromTemplate).toHaveBeenCalledTimes(1);
+                const menu = buildFromTemplate.mock.results[0]?.value;
+                expect(setApplicationMenu.mock.calls).toEqual([[menu]]);
+
+                const items = flattenItems(buildFromTemplate.mock.calls[0]?.[0] ?? []);
+                const roles = items.map((item) => item.role);
+                expect(roles).toEqual(
+                    expect.arrayContaining(["fileMenu", "editMenu", "viewMenu", "close"])
+                );
+                expect(roles).not.toContain("minimize");
+                // Without its own submenu, a `windowMenu` gets Electron's defaults and `minimize`.
+                const defaultWindowMenus = items.filter((item) =>
+                    item.role === "windowMenu" && !Array.isArray(item.submenu));
+                expect(defaultWindowMenus).toEqual([]);
+            }
+
+            await setupWindowingOn("darwin");
+            expect(setApplicationMenu).not.toHaveBeenCalled();
+        });
+
+        it("reports a menu that Electron rejects", async () => {
+            const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+            electronSurface.Menu.buildFromTemplate.mockImplementationOnce(() => {
+                throw new Error("bad template");
+            });
+
+            try {
+                await setupWindowingOn("linux");
+                await new Promise((resolve) => setImmediate(resolve));
+
+                expect(consoleError).toHaveBeenCalledWith(expect.stringContaining("bad template"));
+                expect(electronSurface.Menu.setApplicationMenu).not.toHaveBeenCalled();
+            } finally {
+                consoleError.mockRestore();
+            }
+        });
+    });
+
+    describe("DB_INITIALIZED subscription", () => {
+        beforeEach(() => {
+            state.eventSubs.clear();
+            setupWindowing();
+        });
+
+        it("no-ops when there is no setup window", async () => {
+            const cb = state.eventSubs.get("DB_INITIALIZED");
+            if (!cb) throw new Error("no DB_INITIALIZED subscriber");
+            const sizeBefore = state.windows.length;
+            await cb();
+            expect(state.windows.length).toBe(sizeBefore);
+        });
+
+        it("swaps the setup window for the main window", async () => {
+            await windowService.createSetupWindow();
+            const setupWin = state.windows[state.windows.length - 1];
+            const cb = state.eventSubs.get("DB_INITIALIZED");
+            if (!cb) throw new Error("no DB_INITIALIZED subscriber");
+            await cb();
+            expect(setupWin.close).toHaveBeenCalled();
+        });
+
+        it("logs when creating the main window throws", async () => {
+            await windowService.createSetupWindow();
+            const cb = state.eventSubs.get("DB_INITIALIZED");
+            if (!cb) throw new Error("no DB_INITIALIZED subscriber");
+            // Make BrowserWindow construction throw on the next createMainWindow.
+            const spy = vi.spyOn(state.windows, "push").mockImplementationOnce(() => {
+                throw new Error("construct failed");
+            });
+            await cb();
+            spy.mockRestore();
+            expect(state.log.error).toHaveBeenCalledWith(expect.stringContaining("Failed to swap"));
+        });
+    });
+
+    describe("close-to-tray", () => {
+        it("hides the main window instead of closing when closeToTray is enabled", async () => {
+            state.optionBools = { closeToTray: true };
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+
+            const event = { preventDefault: vi.fn() };
+            win.fire("close", event);
+
+            expect(event.preventDefault).toHaveBeenCalled();
+            expect(win.hide).toHaveBeenCalled();
+            // The window must survive so it can be shown again from the tray.
+            expect(windowService.getMainWindow()).toBe(win);
+        });
+
+        it("closes normally when closeToTray is disabled", async () => {
+            state.optionBools = {};
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+
+            const event = { preventDefault: vi.fn() };
+            win.fire("close", event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(win.hide).not.toHaveBeenCalled();
+        });
+
+        it("closes normally when the tray is disabled, even if closeToTray is on", async () => {
+            state.optionBools = { closeToTray: true, disableTray: true };
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+
+            const event = { preventDefault: vi.fn() };
+            win.fire("close", event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(win.hide).not.toHaveBeenCalled();
+        });
+
+        // NOTE: keep this test LAST. `before-quit` flips the module-level
+        // `isQuitting` flag to `true` and nothing resets it, so any close-to-tray
+        // assertion ordered after this one would see the window close for real.
+        it("lets the main window close for real once a genuine quit is underway", async () => {
+            setupWindowing();
+            state.optionBools = { closeToTray: true };
+            await windowService.createMainWindow();
+            const win = state.windows[state.windows.length - 1];
+
+            // Simulate a real quit (Cmd+Q, tray "Quit", app menu, OS shutdown).
+            const beforeQuit = state.appOn.get("before-quit");
+            if (!beforeQuit) throw new Error("before-quit handler not registered");
+            beforeQuit();
+
+            const event = { preventDefault: vi.fn() };
+            win.fire("close", event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(win.hide).not.toHaveBeenCalled();
+        });
+    });
+});

@@ -1,15 +1,27 @@
-import { normalizeMimeTypeForCKEditor, type MimeType, MIME_TYPE_AUTO, MIME_TYPES_DICT } from "@triliumnext/commons";
+import {
+    type MimeType, MIME_TYPE_AUTO, MIME_TYPE_TRILIUM_LOG, normalizeMimeTypeForCKEditor,
+    resolveEnabledMimeTypes
+} from "@triliumnext/commons";
+
+import { t } from "./i18n.js";
 import options from "./options.js";
+
+// Titles that are descriptive names rather than language identifiers, so they get localized here
+// (the shared MIME dict in commons has no access to the client's i18n).
+const TRANSLATED_TITLES: Record<string, string> = {
+    [MIME_TYPE_TRILIUM_LOG]: "code_mime_types.trilium_log"
+};
 
 let mimeTypes: MimeType[] | null = null;
 
 function loadMimeTypes() {
-    mimeTypes = JSON.parse(JSON.stringify(MIME_TYPES_DICT)) as MimeType[]; // clone
-
-    const enabledMimeTypes = options.getJson("codeNotesMimeTypes") || MIME_TYPES_DICT.filter((mt) => mt.default).map((mt) => mt.mime);
+    mimeTypes = resolveEnabledMimeTypes(options.getJson("codeNotesMimeTypes"));
 
     for (const mt of mimeTypes) {
-        mt.enabled = enabledMimeTypes.includes(mt.mime) || mt.mime === "text/plain"; // text/plain is always enabled
+        const titleKey = TRANSLATED_TITLES[mt.mime];
+        if (titleKey) {
+            mt.title = t(titleKey);
+        }
     }
 }
 

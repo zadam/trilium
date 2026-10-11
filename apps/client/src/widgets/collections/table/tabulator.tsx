@@ -8,8 +8,8 @@ import { EventCallBackMethods, Module, Options, Tabulator as VanillaTabulator } 
 
 import { ParentComponent, renderReactWidget } from "../../react/react_utils";
 
-interface TableProps<T> extends Omit<Options, "data" | "footerElement" | "index"> {
-    tabulatorRef?: RefObject<VanillaTabulator>;
+export interface TableProps<T extends {}> extends Omit<Options, "data" | "footerElement" | "index"> {
+    tabulatorRef?: RefObject<VanillaTabulator | null>;
     className?: string;
     data?: T[];
     modules?: (new (table: VanillaTabulator) => Module)[];
@@ -19,7 +19,7 @@ interface TableProps<T> extends Omit<Options, "data" | "footerElement" | "index"
     onReady?: () => void;
 }
 
-export default function Tabulator<T>({ className, columns, data, modules, tabulatorRef: externalTabulatorRef, footerElement, events, index, dataTree, onReady, ...restProps }: TableProps<T>) {
+export default function Tabulator<T extends {}>({ className, columns, data, modules, tabulatorRef: externalTabulatorRef, footerElement, events, index, dataTree, onReady, ...restProps }: TableProps<T>) {
     const parentComponent = useContext(ParentComponent);
     const containerRef = useRef<HTMLDivElement>(null);
     const tabulatorRef = useRef<VanillaTabulator>(null);
@@ -69,8 +69,9 @@ export default function Tabulator<T>({ className, columns, data, modules, tabula
         };
     }, Object.values(events ?? {}));
 
-    // Change in data.
-    useEffect(() => { tabulatorRef.current?.setData(data); }, [ data ]);
+    // Change in data. replaceData rather than setData: it renders in position instead of
+    // resetting the scroll (see resetScroll in Tabulator's RowManager).
+    useEffect(() => { tabulatorRef.current?.replaceData(data); }, [ data ]);
     useEffect(() => {
         if (!columns) return;
         tabulatorRef.current?.setColumns(columns);

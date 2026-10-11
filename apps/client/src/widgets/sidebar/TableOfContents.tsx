@@ -1,13 +1,15 @@
 import "./TableOfContents.css";
 
-import { attributeChangeAffectsHeading, CKTextEditor, ModelElement, type ModelNode } from "@triliumnext/ckeditor5";
+import type { CKTextEditor, ModelElement, ModelNode } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
+import { revealElement } from "../../services/collapsible";
 import { t } from "../../services/i18n";
 import { randomString } from "../../services/utils";
 import { useActiveNoteContext, useContentElement, useGetContextData, useIsNoteReadOnly, useMathRendering, useNoteProperty, useTextEditor } from "../react/hooks";
 import Icon from "../react/Icon";
+import { getEditorNoteId } from "../react/NoteStore";
 import RawHtml from "../react/RawHtml";
 import RightPanelWidget from "./RightPanelWidget";
 
@@ -39,6 +41,7 @@ export default function TableOfContents() {
             {((noteType === "text" && isReadOnly) || (noteType === "doc")) && <ReadOnlyTextTableOfContents />}
             {noteType === "text" && !isReadOnly && <EditableTextTableOfContents />}
             {noteType === "file" && noteMime === "application/pdf" && <ContextDataTableOfContents />}
+            {noteType === "llmChat" && <ContextDataTableOfContents />}
             {note?.isMarkdown() && <ContextDataTableOfContents />}
         </RightPanelWidget>
     );
@@ -61,9 +64,18 @@ function AbstractTableOfContents<T extends RawHeading>({ headings, scrollToHeadi
     scrollToHeading(heading: T): void;
     activeHeadingId?: string | null;
 }) {
+    const tocRef = useRef<HTMLSpanElement>(null);
     const nestedHeadings = buildHeadingTree(headings);
+
+    useEffect(() => {
+        tocRef.current?.querySelector("li.active")?.scrollIntoView({
+            block: "nearest",
+            behavior: "smooth"
+        });
+    }, [activeHeadingId]);
+
     return (
-        <span className="toc">
+        <span ref={tocRef} className="toc">
             {nestedHeadings.length > 0 ? (
                 <ol>
                     {nestedHeadings.map(heading => <TableOfContentsHeading key={heading.id} heading={heading} scrollToHeading={scrollToHeading} activeHeadingId={activeHeadingId} />)}
@@ -133,6 +145,66 @@ function buildHeadingTree(headings: RawHeading[]): HeadingsWithNesting[] {
 
     return root.children;
 }
+
+export function useActiveHeading<T extends RawHeading>({ headings, scrollingContainer, getHeadingElement }: {
+    headings: T[];
+    scrollingContainer: HTMLElement | null;
+    getHeadingElement: (heading: T) => HTMLElement | null
+}) {
+    const headingsRef = useRef(headings);
+    const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+
+    useEffect(() => {
+        headingsRef.current = headings;
+    }, [headings]);
+
+    useEffect(() => {
+        if (!scrollingContainer) {
+            setActiveHeadingId(null);
+            return;
+        }
+
+        const activeLineY = scrollingContainer.getBoundingClientRect().top + 100;
+        let timeoutId: number | undefined;
+
+        function updateActiveHeading() {
+            let activeHeading: T | null = null;
+
+            for (const heading of headingsRef.current) {
+                const headingEl = getHeadingElement(heading);
+
+                if (headingEl && headingEl.getBoundingClientRect().top <= activeLineY) {
+                    activeHeading = heading;
+                } else {
+                    break;
+                }
+            }
+
+            setActiveHeadingId(prev =>
+                prev === activeHeading?.id ? prev : activeHeading?.id ?? null
+            );
+        }
+
+        function handleScroll() {
+            window.clearTimeout(timeoutId);
+            timeoutId = window.setTimeout(updateActiveHeading, 100);
+        }
+
+        scrollingContainer.addEventListener("scroll", handleScroll);
+
+        updateActiveHeading();
+
+        return () => {
+            window.clearTimeout(timeoutId);
+            scrollingContainer.removeEventListener("scroll", handleScroll);
+        };
+        // getHeadingElement must re-subscribe the listener: when the watchdog replaces the editor,
+        // .scrolling-container is an ancestor of the editor root and stays the same element, so
+        // scrollingContainer alone would keep the listener mapping through the destroyed editor.
+    }, [scrollingContainer, getHeadingElement]);
+
+    return activeHeadingId;
+}
 //#endregion
 
 //#region Editable text (CKEditor)
@@ -146,20 +218,39 @@ function EditableTextTableOfContents() {
     const { note, noteContext } = useActiveNoteContext();
     const textEditor = useTextEditor(noteContext);
     const [ headings, setHeadings ] = useState<CKHeading[]>([]);
+    const [ scrollingContainer, setScrollingContainer ] = useState<HTMLElement | null>(null);
 
+    // The CKEditor instance is reused across note switches within a tab and across the
+    // read-only ↔ editable switch: the note detail keeps it mounted behind the read-only view
+    // and swaps content in with `editor.setData()`, which emits `change:data`. So the editor
+    // this runs against can still hold the note the user edited before, and does until this
+    // note's blob arrives — a wait the auto-readonly threshold makes a long one.
     useEffect(() => {
         if (!textEditor) return;
-        const headings = extractTocFromTextEditor(textEditor);
-        setHeadings(headings);
 
-        // React to changes.
+        // `getEditorNoteId()` says whose content is in the editor. Extracting from another note's
+        // would put its headings in the sidebar; the listener below picks this note's up as soon
+        // as `setData()` lands.
+        if (getEditorNoteId(textEditor) === note?.noteId) {
+            setHeadings(extractTocFromTextEditor(textEditor));
+        }
+
+        // Attached synchronously so no `setData()` can slip past it. Only the attribute check
+        // waits on the CKEditor bundle, which is statically heavy but guaranteed to be loaded by
+        // now (a text editor instance exists); until it resolves, inserts and removals — which is
+        // what `setData()` produces — still come through.
+        let affectsHeading: typeof import("@triliumnext/ckeditor5").attributeChangeAffectsHeading | undefined;
+        void import("@triliumnext/ckeditor5").then(({ attributeChangeAffectsHeading }) => {
+            affectsHeading = attributeChangeAffectsHeading;
+        });
+
         const changeCallback = () => {
             const changes = textEditor.model.document.differ.getChanges();
 
             const affectsHeadings = changes.some( change => {
                 return (
                     change.type === 'insert' || change.type === 'remove' ||
-                    (change.type === 'attribute' && attributeChangeAffectsHeading(change, textEditor))
+                    (change.type === 'attribute' && (affectsHeading?.(change, textEditor) ?? false))
                 );
             });
             if (affectsHeadings) {
@@ -170,8 +261,31 @@ function EditableTextTableOfContents() {
         };
 
         textEditor.model.document.on("change:data", changeCallback);
+
         return () => textEditor.model.document.off("change:data", changeCallback);
-    }, [ textEditor, note ]);
+    }, [ textEditor, note?.noteId ]);
+
+    useEffect(() => {
+        if (!textEditor) {
+            setScrollingContainer(null);
+            return;
+        }
+
+        const container = textEditor.editing.view.getDomRoot()?.closest(".scrolling-container") as HTMLElement | null;
+        setScrollingContainer(container);
+    }, [textEditor]);
+
+    const getHeadingElement = useCallback((heading: CKHeading) => {
+        if (!textEditor) return null;
+
+        const viewEl = textEditor.editing.mapper.toViewElement(heading.element);
+        if (!viewEl) return null;
+
+        const domEl = textEditor.editing.view.domConverter.mapViewToDom(viewEl);
+        return domEl ?? null;
+    }, [textEditor]);
+
+    const activeHeadingId = useActiveHeading({ headings, scrollingContainer, getHeadingElement });
 
     const scrollToHeading = useCallback((heading: CKHeading) => {
         if (!textEditor) return;
@@ -180,12 +294,16 @@ function EditableTextTableOfContents() {
         if (!viewEl) return;
 
         const domEl = textEditor.editing.view.domConverter.mapViewToDom(viewEl);
-        domEl?.scrollIntoView();
+        if (domEl) {
+            revealElement(domEl);
+            domEl.scrollIntoView();
+        }
     }, [ textEditor ]);
 
     return <AbstractTableOfContents
         headings={headings}
         scrollToHeading={scrollToHeading}
+        activeHeadingId={activeHeadingId}
     />;
 }
 
@@ -237,7 +355,10 @@ function extractTocFromTextEditor(editor: CKTextEditor) {
 
             // Assign a unique ID
             let tocId = item.getAttribute(TOC_ID) as string | undefined;
-            if (!tocId) {
+            // Splitting a heading with Enter copies its attributes onto the new element, so two
+            // headings can carry the same tocId and collide as React keys and as activeHeadingId.
+            const tocIdExists = headings.some(h => h.id === tocId);
+            if (!tocId || tocIdExists) {
                 tocId = randomString();
                 writer.setAttribute(TOC_ID, tocId, item);
             }
@@ -258,15 +379,45 @@ interface DomHeading extends RawHeading {
 function ReadOnlyTextTableOfContents() {
     const { noteContext } = useActiveNoteContext();
     const contentEl = useContentElement(noteContext);
-    const headings = extractTocFromStaticHtml(contentEl);
+    const [ headings, setHeadings ] = useState<DomHeading[]>([]);
+    const [ scrollingContainer, setScrollingContainer ] = useState<HTMLElement | null>(null);
+
+    useEffect(() => {
+        if (!contentEl) return;
+        setHeadings(extractTocFromStaticHtml(contentEl));
+
+        const observer = new MutationObserver(() => {
+            setHeadings(extractTocFromStaticHtml(contentEl));
+        });
+
+        observer.observe(contentEl, { childList: true });
+
+        return () => observer.disconnect();
+    }, [contentEl]);
 
     const scrollToHeading = useCallback((heading: DomHeading) => {
+        revealElement(heading.element);
         heading.element.scrollIntoView();
     }, []);
+
+    useEffect(() => {
+        if (!contentEl) {
+            setScrollingContainer(null);
+            return;
+        }
+
+        const container = contentEl.closest(".scrolling-container") as HTMLElement;
+        setScrollingContainer(container);
+    }, [contentEl]);
+
+    const getHeadingElement = useCallback((heading: DomHeading) => heading.element, []);
+
+    const activeHeadingId = useActiveHeading({ headings, scrollingContainer, getHeadingElement });
 
     return <AbstractTableOfContents
         headings={headings}
         scrollToHeading={scrollToHeading}
+        activeHeadingId={activeHeadingId}
     />;
 }
 
@@ -275,6 +426,7 @@ function extractTocFromStaticHtml(el: HTMLElement | null) {
 
     const headings: DomHeading[] = [];
     for (const headingEl of el.querySelectorAll<HTMLHeadingElement>("h1,h2,h3,h4,h5,h6")) {
+        if (headingEl.closest(".include-note")) continue;
         headings.push({
             id: randomString(),
             level: parseInt(headingEl.tagName.substring(1), 10),

@@ -95,6 +95,7 @@ async function resolveNotePathToSegments(notePath: string, hoistedNoteId = "root
         return effectivePathSegments;
     } else {
         const noteId = getNoteIdFromUrl(notePath);
+        /* v8 ignore next 3 -- unreachable: notePath is non-empty here (guarded at the top), so getNoteIdFromUrl always returns its last segment */
         if (!noteId) {
             throw new Error(`Unable to find note with ID: ${noteId}.`);
         }
@@ -254,17 +255,24 @@ async function getNotePathTitle(notePath: string) {
     return titlePath.join(NOTE_PATH_TITLE_SEPARATOR);
 }
 
-async function getNoteTitleWithPathAsSuffix(notePath: string) {
+/**
+ * @param ownedTitle the title of something the note owns, such as an attachment. When set, it is
+ *        shown as the title and the whole of `notePath` becomes the suffix.
+ */
+async function getNoteTitleWithPathAsSuffix(notePath: string, ownedTitle?: string) {
     utils.assertArguments(notePath);
 
     const titleComponents = await getNotePathTitleComponents(notePath);
 
+    /* v8 ignore next 3 -- unreachable: getNotePathTitleComponents always returns a non-empty array (it pushes at least one title for any path, including "") */
     if (!titleComponents || titleComponents.length === 0) {
         return "";
     }
 
-    const title = titleComponents[titleComponents.length - 1];
-    const path = titleComponents.slice(0, titleComponents.length - 1);
+    const title = ownedTitle ?? titleComponents[titleComponents.length - 1];
+    const path = ownedTitle
+        ? titleComponents
+        : titleComponents.slice(0, titleComponents.length - 1);
 
     const $titleWithPath = $('<span class="note-title-with-path">').append($('<span class="note-title">').text(title));
 

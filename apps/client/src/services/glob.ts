@@ -12,7 +12,8 @@ function setupGlobs() {
     window.glob.getComponentByEl = (el) => appContext.getComponentByEl(el);
     window.glob.getHeaders = server.getHeaders;
     window.glob.getReferenceLinkTitle = (href) => linkService.getReferenceLinkTitle(href);
-    window.glob.getReferenceLinkTitleSync = (href) => linkService.getReferenceLinkTitleSync(href);
+    window.glob.getReferenceLinkTitleSync = (href, storedTitle) =>
+        linkService.getReferenceLinkTitleSync(href, storedTitle);
 
     // required for ESLint plugin and CKEditor
     window.glob.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
@@ -82,7 +83,7 @@ function setupGlobs() {
     });
 }
 
-async function requireCss(url: string, prependAssetPath = true) {
+export async function requireCss(url: string, prependAssetPath = true) {
     const cssLinks = Array.from(document.querySelectorAll("link")).map((el) => el.href);
 
     if (!cssLinks.some((l) => l.endsWith(url))) {

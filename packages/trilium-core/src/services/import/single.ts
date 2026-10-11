@@ -6,6 +6,7 @@ import noteService from "../../services/notes.js";
 import protectedSessionService from "../protected_session.js";
 import type TaskContext from "../task_context.js";
 import type { File } from "./common.js";
+import { extractFrontmatter } from "./frontmatter.js";
 import markdownService from "./markdown.js";
 import mimeService from "./mime.js";
 import importUtils from "./utils.js";
@@ -13,7 +14,34 @@ import { getNoteTitle } from "../utils/index.js";
 import { sanitizeHtml } from "../sanitizer.js";
 import { processStringOrBuffer } from "../utils/binary.js";
 
-function importSingleFile(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
+// MIME of an `.xlsx` upload (Office Open XML spreadsheet), as resolved by `mime-types`.
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+// MIME of a `.csv` upload, as resolved by `mime-types`.
+const CSV_MIME = "text/csv";
+
+/**
+ * Imports one uploaded file as a note, then puts it through the same post-processing every other
+ * importer runs (`zip.importZip` does it per created note).
+ *
+ * `createNewNote` deliberately does none of that itself, so without this step a single-file import
+ * produced a note whose links were never scanned and whose pictures were never taken in hand — a
+ * gap the single-file *export* makes plain, since it inlines every picture as base64 and this is
+ * what unpacks them again.
+ */
+async function importSingleFile(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
+    const note = await importSingleFileAs(taskContext, file, parentNote);
+
+    // The types the pass acts on at all, checked here rather than left to it: reading the content is
+    // what costs, and an uploaded video or disk image would be pulled into memory in full only to be
+    // handed to a step that returns immediately on seeing what type it is.
+    if (note.type === "text" || note.type === "relationMap") {
+        await noteService.asyncPostProcessContent(note, note.getContent());
+    }
+
+    return note;
+}
+
+async function importSingleFileAs(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
     if (taskContext?.data?.textImportedAsText) {
@@ -26,8 +54,26 @@ function importSingleFile(taskContext: TaskContext<"importNotes">, file: File, p
         }
     }
 
+    // CSV/XLSX become editable spreadsheet notes unless the user opts out (then they fall through
+    // to a plain file attachment), mirroring `textImportedAsText`/`codeImportedAsCode`.
+    if (taskContext?.data?.spreadsheetImportedAsSpreadsheet) {
+        if (mime === XLSX_MIME) {
+            return importSpreadsheet(taskContext, file, parentNote);
+        }
+
+        if (mime === CSV_MIME) {
+            return importSpreadsheetFromCsv(taskContext, file, parentNote);
+        }
+    }
+
     if (mime === "text/vnd.mermaid") {
         return importCustomType(taskContext, file, parentNote, "mermaid", mime);
+    }
+
+    // `.triliumsheet` is Trilium's native lossless spreadsheet format (see single-note export): the raw
+    // Univer workbook JSON is re-imported verbatim, unlike `.xlsx`/`.csv` which are parsed into a workbook.
+    if (mime === "text/x-spreadsheet") {
+        return importCustomType(taskContext, file, parentNote, "spreadsheet", mime);
     }
 
     if (taskContext?.data?.codeImportedAsCode && mimeService.getType(taskContext.data, mime) === "code") {
@@ -115,6 +161,43 @@ function importCustomType(taskContext: TaskContext<"importNotes">, file: File, p
     return note;
 }
 
+async function importSpreadsheet(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
+    // Dynamically import the exceljs-backed parser so exceljs only loads when an `.xlsx` is
+    // actually imported, keeping it out of the core barrel (and the standalone/browser bundle).
+    const { parseXlsxToWorkbook } = await import("@triliumnext/commons/src/lib/spreadsheet/parse_from_xlsx.js");
+    const buffer = typeof file.buffer === "string" ? Buffer.from(file.buffer) : file.buffer;
+    const workbook = await parseXlsxToWorkbook(buffer);
+
+    return createSpreadsheetNote(taskContext, file, parentNote, JSON.stringify(workbook));
+}
+
+async function importSpreadsheetFromCsv(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
+    const csv = processStringOrBuffer(file.buffer);
+    const { parseCsvToWorkbook } = await import("@triliumnext/commons/src/lib/spreadsheet/parse_from_csv.js");
+    const workbook = parseCsvToWorkbook(csv);
+
+    return createSpreadsheetNote(taskContext, file, parentNote, JSON.stringify(workbook));
+}
+
+function createSpreadsheetNote(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote, content: string) {
+    const title = getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
+
+    const { note } = noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title,
+        content,
+        type: "spreadsheet",
+        mime: "text/x-spreadsheet",
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
+    });
+
+    note.addLabel("originalFileName", file.originalname);
+
+    taskContext.increaseProgressCount();
+
+    return note;
+}
+
 function importPlainText(taskContext: TaskContext<"importNotes">, file: File, parentNote: BNote) {
     const title = getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
     const plainTextContent = processStringOrBuffer(file.buffer);
@@ -154,7 +237,9 @@ function importMarkdown(taskContext: TaskContext<"importNotes">, file: File, par
     const title = getNoteTitle(file.originalname, !!taskContext.data?.replaceUnderscoresWithSpaces);
 
     const markdownContent = processStringOrBuffer(file.buffer);
-    let htmlContent = markdownService.renderToHtml(markdownContent, title);
+    // YAML front matter (Obsidian/Jekyll/Hugo/…) is lifted into labels and stripped before rendering.
+    const { body, attributes } = extractFrontmatter(markdownContent);
+    let htmlContent = markdownService.renderToHtml(body, title);
 
     if (taskContext.data?.safeImport) {
         htmlContent = sanitizeHtml(htmlContent);
@@ -168,6 +253,10 @@ function importMarkdown(taskContext: TaskContext<"importNotes">, file: File, par
         mime: "text/html",
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
+
+    for (const attribute of attributes) {
+        note.addLabel(attribute.name, attribute.value);
+    }
 
     taskContext.increaseProgressCount();
 

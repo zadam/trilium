@@ -4,14 +4,13 @@
  * Protected session routes (loginToProtectedSession, logoutFromProtectedSession,
  * touchProtectedSession) are now in core and registered via buildSharedApiRoutes.
  */
-import { app_info as appInfo, date_utils as dateUtils, getInstanceId, options, password_encryption as passwordEncryptionService } from "@triliumnext/core";
+import { app_info as appInfo, date_utils as dateUtils, getInstanceId, options } from "@triliumnext/core";
 import type { Request } from "express";
 
-import recoveryCodeService from "../../services/encryption/recovery_codes";
+import { verifyLoginCredentials } from "../../services/auth.js";
 import etapiTokenService from "../../services/etapi_tokens.js";
 import sql from "../../services/sql.js";
 import sqlInit from "../../services/sql_init.js";
-import totp from "../../services/totp";
 import utils from "../../services/utils.js";
 
 /**
@@ -76,7 +75,7 @@ import utils from "../../services/utils.js";
  *                   type: string
  *                   example: "Auth request time is out of sync, please check that both client and server have correct time. The difference between clocks has to be smaller than 5 minutes"
  */
-function loginSync(req: Request) {
+async function loginSync(req: Request) {
     if (!sqlInit.schemaExists()) {
         return [500, { message: "DB schema does not exist, can't sync." }];
     }
@@ -110,6 +109,17 @@ function loginSync(req: Request) {
         return [400, { message: "Sync login credentials are incorrect. It looks like you're trying to sync two different initialized documents which is not possible." }];
     }
 
+    // Regenerate session to prevent session fixation attacks.
+    await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+
     req.session.loggedIn = true;
 
     return {
@@ -122,14 +132,9 @@ async function token(req: Request) {
     const password = req.body.password;
     const submittedTotpToken = req.body.totpToken;
 
-    if (totp.isTotpEnabled()) {
-        if (!verifyTOTP(submittedTotpToken)) {
-            return [401, "Incorrect credential"];
-        }
-    }
-
-    if (!(await passwordEncryptionService.verifyPassword(password))) {
-        return [401, "Incorrect credential"];
+    const failedFactor = await verifyLoginCredentials(password, submittedTotpToken);
+    if (failedFactor) {
+        return [401, { message: "Incorrect credential", factor: failedFactor }];
     }
 
     // for backwards compatibility with Sender which does not send the name
@@ -138,14 +143,6 @@ async function token(req: Request) {
     const { authToken } = etapiTokenService.createToken(tokenName);
 
     return { token: authToken };
-}
-
-function verifyTOTP(submittedTotpToken: string) {
-    if (totp.validateTOTP(submittedTotpToken)) return true;
-
-    const recoveryCodeValidates = recoveryCodeService.verifyRecoveryCode(submittedTotpToken);
-
-    return recoveryCodeValidates;
 }
 
 export default {

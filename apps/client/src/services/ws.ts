@@ -8,8 +8,8 @@ import frocaUpdater from "./froca_updater.js";
 import { t } from "./i18n.js";
 import options from "./options.js";
 import server from "./server.js";
-import toastService from "./toast.js";
-import utils from "./utils.js";
+import toastService, { showUnhandledError } from "./toast.js";
+import utils, { isPreAuthScreen } from "./utils.js";
 
 type MessageHandler = (message: WebSocketMessage) => void;
 let messageHandlers: MessageHandler[] = [];
@@ -18,6 +18,7 @@ let ws: WebSocket;
 // In Electron desktop, messaging goes over Chromium IPC (no TCP socket,
 // no auth). The bridge is exposed by the preload script; when present we
 // skip the WebSocket entirely.
+/* v8 ignore next -- `window` is always defined wherever this module loads (browser/electron); the SSR-style guard's else arm is unreachable */
 const ipcWs = typeof window !== "undefined" ? window.electronApi?.ws : undefined;
 let lastAcceptedEntityChangeId = window.glob.maxEntityChangeIdAtLoad ?? 0;
 let lastAcceptedEntityChangeSyncId = window.glob.maxEntityChangeSyncIdAtLoad ?? 0;
@@ -85,18 +86,36 @@ export async function dispatchMessage(message: WebSocketMessage) {
     // Process the message
     if (messageType === "ping") {
         lastPingTs = Date.now();
+
+        // The backend expires the protected session with a one-shot `reload-frontend` broadcast;
+        // if the connection was down at that moment, the client would keep showing decrypted
+        // notes indefinitely. Ping replies carry the live backend state, so recover here.
+        if (msg.protectedSessionAvailable === false && glob.isProtectedSessionAvailable) {
+            utils.reloadFrontendApp("protected session expired on the backend");
+        }
     } else if (messageType === "reload-frontend") {
         utils.reloadFrontendApp("received request from backend to reload frontend");
     } else if (messageType === "frontend-update") {
         await executeFrontendUpdate(msg.data.entityChanges);
     } else if (messageType === "sync-hash-check-failed") {
-        toastService.showError(t("ws.sync-check-failed"), 60000);
+        // Not auto-dismissed after the usual few seconds: syncing stays broken until the user acts,
+        // and the backend only reports it once (it would otherwise recur with every sync attempt).
+        // The sector list is interpolated unescaped ({{- }}) since the toast renders its message as
+        // text: i18next's HTML escaping would only turn the `entityName/sector` slash into a
+        // literal `&#x2F;`.
+        toastService.showErrorTitleAndMessage(
+            t("ws.sync-hash-check-failed-title"),
+            t("ws.sync-hash-check-failed", { sectors: (msg.sectors ?? []).join(", ") }),
+            50 * 60000
+        );
     } else if (messageType === "consistency-checks-failed") {
         toastService.showError(t("ws.consistency-checks-failed"), 50 * 60000);
     } else if (messageType === "api-log-messages") {
         appContext.triggerEvent("apiLogMessages", { noteId: msg.noteId, messages: msg.messages });
     } else if (messageType === "toast") {
         toastService.showMessage(msg.message, msg.timeout);
+    } else if (messageType === "unhandled-error") {
+        showUnhandledError(msg.message, msg.stack);
     } else if (messageType === "execute-script") {
         const originEntity = msg.originEntityId ? await froca.getNote(msg.originEntityId) : null;
 
@@ -302,7 +321,10 @@ async function sendPing() {
 
 setTimeout(() => {
     if (glob.device === "print") return;
-    if (!glob.dbInitialized) return;
+    // Skip on the setup screen (!dbInitialized) and on the login / set-password pre-auth
+    // screens (isPreAuthScreen) — otherwise the browser opens a WebSocket it isn't authorised
+    // for, which the server refuses (#10589).
+    if (!glob.dbInitialized || isPreAuthScreen()) return;
 
     if (glob.isStandalone) {
         // In standalone mode, listen for messages from the local worker via custom event

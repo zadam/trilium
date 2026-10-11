@@ -1,31 +1,34 @@
-import { MimeType } from "@triliumnext/commons";
-import { type AutoHighlightResult, ensureMimeTypes, highlight, highlightAuto, type HighlightResult, loadTheme, type Theme,Themes } from "@triliumnext/highlightjs";
+import { MimeType, shouldSyntaxHighlight } from "@triliumnext/commons";
+// highlight.js is heavy and this module is reachable from the startup graph (note tooltips →
+// content renderer), so the library itself is only imported dynamically when highlighting runs.
+import type { AutoHighlightResult, HighlightResult, Theme } from "@triliumnext/highlightjs";
 
 import { copyText, copyTextWithToast } from "./clipboard_ext.js";
 import { t } from "./i18n.js";
 import mime_types from "./mime_types.js";
 import options from "./options.js";
-import { getEffectiveThemeStyle } from "./theme.js";
+import { getEffectiveThemeStyle, onEffectiveThemeStyleChange } from "./theme.js";
 import { isShare } from "./utils.js";
 
 let highlightingLoaded = false;
 
 function getEffectiveCodeBlockTheme(): string {
-    if (options.get("codeBlockThemeMatchesApp") === "true") {
-        const style = getEffectiveThemeStyle();
-        return String(options.get(style === "dark" ? "codeBlockThemeDark" : "codeBlockThemeLight"));
-    }
-    return String(options.get("codeBlockTheme"));
+    const theme = options.get("codeBlockThemeMatchesApp") === "true"
+        ? options.get(getEffectiveThemeStyle() === "dark" ? "codeBlockThemeDark" : "codeBlockThemeLight")
+        : options.get("codeBlockTheme");
+    // `options.get()` answers undefined until the options have loaded. String() would turn that
+    // into the truthy "undefined", which `isSyntaxHighlightEnabled()` reads as a theme.
+    return String(theme ?? "");
 }
 
-// Re-apply the highlight.js theme when the OS color scheme changes, so that
+// Re-apply the highlight.js theme when the effective color scheme changes, so that
 // "match app appearance" reacts in real time.
 let colorSchemeListenerRegistered = false;
-function ensureColorSchemeListener() {
+export function ensureColorSchemeListener() {
     if (colorSchemeListenerRegistered) return;
     colorSchemeListenerRegistered = true;
 
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    onEffectiveThemeStyleChange(() => {
         if (highlightingLoaded && options.get("codeBlockThemeMatchesApp") === "true") {
             loadHighlightingTheme(getEffectiveCodeBlockTheme());
         }
@@ -48,6 +51,7 @@ function setCachedHighlight(language: string, text: string, value: string) {
     const key = `${language}\x00${text}`;
     if (highlightCache.size >= HIGHLIGHT_CACHE_MAX) {
         const oldest = highlightCache.keys().next().value;
+        /* v8 ignore next -- size>=MAX guarantees a key exists; the undefined guard is defensive */
         if (oldest !== undefined) highlightCache.delete(oldest);
     }
     highlightCache.set(key, value);
@@ -74,7 +78,7 @@ export async function formatCodeBlocks($container: JQuery<HTMLElement>) {
         }
 
         if (syntaxHighlightingEnabled) {
-            applySingleBlockSyntaxHighlight($(codeBlock), normalizedMimeType);
+            await applySingleBlockSyntaxHighlight($(codeBlock), normalizedMimeType);
         }
     }
 
@@ -126,6 +130,9 @@ export function applyInlineCodeCopy($inlineCode: JQuery<HTMLElement>) {
 export async function applySingleBlockSyntaxHighlight($codeBlock: JQuery<HTMLElement>, normalizedMimeType: string) {
     $codeBlock.parent().toggleClass("hljs");
     const text = $codeBlock.text();
+    if (!shouldSyntaxHighlight(text)) {
+        return;
+    }
 
     const cached = getCachedHighlight(normalizedMimeType, text);
     if (cached !== undefined) {
@@ -136,9 +143,11 @@ export async function applySingleBlockSyntaxHighlight($codeBlock: JQuery<HTMLEle
     let highlightedText: HighlightResult | AutoHighlightResult | null = null;
     if (normalizedMimeType === mime_types.MIME_TYPE_AUTO && !isShare) {
         await ensureMimeTypesForHighlighting();
+        const { highlightAuto } = await import("@triliumnext/highlightjs");
         highlightedText = highlightAuto(text);
     } else if (normalizedMimeType) {
         await ensureMimeTypesForHighlighting(normalizedMimeType);
+        const { highlight } = await import("@triliumnext/highlightjs");
         try {
             highlightedText = highlight(text, { language: normalizedMimeType });
         } catch (e) {
@@ -178,12 +187,14 @@ export async function ensureMimeTypesForHighlighting(mimeTypeHint?: string) {
         mimeTypes = mime_types.getMimeTypes();
     }
 
+    const { ensureMimeTypes } = await import("@triliumnext/highlightjs");
     await ensureMimeTypes(mimeTypes);
 
     highlightingLoaded = true;
 }
 
 export async function loadHighlightingTheme(themeName: string) {
+    const { loadTheme, Themes } = await import("@triliumnext/highlightjs");
     const themePrefix = "default:";
     let theme: Theme | null = null;
     if (glob.device === "print") {

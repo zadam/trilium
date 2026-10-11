@@ -1,56 +1,124 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import ocrRoutes from "./ocr.js";
+import { becca, cls, note_service as noteService } from "@triliumnext/core";
+import type { Request } from "express";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the OCR service
+// Only the OCR engine is mocked — becca/sql run against the real in-memory DB.
+const ocrState = vi.hoisted(() => ({
+    noteResult: null as unknown,
+    attachmentResult: null as unknown,
+    batchResult: { success: true } as { success: boolean; message?: string }
+}));
+
 vi.mock("../../services/ocr/ocr_service.js", () => ({
     default: {
-        startBatchProcessing: vi.fn(() => Promise.resolve({ success: true })),
+        processNoteOCR: vi.fn(async () => ocrState.noteResult),
+        processAttachmentOCR: vi.fn(async () => ocrState.attachmentResult),
+        startBatchProcessing: vi.fn(async () => ocrState.batchResult),
         getBatchProgress: vi.fn(() => ({ inProgress: false, total: 0, processed: 0 }))
     }
 }));
 
-// Mock becca
-vi.mock("../../becca/becca.js", () => ({
-    default: {}
-}));
+import ocrService from "../../services/ocr/ocr_service.js";
+import sql from "../../services/sql.js";
+import ocrRoutes from "./ocr.js";
 
-// Mock sql
-vi.mock("../../services/sql.js", () => ({
-    default: {
-        getRow: vi.fn()
-    }
-}));
-
-// Mock log
-vi.mock("../../services/log.js", () => ({
-    default: {
-        error: vi.fn()
-    }
-}));
+let noteId: string;
+let attachmentId: string;
 
 describe("OCR API", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
+    beforeEach(() => vi.clearAllMocks());
+
+    beforeAll(() => {
+        cls.init(() => {
+            const { note } = noteService.createNewNote({ parentNoteId: "root", title: "OCR note", type: "text", content: "hi" });
+            noteId = note.noteId;
+            attachmentId = note.saveAttachment({ role: "image", mime: "image/png", title: "img", content: "x" }).attachmentId;
+        });
     });
 
-    it("should return success for batch processing", async () => {
-        const result = await ocrRoutes.batchProcessOCR();
-        expect(result).toEqual({ success: true });
-    });
-
-    it("should return batch progress", async () => {
-        const result = await ocrRoutes.getBatchProgress();
-        expect(result).toEqual({ inProgress: false, total: 0, processed: 0 });
-    });
-
-    it("should return 400 when batch processing fails", async () => {
-        const ocrService = await import("../../services/ocr/ocr_service.js");
-        vi.mocked(ocrService.default.startBatchProcessing).mockResolvedValueOnce({
-            success: false,
-            message: "No images found that need OCR processing"
+    describe("processNoteOCR", () => {
+        it("returns 404 for a missing note", async () => {
+            const result = await ocrRoutes.processNoteOCR({ params: { noteId: "missing" }, body: {} } as unknown as Request<{ noteId: string }>);
+            expect(result).toEqual([404, { success: false, message: "Note not found" }]);
         });
 
-        const result = await ocrRoutes.batchProcessOCR();
-        expect(result).toEqual([400, { success: false, message: "No images found that need OCR processing" }]);
+        it("returns 400 when the note is not a supported image", async () => {
+            ocrState.noteResult = null;
+            const result = await ocrRoutes.processNoteOCR({ params: { noteId }, body: {} } as unknown as Request<{ noteId: string }>);
+            expect(result).toEqual([400, { success: false, message: "Note is not an image or has unsupported format" }]);
+        });
+
+        it("returns the OCR result on success", async () => {
+            ocrState.noteResult = { text: "hello" };
+            const result = await ocrRoutes.processNoteOCR({ params: { noteId }, body: { language: "eng" } } as unknown as Request<{ noteId: string }>);
+            expect(result).toMatchObject({ success: true, result: { text: "hello" } });
+        });
+
+        it("names the locked vault rather than blaming the note's format", async () => {
+            const note = becca.getNoteOrThrow(noteId);
+            note.isProtected = true;
+            // The engine would skip this note, which the route cannot tell from an unsupported one.
+            ocrState.noteResult = null;
+
+            try {
+                const result = await ocrRoutes.processNoteOCR({ params: { noteId }, body: {} } as unknown as Request<{ noteId: string }>);
+
+                expect(result).toEqual([400, { success: false, message: "Note is protected and the protected session is not available" }]);
+                expect(ocrService.processNoteOCR).not.toHaveBeenCalled();
+            } finally {
+                note.isProtected = false;
+            }
+        });
     });
+
+    describe("processAttachmentOCR", () => {
+        it("returns 404 for a missing attachment", async () => {
+            const result = await ocrRoutes.processAttachmentOCR({ params: { attachmentId: "missing" }, body: {} } as unknown as Request<{ attachmentId: string }>);
+            expect(result).toEqual([404, { success: false, message: "Attachment not found" }]);
+        });
+
+        it("returns 400 then success depending on the engine result", async () => {
+            ocrState.attachmentResult = null;
+            expect(await ocrRoutes.processAttachmentOCR({ params: { attachmentId }, body: {} } as unknown as Request<{ attachmentId: string }>))
+                .toEqual([400, { success: false, message: "Attachment is not an image or has unsupported format" }]);
+
+            ocrState.attachmentResult = { text: "ocr" };
+            expect(await ocrRoutes.processAttachmentOCR({ params: { attachmentId }, body: {} } as unknown as Request<{ attachmentId: string }>))
+                .toMatchObject({ success: true });
+        });
+
+        it("names the locked vault rather than blaming the attachment's format", async () => {
+            // becca builds an attachment from SQL on every lookup rather than caching it like a note,
+            // so the flag has to be set where the route will read it back from.
+            const setProtected = (value: number) =>
+                sql.execute("UPDATE attachments SET isProtected = ? WHERE attachmentId = ?", [value, attachmentId]);
+
+            setProtected(1);
+            try {
+                const result = await ocrRoutes.processAttachmentOCR({ params: { attachmentId }, body: {} } as unknown as Request<{ attachmentId: string }>);
+
+                expect(result).toEqual([400, { success: false, message: "Attachment is protected and the protected session is not available" }]);
+                expect(ocrService.processAttachmentOCR).not.toHaveBeenCalled();
+            } finally {
+                setProtected(0);
+            }
+        });
+    });
+
+    describe("batch processing", () => {
+        it("returns the result on success", async () => {
+            ocrState.batchResult = { success: true };
+            expect(await ocrRoutes.batchProcessOCR()).toEqual({ success: true });
+        });
+
+        it("returns 400 when batch processing fails", async () => {
+            ocrState.batchResult = { success: false, message: "No images found that need OCR processing" };
+            expect(await ocrRoutes.batchProcessOCR()).toEqual([400, { success: false, message: "No images found that need OCR processing" }]);
+        });
+
+        it("returns batch progress", async () => {
+            expect(await ocrRoutes.getBatchProgress()).toEqual({ inProgress: false, total: 0, processed: 0 });
+        });
+    });
+
 });

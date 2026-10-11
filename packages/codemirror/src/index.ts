@@ -1,16 +1,20 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
+import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import { Compartment, EditorSelection, EditorState, StateEffect, type Extension } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
+import { autocompletion, type CompletionSource } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
-import byMimeType from "./syntax_highlighting.js";
+import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
 import smartIndentWithTab from "./extensions/custom_tab.js";
 import type { ThemeDefinition } from "./color_themes.js";
 import { createSearchHighlighter, SearchHighlighter, searchMatchHighlightTheme } from "./find_replace.js";
+import { buildTypeCompletion, type ScriptApiContext } from "./type_completion/index.js";
 
 export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThemeById } from "./color_themes.js";
+export { isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND } from "./type_completion/index.js";
+export { triliumLogHighlighter } from "./extensions/trilium_log_highlighter.js";
 
 // Custom keymap to prevent Ctrl+Enter from inserting a newline
 // This allows the parent application to handle the shortcut (e.g., for "Run Active Note")
@@ -22,6 +26,35 @@ const preventCtrlEnterKeymap: readonly KeyBinding[] = [
         preventDefault: true
     }
 ];
+
+// Lint diagnostics (e.g. the TypeScript script linter or the Mermaid linter) can produce very
+// long messages; without a width cap and wrapping the tooltip overflows the editor and gets
+// clipped at the edges. `.cm-tooltip-lint` is the diagnostics list shared by both the gutter
+// tooltip (where it also carries `.cm-tooltip`) and the inline hover tooltip (where it's nested
+// inside a `.cm-tooltip-hover` wrapper), so targeting it directly covers both.
+const lintTooltipTheme = EditorView.baseTheme({
+    ".cm-tooltip-lint": {
+        maxWidth: "min(40em, 90vw)"
+    },
+    ".cm-diagnostic": {
+        whiteSpace: "normal",
+        overflowWrap: "anywhere"
+    }
+});
+
+// Chromium maps `autocomplete="off"` on the focused element to Android's
+// `TYPE_TEXT_FLAG_NO_SUGGESTIONS`, which is what stops Gboard from offering word completions and
+// rewriting what was typed. The `spellcheck`, `autocorrect` and `writingsuggestions` attributes
+// CodeMirror already sets reach no equivalent flag, so the on-screen keyboard ignores them.
+const noKeyboardSuggestions = EditorView.contentAttributes.of({ autocomplete: "off" });
+
+// CodeMirror sets `autocorrect="off"` and `autocapitalize="off"` on every editor it builds, which
+// suits code. An editor holding prose overrides both, since `contentAttributes` is merged in after
+// those defaults, so the on-screen keyboard capitalizes sentences and fixes typos again.
+const proseKeyboardAttributes = EditorView.contentAttributes.of({
+    autocorrect: "on",
+    autocapitalize: "sentences"
+});
 
 type ContentChangedListener = () => void;
 
@@ -38,6 +71,12 @@ export interface EditorConfig {
     indentSize?: number;
     /** If true, indent using a tab character instead of spaces. Defaults to false. */
     useTabs?: boolean;
+    /**
+     * Lets an on-screen keyboard offer word completions, correct typos and capitalize sentences.
+     * Defaults to false, which suits code; an editor holding prose, such as the Markdown note
+     * type, sets it to true.
+     */
+    allowKeyboardSuggestions?: boolean;
     onContentChanged?: ContentChangedListener;
 }
 
@@ -52,18 +91,32 @@ export default class CodeMirror extends EditorView {
     private historyCompartment: Compartment;
     private themeCompartment: Compartment;
     private lineWrappingCompartment: Compartment;
+    private keyboardSuggestionsCompartment: Compartment;
     private indentUnitCompartment: Compartment;
     private searchHighlightCompartment: Compartment;
+    private typeCompletionCompartment: Compartment;
+    private completionSourceCompartment: Compartment;
     private searchPlugin?: SearchHighlighter | null;
     private namedCompartments = new Map<string, Compartment>();
+    /** Named completion sources aggregated into the editor's single autocompletion. */
+    private completionSources = new Map<string, CompletionSource>();
+    /** Monotonic token guarding against out-of-order async type-completion updates. */
+    private typeCompletionToken = 0;
+    /** Current MIME type, retained so the type completion can be rebuilt when only the api context changes. */
+    private currentMime: string | null = null;
+    /** Per-note context tuning the script `api` surface (e.g. custom-request-handler members). */
+    private scriptApiContext: ScriptApiContext = {};
 
     constructor(config: EditorConfig) {
         const languageCompartment = new Compartment();
         const historyCompartment = new Compartment();
         const themeCompartment = new Compartment();
         const lineWrappingCompartment = new Compartment();
+        const keyboardSuggestionsCompartment = new Compartment();
         const indentUnitCompartment = new Compartment();
         const searchHighlightCompartment = new Compartment();
+        const typeCompletionCompartment = new Compartment();
+        const completionSourceCompartment = new Compartment();
 
         let extensions: Extension[] = [];
 
@@ -75,8 +128,13 @@ export default class CodeMirror extends EditorView {
             ...extensions,
             languageCompartment.of([]),
             lineWrappingCompartment.of(config.lineWrapping ? EditorView.lineWrapping : []),
+            keyboardSuggestionsCompartment.of(config.allowKeyboardSuggestions ? proseKeyboardAttributes : noKeyboardSuggestions),
             searchMatchHighlightTheme,
+            lintTooltipTheme,
+            tooltips({ parent: getTooltipHost() }),
             searchHighlightCompartment.of([]),
+            typeCompletionCompartment.of([]),
+            completionSourceCompartment.of([]),
             highlightActiveLine(),
             lineNumbers(),
             themeCompartment.of([
@@ -133,8 +191,11 @@ export default class CodeMirror extends EditorView {
         this.historyCompartment = historyCompartment;
         this.themeCompartment = themeCompartment;
         this.lineWrappingCompartment = lineWrappingCompartment;
+        this.keyboardSuggestionsCompartment = keyboardSuggestionsCompartment;
         this.indentUnitCompartment = indentUnitCompartment;
         this.searchHighlightCompartment = searchHighlightCompartment;
+        this.typeCompletionCompartment = typeCompletionCompartment;
+        this.completionSourceCompartment = completionSourceCompartment;
     }
 
     #onDocumentUpdated(v: ViewUpdate) {
@@ -174,13 +235,25 @@ export default class CodeMirror extends EditorView {
     }
 
     setText(content: string) {
-        this.dispatch({
+        const transaction = this.state.update({
             changes: {
                 from: 0,
                 to: this.state.doc.length,
                 insert: content || "",
             }
-        })
+        });
+        // Dispatching a full-document replacement maps the viewport onto the whole new document.
+        // A visible editor's next measure shrinks it back, but an editor inside a display:none
+        // subtree cannot measure (`measure()` bails out off-screen), so every line of the new
+        // document stays rendered in the DOM for as long as the editor stays hidden — e.g. a
+        // background tab that received its content after being covered. Rebuilding the view from
+        // the updated state resets the viewport to the initial estimate instead; the first
+        // measure after the editor becomes visible then sizes it to the real geometry.
+        if (this.dom.offsetParent === null) {
+            this.setState(transaction.state);
+        } else {
+            this.dispatch(transaction);
+        }
     }
 
     async setTheme(theme: ThemeDefinition) {
@@ -193,6 +266,12 @@ export default class CodeMirror extends EditorView {
     setLineWrapping(wrapping: boolean) {
         this.dispatch({
             effects: [ this.lineWrappingCompartment.reconfigure(wrapping ? EditorView.lineWrapping : []) ]
+        });
+    }
+
+    setAllowKeyboardSuggestions(allow: boolean) {
+        this.dispatch({
+            effects: [ this.keyboardSuggestionsCompartment.reconfigure(allow ? proseKeyboardAttributes : noKeyboardSuggestions) ]
         });
     }
 
@@ -240,6 +319,26 @@ export default class CodeMirror extends EditorView {
         });
     }
 
+    /**
+     * Inserts a blank line at the very top of the document and places the cursor on it — the code-note
+     * analog of the Notion-like behavior when pressing Enter in the note title. If the first line is
+     * already empty, the cursor is simply moved there instead of inserting another blank line, so a
+     * brand-new (empty) note does not end up with two blank lines. No-op for read-only editors, since
+     * CodeMirror's `readOnly` facet does not block programmatic transactions.
+     */
+    insertBlankLineAtTop() {
+        if (this.config.readOnly) {
+            return;
+        }
+        const firstLineEmpty = this.state.doc.line(1).length === 0;
+        this.dispatch({
+            ...(firstLineEmpty ? {} : { changes: { from: 0, insert: "\n" } }),
+            selection: EditorSelection.cursor(0),
+            // Reveal the new top line — the cursor may have been at the bottom of a long note.
+            scrollIntoView: true
+        });
+    }
+
     async performFind(searchTerm: string, matchCase: boolean, wholeWord: boolean) {
         const plugin = createSearchHighlighter();
         this.dispatch({
@@ -252,6 +351,9 @@ export default class CodeMirror extends EditorView {
         instance?.searchFor(searchTerm, matchCase, wholeWord);
         this.searchPlugin = instance;
 
+        /* v8 ignore next 4 -- the plugin was just installed via the compartment above and the
+           view has re-rendered, so `this.plugin()` always resolves it; the guards only cover a
+           view destroyed mid-search. */
         return {
             totalFound: instance?.totalFound ?? 0,
             currentFound: instance?.currentFound ?? 0
@@ -296,9 +398,10 @@ export default class CodeMirror extends EditorView {
     }
 
     async setMimeType(mime: string) {
+        this.currentMime = mime;
         let newExtension: Extension[] = [];
 
-        const correspondingSyntax = byMimeType[mime];
+        const correspondingSyntax = byMimeType[MIME_ALIASES[mime] ?? mime];
         if (correspondingSyntax) {
             const resolvedSyntax = await correspondingSyntax();
 
@@ -315,5 +418,77 @@ export default class CodeMirror extends EditorView {
         this.dispatch({
             effects: this.languageCompartment.reconfigure(newExtension)
         });
+
+        await this.#updateTypeCompletion(mime);
     }
+
+    /**
+     * Updates the per-note script `api` context (e.g. whether the note is a custom
+     * request handler, which gates the `req`/`res`/`pathParams` members) and rebuilds
+     * the type completion in place. Safe to call before a MIME type is set — it takes
+     * effect on the next `setMimeType`.
+     */
+    async setScriptApiContext(context: ScriptApiContext) {
+        this.scriptApiContext = context;
+        if (this.currentMime !== null) {
+            await this.#updateTypeCompletion(this.currentMime);
+        }
+    }
+
+    /**
+     * Enables the TypeScript language service (full completion, hover docs and
+     * diagnostics) for backend/frontend script notes, and clears it otherwise.
+     * Guarded by a token so a slow async build for a previous MIME type can't
+     * overwrite a newer one.
+     */
+    async #updateTypeCompletion(mime: string) {
+        const token = ++this.typeCompletionToken;
+        const { extensions, source } = await buildTypeCompletion(mime, this.scriptApiContext);
+        if (token !== this.typeCompletionToken) {
+            return; // a newer setMimeType call superseded this one
+        }
+        this.dispatch({
+            effects: this.typeCompletionCompartment.reconfigure(extensions)
+        });
+        this.setCompletionSource("typescript", source);
+    }
+
+    /**
+     * Registers (or, with `null`, removes) a named autocompletion source. All
+     * registered sources are merged into the editor's single `autocompletion()`
+     * extension — CodeMirror permits only one `override` config per editor, so
+     * features (snippets, the TypeScript language service, …) contribute sources
+     * here rather than each adding their own autocompletion.
+     */
+    setCompletionSource(name: string, source: CompletionSource | null) {
+        if (source) {
+            this.completionSources.set(name, source);
+        } else {
+            this.completionSources.delete(name);
+        }
+        const sources = [...this.completionSources.values()];
+        this.dispatch({
+            effects: this.completionSourceCompartment.reconfigure(
+                sources.length
+                    ? autocompletion({ override: sources, activateOnTyping: true })
+                    : []
+            )
+        });
+    }
+}
+
+/**
+ * Returns the body-level element CodeMirror renders tooltips into, outside `.cm-editor`, whose
+ * `overflow: hidden` clips an absolutely positioned tooltip (Safari, iOS).
+ */
+function getTooltipHost() {
+    const existing = document.body.querySelector(".cm-tooltip-host");
+    if (existing instanceof HTMLElement) {
+        return existing;
+    }
+
+    const host = document.createElement("div");
+    host.className = "cm-tooltip-host";
+    document.body.appendChild(host);
+    return host;
 }

@@ -10,7 +10,8 @@ export default function ScrollPadding() {
         && viewScope?.viewMode === "default"
         && note?.isContentAvailable()
         && !note?.isTriliumSqlite()
-        && !note?.isMarkdown();
+        && !note?.isMarkdown()
+        && !note?.isIconPack();
 
     const refreshHeight = () => {
         if (!ref.current) return;
@@ -39,7 +40,7 @@ export default function ScrollPadding() {
         <div
             ref={ref}
             className="scroll-padding-widget"
-            style={{ height }}
+            style={{ height: `${height}px` }}
             onClick={() => parentComponent.triggerCommand("scrollToEnd", { ntxId })}
         />
         : <div />

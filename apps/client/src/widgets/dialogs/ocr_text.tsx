@@ -8,7 +8,7 @@ import { copyTextWithToast } from "../../services/clipboard_ext";
 import { t } from "../../services/i18n";
 import server from "../../services/server";
 import toast from "../../services/toast";
-import { randomString } from "../../services/utils";
+import { isStandalone, randomString } from "../../services/utils";
 import Button from "../react/Button";
 import { useTriliumEvent } from "../react/hooks";
 import Modal from "../react/Modal";
@@ -110,7 +110,9 @@ function TextRepresentationModal({ textUrl, processUrl, onHidden }: TextRepresen
                         buttons: [{
                             text: t("ocr.open_media_settings"),
                             onClick: ({ dismissToast }) => {
-                                appContext.tabManager.openInNewTab("_optionsMedia", null, true);
+                                // Opening the settings modal auto-closes the OCR dialog if it is
+                                // still up (openDialog closes the active dialog by default).
+                                void appContext.triggerCommand("showOptions", { section: "_optionsMedia" });
                                 dismissToast();
                             }
                         }]
@@ -137,13 +139,17 @@ function TextRepresentationModal({ textUrl, processUrl, onHidden }: TextRepresen
 
     const footer = state.kind !== "loading" && (
         <>
-            <Button
-                icon={processing ? "bx-loader-alt bx-spin" : "bx-refresh"}
-                text={processing ? t("ocr.processing") : t("ocr.process_now")}
-                size="small"
-                disabled={processing}
-                onClick={processOCR}
-            />
+            {/* Extracting text needs the OCR engine, which only the server has: standalone can show
+                what was extracted elsewhere and synced here, but cannot run it itself. */}
+            {!isStandalone && (
+                <Button
+                    icon={processing ? "bx-loader-alt bx-spin" : "bx-refresh"}
+                    text={processing ? t("ocr.processing") : t("ocr.process_now")}
+                    size="small"
+                    disabled={processing}
+                    onClick={processOCR}
+                />
+            )}
             {state.kind === "loaded" && (
                 <Button
                     icon="bx-copy"

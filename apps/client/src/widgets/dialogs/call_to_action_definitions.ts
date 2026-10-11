@@ -43,19 +43,6 @@ export interface CallToAction {
 
 const CALL_TO_ACTIONS: CallToAction[] = [
     {
-        id: "new_layout",
-        title: t("call_to_action.new_layout_title"),
-        message: t("call_to_action.new_layout_message"),
-        enabled: () => true,
-        buttons: [
-            {
-
-                text: t("call_to_action.new_layout_button"),
-                onClick: () => appContext.tabManager.openInNewTab("_help_IjZS7iK5EXtb", "_help", true)
-            }
-        ]
-    },
-    {
         id: "background_effects",
         title: t("call_to_action.background_effects_title"),
         message: t("call_to_action.background_effects_message"),
@@ -66,6 +53,22 @@ const CALL_TO_ACTIONS: CallToAction[] = [
                 async onClick() {
                     await options.save("backgroundEffects", "true");
                     utils.restartDesktopApp();
+                }
+            }
+        ]
+    },
+    {
+        id: "scripting_disabled",
+        title: t("call_to_action.scripting_disabled_title"),
+        message: t("call_to_action.scripting_disabled_message"),
+        enabled: () => !options.is("backendScriptingEnabled") && options.is("hasUserBackendScripts"),
+        buttons: [
+            {
+                text: t("call_to_action.scripting_disabled_button"),
+                onClick: () => {
+                    // Not awaited: the CTA dialog hides itself right after onClick (goToNext),
+                    // so the settings modal opens on top of an already-closing dialog.
+                    void appContext.triggerCommand("showOptions", { section: "_optionsSecurity" });
                 }
             }
         ]

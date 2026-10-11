@@ -3,27 +3,40 @@ import BuildHelper from "../../../scripts/build-utils";
 const build = new BuildHelper("apps/server");
 
 async function main() {
-    await build.buildBackend([ "src/main.ts", "src/docker_healthcheck.ts" ])
+    // ESM so dynamic-import boundaries split into chunks/ that only load on first use; the
+    // image worker below is spawned by its .cjs path and stays CJS.
+    await build.buildBackend([ "src/main.ts" ], { format: "esm" });
+    // Its own call so it lands beside the bundle rather than under a `services/` path: the pool
+    // looks for it next to whatever is running, and desktop builds it the same way.
+    await build.buildBackend([ "src/services/image_worker.ts" ]);
+    await build.buildTesseractWorker("src/services/ocr/tesseract_worker.ts");
 
     // Copy assets
     build.copy("src/assets", "assets/");
+    // The healthcheck docker runs; the Dockerfiles point at it inside the image.
+    build.copy("docker_healthcheck.sh", "docker_healthcheck.sh");
     // schema.sql lives in trilium-core but is loaded at server startup. The
-    // bundled main.cjs can't `require.resolve("@triliumnext/core/...")` in
+    // bundled main.mjs can't `require.resolve("@triliumnext/core/...")` in
     // Docker (no workspace symlinks in the image), so we copy the file
     // alongside the server's own assets and read it via RESOURCE_DIR at
     // runtime. See main.ts.
     build.copy("/packages/trilium-core/src/assets/schema.sql", "assets/schema.sql");
-    // The integration test database fixture is loaded into memory when
-    // TRILIUM_INTEGRATION_TEST=memory is set (used by e2e tests against the
-    // packaged server). Same require.resolve issue as schema.sql in
-    // bundled environments — copy it into the bundle so it's reachable.
-    build.copy("/packages/trilium-core/src/test/fixtures/document.db", "assets/test/document.db");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/");
+    // Same story for the LLM skill sheets: core owns them, the server reads them
+    // from RESOURCE_DIR at runtime. See core_assets.ts.
+    build.copy("/packages/trilium-core/src/assets/llm/skills", "assets/llm/skills/");
+    // PDFium rasterizes scanned PDF pages for OCR. Its own loader resolves the wasm relative to
+    // `import.meta.url`, which in a split bundle is a hash-named file under chunks/, so the bytes
+    // are handed to it explicitly from here instead. See pdf_renderer.ts.
+    build.copy("/node_modules/@hyzyla/pdfium/dist/pdfium.wasm", "assets/pdfium.wasm");
+    // The Codex ACP adapter runs as a script of its own in a worker thread. See codex_binary.ts.
+    build.copy("/node_modules/@agentclientprotocol/codex-acp/dist/index.js", "assets/codex-acp.mjs");
     build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
-    build.copyNodeModules([ "better-sqlite3", "bindings", "file-uri-to-path" ]);
+    build.copyNodeModules([ "better-sqlite3" ]);
+    build.trimBetterSqlite3();
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
+    build.copy("/packages/ckeditor5/src/theme/multicolumn.css", "ckeditor5-multicolumn.css");
 
     build.buildFrontend();
 }

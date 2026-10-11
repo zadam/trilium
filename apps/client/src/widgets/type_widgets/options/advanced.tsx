@@ -1,168 +1,28 @@
-import { AnonymizedDbResponse, DatabaseAnonymizeResponse, DatabaseCheckIntegrityResponse } from "@triliumnext/commons";
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
+import { useCallback, useMemo } from "preact/hooks";
 
-import { getAvailableExperimentalFeatures, type ExperimentalFeatureId } from "../../../services/experimental_features";
+import { type ExperimentalFeatureId, getAvailableExperimentalFeatures } from "../../../services/experimental_features";
 import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import toast from "../../../services/toast";
-import FormText from "../../react/FormText";
+import Button from "../../react/Button";
+import { Card, OptionCardSection } from "../../react/Card";
+import FormToggle from "../../react/FormToggle";
 import { useTriliumOptionJson } from "../../react/hooks";
-import { OptionsRowWithButton, OptionsRowWithToggle } from "./components/OptionsRow";
-import OptionsSection from "./components/OptionsSection";
+import OptionsPageHeader from "./components/OptionsPageHeader";
 
 export default function AdvancedSettings() {
     return <>
-        <DatabaseOptions />
-        <DatabaseAnonymizationOptions />
+        <OptionsPageHeader />
         <ExperimentalOptions />
         <AdvancedSyncOptions />
     </>;
 }
 
-function AdvancedSyncOptions() {
-    return (
-        <OptionsSection title={t("sync.title")}>
-            <OptionsRowWithButton
-                label={t("sync.force_full_sync_label")}
-                description={t("sync.force_full_sync_description")}
-                onClick={async () => {
-                    await server.post("sync/force-full-sync");
-                    toast.showMessage(t("sync.full_sync_triggered"));
-                }}
-            />
-
-            <OptionsRowWithButton
-                label={t("sync.fill_entity_changes_label")}
-                description={t("sync.fill_entity_changes_description")}
-                onClick={async () => {
-                    toast.showMessage(t("sync.filling_entity_changes"));
-                    await server.post("sync/fill-entity-changes");
-                    toast.showMessage(t("sync.sync_rows_filled_successfully"));
-                }}
-            />
-        </OptionsSection>
-    );
-}
-
-function DatabaseOptions() {
-    return (
-        <OptionsSection title={t("database.title")}>
-            <OptionsRowWithButton
-                label={t("database_integrity_check.check_integrity_label")}
-                description={t("database_integrity_check.check_integrity_description")}
-                onClick={async () => {
-                    toast.showMessage(t("database_integrity_check.checking_integrity"));
-
-                    const { results } = await server.get<DatabaseCheckIntegrityResponse>("database/check-integrity");
-
-                    if (results.length === 1 && results[0].integrity_check === "ok") {
-                        toast.showMessage(t("database_integrity_check.integrity_check_succeeded"));
-                    } else {
-                        toast.showMessage(t("database_integrity_check.integrity_check_failed", { results: JSON.stringify(results, null, 2) }), 15000);
-                    }
-                }}
-            />
-
-            <OptionsRowWithButton
-                label={t("consistency_checks.find_and_fix_label")}
-                description={t("consistency_checks.find_and_fix_description")}
-                onClick={async () => {
-                    toast.showMessage(t("consistency_checks.finding_and_fixing_message"));
-                    await server.post("database/find-and-fix-consistency-issues");
-                    toast.showMessage(t("consistency_checks.issues_fixed_message"));
-                }}
-            />
-
-            <OptionsRowWithButton
-                label={t("vacuum_database.vacuum_label")}
-                description={t("vacuum_database.vacuum_description")}
-                onClick={async () => {
-                    toast.showMessage(t("vacuum_database.vacuuming_database"));
-                    await server.post("database/vacuum-database");
-                    toast.showMessage(t("vacuum_database.database_vacuumed"));
-                }}
-            />
-        </OptionsSection>
-    );
-}
-
-function DatabaseAnonymizationOptions() {
-    const [existingAnonymizedDatabases, setExistingAnonymizedDatabases] = useState<AnonymizedDbResponse[]>([]);
-
-    function refreshAnonymizedDatabase() {
-        server.get<AnonymizedDbResponse[]>("database/anonymized-databases").then(setExistingAnonymizedDatabases);
-    }
-
-    useEffect(refreshAnonymizedDatabase, []);
-
-    return (
-        <OptionsSection title={t("database_anonymization.title")}>
-            <FormText>{t("database_anonymization.description")}</FormText>
-
-            <OptionsRowWithButton
-                label={t("database_anonymization.full_anonymization")}
-                description={t("database_anonymization.full_anonymization_description")}
-                onClick={async () => {
-                    toast.showMessage(t("database_anonymization.creating_fully_anonymized_database"));
-                    const resp = await server.post<DatabaseAnonymizeResponse>("database/anonymize/full");
-
-                    if (!resp.success) {
-                        toast.showError(t("database_anonymization.error_creating_anonymized_database"));
-                    } else {
-                        toast.showMessage(t("database_anonymization.successfully_created_fully_anonymized_database", { anonymizedFilePath: resp.anonymizedFilePath }), 10000);
-                        refreshAnonymizedDatabase();
-                    }
-                }}
-            />
-
-            <OptionsRowWithButton
-                label={t("database_anonymization.light_anonymization")}
-                description={t("database_anonymization.light_anonymization_description")}
-                onClick={async () => {
-                    toast.showMessage(t("database_anonymization.creating_lightly_anonymized_database"));
-                    const resp = await server.post<DatabaseAnonymizeResponse>("database/anonymize/light");
-
-                    if (!resp.success) {
-                        toast.showError(t("database_anonymization.error_creating_anonymized_database"));
-                    } else {
-                        toast.showMessage(t("database_anonymization.successfully_created_lightly_anonymized_database", { anonymizedFilePath: resp.anonymizedFilePath }), 10000);
-                        refreshAnonymizedDatabase();
-                    }
-                }}
-            />
-
-            <hr />
-
-            <ExistingAnonymizedDatabases databases={existingAnonymizedDatabases} />
-        </OptionsSection>
-    );
-}
-
-function ExistingAnonymizedDatabases({ databases }: { databases: AnonymizedDbResponse[] }) {
-    if (!databases.length) {
-        return <FormText>{t("database_anonymization.no_anonymized_database_yet")}</FormText>;
-    }
-
-    return (
-        <table className="table table-stripped">
-            <thead>
-                <th>{t("database_anonymization.existing_anonymized_databases")}</th>
-            </thead>
-            <tbody>
-                {databases.map(({ filePath }) => (
-                    <tr>
-                        <td>{filePath}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
-
-
 function ExperimentalOptions() {
     const [enabledFeatures, setEnabledFeatures] = useTriliumOptionJson<ExperimentalFeatureId[]>("experimentalFeatures", true);
-    const filteredFeatures = useMemo(() => getAvailableExperimentalFeatures().filter(e => e.id !== "new-layout"), []);
+    // Features with dedicated controls elsewhere (the AI/LLM page).
+    const integratedFeatures: ExperimentalFeatureId[] = ["llm"];
+    const filteredFeatures = useMemo(() => getAvailableExperimentalFeatures().filter(e => !integratedFeatures.includes(e.id)), []);
 
     const toggleFeature = useCallback((featureId: ExperimentalFeatureId, enabled: boolean) => {
         if (enabled) {
@@ -177,19 +37,60 @@ function ExperimentalOptions() {
     }
 
     return (
-        <OptionsSection title={t("experimental_features.title")}>
-            <FormText>{t("experimental_features.disclaimer")}</FormText>
-
+        <Card
+            heading={t("experimental_features.title")}
+            description={t("experimental_features.disclaimer")}
+        >
             {filteredFeatures.map((feature) => (
-                <OptionsRowWithToggle
+                <OptionCardSection
                     key={feature.id}
                     name={`experimental-${feature.id}`}
                     label={feature.name}
                     description={feature.description}
-                    currentValue={enabledFeatures.includes(feature.id)}
-                    onChange={(enabled) => toggleFeature(feature.id, enabled)}
-                />
+                >
+                    <FormToggle
+                        currentValue={enabledFeatures.includes(feature.id)}
+                        onChange={(enabled) => toggleFeature(feature.id, enabled)}
+                    />
+                </OptionCardSection>
             ))}
-        </OptionsSection>
+        </Card>
+    );
+}
+
+function AdvancedSyncOptions() {
+    return (
+        <Card heading={t("sync.title")}>
+            <OptionCardSection
+                label={t("sync.force_full_sync_label")}
+                description={t("sync.force_full_sync_description")}
+            >
+                <Button
+                    name="force-full-sync-button"
+                    text={t("sync.force_full_sync_button")}
+                    size="micro"
+                    onClick={async () => {
+                        await server.post("sync/force-full-sync");
+                        toast.showMessage(t("sync.full_sync_triggered"));
+                    }}
+                />
+            </OptionCardSection>
+
+            <OptionCardSection
+                label={t("sync.fill_entity_changes_label")}
+                description={t("sync.fill_entity_changes_description")}
+            >
+                <Button
+                    name="fill-entity-changes-button"
+                    text={t("sync.fill_entity_changes_button")}
+                    size="micro"
+                    onClick={async () => {
+                        toast.showMessage(t("sync.filling_entity_changes"));
+                        await server.post("sync/fill-entity-changes");
+                        toast.showMessage(t("sync.sync_rows_filled_successfully"));
+                    }}
+                />
+            </OptionCardSection>
+        </Card>
     );
 }

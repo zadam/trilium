@@ -1,4 +1,7 @@
+import { parseSortCriteria } from "@triliumnext/commons";
+
 import eventService from "./events.js";
+import { isScriptingEnabled } from "./scripting_guard.js";
 import scriptService from "./script.js";
 import treeService from "./tree.js";
 import noteService from "./notes.js";
@@ -13,7 +16,7 @@ import { DefinitionObject } from "@triliumnext/commons";
 type Handler = (definition: DefinitionObject, note: BNote, targetNote: BNote) => void;
 
 function runAttachedRelations(note: BNote, relationName: string, originEntity: AbstractBeccaEntity<any>) {
-    if (!note) {
+    if (!note || !isScriptingEnabled()) {
         return;
     }
 
@@ -192,9 +195,9 @@ function handleMaybeSortingLabel(entity: BAttribute) {
             }
 
             if (
-                sorted.includes(entity.name) || // hacky check if this label is used in the sort
                 entity.name === "top" ||
-                entity.name === "bottom"
+                entity.name === "bottom" ||
+                parseSortCriteria(sorted).some((criterion) => criterion.key === entity.name)
             ) {
                 treeService.sortNotesIfNeeded(parentNote.noteId);
             }

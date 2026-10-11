@@ -20,7 +20,7 @@ The server installation includes both web and [mobile frontends](Mobile%20Fronte
 
 After setting up your server installation, you may want to configure settings such as the port or enable [TLS](Server%20Installation/HTTPS%20\(TLS\).md). Configuration is managed via the Trilium `config.ini` file, which is located in the [data directory](Data%20directory.md) by default. To begin customizing your setup, copy the provided `config-sample.ini` file with default values to `config.ini`.
 
-You can also review the [configuration](../Advanced%20Usage/Configuration%20\(config.ini%20or%20e.md) file to provide all `config.ini` values as environment variables instead.
+You can also review the [configuration](../Advanced%20Usage/Configuration%20\(config.ini%20or%20environment%20variables\).md) file to provide all `config.ini` values as environment variables instead.
 
 ### Config Location
 
@@ -28,20 +28,6 @@ By default, `config.ini`, the [database](../Advanced%20Usage/Database.md), and o
 
 ```
 export TRILIUM_DATA_DIR=/home/myuser/data/my-trilium-data
-```
-
-### Disabling / Modifying the Upload Limit
-
-If you're running into the 250MB limit imposed on the server by default, and you'd like to increase the upload limit, you can set the `TRILIUM_NO_UPLOAD_LIMIT` environment variable to `true` to disable it completely:
-
-```
-export TRILIUM_NO_UPLOAD_LIMIT=true 
-```
-
-Or, if you'd simply like to _increase_ the upload limit size to something beyond 250MB, you can set the `MAX_ALLOWED_FILE_SIZE_MB` environment variable to something larger than the integer `250` (e.g. `450` in the following example):
-
-```
-export MAX_ALLOWED_FILE_SIZE_MB=450
 ```
 
 ### Disabling Authentication
@@ -52,28 +38,28 @@ See <a class="reference-link" href="Server%20Installation/Authentication.md">Au
 
 To configure a reverse proxy for Trilium, you can use either **nginx** or **Apache**. You can also check out the documentation stored in the Reverse proxy folder.
 
-### nginx
+=== "nginx"
 
-Add the following configuration to your `nginx` setup to proxy requests to Trilium:
+    Add the following configuration to your `nginx` setup to proxy requests to Trilium:
 
-```
-location /trilium/ {
-    proxy_pass http://127.0.0.1:8080/;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_cache_bypass $http_upgrade;
-}
-```
+    ```
+    location /trilium/ {
+        proxy_pass http://127.0.0.1:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+    ```
 
-To avoid limiting the size of payloads, include this in the `server {}` block:
+    To avoid limiting the size of payloads, include this in the `server {}` block:
 
-```
-# Set to 0 for unlimited. Default is 1M.
-client_max_body_size 0;
-```
+    ```
+    # Set to 0 for unlimited. Default is 1M.
+    client_max_body_size 0;
+    ```
 
-### Apache
+=== "Apache"
 
-For an Apache setup, refer to the [Apache proxy setup](Server%20Installation/2.%20Reverse%20proxy/Apache%20using%20Docker.md) guide.
+    For an Apache setup, refer to the <a class="reference-link" href="Server%20Installation/2.%20Reverse%20proxy/Apache%20using%20Docker.md">Apache using Docker</a> guide.

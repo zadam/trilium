@@ -1,5 +1,4 @@
-import chardet from "chardet";
-import stripBom from "strip-bom";
+import { getCrypto } from "../encryption/crypto.js";
 
 const utf8Decoder = new TextDecoder("utf-8");
 const utf8Encoder = new TextEncoder();
@@ -11,28 +10,31 @@ export function concat2(a: Uint8Array, b: Uint8Array): Uint8Array {
     return out;
 }
 
+/**
+ * Encodes a string (UTF-8) or raw bytes to a standard base64 string. The heavy lifting is
+ * delegated to the active crypto provider so each platform uses its fastest implementation
+ * (native `Buffer` on server/desktop, a chunked encoder in the browser).
+ */
 export function encodeBase64(stringOrBuffer: string | Uint8Array): string {
-    const bytes = wrapStringOrBuffer(stringOrBuffer);
-    let binary = "";
-    const len = bytes.length;
-
-    for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-
-    return btoa(binary);
+    return getCrypto().base64Encode(wrapStringOrBuffer(stringOrBuffer));
 }
 
+/** Decodes a standard base64 string into raw bytes via the active crypto provider. */
 export function decodeBase64(base64: string): Uint8Array {
-    const binary = atob(base64);
-    const len = binary.length;
+    return getCrypto().base64Decode(base64);
+}
 
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binary.charCodeAt(i);
-    }
+/**
+ * Decodes a standard base64 string into a caller-provided buffer (at least
+ * `(base64.length * 3) >> 2` bytes), returning the number of bytes written — or `null` when the
+ * active crypto provider has no in-place decoder, in which case the caller should fall back to
+ * {@link decodeBase64}. Used to reuse one scratch buffer across many decodes instead of
+ * allocating a fresh ArrayBuffer per call (see the blob decode pool in sync_update).
+ */
+export function decodeBase64Into(base64: string, target: Uint8Array): number | null {
+    const provider = getCrypto();
 
-    return bytes;
+    return provider.base64DecodeInto ? provider.base64DecodeInto(base64, target) : null;
 }
 
 export function decodeUtf8(stringOrBuffer: string | Uint8Array) {
@@ -45,6 +47,27 @@ export function decodeUtf8(stringOrBuffer: string | Uint8Array) {
 
 export function encodeUtf8(string: string | Uint8Array) {
     return utf8Encoder.encode(unwrapStringOrBuffer(string));
+}
+
+/**
+ * Truncates a string so that its UTF-8 encoding does not exceed `maxBytes`,
+ * without ever splitting a multi-byte character (the cut is moved back to the
+ * nearest character boundary). Returns the input unchanged when it already fits.
+ */
+export function truncateUtf8Bytes(text: string, maxBytes: number): string {
+    const encoded = encodeUtf8(text);
+    if (encoded.length <= maxBytes) {
+        return text;
+    }
+
+    // UTF-8 continuation bytes match 0b10xxxxxx (0x80–0xBF); back up while the
+    // cut would land inside a multi-byte sequence so we never emit a partial char.
+    let end = Math.max(0, maxBytes);
+    while (end > 0 && (encoded[end] & 0xc0) === 0x80) {
+        end--;
+    }
+
+    return decodeUtf8(encoded.slice(0, end));
 }
 
 export function unwrapStringOrBuffer(stringOrBuffer: string | Uint8Array) {
@@ -61,6 +84,15 @@ export function wrapStringOrBuffer(stringOrBuffer: string | Uint8Array) {
     } else {
         return stringOrBuffer;
     }
+}
+
+/**
+ * Strips a leading byte order mark (U+FEFF) from a string, if present. A
+ * buffer-to-string conversion translates a UTF-8 BOM (EF BB BF) into the same
+ * U+FEFF code point, so this covers both UTF-8 and UTF-16 BOMs.
+ */
+export function stripBom(text: string): string {
+    return text.startsWith("\uFEFF") ? text.slice(1) : text;
 }
 
 /**
@@ -82,12 +114,13 @@ export function processStringOrBuffer(data: string | Uint8Array | null) {
         return data;
     }
 
-    const detectedEncoding = chardet.detect(data);
-    switch (detectedEncoding) {
-        case "UTF-16LE":
-            return stripBom(new TextDecoder("utf-16le").decode(data));
-        case "UTF-8":
-        default:
-            return utf8Decoder.decode(data);
+    // The only non-UTF-8 encoding we decode is UTF-16LE. Detection previously used chardet, but chardet
+    // only ever resolved to UTF-16LE when the FF FE byte-order mark was present — BOM-less UTF-16 was
+    // detected as a single-byte encoding and decoded as UTF-8 anyway. A cheap BOM check reproduces that
+    // behaviour exactly, without running statistical charset detection on every imported note's content.
+    if (data.length >= 2 && data[0] === 0xFF && data[1] === 0xFE) {
+        return stripBom(new TextDecoder("utf-16le").decode(data));
     }
+
+    return utf8Decoder.decode(data);
 }

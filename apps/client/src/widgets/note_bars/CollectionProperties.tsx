@@ -1,21 +1,25 @@
 import "./CollectionProperties.css";
 
+import { SearchResultDetails, SearchResultDetailsResponse } from "@triliumnext/commons";
 import { t } from "i18next";
 import { ComponentChildren } from "preact";
 import { useRef, useState } from "preact/hooks";
 
-import FNote from "../../entities/fnote";
 import appContext from "../../components/app_context";
+import FNote from "../../entities/fnote";
 import dialogService from "../../services/dialog";
+import server from "../../services/server";
+import toast from "../../services/toast";
+import { getErrorMessage, isShare } from "../../services/utils";
 import { ViewTypeOptions } from "../collections/interface";
+import { searchTermsFor } from "../collections/search/SearchResultCard";
 import ActionButton from "../react/ActionButton";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
-import { useNoteProperty, useTriliumEvent } from "../react/hooks";
+import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import { CheckBoxProperty, ViewProperty } from "../react/NotePropertyMenu";
-import { bookPropertiesConfig } from "../ribbon/collection-properties-config";
-import { useViewType, VIEW_TYPE_MAPPINGS } from "../ribbon/CollectionPropertiesTab";
+import { bookPropertiesConfig } from "./collection-properties-config";
 
 export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
     grid: "bx bxs-grid",
@@ -24,16 +28,48 @@ export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
     table: "bx bx-table",
     geoMap: "bx bx-map-alt",
     board: "bx bx-columns",
-    presentation: "bx bx-rectangle"
+    presentation: "bx bx-rectangle",
+    dashboard: "bx bxs-dashboard"
+};
+
+export const VIEW_TYPE_MAPPINGS: Record<ViewTypeOptions, string> = {
+    grid: t("book_properties.grid"),
+    list: t("book_properties.list"),
+    calendar: t("book_properties.calendar"),
+    table: t("book_properties.table"),
+    geoMap: t("book_properties.geo-map"),
+    board: t("book_properties.board"),
+    presentation: t("book_properties.presentation"),
+    dashboard: t("book_properties.dashboard")
 };
 
 const MAX_OPEN_TABS = 50;
 
-export default function CollectionProperties({ note, centerChildren, rightChildren }: {
+interface CollectionPropertiesProps {
     note: FNote;
     centerChildren?: ComponentChildren;
     rightChildren?: ComponentChildren;
-}) {
+    /** Entries appended below a divider at the end of the settings dropdown. */
+    optionsChildren?: ComponentChildren;
+}
+
+/**
+ * The bar above a collection that switches its view, sets its options and holds the view's own
+ * controls, such as a calendar's navigation. A shared page keeps only the view's own controls, as a
+ * visitor cannot change the note, and has no bar for a view without any.
+ */
+export default function CollectionProperties(props: CollectionPropertiesProps) {
+    return isShare && !props.centerChildren && !props.rightChildren
+        ? null
+        : <CollectionPropertiesBar {...props} />;
+}
+
+function CollectionPropertiesBar({
+    note,
+    centerChildren,
+    rightChildren,
+    optionsChildren
+}: CollectionPropertiesProps) {
     const [ viewType, setViewType ] = useViewType(note);
     const noteType = useNoteProperty(note, "type");
     const [ isOpening, setIsOpening ] = useState(false);
@@ -41,15 +77,17 @@ export default function CollectionProperties({ note, centerChildren, rightChildr
     return ([ "book", "search" ].includes(noteType ?? "") &&
         <div className="collection-properties">
             <div className="left-container">
-                <ViewTypeSwitcher viewType={viewType} setViewType={setViewType} />
-                <ViewOptions note={note} viewType={viewType} />
+                {!isShare && <>
+                    <ViewTypeSwitcher viewType={viewType} setViewType={setViewType} />
+                    <ViewOptions note={note} viewType={viewType} optionsChildren={optionsChildren} />
+                </>}
             </div>
             <div className="center-container">
                 {centerChildren}
             </div>
             <div className="right-container">
                 {rightChildren}
-                {noteType === "search" && (
+                {noteType === "search" && !isShare && (
                     <OpenAllButton note={note} isOpening={isOpening} setIsOpening={setIsOpening} />
                 )}
             </div>
@@ -69,7 +107,7 @@ function OpenAllButton({ note, isOpening, setIsOpening }: {
         if (count === 0) return;
 
         if (count > MAX_OPEN_TABS) {
-            await dialogService.info(t("book_properties.open_all_too_many", { count, max: MAX_OPEN_TABS }));
+            toast.showError(t("book_properties.open_all_limit_exceeded", { count, max: MAX_OPEN_TABS }));
             return;
         }
 
@@ -80,11 +118,15 @@ function OpenAllButton({ note, isOpening, setIsOpening }: {
 
         setIsOpening(true);
         try {
+            const detailsByNoteId = await getResultDetails(note, noteIds);
+            const highlightedTokens = note.highlightedTokenInfos ?? note.highlightedTokens;
             for (let i = 0; i < noteIds.length; i++) {
                 const noteId = noteIds[i];
                 const isLast = i === noteIds.length - 1;
+                const searchTerms = searchTermsFor(detailsByNoteId.get(noteId), highlightedTokens);
                 await appContext.tabManager.openTabWithNoteWithHoisting(noteId, {
-                    activate: isLast
+                    activate: isLast,
+                    viewScope: searchTerms?.length ? { searchTerms } : null
                 });
             }
         } finally {
@@ -102,10 +144,35 @@ function OpenAllButton({ note, isOpening, setIsOpening }: {
     );
 }
 
+/**
+ * The details of the results being opened, for `searchTermsFor()` to read their matched terms.
+ * Empty if the request fails, so the tabs still open and fall back to the query's tokens.
+ */
+async function getResultDetails(searchNote: FNote, noteIds: string[]) {
+    try {
+        const { results } = await server.post<SearchResultDetailsResponse>(
+            `search-note/${searchNote.noteId}/result-details`, { noteIds }
+        );
+        return new Map(results.map((details) => [ details.noteId, details ]));
+    } catch (e) {
+        logError(`Could not load the matched terms of search note '${searchNote.noteId}': ${getErrorMessage(e)}`);
+        return new Map<string, SearchResultDetails>();
+    }
+}
+
+export function useViewType(note: FNote | null | undefined) {
+    const [ viewType, setViewType ] = useNoteLabel(note, "viewType");
+    const defaultViewType = (note?.type === "search" ? "list" : "grid");
+    const viewTypeWithDefault = (viewType ?? defaultViewType) as ViewTypeOptions;
+    return [ viewTypeWithDefault, setViewType ] as const;
+}
+
 function ViewTypeSwitcher({ viewType, setViewType }: { viewType: ViewTypeOptions, setViewType: (newValue: ViewTypeOptions) => void }) {
     // Keyboard shortcut
     const dropdownContainerRef = useRef<HTMLDivElement>(null);
-    useTriliumEvent("toggleRibbonTabBookProperties", () => {
+    const { ntxId: ownNtxId } = useNoteContext();
+    useTriliumEvent("toggleRibbonTabBookProperties", ({ ntxId }) => {
+        if (!ownNtxId || ntxId !== ownNtxId) return;
         dropdownContainerRef.current?.querySelector("button")?.focus();
     });
 
@@ -124,21 +191,25 @@ function ViewTypeSwitcher({ viewType, setViewType }: { viewType: ViewTypeOptions
                     selected={viewType === key}
                     disabled={viewType === key}
                     icon={ICON_MAPPINGS[key as ViewTypeOptions]}
+                    badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
                 >{label}</FormListItem>
             ))}
         </Dropdown>
     );
 }
 
-function ViewOptions({ note, viewType }: { note: FNote, viewType: ViewTypeOptions }) {
+function ViewOptions({ note, viewType, optionsChildren }: {
+    note: FNote,
+    viewType: ViewTypeOptions,
+    optionsChildren?: ComponentChildren
+}) {
     const properties = bookPropertiesConfig[viewType].properties;
 
     return (
         <Dropdown
             buttonClassName="bx bx-cog icon-action"
             hideToggleArrow
-            dropdownContainerClassName="mobile-bottom-menu"
-            mobileBackdrop
+            mobileBottomSheet
         >
             {properties.map((property, index) => (
                 <ViewProperty key={index} note={note} property={property} />
@@ -158,6 +229,11 @@ function ViewOptions({ note, viewType }: { note: FNote, viewType: ViewTypeOption
                 label: t("book_properties.include_archived_notes"),
                 bindToLabel: "includeArchived"
             } as CheckBoxProperty} />
+
+            {optionsChildren && <>
+                <FormDropdownDivider />
+                {optionsChildren}
+            </>}
         </Dropdown>
     );
 }

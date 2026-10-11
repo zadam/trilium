@@ -3,8 +3,9 @@ import froca from "../services/froca.js";
 import openService from "../services/open.js";
 import options from "../services/options.js";
 import protectedSessionService from "../services/protected_session.js";
+import { collectShortcutHints } from "../services/shortcut_hints.js";
 import treeService from "../services/tree.js";
-import utils, { openInReusableSplit } from "../services/utils.js";
+import utils from "../services/utils.js";
 import appContext, { type CommandListenerData } from "./app_context.js";
 import Component from "./component.js";
 
@@ -15,6 +16,11 @@ export default class RootCommandExecutor extends Component {
             noteContext.viewScope.readOnlyTemporarilyDisabled = true;
             appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
         }
+    }
+
+    async showShortcutHintsCommand() {
+        const sections = collectShortcutHints(await resolveFocusedComponent());
+        appContext.triggerEvent("shortcutHintsRequested", { sections });
     }
 
     async showSQLConsoleCommand() {
@@ -48,24 +54,22 @@ export default class RootCommandExecutor extends Component {
         this.searchNotesCommand({ ancestorNoteId: noteId });
     }
 
-    openNoteExternallyCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
-        const mime = appContext.tabManager.getActiveContextNoteMime();
-        if (noteId) {
-            openService.openNoteExternally(noteId, mime || "");
+    openNoteExternallyCommand({ ntxId }: CommandListenerData<"openNoteExternally">) {
+        const note = appContext.tabManager.getCommandContext(ntxId)?.note;
+        if (note) {
+            openService.openNoteExternally(note.noteId, note.mime);
         }
     }
 
-    openNoteCustomCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
-        const mime = appContext.tabManager.getActiveContextNoteMime();
-        if (noteId) {
-            openService.openNoteCustom(noteId, mime || "");
+    openNoteCustomCommand({ ntxId }: CommandListenerData<"openNoteCustom">) {
+        const note = appContext.tabManager.getCommandContext(ntxId)?.note;
+        if (note) {
+            openService.openNoteCustom(note.noteId, note.mime);
         }
     }
 
-    openNoteOnServerCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
+    openNoteOnServerCommand({ ntxId }: CommandListenerData<"openNoteOnServer">) {
+        const noteId = appContext.tabManager.getCommandContext(ntxId)?.noteId;
         if (noteId) {
             openService.openNoteOnServer(noteId);
         }
@@ -95,14 +99,17 @@ export default class RootCommandExecutor extends Component {
         await appContext.tabManager.openTabWithNoteWithHoisting("_backendLog", { activate: true });
     }
 
+    async showSpaceUsageCommand() {
+        await appContext.tabManager.openTabWithNoteWithHoisting("_spaceUsage", { activate: true });
+    }
+
     async showHelpCommand() {
         await this.showAndHoistSubtree("_help");
     }
 
     async showLaunchBarSubtreeCommand() {
         const rootNote = utils.isMobile() ? "_lbMobileRoot" : "_lbRoot";
-        await this.showAndHoistSubtree(rootNote);
-        this.showLeftPaneCommand();
+        appContext.triggerCommand("openInTreePopup", { noteIdOrPath: rootNote, hoistedNoteId: rootNote });
     }
 
     async showShareSubtreeCommand() {
@@ -111,13 +118,6 @@ export default class RootCommandExecutor extends Component {
 
     async showHiddenSubtreeCommand() {
         await this.showAndHoistSubtree("_hidden");
-    }
-
-    async showOptionsCommand({ section }: CommandListenerData<"showOptions">) {
-        await appContext.tabManager.openContextWithNote(section || "_options", {
-            activate: true,
-            hoistedNoteId: "_options"
-        });
     }
 
     async showSQLConsoleHistoryCommand() {
@@ -135,8 +135,8 @@ export default class RootCommandExecutor extends Component {
         });
     }
 
-    async showNoteSourceCommand() {
-        const notePath = appContext.tabManager.getActiveContextNotePath();
+    async showNoteSourceCommand({ ntxId }: CommandListenerData<"showNoteSource">) {
+        const notePath = appContext.tabManager.getCommandContext(ntxId)?.notePath;
 
         if (notePath) {
             await appContext.tabManager.openTabWithNoteWithHoisting(notePath, {
@@ -148,8 +148,8 @@ export default class RootCommandExecutor extends Component {
         }
     }
 
-    showNoteOCRTextCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
+    showNoteOCRTextCommand({ ntxId }: CommandListenerData<"showNoteOCRText">) {
+        const noteId = appContext.tabManager.getCommandContext(ntxId)?.noteId;
         if (noteId) {
             appContext.triggerCommand("showOcrTextDialog", {
                 textUrl: `ocr/notes/${noteId}/text`,
@@ -158,8 +158,8 @@ export default class RootCommandExecutor extends Component {
         }
     }
 
-    async showAttachmentsCommand() {
-        const notePath = appContext.tabManager.getActiveContextNotePath();
+    async showAttachmentsCommand({ ntxId }: CommandListenerData<"showAttachments">) {
+        const notePath = appContext.tabManager.getCommandContext(ntxId)?.notePath;
 
         if (notePath) {
             await appContext.tabManager.openTabWithNoteWithHoisting(notePath, {
@@ -197,17 +197,24 @@ export default class RootCommandExecutor extends Component {
         appContext.triggerEvent("zenModeChanged", { isEnabled });
     }
 
-    async toggleRibbonTabNoteMapCommand(data: CommandListenerData<"toggleRibbonTabNoteMap">) {
-        const { isExperimentalFeatureEnabled } = await import("../services/experimental_features.js");
-        const isNewLayout = isExperimentalFeatureEnabled("new-layout");
-        if (!isNewLayout) {
-            this.triggerEvent("toggleRibbonTabNoteMap", data);
+    toggleRibbonTabNoteMapCommand() {
+        // Mobile has no right pane, so the map opens in the quick edit popup with the `note-map` view
+        // mode, the same view the sidebar card's expand button opens.
+        if (utils.isMobile()) {
+            const notePath = appContext.tabManager.getActiveContext()?.notePath;
+            if (notePath) {
+                void appContext.triggerCommand("openInPopup", { noteIdOrPath: notePath, viewScope: { viewMode: "note-map" } });
+            }
             return;
         }
 
-        const activeContext = appContext.tabManager.getActiveContext();
-        if (!activeContext?.notePath) return;
-        openInReusableSplit(activeContext.notePath, "note-map");
+        // Peeks the right pane rather than docking it: with the connections tab already docked,
+        // `reduceTabSelection()` closes the pane instead of expanding the card.
+        void appContext.triggerEvent("selectRightPaneTab", {
+            tabId: "connections",
+            peek: true,
+            expandWidgetId: "noteMap"
+        });
     }
 
     firstTabCommand() {
@@ -248,8 +255,24 @@ export default class RootCommandExecutor extends Component {
         const tab = mainNoteContexts[index];
 
         if (tab) {
-            appContext.tabManager.activateNoteContext(tab.ntxId);
+            appContext.tabManager.activateTabContext(tab.ntxId);
         }
     }
 
+}
+
+/**
+ * The component to start collecting shortcut hints from: the one owning the focused element, or —
+ * when nothing focusable is (e.g. the image/media viewers) — the active pane's type widget.
+ */
+async function resolveFocusedComponent(): Promise<Component | undefined> {
+    const activeEl = document.activeElement;
+    if (activeEl instanceof HTMLElement) {
+        const component = appContext.getComponentByEl(activeEl) as Component | undefined;
+        if (component) {
+            return component;
+        }
+    }
+
+    return appContext.tabManager.getActiveContext()?.getTypeWidget();
 }

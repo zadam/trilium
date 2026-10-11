@@ -140,6 +140,8 @@ describe("Config Service", () => {
             process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERBASEURL = "https://issuer.standard.com";
             process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERNAME = "Standard Auth";
             process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERICON = "standard-icon.png";
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT = "45000";
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE = "openid profile email offline_access";
 
             let { default: config } = await import("./config.js");
 
@@ -149,6 +151,8 @@ describe("Config Service", () => {
             expect(config.MultiFactorAuthentication.oauthIssuerBaseUrl).toBe("https://issuer.standard.com");
             expect(config.MultiFactorAuthentication.oauthIssuerName).toBe("Standard Auth");
             expect(config.MultiFactorAuthentication.oauthIssuerIcon).toBe("standard-icon.png");
+            expect(config.MultiFactorAuthentication.oauthHttpTimeout).toBe(45000);
+            expect(config.MultiFactorAuthentication.oauthScope).toBe("openid profile email offline_access");
 
             // Clear and test with alias naming
             Object.keys(process.env).forEach(key => {
@@ -163,7 +167,9 @@ describe("Config Service", () => {
             process.env.TRILIUM_OAUTH_ISSUER_BASE_URL = "https://issuer.alias.com";
             process.env.TRILIUM_OAUTH_ISSUER_NAME = "Alias Auth";
             process.env.TRILIUM_OAUTH_ISSUER_ICON = "alias-icon.png";
-            
+            process.env.TRILIUM_OAUTH_HTTP_TIMEOUT = "15000";
+            process.env.TRILIUM_OAUTH_SCOPE = "openid email";
+
             vi.resetModules();
             config = (await import("./config.js")).default;
 
@@ -173,6 +179,33 @@ describe("Config Service", () => {
             expect(config.MultiFactorAuthentication.oauthIssuerBaseUrl).toBe("https://issuer.alias.com");
             expect(config.MultiFactorAuthentication.oauthIssuerName).toBe("Alias Auth");
             expect(config.MultiFactorAuthentication.oauthIssuerIcon).toBe("alias-icon.png");
+            expect(config.MultiFactorAuthentication.oauthHttpTimeout).toBe(15000);
+            expect(config.MultiFactorAuthentication.oauthScope).toBe("openid email");
+        });
+
+        it("should apply oauthHttpTimeout and oauthScope transformers (defaults, bounds, openid prefix)", async () => {
+            // Timeout below the express-openid-connect minimum (500) falls back to the 30000 default.
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT = "100";
+            // Scope missing the mandatory 'openid' token gets it prepended.
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE = "profile email offline_access";
+
+            let { default: config } = await import("./config.js");
+            expect(config.MultiFactorAuthentication.oauthHttpTimeout).toBe(30000);
+            expect(config.MultiFactorAuthentication.oauthScope).toBe("openid profile email offline_access");
+
+            // Non-numeric timeout and blank scope both fall back to their defaults.
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT = "not-a-number";
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE = "   ";
+            vi.resetModules();
+            config = (await import("./config.js")).default;
+            expect(config.MultiFactorAuthentication.oauthHttpTimeout).toBe(30000);
+            expect(config.MultiFactorAuthentication.oauthScope).toBe("openid profile email");
+
+            // Internal whitespace is normalized to single spaces even when 'openid' is already present.
+            process.env.TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE = "openid   profile\t email";
+            vi.resetModules();
+            config = (await import("./config.js")).default;
+            expect(config.MultiFactorAuthentication.oauthScope).toBe("openid profile email");
         });
 
         it("should handle all Sync environment variables correctly", async () => {
@@ -303,6 +336,63 @@ corsAllowOrigin=https://ini-cors.com
         });
     });
 
+    describe("config.ini bootstrapping", () => {
+        it("creates config.ini from the sample when it does not yet exist", async () => {
+            // existsSync false -> the bootstrap branch copies config-sample.ini.
+            vi.mocked(fs.existsSync).mockReturnValue(false);
+            const sampleContents = "[General]\ninstanceName=from-sample";
+            vi.mocked(fs.readFileSync).mockImplementation((path) => {
+                if (String(path).includes("config-sample.ini")) {
+                    return Buffer.from(sampleContents) as any;
+                }
+                return sampleContents as any;
+            });
+
+            const { default: config } = await import("./config.js");
+
+            expect(fs.writeFileSync).toHaveBeenCalledWith("/test/config.ini", sampleContents);
+            expect(config.General.instanceName).toBe("from-sample");
+        });
+
+        it("uses the trimmed desktop sample under Electron", async () => {
+            const originalElectron = process.versions.electron;
+            Object.defineProperty(process.versions, "electron", { value: "41.0.0", configurable: true });
+            try {
+                vi.mocked(fs.existsSync).mockReturnValue(false);
+                const desktopSample = "[General]\ninstanceName=desktop-sample";
+                vi.mocked(fs.readFileSync).mockImplementation((path) => {
+                    if (String(path).includes("config-sample-desktop.ini")) {
+                        return Buffer.from(desktopSample) as any;
+                    }
+                    return desktopSample as any;
+                });
+
+                const { default: config } = await import("./config.js");
+
+                expect(fs.writeFileSync).toHaveBeenCalledWith("/test/config.ini", desktopSample);
+                expect(config.General.instanceName).toBe("desktop-sample");
+            } finally {
+                if (originalElectron === undefined) {
+                    delete (process.versions as { electron?: string }).electron;
+                } else {
+                    Object.defineProperty(process.versions, "electron", { value: originalElectron, configurable: true });
+                }
+            }
+        });
+    });
+
+    describe("Boolean transformation edge cases", () => {
+        it("defaults unrecognized boolean-ish values to false", async () => {
+            // "yes" is not handled by envToBoolean nor the 1/0 checks -> falls
+            // through to the default `return false` branch of transformBoolean.
+            process.env.TRILIUM_GENERAL_NOAUTHENTICATION = "yes";
+
+            const { default: config } = await import("./config.js");
+
+            expect(config.General.noAuthentication).toBe(false);
+        });
+    });
+
     describe("Default Values", () => {
         it("should use correct default values when no config is provided", async () => {
             const { default: config } = await import("./config.js");
@@ -314,9 +404,9 @@ corsAllowOrigin=https://ini-cors.com
             expect(config.General.noDesktopIcon).toBe(false);
             expect(config.General.readOnly).toBe(false);
 
-            // Network defaults
+            // Network defaults (host is the web/server bind address)
             expect(config.Network.host).toBe("0.0.0.0");
-            expect(config.Network.port).toBe("3000");
+            expect(config.Network.port).toBe("8080");
             expect(config.Network.https).toBe(false);
             expect(config.Network.certPath).toBe("");
             expect(config.Network.keyPath).toBe("");
@@ -340,9 +430,17 @@ corsAllowOrigin=https://ini-cors.com
             expect(config.MultiFactorAuthentication.oauthIssuerBaseUrl).toBe("https://accounts.google.com");
             expect(config.MultiFactorAuthentication.oauthIssuerName).toBe("Google");
             expect(config.MultiFactorAuthentication.oauthIssuerIcon).toBe("");
+            // Empty means "detect from the provider's discovery document" for both of these.
+            expect(config.MultiFactorAuthentication.oauthClientAuthMethod).toBe("");
+            expect(config.MultiFactorAuthentication.oauthIdTokenSigningAlg).toBe("");
 
             // Logging defaults
             expect(config.Logging.retentionDays).toBe(90);
+
+            // Security defaults (allowLanAccess is the desktop LAN-bind override)
+            expect(config.Security.backendScriptingEnabled).toBe(false);
+            expect(config.Security.sqlConsoleEnabled).toBe(false);
+            expect(config.Security.allowLanAccess).toBe(false);
         });
     });
 });

@@ -1,200 +1,30 @@
+@import url(./buttons.css);
+
 /*
- * Command buttons (.btn-primary / .btn-secondary / .btn-sm / .btn-success)
+ * Selectable cards (import/export pickers) — mirror the button-group look: borderless, a recessed
+ * group background, and a raised "selected" chip with a subtle shadow. The base component styling
+ * (SelectableCard.css) uses theme-agnostic tokens so the legacy theme keeps working; these Next-theme
+ * tokens only exist here, so the override lives in the theme. The `:root` prefix matches the
+ * button-group convention above and keeps these rules winning over the component's base rules.
  */
-
-button.btn.btn-primary,
-button.btn.btn-secondary,
-button.btn.btn-sm:not(.select-button),
-button.btn.btn-success,
-button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel, .ck-button-replaceall, .ck-button-replace).ck-button_with-text {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 120px;
-    box-shadow: 1px 1px 1px var(--cmd-button-shadow-color);
-    border: unset;
-    border-radius: 6px;
-    padding: 4px 16px;
-    background: var(--cmd-button-background-color);
+:root .selectable-card {
+    border-color: transparent;
+    background: var(--button-group-background-color);
     color: var(--cmd-button-text-color);
-
-    &.dropdown-toggle-split {
-        min-width: unset;
-    }
+    transition: background-color 150ms ease-in-out, color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 }
 
-button.btn.btn-primary:hover,
-button.btn.btn-secondary:hover,
-button.btn.btn-sm:not(.select-button):hover,
-button.btn.btn-success:hover,
-button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel, .ck-button-replaceall, .ck-button-replace).ck-button_with-text:not(.ck-disabled):hover {
+:root .selectable-card:hover {
+    border-color: transparent;
     background: var(--cmd-button-hover-background-color);
     color: var(--cmd-button-hover-text-color);
 }
 
-button.btn.btn-primary:active,
-button.btn.btn-secondary:active,
-button.btn.btn-sm:not(.select-button):active,
-button.btn.btn-success:active,
-button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel, .ck-button-replaceall, .ck-button-replace).ck-button_with-text:not(.ck-disabled):active {
-    opacity: 0.85;
-    box-shadow: unset;
-    background: var(--cmd-button-background-color) !important;
-    color: var(--cmd-button-text-color) !important;
-    transform: scale(0.95);
-}
-
-button.btn.btn-primary:disabled,
-button.btn.btn-secondary:disabled,
-button.btn.btn-sm:not(.select-button):disabled,
-button.btn.btn-success:disabled,
-button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel, .ck-button-replaceall, .ck-button-replace).ck-button_with-text.ck-disabled {
-    opacity: var(--cmd-button-disabled-opacity);
-}
-
-button.btn.btn-primary:focus-visible,
-button.btn.btn-secondary:focus-visible,
-button.btn.btn-sm:not(.select-button):focus-visible,
-button.btn.btn-success:focus-visible,
-button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel, .ck-button-replaceall, .ck-button-replace).ck-button_with-text:not(.ck-disabled):focus-visible,
-.tn-focusable-button:focus-visible {
-    outline: 2px solid var(--input-focus-outline-color);
-}
-
-/* Button's icon */
-button.btn.btn-primary span.tn-icon,
-button.btn.btn-secondary span.tn-icon,
-button.btn.btn-sm span.tn-icon,
-button.btn.btn-success span.tn-icon {
-    color: var(--cmd-button-icon-color);
-    padding-inline-end: 0.35em;
-    font-size: 1.2em;
-}
-
-/* Button's keyboard shortcut */
-button.btn.btn-primary kbd,
-button.btn.btn-secondary kbd,
-button.btn.btn-sm kbd,
-button.btn.btn-success kbd {
-    margin-inline-start: 0.5em;
-    background: var(--cmd-button-keyboard-shortcut-background);
-    color: var(--cmd-button-keyboard-shortcut-color);
-    font-size: 0.6em;
-    text-transform: uppercase;
-    letter-spacing: 0.5pt;
-}
-
-/*
- * Low profile buttons
- */
-
-button.tn-low-profile {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    border-radius: 8px;
-    color: inherit;
-}
-
-button.tn-low-profile:hover {
-    background-color: var(--icon-button-hover-background);
-}
-
-/*
- * Icon buttons
- */
-
-:root .icon-action:not(.global-menu-button),
-:root .tn-tool-button,
-:root .btn-group .tn-tool-button:not(:last-child),
-:root .btn-group .tn-tool-button:last-child {
-    width: var(--icon-button-size);
-    height: var(--icon-button-size);
-    border: unset !important;
-    border-radius: 8px;
-    padding: 0;
-    text-align: center;
-    color: var(--icon-button-color);
-}
-
-.btn-group .tn-tool-button + .tn-tool-button {
-    margin-inline-start: 4px !important;
-}
-
-/* The "x" icon button */
-:root .icon-action.bx-x,
-:root .tn-tool-button.bx-x {
-    --icon-button-hover-background: var(--tab-close-button-hover-background);
-    --icon-button-hover-color: var(--tab-close-button-hover-color);
-    --icon-button-size: 24px;
-    --icon-button-icon-ratio: 0.8;
-
-    border-radius: 50%;
-}
-
-/* The icon */
-:root .icon-action:not(.global-menu-button)::before,
-:root .tn-tool-button::before {
-    display: block;
-    line-height: 1;
-    font-size: calc(var(--icon-button-size) * var(--icon-button-icon-ratio));
-}
-
-:root .icon-action.disabled::before {
-    opacity: .5;
-}
-
-:root .icon-action:not(.global-menu-button):hover,
-:root .icon-action:not(.global-menu-button).show,
-:root .tn-tool-button:hover,
-:root .tn-tool-button.show {
-    background: var(--icon-button-hover-background);
-    color: var(--icon-button-hover-color);
-}
-
-:root .icon-action:not(.global-menu-button):active::before,
-:root .tn-tool-button:active::before {
-    transform: scale(0.85);
-}
-
-:root .icon-action:not(.global-menu-button):focus-visible,
-:root .tn-tool-button:focus-visible {
-    outline: 2px solid var(--input-focus-outline-color);
-}
-
-/* Button groups */
-
-:root div.btn-group {
-    display: flex;
-    gap: 4px;
-    border-radius: 8px;
-    background: var(--button-group-background-color);
-    padding: 4px;
-
-    button,
-    button.btn,
-    button.btn.btn-secondary {
-        --cmd-button-background-color: transparent;
-        --cmd-button-shadow-color: transparent;
-
-        min-width: unset;
-        margin: 0;
-        box-shadow: unset;
-        border-radius: 8px;
-
-        &.active, &.active:hover {
-            background-color: var(--button-group-active-button-background-color);
-            color: var(--button-group-active-button-color);
-
-            box-shadow: 1px 1px 1px var(--button-group-active-button-shadow-color);
-        }
-    }
-
-    .icon-action {
-        --icon-button-size: 28px;
-        --icon-button-icon-ratio: .75;
-        width: calc(var(--icon-button-size) * 1.25);
-    }
+:root .selectable-card.selected {
+    border-color: transparent;
+    background: var(--button-group-active-button-background-color);
+    color: var(--button-group-active-button-color);
+    box-shadow: 1px 1px 1px var(--button-group-active-button-shadow-color);
 }
 
 /*
@@ -288,11 +118,15 @@ input::selection,
 /* Input groups */
 
 .input-group {
+    /* Named rather than written into the padding alone, so that a field drawing an indicator of its
+       own can place it against the group's edge — which is this much further out than the field's. */
+    --input-group-padding-inline-end: 8px;
+
     outline: 3px solid transparent;
     outline-offset: 6px;
     background: var(--input-background-color);
     border-radius: 6px;
-    padding-inline-end: 8px;
+    padding-inline-end: var(--input-group-padding-inline-end);
     color: var(--quick-search-color);
     flex-wrap: nowrap;
 }
@@ -457,6 +291,14 @@ select.form-control:focus,
     transition:
         outline-color 50ms linear,
         outline-offset 200ms ease-out;
+}
+
+select:disabled,
+select.form-select:disabled,
+select.form-control:disabled {
+    background: var(--input-background-color) var(--dropdown-arrow);
+    color: var(--input-text-color);
+    opacity: 0.65;
 }
 
 option {
@@ -659,8 +501,7 @@ optgroup {
 
 /* Switches */
 
-.switch-widget.component,
-.note-language-container {
+.switch-widget.component {
     --icon-button-size: 28px;
 }
 
@@ -672,12 +513,12 @@ div.switch-widget {
     --switch-on-thumb-background: var(--main-background-color);
 }
 
-/* Links */
+/* Links. `:where(:not(.excalidraw *))` leaves out the menus of an embedded canvas drawing. */
 
 body a.tn-link,
 body a.tn-link:visited,
-.use-tn-links a,
-.use-tn-links a:visited {
+.use-tn-links a:where(:not(.excalidraw *)),
+.use-tn-links a:visited:where(:not(.excalidraw *)) {
     --background: transparent;
 
     box-shadow: 0 0 0 0 var(--background);
@@ -694,13 +535,13 @@ body a.tn-link:visited,
 }
 
 body a.tn-link:focus-visible,
-.use-tn-links a:focus-visible {
+.use-tn-links a:focus-visible:where(:not(.excalidraw *)) {
     outline: 2px solid var(--input-focus-outline-color);
     outline-offset: 2px;
 }
 
 body a.tn-link:hover,
-.use-tn-links a:hover,
+.use-tn-links a:hover:where(:not(.excalidraw *)),
 .use-tn-links a.ck-widget_selected {
     box-shadow: 0 0 0 4px var(--link-hover-background);
     --background: var(--link-hover-background);
@@ -716,9 +557,9 @@ body a.tn-link:hover,
 a.tn-link.external:not(.no-arrow)::after,
 a.tn-link[href^="http://"]:not(.no-arrow)::after,
 a.tn-link[href^="https://"]:not(.no-arrow)::after,
-.use-tn-links a.external:not(.no-arrow)::after,
-.use-tn-links a[href^="http://"]:not(.no-arrow)::after,
-.use-tn-links a[href^="https://"]:not(.no-arrow)::after
+.use-tn-links a.external:not(.no-arrow):where(:not(.excalidraw *))::after,
+.use-tn-links a[href^="http://"]:not(.no-arrow):where(:not(.excalidraw *))::after,
+.use-tn-links a[href^="https://"]:not(.no-arrow):where(:not(.excalidraw *))::after
 {
     display: inline-block;
     opacity: 0.5;
@@ -736,9 +577,9 @@ a.tn-link[href^="https://"]:not(.no-arrow)::after,
 a.tn-link:hover.external:not(.no-arrow)::after,
 a.tn-link:hover[href^="http://"]:not(.no-arrow)::after,
 a.tn-link:hover[href^="https://"]:not(.no-arrow)::after,
-.use-tn-links a:hover.external:not(.no-arrow)::after,
-.use-tn-links a:hover[href^="http://"]:not(.no-arrow)::after,
-.use-tn-links a:hover[href^="https://"]:not(.no-arrow)::after
+.use-tn-links a:hover.external:not(.no-arrow):where(:not(.excalidraw *))::after,
+.use-tn-links a:hover[href^="http://"]:not(.no-arrow):where(:not(.excalidraw *))::after,
+.use-tn-links a:hover[href^="https://"]:not(.no-arrow):where(:not(.excalidraw *))::after
 {
     animation: link-arrow-blink 500ms linear alternate infinite;
 }
@@ -828,7 +669,7 @@ input[type="range"] {
     scrollbar-width: var(--scrollbar-thickness);
 }
 
-@supports selector(::-webkit-scrollbar) {
+@supports (-webkit-box-reflect: below) {
     /* Prevent the scrollbar-color and scrollbar-width properties to override the custom styles
      * defined using ::-webkit-scrollbar. */
     :root {

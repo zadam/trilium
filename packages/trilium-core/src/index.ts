@@ -1,3 +1,5 @@
+import type { SetupMarker } from "@triliumnext/commons";
+
 import { ExecutionContext, initContext } from "./services/context";
 import { CryptoProvider, initCrypto } from "./services/encryption/crypto";
 import LogService, { getLog, initLog } from "./services/log";
@@ -7,6 +9,7 @@ import { SqlService, SqlServiceParams } from "./services/sql/sql";
 import { initMessaging, MessagingProvider } from "./services/messaging/index";
 import { initRequest, RequestProvider } from "./services/request";
 import { initTranslations, TranslationProvider } from "./services/i18n";
+import { enterSetupMode, initSetupPlatform, type SetupPlatform } from "./services/setup_mode";
 import { initSchema, initDemoArchive } from "./services/sql_init";
 import appInfo from "./services/app_info";
 import { type PlatformProvider, initPlatform } from "./services/platform";
@@ -22,6 +25,36 @@ export { default as BackupService, getBackup, initBackup, type BackupOptionsServ
 export type * from "./services/sql/types";
 export * from "./services/sql/index";
 export { default as sql_init } from "./services/sql_init";
+export { getRunningSetupOperation, holdSetup, withSetupLock } from "./services/setup_lock";
+export {
+    authenticateSetup,
+    initSetupSecondFactor,
+    isSetupAuthorized,
+    isSetupAuthRequired,
+    isSetupSecondFactorRequired,
+    resetSetupAuth,
+    type SetupSecondFactor
+} from "./services/setup_auth";
+export {
+    enterSetupMode,
+    getSetupLanguage,
+    getSetupTargetScreen,
+    hasExistingData,
+    isInitialSetup,
+    isSetupRequested,
+    leaveSetupMode,
+    parseSetupMarker,
+    type SetupPlatform
+} from "./services/setup_mode";
+export {
+    type CandidateDatabase,
+    type DatabaseRejection,
+    type DatabaseValidation,
+    looksLikeSqlite,
+    OLDEST_SUPPORTED_DB_VERSION,
+    validateDatabase,
+    type ValidationOptions
+} from "./services/database_validation";
 export * as protected_session from "./services/protected_session";
 export { default as data_encryption } from "./services/encryption/data_encryption";
 export { default as scrypt } from "./services/encryption/scrypt";
@@ -92,9 +125,10 @@ export { default as SearchContext } from "./services/search/search_context";
 export { default as search, } from "./services/search/services/search";
 export { type default as SearchResult } from "./services/search/search_result";
 export { type SearchParams } from "./services/search/services/types";
-export { checkImageAttachments, default as note_service, findBookmarks, findLlmChatLinks, saveLinks } from "./services/notes";
+export { checkImageAttachments, collectCanvasImageFileIds, default as note_service, findBookmarks, findLlmChatLinks, findMindMapLinks, saveLinks } from "./services/notes";
 export type { NoteParams } from "./services/notes";
 export * as sanitize from "./services/sanitizer";
+export { assertScriptingEnabled, assertSqlConsoleEnabled, isScriptingEnabled } from "./services/scripting_guard";
 export * as routes from "./routes";
 export { default as ws } from "./services/ws";
 export { default as request } from "./services/request";
@@ -107,16 +141,27 @@ export { default as sync_mutex } from "./services/sync_mutex";
 export { default as setup } from "./services/setup";
 export { getPlatform, type PlatformProvider } from "./services/platform";
 export { InAppHelpProvider } from "./services/in_app_help";
-export { type ImageProvider, type ImageFormat, type ProcessedImage, getImageProvider } from "./services/image_provider";
+export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ProcessedImage, getImageProvider } from "./services/image_provider";
+export { default as imageCompressionService } from "./services/image_compression";
+export { default as imageInventoryService, type ImageInventoryOptions } from "./services/image_inventory";
+export { getContentCounts } from "./services/space_usage";
+export { getDatabaseSizeBytes, getReclaimableBytes } from "./services/database_size";
+export { checkIntegrity } from "./services/database_maintenance";
+export { default as imageInfoService } from "./services/image_info";
+export { estimateJpegQuality } from "./services/jpeg_quality";
+export { inspectImage, type InspectedImage, UNKNOWN_FORMAT } from "./services/image_inspect";
 export { type CoreConfig, initConfig, getConfig } from "./services/config";
 export { default as imageService } from "./services/image";
 export { t } from "i18next";
-export type { RequestProvider, ExecOpts, CookieJar } from "./services/request";
+export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceOpts, FetchedResource } from "./services/request";
 export type * from "./meta";
+export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
 
 export { getZipProvider, type ZipArchive, type ZipProvider } from "./services/zip_provider";
 export { default as zipImportService } from "./services/import/zip";
+export { default as importDispatchService, type ImportOptions } from "./services/import/dispatch";
+export type { File } from "./services/import/common";
 export { default as zipExportService } from "./services/export/zip";
 export { type AdvancedExportOptions, type ZipExportProviderData } from "./services/export/zip/abstract_provider";
 export { ZipExportProvider } from "./services/export/zip/abstract_provider";
@@ -133,7 +178,7 @@ export { default as scriptService } from "./services/script";
 export { default as BackendScriptApi, type Api as BackendScriptApiInterface } from "./services/backend_script_api";
 export * as scheduler from "./services/scheduler";
 
-export async function initializeCore({ dbConfig, executionContext, crypto, zip, zipExportProviderFactory, translations, messaging, request, schema, extraAppInfo, platform, getDemoArchive, inAppHelp, log, backup, image, config }: {
+export async function initializeCore({ dbConfig, executionContext, crypto, zip, zipExportProviderFactory, translations, messaging, request, schema, extraAppInfo, platform, getDemoArchive, inAppHelp, log, backup, image, config, setupMarker, setupPlatform }: {
     dbConfig: SqlServiceParams,
     executionContext: ExecutionContext,
     crypto: CryptoProvider,
@@ -154,6 +199,13 @@ export async function initializeCore({ dbConfig, executionContext, crypto, zip, 
     backup: BackupService;
     image: ImageProvider;
     config?: CoreConfig;
+    /**
+     * The `setup.json` a running instance left behind for this start, already read and deleted by
+     * the platform. Its presence keeps the database closed and sends the client to the setup screen.
+     */
+    setupMarker?: SetupMarker | null;
+    /** How this platform writes that file, for the route that asks for the next start to be setup. */
+    setupPlatform?: SetupPlatform;
 }) {
     if (config) {
         initConfig(config);
@@ -161,7 +213,16 @@ export async function initializeCore({ dbConfig, executionContext, crypto, zip, 
     initPlatform(platform);
     initLog(log);
     initBackup(backup);
-    await initTranslations(translations);
+    // Before anything reads the database: from here on this instance answers as one with nothing to
+    // open, which is what `initSql` below relies on to leave the existing database alone.
+    enterSetupMode(setupMarker ?? null);
+    if (setupPlatform) {
+        initSetupPlatform(setupPlatform);
+    }
+    // The wizard is for a user who has already chosen a language, so it opens in theirs. Passed in
+    // here, where the resources for a language are actually loaded, because the place that language
+    // is normally read from is the database this start is deliberately not opening.
+    await initTranslations(translations, setupMarker?.lang);
     initCrypto(crypto);
     initZipProvider(zip);
     initZipExportProviderFactory(zipExportProviderFactory);

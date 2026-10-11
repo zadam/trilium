@@ -9,6 +9,7 @@ import { timeLimit } from "./utils/index.js";
 import becca from "../becca/becca.js";
 import type { SetupStatusResponse, SetupSyncFromServerResponse, SetupSyncSeedResponse } from "@triliumnext/commons";
 import request from "./request.js";
+import { discardExistingData } from "./setup_existing.js";
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer<SetupStatusResponse>("GET", "/api/setup/status");
@@ -66,7 +67,7 @@ async function requestToSyncServer<T>(method: string, path: string, body?: strin
     )) as T;
 }
 
-async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string, password: string): Promise<SetupSyncFromServerResponse> {
+async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string, password: string, syncMaxBlobContentSize = 0): Promise<SetupSyncFromServerResponse> {
     if (sqlInit.isDbInitialized()) {
         return {
             result: "failure",
@@ -98,7 +99,13 @@ async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string
             };
         }
 
-        await sqlInit.createDatabaseForSync(resp.options, syncServerHost, syncProxy);
+        // Not a step earlier. Everything above can fail on something the user can correct — a
+        // mistyped host, a refused password, a server too old to talk to this one — and each of
+        // those has to fail with the knowledge base still there to go back to. This is the first
+        // move that cannot be taken back, and the erasure belongs immediately in front of it.
+        await discardExistingData();
+
+        await sqlInit.createDatabaseForSync(resp.options, syncServerHost, syncProxy, syncMaxBlobContentSize);
 
         triggerSync();
 

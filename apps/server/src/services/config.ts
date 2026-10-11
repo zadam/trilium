@@ -11,7 +11,7 @@
  * ║      2     │ config.ini File                 │ [Network]                   ║
  * ║      ↓     │ (User Configuration)            │ port=8080                   ║
  * ║            │                                                                ║
- * ║      3     │ Default Values                  │ port='3000'                 ║
+ * ║      3     │ Default Values                  │ port='8080'                 ║
  * ║            │ (Lowest Priority - Fallback)    │ (hardcoded defaults)        ║
  * ║                                                                            ║
  * ╠════════════════════════════════════════════════════════════════════════════╣
@@ -28,10 +28,15 @@ import dataDir from "./data_dir.js";
 import resourceDir from "./resource_dir.js";
 
 /**
- * Path to the sample configuration file that serves as a template for new installations.
- * This file contains all available configuration options with documentation.
+ * Path to the sample configuration file copied into the data directory on first
+ * run. Desktop builds get a trimmed template: web-deployment options (host, port,
+ * CORS, reverse proxy, sessions, OAuth) don't apply because the renderer talks to
+ * the bundled server in-process, and network/scripting are managed through the UI.
+ * `process.versions.electron` is used (not the core `isElectron()`) because this
+ * runs at module load, before the platform is initialized.
  */
-const configSampleFilePath = path.resolve(resourceDir.RESOURCE_DIR, "config-sample.ini");
+const configSampleFileName = process.versions.electron ? "config-sample-desktop.ini" : "config-sample.ini";
+const configSampleFilePath = path.resolve(resourceDir.RESOURCE_DIR, configSampleFileName);
 
 /**
  * Initialize config.ini file if it doesn't exist.
@@ -129,6 +134,20 @@ export interface TriliumConfig {
         oauthIssuerName: string;
         /** URL to the OAuth provider's icon/logo */
         oauthIssuerIcon: string;
+        /** Timeout in milliseconds for OAuth/OIDC HTTP requests (discovery, token exchange, userinfo). Default: 30000 */
+        oauthHttpTimeout: number;
+        /** Space-separated OIDC scopes requested at login. Default: 'openid profile email' */
+        oauthScope: string;
+        /**
+         * How to authenticate to the provider's token endpoint: 'client_secret_basic' or
+         * 'client_secret_post'. Leave empty to auto-detect from the issuer.
+         */
+        oauthClientAuthMethod: string;
+        /**
+         * The JWS algorithm the provider signs ID tokens with (e.g. 'RS256', 'EdDSA', 'ES256').
+         * Leave empty to auto-detect from the issuer's discovery document.
+         */
+        oauthIdTokenSigningAlg: string;
     };
     /** Logging configuration */
     Logging: {
@@ -137,7 +156,20 @@ export interface TriliumConfig {
          * log files created by Trilium older than the specified amount of time will be deleted.
          */
         retentionDays: number;
-    }
+    };
+    /** Security and code execution configuration */
+    Security: {
+        /** Whether backend script execution is enabled (default: false for server, true for desktop) */
+        backendScriptingEnabled: boolean;
+        /** Whether the SQL console is accessible (default: false) */
+        sqlConsoleEnabled: boolean;
+        /**
+         * Desktop only: whether the TCP listener binds all interfaces (LAN-reachable)
+         * instead of loopback. Managed via the desktop `security.json` override, not
+         * config.ini. Consumed by host.ts; has no effect on server builds.
+         */
+        allowLanAccess: boolean;
+    };
 }
 
 /**
@@ -145,6 +177,17 @@ export interface TriliumConfig {
  * After this period, old log files are automatically deleted during rotation.
  */
 export const LOGGING_DEFAULT_RETENTION_DAYS = 90;
+
+/**
+ * Port the server listens on when neither an environment variable nor a
+ * `port=` entry in config.ini supplies one.
+ *
+ * In practice this fallback is rarely reached: `config-sample.ini` ships
+ * `port=8080` and is copied into the data directory on first run, so a fresh
+ * install already has the value set. Keep the two in sync — a mismatch here
+ * reads as "the default port changed" to anyone inspecting this file.
+ */
+export const DEFAULT_NETWORK_PORT = "8080";
 
 /**
  * Configuration value source with precedence handling.
@@ -315,6 +358,8 @@ const configMapping = {
     },
     Network: {
         host: {
+            // Web/server only — desktop ignores this and resolves its bind
+            // address from the `allowLanAccess` security override (see host.ts).
             standardEnvVar: 'TRILIUM_NETWORK_HOST',
             iniGetter: () => getIniSection("Network")?.host,
             defaultValue: '0.0.0.0'
@@ -322,7 +367,7 @@ const configMapping = {
         port: {
             standardEnvVar: 'TRILIUM_NETWORK_PORT',
             iniGetter: () => getIniSection("Network")?.port,
-            defaultValue: '3000'
+            defaultValue: DEFAULT_NETWORK_PORT
         },
         https: {
             standardEnvVar: 'TRILIUM_NETWORK_HTTPS',
@@ -452,6 +497,44 @@ const configMapping = {
             aliasEnvVars: ['TRILIUM_OAUTH_ISSUER_ICON'],
             iniGetter: () => getIniSection("MultiFactorAuthentication")?.oauthIssuerIcon,
             defaultValue: ''
+        },
+        oauthHttpTimeout: {
+            standardEnvVar: 'TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT',
+            aliasEnvVars: ['TRILIUM_OAUTH_HTTP_TIMEOUT'],
+            iniGetter: () => getIniSection("MultiFactorAuthentication")?.oauthHttpTimeout,
+            defaultValue: 30000,
+            transformer: (value: unknown) => {
+                const parsed = parseInt(String(value), 10);
+                // express-openid-connect requires httpTimeout >= 500; fall back to the default otherwise.
+                return Number.isFinite(parsed) && parsed >= 500 ? parsed : 30000;
+            }
+        },
+        oauthScope: {
+            standardEnvVar: 'TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE',
+            aliasEnvVars: ['TRILIUM_OAUTH_SCOPE'],
+            iniGetter: () => getIniSection("MultiFactorAuthentication")?.oauthScope,
+            defaultValue: 'openid profile email',
+            transformer: (value: unknown) => {
+                const trimmed = String(value).trim();
+                if (!trimmed) return 'openid profile email';
+                // Normalize internal whitespace, and prepend the spec-required 'openid' if the user forgot it.
+                const tokens = trimmed.split(/\s+/);
+                return tokens.includes('openid') ? tokens.join(' ') : `openid ${tokens.join(' ')}`;
+            }
+        },
+        oauthClientAuthMethod: {
+            standardEnvVar: 'TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHCLIENTAUTHMETHOD',
+            // alternative format
+            aliasEnvVars: ['TRILIUM_OAUTH_CLIENT_AUTH_METHOD'],
+            iniGetter: () => getIniSection("MultiFactorAuthentication")?.oauthClientAuthMethod,
+            defaultValue: ''
+        },
+        oauthIdTokenSigningAlg: {
+            standardEnvVar: 'TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHIDTOKENSIGNINGALG',
+            // alternative format
+            aliasEnvVars: ['TRILIUM_OAUTH_ID_TOKEN_SIGNING_ALG'],
+            iniGetter: () => getIniSection("MultiFactorAuthentication")?.oauthIdTokenSigningAlg,
+            defaultValue: ''
         }
     },
     Logging: {
@@ -462,6 +545,29 @@ const configMapping = {
             iniGetter: () => getIniSection("Logging")?.retentionDays,
             defaultValue: LOGGING_DEFAULT_RETENTION_DAYS,
             transformer: (value: unknown) => utils.stringToInt(String(value)) ?? LOGGING_DEFAULT_RETENTION_DAYS
+        }
+    },
+    Security: {
+        backendScriptingEnabled: {
+            standardEnvVar: 'TRILIUM_SECURITY_BACKEND_SCRIPTING_ENABLED',
+            iniGetter: () => getIniSection("Security")?.backendScriptingEnabled,
+            defaultValue: false,
+            transformer: transformBoolean
+        },
+        sqlConsoleEnabled: {
+            standardEnvVar: 'TRILIUM_SECURITY_SQL_CONSOLE_ENABLED',
+            aliasEnvVars: ['TRILIUM_SECURITY_SQLCONSOLEENABLED'],
+            iniGetter: () => getIniSection("Security")?.sqlConsoleEnabled,
+            defaultValue: false,
+            transformer: transformBoolean
+        },
+        allowLanAccess: {
+            // Desktop-only: normally written to security.json and applied by the
+            // Electron main process at startup; host.ts reads it instead of the
+            // [Network] host. Kept off the documented config surface on purpose.
+            iniGetter: () => getIniSection("Security")?.allowLanAccess,
+            defaultValue: false,
+            transformer: transformBoolean
         }
     }
 };
@@ -512,12 +618,22 @@ const config: TriliumConfig = {
         oauthClientSecret: getConfigValue(configMapping.MultiFactorAuthentication.oauthClientSecret),
         oauthIssuerBaseUrl: getConfigValue(configMapping.MultiFactorAuthentication.oauthIssuerBaseUrl),
         oauthIssuerName: getConfigValue(configMapping.MultiFactorAuthentication.oauthIssuerName),
-        oauthIssuerIcon: getConfigValue(configMapping.MultiFactorAuthentication.oauthIssuerIcon)
+        oauthIssuerIcon: getConfigValue(configMapping.MultiFactorAuthentication.oauthIssuerIcon),
+        oauthHttpTimeout: getConfigValue(configMapping.MultiFactorAuthentication.oauthHttpTimeout),
+        oauthScope: getConfigValue(configMapping.MultiFactorAuthentication.oauthScope),
+        oauthClientAuthMethod: getConfigValue(configMapping.MultiFactorAuthentication.oauthClientAuthMethod),
+        oauthIdTokenSigningAlg: getConfigValue(configMapping.MultiFactorAuthentication.oauthIdTokenSigningAlg)
     },
     Logging: {
         retentionDays: getConfigValue(configMapping.Logging.retentionDays)
+    },
+    Security: {
+        backendScriptingEnabled: getConfigValue(configMapping.Security.backendScriptingEnabled),
+        sqlConsoleEnabled: getConfigValue(configMapping.Security.sqlConsoleEnabled),
+        allowLanAccess: getConfigValue(configMapping.Security.allowLanAccess)
     }
 };
+
 
 /**
  * =====================================================================
@@ -570,6 +686,10 @@ const config: TriliumConfig = {
  * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERBASEURL : OAuth issuer URL
  * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERNAME    : OAuth provider name
  * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERICON    : OAuth provider icon
+ * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT   : OAuth HTTP timeout in ms (default 30000)
+ * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE         : Space-separated OIDC scopes (default 'openid profile email')
+ * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHCLIENTAUTHMETHOD : Token-endpoint auth method
+ * - TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHIDTOKENSIGNINGALG : ID token signing algorithm
  *
  * Logging Section:
  * - TRILIUM_LOGGING_RETENTIONDAYS        : Log retention period in days
@@ -595,6 +715,8 @@ const config: TriliumConfig = {
  * - TRILIUM_OAUTH_ISSUER_BASE_URL        : Same as TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERBASEURL
  * - TRILIUM_OAUTH_ISSUER_NAME            : Same as TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERNAME
  * - TRILIUM_OAUTH_ISSUER_ICON            : Same as TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERICON
+ * - TRILIUM_OAUTH_HTTP_TIMEOUT           : Same as TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHHTTPTIMEOUT
+ * - TRILIUM_OAUTH_SCOPE                  : Same as TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHSCOPE
  *
  * Logging (with underscore):
  * - TRILIUM_LOGGING_RETENTION_DAYS       : Same as TRILIUM_LOGGING_RETENTIONDAYS

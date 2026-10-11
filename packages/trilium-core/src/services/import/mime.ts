@@ -9,6 +9,7 @@ const CODE_MIME_TYPES = new Set([
     "message/http",
     "text/css",
     "text/html",
+    "text/javascript",
     "text/plain",
     "text/x-clojure",
     "text/x-csharp",
@@ -25,6 +26,7 @@ const CODE_MIME_TYPES = new Set([
     "text/x-kotlin",
     "text/x-lua",
     "text/x-markdown",
+    "text/x-nim",
     "text/xml",
     "text/x-objectivec",
     "text/x-pascal",
@@ -43,8 +45,10 @@ const CODE_MIME_TYPES = new Set([
 ]);
 
 const CODE_MIME_TYPES_OVERRIDE = new Map<string, string>([
-    ["application/javascript", "application/javascript;env=frontend"],
-    ["application/x-javascript", "application/javascript;env=frontend"],
+    // Imported JavaScript is treated as plain (non-Trilium) JavaScript rather than a
+    // frontend/backend script, since an imported `.js` file is rarely a Trilium script.
+    ["application/javascript", "text/javascript"],
+    ["application/x-javascript", "text/javascript"],
     // possibly later migrate to text/markdown as primary MIME
     ["text/markdown", "text/x-markdown"]
 ]);
@@ -66,6 +70,7 @@ const EXTENSION_TO_MIME = new Map<string, string>([
     [".http", "message/http"],
     [".kt", "text/x-kotlin"],
     [".m", "text/x-objectivec"],
+    [".nim", "text/x-nim"],
     [".py", "text/x-python"],
     [".rb", "text/x-ruby"],
     [".scala", "text/x-scala"],
@@ -73,7 +78,8 @@ const EXTENSION_TO_MIME = new Map<string, string>([
     [".ts", "text/x-typescript"],
     [".excalidraw", "application/json"],
     [".mermaid", "text/vnd.mermaid"],
-    [".mmd", "text/vnd.mermaid"]
+    [".mmd", "text/vnd.mermaid"],
+    [".triliumsheet", "text/x-spreadsheet"]
 ]);
 
 /** @returns false if MIME is not detected */

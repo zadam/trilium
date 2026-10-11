@@ -1,15 +1,46 @@
 import { dayjs } from "@triliumnext/commons";
-import type { Application } from "express";
+import express, { type Application } from "express";
 import { SessionData } from "express-session";
 import supertest, { type Response } from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { cls } from "@triliumnext/core";
+import { cls, options } from "@triliumnext/core";
+import { refreshAuth } from "../services/auth.js";
+import config from "../services/config.js";
+import totp from "../services/totp.js";
+import { createLoginRateLimiter } from "./login.js";
 import { type SQLiteSessionStore } from "./session_parser.js";
 
 let app: Application;
 let sessionStore: SQLiteSessionStore;
 let CLEAN_UP_INTERVAL: number;
+
+describe("createLoginRateLimiter", () => {
+    it("counts failed attempts and stops answering past the limit", async () => {
+        const { app, handled } = buildRateLimitedApp((_req, res) => {
+            res.status(401).json({ success: false });
+        });
+
+        const statuses = await sendRepeatedly(app, 12);
+
+        expect(handled()).toBe(10); // the configured max
+        expect(statuses).toEqual([ ...Array(10).fill(401), 429, 429 ]);
+    });
+
+    it("refunds every response below 400, which is why a refusal must not be one", async () => {
+        // A route answering a refused credential with 200 has its hit handed straight back by
+        // `skipSuccessfulRequests`, and the limit is never reached. Guards the contract
+        // `createLoginRateLimiter` documents.
+        const { app, handled } = buildRateLimitedApp((_req, res) => {
+            res.status(200).json({ authenticated: false });
+        });
+
+        const statuses = await sendRepeatedly(app, 12);
+
+        expect(handled()).toBe(12);
+        expect(statuses).toEqual(Array(12).fill(200));
+    });
+});
 
 describe("Login Route test", () => {
 
@@ -24,15 +55,12 @@ describe("Login Route test", () => {
         vi.useRealTimers();
     });
 
-    it("should return the login page, when using a GET request", async () => {
-
-        // RegExp for login page specific string in HTML
+    it("redirects GET /login to the SPA root with the login marker, since login is served client-side", async () => {
         const res = await supertest(app)
             .get("/login")
-            .expect(200);
+            .expect(302);
 
-        expect(res.text).toMatch(/assets\/v[0-9.a-z]+\/src\/login\.js/);
-
+        expect(res.headers.location).toBe("./?login");
     });
 
     it("returns a 401 status, when login fails with wrong password", async () => {
@@ -42,6 +70,84 @@ describe("Login Route test", () => {
             .send({ password: "fakePassword" })
             .expect(401);
 
+    });
+
+    it("returns a 401 status, when the password field is missing or not a string", async () => {
+        for (const body of [{}, { password: ["a"] }]) {
+            await supertest(app)
+                .post("/login")
+                .send(body)
+                .expect(401);
+        }
+    });
+
+    it("rejects a TOTP token that is not a string without verifying it", async () => {
+        vi.spyOn(totp, "isTotpEnabled").mockReturnValue(true);
+        const verifyTOTP = vi.spyOn(totp, "verifyTOTP");
+
+        try {
+            const res = await supertest(app)
+                .post("/login")
+                .send({ password: "demo1234", totpToken: ["123456"] })
+                .expect(401);
+
+            expect(res.body).toEqual({ success: false, factor: "totp" });
+            expect(verifyTOTP).not.toHaveBeenCalled();
+        } finally {
+            vi.restoreAllMocks();
+        }
+    });
+
+    describe("login stays reachable with redirectBareDomain enabled (#10552)", () => {
+        // The fixture DB contains a #shareRoot note (y0AFOwgOgkWO), so enabling
+        // redirectBareDomain arms the bare-domain → share redirect in checkAuth.
+        // The login screen is served by the SPA at the root, so an explicit login
+        // request must still be able to reach it — otherwise the share redirect
+        // locks the owner out of their own instance.
+        let originalNoAuthentication: boolean;
+
+        beforeAll(() => {
+            // The spec data dir's config.ini enables noAuthentication, which makes
+            // checkAuth wave every request through and would mask the redirect
+            // behavior under test.
+            originalNoAuthentication = config.General.noAuthentication;
+            config.General.noAuthentication = false;
+            refreshAuth();
+            cls.init(() => options.setOption("redirectBareDomain", "true"));
+        });
+
+        afterAll(() => {
+            config.General.noAuthentication = originalNoAuthentication;
+            refreshAuth();
+            cls.init(() => options.setOption("redirectBareDomain", "false"));
+        });
+
+        it("still redirects the bare domain itself to the share page", async () => {
+            const res = await supertest(app).get("/").expect(302);
+            expect(res.headers.location).toBe("share");
+        });
+
+        it("GET /login ends on the login screen, not the share page", async () => {
+            const { res, path } = await followRedirects(app, "/login");
+
+            expect(path).not.toMatch(/^\/share/);
+            expect(res.status).toBe(200);
+        });
+
+        it("GET /login/ (trailing slash) ends on the login screen, not a redirect loop", async () => {
+            const { res, path } = await followRedirects(app, "/login/");
+
+            expect(path).not.toMatch(/^\/share/);
+            expect(res.status).toBe(200);
+        });
+
+        it("serves the bootstrap payload to a logged-out client instead of redirecting it to share", async () => {
+            // The SPA's login screen is driven by the bootstrap `loggedIn: false`
+            // payload; if /bootstrap gets bounced to the share page, the login
+            // screen can never render even when the SPA itself is served.
+            const res = await supertest(app).get("/bootstrap").expect(200);
+            expect(res.body.loggedIn).toBe(false);
+        });
     });
 
     describe("Login when 'Remember Me' is ticked", async () => {
@@ -188,6 +294,31 @@ describe("Login Route test", () => {
     });
 }, 100_000);
 
+const MAX_REDIRECT_HOPS = 5;
+
+/**
+ * Follows 3xx redirects the way a browser would, resolving relative `Location`
+ * headers (".", "share", …) against the current URL. Stops after
+ * {@link MAX_REDIRECT_HOPS} hops so redirect loops surface as a final 3xx
+ * response instead of hanging the test.
+ */
+async function followRedirects(app: Application, startPath: string) {
+    let url = new URL(startPath, "http://localhost");
+    let res = await supertest(app).get(url.pathname + url.search);
+
+    for (let hop = 0; hop < MAX_REDIRECT_HOPS && res.status >= 300 && res.status < 400; hop++) {
+        const location = res.headers.location;
+        if (!location) {
+            break;
+        }
+
+        url = new URL(location, url);
+        res = await supertest(app).get(url.pathname + url.search);
+    }
+
+    return { res, path: url.pathname };
+}
+
 async function getSessionFromCookie(setCookieHeader: string) {
     // Extract the session ID from the cookie.
     const sessionIdMatch = setCookieHeader.match(/trilium.sid=(?<sessionId>[^;]+)/)?.[1];
@@ -211,4 +342,28 @@ function getSessionFromStore(sessionId: string) {
             }
         });
     });
+}
+
+/** An app whose only route counts how many requests made it past the limiter. */
+function buildRateLimitedApp(handler: express.RequestHandler) {
+    let handled = 0;
+
+    const app = express();
+    app.post("/login", createLoginRateLimiter(), (req, res, next) => {
+        handled++;
+        handler(req, res, next);
+    });
+
+    return { app, handled: () => handled };
+}
+
+async function sendRepeatedly(app: Application, count: number) {
+    const statuses: number[] = [];
+
+    // Sequentially: the limiter's budget is spent in request order, which is what's asserted.
+    for (let i = 0; i < count; i++) {
+        statuses.push((await supertest(app).post("/login")).status);
+    }
+
+    return statuses;
 }

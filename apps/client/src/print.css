@@ -1,4 +1,6 @@
 @import "./stylesheets/boxicons-compat.css";
+/* No dark theme class is set when printing, so colors get the light theme's shades. */
+@import "@triliumnext/ckeditor5/src/theme/adaptive_colors.css";
 
 :root {
     --print-font-size: 11pt;
@@ -48,6 +50,7 @@ body[data-note-type="text"] .ck-content {
     color: #374a75;
 }
 
+.ck-content .todo-list__label,
 .ck-content .todo-list__label * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -76,24 +79,37 @@ body[data-note-type="text"] .ck-content {
         --task-state-glyph-font-family: initial;
         --task-state-color: initial;
     }
-    
+
     :where(.ck-content .todo-list li:where(:not([data-trilium-task-state]), [data-trilium-task-state="done"]):has(> .todo-list__label input[type="checkbox"]:checked)) {
         --task-state-glyph: "";
         --task-state-glyph-font-family: boxicons;
     }
 
-    .ck-content .todo-list__label__description {
+    .ck-content .todo-list li {
         /* The percentage of the line height that the check box occupies */
         --box-ratio: 0.75;
         /* The size of the gap between the check box and the caption */
         --box-text-gap: 0.25em;
-        
+
         /* The percentage of the box size that the glyph occupies. */
         --glyph-ratio: .70;
 
+        /* Registered as <length> above, so the `lh` unit is resolved to an
+           absolute length here at the li; descendants and pseudo-elements
+           inherit that frozen value, so changing the glyph's font-size on
+           ::after no longer feeds back into the box dimensions. */
         --box-size: calc(1lh * var(--box-ratio));
         --box-vert-offset: calc((1lh - var(--box-size)) / 2);
+    }
 
+    /* The print document does not load the app stylesheet, so neutralise the UA
+       paragraph margins for real-<p> item descriptions — the box is centred on
+       the li's first line and the text must start there too. */
+    .ck-content .todo-list li p {
+        margin-block: 0;
+    }
+
+    .ck-content .todo-list__label__description {
         display: inline-block;
         padding-inline-start: calc(var(--box-size) + var(--box-text-gap));
         position: relative;
@@ -109,27 +125,68 @@ body[data-note-type="text"] .ck-content {
         height: var(--box-size);
     }
 
-    .ck-content .todo-list__label__description::before {
+    /* The `_without-description` variant has no description span — the item text is
+       a sibling <p>. Turn the (otherwise empty) label itself into the box, anchored
+       on the li's first line, and indent the paragraph(s) to make room for it. */
+    .ck-content .todo-list__label.todo-list__label_without-description {
+        position: absolute;
+        left: 0;
+        top: var(--box-vert-offset);
+        width: var(--box-size);
+        height: var(--box-size);
+    }
+
+    .ck-content .todo-list__label.todo-list__label_without-description::before,
+    .ck-content .todo-list__label.todo-list__label_without-description::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+    }
+
+    .ck-content .todo-list li > .todo-list__label_without-description ~ p {
+        padding-inline-start: calc(var(--box-size) + var(--box-text-gap));
+    }
+
+    .ck-content .todo-list__label__description::before,
+    .ck-content .todo-list__label.todo-list__label_without-description::before {
         --_border-tickness: 1pt;
         outline: var(--_border-tickness) solid black;
         outline-offset: calc(0pt - var(--_border-tickness));
         border-radius: 2pt;
     }
 
-    .ck-content .todo-list__label__description::after {
+    .ck-content .todo-list__label__description::after,
+    .ck-content .todo-list__label.todo-list__label_without-description::after {
         content: var(--task-state-glyph);
         line-height: var(--box-size);
-        vertical-align: middle;
         text-align: center;
         font-family: var(--task-state-glyph-font-family);
-        font-size: calc(var(--box-size) * var(--glyph-ratio));
+        /* Em box == checkbox box, shrink via scale(): geometric centring,
+           consistent with the on-screen checkbox glyph. */
+        font-size: var(--box-size);
         color: var(--task-state-color);
+        transform: scale(var(--glyph-ratio));
     }
 
     .ck-content .todo-list__label input[type="checkbox"] {
         display: none !important;
     }
 }
+
+/* #region Inline code */
+/* The print window loads neither style.css nor a theme (see loadStylesheets() in index.ts), so this
+ * repeats the on-screen rule with print-safe values instead of reading --inline-code-*. Printers
+ * drop backgrounds by default, which leaves the border as the only thing setting an inline snippet
+ * apart from the prose around it — so it has to survive greyscale on its own. */
+.ck-content code:not(pre code) {
+    padding: 0.1em 0.35em;
+    border: 1px solid #999;
+    border-radius: 3pt;
+    background-color: transparent;
+    font-size: 0.9em;
+    overflow-wrap: break-word;
+}
+/* #endregion */
 
 /* #region Footnotes */
 .footnote-reference a,
@@ -140,10 +197,27 @@ body[data-note-type="text"] .ck-content {
 li.footnote-item {
     position: relative;
     width: fit-content;
+    /* The flex layout that top-aligns the number lives in style.css, which is not
+       loaded in print mode (see index.ts), so the rules are replicated here. */
+    display: flex;
+    list-style: none;
+    counter-increment: footnote-counter;
+}
+
+li.footnote-item::before {
+    content: counter(footnote-counter) ". ";
+    margin-right: 0.25em;
 }
 
 .ck-content .footnote-back-link {
     margin-right: 0.25em;
+}
+
+.ck-content .footnote-section {
+    margin-top: 1em;
+    border-top: 1px solid #ccc;
+    padding-top: 1em;
+    counter-reset: footnote-counter;
 }
 
 .ck-content .footnote-content {
@@ -185,6 +259,15 @@ h6 {
     vertical-align: middle;
 }
 
+/* CKEditor's content stylesheet sets `figure.table { width: fit-content }` under
+   @media print to stop tables from being stretched to the page. On screen, Bootstrap's
+   `.table { width: 100% }` keeps tables full-width, but Bootstrap is not loaded in print,
+   so a fit-content table gets centered by CKEditor's `.table { margin: .9em auto }`.
+   Restore the full-width screen behavior while leaving the height guard intact. */
+.ck-content figure.table:not(.layout-table):not([style]) {
+    width: 100% !important;
+}
+
 pre {
     box-shadow: unset !important;
     border: 0.75pt solid gray !important;
@@ -201,17 +284,117 @@ span[style] {
 /* #region Spreadsheet */
 .spreadsheet-table {
     border-collapse: collapse;
+    /* Gridlines are drawn by the renderer's own rule; on paper they are a hairline. At 0.5pt one
+       is narrower than every real cell border (>= 1px from the workbook data), so a cell's own
+       border always wins the border-collapse conflict and is never clobbered. */
+    --spreadsheet-gridline-width: 0.5pt;
+    --spreadsheet-gridline-color: #ccc;
+    /* Honour the per-column widths in the colgroup, as the share renderer does, so the printed
+       grid keeps the editor's geometry and the floating images stay over the cells they belong to. */
+    table-layout: fixed;
     width: 100%;
     font-size: var(--print-font-size);
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
 }
 
-.spreadsheet-table td {
-    border: 0.5pt solid #ccc;
+/* The context is in :where() so this stays a default: the renderer emits the commonest cell
+   style as a `.spreadsheet-table td` rule, which has to win over it. */
+:where(.spreadsheet-table) td {
     padding: 2pt 4pt;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Match the spreadsheet: long text runs into empty neighbouring cells instead of wrapping,
+       which keeps every row at its declared height. The renderer sets overflow:hidden on the cells
+       whose neighbour holds a value, so only those are cut. */
+    white-space: nowrap;
+    overflow: visible;
+}
+
+/* On paper a link cannot be followed, so it keeps the cell's own text color and the underline
+   is the only marker, matching how .ck-content links print. */
+.spreadsheet-table a {
+    text-decoration: underline;
+    color: inherit;
+}
+/* #endregion */
+
+/* #region AI chat */
+body[data-note-type="llmChat"] {
+    font-size: var(--print-font-size);
+}
+
+body[data-note-type="llmChat"] .llm-chat-message-wrapper {
+    contain: none !important;
+}
+
+body[data-note-type="llmChat"] .llm-chat-message-user {
+    background: #f0f0f0;
+    border: 0.5pt solid #ccc;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+body[data-note-type="llmChat"] .llm-chat-footer {
+    /* The timestamp/usage footer is revealed on hover on screen; on paper there is no hover, and a
+       transcript wants its timestamps. */
+    opacity: 1;
+    color: #666;
+}
+/* #endregion */
+
+/* #region Collapsible blocks */
+/* A collapsed <details> hides its body in print too; overriding the UA's content-visibility on
+   ::details-content is the only CSS way to reveal it. The arrow is rotated to match. */
+details::details-content {
+    content-visibility: visible;
+}
+
+.ck-content details.trilium-collapsible > summary::before {
+    transform: scale(1.3) rotate(90deg) !important;
+}
+/* #endregion */
+
+/* #region Tabs */
+.ck-content .trilium-tabs {
+    margin: 1em 0;
+}
+
+.ck-content .trilium-tab {
+    break-inside: avoid;
+
+    & + .trilium-tab {
+        margin-top: 8pt;
+    }
+}
+
+.ck-content .trilium-tab-title {
+    width: fit-content;
+    min-width: 3em;
+    min-height: calc(1.5em + 4pt);
+    margin: 0;
+    padding: 2pt 8pt;
+    border: 0.5pt solid #ccc;
+    border-bottom: 0;
+    border-radius: 4pt 4pt 0 0;
+    background: #f0f0f0;
+    font-weight: 500;
+    text-align: start;
+    break-after: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.ck-content .trilium-tab-panel {
+    padding: 6pt 10pt;
+    border: 0.5pt solid #ccc;
+    border-radius: 0 4pt 4pt 4pt;
+
+    & > :first-child {
+        margin-top: 0;
+    }
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
 }
 /* #endregion */
 

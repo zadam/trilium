@@ -36,7 +36,7 @@ async function renderAttribute(attribute: FAttribute, renderIsInheritable: boole
     return $attr;
 }
 
-function formatValue(val: string) {
+export function formatValue(val: string) {
     if (/^[\p{L}\p{N}\-_,.]+$/u.test(val)) {
         return val;
     } else if (!val.includes('"')) {
@@ -90,6 +90,7 @@ const HIDDEN_ATTRIBUTES = [
     "pageSize",
     "viewType",
     "geolocation",
+    "mapPosition",
     "docName",
     "webViewSrc",
     "archived"

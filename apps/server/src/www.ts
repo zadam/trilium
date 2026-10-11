@@ -1,4 +1,4 @@
-import { app_info as appInfo, getMessagingProvider, getPlatform, utils } from "@triliumnext/core";
+import { app_info as appInfo, getLog, getMessagingProvider, getPlatform, utils } from "@triliumnext/core";
 import type { Express } from "express";
 import fs from "fs";
 import http from "http";
@@ -7,12 +7,17 @@ import tmp from "tmp";
 
 import buildApp from "./app.js";
 import config from "./services/config.js";
+import dataDir from "./services/data_dir.js";
+import { startCpuProfiler, writeCpuProfile } from "./services/cpu_profiler.js";
 import { registerOcrHandlers } from "./services/handlers.js";
 import host from "./services/host.js";
-import { getLog } from "@triliumnext/core";
+import { registerServerLlmExtensions } from "./services/llm/index.js";
 import port from "./services/port.js";
+import { installProcessErrorHandlers, markAppReady } from "./services/process_errors.js";
+import { isScriptingEnabled } from "./services/scripting_guard.js";
+import { publishHealthcheckTarget } from "./services/healthcheck.js";
 import { getDbSize } from "./services/sql_init.js";
-import WebSocketMessagingProvider from "./services/ws_messaging_provider.js";
+import { isHttpAttachableMessagingProvider } from "./services/ws_messaging_provider.js";
 
 const MINIMUM_NODE_VERSION = "20.0.0";
 
@@ -28,21 +33,35 @@ export default async function startTriliumServer(): Promise<Express> {
     await displayStartupMessage();
 
     // setup basic error handling even before requiring dependencies, since those can produce errors as well
-    process.on("unhandledRejection", (error: Error) => {
-        // this makes sure that stacktrace of failed promise is printed out
-        console.log(error);
+    installProcessErrorHandlers();
 
-        // but also try to log it into file
-        getLog().info(error);
-    });
+    // When TRILIUM_PROFILE is set we drive the V8 CPU profiler ourselves rather than relying on Node's
+    // --cpu-prof flag: that flag flushes its file during the normal shutdown path, which the exit() handler
+    // below short-circuits with process.exit(0), so the profile is silently never written.
+    const profilerSession = startCpuProfiler();
 
-    function exit() {
-        console.log("Caught interrupt/termination signal. Exiting.");
-        process.exit(0);
+    let exiting = false;
+    function exit(reason: string) {
+        if (exiting) {
+            return;
+        }
+        exiting = true;
+        console.log(reason);
+        // Writing the profile needs an async inspector round-trip. On a signal this races the process
+        // teardown and often loses, so the reliable trigger is the Enter keypress wired up below; the
+        // signal path is best-effort.
+        writeCpuProfile(profilerSession, () => process.exit(0));
     }
 
-    process.on("SIGINT", exit);
-    process.on("SIGTERM", exit);
+    process.on("SIGINT", () => exit("Caught interrupt/termination signal. Exiting."));
+    process.on("SIGTERM", () => exit("Caught interrupt/termination signal. Exiting."));
+
+    if (profilerSession) {
+        // Pressing Enter fires during normal event-loop operation, so the async profile flush completes
+        // before we exit — unlike Ctrl+C, which the V8 inspector round-trip can't reliably outrun.
+        process.stdin.resume();
+        process.stdin.on("data", () => exit("Writing CPU profile and exiting (TRILIUM_PROFILE)."));
+    }
 
     if (utils.compareVersions(process.versions.node, MINIMUM_NODE_VERSION) < 0) {
         console.error();
@@ -58,20 +77,26 @@ export default async function startTriliumServer(): Promise<Express> {
     const app = await buildApp();
     const httpServer = startHttpServer(app);
 
-    // Only the WS provider needs the HTTP server and session parser; other
-    // providers (e.g. the Electron-IPC provider from apps/desktop) are
-    // initialised by their owning app before startup. Gating on the concrete
-    // type keeps www.ts platform-agnostic.
+    // Only providers that serve clients over the TCP listener need the HTTP server
+    // and session parser (the server's WebSocket provider, or the desktop composite
+    // when LAN access is on). A pure Electron-IPC provider isn't HTTP-attachable, so
+    // it's skipped here and no WS endpoint is bound. Gating on the capability rather
+    // than a concrete type keeps www.ts platform-agnostic.
     const messaging = getMessagingProvider();
-    if (messaging instanceof WebSocketMessagingProvider) {
+    if (isHttpAttachableMessagingProvider(messaging)) {
         const sessionParser = (await import("./routes/session_parser.js")).default;
-        messaging.init(httpServer, sessionParser);
+        messaging.attachToHttpServer(httpServer, sessionParser);
     }
 
     const { ws } = await import("@triliumnext/core");
     ws.init();
 
     registerOcrHandlers();
+    registerServerLlmExtensions();
+
+    // Everything the application needs in order to be usable is now up, so from here on an escaped error
+    // is a contained failure rather than a broken startup, and stops being fatal.
+    markAppReady();
 
     return app;
 }
@@ -91,6 +116,14 @@ async function displayStartupMessage() {
         getLog().info(`💻 CPU:         ${cpuModel} (${cpuInfos.length}-core @ ${cpuInfos[0].speed} Mhz)`);
     }
     getLog().info(`💾 DB size:     ${utils.formatSize(getDbSize() * 1024)}`);
+
+    if (isScriptingEnabled()) {
+        getLog().info("WARNING: Backend script execution is ENABLED. Backend scripts have full server access including " +
+                 "filesystem, network, and OS commands. Only enable in trusted environments.");
+    } else {
+        getLog().info("Backend script execution is DISABLED. Set [Security] backendScriptingEnabled=true in config.ini to enable.");
+    }
+
     getLog().info("");
 }
 
@@ -177,6 +210,9 @@ function startHttpServer(app: Express) {
         } else {
             getLog().info(`Listening on unix socket ${host}`);
         }
+
+        publishHealthcheckTarget(
+            dataDir.TRILIUM_DATA_DIR, httpServer.address(), config.Network.https);
     });
 
     return httpServer;

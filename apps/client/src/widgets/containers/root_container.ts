@@ -1,12 +1,23 @@
-import { LOCALES } from "@triliumnext/commons";
+import { LOCALES, OptionNames } from "@triliumnext/commons";
 
 import { EventData } from "../../components/app_context.js";
 import { getEnabledExperimentalFeatureIds } from "../../services/experimental_features.js";
+import { applyCustomFontsFromOptions, hasCustomFontContentChanged } from "../../services/custom_fonts.js";
+import { applyFontsFromOptions } from "../../services/font.js";
 import options from "../../services/options.js";
+import { applyThemeFromOptions, onEffectiveThemeStyleChange, updateColorSchemeClasses, updateThemeCapabilities } from "../../services/theme.js";
 import utils, { isIOS, isMobile } from "../../services/utils.js";
-import { readCssVar } from "../../utils/css-var.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer from "./flex_container.js";
+
+/** Font options whose change requires re-applying the server-generated fonts stylesheet. */
+const FONT_OPTIONS: OptionNames[] = [
+    "overrideThemeFonts",
+    "mainFontFamily", "mainFontSize",
+    "treeFontFamily", "treeFontSize",
+    "detailFontFamily", "detailFontSize",
+    "monospaceFontFamily", "monospaceFontSize"
+];
 
 /**
  * The root container is the top-most widget/container, from which the entire layout derives.
@@ -21,12 +32,15 @@ import FlexContainer from "./flex_container.js";
  */
 export default class RootContainer extends FlexContainer<BasicWidget> {
 
-    private originalWindowHeight: number;
+    /** Window size the virtual keyboard detection compares against, per orientation. */
+    private baselineWindowHeight: number;
+    private baselineWindowWidth: number;
 
     constructor(isHorizontalLayout: boolean) {
         super(isHorizontalLayout ? "column" : "row");
 
-        this.originalWindowHeight = window.innerHeight ?? 0;
+        this.baselineWindowHeight = window.innerHeight ?? 0;
+        this.baselineWindowWidth = window.innerWidth ?? 0;
         this.id("root-widget");
         this.css("height", "100dvh");
     }
@@ -42,8 +56,12 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         this.#setMotion();
         this.#setShadows();
         this.#setBackdropEffects();
-        this.#setThemeCapabilities();
+        this.#setMonospaceLigatures();
+        updateThemeCapabilities();
         this.#setLocaleAndDirection(options.get("locale"));
+        // The fonts stylesheet went out with the page; the files the user's own fonts are stored in
+        // are fetched here, once froca can be asked which notes hold them.
+        void applyCustomFontsFromOptions();
         this.#setExperimentalFeatures();
         this.#initPWATopbarColor();
 
@@ -51,6 +69,19 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     entitiesReloadedEvent({ loadResults }: EventData<"entitiesReloaded">) {
+        if (loadResults.isOptionReloaded("theme")) {
+            void applyThemeFromOptions();
+        }
+
+        if (FONT_OPTIONS.some((optionName) => loadResults.isOptionReloaded(optionName))) {
+            applyFontsFromOptions();
+            void applyCustomFontsFromOptions();
+        } else if (hasCustomFontContentChanged(loadResults)) {
+            // The options still name the same fonts, so the stylesheet they are served as holds; only
+            // the faces their files were loaded into have to be built again.
+            void applyCustomFontsFromOptions();
+        }
+
         if (loadResults.isOptionReloaded("motionEnabled")) {
             this.#setMotion();
         }
@@ -63,6 +94,10 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
             this.#setBackdropEffects();
         }
 
+        if (loadResults.isOptionReloaded("monospaceLigaturesEnabled")) {
+            this.#setMonospaceLigatures();
+        }
+
         if (loadResults.isOptionReloaded("maxContentWidth")
             || loadResults.isOptionReloaded("centerContent")) {
 
@@ -71,23 +106,27 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     #initTheme() {
-        const colorSchemeChangeObserver = matchMedia("(prefers-color-scheme: dark)")
-        colorSchemeChangeObserver.addEventListener("change", () => this.#updateColorScheme());
+        onEffectiveThemeStyleChange(() => this.#updateColorScheme());
         this.#updateColorScheme();
-        
+
         document.body.setAttribute("data-theme-id", options.get("theme"));
     }
 
     #updateColorScheme() {
-        const colorScheme = readCssVar(document.body, "theme-style").asString();
-        
-        document.body.classList.toggle("light-theme", colorScheme === "light");
-        document.body.classList.toggle("dark-theme", colorScheme === "dark");
+        updateColorSchemeClasses();
     }
 
     #onMobileResize() {
+        // The virtual keyboard never changes the window width, so a width change means the device was
+        // rotated (or the window resized) and the stored height no longer describes this orientation.
+        // Keeping it would make the shorter landscape window look like an open keyboard (#10835).
+        if (window.innerWidth !== this.baselineWindowWidth) {
+            this.baselineWindowWidth = window.innerWidth;
+            this.baselineWindowHeight = window.innerHeight;
+        }
+
         const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-        const windowHeight = Math.max(window.innerHeight, this.originalWindowHeight); // inner height changes when keyboard is opened, we need to compare with the original height to detect it.
+        const windowHeight = Math.max(window.innerHeight, this.baselineWindowHeight); // inner height changes when keyboard is opened, we need to compare with the original height to detect it.
 
         // If viewport is significantly smaller, keyboard is likely open
         const isKeyboardOpened = windowHeight - viewportHeight > 150;
@@ -118,13 +157,14 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         document.body.classList.toggle("backdrop-effects-disabled", !enabled);
     }
 
-    #setThemeCapabilities() {
-        // Supports background effects
-
-        const useBgfx = readCssVar(document.documentElement, "allow-background-effects")
-            .asBoolean(false);
-
-        document.body.classList.toggle("theme-supports-background-effects", useBgfx);
+    /**
+     * Ligatures are a property of how the monospace font renders, not of which font is selected, so
+     * this rides a body class rather than the server-generated fonts stylesheet — no round-trip to
+     * `api/fonts` is needed to flip it.
+     */
+    #setMonospaceLigatures() {
+        const enabled = options.is("monospaceLigaturesEnabled");
+        document.body.classList.toggle("monospace-ligatures-disabled", !enabled);
     }
 
     #setExperimentalFeatures() {

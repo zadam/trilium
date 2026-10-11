@@ -5,7 +5,7 @@ In the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/
 
 Interaction since v0.104.0:
 
-*   The file can be downloaded as a text file using the dedicated button in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20buttons.md">Note buttons</a> area (<a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/New%20Layout.md">New Layout</a> only).
+*   The file can be downloaded as a text file using the <span class="tn-icon bx bx-download"></span> button in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> area.
 *   The file can also be searched just like a normal <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> note.
 
 ## Location on the disk
@@ -20,7 +20,7 @@ You can attach the whole file to the bug report (preferable) or open it and copy
 
 The backend logs are fully managed by the Trilium server. By default the last 90 days worth of logs are kept; the logs older than that are deleted in order to reduce the space consumption.
 
-It's possible to change the retention period by modifying the <a class="reference-link" href="../../Advanced%20Usage/Configuration%20(config.ini%20or%20e.md">Configuration (config.ini or environment variables)</a> via the `.ini` file:
+It's possible to change the retention period by modifying the <a class="reference-link" href="../../Advanced%20Usage/Configuration%20(config.ini%20or%20environment%20variables).md">Configuration (config.ini or environment variables)</a> via the `.ini` file:
 
 ```
 [Logging]

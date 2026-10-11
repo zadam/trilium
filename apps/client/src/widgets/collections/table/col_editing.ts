@@ -12,11 +12,15 @@ import dialog from "../../../services/dialog";
 import { t } from "i18next";
 import { executeBulkActions } from "../../../services/bulk_action";
 
-export default function useColTableEditing(api: RefObject<Tabulator>, attributeDetailWidget: AttributeDetailWidget, parentNote: FNote) {
+export default function useColTableEditing(
+    api: RefObject<Tabulator | null>,
+    attributeDetailWidget: AttributeDetailWidget,
+    parentNote: FNote,
+    newAttributePosition: RefObject<number | undefined>
+) {
 
-    const existingAttributeToEdit = useRef<Attribute>();
-    const newAttribute = useRef<Attribute>();
-    const newAttributePosition = useRef<number>();
+    const existingAttributeToEdit = useRef<Attribute | undefined>(undefined);
+    const newAttribute = useRef<Attribute | undefined>(undefined);
 
     useLegacyImperativeHandlers({
         addNewTableColumnCommand({ referenceColumn, columnToEdit, direction, type }: EventData<"addNewTableColumn">) {
@@ -55,7 +59,6 @@ export default function useColTableEditing(api: RefObject<Tabulator>, attributeD
                 allAttributes: [ attr ],
                 isOwned: true,
                 x: 0,
-                y: 150,
                 focus: "name",
                 hideMultiplicity: true
             });
@@ -114,7 +117,7 @@ export default function useColTableEditing(api: RefObject<Tabulator>, attributeD
         existingAttributeToEdit.current = undefined;
     }
 
-    return { newAttributePosition, resetNewAttributePosition };
+    return { resetNewAttributePosition };
 }
 
 async function deleteColumn(parentNoteId: string, type: "label" | "relation", columnName: string) {
@@ -122,12 +125,12 @@ async function deleteColumn(parentNoteId: string, type: "label" | "relation", co
         return executeBulkActions([parentNoteId], [{
             name: "deleteLabel",
             labelName: columnName
-        }], true);
+        }], { includeDescendants: true });
     } else {
         return executeBulkActions([parentNoteId], [{
             name: "deleteRelation",
             relationName: columnName
-        }], true);
+        }], { includeDescendants: true });
     }
 }
 
@@ -137,12 +140,12 @@ async function renameColumn(parentNoteId: string, type: "label" | "relation", or
             name: "renameLabel",
             oldLabelName: originalName,
             newLabelName: newName
-        }], true);
+        }], { includeDescendants: true });
     } else {
         return executeBulkActions([parentNoteId], [{
             name: "renameRelation",
             oldRelationName: originalName,
             newRelationName: newName
-        }], true);
+        }], { includeDescendants: true });
     }
 }

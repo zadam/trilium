@@ -1,5 +1,6 @@
+import { BBranch, becca, note_service as noteService } from "@triliumnext/core";
 import { Application } from "express";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import supertest from "supertest";
 import { login } from "./utils.js";
 import config from "../../src/services/config.js";
@@ -75,6 +76,40 @@ describe("etapi/create-entities", () => {
         });
     });
 
+    it("keeps a given utcDateModified on create and on patch", async () => {
+        const utcDateModified = "2024-05-06 08:11:12.456Z";
+        const created = await supertest(app)
+            .post("/etapi/create-note")
+            .auth(USER, token, { "type": "basic"})
+            .send({
+                parentNoteId: "root",
+                title: "Imported",
+                type: "text",
+                content: "x",
+                utcDateModified
+            })
+            .expect(201);
+        const { noteId } = created.body.note;
+        expect(created.body.note.utcDateModified).toBe(utcDateModified);
+        expect(becca.getNoteOrThrow(noteId).utcDateModified).toBe(utcDateModified);
+
+        await supertest(app)
+            .put(`/etapi/notes/${noteId}/content`)
+            .auth(USER, token, { "type": "basic"})
+            .set("Content-Type", "text/plain")
+            .send("rewritten")
+            .expect(204);
+        expect(becca.getNoteOrThrow(noteId).utcDateModified).not.toBe(utcDateModified);
+
+        const patched = await supertest(app)
+            .patch(`/etapi/notes/${noteId}`)
+            .auth(USER, token, { "type": "basic"})
+            .send({ utcDateModified })
+            .expect(200);
+        expect(patched.body.utcDateModified).toBe(utcDateModified);
+        expect(becca.getNoteOrThrow(noteId).utcDateModified).toBe(utcDateModified);
+    });
+
     it("obtains attribute information", async () => {
         const response = await supertest(app)
             .get(`/etapi/attributes/${createdAttributeId}`)
@@ -93,6 +128,63 @@ describe("etapi/create-entities", () => {
             role: "file",
             mime: "plain/text",
             title: "my attachment"
+        });
+    });
+
+    describe("error and edge cases", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it("rejects creating an image note with a non-image MIME", async () => {
+            const response = await supertest(app)
+                .post("/etapi/create-note")
+                .auth(USER, token, { "type": "basic"})
+                .send({ parentNoteId: "root", title: "img", type: "image", mime: "text/plain" })
+                .expect(400);
+            expect(response.body.code).toStrictEqual("INVALID_MIME_FOR_IMAGE");
+        });
+
+        it("reports a 500 when note creation throws", async () => {
+            vi.spyOn(noteService, "createNewNote").mockImplementation(() => {
+                throw new Error("boom");
+            });
+            const response = await supertest(app)
+                .post("/etapi/create-note")
+                .auth(USER, token, { "type": "basic"})
+                .send({ parentNoteId: "root", title: "x", type: "text", content: "x" })
+                .expect(500);
+            expect(response.body.code).toStrictEqual("GENERIC");
+        });
+
+        it("creates a relation attribute, validating the target note", async () => {
+            const response = await supertest(app)
+                .post("/etapi/attributes")
+                .auth(USER, token, { "type": "basic"})
+                .send({ noteId: createdNoteId, type: "relation", name: "myrelation", value: "root" })
+                .expect(201);
+            expect(response.body.type).toStrictEqual("relation");
+        });
+
+        it("reports a 400 when branch creation throws", async () => {
+            // A fresh note with no existing branch under _hidden, so the route takes the
+            // "new BBranch().save()" path (the try/catch) rather than updating an existing one.
+            const noteResp = await supertest(app)
+                .post("/etapi/create-note")
+                .auth(USER, token, { "type": "basic"})
+                .send({ parentNoteId: "root", title: "branch-fail", type: "text", content: "x" })
+                .expect(201);
+            const noteId = noteResp.body.note.noteId;
+
+            vi.spyOn(BBranch.prototype, "save").mockImplementation(() => {
+                throw new Error("boom");
+            });
+            const response = await supertest(app)
+                .post("/etapi/branches")
+                .auth(USER, token, { "type": "basic"})
+                .send({ noteId, parentNoteId: "_hidden" })
+                .expect(400);
+            expect(response.body.code).toStrictEqual("GENERIC");
         });
     });
 });

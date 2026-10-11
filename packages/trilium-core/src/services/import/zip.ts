@@ -1,18 +1,20 @@
-import { ALLOWED_NOTE_TYPES, type NoteType } from "@triliumnext/commons";
+import { ALLOWED_NOTE_TYPES, getImageAttachmentTitle, type NoteType } from "@triliumnext/commons";
 import { basename, dirname } from "../utils/path.js";
-import { getZipProvider } from "../zip_provider.js";
+import { getZipProvider, type ZipSource } from "../zip_provider.js";
 
 import becca from "../../becca/becca.js";
 import BAttachment from "../../becca/entities/battachment.js";
 import BAttribute from "../../becca/entities/battribute.js";
 import BBranch from "../../becca/entities/bbranch.js";
 import type BNote from "../../becca/entities/bnote.js";
+import * as cls from "../context.js";
 import attributeService from "../../services/attributes.js";
 import { getLog } from "../../services/log.js";
 import noteService from "../../services/notes.js";
 import { getNoteTitle, newEntityId, removeFileExtension, unescapeHtml } from "../../services/utils/index.js";
 import { processStringOrBuffer } from "../../services/utils/binary.js";
 import protectedSessionService from "../protected_session.js";
+import { getSql } from "../sql/index.js";
 import type TaskContext from "../task_context.js";
 import treeService from "../tree.js";
 import markdownService from "./markdown.js";
@@ -20,6 +22,29 @@ import mimeService from "./mime.js";
 import { AttributeMeta, NoteMeta } from "../../meta.js";
 import { isMarkdownCodeNote } from "../export/rewrite_links.js";
 import { sanitizeHtml } from "../sanitizer.js";
+import { extractFrontmatter, type FrontmatterAttribute } from "./frontmatter.js";
+
+// Source mimes that import as editable spreadsheet notes (parsed to Univer workbook JSON),
+// mirroring the single-file importer. As resolved by `mime-types` from the entry extension.
+const CSV_MIME = "text/csv";
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const SPREADSHEET_MIME = "text/x-spreadsheet";
+
+// Source mimes rendered from Markdown to HTML on import.
+const MARKDOWN_MIMES = ["text/markdown", "text/x-markdown", "text/mdx"];
+
+// A note entry whose content has been read (and any async conversion already applied), ready for the
+// synchronous saveNote() inside a batch transaction. `mimeOverride` is set when prepareEntry converted a
+// raw spreadsheet so saveNote stores it as a spreadsheet instead of re-detecting the raw CSV/XLSX mime.
+interface BatchEntry {
+    filePath: string;
+    content: string | Uint8Array;
+    mimeOverride?: string;
+}
+
+// A buffered import operation, replayed in order inside one transaction. Directory entries carry no
+// content; note entries are BatchEntry. Buffering both preserves the exact zip order across batches.
+type BatchItem = { isDirectory: true; filePath: string } | ({ isDirectory: false } & BatchEntry);
 
 interface MetaFile {
     files: NoteMeta[];
@@ -27,9 +52,24 @@ interface MetaFile {
 
 interface ImportZipOpts {
     preserveIds?: boolean;
+    /**
+     * Restore a whole-database export: map the archive's "root" note onto the import target instead of
+     * importing it as a new child note. The archived root's content merges into the destination and its
+     * children become the destination's children - no redundant "root" wrapper note, no root->root branch.
+     * Used by the demo-content import (and intended for a future "restore from ZIP" flow). Without it, an
+     * archived "root" is remapped to a fresh id like any other note (see {@link getNewNoteId}).
+     */
+    restoreAsRoot?: boolean;
+    /**
+     * Imports the archive instead when the scan pass recognizes an Obsidian vault: a `.obsidian/` config
+     * folder at the archive root or under a single wrapper folder, and no `!!!meta.json`. Set by the
+     * dispatcher for an untagged `.zip`, so a dropped vault reaches the Obsidian importer without anyone
+     * reading the archive an extra time.
+     */
+    onObsidianVault?: () => Promise<BNote>;
 }
 
-async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Uint8Array, importRootNote: BNote, opts?: ImportZipOpts): Promise<BNote> {
+async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSource, importRootNote: BNote, opts?: ImportZipOpts): Promise<BNote> {
     /** maps from original noteId (in ZIP file) to newly generated noteId */
     const noteIdMap: Record<string, string> = {};
     /** type maps from original attachmentId (in ZIP file) to newly generated attachmentId */
@@ -43,14 +83,32 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
     let topLevelPath = "";
     const createdNoteIds = new Set<string>();
 
+    // Records the first created note as the de-facto import root (its position is deliberately left to float
+    // per any inherited #newNotesOnTop — see the notePosition logic below). Once it exists, order-preservation
+    // is turned on so the remaining entries keep their archive order: this only matters for a non-Trilium
+    // folder zip, which carries no position metadata, since a Trilium export restores explicit positions for
+    // every non-root note and so never consults getNewNotePosition. See cls.setImportOrderPreserved.
+    function trackFirstNote(note: BNote) {
+        if (firstNote) {
+            return;
+        }
+        firstNote = note;
+        cls.setImportOrderPreserved(true);
+    }
+
     function getNewNoteId(origNoteId: string) {
         if (!origNoteId.trim()) {
             // this probably shouldn't happen, but still good to have this precaution
             return "empty_note_id";
         }
 
-        if (origNoteId === "root" || opts?.preserveIds) {
+        if (opts?.preserveIds) {
             return origNoteId;
+        }
+
+        // Whole-database restore: the archived root note IS the destination root, not a new child note.
+        if (opts?.restoreAsRoot && origNoteId === "root") {
+            return importRootNote.noteId;
         }
 
         if (!noteIdMap[origNoteId]) {
@@ -174,9 +232,18 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
     function detectFileTypeAndMime(taskContext: TaskContext<"importNotes">, filePath: string) {
         const rawMime = mimeService.getMime(filePath) || "application/octet-stream";
+
+        // CSV/XLSX entries become editable spreadsheet notes (matching single-file import) unless
+        // the user opts out, in which case they fall through to a plain file attachment. The raw
+        // mime is kept so `saveNote` knows which parser to run; it's swapped for the spreadsheet
+        // mime once the bytes have been converted to the Univer workbook JSON.
+        if (taskContext.data?.spreadsheetImportedAsSpreadsheet && (rawMime === CSV_MIME || rawMime === XLSX_MIME)) {
+            return { mime: rawMime, type: "spreadsheet" as NoteType };
+        }
+
         const type = mimeService.getType(taskContext.data || {}, rawMime);
         // Normalize aliased code MIMEs (e.g. `text/markdown` → `text/x-markdown`,
-        // `application/javascript` → `application/javascript;env=frontend`) so the
+        // `application/javascript` → `text/javascript`) so the
         // stored MIME matches what the rest of the app expects.
         const mime = (type === "code" && mimeService.normalizeMimeType(rawMime)) || rawMime;
 
@@ -259,7 +326,7 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
         saveAttributes(note, noteMeta);
 
-        firstNote = firstNote || note;
+        trackFirstNote(note);
         return noteId;
     }
 
@@ -287,15 +354,18 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             absUrl = topLevelPath + url;
         }
 
-        console.log(url, "-->", absUrl);
-
         const { noteMeta, attachmentMeta } = getMeta(absUrl);
 
         if (attachmentMeta && attachmentMeta.attachmentId && noteMeta.noteId) {
             return {
                 attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
                 attachmentTitle: attachmentMeta.title,
-                noteId: getNewNoteId(noteMeta.noteId)
+                noteId: getNewNoteId(noteMeta.noteId),
+                // The rendered image of a mermaid/canvas note, which the export writes out as a
+                // sibling file. An <img> aimed at it belongs back on `api/images/<noteId>`: that
+                // keeps the embed tied to the live diagram instead of freezing it into a copy of
+                // the exported picture.
+                isRenderedNoteImage: getImageAttachmentTitle(noteMeta.type) === attachmentMeta.title
             };
         }
         // don't check for noteMeta since it's not mandatory for notes
@@ -326,7 +396,13 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
         content = content.replace(/<html.*<body[^>]*>/gis, "");
         content = content.replace(/<\/body>.*<\/html>/gis, "");
 
-        content = content.replace(/src="([^"]*)"/g, (match, url) => {
+        // `data-image` and `data-favicon` are where a link preview (section.link-embed /
+        // span.link-mention) keeps its two pictures, which the export rewrites to attachment files
+        // alongside any <img src> — so they have to come back the same way. They are only ever an
+        // attachment of the note, and the render sinks accept nothing else (see
+        // `isLocalPreviewImageSrc`), so the note-image fallback below is deliberately not offered to
+        // them: an unresolvable reference stays as it is and the preview falls back to its placeholder.
+        content = content.replace(/(src|data-image|data-favicon)="([^"]*)"/g, (match, attrName, url) => {
             if (url.startsWith("data:image")) {
                 // inline images are parsed and saved into attachments in the note service
                 return match;
@@ -336,7 +412,7 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
                 url = decodeURIComponent(url).trim();
             } catch (e: any) {
                 getLog().error(`Cannot parse image URL '${url}', keeping original. Error: ${e.message}.`);
-                return `src="${url}"`;
+                return `${attrName}="${url}"`;
             }
 
             if (isUrlAbsolute(url)) {
@@ -345,11 +421,21 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
             const target = getEntityIdFromRelativeUrl(url, filePath);
 
-            if (target.attachmentId) {
-                return `src="api/attachments/${target.attachmentId}/image/${basename(url)}"`;
-            } else if (target.noteId) {
+            if (target.attachmentId && !target.isRenderedNoteImage) {
+                // The attachment's own title, encoded — not the archive's file name, which is prefixed
+                // with the owner note's title and so carries whatever spaces and punctuation that had.
+                // A space there is fatal rather than untidy: `isLocalPreviewImageSrc` guards the render
+                // sinks with an anchored pattern that admits no whitespace, so a preview whose owner
+                // was called "New note" imports with correct references that draw nothing. Every other
+                // producer of one of these URLs already encodes the title, the Markdown branch below
+                // included.
+                const title = encodeURIComponent(target.attachmentTitle || basename(url));
+
+                return `${attrName}="api/attachments/${target.attachmentId}/image/${title}"`;
+            } else if (target.noteId && attrName === "src") {
                 return `src="api/images/${target.noteId}/${basename(url)}"`;
             }
+
             return match;
 
         });
@@ -376,9 +462,15 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             } else if (target.noteId) {
                 return `href="#root/${target.noteId}"`;
             }
+            /* v8 ignore next -- unreachable: getEntityIdFromRelativeUrl always yields a noteId; kept so the callback returns a string on every path */
             return match;
 
         });
+
+        content = content.replace(
+            /data-attachment-id="([a-zA-Z0-9_]+)"/g,
+            (_match, id: string) => `data-attachment-id="${getNewAttachmentId(id)}"`
+        );
 
         if (noteMeta) {
             const includeNoteLinks = (noteMeta.attributes || []).filter((attr) => attr.type === "relation" && attr.name === "includeNoteLink");
@@ -395,16 +487,25 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
     }
 
     function processNoteContent(noteMeta: NoteMeta | undefined, type: string, mime: string, content: string | Uint8Array, noteTitle: string, filePath: string) {
-        if ((noteMeta?.format === "markdown" || (!noteMeta && taskContext.data?.textImportedAsText && ["text/markdown", "text/x-markdown", "text/mdx"].includes(mime))) && typeof content === "string") {
+        if ((noteMeta?.format === "markdown" || (!noteMeta && taskContext.data?.textImportedAsText && MARKDOWN_MIMES.includes(mime))) && typeof content === "string") {
             content = markdownService.renderToHtml(content, noteTitle);
         }
 
-        if (type === "text" && typeof content === "string") {
+        // `book` notes are rendered as rich HTML through the same `renderText()` path as
+        // `text` notes (see content_renderer), so their content must receive the same
+        // import processing — crucially the Safe Import HTML sanitization. Otherwise a
+        // malicious `book` note bypasses sanitization and achieves stored XSS/RCE when its
+        // content is previewed in a grid/list view.
+        if ((type === "text" || type === "book") && typeof content === "string") {
             content = processTextNoteContent(content, noteTitle, filePath, noteMeta);
         }
 
         if (type === "code" && isMarkdownCodeNote(mime) && typeof content === "string") {
             content = processMarkdownCodeNoteContent(content, filePath);
+        }
+
+        if (type === "mindMap" && typeof content === "string") {
+            content = processMindMapContent(content);
         }
 
         if (type === "relationMap" && noteMeta && typeof content === "string") {
@@ -418,6 +519,18 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
         }
 
         return content;
+    }
+
+    /**
+     * Points the pictures of a mind map's nodes at the attachments as they were recreated here.
+     *
+     * The map JSON carries each picture as the `api/attachments/...` URL it was served from in the
+     * instance the map came from, and every attachment is given a new id on the way in — so without
+     * this the pictures of an imported map point at attachments of the instance it left.
+     */
+    function processMindMapContent(content: string) {
+        return content.replace(/api\/attachments\/([a-zA-Z0-9_]+)\/image/g,
+            (_match, attachmentId: string) => `api/attachments/${getNewAttachmentId(attachmentId)}/image`);
     }
 
     /**
@@ -443,11 +556,12 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
             const target = getEntityIdFromRelativeUrl(url, filePath);
 
-            if (target.attachmentId) {
+            if (target.attachmentId && !target.isRenderedNoteImage) {
                 return `![${alt}](api/attachments/${target.attachmentId}/image/${encodeURIComponent(target.attachmentTitle || "image")})`;
             } else if (target.noteId) {
                 return `![${alt}](api/images/${target.noteId}/${basename(url)})`;
             }
+            /* v8 ignore next -- unreachable: getEntityIdFromRelativeUrl always yields a noteId; kept so the callback returns a string on every path */
             return match;
         });
 
@@ -470,13 +584,14 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             } else if (target.noteId) {
                 return `[${text}](#root/${target.noteId})`;
             }
+            /* v8 ignore next -- unreachable: getEntityIdFromRelativeUrl always yields a noteId; kept so the callback returns a string on every path */
             return match;
         });
 
         return content;
     }
 
-    function saveNote(filePath: string, content: string | Uint8Array) {
+    function saveNote(filePath: string, content: string | Uint8Array, mimeOverride?: string) {
         const { parentNoteMeta, noteMeta, attachmentMeta } = getMeta(filePath);
 
         if (noteMeta?.noImport) {
@@ -499,14 +614,24 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             return;
         }
 
-        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
+        let parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (!parentNoteId) {
             throw new Error(`Cannot find parentNoteId for '${filePath}'`);
         }
 
+        // When restoring a whole database (restoreAsRoot), the archived "root" maps onto the import root
+        // itself - it already exists with its own parentage, so we only refresh its content and never
+        // create a branch for it. For any other note, guard against a self-referential branch: reserved
+        // IDs like "root" are remapped on import so this shouldn't normally happen, but a malformed archive
+        // could otherwise persist a root->root branch that corrupts the tree and breaks loading.
+        const isImportRootNote = noteId === importRootNote.noteId;
+        if (!isImportRootNote && parentNoteId === noteId) {
+            parentNoteId = importRootNote.noteId;
+        }
+
         if (noteMeta?.isClone) {
-            if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
+            if (!isImportRootNote && !becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
                 new BBranch({
                     noteId,
                     parentNoteId,
@@ -525,11 +650,31 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             throw new Error("Unable to resolve mime type.");
         }
 
+        // A raw CSV/XLSX entry is converted to the Univer workbook JSON a spreadsheet note stores by the
+        // async prepareEntry() step (so this function can stay synchronous and run inside a batch
+        // transaction). When that happened, prepareEntry passes the spreadsheet mime here so the note is
+        // stored as a spreadsheet instead of being re-detected as raw CSV/XLSX.
+        if (mimeOverride != null) {
+            mime = mimeOverride;
+        }
+
         if (type !== "file" && type !== "image") {
             content = processStringOrBuffer(content);
         }
 
-        const noteTitle = getNoteTitle(filePath, taskContext.data?.replaceUnderscoresWithSpaces || false, noteMeta);
+        // A plain archive carries no metadata, so the detected mime stands in for it: getNoteTitle
+        // reads the mime to drop the extension of the types that record their format in the note's
+        // own mime (video, audio, fonts), which single-file import already does.
+        const noteTitle = getNoteTitle(filePath, taskContext.data?.replaceUnderscoresWithSpaces || false, noteMeta ?? { mime });
+
+        // Generic Markdown (not a Trilium export, which carries its attributes in !!!meta.json) may begin
+        // with a YAML front matter block; lift it into labels and strip it before the body is rendered.
+        let frontmatterAttributes: FrontmatterAttribute[] = [];
+        if (!noteMeta && typeof content === "string" && taskContext.data?.textImportedAsText && MARKDOWN_MIMES.includes(mime)) {
+            const parsed = extractFrontmatter(content);
+            content = parsed.body;
+            frontmatterAttributes = parsed.attributes;
+        }
 
         content = processNoteContent(noteMeta, type, mime, content, noteTitle || "", filePath);
 
@@ -550,7 +695,7 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
             note.setContent(content);
 
-            if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
+            if (!isImportRootNote && !becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
                 new BBranch({
                     noteId,
                     parentNoteId,
@@ -560,8 +705,8 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
                 }).save();
             }
 
-            if (opts?.preserveIds) {
-                firstNote = firstNote || note;
+            if (opts?.preserveIds || isImportRootNote) {
+                trackFirstNote(note);
             }
         } else {
             if (detectedType as string === "geoMap") {
@@ -604,8 +749,11 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             createdNoteIds.add(note.noteId);
 
             saveAttributes(note, noteMeta);
+            for (const attribute of frontmatterAttributes) {
+                note.addLabel(attribute.name, attribute.value);
+            }
 
-            firstNote = firstNote || note;
+            trackFirstNote(note);
         }
 
         if (!noteMeta && (type === "file" || type === "image")) {
@@ -618,20 +766,55 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
         }
     }
 
+    /**
+     * Runs the only asynchronous part of importing a note — converting a raw CSV/XLSX entry into the Univer
+     * workbook JSON a spreadsheet note stores — ahead of the synchronous {@link saveNote}. Keeping saveNote
+     * synchronous is what lets a whole batch of notes be written inside a single synchronous transaction.
+     * Returns the (possibly converted) content plus, when it converted, the mime saveNote should force.
+     */
+    async function prepareEntry(filePath: string, content: string | Uint8Array): Promise<BatchEntry> {
+        const { noteMeta, attachmentMeta } = getMeta(filePath);
+
+        // Attachments, clones and skipped notes return from saveNote before the spreadsheet branch, so
+        // they never need conversion. Only an actual note whose mime resolves to a raw spreadsheet does.
+        if (!attachmentMeta && !noteMeta?.isClone && !noteMeta?.noImport) {
+            const { mime, type: detectedType } = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
+            if (resolveNoteType(detectedType) === "spreadsheet" && (mime === CSV_MIME || mime === XLSX_MIME)) {
+                return { filePath, content: await convertSpreadsheetContent(mime, content), mimeOverride: SPREADSHEET_MIME };
+            }
+        }
+
+        return { filePath, content };
+    }
+
     const zipProvider = getZipProvider();
 
+    // Per-phase wall-clock so a single import run reveals where the time goes (logged as one summary line
+    // below). Cheap: a couple of Date.now() reads per entry.
+    const timing = { encoding: 0, scan: 0, read: 0, save: 0, postProcess: 0, sort: 0, attributes: 0 };
+    let timingMark = Date.now();
+
     // Detect filename encoding once for the whole ZIP (e.g. GBK for Chinese Windows ZIPs)
-    const filenameEncoding = await zipProvider.detectFilenameEncoding(fileBuffer);
+    const filenameEncoding = await zipProvider.detectFilenameEncoding(source);
+    timing.encoding = Date.now() - timingMark;
+    timingMark = Date.now();
 
     // we're running two passes in order to obtain critical information first (meta file and root)
     const topLevelItems = new Set<string>();
+    // count of entries the processing pass will handle, used as the progress denominator so the
+    // client can show a progress bar ("X of N") instead of a bare running count
+    let entriesToProcess = 0;
+    // Depth of the shallowest `.obsidian` segment, which sits at an Obsidian vault's root; -1 when absent.
+    let obsidianDepth = -1;
 
-    await zipProvider.readZipFile(fileBuffer, async (entry, readContent) => {
+    await zipProvider.readZipFile(source, async (entry, readContent) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (isMacOSMetadata(filePath)) {
             return;
         }
+
+        entriesToProcess++;
 
         // make sure that the meta file is loaded before the rest of the files is processed.
         if (filePath === "!!!meta.json") {
@@ -639,15 +822,73 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             metaFile = JSON.parse(new TextDecoder("utf-8").decode(content));
         }
 
+        const depth = filePath.split("/").indexOf(".obsidian");
+        if (depth !== -1 && (obsidianDepth === -1 || depth < obsidianDepth)) {
+            obsidianDepth = depth;
+        }
+
         // determine the root of the .zip (i.e. if it has only one top-level folder then the root is that folder, or the root of the archive if there are multiple top-level folders).
         const firstSlash = filePath.indexOf("/");
         const topLevelPath = (firstSlash !== -1 ? filePath.substring(0, firstSlash) : filePath);
         topLevelItems.add(topLevelPath);
     }, filenameEncoding);
+    timing.scan = Date.now() - timingMark;
+
+    // Only the two shapes importObsidian supports: `.obsidian/` at the archive root, or under a single
+    // wrapper folder. A vault nested among unrelated content stays with this importer, which leaves that
+    // content alone.
+    const isObsidianVault = obsidianDepth === 0 || (obsidianDepth === 1 && topLevelItems.size === 1);
+    if (opts?.onObsidianVault && isObsidianVault && !metaFile) {
+        return await opts.onObsidianVault();
+    }
 
     topLevelPath = (topLevelItems.size > 1 ? "" : topLevelItems.values().next().value ?? "");
 
-    await zipProvider.readZipFile(fileBuffer, async (entry, readContent) => {
+    // The import runs in two labelled phases, each driving its own 0→100% bar: first "extracting" counts
+    // every archive entry (notes, attachments, folders, the meta file), then "processing" counts only the
+    // notes that were actually created. The denominator deliberately changes between phases — the client
+    // shows distinct messages ("Extracted X items" vs "Processed X notes") so the switch reads as progress
+    // rather than the bar jerking. Here we seed the extraction phase with the entry count from the scan.
+    taskContext.setPhase("extracting");
+    taskContext.resetProgressCount();
+    taskContext.setTotalCount(entriesToProcess);
+
+    // Notes are written in batches, each batch in a single synchronous transaction, instead of letting
+    // every entity save auto-commit on its own. The per-note BEGIN/COMMIT (and its WAL fsync) dominated
+    // import time; batching collapses tens of thousands of commits into a handful (the inner per-entity
+    // transactions become cheap savepoints under the outer one). The flush MUST stay synchronous: holding
+    // a transaction open across the async readContent() would let concurrent requests on the shared DB
+    // connection interleave into the import's transaction. So all async work (reading entries and the
+    // spreadsheet conversion in prepareEntry) happens during accumulation, outside the transaction; the
+    // flush only replays already-prepared items. A byte cap keeps memory bounded so a multi-GB ZIP is
+    // never fully materialised, preserving the per-entry streaming the reader was built for.
+    const BATCH_MAX_COUNT = 200;
+    const BATCH_MAX_BYTES = 50 * 1024 * 1024;
+    let batch: BatchItem[] = [];
+    let batchBytes = 0;
+
+    const flushBatch = () => {
+        if (batch.length === 0) {
+            return;
+        }
+        const items = batch;
+        batch = [];
+        batchBytes = 0;
+
+        const saveStart = Date.now();
+        getSql().transactional(() => {
+            for (const item of items) {
+                if (item.isDirectory) {
+                    saveDirectory(item.filePath);
+                } else {
+                    saveNote(item.filePath, item.content, item.mimeOverride);
+                }
+            }
+        });
+        timing.save += Date.now() - saveStart;
+    };
+
+    await zipProvider.readZipFile(source, async (entry, readContent) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (isMacOSMetadata(filePath)) {
@@ -655,23 +896,45 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
         }
 
         if (/\/$/.test(entry.fileName)) {
-            saveDirectory(filePath);
+            batch.push({ isDirectory: true, filePath });
         } else if (filePath !== "!!!meta.json") {
-            saveNote(filePath, await readContent());
+            const readStart = Date.now();
+            const content = await readContent();
+            const prepared = await prepareEntry(filePath, content);
+            timing.read += Date.now() - readStart;
+
+            batch.push({ isDirectory: false, ...prepared });
+            batchBytes += prepared.content.length;
+
+            if (batch.length >= BATCH_MAX_COUNT || batchBytes >= BATCH_MAX_BYTES) {
+                flushBatch();
+            }
         }
 
         taskContext.increaseProgressCount();
     }, filenameEncoding);
 
+    flushBatch();
+
+    // Post-processing phase: increments progress once per created note (now known exactly). Reset the count
+    // and re-seed the total with the note count so this phase renders its own clean 0→100% bar.
+    taskContext.setPhase("processing");
+    taskContext.resetProgressCount();
+    taskContext.setTotalCount(createdNoteIds.size);
+
     for (const noteId of createdNoteIds) {
         const note = becca.getNote(noteId);
         if (!note) continue;
+        const postStart = Date.now();
         await noteService.asyncPostProcessContent(note, note.getContent());
+        timing.postProcess += Date.now() - postStart;
 
         if (!metaFile) {
             // if there's no meta file, then the notes are created based on the order in that zip file but that
             // is usually quite random, so we sort the notes in the way they would appear in the file manager
+            const sortStart = Date.now();
             treeService.sortNotes(noteId, "title", false, true);
+            timing.sort += Date.now() - sortStart;
         }
 
         taskContext.increaseProgressCount();
@@ -679,6 +942,7 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
 
     // we're saving attributes and links only now so that all relation and link target notes
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
+    timingMark = Date.now();
     for (const attr of attributes) {
         if (attr.type !== "relation" || attr.value in becca.notes) {
             new BAttribute(attr).save();
@@ -686,6 +950,13 @@ async function importZip(taskContext: TaskContext<"importNotes">, fileBuffer: Ui
             getLog().info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);
         }
     }
+    timing.attributes = Date.now() - timingMark;
+
+    getLog().info(
+        `Import timing (ms): encoding=${timing.encoding} scan=${timing.scan} read=${timing.read} ` +
+        `save=${timing.save} postProcess=${timing.postProcess} sort=${timing.sort} attributes=${timing.attributes} ` +
+        `— ${createdNoteIds.size} notes, ${entriesToProcess} entries, ${attributes.length} attributes`
+    );
 
     if (!firstNote) {
         throw new Error("Unable to determine first note.");
@@ -732,6 +1003,22 @@ function resolveNoteType(type: string | undefined): NoteType {
     }
     return "text";
 
+}
+
+/**
+ * Parses a raw CSV or XLSX entry into the Univer workbook JSON a spreadsheet note stores.
+ * The parsers are dynamically imported so exceljs only loads when such a file is imported
+ * (keeping it out of the core barrel and the standalone/browser bundle).
+ */
+async function convertSpreadsheetContent(mime: string, content: string | Uint8Array): Promise<string> {
+    if (mime === XLSX_MIME) {
+        const { parseXlsxToWorkbook } = await import("@triliumnext/commons/src/lib/spreadsheet/parse_from_xlsx.js");
+        const buffer = typeof content === "string" ? Buffer.from(content) : content;
+        return JSON.stringify(await parseXlsxToWorkbook(buffer));
+    }
+
+    const { parseCsvToWorkbook } = await import("@triliumnext/commons/src/lib/spreadsheet/parse_from_csv.js");
+    return JSON.stringify(parseCsvToWorkbook(processStringOrBuffer(content)));
 }
 
 export function removeTriliumTags(content: string) {

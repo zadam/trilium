@@ -24,21 +24,27 @@ export function loadCoreSchema(): string {
 }
 
 /**
- * Resolves the path to the integration test database fixture, with the same
- * production-bundled vs. dev/test fallback as loadCoreSchema().
+ * Reads one of the LLM skill sheets, by the file name core's catalog gives, on
+ * the same two paths as {@link loadCoreSchema}: copied under RESOURCE_DIR by the
+ * build, resolved through the workspace symlink when running from source.
  *
- * Returns a real on-disk path so callers can either feed it into
- * fs.readFileSync() (to load as a buffer for an in-memory connection) or
- * pass it directly to better-sqlite3's `new Database(path)` constructor
- * (for a separate file-backed read-only connection like share uses).
- *
- * Only meaningful when TRILIUM_INTEGRATION_TEST is set; production code
- * paths that call this should be gated by that env var.
+ * Returns null rather than throwing — a missing sheet costs the model one tool
+ * call, and is not worth failing a chat over.
  */
-export function getIntegrationTestDbPath(): string {
-    const productionPath = path.join(RESOURCE_DIR, "test", "document.db");
-    if (fs.existsSync(productionPath)) {
-        return productionPath;
+export function loadSkillSheet(file: string): string | null {
+    // The name comes from core's own catalog, but it is interpolated into a path,
+    // so anything that could climb out of the directory is refused outright.
+    if (file.includes("/") || file.includes("\\") || file.includes("..")) {
+        return null;
     }
-    return require.resolve("@triliumnext/core/src/test/fixtures/document.db");
+
+    const productionPath = path.join(RESOURCE_DIR, "llm", "skills", file);
+    try {
+        if (fs.existsSync(productionPath)) {
+            return fs.readFileSync(productionPath, "utf-8");
+        }
+        return fs.readFileSync(require.resolve(`@triliumnext/core/src/assets/llm/skills/${file}`), "utf-8");
+    } catch {
+        return null;
+    }
 }

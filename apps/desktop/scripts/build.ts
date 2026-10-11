@@ -7,18 +7,40 @@ import originalPackageJson from "../package.json" with { type: "json" };
 const build = new BuildHelper("apps/desktop");
 
 async function main() {
-    await build.buildBackend([ "src/main.ts", "src/preload.ts"]);
+    // The preload runs in Electron's sandboxed renderer, where the
+    // import.meta.url shim's `require("node:url")` banner throws and aborts the
+    // preload before it can expose `electronApi`. Build it without the shim
+    // (it never references import.meta.url). Build it first so the main bundle,
+    // built after, leaves the final meta.json.
+    await build.buildBackend([ "src/preload.ts" ], { importMetaUrlShim: false });
+    // ESM so dynamic-import boundaries split into chunks/ that only load on
+    // first use; the preload above must stay CJS (sandboxed renderer) and the
+    // image worker below is spawned by its .cjs path.
+    await build.buildBackend([ "src/main.ts" ], { format: "esm" });
+    // The image compression worker, which lives in the server it embeds. Built here too so the
+    // desktop app can compress off-thread rather than falling back to doing it in the main process.
+    await build.buildBackend([ "../server/src/services/image_worker.ts" ]);
+    await build.buildTesseractWorker("../server/src/services/ocr/tesseract_worker.ts");
 
     // Copy assets.
     build.copy("src/assets", "assets/");
     build.copy("/apps/server/src/assets", "assets/");
     build.copy("/packages/trilium-core/src/assets/schema.sql", "assets/schema.sql");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/");
+    // The LLM skill sheets moved to core with the rest of the stack, but the
+    // Node hosts still read them from RESOURCE_DIR. See server core_assets.ts.
+    build.copy("/packages/trilium-core/src/assets/llm/skills", "assets/llm/skills/");
+    // The Codex ACP adapter runs as a script of its own in a worker thread. See the server's
+    // codex_binary.ts.
+    build.copy("/node_modules/@agentclientprotocol/codex-acp/dist/index.js", "assets/codex-acp.mjs");
     build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
-    build.copyNodeModules([ "better-sqlite3", "bindings", "file-uri-to-path" ]);
+    build.copyNodeModules([ "better-sqlite3" ]);
+    // No musl build: Electron itself ships glibc-only Linux binaries.
+    build.trimBetterSqlite3({ includeMusl: false });
+
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
+    build.copy("/packages/ckeditor5/src/theme/multicolumn.css", "ckeditor5-multicolumn.css");
 
     build.buildFrontend();
 
@@ -29,7 +51,7 @@ function generatePackageJson() {
     const { version, author, license, description, dependencies, devDependencies } = originalPackageJson;
     const packageJson = {
         name: "trilium",
-        main: "main.cjs",
+        main: "main.mjs",
         version, author, license, description,
         dependencies: {
             "better-sqlite3": dependencies["better-sqlite3"],

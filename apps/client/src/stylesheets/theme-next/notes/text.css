@@ -2,11 +2,6 @@
  * CKEDITOR
  */
 
- :root {
-    --ck-font-face: var(--main-font-family);
-    --ck-input-label-height: 1.5em;
- }
-
 /*
  * Toolbar
  */
@@ -46,20 +41,28 @@
     --ck-color-button-on-color: currentColor;
 }
 
-/* The toolbar show / hide button for the current text block */
+/* The toolbar show / hide button for the current text block. Unlike the buttons above it, this one
+   floats free and needs a surface of its own; the hover tint is flattened onto it. */
 :root .ck.ck-block-toolbar-button {
+    --block-toolbar-button-hover-surface:
+        linear-gradient(var(--hover-item-background-color), var(--hover-item-background-color)),
+        var(--main-background-color);
+
     --ck-color-block-toolbar-button: var(--muted-text-color);
-    --ck-color-button-on-background: transparent;
+    --ck-color-button-default-background: var(--main-background-color);
+    --ck-color-button-on-background: var(--main-background-color);
+    --ck-color-button-default-hover-background: var(--block-toolbar-button-hover-surface);
+    --ck-color-button-on-hover-background: var(--block-toolbar-button-hover-surface);
     --ck-color-button-on-color: var(--ck-editor-toolbar-button-on-color);
-    translate: -40% 0;
-    min-width: 0;
-    padding: 0;
     z-index: 1600;
 }
 
-:root .ck.ck-toolbar .ck-button:not(.ck-disabled):active,
-.ck.ck-block-toolbar-button:active {
+:root .ck.ck-toolbar .ck-button:not(.ck-disabled):active {
     background-color: var(--hover-item-background-color);
+}
+
+:root .ck.ck-block-toolbar-button:active {
+    background: var(--block-toolbar-button-hover-surface);
 }
 
 .ck.ck-toolbar .ck-button:active:not(.ck-list-item-button):not(.ck-button_with-text):not(.ck-disabled) svg:not(.ck-dropdown__arrow),
@@ -135,6 +138,34 @@
     --ck-editor-popup-padding: var(--menu-padding-size);
 }
 
+/* Submenu panel */
+:root .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
+    --ck-editor-popup-padding: var(--menu-padding-size);
+
+    backdrop-filter: var(--dropdown-backdrop-filter);
+}
+
+body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
+    --menu-background-color: var(--menu-background-color-no-backdrop);
+
+    backdrop-filter: none;
+}
+
+/* Inline icon picker: the icon grid scrolls, so it runs to the balloon's edges. */
+:root .ck.ck-balloon-panel:has(.icon-picker-balloon) {
+    --ck-editor-popup-padding: 0px;
+}
+
+.ck.ck-balloon-panel .icon-picker-balloon {
+    border-radius: calc(var(--dropdown-border-radius) - 1px);
+    overflow: clip;
+}
+
+/* Submenu arrow */
+:root .ck.ck-button.ck-dropdown-menu-list__nested-menu__button > .ck-dropdown-menu-list__nested-menu__button__arrow {
+    color: var(--menu-item-arrow-color);
+}
+
 /* Dropdown panel containing a toolbar */
 :root .ck.ck-dropdown__panel:has(>.ck-toolbar) {
     --ck-editor-popup-padding: calc(var(--menu-padding-size) - var(--ck-spacing-small));
@@ -181,8 +212,18 @@
     min-width: 10em;
 }
 
+/* Menu list item, in a menu with submenus */
+:root .ck.ck-dropdown-menu-list {
+    --ck-color-button-default-hover-background: var(--hover-item-background-color);
+    --ck-color-list-button-hover-background: var(--hover-item-background-color);
+    --ck-color-list-button-on-background: var(--hover-item-background-color);
+    --ck-color-list-button-on-background-focus: var(--hover-item-background-color);
+    --ck-color-list-button-on-text: var(--hover-item-text-color);
+}
+
 /* Item with icon */
-:root .ck.ck-button_with-text svg:first-child {
+:root .ck.ck-button_with-text svg:first-child,
+:root .ck.ck-button_with-text > .ck-ai-action-icon {
     color: var(--menu-item-icon-color);
 }
 
@@ -208,13 +249,9 @@
     color: var(--menu-item-icon-color);
 }
 
-/* Slash commands */
-.ck.ck-slash-command-button__text-part .ck.ck-button__label {
-    font-weight: bold;
-}
-
 /* Separator */
 :root .ck .ck-list__separator {
+    flex-shrink: 0;
     margin: .5em 0;
     margin-inline-start: calc(0px - var(--ck-editor-popup-padding));
     width: calc(100% + (var(--ck-editor-popup-padding) * 2));
@@ -223,7 +260,7 @@
 
 /* Collapsible section */
 
-.ck.ck-collapsible {
+div.ck.ck-collapsible {
     position: relative;
     border: unset !important;
     padding-top: var(--ck-editor-popup-padding);
@@ -371,8 +408,11 @@
     color: var(--accent);
 }
 
-/* Code dropdown */
+/* Scrollable dropdown panel. Applies to our reusable `.ck-tn-dropdown`
+   (footnotes, mermaid; set via `dropdownView.class`) and to CKEditor's own code
+   block language dropdown, whose 250px default we bump up to 400px. */
 
+.ck.ck-dropdown.ck-tn-dropdown .ck-dropdown__panel,
 .ck.ck-dropdown.ck-code-block-dropdown .ck-dropdown__panel,
 .ck.ck-toolbar-container.codeblock-language-list .ck.ck-dropdown__panel {
     --_panel-height: 400px;
@@ -381,6 +421,7 @@
     max-height: var(--_panel-height);
 }
 
+.ck-tn-dropdown .ck-dropdown__panel .ck-list,
 .ck-code-block-dropdown .ck-dropdown__panel .ck-list,
 .ck.ck-toolbar-container.codeblock-language-list .ck.ck-dropdown__panel .ck-list {
     overflow: auto;
@@ -424,31 +465,27 @@ div.ck-template-form .ck-labeled-field-view {
     border-color: transparent;
 }
 
-/* Template icon */
-:root .ck-template-form .ck-button__icon {
-    --ck-spacing-medium: 2px;
-}
-
-:root div.ck-template-form .ck-icon foreignObject {
+/* Note icon — a plain font-icon <span>, no SVG <foreignObject> wrapper. The glyph is drawn by the
+   Boxicons font on the element's own ::before, so the circular backdrop goes on ::after to avoid
+   clobbering the glyph's `content`. */
+:root div.ck-template-form .ck-template-icon {
     position: relative;
+    /* Render like a real note icon (cf. the list/grid view's `.note-icon`): a hue-light glyph on a
+       hue-tinted circular backdrop when the note has a `#color`, falling back to the neutral icon
+       colours otherwise. The `--note-icon-custom-*` variables come from the `.with-hue` rule the
+       plugin opts into (see theme-next-{dark,light}.css); they derive from `--custom-color-hue`,
+       which the note's colour class carries. */
+    color: var(--note-icon-custom-color, var(--note-icon-color));
 
-    &::before {
+    &::after {
         display: block;
         content: "";
         position: absolute;
         inset: 2px;
         border-radius: 50%;
-        background: var(--note-icon-hover-background-color);
+        background: var(--note-icon-custom-background-color, var(--note-icon-hover-background-color));
         z-index: -1;
     }
-} 
-
-:root div.ck-template-form .ck-icon .note-icon {
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-    color: var(--note-icon-color);
 }
 
 /* Template name */
@@ -460,7 +497,7 @@ div.ck-template-form .ck-template-form__text-part {
 
 div.ck-template-form .ck-template-form__text-part mark {
     --ck-color-highlight-background: transparent;
-    
+
     color: var(--quick-search-result-highlight-color);
     text-decoration: underline;
     font-weight: bold;
@@ -516,20 +553,6 @@ div.ck-template-form .ck-search__info span:nth-child(2) {
     margin-top: var(--ck-input-label-height);
 }
 
-/* Mention list (the autocompletion list for emojis, labels and relations)  */
-
-:root .ck-mentions {
-    --ck-color-list-button-on-background: var(--hover-item-background-color);
-    --ck-color-list-button-on-text: var(--hover-item-text-color);
-    --ck-color-list-button-hover-background: var(--ck-editor-toolbar-dropdown-button-open-background);
-    --ck-focus-ring: 1px solid transparent;
-}
-
-/* "Keep on typing to see the emoji" placeholder */
-#mention-list-item-id\:__EMOJI_HINT {
-    background: transparent;
-}
-
 /*
  * FORMS
  */
@@ -568,6 +591,15 @@ button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel).ck
     background: var(--input-background-color);
 }
 
+/* AI assistant composer */
+
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text,
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text:not([readonly="true"]):hover,
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text:not([readonly="true"]):focus {
+    outline: none;
+    background: transparent;
+}
+
 /* Forms */
 
 :root .ck.ck-form__row.ck-form__row_with-submit > :not(:first-child) {
@@ -583,11 +615,56 @@ button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel).ck
 }
 
 /*
+ * Multistate checkboxes
+ */
+
+/* Prevent variables from bleeding into nested items */
+.ck-content.ck-editor__editable .todo-list .todo-list {
+    --_task-checkbox-hover-background-color: initial;
+}
+
+/* Checkboxes with a task state */
+.ck-content .todo-list li[data-trilium-task-state]:not([data-trilium-task-state="none"]) {
+    --_task-checkbox-hover-background-color: var(--task-state-custom-hover-background-color, var(--task-checkbox-with-state-hover-background));
+}
+
+/* Checkboxes in the "done" state */
+.ck-content.ck-editor__editable .todo-list li:where(:not([data-trilium-task-state]), [data-trilium-task-state="done"]):has(> .todo-list__label input[type="checkbox"]:checked) {
+    --_task-checkbox-hover-background-color: var(--task-checkbox-done-hover-color);
+}
+
+/* All checkboxes */
+:root .ck-content.ck-editor__editable ul.todo-list li .todo-list__label input[type="checkbox"] {
+    background: transparent;
+
+    &:hover::before {
+        box-shadow: 0 0 0 5px color-mix(in srgb, var(--_task-checkbox-background, var(--task-checkbox-without-state-hover-background)) 25%, transparent);
+        background: var(--_task-checkbox-hover-background-color, var(--task-checkbox-without-state-hover-background));
+    }
+}
+
+/* Unknown task state */
+:root .ck-content.ck-editor__editable ul.todo-list li.tn-unknown-task-state .todo-list__label input[type="checkbox"] {
+    outline: none;
+
+    &:before {
+        outline: 2px solid var(--task-checkbox-unknown-state-color);
+    }
+}
+
+/*
  * EDITOR'S CONTENT
  */
 
 .note-detail-editable-text-editor > .ck-placeholder {
     opacity: .5;
+}
+
+/* A widget that CKEditor wrongly flags as the placeholder host (see the
+   `.ck-widget.ck-placeholder` note in style.css) must not be dimmed — its
+   content is real. The overlaid placeholder text is suppressed there. */
+.note-detail-editable-text-editor > .ck-widget.ck-placeholder {
+    opacity: 1;
 }
 
 /*
@@ -635,9 +712,21 @@ pre button.copy-button.icon-action {
     padding-inline-end: calc(var(--icon-button-size) + (var(--copy-button-margin-size) * 2));
 }
 
-html .note-detail-editable-text :not(figure, .include-note, hr):first-child {
+/* Child combinator: as a descendant one it also hit first-children nested inside a block, stacking a pixel per level. */
+html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
     /* Create some space for the top-side shadow */
     margin-top: 1px !important;
+}
+
+/* Round the player, not the card: clipping the card would crop the insert-paragraph buttons. */
+.include-note-content.type-video .video-preview-wrapper:not(:fullscreen) {
+    border-radius: 0 0 var(--_include-note-bottom-border-radius, 8px)
+                   var(--_include-note-bottom-border-radius, 8px);
+    overflow: hidden;
+}
+
+.include-note:has(> figcaption) .include-note-content.type-video .video-preview-wrapper {
+    border-radius: 0;
 }
 
 .ck.ck-editor__editable pre[data-language]::after {
@@ -699,12 +788,8 @@ html .note-detail-editable-text :not(figure, .include-note, hr):first-child {
     inset-inline-end: 0.35em;
 }
 
-.ck-content h1,
-.ck-content h2,
-.ck-content h3,
-.ck-content h4,
-.ck-content h5,
-.ck-content h6 {
+/* `:where(:not(.excalidraw *))` leaves out the UI of an embedded canvas drawing. */
+.ck-content :is(h1, h2, h3, h4, h5, h6):where(:not(.excalidraw *)) {
     font-weight: 300;
 }
 
@@ -712,20 +797,12 @@ html .note-detail-editable-text :not(figure, .include-note, hr):first-child {
     font-weight: 600;
 }
 
-:root .ck-content hr {
+/* `:where(:not(.excalidraw *))` leaves out the menus of an embedded canvas drawing. */
+:root .ck-content hr:where(:not(.excalidraw *)) {
     margin-block: 5px;
     height: 0;
     border: thin solid var(--main-border-color);
     opacity: 1;
-}
-
-@media (screen) {
-    .ck-content p code {
-        border: 1px solid var(--card-border-color);
-        box-shadow: var(--card-box-shadow);
-        border-radius: 6px;
-        background-color: var(--card-background-color);
-    }
 }
 
 .ck-content:not(.word-wrap) pre code {

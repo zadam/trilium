@@ -1,6 +1,40 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import $ from "jquery";
 
-import { isValidDocName } from "./doc_renderer.js";
+vi.mock("./i18n.js", () => ({
+    getCurrentLanguage: () => mockedLanguage
+}));
+vi.mock("./syntax_highlight.js", () => ({
+    formatCodeBlocks: (arg: unknown) => formatCodeBlocksMock(arg)
+}));
+vi.mock("../widgets/type_widgets/text/read_only_helper.js", () => ({
+    applyReferenceLinks: (arg: unknown) => applyReferenceLinksMock(arg)
+}));
+
+import renderDoc, { isValidDocName } from "./doc_renderer.js";
+
+let mockedLanguage = "en";
+const formatCodeBlocksMock = vi.fn((_arg?: unknown) => {});
+const applyReferenceLinksMock = vi.fn(async (_arg?: unknown) => {});
+
+/** Builds a minimal FNote-like object with the given docName label. */
+function fakeNote(docName: string | null) {
+    return { getLabelValue: (name: string) => (name === "docName" ? docName : null) } as any;
+}
+
+/**
+ * Overrides jQuery's `.load(url, cb)` so we can drive the callback deterministically.
+ * The handler receives the requested url and the jQuery element so it can inject HTML.
+ */
+function stubLoad(handler: (url: string, $el: JQuery<HTMLElement>) => { status?: string } | void) {
+    return vi.spyOn($.fn, "load").mockImplementation(function (this: JQuery<HTMLElement>, url: any, cb?: any) {
+        const result = handler(url, this) ?? {};
+        const status = result.status ?? "success";
+        // jQuery invokes the callback with (responseText, status, xhr).
+        cb?.call(this, this.html(), status, {});
+        return this;
+    } as any);
+}
 
 describe("isValidDocName", () => {
     it("accepts valid docNames", () => {
@@ -11,6 +45,17 @@ describe("isValidDocName", () => {
         expect(isValidDocName("quick_start_guide")).toBe(true);
         expect(isValidDocName("quick-start-guide")).toBe(true);
         expect(isValidDocName("User Guide/User Guide/Advanced Usage/Text Extraction (OCR)")).toBe(true);
+        expect(isValidDocName("User Guide/Basic Concepts and Features/Import & Export/Microsoft OneNote")).toBe(true);
+    });
+
+    // A docName is a path built out of page titles, so it carries whatever punctuation the titles do.
+    // These are all real pages of the user guide.
+    it("accepts the punctuation real page titles carry", () => {
+        expect(isValidDocName("User Guide/User Guide/Advanced Usage/Note Map (Link map, Tree map)")).toBe(true);
+        expect(isValidDocName("User Guide/User Guide/Advanced Usage/Configuration (config.ini or environment variables)")).toBe(true);
+        expect(isValidDocName("User Guide/User Guide/Installation & Setup/Server Installation/1. Installing the server/Using Docker")).toBe(true);
+        expect(isValidDocName("User Guide/User Guide/Scripting/Script API/Day.js")).toBe(true);
+        expect(isValidDocName("User Guide/User Guide/Scripting/Breaking changes/v0.103.0 `cheerio` is now deprecated")).toBe(true);
     });
 
     it("rejects path traversal attacks", () => {
@@ -20,6 +65,12 @@ describe("isValidDocName", () => {
         expect(isValidDocName("../../../../api/notes/_malicious/open")).toBe(false);
         expect(isValidDocName("..\\etc\\passwd")).toBe(false);
         expect(isValidDocName("foo\\bar")).toBe(false);
+        // Dots are allowed within a segment (see above), so a segment made of nothing else — which is
+        // what climbs out of the doc directory — has to be turned away in its own right.
+        expect(isValidDocName("...")).toBe(false);
+        expect(isValidDocName("foo/..")).toBe(false);
+        expect(isValidDocName("foo/./bar")).toBe(false);
+        expect(isValidDocName("Day.js/../../etc/passwd")).toBe(false);
     });
 
     it("rejects URL manipulation attacks", () => {
@@ -27,5 +78,105 @@ describe("isValidDocName", () => {
         expect(isValidDocName("foo#bar")).toBe(false);
         expect(isValidDocName("%2e%2e")).toBe(false);
         expect(isValidDocName("%2e%2e%2f%2e%2e%2fapi")).toBe(false);
+    });
+});
+
+describe("renderDoc", () => {
+    beforeEach(() => {
+        mockedLanguage = "en";
+        formatCodeBlocksMock.mockClear();
+        applyReferenceLinksMock.mockClear();
+        (window as any).glob = { isStandalone: false, isDev: false, assetPath: "assets" };
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("resolves with an empty container when the note has no docName (load is never called)", async () => {
+        const loadSpy = stubLoad(() => {});
+        const $content = await renderDoc(fakeNote(null));
+        expect($content.length).toBe(1);
+        expect(loadSpy).not.toHaveBeenCalled();
+    });
+
+    it("resolves with an empty container and logs when the docName is invalid", async () => {
+        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        const loadSpy = stubLoad(() => {});
+        const $content = await renderDoc(fakeNote("../etc/passwd"));
+        expect($content.length).toBe(1);
+        expect(loadSpy).not.toHaveBeenCalled();
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid docName"));
+    });
+
+    it("loads the localized doc, rewrites relative image src, and runs post-processing", async () => {
+        mockedLanguage = "de";
+        const loadSpy = stubLoad((_url, $el) => {
+            $el.html(`<img src="pic.png"><a class="reference-link">x</a>`);
+        });
+
+        const $content = await renderDoc(fakeNote("Quick Start"));
+
+        // URL is base/doc_notes/<lang>/<docName with %20>.html
+        expect(loadSpy.mock.calls[0][0]).toBe("assets/doc_notes/de/Quick%20Start.html");
+        // The relative image src is rewritten to be prefixed with the doc directory.
+        expect($content.find("img").attr("src")).toBe("assets/doc_notes/de/pic.png");
+        expect(formatCodeBlocksMock).toHaveBeenCalledTimes(1);
+        expect(applyReferenceLinksMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("forces English for User Guide docs regardless of the current language", async () => {
+        mockedLanguage = "fr";
+        const loadSpy = stubLoad(() => {});
+        await renderDoc(fakeNote("User Guide/Quick Start"));
+        expect(loadSpy.mock.calls[0][0]).toBe("assets/doc_notes/en/User%20Guide/Quick%20Start.html");
+    });
+
+    it("percent-encodes ampersands in the docName (e.g. \"Import & Export\")", async () => {
+        const loadSpy = stubLoad(() => {});
+        await renderDoc(fakeNote("User Guide/Basic Concepts and Features/Import & Export/Microsoft OneNote"));
+        expect(loadSpy.mock.calls[0][0]).toBe("assets/doc_notes/en/User%20Guide/Basic%20Concepts%20and%20Features/Import%20%26%20Export/Microsoft%20OneNote.html");
+    });
+
+    it("leaves the rest of a title's punctuation to the browser's own URL encoding", async () => {
+        const loadSpy = stubLoad(() => {});
+        await renderDoc(fakeNote("User Guide/User Guide/Advanced Usage/Note Map (Link map, Tree map)"));
+        expect(loadSpy.mock.calls[0][0]).toBe("assets/doc_notes/en/User%20Guide/User%20Guide/Advanced%20Usage/Note%20Map%20(Link%20map,%20Tree%20map).html");
+    });
+
+    it("falls back to the English doc when the localized load errors", async () => {
+        mockedLanguage = "de";
+        const requested: string[] = [];
+        const loadSpy = stubLoad((url) => {
+            requested.push(url);
+            // First (German) request errors; the English fallback succeeds.
+            return url.includes("/de/") ? { status: "error" } : {};
+        });
+
+        const $content = await renderDoc(fakeNote("Quick Start"));
+
+        expect(requested).toEqual([
+            "assets/doc_notes/de/Quick%20Start.html",
+            "assets/doc_notes/en/Quick%20Start.html"
+        ]);
+        expect($content.length).toBe(1);
+        expect(loadSpy).toHaveBeenCalledTimes(2);
+        // processContent runs for the fallback url.
+        expect(formatCodeBlocksMock).toHaveBeenCalledTimes(1);
+        expect(applyReferenceLinksMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("uses the server-assets base path in standalone mode", async () => {
+        (window as any).glob = { isStandalone: true, isDev: false, assetPath: "assets" };
+        const loadSpy = stubLoad(() => {});
+        await renderDoc(fakeNote("Quick Start"));
+        expect(loadSpy.mock.calls[0][0]).toBe("server-assets/doc_notes/en/Quick%20Start.html");
+    });
+
+    it("uses the parent of assetPath in dev mode", async () => {
+        (window as any).glob = { isStandalone: false, isDev: true, assetPath: "assets" };
+        const loadSpy = stubLoad(() => {});
+        await renderDoc(fakeNote("Quick Start"));
+        expect(loadSpy.mock.calls[0][0]).toBe("assets/../doc_notes/en/Quick%20Start.html");
     });
 });

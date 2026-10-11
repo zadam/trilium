@@ -9,9 +9,17 @@ import { formatCodeBlocks } from "./syntax_highlight.js";
  * but blocks traversal sequences and URL manipulation characters.
  */
 export function isValidDocName(docName: string): boolean {
-    // Allow alphanumeric characters, spaces, underscores, hyphens, and forward slashes.
-    const validDocNameRegex = /^[a-zA-Z0-9_/\- ()]+$/;
-    return validDocNameRegex.test(docName);
+    // A docName is a path built out of page titles, so it has to carry the punctuation titles do:
+    // dots ("Day.js", "1. Installing the server", "v0.103.0 ..."), commas ("Note Map (Link map, Tree
+    // map)") and backticks ("`cheerio` is now deprecated"), on top of spaces, underscores, hyphens,
+    // ampersands, brackets and the slashes that separate the segments.
+    const validDocNameRegex = /^[a-zA-Z0-9_/\- ()&.,`]+$/;
+    if (!validDocNameRegex.test(docName)) return false;
+
+    // Dots being allowed above, the traversal they would spell has to be turned away in its own
+    // right: a segment of nothing but dots is the one that climbs out of the doc directory, and no
+    // page title is ever that.
+    return !docName.split("/").some((segment) => /^\.+$/.test(segment));
 }
 
 export default function renderDoc(note: FNote) {
@@ -28,6 +36,7 @@ export default function renderDoc(note: FNote) {
                 if (status === "error") {
                     const fallbackUrl = getUrl(docName, "en");
 
+                    /* v8 ignore next 8 -- the else branch is unreachable: fallbackUrl only differs from the primary url by language, so if the primary url was valid (we got here from a successful .load call) the "en" fallback url is valid too and never null */
                     if (fallbackUrl) {
                         $content.load(fallbackUrl, async () => {
                             await processContent(fallbackUrl, $content);
@@ -73,6 +82,8 @@ function getUrl(docNameValue: string | null, language: string) {
 
     // Cannot have spaces in the URL due to how JQuery.load works.
     docNameValue = docNameValue.replaceAll(" ", "%20");
+    // Percent-encode ampersands (e.g. in "Import & Export") so they aren't misread when fetching the doc.
+    docNameValue = docNameValue.replaceAll("&", "%26");
     // The user guide is available only in English, so make sure we are requesting correctly since 404s in standalone client are treated differently.
     if (docNameValue.includes("User%20Guide")) language = "en";
     return `${getBasePath()}/doc_notes/${language}/${docNameValue}.html`;

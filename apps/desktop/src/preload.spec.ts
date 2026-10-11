@@ -50,6 +50,12 @@ vi.mock("electron", () => ({
                 ipcRendererListeners.set(channel, filtered);
             }
         }
+    },
+    // Maps a dropped File to its on-disk path; here we read a test-only `path` field off the fake File.
+    webUtils: {
+        getPathForFile(file: { path?: string }) {
+            return file.path ?? "";
+        }
     }
 }));
 
@@ -166,14 +172,6 @@ describe("preload script", () => {
             expect(ipcRendererSent).toContainEqual({ channel: "close-window", args: [] });
         });
 
-        it("createExtraWindow sends correct IPC message", () => {
-            win().createExtraWindow("#root/abc123");
-            expect(ipcRendererSent).toContainEqual({
-                channel: "create-extra-window",
-                args: [{ extraWindowHash: "#root/abc123" }]
-            });
-        });
-
         it("isAlwaysOnTop uses sendSync", () => {
             ipcRendererSyncResults.set("is-always-on-top:undefined", true);
             expect(win().isAlwaysOnTop()).toBe(true);
@@ -187,6 +185,20 @@ describe("preload script", () => {
         it("toggleDevTools sends correct IPC message", () => {
             win().toggleDevTools();
             expect(ipcRendererSent).toContainEqual({ channel: "toggle-dev-tools", args: [] });
+        });
+
+        it("isDevToolsDocked uses sendSync", () => {
+            ipcRendererSyncResults.set("is-dev-tools-docked:undefined", true);
+            expect(win().isDevToolsDocked()).toBe(true);
+        });
+
+        it("onDevToolsDockChanged registers and forwards the dock state", () => {
+            const callback = vi.fn();
+            win().onDevToolsDockChanged(callback);
+            const listeners = ipcRendererListeners.get("dev-tools-dock-changed") ?? [];
+            expect(listeners).toHaveLength(1);
+            listeners[0]({}, true);
+            expect(callback).toHaveBeenCalledWith(true);
         });
 
         it("reloadAllWindows sends correct IPC message", () => {
@@ -207,6 +219,14 @@ describe("preload script", () => {
         it("showWindow sends correct IPC message", () => {
             win().showWindow();
             expect(ipcRendererSent).toContainEqual({ channel: "show-window", args: [] });
+        });
+
+        it("reportStartupMetric sends correct IPC message", () => {
+            win().reportStartupMetric("client-full-render");
+            expect(ipcRendererSent).toContainEqual({
+                channel: "report-startup-metric",
+                args: ["client-full-render"]
+            });
         });
 
         it("clearCache invokes correct IPC channel", async () => {
@@ -254,6 +274,16 @@ describe("preload script", () => {
                 args: [buffer]
             });
         });
+
+        it("readText invokes correct IPC channel", async () => {
+            await clip().readText();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "read-clipboard-text", args: [] });
+        });
+
+        it("readHTML invokes correct IPC channel", async () => {
+            await clip().readHTML();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "read-clipboard-html", args: [] });
+        });
     });
 
     describe("shell", () => {
@@ -271,6 +301,14 @@ describe("preload script", () => {
             await shell().openPath("/tmp/test.txt");
             expect(ipcRendererInvoked).toContainEqual({
                 channel: "open-path",
+                args: ["/tmp/test.txt"]
+            });
+        });
+
+        it("showItemInFolder sends correct IPC message", () => {
+            shell().showItemInFolder("/tmp/test.txt");
+            expect(ipcRendererSent).toContainEqual({
+                channel: "show-item-in-folder",
                 args: ["/tmp/test.txt"]
             });
         });
@@ -342,14 +380,35 @@ describe("preload script", () => {
             ipcRendererSyncResults.set("get-available-spellchecker-languages:undefined", ["en-US", "de-DE"]);
             expect(spell().getAvailableSpellCheckerLanguages()).toEqual(["en-US", "de-DE"]);
         });
+
+        it("setSpellCheckerLanguages sends correct IPC message", () => {
+            spell().setSpellCheckerLanguages(["en-US", "fr"]);
+            expect(ipcRendererSent).toContainEqual({
+                channel: "set-spellchecker-languages",
+                args: [["en-US", "fr"]]
+            });
+        });
+
+        it("setSpellCheckerEnabled sends correct IPC message", () => {
+            spell().setSpellCheckerEnabled(false);
+            expect(ipcRendererSent).toContainEqual({
+                channel: "set-spellchecker-enabled",
+                args: [false]
+            });
+        });
     });
 
-    describe("tray", () => {
-        const tray = () => getGroup("tray");
+    describe("systemIntegration", () => {
+        const systemIntegration = () => getGroup("systemIntegration");
 
         it("reloadTray sends correct IPC message", () => {
-            tray().reloadTray();
+            systemIntegration().reloadTray();
             expect(ipcRendererSent).toContainEqual({ channel: "reload-tray", args: [] });
+        });
+
+        it("reapplyLaunchOnStartup sends correct IPC message", () => {
+            systemIntegration().reapplyLaunchOnStartup();
+            expect(ipcRendererSent).toContainEqual({ channel: "reapply-launch-on-startup", args: [] });
         });
     });
 
@@ -481,6 +540,15 @@ describe("preload script", () => {
             expect(callback).toHaveBeenCalled();
         });
 
+        it("onDidNavigateInPage registers and forwards did-navigate-in-page channel", () => {
+            const callback = vi.fn();
+            nav().onDidNavigateInPage(callback);
+            const listeners = ipcRendererListeners.get("did-navigate-in-page")!;
+            expect(listeners).toHaveLength(1);
+            listeners[0]();
+            expect(callback).toHaveBeenCalled();
+        });
+
         it("removeDidNavigateListeners clears both navigation listeners", () => {
             nav().onDidNavigate(vi.fn());
             nav().onDidNavigateInPage(vi.fn());
@@ -526,6 +594,128 @@ describe("preload script", () => {
             remaining[0]({}, { type: "toast", message: "hi" });
             expect(first).not.toHaveBeenCalled();
             expect(second).toHaveBeenCalledWith({ type: "toast", message: "hi" });
+        });
+    });
+
+    describe("security", () => {
+        const security = () => getGroup("security");
+
+        it("setBackendScriptingEnabled invokes the corresponding IPC channel", async () => {
+            await security().setBackendScriptingEnabled(true);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "security-set-backend-scripting", args: [true] });
+        });
+
+        it("setSqlConsoleEnabled invokes the corresponding IPC channel", async () => {
+            await security().setSqlConsoleEnabled(false);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "security-set-sql-console", args: [false] });
+        });
+
+        it("setLanAccessEnabled invokes the corresponding IPC channel", async () => {
+            await security().setLanAccessEnabled(true);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "security-set-lan-access", args: [true] });
+        });
+    });
+
+    describe("backupPassphrase", () => {
+        const backupPassphrase = () => getGroup("backupPassphrase");
+
+        it("getStatus invokes the corresponding IPC channel", async () => {
+            await backupPassphrase().getStatus();
+            expect(ipcRendererInvoked).toContainEqual({
+                channel: "backup-passphrase-status",
+                args: []
+            });
+        });
+
+        it("set invokes the corresponding IPC channel", async () => {
+            await backupPassphrase().set("hunter2");
+            expect(ipcRendererInvoked).toContainEqual({
+                channel: "backup-passphrase-set",
+                args: [ "hunter2" ]
+            });
+        });
+
+        it("clear invokes the corresponding IPC channel", async () => {
+            await backupPassphrase().clear();
+            expect(ipcRendererInvoked).toContainEqual({
+                channel: "backup-passphrase-clear",
+                args: []
+            });
+        });
+
+        it("exposes no way to read the passphrase back", () => {
+            const exposed = Object.keys(backupPassphrase()).sort();
+
+            expect(exposed).toEqual([ "clear", "getStatus", "set" ]);
+        });
+    });
+
+    describe("onenote", () => {
+        const onenote = () => getGroup("onenote");
+
+        it("login invokes the corresponding IPC channel", async () => {
+            await onenote().login();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "onenote-login", args: [] });
+        });
+    });
+
+    describe("nativeExport", () => {
+        const nativeExport = () => getGroup("nativeExport");
+
+        it("exportSubtreeToFile invokes the corresponding IPC channel with the options", async () => {
+            const opts = { branchId: "branch123", format: "html", title: "My Note", taskId: "task1" };
+            await nativeExport().exportSubtreeToFile(opts);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "export-subtree-to-file", args: [opts] });
+        });
+    });
+
+    describe("nativeImport", () => {
+        const nativeImport = () => getGroup("nativeImport");
+
+        it("pickFiles invokes the open-dialog IPC channel with no path argument", async () => {
+            await nativeImport().pickFiles();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "import-pick-files", args: [] });
+        });
+
+        it("importFromToken forwards the token + options (never a path) to its IPC channel", async () => {
+            const opts = { token: "tok-1", parentNoteId: "p1", taskId: "task1", options: { explodeArchives: true }, last: true };
+            await nativeImport().importFromToken(opts);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "import-from-token", args: [opts] });
+        });
+
+        it("grantDroppedFiles resolves File objects to paths and forwards only those (dropping unresolved)", async () => {
+            const grantDroppedFiles = nativeImport().grantDroppedFiles as (files: unknown[]) => Promise<unknown>;
+            // The second file has no backing path (a script-built blob / browser drag) → getPathForFile yields "".
+            await grantDroppedFiles([{ path: "/data/a.zip" }, { /* no path */ }]);
+            expect(ipcRendererInvoked).toContainEqual({ channel: "import-grant-dropped", args: [["/data/a.zip"]] });
+        });
+    });
+
+    describe("dialog", () => {
+        const dialog = () => getGroup("dialog");
+
+        it("pickDirectory forwards the starting location to its IPC channel", async () => {
+            await dialog().pickDirectory({ defaultPath: "/data/backup" });
+            expect(ipcRendererInvoked).toContainEqual({ channel: "dialog-pick-directory", args: [{ defaultPath: "/data/backup" }] });
+        });
+
+        it("pickDirectory may be called without a starting location", async () => {
+            await dialog().pickDirectory();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "dialog-pick-directory", args: [undefined] });
+        });
+
+        it("confirmStartOver invokes its IPC channel, passing nothing it could steer", async () => {
+            await dialog().confirmStartOver();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "dialog-confirm-start-over", args: [] });
+        });
+    });
+
+    describe("restore", () => {
+        const restore = () => getGroup("restore");
+
+        it("pickBackup invokes the open-dialog IPC channel, passing nothing it could steer", async () => {
+            await restore().pickBackup();
+            expect(ipcRendererInvoked).toContainEqual({ channel: "restore-pick-backup", args: [] });
         });
     });
 });

@@ -1,0 +1,901 @@
+import { mkdtempSync, readFileSync, rmSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
+import { PassThrough } from "stream";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import { isLocalPreviewImageSrc } from "@triliumnext/commons";
+
+import becca from "../../becca/becca.js";
+import type BBranch from "../../becca/entities/bbranch.js";
+import type BNote from "../../becca/entities/bnote.js";
+import type { ExportFormat, NoteMetaFile } from "../../meta.js";
+import { getContext } from "../context.js";
+import noteService from "../notes.js";
+import sql_init from "../sql_init.js";
+import { decodeUtf8 } from "../utils/binary.js";
+import type { ZipArchive, ZipArchiveEntryOptions, ZipProvider } from "../zip_provider.js";
+import { getZipProvider, initZipProvider } from "../zip_provider.js";
+import zip, { shouldStoreUncompressed } from "./zip.js";
+import ShareThemeExportProvider from "./zip/share_theme.js";
+import {
+    getZipExportProviderFactory,
+    initZipExportProviderFactory,
+    type ZipExportProviderFactory
+} from "./zip_export_provider_factory.js";
+
+// happy-dom (standalone/WASM) exposes `window`; the Node server suite does not.
+const isBrowserRuntime = typeof window !== "undefined";
+
+let counter = 0;
+
+/**
+ * Creates a fresh note under the given parent in the shared in-memory fixture
+ * DB. Each call uses a unique title so the `it()`s in this file (which share
+ * one DB copy per fork) don't collide.
+ */
+function createNote(
+    parentNoteId: string,
+    overrides: Partial<{ title: string; content: string; type: BNote["type"]; mime: string }> = {}
+): { note: BNote; branch: BBranch } {
+    counter++;
+    return getContext().init(() =>
+        noteService.createNewNote({
+            parentNoteId,
+            title: overrides.title ?? `zip-spec-${counter}`,
+            content: overrides.content ?? "<p>hello</p>",
+            type: overrides.type ?? "text",
+            mime: overrides.mime
+        })
+    );
+}
+
+/** A minimal Express-`res`-like writable that collects everything piped into it. */
+class FakeResponse extends PassThrough {
+    headers: Record<string, string> = {};
+    statusCode = 200;
+    sentBody: string | undefined;
+    removedHeaders: string[] = [];
+
+    setHeader(name: string, value: string) {
+        this.headers[name] = value;
+        return this;
+    }
+
+    removeHeader(name: string) {
+        this.removedHeaders.push(name);
+        delete this.headers[name];
+        return this;
+    }
+
+    status(code: number) {
+        this.statusCode = code;
+        return this;
+    }
+
+    send(body: string) {
+        this.sentBody = body;
+        return this;
+    }
+}
+
+/** Drains a FakeResponse and returns the full piped buffer once the archive finalizes. */
+function collect(res: FakeResponse): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    res.on("data", (chunk: Buffer) => chunks.push(chunk));
+    return new Promise((resolve, reject) => {
+        res.on("end", () => resolve(Buffer.concat(chunks)));
+        res.on("error", reject);
+    });
+}
+
+/** Unzips the produced archive into a `{ fileName -> contents }` map. */
+async function readArchive(buffer: Buffer): Promise<Record<string, Buffer>> {
+    const entries: Record<string, Buffer> = {};
+    await getZipProvider().readZipFile(buffer, async (entry, readContent) => {
+        entries[entry.fileName] = Buffer.from(await readContent());
+    });
+    return entries;
+}
+
+async function exportSubtree(branch: BBranch, format: ExportFormat = "html") {
+    const taskContext = (await import("../task_context.js")).default;
+    const ctx = new taskContext("no-progress-reporting", "export", null);
+    const res = new FakeResponse();
+    const done = collect(res);
+    await zip.exportToZip(ctx, branch, format, res);
+    const buffer = await done;
+    return { buffer, res, entries: await readArchive(buffer) };
+}
+
+function parseMeta(entries: Record<string, Buffer>): NoteMetaFile {
+    return JSON.parse(entries["!!!meta.json"].toString("utf-8"));
+}
+
+// Gated to Node: these real-DB export tests rely on Node stream semantics.
+// The in-memory exportToZip tests pipe into a PassThrough and await its `end`
+// event, but the BrowserZipProvider.finalize() writes synchronously via
+// res.send() and never ends the stream, so completion never fires (timeout).
+// The exportToZipFile tests need a writable file stream, which the browser
+// provider does not support (createFileStream throws). The browser zip provider
+// has different streaming semantics and is validated separately.
+describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
+    // The server's share factory reads the theme from the client build, which a test run lacks.
+    let platformFactory: ZipExportProviderFactory;
+    beforeAll(async () => {
+        sql_init.initializeDb();
+        await sql_init.dbReady;
+        platformFactory = getZipExportProviderFactory();
+        const noAssets = { files: new Map(), readBuiltinFont: () => undefined };
+        initZipExportProviderFactory(async (format, data) => (format === "share"
+            ? new ShareThemeExportProvider(data, noAssets)
+            : platformFactory(format, data)));
+    });
+
+    afterAll(() => initZipExportProviderFactory(platformFactory));
+
+    describe("exportToZip", () => {
+        it("produces a meta file plus the note's data file and sets the zip headers", async () => {
+            const { note } = createNote("root", { title: "ExportRoot", content: "<p>body text</p>" });
+            const branch = note.getParentBranches()[0];
+
+            const { entries, res } = await exportSubtree(branch, "html");
+
+            // The meta manifest is always present and describes the exported root.
+            const meta = parseMeta(entries);
+            expect(meta.formatVersion).toBe(2);
+            expect(typeof meta.appVersion).toBe("string");
+
+            const rootMeta = meta.files[0];
+            expect(rootMeta.noteId).toBe(note.noteId);
+            expect(rootMeta.isClone).toBe(false);
+            expect(rootMeta.type).toBe("text");
+            // HTML export of a text note maps to an .html data file.
+            expect(rootMeta.dataFileName).toMatch(/\.html$/);
+            expect(rootMeta.format).toBe("html");
+
+            // The corresponding data file is in the archive and contains the body.
+            const dataFile = entries[rootMeta.dataFileName!];
+            expect(dataFile).toBeDefined();
+            expect(dataFile.toString("utf-8")).toContain("body text");
+
+            // Streaming a download sets the disposition + content-type headers.
+            expect(res.headers["Content-Type"]).toBe("application/zip");
+            expect(res.headers["Content-Disposition"]).toContain("ExportRoot.zip");
+
+            // The HTML provider injects extra navigation/index/style files marked noImport.
+            expect(meta.files.some((f) => f.noImport && f.dataFileName === "navigation.html")).toBe(true);
+            expect(meta.files.some((f) => f.noImport && f.dataFileName === "index.html")).toBe(true);
+            expect(meta.files.some((f) => f.noImport && f.dataFileName === "style.css")).toBe(true);
+            expect(entries["navigation.html"]).toBeDefined();
+            expect(entries["index.html"]).toBeDefined();
+            expect(entries["style.css"]).toBeDefined();
+        });
+
+        it("exports a subtree with nested children into a directory hierarchy", async () => {
+            const { note: parent } = createNote("root", { title: "Parent", content: "" });
+            const { note: child } = createNote(parent.noteId, { title: "Child", content: "<p>child body</p>" });
+            const branch = parent.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const meta = parseMeta(entries);
+
+            const rootMeta = meta.files[0];
+            expect(rootMeta.noteId).toBe(parent.noteId);
+            // A parent with children gets a directory and a nested child entry.
+            expect(rootMeta.dirFileName).toBeTruthy();
+            expect(rootMeta.children).toHaveLength(1);
+
+            const childMeta = rootMeta.children![0];
+            expect(childMeta.noteId).toBe(child.noteId);
+
+            // The child's data file lives under the parent's directory.
+            const childPath = `${rootMeta.dirFileName}/${childMeta.dataFileName}`;
+            expect(entries[childPath]).toBeDefined();
+            expect(entries[childPath].toString("utf-8")).toContain("child body");
+            // The directory entry itself is emitted.
+            expect(entries[`${rootMeta.dirFileName}/`]).toBeDefined();
+        });
+
+        it("exports text notes as markdown when the markdown format is requested", async () => {
+            const { note } = createNote("root", { title: "MdNote", content: "<h2>Heading</h2>" });
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "markdown");
+            const rootMeta = parseMeta(entries).files[0];
+
+            expect(rootMeta.format).toBe("markdown");
+            expect(rootMeta.dataFileName).toMatch(/\.md$/);
+            // Markdown conversion turns the HTML heading into a markdown heading.
+            expect(entries[rootMeta.dataFileName!].toString("utf-8")).toContain("## Heading");
+        });
+
+        it("strips CKEditor's data-list-item-id from HTML and Markdown exports", async () => {
+            // A plain list converts to Markdown syntax (turndown drops attributes), but a list
+            // inside a table survives as raw HTML — both must come out without the editor-only id.
+            const content = `<ul><li data-list-item-id="e0123">Bullet</li></ul>`
+                + `<table><tbody><tr><td><ul><li data-list-item-id="e4567">Cell</li></ul></td></tr></tbody></table>`;
+            const { note } = createNote("root", { title: "ListIds", content });
+            const branch = note.getParentBranches()[0];
+
+            for (const format of ["html", "markdown"] as const) {
+                const { entries } = await exportSubtree(branch, format);
+                const dataFileName = parseMeta(entries).files[0].dataFileName ?? "";
+                const exported = entries[dataFileName].toString("utf-8");
+
+                expect(exported).not.toContain("data-list-item-id");
+                // The list content itself still round-trips.
+                expect(exported).toContain("Bullet");
+                expect(exported).toContain("Cell");
+            }
+        });
+
+        it("carries owned attributes into the note meta but drops out-of-export relations", async () => {
+            // A note living outside the exported subtree: a relation to it is valid
+            // to save but must be filtered out of the export meta.
+            const { note: outsider } = createNote("root", { title: "Outsider", content: "<p>o</p>" });
+            const { note } = createNote("root", { title: "Attributed", content: "<p>x</p>" });
+            getContext().init(() => {
+                note.addLabel("myLabel", "labelValue");
+                // Relation to "root" is a named noteId and is preserved.
+                note.addRelation("rootRel", "root");
+                // Relation to a note not contained in this export is dropped.
+                note.addRelation("outsideRel", outsider.noteId);
+            });
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+            const attrs = rootMeta.attributes ?? [];
+
+            const label = attrs.find((a) => a.name === "myLabel");
+            expect(label).toMatchObject({ type: "label", value: "labelValue" });
+
+            expect(attrs.some((a) => a.name === "rootRel")).toBe(true);
+            expect(attrs.some((a) => a.name === "outsideRel")).toBe(false);
+        });
+
+        it("leaves out the link relations the importer rebuilds, and keeps the ones it reads back", async () => {
+            // Both notes go inside the exported subtree: a relation pointing out of it is dropped
+            // by the containment filter, which would hide what this test is about.
+            const { note: parent } = createNote("root", { title: "LinkHost", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "LinkTarget", content: "<p>t</p>" });
+            const { note } = createNote(parent.noteId, { title: "Linker", content: "<p>x</p>" });
+            getContext().init(() => {
+                note.addRelation("internalLink", target.noteId);
+                note.addRelation("imageLink", target.noteId);
+                // The importer reads these two back to remap note ids inside the content.
+                note.addRelation("includeNoteLink", target.noteId);
+                note.addRelation("relationMapLink", target.noteId);
+                note.addRelation("userRelation", target.noteId);
+            });
+
+            const { entries } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const children = parseMeta(entries).files[0].children ?? [];
+            const linkerMeta = children.find((child) => child.title === "Linker");
+            const names = (linkerMeta?.attributes ?? []).map((a) => a.name);
+
+            expect(names).not.toContain("internalLink");
+            expect(names).not.toContain("imageLink");
+            expect(names).toContain("includeNoteLink");
+            expect(names).toContain("relationMapLink");
+            expect(names).toContain("userRelation");
+        });
+
+        it("comes back with those relations anyway, rebuilt from content and pointing at the new notes", async () => {
+            const { note: parent } = createNote("root", { title: "LinkRoundTrip", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "Target", content: "<p>t</p>" });
+            const { note: picture } = createNote(parent.noteId,
+                { title: "Picture", content: "png-bytes", type: "image", mime: "image/png" });
+            const { note: source } = createNote(parent.noteId, { title: "Source", content: "" });
+            getContext().init(() => source.setContent(
+                `<p>See <a href="#root/${target.noteId}">Target</a>.</p>`
+                + `<p><img src="api/images/${picture.noteId}/Picture.png"></p>`
+            ));
+
+            const taskContext = (await import("../task_context.js")).default;
+            const importZip = (await import("../import/zip.js")).default;
+            const { buffer } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const imported = await getContext().init(async () => await importZip.importZip(
+                new taskContext("no-progress-reporting", "importNotes", {}),
+                buffer,
+                becca.getNoteOrThrow("root")
+            ));
+
+            const childByTitle = (title: string) =>
+                imported.getChildNotes().find((child) => child.title === title);
+            const importedSource = childByTitle("Source");
+            const relationTargets = (name: string) =>
+                (importedSource?.getRelations() ?? []).filter((rel) => rel.name === name).map((rel) => rel.value);
+
+            // New ids on the far side, so a relation copied out of the export could not have pointed here.
+            expect(childByTitle("Target")?.noteId).not.toBe(target.noteId);
+            expect(relationTargets("internalLink")).toStrictEqual([childByTitle("Target")?.noteId]);
+            expect(relationTargets("imageLink")).toStrictEqual([childByTitle("Picture")?.noteId]);
+        });
+
+        it("excludes notes marked with #excludeFromExport", async () => {
+            const { note: parent } = createNote("root", { title: "WithExcluded", content: "" });
+            const { note: kept } = createNote(parent.noteId, { title: "Kept", content: "<p>kept</p>" });
+            const { note: excluded } = createNote(parent.noteId, { title: "Excluded", content: "<p>no</p>" });
+            getContext().init(() => excluded.addLabel("excludeFromExport"));
+            const branch = parent.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+            const childIds = (rootMeta.children ?? []).map((c) => c.noteId);
+
+            expect(childIds).toContain(kept.noteId);
+            expect(childIds).not.toContain(excluded.noteId);
+        });
+
+        it("keeps note titles longer than 30 characters in the data file name", async () => {
+            // Regression for #10112: the base file name used to be hard-capped at
+            // 30 characters, mangling long titles in the export.
+            const longTitle = "This is a very long note title well beyond the old thirty char cap";
+            expect(longTitle.length).toBeGreaterThan(30);
+            const { note } = createNote("root", { title: longTitle, content: "<p>long</p>" });
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+
+            expect(rootMeta.dataFileName).toBe(`${longTitle}.html`);
+            expect(entries[`${longTitle}.html`]).toBeDefined();
+        });
+
+        it("keeps the full UTF-8 title for accented note names (issue #10112)", async () => {
+            // The reporter's archive showed "Jean 15.1-8 - prédication corr.md",
+            // i.e. a longer accented title chopped at 30 chars before ".md".
+            const accentedTitle = "Jean 15.1-8 - prédication corrigée";
+            expect(accentedTitle.length).toBeGreaterThan(30);
+            const { note } = createNote("root", { title: accentedTitle, content: "<h2>Heading</h2>" });
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "markdown");
+            const rootMeta = parseMeta(entries).files[0];
+
+            expect(rootMeta.dataFileName).toBe(`${accentedTitle}.md`);
+            expect(entries[`${accentedTitle}.md`]).toBeDefined();
+        });
+
+        it("keeps long attachment names and strips illegal characters from them", async () => {
+            const { note } = createNote("root", { title: "AttachHost", content: "<p>host</p>" });
+            const longAttachmentTitle = "long attachment / with : illegal * chars beyond thirty characters";
+            getContext().init(() =>
+                note.saveAttachment({ role: "file", mime: "text/plain", title: longAttachmentTitle, content: "data" })
+            );
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+
+            const attMeta = (rootMeta.attachments ?? [])[0];
+            expect(attMeta).toBeDefined();
+            const attFileName = attMeta.dataFileName ?? "";
+            // Not capped at 30: the old behaviour cropped to 30 chars + extension.
+            expect(attFileName.length).toBeGreaterThan(33);
+            // Illegal filename characters are stripped (previously left untouched).
+            expect(attFileName).not.toMatch(/[/\\:*?"<>|]/);
+            expect(entries[attFileName]).toBeDefined();
+        });
+
+        it("round-trips binary attachment content byte-for-byte", async () => {
+            const { note } = createNote("root", { title: "BinaryAttachHost", content: "<p>host</p>" });
+            // Bytes that are not valid UTF-8 (0x00, 0xFF, lone 0x80 continuation byte)
+            // so any accidental string coercion in the export path would corrupt them.
+            const binaryContent = new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x80, 0x01, 0xfe ]);
+            getContext().init(() =>
+                note.saveAttachment({ role: "image", mime: "image/png", title: "pixel.png", content: binaryContent })
+            );
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+
+            const attMeta = (rootMeta.attachments ?? [])[0];
+            expect(attMeta).toBeDefined();
+            const attFileName = attMeta.dataFileName ?? "";
+            expect(entries[attFileName]).toBeDefined();
+            // The exported bytes must equal the stored bytes exactly.
+            expect([ ...entries[attFileName] ]).toEqual([ ...binaryContent ]);
+        });
+
+        it("resolves embedded mermaid/canvas images to their rendered image attachment", async () => {
+            // A mermaid/canvas note is not an image itself: `api/images/<noteId>` serves its
+            // generated `*-export.svg` attachment. An <img> embedding such a note must therefore
+            // resolve to that attachment, not to the note's own data file (the mermaid source or,
+            // in the share export, the note's HTML page).
+            const cases = [
+                { type: "mermaid", mime: "text/mermaid", content: "flowchart TD\n A --> B", attachment: "mermaid-export.svg" },
+                { type: "canvas", mime: "application/json", content: "{}", attachment: "canvas-export.svg" }
+            ] as const;
+
+            for (const { type, mime, content, attachment } of cases) {
+                const hostTitle = `${type}Host`;
+                const { note: host } = createNote("root", { title: hostTitle, content: "" });
+                const { note: diagram } = createNote(host.noteId, { title: "Diagram", type, mime, content });
+
+                getContext().init(() => {
+                    diagram.saveAttachment({ role: "image", mime: "image/svg+xml", title: attachment, content: "<svg/>" });
+                    host.setContent(`<p><img src="api/images/${diagram.noteId}/Diagram"></p>`);
+                });
+
+                const { entries } = await exportSubtree(host.getParentBranches()[0], "html");
+                const rootMeta = parseMeta(entries).files[0];
+                const exported = entries[rootMeta.dataFileName ?? ""].toString("utf-8");
+
+                // The SVG really is in the archive, next to the diagram note's own data file.
+                const svgPath = `${hostTitle}/Diagram_${attachment}`;
+                expect(entries[svgPath], svgPath).toBeDefined();
+
+                expect(exported, type).toContain(`src="${svgPath}"`);
+                // ...and not at the diagram note's data file, which no browser can render as an image.
+                expect(exported, type).not.toMatch(/src="[^"]*Diagram\.(txt|json|html)"/);
+            }
+        });
+
+        it("rewrites a link preview's picture references to the exported attachment files", async () => {
+            // A link preview stores its card image and its favicon as attachments referenced from
+            // `data-image` and `data-favicon` (not an <img src>), so both attributes must be
+            // rewritten to the exported attachment files just like an image src. The markdown
+            // export keeps the preview's raw HTML, so the same rewrite must land there too.
+            const { note } = createNote("root", { title: "LinkPreviewHost", content: "" });
+            getContext().init(() => {
+                const image = note.saveAttachment({ role: "image", mime: "image/jpeg", title: "preview.jpg", content: "jpeg-bytes" });
+                const favicon = note.saveAttachment({ role: "image", mime: "image/x-icon", title: "favicon.ico", content: "ico-bytes" });
+                note.setContent(`<section class="link-embed" data-url="https://example.com" data-embed-type="opengraph"` +
+                    ` data-title="Example" data-image="api/attachments/${image.attachmentId}/image/preview.jpg"` +
+                    ` data-favicon="api/attachments/${favicon.attachmentId}/image/favicon.ico"></section>`);
+            });
+
+            for (const format of ["html", "markdown"] as const) {
+                const { entries } = await exportSubtree(note.getParentBranches()[0], format);
+                const rootMeta = parseMeta(entries).files[0];
+                const attachments = rootMeta.attachments ?? [];
+
+                const fileNameOf = (title: string) => attachments.find((a) => a.title === title)?.dataFileName ?? "";
+                const imageFileName = fileNameOf("preview.jpg");
+                const faviconFileName = fileNameOf("favicon.ico");
+                expect(entries[imageFileName], format).toBeDefined();
+                expect(entries[faviconFileName], format).toBeDefined();
+
+                const exported = entries[rootMeta.dataFileName ?? ""].toString("utf-8");
+                expect(exported, format).toContain(`data-image="${imageFileName}"`);
+                expect(exported, format).toContain(`data-favicon="${faviconFileName}"`);
+                expect(exported, format).not.toContain("api/attachments");
+            }
+        });
+
+        it("carries a link preview's pictures through an export and back", async () => {
+            // The two halves of the rewrite above are each tested against a fixed archive shape, which
+            // leaves the seam between them untested — and the seam is where this broke: the export
+            // learned about `data-image`/`data-favicon` while the import kept rewriting `src` alone, so
+            // both pictures imported as attachments with the right roles and neither one rendered.
+            // A title with a space in it, as the default "New note" has: the export prefixes it onto
+            // both attachment file names, and a space is exactly what the render sinks reject.
+            const { note } = createNote("root", { title: "Round Trip Host", content: "" });
+            getContext().init(() => {
+                const cover = note.saveAttachment({ role: "coverImage", mime: "image/jpeg", title: "https://example.com/page", content: "jpeg-bytes" });
+                const favicon = note.saveAttachment({ role: "favicon", mime: "image/png", title: "example.com", content: "png-bytes" });
+                note.setContent(`<section class="link-embed" data-url="https://example.com/page" data-embed-type="opengraph"`
+                    + ` data-title="Example" data-image="api/attachments/${cover.attachmentId}/image/page.jpg"`
+                    + ` data-favicon="api/attachments/${favicon.attachmentId}/image/example.com.png"></section>`);
+            });
+
+            const taskContext = (await import("../task_context.js")).default;
+            const importZip = (await import("../import/zip.js")).default;
+
+            // Markdown too: that export keeps the preview's raw HTML, so it carries the same two
+            // attributes and needs the same journey back.
+            for (const format of ["html", "markdown"] as const) {
+                const { buffer } = await exportSubtree(note.getParentBranches()[0], format);
+                const imported = await getContext().init(async () => await importZip.importZip(
+                    new taskContext("no-progress-reporting", "importNotes", {}),
+                    buffer,
+                    becca.getNoteOrThrow("root")
+                ));
+
+                const content = imported.getContent().toString();
+                const idOf = (role: string) => imported.getAttachments().find((a) => a.role === role)?.attachmentId;
+
+                // New ids on the far side, so the references have to have been rewritten twice over...
+                expect(content, format).toContain(`data-image="api/attachments/${idOf("coverImage")}/image/`);
+                expect(content, format).toContain(`data-favicon="api/attachments/${idOf("favicon")}/image/`);
+
+                // ...and into something the render sinks will actually load. Pointing at the right
+                // attachment is only half of it: this note's title has a space in it, which the export
+                // prefixes onto both file names, and the pattern below admits none.
+                const sources = [...content.matchAll(/data-(?:image|favicon)="([^"]*)"/g)];
+                expect(sources, format).toHaveLength(2);
+                for (const [, src] of sources) {
+                    expect(isLocalPreviewImageSrc(src), `${format}: ${src}`).toBe(true);
+                }
+            }
+        });
+
+        it("pipes the archive to the response before appending any content", async () => {
+            // Memory efficiency: the archive must start streaming to the response
+            // before note/attachment content is appended, so blobs drain to the
+            // client as they are added rather than all being buffered in memory.
+            const { note } = createNote("root", { title: "StreamOrder", content: "<p>x</p>" });
+            getContext().init(() =>
+                note.saveAttachment({ role: "file", mime: "text/plain", title: "a.txt", content: "data" })
+            );
+            const branch = note.getParentBranches()[0];
+
+            const events: string[] = [];
+            const original = getZipProvider();
+            const spy: ZipProvider = {
+                detectFilenameEncoding: (b) => original.detectFilenameEncoding(b),
+                readZipFile: (b, fn, enc) => original.readZipFile(b, fn, enc),
+                createFileStream: (p) => original.createFileStream(p),
+                createZipArchive() {
+                    const real = original.createZipArchive();
+                    const wrapper: ZipArchive = {
+                        append(content: string | Uint8Array, options: ZipArchiveEntryOptions) {
+                            events.push(`append:${options.name}`);
+                            real.append(content, options);
+                        },
+                        pipe(dest: unknown) {
+                            events.push("pipe");
+                            real.pipe(dest);
+                        },
+                        finalize() {
+                            events.push("finalize");
+                            return real.finalize();
+                        }
+                    };
+                    return wrapper;
+                }
+            };
+
+            initZipProvider(spy);
+            try {
+                const taskContext = (await import("../task_context.js")).default;
+                const ctx = new taskContext("no-progress-reporting", "export", null);
+                const res = new FakeResponse();
+                const done = collect(res);
+                await zip.exportToZip(ctx, branch, "html", res);
+                await done;
+            } finally {
+                initZipProvider(original);
+            }
+
+            // The pipe is the very first archive operation and precedes every append.
+            const pipeIdx = events.indexOf("pipe");
+            const firstAppendIdx = events.findIndex((e) => e.startsWith("append:"));
+            expect(pipeIdx).toBe(0);
+            expect(firstAppendIdx).toBeGreaterThan(pipeIdx);
+            // Content really was appended (note data + attachment), and finalize closes it.
+            expect(events).toContain("append:!!!meta.json");
+            expect(events[events.length - 1]).toBe("finalize");
+        });
+
+        it("keeps the extension on very long multi-byte titles within the 255-byte limit", async () => {
+            // A title of 3-byte CJK characters long enough that, once the upstream
+            // 255-byte sanitize cap fills the base, appending the extension would
+            // push past 255 bytes. The extension must survive and the whole name
+            // must stay within the filesystem's 255-byte limit.
+            const cjkTitle = "汉".repeat(120);
+            const { note } = createNote("root", { title: cjkTitle, content: "<h2>Heading</h2>" });
+            const branch = note.getParentBranches()[0];
+
+            const { entries } = await exportSubtree(branch, "markdown");
+            const rootMeta = parseMeta(entries).files[0];
+
+            const name = rootMeta.dataFileName ?? "";
+            expect(name.endsWith(".md")).toBe(true);
+            expect(Buffer.byteLength(name, "utf-8")).toBeLessThanOrEqual(255);
+            expect(entries[name]).toBeDefined();
+        });
+
+        it("emits a .clone data file when the same note appears twice in the subtree", async () => {
+            const { note: parent } = createNote("root", { title: "CloneHolder", content: "" });
+            const { note: folderA } = createNote(parent.noteId, { title: "FolderA", content: "" });
+            const { note: folderB } = createNote(parent.noteId, { title: "FolderB", content: "" });
+            const { note: original } = createNote(folderA.noteId, { title: "Original", content: "<p>orig</p>" });
+
+            // Clone the note into a second folder inside the same exported subtree.
+            const cloningService = (await import("../cloning.js")).default;
+            const cloneRes = getContext().init(() => cloningService.cloneNoteToParentNote(original.noteId, folderB.noteId));
+            expect(cloneRes.success).toBe(true);
+
+            const branch = parent.getParentBranches()[0];
+            const { entries } = await exportSubtree(branch, "html");
+            const rootMeta = parseMeta(entries).files[0];
+
+            // Flatten the meta tree to find every occurrence of the note.
+            const occurrences: { isClone?: boolean; dataFileName?: string; dirPath?: string }[] = [];
+            function walk(meta: NoteMetaFile["files"][number], dirPath: string) {
+                if (meta.noteId === original.noteId) {
+                    occurrences.push({ isClone: meta.isClone, dataFileName: meta.dataFileName, dirPath });
+                }
+                for (const child of meta.children ?? []) {
+                    walk(child, meta.dirFileName ? `${dirPath}${meta.dirFileName}/` : dirPath);
+                }
+            }
+            walk(rootMeta, "");
+
+            // The note appears twice: once as the real export, once as a clone marker.
+            expect(occurrences).toHaveLength(2);
+            const clones = occurrences.filter((o) => o.isClone);
+            expect(clones).toHaveLength(1);
+
+            const clonePath = `${clones[0].dirPath}${clones[0].dataFileName}`;
+            expect(entries[clonePath].toString("utf-8")).toContain("clone of a note");
+        });
+
+        it("falls back to a generic data file name when the title sanitizes away entirely", async () => {
+            // sanitize() strips "/" wholesale, leaving nothing to name the file after.
+            const { note } = createNote("root", { title: "///", content: "<p>nameless</p>" });
+
+            const { entries } = await exportSubtree(note.getParentBranches()[0], "html");
+
+            expect(entries["note.html"]?.toString("utf-8")).toContain("nameless");
+        });
+
+        it("caps an overlong title when deriving the data file name", async () => {
+            const { note } = createNote("root", { title: "T".repeat(250), content: "<p>long</p>" });
+
+            const { entries } = await exportSubtree(note.getParentBranches()[0], "html");
+            const dataFileName = parseMeta(entries).files[0].dataFileName ?? "";
+
+            // Truncated to 200 characters before the ".html" extension is appended.
+            expect(dataFileName).toBe(`${"T".repeat(200)}.html`);
+            expect(entries[dataFileName]).toBeDefined();
+        });
+
+        it("names a share export's data file after #shareAlias instead of the title", async () => {
+            const { note } = createNote("root", { title: "Internal Title", content: "<p>shared</p>" });
+            getContext().init(() => note.addLabel("shareAlias", "public-alias"));
+
+            const { entries } = await exportSubtree(note.getParentBranches()[0], "share");
+
+            expect(parseMeta(entries).files[0].dataFileName).toBe("public-alias.html");
+        });
+
+        it("writes an image or file note of a share export as a page plus its raw file", async () => {
+            const bytes = new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x80 ]);
+            const { note: host } = createNote("root", { title: "BinaryShareHost", content: "" });
+            const { note: image } = createNote(host.noteId, { title: "Photo.png", type: "image", mime: "image/png" });
+            const { note: pdf } = createNote(host.noteId, { title: "Manual", type: "file", mime: "application/pdf" });
+            const { note: file } = createNote(host.noteId, { title: "Data.bin", type: "file", mime: "application/octet-stream" });
+            getContext().init(() => {
+                for (const note of [ image, pdf, file ]) note.setContent(bytes);
+                host.setContent(`<p><img src="api/images/${image.noteId}/Photo.png"></p>`);
+            });
+
+            const { entries } = await exportSubtree(host.getParentBranches()[0], "share");
+            const pageOf = (noteId: string) => {
+                const meta = (parseMeta(entries).files[0].children ?? []).find((c) => c.noteId === noteId);
+                return meta?.dataFileName ?? "";
+            };
+
+            expect([ pageOf(image.noteId), pageOf(pdf.noteId), pageOf(file.noteId) ])
+                .toEqual([ "Photo.png.html", "Manual.html", "Data.bin.html" ]);
+            for (const raw of [ "Photo.png", "Manual.pdf", "Data.bin" ]) {
+                expect([ ...entries[raw] ?? [] ], raw).toEqual([ ...bytes ]);
+            }
+            expect(decodeUtf8(entries["Photo.png.html"])).toContain(`<img src="Photo.png"`);
+            expect(decodeUtf8(entries["Manual.html"])).toContain(`src="Manual.pdf"`);
+            expect(decodeUtf8(entries["Data.bin.html"])).toContain(`location.href='Data.bin'`);
+            expect(decodeUtf8(entries[parseMeta(entries).files[0].dataFileName ?? ""]))
+                .toContain(`<img src="Photo.png"`);
+        });
+
+        it("rewrites links to notes inside the export and leaves outside ones alone", async () => {
+            const { note: outside } = createNote("root", { title: "Outside", content: "<p>out</p>" });
+            const { note: parent } = createNote("root", { title: "LinkParent", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "LinkTarget", content: "<p>target</p>" });
+            const { note: source } = createNote(parent.noteId, {
+                title: "LinkSource",
+                content: `<p><a href="#root/${target.noteId}">inside</a><a href="#root/${outside.noteId}">outside</a></p>`
+            });
+
+            const { entries } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const rootMeta = parseMeta(entries).files[0];
+            const sourceMeta = (rootMeta.children ?? []).find((c) => c.noteId === source.noteId);
+            const dataFile = entries[`${rootMeta.dirFileName}/${sourceMeta?.dataFileName}`].toString("utf-8");
+
+            // The in-export target becomes a relative path to its exported file ...
+            expect(dataFile).toContain(`href="LinkTarget.html"`);
+            // ... while a note outside the subtree has no exported file, so its link is left as-is.
+            expect(dataFile).toContain(`href="#root/${outside.noteId}"`);
+        });
+
+        it("rewrites attachment links to the exported file and leaves unknown ids alone", async () => {
+            const { note } = createNote("root", { title: "AttLinker", content: "" });
+            const attachment = getContext().init(() =>
+                note.saveAttachment({ title: "doc.txt", role: "file", mime: "text/plain", content: "attached body" })
+            );
+            getContext().init(() =>
+                note.setContent(
+                    `<p><a href="#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}">real</a>`
+                    + `<a href="#root/${note.noteId}?viewMode=attachments&attachmentId=missingAtt01">dangling</a></p>`
+                )
+            );
+
+            const { entries } = await exportSubtree(note.getParentBranches()[0], "html");
+            const rootMeta = parseMeta(entries).files[0];
+            const dataFile = entries[rootMeta.dataFileName ?? ""].toString("utf-8");
+
+            expect(dataFile).toContain(`href="AttLinker_doc.txt"`);
+            // An attachment that isn't part of the export can't be resolved, so the attachment rewriter
+            // leaves it alone and the generic note-link rewriter that runs next degrades it to the
+            // owning note's own exported file.
+            expect(dataFile).not.toContain("missingAtt01");
+            expect(dataFile).toContain(`href="AttLinker.html"`);
+        });
+
+        it("rewrites api/notes download sources only in a share export", async () => {
+            const { note: parent } = createNote("root", { title: "DownloadParent", content: "" });
+            const { note: file } = createNote(parent.noteId, { title: "Payload", content: "<p>payload</p>" });
+            const { note: source } = createNote(parent.noteId, {
+                title: "DownloadSource",
+                content: `<p><img src="api/notes/${file.noteId}/download"></p>`
+            });
+
+            const readSource = async (format: ExportFormat) => {
+                const { entries } = await exportSubtree(parent.getParentBranches()[0], format);
+                const rootMeta = parseMeta(entries).files[0];
+                const sourceMeta = (rootMeta.children ?? []).find((c) => c.noteId === source.noteId);
+                // A share export hoists the root's children to the archive root; other formats nest
+                // them under the root note's directory.
+                const entryName = Object.keys(entries).find((name) => name.endsWith(sourceMeta?.dataFileName ?? "\0"));
+                return entries[entryName ?? ""].toString("utf-8");
+            };
+
+            // Only the share export resolves the download URL onto the exported file ...
+            expect(await readSource("share")).toContain(`src="Payload.html"`);
+            // ... an ordinary HTML export leaves it pointing at the API.
+            expect(await readSource("html")).toContain(`src="api/notes/${file.noteId}/download"`);
+        });
+
+        it("rewrites Markdown-syntax links in a markdown code note", async () => {
+            const { note: parent } = createNote("root", { title: "MdCodeParent", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "MdTarget", content: "<p>target</p>" });
+            const { note: source } = createNote(parent.noteId, {
+                title: "MdSource",
+                type: "code",
+                mime: "text/x-markdown",
+                content: `See [the target](#root/${target.noteId}).`
+            });
+
+            const { entries } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const rootMeta = parseMeta(entries).files[0];
+            const sourceMeta = (rootMeta.children ?? []).find((c) => c.noteId === source.noteId);
+            const dataFile = entries[`${rootMeta.dirFileName}/${sourceMeta?.dataFileName}`].toString("utf-8");
+
+            // A markdown code note stores Markdown, not HTML, so the HTML link rewriter can't reach it.
+            expect(dataFile).toContain("[the target](MdTarget.html)");
+        });
+
+        it("refuses to export a subtree whose own root is marked #excludeFromExport", async () => {
+            const { note } = createNote("root", { title: "ExcludedRoot", content: "<p>x</p>" });
+            getContext().init(() => note.addLabel("excludeFromExport"));
+
+            await expect(exportSubtree(note.getParentBranches()[0], "html")).rejects.toThrow("Unable to create root meta.");
+        });
+    });
+
+    describe("exportToZipFile", () => {
+        let tempDir: string;
+
+        beforeAll(() => {
+            tempDir = mkdtempSync(join(tmpdir(), "trilium-zip-export-"));
+        });
+
+        it("writes a valid, readable zip archive to the given path", async () => {
+            const { note } = createNote("root", { title: "FileExport", content: "<p>to file</p>" });
+            const zipPath = join(tempDir, `export-${note.noteId}.zip`);
+
+            await getContext().init(() => zip.exportToZipFile(note.noteId, "html", zipPath));
+
+            const buffer = readFileSync(zipPath);
+            const entries = await readArchive(buffer);
+            const rootMeta = parseMeta(entries).files[0];
+
+            expect(rootMeta.noteId).toBe(note.noteId);
+            expect(entries[rootMeta.dataFileName!].toString("utf-8")).toContain("to file");
+
+            rmSync(zipPath, { force: true });
+        });
+
+        it("throws a ValidationError for a non-existent note", async () => {
+            await expect(
+                getContext().init(() => zip.exportToZipFile("missingNoteId123", "html", join(tempDir, "never.zip")))
+            ).rejects.toThrow(/not found/);
+        });
+    });
+
+    describe("exportBranchToZipFile", () => {
+        let tempDir: string;
+
+        beforeAll(() => {
+            tempDir = mkdtempSync(join(tmpdir(), "trilium-zip-branch-export-"));
+        });
+
+        it("streams a subtree export for the given branch to a file path", async () => {
+            const { note, branch } = createNote("root", { title: "BranchFileExport", content: "<p>branch to file</p>" });
+            const zipPath = join(tempDir, `branch-export-${note.noteId}.zip`);
+            const { branchId } = branch;
+            if (!branchId) {
+                throw new Error("branch was not saved");
+            }
+
+            await getContext().init(() =>
+                zip.exportBranchToZipFile(branchId, "html", zipPath, "no-progress-reporting")
+            );
+
+            const buffer = readFileSync(zipPath);
+            const entries = await readArchive(buffer);
+            const rootMeta = parseMeta(entries).files[0];
+
+            expect(rootMeta.noteId).toBe(note.noteId);
+            const dataFileName = rootMeta.dataFileName ?? "";
+            expect(entries[dataFileName].toString("utf-8")).toContain("branch to file");
+
+            rmSync(zipPath, { force: true });
+        });
+
+        it("throws a ValidationError for a non-existent branch", async () => {
+            await expect(
+                getContext().init(() =>
+                    zip.exportBranchToZipFile("missingBranch123", "html", join(tempDir, "never.zip"), "no-progress-reporting")
+                )
+            ).rejects.toThrow(/not found/);
+        });
+
+        it("reports the error to the task context and rethrows when the export itself fails", async () => {
+            const { note, branch } = createNote("root", { title: "BranchExportFails", content: "<p>x</p>" });
+            getContext().init(() => note.addLabel("excludeFromExport"));
+            const { branchId } = branch;
+            if (!branchId) {
+                throw new Error("branch was not saved");
+            }
+
+            await expect(
+                getContext().init(() =>
+                    zip.exportBranchToZipFile(branchId, "html", join(tempDir, "failed.zip"), "no-progress-reporting")
+                )
+            ).rejects.toThrow("Unable to create root meta.");
+        });
+    });
+});
+
+describe("shouldStoreUncompressed", () => {
+    it("stores already-compressed payloads uncompressed", () => {
+        for (const mime of [
+            "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
+            "video/mp4", "video/webm", "audio/mpeg", "audio/ogg",
+            "application/pdf", "application/zip", "application/gzip",
+            "application/x-7z-compressed", "font/woff2",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
+            "application/vnd.oasis.opendocument.spreadsheet", // ods
+            "application/epub+zip"
+        ]) {
+            expect(shouldStoreUncompressed(mime), mime).toBe(true);
+        }
+    });
+
+    it("compresses text and other deflate-friendly payloads", () => {
+        for (const mime of [
+            "text/html", "text/plain", "text/markdown", "application/json",
+            "application/xml", "application/javascript",
+            "image/svg+xml", "image/bmp", "image/x-icon", "image/tiff",
+            "audio/wav", "audio/x-wav", "audio/aiff"
+        ]) {
+            expect(shouldStoreUncompressed(mime), mime).toBe(false);
+        }
+    });
+
+    it("normalizes case and ignores parameters, and treats missing mime as compressible", () => {
+        expect(shouldStoreUncompressed("IMAGE/JPEG")).toBe(true);
+        expect(shouldStoreUncompressed("image/png; charset=binary")).toBe(true);
+        expect(shouldStoreUncompressed("  text/html ; charset=utf-8 ")).toBe(false);
+        expect(shouldStoreUncompressed(undefined)).toBe(false);
+        expect(shouldStoreUncompressed(null)).toBe(false);
+        expect(shouldStoreUncompressed("")).toBe(false);
+    });
+});

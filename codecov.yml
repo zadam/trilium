@@ -1,0 +1,77 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+      # The share code is held at full coverage by the share-theme, server and standalone suites;
+      # this status checks the merged result.
+      share:
+        target: 100%
+        paths:
+          - packages/share-theme/src/
+          - packages/trilium-core/src/share/
+          - apps/server/src/share/
+          - apps/standalone/src/lightweight/share_provider.ts
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+# No `fixes:` needed: every suite pins the lcov reporter's `projectRoot` to the repo root, so
+# `SF:` paths already arrive repo-root-relative. Leaving them project-relative would make the
+# shallow ones (`src/index.ts`, `src/utils.ts`) ambiguous across the monorepo, and Codecov would
+# attribute their coverage to whichever project won the match.
+
+flags:
+  client:
+    paths:
+      - apps/client/src/
+    carryforward: true
+  server:
+    paths:
+      - apps/server/src/
+      - packages/trilium-core/src/
+    carryforward: true
+  standalone:
+    paths:
+      - apps/standalone/src/
+      - packages/trilium-core/src/
+    carryforward: true
+  desktop:
+    paths:
+      - apps/desktop/src/
+    carryforward: true
+  commons:
+    paths:
+      - packages/commons/src/
+    carryforward: true
+  ckeditor5:
+    paths:
+      - packages/ckeditor5/src/
+    carryforward: true
+  codemirror:
+    paths:
+      - packages/codemirror/src/
+    carryforward: true
+  highlightjs:
+    paths:
+      - packages/highlightjs/src/
+    carryforward: true
+  pdfjs-viewer:
+    paths:
+      - packages/pdfjs-viewer/src/
+    carryforward: true
+  share-theme:
+    paths:
+      - packages/share-theme/src/
+    carryforward: true
+  web-clipper:
+    paths:
+      - apps/web-clipper/entrypoints/
+      - apps/web-clipper/utils.ts
+    carryforward: true
+
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer"
+  require_changes: true

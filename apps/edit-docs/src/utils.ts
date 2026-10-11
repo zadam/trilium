@@ -1,49 +1,17 @@
-import { BackupService, initializeCore } from "@triliumnext/core";
 import IpcMessagingProvider from "@triliumnext/desktop/src/ipc_messaging_provider.js";
-import { registerTriliumAppScheme } from "@triliumnext/desktop/src/protocol.js";
-import ClsHookedExecutionContext from "@triliumnext/server/src/cls_provider.js";
-import NodejsCryptoProvider from "@triliumnext/server/src/crypto_provider.js";
-import ServerPlatformProvider from "@triliumnext/server/src/platform_provider.js";
-import { serverImageProvider } from "@triliumnext/server/src/services/image_provider.js";
-import windowService from "@triliumnext/desktop/src/services/window.js";
-import BetterSqlite3Provider from "@triliumnext/server/src/sql_provider.js";
-import NodejsZipProvider from "@triliumnext/server/src/zip_provider.js";
-import { type Archiver, ZipArchive } from "archiver";
+import { registerTriliumAppScheme, setupTriliumAppProtocol } from "@triliumnext/desktop/src/protocol.js";
+import windowService, { setupWindowing } from "@triliumnext/desktop/src/services/window.js";
 import electron from "electron";
-import { createWriteStream, readFileSync, type WriteStream } from "fs";
-import fs from "fs/promises";
-import path from "path";
 
 import { deferred, type DeferredPromise } from "../../../packages/commons/src/index.js";
+import { initializeDocsCore } from "./docs_pipeline.js";
 
 // Register the `trilium-app://` scheme synchronously at module load (before any
 // `await` in edit-docs.ts / edit-demo.ts) so it lands before `app.ready` fires
 // — otherwise Chromium blocks the navigation with `(blocked:origin)`.
 registerTriliumAppScheme();
 
-// Stub backup service (not used in edit-docs, but required by initializeCore)
-class StubBackupService extends BackupService {
-    constructor() {
-        super({ getOption: () => "", getOptionBool: () => false, setOption: () => {} });
-    }
-    scheduleBackups(): void {}
-    async backupNow(_name: string): Promise<string> {
-        throw new Error("Backup not supported in edit-docs");
-    }
-    async getExistingBackups() {
-        return [];
-    }
-    async getBackupContent(_filePath: string): Promise<Uint8Array | null> {
-        return null;
-    }
-}
-
 export async function initializeEditDocsCore() {
-    const dbProvider = new BetterSqlite3Provider();
-    dbProvider.loadFromMemory();
-
-    const { serverZipExportProviderFactory } = await import("@triliumnext/server/src/services/export/zip/factory.js");
-
     // edit-docs is Electron-based and reuses the desktop preload, so the
     // renderer talks to the server over the IPC bridge — never opens a
     // WebSocket. Use IpcMessagingProvider so the server side actually
@@ -52,28 +20,7 @@ export async function initializeEditDocsCore() {
     const messaging = new IpcMessagingProvider();
     messaging.init();
 
-    await initializeCore({
-        dbConfig: {
-            provider: dbProvider,
-            isReadOnly: false,
-            async onTransactionCommit() {
-                const { ws } = await import("@triliumnext/core");
-                ws.sendTransactionEntityChangesToAllClients();
-            },
-            onTransactionRollback: () => {}
-        },
-        crypto: new NodejsCryptoProvider(),
-        zip: new NodejsZipProvider(),
-        zipExportProviderFactory: serverZipExportProviderFactory,
-        executionContext: new ClsHookedExecutionContext(),
-        platform: new ServerPlatformProvider(),
-        schema: readFileSync(require.resolve("@triliumnext/core/src/assets/schema.sql"), "utf-8"),
-        translations: (await import("@triliumnext/server/src/services/i18n.js")).initializeTranslationsWithParams,
-        messaging,
-        getDemoArchive: async () => null,
-        backup: new StubBackupService(),
-        image: serverImageProvider
-    });
+    await initializeDocsCore(messaging);
 }
 
 /**
@@ -92,7 +39,24 @@ export function startElectron(callback: () => void): DeferredPromise<void> {
 
         // Start the server.
         const startTriliumServer = (await import("@triliumnext/server/src/www.js")).default;
-        await startTriliumServer();
+        const expressApp = await startTriliumServer();
+
+        // Install the `trilium-app://` request handler that bridges the
+        // renderer's page / asset / API requests into Express. Without this the
+        // main window navigates to `trilium-app://app/` but nothing answers it,
+        // leaving a blank screen with no requests. Desktop does the same in
+        // apps/desktop/src/main.ts.
+        setupTriliumAppProtocol(expressApp);
+
+        // Register the main-process IPC handlers the renderer relies on (window
+        // management, clipboard, and crucially the `navigation-history` channel).
+        // Without this, the renderer's synchronous `navigationCanGoBack/Forward`
+        // IPC calls hit no listener — which storms the TabHistoryNavigationButtons
+        // render loop with tens of thousands of blocking sendSync calls and pegs
+        // the renderer. Desktop registers these in apps/desktop/src/main.ts.
+        // (This also installs the WebContents security policy — webview-attach
+        // vetting, window-open/navigation guards, permission handlers.)
+        setupWindowing();
 
         // Create the main window.
         await windowService.createMainWindow();
@@ -108,75 +72,4 @@ export function startElectron(callback: () => void): DeferredPromise<void> {
     }
 
     return initializedPromise;
-}
-
-export async function importData(path: string) {
-    const buffer = await createImportZip(path);
-    const { zipImportService, TaskContext, becca } = (await import("@triliumnext/core"));
-    const context = new TaskContext("no-progress-reporting", "importNotes", null);
-
-    const rootNote = becca.getRoot();
-    if (!rootNote) {
-        throw new Error("Missing root note for import.");
-    }
-    await zipImportService.importZip(context, buffer, rootNote, {
-        preserveIds: true
-    });
-}
-
-async function createImportZip(path: string) {
-    const inputFile = "input.zip";
-    const archive = new ZipArchive({
-        zlib: { level: 0 }
-    });
-
-    archive.directory(path, "/");
-
-    const outputStream = createWriteStream(inputFile);
-    archive.pipe(outputStream);
-    await waitForEnd(archive, outputStream);
-
-    try {
-        return await fs.readFile(inputFile);
-    } finally {
-        await fs.rm(inputFile);
-    }
-}
-
-function waitForEnd(archive: Archiver, stream: WriteStream) {
-    return new Promise<void>((res, rej) => {
-        stream.on("finish", res);
-        stream.on("error", rej);
-        archive.on("error", rej);
-        archive.finalize().catch(rej);
-    });
-}
-
-export async function createZipFromDirectory(dirPath: string, zipPath: string) {
-    const archive = new ZipArchive({ zlib: { level: 5 } });
-    const outputStream = createWriteStream(zipPath);
-    archive.directory(dirPath, false);
-    archive.pipe(outputStream);
-    await waitForEnd(archive, outputStream);
-}
-
-export async function extractZip(zipFilePath: string, outputPath: string, ignoredFiles?: Set<string>) {
-    const promise = deferred<void>();
-    setTimeout(async () => {
-        const { getZipProvider } = (await import("@triliumnext/core"));
-        const zipProvider = getZipProvider();
-        const buffer = await fs.readFile(zipFilePath);
-        await zipProvider.readZipFile(buffer, async (entry, readContent) => {
-            // We ignore directories since they can appear out of order anyway.
-            if (!entry.fileName.endsWith("/") && !ignoredFiles?.has(entry.fileName)) {
-                const destPath = path.join(outputPath, entry.fileName);
-                const fileContent = await readContent();
-
-                await fs.mkdir(path.dirname(destPath), { recursive: true });
-                await fs.writeFile(destPath, fileContent);
-            }
-        });
-        promise.resolve();
-    }, 1000);
-    await promise;
 }

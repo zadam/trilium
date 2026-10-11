@@ -1,10 +1,18 @@
 import { copyFile, readFile, rm, writeFile } from "fs/promises";
+import JSZip from "jszip";
 import { defineConfig } from "wxt";
 
 let originalTsConfig: object;
 
 export default defineConfig({
-    modules: ['@wxt-dev/auto-icons'],
+    vite: () => ({
+        oxc: {
+            jsx: {
+                runtime: "automatic",
+                importSource: "preact"
+            }
+        }
+    }),
     manifest: ({ manifestVersion }) => ({
         name: "Trilium Web Clipper",
         description: "Save web clippings to Trilium Notes.",
@@ -52,14 +60,14 @@ export default defineConfig({
                 suggested_key: {
                     default: "Ctrl+Shift+E"
                 }
+            },
+            saveTabs: {
+                description: "Save all tabs of the current window into a note"
             }
         }
     }),
     zip: {
-        artifactTemplate: "trilium-web-clipper-{{version}}-{{browser}}.zip",
-        includeSources: [
-            "entrypoints/offscreen/index.html"
-        ]
+        artifactTemplate: "trilium-web-clipper-{{version}}-{{browser}}.zip"
     },
     hooks: {
         'zip:sources:start': async () => {
@@ -74,12 +82,21 @@ export default defineConfig({
 
             await writeFile("./tsconfig.json", JSON.stringify(adjustedTsConfig, null, 4), 'utf-8');
         },
-        "zip:sources:done": async () => {
+        "zip:sources:done": async (_wxt, sourcesZipPath) => {
             // Restore original tsconfig.json
             await writeFile("./tsconfig.json", JSON.stringify(originalTsConfig, null, 4), 'utf-8');
 
             // Remove the copied tsconfig.base.json
             await rm("./tsconfig.base.json");
+
+            // wxt always excludes skipped entrypoints (offscreen is Chrome-only) from the
+            // sources zip, but AMO needs complete sources to reproduce the build.
+            const archive = await JSZip.loadAsync(await readFile(sourcesZipPath));
+            archive.file("entrypoints/offscreen/index.html", await readFile("entrypoints/offscreen/index.html"));
+            await writeFile(sourcesZipPath, await archive.generateAsync({
+                type: "nodebuffer",
+                compression: "DEFLATE"
+            }));
         }
     }
 });

@@ -1,5 +1,5 @@
 import { UpdateAttributeResponse } from "@triliumnext/commons";
-import type { Request } from "express";
+import type { Request } from "../../http_interface";
 
 import becca from "../../becca/becca.js";
 import BAttribute from "../../becca/entities/battribute.js";
@@ -57,6 +57,7 @@ function updateNoteAttribute(req: Request<{ noteId: string }>) {
         attribute.value = body.value;
     } else {
         // relations should never have empty target
+        /* v8 ignore next -- unreachable: BAttribute.validate() rejects relations with an empty/non-existing target, so an empty-valued relation can never be persisted and re-fetched here */
         attribute.markAsDeleted();
     }
 
@@ -75,6 +76,7 @@ function setNoteAttribute(req: Request) {
 
     if (attributeId) {
         const attr = becca.getAttribute(attributeId);
+        /* v8 ignore next 3 -- unreachable: the attributeId comes from a SQL query over non-deleted rows, which are always present in becca, so getAttribute cannot return null here */
         if (!attr) {
             throw new ValidationError(`Missing attribute with ID ${attributeId}.`);
         }

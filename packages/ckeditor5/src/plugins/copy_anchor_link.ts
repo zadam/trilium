@@ -5,7 +5,9 @@ import { escapeHtml } from "../utils";
 /**
  * Adds a "Copy anchor link" button to the bookmark/anchor widget toolbar.
  * When clicked, copies a reference link href (e.g. `#root/noteId?bookmark=anchorName`)
- * to the clipboard.
+ * to the clipboard via the host-provided `clipboard.copyHtml` callback (cross-browser
+ * fallback + toast) — `navigator.clipboard` is undefined outside secure contexts, so
+ * writing to it directly crashed the editor when Trilium is served over plain HTTP.
  */
 export default class CopyAnchorLinkButton extends Plugin {
 
@@ -28,18 +30,17 @@ export default class CopyAnchorLinkButton extends Plugin {
 
                 if (selectedElement?.name === "bookmark") {
                     const bookmarkId = selectedElement.getAttribute("bookmarkId") as string;
-                    const noteId = glob.getActiveContextNote()?.noteId;
+                    // The note the editor holds, which is not the active tab's in an included note.
+                    const component = glob.getComponentByEl<EditorComponent>(
+                        editor.editing.view.getDomRoot()
+                    );
+                    const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote()?.noteId;
 
                     if (noteId && bookmarkId) {
                         const href = `#root/${noteId}?bookmark=${encodeURIComponent(bookmarkId)}`;
                         const title = glob.getReferenceLinkTitleSync(href);
                         const html = `<a class="reference-link" href="${escapeHtml(href)}">${escapeHtml(title)}</a>`;
-                        navigator.clipboard.write([
-                            new ClipboardItem({
-                                "text/html": new Blob([html], { type: "text/html" }),
-                                "text/plain": new Blob([href], { type: "text/plain" })
-                            })
-                        ]);
+                        editor.config.get("clipboard")?.copyHtml?.(html, href);
                     }
                 }
             });

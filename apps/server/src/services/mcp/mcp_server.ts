@@ -7,11 +7,13 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { isToolErrorResult } from "@triliumnext/commons";
 import { app_info as appInfo } from "@triliumnext/core";
-
 import { cls } from "@triliumnext/core";
-import { allToolRegistries } from "../llm/tools/index.js";
-import type { ToolDefinition } from "../llm/tools/tool_registry.js";
+
+import { allToolRegistries, resolveToolRegistries } from "@triliumnext/core/src/services/llm/tools/index.js";
+import type { ToolDefinition } from "@triliumnext/core/src/services/llm/tools/tool_registry.js";
+
 import sql from "../sql.js";
 
 /**
@@ -33,11 +35,17 @@ function registerTool(server: McpServer, name: string, def: ToolDefinition) {
                 : def.execute(args);
         });
 
-        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        const content: CallToolResult["content"] = [{ type: "text", text: JSON.stringify(result) }];
+        // Without `isError`, an agent (and the chat behind it) takes a failure for a success.
+        return isToolErrorResult(result) ? { content, isError: true } : { content };
     });
 }
 
-export function createMcpServer(): McpServer {
+export async function createMcpServer(): Promise<McpServer> {
+    // Host-registered registries (the User Guide tools) load lazily; the array
+    // is complete only after this resolves.
+    await resolveToolRegistries();
+
     const server = new McpServer({
         name: "trilium-notes",
         version: appInfo.appVersion

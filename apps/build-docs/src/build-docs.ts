@@ -6,7 +6,7 @@ if (!process.env.TRILIUM_RESOURCE_DIR) {
 process.env.NODE_ENV = "development";
 
 import { BackupService, getContext, initializeCore, type ImageProvider } from "@triliumnext/core";
-import ClsHookedExecutionContext from "@triliumnext/server/src/cls_provider.js";
+import AsyncLocalStorageExecutionContext from "@triliumnext/server/src/cls_provider.js";
 import NodejsCryptoProvider from "@triliumnext/server/src/crypto_provider.js";
 import ServerPlatformProvider from "@triliumnext/server/src/platform_provider.js";
 import BetterSqlite3Provider from "@triliumnext/server/src/sql_provider.js";
@@ -17,6 +17,7 @@ class StubBackupService extends BackupService {
     constructor() {
         super({
             getOption: () => "",
+            getOptionOrNull: () => null,
             getOptionBool: () => false,
             setOption: () => {}
         });
@@ -40,13 +41,17 @@ const stubImageProvider: ImageProvider = {
     getImageType: () => null,
     processImage: async () => {
         throw new Error("Image processing not supported in build-docs");
-    }
+    },
+    compressImage: async () => ({ compressed: false, reason: "unsupported-platform" }),
+    planCompression: async () => ({ skip: "unsupported-platform" as const, decodeCost: null }),
+    compressionConcurrency: () => 1,
+    resizeForPreview: async () => ({ resized: false, reason: "unsupported-platform" as const })
 };
 import { ZipArchive } from "archiver";
 import { execSync } from "child_process";
 import { createWriteStream, readFileSync } from "fs";
 import * as fs from "fs/promises";
-import yaml from "js-yaml";
+import { load } from "js-yaml";
 import { dirname, join, resolve } from "path";
 
 import BuildContext from "./context.js";
@@ -72,7 +77,7 @@ async function initializeBuildEnvironment() {
         crypto: new NodejsCryptoProvider(),
         zip: new NodejsZipProvider(),
         zipExportProviderFactory: serverZipExportProviderFactory,
-        executionContext: new ClsHookedExecutionContext(),
+        executionContext: new AsyncLocalStorageExecutionContext(),
         platform: new ServerPlatformProvider(),
         schema: readFileSync(require.resolve("@triliumnext/core/src/assets/schema.sql"), "utf-8"),
         translations: (await import("@triliumnext/server/src/services/i18n.js")).initializeTranslations,
@@ -110,7 +115,7 @@ async function loadConfig(configPath?: string): Promise<Config | null> {
     for (const path of pathsToTry) {
         try {
             const configContent = await fs.readFile(path, "utf-8");
-            const config = yaml.load(configContent) as Config;
+            const config = load(configContent) as Config;
 
             // Resolve all paths relative to the config file's directory
             const CONFIG_DIR = dirname(path);
@@ -284,11 +289,8 @@ export async function buildDocsFromConfig(configPath?: string, gitRootDir?: stri
     const config = await loadConfig(configPath);
 
     if (gitRootDir) {
-        // Build the share theme if we have a gitRootDir (for Trilium project)
-        execSync(`pnpm run --filter share-theme build`, {
-            stdio: "inherit",
-            cwd: gitRootDir
-        });
+        // Only a Trilium checkout (a gitRootDir) has the client to build the share theme with.
+        buildShareThemeAssets(gitRootDir);
     }
 
     // Initialize the build environment before using cls
@@ -305,11 +307,7 @@ export async function buildDocsFromConfig(configPath?: string, gitRootDir?: stri
 }
 
 export default async function buildDocs({ gitRootDir }: BuildContext) {
-    // Build the share theme.
-    execSync(`pnpm run --filter share-theme build`, {
-        stdio: "inherit",
-        cwd: gitRootDir
-    });
+    buildShareThemeAssets(gitRootDir);
 
     // Initialize the build environment before using cls
     await initializeBuildEnvironment();
@@ -321,5 +319,17 @@ export default async function buildDocs({ gitRootDir }: BuildContext) {
                 .catch(rej)
                 .then(res);
         });
+    });
+}
+
+/**
+ * Builds the client, which writes the share theme the export copies. It builds for production
+ * rather than under this process's `NODE_ENV=development`.
+ */
+function buildShareThemeAssets(gitRootDir: string) {
+    execSync("pnpm run --filter client build", {
+        stdio: "inherit",
+        cwd: gitRootDir,
+        env: { ...process.env, NODE_ENV: "production" }
     });
 }

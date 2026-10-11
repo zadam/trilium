@@ -46,6 +46,21 @@ describe("#newEntityId", () => {
     });
 });
 
+describe("#isValidEntityId", () => {
+    it("accepts only letters, digits and underscores with a length of 4 to 128", () => {
+        const accepted = [ "root", "_hidden", "abcDEF012345", "a".repeat(128) ];
+        for (const id of accepted) {
+            expect(utils.isValidEntityId(id), id).toBe(true);
+        }
+
+        const dashedId = "0d8949e4-6fe3-4f4b-82c1-679baf64fccb";
+        const rejected = [ "", "abc", "a".repeat(129), dashedId, "bad/id01", "bad id01" ];
+        for (const id of rejected) {
+            expect(utils.isValidEntityId(id), id).toBe(false);
+        }
+    });
+});
+
 describe("#randomString", () => {
     it("should return a string with a length as per argument", () => {
         const stringLength = 5;
@@ -142,8 +157,30 @@ describe("#escapeHtml", () => {
 });
 
 describe("#unescapeHtml", () => {
-    it("should re-export 'unescape' npm module as unescapeHtml", () => {
-        expect(utils.unescapeHtml).toBeTypeOf("function");
+    it("decodes the five default HTML entities (named and numeric short forms)", () => {
+        expect(utils.unescapeHtml("a &amp; b")).toBe("a & b");
+        expect(utils.unescapeHtml("&#38;")).toBe("&");
+        expect(utils.unescapeHtml("x &lt; y &gt; z")).toBe("x < y > z");
+        expect(utils.unescapeHtml("&#60; &#62;")).toBe("< >");
+        expect(utils.unescapeHtml("&quot;hi&quot; &#34;")).toBe("\"hi\" \"");
+        expect(utils.unescapeHtml("it&apos;s &#39;")).toBe("it's '");
+    });
+
+    it("leaves entities outside the default set untouched", () => {
+        // other numeric, hex, nbsp, unknown-named and wrong-case are NOT decoded
+        expect(utils.unescapeHtml("&copy; &#169; &#x26; &nbsp; &hellip; &AMP;"))
+            .toBe("&copy; &#169; &#x26; &nbsp; &hellip; &AMP;");
+    });
+
+    it("handles double-escaped entities and query-string URLs", () => {
+        expect(utils.unescapeHtml("&amp;amp;")).toBe("&amp;");
+        expect(utils.unescapeHtml("http://x/?a=1&amp;b=2")).toBe("http://x/?a=1&b=2");
+    });
+
+    it("returns an empty string for empty or non-string input", () => {
+        expect(utils.unescapeHtml("")).toBe("");
+        expect(utils.unescapeHtml(null as unknown as string)).toBe("");
+        expect(utils.unescapeHtml(undefined as unknown as string)).toBe("");
     });
 });
 
@@ -193,7 +230,9 @@ describe.todo("#crash", () => {});
 
 describe("#getContentDisposition", () => {
 
-    const defaultFallBackDisposition = `file; filename="file"; filename*=UTF-8''file`;
+    // "attachment" is one of the two disposition types defined by RFC 6266 — Safari renders
+    // responses with an unknown type (e.g. the former "file") inline instead of downloading them.
+    const defaultFallBackDisposition = `attachment; filename="file"; filename*=UTF-8''file`;
     const testCases: TestCase<typeof utils.getContentDisposition>[] = [
         [
             "when passed filename is empty, it should fallback to default value 'file'",
@@ -214,7 +253,7 @@ describe("#getContentDisposition", () => {
         [
             "sanitized passed filename should be returned URIEncoded",
             [ "test file.csv" ],
-            `file; filename="test%20file.csv"; filename*=UTF-8''test%20file.csv`
+            `attachment; filename="test%20file.csv"; filename*=UTF-8''test%20file.csv`
         ]
     ];
 
@@ -259,6 +298,16 @@ describe("#isStringNote", () => {
             "w/ non-string note type (file), but mime type starting with 'text/', it should return true",
             [ "file", "text/html" ],
             true
+        ],
+        [
+            "w/ 'undefined' note type and the InkML mime type, it should return true",
+            [ undefined, "application/inkml+xml" ],
+            true
+        ],
+        [
+            "w/ 'undefined' note type and the mime type of a canvas drawing, it should return true",
+            [ undefined, "application/vnd.excalidraw+json" ],
+            true
         ]
     ];
 
@@ -281,6 +330,9 @@ describe("#removeFileExtension", () => {
         [ "w/ 'test.markdown' it should strip '.markdown'", [ "test.markdown" ], "test" ],
         [ "w/ 'test.html' it should strip '.html'", [ "test.html" ], "test" ],
         [ "w/ 'test.htm' it should strip '.htm'", [ "test.htm" ], "test" ],
+        [ "w/ 'test.xlsx' it should strip '.xlsx'", [ "test.xlsx" ], "test" ],
+        [ "w/ 'test.csv' it should strip '.csv'", [ "test.csv" ], "test" ],
+        [ "w/ 'test.gpx' it should strip '.gpx'", [ "test.gpx" ], "test" ],
         [ "w/ 'test.zip' it should NOT strip '.zip'", [ "test.zip" ], "test.zip" ]
     ];
 
@@ -336,14 +388,19 @@ describe("#getNoteTitle", () => {
             "some other title"
         ],
         [
-            "when a noteMeta object is passed, but the title prop is empty, it should try to handle the filename as if no noteMeta was passed",
-            [ "test_file.md", true, { title: "" } ],
-            "test file"
+            "when a noteMeta object is passed with an empty title, it should keep the note untitled",
+            [ "note.html", true, { title: "" } ],
+            ""
         ],
         [
-            "when a noteMeta object is passed, but the title prop is empty, it should try to handle the filename as if no noteMeta was passed",
-            [ "test_file.json", false, { title: " " } ],
-            "test_file.json"
+            "when a noteMeta object is passed with a blank title, it should keep the note untitled",
+            [ "1_note.html", false, { title: " " } ],
+            ""
+        ],
+        [
+            "when a noteMeta object is passed without a title, it should handle the filename as if no noteMeta was passed",
+            [ "test_file.md", true, { mime: "text/markdown" } ],
+            "test file"
         ]
     ];
 
@@ -367,6 +424,15 @@ describe("#timeLimit", () => {
             //rej("rejected!");
         });
         await expect(utils.timeLimit(testPromise, 1_000)).resolves.toBe(resolvedValue);
+    });
+
+    it("does nothing when the internal timeout fires after the promise already resolved", async () => {
+        // Resolve well within the limit, then wait past the limit so the internal
+        // setTimeout callback runs with `resolved === true` (the no-op else path).
+        const fast = new Promise((res) => setTimeout(() => res("fast"), 5));
+        await expect(utils.timeLimit(fast, 20)).resolves.toBe("fast");
+        // give the 20ms internal timer time to fire on the already-resolved promise
+        await new Promise((res) => setTimeout(res, 40));
     });
 
     it("when promise execution rejects within timeout, it should return the original promises' rejected value, not the custom set one", async () => {
@@ -529,6 +595,12 @@ describe("#isWindows", () => {
     });
 });
 
+describe("#isLinux", () => {
+    it("should export a boolean", () => {
+        expect(utils.isLinux()).toBeTypeOf("boolean");
+    });
+});
+
 describe("#safeExtractMessageAndStackFromError", () => {
     it("should correctly extract the message and stack property if it gets passed an instance of an Error", () => {
         const testMessage = "Test Message";
@@ -653,6 +725,13 @@ describe("#formatDownloadTitle", () => {
         [
             [ ":::a", "file", "application/zip" ],
             "a.zip"
+        ],
+
+
+        // mime type that maps to no known extension -> filename returned unchanged
+        [
+            [ "test_file", "file", "application/x-this-mime-has-no-extension" ],
+            "test_file"
         ]
     ];
 
@@ -690,6 +769,21 @@ describe("#normalizeUrl", () => {
             const result = utils.normalizeUrl(...fnParams);
             expect(result).toStrictEqual(expected);
         });
+    });
+});
+
+describe("#trimTrailingSlashes", () => {
+    it("removes every trailing slash and nothing else", () => {
+        expect(utils.trimTrailingSlashes("http://localhost:8888///")).toBe("http://localhost:8888");
+        expect(utils.trimTrailingSlashes("https://example.com/a//b")).toBe("https://example.com/a//b");
+        expect(utils.trimTrailingSlashes("///")).toBe("");
+        expect(utils.trimTrailingSlashes("")).toBe("");
+    });
+
+    it("stays linear on a long run of slashes", () => {
+        const start = performance.now();
+        utils.trimTrailingSlashes(`${"/".repeat(100_000)}x`);
+        expect(performance.now() - start).toBeLessThan(100);
     });
 });
 
@@ -746,6 +840,33 @@ describe("#slugify", () => {
         const expectedSlug = "café-naïve-façade-jalapeño";
         const result = utils.slugify(testString);
         expect(result).toBe(expectedSlug);
+    });
+});
+
+describe("#slugifyHeadings", () => {
+    it("slugifies each heading in order", () => {
+        expect(utils.slugifyHeadings(["First Section", "Second Section"])).toStrictEqual(["first-section", "second-section"]);
+    });
+
+    it("disambiguates duplicate titles with a numeric suffix", () => {
+        expect(utils.slugifyHeadings(["Notes", "Notes", "Notes"])).toStrictEqual(["notes", "notes-1", "notes-2"]);
+    });
+
+    it("avoids colliding a suffix with an existing slug", () => {
+        // "Notes 1" naturally slugifies to "notes-1", so the second "Notes" must skip to "notes-2"
+        expect(utils.slugifyHeadings(["Notes", "Notes 1", "Notes"])).toStrictEqual(["notes", "notes-1", "notes-2"]);
+    });
+
+    it("skips the reserved slugs", () => {
+        expect(utils.slugifyHeadings(["Notes", "Notes"], ["notes", "notes-1"])).toStrictEqual(["notes-2", "notes-3"]);
+    });
+
+    it("strips HTML tags before slugifying", () => {
+        expect(utils.slugifyHeadings(["<b>Bold</b> Heading"])).toStrictEqual(["bold-heading"]);
+    });
+
+    it("returns an empty array for no headings", () => {
+        expect(utils.slugifyHeadings([])).toStrictEqual([]);
     });
 });
 
@@ -853,5 +974,208 @@ describe("#sanitizeSvg", () => {
         const maliciousSvg = '<svg><rect ONCLICK="alert(1)" width="100"/></svg>';
         const result = utils.sanitizeSvg(maliciousSvg);
         expect(result).toBe('<svg><rect width="100"/></svg>');
+    });
+});
+
+describe("#isDev", () => {
+    it("returns a boolean derived from the TRILIUM_ENV platform var", () => {
+        expect(utils.isDev()).toBeTypeOf("boolean");
+    });
+});
+
+describe("#md5", () => {
+    it("produces the canonical lowercase hex digest", () => {
+        // RFC 1321 / well-known vectors
+        expect(utils.md5("")).toBe("d41d8cd98f00b204e9800998ecf8427e");
+        expect(utils.md5("abc")).toBe("900150983cd24fb0d6963f7d28e17f72");
+    });
+
+    it("accepts a byte buffer and yields a 32-char hex string", () => {
+        const digest = utils.md5(new Uint8Array([0x61, 0x62, 0x63])); // "abc"
+        expect(digest).toBe("900150983cd24fb0d6963f7d28e17f72");
+    });
+});
+
+describe("#hashedBlobId", () => {
+    it("returns a 20-char id without '+' or '/' characters", () => {
+        const id = utils.hashedBlobId("some content");
+        expect(id).toHaveLength(20);
+        expect(id).not.toMatch(/[+/]/);
+    });
+
+    it("is deterministic for identical content", () => {
+        expect(utils.hashedBlobId("repeatable")).toBe(utils.hashedBlobId("repeatable"));
+    });
+
+    it("treats null and undefined content as empty string", () => {
+        const emptyId = utils.hashedBlobId("");
+        //@ts-expect-error - exercising the nullish guard
+        expect(utils.hashedBlobId(null)).toBe(emptyId);
+        //@ts-expect-error - exercising the nullish guard
+        expect(utils.hashedBlobId(undefined)).toBe(emptyId);
+    });
+});
+
+describe("#quoteRegex", () => {
+    it("escapes regex metacharacters", () => {
+        expect(utils.quoteRegex("a.b*c")).toBe("a\\.b\\*c");
+        expect(utils.quoteRegex("(x)[y]{z}")).toBe("\\(x\\)\\[y\\]\\{z\\}");
+    });
+});
+
+describe("#replaceAll", () => {
+    it("replaces every occurrence, escaping the search term", () => {
+        expect(utils.replaceAll("a-b-c", "-", "+")).toBe("a+b+c");
+        // the search term contains regex metacharacters that must be treated literally
+        expect(utils.replaceAll("a.b.c", ".", "_")).toBe("a_b_c");
+    });
+});
+
+describe("#escapeRegExp", () => {
+    it("escapes regex metacharacters in a string", () => {
+        expect(utils.escapeRegExp("a.b")).toBe("a\\.b");
+        expect(utils.escapeRegExp("1+1=2")).toBe("1\\+1\\=2");
+    });
+});
+
+describe("#stringToInt", () => {
+    const testCases: TestCase<typeof utils.stringToInt>[] = [
+        [ "w/ a numeric string it returns the parsed integer", [ "42" ], 42 ],
+        [ "w/ a decimal string it truncates at the decimal point", [ "12.9" ], 12 ],
+        [ "w/ a non-numeric string it returns undefined", [ "abc" ], undefined ],
+        [ "w/ an empty string it returns undefined", [ "" ], undefined ],
+        [ "w/ undefined it returns undefined", [ undefined ], undefined ]
+    ];
+
+    testCases.forEach((testCase) => {
+        const [ desc, fnParams, expected ] = testCase;
+        it(desc, () => {
+            expect(utils.stringToInt(...fnParams)).toStrictEqual(expected);
+        });
+    });
+});
+
+describe("#formatUtcTime", () => {
+    it("replaces the ISO 'T' separator and truncates to seconds", () => {
+        expect(utils.formatUtcTime("2023-08-21T23:38:51.110Z")).toBe("2023-08-21 23:38:51");
+    });
+});
+
+describe("#formatSize", () => {
+    const testCases: TestCase<typeof utils.formatSize>[] = [
+        [ "w/ null it returns an empty string", [ null ], "" ],
+        [ "w/ undefined it returns an empty string", [ undefined ], "" ],
+        [ "w/ 0 bytes it rounds up to the 1 KiB minimum", [ 0 ], "1 KiB" ],
+        [ "w/ a sub-MiB value it reports KiB", [ 2048 ], "2 KiB" ],
+        [ "w/ a multi-MiB value it reports MiB", [ 5 * 1024 * 1024 ], "5 MiB" ]
+    ];
+
+    testCases.forEach((testCase) => {
+        const [ desc, fnParams, expected ] = testCase;
+        it(desc, () => {
+            expect(utils.formatSize(...fnParams)).toBe(expected);
+        });
+    });
+});
+
+describe("#removeFileExtension (media types)", () => {
+    it("strips the extension for video and audio mime types", () => {
+        expect(utils.removeFileExtension("clip.mov", "video/quicktime")).toBe("clip");
+        expect(utils.removeFileExtension("song.flac", "audio/flac")).toBe("song");
+    });
+
+    it("strips the extension for the fonts Trilium draws, and leaves the rest alone", () => {
+        expect(utils.removeFileExtension("Iosevka-Regular.ttf", "font/ttf")).toBe("Iosevka-Regular");
+        expect(utils.removeFileExtension("Inter.woff2", "font/woff2")).toBe("Inter");
+        expect(utils.removeFileExtension("Legacy.ttf", "application/x-font-ttf")).toBe("Legacy");
+        // Neither an EOT nor a font arriving as an opaque binary is one Trilium can draw, so the
+        // name it was uploaded under is all there is to say what it holds.
+        expect(utils.removeFileExtension("Old.eot", "application/vnd.ms-fontobject")).toBe("Old.eot");
+        expect(utils.removeFileExtension("Mystery.ttf", "application/octet-stream")).toBe("Mystery.ttf");
+    });
+});
+
+describe("#compareVersions", () => {
+    const testCases: TestCase<typeof utils.compareVersions>[] = [
+        [ "equal versions return 0", [ "1.2.3", "1.2.3" ], 0 ],
+        [ "greater major returns 1", [ "2.0.0", "1.9.9" ], 1 ],
+        [ "lesser major returns -1", [ "1.0.0", "2.0.0" ], -1 ],
+        [ "greater minor returns 1", [ "1.3.0", "1.2.9" ], 1 ],
+        [ "lesser minor returns -1", [ "1.2.0", "1.3.0" ], -1 ],
+        [ "greater patch returns 1", [ "1.2.4", "1.2.3" ], 1 ],
+        [ "lesser patch returns -1", [ "1.2.3", "1.2.4" ], -1 ],
+        [ "strips a leading 'v' prefix", [ "v1.2.3", "1.2.3" ], 0 ],
+        [ "ignores a pre-release suffix after a dash", [ "1.2.3-beta", "1.2.3" ], 0 ],
+        [ "pads a shorter first version with zeros", [ "1.2", "1.2.0" ], 0 ],
+        [ "pads a shorter second version with zeros", [ "1.2.0", "1.2" ], 0 ]
+    ];
+
+    testCases.forEach((testCase) => {
+        const [ desc, fnParams, expected ] = testCase;
+        it(desc, () => {
+            expect(utils.compareVersions(...fnParams)).toBe(expected);
+        });
+    });
+});
+
+describe("#escapeCssString", () => {
+    it("hex-escapes the characters that could escape a double-quoted CSS string", () => {
+        expect(utils.escapeCssString(`a"b\\c'd`)).toBe("a\\22 b\\5c c\\27 d");
+        expect(utils.escapeCssString("a\nb")).toBe("a\\a b");
+    });
+
+    it("hex-escapes the markup characters that could end the surrounding <style> element", () => {
+        expect(utils.escapeCssString("</style><script>x</script>")).toBe(
+            "\\3c /style\\3e \\3c script\\3e x\\3c /script\\3e "
+        );
+    });
+
+    it("leaves the private-use glyphs an icon pack actually carries untouched", () => {
+        expect(utils.escapeCssString("")).toBe("");
+    });
+});
+
+describe("#decodeCssEscapes", () => {
+    it("decodes a hex escape with or without its terminating space", () => {
+        expect(utils.decodeCssEscapes("\\30 ")).toBe("0");
+        expect(utils.decodeCssEscapes("\\f015")).toBe("\uf015");
+        expect(utils.decodeCssEscapes("\\1F600")).toBe("\u{1F600}");
+        expect(utils.decodeCssEscapes("\\61\\62")).toBe("ab");
+    });
+
+    it("resolves the code points CSS maps to the replacement character", () => {
+        expect(utils.decodeCssEscapes("\\0")).toBe("\uFFFD");
+        expect(utils.decodeCssEscapes("\\d800 ")).toBe("\uFFFD");
+        expect(utils.decodeCssEscapes("\\ffffff")).toBe("\uFFFD");
+    });
+
+    it("leaves text carrying no hex escape untouched", () => {
+        expect(utils.decodeCssEscapes("")).toBe("");
+        expect(utils.decodeCssEscapes("\uf015")).toBe("\uf015");
+        expect(utils.decodeCssEscapes("</style>")).toBe("</style>");
+        expect(utils.decodeCssEscapes("\\")).toBe("\\");
+    });
+
+    it("cannot widen what the generated stylesheet emits, since escaping follows it", () => {
+        // A glyph spelling `</style>` as escapes decodes to the markup, then escapes back to it.
+        const smuggled = "\\3c /style\\3e ";
+        expect(utils.decodeCssEscapes(smuggled)).toBe("</style>");
+        expect(utils.escapeCssString(utils.decodeCssEscapes(smuggled))).toBe("\\3c /style\\3e ");
+
+        // A backslash reaching the output would let the glyph end its own CSS string.
+        expect(utils.escapeCssString(utils.decodeCssEscapes("\\5c "))).toBe("\\5c ");
+    });
+});
+
+describe("#escapeInlineStylesheet", () => {
+    it("escapes every closing style tag, whatever its casing", () => {
+        const escaped = utils.escapeInlineStylesheet(`.a::before { content: "</style><SCRIPT>x</STYLE>"; }`);
+        expect(escaped).not.toMatch(/<\/style/i);
+        expect(escaped).toBe(`.a::before { content: "\\3c /style><SCRIPT>x\\3c /STYLE>"; }`);
+    });
+
+    it("leaves a stylesheet without a closing style tag byte-identical", () => {
+        const css = `.bx.bx-ball::before { content: ""; }\n@media (width > 40em) { .a { color: red; } }`;
+        expect(utils.escapeInlineStylesheet(css)).toBe(css);
     });
 });

@@ -5,10 +5,11 @@ import { useEffect, useState } from "preact/hooks";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
 import { t } from "../../services/i18n";
-import { isElectron, openInAppHelpFromUrl } from "../../services/utils";
+import { isElectron } from "../../services/utils";
 import { BadgeWithDropdown } from "../react/Badge";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import FormToggle from "../react/FormToggle";
+import { openHelpPageFor } from "../react/HelpButton";
 import { useNoteContext, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import { BookProperty, ViewProperty } from "../react/NotePropertyMenu";
 
@@ -17,7 +18,7 @@ const DANGEROUS_ATTRIBUTES = BUILTIN_ATTRIBUTES.filter(a => a.isDangerous || NON
 const activeContentLabels = [ "iconPack", "widget", "appCss", "appTheme" ] as const;
 
 interface ActiveContentInfo {
-    type: "iconPack" | "backendScript" | "frontendScript" | "widget" | "appCss" | "renderNote" | "webView" | "appTheme";
+    type: "iconPack" | "backendScript" | "customRequestHandler" | "frontendScript" | "widget" | "appCss" | "renderNote" | "webView" | "appTheme";
     isEnabled: boolean;
     canToggleEnabled: boolean;
 }
@@ -26,7 +27,7 @@ const executeOption: BookProperty = {
     type: "button",
     icon: "bx bx-play",
     label: t("active_content_badges.menu_execute_now"),
-    onClick: context => context.triggerCommand("runActiveNote")
+    onClick: context => context.triggerCommand("runActiveNote", { ntxId: context.ntxId })
 };
 
 const typeMappings: Record<ActiveContentInfo["type"], {
@@ -56,7 +57,6 @@ const typeMappings: Record<ActiveContentInfo["type"], {
                 bindToLabel: "run",
                 label: t("active_content_badges.menu_run"),
                 icon: "bx bx-rss",
-                dropStart: true,
                 options: [
                     { value: null, label: t("active_content_badges.menu_run_disabled") },
                     { value: "backendStartup", label: t("active_content_badges.menu_run_backend_startup") },
@@ -65,6 +65,12 @@ const typeMappings: Record<ActiveContentInfo["type"], {
                 ]
             }
         ]
+    },
+    customRequestHandler: {
+        title: t("active_content_badges.type_custom_request_handler"),
+        icon: "bx bx-world",
+        helpPage: "J5Ex1ZrMbyJ6",
+        apiDocsPage: "MEtfsqa5VwNi",
     },
     frontendScript: {
         title: t("active_content_badges.type_frontend_script"),
@@ -80,7 +86,6 @@ const typeMappings: Record<ActiveContentInfo["type"], {
                 bindToLabel: "run",
                 label: t("active_content_badges.menu_run"),
                 icon: "bx bx-rss",
-                dropStart: true,
                 options: [
                     { value: null, label: t("active_content_badges.menu_run_disabled") },
                     { value: "frontendStartup", label: t("active_content_badges.menu_run_frontend_startup") },
@@ -100,6 +105,8 @@ const typeMappings: Record<ActiveContentInfo["type"], {
         title: t("active_content_badges.type_widget"),
         icon: "bx bxs-widget",
         helpPage: "MgibgPcfeuGz",
+        apiDocsPage: "Q2z6av6JZVWm",
+        electronApiDocsPage: "GFXVHyblVN3d",
         additionalOptions: [
             {
                 type: "button",
@@ -137,7 +144,6 @@ const typeMappings: Record<ActiveContentInfo["type"], {
                 bindToLabel: "appThemeBase",
                 label: t("active_content_badges.menu_theme_base"),
                 icon: "bx bx-layer",
-                dropStart: true,
                 options: [
                     { label: t("theme.auto_theme"), value: null },
                     { type: "separator" },
@@ -151,28 +157,25 @@ const typeMappings: Record<ActiveContentInfo["type"], {
 };
 
 export function ActiveContentBadges() {
-    const { note } = useNoteContext();
+    const { note, ntxId } = useNoteContext();
     const info = useActiveContentInfo(note);
 
     return (note && info &&
         <>
             {info.canToggleEnabled && <ActiveContentToggle info={info} note={note} />}
-            <ActiveContentBadge info={info} note={note} />
+            <ActiveContentBadge info={info} note={note} ntxId={ntxId} />
         </>
     );
 }
 
-function ActiveContentBadge({ info, note }: { note: FNote, info: ActiveContentInfo }) {
+function ActiveContentBadge({ info, note, ntxId }: { note: FNote, info: ActiveContentInfo, ntxId: string | null | undefined }) {
     const { title, icon, helpPage, apiDocsPage, electronApiDocsPage, additionalOptions } = typeMappings[info.type];
     return (
         <BadgeWithDropdown
             className={clsx("active-content-badge", info.canToggleEnabled && !info.isEnabled && "disabled")}
             icon={icon}
             text={title}
-            dropdownOptions={{
-                dropdownContainerClassName: "mobile-bottom-menu",
-                mobileBackdrop: true
-            }}
+            dropdownProps={{ mobileBottomSheet: true }}
         >
             {additionalOptions?.length && (
                 <>
@@ -185,17 +188,17 @@ function ActiveContentBadge({ info, note }: { note: FNote, info: ActiveContentIn
 
             <FormListItem
                 icon="bx bx-help-circle"
-                onClick={() => openInAppHelpFromUrl(helpPage)}
+                onClick={() => openHelpPageFor(helpPage, ntxId)}
             >{t("active_content_badges.menu_docs")}</FormListItem>
 
             {apiDocsPage && <FormListItem
                 icon="bx bx-book-content"
-                onClick={() => openInAppHelpFromUrl(apiDocsPage)}
+                onClick={() => openHelpPageFor(apiDocsPage, ntxId)}
             >{t("code_buttons.trilium_api_docs_button_title")}</FormListItem>}
 
             {electronApiDocsPage && isElectron() && <FormListItem
                 icon="bx bx-window-alt"
-                onClick={() => openInAppHelpFromUrl(electronApiDocsPage)}
+                onClick={() => openHelpPageFor(electronApiDocsPage, ntxId)}
             >{t("code_buttons.electron_api_docs_button_title")}</FormListItem>}
         </BadgeWithDropdown>
     );
@@ -240,12 +243,21 @@ function useActiveContentInfo(note: FNote | null | undefined) {
             type = "webView";
             isEnabled = note.hasLabel("webViewSrc");
         } else if (noteType === "code" && noteMime === "application/javascript;env=backend") {
-            type = "backendScript";
-            for (const backendLabel of [ "run", "customRequestHandler", "customResourceProvider" ]) {
-                isEnabled ||= note.hasLabel(backendLabel);
+            if (note.hasLabelOrDisabled("customRequestHandler")) {
+                // A custom request handler takes precedence over the generic backend script badge:
+                // it's invoked via the /custom/* route with req/res, so the run/execute controls
+                // (which provide no req/res) don't apply.
+                type = "customRequestHandler";
+                isEnabled = note.hasLabel("customRequestHandler");
+                canToggleEnabled = true;
+            } else {
+                type = "backendScript";
+                for (const backendLabel of [ "run", "customRequestHandler", "customResourceProvider" ]) {
+                    isEnabled ||= note.hasLabel(backendLabel);
 
-                if (!canToggleEnabled && note.hasLabelOrDisabled(backendLabel)) {
-                    canToggleEnabled = true;
+                    if (!canToggleEnabled && note.hasLabelOrDisabled(backendLabel)) {
+                        canToggleEnabled = true;
+                    }
                 }
             }
         } else if (noteType === "code" && noteMime === "application/javascript;env=frontend") {

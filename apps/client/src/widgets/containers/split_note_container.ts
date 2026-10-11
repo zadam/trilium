@@ -95,6 +95,8 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
 
             // move the note context rendered widget after the originating widget
             this.$widget.find(`[data-ntx-id="${noteContext.ntxId}"]`).insertAfter(this.$widget.find(`[data-ntx-id="${ntxId}"]`));
+
+            this.refresh();
         }
 
 
@@ -112,6 +114,18 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
         const contexts = appContext.tabManager.noteContexts;
         const currentIndex = contexts.findIndex((c) => c.ntxId === ntxId);
         if (currentIndex === -1) return;
+
+        // the pane showing a pinned note can't be closed (unpin the tab first). Bail before the
+        // demote/reorder below, which would otherwise strip the main context of its pinned state.
+        if (contexts[currentIndex].pinned) {
+            return;
+        }
+
+        // A tab whose only pane is this one has no split to close -- closing it would take the whole
+        // tab down. ClosePaneButton hides itself there; the keyboard action can still ask for it.
+        if (contexts[currentIndex].getMainContext().getSubContexts().length <= 1) {
+            return;
+        }
 
         const isRemoveMainContext = contexts[currentIndex].isMainContext();
         if (isRemoveMainContext && currentIndex + 1 < contexts.length) {
@@ -135,10 +149,18 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
         const contexts = appContext.tabManager.noteContexts;
 
         const currentIndex = contexts.findIndex((c) => c.ntxId === ntxId);
+        if (currentIndex === -1) {
+            logError(`invalid context! ntxId: ${ntxId}`);
+            return;
+        }
+
         const leftIndex = isMovingLeft ? currentIndex - 1 : currentIndex;
 
-        if (currentIndex === -1 || leftIndex < 0 || leftIndex + 1 >= contexts.length) {
-            logError(`invalid context! currentIndex: ${currentIndex}, leftIndex: ${leftIndex}, contexts.length: ${contexts.length}`);
+        // A tab lays its panes out as the main context followed by its sub-contexts, so the right
+        // half of the swapped pair is a sub-context whenever the pair sits inside one tab. Anything
+        // else is at a tab boundary, where a swap would move a pane into the neighbouring tab.
+        // MovePaneButton hides itself in that state; the keyboard actions can still ask for it.
+        if (leftIndex < 0 || leftIndex + 1 >= contexts.length || !contexts[leftIndex + 1].mainNtxId) {
             return;
         }
 
@@ -160,10 +182,32 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
         // reorder the note context widgets
         this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex]}"]`).insertAfter(this.$widget.find(`[data-ntx-id="${ntxIds[leftIndex + 1]}"]`));
 
+        // the reorder changes which split is last; the activation below may be a no-op (the moved
+        // context can already be active), so it can't be relied on to refresh.
+        this.refresh();
+
         // activate context that now contains the original note
         await appContext.tabManager.activateNoteContext(isMovingLeft ? ntxIds[leftIndex + 1] : ntxIds[leftIndex]);
 
         splitService.moveNoteSplitResizer(ntxIds[leftIndex]);
+    }
+
+    /*
+     * Entry points for the split keyboard actions. They dispatch from `appContext`, which finds no
+     * matching command on its top-level components and distributes downwards as an event instead, so
+     * they cannot reuse the command handlers above -- those only run when a pane button bubbles the
+     * command up from the pane it belongs to.
+     */
+    async closeActiveNoteSplitEvent({ ntxId }: EventData<"closeActiveNoteSplit">) {
+        await this.closeThisNoteSplitCommand({ ntxId });
+    }
+
+    async moveActiveNoteSplitLeftEvent({ ntxId }: EventData<"moveActiveNoteSplitLeft">) {
+        await this.moveThisNoteSplitCommand({ ntxId, isMovingLeft: true });
+    }
+
+    async moveActiveNoteSplitRightEvent({ ntxId }: EventData<"moveActiveNoteSplitRight">) {
+        await this.moveThisNoteSplitCommand({ ntxId, isMovingLeft: false });
     }
 
     activeContextChangedEvent() {
@@ -175,17 +219,28 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
     }
 
     noteContextRemovedEvent({ ntxIds }: EventData<"noteContextRemoved">) {
-        this.children = this.children.filter((c) => !ntxIds.includes(c.ntxId ?? ""));
-
         for (const ntxId of ntxIds) {
             this.$widget.find(`[data-ntx-id="${ntxId}"]`).remove();
 
             const widget = this.widgets[ntxId];
+            if (!widget) {
+                continue;
+            }
+
+            // Detach through this map, not through a `widget.ntxId` lookup: the widgets are whatever
+            // the factory builds (a NoteWrapperWidget on both layouts), and none of them carries an
+            // ntxId -- only the DOM node gets one, as `data-ntx-id`. A filter over `children` reading
+            // `c.ntxId` therefore matches nothing, leaving the closed split in the tree and its
+            // widgets handling events for a pane the user cannot see.
+            this.removeChild(widget);
             recursiveCleanup(widget);
             delete this.widgets[ntxId];
         }
 
         splitService.delNoteSplitResizer(ntxIds);
+
+        // closing a non-active split fires no activation, so nothing else would refresh here
+        this.refresh();
     }
 
     contextsReopenedEvent({ ntxId, mainNtxId, afterNtxId }: EventData<"contextsReopened">) {
@@ -198,6 +253,8 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
 
             this.$widget.find(`[data-ntx-id="${mainNtxId}"]`).insertBefore(this.$widget.find(`[data-ntx-id="${beforeNtxId}"]`));
         }
+
+        this.refresh();
     }
 
     async refresh() {
@@ -207,6 +264,13 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
         for (const child of this.children as NoteContextAwareWidget[]) {
             child.$widget.toggleClass("active", !!child.noteContext?.isActive());
         }
+
+        // Mark the rightmost visible split. CSS can't reach a split from outside #center-pane, so
+        // siblings of it (the right pane peek button) need this hook to match its background.
+        // Read the DOM, not `this.children`: splits are reordered in place, the array is not.
+        const $visibleSplits = this.$widget.children(".note-split:not(.hidden-ext)");
+        $visibleSplits.removeClass("last-visible");
+        $visibleSplits.last().addClass("last-visible");
     }
 
     toggleInt(show: boolean) {} // not needed
@@ -244,7 +308,9 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
             if (widget.hasBeenAlreadyShown || name === "noteSwitchedAndActivated" || appContext.tabManager.getActiveMainContext() === noteSwitchedContext.noteContext.getMainContext()) {
                 widget.hasBeenAlreadyShown = true;
 
-                return [widget.handleEvent("noteSwitched", noteSwitchedContext), this.refreshNotShown(noteSwitchedContext)];
+                // Promise.all (not a bare array) so that awaiting triggerEvent("noteSwitched")
+                // genuinely waits for the tab's widgets to process the switch.
+                return Promise.all([ widget.handleEvent("noteSwitched", noteSwitchedContext), this.refreshNotShown(noteSwitchedContext) ]);
             }
             return Promise.resolve();
 

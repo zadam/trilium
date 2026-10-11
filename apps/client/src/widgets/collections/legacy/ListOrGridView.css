@@ -4,6 +4,7 @@
     height: 100%;
 
     .note-list-wrapper {
+        margin-block: var(--content-margin-inline);
         height: 100%;
         overflow: auto;
     }
@@ -26,7 +27,8 @@
 /* #region List view / Grid view common styles */
 
 .nested-note-list-item h5,
-.note-book-card .note-book-header {
+.note-book-card .note-book-header,
+.dashboard-widget-header {
     display: flex;
     align-items: center;
     font-size: 1em;
@@ -82,7 +84,9 @@
         letter-spacing: .5pt;
     }
 
-    .tn-icon {
+    /* The row's own note icon only: a bare `.tn-icon` would also catch icons of anything nested in
+       the row, such as the entries of a dropdown menu opened from it. */
+    .note-icon {
         display: flex;
         flex-shrink: 0;
         justify-content: center;
@@ -174,6 +178,11 @@
         cursor: pointer;
     }
 
+    /* Nothing to reveal: hidden rather than removed, so the title still lines up with its siblings. */
+    .note-expander-empty {
+        visibility: hidden;
+    }
+
     .tn-icon {
         color: var(--note-list-view-icon-color);
     }
@@ -186,6 +195,17 @@
         opacity: .75;
     }
 
+    /* Stands in for .note-list-attributes when the caller supplies its own controls, so the item
+       menu still sits at the far end of the row instead of collapsing next to the title. */
+    .note-list-item-actions {
+        display: flex;
+        flex-grow: 1;
+        justify-content: flex-end;
+        align-items: center;
+        gap: .5em;
+        margin-inline-start: 1em;
+    }
+
     &.archived {
         span.tn-icon + span,
         .tn-icon {
@@ -195,7 +215,8 @@
 }
 
 .nested-note-list:not(.search-results) h5,
-.note-book-card:not(.search-results) h5 {
+.note-book-card:not(.search-results) h5,
+.dashboard-widget-header {
     span.tn-icon + span,
     .note-list-attributes {
         white-space: nowrap;
@@ -316,38 +337,44 @@
             height: 100%;
         }
 
-        .rendered-content:has(.file-footer) {
-            padding: 0;
-        }
-
         img {
             max-height: 220px;
             object-fit: contain;
         }
+    }
+}
 
-        .file-footer {
-            display: flex;
-            gap: 8px;
-            justify-content: space-between;
-            padding: 0;
+/* The file footer (Download / Open externally) of a note preview, in every surface that shows one: the
+   grid/list cards and the dashboard tiles. Two flat buttons splitting the card's full width, rather than the
+   default pair of solid Bootstrap pills. */
+.note-list .note-book-card .note-book-content,
+.dashboard-widget-content .note-book-content {
+    .rendered-content:has(.file-footer) {
+        padding: 0;
+    }
 
-            .btn.btn-primary {
-                flex: 1;
-                margin: 0;
-                box-shadow: unset;
-                background: transparent;
-                border: 0;
-                border-radius: 0;
-                padding: 8px;
-                color: var(--main-text-color);
+    .file-footer {
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        padding: 0;
 
-                &:hover {
-                    background: var(--more-accented-background-color);
-                }
+        .btn.btn-primary {
+            flex: 1;
+            margin: 0;
+            box-shadow: unset;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            padding: 8px;
+            color: var(--main-text-color);
 
-                &:active {
-                    transform: none;
-                }
+            &:hover {
+                background: var(--more-accented-background-color);
+            }
+
+            &:active {
+                transform: none;
             }
         }
     }

@@ -1,5 +1,6 @@
 import "./Spreadsheet.css";
 import "@univerjs/preset-sheets-core/lib/index.css";
+import "@univerjs/preset-sheets-drawing/lib/index.css";
 import "@univerjs/preset-sheets-sort/lib/index.css";
 import "@univerjs/preset-sheets-conditional-formatting/lib/index.css";
 import "@univerjs/preset-sheets-find-replace/lib/index.css";
@@ -8,31 +9,32 @@ import "@univerjs/preset-sheets-filter/lib/index.css";
 import "@univerjs/preset-sheets-hyper-link/lib/index.css";
 import "@univerjs/preset-sheets-data-validation/lib/index.css";
 
-import { DEFAULT_STYLES } from '@univerjs/core';
-import { UniverSheetsConditionalFormattingPreset } from '@univerjs/preset-sheets-conditional-formatting';
-import UniverPresetSheetsConditionalFormattingEnUS from '@univerjs/preset-sheets-conditional-formatting/locales/en-US';
-import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
-import sheetsCoreEnUS  from '@univerjs/preset-sheets-core/locales/en-US';
-import { UniverSheetsDataValidationPreset } from '@univerjs/preset-sheets-data-validation';
-import UniverPresetSheetsDataValidationEnUS from '@univerjs/preset-sheets-data-validation/locales/en-US';
-import { UniverSheetsFilterPreset } from '@univerjs/preset-sheets-filter';
-import UniverPresetSheetsFilterEnUS from '@univerjs/preset-sheets-filter/locales/en-US';
+import { DEFAULT_STYLES, type Injector, type Plugin, type PluginCtor } from '@univerjs/core';
+import { UniverSheetsConditionalFormattingMobileUIPlugin, UniverSheetsConditionalFormattingPreset, UniverSheetsConditionalFormattingUIPlugin } from '@univerjs/preset-sheets-conditional-formatting';
+import { UniverMobileUIPlugin, UniverSheetsCorePreset, UniverSheetsMobileUIPlugin, UniverSheetsUIPlugin, UniverUIPlugin } from '@univerjs/preset-sheets-core';
+import { UniverSheetsDataValidationMobileUIPlugin, UniverSheetsDataValidationPreset, UniverSheetsDataValidationUIPlugin } from '@univerjs/preset-sheets-data-validation';
+import { UniverSheetsDrawingPreset } from '@univerjs/preset-sheets-drawing';
+import { UniverSheetsFilterMobileUIPlugin, UniverSheetsFilterPreset, UniverSheetsFilterUIPlugin } from '@univerjs/preset-sheets-filter';
 import { UniverSheetsFindReplacePreset } from '@univerjs/preset-sheets-find-replace';
-import sheetsFindReplaceEnUS from '@univerjs/preset-sheets-find-replace/locales/en-US';
 import { UniverSheetsHyperLinkPreset } from '@univerjs/preset-sheets-hyper-link';
-import UniverPresetSheetsHyperLinkEnUS from '@univerjs/preset-sheets-hyper-link/locales/en-US';
 import { UniverSheetsNotePreset } from '@univerjs/preset-sheets-note';
-import sheetsNoteEnUS from '@univerjs/preset-sheets-note/locales/en-US';
 import { UniverSheetsSortPreset } from '@univerjs/preset-sheets-sort';
-import UniverPresetSheetsSortEnUS from '@univerjs/preset-sheets-sort/locales/en-US';
-import { createUniver, FUniver, LocaleType, mergeLocales } from '@univerjs/presets';
-import { IDialogService, ISidebarService } from '@univerjs/ui';
-import { MutableRef, useEffect, useRef } from "preact/hooks";
+import { createUniver, FUniver, mergeLocales } from '@univerjs/presets';
+import { CalculationMode } from '@univerjs/sheets-formula';
+import { IEditorBridgeService, SheetCellEditorResizeService } from '@univerjs/sheets-ui';
+import { IDialogService, IShortcutService, ISidebarService } from '@univerjs/ui';
+import { RefObject } from "preact";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import type NoteContext from "../../../components/note_context";
 import { t } from "../../../services/i18n";
+import { isMobile } from "../../../services/utils";
 import { useColorScheme, useEffectiveReadOnly, useTriliumEvent, useTriliumEvents } from "../../react/hooks";
 import { TypeWidgetProps } from "../type_widget";
+import useStripPastedFontFamily from "./clipboard";
+import useSpreadsheetExport from "./export";
+import { loadUniverLocale, UniverLocale } from "./locales";
+import useClampEdgeNavigation from "./navigation";
 import usePersistence from "./persistence";
 
 function buildReadOnlyLocaleOverrides() {
@@ -61,18 +63,45 @@ function buildReadOnlyLocaleOverrides() {
 
 export default function Spreadsheet(props: TypeWidgetProps) {
     const readOnly = useEffectiveReadOnly(props.note, props.noteContext);
+    const locale = useUniverLocale();
+
+    // Wait for the locale bundle before mounting the editor so Univer can be created synchronously
+    // with the right language (the dependent hooks below rely on the API being ready immediately).
+    if (!locale) {
+        return <div className="spreadsheet" />;
+    }
 
     // Use readOnly as key to force full remount (and data reload) when it changes.
-    return <SpreadsheetEditor key={String(readOnly)} {...props} readOnly={readOnly} />;
+    return <SpreadsheetEditor key={String(readOnly)} {...props} readOnly={readOnly} locale={locale} />;
 }
 
-function SpreadsheetEditor({ note, noteContext, readOnly }: TypeWidgetProps & { readOnly: boolean }) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const apiRef = useRef<FUniver>();
+/** Loads the Univer locale matching Trilium's UI language once, on mount. */
+function useUniverLocale() {
+    const [locale, setLocale] = useState<UniverLocale>();
+    useEffect(() => {
+        let cancelled = false;
+        void loadUniverLocale().then((loaded) => {
+            if (!cancelled) setLocale(loaded);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+    return locale;
+}
 
-    useInitializeSpreadsheet(containerRef, apiRef, readOnly);
+function SpreadsheetEditor({ note, noteContext, readOnly, locale }: TypeWidgetProps & { readOnly: boolean; locale: UniverLocale }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const apiRef = useRef<FUniver | undefined>(undefined);
+
+    useInitializeSpreadsheet(containerRef, apiRef, readOnly, locale);
+    useReleaseFillShortcuts(apiRef);
+    useClampEdgeNavigation(apiRef);
+    useAnchorCellEditorOnScroll(apiRef);
+    useStripPastedFontFamily(apiRef);
     useDarkMode(apiRef);
-    usePersistence(note, noteContext, apiRef, containerRef);
+    const spacedUpdate = usePersistence(note, noteContext, apiRef, containerRef);
+    useSpreadsheetExport(apiRef, note, noteContext, spacedUpdate);
     useSearchIntegration(apiRef, noteContext);
     useDismissDialogsOnNoteSwitch(apiRef);
     useFixRadixPortals();
@@ -120,7 +149,101 @@ function useFixRadixPortals() {
     }, []);
 }
 
-function useInitializeSpreadsheet(containerRef: MutableRef<HTMLDivElement | null>, apiRef: MutableRef<FUniver | undefined>, readOnly: boolean) {
+// Univer binds Ctrl+R to fill-right and Ctrl+D to fill-down, which shadow the
+// browser/Electron refresh (Ctrl+R) and bookmark (Ctrl+D) shortcuts.
+const FILL_SHORTCUT_COMMAND_IDS = new Set([
+    "sheet.command.copy-right", // Ctrl+R
+    "sheet.command.copy-down"   // Ctrl+D
+]);
+
+interface ShortcutItemLike { id: string; }
+interface ShortcutServiceLike {
+    getAllShortcuts(): ShortcutItemLike[];
+    registerShortcut(shortcut: ShortcutItemLike): { dispose(): void };
+}
+
+/**
+ * Unregister Univer's fill-right (Ctrl+R) and fill-down (Ctrl+D) keyboard bindings so
+ * the keystrokes fall through to the browser instead of silently copying the active
+ * cell into its neighbour when a user presses Ctrl+R expecting a reload. The commands
+ * remain available via the toolbar/context menu and the fill handle.
+ */
+function useReleaseFillShortcuts(apiRef: RefObject<FUniver | undefined>) {
+    useEffect(() => {
+        const univerAPI = apiRef.current;
+        if (!univerAPI) return;
+
+        const releaseShortcuts = () => {
+            try {
+                const injector = (univerAPI as unknown as { _injector: { get(id: unknown): ShortcutServiceLike } })._injector;
+                const shortcutService = injector.get(IShortcutService);
+                for (const shortcut of shortcutService.getAllShortcuts()) {
+                    if (FILL_SHORTCUT_COMMAND_IDS.has(shortcut.id)) {
+                        // getAllShortcuts() hands back the exact item objects the service stores
+                        // in its internal Sets, keyed by identity. registerShortcut(item) re-adds
+                        // that same object (a Set no-op) and returns a disposer that deletes it —
+                        // so disposing immediately removes the original binding, not a duplicate.
+                        shortcutService.registerShortcut(shortcut).dispose();
+                    }
+                }
+                // Guard the undocumented mechanic above against future Univer changes: if any
+                // fill binding survived, the keystrokes are still captured and our refresh/bookmark
+                // fix is silently broken.
+                const stillBound = shortcutService.getAllShortcuts().some(s => FILL_SHORTCUT_COMMAND_IDS.has(s.id));
+                if (stillBound) {
+                    console.warn("Spreadsheet fill shortcuts could not be released; Ctrl+R/Ctrl+D may be captured.");
+                }
+            } catch (e) {
+                console.error("Failed to release spreadsheet fill shortcuts", e);
+            }
+        };
+
+        // Shortcuts are registered during plugin init. The Rendered stage may already have
+        // been reached synchronously while the Univer instance was created (in which case the
+        // event below never fires again), so release immediately and keep the listener as a
+        // fallback for the asynchronous case.
+        releaseShortcuts();
+        const disposable = univerAPI.addEvent(univerAPI.Event.LifeCycleChanged, ({ stage }) => {
+            if (stage === univerAPI.Enum.LifecycleStages.Rendered) {
+                releaseShortcuts();
+            }
+        });
+        return () => disposable.dispose();
+    }, [ apiRef ]);
+}
+
+/**
+ * Keeps the cell editor glued to the cell being edited while the grid scrolls.
+ *
+ * Univer positions the editor overlay (a DOM element floating above the canvas) only when
+ * editing starts and when the text inside it changes — nothing recomputes it when the viewport
+ * scrolls underneath. Scrolling with the wheel mid-edit therefore leaves the box parked at its
+ * original screen position, overlapping whichever cell has scrolled into that spot, which reads
+ * as editing the wrong cell. Excel and Google Sheets both let the editor travel with its cell.
+ *
+ * `refreshEditCellPosition(false)` recomputes the cell's position from the skeleton and the
+ * current viewport scroll (`resetSizeOnly: false` — the `true` variant deliberately keeps the
+ * stale origin and only resizes), and `fitTextSize()` pushes that layout to the overlay's DOM
+ * state, which is the same pair Univer runs when the editor first opens.
+ */
+function useAnchorCellEditorOnScroll(apiRef: RefObject<FUniver | undefined>) {
+    useEffect(() => {
+        const univerAPI = apiRef.current;
+        if (!univerAPI) return;
+
+        const injector = (univerAPI as unknown as { _injector: Injector })._injector;
+        const disposable = univerAPI.addEvent(univerAPI.Event.Scroll, () => {
+            const editorBridgeService = injector.get(IEditorBridgeService);
+            if (!editorBridgeService.isVisible().visible) return;
+
+            editorBridgeService.refreshEditCellPosition(false);
+            injector.get(SheetCellEditorResizeService).fitTextSize();
+        });
+        return () => disposable.dispose();
+    }, [ apiRef ]);
+}
+
+function useInitializeSpreadsheet(containerRef: RefObject<HTMLDivElement | null>, apiRef: RefObject<FUniver | undefined>, readOnly: boolean, locale: UniverLocale) {
     useEffect(() => {
         if (!containerRef.current) return;
 
@@ -130,28 +253,20 @@ function useInitializeSpreadsheet(containerRef: MutableRef<HTMLDivElement | null
             DEFAULT_STYLES.ff = ff;
         }
 
-        const { univerAPI } = createUniver({
-            locale: LocaleType.EN_US,
-            locales: {
-                [LocaleType.EN_US]: mergeLocales(
-                    sheetsCoreEnUS,
-                    sheetsFindReplaceEnUS,
-                    sheetsNoteEnUS,
-                    UniverPresetSheetsFilterEnUS,
-                    UniverPresetSheetsSortEnUS,
-                    UniverPresetSheetsDataValidationEnUS,
-                    UniverPresetSheetsConditionalFormattingEnUS,
-                    UniverPresetSheetsHyperLinkEnUS,
-                    readOnly ? buildReadOnlyLocaleOverrides() : {},
-                ),
-            },
-            presets: [
+        const presets = [
                 UniverSheetsCorePreset({
                     container: containerRef.current,
                     toolbar: !readOnly,
                     contextMenu: !readOnly,
                     formulaBar: !readOnly,
                     footer: readOnly ? false : undefined,
+                    // Skip the formula recalculation Univer runs on workbook load. Our
+                    // content is always Univer-saved (formulas already carry cached
+                    // results), so the default WHEN_EMPTY mode only re-runs formulas that
+                    // evaluate to 0/"" and writes identical results back — which the change
+                    // listener persists as a spurious save on every open. NO_CALCULATION
+                    // avoids that; edit-driven recalculation is unaffected.
+                    formula: { initialFormulaComputing: CalculationMode.NO_CALCULATION },
                     menu: {
                         "sheet.contextMenu.permission": { hidden: true },
                         "sheet-permission.operation.openPanel": { hidden: true },
@@ -159,6 +274,11 @@ function useInitializeSpreadsheet(containerRef: MutableRef<HTMLDivElement | null
                         "sheet.command.set-range-font-family": { hidden: true },
                     },
                 }),
+                // Floating images stored inline as base64 in the workbook's SHEET_DRAWING_PLUGIN
+                // resource (Univer's default ImageIoService), so they persist through the normal
+                // content save path. The insert-image toolbar button is hidden in read-only mode
+                // (toolbar is disabled above); the preset stays registered so existing images render.
+                UniverSheetsDrawingPreset(),
                 UniverSheetsFindReplacePreset(),
                 UniverSheetsNotePreset(),
                 UniverSheetsFilterPreset(),
@@ -166,7 +286,22 @@ function useInitializeSpreadsheet(containerRef: MutableRef<HTMLDivElement | null
                 UniverSheetsDataValidationPreset(),
                 UniverSheetsConditionalFormattingPreset(),
                 UniverSheetsHyperLinkPreset()
-            ]
+            ];
+
+        const { univerAPI } = createUniver({
+            // Inherit the spreadsheet language (and locale-dependent defaults such as the currency
+            // symbol) from Trilium's UI language instead of hardcoding US English.
+            locale: locale.type,
+            locales: {
+                [locale.type]: mergeLocales(
+                    locale.data,
+                    readOnly ? buildReadOnlyLocaleOverrides() : {},
+                ),
+            },
+            // Univer ships no "mobile preset" — the presets above register the desktop UI shells.
+            // On Trilium's mobile layout, swap those shells for their touch-optimised variants
+            // (see toMobilePresets); the remaining feature plugins are platform-agnostic.
+            presets: isMobile() ? toMobilePresets(presets) : presets,
         });
         if (readOnly) {
             univerAPI.addEvent(univerAPI.Event.LifeCycleChanged, ({ stage }) => {
@@ -182,10 +317,42 @@ function useInitializeSpreadsheet(containerRef: MutableRef<HTMLDivElement | null
 
         apiRef.current = univerAPI;
         return () => univerAPI.dispose();
-    }, [ apiRef, containerRef, readOnly ]);
+    }, [ apiRef, containerRef, readOnly, locale ]);
 }
 
-function useDarkMode(apiRef: MutableRef<FUniver | undefined>) {
+type PluginEntry = PluginCtor<Plugin> | [PluginCtor<Plugin>, ConstructorParameters<PluginCtor<Plugin>>[0]];
+interface UniverPreset { plugins: PluginEntry[]; }
+
+// Desktop UI shell plugins (registered by the presets) mapped to their touch-optimised
+// counterparts. Only these five Univer plugins ship a mobile variant; every other plugin
+// the presets register is platform-agnostic and is left untouched.
+const DESKTOP_TO_MOBILE_UI = new Map<PluginCtor<Plugin>, PluginCtor<Plugin>>([
+    [UniverUIPlugin, UniverMobileUIPlugin],
+    [UniverSheetsUIPlugin, UniverSheetsMobileUIPlugin],
+    [UniverSheetsConditionalFormattingUIPlugin, UniverSheetsConditionalFormattingMobileUIPlugin],
+    [UniverSheetsDataValidationUIPlugin, UniverSheetsDataValidationMobileUIPlugin],
+    [UniverSheetsFilterUIPlugin, UniverSheetsFilterMobileUIPlugin],
+]);
+
+/**
+ * Rewrite a list of Univer presets so their desktop UI shells are replaced by the mobile
+ * equivalents, preserving each plugin's configuration. A preset is just a `{ plugins }` data
+ * object whose entries are either a plugin constructor or a `[constructor, options]` tuple, so
+ * we can swap the constructor in place without re-running the preset factories.
+ */
+function toMobilePresets(presets: UniverPreset[]): UniverPreset[] {
+    return presets.map((preset) => ({
+        ...preset,
+        plugins: preset.plugins.map((entry) => {
+            const [ctor, options] = Array.isArray(entry) ? entry : [entry, undefined];
+            const mobileCtor = DESKTOP_TO_MOBILE_UI.get(ctor);
+            if (!mobileCtor) return entry;
+            return options === undefined ? mobileCtor : [mobileCtor, options];
+        }),
+    }));
+}
+
+function useDarkMode(apiRef: RefObject<FUniver | undefined>) {
     const colorScheme = useColorScheme();
 
     // React to dark mode.
@@ -196,7 +363,7 @@ function useDarkMode(apiRef: MutableRef<FUniver | undefined>) {
     }, [ colorScheme, apiRef ]);
 }
 
-function useSearchIntegration(apiRef: MutableRef<FUniver | undefined>, noteContext: NoteContext | undefined) {
+function useSearchIntegration(apiRef: RefObject<FUniver | undefined>, noteContext: NoteContext | undefined) {
     useTriliumEvent("findInText", () => {
         if (!noteContext?.isActive()) return;
 
@@ -208,7 +375,7 @@ function useSearchIntegration(apiRef: MutableRef<FUniver | undefined>, noteConte
     });
 }
 
-function useDismissDialogsOnNoteSwitch(apiRef: MutableRef<FUniver | undefined>) {
+function useDismissDialogsOnNoteSwitch(apiRef: RefObject<FUniver | undefined>) {
     useTriliumEvents(["beforeNoteSwitch", "noteTypeMimeChanged"], () => {
         const univerAPI = apiRef.current;
         if (!univerAPI) return;

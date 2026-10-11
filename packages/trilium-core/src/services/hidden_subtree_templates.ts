@@ -35,6 +35,68 @@ export default function buildHiddenSubtreeTemplates() {
                 ]
             },
             {
+                id: "_template_markdown_snippet",
+                type: "code",
+                mime: "text/x-markdown",
+                title: t("hidden_subtree_templates.markdown-snippet"),
+                icon: "bx-align-left",
+                attributes: [
+                    {
+                        name: "template",
+                        type: "label"
+                    },
+                    {
+                        name: "snippet",
+                        type: "label"
+                    },
+                    {
+                        name: "label:snippetDescription",
+                        type: "label",
+                        value: `promoted,alias=${t("hidden_subtree_templates.description")},single,text`
+                    }
+                ]
+            },
+            {
+                id: "_template_code_snippet",
+                type: "code",
+                mime: "text/plain",
+                title: t("hidden_subtree_templates.code-snippet"),
+                icon: "bx-align-left",
+                attributes: [
+                    {
+                        name: "template",
+                        type: "label"
+                    },
+                    {
+                        name: "snippet",
+                        type: "label"
+                    },
+                    {
+                        name: "label:snippetDescription",
+                        type: "label",
+                        value: `promoted,alias=${t("hidden_subtree_templates.description")},single,text`
+                    }
+                ]
+            },
+            {
+                // A text note rather than a code one: the content is an instruction written in
+                // prose, and the editor is where the user already is when they think of it.
+                id: "_template_ai_quick_action",
+                type: "text",
+                title: t("hidden_subtree_templates.ai-quick-action"),
+                icon: "bx-bot",
+                attributes: [
+                    {
+                        name: "template",
+                        type: "label"
+                    },
+                    {
+                        name: "aiQuickAction",
+                        type: "label"
+                    }
+                ]
+            },
+            {
                 id: "_template_list_view",
                 type: "book",
                 title: t("hidden_subtree_templates.list-view"),
@@ -203,13 +265,17 @@ export default function buildHiddenSubtreeTemplates() {
                         name: "hidePromotedAttributes",
                         type: "label"
                     },
-                    hideSubtreeAttributes,
                     {
-                        name: "label:status",
-                        type: "label",
-                        value: `promoted,alias=${t("hidden_subtree_templates.status")},single,text`,
-                        isInheritable: true
+                        // A board shows its children as cards, so the tree would repeat them.
+                        name: "subtreeHidden",
+                        type: "label"
                     }
+                    // Deliberately no `label:status`: the columns a board shows are the options of a
+                    // select definition, and a definition here would be shared by every board in the
+                    // document — one board's columns would be everyone's. Each board owns its own
+                    // instead, written by the board view once it knows its columns (see
+                    // BoardApi#syncColumnsToDefinition) and by migration 0240 for boards that predate
+                    // it. `enforceAttributes` deletes the definition this template used to carry.
                 ],
                 children: [
                     {
@@ -312,6 +378,32 @@ export default function buildHiddenSubtreeTemplates() {
                                 value: "_template_presentation_slide"
                             }
                         ]
+                    }
+                ]
+            },
+            {
+                id: "_template_dashboard",
+                type: "book",
+                title: t("hidden_subtree_templates.dashboard"),
+                icon: "bx bxs-dashboard",
+                attributes: [
+                    {
+                        name: "template",
+                        type: "label"
+                    },
+                    {
+                        name: "collection",
+                        type: "label"
+                    },
+                    {
+                        name: "viewType",
+                        type: "label",
+                        value: "dashboard"
+                    },
+                    {
+                        // Marks the collection as a beta feature in the note creation menu.
+                        name: "beta",
+                        type: "label"
                     }
                 ]
             }

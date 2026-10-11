@@ -1,19 +1,24 @@
-<p>The text editor we are using for&nbsp;<a class="reference-link" href="#root/_help_iPIMuisry3hd">Text</a>&nbsp;notes
-  is called CKEditor and it's a commercial product. The core components are
-  open-source, however they <a href="https://ckeditor.com/docs/trial/latest/index.html">offer quite a few features</a> that
-  require a commercial license in order to be used.</p>
-<p>We have reached out to the CKEditor team in order to obtain a license
-  in order to have some of these extra features and they have agreed, based
-  on a signed agreement.</p>
-<h2>How the license works</h2>
-<p>The license key is stored in the application and it enables the use of
-  the previously described premium features. The license key has an expiration
-  date which means that the features can become disabled if using an older
-  version of the application for extended periods of time.</p>
-<h2>Can I opt out of these features?</h2>
-<p>At this moment there is no way to disable these features, apart from manually
-  modifying the source code. If this is a problem, <a href="#root/_help_wy8So3yZZlH9">let us know</a>.</p>
-<p>If you have the possibility of rebuilding the source code (e.g. if a package
-  maintainer), then modify <code spellcheck="false">VITE_CKEDITOR_KEY</code> in
-  <code
-  spellcheck="false">apps/client/.env</code>to be <code spellcheck="false">GPL</code>.</p>
+<p>The text editor we are using is called&nbsp;<a class="reference-link"
+  href="#root/_help_MI26XDLSAlCD">CKEditor</a>&nbsp;which has an open-source
+  core, but it's also a commercial product which offers <a href="https://ckeditor.com/docs/trial/latest/index.html">premium features</a>.</p>
+<p>Prior to v0.105.0, Trilium used the following premium features as part
+  of a signed agreement between the CKEditor and the Trilium team:</p>
+<ul>
+  <li><a class="reference-link" href="#root/_help_ZlN4nump6EbW">Slash Commands</a>
+  </li>
+  <li><a class="reference-link" href="#root/_help_pwc194wlRzcH">Text Snippets</a>
+  </li>
+  <li><a class="reference-link" href="#root/_help_5wZallV2Qo1t">Format Painter</a>
+  </li>
+</ul>
+<p>Starting with v0.105.0, those features have been completely rewritten
+  as custom CKEditor plugins, licensed under AGPL-3.0.</p>
+<h2>Lookalikes</h2>
+<p>There are some premium CK features that look like Trilium's built-in functionality
+  but they are completely different:</p>
+<ul>
+  <li><a class="reference-link" href="#root/_help_VRoP0g1uHHc2">In-editor AI assistant</a>
+  </li>
+  <li><a class="reference-link" href="#root/_help_YfYAtQBcfo5V">Math Equations</a>&nbsp;which
+    uses a third-party plugin that has been adapted for Trilium.</li>
+</ul>

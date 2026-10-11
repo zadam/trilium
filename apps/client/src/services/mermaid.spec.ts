@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { postprocessMermaidSvg } from "./mermaid.js";
+import { getMermaidConfig, postprocessMermaidSvg } from "./mermaid.js";
 import { trimIndentation } from "@triliumnext/commons";
 
 describe("Mermaid", () => {
@@ -36,5 +36,28 @@ describe("Mermaid", () => {
     it("replaces &nbsp; with numeric entity for valid XML", () => {
         expect(postprocessMermaidSvg("<text>a&nbsp;b&nbsp;&nbsp;c</text>"))
             .toBe("<text>a&#160;b&#160;&#160;c</text>");
+    });
+});
+
+describe("getMermaidConfig", () => {
+    it("reads the --mermaid-theme CSS variable (trimmed), pins the pre-12 layout and look, and keeps the static useMaxWidth flags", () => {
+        document.documentElement.style.setProperty("--mermaid-theme", "  dark  ");
+
+        const config = getMermaidConfig();
+
+        expect(config.theme).toBe("dark");
+        expect(config.layout).toBe("dagre");
+        expect(config.look).toBe("classic");
+        expect(config.securityLevel).toBe("antiscript");
+        expect(config.flowchart).toEqual({ useMaxWidth: false });
+        expect(config.sequence).toEqual({ useMaxWidth: false });
+        expect(config.gantt).toEqual({ useMaxWidth: false });
+        expect(config.class).toEqual({ useMaxWidth: false });
+        expect(config.state).toEqual({ useMaxWidth: false });
+        expect(config.pie).toEqual({ useMaxWidth: true });
+        expect(config.journey).toEqual({ useMaxWidth: false });
+        expect(config.gitGraph).toEqual({ useMaxWidth: false });
+
+        document.documentElement.style.removeProperty("--mermaid-theme");
     });
 });

@@ -20,6 +20,10 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Streaming HTTP proxy for the sync worker (see TriliumWebViewClient).
+        getBridge().setWebViewClient(new TriliumWebViewClient(getBridge()));
+        // Binary write channel for downloads and backups (see TriliumFileSink).
+        TriliumFileSink.install(getBridge());
         enableEdgeToEdge();
         forwardInsetsToWebView();
         applySystemBarsAppearance();

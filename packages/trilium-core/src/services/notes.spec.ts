@@ -1,0 +1,800 @@
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+
+import becca from "../becca/becca.js";
+import type BBranch from "../becca/entities/bbranch.js";
+import type BNote from "../becca/entities/bnote.js";
+import { ValidationError } from "../errors.js";
+import blobService from "./blob.js";
+import { disableEntityEvents, getContext } from "./context.js";
+import { getLog } from "./log.js";
+import noteService, { prepareTitle, saveLinks } from "./notes.js";
+import optionService from "./options.js";
+import protectedSessionService from "./protected_session.js";
+import { fakeRequestProvider } from "../test/request_provider.js";
+import { initRequest } from "./request.js";
+import { getSql } from "./sql/index.js";
+import TaskContext from "./task_context.js";
+import { encodeUtf8 } from "./utils/binary.js";
+
+/**
+ * The pure link-extraction helpers (findBookmarks, findLlmChatLinks) and the
+ * becca-mocked checkImageAttachments path are already covered by
+ * apps/server/src/services/notes.spec.ts. This file exercises the real-DB
+ * write paths (note creation, update, duplication) which that spec stubs out.
+ */
+
+let counter = 0;
+
+/**
+ * Creates a fresh text note under the given parent in the real in-memory DB.
+ * Each call uses a unique title since the same fixture DB is shared between
+ * the `it()`s in this file.
+ */
+function createNote(parentNoteId: string, overrides: Partial<Parameters<typeof noteService.createNewNote>[0]> = {}): {
+    note: BNote;
+    branch: BBranch;
+} {
+    counter++;
+    return getContext().init(() =>
+        noteService.createNewNote({
+            parentNoteId,
+            title: `notes-spec-${counter}`,
+            content: "<p>hello</p>",
+            type: "text",
+            ...overrides
+        })
+    );
+}
+
+describe("OCR text across (un)protection", () => {
+    const PROTECTED_KEY = encodeUtf8("0123456789abcdef"); // exactly 16 bytes
+
+    /** The text as it is stored on the blob right now, without decrypting it. */
+    function storedText(blobId: string | undefined) {
+        return getSql().getValue<string | null>("SELECT textRepresentation FROM blobs WHERE blobId = ?", [blobId ?? ""]);
+    }
+
+    function setStoredText(blobId: string | undefined, text: string) {
+        getSql().execute("UPDATE blobs SET textRepresentation = ? WHERE blobId = ?", [text, blobId ?? ""]);
+    }
+
+    function protect(note: BNote, value: boolean) {
+        getContext().init(() =>
+            noteService.protectNoteRecursively(note, value, false, new TaskContext("spec-protect", "protectNotes", { protect: value }))
+        );
+    }
+
+    afterEach(() => protectedSessionService.resetDataKey());
+
+    it("carries a note's extracted text onto the blob the re-save produces, encrypting it", () => {
+        const { note } = createNote("root", { title: "spec-ocr-carry", content: "image-bytes-carry", type: "image", mime: "image/png" });
+        setStoredText(note.blobId, "text read out of the picture");
+        const unprotectedBlobId = note.blobId;
+
+        protectedSessionService.setDataKey(PROTECTED_KEY);
+        protect(note, true);
+
+        // A new blob, since protection is part of a blob's identity — and the text came with it.
+        expect(note.blobId).not.toBe(unprotectedBlobId);
+        expect(storedText(note.blobId)).not.toBe("text read out of the picture");
+        expect(blobService.decryptTextRepresentation(storedText(note.blobId), true)).toBe("text read out of the picture");
+
+        // And back again, readable without a key once the note no longer needs one.
+        protect(note, false);
+        expect(storedText(note.blobId)).toBe("text read out of the picture");
+    });
+
+    it("carries an attachment's extracted text too", () => {
+        const { note } = createNote("root", { title: "spec-ocr-carry-attachment" });
+        const attachment = getContext().init(() =>
+            note.saveAttachment({ role: "image", mime: "image/png", title: "scan.png", content: "attachment-bytes-carry" })
+        );
+        setStoredText(attachment.blobId, "text read out of the attachment");
+
+        protectedSessionService.setDataKey(PROTECTED_KEY);
+        protect(note, true);
+
+        const protectedAttachment = becca.getAttachmentOrThrow(attachment.attachmentId);
+        expect(protectedAttachment.isProtected).toBe(true);
+        expect(blobService.decryptTextRepresentation(storedText(protectedAttachment.blobId), true))
+            .toBe("text read out of the attachment");
+    });
+
+    it("leaves a note that never had extracted text without any", () => {
+        const { note } = createNote("root", { title: "spec-ocr-carry-none", content: "image-bytes-none", type: "image", mime: "image/png" });
+
+        protectedSessionService.setDataKey(PROTECTED_KEY);
+        protect(note, true);
+
+        expect(storedText(note.blobId)).toBeNull();
+    });
+});
+
+describe("notes service (real DB)", () => {
+    beforeAll(() => {
+        // The in-memory fixture DB and initializeCore are booted by the
+        // server suite setup (apps/server/spec/setup.ts), through which
+        // co-located trilium-core specs run.
+    });
+
+    describe("createNewNote", () => {
+        it("creates a text note under root with content, branch and derived mime", () => {
+            const { note, branch } = createNote("root", { title: "spec-create-basic", content: "<p>body</p>" });
+
+            expect(becca.notes[note.noteId]).toBe(note);
+            expect(note.title).toBe("spec-create-basic");
+            expect(note.type).toBe("text");
+            expect(note.mime).toBe("text/html");
+            expect(note.getContent()).toBe("<p>body</p>");
+
+            expect(branch.parentNoteId).toBe("root");
+            expect(branch.noteId).toBe(note.noteId);
+            // position derives from MAX existing position + 10 and is therefore positive.
+            expect(branch.notePosition).toBeGreaterThan(0);
+
+            // The note row is persisted in the DB, not just becca.
+            const row = getSql().getRow<{ title: string }>("SELECT title FROM notes WHERE noteId = ?", [note.noteId]);
+            expect(row.title).toBe("spec-create-basic");
+        });
+
+        it("honours an explicit notePosition and creates atomic attributes", () => {
+            const { note, branch } = createNote("root", {
+                title: "spec-create-attrs",
+                content: "",
+                notePosition: 1234,
+                attributes: [
+                    { type: "label", name: "myLabel", value: "v1", isInheritable: false, position: 10 },
+                    { type: "label", name: "secondLabel", value: "v2", isInheritable: false, position: 20 }
+                ]
+            });
+
+            expect(branch.notePosition).toBe(1234);
+            expect(note.getLabelValue("myLabel")).toBe("v1");
+            expect(note.getLabelValue("secondLabel")).toBe("v2");
+        });
+
+        it("throws when the parent note does not exist", () => {
+            expect(() => createNote("noSuchParent00", { title: "spec-bad-parent" })).toThrow(
+                /Parent note 'noSuchParent00' was not found/
+            );
+        });
+
+        it("throws when the content is null/undefined", () => {
+            expect(() =>
+                getContext().init(() =>
+                    noteService.createNewNote({
+                        parentNoteId: "root",
+                        title: "spec-null-content",
+                        // deliberately invalid content to hit the guard
+                        content: null as unknown as string,
+                        type: "text"
+                    })
+                )
+            ).toThrow(/Note content must be set/);
+        });
+
+        it("refuses to create notes under a forbidden parent like _hidden", () => {
+            expect(() => createNote("_hidden", { title: "spec-hidden-child" })).toThrow(
+                /Creating child notes into '_hidden' is not allowed/
+            );
+        });
+
+        it("accepts a well-formed forced noteId and rejects one that links cannot match", () => {
+            for (const noteId of [ "forcedSpecId01", "forced_spec_id_02" ]) {
+                const { note } = createNote("root", { title: "spec-forced-id", noteId });
+
+                expect(note.noteId).toBe(noteId);
+                expect(becca.notes[noteId]).toBe(note);
+            }
+
+            for (const noteId of [ null as unknown as string, "", undefined as unknown as string ]) {
+                expect(createNote("root", { noteId }).note.noteId).toMatch(/^[A-Za-z0-9]{12}$/);
+            }
+
+            const dashedId = "0d8949e4-6fe3-4f4b-82c1-679baf64fccb";
+            const countRows = (noteId: string) =>
+                getSql().getValue("SELECT COUNT(*) FROM notes WHERE noteId = ?", [ noteId ]);
+            for (const noteId of [ dashedId, "abc", "bad/id01", "bad id01" ]) {
+                expect(() => createNote("root", { noteId }), noteId).toThrow(/is not valid/);
+                expect(becca.notes[noteId]).toBeUndefined();
+                expect(countRows(noteId)).toBe(0);
+            }
+
+            const numericId = 12345 as unknown as string;
+            expect(() => createNote("root", { noteId: numericId })).toThrow(ValidationError);
+
+            for (const noteId of [ 0 as unknown as string, false as unknown as string ]) {
+                expect(() => createNote("root", { noteId }), String(noteId)).toThrow(/is not valid/);
+            }
+        });
+
+        it("inherits the template's mime and adds a template relation when creating from a template", () => {
+            const template = createNote("root", { title: "spec-template", content: "<p>tmpl</p>" });
+            // Give the template a non-default mime so we can verify inheritance.
+            getContext().init(() => {
+                template.note.mime = "text/special";
+                template.note.save();
+            });
+
+            const { note } = createNote("root", {
+                title: "spec-from-template",
+                content: "<p>child</p>",
+                templateNoteId: template.note.noteId
+            });
+
+            expect(note.mime).toBe("text/special");
+            expect(note.getRelationValue("template")).toBe(template.note.noteId);
+        });
+
+        it("inherits the parent's child:template when the new note's type matches the template's", () => {
+            const template = createNote("root", { title: "spec-child-tmpl-match", content: "<p>day template</p>" });
+            const parent = createNote("root", {
+                title: "spec-child-tmpl-parent-match",
+                attributes: [{ type: "relation", name: "child:template", value: template.note.noteId }]
+            });
+
+            const { note } = createNote(parent.note.noteId, { title: "spec-child-tmpl-text", content: "" });
+
+            expect(note.getRelationValue("template")).toBe(template.note.noteId);
+            expect(note.type).toBe("text");
+            expect(note.getContent()).toBe("<p>day template</p>");
+        });
+
+        it("inherits every one of the parent's child:template relations, not just one", () => {
+            const t1 = createNote("root", { title: "spec-multi-tmpl-1", content: "<p>one</p>" });
+            const t2 = createNote("root", { title: "spec-multi-tmpl-2", content: "<p>two</p>" });
+            const parent = createNote("root", {
+                title: "spec-multi-tmpl-parent",
+                attributes: [
+                    { type: "relation", name: "child:template", value: t1.note.noteId },
+                    { type: "relation", name: "child:template", value: t2.note.noteId }
+                ]
+            });
+
+            const { note } = createNote(parent.note.noteId, {
+                title: "spec-multi-tmpl-child",
+                content: ""
+            });
+
+            const applied = note.getRelations("template").map((r) => r.value);
+            expect(applied).toEqual([t1.note.noteId, t2.note.noteId]);
+        });
+
+        it("lets an explicitly chosen template suppress the child:template defaults", () => {
+            const chosen = createNote("root", {
+                title: "spec-multi-tmpl-chosen",
+                content: "<p>chosen</p>"
+            });
+            const t1 = createNote("root", { title: "spec-mt-def-1", content: "<p>one</p>" });
+            const t2 = createNote("root", { title: "spec-mt-def-2", content: "<p>two</p>" });
+            const parent = createNote("root", {
+                title: "spec-multi-tmpl-parent-chosen",
+                attributes: [
+                    { type: "relation", name: "child:template", value: t1.note.noteId },
+                    { type: "relation", name: "child:template", value: t2.note.noteId }
+                ]
+            });
+
+            const { note } = createNote(parent.note.noteId, {
+                title: "spec-multi-tmpl-child-chosen",
+                content: "",
+                templateNoteId: chosen.note.noteId
+            });
+
+            const applied = note.getRelations("template").map((r) => r.value);
+            expect(applied).toEqual([chosen.note.noteId]);
+        });
+
+        it("applies child:template even when the parent also has an inheritable ~template", () => {
+            const template = createNote("root", { title: "spec-inh-tmpl", content: "<p>tmpl</p>" });
+            const parent = createNote("root", {
+                title: "spec-inh-tmpl-parent",
+                attributes: [
+                    { type: "relation", name: "child:template", value: template.note.noteId },
+                    { type: "relation", name: "template", value: template.note.noteId, isInheritable: true }
+                ]
+            });
+
+            const { note } = createNote(parent.note.noteId, { title: "spec-inh-tmpl-child", content: "" });
+
+            // the relation must be owned, not merely inherited, so the template's content is copied
+            expect(note.getOwnedRelations("template").map((r) => r.value)).toEqual([template.note.noteId]);
+            expect(note.getContent()).toBe("<p>tmpl</p>");
+        });
+
+        it("does not inherit the parent's child:template when the new note's type differs (#3015)", () => {
+            const template = createNote("root", { title: "spec-child-tmpl-mismatch", content: "<p>day template</p>" });
+            const parent = createNote("root", {
+                title: "spec-child-tmpl-parent-mismatch",
+                attributes: [
+                    { type: "relation", name: "child:template", value: template.note.noteId },
+                    { type: "label", name: "child:myLabel", value: "v1" }
+                ]
+            });
+
+            const { note } = createNote(parent.note.noteId, { title: "spec-child-tmpl-code", content: "", type: "code" });
+
+            // the explicitly chosen type wins: no template relation, no content/type override
+            expect(note.getRelationValue("template")).toBeNull();
+            expect(note.type).toBe("code");
+            expect(note.mime).toBe("text/plain");
+            expect(note.getContent()).toBe("");
+            // other child: attributes are still inherited
+            expect(note.getLabelValue("myLabel")).toBe("v1");
+        });
+
+        it("applies a mismatched child:template when no type was explicitly chosen (+ button)", () => {
+            const template = createNote("root", {
+                title: "spec-child-tmpl-plus",
+                type: "code",
+                mime: "text/x-python",
+                content: "print('hi')"
+            });
+            const parent = createNote("root", {
+                title: "spec-child-tmpl-parent-plus",
+                attributes: [{ type: "relation", name: "child:template", value: template.note.noteId }]
+            });
+
+            // the + button sends no type at all; the server derives one from the parent,
+            // which must not count as an explicit user choice
+            const { note } = getContext().init(() =>
+                noteService.createNewNoteWithTarget("into", undefined, {
+                    parentNoteId: parent.note.noteId,
+                    title: "spec-child-tmpl-untyped",
+                    content: ""
+                })
+            );
+
+            expect(note.getRelationValue("template")).toBe(template.note.noteId);
+            expect(note.type).toBe("code");
+            expect(note.mime).toBe("text/x-python");
+            expect(note.getContent()).toBe("print('hi')");
+        });
+    });
+
+    describe("createNewNote logging", () => {
+        const isCreatedNoteLog = (call: unknown[]) => typeof call[0] === "string" && call[0].includes("Created new note");
+
+        it("logs a line for an interactive note creation", () => {
+            const info = vi.spyOn(getLog(), "info");
+            try {
+                createNote("root", { title: "spec-log-interactive" });
+                expect(info.mock.calls.some(isCreatedNoteLog)).toBe(true);
+            } finally {
+                info.mockRestore();
+            }
+        });
+
+        it("skips the per-note log line during bulk operations (entity events disabled)", () => {
+            const info = vi.spyOn(getLog(), "info");
+            try {
+                getContext().init(() => {
+                    // Mirrors what the import route does: it disables entity events for the whole bulk run,
+                    // which createNewNote uses to suppress its otherwise-per-note log line.
+                    disableEntityEvents();
+                    noteService.createNewNote({
+                        parentNoteId: "root",
+                        title: "spec-log-bulk",
+                        content: "<p>x</p>",
+                        type: "text"
+                    });
+                });
+                expect(info.mock.calls.some(isCreatedNoteLog)).toBe(false);
+            } finally {
+                info.mockRestore();
+            }
+        });
+    });
+
+    describe("createNewNoteWithTarget", () => {
+        it("defaults the type from the parent and creates the note for 'into'", () => {
+            const parent = createNote("root", { title: "spec-into-parent" });
+
+            const { note, branch } = getContext().init(() =>
+                noteService.createNewNoteWithTarget("into", undefined, {
+                    parentNoteId: parent.note.noteId,
+                    title: "spec-into-child",
+                    content: "<p>x</p>",
+                    // type intentionally left unset so it is derived from the parent
+                    type: undefined as unknown as "text"
+                })
+            );
+
+            expect(note.type).toBe("text");
+            expect(branch.parentNoteId).toBe(parent.note.noteId);
+        });
+
+        it("positions a note after an existing sibling branch", () => {
+            const parent = createNote("root", { title: "spec-after-parent" });
+            const first = createNote(parent.note.noteId, { title: "spec-after-first" });
+
+            const { branch } = getContext().init(() =>
+                noteService.createNewNoteWithTarget("after", first.branch.branchId, {
+                    parentNoteId: parent.note.noteId,
+                    title: "spec-after-second",
+                    content: "<p>x</p>",
+                    type: "text"
+                })
+            );
+
+            expect(branch.notePosition).toBe(first.branch.notePosition + 10);
+        });
+
+        it("throws on an unknown target", () => {
+            expect(() =>
+                getContext().init(() =>
+                    noteService.createNewNoteWithTarget("sideways" as "into", undefined, {
+                        parentNoteId: "root",
+                        title: "spec-bad-target",
+                        content: "",
+                        type: "text"
+                    })
+                )
+            ).toThrow(/Unknown target/);
+        });
+    });
+
+    describe("saveLinks", () => {
+        it("creates internal-link relations to existing target notes and strips absolute hrefs", () => {
+            const target = createNote("root", { title: "spec-link-target" });
+            const source = createNote("root", { title: "spec-link-source" });
+
+            const content = `<p>link <a href="http://example.com/#root/${target.note.noteId}">here</a></p>`;
+
+            const { content: newContent } = getContext().init(() => saveLinks(source.note, content));
+
+            // Absolute href is rewritten to a relative #root reference.
+            expect(newContent).toContain(`href="#root/${target.note.noteId}"`);
+            expect(newContent).not.toContain("http://example.com");
+
+            const relation = source.note.getRelations().find((r) => r.name === "internalLink");
+            expect(relation).toBeDefined();
+            expect(relation!.value).toBe(target.note.noteId);
+        });
+
+        it("creates internal-link relations for links to a part of a note", () => {
+            const target = createNote("root", { title: "spec-part-target" });
+            const source = createNote("root", { title: "spec-part-source" });
+
+            const content = `<a href="#root/${target.note.noteId}?block=a1:b2">x</a>`
+                + `<a href="#root/${target.note.noteId}?bookmark=heading">y</a>`;
+            getContext().init(() => saveLinks(source.note, content));
+
+            const relations = source.note.getRelations().filter((r) => r.name === "internalLink");
+            expect(relations.map((r) => r.value)).toEqual([ target.note.noteId ]);
+        });
+
+        it("removes link relations that are no longer present in the content", () => {
+            const target = createNote("root", { title: "spec-unused-target" });
+            const source = createNote("root", { title: "spec-unused-source" });
+
+            // First, create the link.
+            getContext().init(() => saveLinks(source.note, `<a href="#root/${target.note.noteId}">x</a>`));
+            expect(source.note.getRelations().some((r) => r.name === "internalLink")).toBe(true);
+
+            // Then save content without the link; the relation should be marked deleted.
+            getContext().init(() => saveLinks(source.note, "<p>no links anymore</p>"));
+            expect(source.note.getRelations().some((r) => r.name === "internalLink" && !r.isDeleted)).toBe(false);
+        });
+
+        it("is a no-op for note types it does not scan", () => {
+            const code = createNote("root", {
+                title: "spec-code",
+                content: "let x = 1;",
+                type: "code",
+                mime: "application/javascript"
+            });
+
+            const content = `<a href="#root/root">x</a>`;
+            const res = getContext().init(() => saveLinks(code.note, content));
+
+            expect(res).toEqual({ forceFrontendReload: false, content });
+            expect(code.note.getRelations().some((r) => r.name === "internalLink")).toBe(false);
+        });
+
+        it("strips a stale external srcset from an image already pointing at a local attachment (#srcset)", () => {
+            const source = createNote("root", { title: "spec-srcset" });
+
+            // Real-world paste: the image was saved as a local attachment (src rewritten),
+            // but the copied HTML still carries a srcset of external URLs. Browsers prefer
+            // srcset over src, so once upstream removes those URLs the image vanishes even
+            // though the local attachment is still valid.
+            const content =
+                `<figure class="image image_resized" style="width:49.35%;">` +
+                `<img style="aspect-ratio:1290/238;" src="api/attachments/gbsXLfqQwo4a/image/asas.png" alt="" ` +
+                `srcset="https://example.com/wp-content/uploads/2025/02/asas.png 1290w, ` +
+                `https://example.com/wp-content/uploads/2025/02/asas-300x55.png 300w" ` +
+                `sizes="100vw" width="1290" height="238"></figure>`;
+
+            const { content: newContent } = getContext().init(() => saveLinks(source.note, content));
+
+            // The local src is preserved…
+            expect(newContent).toContain(`src="api/attachments/gbsXLfqQwo4a/image/asas.png"`);
+            // …but the external srcset/sizes are removed so the browser falls back to it.
+            expect(newContent).not.toContain("srcset=");
+            expect(newContent).not.toContain("example.com");
+            expect(newContent).not.toContain("sizes=");
+        });
+
+        it("keeps the srcset on an image whose src is still an external URL", () => {
+            const source = createNote("root", { title: "spec-srcset-external" });
+
+            // Nothing was localized here (e.g. downloadImagesAutomatically off): the src is
+            // still external, so the srcset is the legitimate/only source and must survive.
+            const content =
+                `<img src="https://example.com/a.png" ` +
+                `srcset="https://example.com/a.png 1290w, https://example.com/a-300.png 300w" sizes="100vw">`;
+
+            const { content: newContent } = getContext().init(() => saveLinks(source.note, content));
+
+            // Assert the full srcset value survived intact, not merely that a srcset= token is present.
+            expect(newContent).toContain(`srcset="https://example.com/a.png 1290w, https://example.com/a-300.png 300w"`);
+        });
+
+        it("strips a srcset containing the opposite quote character without corrupting the tag", () => {
+            const source = createNote("root", { title: "spec-srcset-quote" });
+
+            // A single quote inside the double-quoted srcset value must not truncate the strip
+            // (a naive [^"']* would stop at the apostrophe and leave a dangling fragment).
+            const content =
+                `<p><img src="api/attachments/aBc/image/x.png" ` +
+                `srcset="https://example.com/it's-a-photo.png 1x"> after</p>`;
+
+            const { content: newContent } = getContext().init(() => saveLinks(source.note, content));
+
+            expect(newContent).toBe(`<p><img src="api/attachments/aBc/image/x.png"> after</p>`);
+        });
+
+        it("extracts an inline base64 attachment, deriving its title via prepareTitle", () => {
+            const source = createNote("root", { title: "spec-inline-attachment" });
+
+            // A 1x1 PNG embedded inline, with an HTML-entity-encoded link label.
+            const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+            const content = `<p><a href="data:image/png;base64,${pngBase64}">my &amp; file.png</a></p>`;
+
+            const { content: newContent } = getContext().init(() => saveLinks(source.note, content));
+
+            const attachments = source.note.getAttachments().filter((a) => a.role === "file");
+            expect(attachments).toHaveLength(1);
+            // prepareTitle stripped the tag context and decoded the &amp; entity for the title.
+            expect(attachments[0].title).toBe("my & file.png");
+            expect(attachments[0].mime).toBe("image/png");
+
+            // The inline data URL is replaced by a reference-link to the new attachment.
+            expect(newContent).toContain(`attachmentId=${attachments[0].attachmentId}`);
+            expect(newContent).not.toContain("data:image/png;base64");
+        });
+
+        it("relates a mind map to the notes its nodes link to, and lets go of the ones dropped", () => {
+            const target = createNote("root", { title: "spec-map-target" });
+            const map = createNote("root", {
+                title: "spec-map",
+                type: "mindMap",
+                mime: "application/json",
+                content: `{"nodeData":{"id":"root","topic":"Root"}}`
+            });
+            const buildMap = (hyperLink: string) =>
+                JSON.stringify({ nodeData: { id: "root", topic: "Root", children: [{ id: "a", topic: "A", hyperLink }] } });
+
+            getContext().init(() => saveLinks(map.note, buildMap(`#root/${target.note.noteId}`)));
+
+            const relation = map.note.getRelations().find((r) => r.name === "internalLink");
+            expect(relation?.value).toBe(target.note.noteId);
+
+            // Pointed elsewhere, the node no longer relates the two notes.
+            getContext().init(() => saveLinks(map.note, buildMap("https://example.com")));
+            expect(map.note.getRelations().some((r) => r.name === "internalLink" && !r.isDeleted)).toBe(false);
+        });
+    });
+
+    describe("asyncPostProcessContent", () => {
+        it("sets the link preview picture download going", async () => {
+            // The pass itself is covered in image_download.spec.ts. What matters here is the wiring:
+            // saving content is the only thing that starts it.
+            const asked: string[] = [];
+            initRequest(fakeRequestProvider({
+                getImage: async (address: string) => {
+                    asked.push(address);
+                    const png = Buffer.from(
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
+                        "base64"
+                    );
+                    return png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) as ArrayBuffer;
+                }
+            }));
+
+            const { note } = createNote("root", {
+                title: "spec-preview-wiring",
+                content: `<section class="link-embed" data-url="https://example.com/p" data-favicon="https://example.com/f.png"></section>`
+            });
+
+            await getContext().init(() => noteService.asyncPostProcessContent(note, note.getContent()));
+
+            expect(asked).toEqual([ "https://example.com/f.png" ]);
+            expect(note.getAttachments().map((a) => a.role)).toStrictEqual([ "favicon" ]);
+        });
+    });
+
+    describe("updateNoteData", () => {
+        it("persists new content and extracts link relations", () => {
+            const target = createNote("root", { title: "spec-update-target" });
+            const note = createNote("root", { title: "spec-update", content: "<p>old</p>" }).note;
+
+            const content = `<p>new <a href="#root/${target.note.noteId}">link</a></p>`;
+            getContext().init(() => noteService.updateNoteData(note.noteId, content));
+
+            expect(note.getContent()).toContain("new");
+            expect(
+                note.getRelations().some((r) => r.name === "internalLink" && r.value === target.note.noteId)
+            ).toBe(true);
+        });
+
+        it("throws when the note is not available", () => {
+            expect(() => getContext().init(() => noteService.updateNoteData("doesNotExist99", "<p>x</p>"))).toThrow(
+                /not available for change/
+            );
+        });
+
+        it("updates an attachment of the note by its ID and skips any other attachment ID", () => {
+            const note = createNote("root", { title: "spec-update-att", content: "<p>x</p>" }).note;
+            const other = createNote("root", { title: "spec-update-att-other" }).note;
+            const attachment = { role: "file", mime: "application/json", title: "canvas.json" };
+            const save = (owner: BNote, content: string) =>
+                getContext().init(() => owner.saveAttachment({ ...attachment, content }));
+            const own = save(note, "old");
+            const foreign = save(other, "theirs");
+            const row = (attachmentId: string | undefined, content: string) =>
+                ({ ...attachment, attachmentId, ownerId: note.noteId, content });
+            // `becca.getAttachment()` reads the row again, with its current blob.
+            const contentOf = (attachmentId: string | undefined) =>
+                attachmentId ? becca.getAttachment(attachmentId)?.getContent() : undefined;
+
+            getContext().init(() => noteService.updateNoteData(note.noteId, "<p>x</p>", [
+                row(own.attachmentId, "new"),
+                row(foreign.attachmentId, "mine"),
+                row("deletedAttachment99", "gone")
+            ]));
+
+            expect(contentOf(own.attachmentId)).toBe("new");
+            expect(contentOf(foreign.attachmentId)).toBe("theirs");
+            expect(note.getAttachments().map((a) => a.attachmentId))
+                .toStrictEqual([ own.attachmentId ]);
+        });
+    });
+
+    describe("duplicateSubtree", () => {
+        it("duplicates a note and its descendants, remapping internal relations and appending a suffix", () => {
+            const root = createNote("root", { title: "spec-dup-root" });
+            const child = createNote(root.note.noteId, { title: "spec-dup-child" });
+
+            // Add a relation from the parent to its own child so we can verify remapping.
+            getContext().init(() => root.note.setRelation("myRel", child.note.noteId));
+
+            const { note: dupNote } = getContext().init(() => noteService.duplicateSubtree(root.note.noteId, "root"));
+
+            // A brand new note id is allocated.
+            expect(dupNote.noteId).not.toBe(root.note.noteId);
+            // The duplicate gets the "(dup)" suffix in its title.
+            expect(dupNote.title).not.toBe(root.note.title);
+
+            // The internal relation now points at the duplicated child, not the original.
+            const dupChildren = dupNote.getChildNotes();
+            expect(dupChildren).toHaveLength(1);
+            expect(dupNote.getRelationValue("myRel")).toBe(dupChildren[0].noteId);
+            expect(dupChildren[0].noteId).not.toBe(child.note.noteId);
+        });
+
+        it("duplicates only the note when withChildren is false, keeping references to the original children", () => {
+            const parent = createNote("root", { title: "spec-dup-only" });
+            const child = createNote(parent.note.noteId, { title: "spec-dup-only-child" });
+            getContext().init(() => {
+                parent.note.setLabel("iconClass", "bx bx-star");
+                parent.note.setRelation("selfRel", parent.note.noteId);
+                parent.note.setRelation("childRel", child.note.noteId);
+                parent.note.setContent(`<p><a href="#root/${child.note.noteId}">child</a></p>`);
+            });
+
+            const { note: dupNote } = getContext().init(() =>
+                noteService.duplicateSubtree(parent.note.noteId, "root", { withChildren: false }));
+
+            expect(dupNote.noteId).not.toBe(parent.note.noteId);
+            expect(dupNote.getChildNotes()).toHaveLength(0);
+            expect(parent.note.getChildNotes().map((n) => n.noteId)).toStrictEqual([ child.note.noteId ]);
+            expect(dupNote.getLabelValue("iconClass")).toBe("bx bx-star");
+            expect(dupNote.getRelationValue("selfRel")).toBe(dupNote.noteId);
+            expect(dupNote.getRelationValue("childRel")).toBe(child.note.noteId);
+            expect(dupNote.getContent()).toContain(child.note.noteId);
+        });
+
+        it("refuses to duplicate the root note", () => {
+            expect(() => getContext().init(() => noteService.duplicateSubtree("root", "root"))).toThrow(
+                /Duplicating root is not possible/
+            );
+        });
+    });
+
+    describe("saveRevisionIfNeeded", () => {
+        // saveRevisionIfNeeded only creates a revision once the note is at least
+        // `revisionSnapshotTimeInterval` seconds old (default 600s). A freshly
+        // created note is ~0s old, so with the default interval the revision
+        // branch is unreachable and the `disableVersioning` guard would never be
+        // exercised. Force the interval to 0 so the branch becomes reachable, and
+        // restore the original value afterwards so sibling tests are unaffected.
+        let originalInterval: string;
+
+        beforeAll(() => {
+            originalInterval = optionService.getOption("revisionSnapshotTimeInterval");
+            getContext().init(() => optionService.setOption("revisionSnapshotTimeInterval", "0"));
+        });
+
+        afterAll(() => {
+            getContext().init(() => optionService.setOption("revisionSnapshotTimeInterval", originalInterval));
+        });
+
+        function revisionCount(note: BNote): number {
+            return getSql().getValue<number>("SELECT COUNT(*) FROM revisions WHERE noteId = ?", [note.noteId]);
+        }
+
+        it("creates a revision for an eligible note without disableVersioning", () => {
+            const note = createNote("root", {
+                title: "spec-revision-eligible",
+                content: "<p>x</p>"
+            }).note;
+
+            const before = revisionCount(note);
+            getContext().init(() => noteService.saveRevisionIfNeeded(note));
+            const after = revisionCount(note);
+
+            expect(after).toBe(before + 1);
+        });
+
+        it("does nothing for notes with disableVersioning", () => {
+            const note = createNote("root", {
+                title: "spec-no-revision",
+                content: "<p>x</p>",
+                attributes: [
+                    { type: "label", name: "disableVersioning", value: "", isInheritable: false, position: 10 }
+                ]
+            }).note;
+
+            const before = revisionCount(note);
+            getContext().init(() => noteService.saveRevisionIfNeeded(note));
+            const after = revisionCount(note);
+
+            expect(after).toBe(before);
+        });
+    });
+});
+
+/**
+ * Characterization of the attachment-title derivation used by saveAttachments
+ * (the inner label of an inline base64 `<a>` link → a plain-text title). Locks
+ * the behavior so the underlying HTML-to-text implementation can be swapped
+ * without regressing real-world inputs (filenames, entities, inline markup).
+ */
+describe("prepareTitle", () => {
+    it("decodes HTML entities (named, decimal, hex)", () => {
+        expect(prepareTitle("a &amp; b.txt")).toBe("a & b.txt");
+        expect(prepareTitle("caf&eacute;.pdf")).toBe("café.pdf");
+        expect(prepareTitle("&copy; report.docx")).toBe("© report.docx");
+        expect(prepareTitle("price &lt; 100 &gt; 50.csv")).toBe("price < 100 > 50.csv");
+        expect(prepareTitle("emoji &#x1F600; file.png")).toBe("emoji 😀 file.png");
+    });
+
+    it("strips inline tags, keeping their text", () => {
+        expect(prepareTitle("<b>bold</b> name.jpg")).toBe("bold name.jpg");
+        expect(prepareTitle('<span class="x">nested <i>tags</i></span>.svg')).toBe("nested tags.svg");
+    });
+
+    it("collapses runs of whitespace and trims", () => {
+        expect(prepareTitle("spaced    out    name.dat")).toBe("spaced out name.dat");
+        expect(prepareTitle("tab\tand\nnewline.bin")).toBe("tab and newline.bin");
+        expect(prepareTitle("  leading & trailing  ")).toBe("leading & trailing");
+    });
+
+    it("passes plain filenames through unchanged and handles empty input", () => {
+        expect(prepareTitle("document.pdf")).toBe("document.pdf");
+        expect(prepareTitle("My File (1).png")).toBe("My File (1).png");
+        expect(prepareTitle("")).toBe("");
+    });
+});

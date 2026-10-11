@@ -1,20 +1,17 @@
 import "./code_notes.css";
 
 import CodeMirror, { ColorThemes, getThemeById, type ThemeVariant } from "@triliumnext/codemirror";
-import { default as codeNoteMimeTypes } from "@triliumnext/codemirror/src/syntax_highlighting";
-import { MimeType } from "@triliumnext/commons";
-import { byMimeType as codeBlockMimeTypes } from "@triliumnext/highlightjs/src/syntax_highlighting";
 import { useEffect, useMemo, useRef } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
-import mime_types from "../../../services/mime_types";
+import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import FormSelect from "../../react/FormSelect";
 import { FormTextBoxWithUnit } from "../../react/FormTextBox";
-import { useColorScheme, useStaticTooltip, useTriliumOption, useTriliumOptionBool, useTriliumOptionJson } from "../../react/hooks";
+import FormToggle from "../../react/FormToggle";
+import { useColorScheme, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
-import CheckboxList from "./components/CheckboxList";
-import OptionsRow, { OptionsRowWithToggle } from "./components/OptionsRow";
-import OptionsSection from "./components/OptionsSection";
+import { CodeMimeTypesList } from "./code_mime_types_list";
+import OptionsPageHeader from "./components/OptionsPageHeader";
 import ThemeModeSelector from "./components/ThemeModeSelector";
 import codeNoteSample from "./samples/code_note.txt?raw";
 
@@ -26,6 +23,7 @@ export default function CodeNoteSettings() {
 
     return (
         <>
+            <OptionsPageHeader />
             <Editor wordWrapping={codeLineWrapEnabled} setWordWrapping={setCodeLineWrapEnabled} />
             <Appearance wordWrapping={codeLineWrapEnabled} indentSize={parseInt(codeNoteTabWidth) || 4} />
             <CodeMimeTypes />
@@ -44,16 +42,16 @@ function Editor({ wordWrapping, setWordWrapping }: EditorProps) {
     const [codeNoteTabWidth, setCodeNoteTabWidth] = useTriliumOption("codeNoteTabWidth");
 
     return (
-        <OptionsSection title={t("code-editor-options.title")}>
-            <OptionsRowWithToggle
-                name="word-wrap"
-                label={t("code_theme.word_wrapping")}
-                currentValue={wordWrapping}
-                onChange={setWordWrapping}
-            />
+        <Card heading={t("code-editor-options.title")}>
+            <OptionCardSection name="word-wrap" label={t("code_theme.word_wrapping")}>
+                <FormToggle currentValue={wordWrapping} onChange={setWordWrapping} />
+            </OptionCardSection>
 
             {/* Avoid using "code" in the name of numeric inputs to prevent KeepassXC from triggering. */}
-            <OptionsRow name="editor-tab-width" label={t("code-editor-options.tab_width")}>
+            <OptionCardSection
+                name="editor-tab-width"
+                label={t("code-editor-options.tab_width")}
+            >
                 <FormTextBoxWithUnit
                     type="number" min={1} max={16} step={1}
                     unit={t("code-editor-options.tab_width_unit")}
@@ -61,25 +59,29 @@ function Editor({ wordWrapping, setWordWrapping }: EditorProps) {
                     onChange={setCodeNoteTabWidth}
                     onBlur={setCodeNoteTabWidth}
                 />
-            </OptionsRow>
+            </OptionCardSection>
 
-            <OptionsRow name="source-readonly-threshold" label={t("code_auto_read_only_size.label")} description={t("text_auto_read_only_size.description")}>
+            <OptionCardSection
+                name="source-readonly-threshold"
+                label={t("code_auto_read_only_size.label")}
+                description={t("text_auto_read_only_size.description")}
+            >
                 <FormTextBoxWithUnit
                     type="number" min={0}
                     unit={t("text_auto_read_only_size.unit")}
                     currentValue={autoReadonlySize}
                     onBlur={setAutoReadonlySize}
                 />
-            </OptionsRow>
+            </OptionCardSection>
 
-            <OptionsRowWithToggle
+            <OptionCardSection
                 name="vim-keymap-enabled"
                 label={t("vim_key_bindings.use_vim_keybindings_in_code_notes")}
                 description={t("vim_key_bindings.enable_vim_keybindings")}
-                currentValue={vimKeymapEnabled}
-                onChange={setVimKeymapEnabled}
-            />
-        </OptionsSection>
+            >
+                <FormToggle currentValue={vimKeymapEnabled} onChange={setVimKeymapEnabled} />
+            </OptionCardSection>
+        </Card>
     );
 }
 
@@ -115,38 +117,42 @@ function Appearance({ wordWrapping, indentSize }: AppearanceProps) {
         : codeNoteTheme;
 
     return (
-        <OptionsSection title={t("code_theme.title")} className="code-block-appearance">
+        <Card heading={t("code_theme.title")}>
             <ThemeModeSelector matchesApp={matchesApp} onMatchesAppChange={setMatchesApp} />
 
             {matchesApp ? (
                 <>
-                    <OptionsRow name="light-theme" label={t("code_theme.light_theme")}>
+                    <OptionCardSection name="light-theme" label={t("code_theme.light_theme")}>
                         <FormSelect
                             values={lightThemes}
                             keyProperty="id" titleProperty="name"
                             currentValue={lightTheme} onChange={setLightTheme}
                         />
-                    </OptionsRow>
-                    <OptionsRow name="dark-theme" label={t("code_theme.dark_theme")}>
+                    </OptionCardSection>
+                    <OptionCardSection name="dark-theme" label={t("code_theme.dark_theme")}>
                         <FormSelect
                             values={darkThemes}
                             keyProperty="id" titleProperty="name"
                             currentValue={darkTheme} onChange={setDarkTheme}
                         />
-                    </OptionsRow>
+                    </OptionCardSection>
                 </>
             ) : (
-                <OptionsRow name="color-scheme" label={t("code_theme.color-scheme")}>
+                <OptionCardSection name="color-scheme" label={t("code_theme.color-scheme")}>
                     <FormSelect
                         values={allThemes}
                         keyProperty="id" titleProperty="name"
                         currentValue={codeNoteTheme} onChange={setCodeNoteTheme}
                     />
-                </OptionsRow>
+                </OptionCardSection>
             )}
 
-            <CodeNotePreview wordWrapping={wordWrapping} themeName={effectiveTheme} indentSize={indentSize} />
-        </OptionsSection>
+            {/* A specimen of the editor rather than a control standing beside a label, shown
+                the way a code block is shown in a note. */}
+            <CardSection className="code-note-preview" filterRole="companion">
+                <CodeNotePreview wordWrapping={wordWrapping} themeName={effectiveTheme} indentSize={indentSize} />
+            </CardSection>
+        </Card>
     );
 }
 
@@ -193,11 +199,7 @@ function CodeNotePreview({ themeName, wordWrapping, indentSize }: { themeName: s
     }, [ themeName ]);
 
     return (
-        <div
-            ref={containerRef}
-            class="note-detail-readonly-code-content"
-            style={{ margin: 0, height: "200px" }}
-        />
+        <div ref={containerRef} class="note-detail-readonly-code-content" />
     );
 }
 
@@ -212,75 +214,11 @@ function reindentSample(sample: string, indentSize: number): string {
 
 function CodeMimeTypes() {
     return (
-        <OptionsSection title={t("code_mime_types.title")}>
-            <CodeMimeTypesList />
-        </OptionsSection>
+        <Card heading={t("code_mime_types.title")}>
+            <CardSection>
+                <CodeMimeTypesList />
+            </CardSection>
+        </Card>
     );
 }
 
-type MimeTypeWithDisabled = MimeType & { disabled?: boolean };
-
-export function CodeMimeTypesList() {
-    const containerRef = useRef<HTMLUListElement>(null);
-    useStaticTooltip(containerRef, {
-        title() {
-            const mime = this.querySelector("input")?.value;
-            if (!mime || mime === "text/plain") return "";
-
-            const hasCodeBlockSyntax = !!codeBlockMimeTypes[mime];
-            const hasCodeNoteSyntax = !!codeNoteMimeTypes[mime];
-
-            return `
-                <strong>${t("code_mime_types.tooltip_syntax_highlighting")}</strong><br/>
-                ${hasCodeBlockSyntax ? "✅" : "❌"} ${t("code_mime_types.tooltip_code_block_syntax")}<br/>
-                ${hasCodeNoteSyntax ? "✅" : "❌"} ${t("code_mime_types.tooltip_code_note_syntax")}
-            `;
-        },
-        selector: "label",
-        customClass: "tooltip-top",
-        placement: "left",
-        fallbackPlacements: [ "left", "right" ],
-        animation: false,
-        html: true
-    });
-    const [ codeNotesMimeTypes, setCodeNotesMimeTypes ] = useTriliumOptionJson<string[]>("codeNotesMimeTypes");
-    const groupedMimeTypes: Record<string, MimeType[]> = useMemo(() => {
-        mime_types.loadMimeTypes();
-
-        const ungroupedMimeTypes = Array.from(mime_types.getMimeTypes()) as MimeTypeWithDisabled[];
-        const plainTextMimeType = ungroupedMimeTypes.shift();
-        const result: Record<string, MimeType[]> = {};
-        ungroupedMimeTypes.sort((a, b) => a.title.localeCompare(b.title));
-
-        if (plainTextMimeType) {
-            result[""] = [ plainTextMimeType ];
-            plainTextMimeType.enabled = true;
-            plainTextMimeType.disabled = true;
-        }
-
-        for (const mimeType of ungroupedMimeTypes) {
-            const initial = mimeType.title.charAt(0).toUpperCase();
-            if (!result[initial]) {
-                result[initial] = [];
-            }
-            result[initial].push(mimeType);
-        }
-        return result;
-    }, [ codeNotesMimeTypes ]);
-
-    return (
-        <ul class="options-mime-types" ref={containerRef}>
-            {Object.entries(groupedMimeTypes).map(([ initial, mimeTypes ]) => (
-                <section>
-                    { initial && <h5>{initial}</h5> }
-                    <CheckboxList
-                        values={mimeTypes as MimeTypeWithDisabled[]}
-                        keyProperty="mime" titleProperty="title" disabledProperty="disabled"
-                        currentValue={codeNotesMimeTypes} onChange={setCodeNotesMimeTypes}
-                        columnWidth="inherit"
-                    />
-                </section>
-            ))}
-        </ul>
-    );
-}

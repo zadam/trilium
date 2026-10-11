@@ -1,0 +1,15 @@
+/* Previous/next sibling navigation, pinned by the corner it names (see `placement` on
+   OverlayControlGroup); left here is the size of its arrows and what it stands above. */
+.sibling-navigator {
+    --overlay-button-icon-size: 20px;
+
+    z-index: 1;
+
+    .sibling-navigator-index {
+        min-width: 5em;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+

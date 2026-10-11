@@ -1,39 +1,51 @@
 import { Component, h, VNode } from "preact";
 
+import type AppComponent from "../components/component.js";
+
 import type FNote from "../entities/fnote.js";
 import { renderReactWidgetAtElement } from "../widgets/react/react_utils.jsx";
 import { type Bundle, executeBundleWithoutErrorHandling } from "./bundle.js";
 import froca from "./froca.js";
-import server from "./server.js";
+import { keepStylesScoped, RENDER_SCOPE_CLASS } from "./render_css_scope.js";
 
-type ErrorHandler = (e: unknown) => void;
+/**
+ * @param noteId the render note the error is attributed to, so the caller can link back to it.
+ */
+type ErrorHandler = (e: unknown, noteId?: string) => void;
 
-async function render(note: FNote, $el: JQuery<HTMLElement>, onError?: ErrorHandler) {
+/**
+ * @param parentComponent the component a JSX render note's element is mounted under, by default the
+ *                        one of the closest `.component` element.
+ */
+export async function render(note: FNote, $el: JQuery<HTMLElement>, onError?: ErrorHandler, parentComponent?: AppComponent) {
     const relations = note.getRelations("renderNote");
     const renderNoteIds = relations.map((rel) => rel.value).filter((noteId) => noteId);
 
     $el.empty().toggle(renderNoteIds.length > 0);
 
+    let currentRenderNoteId: string | undefined;
     try {
         for (const renderNoteId of renderNoteIds) {
-            const bundle = await server.postWithSilentInternalServerError<Bundle>(`script/bundle/${renderNoteId}`);
+            currentRenderNoteId = renderNoteId;
+            const bundle = await froca.getScriptBundle(renderNoteId);
 
             if (!bundle) {
                 throw new Error(`Script note '${renderNoteId}' could not be loaded. It may be protected and require an active protected session.`);
             }
 
-            const $scriptContainer = $("<div>");
+            const $scriptContainer = $("<div>").addClass(RENDER_SCOPE_CLASS);
             $el.append($scriptContainer);
 
             $scriptContainer.append(bundle.html);
+            keepStylesScoped($scriptContainer[0]);
 
             // async so that scripts cannot block trilium execution
             executeBundleWithoutErrorHandling(bundle, note, $scriptContainer)
-                .catch(onError)
+                .catch((e) => onError?.(e, renderNoteId))
                 .then(result => {
                     // Render JSX
                     if (bundle.html === "") {
-                        renderIfJsx(bundle, result, $el, onError).catch(onError);
+                        renderIfJsx(bundle, result, $el, onError, parentComponent).catch((e) => onError?.(e, bundle.noteId));
                     }
                 });
         }
@@ -42,17 +54,17 @@ async function render(note: FNote, $el: JQuery<HTMLElement>, onError?: ErrorHand
     } catch (e) {
         if (typeof e === "string" && e.startsWith("{") && e.endsWith("}")) {
             try {
-                onError?.(JSON.parse(e));
+                onError?.(JSON.parse(e), currentRenderNoteId);
             } catch (e) {
-                onError?.(e);
+                onError?.(e, currentRenderNoteId);
             }
         } else {
-            onError?.(e);
+            onError?.(e, currentRenderNoteId);
         }
     }
 }
 
-async function renderIfJsx(bundle: Bundle, result: unknown, $el: JQuery<HTMLElement>, onError?: ErrorHandler) {
+export async function renderIfJsx(bundle: Bundle, result: unknown, $el: JQuery<HTMLElement>, onError?: ErrorHandler, parentComponent?: AppComponent) {
     // Ensure the root script note is actually a JSX.
     const rootScriptNoteId = await froca.getNote(bundle.noteId);
     if (rootScriptNoteId?.mime !== "text/jsx") return;
@@ -61,7 +73,7 @@ async function renderIfJsx(bundle: Bundle, result: unknown, $el: JQuery<HTMLElem
     if (typeof result !== "function") return;
 
     // Obtain the parent component.
-    const closestComponent = glob.getComponentByEl($el.closest(".component")[0]);
+    const closestComponent = parentComponent ?? glob.getComponentByEl($el.closest(".component")[0]);
     if (!closestComponent) return;
 
     // Render the element.
@@ -72,7 +84,7 @@ async function renderIfJsx(bundle: Bundle, result: unknown, $el: JQuery<HTMLElem
         }
 
         componentDidCatch(error: unknown) {
-            onError?.(error);
+            onError?.(error, bundle.noteId);
             this.setState({ error });
         }
 

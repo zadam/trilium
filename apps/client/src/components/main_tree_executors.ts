@@ -1,3 +1,9 @@
+// Loaded for its side effect: this eagerly-instantiated executor owns the import/export commands, so
+// importing the service here registers its task-progress toast subscriptions at startup. The import/export
+// dialogs are lazy-loaded, so relying on them to register would mean an in-progress import/export toast
+// never reappears after a page refresh.
+import "../services/import.js";
+
 import branchService from "../services/branches.js";
 import clipboard from "../services/clipboard.js";
 import froca from "../services/froca.js";
@@ -160,13 +166,21 @@ export default class MainTreeExecutors extends Component {
     }
 
     async duplicateSubtreeCommand({ selectedOrActiveBranchIds }: CommandListenerData<"duplicateSubtree">) {
-        for (const branchId of selectedOrActiveBranchIds) {
+        await this.#duplicate(selectedOrActiveBranchIds, true);
+    }
+
+    async duplicateNoteCommand({ selectedOrActiveBranchIds }: CommandListenerData<"duplicateNote">) {
+        await this.#duplicate(selectedOrActiveBranchIds, false);
+    }
+
+    async #duplicate(branchIds: string[], withChildren: boolean) {
+        for (const branchId of branchIds) {
             const branch = froca.getBranch(branchId);
             if (!branch) continue;
             const note = await froca.getNote(branch.noteId);
             if (!note) continue;
             if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) continue;
-            noteCreateService.duplicateSubtree(branch.noteId, branch.parentNoteId);
+            noteCreateService.duplicateSubtree(branch.noteId, branch.parentNoteId, { withChildren });
         }
     }
 

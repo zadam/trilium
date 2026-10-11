@@ -32,6 +32,8 @@ export default class App {
     readonly currentNoteSplitTitle: Locator;
     readonly currentNoteSplitContent: Locator;
     readonly sidebar: Locator;
+    readonly optionsDialog: Locator;
+    readonly optionsDialogContent: Locator;
     private isMobile: boolean = false;
 
     constructor(page: Page, context: BrowserContext) {
@@ -47,6 +49,8 @@ export default class App {
         this.currentNoteSplitTitle = this.currentNoteSplit.locator(".note-title").first();
         this.currentNoteSplitContent = this.currentNoteSplit.locator(".note-detail-printable.visible");
         this.sidebar = page.locator("#right-pane");
+        this.optionsDialog = page.locator(".modal.options-dialog");
+        this.optionsDialogContent = this.optionsDialog.locator(".modal-body");
     }
 
     get noteTree(): Locator {
@@ -93,29 +97,53 @@ export default class App {
         }
     }
 
+    /**
+     * Sends this tab's API calls through the service worker, where Playwright can see them.
+     *
+     * Standalone's leader tab answers its own calls from the in-page SQLite worker
+     * (`standaloneApi.localFetch`), so they never reach the network stack and
+     * `page.waitForResponse()` never fires. Call this in a test that waits on a request rather than
+     * on what the request changes. Does nothing on the server build, which has no `standaloneApi`,
+     * and lasts until the next navigation re-runs standalone's bootstrap.
+     */
+    async observeApiRequests() {
+        await this.page.evaluate(() => {
+            const standaloneApi = (window as unknown as { standaloneApi?: { localFetch?: unknown } }).standaloneApi;
+            delete standaloneApi?.localFetch;
+        });
+    }
+
     async goToNoteInNewTab(noteTitle: string) {
         const autocomplete = this.currentNoteSplit.locator(".note-autocomplete");
         await expect(autocomplete).toBeVisible();
-        // The algolia autocomplete listens to keyboard events. `fill()` only
-        // dispatches `input`, which doesn't reliably open the dropdown — clear
-        // and type with real key events instead.
+        // Typed with real key events, as a person types, rather than `fill()`.
         await autocomplete.click();
         await autocomplete.clear();
         await autocomplete.pressSequentially(noteTitle);
 
-        // The second suggestion is the best candidate; the first is "Create a
-        // new note". Asserting on the suggestion itself (instead of the parent
-        // `.note-detail-empty-results`, which also contains the recent-notes
-        // list) ensures the dropdown actually opened.
+        // The notes come first, ahead of the search and creation rows, which also carry the
+        // title. Asserting on the suggestion itself (instead of the parent
+        // `.note-detail-empty-results`, which also contains the recent-notes list) ensures the
+        // dropdown actually opened.
         const suggestionSelector = this.currentNoteSplit
-            .locator(".note-detail-empty-results .aa-suggestion")
-            .nth(1);
+            .locator(".note-detail-empty-results .note-suggestion-list > .dropdown-item")
+            .first();
         await expect(suggestionSelector).toContainText(noteTitle);
         await suggestionSelector.click();
     }
 
+    /** Opens the settings dialog via the launcher cog and waits for it to appear. */
     async goToSettings() {
         await this.page.locator(".launcher-button.bx-cog").click();
+        await expect(this.optionsDialog).toBeVisible();
+    }
+
+    /**
+     * Navigates to the given settings page via the options dialog's sidebar. Pages are matched by
+     * their note ID (e.g. `_optionsLocalization`) so navigation is independent of the UI language.
+     */
+    async goToSettingsPage(optionsNoteId: string) {
+        await this.optionsDialog.locator(`.settings-navigation-item[href$="${optionsNoteId}"]`).click();
     }
 
     async getTab(tabIndex: number) {
@@ -171,7 +199,7 @@ export default class App {
         const noteActionsButton = this.currentNoteSplit.locator(".note-actions");
         await noteActionsButton.click();
 
-        const dropdownMenu = noteActionsButton.locator(".dropdown-menu").first();
+        const dropdownMenu = this.page.locator(".tn-dropdown-portal.note-actions .dropdown-menu").first();
         await this.page.waitForTimeout(100);
         await expect(dropdownMenu).toBeVisible();
         dropdownMenu.getByText(itemToFind).click();
@@ -221,7 +249,12 @@ export default class App {
         const locator = _locator as DropdownLocator;
         locator.selectOptionByText = async (text: string) => {
             await locator.locator(".dropdown-toggle").click();
-            await locator.locator(".dropdown-item", { hasText: text }).click();
+            // The menu is not always a child of the dropdown it belongs to: one opened inside a
+            // card is carried out to the body, the card being a container and so a backdrop root
+            // that would otherwise flatten its blur. Found by being the open one instead.
+            await this.page.locator(".dropdown-menu.show")
+                .locator(".dropdown-item", { hasText: text })
+                .click();
         };
         return locator;
     }

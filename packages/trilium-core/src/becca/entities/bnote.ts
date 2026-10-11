@@ -1,5 +1,5 @@
-import type { AttachmentRow, AttributeType, CloneResponse, NoteRow, NoteType, RevisionRow, RevisionSource } from "@triliumnext/commons";
-import { dayjs, getNoteIcon } from "@triliumnext/commons";
+import type { AttachmentRow, AttributeType, CloneResponse, EraseExcessRevisionsOptions, NoteRow, NoteType, RevisionRow, RevisionSource } from "@triliumnext/commons";
+import { dayjs, getNoteIcon, isMarkdownMime } from "@triliumnext/commons";
 
 import cloningService from "../../services/cloning.js";
 import dateUtils from "../../services/utils/date.js";
@@ -10,6 +10,7 @@ import noteService from "../../services/notes.js";
 import optionService from "../../services/options.js";
 import protectedSessionService from "../../services/protected_session.js";
 import searchService from "../../services/search/services/search.js";
+import { normalizeSearchText, tokenizeNormalizedText } from "../../services/search/utils/text_utils.js";
 import TaskContext from "../../services/task_context.js";
 import type { NotePojo } from "../becca-interface.js";
 import AbstractBeccaEntity from "./abstract_becca_entity.js";
@@ -48,6 +49,14 @@ interface ConvertOpts {
     autoConversion?: boolean;
 }
 
+/** A note's title in the two forms scoring needs, cached together since both derive from it. */
+export interface SearchableTitle {
+    normalized: string;
+    words: string[];
+    /** The title lowercased with its diacritics kept, or `null` when it has none. */
+    accented: string | null;
+}
+
 /**
  * Trilium's main entity, which can represent text note, image, code note, file attachment etc.
  */
@@ -77,8 +86,10 @@ class BNote extends AbstractBeccaEntity<BNote> {
     targetRelations!: BAttribute[];
 
     __flatTextCache!: string | null;
+    __searchableTitleCache: SearchableTitle | null = null;
 
     private __attributeCache!: BAttribute[] | null;
+    private __isArchivedCache: boolean | null = null;
     private __inheritableAttributeCache!: BAttribute[] | null;
     private __ancestorCache!: BNote[] | null;
 
@@ -129,6 +140,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         this.decrypt();
 
         this.__flatTextCache = null;
+        this.__searchableTitleCache = null;
 
         return this;
     }
@@ -139,6 +151,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         this.children = [];
         this.ownedAttributes = [];
         this.__attributeCache = null;
+        this.__isArchivedCache = null;
         this.__inheritableAttributeCache = null;
         this.targetRelations = [];
 
@@ -286,7 +299,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     /** @returns true if this note is a Markdown code note */
     isMarkdown() {
-        return this.type === "code" && (this.mime === "text/markdown" || this.mime === "text/x-markdown" || this.mime === "text/x-gfm");
+        return this.type === "code" && isMarkdownMime(this.mime);
     }
 
     /** @returns true if this note is an image */
@@ -345,6 +358,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         this.__validateTypeName(type, name);
         this.__ensureAttributeCacheIsAvailable();
 
+        /* v8 ignore next 3 -- defensive: cache is always populated by __ensureAttributeCacheIsAvailable */
         if (!this.__attributeCache) {
             throw new Error("Attribute cache not available.");
         }
@@ -432,6 +446,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             this.__getAttributes(path); // will refresh also this.__inheritableAttributeCache
         }
 
+        /* v8 ignore next -- defensive: __getAttributes always sets the cache for a non-cyclic path */
         return this.__inheritableAttributeCache || [];
     }
 
@@ -707,7 +722,13 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     get isArchived() {
-        return this.hasAttribute("label", "archived");
+        // Ranking a note path tests this for every note on it, so the attribute walk is cached
+        // alongside the attributes it reads.
+        if (this.__isArchivedCache === null) {
+            this.__isArchivedCache = this.hasAttribute("label", "archived");
+        }
+
+        return this.__isArchivedCache;
     }
 
     areAllNotePathsArchived() {
@@ -801,10 +822,30 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return this.__flatTextCache as string;
     }
 
+    /**
+     * The title normalized for search, plus its punctuation-stripped words. Scoring reads both for
+     * every match it ranks, so they are derived once per title rather than once per result.
+     */
+    getSearchableTitle(): SearchableTitle {
+        if (!this.__searchableTitleCache) {
+            const normalized = normalizeSearchText(this.title);
+            const lowercased = this.title.toLowerCase();
+            this.__searchableTitleCache = {
+                normalized,
+                words: tokenizeNormalizedText(normalized),
+                accented: lowercased === normalized ? null : lowercased
+            };
+        }
+
+        return this.__searchableTitleCache;
+    }
+
     invalidateThisCache() {
         this.__flatTextCache = null;
+        this.__searchableTitleCache = null;
 
         this.__attributeCache = null;
+        this.__isArchivedCache = null;
         this.__inheritableAttributeCache = null;
         this.__ancestorCache = null;
 
@@ -1171,16 +1212,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             isHidden: path.includes("_hidden")
         }));
 
-        notePaths.sort((a, b) => {
-            if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
-                return a.isInHoistedSubTree ? -1 : 1;
-            } else if (a.isArchived !== b.isArchived) {
-                return a.isArchived ? 1 : -1;
-            } else if (a.isHidden !== b.isHidden) {
-                return a.isHidden ? 1 : -1;
-            }
-            return a.notePath.length - b.notePath.length;
-        });
+        notePaths.sort(compareNotePathRecords);
 
         return notePaths;
     }
@@ -1477,6 +1509,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         const oldNoteUrl = `api/images/${this.noteId}/`;
         const newAttachmentUrl = `api/attachments/${attachment.attachmentId}/image/`;
 
+        /* v8 ignore next 3 -- defensive: an eligible parent is always a text note with string content */
         if (typeof parentContent !== "string") {
             throw new Error("Unable to convert image note into attachment because parent note does not have a string content.");
         }
@@ -1515,6 +1548,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         taskContext.noteDeletionHandlerTriggered = true;
 
         for (const branch of this.getParentBranches()) {
+            /* v8 ignore next -- deleteId is always assigned above; the nullish fallback is unreachable */
             branch.deleteBranch(deleteId ?? undefined, taskContext);
         }
     }
@@ -1524,6 +1558,11 @@ class BNote extends AbstractBeccaEntity<BNote> {
             try {
                 this.title = protectedSessionService.decryptString(this.title) || "";
                 this.__flatTextCache = null;
+                this.__searchableTitleCache = null;
+                // The pre-built flat text search index still holds this note's encrypted
+                // title, so schedule a refresh — otherwise the note stays unsearchable by
+                // title even after the protected session is unlocked (issue #10406).
+                this.becca.dirtyNoteFlatText(this.noteId);
 
                 this.isDecrypted = true;
             } catch (e: any) {
@@ -1576,6 +1615,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
             for (const noteAttachment of this.getAttachments()) {
                 const revisionAttachment = noteAttachment.copy();
 
+                /* v8 ignore next 3 -- defensive: revision.save() above always assigns revisionId */
                 if (!revision.revisionId) {
                     throw new Error("Revision ID is missing.");
                 }
@@ -1601,24 +1641,59 @@ class BNote extends AbstractBeccaEntity<BNote> {
         });
     }
 
-    // Limit the number of Snapshots to revisionSnapshotNumberLimit
-    // Delete older Snapshots that exceed the limit
-    eraseExcessRevisionSnapshots() {
-        // lable has a higher priority
-        let revisionSnapshotNumberLimit = parseInt(this.getLabelValue("versioningLimit") ?? "");
-        if (!Number.isInteger(revisionSnapshotNumberLimit)) {
-            revisionSnapshotNumberLimit = parseInt(optionService.getOption("revisionSnapshotNumberLimit"));
+    /**
+     * Erases the oldest revision snapshots beyond the number to keep, newest kept first.
+     *
+     * A negative limit keeps every snapshot — nothing is ever excess — while zero keeps none.
+     *
+     * @returns how many snapshots were erased.
+     */
+    eraseExcessRevisionSnapshots({ snapshotsToKeep, keepNamedSnapshots }: EraseExcessRevisionsOptions = {}): number {
+        const limit = this.resolveSnapshotLimit(snapshotsToKeep);
+
+        if (limit < 0) {
+            return 0;
         }
-        if (revisionSnapshotNumberLimit >= 0) {
-            const revisions = this.getRevisions();
-            if (revisions.length - revisionSnapshotNumberLimit > 0) {
-                const revisionIds = revisions
-                    .slice(0, revisions.length - revisionSnapshotNumberLimit)
-                    .map((revision) => revision.revisionId)
-                    .filter((id): id is string => id !== undefined);
-                eraseService.eraseRevisions(revisionIds);
-            }
+
+        // Named snapshots are the ones the user deliberately marked, so sparing them takes them out
+        // of the reckoning entirely: they are neither erased nor counted, and the limit then
+        // governs the automatic snapshots alone. Counting them would let a handful of named ones
+        // push every automatic snapshot out.
+        const keepNamed = keepNamedSnapshots ?? optionService.getOptionBool("revisionIgnoreNamedSnapshots");
+        const candidates = keepNamed
+            ? this.getRevisions().filter((revision) => !revision.description)
+            : this.getRevisions();
+
+        const revisionIds = candidates
+            .slice(0, Math.max(candidates.length - limit, 0))
+            .map((revision) => revision.revisionId)
+            .filter((id): id is string => id !== undefined);
+
+        if (revisionIds.length > 0) {
+            eraseService.eraseRevisions(revisionIds);
         }
+
+        return revisionIds.length;
+    }
+
+    /**
+     * How many snapshots this note keeps, most specific answer first: its own `#versioningLimit`,
+     * then the caller's override, then the `revisionSnapshotNumberLimit` option.
+     *
+     * The label outranks the override rather than the other way round. A label is a policy set on
+     * this note deliberately, while an override is a one-off answer standing in for the global
+     * setting — so it replaces that setting, and leaves a note that was given its own limit alone.
+     */
+    private resolveSnapshotLimit(override: number | undefined): number {
+        const labelled = parseInt(this.getLabelValue("versioningLimit") ?? "");
+
+        if (Number.isInteger(labelled)) {
+            return labelled;
+        }
+
+        return Number.isInteger(override)
+            ? Number(override)
+            : parseInt(optionService.getOption("revisionSnapshotNumberLimit"));
     }
 
     /**
@@ -1657,6 +1732,39 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     getFileName() {
         return formatDownloadTitle(this.title, this.type, this.mime);
+    }
+
+    /**
+     * Forces explicit creation/modification timestamps onto the note and its blob, persisting them
+     * immediately with raw SQL. This deliberately bypasses the automatic "now" stamping that
+     * {@link beforeSaving} applies on every regular save, which is why importers that need to preserve
+     * the source's original dates (ENEX, OneNote, …) call this *after* the note and its content have
+     * been saved.
+     *
+     * Both arguments are UTC datetimes in Trilium's DB format (e.g. `2023-08-21 23:38:51.110Z`); the
+     * matching local-time columns are derived from them. Either may be omitted to leave that pair at
+     * its current value.
+     */
+    setDateCreatedAndModified(utcDateCreated?: string, utcDateModified?: string) {
+        const toLocalDbFormat = (utc: string) => dayjs(utc).format(dateUtils.LOCAL_DATETIME_FORMAT);
+
+        if (utcDateCreated) {
+            this.utcDateCreated = utcDateCreated;
+            this.dateCreated = toLocalDbFormat(utcDateCreated);
+        }
+        if (utcDateModified) {
+            this.utcDateModified = utcDateModified;
+            this.dateModified = toLocalDbFormat(utcDateModified);
+        }
+
+        const sql = getSql();
+        sql.execute(
+            /*sql*/`UPDATE notes
+                    SET dateCreated = ?, utcDateCreated = ?, dateModified = ?, utcDateModified = ?
+                    WHERE noteId = ?`,
+            [this.dateCreated, this.utcDateCreated, this.dateModified, this.utcDateModified, this.noteId]
+        );
+        sql.execute(/*sql*/`UPDATE blobs SET utcDateModified = ? WHERE blobId = ?`, [this.utcDateModified, this.blobId]);
     }
 
     override beforeSaving() {
@@ -1707,7 +1815,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
             mime: this.mime,
             iconClass: iconClassLabels.length > 0 ? iconClassLabels[0].value : undefined,
             workspaceIconClass: undefined,
-            isFolder: this.isFolder.bind(this)
+            isFolder: this.isFolder.bind(this),
+            getLabelValue: this.getLabelValue.bind(this)
         });
 
         return `tn-icon ${icon}`;
@@ -1766,6 +1875,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
     getAttributeById(attributeId : string): BAttribute | undefined {
         this.__ensureAttributeCacheIsAvailable();
 
+        /* v8 ignore next 3 -- defensive: cache is always populated by __ensureAttributeCacheIsAvailable */
         if (!this.__attributeCache) {
             throw new Error("Attribute cache not available.");
         }
@@ -1793,6 +1903,23 @@ class BNote extends AbstractBeccaEntity<BNote> {
             throw new Error(`Attribute with id ${attributeId} not found.`);
         }
     }
+}
+
+/**
+ * Orders note-path records so the "best" path sorts first: paths inside the hoisted
+ * subtree beat outside ones, non-archived beat archived, non-hidden beat hidden, and
+ * shorter paths beat longer ones. Extracted from {@link BNote.getSortedNotePathRecords}
+ * so the ordering logic can be unit-tested directly.
+ */
+export function compareNotePathRecords(a: NotePathRecord, b: NotePathRecord): number {
+    if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
+        return a.isInHoistedSubTree ? -1 : 1;
+    } else if (a.isArchived !== b.isArchived) {
+        return a.isArchived ? 1 : -1;
+    } else if (a.isHidden !== b.isHidden) {
+        return a.isHidden ? 1 : -1;
+    }
+    return a.notePath.length - b.notePath.length;
 }
 
 export default BNote;

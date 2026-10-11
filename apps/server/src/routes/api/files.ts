@@ -1,103 +1,14 @@
-import { note_service as noteService, ValidationError, ws } from "@triliumnext/core";
+import { ValidationError, ws } from "@triliumnext/core";
 import chokidar from "chokidar";
 import type { Request } from "express";
 import fs from "fs";
-import { Readable } from "stream";
+import path from "path";
 import tmp from "tmp";
 
 import { becca } from "@triliumnext/core";
 import dataDirs from "../../services/data_dir.js";
 import { getLog } from "@triliumnext/core";
 import utils from "../../services/utils.js";
-
-function updateFile(req: Request<{ noteId: string }>) {
-    const note = becca.getNoteOrThrow(req.params.noteId);
-
-    const file = req.file;
-    if (!file) {
-        return {
-            uploaded: false,
-            message: `Missing file.`
-        };
-    }
-
-    if (req.query.replace !== "1") {
-        note.saveRevision();
-    }
-
-    note.mime = file.mimetype.toLowerCase();
-    note.save();
-
-    note.setContent(file.buffer);
-
-    note.setLabel("originalFileName", file.originalname);
-
-    noteService.asyncPostProcessContent(note, file.buffer);
-
-    return {
-        uploaded: true
-    };
-}
-
-function updateAttachment(req: Request<{ attachmentId: string }>) {
-    const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
-    const file = req.file;
-    if (!file) {
-        return {
-            uploaded: false,
-            message: `Missing file.`
-        };
-    }
-
-    attachment.getNote().saveRevision();
-
-    attachment.mime = file.mimetype.toLowerCase();
-    attachment.setContent(file.buffer, { forceSave: true });
-
-    return {
-        uploaded: true
-    };
-}
-
-function fileContentProvider(req: Request<{ noteId: string }>) {
-    // Read the file name from route params.
-    const note = becca.getNoteOrThrow(req.params.noteId);
-
-    return streamContent(note.getContent(), note.getFileName(), note.mime);
-}
-
-function attachmentContentProvider(req: Request<{ attachmentId: string }>) {
-    // Read the file name from route params.
-    const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
-
-    return streamContent(attachment.getContent(), attachment.getFileName(), attachment.mime);
-}
-
-async function streamContent(content: string | Uint8Array, fileName: string, mimeType: string) {
-    if (typeof content === "string") {
-        content = Buffer.from(content, "utf8");
-    }
-
-    const totalSize = content.byteLength;
-
-    const getStream = (range: { start: number; end: number }) => {
-        if (!range) {
-            // Request if for complete content.
-            return Readable.from(content);
-        }
-        // Partial content request.
-        const { start, end } = range;
-
-        return Readable.from(content.slice(start, end + 1));
-    };
-
-    return {
-        fileName,
-        totalSize,
-        mimeType,
-        getStream
-    };
-}
 
 function saveNoteToTmpDir(req: Request<{ noteId: string }>) {
     const note = becca.getNoteOrThrow(req.params.noteId);
@@ -155,13 +66,36 @@ function saveToTmpDir(fileName: string, content: string | Uint8Array, entityType
     };
 }
 
+/**
+ * Validates that the given file path is a known temporary file created by this server
+ * and resides within the expected temporary directory. This prevents path traversal
+ * attacks (CWE-22) where an attacker could read arbitrary files from the filesystem.
+ */
+function validateTemporaryFilePath(filePath: string): void {
+    if (!filePath || typeof filePath !== "string") {
+        throw new ValidationError("Missing or invalid file path.");
+    }
+
+    // Check 1: The file must be in our set of known temporary files created by saveToTmpDir().
+    if (!createdTemporaryFiles.has(filePath)) {
+        throw new ValidationError(`File '${filePath}' is not a tracked temporary file.`);
+    }
+
+    // Check 2 (defense-in-depth): Resolve to an absolute path and verify it is within TMP_DIR.
+    // This guards against any future bugs where a non-temp path could end up in the set.
+    const resolvedPath = path.resolve(filePath);
+    const resolvedTmpDir = path.resolve(dataDirs.TMP_DIR);
+
+    if (!resolvedPath.startsWith(resolvedTmpDir + path.sep) && resolvedPath !== resolvedTmpDir) {
+        throw new ValidationError(`File path '${filePath}' is outside the temporary directory.`);
+    }
+}
+
 function uploadModifiedFileToNote(req: Request<{ noteId: string }>) {
     const noteId = req.params.noteId;
     const { filePath } = req.body;
 
-    if (!createdTemporaryFiles.has(filePath)) {
-        throw new ValidationError(`File '${filePath}' is not a temporary file.`);
-    }
+    validateTemporaryFilePath(filePath);
 
     const note = becca.getNoteOrThrow(noteId);
 
@@ -182,9 +116,7 @@ function uploadModifiedFileToAttachment(req: Request<{ attachmentId: string }>) 
     const { attachmentId } = req.params;
     const { filePath } = req.body;
 
-    if (!createdTemporaryFiles.has(filePath)) {
-        throw new ValidationError(`File '${filePath}' is not a temporary file.`);
-    }
+    validateTemporaryFilePath(filePath);
 
     const attachment = becca.getAttachmentOrThrow(attachmentId);
 
@@ -202,12 +134,8 @@ function uploadModifiedFileToAttachment(req: Request<{ attachmentId: string }>) 
 }
 
 export default {
-    updateFile,
-    updateAttachment,
-    fileContentProvider,
     saveNoteToTmpDir,
     saveAttachmentToTmpDir,
-    attachmentContentProvider,
     uploadModifiedFileToNote,
     uploadModifiedFileToAttachment
 };

@@ -1,5 +1,5 @@
 import type { AttributeRow, BranchRow, NoteRow } from "@triliumnext/commons";
-import type { Request } from "express";
+import type { Request } from "../../http_interface";
 
 import becca from "../../becca/becca.js";
 import { NotFoundError } from "../../errors.js";
@@ -172,6 +172,7 @@ function getTree(req: Request) {
     const collectedNoteIds = new Set<string>([subTreeNoteId]);
 
     function collect(parentNote: BNote) {
+        /* v8 ignore next 3 -- defensive guard: collect() is only ever called with a cache-verified note */
         if (!parentNote) {
             console.trace(parentNote);
         }

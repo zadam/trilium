@@ -1,22 +1,14 @@
 {
   "name": "@triliumnext/share-theme",
   "version": "1.0.3",
-  "description": "Adaptation of the trilium.rocks share theme",
+  "description": "Default theme for shared notes and static HTML exports",
   "type": "module",
-  "main": "index.js",
   "scripts": {
-    "dev": "esrun scripts/build.ts -- --watch",
-    "build": "esrun scripts/build.ts",
-    "build-scripts": "esrun scripts/build.ts -- --module=scripts",
-    "build-styles": "esrun scripts/build.ts -- --module=styles",
-    "dist": "esrun scripts/build.ts -- --minify",
-    "test": "esrun src/scripts/test.ts"
+    "test": "vitest run"
   },
   "exports": {
     "./templates/*": "./src/templates/*",
-    "./styles/*": "./src/styles/*",
-    "./scripts/*": "./src/scripts/*",
-    "./*": "./dist/*"
+    "./model/*": "./src/model/*.ts"
   },
   "author": "Elian Doran <contact@eliandoran.me>",
   "contributors": [
@@ -24,19 +16,18 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "fuse.js": "7.3.0",
-    "katex": "0.16.47",
-    "mermaid": "11.15.0"
+    "@triliumnext/commons": "workspace:*",
+    "fuse.js": "7.5.0",
+    "katex": "0.19.0",
+    "mermaid": "12.1.0"
   },
   "devDependencies": {
-    "@digitak/esrun": "3.2.26",
     "@triliumnext/ckeditor5": "workspace:*",
-    "@typescript-eslint/eslint-plugin": "8.59.4",
-    "@typescript-eslint/parser": "8.59.4",
-    "dotenv": "17.4.2",
-    "esbuild": "0.28.0",
-    "eslint": "10.4.0",
-    "highlight.js": "11.11.1",
-    "typescript": "6.0.3"
+    "@triliumnext/client": "workspace:*",
+    "@types/ejs": "3.1.5",
+    "ejs": "7.0.1",
+    "happy-dom": "20.14.5",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
   }
 }

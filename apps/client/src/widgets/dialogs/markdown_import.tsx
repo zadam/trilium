@@ -1,3 +1,5 @@
+import "./markdown_import.css";
+
 import { RenderMarkdownResponse } from "@triliumnext/commons";
 import { useRef, useState } from "preact/hooks";
 
@@ -8,7 +10,7 @@ import utils from "../../services/utils";
 import Button from "../react/Button";
 import { useTriliumEvent } from "../react/hooks";
 import Modal from "../react/Modal";
-import { CKEditorApi } from "../type_widgets/text/CKEditorWithWatchdog";
+import type { CKEditorApi } from "../type_widgets/text/CKEditorWithWatchdog";
 
 export interface MarkdownImportOpts {
     editorApi: CKEditorApi;
@@ -22,7 +24,7 @@ export default function MarkdownImportDialog() {
 
     useTriliumEvent("showPasteMarkdownDialog", async ({ editorApi }) => {
         if (utils.isElectron()) {
-            const text = await navigator.clipboard.readText();
+            const text = (await window.electronApi?.clipboard.readText()) ?? "";
             convertMarkdownToHtml(text, editorApi);
         } else {
             editorApiRef.current = editorApi;
@@ -58,7 +60,6 @@ export default function MarkdownImportDialog() {
             <p>{t("markdown_import.modal_body_text")}</p>
             <textarea ref={markdownImportTextArea} value={text}
                 onInput={(e) => setText(e.currentTarget.value)}
-                style={{ height: 340, width: "100%" }}
                 onKeyDown={(e) => {
                     if (e.key === "Enter" && e.ctrlKey) {
                         e.preventDefault();

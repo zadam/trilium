@@ -1,7 +1,8 @@
-import type { NoteMeta } from "@triliumnext/core";
+import type { HiddenSubtreeItem } from "@triliumnext/commons";
+import type { NoteMeta, NoteMetaFile } from "@triliumnext/core";
 import { describe, expect, it } from "vitest";
 
-import { parseNoteMetaFile, serverTextNoteHandler, standaloneTextNoteHandler } from "./help_meta_generator.js";
+import { parseNoteMetaFile, serverTextNoteHandler, standaloneTextNoteHandler, stripAppVersion } from "./help_meta_generator.js";
 
 describe("Help meta generation (server)", () => {
     it("preserves custom folder icon", () => {
@@ -34,6 +35,52 @@ describe("Help meta generation (server)", () => {
         const items = parseNoteMetaFile(metaFile, serverTextNoteHandler);
         const icon = items[0]?.attributes?.find((a) => a.name === "iconClass");
         expect(icon?.value).toBe("bx bx-star");
+    });
+
+    it("resolves a cloned note's iconClass and docName to the primary occurrence", () => {
+        // The same note is placed under two folders: a primary occurrence (isClone:false) carrying
+        // a custom icon, and a clone (isClone:true) with no attributes and a ".clone" data file.
+        // Both occurrences map to the same noteId, so the runtime hidden-subtree check enforces one
+        // set of attributes; if the generator emits different iconClass/docName per occurrence, that
+        // check flip-flops them on every run. The clone must therefore inherit the primary's values.
+        const primary: NoteMeta = {
+            isClone: false, noteId: "nix", title: "Nix flake", type: "text", mime: "text/html",
+            attributes: [{ type: "label", name: "iconClass", value: "bx bxl-tux", isInheritable: false, position: 10 }],
+            format: "html", dataFileName: "Nix flake.html", children: []
+        };
+        const clone: NoteMeta = {
+            isClone: true, noteId: "nix", title: "Nix flake", type: "text", mime: "text/html",
+            format: "html", dataFileName: "Nix flake.clone.html", children: []
+        };
+        const desktop: NoteMeta = {
+            isClone: false, noteId: "desktop", title: "Desktop Installation", type: "text", mime: "text/html",
+            attributes: [], format: "html", dirFileName: "Desktop Installation", children: [primary]
+        };
+        const server: NoteMeta = {
+            isClone: false, noteId: "server", title: "Server Installation", type: "text", mime: "text/html",
+            attributes: [], format: "html", dirFileName: "Server Installation", children: [clone]
+        };
+        const root: NoteMeta = {
+            isClone: false, noteId: "root", title: "User Guide", type: "text", mime: "text/html",
+            attributes: [], format: "html", dirFileName: "User Guide", children: [desktop, server]
+        };
+
+        const metaFile = { formatVersion: 2, appVersion: "0.103.0", files: [root] };
+        const items = parseNoteMetaFile(metaFile, serverTextNoteHandler);
+
+        const primaryItem = items.find((i) => i.id === "_help_desktop")?.children?.[0];
+        const cloneItem = items.find((i) => i.id === "_help_server")?.children?.[0];
+        expect(primaryItem?.id).toBe("_help_nix");
+        expect(cloneItem?.id).toBe("_help_nix");
+
+        const iconOf = (it?: HiddenSubtreeItem) => it?.attributes?.find((a) => a.name === "iconClass")?.value;
+        const docNameOf = (it?: HiddenSubtreeItem) => it?.attributes?.find((a) => a.name === "docName")?.value;
+
+        // The clone inherits the primary's custom icon rather than falling back to "bx bx-file".
+        expect(iconOf(primaryItem)).toBe("bx bxl-tux");
+        expect(iconOf(cloneItem)).toBe("bx bxl-tux");
+        // Both point at the same documentation file (the primary's), not the clone's ".clone" path.
+        expect(docNameOf(cloneItem)).toBe(docNameOf(primaryItem));
     });
 
     it("generates docUrl from shareAlias when baseUrl is provided", () => {
@@ -257,5 +304,22 @@ describe("Help meta generation (standalone)", () => {
 
         expect(items).toHaveLength(1);
         expect(items[0].type).toBe("book");
+    });
+});
+
+describe("stripAppVersion", () => {
+    it("drops the version stamp and keeps everything else the docs metadata carries", () => {
+        const meta = {
+            formatVersion: 2,
+            appVersion: "0.105.0",
+            files: [{ noteId: "abc", title: "Note", attributes: [] }]
+        } as unknown as NoteMetaFile;
+
+        const stripped = stripAppVersion(meta);
+
+        expect("appVersion" in stripped).toBe(false);
+        expect(stripped).toStrictEqual({ formatVersion: 2, files: meta.files });
+        // The input is left alone: the minified branch of the export reads the same object.
+        expect(meta.appVersion).toBe("0.105.0");
     });
 });

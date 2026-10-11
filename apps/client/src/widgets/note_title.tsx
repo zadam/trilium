@@ -57,7 +57,7 @@ export default function NoteTitleWidget(props: {className?: string}) {
 
     // Manage focus.
     const textBoxRef = useRef<HTMLInputElement>(null);
-    const isNewNote = useRef<boolean>();
+    const isNewNote = useRef<boolean | undefined>(undefined);
     const pendingSelect = useRef<boolean>(false);
 
     // Re-apply selection when title changes if we have a pending select.
@@ -71,8 +71,11 @@ export default function NoteTitleWidget(props: {className?: string}) {
     }, [title]);
 
     useTriliumEvents([ "focusOnTitle", "focusAndSelectTitle" ], (e, eventName) => {
-        if (noteContext?.isActive() && textBoxRef.current) {
-            // In the new layout, there are two NoteTitleWidget instances. Only handle if visible.
+        // When the event targets a specific context (e.g. a popup's own context, which is never
+        // "active" in the tab manager), match on it; otherwise fall back to the active context.
+        const isTargeted = e.ntxId ? e.ntxId === noteContext?.ntxId : noteContext?.isActive();
+        if (isTargeted && textBoxRef.current) {
+            // A note context has two NoteTitleWidget instances, the title row's and InlineTitle's. Only handle if visible.
             if (!textBoxRef.current.checkVisibility({ checkOpacity: true })) {
                 return;
             }
@@ -110,10 +113,11 @@ export default function NoteTitleWidget(props: {className?: string}) {
                         return;
                     }
 
-                    // Focus on the note content when pressing enter.
+                    // Pressing Enter moves to the note content. For text notes this inserts a new empty
+                    // paragraph at the top of the document (Notion-like) rather than just focusing.
                     if (e.key === "Enter") {
                         e.preventDefault();
-                        parentComponent.triggerCommand("focusOnDetail", { ntxId: noteContext?.ntxId });
+                        parentComponent.triggerCommand("focusOnDetail", { ntxId: noteContext?.ntxId, insertNewlineAtTop: true });
                         return;
                     }
 
