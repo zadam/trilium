@@ -14,6 +14,8 @@ type BackgroundMessage = {
     name: "trilium-get-rectangle-for-screenshot";
 } | {
     name: "trilium-save-page";
+} | {
+    name: "trilium-get-page-metadata";
 };
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
@@ -270,16 +272,31 @@ export default defineBackground(() => {
     async function getImagePayloadFromSrc(src: string, pageUrl: string | null | undefined) {
         const imageId = randomString(20);
         const activeTab = await getActiveTab();
+        const { description } = await readPageMetadata();
         const payload = {
             title: activeTab.title,
             content: `<img src="${imageId}">`,
             images: [ { imageId, src } ],
-            pageUrl
+            pageUrl,
+            ...(description && { labels: { pageDescription: description } })
         };
 
         const failedImages = await postProcessImages(payload);
 
         return { payload, failedImages };
+    }
+
+    /**
+     * What the page says about itself. A screenshot or an image is saved without it where no
+     * content script answers: on browser pages, and on a page loaded before the extension was
+     * updated.
+     */
+    async function readPageMetadata(): Promise<{ description?: string }> {
+        try {
+            return await sendMessageToActiveTab({ name: "trilium-get-page-metadata" }) ?? {};
+        } catch {
+            return {};
+        }
     }
 
     async function saveCroppedScreenshot(pageUrl: string | null | undefined) {

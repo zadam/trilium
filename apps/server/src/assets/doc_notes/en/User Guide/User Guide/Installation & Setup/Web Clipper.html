@@ -32,8 +32,9 @@
 <ul>
   <li>
     <p>The popup shows what will be saved from the current page: the note's title,
-      which can be edited before saving, the website, and below them a preview.
-      A switch above the preview chooses what to save, among what the page offers:</p>
+      which can be edited before saving, the website, the page's description
+      if it has one, and below them a preview. A switch above the preview chooses
+      what to save, among what the page offers:</p>
     <ul>
       <li><em>Selection</em>, when text is selected on the page: <em>Save selection</em> saves
         it into the note of that page's clippings, as the context menu does.</li>
@@ -43,11 +44,14 @@
       <li><em>Bookmark</em>, always: a text box for a note about the page replaces
         the preview, and <em>Save bookmark</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>)
         saves a link to the page with that note. Left empty, the title stays the
-        page's title. If the page describes itself (in its <code>description</code> meta
-        tag, or the one it gives social sites), the description is shown above
-        the text box, where it can be edited or cleared, and is saved in the note's <code>#pageDescription</code> label.
-        The label is updated when the page is bookmarked again.</li>
+        page's title.</li>
     </ul>
+    <p>The description comes from the page's <code>description</code> meta tag,
+      or the one it gives social sites. It can be edited or cleared before saving,
+      and is saved in the <code>#pageDescription</code> label of the note. Clippings
+      saved with the keyboard shortcuts or the context menu, screenshots and
+      images included, get the description as the page gives it. Each clipping
+      that brings a description updates the label.</p>
     <p>The popup opens on the selection if there is one, otherwise on the article.
       On a page with no article (Readability cannot find one) and no selection,
       it opens on <em>Bookmark</em> and says the page has no article. The keyboard
@@ -100,6 +104,9 @@
   title and thumbnail. As with a link preview added in the editor, the video
   plays only when clicked. Other embedded content (such as videos from other
   websites) is not saved.</p>
+<p>The popup's preview shows each such video as a chip with the YouTube icon
+  and the video's short link, and leaves out the embedded content that will
+  not be saved.</p>
 <h2>Keyboard shortcuts</h2>
 <p>Keyboard shortcuts are available for most functions:</p>
 <ul>

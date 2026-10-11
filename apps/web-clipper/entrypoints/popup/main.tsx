@@ -41,6 +41,7 @@ interface SelectedContent {
     content: string;
     images: { imageId: string, src: string }[];
     pageUrl: string;
+    labels?: Record<string, string>;
 }
 
 /** The readable page, as the content script extracts it. */
@@ -316,6 +317,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const clip = mode === "selection" ? selection : mode === "page" ? article : undefined;
     const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription = description ?? tab?.description;
+    const savedDescription = shownDescription?.replace(/\s+/g, " ").trim();
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -324,18 +326,20 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     /** Keeps the popup open when the note could not be saved, so its text is not lost. */
     async function saveNote() {
         const content = text.trim();
-        const pageDescription = shownDescription?.replace(/\s+/g, " ").trim();
         const result = await sendMessage({
             name: "save-link-with-note",
             title: shownTitle.trim(),
             content: content ? textToHtml(content) : "",
-            ...(pageDescription && { description: pageDescription })
+            ...(savedDescription && { description: savedDescription })
         });
         if (result) window.close();
     }
 
     function saveClip(content: SelectedContent) {
-        const titled = { ...content, title: shownTitle.trim() || content.title };
+        const labels = savedDescription === undefined
+            ? content.labels
+            : withDescription(content.labels, savedDescription);
+        const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
         void sendMessage(mode === "selection"
             ? { name: "save-selection", selection: titled }
             : { name: "save-whole-page", page: titled });
@@ -380,6 +384,16 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 {new URL(pageUrl).hostname}{published && ` · Published ${published}`}
                             </div>
                         )}
+                        {shownDescription !== undefined && (
+                            <textarea
+                                className="page-description"
+                                aria-label="Page description"
+                                rows={2}
+                                value={shownDescription}
+                                onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
+                                onKeyDown={saveNoteOnCtrlEnter}
+                            />
+                        )}
                     </div>
                 </div>
             )}
@@ -396,17 +410,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
 
             {mode === "note" && modes.length === 1 && (
                 <div className="clip-hint">This page has no article; save it as a bookmark.</div>
-            )}
-
-            {mode === "note" && shownDescription !== undefined && (
-                <textarea
-                    className="page-description"
-                    aria-label="Page description"
-                    rows={2}
-                    value={shownDescription}
-                    onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
-                    onKeyDown={saveNoteOnCtrlEnter}
-                />
             )}
 
             <div className="page-body">
@@ -436,6 +439,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             </button>
         </div>
     );
+}
+
+/** A clip's labels with `#pageDescription` as the user left it, or without one when it was cleared. */
+function withDescription(labels: Record<string, string> | undefined, description: string) {
+    const { pageDescription: _, ...others } = labels ?? {};
+    return description ? { ...others, pageDescription: description } : others;
 }
 
 /** The modes the page offers, the default first: the selection, then the article, then a note. */

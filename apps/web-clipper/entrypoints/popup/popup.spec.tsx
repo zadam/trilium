@@ -371,20 +371,31 @@ describe("popup", () => {
         expect(closeWindow).toHaveBeenCalledOnce();
     });
 
-    it("shows the page's description in a bookmark, and saves it as edited", async () => {
+    it("shows the page's description under the title in every mode, and saves it as edited", async () => {
         metadata = { description: "All about the post" };
+        selection = SELECTION;
         await rerender();
-        expect(container.querySelector(".page-description")).toBeNull();
+        const description = () => container.querySelector<HTMLTextAreaElement>(".page-heading .page-description");
+        expect(description()?.value).toBe("All about the post");
+        expect(description()?.getAttribute("aria-label")).toBe("Page description");
+        expect(cardParts()).toEqual([ "page-heading", "clip-mode", "page-body", "btn btn-primary primary-action" ]);
+
+        await click("Save selection");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-selection",
+            selection: { ...SELECTION, title: "An article", labels: { pageDescription: "All about the post" } }
+        });
+
+        await click("Page");
+        await type(".page-description", "  Edited\n  description ");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels: { publishedDate: "2024-05-01", pageDescription: "Edited description" } }
+        });
 
         await click("Bookmark");
-        expect(cardParts()).toEqual([
-            "page-heading", "clip-mode", "page-description", "page-body", "btn btn-primary primary-action"
-        ]);
-        const description = container.querySelector<HTMLTextAreaElement>(".page-description");
-        expect(description?.value).toBe("All about the post");
-        expect(description?.getAttribute("aria-label")).toBe("Page description");
-
-        await type(".page-description", "  Edited\n  description ");
+        expect(description()?.value).toBe("  Edited\n  description ");
         sendMessage.mockResolvedValueOnce(undefined);
         await ctrlEnter(".page-description");
         expect(sendMessage).toHaveBeenLastCalledWith({
@@ -396,15 +407,22 @@ describe("popup", () => {
 
         // A cleared description stays in the card while it is edited, and is not saved.
         await type(".page-description", " ");
-        expect(container.querySelector(".page-description")).not.toBeNull();
+        expect(description()).not.toBeNull();
         await click("Save bookmark");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-link-with-note", title: "An article", content: "" });
+        await click("Page");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels: { publishedDate: "2024-05-01" } }
+        });
     });
 
     it("shows no description where the page gives none or cannot be asked for one", async () => {
         // An outdated content script answers nothing.
         metadata = undefined;
         await rerender();
+        expect(container.querySelector(".page-description")).toBeNull();
         await click("Bookmark");
         expect(container.querySelector(".page-description")).toBeNull();
 

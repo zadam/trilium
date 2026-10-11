@@ -11,7 +11,8 @@ type Clipping = {
     title: string,
     content: string,
     images: { imageId: string, src: string }[],
-    pageUrl: string
+    pageUrl: string,
+    labels: Record<string, string>
 };
 
 const PARAGRAPH = "Trilium is a hierarchical note taking application with focus on "
@@ -45,11 +46,14 @@ describe("content script", () => {
                 <img src="/cat.png">
                 <img>
                 <p id="end">After</p>`;
+            document.head.insertAdjacentHTML(
+                "beforeend", "<meta name=\"description\" content=\"About the post\">");
             selectRange("start", "end");
 
             const response = await send<Clipping>({ name: "trilium-save-selection" });
 
             expect(response.title).toBe("Post title");
+            expect(response.labels).toEqual({ pageDescription: "About the post" });
             expect(response.pageUrl).toBe("https://example.com/blog/post.html?id=1#comments");
             expect(response.images.map((image) => image.src)).toEqual([
                 "https://example.com/cat.png",
@@ -91,7 +95,9 @@ describe("content script", () => {
             document.body.innerHTML = "<p id=\"p\">Text</p>";
             selectRange("p", "p");
             expect(document.getElementsByTagName("title")).toHaveLength(0);
-            expect(await send({ name: "trilium-save-selection" })).toMatchObject({ title: "" });
+            const untitled = await send<Clipping>({ name: "trilium-save-selection" });
+            expect(untitled.title).toBe("");
+            expect(untitled.labels).toEqual({});
 
             document.title = " Fallback ";
             expect(await send({ name: "trilium-save-selection" }))
@@ -108,7 +114,8 @@ describe("content script", () => {
             document.head.innerHTML = `
                 <title>Article title</title>
                 <meta property="article:published_time" content="2026-01-02T10:00:00Z">
-                <meta property="article:modified_time" content="2026-02-03T10:00:00Z">`;
+                <meta property="article:modified_time" content="2026-02-03T10:00:00Z">
+                <meta property="og:description" content="About the article">`;
             document.body.innerHTML = `
                 <nav><a href="/">Home</a></nav>
                 <article>
@@ -126,7 +133,11 @@ describe("content script", () => {
                 title: "Article title",
                 pageUrl: "https://example.com/blog/post.html?id=1",
                 clipType: "page",
-                labels: { publishedDate: "2026-01-02", modifiedDate: "2026-02-03" },
+                labels: {
+                    pageDescription: "About the article",
+                    publishedDate: "2026-01-02",
+                    modifiedDate: "2026-02-03"
+                },
                 images: [ {
                     imageId: expect.any(String),
                     src: "https://example.com/blog/figure.png"
@@ -140,7 +151,7 @@ describe("content script", () => {
 
         it("adds no labels without dates and fails when Readability finds no article", async () => {
             document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p></article>`;
-            expect(await send({ name: "trilium-save-page" })).toMatchObject({ labels: {} });
+            expect((await send<Clipping>({ name: "trilium-save-page" })).labels).toEqual({});
 
             document.body.innerHTML = "";
             vi.spyOn(Document.prototype, "cloneNode")

@@ -17,7 +17,7 @@ async function addClipping(req: Request) {
     // if a #clipType=clippings note exists with the same 'pageUrl' attribute,
     // append the content to that note
     // otherwise create a new note under clipperInbox (or today's note)
-    const { title, content, images } = req.body;
+    const { title, content, images, labels } = req.body;
     const clipType = "clippings";
 
     const pageUrl = sanitize.sanitizeUrl(req.body.pageUrl);
@@ -36,6 +36,8 @@ async function addClipping(req: Request) {
         clippingNote.setLabel("pageUrl", pageUrl);
         clippingNote.setLabel("iconClass", "bx bx-globe");
     }
+
+    setLabels(clippingNote, labels);
 
     const rewrittenContent = await processContent(images, clippingNote, content);
 
@@ -113,11 +115,7 @@ async function createNote(req: Request) {
         }
     }
 
-    if (labels) {
-        for (const labelName in labels) {
-            note.setLabel(labelName, sanitizeLabelValue(labels[labelName]));
-        }
-    }
+    setLabels(note, labels);
 
     const existingContent = note.getContent();
     if (typeof existingContent !== "string") {
@@ -132,6 +130,13 @@ async function createNote(req: Request) {
     return {
         noteId: note.noteId
     };
+}
+
+/** Sets each label the extension sends, replacing the value a previous clipping set. */
+function setLabels(note: BNote, labels: Record<string, string> | undefined) {
+    for (const labelName in labels) {
+        note.setLabel(labelName, sanitizeLabelValue(labels[labelName]));
+    }
 }
 
 /**

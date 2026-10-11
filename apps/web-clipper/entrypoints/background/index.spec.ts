@@ -488,6 +488,37 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
         });
 
+        it("labels screenshots and images with the page's description", async () => {
+            tabMessageHandler = (message) => message.name === "trilium-get-page-metadata"
+                ? { description: "About the page" }
+                : undefined;
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+            await onContextMenuClicked({
+                menuItemId: "trilium-save-image",
+                srcUrl: "https://example.com/cat.png",
+                pageUrl: PAGE_URL
+            });
+            expect(lastPayload()).toMatchObject({ labels: { pageDescription: "About the page" } });
+
+            tabMessageHandler = () => ({});
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+
+            // An outdated content script answers nothing; none runs on browser pages.
+            tabMessageHandler = () => undefined;
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+
+            tabMessageHandler = () => {
+                throw new Error("Could not establish connection.");
+            };
+            facade.callService.mockClear();
+            await sendRuntimeMessage({ name: "save-whole-screenshot" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+            expect(facade.callService).toHaveBeenCalledOnce();
+        });
+
         it("saves a link, with its URL as the text when the browser gives none", async () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-link", pageUrl: PAGE_URL });
             expect(facade.callService).not.toHaveBeenCalled();

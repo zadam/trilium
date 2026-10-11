@@ -132,6 +132,23 @@ describe("clipper route handlers", () => {
         expect(found.noteId).toBe(first.noteId);
     });
 
+    it("labels a clipping note, refreshed by each clipping that brings labels", async () => {
+        const pageUrl = "https://example.com/described";
+        const clip = (labels?: Record<string, string>) => cls.init(() => clipperRoute.addClipping({
+            body: { title: "Described", content: "<p>x</p>", images: [], pageUrl, labels }
+        } as unknown as Request));
+
+        const { noteId } = await clip({ pageDescription: "Tom & <b>Jerry</b>" });
+        const clipping = becca.getNoteOrThrow(noteId);
+        expect(clipping.getLabelValue("pageDescription")).toBe("Tom & Jerry");
+
+        await clip({ pageDescription: "Updated" });
+        expect(clipping.getLabelValue("pageDescription")).toBe("Updated");
+
+        await clip();
+        expect(clipping.getLabelValue("pageDescription")).toBe("Updated");
+    });
+
     it("appends to a clipping note moved out of the inbox without cloning it back", async () => {
         const pageUrl = "https://example.com/moved";
         const first = await cls.init(() => clipperRoute.addClipping({

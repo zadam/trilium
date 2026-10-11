@@ -65,6 +65,12 @@ export default defineContentScript({
             return undefined;
         }
 
+        /** The `#pageDescription` label of every clip of the page, if the page has one. */
+        function descriptionLabels(): Record<string, string> {
+            const description = getPageDescription();
+            return description ? { pageDescription: description } : {};
+        }
+
         function getRectangleArea() {
             return new Promise<Rect | null>((resolve) => {
                 const overlay = document.createElement('div');
@@ -289,7 +295,9 @@ export default defineContentScript({
                     title: pageTitle(),
                     content: container.innerHTML,
                     images,
-                    pageUrl: getPageLocationOrigin() + location.pathname + location.search + location.hash
+                    pageUrl: getPageLocationOrigin() + location.pathname + location.search
+                        + location.hash,
+                    labels: descriptionLabels()
                 };
 
             }
@@ -306,7 +314,7 @@ export default defineContentScript({
 
                 const images = getImages(body);
 
-                const labels = {};
+                const labels = descriptionLabels();
                 const dates = getDocumentDates();
                 if (dates.publishedDate) {
                     labels['publishedDate'] = dates.publishedDate.toISOString().substring(0, 10);
