@@ -141,6 +141,45 @@ async function createNote(req: Request) {
 }
 
 /**
+ * Saves a file the extension downloaded, such as the PDF a tab shows, as a file note. Each call
+ * creates a note, since a file at the same address can have changed since it was last clipped.
+ */
+async function createFile(req: Request) {
+    const { dataUrl, labels } = req.body;
+    const header = typeof dataUrl === "string" ? /^data:([\w.+-]+\/[\w.+-]+);base64,/.exec(dataUrl) : null;
+    if (!header) {
+        throw new ValidationError("The file must be sent as a base64 data URL.");
+    }
+
+    const pageUrl = req.body.pageUrl ? sanitize.sanitizeUrl(req.body.pageUrl) : "";
+    const fileName = typeof req.body.fileName === "string" ? path.basename(req.body.fileName).trim() : "";
+    const trimmedTitle = typeof req.body.title === "string" ? req.body.title.trim() : "";
+    const title = trimmedTitle || fileName || `Clipped file from ${pageUrl}`;
+
+    const clipperInbox = await getClipperInboxNote();
+    const { note } = noteService.createNewNote({
+        parentNoteId: clipperInbox.noteId,
+        title,
+        content: Buffer.from(dataUrl.substring(header[0].length), "base64"),
+        type: "file",
+        mime: header[1]
+    });
+
+    note.setLabel("clipType", "file");
+    if (pageUrl) {
+        note.setLabel("pageUrl", pageUrl);
+    }
+    if (fileName) {
+        note.setLabel("originalFileName", fileName);
+    }
+    setLabels(note, labels);
+
+    return {
+        noteId: note.noteId
+    };
+}
+
+/**
  * Renders saved browser tabs as a list of link mentions, each with the tab's favicon stored as an
  * attachment of `note`. Returns undefined when automatic link previews are turned off or the
  * extension sent no tabs, so the plain list of links in `content` is kept.
@@ -327,6 +366,7 @@ async function findNotesByUrl(req: Request<{ noteUrl: string }>) {
 
 export default {
     createNote,
+    createFile,
     addClipping,
     openNote,
     handshake,

@@ -1,7 +1,7 @@
 import {
     type ScreenshotSlice, ScreenshotStitcher, type StitchMessage, type StitchRequest
 } from "@/screenshot";
-import { extractPage, randomString, type Rect } from "@/utils";
+import { extractPage, isPdfTab, randomString, type Rect } from "@/utils";
 
 import setupContextMenu from "./context_menu";
 import TriliumServerFacade, { TriliumError } from "./trilium_server_facade";
@@ -52,6 +52,8 @@ const CAPTURE_INTERVAL_MS = 550;
 const SCROLL_SETTLE_MS = 150;
 /** The most captures a full-page screenshot takes, about a minute; a longer page is cut off. */
 const MAX_SCREENSHOT_CAPTURES = 100;
+/** The largest PDF the clipper saves. It reaches Trilium as base64 in a single request. */
+const MAX_PDF_SIZE = 100 * 1024 * 1024;
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
 type ClippedImage = { imageId: string, src: string, dataUrl?: string };
@@ -482,7 +484,15 @@ export default defineBackground(() => {
      * whole page when it has none.
      */
     async function saveWholePage(page?: object) {
-        const payload = page ?? await readActivePage();
+        let payload = page;
+        if (!payload) {
+            const activeTab = await getActiveTab();
+            if (activeTab.url && await isPdfTab(activeTab)) {
+                await savePdf(activeTab.url, activeTab.title);
+                return;
+            }
+            payload = await readPage(activeTab);
+        }
 
         const failedImages = await postProcessImages(payload);
 
@@ -491,8 +501,52 @@ export default defineBackground(() => {
         toast(savedMessage("Page", failedImages), resp.noteId);
     }
 
-    async function readActivePage() {
-        const activeTab = await getActiveTab();
+    /**
+     * Downloads the PDF at `url`, as the browser does, with the website's cookies, and saves it as a
+     * file note. Trilium has the route for it since protocol version 1.1.
+     */
+    async function savePdf(url: string, title: string | undefined, description?: string) {
+        await triliumServerFacade.requireMinorVersion(1, "Saving a PDF");
+        const { dataUrl, fileName } = await downloadPdf(url);
+
+        const resp = await triliumServerFacade.callService("POST", "files", {
+            title: title || (await getActiveTab()).title,
+            fileName,
+            pageUrl: url,
+            dataUrl,
+            ...(description && { labels: { pageDescription: description } })
+        });
+
+        toast(savedMessage("PDF", 0), resp.noteId);
+    }
+
+    async function downloadPdf(url: string) {
+        const response = await fetch(url, { credentials: "include" });
+        if (!response.ok) {
+            throw new Error(`The PDF could not be downloaded: HTTP ${response.status}`);
+        }
+        if (Number(response.headers.get("content-length")) > MAX_PDF_SIZE) {
+            throw pdfTooLarge();
+        }
+
+        const blob = await response.blob();
+        if (blob.size > MAX_PDF_SIZE) {
+            throw pdfTooLarge();
+        }
+        // A PDF can have bytes before its header, within the first kilobyte.
+        if (!(await blob.slice(0, 1024).text()).includes("%PDF-")) {
+            throw new Error("The page is not a PDF.");
+        }
+
+        const dataUrl = await blob2base64(new Blob([ blob ], { type: "application/pdf" }));
+        if (!dataUrl) {
+            throw new Error("The PDF could not be read.");
+        }
+
+        return { dataUrl, fileName: pdfFileName(response, url) };
+    }
+
+    async function readPage(activeTab: Browser.tabs.Tab) {
         const tabId = activeTab.id;
         if (tabId !== undefined) {
             const article = await extractPage(tabId, "article");
@@ -665,6 +719,9 @@ export default defineBackground(() => {
         else if (request.name === 'save-whole-page') {
             return await saveWholePage(request.page);
         }
+        else if (request.name === 'save-pdf') {
+            return await savePdf(request.url, request.title, request.description);
+        }
         else if (request.name === 'save-selection') {
             return await saveSelection(request.selection);
         }
@@ -701,6 +758,35 @@ function escapeHtml(value: string) {
         .replaceAll("\"", "&quot;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+}
+
+function pdfTooLarge() {
+    return new Error(`The PDF is larger than ${MAX_PDF_SIZE / 1024 / 1024} MB, the most the clipper saves.`);
+}
+
+/**
+ * The PDF's file name, as the website gives it or as its address ends, with a `.pdf` extension;
+ * `undefined` when neither names it.
+ */
+function pdfFileName(response: Response, url: string) {
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const encoded = /filename\*=[^']*'[^']*'([^;]+)/i.exec(disposition)?.[1];
+    const plain = /filename=\s*"?([^";]+)/i.exec(disposition)?.[1];
+    const { pathname } = new URL(url);
+    const name = (encoded && decodeComponent(encoded.trim()))
+        || plain?.trim()
+        || decodeComponent(pathname.slice(pathname.lastIndexOf("/") + 1));
+    if (!name) return undefined;
+    return /\.pdf$/i.test(name) ? name : `${name}.pdf`;
+}
+
+/** Decodes a percent-encoded name, or keeps it as it is when it is malformed. */
+function decodeComponent(value: string) {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
 }
 
 function failureMessage(error: unknown) {

@@ -24,6 +24,7 @@
   <li>select text and clip it with the right-click context menu</li>
   <li>click on an image or link and save it through context menu</li>
   <li>save whole page from the popup or context menu</li>
+  <li>save a PDF that the browser shows, as a file note</li>
   <li>save a screenshot of an area you select, of the visible part of the page
     or of the whole page, from either popup or context menu</li>
   <li>create short text note from popup</li>
@@ -55,6 +56,13 @@
         of the note. When it states when it was last modified, that date shows
         below, marked by the <span class="tn-icon bx bx-history"></span> icon, and
         is saved in the <code>#modifiedDate</code> label.</li>
+      <li><em>PDF</em>, when the tab shows a PDF in the browser's viewer: <em>Save PDF to Trilium</em> downloads
+        the PDF and saves it as a file note, which Trilium opens in its&nbsp;<a
+        class="reference-link" href="#root/_help_XJGJrpu7F9sh">PDFs</a> viewer.
+        Only the title and the description can be edited, since a file note has
+        no text of its own for your note. The page's address is saved in the note's <code>#pageUrl</code> label
+        and the PDF's file name in <code>#originalFileName</code>. Saving a PDF
+        needs Trilium v0.107.0 or later.</li>
       <li><em>Bookmark</em>, always: there is no preview, and <em>Save bookmark</em> saves
         a link to the page with your note as the content of the note. Left empty,
         the title stays the page's title.</li>
@@ -77,10 +85,11 @@
       next to the title of the note (see <a class="reference-link" href="#root/_help_B5dihXRDksTk">Note badges</a>).</p>
     <p>The popup opens on the selection if there is one, otherwise on <em>Page</em>,
       showing the article, or the whole page when the page has no article. On
-      a page that shows nothing to save, it opens on <em>Bookmark</em> and says
-      so. The keyboard shortcuts and the context menu still save right away,
-      without a preview: saving the whole page that way saves the article, or
-      the whole page when the page has no article.</p>
+      a PDF, it opens on <em>PDF</em>. On a page that shows nothing to save, it
+      opens on <em>Bookmark</em> and says so. The keyboard shortcuts and the context
+      menu still save right away, without a preview: saving the whole page that
+      way saves the article, the whole page when the page has no article, or
+      the PDF when the tab shows one.</p>
   </li>
   <li>
     <p>Pages the extension cannot access (the browser's own pages, the extension
@@ -138,7 +147,8 @@
 <p>Further clippings of the same kind from the same page are added to the
   note created by the first one, even on a later day or after that note was
   moved out of the clipper inbox. The note stays where it is and is not cloned
-  back into the inbox.</p>
+  back into the inbox. A PDF is the exception: each save creates a new file
+  note, since the PDF can have changed since it was last saved.</p>
 <p>The icon of a clipped note shows what was saved:</p>
 <ul>
   <li><span class="tn-icon bx bx-paperclip"></span> a selection, a screenshot
@@ -148,7 +158,8 @@
   <li><span class="tn-icon bx bx-window-alt"></span> the tabs of a window.</li>
 </ul>
 <p>The icon is derived from the note's <code>#clipType</code> label, so setting
-  an <code>#iconClass</code> label on the note replaces it.</p>
+  an <code>#iconClass</code> label on the note replaces it. A saved PDF has
+  the icon of a PDF file, like any other PDF in Trilium.</p>
 <h2>Embedded videos</h2>
 <p>A YouTube video embedded in a clipped page is saved as a <a class="reference-link"
   href="#root/_help_UmgZAfcltxkS">Link Previews</a> embed, with the video's
@@ -211,6 +222,10 @@
     one the message names.</li>
   <li>Trilium rejected the request: the message includes the reason Trilium
     gave.</li>
+  <li>A PDF could not be saved: Trilium is older than v0.107.0, the website
+    refused to send the PDF again, or the PDF is larger than 100 MB. The extension
+    downloads the PDF with the browser's cookies for that website, so a PDF
+    behind a login can be saved while you are logged in.</li>
 </ul>
 <p>The extension downloads the images of a clipping itself, so that they
   are stored in Trilium together with the note. If some of them cannot be

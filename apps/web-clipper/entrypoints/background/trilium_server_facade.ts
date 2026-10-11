@@ -10,10 +10,12 @@ export type TriliumSearchStatus = {
     status: "found-desktop",
     port: number;
     url: string;
+    protocolMinor: number;
 } | {
     status: "found-server",
     url: string;
     token: string;
+    protocolMinor: number;
 } | {
     status: "version-mismatch";
     extensionMajor: number;
@@ -23,6 +25,7 @@ export type TriliumSearchStatus = {
 /** The outcome of a finished search. */
 type SearchResult = Exclude<TriliumSearchStatus, { status: "searching" }>;
 type FoundStatus = Exclude<SearchResult, { status: "not-found" }>;
+type CompatibleStatus = Exclude<FoundStatus, { status: "version-mismatch" }>;
 
 export type TriliumSearchNoteStatus = {
     status: "not-found",
@@ -131,16 +134,19 @@ export default class TriliumServerFacade {
 
         const server = triliumServerUrl && authToken
             ? handshake(triliumServerUrl, SERVER_TIMEOUT_MS, { Authorization: authToken })
-                .then((json) => json && checkVersion(json, {
+                .then((json) => json && checkVersion(json, (protocolMinor) => ({
                     status: "found-server",
                     url: triliumServerUrl,
-                    token: authToken
-                }))
+                    token: authToken,
+                    protocolMinor
+                })))
             : Promise.resolve(null);
 
         const desktop = await handshake(desktopUrl, DESKTOP_TIMEOUT_MS);
         if (desktop) {
-            return checkVersion(desktop, { status: "found-desktop", port, url: desktopUrl });
+            return checkVersion(desktop, (protocolMinor) => ({
+                status: "found-desktop", port, url: desktopUrl, protocolMinor
+            }));
         }
 
         return await server ?? { status: "not-found" };
@@ -189,7 +195,19 @@ export default class TriliumServerFacade {
         return import.meta.env.DEV ? 37743 : 37840;
     }
 
-    async callService(method: string, path: string, body?: string | object) {
+    /**
+     * Rejects unless Trilium supports minor version `minor` of the protocol, which `feature` needs:
+     * a minor version adds an API that older versions of Trilium do not have.
+     */
+    async requireMinorVersion(minor: number, feature: string) {
+        const search = await this.waitForCompatibleTrilium();
+        if (search.protocolMinor < minor) {
+            throw new TriliumError("version-mismatch",
+                `${feature} needs a newer version of Trilium. Update Trilium to the latest version.`);
+        }
+    }
+
+    private async waitForCompatibleTrilium(): Promise<CompatibleStatus> {
         const search = await this.waitForTriliumSearch();
         if (search.status === "version-mismatch") {
             const { extensionMajor, triliumMajor } = search;
@@ -197,6 +215,11 @@ export default class TriliumServerFacade {
             throw new TriliumError("version-mismatch", "This version of the web clipper does not "
                 + `work with this version of Trilium. Update ${outdated} to the latest version.`);
         }
+        return search;
+    }
+
+    async callService(method: string, path: string, body?: string | object) {
+        const search = await this.waitForCompatibleTrilium();
 
         let response: Response;
         try {
@@ -262,13 +285,17 @@ async function handshake(url: string, timeoutMs: number, headers?: Record<string
     }
 }
 
-function checkVersion(json: HandshakeResponse, found: FoundStatus): SearchResult {
-    const [ major = NaN ] = json.protocolVersion
+/**
+ * Reports a Trilium of another major version as a mismatch, or else `found` with the minor version,
+ * which tells the features Trilium supports.
+ */
+function checkVersion(
+    json: HandshakeResponse,
+    found: (protocolMinor: number) => CompatibleStatus
+): SearchResult {
+    const [ major = NaN, minor = 0 ] = json.protocolVersion
         .split(".")
         .map(chunk => parseInt(chunk, 10));
-
-    // minor version is intended to be used to dynamically limit features provided by extension
-    // if some specific Trilium API is not supported. So far not needed.
 
     if (major !== PROTOCOL_VERSION_MAJOR) {
         return {
@@ -277,7 +304,7 @@ function checkVersion(json: HandshakeResponse, found: FoundStatus): SearchResult
             triliumMajor: major
         };
     }
-    return found;
+    return found(minor);
 }
 
 function notFound() {

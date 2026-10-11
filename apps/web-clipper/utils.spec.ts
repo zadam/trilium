@@ -1,8 +1,8 @@
 import type { Window as HappyDOMWindow } from "happy-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
-import { createLink, extractPage, getPageLocationOrigin, randomString } from "./utils";
+import { createLink, extractPage, getPageLocationOrigin, isPdfTab, randomString } from "./utils";
 
 describe("randomString", () => {
     it("returns alphanumeric strings of the requested length", () => {
@@ -67,6 +67,69 @@ describe("extractPage", () => {
 
         executeScript.mockResolvedValue([]);
         expect(await extractPage(7, "article")).toBeUndefined();
+    });
+});
+
+
+describe("isPdfTab", () => {
+    const TAB = { id: 7, url: "https://example.com/report" };
+    const executeScript = vi.fn(async ({ func }: { func: () => unknown }) => [ { result: func() } ]);
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response(null));
+
+    beforeEach(() => {
+        Object.assign(fakeBrowser, { scripting: { executeScript } });
+        vi.stubGlobal("fetch", fetchMock);
+    });
+
+    afterEach(() => {
+        Reflect.deleteProperty(fakeBrowser, "scripting");
+        document.body.innerHTML = "";
+        vi.clearAllMocks();
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    it("asks the page around Chrome's viewer what it shows", async () => {
+        expect(await isPdfTab(TAB)).toBe(false);
+        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, func: expect.any(Function) });
+
+        document.body.innerHTML = `<embed type="application/pdf" src="https://example.com/a.pdf">`;
+        expect(await isPdfTab(TAB)).toBe(false);
+        document.body.innerHTML = `<embed type="application/pdf" src="about:blank">`;
+        expect(await isPdfTab(TAB)).toBe(true);
+
+        document.body.innerHTML = "";
+        vi.spyOn(document, "contentType", "get").mockReturnValue("application/pdf");
+        expect(await isPdfTab(TAB)).toBe(true);
+
+        executeScript.mockResolvedValueOnce([]);
+        expect(await isPdfTab(TAB)).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("asks the website where the browser runs no script, as in Firefox's viewer", async () => {
+        executeScript.mockRejectedValue(new Error("Missing host permission for the tab"));
+        const answer = (contentType?: string) => fetchMock.mockImplementation(async () =>
+            new Response(null, { headers: contentType ? { "Content-Type": contentType } : {} }));
+
+        answer("Application/PDF; qs=0.001");
+        expect(await isPdfTab(TAB)).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith(TAB.url, { method: "HEAD", credentials: "include" });
+
+        answer("text/html");
+        expect(await isPdfTab(TAB)).toBe(false);
+        answer();
+        expect(await isPdfTab(TAB)).toBe(false);
+        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+        expect(await isPdfTab(TAB)).toBe(false);
+    });
+
+    it("checks only web pages in a tab it can address", async () => {
+        expect(await isPdfTab({ id: 7, url: "chrome://settings" })).toBe(false);
+        expect(await isPdfTab({ id: 7 })).toBe(false);
+        expect(await isPdfTab({ url: TAB.url })).toBe(false);
+        expect(executeScript).not.toHaveBeenCalled();
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 });
 

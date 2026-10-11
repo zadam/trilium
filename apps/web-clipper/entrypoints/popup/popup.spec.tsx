@@ -1,5 +1,6 @@
 import Bookmark from "@boxicons/js/icons/Bookmark";
 import Crop from "@boxicons/js/icons/Crop";
+import FileDetail from "@boxicons/js/icons/FileDetail";
 import Globe from "@boxicons/js/icons/Globe";
 import Paperclip from "@boxicons/js/icons/Paperclip";
 import { readFileSync } from "fs";
@@ -33,8 +34,12 @@ const PAGE = {
 const WHOLE_PAGE = { ...PAGE, content: `<nav>Menu</nav><p>Body</p><img src="i1">` };
 /** How `readable-page.js` reads the tab, by variant, as `browser.scripting.executeScript()` answers. */
 let pageReadings: Record<string, unknown> = {};
-const executeScript = vi.fn(async ({ args }: { args?: [ string ] }): Promise<unknown> =>
-    args ? [ { result: pageReadings[args[0]] } ] : []);
+/** Whether the tab shows a PDF, as the check run in the tab answers. */
+let pdfTab = false;
+const executeScript = vi.fn(async ({ args, func }: { args?: [ string ], func?: unknown }): Promise<unknown> => {
+    if (args) return [ { result: pageReadings[args[0]] } ];
+    return func ? [ { result: pdfTab } ] : [];
+});
 const tabsQuery = vi.fn(async (): Promise<{ id?: number, title?: string, url?: string }[]> => [ { id: 7 } ]);
 const SELECTION = {
     title: "Page title",
@@ -62,6 +67,7 @@ describe("popup", () => {
         selection = undefined;
         metadata = {};
         pageReadings = { article: PAGE, wholePage: WHOLE_PAGE };
+        pdfTab = false;
         Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage });
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
@@ -739,6 +745,59 @@ describe("popup", () => {
         await type(".note-text", " \n ");
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+    });
+
+    describe("a PDF", () => {
+        const PDF_TAB = { id: 7, title: "Annual report", url: "https://example.com/files/report.pdf" };
+
+        it("offers to save the PDF in Chrome's viewer as a file, or a bookmark of it", async () => {
+            pdfTab = true;
+            tabsQuery.mockResolvedValueOnce([ PDF_TAB ]);
+            await rerender();
+
+            expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
+            expect(headingIcon()).toEqual(pathsOf(iconVariant(FileDetail).content));
+            expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("Annual report");
+            expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
+            expect(container.querySelector(".clip-hint")?.textContent).toBe("The PDF is saved as a file in Trilium.");
+            expect(container.querySelector(".note-text")).toBeNull();
+            expect(container.querySelector(".page-author")).toBeNull();
+            expect(container.querySelector(".page-content")).toBeNull();
+            expect(placeholder()).toBeUndefined();
+            expect(shortcutOf("Save PDF to Trilium").text).toBe("Alt+Shift+S");
+
+            await type(".page-title", "Edited");
+            await type(".page-description", " Key   figures ");
+            await click("Save PDF to Trilium");
+            expect(sendMessage).toHaveBeenLastCalledWith({
+                name: "save-pdf", url: PDF_TAB.url, title: "Edited", description: "Key figures"
+            });
+            expect(closeWindow).toHaveBeenCalledOnce();
+
+            await click("Bookmark");
+            expect(container.querySelector(".note-text")).not.toBeNull();
+            expect(container.querySelector(".clip-hint")).toBeNull();
+        });
+
+        it("offers it in Firefox's viewer, where the website names the type, keeping out what needs the page", async () => {
+            const fetchMock = vi.fn(async () => new Response(null, { headers: { "Content-Type": "application/pdf" } }));
+            vi.stubGlobal("fetch", fetchMock);
+            executeScript.mockRejectedValueOnce(new Error("Missing host permission for the tab"));
+            executeScript.mockRejectedValueOnce(new Error("Missing host permission for the tab"));
+            tabsSendMessage.mockRejectedValueOnce(new Error("Could not establish connection."));
+            tabsSendMessage.mockRejectedValueOnce(new Error("Could not establish connection."));
+            tabsQuery.mockResolvedValueOnce([ { ...PDF_TAB, title: "report.pdf" } ]);
+            await rerender();
+
+            expect(fetchMock).toHaveBeenCalledWith(PDF_TAB.url, { method: "HEAD", credentials: "include" });
+            expect(container.querySelector(".capture-actions > .no-items")).toBeNull();
+            expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
+            expect(button("Crop screenshot")?.disabled).toBe(true);
+            expect(button("All tabs in window")?.disabled).toBe(false);
+
+            await click("Save PDF to Trilium");
+            expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-pdf", url: PDF_TAB.url, title: "report.pdf" });
+        });
     });
 
     it("renders itself into the page's root element", async () => {

@@ -8,6 +8,7 @@ import Bookmark from "@boxicons/js/icons/Bookmark";
 import Calendar from "@boxicons/js/icons/Calendar";
 import Cog from "@boxicons/js/icons/Cog";
 import Crop from "@boxicons/js/icons/Crop";
+import FileDetail from "@boxicons/js/icons/FileDetail";
 import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
@@ -27,7 +28,7 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { extractPage, type PageVariant, type ReadablePage } from "@/utils";
+import { extractPage, isPdfTab, type PageVariant, type ReadablePage } from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
@@ -71,13 +72,16 @@ interface TabContent {
     url?: string;
     /** What the page says about itself, which a note clip saves in its `#pageDescription` label. */
     description?: string;
+    /** Whether the tab shows a PDF in the browser's viewer, which is saved as a file. */
+    pdf: boolean;
 }
 
 /**
- * What the card saves: the selection, the page (`clipType: "page"`), or a note about the page with a
- * link to it (`clipType: "note"`), which the popup calls a bookmark.
+ * What the card saves: the selection, the page (`clipType: "page"`), the PDF the tab shows as a file
+ * (`clipType: "file"`), or a note about the page with a link to it (`clipType: "note"`), which the
+ * popup calls a bookmark.
  */
-type ClipMode = "selection" | "page" | "note";
+type ClipMode = "selection" | "page" | "pdf" | "note";
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
@@ -129,9 +133,11 @@ const PREVIEW_STYLE = `
     .embed-chip-detail { color: light-dark(#666, #bbb); }
 `;
 
-const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
+const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", pdf: "PDF", note: "Bookmark" };
 /** The icon of the note each mode saves, as Trilium draws it from the note's `#clipType`. */
-const MODE_ICONS: Record<ClipMode, IconDefinition> = { selection: Paperclip, page: Globe, note: Bookmark };
+const MODE_ICONS: Record<ClipMode, IconDefinition> = {
+    selection: Paperclip, page: Globe, pdf: FileDetail, note: Bookmark
+};
 
 const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
 
@@ -145,6 +151,7 @@ const VARIANT_UNAVAILABLE: Record<PageVariant, string> = {
 const SAVE_BUTTONS: Record<ClipMode, { icon: IconDefinition, label: string, command: string, shortcut?: string }> = {
     selection: { icon: Highlight, label: "Save selection", command: "saveSelection" },
     page: { icon: Article, label: "Save page to Trilium", command: "saveWholePage" },
+    pdf: { icon: FileDetail, label: "Save PDF to Trilium", command: "saveWholePage" },
     note: { icon: Bookmark, label: "Save bookmark", command: "", shortcut: "Ctrl+Enter" }
 };
 
@@ -273,7 +280,7 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
     const pageDisabledReason = disabledReason ?? (tab?.page === "inaccessible" ? UNREACHABLE_TITLE : undefined);
 
     let main: ComponentChildren;
-    if (tab?.page === "inaccessible") {
+    if (tab?.page === "inaccessible" && !tab.pdf) {
         main = (
             <EmptyState icon={Lock}>
                 {"The extension cannot access this page.\nIf it is a regular web page, reload it."}
@@ -372,7 +379,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     /** Either reading: both carry the same title and labels. */
     const pageReading = page?.article ?? page?.wholePage ?? undefined;
     const selection = tab?.selection ?? undefined;
-    const modes = tab ? availableModes(!!page, selection) : [];
+    const modes = tab ? availableModes(!!page, selection, tab.pdf) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
     const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
@@ -424,9 +431,21 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         window.close();
     }
 
+    function savePdf() {
+        void sendMessage({
+            name: "save-pdf",
+            url: tab?.url,
+            title: shownTitle.trim(),
+            ...(savedDescription && { description: savedDescription })
+        });
+        window.close();
+    }
+
     let onSave: (() => void) | undefined;
     if (mode === "note") {
         onSave = () => void saveNote();
+    } else if (mode === "pdf") {
+        onSave = savePdf;
     } else if (clip) {
         onSave = () => saveClip(clip);
     }
@@ -438,7 +457,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         }
     }
 
-    const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
+    const pageUrl = mode === "note" || mode === "pdf" ? tab?.url : clip?.pageUrl;
     const pageLabels = mode === "page" ? pageReading?.labels : undefined;
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
@@ -477,30 +496,33 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             {mode === "note" && modes.length === 1 && (
                 <div className="clip-hint">This page has nothing to save; save it as a bookmark.</div>
             )}
+            {mode === "pdf" && <div className="clip-hint">The PDF is saved as a file in Trilium.</div>}
 
             <div className="page-body">
                 {mode && (
                     <div className={mode === "note" ? "page-fields bookmark" : "page-fields"}>
-                        <div className="page-field">
-                            <span
-                                className="page-field-icon"
-                                title={mode === "note"
-                                    ? "Your note about the page. It is saved as the content of the note."
-                                    : "Your note about the page. It is saved above the clipped content."}
-                            >
-                                <Icon icon={InfoCircle} />
-                            </span>
-                            <textarea
-                                ref={textAreaRef}
-                                className="note-text"
-                                aria-label="Your note"
-                                placeholder="Add a note about this page"
-                                rows={1}
-                                value={text}
-                                onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
-                                onKeyDown={saveOnCtrlEnter}
-                            />
-                        </div>
+                        {mode !== "pdf" && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title={mode === "note"
+                                        ? "Your note about the page. It is saved as the content of the note."
+                                        : "Your note about the page. It is saved above the clipped content."}
+                                >
+                                    <Icon icon={InfoCircle} />
+                                </span>
+                                <textarea
+                                    ref={textAreaRef}
+                                    className="note-text"
+                                    aria-label="Your note"
+                                    placeholder="Add a note about this page"
+                                    rows={1}
+                                    value={text}
+                                    onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
+                                    onKeyDown={saveOnCtrlEnter}
+                                />
+                            </div>
+                        )}
                         <div className="page-field">
                             <span
                                 className="page-field-icon"
@@ -631,11 +653,12 @@ function fitToContent(frame: HTMLIFrameElement) {
     }).observe(root);
 }
 
-/** The modes the page offers, the default first: the selection, then the page, then a note. */
-function availableModes(hasPage: boolean, selection: SelectedContent | undefined): ClipMode[] {
+/** The modes the page offers, the default first: the selection, the page or the PDF, then a note. */
+function availableModes(hasPage: boolean, selection: SelectedContent | undefined, pdf: boolean): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
     if (hasPage) modes.push("page");
+    if (pdf) modes.push("pdf");
     modes.push("note");
     return modes;
 }
@@ -694,12 +717,20 @@ function describeStatus(status: TriliumSearchStatus | undefined) {
 /** Asks the content script of the active tab for its readable page and its selection, together. */
 async function readActiveTab(): Promise<TabContent> {
     const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id === undefined) return { page: "inaccessible", selection: null };
+    if (tab?.id === undefined) return { page: "inaccessible", selection: null, pdf: false };
 
-    const [ page, selection, description ] = await Promise.all([
-        readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
+    const [ pdf, page, selection, description ] = await Promise.all([
+        isPdfTab(tab), readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
     ]);
-    return { page, selection, title: tab.title, url: tab.url, description };
+    // The page around Chrome's PDF viewer has nothing to save but the PDF.
+    return {
+        page: pdf && typeof page === "object" ? "unreadable" : page,
+        selection,
+        title: tab.title,
+        url: tab.url,
+        description,
+        pdf
+    };
 }
 
 /**

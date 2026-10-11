@@ -6,7 +6,8 @@ const { facade, TriliumError } = vi.hoisted(() => ({
         callService: vi.fn<(method: string, path: string, body?: unknown) => Promise<any>>(),
         triggerSearchForTrilium: vi.fn(),
         sendTriliumSearchStatusToPopup: vi.fn(),
-        triggerSearchNoteByUrl: vi.fn()
+        triggerSearchNoteByUrl: vi.fn(),
+        requireMinorVersion: vi.fn(async (_minor: number, _feature: string) => {})
     },
     TriliumError: class extends Error {
 
@@ -40,6 +41,7 @@ vi.mock("./trilium_server_facade", () => ({
         triggerSearchForTrilium = facade.triggerSearchForTrilium;
         sendTriliumSearchStatusToPopup = facade.sendTriliumSearchStatusToPopup;
         triggerSearchNoteByUrl = facade.triggerSearchNoteByUrl;
+        requireMinorVersion = facade.requireMinorVersion;
 
     }
 }));
@@ -73,7 +75,12 @@ const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
 /** How `readable-page.js` reads the active tab, by variant; nothing to save unless a test says so. */
 let pageReadings: Record<string, unknown>;
-const executeScript = vi.fn(async ({ args }: { args?: [ string ] }) => args ? [ { result: pageReadings[args[0]] } ] : []);
+/** Whether the active tab shows a PDF, as the check run in the tab answers. */
+let pdfTab: boolean;
+const executeScript = vi.fn(async ({ args, func }: { args?: [ string ], func?: unknown }) => {
+    if (args) return [ { result: pageReadings[args[0]] } ];
+    return func ? [ { result: pdfTab } ] : [];
+});
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
@@ -93,6 +100,7 @@ describe("background", () => {
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
         pageReadings = {};
+        pdfTab = false;
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -306,7 +314,7 @@ describe("background", () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
             await sendRuntimeMessage({ name: "save-whole-page" });
 
-            expect(executeScript).toHaveBeenCalledTimes(6);
+            expect(executeScript).toHaveBeenCalledTimes(9);
             expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
             expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ args: [ "wholePage" ] }));
             expect(facade.callService).toHaveBeenCalledTimes(3);
@@ -341,6 +349,8 @@ describe("background", () => {
             await onCommand("saveWholePage");
 
             tabs = [ ACTIVE_TAB ];
+            // Once for the PDF check, once for the page.
+            executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
             executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
             await onCommand("saveWholePage");
             expect(await lastToast()).toMatchObject({
@@ -348,7 +358,7 @@ describe("background", () => {
                 message: "Saving to Trilium failed: Cannot access a chrome:// URL"
             });
 
-            expect(executeScript).toHaveBeenCalledTimes(5);
+            expect(executeScript).toHaveBeenCalledTimes(7);
             expect(facade.callService).not.toHaveBeenCalled();
         });
 
@@ -388,6 +398,117 @@ describe("background", () => {
                 images: [ { ...selection.images[0], dataUrl: expect.stringMatching(PNG_DATA_URL) } ]
             });
             expect(await lastToast()).toMatchObject({ message: "Selection has been saved to Trilium.", noteId: "saved" });
+        });
+    });
+
+    describe("saving a PDF", () => {
+        const PDF = "%PDF-1.7 bytes";
+        const PDF_DATA_URL = `data:application/pdf;base64,${btoa(PDF)}`;
+
+        function answerPdf(body: BodyInit = PDF, headers: Record<string, string> = {}, status = 200) {
+            fetchMock.mockImplementation(async () => new Response(body, { status, headers }));
+        }
+
+        afterEach(() => {
+            fetchMock.mockImplementation(fetchMockDefault);
+        });
+
+        it("saves the PDF the tab shows as a file, from the shortcut, the menu and the popup", async () => {
+            pdfTab = true;
+            answerPdf(PDF, { "Content-Disposition": "inline; filename*=UTF-8''Annual%20report.pdf" });
+
+            await onCommand("saveWholePage");
+            await onContextMenuClicked({ menuItemId: "trilium-save-page" });
+            await sendRuntimeMessage({ name: "save-whole-page" });
+
+            expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ files: [ "/readable-page.js" ] }));
+            expect(facade.requireMinorVersion).toHaveBeenCalledWith(1, "Saving a PDF");
+            expect(fetchMock).toHaveBeenCalledWith(PAGE_URL, { credentials: "include" });
+            expect(facade.callService.mock.calls).toEqual(Array(3).fill([ "POST", "files", {
+                title: "Active page",
+                fileName: "Annual report.pdf",
+                pageUrl: PAGE_URL,
+                dataUrl: PDF_DATA_URL
+            } ]));
+            expect(await lastToast()).toMatchObject({ message: "PDF has been saved to Trilium.", noteId: "saved" });
+        });
+
+        it("saves the PDF the popup names, with the user's title and description", async () => {
+            answerPdf();
+            const pdfUrl = "https://example.com/files/report";
+
+            await sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "Edited", description: "Summary" });
+
+            expect(fetchMock).toHaveBeenCalledWith(pdfUrl, { credentials: "include" });
+            expect(lastPayload()).toEqual({
+                title: "Edited",
+                fileName: "report.pdf",
+                pageUrl: pdfUrl,
+                dataUrl: PDF_DATA_URL,
+                labels: { pageDescription: "Summary" }
+            });
+
+            await sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "" });
+            expect(lastPayload()).toMatchObject({ title: "Active page" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+        });
+
+        it("names the file as the website does, or else after its address", async () => {
+            const savedFileName = async (url: string, disposition?: string) => {
+                answerPdf(PDF, disposition ? { "Content-Disposition": disposition } : {});
+                await sendRuntimeMessage({ name: "save-pdf", url, title: "T" });
+                return (lastPayload() as { fileName?: string }).fileName;
+            };
+
+            expect(await savedFileName(PAGE_URL, `attachment; filename="Q3 results.PDF"`)).toBe("Q3 results.PDF");
+            expect(await savedFileName(PAGE_URL, "attachment; filename=plain")).toBe("plain.pdf");
+            expect(await savedFileName(PAGE_URL, "attachment; filename*=UTF-8''%E0%A4%A")).toBe("%E0%A4%A.pdf");
+            expect(await savedFileName("https://example.com/a/%C3%A9t%C3%A9.pdf?x=1")).toBe("été.pdf");
+            expect(await savedFileName("https://example.com/a/%E0%A4%A")).toBe("%E0%A4%A.pdf");
+            expect(await savedFileName("https://example.com/a/", "inline")).toBeUndefined();
+        });
+
+        it("saves nothing that is not a PDF, too large, or out of reach, and says why", async () => {
+            const failure = async (message: object) => {
+                facade.callService.mockClear();
+                tabsSendMessage.mockClear();
+                await sendRuntimeMessage({ name: "save-pdf", url: PAGE_URL, title: "T", ...message });
+                expect(facade.callService).not.toHaveBeenCalled();
+                return (await lastToast() as { message?: string } | undefined)?.message;
+            };
+
+            facade.requireMinorVersion.mockRejectedValueOnce(
+                new TriliumError("version-mismatch", "Saving a PDF needs a newer version of Trilium."));
+            expect(await failure({})).toBe("Saving a PDF needs a newer version of Trilium.");
+            expect(fetchMock).not.toHaveBeenCalled();
+
+            answerPdf("Not found", {}, 404);
+            expect(await failure({})).toBe("Saving to Trilium failed: The PDF could not be downloaded: HTTP 404");
+
+            answerPdf("<html></html>");
+            expect(await failure({})).toBe("Saving to Trilium failed: The page is not a PDF.");
+
+            const TOO_LARGE = "Saving to Trilium failed: The PDF is larger than 100 MB, the most the clipper saves.";
+            answerPdf(PDF, { "Content-Length": String(100 * 1024 * 1024 + 1) });
+            expect(await failure({})).toBe(TOO_LARGE);
+
+            const unannounced = new Response(PDF);
+            vi.spyOn(unannounced, "blob").mockResolvedValue({ size: 100 * 1024 * 1024 + 1 } as Blob);
+            fetchMock.mockResolvedValueOnce(unannounced);
+            expect(await failure({})).toBe(TOO_LARGE);
+
+            answerPdf();
+            vi.stubGlobal("FileReader", class {
+
+                result = null;
+                onloadend: (() => void) | null = null;
+
+                readAsDataURL() {
+                    setTimeout(() => this.onloadend?.());
+                }
+
+            });
+            expect(await failure({})).toBe("Saving to Trilium failed: The PDF could not be read.");
         });
     });
 

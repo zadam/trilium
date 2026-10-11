@@ -195,7 +195,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "clipperInbox", valueType: "boolean" },
     // Stamped by the web clipper on what it saves, recording which of its actions produced the note.
     { type: "label", name: "clipType", valueType: "select", selectOptions: [
-        "clippings", "page", "note", "tabs"
+        "clippings", "page", "note", "tabs", "file"
     ] },
     { type: "label", name: "sentFromSender", valueType: "boolean" },
     { type: "label", name: "hideChildrenOverview", valueType: "boolean" },

@@ -36,6 +36,37 @@ export async function extractPage(tabId: number, variant: PageVariant): Promise<
     return (injection?.result ?? undefined) as ReadablePage | undefined;
 }
 
+/**
+ * Whether the tab shows a PDF in the browser's own viewer. Chrome runs scripts in the page around
+ * its viewer; Firefox runs none in its viewer, so the website is asked for the type instead.
+ */
+export async function isPdfTab({ id, url }: { id?: number, url?: string }) {
+    if (id === undefined || !url || !/^https?:\/\//.test(url)) return false;
+
+    try {
+        const [ injection ] = await browser.scripting.executeScript({ target: { tabId: id }, func: isPdfDocument });
+        return injection?.result === true;
+    } catch {
+        try {
+            const response = await fetch(url, { method: "HEAD", credentials: "include" });
+            return isPdfType(response.headers.get("content-type"));
+        } catch {
+            return false;
+        }
+    }
+}
+
+/** Runs in the tab. Chrome's viewer is an `<embed>` of `about:blank` in the page at the PDF's address. */
+function isPdfDocument() {
+    return document.contentType === "application/pdf"
+        || !!document.querySelector("embed[type='application/pdf'][src='about:blank']");
+}
+
+/** Whether a `Content-Type` header names a PDF, whatever its parameters. */
+export function isPdfType(contentType: string | null) {
+    return contentType?.split(";")[0]?.trim().toLowerCase() === "application/pdf";
+}
+
 export function randomString(len: number) {
     let text = "";
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

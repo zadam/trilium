@@ -22,6 +22,7 @@ The extension is available from the official browser web stores:
 *   select text and clip it with the right-click context menu
 *   click on an image or link and save it through context menu
 *   save whole page from the popup or context menu
+*   save a PDF that the browser shows, as a file note
 *   save a screenshot of an area you select, of the visible part of the page or of the whole page, from either popup or context menu
 *   create short text note from popup
 
@@ -33,13 +34,14 @@ Clicking the extension's button in the browser toolbar opens its popup:
     
     *   _Selection_, when text is selected on the page: _Save selection_ saves it into the note of that page's clippings, as the context menu does.
     *   _Page_: _Save page to Trilium_ saves the page's text and images. A smaller switch at the top of the preview chooses how much of the page to keep: _Article_ keeps only the page's main text, without its menus, sidebars and footers, and _Whole page_ keeps everything the page shows. _Whole page_ is for pages that are not an article (such as a gallery or a page of cards), where _Article_ can leave out part of the content; the preview shows what each one keeps. _Article_ is unavailable on a page where Trilium finds no article. The author the page names shows under the description, marked by the <span class="tn-icon bx bx-user"></span> icon. It can be edited or cleared before saving, or written in when the page names none, and is saved in the `#pageAuthor` label of the note. When the page states when it was published, that date shows under the author, marked by the <span class="tn-icon bx bx-calendar"></span> icon, and is saved in the `#publishedDate` label of the note. When it states when it was last modified, that date shows below, marked by the <span class="tn-icon bx bx-history"></span> icon, and is saved in the `#modifiedDate` label.
+    *   _PDF_, when the tab shows a PDF in the browser's viewer: _Save PDF to Trilium_ downloads the PDF and saves it as a file note, which Trilium opens in its <a class="reference-link" href="../Note%20Types/File/PDFs.md">PDFs</a> viewer. Only the title and the description can be edited, since a file note has no text of its own for your note. The page's address is saved in the note's `#pageUrl` label and the PDF's file name in `#originalFileName`. Saving a PDF needs Trilium v0.107.0 or later.
     *   _Bookmark_, always: there is no preview, and _Save bookmark_ saves a link to the page with your note as the content of the note. Left empty, the title stays the page's title.
     
     The box for your note, marked by the <span class="tn-icon bx bx-info-circle"></span> icon, has the cursor when the popup opens, so a note (such as why the page is worth keeping) can be typed right away. It grows with its text, and keeps it when switching between _Selection_, _Page_ and _Bookmark_. A note on a selection or a page is saved above the clipped content, in a _Note_ admonition. Left empty, nothing is added. <kbd>Ctrl</kbd>+<kbd>Enter</kbd> in any of the popup's fields saves, whichever is chosen.
     
     The description, marked by the <span class="tn-icon bx bx-align-left"></span> icon, comes from the page's `description` meta tag, or the one it gives social sites. It can be edited or cleared before saving, or written in when the page has none, and is saved in the `#pageDescription` label of the note. Clippings saved with the keyboard shortcuts or the context menu, screenshots and images included, get the description as the page gives it. Each clipping that brings a description updates the label. The description, the author and the dates are shown by clicking the _Web clip_ badge next to the title of the note (see <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20badges.md">Note badges</a>).
     
-    The popup opens on the selection if there is one, otherwise on _Page_, showing the article, or the whole page when the page has no article. On a page that shows nothing to save, it opens on _Bookmark_ and says so. The keyboard shortcuts and the context menu still save right away, without a preview: saving the whole page that way saves the article, or the whole page when the page has no article.
+    The popup opens on the selection if there is one, otherwise on _Page_, showing the article, or the whole page when the page has no article. On a PDF, it opens on _PDF_. On a page that shows nothing to save, it opens on _Bookmark_ and says so. The keyboard shortcuts and the context menu still save right away, without a preview: saving the whole page that way saves the article, the whole page when the page has no article, or the PDF when the tab shows one.
 *   Pages the extension cannot access (the browser's own pages, the extension stores, and pages that were open before the extension was installed until they are reloaded) cannot be saved or captured, so the popup says so in place of the preview, and only _Tabs_ remains available there.
 *   Below the preview, a row of buttons offers the other actions: _Crop_ (a screenshot of an area you select), _Screenshot_ (of the visible part of the page), _Full page_ (a screenshot of the whole page) and _Tabs_ (saves the links of every tab in the current window as a list of <a class="reference-link" href="../Note%20Types/Text/Link%20Previews.md">Link Previews</a>, or of plain links when _Autogenerate link previews_ is turned off). Hovering over a button shows its full name and, if it has one, its keyboard shortcut.
 *   _Full page_ scrolls through the page, takes a screenshot of each part and joins them into one image, then scrolls back to where the page was. The scrollbars are hidden while it does, so they do not appear in the image. Stay on the tab until it is saved: switching to another tab stops the screenshot. A header that stays at the top of the window appears once, at the top of the image, and headings that stick while scrolling appear where they are in the page. Other elements that stay in place while scrolling (such as cookie banners and chat buttons) are left out, while a background that fills the whole window repeats on every screen. A long page is saved as several images, one below the other in the note. A page longer than 100 screens is cut off there, and the message after saving says so.
@@ -53,7 +55,7 @@ Trilium will save these clippings as a new child note under a "clipper inbox" no
 
 By default, that's the <a class="reference-link" href="../Advanced%20Usage/Advanced%20Showcases/Day%20Notes.md">Day Notes</a> but you can override that by setting the [label](../Advanced%20Usage/Attributes.md) `clipperInbox`, on any other note.
 
-Further clippings of the same kind from the same page are added to the note created by the first one, even on a later day or after that note was moved out of the clipper inbox. The note stays where it is and is not cloned back into the inbox.
+Further clippings of the same kind from the same page are added to the note created by the first one, even on a later day or after that note was moved out of the clipper inbox. The note stays where it is and is not cloned back into the inbox. A PDF is the exception: each save creates a new file note, since the PDF can have changed since it was last saved.
 
 The icon of a clipped note shows what was saved:
 
@@ -62,7 +64,7 @@ The icon of a clipped note shows what was saved:
 *   <span class="tn-icon bx bx-bookmark"></span> a bookmark;
 *   <span class="tn-icon bx bx-window-alt"></span> the tabs of a window.
 
-The icon is derived from the note's `#clipType` label, so setting an `#iconClass` label on the note replaces it.
+The icon is derived from the note's `#clipType` label, so setting an `#iconClass` label on the note replaces it. A saved PDF has the icon of a PDF file, like any other PDF in Trilium.
 
 ## Embedded videos
 
@@ -103,6 +105,7 @@ After each clipping, a notification in the corner of the page confirms that it w
 *   Trilium was not found: start the desktop application, or check the server address and token in the extension's options.
 *   The versions of Trilium and the extension are not compatible: update the one the message names.
 *   Trilium rejected the request: the message includes the reason Trilium gave.
+*   A PDF could not be saved: Trilium is older than v0.107.0, the website refused to send the PDF again, or the PDF is larger than 100 MB. The extension downloads the PDF with the browser's cookies for that website, so a PDF behind a login can be saved while you are logged in.
 
 The extension downloads the images of a clipping itself, so that they are stored in Trilium together with the note. If some of them cannot be downloaded (for example because the website refuses the request), the clipping is still saved, and the notification says how many images are missing. Those images keep their address on the original website: Trilium tries to download them once more if _Download images automatically_ is enabled in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Media_, and otherwise the note shows them from the website for as long as it serves them.
 

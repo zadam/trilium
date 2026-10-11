@@ -225,6 +225,55 @@ describe("clipper route handlers", () => {
         });
     });
 
+    describe("saving files", () => {
+        const PDF = Buffer.from("%PDF-1.7 bytes");
+
+        function createFile(body: object) {
+            return cls.init(() => clipperRoute.createFile({ body } as unknown as Request));
+        }
+
+        it("saves a PDF as a file note, a new one each time", async () => {
+            const body = {
+                title: "  Annual report  ",
+                fileName: "../report.pdf",
+                pageUrl: "https://example.com/report.pdf",
+                dataUrl: `data:application/pdf;base64,${PDF.toString("base64")}`,
+                labels: { pageDescription: "Tom & <b>Jerry</b>" }
+            };
+            const { noteId } = await createFile(body);
+
+            const note = becca.getNoteOrThrow(noteId);
+            expect(note.title).toBe("Annual report");
+            expect(note.type).toBe("file");
+            expect(note.mime).toBe("application/pdf");
+            expect(Buffer.from(note.getContent())).toEqual(PDF);
+            expect(note.getLabelValue("clipType")).toBe("file");
+            expect(note.getLabelValue("pageUrl")).toBe("https://example.com/report.pdf");
+            expect(note.getLabelValue("originalFileName")).toBe("report.pdf");
+            expect(note.getLabelValue("pageDescription")).toBe("Tom & Jerry");
+
+            const second = await createFile(body);
+            expect(second.noteId).not.toBe(noteId);
+        });
+
+        it("titles the note after the file, or the page without one", async () => {
+            const dataUrl = `data:application/pdf;base64,${PDF.toString("base64")}`;
+            const named = await createFile({ title: " ", fileName: "report.pdf", pageUrl: "https://example.com/a", dataUrl });
+            expect(becca.getNoteOrThrow(named.noteId).title).toBe("report.pdf");
+
+            const unnamed = await createFile({ pageUrl: "https://example.com/b", dataUrl });
+            const note = becca.getNoteOrThrow(unnamed.noteId);
+            expect(note.title).toBe("Clipped file from https://example.com/b");
+            expect(note.hasLabel("originalFileName")).toBe(false);
+        });
+
+        it("rejects a file that is not a base64 data URL", async () => {
+            await expect(createFile({ title: "x", dataUrl: "https://example.com/report.pdf" }))
+                .rejects.toThrow("The file must be sent as a base64 data URL.");
+            await expect(createFile({ title: "x" })).rejects.toThrow("The file must be sent as a base64 data URL.");
+        });
+    });
+
     it("creates a standalone note with labels", async () => {
         const result = await cls.init(() => clipperRoute.createNote({
             body: {
