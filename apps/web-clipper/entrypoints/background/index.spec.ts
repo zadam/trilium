@@ -544,7 +544,7 @@ describe("background", () => {
             expect(payload).toEqual({
                 title: "Active page",
                 content: expect.stringMatching(/^<img src="[A-Za-z0-9]{20}">$/),
-                images: [ { imageId: expect.any(String), src: "inline.png", dataUrl: PNG } ],
+                images: [ { imageId: expect.any(String), src: "inline.png", dataUrl: PNG, screenshot: true } ],
                 pageUrl: PAGE_URL
             });
             const { content, images } = payload as {
@@ -594,7 +594,7 @@ describe("background", () => {
                 pageUrl: MENU_URL
             });
             expect(lastPayload()).toMatchObject({
-                images: [ { src: "inline.png", dataUrl: PNG } ],
+                images: [ { src: "inline.png", dataUrl: PNG, screenshot: true } ],
                 pageUrl: MENU_URL
             });
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
@@ -721,8 +721,10 @@ describe("background", () => {
 
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
 
-            const { content, images } = lastPayload() as { content: string, images: { imageId: string, dataUrl: string }[] };
-            expect(images.map((image) => image.dataUrl)).toEqual([ PNG, CROPPED_PNG ]);
+            const { content, images } = lastPayload() as {
+                content: string, images: { imageId: string, dataUrl: string, screenshot: boolean }[]
+            };
+            expect(images.map((image) => [ image.dataUrl, image.screenshot ])).toEqual([ [ PNG, true ], [ CROPPED_PNG, true ] ]);
             expect(content).toBe(images.map((image) => `<img src="${image.imageId}">`).join(""));
         });
 
@@ -822,6 +824,7 @@ describe("background", () => {
                 } ],
                 pageUrl: PAGE_URL
             });
+            expect((lastPayload() as { images: object[] }).images[0]).not.toHaveProperty("screenshot");
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
 
             fetchMock.mockResolvedValueOnce(new Response("Not found", { status: 404 }));

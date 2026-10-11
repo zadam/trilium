@@ -55,8 +55,11 @@ const MAX_SCREENSHOT_CAPTURES = 100;
 /** The largest PDF the clipper saves. It reaches Trilium as base64 in a single request. */
 const MAX_PDF_SIZE = 100 * 1024 * 1024;
 
-/** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
-type ClippedImage = { imageId: string, src: string, dataUrl?: string };
+/**
+ * An image of a clipping; `content` references it by `imageId` until Trilium stores it. Trilium
+ * holds a `screenshot` to the width setting alone, so a long page stays readable.
+ */
+type ClippedImage = { imageId: string, src: string, dataUrl?: string, screenshot?: boolean };
 
 /** `linkText` is only available on Firefox. */
 type ContextMenuInfo = Browser.contextMenus.OnClickData & { linkText?: string };
@@ -449,8 +452,12 @@ export default defineBackground(() => {
     }
 
     /** A clipping of the images, one after another. */
-    async function getImagePayload(srcs: string[], pageUrl: string | null | undefined) {
-        const images = srcs.map((src) => ({ imageId: randomString(20), src }));
+    async function getImagePayload(srcs: string[], pageUrl: string | null | undefined, screenshot = false) {
+        const images: ClippedImage[] = srcs.map((src) => ({
+            imageId: randomString(20),
+            src,
+            ...(screenshot && { screenshot })
+        }));
         const activeTab = await getActiveTab();
         const { description } = await readPageMetadata();
         const payload = {
@@ -493,7 +500,7 @@ export default defineBackground(() => {
         pageUrl: string | null | undefined,
         message = "Screenshot has been saved to Trilium."
     ): Promise<Saved> {
-        const { payload } = await getImagePayload(srcs, pageUrl);
+        const { payload } = await getImagePayload(srcs, pageUrl, true);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
 

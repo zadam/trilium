@@ -18,6 +18,8 @@ interface Image {
     src: string;
     dataUrl: string;
     imageId: string;
+    /** Sent by recent versions of the extension; an older one's screenshots are shrunk to fit. */
+    screenshot?: unknown;
 }
 
 async function addClipping(req: Request) {
@@ -239,7 +241,7 @@ export async function processContent(images: Image[], note: BNote, content: stri
     let rewrittenContent = sanitize.sanitizeHtml(await replaceYouTubePlayers(note, content));
 
     if (images) {
-        for (const { src, dataUrl, imageId } of images) {
+        for (const { src, dataUrl, imageId, screenshot } of images) {
             const filename = path.basename(src);
 
             if (!dataUrl || !dataUrl.startsWith("data:image")) {
@@ -251,7 +253,10 @@ export async function processContent(images: Image[], note: BNote, content: stri
 
             const buffer = Buffer.from(dataUrl.split(",")[1], "base64");
 
-            const attachment = imageService.saveImageToAttachment(note.noteId, buffer, filename, true);
+            // A screenshot is held to the width setting only: fitting a long page into it by its
+            // height would leave a strip too narrow to read.
+            const attachment = imageService.saveImageToAttachment(
+                note.noteId, buffer, filename, screenshot === true ? "width" : true);
 
             // The URL below goes into the note as an image source, and the note is opened as soon
             // as this answers. Waiting for the bytes is what stops the clipping from being read

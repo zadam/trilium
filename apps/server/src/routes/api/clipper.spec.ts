@@ -8,6 +8,7 @@ const { buildNote } = becca_easy_mocking;
 
 const resolveYouTubePreview = vi.hoisted(() => vi.fn());
 const storeFavicon = vi.hoisted(() => vi.fn());
+const saveImageToAttachment = vi.hoisted(() => vi.fn(() => ({ attachmentId: "foo", title: "encodedTitle" })));
 
 vi.mock("@triliumnext/core", async (importOriginal) => ({
     ...await importOriginal<typeof import("@triliumnext/core")>(),
@@ -17,12 +18,7 @@ vi.mock("@triliumnext/core", async (importOriginal) => ({
 
 vi.mock("../../services/image.js", () => ({
     default: {
-        saveImageToAttachment() {
-            return {
-                attachmentId: "foo",
-                title: "encodedTitle",
-            };
-        },
+        saveImageToAttachment,
         // The clipping is read as soon as this answers, so the picture has to be stored by
         // then; nothing here defers, so there is nothing for the wait to do.
         awaitImageWrite: async () => {}
@@ -55,6 +51,18 @@ describe("processContent", () => {
             note, `<img src="OKZxZA3MonZJkwFcEhId">`
         ));
         expect(processed).toStrictEqual(`<img src="api/attachments/foo/image/encodedTitle" >`);
+    });
+
+    it("shrinks a screenshot by its width alone, and any other image to fit", async () => {
+        const PNG = "data:image/png;base64,iVBORw0KGgo=";
+        saveImageToAttachment.mockClear();
+        await cls.init(() => processContent([
+            { imageId: "screenshotImage00000", src: "inline.png", dataUrl: PNG, screenshot: true },
+            { imageId: "pictureImage00000000", src: "inline.png", dataUrl: PNG, screenshot: "yes" }
+        ], note, `<img src="screenshotImage00000"><img src="pictureImage00000000">`));
+
+        expect(saveImageToAttachment.mock.calls.map((call) => (call as unknown[]).slice(3)))
+            .toEqual([ [ "width" ], [ true ] ]);
     });
 
     it("skips over non-data images", async () => {
