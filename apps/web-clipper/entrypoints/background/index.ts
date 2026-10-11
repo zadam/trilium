@@ -178,7 +178,7 @@ export default defineBackground(() => {
             // Measured once the page is prepared: without its scrollbars, it can lay out differently.
             const page = await scrollTab(tabId, start.scrollX, 0);
             const height = Math.min(page.pageHeight, MAX_SCREENSHOT_HEIGHT / page.devicePixelRatio);
-            const stitcher = await createStitcher({ viewportHeight: page.viewportHeight, pageHeight: height });
+            const stitcher = await createStitcher({ pageHeight: height, devicePixelRatio: page.devicePixelRatio });
 
             let position = page;
             let lastCaptureAt = 0;

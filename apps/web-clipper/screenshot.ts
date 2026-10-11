@@ -5,10 +5,10 @@ export interface ScreenshotSlice {
 }
 
 export interface StitchRequest {
-    /** The height of the page's viewport, in CSS pixels. */
-    viewportHeight: number;
     /** The height of the page to stitch, in CSS pixels. */
     pageHeight: number;
+    /** The page's `devicePixelRatio`: the device pixels of a capture per CSS pixel, zoom included. */
+    devicePixelRatio: number;
 }
 
 /** How the background script has the offscreen document stitch a screenshot, one step a message. */
@@ -37,24 +37,20 @@ export const MAX_SCREENSHOT_HEIGHT = 60_000;
  */
 export class ScreenshotStitcher {
 
-    private scale = 0;
     private width = 0;
-    private height = 0;
+    private readonly height: number;
     private part: { index: number, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D } | undefined;
     private readonly parts: string[] = [];
 
-    constructor(private readonly request: StitchRequest) {}
+    constructor(private readonly request: StitchRequest) {
+        this.height = Math.round(request.pageHeight * request.devicePixelRatio);
+    }
 
     async add({ dataUrl, y }: ScreenshotSlice) {
         const image = await loadImage(dataUrl);
-        if (!this.scale) {
-            // The captures are in device pixels, which include the page zoom and the display's scaling.
-            this.scale = image.naturalHeight / this.request.viewportHeight;
-            this.width = image.naturalWidth;
-            this.height = Math.round(this.request.pageHeight * this.scale);
-        }
+        this.width ||= image.naturalWidth;
 
-        const top = Math.round(y * this.scale);
+        const top = Math.round(y * this.request.devicePixelRatio);
         const bottom = Math.min(top + image.naturalHeight, this.height);
         for (let index = Math.floor(top / MAX_PART_HEIGHT); index * MAX_PART_HEIGHT < bottom; index++) {
             // The last capture overlaps the one before it, which already drew any part it reaches back into.

@@ -570,7 +570,7 @@ describe("background", () => {
             await run(onCommand("saveFullPageScreenshot"));
 
             expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300 ]);
-            expect(offscreen.request).toEqual({ viewportHeight: 500, pageHeight: 1200 });
+            expect(offscreen.request).toEqual({ pageHeight: 1200, devicePixelRatio: 1 });
             expect(offscreen.slices).toEqual([ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ]);
             const intervals = captureTimes.slice(1).map((time, index) => time - (captureTimes[index] ?? 0));
             expect(intervals.every((interval) => interval >= 550)).toBe(true);
@@ -604,7 +604,7 @@ describe("background", () => {
             offscreen.slices = [];
             simulatePage({ viewportHeight: 2000, pageHeight: 100000, devicePixelRatio: 4 });
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
-            expect(offscreen.request).toEqual({ viewportHeight: 2000, pageHeight: 15000 });
+            expect(offscreen.request).toEqual({ pageHeight: 15000, devicePixelRatio: 4 });
             expect(sliceTops()).toEqual([ 0, 2000, 4000, 6000, 8000, 10000, 12000, 14000 ]);
             expect(await lastToast()).toMatchObject({
                 message: "Screenshot has been saved to Trilium, but the page was too long to capture in full."
@@ -616,7 +616,7 @@ describe("background", () => {
 
             await run(onCommand("saveFullPageScreenshot"));
 
-            expect(offscreen.request).toEqual({ viewportHeight: 515, pageHeight: 1100 });
+            expect(offscreen.request).toEqual({ pageHeight: 1100, devicePixelRatio: 1 });
             expect(sliceTops()).toEqual([ 0, 515, 585 ]);
         });
 
@@ -664,7 +664,7 @@ describe("background", () => {
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
 
             expect(runtimeSendMessage).not.toHaveBeenCalled();
-            expect(backgroundStitcher.created).toHaveBeenCalledWith({ viewportHeight: 500, pageHeight: 500 });
+            expect(backgroundStitcher.created).toHaveBeenCalledWith({ pageHeight: 500, devicePixelRatio: 1 });
             expect(backgroundStitcher.add).toHaveBeenCalledWith({ dataUrl: PNG, y: 0 });
             expect(lastPayload()).toMatchObject({ images: [ { dataUrl: CROPPED_PNG } ] });
         });

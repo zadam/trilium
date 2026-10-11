@@ -11,7 +11,7 @@ describe("ScreenshotStitcher", () => {
     it("draws each capture where it was taken, scaled to device pixels", async () => {
         stubImages({ naturalWidth: 1600, naturalHeight: 1000 });
         const canvas = stubCanvas();
-        const stitcher = new ScreenshotStitcher({ viewportHeight: 500, pageHeight: 1200 });
+        const stitcher = new ScreenshotStitcher({ pageHeight: 1200, devicePixelRatio: 2 });
 
         for (const y of [ 0, 500, 700 ]) {
             await stitcher.add({ dataUrl: `slice-${y}`, y });
@@ -24,10 +24,28 @@ describe("ScreenshotStitcher", () => {
         ]);
     });
 
+    it("places captures by the pixel ratio, which a capture's rounded height would get wrong", async () => {
+        // A 701 px viewport at 150% is 1,051.5 device pixels, captured as 1,052 rows.
+        stubImages({ naturalWidth: 600, naturalHeight: 1052 });
+        const canvas = stubCanvas();
+        const stitcher = new ScreenshotStitcher({ pageHeight: 2200, devicePixelRatio: 1.5 });
+
+        for (const y of [ 0, 701, 1402, 1499 ]) {
+            await stitcher.add({ dataUrl: `slice-${y}`, y });
+        }
+        stitcher.finish();
+
+        expect(canvas.sizes()).toEqual([ [ 600, 3300 ] ]);
+        expect(canvas.events).toEqual([
+            "draw 0: slice-0 at 0", "draw 0: slice-701 at 1052", "draw 0: slice-1402 at 2103",
+            "draw 0: slice-1499 at 2249", "encode 0"
+        ]);
+    });
+
     it("splits a long page into images, encoding each before the next is drawn", async () => {
         stubImages({ naturalWidth: 900, naturalHeight: 3000 });
         const canvas = stubCanvas();
-        const stitcher = new ScreenshotStitcher({ viewportHeight: 1000, pageHeight: 6000 });
+        const stitcher = new ScreenshotStitcher({ pageHeight: 6000, devicePixelRatio: 3 });
 
         for (const y of [ 0, 1000, 2000, 3000, 4000, 5000 ]) {
             await stitcher.add({ dataUrl: `slice-${y}`, y });
@@ -49,7 +67,7 @@ describe("ScreenshotStitcher", () => {
     it("leaves out the part of the last capture that reaches back into an image already encoded", async () => {
         stubImages({ naturalWidth: 100, naturalHeight: 1500 });
         const canvas = stubCanvas();
-        const stitcher = new ScreenshotStitcher({ viewportHeight: 1500, pageHeight: 9400 });
+        const stitcher = new ScreenshotStitcher({ pageHeight: 9400, devicePixelRatio: 1 });
 
         for (const y of [ 0, 1500, 3000, 4500, 6000, 7500, 7900 ]) {
             await stitcher.add({ dataUrl: `slice-${y}`, y });
@@ -65,7 +83,7 @@ describe("ScreenshotStitcher", () => {
     it("ignores what a capture shows below the height it was given", async () => {
         stubImages({ naturalWidth: 100, naturalHeight: 1000 });
         const canvas = stubCanvas();
-        const stitcher = new ScreenshotStitcher({ viewportHeight: 1000, pageHeight: MAX_PART_HEIGHT });
+        const stitcher = new ScreenshotStitcher({ pageHeight: MAX_PART_HEIGHT, devicePixelRatio: 1 });
 
         await stitcher.add({ dataUrl: "slice", y: 7500 });
 
@@ -74,7 +92,7 @@ describe("ScreenshotStitcher", () => {
     });
 
     it("fails without captures, without a canvas, or on a capture that cannot be read", async () => {
-        const request = { viewportHeight: 100, pageHeight: 100 };
+        const request = { pageHeight: 100, devicePixelRatio: 1 };
         stubImages({ naturalWidth: 100, naturalHeight: 100 });
 
         expect(() => new ScreenshotStitcher(request).finish()).toThrow("There is no screenshot to stitch.");

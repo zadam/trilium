@@ -68,7 +68,7 @@ describe("offscreen document", () => {
     });
 
     it("stitches a screenshot one message at a time, handing out the images one by one", async () => {
-        const request = { viewportHeight: 10, pageHeight: 30 };
+        const request = { pageHeight: 30, devicePixelRatio: 1 };
         const slice = { dataUrl: "a", y: 0 };
         stitcher.finish.mockReturnValue([ "part-0", CROPPED_PNG ]);
 
@@ -81,7 +81,7 @@ describe("offscreen document", () => {
     });
 
     it("answers why stitching failed, also when no screenshot was begun", async () => {
-        await sendMessage({ type: "STITCH_BEGIN", request: { viewportHeight: 10, pageHeight: 10 } });
+        await sendMessage({ type: "STITCH_BEGIN", request: { pageHeight: 10, devicePixelRatio: 1 } });
         stitcher.add.mockRejectedValueOnce(new Error("Too tall"));
         await expect(sendMessage({ type: "STITCH_ADD", slice: { dataUrl: "a", y: 0 } }))
             .resolves.toEqual({ error: "Too tall" });
