@@ -12,6 +12,7 @@ import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
 import History from "@boxicons/js/icons/History";
+import ImagePortrait from "@boxicons/js/icons/ImagePortrait";
 import Lock from "@boxicons/js/icons/Lock";
 import Paperclip from "@boxicons/js/icons/Paperclip";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
@@ -295,6 +296,11 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
                     icon={Screenshot} label="Screenshot" name="Visible area screenshot"
                     disabledReason={pageDisabledReason}
                     onClick={() => sendAndClose("save-whole-screenshot")}
+                />
+                <ToolbarAction
+                    icon={ImagePortrait} label="Full page" name="Full page screenshot"
+                    shortcut={shortcuts.saveFullPageScreenshot} disabledReason={pageDisabledReason}
+                    onClick={() => sendAndClose("save-full-page-screenshot")}
                 />
                 <ToolbarAction
                     icon={Tabs} label="Tabs" name="All tabs in window"

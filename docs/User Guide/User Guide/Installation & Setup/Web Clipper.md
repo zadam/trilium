@@ -22,7 +22,7 @@ The extension is available from the official browser web stores:
 *   select text and clip it with the right-click context menu
 *   click on an image or link and save it through context menu
 *   save whole page from the popup or context menu
-*   save screenshot (with crop tool) from either popup or context menu
+*   save a screenshot of an area you select, of the visible part of the page or of the whole page, from either popup or context menu
 *   create short text note from popup
 
 ## The popup
@@ -39,7 +39,8 @@ Clicking the extension's button in the browser toolbar opens its popup:
     
     The popup opens on the selection if there is one, otherwise on _Page_, showing the article, or the whole page when the page has no article. On a page that shows nothing to save, it opens on _Bookmark_ and says so. The keyboard shortcuts and the context menu still save right away, without a preview: saving the whole page that way saves the article, or the whole page when the page has no article.
 *   Pages the extension cannot access (the browser's own pages, the extension stores, and pages that were open before the extension was installed until they are reloaded) cannot be saved or captured, so the popup says so in place of the preview, and only _Tabs_ remains available there.
-*   Below the preview, a row of buttons offers the other actions: _Crop_ (a screenshot of an area you select), _Screenshot_ (of the visible part of the page) and _Tabs_ (saves the links of every tab in the current window as a list of <a class="reference-link" href="../Note%20Types/Text/Link%20Previews.md">Link Previews</a>, or of plain links when _Autogenerate link previews_ is turned off). Hovering over a button shows its full name and, if it has one, its keyboard shortcut.
+*   Below the preview, a row of buttons offers the other actions: _Crop_ (a screenshot of an area you select), _Screenshot_ (of the visible part of the page), _Full page_ (a screenshot of the whole page) and _Tabs_ (saves the links of every tab in the current window as a list of <a class="reference-link" href="../Note%20Types/Text/Link%20Previews.md">Link Previews</a>, or of plain links when _Autogenerate link previews_ is turned off). Hovering over a button shows its full name and, if it has one, its keyboard shortcut.
+*   _Full page_ scrolls through the page, takes a screenshot of each part and joins them into one image, then scrolls back to where the page was. Stay on the tab until it is saved: switching to another tab stops the screenshot. Elements that stay in place while the page scrolls (such as a fixed header) appear in every part of the image, and a very long page is cut off.
 *   If the current page was already clipped, a notice at the top offers to open the note in Trilium.
 *   If Trilium cannot be found, the popup explains why instead of showing the actions, with buttons to look for Trilium again and to open the options.
 *   The bottom of the popup shows whether the extension is connected to Trilium, as a colored dot (green when connected, amber when the versions are not compatible, red when Trilium was not found) next to a description of the connection, followed by the buttons for the extension's options and for this help page. A button to check the connection again appears next to them when hovering over the bar, and stays visible while Trilium cannot be reached or is not compatible.
@@ -75,6 +76,7 @@ Keyboard shortcuts are available for most functions:
 *   Save whole page: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (Mac: <kbd>⌥</kbd>+<kbd>⇧</kbd>+<kbd>S</kbd>)
 *   Save screenshot: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> (Mac: <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>E</kbd>)
 *   Save all tabs of the current window: no default shortcut, but one can be assigned as described below.
+*   Save a screenshot of the whole page: no default shortcut, but one can be assigned as described below.
 
 To set custom shortcuts, follow the directions for your browser.
 

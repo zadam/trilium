@@ -241,6 +241,25 @@ describe("content script", () => {
         });
     });
 
+    it("scrolls the page when given a position, and answers where it is scrolled to", async () => {
+        const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        vi.spyOn(window, "scrollY", "get").mockReturnValue(240);
+        vi.spyOn(document.documentElement, "scrollHeight", "get").mockReturnValue(3000);
+        const position = {
+            scrollX: window.scrollX,
+            scrollY: 240,
+            viewportHeight: window.innerHeight,
+            pageHeight: 3000,
+            devicePixelRatio: window.devicePixelRatio
+        };
+
+        expect(await send({ name: "trilium-scroll-to" })).toEqual(position);
+        expect(scrollTo).not.toHaveBeenCalled();
+
+        expect(await send({ name: "trilium-scroll-to", x: 5, y: 240 })).toEqual(position);
+        expect(scrollTo).toHaveBeenCalledWith({ left: 5, top: 240, behavior: "instant" });
+    });
+
     it("answers unknown messages with nothing", async () => {
         expect(await send({ name: "unknown" })).toBeUndefined();
         expect(console.error).toHaveBeenCalledOnce();

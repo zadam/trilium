@@ -1,7 +1,17 @@
+import { stitchScreenshots } from "@/screenshot";
+
 browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'CROP_IMAGE') {
         cropImage(message.cropRect, message.dataUrl).then(sendResponse);
         return true; // Keep channel open for async response
+    }
+    if (message.type === 'STITCH_IMAGES') {
+        // A failure answers its message, which the background script throws again.
+        stitchScreenshots(message.request).then(
+            (dataUrl) => sendResponse({ dataUrl }),
+            (e: Error) => sendResponse({ error: e.message })
+        );
+        return true;
     }
 });
 

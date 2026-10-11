@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
+const stitchScreenshots = vi.hoisted(() => vi.fn());
+vi.mock("@/screenshot", () => ({ stitchScreenshots }));
+
 import "./index";
 
 const CROPPED_PNG = "data:image/png;base64,Q1JPUA==";
@@ -51,6 +54,16 @@ describe("offscreen document", () => {
             cropRect: { x: 0, y: 0, width: 1, height: 1 }
         };
         await expect(sendMessage(emptyCrop)).resolves.toBe(CROPPED_PNG);
+    });
+
+    it("stitches screenshots, answering with the image or why it failed", async () => {
+        const request = { slices: [ { dataUrl: "a", y: 0 } ], viewportHeight: 10, pageHeight: 10 };
+        stitchScreenshots.mockResolvedValueOnce(CROPPED_PNG);
+        await expect(sendMessage({ type: "STITCH_IMAGES", request })).resolves.toEqual({ dataUrl: CROPPED_PNG });
+        expect(stitchScreenshots).toHaveBeenCalledWith(request);
+
+        stitchScreenshots.mockRejectedValueOnce(new Error("Too tall"));
+        await expect(sendMessage({ type: "STITCH_IMAGES", request })).resolves.toEqual({ error: "Too tall" });
     });
 
     it("ignores other messages", async () => {

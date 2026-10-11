@@ -141,7 +141,9 @@ export default defineContentScript({
             });
         }
 
-        async function prepareMessageResponse(message: {name: string, noteId?: string, message?: string, tabIds?: string[]}) {
+        async function prepareMessageResponse(message: {
+            name: string, noteId?: string, message?: string, tabIds?: string[], x?: number, y?: number
+        }) {
             console.info(`Message: ${  message.name}`);
 
             if (message.name === "toast") {
@@ -209,6 +211,18 @@ export default defineContentScript({
             else if (message.name === 'trilium-get-rectangle-for-screenshot') {
                 return {
                     rect: await getRectangleArea(),
+                    devicePixelRatio: window.devicePixelRatio
+                };
+            }
+            else if (message.name === "trilium-scroll-to") {
+                if (message.y !== undefined) {
+                    window.scrollTo({ left: message.x, top: message.y, behavior: "instant" });
+                }
+                return {
+                    scrollX: window.scrollX,
+                    scrollY: window.scrollY,
+                    viewportHeight: window.innerHeight,
+                    pageHeight: document.documentElement.scrollHeight,
                     devicePixelRatio: window.devicePixelRatio
                 };
             }

@@ -17,6 +17,12 @@ const { facade, TriliumError } = vi.hoisted(() => ({
     }
 }));
 
+const stitchScreenshots = vi.hoisted(() => vi.fn());
+vi.mock("@/screenshot", async (importOriginal) => ({
+    ...await importOriginal<typeof import("@/screenshot")>(),
+    stitchScreenshots
+}));
+
 vi.mock("./trilium_server_facade", () => ({
     TriliumError,
     default: class {
@@ -107,7 +113,7 @@ describe("background", () => {
         Object.assign(fakeBrowser, { offscreen: { createDocument }, scripting: { executeScript } });
 
         background.main();
-        await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(6));
+        await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(7));
     });
 
     afterEach(() => {
@@ -122,6 +128,7 @@ describe("background", () => {
             "trilium-save-selection",
             "trilium-save-cropped-screenshot",
             "trilium-save-whole-screenshot",
+            "trilium-save-full-page-screenshot",
             "trilium-save-page",
             "trilium-save-link",
             "trilium-save-image"
@@ -490,6 +497,138 @@ describe("background", () => {
         });
     });
 
+    describe("full page screenshots", () => {
+        const captureVisibleTab = vi.fn(async () => PNG);
+        let tabActive: boolean;
+
+        beforeEach(() => {
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            tabActive = true;
+            Object.assign(fakeBrowser.tabs, {
+                get: async () => ({ active: tabActive }),
+                captureVisibleTab
+            });
+            runtimeSendMessage.mockImplementation(async (message) => (
+                (message as { type?: string }).type === "STITCH_IMAGES" ? { dataUrl: CROPPED_PNG } : PNG
+            ));
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+            runtimeSendMessage.mockImplementation(async () => PNG);
+        });
+
+        /** Runs an action to its end, letting the waits between captures pass. */
+        async function run(action: Promise<unknown>) {
+            await vi.runAllTimersAsync();
+            await action;
+            vi.useRealTimers();
+        }
+
+        /** The positions the page was asked to scroll to; `undefined` only asks where it is. */
+        function scrolls() {
+            return tabsSendMessage.mock.calls
+                .map(([ , message ]) => message as { name: string, y?: number })
+                .filter((message) => message.name === "trilium-scroll-to")
+                .map((message) => message.y);
+        }
+
+        function stitchRequest() {
+            const call = runtimeSendMessage.mock.calls.find(([ message ]) =>
+                (message as { type?: string }).type === "STITCH_IMAGES");
+            return (call?.[0] as { request?: unknown } | undefined)?.request;
+        }
+
+        it("captures the page a viewport at a time, then stitches the captures offscreen", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const captureTimes: number[] = [];
+            captureVisibleTab.mockImplementation(async () => {
+                captureTimes.push(Date.now());
+                return PNG;
+            });
+
+            await run(onCommand("saveFullPageScreenshot"));
+
+            expect(scrolls()).toEqual([ undefined, 0, 500, 1000, 300 ]);
+            expect(stitchRequest()).toEqual({
+                slices: [ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ],
+                viewportHeight: 500,
+                pageHeight: 1200
+            });
+            const intervals = captureTimes.slice(1).map((time, index) => time - (captureTimes[index] ?? 0));
+            expect(intervals.every((interval) => interval >= 550)).toBe(true);
+            expect(lastPayload()).toMatchObject({
+                images: [ { src: "inline.png", dataUrl: CROPPED_PNG } ],
+                pageUrl: PAGE_URL
+            });
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+        });
+
+        it("stops where the page stops scrolling, and at the height a screenshot can hold", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 5000, scrollLimit: 1000 });
+            await run(onContextMenuClicked({ menuItemId: "trilium-save-full-page-screenshot", pageUrl: MENU_URL }));
+            expect(stitchRequest()).toMatchObject({ slices: [ { y: 0 }, { y: 500 } ] });
+            expect(lastPayload()).toMatchObject({ pageUrl: MENU_URL });
+
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            runtimeSendMessage.mockClear();
+            simulatePage({ viewportHeight: 2000, pageHeight: 100000, devicePixelRatio: 4 });
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(stitchRequest()).toMatchObject({ slices: [ { y: 0 }, { y: 2000 }, { y: 4000 } ] });
+        });
+
+        it("stops and scrolls back when another tab is opened, even if scrolling back fails", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const scrollPage = tabMessageHandler;
+            tabMessageHandler = (message) => {
+                if ((message as { y?: number }).y === 300) throw new Error("The tab is gone.");
+                return scrollPage(message);
+            };
+            tabActive = false;
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            expect(captureVisibleTab).not.toHaveBeenCalled();
+            expect(scrolls()).toEqual([ undefined, 0, 300 ]);
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: The screenshot was stopped because another tab was opened."
+            });
+        });
+
+        it("reports a page that does not answer, a failed stitch, and a tab without an ID", async () => {
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: The page could not be read. Reload it and try again."
+            });
+
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+            runtimeSendMessage.mockImplementation(async () => ({ error: "Too tall" }));
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(await lastToast()).toMatchObject({ message: "Saving to Trilium failed: Too tall" });
+
+            tabs = [ { title: "Tab without id" } ];
+            await sendRuntimeMessage({ name: "save-full-page-screenshot" });
+            expect(facade.callService).not.toHaveBeenCalled();
+        });
+
+        it("stitches in the background page under Manifest V2", async () => {
+            vi.stubGlobal("__MANIFEST_VERSION__", 2);
+            stitchScreenshots.mockResolvedValue(CROPPED_PNG);
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            expect(runtimeSendMessage).not.toHaveBeenCalled();
+            expect(stitchScreenshots).toHaveBeenCalledWith({
+                slices: [ { dataUrl: PNG, y: 0 } ],
+                viewportHeight: 500,
+                pageHeight: 500
+            });
+            expect(lastPayload()).toMatchObject({ images: [ { dataUrl: CROPPED_PNG } ] });
+        });
+    });
+
     describe("context menu", () => {
         it("saves an image by fetching it", async () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-image", pageUrl: PAGE_URL });
@@ -800,6 +939,24 @@ async function lastToast() {
         .map(([ , message ]) => message)
         .filter((message) => message.name === "toast")
         .at(-1);
+}
+
+/**
+ * Answers the content script's scroll messages for a page of `pageHeight` that scrolls no further
+ * than `scrollLimit`, starting at `startY`.
+ */
+function simulatePage({ startY = 0, viewportHeight, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1 }: {
+    startY?: number, viewportHeight: number, pageHeight: number, scrollLimit?: number, devicePixelRatio?: number
+}) {
+    let scrollY = startY;
+    tabMessageHandler = (message) => {
+        if (message.name !== "trilium-scroll-to") return undefined;
+        const { y } = message as { y?: number };
+        if (y !== undefined) {
+            scrollY = Math.max(0, Math.min(y, scrollLimit - viewportHeight));
+        }
+        return { scrollX: 0, scrollY, viewportHeight, pageHeight, devicePixelRatio };
+    };
 }
 
 function stubImageLoading() {

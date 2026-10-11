@@ -70,6 +70,9 @@ export default defineConfig({
             },
             saveTabs: {
                 description: "Save all tabs of the current window into a note"
+            },
+            saveFullPageScreenshot: {
+                description: "Take a screenshot of the whole page"
             }
         }
     }),

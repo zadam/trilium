@@ -1,3 +1,6 @@
+import {
+    MAX_SCREENSHOT_HEIGHT, type ScreenshotSlice, stitchScreenshots, type StitchRequest
+} from "@/screenshot";
 import { extractPage, randomString, type Rect } from "@/utils";
 
 import setupContextMenu from "./context_menu";
@@ -14,7 +17,26 @@ type BackgroundMessage = {
     name: "trilium-get-rectangle-for-screenshot";
 } | {
     name: "trilium-get-page-metadata";
+} | {
+    /** Scrolls the page to `x`, `y` when given, and answers with a {@link ScrollPosition}. */
+    name: "trilium-scroll-to";
+    x?: number;
+    y?: number;
 };
+
+/** Where the page is scrolled to and how large it is, in CSS pixels. */
+type ScrollPosition = {
+    scrollX: number;
+    scrollY: number;
+    viewportHeight: number;
+    pageHeight: number;
+    devicePixelRatio: number;
+};
+
+/** Chrome allows two `captureVisibleTab()` calls a second, and fails a third. */
+const CAPTURE_INTERVAL_MS = 550;
+/** How long a scrolled page gets to draw what came into view before it is captured. */
+const SCROLL_SETTLE_MS = 150;
 
 /** An image of a clipping; `content` references it by `imageId` until Trilium stores it. */
 type ClippedImage = { imageId: string, src: string, dataUrl?: string };
@@ -40,6 +62,11 @@ export default defineBackground(() => {
             case "saveCroppedScreenshot": {
                 const activeTab = await getActiveTab();
                 await saveCroppedScreenshot(activeTab.url);
+                break;
+            }
+            case "saveFullPageScreenshot": {
+                const activeTab = await getActiveTab();
+                await saveScreenshot(await takeFullPageScreenshot(), activeTab.url);
                 break;
             }
             default:
@@ -117,11 +144,71 @@ export default defineBackground(() => {
     }
 
     async function takeWholeScreenshot() {
-        // this saves only visible portion of the page
-        // workaround to save the whole page is to scroll & stitch
-        // example in https://github.com/mrcoles/full-page-screen-capture-chrome-extension
-        // see page.js and popup.js
         return await browser.tabs.captureVisibleTab({ format: 'png' });
+    }
+
+    /**
+     * Scrolls the active tab from the top, one viewport at a time, captures each, and stitches the
+     * captures into one image. The tab is scrolled back to where it was afterwards.
+     */
+    async function takeFullPageScreenshot() {
+        const { id: tabId, windowId } = await getActiveTab();
+        if (tabId === undefined) {
+            throw new Error("No active tab.");
+        }
+
+        const start = await scrollTab(tabId);
+        const height = Math.min(start.pageHeight, MAX_SCREENSHOT_HEIGHT / start.devicePixelRatio);
+        const slices: ScreenshotSlice[] = [];
+        let lastCaptureAt = 0;
+
+        try {
+            let y = 0;
+            while (y < height) {
+                const position = await scrollTab(tabId, start.scrollX, y);
+                const previous = slices.at(-1);
+                // The page stopped scrolling short of the height it reported.
+                if (previous && position.scrollY <= previous.y) break;
+
+                await delay(Math.max(SCROLL_SETTLE_MS, lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now()));
+                const tab = await browser.tabs.get(tabId);
+                if (!tab.active) {
+                    throw new Error("The screenshot was stopped because another tab was opened.");
+                }
+
+                lastCaptureAt = Date.now();
+                const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: "png" });
+                slices.push({ dataUrl, y: position.scrollY });
+                y = position.scrollY + start.viewportHeight;
+            }
+        } finally {
+            await scrollTab(tabId, start.scrollX, start.scrollY).catch(() => undefined);
+        }
+
+        return await stitch({ slices, viewportHeight: start.viewportHeight, pageHeight: start.pageHeight });
+    }
+
+    /** Scrolls the tab when given a position, and answers where it is scrolled to. */
+    async function scrollTab(tabId: number, x?: number, y?: number): Promise<ScrollPosition> {
+        const message: BackgroundMessage = { name: "trilium-scroll-to", x, y };
+        const position = await browser.tabs.sendMessage(tabId, message);
+        if (!position) {
+            throw new Error("The page could not be read. Reload it and try again.");
+        }
+        return position;
+    }
+
+    async function stitch(request: StitchRequest) {
+        if (import.meta.env.MANIFEST_VERSION !== 3) {
+            return await stitchScreenshots(request);
+        }
+
+        await ensureOffscreenDocument();
+        const { dataUrl, error } = await browser.runtime.sendMessage({ type: "STITCH_IMAGES", request });
+        if (error) {
+            throw new Error(error);
+        }
+        return dataUrl as string;
     }
 
     async function getActiveTab() {
@@ -304,18 +391,10 @@ export default defineBackground(() => {
         });
         if (!rect) return;
 
-        const src = await takeCroppedScreenshot(rect, devicePixelRatio);
-
-        const { payload } = await getImagePayloadFromSrc(src, pageUrl);
-
-        const resp = await triliumServerFacade.callService("POST", "clippings", payload);
-
-        toast("Screenshot has been saved to Trilium.", resp.noteId);
+        await saveScreenshot(await takeCroppedScreenshot(rect, devicePixelRatio), pageUrl);
     }
 
-    async function saveWholeScreenshot(pageUrl: string | null | undefined) {
-        const src = await takeWholeScreenshot();
-
+    async function saveScreenshot(src: string, pageUrl: string | null | undefined) {
         const { payload } = await getImagePayloadFromSrc(src, pageUrl);
 
         const resp = await triliumServerFacade.callService("POST", "clippings", payload);
@@ -442,7 +521,10 @@ export default defineBackground(() => {
             await saveCroppedScreenshot(info.pageUrl);
         }
         else if (info.menuItemId === 'trilium-save-whole-screenshot') {
-            await saveWholeScreenshot(info.pageUrl);
+            await saveScreenshot(await takeWholeScreenshot(), info.pageUrl);
+        }
+        else if (info.menuItemId === 'trilium-save-full-page-screenshot') {
+            await saveScreenshot(await takeFullPageScreenshot(), info.pageUrl);
         }
         else if (info.menuItemId === 'trilium-save-image') {
             if (!info.srcUrl) return;
@@ -506,7 +588,12 @@ export default defineBackground(() => {
         else if (request.name === 'save-whole-screenshot') {
             const activeTab = await getActiveTab();
 
-            return await saveWholeScreenshot(activeTab.url);
+            return await saveScreenshot(await takeWholeScreenshot(), activeTab.url);
+        }
+        else if (request.name === 'save-full-page-screenshot') {
+            const activeTab = await getActiveTab();
+
+            return await saveScreenshot(await takeFullPageScreenshot(), activeTab.url);
         }
         else if (request.name === 'save-whole-page') {
             return await saveWholePage(request.page);
@@ -553,4 +640,8 @@ function failureMessage(error: unknown) {
     if (error instanceof TriliumError) return error.message;
     const details = error instanceof Error ? error.message : "";
     return details ? `Saving to Trilium failed: ${details}` : "Saving to Trilium failed.";
+}
+
+function delay(ms: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }

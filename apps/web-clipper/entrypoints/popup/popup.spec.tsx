@@ -86,7 +86,7 @@ describe("popup", () => {
     it("asks for the connection status and shows it in the footer", async () => {
         expect(sendMessage).toHaveBeenCalledWith({ name: "send-trilium-search-status" });
         expect(status()).toEqual({ dot: "status-dot status-dot-pending", text: "Looking for Trilium…" });
-        expect(captureButtons()).toHaveLength(4);
+        expect(captureButtons()).toHaveLength(5);
         expect(container.querySelector(".popup-header")).toBeNull();
         expect([ ...container.querySelectorAll(".connection button") ].map((b) => b.getAttribute("aria-label")))
             .toEqual([ "Check the connection again", "Options", "Help" ]);
@@ -182,7 +182,9 @@ describe("popup", () => {
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-cropped-screenshot" });
         await click("Visible area screenshot");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-whole-screenshot" });
-        expect(closeWindow).toHaveBeenCalledTimes(2);
+        await click("Full page screenshot");
+        expect(sendMessage).toHaveBeenCalledWith({ name: "save-full-page-screenshot" });
+        expect(closeWindow).toHaveBeenCalledTimes(3);
 
         await click("All tabs in window");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-tabs" });
@@ -190,7 +192,7 @@ describe("popup", () => {
         expect(sendMessage).toHaveBeenCalledWith({ name: "trigger-trilium-search" });
         await click("Options");
         expect(openOptionsPage).toHaveBeenCalledOnce();
-        expect(closeWindow).toHaveBeenCalledTimes(2);
+        expect(closeWindow).toHaveBeenCalledTimes(3);
 
         const openWindow = vi.spyOn(window, "open").mockImplementation(() => null);
         await click("Help");
@@ -203,6 +205,7 @@ describe("popup", () => {
         expect(toolbar()).toEqual([
             { label: "Crop", title: "Crop screenshot (Ctrl+Shift+E)" },
             { label: "Screenshot", title: "Visible area screenshot" },
+            { label: "Full page", title: "Full page screenshot" },
             { label: "Tabs", title: "All tabs in window" }
         ]);
         expect(container.querySelectorAll(".toolbar-action kbd")).toHaveLength(0);
@@ -355,7 +358,7 @@ describe("popup", () => {
         expect(document.activeElement).toBe(container.querySelector(".page-body .note-text"));
         expect(container.querySelector(".page-meta")).toBeNull();
         expect(button("Save bookmark")?.disabled).toBe(false);
-        expect(captureButtons().map((action) => action.disabled)).toEqual([ false, false, false, false ]);
+        expect(captureButtons().map((action) => action.disabled)).toEqual([ false, false, false, false, false ]);
     });
 
     it("keeps only the actions that need no access to a page out of reach", async () => {
@@ -366,7 +369,7 @@ describe("popup", () => {
             "The extension cannot access this page.\nIf it is a regular web page, reload it."
         );
         expect(container.querySelector(".page-preview")).toBeNull();
-        expect(captureButtons().map((action) => action.disabled)).toEqual([ true, true, false ]);
+        expect(captureButtons().map((action) => action.disabled)).toEqual([ true, true, true, false ]);
         expect(button("Crop screenshot")?.title).toBe(UNREACHABLE);
         expect(button("Visible area screenshot")?.title).toBe(UNREACHABLE);
 
@@ -785,7 +788,7 @@ describe("icons", () => {
         await act(() => render(<Popup />, container));
 
         const icons = container.querySelectorAll("button > svg.icon");
-        expect(icons).toHaveLength(7);
+        expect(icons).toHaveLength(8);
         for (const icon of icons) {
             expect(icon.getAttribute("aria-hidden")).toBe("true");
             expect(icon.getAttribute("viewBox")).toBe("0 0 24 24");
