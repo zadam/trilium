@@ -44,7 +44,7 @@ describe("setFloatingElements", () => {
         expect(styleOf(".gone")).toBeNull();
     });
 
-    it("hides the scrollbars until the page is restored", () => {
+    it("hides the scrollbars and turns off scroll snapping until the page is restored", () => {
         const scrollbarStyles = () => [ ...document.querySelectorAll("style") ]
             .filter((style) => style.textContent?.includes("scrollbar-width: none !important"));
 
@@ -52,6 +52,7 @@ describe("setFloatingElements", () => {
         setFloatingElements("first");
         expect(scrollbarStyles()).toHaveLength(1);
         expect(scrollbarStyles()[0]?.textContent).toContain("html::-webkit-scrollbar");
+        expect(scrollbarStyles()[0]?.textContent).toContain("scroll-snap-type: none !important");
 
         setFloatingElements("restore");
         expect(scrollbarStyles()).toHaveLength(0);
