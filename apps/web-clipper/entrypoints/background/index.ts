@@ -77,6 +77,11 @@ export default defineBackground(() => {
     const triliumServerFacade = new TriliumServerFacade();
     /** How many popups are open: each keeps a port named "popup" connected while it is. */
     let openPopups = 0;
+    /**
+     * The last full-page screenshot asked for, which the next one waits for: both would scroll the tab,
+     * and under Manifest V3 they share the offscreen document's stitcher.
+     */
+    let lastFullPageScreenshot: Promise<unknown> = Promise.resolve();
 
     browser.runtime.onConnect.addListener((port) => {
         if (port.name !== "popup") return;
@@ -189,7 +194,13 @@ export default defineBackground(() => {
      * captures into images of the page from the top. The tab is scrolled back to where it was
      * afterwards. `cutOff` says the page was longer than a screenshot holds.
      */
-    async function takeFullPageScreenshot() {
+    function takeFullPageScreenshot() {
+        const screenshot = lastFullPageScreenshot.then(captureFullPage);
+        lastFullPageScreenshot = screenshot.catch(() => undefined);
+        return screenshot;
+    }
+
+    async function captureFullPage() {
         const { id: tabId, windowId } = await getActiveTab();
         if (tabId === undefined) {
             throw new Error("No active tab.");

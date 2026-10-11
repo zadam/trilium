@@ -774,6 +774,25 @@ describe("background", () => {
             });
         });
 
+        it("takes one full-page screenshot at a time, the next once the last one ends or fails", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            Object.assign(fakeBrowser.tabs, {
+                get: vi.fn().mockResolvedValueOnce({ active: false }).mockResolvedValue({ active: true })
+            });
+
+            await run(Promise.all([
+                sendRuntimeMessage({ name: "save-full-page-screenshot" }),
+                onCommand("saveFullPageScreenshot")
+            ]));
+
+            expect(pageSteps()).toEqual([
+                undefined, 0, "first", 0, "restore", 300,
+                undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300
+            ]);
+            expect(sliceTops()).toEqual([ 0, 500, 700 ]);
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+        });
+
         it("reports a page that does not answer, a failed stitch, and a tab without an ID", async () => {
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
             expect(await lastToast()).toMatchObject({
