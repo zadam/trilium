@@ -29,13 +29,13 @@ The extension is available from the official browser web stores:
 
 Clicking the extension's button in the browser toolbar opens its popup:
 
-*   The popup shows what will be saved from the current page: the note's title, which can be edited before saving, the website, the page's description if it has one, and below them a preview. A switch above the preview chooses what to save, among what the page offers:
+*   The popup shows what will be saved from the current page: the note's title, which can be edited before saving, the website, and below them a preview, which starts with the page's description. A switch above the preview chooses what to save, among what the page offers:
     
     *   _Selection_, when text is selected on the page: _Save selection_ saves it into the note of that page's clippings, as the context menu does.
     *   _Page_, when the page has an article: _Save page to Trilium_ saves the article's text and images, and the publication date shows next to the website when the page states one.
     *   _Bookmark_, always: a text box for a note about the page replaces the preview, and _Save bookmark_ (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) saves a link to the page with that note. Left empty, the title stays the page's title.
     
-    The description comes from the page's `description` meta tag, or the one it gives social sites. It can be edited or cleared before saving, and is saved in the `#pageDescription` label of the note. Clippings saved with the keyboard shortcuts or the context menu, screenshots and images included, get the description as the page gives it. Each clipping that brings a description updates the label.
+    The description, marked by the <span class="tn-icon bx bx-align-left"></span> icon, comes from the page's `description` meta tag, or the one it gives social sites. It can be edited or cleared before saving, or written in when the page has none, and is saved in the `#pageDescription` label of the note. Clippings saved with the keyboard shortcuts or the context menu, screenshots and images included, get the description as the page gives it. Each clipping that brings a description updates the label.
     
     The popup opens on the selection if there is one, otherwise on the article. On a page with no article (Readability cannot find one) and no selection, it opens on _Bookmark_ and says the page has no article. The keyboard shortcuts and the context menu still save right away, without a preview.
 *   Pages the extension cannot access (the browser's own pages, the extension stores, and pages that were open before the extension was installed until they are reloaded) cannot be saved or captured, so the popup says so in place of the preview, and only _Tabs_ remains available there.

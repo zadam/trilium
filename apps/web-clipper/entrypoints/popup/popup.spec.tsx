@@ -215,8 +215,10 @@ describe("popup", () => {
         expect(heading?.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com · Published 2024-05-01");
         const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
-        expect(frame?.getAttribute("sandbox")).toBe("");
+        expect(frame?.getAttribute("sandbox")).toBe("allow-same-origin");
         expect(frame?.getAttribute("srcdoc")).toBe(previewDocument(PAGE));
+        expect([ ...container.querySelector(".page-body")?.children ?? [] ].map((part) => part.className))
+            .toEqual([ "page-description-row", "page-content" ]);
         expect(button("Save page to Trilium")?.disabled).toBe(false);
     });
 
@@ -258,7 +260,7 @@ describe("popup", () => {
         expect(container.querySelector(".no-items")).toBeNull();
         expect(container.querySelector(".clip-mode")).toBeNull();
         expect(container.querySelector(".clip-hint")?.textContent).toBe("This page has no article; save it as a bookmark.");
-        expect(document.activeElement).toBe(container.querySelector(".page-body textarea"));
+        expect(document.activeElement).toBe(container.querySelector(".page-body .note-text"));
         expect(container.querySelector(".page-meta")).toBeNull();
         expect(button("Save bookmark")?.disabled).toBe(false);
         expect(captureButtons().map((action) => action.disabled)).toEqual([ false, false, false, false ]);
@@ -341,11 +343,11 @@ describe("popup", () => {
     it("writes a bookmark in the card, keeping the note across modes", async () => {
         tabsQuery.mockResolvedValueOnce([ { id: 7, title: "A page", url: "https://example.com/post" } ]);
         await rerender();
-        expect(container.querySelector("textarea")).toBeNull();
+        expect(container.querySelector(".note-text")).toBeNull();
 
         await click("Bookmark");
         expect(modes()).toEqual([ [ "Page", "false" ], [ "Bookmark", "true" ] ]);
-        const textArea = container.querySelector(".page-body textarea");
+        const textArea = container.querySelector(".page-body .note-text");
         expect(textArea).not.toBeNull();
         expect(document.activeElement).toBe(textArea);
         expect(textArea?.getAttribute("placeholder")).toBe("Add a note about this page");
@@ -354,11 +356,11 @@ describe("popup", () => {
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(shortcutOf("Save bookmark")).toEqual({ text: "Ctrl+Enter", keys: [ "Ctrl", "Enter" ] });
 
-        await type(".page-body textarea", "Worth a read");
+        await type(".page-body .note-text", "Worth a read");
         await click("Page");
-        expect(container.querySelector("textarea")).toBeNull();
+        expect(container.querySelector(".note-text")).toBeNull();
         await click("Bookmark");
-        expect(container.querySelector<HTMLTextAreaElement>(".page-body textarea")?.value).toBe("Worth a read");
+        expect(container.querySelector<HTMLTextAreaElement>(".page-body .note-text")?.value).toBe("Worth a read");
         expect(closeWindow).not.toHaveBeenCalled();
 
         sendMessage.mockResolvedValueOnce(true);
@@ -371,14 +373,19 @@ describe("popup", () => {
         expect(closeWindow).toHaveBeenCalledOnce();
     });
 
-    it("shows the page's description under the title in every mode, and saves it as edited", async () => {
+    it("shows the page's description atop the preview in every mode, and saves it as edited", async () => {
         metadata = { description: "All about the post" };
         selection = SELECTION;
         await rerender();
-        const description = () => container.querySelector<HTMLTextAreaElement>(".page-heading .page-description");
+        const description = () =>
+            container.querySelector<HTMLTextAreaElement>(".page-body > .page-description-row .page-description");
         expect(description()?.value).toBe("All about the post");
         expect(description()?.getAttribute("aria-label")).toBe("Page description");
-        expect(cardParts()).toEqual([ "page-heading", "clip-mode", "page-body", "btn btn-primary primary-action" ]);
+        expect(description()?.getAttribute("placeholder")).toBe("Add a description");
+        const icon = container.querySelector<HTMLElement>(".page-description-row .page-description-icon");
+        expect(icon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(icon?.title).toBe(
+            "The page's description. It is saved in the #pageDescription label of the note.");
 
         await click("Save selection");
         expect(sendMessage).toHaveBeenLastCalledWith({
@@ -418,42 +425,67 @@ describe("popup", () => {
         });
     });
 
-    it("shows no description where the page gives none or cannot be asked for one", async () => {
+    it("offers an empty description where the page gives none or cannot be asked for one", async () => {
+        const description = () => container.querySelector<HTMLTextAreaElement>(".page-description");
         // An outdated content script answers nothing.
         metadata = undefined;
         await rerender();
-        expect(container.querySelector(".page-description")).toBeNull();
-        await click("Bookmark");
-        expect(container.querySelector(".page-description")).toBeNull();
+        expect(description()?.value).toBe("");
+        await type(".page-description", "Written by hand");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels: { publishedDate: "2024-05-01", pageDescription: "Written by hand" } }
+        });
 
         metadata = new Error("Could not establish connection.");
         await rerender();
         await click("Bookmark");
-        expect(container.querySelector(".page-description")).toBeNull();
-        expect(container.querySelector(".page-body textarea")).not.toBeNull();
+        expect(description()?.value).toBe("");
+        expect(container.querySelector(".page-body .note-text")).not.toBeNull();
+    });
+
+    it("sizes the preview to the page, so that it scrolls with the description", async () => {
+        const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
+        expect(frame).not.toBeNull();
+        if (!frame) return;
+        Object.defineProperty(frame, "contentDocument", {
+            configurable: true,
+            value: { documentElement: { scrollHeight: 640 } }
+        });
+        await act(() => {
+            frame.dispatchEvent(new Event("load"));
+        });
+        expect(frame.style.height).toBe("640px");
+
+        Object.defineProperty(frame, "contentDocument", { configurable: true, value: null });
+        await act(() => {
+            frame.dispatchEvent(new Event("load"));
+        });
+        expect(frame.style.height).toBe("640px");
     });
 
     it("keeps a draft bookmark while Trilium is briefly not found", async () => {
         await click("Bookmark");
         await type(".page-title", "My title");
-        await type(".page-body textarea", "Half-written note");
+        await type(".page-body .note-text", "Half-written note");
 
         await receive({ name: "trilium-search-status", triliumSearch: { status: "not-found" } });
-        expect(container.querySelector(".page-body textarea")).toBeNull();
+        expect(container.querySelector(".page-body .note-text")).toBeNull();
         await receive({ name: "trilium-search-status", triliumSearch: { status: "found-desktop", port: 37840, url: "" } });
         await flush();
 
         expect(modes()).toEqual([ [ "Page", "false" ], [ "Bookmark", "true" ] ]);
         expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("My title");
-        expect(container.querySelector<HTMLTextAreaElement>(".page-body textarea")?.value).toBe("Half-written note");
+        expect(container.querySelector<HTMLTextAreaElement>(".page-body .note-text")?.value).toBe("Half-written note");
     });
 
     it("saves the title and the text as they are, on Ctrl+Enter from either field", async () => {
         await click("Bookmark");
         await type(".page-title", "  Read later. Soon ");
-        await type(".page-body textarea", " It has <b>tips</b>\nand more ");
+        await type(".page-body .note-text", " It has <b>tips</b>\nand more ");
         sendMessage.mockResolvedValueOnce(true);
-        await ctrlEnter(".page-body textarea");
+        await ctrlEnter(".page-body .note-text");
         expect(sendMessage).toHaveBeenCalledWith({
             name: "save-link-with-note",
             title: "Read later. Soon",
@@ -474,7 +506,7 @@ describe("popup", () => {
         sendMessage.mockResolvedValueOnce(undefined);
         await ctrlEnter(".page-title");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-link-with-note", title: "", content: "" });
-        expect(container.querySelector(".page-body textarea")).not.toBeNull();
+        expect(container.querySelector(".page-body .note-text")).not.toBeNull();
         expect(closeWindow).not.toHaveBeenCalled();
 
         const calls = sendMessage.mock.calls.length;

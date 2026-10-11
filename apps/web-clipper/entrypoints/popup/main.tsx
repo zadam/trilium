@@ -2,6 +2,7 @@ import "@/assets/theme.css";
 import "./popup.css";
 
 import type { IconData, IconDefinition, IconPack } from "@boxicons/js";
+import AlignLeft from "@boxicons/js/icons/AlignLeft";
 import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
 import Cog from "@boxicons/js/icons/Cog";
@@ -324,8 +325,8 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? article : undefined;
     const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
-    const shownDescription = description ?? tab?.description;
-    const savedDescription = shownDescription?.replace(/\s+/g, " ").trim();
+    const shownDescription = description ?? tab?.description ?? "";
+    const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -344,9 +345,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     function saveClip(content: SelectedContent) {
-        const labels = savedDescription === undefined
-            ? content.labels
-            : withDescription(content.labels, savedDescription);
+        const labels = withDescription(content.labels, savedDescription);
         const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
         void sendMessage(mode === "selection"
             ? { name: "save-selection", selection: titled }
@@ -392,16 +391,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 {new URL(pageUrl).hostname}{published && ` · Published ${published}`}
                             </div>
                         )}
-                        {shownDescription !== undefined && (
-                            <textarea
-                                className="page-description"
-                                aria-label="Page description"
-                                rows={2}
-                                value={shownDescription}
-                                onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
-                                onKeyDown={saveNoteOnCtrlEnter}
-                            />
-                        )}
                     </div>
                 </div>
             )}
@@ -421,6 +410,25 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             )}
 
             <div className="page-body">
+                {mode && (
+                    <div className="page-description-row">
+                        <span
+                            className="page-description-icon"
+                            title="The page's description. It is saved in the #pageDescription label of the note."
+                        >
+                            <Icon icon={AlignLeft} />
+                        </span>
+                        <textarea
+                            className="page-description"
+                            aria-label="Page description"
+                            placeholder="Add a description"
+                            rows={2}
+                            value={shownDescription}
+                            onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
+                            onKeyDown={saveNoteOnCtrlEnter}
+                        />
+                    </div>
+                )}
                 {mode === "note" && (
                     <textarea
                         ref={textAreaRef}
@@ -431,7 +439,15 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                         onKeyDown={saveNoteOnCtrlEnter}
                     />
                 )}
-                {clip && <iframe className="page-content" title="Preview of the page" sandbox="" srcDoc={previewDocument(clip)} />}
+                {clip && (
+                    <iframe
+                        className="page-content"
+                        title="Preview of the page"
+                        sandbox="allow-same-origin"
+                        srcDoc={previewDocument(clip)}
+                        onLoad={(e) => fitToContent(e.currentTarget)}
+                    />
+                )}
                 {!mode && <div className="page-preview-placeholder">Reading the page…</div>}
             </div>
 
@@ -449,10 +465,20 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     );
 }
 
-/** A clip's labels with `#pageDescription` as the user left it, or without one when it was cleared. */
+/** A clip's labels with `#pageDescription` as the user left it, or without one when it is empty. */
 function withDescription(labels: Record<string, string> | undefined, description: string) {
     const { pageDescription: _, ...others } = labels ?? {};
-    return description ? { ...others, pageDescription: description } : others;
+    return description ? { ...others, pageDescription: description } : labels && others;
+}
+
+/**
+ * Makes the preview as tall as the page it shows, so that the page scrolls in `.page-body` together
+ * with the description above it. `allow-same-origin` lets the popup read the height; the sandbox
+ * still runs no script.
+ */
+function fitToContent(frame: HTMLIFrameElement) {
+    const height = frame.contentDocument?.documentElement.scrollHeight;
+    if (height) frame.style.height = `${height}px`;
 }
 
 /** The modes the page offers, the default first: the selection, then the article, then a note. */
@@ -577,7 +603,7 @@ export function previewDocument({ content, images }: Pick<ExtractedPage, "conten
             img.setAttribute("src", image.src);
         }
     }
-    // An empty `sandbox` still lets the frame navigate itself: through a link, which the keyboard
+    // The sandbox still lets the frame navigate itself: through a link, which the keyboard
     // can follow, or through a `<meta http-equiv="refresh">`.
     for (const link of doc.querySelectorAll("a[href], area[href]")) {
         link.removeAttribute("href");

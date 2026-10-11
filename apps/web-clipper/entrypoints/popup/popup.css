@@ -130,23 +130,64 @@ body {
         }
 
         .page-body {
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 240px;
+            overflow-y: auto;
             border-radius: 6px;
             background: var(--main-background-color);
 
             &:has(.page-content)::after {
                 content: "";
-                position: absolute;
-                inset: auto 0 0;
+                flex: none;
+                position: sticky;
+                bottom: 0;
                 height: 24px;
+                margin-top: -24px;
                 background: linear-gradient(transparent, var(--main-background-color));
                 pointer-events: none;
             }
         }
 
+        .page-description-row {
+            display: flex;
+            flex: none;
+            align-items: flex-start;
+            gap: 4px;
+            padding: 6px 8px 6px 6px;
+            border-bottom: 1px solid var(--main-border-color);
+        }
+
+        .page-description-icon {
+            display: flex;
+            flex: none;
+            padding: 3px 2px;
+            color: var(--muted-text-color);
+            cursor: help;
+
+            svg.icon {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        .page-description {
+            --input-background-color: transparent;
+
+            flex-grow: 1;
+            min-width: 0;
+            padding: 2px 4px;
+            border: 0;
+            border-radius: 4px;
+            color: var(--muted-text-color);
+            font-size: 0.85em;
+            field-sizing: content;
+            resize: none;
+        }
+
         .page-content {
             display: block;
+            flex: none;
             width: 100%;
             height: 200px;
             border: 0;
@@ -159,8 +200,8 @@ body {
             --input-focus-background: transparent;
 
             display: block;
+            flex: 1 0 120px;
             width: 100%;
-            height: 200px;
             padding: 8px;
             border: 0;
             border-radius: 6px;
@@ -172,19 +213,6 @@ body {
             }
         }
 
-        .page-description {
-            --input-background-color: transparent;
-
-            display: block;
-            width: 100%;
-            padding: 2px 6px;
-            border: 0;
-            border-radius: 6px;
-            color: var(--muted-text-color);
-            font-size: 0.85em;
-            resize: none;
-        }
-
         .clip-hint {
             padding-inline: 6px;
             color: var(--muted-text-color);
@@ -194,8 +222,8 @@ body {
         .page-preview-placeholder {
             display: flex;
             align-items: center;
+            flex-grow: 1;
             justify-content: center;
-            height: 120px;
             padding: 12px;
             color: var(--muted-text-color);
             text-align: center;
