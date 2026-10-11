@@ -366,7 +366,8 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
     const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
-    const shownDescription = description ?? tab?.description ?? "";
+    const shownDescription =
+        description ?? tab?.description ?? pageReading?.labels.pageDescription ?? "";
     const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
     const shownAuthor = author ?? pageReading?.labels.pageAuthor ?? "";
     const savedAuthor = shownAuthor.replace(/\s+/g, " ").trim();

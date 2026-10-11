@@ -539,6 +539,21 @@ describe("popup", () => {
         expect(container.querySelector(".page-body .note-text")).not.toBeNull();
     });
 
+    it("takes the description from the page reading when the content script cannot be asked", async () => {
+        const labels = { ...PAGE.labels, pageDescription: "All about the post" };
+        pageReadings = { article: { ...PAGE, labels }, wholePage: WHOLE_PAGE };
+        metadata = new Error("Could not establish connection.");
+        await rerender();
+
+        expect(container.querySelector<HTMLTextAreaElement>(".page-description")?.value)
+            .toBe("All about the post");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels }
+        });
+    });
+
     it("offers the page's author in Page mode, and saves it as edited", async () => {
         const author = () => container.querySelector<HTMLInputElement>(".page-fields .page-author");
         expect(author()?.value).toBe("Jane Doe");
