@@ -103,8 +103,12 @@ against older versions of the other.** Prefer changes that need nothing new from
 - **HTML built by concatenation escapes every page-derived value** with `escapeHtml()` — the
   save-tabs list once put tab titles in raw. Tabs can also lack a `url` (still loading), and
   `new URL("")` throws, so `saveTabs()` filters them out.
-- `fetchImage()` rejects a non-OK response and a non-image `Content-Type` — otherwise an error page
-  gets saved as the "image".
+- `fetchImage()` rejects a non-OK response and a type that is not `image/<subtype>` — otherwise an
+  error page gets saved as the "image".
+- **`data:` images go through `fetchImage()` too.** The server decodes every `dataUrl` as base64,
+  and a `data:image/svg+xml,…` or `;utf8,` URL is not; `fetch()` decodes either and `FileReader`
+  re-encodes it. Node's `fetch()` types `data:image/;base64,…` as `image/` where browsers say
+  `text/plain`, hence the subtype in the check.
 - The page is extracted with `defuddle`, installed from npm and pinned; Firefox
   review flags its `innerHTML` use, which the README explains to the reviewer.
   - `new Defuddle(document, { url })` takes the **live** document: it clones it itself, leaves

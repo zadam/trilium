@@ -64,8 +64,12 @@ const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
 const createDocument = vi.fn(async () => {});
 const runtimeSendMessage = vi.fn(async (_message: unknown): Promise<unknown> => PNG);
-const fetchMock = vi.fn(
-    async (_url: string) => new Response(new Blob([ "img" ], { type: "image/png" })));
+/** Answers a picture for a web address, and decodes a `data:` URL as the browser does. */
+const browserFetch = globalThis.fetch;
+const fetchMock = vi.fn(async (url: string) => (url.startsWith("data:")
+    ? browserFetch(url)
+    : new Response(new Blob([ "img" ], { type: "image/png" }))));
+const SVG = "<svg xmlns='http://www.w3.org/2000/svg'></svg>";
 
 describe("background", () => {
     beforeEach(async () => {
@@ -131,7 +135,7 @@ describe("background", () => {
                 images: [
                     { imageId: "i2", src: "https://example.com/a.png" },
                     { imageId: "i3", src: "data:image/jpeg;base64,/9j/4AAQ" },
-                    { imageId: "i4", src: "data:image/;base64,AAAA" }
+                    { imageId: "i4", src: `data:image/svg+xml,${encodeURIComponent(SVG)}` }
                 ]
             });
 
@@ -154,8 +158,8 @@ describe("background", () => {
                     },
                     {
                         imageId: "i4",
-                        src: "data:image/;base64,AAAA",
-                        dataUrl: "data:image/;base64,AAAA"
+                        src: "inline.svg",
+                        dataUrl: `data:image/svg+xml;base64,${btoa(SVG)}`
                     }
                 ]
             });
@@ -174,12 +178,13 @@ describe("background", () => {
                 .mockResolvedValueOnce(new Response("<html>", { headers: { "Content-Type": "text/html" } }));
             tabMessageHandler = () => ({
                 title: "Page",
-                content: `<img src="i1"><img src="i2"><img src="i3"><img src="i4">`,
+                content: `<img src="i1"><img src="i2"><img src="i3"><img src="i4"><img src="i5">`,
                 images: [
                     { imageId: "i1", src: "https://example.com/blocked$&$$.png" },
                     { imageId: "i2", src: "https://example.com/forbidden.png?a=1&b=\"2\"" },
                     { imageId: "i3", src: "https://example.com/page.html" },
-                    { imageId: "i4", src: "https://example.com/ok.png" }
+                    { imageId: "i4", src: "https://example.com/ok.png" },
+                    { imageId: "i5", src: "data:image/;base64,AAAA" }
                 ]
             });
 
@@ -189,16 +194,17 @@ describe("background", () => {
                 title: "Page",
                 content: `<img src="https://example.com/blocked$&amp;$$.png">`
                     + `<img src="https://example.com/forbidden.png?a=1&amp;b=&quot;2&quot;">`
-                    + `<img src="https://example.com/page.html"><img src="i4">`,
+                    + `<img src="https://example.com/page.html"><img src="i4">`
+                    + `<img src="data:image/;base64,AAAA">`,
                 images: [ {
                     imageId: "i4",
                     src: "https://example.com/ok.png",
                     dataUrl: expect.stringMatching(PNG_DATA_URL)
                 } ]
             });
-            expect(console.error).toHaveBeenCalledTimes(3);
+            expect(console.error).toHaveBeenCalledTimes(4);
             expect(await lastToast()).toMatchObject({
-                message: "Selection has been saved to Trilium, but 3 images could not be downloaded.",
+                message: "Selection has been saved to Trilium, but 4 images could not be downloaded.",
                 noteId: "saved"
             });
         });

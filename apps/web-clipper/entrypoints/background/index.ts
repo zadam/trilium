@@ -203,7 +203,7 @@ export default defineBackground(() => {
         }
 
         const blob = await resp.blob();
-        if (!blob.type.startsWith("image/")) {
+        if (!/^image\/[\w.+-]+/.test(blob.type)) {
             throw new Error(`Not an image: '${blob.type}'`);
         }
 
@@ -215,23 +215,24 @@ export default defineBackground(() => {
         return dataUrl;
     }
 
-    /** Inlines the image as a data URL, and returns whether it could be downloaded. */
+    /**
+     * Inlines the image as a base64 data URL, and returns whether it could be read. A `data:` URL
+     * goes through `fetch()` too, which decodes a URL-encoded one; Trilium reads only base64.
+     */
     async function postProcessImage(image: ClippedImage) {
-        if (image.src.startsWith("data:image/")) {
-            image.dataUrl = image.src;
-            const mimeSubtype = image.src.match(/data:image\/(.*?);/)?.[1];
-            if (!mimeSubtype) return true;
-            image.src = `inline.${mimeSubtype}`; // this should extract file type - png/jpg
-            return true;
-        }
-
         try {
             image.dataUrl = await fetchImage(image.src);
-            return true;
         } catch (e) {
-            console.error(`Cannot fetch image from ${image.src}`, e);
+            console.error(`Cannot fetch image from ${image.src.substring(0, 100)}`, e);
             return false;
         }
+
+        if (image.src.startsWith("data:")) {
+            // A `data:` URL names no file: Trilium names the attachment `inline.<type>`.
+            const type = image.dataUrl.substring("data:image/".length).split(/[+;,]/)[0];
+            image.src = `inline.${type}`;
+        }
+        return true;
     }
 
     /**
