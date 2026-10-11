@@ -48,7 +48,7 @@ Trilium will save these clippings as a new child note under a "clipper inbox" no
 
 By default, that's the <a class="reference-link" href="../Advanced%20Usage/Advanced%20Showcases/Day%20Notes.md">Day Notes</a> but you can override that by setting the [label](../Advanced%20Usage/Attributes.md) `clipperInbox`, on any other note.
 
-If there's multiple clippings from the same page (and on the same day), then they will be added to the same note.
+Further clippings of the same kind from the same page are added to the note created by the first one, even on a later day or after that note was moved out of the clipper inbox. The note stays where it is and is not cloned back into the inbox.
 
 ## Keyboard shortcuts
 

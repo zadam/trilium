@@ -1,4 +1,4 @@
-import { BBranch, becca, becca_easy_mocking, BNote, cls } from "@triliumnext/core";
+import { BBranch, becca, becca_easy_mocking, BNote, branches, cls } from "@triliumnext/core";
 import type { Request } from "express";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -87,6 +87,28 @@ describe("clipper route handlers", () => {
 
         const found = await cls.init(() => clipperRoute.findNotesByUrl({ params: { noteUrl: pageUrl } } as unknown as Request<{ noteUrl: string }>));
         expect(found.noteId).toBe(first.noteId);
+    });
+
+    it("appends to a clipping note moved out of the inbox without cloning it back", async () => {
+        const pageUrl = "https://example.com/moved";
+        const first = await cls.init(() => clipperRoute.addClipping({
+            body: { title: "Moved", content: "<p>first</p>", images: [], pageUrl }
+        } as unknown as Request));
+        const clipping = becca.getNoteOrThrow(first.noteId);
+        const [ inboxBranch ] = clipping.getParentBranches();
+        expect(inboxBranch).toBeDefined();
+
+        const folder = buildNote({ title: "Reading list" });
+        new BBranch({ noteId: folder.noteId, parentNoteId: "root", branchId: `root_${folder.noteId}` });
+        cls.init(() => branches.moveBranchToNote(inboxBranch, folder.noteId));
+        expect(clipping.getParentNotes().map((p) => p.noteId)).toEqual([ folder.noteId ]);
+
+        const second = await cls.init(() => clipperRoute.addClipping({
+            body: { title: "Moved", content: "<p>second</p>", images: [], pageUrl }
+        } as unknown as Request));
+        expect(second.noteId).toBe(first.noteId);
+        expect(clipping.getContent()).toBe("<p>first</p><br><p>second</p>");
+        expect(clipping.getParentNotes().map((p) => p.noteId)).toEqual([ folder.noteId ]);
     });
 
     it("creates a standalone note with labels", async () => {
