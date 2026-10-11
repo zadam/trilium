@@ -2027,7 +2027,8 @@
     "fix-nodes": "ノードを修正",
     "too-many-notes_other": "ここに {{count}} 件のノートがあります。表示すると処理速度が遅くなる可能性があります。",
     "show-anyway": "マップを表示",
-    "expand": "マップを展開"
+    "expand": "マップを展開",
+    "fit-to-view": "画面に合わせて表示"
   },
   "promoted_attributes": {
     "unset-field-placeholder": "未設定",
@@ -2082,7 +2083,7 @@
     "restore_note_pane": "ノートをマップの横に戻す",
     "note_color": "ノートの色",
     "remove_from_map": "マップから削除",
-    "fit_to_view": "画面に合わせる",
+    "fit_to_view": "画面に合わせて表示",
     "hints": {
       "title": "リレーションマップ",
       "paste_notes": "コピーまたは切り取ったノートを貼り付け",
@@ -2886,7 +2887,9 @@
     "disabled_button_enable": "レンダリングノートを有効",
     "error_title": "スクリプトの実行に失敗しました",
     "error_show_details": "詳細を表示",
-    "error_note_label": "スクリプトノート:"
+    "error_note_label": "スクリプトノート:",
+    "disabled_read_only": "このレンダリングノートは外部ソースからのものであるため、有効になっていません。",
+    "nothing_to_display": "このノートには表示する内容がありません。"
   },
   "active_content_badges": {
     "type_icon_pack": "アイコンパック",
