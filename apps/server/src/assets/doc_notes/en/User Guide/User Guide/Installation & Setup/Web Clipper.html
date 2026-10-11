@@ -34,8 +34,8 @@
   <li>
     <p>The popup shows what will be saved from the current page: the note's title,
       which can be edited before saving, the website, and below them a preview,
-      which starts with the page's description. A switch above the preview chooses
-      what to save, among what the page offers:</p>
+      which starts with a box for your own note and the page's description. A
+      switch above the preview chooses what to save, among what the page offers:</p>
     <ul>
       <li><em>Selection</em>, when text is selected on the page: <em>Save selection</em> saves
         it into the note of that page's clippings, as the context menu does.</li>
@@ -55,11 +55,17 @@
         of the note. When it states when it was last modified, that date shows
         below, marked by the <span class="tn-icon bx bx-history"></span> icon, and
         is saved in the <code>#modifiedDate</code> label.</li>
-      <li><em>Bookmark</em>, always: a text box for a note about the page replaces
-        the preview, and <em>Save bookmark</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>)
-        saves a link to the page with that note. Left empty, the title stays the
-        page's title.</li>
+      <li><em>Bookmark</em>, always: there is no preview, and <em>Save bookmark</em> saves
+        a link to the page with your note as the content of the note. Left empty,
+        the title stays the page's title.</li>
     </ul>
+    <p>The box for your note, marked by the <span class="tn-icon bx bx-info-circle"></span> icon,
+      has the cursor when the popup opens, so a note (such as why the page is
+      worth keeping) can be typed right away. It grows with its text, and keeps
+      it when switching between <em>Selection</em>, <em>Page</em> and <em>Bookmark</em>.
+      A note on a selection or a page is saved above the clipped content, in
+      a <em>Note</em> admonition. Left empty, nothing is added. <kbd>Ctrl</kbd>+<kbd>Enter</kbd> in
+      any of the popup's fields saves, whichever is chosen.</p>
     <p>The description, marked by the <span class="tn-icon bx bx-align-left"></span> icon,
       comes from the page's <code>description</code> meta tag, or the one it gives
       social sites. It can be edited or cleared before saving, or written in
@@ -102,8 +108,8 @@
       scrolling (such as cookie banners and chat buttons) are left out, while
       a background that fills the whole window repeats on every screen. A long
       page is saved as several images, one below the other in the note. A page
-      longer than 60,000 pixels (30,000 on a display scaled to 200%) is cut off
-      there, and the message after saving says so.</p>
+      longer than 50 screens is cut off there, and the message after saving says
+      so.</p>
   </li>
   <li>
     <p>If the current page was already clipped, a notice at the top offers to

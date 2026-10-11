@@ -227,12 +227,12 @@ describe("popup", () => {
         expect(heading?.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBe("Published 2024-05-01");
-        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
+        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(4) > .page-field-icon");
         expect(dateIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(dateIcon?.title).toBe(
             "The date the page was published. It is saved in the #publishedDate label of the note.");
         expect(modifiedDate()).toBe("Updated 2024-06-12");
-        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(4) > .page-field-icon");
+        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(5) > .page-field-icon");
         expect(modifiedIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(modifiedIcon?.title).toBe(
             "The date the page was last modified. It is saved in the #modifiedDate label of the note.");
@@ -259,6 +259,8 @@ describe("popup", () => {
         expect(variants()).toEqual([ [ "Article", "false", false ], [ "Whole page", "true", false ] ]);
         expect(placeholder()).toBe("Reading the page…");
         expect(button("Save page to Trilium")?.disabled).toBe(true);
+        await ctrlEnter(".note-text");
+        expect(sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({ name: "save-whole-page" }));
 
         await act(() => finishReading());
         await flush();
@@ -329,7 +331,7 @@ describe("popup", () => {
         pageReadings = { article: { ...PAGE, labels: {} }, wholePage: WHOLE_PAGE };
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
-        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(2);
+        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(3);
         expect(publishedDate()).toBeUndefined();
         expect(modifiedDate()).toBeUndefined();
     });
@@ -447,14 +449,14 @@ describe("popup", () => {
     it("writes a bookmark in the card, keeping the note across modes", async () => {
         tabsQuery.mockResolvedValueOnce([ { id: 7, title: "A page", url: "https://example.com/post" } ]);
         await rerender();
-        expect(container.querySelector(".note-text")).toBeNull();
 
         await click("Bookmark");
         expect(modes()).toEqual([ [ "Page", "false" ], [ "Bookmark", "true" ] ]);
-        const textArea = container.querySelector(".page-body .note-text");
+        const textArea = container.querySelector(".page-body .page-fields.bookmark .note-text");
         expect(textArea).not.toBeNull();
         expect(document.activeElement).toBe(textArea);
-        expect(textArea?.getAttribute("placeholder")).toBe("Add a note about this page");
+        expect(container.querySelector<HTMLElement>(".page-field:first-child > .page-field-icon")?.title)
+            .toBe("Your note about the page. It is saved as the content of the note.");
         expect(container.querySelector(".page-body iframe")).toBeNull();
         expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
@@ -464,7 +466,7 @@ describe("popup", () => {
 
         await type(".page-body .note-text", "Worth a read");
         await click("Page");
-        expect(container.querySelector(".note-text")).toBeNull();
+        expect(container.querySelector(".page-fields.bookmark")).toBeNull();
         await click("Bookmark");
         expect(container.querySelector<HTMLTextAreaElement>(".page-body .note-text")?.value).toBe("Worth a read");
         expect(closeWindow).not.toHaveBeenCalled();
@@ -488,7 +490,7 @@ describe("popup", () => {
         expect(description()?.value).toBe("All about the post");
         expect(description()?.getAttribute("aria-label")).toBe("Page description");
         expect(description()?.getAttribute("placeholder")).toBe("Add a description");
-        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:first-child > .page-field-icon");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
         expect(icon?.querySelector("svg.icon path")).not.toBeNull();
         expect(icon?.title).toBe(
             "The page's description. It is saved in the #pageDescription label of the note.");
@@ -571,7 +573,7 @@ describe("popup", () => {
         expect(author()?.value).toBe("Jane Doe");
         expect(author()?.getAttribute("aria-label")).toBe("Author");
         expect(author()?.getAttribute("placeholder")).toBe("Add an author");
-        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
         expect(icon?.querySelector("svg.icon path")).not.toBeNull();
         expect(icon?.title).toBe("The page's author. It is saved in the #pageAuthor label of the note.");
 
@@ -696,10 +698,47 @@ describe("popup", () => {
         expect(container.querySelector(".page-body .note-text")).not.toBeNull();
         expect(closeWindow).not.toHaveBeenCalled();
 
-        const calls = sendMessage.mock.calls.length;
         await click("Page");
         await ctrlEnter(".page-title");
-        expect(sendMessage).toHaveBeenCalledTimes(calls);
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+        expect(closeWindow).toHaveBeenCalledOnce();
+    });
+
+    it("asks for a note in every mode, and saves it above the clipped content", async () => {
+        selection = SELECTION;
+        await rerender();
+        const note = () => container.querySelector<HTMLTextAreaElement>(".page-fields > .page-field:first-child > .note-text");
+        expect(note()).not.toBeNull();
+        expect(document.activeElement).toBe(note());
+        expect(note()?.getAttribute("aria-label")).toBe("Your note");
+        expect(note()?.getAttribute("placeholder")).toBe("Add a note about this page");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:first-child > .page-field-icon");
+        expect(icon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(icon?.title).toBe("Your note about the page. It is saved above the clipped content.");
+
+        await type(".note-text", " Worth <b>reading</b>\nlater ");
+        await click("Save selection");
+        const aside = `<aside class="admonition note"><p>Worth &lt;b&gt;reading&lt;/b&gt;</p><p>later</p></aside>`;
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-selection",
+            selection: { ...SELECTION, title: "An article", content: aside + SELECTION.content }
+        });
+
+        await click("Page");
+        expect(document.activeElement).toBe(note());
+        expect(note()?.value).toBe(" Worth <b>reading</b>\nlater ");
+        await ctrlEnter(".note-text");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, content: aside + PAGE.content }
+        });
+        sendMessage.mockClear();
+        await ctrlEnter(".page-author");
+        expect(sendMessage).toHaveBeenCalledOnce();
+
+        await type(".note-text", " \n ");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
     });
 
     it("renders itself into the page's root element", async () => {

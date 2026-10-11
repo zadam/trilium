@@ -13,6 +13,7 @@ import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
 import History from "@boxicons/js/icons/History";
 import ImagePortrait from "@boxicons/js/icons/ImagePortrait";
+import InfoCircle from "@boxicons/js/icons/InfoCircle";
 import Lock from "@boxicons/js/icons/Lock";
 import Paperclip from "@boxicons/js/icons/Paperclip";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
@@ -391,7 +392,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }, [ tabId, unreadVariant ]);
 
     useEffect(() => {
-        if (mode === "note") textAreaRef.current?.focus();
+        textAreaRef.current?.focus();
     }, [ mode ]);
 
     /** Keeps the popup open when the note could not be saved, so its text is not lost. */
@@ -411,18 +412,16 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         if (mode === "page") {
             labels = withLabel(labels, "pageAuthor", savedAuthor);
         }
-        const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
+        const titled = {
+            ...content,
+            title: shownTitle.trim() || content.title,
+            content: withNote(content.content, text),
+            ...(labels && { labels })
+        };
         void sendMessage(mode === "selection"
             ? { name: "save-selection", selection: titled }
             : { name: "save-whole-page", page: titled });
         window.close();
-    }
-
-    function saveNoteOnCtrlEnter(e: KeyboardEvent) {
-        if (mode === "note" && e.key === "Enter" && e.ctrlKey) {
-            e.preventDefault();
-            void saveNote();
-        }
     }
 
     let onSave: (() => void) | undefined;
@@ -430,6 +429,13 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         onSave = () => void saveNote();
     } else if (clip) {
         onSave = () => saveClip(clip);
+    }
+
+    function saveOnCtrlEnter(e: KeyboardEvent) {
+        if (onSave && e.key === "Enter" && e.ctrlKey) {
+            e.preventDefault();
+            onSave();
+        }
     }
 
     const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
@@ -451,7 +457,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             placeholder="Note title"
                             value={shownTitle}
                             onInput={(e) => onDraftChange({ ...draft, title: e.currentTarget.value })}
-                            onKeyDown={saveNoteOnCtrlEnter}
+                            onKeyDown={saveOnCtrlEnter}
                         />
                         {pageUrl && <div className="page-meta">{new URL(pageUrl).hostname}</div>}
                     </div>
@@ -474,7 +480,27 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
 
             <div className="page-body">
                 {mode && (
-                    <div className="page-fields">
+                    <div className={mode === "note" ? "page-fields bookmark" : "page-fields"}>
+                        <div className="page-field">
+                            <span
+                                className="page-field-icon"
+                                title={mode === "note"
+                                    ? "Your note about the page. It is saved as the content of the note."
+                                    : "Your note about the page. It is saved above the clipped content."}
+                            >
+                                <Icon icon={InfoCircle} />
+                            </span>
+                            <textarea
+                                ref={textAreaRef}
+                                className="note-text"
+                                aria-label="Your note"
+                                placeholder="Add a note about this page"
+                                rows={1}
+                                value={text}
+                                onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
+                                onKeyDown={saveOnCtrlEnter}
+                            />
+                        </div>
                         <div className="page-field">
                             <span
                                 className="page-field-icon"
@@ -489,7 +515,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 rows={2}
                                 value={shownDescription}
                                 onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
-                                onKeyDown={saveNoteOnCtrlEnter}
+                                onKeyDown={saveOnCtrlEnter}
                             />
                         </div>
                         {mode === "page" && (
@@ -507,6 +533,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                     placeholder="Add an author"
                                     value={shownAuthor}
                                     onInput={(e) => onDraftChange({ ...draft, author: e.currentTarget.value })}
+                                    onKeyDown={saveOnCtrlEnter}
                                 />
                             </div>
                         )}
@@ -533,16 +560,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             </div>
                         )}
                     </div>
-                )}
-                {mode === "note" && (
-                    <textarea
-                        ref={textAreaRef}
-                        className="note-text"
-                        value={text}
-                        placeholder="Add a note about this page"
-                        onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
-                        onKeyDown={saveNoteOnCtrlEnter}
-                    />
                 )}
                 {mode === "page" && page && (
                     <div className="page-variant" role="group" aria-label="How to read the page">
@@ -583,6 +600,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
             </button>
         </div>
     );
+}
+
+/** A clip's content with the user's note above it as an admonition, or as it is without a note. */
+function withNote(content: string, note: string) {
+    const text = note.trim();
+    return text ? `<aside class="admonition note">${textToHtml(text)}</aside>${content}` : content;
 }
 
 /** A clip's labels with the label `name` as the user left it, or without it when `value` is empty. */
