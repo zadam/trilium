@@ -54,11 +54,7 @@ export default class TriliumServerFacade {
     private readonly restored: Promise<void>;
 
     constructor() {
-        this.restored = browser.storage.session
-            .get<{ triliumSearch?: SearchResult }>("triliumSearch")
-            .then(({ triliumSearch }) => {
-                if (triliumSearch) this.triliumSearch = triliumSearch;
-            });
+        this.restored = this.restoreLastSearch();
         this.search = this.triggerSearchForTrilium(false);
 
         // continually scan for changes (if e.g. desktop app is started after browser)
@@ -111,12 +107,19 @@ export default class TriliumServerFacade {
             .then(async (status) => {
                 if (id === this.searchCount) {
                     this.setTriliumSearch(status);
-                    await browser.storage.session.set({ triliumSearch: status });
+                    await browser.storage.session?.set({ triliumSearch: status });
                 }
                 return status;
             });
         this.search = search;
         return search;
+    }
+
+    /** Session storage needs Chrome 102 or Firefox 115; without it, each start searches anew. */
+    private async restoreLastSearch() {
+        const stored = await browser.storage.session
+            ?.get<{ triliumSearch?: SearchResult }>("triliumSearch");
+        if (stored?.triliumSearch) this.triliumSearch = stored.triliumSearch;
     }
 
     /** Asks the desktop app and the server at once, and prefers the desktop app when both answer. */

@@ -168,6 +168,17 @@ describe("TriliumServerFacade", () => {
                 .toEqual({ triliumSearch: { status: "not-found" } });
         });
 
+        it("finds Trilium in a browser without session storage", async () => {
+            vi.spyOn(fakeBrowser.storage, "session", "get")
+                .mockReturnValue(undefined as unknown as typeof fakeBrowser.storage.session);
+            fetchMock.mockImplementation(async () => handshake("1.0"));
+
+            const facade = new TriliumServerFacade();
+
+            await expect(facade.waitForTriliumSearch()).resolves.toEqual(FOUND_DESKTOP);
+            expect(lastSearchStatus()).toEqual(FOUND_DESKTOP);
+        });
+
         it("keeps the outcome of the latest search when an older one ends after it", async () => {
             const answers: ((response: Response) => void)[] = [];
             fetchMock.mockImplementation(() => new Promise((resolve) => answers.push(resolve)));
