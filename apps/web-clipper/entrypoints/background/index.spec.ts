@@ -1173,6 +1173,18 @@ describe("background", () => {
             facade.callService.mockRejectedValueOnce(TRILIUM_FAILURE);
             await sendRuntimeMessage({ name: "save-whole-page", page });
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
+
+            // A popup opened while the save runs did not ask for it, and receives no answer to show.
+            const asker = connect("popup");
+            let finishSave: ((resp: unknown) => void) | undefined;
+            facade.callService.mockImplementationOnce(() => new Promise((resolve) => finishSave = resolve));
+            const answer = sendRuntimeMessage({ name: "save-whole-page", page });
+            await vi.waitFor(() => expect(finishSave).toBeDefined());
+            asker.disconnect();
+            connect("popup");
+            finishSave?.({ noteId: "late" });
+            await answer;
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "late" });
         });
 
         it("answers nothing for a crop the user cancels", async () => {

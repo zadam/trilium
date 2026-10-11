@@ -77,8 +77,8 @@ type ContextMenuInfo = Browser.contextMenus.OnClickData & { linkText?: string };
 
 export default defineBackground(() => {
     const triliumServerFacade = new TriliumServerFacade();
-    /** How many popups are open: each keeps a port named "popup" connected while it is. */
-    let openPopups = 0;
+    /** The open popups: each keeps a port named "popup" connected while it is. */
+    const openPopups = new Set<Browser.runtime.Port>();
     /**
      * The last full-page screenshot asked for, which the next one waits for: both would scroll the tab,
      * and under Manifest V3 they share the offscreen document's stitcher.
@@ -87,8 +87,8 @@ export default defineBackground(() => {
 
     browser.runtime.onConnect.addListener((port) => {
         if (port.name !== "popup") return;
-        openPopups++;
-        port.onDisconnect.addListener(() => openPopups--);
+        openPopups.add(port);
+        port.onDisconnect.addListener(() => openPopups.delete(port));
     });
 
     // Keyboard shortcuts
@@ -410,16 +410,18 @@ export default defineBackground(() => {
     /**
      * Runs a save the popup asked for, and answers it with the outcome, which the popup shows. A
      * popup closed before the save ends (as it is to crop a screenshot) shows nothing, so the page
-     * shows a toast instead.
+     * shows a toast instead, also when another popup was opened since.
      */
     async function saveForPopup(save: () => Promise<Saved | undefined>): Promise<SaveOutcome | undefined> {
+        const askers = [ ...openPopups ];
+        const askerOpen = () => askers.some((port) => openPopups.has(port));
         try {
             const saved = await save();
-            if (!openPopups) notify(saved);
+            if (!askerOpen()) notify(saved);
             return saved;
         } catch (e) {
             console.error("Web clipper action failed", e);
-            if (!openPopups) toast(failureMessage(e));
+            if (!askerOpen()) toast(failureMessage(e));
             return { error: failureMessage(e) };
         }
     }
