@@ -21,6 +21,8 @@ import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import { extractReadablePage, type ReadablePage } from "@/utils";
+
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
 const HELP_URL = "https://docs.triliumnotes.org/user-guide/setup/web-clipper";
@@ -47,14 +49,8 @@ interface SelectedContent {
     labels?: Record<string, string>;
 }
 
-/** The readable page, as the content script extracts it. */
-interface ExtractedPage extends SelectedContent {
-    clipType: "page";
-    labels: Record<string, string>;
-}
-
 /** The current page: its readable version, or why there is none. */
-type PageState = ExtractedPage | "unreadable" | "inaccessible";
+type PageState = ReadablePage | "unreadable" | "inaccessible";
 
 /** What the active tab offers to save. */
 interface TabContent {
@@ -504,7 +500,7 @@ function fitToContent(frame: HTMLIFrameElement) {
 }
 
 /** The modes the page offers, the default first: the selection, then the article, then a note. */
-function availableModes(article: ExtractedPage | undefined, selection: SelectedContent | undefined): ClipMode[] {
+function availableModes(article: ReadablePage | undefined, selection: SelectedContent | undefined): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
     if (article) modes.push("page");
@@ -575,12 +571,12 @@ async function readActiveTab(): Promise<TabContent> {
 }
 
 /**
- * The content script answers `undefined` when Readability cannot parse the page, and the message
- * fails where no content script runs.
+ * `extractReadablePage()` answers `undefined` when Readability cannot parse the page, and fails
+ * where the extension cannot run scripts.
  */
 async function extractPage(tabId: number): Promise<PageState> {
     try {
-        return await browser.tabs.sendMessage(tabId, { name: "trilium-save-page" }) ?? "unreadable";
+        return await extractReadablePage(tabId) ?? "unreadable";
     } catch {
         return "inaccessible";
     }
@@ -617,7 +613,7 @@ async function readDescription(tabId: number): Promise<string | undefined> {
 }
 
 /** A standalone document showing the page's content, its images loaded from the website. */
-export function previewDocument({ content, images }: Pick<ExtractedPage, "content" | "images">) {
+export function previewDocument({ content, images }: Pick<ReadablePage, "content" | "images">) {
     const doc = new DOMParser().parseFromString(content, "text/html");
     for (const img of doc.querySelectorAll("img")) {
         const image = images.find(({ imageId }) => imageId === img.getAttribute("src"));

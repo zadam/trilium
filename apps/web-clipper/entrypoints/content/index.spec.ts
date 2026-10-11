@@ -15,10 +15,6 @@ type Clipping = {
     labels: Record<string, string>
 };
 
-const PARAGRAPH = "Trilium is a hierarchical note taking application with focus on "
-    + "building large personal knowledge bases. It supports rich text, code, canvas and many "
-    + "other note types, scripting and sync. ";
-
 describe("content script", () => {
     beforeAll(() => {
         contentScript.main(undefined as never);
@@ -106,57 +102,6 @@ describe("content script", () => {
             window.getSelection()?.removeAllRanges();
             expect(await send({ name: "trilium-save-selection" })).toBeUndefined();
             expect(console.error).toHaveBeenCalledOnce();
-        });
-    });
-
-    describe("saving the page", () => {
-        it("returns the readable article with its publication dates as labels", async () => {
-            document.head.innerHTML = `
-                <title>Article title</title>
-                <meta property="article:published_time" content="2026-01-02T10:00:00Z">
-                <meta property="article:modified_time" content="2026-02-03T10:00:00Z">
-                <meta property="og:description" content="About the article">`;
-            document.body.innerHTML = `
-                <nav><a href="/">Home</a></nav>
-                <article>
-                    <h1>Article title</h1>
-                    <p>${PARAGRAPH.repeat(3)}<a href="/docs">Docs</a>
-                        <a href="mailto:jane@example.com">Jane</a></p>
-                    <p>${PARAGRAPH.repeat(3)}</p>
-                    <img src="figure.png">
-                    <p>${PARAGRAPH.repeat(3)}</p>
-                </article>`;
-
-            const response = await send<Record<string, unknown>>({ name: "trilium-save-page" });
-
-            expect(response).toMatchObject({
-                title: "Article title",
-                pageUrl: "https://example.com/blog/post.html?id=1",
-                clipType: "page",
-                labels: {
-                    pageDescription: "About the article",
-                    publishedDate: "2026-01-02",
-                    modifiedDate: "2026-02-03"
-                },
-                images: [ {
-                    imageId: expect.any(String),
-                    src: "https://example.com/blog/figure.png"
-                } ]
-            });
-            expect(response.content).toContain("href=\"https://example.com/docs\"");
-            expect(response.content).toContain("href=\"mailto:jane@example.com\"");
-            expect(response.content).not.toContain("Home");
-            expect(document.querySelector("nav")).not.toBeNull();
-        });
-
-        it("adds no labels without dates and fails when Readability finds no article", async () => {
-            document.body.innerHTML = `<article><p>${PARAGRAPH.repeat(5)}</p></article>`;
-            expect((await send<Clipping>({ name: "trilium-save-page" })).labels).toEqual({});
-
-            document.body.innerHTML = "";
-            vi.spyOn(Document.prototype, "cloneNode")
-                .mockReturnValue(document.implementation.createHTMLDocument(""));
-            expect(await send({ name: "trilium-save-page" })).toBeUndefined();
         });
     });
 

@@ -1,5 +1,7 @@
-import { Readability } from "@mozilla/readability";
-import { createLink, getPageLocationOrigin, randomString, type Rect } from "@/utils.js";
+import {
+    createLink, descriptionLabels, getImages, getPageDescription, getPageLocationOrigin,
+    makeLinksAbsolute, type Rect
+} from "@/utils.js";
 
 export default defineContentScript({
     matches: [
@@ -10,65 +12,6 @@ export default defineContentScript({
             const titleElements = document.getElementsByTagName("title");
 
             return titleElements[0]?.text.trim() ?? document.title.trim();
-        }
-
-        function getReadableDocument() {
-            // Readability changes the document it parses, so it reads a copy of the page.
-            const documentCopy = document.cloneNode(true) as Document;
-            const readability = new Readability(documentCopy, {
-                // Returns the content as an element rather than as HTML.
-                serializer: (node) => node as HTMLElement
-            });
-
-            const article = readability.parse();
-
-            if (!article?.content) {
-                throw new Error('Could not parse HTML document with Readability');
-            }
-
-            return {
-                title: article.title,
-                body: article.content,
-            };
-        }
-
-        function getDocumentDates() {
-            let publishedDate: Date | null = null;
-            let modifiedDate: Date | null = null;
-
-            const articlePublishedTime = document.querySelector("meta[property='article:published_time']")?.getAttribute('content');
-            if (articlePublishedTime) {
-                publishedDate = new Date(articlePublishedTime);
-            }
-
-            const articleModifiedTime = document.querySelector("meta[property='article:modified_time']")?.getAttribute('content');
-            if (articleModifiedTime) {
-                modifiedDate = new Date(articleModifiedTime);
-            }
-
-            // TODO: if we didn't get dates from meta, then try to get them from JSON-LD
-            return { publishedDate, modifiedDate };
-        }
-
-        /** The page's own summary, preferred to the one it gives social sites, on a single line. */
-        function getPageDescription() {
-            const selectors = [
-                "meta[name='description']",
-                "meta[property='og:description']",
-                "meta[name='twitter:description']"
-            ];
-            for (const selector of selectors) {
-                const description = document.querySelector(selector)?.getAttribute("content")
-                    ?.replace(/\s+/g, " ").trim();
-                if (description) return description;
-            }
-            return undefined;
-        }
-
-        /** The `#pageDescription` label of every clip of the page, if the page has one. */
-        function descriptionLabels(): Record<string, string> {
-            const description = getPageDescription();
-            return description ? { pageDescription: description } : {};
         }
 
         function getRectangleArea() {
@@ -198,44 +141,6 @@ export default defineContentScript({
             });
         }
 
-        function makeLinksAbsolute(container: HTMLElement) {
-            // `link.href` reads the URL the browser resolved against the page, and leaves
-            // `mailto:`, `tel:` and other non-web schemes unchanged.
-            for (const link of container.getElementsByTagName('a')) {
-                if (link.href) {
-                    link.setAttribute("href", link.href);
-                }
-            }
-        }
-
-        function getImages(container: HTMLElement) {
-            const images: {imageId: string, src: string}[] = [];
-
-            for (const img of container.getElementsByTagName('img')) {
-                if (!img.src) {
-                    continue;
-                }
-
-                const existingImage = images.find(image => image.src === img.src);
-
-                if (existingImage) {
-                    img.src = existingImage.imageId;
-                }
-                else {
-                    const imageId = randomString(20);
-
-                    images.push({
-                        imageId,
-                        src: img.src
-                    });
-
-                    img.src = imageId;
-                }
-            }
-
-            return images;
-        }
-
         async function prepareMessageResponse(message: {name: string, noteId?: string, message?: string, tabIds?: string[]}) {
             console.info(`Message: ${  message.name}`);
 
@@ -305,31 +210,6 @@ export default defineContentScript({
                 return {
                     rect: await getRectangleArea(),
                     devicePixelRatio: window.devicePixelRatio
-                };
-            }
-            else if (message.name === "trilium-save-page") {
-                const {title, body} = getReadableDocument();
-
-                makeLinksAbsolute(body);
-
-                const images = getImages(body);
-
-                const labels = descriptionLabels();
-                const dates = getDocumentDates();
-                if (dates.publishedDate) {
-                    labels['publishedDate'] = dates.publishedDate.toISOString().substring(0, 10);
-                }
-                if (dates.modifiedDate) {
-                    labels['modifiedDate'] = dates.modifiedDate.toISOString().substring(0, 10);
-                }
-
-                return {
-                    title,
-                    content: body.innerHTML,
-                    images,
-                    pageUrl: getPageLocationOrigin() + location.pathname + location.search,
-                    clipType: 'page',
-                    labels
                 };
             }
             else if (message.name === "trilium-get-page-metadata") {

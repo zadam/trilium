@@ -27,6 +27,8 @@ const PAGE = {
     clipType: "page",
     labels: { publishedDate: "2024-05-01" }
 };
+/** What `readability.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
+const executeScript = vi.fn(async (): Promise<unknown> => [ { result: PAGE } ]);
 const tabsQuery = vi.fn(async (): Promise<{ id?: number, title?: string, url?: string }[]> => [ { id: 7 } ]);
 const SELECTION = {
     title: "Page title",
@@ -39,7 +41,6 @@ let selection: unknown;
 /** What the content script answers to `trilium-get-page-metadata`, or the error it fails with; no description unless a test says so. */
 let metadata: unknown;
 const tabsSendMessage = vi.fn(async (_tabId: number, message: { name: string }): Promise<unknown> => {
-    if (message.name === "trilium-save-page") return PAGE;
     if (message.name === "trilium-get-page-metadata") {
         if (metadata instanceof Error) throw metadata;
         return metadata;
@@ -57,6 +58,7 @@ describe("popup", () => {
         Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage });
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
+        Object.assign(fakeBrowser, { scripting: { executeScript } });
         vi.spyOn(window, "close").mockImplementation(closeWindow);
         vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -205,7 +207,7 @@ describe("popup", () => {
 
     it("previews the readable page with its title, source and date", () => {
         expect(tabsQuery).toHaveBeenCalledWith({ active: true, currentWindow: true });
-        expect(tabsSendMessage).toHaveBeenCalledWith(7, { name: "trilium-save-page" });
+        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
 
         expect(cardParts()).toEqual([ "page-heading", "clip-mode", "page-body", "btn btn-primary primary-action" ]);
         expect(modes()).toEqual([ [ "Page", "true" ], [ "Bookmark", "false" ] ]);
@@ -234,14 +236,14 @@ describe("popup", () => {
     });
 
     it("leaves out the date of a page that has none", async () => {
-        tabsSendMessage.mockResolvedValueOnce({ ...PAGE, labels: {} });
+        executeScript.mockResolvedValueOnce([ { result: { ...PAGE, labels: {} } } ]);
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
     });
 
     it("says so while the page is read", async () => {
         let resolvePage: (page: unknown) => void = () => {};
-        tabsSendMessage.mockReturnValueOnce(new Promise((resolve) => {
+        executeScript.mockReturnValueOnce(new Promise((resolve) => {
             resolvePage = resolve;
         }));
         await rerender();
@@ -249,13 +251,13 @@ describe("popup", () => {
         expect(cardParts()).toEqual([ "page-body", "btn btn-primary primary-action" ]);
         expect(button("Save page to Trilium")?.disabled).toBe(true);
 
-        resolvePage(PAGE);
+        resolvePage([ { result: PAGE } ]);
         await flush();
         expect(container.querySelector(".page-body iframe")).not.toBeNull();
     });
 
     it("opens a page with no article on a bookmark, and keeps every other action", async () => {
-        tabsSendMessage.mockResolvedValueOnce(undefined);
+        executeScript.mockResolvedValueOnce([ { result: null } ]);
         await rerender();
         expect(container.querySelector(".no-items")).toBeNull();
         expect(container.querySelector(".clip-mode")).toBeNull();
@@ -267,9 +269,8 @@ describe("popup", () => {
     });
 
     it("keeps only the actions that need no access to a page out of reach", async () => {
-        tabsSendMessage
-            .mockRejectedValueOnce(new Error("Could not establish connection."))
-            .mockRejectedValueOnce(new Error("Could not establish connection."));
+        executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
+        tabsSendMessage.mockRejectedValueOnce(new Error("Could not establish connection."));
         await rerender();
         expect(unavailable()).toBe(
             "The extension cannot access this page.\nIf it is a regular web page, reload it."
@@ -282,7 +283,8 @@ describe("popup", () => {
         tabsQuery.mockResolvedValueOnce([ {} ]);
         await rerender();
         expect(unavailable()).toContain("The extension cannot access this page.");
-        expect(tabsSendMessage).toHaveBeenCalledTimes(6);
+        expect(executeScript).toHaveBeenCalledTimes(2);
+        expect(tabsSendMessage).toHaveBeenCalledTimes(4);
     });
 
     it("previews the selection first, and switches to the whole page", async () => {
@@ -310,7 +312,7 @@ describe("popup", () => {
 
     it("saves the selection of a page that has no article, and ignores an empty one", async () => {
         selection = SELECTION;
-        tabsSendMessage.mockResolvedValueOnce(undefined);
+        executeScript.mockResolvedValueOnce([ { result: null } ]);
         await rerender();
         expect(container.querySelector(".no-items")).toBeNull();
         expect(modes()).toEqual([ [ "Selection", "true" ], [ "Bookmark", "false" ] ]);
@@ -609,6 +611,7 @@ describe("icons", () => {
         vi.spyOn(console, "log").mockImplementation(() => {});
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
+        Object.assign(fakeBrowser, { scripting: { executeScript } });
         const container = document.createElement("div");
         await act(() => render(<Popup />, container));
 

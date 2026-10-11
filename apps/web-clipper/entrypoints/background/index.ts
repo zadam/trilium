@@ -1,4 +1,4 @@
-import { randomString, type Rect } from "@/utils";
+import { extractReadablePage, randomString, type Rect } from "@/utils";
 
 import setupContextMenu from "./context_menu";
 import TriliumServerFacade, { TriliumError } from "./trilium_server_facade";
@@ -12,8 +12,6 @@ type BackgroundMessage = {
     name: "trilium-save-selection";
 } | {
     name: "trilium-get-rectangle-for-screenshot";
-} | {
-    name: "trilium-save-page";
 } | {
     name: "trilium-get-page-metadata";
 };
@@ -334,13 +332,22 @@ export default defineBackground(() => {
 
     /** Saves the readable page, or the page the popup already extracted and the user edited. */
     async function saveWholePage(page?: object) {
-        const payload = page ?? await requestFromPage({name: 'trilium-save-page'});
+        const payload = page ?? await readActivePage();
 
         const failedImages = await postProcessImages(payload);
 
         const resp = await triliumServerFacade.callService('POST', 'notes', payload);
 
         toast(savedMessage("Page", failedImages), resp.noteId);
+    }
+
+    async function readActivePage() {
+        const activeTab = await getActiveTab();
+        const page = activeTab.id === undefined ? undefined : await extractReadablePage(activeTab.id);
+        if (!page) {
+            throw new Error("Trilium could not find an article on this page.");
+        }
+        return page;
     }
 
     async function saveLinkWithNote(title: string, content: string, description?: string) {

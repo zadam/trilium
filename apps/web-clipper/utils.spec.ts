@@ -2,7 +2,7 @@ import type { Window as HappyDOMWindow } from "happy-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
-import { createLink, getPageLocationOrigin, randomString } from "./utils";
+import { createLink, extractReadablePage, getPageLocationOrigin, randomString } from "./utils";
 
 describe("randomString", () => {
     it("returns alphanumeric strings of the requested length", () => {
@@ -37,6 +37,27 @@ describe("createLink", () => {
 
         link.click();
         expect(sendMessage).toHaveBeenCalledWith(null, action);
+    });
+});
+
+
+describe("extractReadablePage", () => {
+    afterEach(() => {
+        Reflect.deleteProperty(fakeBrowser, "scripting");
+    });
+
+    it("runs the readability script in the tab and returns its result", async () => {
+        const page = { title: "Article", content: "<p>Body</p>" };
+        const executeScript = vi.fn()
+            .mockResolvedValueOnce([ { result: page } ])
+            .mockResolvedValueOnce([ { result: null } ])
+            .mockResolvedValueOnce([]);
+        Object.assign(fakeBrowser, { scripting: { executeScript } });
+
+        expect(await extractReadablePage(7)).toBe(page);
+        expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
+        expect(await extractReadablePage(7)).toBeUndefined();
+        expect(await extractReadablePage(7)).toBeUndefined();
     });
 });
 

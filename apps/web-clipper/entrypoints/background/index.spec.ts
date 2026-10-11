@@ -56,6 +56,9 @@ let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
+/** What `readability.js` returns in the active tab; no article unless a test says so. */
+let readablePage: unknown;
+const executeScript = vi.fn(async () => [ { result: readablePage } ]);
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
@@ -69,6 +72,7 @@ describe("background", () => {
         fakeBrowser.reset();
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
+        readablePage = undefined;
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -95,7 +99,7 @@ describe("background", () => {
             captureVisibleTab: async () => PNG
         });
         Object.assign(fakeBrowser.runtime, { getContexts, sendMessage: runtimeSendMessage });
-        Object.assign(fakeBrowser, { offscreen: { createDocument } });
+        Object.assign(fakeBrowser, { offscreen: { createDocument }, scripting: { executeScript } });
 
         background.main();
         await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(6));
@@ -273,12 +277,14 @@ describe("background", () => {
     describe("saving the whole page", () => {
         it("saves the readable page from the shortcut, the menu and the popup", async () => {
             const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
-            tabMessageHandler = () => page;
+            readablePage = page;
 
             await onCommand("saveWholePage");
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
             await sendRuntimeMessage({ name: "save-whole-page" });
 
+            expect(executeScript).toHaveBeenCalledTimes(3);
+            expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readability.js" ] });
             expect(facade.callService).toHaveBeenCalledTimes(3);
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", page);
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
@@ -287,6 +293,29 @@ describe("background", () => {
             tabsSendMessage.mockClear();
             await onCommand("saveWholePage");
             expect(await lastToast()).toMatchObject(FAILURE_TOAST);
+        });
+
+        it("saves nothing from a page without an article or out of reach", async () => {
+            await onCommand("saveWholePage");
+            expect(await lastToast()).toMatchObject({
+                ...GENERIC_FAILURE_TOAST,
+                message: "Saving to Trilium failed: Trilium could not find an article on this page."
+            });
+
+            readablePage = { title: "Article", content: "<p>Body</p>", images: [] };
+            tabs = [ { title: "Tab without id" } ];
+            await onCommand("saveWholePage");
+
+            tabs = [ ACTIVE_TAB ];
+            executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
+            await onCommand("saveWholePage");
+            expect(await lastToast()).toMatchObject({
+                ...GENERIC_FAILURE_TOAST,
+                message: "Saving to Trilium failed: Cannot access a chrome:// URL"
+            });
+
+            expect(executeScript).toHaveBeenCalledTimes(2);
+            expect(facade.callService).not.toHaveBeenCalled();
         });
 
         it("saves the page the popup extracted, with the user's title, without reading it again", async () => {
@@ -301,7 +330,7 @@ describe("background", () => {
 
             await sendRuntimeMessage({ name: "save-whole-page", page });
 
-            expect(tabsSendMessage).not.toHaveBeenCalledWith(7, { name: "trilium-save-page" });
+            expect(executeScript).not.toHaveBeenCalled();
             expect(facade.callService).toHaveBeenCalledWith("POST", "notes", {
                 ...page,
                 images: [ { ...page.images[0], dataUrl: expect.stringMatching(PNG_DATA_URL) } ]

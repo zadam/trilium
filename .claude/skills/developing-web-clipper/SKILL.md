@@ -1,6 +1,6 @@
 ---
 name: developing-web-clipper
-description: Use when working on Trilium's browser extension, the web clipper (`apps/web-clipper`, built with WXT for Chrome MV3 and Firefox MV2) — its background script, content script (Readability, screenshots, toasts), the Preact popup and options page, `wxt.config.ts` (manifest, keyboard `commands`, the Firefox sources zip), or the server side it talks to (`apps/server/src/routes/api/clipper.ts`, `/api/login/token`, the desktop port). Covers the message protocol between the extension's parts, how it finds and authenticates to Trilium, the compatibility rule with older Trilium versions, styling the pages in the Next theme from the client's own stylesheets, running and building it, the `fakeBrowser` spec patterns and the 100% coverage gate, and the traps already hit (undeclared commands, image placeholders, `$&` in `replaceAll()` replacements, `javascript:` links, the sources zip).
+description: Use when working on Trilium's browser extension, the web clipper (`apps/web-clipper`, built with WXT for Chrome MV3 and Firefox MV2) — its background script, content script (selection, screenshots, toasts), the injected Readability script, the Preact popup and options page, `wxt.config.ts` (manifest, keyboard `commands`, the Firefox sources zip), or the server side it talks to (`apps/server/src/routes/api/clipper.ts`, `/api/login/token`, the desktop port). Covers the message protocol between the extension's parts, how it finds and authenticates to Trilium, the compatibility rule with older Trilium versions, styling the pages in the Next theme from the client's own stylesheets, running and building it, the `fakeBrowser` spec patterns and the 100% coverage gate, and the traps already hit (undeclared commands, image placeholders, `$&` in `replaceAll()` replacements, `javascript:` links, the sources zip).
 ---
 
 # Developing the web clipper
@@ -17,7 +17,8 @@ repository.
 |---|---|---|
 | `entrypoints/background/index.ts` | service worker (MV3) / background page (MV2) | context menus, keyboard commands, every save, image download, toasts |
 | `entrypoints/background/trilium_server_facade.ts` | background | finds Trilium, authenticates, `callService()` |
-| `entrypoints/content/index.ts` | every page (`<all_urls>`) | Readability extraction, selection, crop overlay, toast UI |
+| `entrypoints/content/index.ts` | every page (`<all_urls>`) | selection, page description, crop overlay, toast UI |
+| `entrypoints/readability/index.ts` | the tab, injected on demand | Readability extraction of the whole page; its `main()` value is the `executeScript()` result |
 | `entrypoints/popup/main.tsx` | the toolbar popup | Preact `Popup`: capture buttons, link-with-note form, connection status |
 | `entrypoints/options/main.tsx` | the options page | Preact `Options`: desktop port, server login |
 | `entrypoints/offscreen/` | MV3 only (Chrome) | crops screenshots on a canvas, since an MV3 service worker has no DOM |
@@ -32,10 +33,16 @@ Everything goes through `browser.runtime.sendMessage` / `browser.tabs.sendMessag
 - **background → popup:** `trilium-search-status` (`triliumSearch: TriliumSearchStatus`, which
   starts as `searching`) and `trilium-previously-visited` (`searchNote`). Both types
   are exported from `trilium_server_facade.ts`; the popup imports them.
-- **background → content script:** `trilium-save-selection`, `trilium-save-page`,
+- **background → content script:** `trilium-save-selection`,
   `trilium-get-rectangle-for-screenshot` (the content script answers with the payload), and `toast`
   (`message`, `noteId`, `tabIds`).
 - **background → offscreen:** `{ type: "CROP_IMAGE" }`, the one message keyed by `type`.
+
+The readable page is not a message: the popup and the background call `extractReadablePage(tabId)`
+(`utils.ts`), which injects `/readability.js` with `browser.scripting.executeScript()` (the
+`scripting` permission, in both builds), so Readability stays out of the content script that loads
+on every page. Specs mock it with `Object.assign(fakeBrowser, { scripting: { executeScript } })`,
+answering `[ { result: page } ]`.
 
 Every user action in the background runs inside `showFailures()`, which turns an exception into a
 toast. A new action belongs inside it too, or it fails silently. A toast cannot show on browser
