@@ -1,7 +1,7 @@
 import "@/assets/theme.css";
 import "./popup.css";
 
-import type { IconData, IconDefinition } from "@boxicons/js";
+import type { IconData, IconDefinition, IconPack } from "@boxicons/js";
 import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
 import Cog from "@boxicons/js/icons/Cog";
@@ -14,6 +14,7 @@ import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
 import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
+import Youtube from "@boxicons/js/icons/Youtube";
 import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -85,9 +86,16 @@ const PREVIEW_STYLE = `
     :root { color-scheme: light dark; }
     body { margin: 8px; font: 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
     h1 { font-size: 1.3em; } h2 { font-size: 1.15em; } h3, h4, h5, h6 { font-size: 1em; }
-    img, video, svg, iframe { max-width: 100%; height: auto; }
+    img, video, svg { max-width: 100%; height: auto; }
     pre { white-space: pre-wrap; }
     a { color: light-dark(#0076af, #95c3d9); text-decoration: none; }
+    .embed-chip {
+        display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 2px 10px 2px 8px;
+        border-radius: 999px; white-space: nowrap;
+        background: light-dark(#0000000f, #ffffff28); color: light-dark(#000000ad, #ffffffc2);
+    }
+    .embed-chip svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .embed-chip-detail { color: light-dark(#666, #bbb); }
 `;
 
 const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
@@ -577,9 +585,34 @@ export function previewDocument({ content, images }: Pick<ExtractedPage, "conten
     for (const meta of doc.querySelectorAll("meta[http-equiv]")) {
         meta.remove();
     }
+    // Trilium saves a YouTube player as a link preview and drops every other iframe.
+    for (const frame of doc.querySelectorAll("iframe")) {
+        const videoId = extractYouTubeVideoId(frame.getAttribute("src") ?? "");
+        if (videoId) {
+            frame.replaceWith(youTubeChip(doc, videoId));
+        } else {
+            frame.remove();
+        }
+    }
 
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PREVIEW_STYLE}</style></head>`
         + `<body>${doc.body.innerHTML}</body></html>`;
+}
+
+/** Stands in for an embedded YouTube player, which the sandboxed preview cannot run. */
+function youTubeChip(doc: Document, videoId: string) {
+    const { viewBox, content } = iconVariant(Youtube, "brands");
+    const chip = doc.createElement("span");
+    chip.className = "embed-chip";
+    chip.innerHTML = `<svg viewBox="${viewBox}" fill="currentColor" aria-hidden="true">${content}</svg>`
+        + `<span>YouTube video</span><span class="embed-chip-detail">youtu.be/${videoId}</span>`;
+    return chip;
+}
+
+/** Matches the same URLs as `YOUTUBE_REGEX` in `packages/commons/src/lib/link_embed.ts`. */
+function extractYouTubeVideoId(url: string) {
+    const match = url.match(/(?:youtube\.com\/watch\?[^\s#]*v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+    return match?.[1];
 }
 
 /** Maps each bound command to its shortcut, as the browser shows it. */
@@ -595,7 +628,7 @@ export function shortcutsByCommand(commands: { name?: string, shortcut?: string 
 
 /** A Boxicons v3 icon, drawn inline in the current text color. */
 function Icon({ icon }: { icon: IconDefinition }) {
-    const { viewBox, content } = basicIcon(icon);
+    const { viewBox, content } = iconVariant(icon);
     return (
         <svg
             className="icon"
@@ -607,11 +640,11 @@ function Icon({ icon }: { icon: IconDefinition }) {
     );
 }
 
-/** The outlined variant of an icon, the one matching the app's Boxicons. */
-export function basicIcon(icon: IconDefinition): IconData {
-    const data = icon.packs.basic;
+/** A variant of an icon, by default the outlined one, which matches the app's Boxicons. */
+export function iconVariant(icon: IconDefinition, pack: IconPack = "basic"): IconData {
+    const data = icon.packs[pack];
     if (!data) {
-        throw new Error(`Boxicons has no basic variant of '${icon.name}'.`);
+        throw new Error(`Boxicons has no ${pack} variant of '${icon.name}'.`);
     }
     return data;
 }

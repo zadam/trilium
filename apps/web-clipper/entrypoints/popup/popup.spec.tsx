@@ -6,7 +6,7 @@ import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
-import { basicIcon, Popup, previewDocument, shortcutsByCommand, textToHtml } from "./main";
+import { iconVariant, Popup, previewDocument, shortcutsByCommand, textToHtml } from "./main";
 
 const DISCONNECTED = "This action can't be performed without active connection to Trilium.";
 const UNREACHABLE = "This action is not available on this page.";
@@ -519,6 +519,26 @@ describe("previewDocument", () => {
         expect(doc.querySelector("meta[http-equiv]")).toBeNull();
     });
 
+    it("shows an embedded YouTube video as a chip, and drops other embedded content", () => {
+        const doc = new DOMParser().parseFromString(previewDocument({
+            content: `<p>Intro</p>`
+                + `<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"></iframe>`
+                + `<iframe src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw"></iframe>`
+                + `<iframe src="https://player.vimeo.com/video/76979871"></iframe>`
+                + `<iframe></iframe>`,
+            images: []
+        }), "text/html");
+        expect(doc.querySelector("iframe")).toBeNull();
+        expect(doc.querySelector("p")?.textContent).toBe("Intro");
+
+        const chips = [ ...doc.querySelectorAll(".embed-chip") ];
+        expect(chips.map((chip) => [ ...chip.children ].map((child) => child.textContent))).toEqual([
+            [ "", "YouTube video", "youtu.be/dQw4w9WgXcQ" ],
+            [ "", "YouTube video", "youtu.be/jNQXAC9IVRw" ]
+        ]);
+        expect(chips[0]?.querySelector("svg path")).not.toBeNull();
+    });
+
     it("colors links with the theme's link colors, which the frame cannot read from the popup", () => {
         const theme = readFileSync(join(import.meta.dirname, "../../assets/theme.css"), "utf8");
         const [ light, dark ] = [ ...theme.matchAll(/--link-color: (#[0-9a-f]+);/g) ].map((match) => match[1]);
@@ -562,8 +582,8 @@ describe("icons", () => {
     });
 
     it("uses the outlined variant, and refuses an icon that has none", () => {
-        expect(basicIcon(Crop)).toBe(Crop.packs.basic);
-        expect(() => basicIcon({ name: "brand", defaultPack: "brands", packs: {} }))
+        expect(iconVariant(Crop)).toBe(Crop.packs.basic);
+        expect(() => iconVariant({ name: "brand", defaultPack: "brands", packs: {} }))
             .toThrow("Boxicons has no basic variant of 'brand'.");
     });
 });
