@@ -445,6 +445,19 @@ describe("popup", () => {
         expect(container.querySelector(".page-body .note-text")).not.toBeNull();
     });
 
+    it("never lets a preview run scripts, since it shares the extension's origin", async () => {
+        selection = SELECTION;
+        await rerender();
+        for (const mode of [ "Selection", "Page" ]) {
+            await click(mode);
+            const frame = container.querySelector(".page-body iframe.page-content");
+            expect(frame, mode).not.toBeNull();
+            const sandbox = frame?.getAttribute("sandbox")?.split(/\s+/);
+            expect(sandbox, mode).toContain("allow-same-origin");
+            expect(sandbox, mode).not.toContain("allow-scripts");
+        }
+    });
+
     it("sizes the preview to the page, so that it scrolls with the description", async () => {
         const frame = container.querySelector<HTMLIFrameElement>(".page-body iframe.page-content");
         expect(frame).not.toBeNull();

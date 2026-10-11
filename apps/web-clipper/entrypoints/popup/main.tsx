@@ -494,8 +494,9 @@ function withDescription(labels: Record<string, string> | undefined, description
 
 /**
  * Makes the preview as tall as the page it shows, so that the page scrolls in `.page-body` together
- * with the description above it. `allow-same-origin` lets the popup read the height; the sandbox
- * still runs no script.
+ * with the description above it. `allow-same-origin` lets the popup read the height, and gives the
+ * frame the extension's origin. The sandbox must not get `allow-scripts` too: with both, the clipped
+ * page's HTML runs as the extension, with its browser APIs.
  */
 function fitToContent(frame: HTMLIFrameElement) {
     const height = frame.contentDocument?.documentElement.scrollHeight;
