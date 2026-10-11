@@ -157,6 +157,7 @@ export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceO
 export type * from "./meta";
 export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
+export { resolveYouTubePreview } from "./routes/api/link_embed";
 
 export { getZipProvider, type ZipArchive, type ZipProvider } from "./services/zip_provider";
 export { default as zipImportService } from "./services/import/zip";
