@@ -464,6 +464,7 @@ describe("popup", () => {
         expect(modes()).toEqual([ [ "Page", "false" ], [ "Bookmark", "true" ] ]);
         const textArea = container.querySelector(".page-body .page-fields.bookmark .note-text");
         expect(textArea).not.toBeNull();
+        expect(container.querySelector(".page-body")?.className).toBe("page-body");
         expect(document.activeElement).toBe(textArea);
         expect(container.querySelector<HTMLElement>(".page-field:first-child > .page-field-icon")?.title)
             .toBe("Your note about the page. It is saved as the content of the note.");
@@ -796,6 +797,7 @@ describe("popup", () => {
 
             await click("Bookmark");
             expect(button("Save bookmark")?.disabled).toBe(false);
+            expect(container.querySelector(".page-body")?.className).toBe("page-body pdf");
             expect(container.querySelector(".note-text")).not.toBeNull();
             expect(container.querySelector(".clip-hint")).toBeNull();
         });

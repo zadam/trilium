@@ -192,6 +192,10 @@ body {
                 .page-fields {
                     border-bottom: 0;
                 }
+
+                .page-fields.bookmark .note-text {
+                    min-height: auto;
+                }
             }
 
             &:has(.page-content)::after {
