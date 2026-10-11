@@ -22,6 +22,7 @@ describe("readable page", () => {
             <meta property="article:published_time" content="2026-01-02T10:00:00Z">
             <meta property="article:modified_time" content="2026-02-03T10:00:00Z">
             <meta property="og:description" content="About the article">
+            <meta name="author" content="  Jane   Doe ">
             <script>window.tracked = true;</script>`;
         document.body.innerHTML = `
             <nav><a href="/">Home</a> <a href="/archive">Archive</a></nav>
@@ -44,6 +45,7 @@ describe("readable page", () => {
             clipType: "page",
             labels: {
                 pageDescription: "About the article",
+                pageAuthor: "Jane Doe",
                 publishedDate: "2026-01-02",
                 modifiedDate: "2026-02-03"
             },

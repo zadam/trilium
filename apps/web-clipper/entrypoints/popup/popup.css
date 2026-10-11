@@ -174,7 +174,8 @@ body {
             }
         }
 
-        .page-description {
+        .page-description,
+        .page-author {
             --input-background-color: transparent;
 
             flex-grow: 1;

@@ -17,6 +17,7 @@ import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
 import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
+import User from "@boxicons/js/icons/User";
 import Youtube from "@boxicons/js/icons/Youtube";
 import monospaceFontUrl from "@triliumnext/client/src/fonts/JetBrainsMono-Light.woff2?url";
 import type { ComponentChildren } from "preact";
@@ -79,6 +80,8 @@ interface Draft {
     title?: string;
     /** `undefined` until the user edits the page's description. */
     description?: string;
+    /** `undefined` until the user edits the author of the page. */
+    author?: string;
     text: string;
 }
 
@@ -336,7 +339,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
 }) {
-    const { mode: chosenMode, title, description, text } = draft;
+    const { mode: chosenMode, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     const article = typeof tab?.page === "object" ? tab.page : undefined;
@@ -347,6 +350,8 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     const shownTitle = title ?? (article ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription = description ?? tab?.description ?? "";
     const savedDescription = shownDescription.replace(/\s+/g, " ").trim();
+    const shownAuthor = author ?? article?.labels.pageAuthor ?? "";
+    const savedAuthor = shownAuthor.replace(/\s+/g, " ").trim();
 
     useEffect(() => {
         if (mode === "note") textAreaRef.current?.focus();
@@ -365,7 +370,10 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }
 
     function saveClip(content: SelectedContent) {
-        const labels = withDescription(content.labels, savedDescription);
+        let labels = withLabel(content.labels, "pageDescription", savedDescription);
+        if (mode === "page") {
+            labels = withLabel(labels, "pageAuthor", savedAuthor);
+        }
         const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
         void sendMessage(mode === "selection"
             ? { name: "save-selection", selection: titled }
@@ -447,6 +455,24 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 onKeyDown={saveNoteOnCtrlEnter}
                             />
                         </div>
+                        {mode === "page" && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title="The page's author. It is saved in the #pageAuthor label of the note."
+                                >
+                                    <Icon icon={User} />
+                                </span>
+                                <input
+                                    type="text"
+                                    className="page-author"
+                                    aria-label="Author"
+                                    placeholder="Add an author"
+                                    value={shownAuthor}
+                                    onInput={(e) => onDraftChange({ ...draft, author: e.currentTarget.value })}
+                                />
+                            </div>
+                        )}
                         {published && (
                             <div className="page-field">
                                 <span
@@ -507,10 +533,10 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     );
 }
 
-/** A clip's labels with `#pageDescription` as the user left it, or without one when it is empty. */
-function withDescription(labels: Record<string, string> | undefined, description: string) {
-    const { pageDescription: _, ...others } = labels ?? {};
-    return description ? { ...others, pageDescription: description } : labels && others;
+/** A clip's labels with the label `name` as the user left it, or without it when `value` is empty. */
+function withLabel(labels: Record<string, string> | undefined, name: string, value: string) {
+    const { [name]: _, ...others } = labels ?? {};
+    return value ? { ...others, [name]: value } : labels && others;
 }
 
 /**

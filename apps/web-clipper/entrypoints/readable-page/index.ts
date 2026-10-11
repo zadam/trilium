@@ -23,6 +23,10 @@ function readPage(): ReadablePage | undefined {
     const images = getImages(body);
 
     const labels = descriptionLabels();
+    const author = article.author.replace(/\s+/g, " ").trim();
+    if (author) {
+        labels['pageAuthor'] = author;
+    }
     const publishedDate = isoDate(metaContent("article:published_time") || article.published);
     if (publishedDate) {
         labels['publishedDate'] = publishedDate;

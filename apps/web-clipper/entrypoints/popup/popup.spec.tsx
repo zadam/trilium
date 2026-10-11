@@ -25,7 +25,7 @@ const PAGE = {
     images: [ { imageId: "i1", src: "https://example.com/a.png" } ],
     pageUrl: "https://example.com/post?id=1",
     clipType: "page",
-    labels: { publishedDate: "2024-05-01", modifiedDate: "2024-06-12" }
+    labels: { pageAuthor: "Jane Doe", publishedDate: "2024-05-01", modifiedDate: "2024-06-12" }
 };
 /** What `readable-page.js` returns in the tab, as `browser.scripting.executeScript()` answers. */
 const executeScript = vi.fn(async (): Promise<unknown> => [ { result: PAGE } ]);
@@ -217,12 +217,12 @@ describe("popup", () => {
         expect(heading?.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBe("Published 2024-05-01");
-        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
+        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
         expect(dateIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(dateIcon?.title).toBe(
             "The date the page was published. It is saved in the #publishedDate label of the note.");
         expect(modifiedDate()).toBe("Updated 2024-06-12");
-        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
+        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(4) > .page-field-icon");
         expect(modifiedIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(modifiedIcon?.title).toBe(
             "The date the page was last modified. It is saved in the #modifiedDate label of the note.");
@@ -249,7 +249,7 @@ describe("popup", () => {
         executeScript.mockResolvedValueOnce([ { result: { ...PAGE, labels: {} } } ]);
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
-        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(1);
+        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(2);
         expect(publishedDate()).toBeUndefined();
         expect(modifiedDate()).toBeUndefined();
     });
@@ -462,6 +462,46 @@ describe("popup", () => {
         await click("Bookmark");
         expect(description()?.value).toBe("");
         expect(container.querySelector(".page-body .note-text")).not.toBeNull();
+    });
+
+    it("offers the page's author in Page mode, and saves it as edited", async () => {
+        const author = () => container.querySelector<HTMLInputElement>(".page-fields .page-author");
+        expect(author()?.value).toBe("Jane Doe");
+        expect(author()?.getAttribute("aria-label")).toBe("Author");
+        expect(author()?.getAttribute("placeholder")).toBe("Add an author");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
+        expect(icon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(icon?.title).toBe("The page's author. It is saved in the #pageAuthor label of the note.");
+
+        await type(".page-author", "  John   Smith ");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels: { ...PAGE.labels, pageAuthor: "John Smith" } }
+        });
+
+        await type(".page-author", " ");
+        expect(author()).not.toBeNull();
+        await click("Save page to Trilium");
+        const { pageAuthor: _, ...withoutAuthor } = PAGE.labels;
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: { ...PAGE, labels: withoutAuthor } });
+
+        selection = SELECTION;
+        await rerender();
+        expect(author()).toBeNull();
+        await click("Bookmark");
+        expect(author()).toBeNull();
+
+        selection = undefined;
+        executeScript.mockResolvedValueOnce([ { result: { ...PAGE, labels: {} } } ]);
+        await rerender();
+        expect(author()?.value).toBe("");
+        await type(".page-author", "Written by hand");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, labels: { pageAuthor: "Written by hand" } }
+        });
     });
 
     it("never lets a preview run scripts, since it shares the extension's origin", async () => {
