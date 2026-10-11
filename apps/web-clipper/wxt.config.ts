@@ -1,3 +1,4 @@
+import { mkdirSync } from "fs";
 import { copyFile, readFile, rm, writeFile } from "fs/promises";
 import JSZip from "jszip";
 import { resolve } from "path";
@@ -8,7 +9,9 @@ let originalTsConfig: object;
 export default defineConfig({
     webExt: {
         // A persistent profile keeps the toolbar pin and the extension's settings across dev runs.
-        chromiumProfile: resolve(".wxt/chrome-data"),
+        // The Firefox one is not in /tmp, where web-ext puts it by default and the Firefox snap cannot read it.
+        chromiumProfile: profileDir("chrome-data"),
+        firefoxProfile: profileDir("firefox-data"),
         keepProfileChanges: true
     },
     vite: () => ({
@@ -117,3 +120,10 @@ export default defineConfig({
         }
     }
 });
+
+/** A dev browser profile in `.wxt`, created if missing: neither browser's launcher creates it. */
+function profileDir(name: string) {
+    const dir = resolve(".wxt", name);
+    mkdirSync(dir, { recursive: true });
+    return dir;
+}
