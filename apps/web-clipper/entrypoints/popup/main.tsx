@@ -535,6 +535,9 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
+    const bookmarkOnly = mode === "note" && modes.length === 1;
+    /** The body fits its fields where there is no preview to give room to. */
+    const compact = tab?.pdf || bookmarkOnly;
 
     return (
         <div className="page-preview">
@@ -566,12 +569,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState
                 </div>
             )}
 
-            {mode === "note" && modes.length === 1 && (
+            {bookmarkOnly && (
                 <div className="clip-hint">This page has nothing to save; save it as a bookmark.</div>
             )}
             {mode === "pdf" && <div className="clip-hint">The PDF is saved as a file in Trilium.</div>}
 
-            <div className={tab?.pdf ? "page-body pdf" : "page-body"}>
+            <div className={compact ? "page-body compact" : "page-body"}>
                 {mode && (
                     <div className={mode === "note" ? "page-fields bookmark" : "page-fields"}>
                         {mode !== "pdf" && (

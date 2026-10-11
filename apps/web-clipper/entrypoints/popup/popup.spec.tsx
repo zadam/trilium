@@ -367,6 +367,7 @@ describe("popup", () => {
         expect(container.querySelector(".no-items")).toBeNull();
         expect(container.querySelector(".clip-mode")).toBeNull();
         expect(container.querySelector(".clip-hint")?.textContent).toBe("This page has nothing to save; save it as a bookmark.");
+        expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
         expect(document.activeElement).toBe(container.querySelector(".page-body .note-text"));
         expect(container.querySelector(".page-meta")).toBeNull();
         expect(button("Save bookmark")?.disabled).toBe(false);
@@ -770,7 +771,7 @@ describe("popup", () => {
             expect(container.querySelector(".note-text")).toBeNull();
             expect(container.querySelector(".page-author")).toBeNull();
             expect(container.querySelector(".page-content")).toBeNull();
-            expect(container.querySelector(".page-body")?.className).toBe("page-body pdf");
+            expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
             expect(placeholder()).toBeUndefined();
             expect(shortcutOf("Save PDF to Trilium").text).toBe("Alt+Shift+S");
 
@@ -797,7 +798,7 @@ describe("popup", () => {
 
             await click("Bookmark");
             expect(button("Save bookmark")?.disabled).toBe(false);
-            expect(container.querySelector(".page-body")?.className).toBe("page-body pdf");
+            expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
             expect(container.querySelector(".note-text")).not.toBeNull();
             expect(container.querySelector(".clip-hint")).toBeNull();
         });

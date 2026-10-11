@@ -186,7 +186,7 @@ body {
             border-radius: 6px;
             background: var(--main-background-color);
 
-            &.pdf {
+            &.compact {
                 height: auto;
 
                 .page-fields {
