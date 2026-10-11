@@ -802,6 +802,29 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
         });
 
+        it("takes a queued screenshot of the tab it was asked for, stopping when another tab is open", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const otherTab: Tab = { id: 8, title: "Other page", url: "https://example.com/other" };
+            const get = vi.fn(async (tabId: number) => {
+                tabs = [ otherTab ];
+                return { active: tabId === otherTab.id };
+            });
+            Object.assign(fakeBrowser.tabs, { get });
+
+            await run(Promise.all([
+                sendRuntimeMessage({ name: "save-full-page-screenshot" }),
+                sendRuntimeMessage({ name: "save-full-page-screenshot" })
+            ]));
+
+            expect(get.mock.calls).toEqual([ [ 7 ], [ 7 ] ]);
+            const pageTabs = tabsSendMessage.mock.calls
+                .filter(([ , message ]) => (message as { name: string }).name !== "toast")
+                .map(([ tabId ]) => tabId);
+            expect(new Set(pageTabs)).toEqual(new Set([ 7 ]));
+            expect(captureVisibleTab).not.toHaveBeenCalled();
+            expect(facade.callService).not.toHaveBeenCalled();
+        });
+
         it("reports a page that does not answer, a failed stitch, and a tab without an ID", async () => {
             await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
             expect(await lastToast()).toMatchObject({

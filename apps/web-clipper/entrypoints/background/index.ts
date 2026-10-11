@@ -196,14 +196,15 @@ export default defineBackground(() => {
      * captures into images of the page from the top. The tab is scrolled back to where it was
      * afterwards. `cutOff` says the page was longer than a screenshot holds.
      */
-    function takeFullPageScreenshot() {
-        const screenshot = lastFullPageScreenshot.then(captureFullPage);
+    async function takeFullPageScreenshot() {
+        // A queued screenshot keeps the tab it was asked for, and stops if that tab is no longer active.
+        const tab = await getActiveTab();
+        const screenshot = lastFullPageScreenshot.then(() => captureFullPage(tab));
         lastFullPageScreenshot = screenshot.catch(() => undefined);
-        return screenshot;
+        return await screenshot;
     }
 
-    async function captureFullPage() {
-        const { id: tabId, windowId } = await getActiveTab();
+    async function captureFullPage({ id: tabId, windowId }: Browser.tabs.Tab) {
         if (tabId === undefined) {
             throw new Error("No active tab.");
         }
