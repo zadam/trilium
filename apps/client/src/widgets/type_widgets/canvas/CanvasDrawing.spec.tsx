@@ -17,7 +17,7 @@ vi.mock("./persistence", () => ({
         return {};
     },
     parseContent: (content: string) => JSON.parse(content),
-    getInlineFiles: () => ({})
+    loadDrawingFiles: async () => ({ files: {}, referencedFileIds: new Set() })
 }));
 const { detailEditor, attachmentEditorMounts, canvasEditorMounts } = vi.hoisted(() => ({
     detailEditor: { canEdit: () => true, release: vi.fn() },

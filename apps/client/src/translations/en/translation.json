@@ -2846,7 +2846,8 @@
     "cannot-copy": "Could not copy the image reference to clipboard.",
     "image-copied-to-clipboard": "The image has been copied to clipboard.",
     "cannot-copy-image": "Could not copy the image to clipboard.",
-    "cannot-download": "Could not download the image."
+    "cannot-download": "Could not download the image.",
+    "cannot-convert-to-drawing": "Could not convert the image to a drawing canvas."
   },
   "clipboard": {
     "cut": "Note(s) have been cut into clipboard.",
@@ -4234,6 +4235,7 @@
       "changes": "Changes",
       "click-on-the-arrow-or-press-0-to-collapse-expand": "Click on the arrow or press %0 to collapse/expand.",
       "collapsible-block": "Collapsible block",
+      "convert-image-to-a-drawing-canvas": "Convert image to a drawing canvas",
       "convert-to-link": "Convert to link",
       "copy-anchor-reference-link": "Copy anchor reference link",
       "copy-formatting": "Copy formatting",

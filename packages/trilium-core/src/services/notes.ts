@@ -1,4 +1,4 @@
-import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, dayjs, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
+import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, CANVAS_ATTACHMENT_MIME, dayjs, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
 import { t } from "i18next";
 import { parse as parseHtml } from "node-html-parser";
 
@@ -23,7 +23,7 @@ import { evaluateTemplateSafe } from "./safe_template.js";
 import { sanitizeHtml } from "./sanitizer.js";
 import { getSql } from "./sql/index.js";
 import type TaskContext from "./task_context.js";
-import { decodeBase64 } from "./utils/binary.js";
+import { decodeBase64, decodeUtf8 } from "./utils/binary.js";
 import date_utils from "./utils/date.js";
 import { isValidEntityId, newEntityId, replaceAll, toMap, unescapeHtml } from "./utils/index.js";
 import ws from "./ws.js";
@@ -496,7 +496,8 @@ function writeExtractedText(blobId: string | undefined, extractedText: string, i
 export function checkImageAttachments(note: BNote, content: string) {
     // Canvas references images by the Excalidraw fileId stored as the attachment *title* in its
     // scene JSON, so orphans are detected by title; every other type references them by attachmentId
-    // embedded in the content (an image URL or attachment link).
+    // embedded in the content (an image URL or attachment link), and by title from the scenes of
+    // the canvas drawings it embeds.
     const isCanvas = note.type === "canvas";
     const foundAttachmentIds = new Set<string>();
     /**
@@ -505,7 +506,6 @@ export function checkImageAttachments(note: BNote, content: string) {
      * reached any other way was put there by hand and takes the role that says so.
      */
     const previewPictureIds = new Set<string>();
-    const foundCanvasFileIds = isCanvas ? collectCanvasImageFileIds(content) : new Set<string>();
 
     if (!isCanvas) {
         let match;
@@ -546,6 +546,9 @@ export function checkImageAttachments(note: BNote, content: string) {
     }
 
     const attachments = note.getAttachments();
+    const foundFileIds = isCanvas
+        ? collectCanvasImageFileIds(content)
+        : collectDrawingImageFileIds(attachments, foundAttachmentIds);
 
     for (const attachment of attachments) {
         // Only attachments that live in the note content are auto-scheduled for erasure when nothing
@@ -572,9 +575,8 @@ export function checkImageAttachments(note: BNote, content: string) {
             continue;
         }
 
-        const attachmentInContent = isCanvas
-            ? foundCanvasFileIds.has(attachment.title)
-            : !!attachment.attachmentId && foundAttachmentIds.has(attachment.attachmentId);
+        const attachmentInContent = foundFileIds.has(attachment.title)
+            || (!!attachment.attachmentId && foundAttachmentIds.has(attachment.attachmentId));
 
         if (attachment.utcDateScheduledForErasureSince && attachmentInContent) {
             attachment.utcDateScheduledForErasureSince = null;
@@ -632,6 +634,8 @@ export function checkImageAttachments(note: BNote, content: string) {
             getLog().info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.ownerId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
         }
 
+        copyDrawingImages(note, unknownAttachment);
+
         // Replace image links — every one of them. A string first argument to replace() rewrites
         // only the first match, which was survivable while each reference had an attachment of its
         // own, but a deduplicated role (a link preview's favicon, one per site rather than one per
@@ -680,6 +684,44 @@ export function collectCanvasImageFileIds(content: string): Set<string> {
     }
 
     return fileIds;
+}
+
+/** The file IDs of the images that the canvas drawings among `attachments` in the content show. */
+function collectDrawingImageFileIds(attachments: BAttachment[], foundAttachmentIds: Set<string>) {
+    const fileIds = new Set<string>();
+    for (const attachment of attachments) {
+        if (attachment.mime !== CANVAS_ATTACHMENT_MIME
+            || !foundAttachmentIds.has(attachment.attachmentId ?? "")) {
+            continue;
+        }
+
+        for (const fileId of collectCanvasImageFileIds(decodeUtf8(attachment.getContent()))) {
+            fileIds.add(fileId);
+        }
+    }
+    return fileIds;
+}
+
+/**
+ * Copies to `note` the images that the canvas drawing of another note shows, which its owner keeps
+ * titled with their file IDs, unless `note` has attachments of those titles already.
+ */
+function copyDrawingImages(note: BNote, drawing: BAttachment) {
+    const owner = becca.getNote(drawing.ownerId);
+    if (drawing.mime !== CANVAS_ATTACHMENT_MIME || !owner) {
+        return;
+    }
+
+    const fileIds = collectCanvasImageFileIds(decodeUtf8(drawing.getContent()));
+    for (const image of owner.getAttachments()) {
+        if (!fileIds.has(image.title) || note.getAttachmentByTitle(image.title)) {
+            continue;
+        }
+
+        const copy = image.copy();
+        copy.ownerId = note.noteId;
+        copy.setContent(image.getContent(), { forceSave: true });
+    }
 }
 
 function findImageLinks(content: string, foundLinks: FoundLink[]) {

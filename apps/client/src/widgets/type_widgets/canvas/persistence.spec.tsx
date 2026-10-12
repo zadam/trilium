@@ -28,11 +28,25 @@ interface FakeElement {
     version: number;
 }
 
+interface PlacedElement {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    isDeleted?: boolean;
+}
+
 vi.mock("@excalidraw/excalidraw", () => ({
     // Mirrors the real behavior closely enough for change tracking: the version of a scene
     // is derived from its elements, and an empty scene is always version 0.
     getSceneVersion: (elements: FakeElement[]) => elements.reduce((sum, el) => sum + (el.version ?? 0), 0),
     exportToSvg: vi.fn(async () => ({ outerHTML: "<svg/>" })),
+    getCommonBounds: (elements: PlacedElement[]) => [
+        Math.min(...elements.map(({ x }) => x)),
+        Math.min(...elements.map(({ y }) => y)),
+        Math.max(...elements.map(({ x, width }) => x + width)),
+        Math.max(...elements.map(({ y, height }) => y + height))
+    ],
     CaptureUpdateAction: { IMMEDIATELY: "IMMEDIATELY", NEVER: "NEVER", EVENTUALLY: "EVENTUALLY" }
 }));
 
@@ -213,7 +227,9 @@ describe("useCanvasDrawingPersistence", () => {
     let container: HTMLElement;
     let drawingProps: ReturnType<typeof useCanvasDrawingPersistence> | undefined;
     let sceneElements: FakeElement[];
+    let sceneFiles: Record<string, unknown>;
     let appState: Record<string, unknown>;
+    let updateScene: ReturnType<typeof vi.fn>;
 
     function DrawingProbe({ attachment, editor, apiRef }: {
         attachment: FAttachment;
@@ -227,6 +243,8 @@ describe("useCanvasDrawingPersistence", () => {
     beforeEach(() => {
         drawingProps = undefined;
         sceneElements = [];
+        sceneFiles = { f1: IMAGE, f2: UNUSED_IMAGE };
+        updateScene = vi.fn();
         appState = {
             scrollX: 1, scrollY: 2, zoom: { value: 1 }, gridModeEnabled: false,
             viewBackgroundColor: "transparent", theme: "light"
@@ -238,6 +256,7 @@ describe("useCanvasDrawingPersistence", () => {
     afterEach(() => {
         act(() => render(null, container));
         container.remove();
+        vi.unstubAllGlobals();
     });
 
     function buildAttachment(content: object) {
@@ -258,7 +277,8 @@ describe("useCanvasDrawingPersistence", () => {
         const api = {
             getSceneElements: () => sceneElements,
             getAppState: () => appState,
-            getFiles: () => ({ f1: IMAGE, f2: UNUSED_IMAGE })
+            getFiles: () => sceneFiles,
+            updateScene
         } as unknown as ExcalidrawImperativeAPI;
         const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
         await act(async () => {
@@ -335,6 +355,76 @@ describe("useCanvasDrawingPersistence", () => {
 
         act(() => render(null, container));
         expect(editor.release).toHaveBeenCalledOnce();
+    });
+
+    it("loads the images it refers to from its note and saves them by reference", async () => {
+        const owner = buildNote({ title: "Owner" });
+        const getAttachmentsByRole = vi.fn(async () => [
+            { attachmentId: "img1", title: "f9.png" },
+            { attachmentId: "img2", title: "other.png" }
+        ]);
+        owner.getAttachmentsByRole = getAttachmentsByRole as never;
+        const fetchImage = vi.fn(async () => ({
+            ok: true,
+            blob: async () => new Blob([ "ABC" ], { type: "image/png" })
+        }));
+        vi.stubGlobal("fetch", fetchImage);
+        const loaded = [
+            { id: "i1", type: "image", version: 1, fileId: "f1" },
+            { id: "i9", type: "image", version: 1, fileId: "f9.png" }
+        ];
+        const { attachment } = buildAttachment({ elements: loaded, files: { f1: IMAGE } });
+        const drawing = { ...attachment, ownerId: owner.noteId } as unknown as FAttachment;
+        const editor = buildEditor();
+
+        const initialData = await mount(drawing, editor);
+        expect(getAttachmentsByRole).toHaveBeenCalledWith("image");
+        expect(fetchImage).toHaveBeenCalledExactlyOnceWith("api/attachments/img1/image/f9.png");
+        expect(initialData.files).toEqual({
+            f1: IMAGE,
+            "f9.png": {
+                id: "f9.png", dataURL: "data:image/png;base64,QUJD", mimeType: "image/png",
+                created: expect.any(Number)
+            }
+        });
+
+        sceneElements = loaded;
+        change();
+        sceneElements = [ { ...loaded[0], version: 2 }, loaded[1] ];
+        sceneFiles = initialData.files ?? {};
+        change();
+        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        expect(JSON.parse(getContent()).files).toEqual({ f1: IMAGE });
+    });
+
+    it("fits a drawing without a saved view in the size that Excalidraw reports", async () => {
+        const TALL = { x: -400, y: -400, width: 800, height: 800 };
+        const LATER = { x: 150, y: 60, width: 10, height: 10 };
+        async function getFits(loaded: PlacedElement[], savedAppState: object = {}) {
+            act(() => render(null, container));
+            updateScene.mockClear();
+            const { attachment } = buildAttachment({ elements: loaded, appState: savedAppState });
+            await mount(attachment, undefined);
+            // The empty scene, then the loaded one before the drawing is laid out, then more.
+            for (const [ elements, width, height ] of [
+                [ [], 1000, 400 ], [ loaded, 0, 0 ], [ [ ...loaded, LATER ], 1000, 400 ],
+                [ [ ...loaded, LATER ], 1000, 400 ]
+            ] as const) {
+                drawingProps?.onChange?.(elements as never, { width, height } as never, {});
+            }
+            return updateScene.mock.calls.map(([ { appState } ]) => appState);
+        }
+
+        expect(await getFits([ TALL ]))
+            .toEqual([ { zoom: { value: 0.5 }, scrollX: 1000, scrollY: 400 } ]);
+        expect(await getFits([ { x: 100, y: 50, width: 800, height: 200 } ]))
+            .toEqual([ { zoom: { value: 1.25 }, scrollX: -100, scrollY: 10 } ]);
+        expect((await getFits([ { x: 0, y: 0, width: 100_000, height: 100 } ]))[0]?.zoom)
+            .toEqual({ value: 0.1 });
+
+        expect(await getFits([ TALL ], { zoom: { value: 2 }, scrollX: 5, scrollY: 6 })).toEqual([]);
+        expect(await getFits([])).toEqual([]);
+        expect(await getFits([ { ...TALL, isDeleted: true } ])).toEqual([]);
     });
 
     it("saves nothing without an editor", async () => {

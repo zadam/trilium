@@ -20,7 +20,7 @@ import { useEditableEmbed } from "../text/editable_embed";
 import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
 import CanvasEmbedTools from "./CanvasEmbedTools";
-import { getInlineFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
+import { loadDrawingFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
 
 interface CanvasDrawingProps {
     attachment: FAttachment;
@@ -98,7 +98,7 @@ export async function renderCanvasDrawingPicture(entity: FNote | FAttachment) {
             // Follows the theme as the editor does, except in print, which stays light.
             exportWithDarkMode: glob.device !== "print" && getEffectiveThemeStyle() === "dark"
         },
-        files: getInlineFiles(content),
+        files: (await loadDrawingFiles(entity, content)).files,
         exportPadding: 5
     });
     svg.classList.add("canvas-drawing-picture");
