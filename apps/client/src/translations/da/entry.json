@@ -12,6 +12,16 @@
         "sync-from-server-description": "Du har en Trilium-server kørende et andet sted (enten selvhostet eller i skyen). Denne enhed synkroniserer sine data fra serveren.",
         "next": "Næste",
         "init-in-progress": "Initialisering af dokumentet er i gang",
-        "redirecting": "Du bliver snart viderestillet til programmet."
+        "redirecting": "Du bliver snart viderestillet til programmet.",
+        "title": "Opsætning",
+        "sync-from-server-page-description": "Indtast dine serveroplysninger nedenfor for at oprette forbindelse til dit eksisterende arbejdsområde.",
+        "sync-in-progress-title": "Synkronisering i gang",
+        "sync-in-progress-description": "Din enhed er nu tilsluttet, og elementerne synkroniseres.",
+        "sync-in-progress-banner": "Dette kan tage et stykke tid afhængigt af, hvor mange noter du har. Skift ikke til et andet program, før synkroniseringen er fuldført.",
+        "button-back": "Tilbage",
+        "button-finish-setup": "Fuldfør opsætningen",
+        "sync-step-connecting": "Opretter forbindelse til serveren",
+        "sync-step-syncing": "Synkroniserer data",
+        "sync-step-finalizing": "Konfigurerer indstillinger"
     }
 }
