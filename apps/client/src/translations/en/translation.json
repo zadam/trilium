@@ -515,7 +515,9 @@
     "source_description_etapi": "Created via the External Trilium API",
     "source_description_llm": "Created by the AI assistant",
     "source_description_restore": "Saved before restoring a previous revision",
-    "source_description_unknown": "Source not available"
+    "source_description_unknown": "Source not available",
+    "source_collab": "Guest edit",
+    "source_description_collab": "Saved before a guest changed the note on its shared page"
   },
   "sort_child_notes": {
     "sort_children_by": "Sort children by...",
@@ -823,7 +825,10 @@
     "hoisted_note": "The note to hoist to when a launcher opens its target.",
     "share_logo": "An image note used as the logo of the shared page. It has to sit inside the shared subtree.",
     "share_open_graph_image_relation": "An image note served as the <code>og:image</code> of the shared page. Set the label of the same name instead to point at an address.",
-    "share_html": "An HTML note injected into the shared page, where <code>#shareHtmlLocation</code> on that note says. It has to sit inside the shared subtree."
+    "share_html": "An HTML note injected into the shared page, where <code>#shareHtmlLocation</code> on that note says. It has to sit inside the shared subtree.",
+    "share_edit": "Visitors of the shared page can edit this note and the notes below it. Set from the Shared badge's menu.",
+    "share_edit_password": "The hashed password that unlocks editing on the shared page. Set from the Shared badge's menu, not by hand.",
+    "share_attachments": "Guests who edit the shared page can upload images and files into the notes."
   },
   "attribute_editor": {
     "help_text_body1": "To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code>",
@@ -2754,7 +2759,8 @@
     "subtree-hidden-tooltip_other": "{{count}} child notes that are hidden from the tree",
     "subtree-hidden-moved-title": "Added to {{title}}",
     "subtree-hidden-moved-description-collection": "This collection hides its child notes in the tree.",
-    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note."
+    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note.",
+    "shared-edit-indicator-tooltip-with-url": "This note is shared, and guests can edit it, at: {{- url}}"
   },
   "mobile_note_navigator": {
     "back": "Go up one level",
@@ -3832,7 +3838,13 @@
     "shared_preview": "Share preview",
     "shared_preview_description": "Only this browser can open the shared page, and only while Trilium is open in it. To publish it, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
     "shared_export_only": "Not published",
-    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server."
+    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
+    "shared_guests_can_edit": "Guests can edit",
+    "shared_guests_can_edit_description": "Visitors of the shared page change this note and the notes below it with the app's editor; each change is kept as a revision.",
+    "shared_allow_attachments": "Allow attachments",
+    "shared_allow_attachments_description": "Guests who edit can upload images and files into the notes.",
+    "shared_set_password": "Set a password…",
+    "shared_change_password": "Change the password…"
   },
   "status_bar": {
     "language_title": "Change content language",
@@ -4543,5 +4555,23 @@
     "excerpt": "Excerpt",
     "excerpt_description": "You are currently seeing just a fragment of this note. Press the {{icon}} button to open the entire note in a new tab.",
     "edit_excerpt": "Edit excerpt"
+  },
+  "share_edit": {
+    "title": "Let guests edit",
+    "description": "Anyone who opens the shared page can change this note and the notes below it, with the app's own text editor. Every change is kept as a revision of the note.",
+    "with_password": "With a password",
+    "open": "Anyone with the link",
+    "open_warning": "Anyone who finds the link can change these notes, including search engines and the people they lead here. Prefer a password for a page that is linked from anywhere public.",
+    "password_hint": "Guests enter it on the shared page. It needs at least 4 characters.",
+    "save": "Save",
+    "saved": "Guests can now edit this note.",
+    "disabled": "Guests can no longer edit this note.",
+    "status_unsaved": "Unsaved changes",
+    "status_saving": "Saving…",
+    "status_saved": "Saved",
+    "status_error": "Could not save. Trying again…",
+    "conflict": "This note changed on the server while you were editing it.",
+    "conflict_reload": "Reload the page",
+    "conflict_keep": "Keep my version"
   }
 }

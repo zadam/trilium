@@ -1,0 +1,119 @@
+.share-edit-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 1em;
+
+    > [hidden],
+    > form[hidden] {
+        display: none;
+    }
+}
+
+body:has(#content.full-height) .share-edit-bar {
+    flex: none;
+    margin: 0;
+    padding: 8px 20px;
+}
+
+.share-edit-login {
+    display: flex;
+    gap: 8px;
+}
+
+.share-edit-password {
+    padding: 4px 8px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 8px;
+    background: var(--main-background-color);
+    color: inherit;
+    font: inherit;
+}
+
+.share-edit-button {
+    padding: 4px 12px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-menu);
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 200ms ease;
+
+    &:hover {
+        background-color: var(--background-highlight);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--link-focus-outline-color);
+        outline-offset: 1px;
+    }
+}
+
+.share-edit-error {
+    width: 100%;
+    margin: 0;
+    color: var(--error-color, #c33);
+}
+
+/* The editor fills the page the way a hosted view does, below the title and the bar. */
+#content.share-editing {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - var(--header-height, 0px));
+
+    > .share-edit-view {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+    }
+}
+
+.share-edit-view {
+    > .note-detail-editable-text {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .share-edit-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        margin: 0 0 8px;
+
+        &:empty {
+            display: none;
+        }
+
+        .ck.ck-toolbar {
+            border-radius: 8px;
+        }
+    }
+
+    .share-edit-status {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 8px;
+        font-size: 0.9em;
+        color: var(--muted-text-color);
+    }
+
+    .share-edit-conflict {
+        margin: 0 0 8px;
+    }
+}
+
+#title[contenteditable] {
+    outline: none;
+    cursor: text;
+
+    &:focus-visible {
+        outline: 2px solid var(--link-focus-outline-color);
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+}

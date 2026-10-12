@@ -128,6 +128,23 @@ When you share a note, you actually share the entire subtree of notes beneath it
 
 You can view a list of all shared notes by clicking on "Show Shared Notes Subtree" in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>. This allows you to manage and navigate through all the notes you have made public.
 
+## Letting guests edit
+
+A shared text note can be opened to editing by its visitors, without accounts. Open the Shared badge's menu and turn on _Guests can edit_; the dialog asks how the page is unlocked:
+
+*   **With a password**, which guests enter on the page. One password covers the note and every note below it.
+*   **Anyone with the link**, which needs no password at all. Prefer a password for a page that is linked from anywhere public.
+
+A visitor of the page then sees an _Edit_ button beside the title. Once unlocked, the page hosts Trilium's own text editor, with its toolbar above the note, and saves as the visitor types; the title can be edited as well. _Stop editing_ brings the rendered page back, and _Log out_ ends the visitor's access on a password-protected page.
+
+*   Guests edit text notes only, and never one with the `#readOnly` label. They cannot add, move or delete notes, nor change a note's type.
+*   Every guest change is kept as a revision of the note, marked _Guest edit_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> dialog, so the host can review and restore it.
+*   The editor leaves out what reaches the host's other notes: snippets, included notes, internal links, link previews and the AI assistant. A guest's content goes through the same sanitizer as imported HTML.
+*   _Allow attachments_, in the same menu, lets guests upload images and files into the notes they edit.
+*   When the note changed on the server while a guest was editing it, the page says so and lets the guest reload or keep their version.
+
+In the note tree, a shared note guests can edit shows a <span class="tn-icon bx bx-group"></span> icon in place of the share icon. Editing is offered by a server installation and by the desktop app on its local network; the standalone and mobile apps, which serve no pages, do not offer it.
+
 ## Security considerations
 
 *   Shared notes are published on the open internet and can be accessed by anyone with the URL unless the notes are password-protected.
@@ -280,6 +297,10 @@ The URL must be absolute and include the scheme (e.g. `https://`).
         <tr>
             <td><code>#shareCredentials</code></td>
             <td>require credentials to access this shared note. Value is expected to be in format <code>username:password</code>. Don't forget to make this inheritable to apply to child-notes/images.</td>
+        </tr>
+        <tr>
+            <td><code>#shareEdit</code></td>
+            <td>visitors of the shared page can edit this note and the notes below it. Set from the Shared badge's menu, which also writes <code>#shareEditPassword</code>, the hashed password that unlocks editing, and <code>#shareAttachments</code>, which lets guests upload images and files.</td>
         </tr>
         <tr>
             <td><code>#shareIndex</code></td>

@@ -993,9 +993,7 @@ function hostInAppView(
         options: Object.fromEntries(SHARED_OPTIONS.map((name) => [ name, options.getOptionOrNull(name) ])),
         // The app's assets, such as its translations: the export's `assets/`, else those of the
         // app from a page directly below `/share/`.
-        assetPath: exportHosting
-            ? `${exportHosting.basePath}assets`
-            : `../${utils.isDev() ? `${assetUrlFragment}/src` : assetUrlFragment}`,
+        assetPath: exportHosting ? `${exportHosting.basePath}assets` : getAppAssetPath(),
         // The note the app would show the note below, such as the root of a note map note's map.
         parentNoteId: note.getParentBranches()[0]?.parentNoteId ?? null,
         // On a page of the export, the views read their notes from the files under `data/`.
@@ -1024,12 +1022,17 @@ function buildExportRows(note: BNote, exportHosting: ExportHosting | undefined) 
  * The options the app's views read to draw a note as the app does, which a shared page receives. Only
  * display options: the rest of the options can hold secrets, such as API keys.
  */
-const SHARED_OPTIONS = [
+export const SHARED_OPTIONS = [
     "locale", "formattingLocale", "firstDayOfWeek",
     "codeNoteTheme", "codeNoteThemeLight", "codeNoteThemeDark", "codeNoteThemeMatchesApp",
     "codeLineWrapEnabled", "codeNoteTabWidth", "codeNoteIndentWithTabs",
     "splitEditorOrientation"
 ] as const;
+
+/** The app's assets, such as its translations, from a page directly below `/share/`. */
+export function getAppAssetPath() {
+    return `../${utils.isDev() ? `${assetUrlFragment}/src` : assetUrlFragment}`;
+}
 
 function renderImage(result: Result, note: SNote | BNote) {
     result.content = `<img src="api/images/${note.noteId}/${note.encodedTitle}?${note.utcDateModified}">`;

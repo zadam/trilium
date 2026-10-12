@@ -1,0 +1,233 @@
+// @vitest-environment happy-dom
+import { type ComponentChildren, render } from "preact";
+import { act } from "preact/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppPayload, HostedApp } from "./app_host.js";
+import mountEditView, { type EditView, type EditViewOptions, type ShareEditGlobals } from "./edit_view.js";
+
+const mocks = vi.hoisted(() => ({
+    eventHandlers: new Map<string, (data: unknown) => void>(),
+    put: vi.fn(),
+    getHeaders: vi.fn(),
+    getComponentByEl: vi.fn(),
+    getReferenceLinkTitle: vi.fn(),
+    getReferenceLinkTitleSync: vi.fn(),
+    getNoteFromCache: vi.fn(),
+    triggerCommand: vi.fn(),
+    widget: vi.fn(() => <p className="widget">Editor</p>),
+    viewModule: undefined as unknown,
+    hostProps: {} as Record<string, unknown>
+}));
+
+vi.mock("@triliumnext/client/src/widgets/type_widgets/text/EditableText.css", () => ({}));
+vi.mock("@triliumnext/client/src/components/app_context.js", () => ({
+    default: { getComponentByEl: mocks.getComponentByEl }
+}));
+vi.mock("@triliumnext/client/src/components/component.js", () => ({
+    default: class Component { triggerCommand = mocks.triggerCommand; }
+}));
+vi.mock("@triliumnext/client/src/services/froca.js", () => ({
+    default: { getNoteFromCache: mocks.getNoteFromCache }
+}));
+vi.mock("@triliumnext/client/src/services/i18n.js", () => ({ t: (key: string) => key }));
+vi.mock("@triliumnext/client/src/services/link.js", () => ({
+    default: {
+        getReferenceLinkTitle: mocks.getReferenceLinkTitle,
+        getReferenceLinkTitleSync: mocks.getReferenceLinkTitleSync
+    }
+}));
+vi.mock("@triliumnext/client/src/services/server.js", () => ({
+    default: { put: mocks.put, getHeaders: mocks.getHeaders }
+}));
+vi.mock("@triliumnext/client/src/services/utils.js", () => ({
+    default: { isDesktop: () => true, isMobile: () => false },
+    randomString: () => "component-id"
+}));
+vi.mock("@triliumnext/client/src/widgets/note_types.js", () => ({
+    TYPE_MAPPINGS: {
+        editableText: {
+            view: async () => mocks.viewModule ?? { default: mocks.widget },
+            className: "note-detail-editable-text"
+        }
+    }
+}));
+vi.mock("@triliumnext/client/src/widgets/react/hooks.js", () => ({
+    useTriliumEvent: (name: string, handler: (data: unknown) => void) => {
+        mocks.eventHandlers.set(name, handler);
+    }
+}));
+vi.mock("@triliumnext/client/src/widgets/react/Alert.js", () => ({
+    default: ({ className, children }: { className: string; children: ComponentChildren }) =>
+        <div className={`alert ${className}`}>{children}</div>
+}));
+vi.mock("@triliumnext/client/src/widgets/react/Button.js", () => ({
+    default: ({ text, onClick }: { text: string; onClick(): void }) =>
+        <button type="button" onClick={onClick}>{text}</button>
+}));
+vi.mock("./app_host.js", () => ({
+    default: (props: { noteId: string; payload: AppPayload; component: unknown; children(app: HostedApp): ComponentChildren }) => {
+        mocks.hostProps = props;
+        return props.children({ note: { noteId: props.noteId } } as HostedApp);
+    }
+}));
+
+describe("mountEditView", () => {
+    let container: HTMLElement;
+    let title: HTMLElement;
+    let reload: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        vi.stubGlobal("glob", { isShare: true });
+        reload = vi.fn();
+        vi.spyOn(window, "location", "get").mockReturnValue({ reload } as unknown as Location);
+        document.body.innerHTML = `<h1 id="title"> Old title </h1><div id="container"></div>`;
+        container = document.getElementById("container") as HTMLElement;
+        title = document.getElementById("title") as HTMLElement;
+        mocks.put.mockResolvedValue({});
+        mocks.getNoteFromCache.mockReturnValue({ noteId: "note" });
+        mocks.viewModule = undefined;
+    });
+
+    afterEach(() => {
+        act(() => render(null, container));
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+        vi.clearAllMocks();
+        vi.useRealTimers();
+    });
+
+    it("installs the app's globals for the share's API and mounts the editor, editable", async () => {
+        await act(async () => { await mountEditView(container, buildOptions()); });
+
+        const glob = window.glob as Record<string, unknown>;
+        expect(glob).toMatchObject({
+            baseApiUrl: "api/",
+            csrfToken: "csrf",
+            csrfRefreshUrl: "api/edit/session?noteId=note",
+            componentId: "component-id",
+            getHeaders: mocks.getHeaders,
+            shareEdit: expect.objectContaining({ version: "blob1", attachments: true })
+        });
+        expect(glob.isDesktop).toBeTypeOf("function");
+        expect(glob.froca).toBe(glob.treeCache);
+        (glob.getComponentByEl as (el: unknown) => void)("el");
+        expect(mocks.getComponentByEl).toHaveBeenCalledWith("el");
+        (glob.getReferenceLinkTitle as (href: string) => void)("#root/x");
+        (glob.getReferenceLinkTitleSync as (href: string, stored?: string) => void)("#root/x", "T");
+        expect(mocks.getReferenceLinkTitle).toHaveBeenCalledWith("#root/x");
+        expect(mocks.getReferenceLinkTitleSync).toHaveBeenCalledWith("#root/x", "T");
+        expect((glob.getActiveContextNote as () => unknown)()).toEqual({ noteId: "note" });
+        mocks.getNoteFromCache.mockReturnValue(undefined);
+        expect((glob.getActiveContextNote as () => unknown)()).toBeNull();
+
+        expect(mocks.hostProps).toMatchObject({ noteId: "note", readOnly: false });
+        expect(container.querySelector(".note-detail-editable-text > p.widget")).not.toBeNull();
+        expect(mocks.widget).toHaveBeenCalledWith(expect.objectContaining({
+            note: { noteId: "note" }, isVisible: true, parentComponent: mocks.hostProps.component
+        }), expect.anything());
+        expect(container.querySelector(".share-edit-status")?.textContent).toBe("share_edit.status_saved");
+    });
+
+    it("takes a widget module that is the component itself", async () => {
+        mocks.viewModule = () => <p className="bare">Bare</p>;
+        await act(async () => { await mountEditView(container, buildOptions()); });
+        expect(container.querySelector(".note-detail-editable-text > p.bare")).not.toBeNull();
+    });
+
+    it("places the decoupled editor's toolbar above the editor once the editor reports itself", async () => {
+        await act(async () => { await mountEditView(container, buildOptions()); });
+        const toolbar = document.createElement("div");
+        toolbar.className = "ck-toolbar";
+        const refreshed = mocks.eventHandlers.get("textEditorRefreshed");
+
+        refreshed?.({ ntxId: null, editor: { ui: { view: { toolbar: { element: toolbar } } } } });
+        expect(container.querySelector(".share-edit-toolbar > .ck-toolbar")).toBe(toolbar);
+
+        refreshed?.({ ntxId: null, editor: { ui: { view: {} } } });
+        expect(container.querySelector(".share-edit-toolbar")?.childElementCount).toBe(0);
+    });
+
+    it("shows the editor's state and keeps a conflict up until the visitor settles it", async () => {
+        await act(async () => { await mountEditView(container, buildOptions()); });
+        const shareEdit = (window.glob as unknown as { shareEdit: ShareEditGlobals }).shareEdit;
+        const status = () => container.querySelector(".share-edit-status")?.textContent;
+        const retry = vi.fn();
+
+        act(() => shareEdit?.onSaveState("saving"));
+        expect(status()).toBe("share_edit.status_saving");
+
+        act(() => shareEdit?.onConflict({ blobId: "newer" }, retry));
+        expect(status()).toBe("share_edit.status_error");
+        expect(container.querySelector(".share-edit-conflict")).not.toBeNull();
+        act(() => shareEdit?.onSaveState("saved"));
+        expect(container.querySelector(".share-edit-conflict")).not.toBeNull();
+
+        const buttons = [ ...container.querySelectorAll<HTMLButtonElement>(".share-edit-conflict button") ];
+        act(() => buttons[1]?.click());
+        expect(retry).toHaveBeenCalled();
+        expect(container.querySelector(".share-edit-conflict")).toBeNull();
+        expect(status()).toBe("share_edit.status_unsaved");
+
+        act(() => shareEdit?.onConflict({ blobId: "newest" }, retry));
+        act(() => buttons[0]?.click());
+        act(() => container.querySelector<HTMLButtonElement>(".share-edit-conflict button")?.click());
+        expect(reload).toHaveBeenCalled();
+    });
+
+    it("saves the title once typing pauses, on blur, and before stopping", async () => {
+        let view: EditView | undefined;
+        await act(async () => { view = await mountEditView(container, buildOptions()); });
+        expect(title.contentEditable).toBe("true");
+
+        title.textContent = " Renamed ";
+        title.dispatchEvent(new Event("input"));
+        expect(mocks.put).not.toHaveBeenCalled();
+        await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+        expect(mocks.put).toHaveBeenCalledWith("notes/note/title", { title: "Renamed" });
+
+        // The same title again, or an empty one, is not sent.
+        title.dispatchEvent(new Event("blur"));
+        title.textContent = "";
+        title.dispatchEvent(new Event("blur"));
+        await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+
+        title.textContent = "Final";
+        title.dispatchEvent(new Event("input"));
+        await view?.stop();
+        expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Final" });
+        expect(mocks.triggerCommand).toHaveBeenCalledWith("saveNoteDetailNow");
+    });
+
+    it("moves from the title into the editor on Enter, leaving a composition alone", async () => {
+        await act(async () => { await mountEditView(container, buildOptions()); });
+        const editable = document.createElement("div");
+        editable.className = "ck-editor__editable";
+        editable.tabIndex = 0;
+        container.append(editable);
+        const focus = vi.spyOn(editable, "focus");
+
+        const composing = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+        Object.defineProperty(composing, "isComposing", { value: true });
+        title.dispatchEvent(composing);
+        expect(composing.defaultPrevented).toBe(false);
+
+        const enter = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+        title.dispatchEvent(enter);
+        expect(enter.defaultPrevented).toBe(true);
+        expect(focus).toHaveBeenCalled();
+    });
+
+    function buildOptions(): EditViewOptions {
+        return {
+            noteId: "note",
+            title,
+            payload: { notes: [ { noteId: "note" } ], branches: [], attributes: [], links: {}, options: {} } as unknown as AppPayload,
+            csrfToken: "csrf",
+            version: "blob1",
+            attachments: true
+        };
+    }
+});

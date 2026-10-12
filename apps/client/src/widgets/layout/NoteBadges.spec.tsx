@@ -22,7 +22,7 @@ vi.mock("../../services/i18n", () => ({
 
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
-import { ExecuteBadge, getShareScope, OfficePreviewBadge } from "./NoteBadges";
+import { ExecuteBadge, getShareScope, OfficePreviewBadge, useShareEditState } from "./NoteBadges";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -82,5 +82,27 @@ describe("getShareScope", () => {
         expect(getShareScope({ ...platform, isStandalone: true, syncServerHost })).toBe("public");
         expect(getShareScope({ ...platform, isStandalone: true, isMobileApp: true, syncServerHost: "" })).toBe("export-only");
         expect(getShareScope({ ...platform, isStandalone: true, isMobileApp: true, syncServerHost })).toBe("public");
+    });
+});
+
+describe("useShareEditState", () => {
+    it("reads whether guests edit the note, upload into it and need a password, from its labels", () => {
+        const states: ReturnType<typeof useShareEditState>[] = [];
+        function Reader({ note }: { note: FNote }) {
+            states.push(useShareEditState(note));
+            return null;
+        }
+
+        renderInto(<Reader note={buildNote({ title: "Plain" })} />);
+        renderInto(<Reader note={buildNote({
+            "title": "Open", "#shareEdit": "", "#shareAttachments": ""
+        })} />);
+        renderInto(<Reader note={buildNote({
+            "title": "Locked", "#shareEdit": "", "#shareEditPassword": "salt$hash"
+        })} />);
+
+        expect(states.at(0)).toEqual({ canEdit: false, attachments: false, needsPassword: false });
+        expect(states.at(1)).toEqual({ canEdit: true, attachments: true, needsPassword: false });
+        expect(states.at(2)).toEqual({ canEdit: true, attachments: false, needsPassword: true });
     });
 });

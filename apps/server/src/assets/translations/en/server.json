@@ -470,7 +470,14 @@
     "heading-link": "Link to This Section",
     "previous": "Previous",
     "next": "Next",
-    "page-navigation": "Previous and next pages"
+    "page-navigation": "Previous and next pages",
+    "edit": "Edit",
+    "edit-unlock": "Unlock editing",
+    "edit-password": "Password",
+    "edit-stop": "Stop editing",
+    "edit-log-out": "Log out",
+    "edit-wrong-password": "Wrong password.",
+    "edit-failed": "Editing could not start. Reload the page and try again."
   },
   "hidden_subtree_templates": {
     "text-snippet": "Text Snippet",

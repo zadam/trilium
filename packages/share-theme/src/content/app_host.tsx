@@ -46,6 +46,10 @@ export interface HostedApp {
 interface ShareAppHostProps {
     noteId: string;
     payload: AppPayload;
+    /** Whether the views leave out their editing controls, which they do unless the page edits the note. */
+    readOnly?: boolean;
+    /** The component the views mount under, for a page that reaches their commands through it. */
+    component?: Component;
     children(app: HostedApp): ComponentChildren;
 }
 
@@ -57,9 +61,11 @@ interface ShareAppHostProps {
  * note of the export, so a collection a view draws has its children. A click on a link into the note tree the views render,
  * which the app's link handler opens in the app, opens the note's shared page.
  */
-export default function ShareAppHost({ noteId, payload, children }: ShareAppHostProps) {
-    const [ app ] = useState(() => loadPayload(noteId, payload));
-    const [ component ] = useState(() => new Component());
+export default function ShareAppHost({
+    noteId, payload, readOnly = true, component: hostComponent, children
+}: ShareAppHostProps) {
+    const [ app ] = useState(() => loadPayload(noteId, payload, readOnly));
+    const [ component ] = useState(() => hostComponent ?? new Component());
     const [ isLoaded, setLoaded ] = useState(!app?.staticSource);
 
     useLayoutEffect(() => {
@@ -90,7 +96,7 @@ export default function ShareAppHost({ noteId, payload, children }: ShareAppHost
     );
 }
 
-function loadPayload(noteId: string, payload: AppPayload): HostedApp | null {
+function loadPayload(noteId: string, payload: AppPayload, readOnly: boolean): HostedApp | null {
     const { options: optionValues, links, ...rows } = payload;
     options.load(Object.fromEntries(Object.entries(optionValues)
         .flatMap(([ name, value ]) => (value === null ? [] : [ [ name, value ] ]))));
@@ -103,7 +109,7 @@ function loadPayload(noteId: string, payload: AppPayload): HostedApp | null {
     linkContextMenu.setShareLinkResolver(source.getNoteLink);
     froca.addResp({
         ...anchorAtRoot(rows),
-        attributes: [ ...rows.attributes, {
+        attributes: readOnly ? [ ...rows.attributes, {
             attributeId: `${noteId}-share-readOnly`,
             noteId,
             type: "label",
@@ -111,7 +117,7 @@ function loadPayload(noteId: string, payload: AppPayload): HostedApp | null {
             value: "",
             position: 0,
             isInheritable: false
-        } ]
+        } ] : rows.attributes
     });
 
     const note = froca.getNoteFromCache(noteId);

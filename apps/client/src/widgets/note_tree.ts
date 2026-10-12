@@ -1955,9 +1955,13 @@ function buildEnhanceTitle() {
             // Pass no sync host to preserve this tooltip's prior local-origin behavior; the helper
             // still substitutes the loopback origin for the trilium-app:// desktop renderer (#10589).
             const shareUrl = buildShareLink(shareId, undefined);
-            const tooltipText = t("note_tree.shared-indicator-tooltip-with-url", { url: shareUrl });
+            const guestsEdit = note.isLabelTruthy("shareEdit");
+            const tooltipText = guestsEdit
+                ? t("note_tree.shared-edit-indicator-tooltip-with-url", { url: shareUrl })
+                : t("note_tree.shared-indicator-tooltip-with-url", { url: shareUrl });
 
             const $sharedIndicator = $(`<span class="note-indicator-icon shared-indicator"></span>`);
+            $sharedIndicator.toggleClass("shared-edit-indicator", guestsEdit);
             $sharedIndicator.attr("title", tooltipText);
             $span.find(".fancytree-title").append($sharedIndicator);
         }

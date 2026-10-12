@@ -1,5 +1,6 @@
 import { dayjs, filterAttributeName, isValidAttributeName } from "@triliumnext/commons";
 
+import type { SaveState } from "../components/note_context";
 import FNote from "../entities/fnote";
 import { getNoteImageUrl } from "./image_urls.js";
 import type { ViewMode, ViewScope } from "./link.js";
@@ -7,6 +8,26 @@ import type { ViewMode, ViewScope } from "./link.js";
 const SVG_MIME = "image/svg+xml";
 
 export const isShare = !window.glob || !!window.glob.isShare;
+
+/** What a shared page sets while a visitor edits its note through the share's guest API. */
+export interface ShareEditGlobals {
+    /** The `blobId` the content was loaded from, which a save names so a stale one is refused. */
+    version: string;
+    /** Whether the host lets guests upload images and files into the note. */
+    attachments: boolean;
+    onSaveState(state: SaveState): void;
+    /** Reports a save the server refused as stale; `retry` sends the editor's content again. */
+    onConflict(stale: { blobId: string }, retry: () => void): void;
+}
+
+/**
+ * Whether a shared page is editing its note through the share's guest API, which its edit view
+ * marks by setting `glob.shareEdit` once the visitor unlocks the note. A function rather than a
+ * constant: the page sets it after the modules have loaded.
+ */
+export function isShareEditing(): boolean {
+    return isShare && !!window.glob?.shareEdit;
+}
 
 /**
  * True when the client is showing a *pre-auth* SPA screen — the login screen (`loggedIn: false`),

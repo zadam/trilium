@@ -10,6 +10,7 @@ import setupToC from "./page/toc.js";
 import "./page/child_links.css";
 import setupFooter from "./page/footer.js";
 import setupSpeculation, { whenActivated } from "./page/speculation.js";
+import setupShareEdit from "./page/share_edit.js";
 import "./content/content.css";
 import "./content/footnotes.css";
 import "./content/external_links.css";
@@ -65,6 +66,7 @@ function setupTextNote() {
     $try(setupMath);
     $try(() => enhanceLinkPreviews(document.body));
     $try(setupTabs);
+    $try(setupShareEdit);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

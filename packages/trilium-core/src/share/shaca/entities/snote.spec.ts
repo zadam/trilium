@@ -131,12 +131,18 @@ describe("SNote", () => {
         const related = addAttribute("related", "note", "relation", "related", "target");
         const credentials =
             addAttribute("credentials", "note", "label", "shareCredentials", "user:pass");
+        addAttribute("editPassword", "parent", "label", "shareEditPassword", "salt$hash", true);
 
         expect(note.getAttributes()).toEqual([ color, color2, enabled, related, archived ]);
         expect(note.getAttributes("label")).toEqual([ color, color2, enabled, archived ]);
         expect(note.getAttributes(undefined, "color")).toEqual([ color, color2 ]);
         expect(note.getAttributes("label", "shareCredentials")).toEqual([]);
+        expect(note.getAttributes(undefined, "shareEditPassword")).toEqual([]);
         expect(note.getCredentials()).toEqual([ credentials ]);
+        expect(note.getSecretLabelValue("shareEditPassword")).toBe("salt$hash");
+        expect(note.getSecretLabelValue("shareCredentials")).toBe("user:pass");
+        expect(note.getSecretLabelValue("color")).toBeNull();
+        expect(parent.getSecretLabelValue("shareCredentials")).toBeNull();
 
         expect(note.hasLabel("archived")).toBe(true);
         expect(note.hasOwnedLabel("archived")).toBe(false);

@@ -62,6 +62,7 @@ vi.mock("./share_froca_source.js", () => ({
 }));
 
 const { ParentComponent } = await import("@triliumnext/client/src/widgets/react/react_utils.js");
+const { default: Component } = await import("@triliumnext/client/src/components/component.js");
 
 describe("ShareAppHost", () => {
     let container: HTMLElement;
@@ -127,6 +128,19 @@ describe("ShareAppHost", () => {
         expect(app?.hasLink("unlinked")).toBe(false);
     });
 
+    it("leaves the note editable, under the page's own component, when the page edits it", () => {
+        mocks.froca.notes.set("board", { noteId: "board" });
+        const component = new Component();
+        let parent: unknown;
+
+        mount(buildPayload(), () => <ParentReader onRead={(value) => { parent = value; }} />,
+            { readOnly: false, component });
+
+        const rows = mocks.froca.addResp.mock.calls[0][0];
+        expect(rows.attributes).toEqual([]);
+        expect(parent).toBe(component);
+    });
+
     it("starts one tab manager for the views and lets go of their component on unmount", () => {
         mocks.froca.notes.set("board", { noteId: "board" });
 
@@ -190,9 +204,13 @@ describe("ShareAppHost", () => {
         expect(event.defaultPrevented).toBe(false);
     });
 
-    function mount(payload: AppPayload, children: (app: HostedApp) => preact.ComponentChildren) {
+    function mount(
+        payload: AppPayload,
+        children: (app: HostedApp) => preact.ComponentChildren,
+        props: { readOnly?: boolean; component?: InstanceType<typeof Component> } = {}
+    ) {
         act(() => render(
-            <ShareAppHost noteId="board" payload={payload}>{children}</ShareAppHost>,
+            <ShareAppHost noteId="board" payload={payload} {...props}>{children}</ShareAppHost>,
             container
         ));
     }

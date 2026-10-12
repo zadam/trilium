@@ -12,6 +12,7 @@ import etapiNoteRoutes from "../etapi/notes.js";
 import etapiRevisionsRoutes from "../etapi/revisions.js";
 import etapiSpecRoute from "../etapi/spec.js";
 import etapiSpecialNoteRoutes from "../etapi/special_notes.js";
+import shareEditRoutes from "../collab/routes.js";
 import auth from "../services/auth.js";
 import openID from '../services/open_id.js';
 import { isElectron } from "../services/utils.js";
@@ -29,6 +30,7 @@ import onenoteImportRoute from "./api/onenote_import.js";
 import recoveryCodes from './api/recovery_codes.js';
 import senderRoute from "./api/sender.js";
 import setupRestoreRoute from "./api/setup_restore.js";
+import shareEditApiRoute from "./api/share_edit.js";
 import systemInfoRoute from "./api/system_info.js";
 import totp from './api/totp.js';
 import { doubleCsrfProtection as csrfMiddleware } from "./csrf_protection.js";
@@ -40,6 +42,7 @@ import setupRoute from "./setup.js";
 
 const GET = "get",
     PST = "post",
+    PUT = "put",
     PATCH = "patch",
     DEL = "delete";
 
@@ -176,6 +179,8 @@ function register(app: express.Application) {
     asyncApiRoute(PST, "/api/onenote-import/import", onenoteImportRoute.runImport);
 
     shareRoutes.register(router);
+    shareEditRoutes.register(loginRateLimiter);
+    asyncApiRoute(PUT, "/api/notes/:noteId/share-edit", shareEditApiRoute.setShareEdit);
 
     etapiAuthRoutes.register(router, [loginRateLimiter]);
     etapiAppInfoRoutes.register(router);

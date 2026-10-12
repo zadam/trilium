@@ -12,7 +12,7 @@ import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
-import { isMac, isMobile, openInAppHelpFromUrl } from "../../../services/utils.js";
+import { isMac, isMobile, isShareEditing, openInAppHelpFromUrl } from "../../../services/utils.js";
 import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
@@ -183,9 +183,9 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             ]
         },
         emoji: {
-            definitionsUrl: window.glob.isDev
-                ? new URL(import.meta.url).origin + emojiDefinitionsUrl
-                : emojiDefinitionsUrl,
+            // `EmojiRepository` takes an absolute URL; the development server names the file by
+            // a root path, which resolves the same from the app and from a shared page.
+            definitionsUrl: new URL(emojiDefinitionsUrl, document.baseURI).href,
             list: createEmojiList
         },
         syntaxHighlighting: {
@@ -452,7 +452,27 @@ function buildHtmlSupportConfig(): EditorConfig["htmlSupport"] {
  */
 const EDITOR_ONLY_DISALLOWED_TAGS = new Set(["div"]);
 
-function getDisabledPlugins() {
+/**
+ * The plugins a guest editing a shared note cannot use: each reaches into the host's other notes,
+ * its dialogs or its services, none of which the page has. `TablePasteRows` goes with
+ * `CutToNotePlugin`, which it requires.
+ */
+export const SHARE_EDIT_DISABLED_PLUGINS = [
+    "CutToNotePlugin", "TablePasteRows", "ContentEmbed", "ContentEmbedBoxSizeDropdown",
+    "ContentEmbedToolbar", "InternalLinkPlugin", "MarkdownImportPlugin", "TriliumSnippets",
+    "TriliumAiAssistant", "BlockReference", "InlineIcon"
+];
+
+/**
+ * The plugins that upload into the note, which the host allows guests with `#shareAttachments`:
+ * the upload adapter every upload goes through, and the clipboard handlers that start one. The
+ * file upload plugin itself stays, as `EditableText` hooks its progress events.
+ */
+export const SHARE_EDIT_UPLOAD_PLUGINS = [
+    "UploadimagePlugin", "ClipboardBareImage", "ClipboardImageEmbed"
+];
+
+export function getDisabledPlugins() {
     const disabledPlugins: string[] = [];
 
     if (options.get("textNoteEmojiCompletionEnabled") !== "true") {
@@ -466,6 +486,13 @@ function getDisabledPlugins() {
     // The mobile layout leaves no margin beside the blocks for the drag handle.
     if (isMobile()) {
         disabledPlugins.push("BlockDragHandle");
+    }
+
+    if (isShareEditing()) {
+        disabledPlugins.push(...SHARE_EDIT_DISABLED_PLUGINS);
+        if (!glob.shareEdit?.attachments) {
+            disabledPlugins.push(...SHARE_EDIT_UPLOAD_PLUGINS);
+        }
     }
 
     return disabledPlugins;

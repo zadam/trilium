@@ -13,7 +13,7 @@ import scriptService from "../services/script.js";
 import type SAttachment from "./shaca/entities/sattachment.js";
 import type SAttribute from "./shaca/entities/sattribute.js";
 import type SBranch from "./shaca/entities/sbranch.js";
-import type SNote from "./shaca/entities/snote.js";
+import SNote, { SHARE_SECRET_LABELS } from "./shaca/entities/snote.js";
 
 /**
  * Notes as the rows the client's `froca.addResp()` takes, so that a shared page builds the same
@@ -43,7 +43,7 @@ export function buildFrocaPayload(note: SNote, canAccess?: (note: SNote) => bool
  * holds only shared notes, so a relation to a note outside the share is left out, as is every note
  * that is protected or that `canAccess` refuses. A built-in template such as `_template_calendar`
  * is read from becca instead, as it lives in the hidden subtree, so the notes inherit its labels.
- * `#shareCredentials` is always left out, as it holds the password of the notes.
+ * The secret labels, `#shareCredentials` and `#shareEditPassword`, are always left out.
  *
  * The roots are shaca's notes on a shared page and becca's in the static export, whose relations
  * and children are notes of the same cache. `getLink` gives the URL of each note's page, by
@@ -103,7 +103,7 @@ export function buildFrocaRows<T extends PayloadNote>(
             }
         }
         for (const attribute of included.ownedAttributes) {
-            if (attribute.name === "shareCredentials") {
+            if (attribute.type === "label" && SHARE_SECRET_LABELS.has(attribute.name)) {
                 continue;
             }
             if (attribute.type === "label" || notes.has(attribute.value) || templates.has(attribute.value)) {
