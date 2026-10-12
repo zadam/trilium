@@ -71,6 +71,7 @@ export default function CalendarProperties({
                 drawnByCollection={drawnLabels}
                 itemNotes={eventNotes}
                 unarrangedHidden
+                omitDrawn
                 onChange={storeAttributes}
             />
 

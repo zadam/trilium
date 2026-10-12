@@ -44,10 +44,12 @@ vi.mock("../../react/TemplateSelectionCard", () => ({
 // and where onChange writes.
 vi.mock("../../react/PromotedAttributesCard", () => ({
     default: ({
-        heading, instruction, settings, drawnByCollection, itemNotes, unarrangedHidden, onChange
+        heading, instruction, settings, drawnByCollection, itemNotes, unarrangedHidden, omitDrawn,
+        onChange
     }: {
         heading: string, instruction: string, settings?: { name: string }[],
         drawnByCollection?: string[], itemNotes?: FNote[], unarrangedHidden?: boolean,
+        omitDrawn?: boolean,
         onChange: (attributes: { name: string, hidden: boolean }[]) => void
     }) => (
         <div
@@ -58,6 +60,7 @@ vi.mock("../../react/PromotedAttributesCard", () => ({
             data-drawn={drawnByCollection?.join(",")}
             data-items={itemNotes?.map((item) => item.noteId).join(",")}
             data-unarranged-hidden={String(!!unarrangedHidden)}
+            data-omit-drawn={String(!!omitDrawn)}
             onClick={() => onChange([
                 { name: "mood", hidden: false }, { name: "where", hidden: true }
             ])}
@@ -153,7 +156,8 @@ describe("CalendarProperties", () => {
         expect(card?.dataset.instruction).toBe("calendar_view.event_attributes_hint");
         expect(card?.dataset.settings).toBe("mood");
         expect(card?.dataset.unarrangedHidden).toBe("true");
-        // The date labels, custom names included, are drawn by the calendar itself.
+        expect(card?.dataset.omitDrawn).toBe("true");
+        // The calendar draws the date labels itself, custom names included, so the card omits them.
         expect(card?.dataset.drawn?.split(",")).toEqual([
             "startDate", "endDate", "startTime", "endTime", "recurrence", "myStart"
         ]);

@@ -119,7 +119,7 @@ Events can show the values of their attributes below their title, in the month v
 *   Drag an attribute by its handle to change the order in which the events show them.
 *   Create a new attribute, which is shown on the events right away, or edit or delete one the calendar defines.
 
-The dates, times and recurrence of the events are drawn by the calendar itself, so they are listed but cannot be switched on.
+The dates, times and recurrence of the events are not listed, as the calendar always shows them itself.
 
 If an event has a `#calendar:displayedAttributes` label, including one inherited from the calendar, the attributes listed in that label are shown instead.
 

@@ -85,6 +85,7 @@ describe("PromotedAttributesCard", () => {
     let drawnByCollection: string[] | undefined;
     let itemNotes: FNote[] | undefined;
     let unarrangedHidden: boolean | undefined;
+    let omitDrawn: boolean | undefined;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -93,6 +94,7 @@ describe("PromotedAttributesCard", () => {
         drawnByCollection = undefined;
         itemNotes = undefined;
         unarrangedHidden = undefined;
+        omitDrawn = undefined;
         defined = [ definition("label:dueDate", { alias: "Due" }), definition("label:owner") ];
         mocks.detail.opts = null;
         mocks.confirm.mockResolvedValue(true);
@@ -151,6 +153,17 @@ describe("PromotedAttributesCard", () => {
         toggle(0);
         expect(shown()).toEqual([ false, true ]);
         expect(stored).toEqual([]);
+    });
+
+    /** A calendar always draws its dates itself, so a row for them could never be switched on. */
+    it("leaves out what the collection draws itself, for a collection that asks", () => {
+        settings = [ { name: "owner" }, { name: "dueDate" } ];
+        drawnByCollection = [ "owner" ];
+        omitDrawn = true;
+        draw();
+
+        expect(names()).toEqual([ "Due" ]);
+        expect(shown()).toEqual([ true ]);
     });
 
     /**
@@ -532,6 +545,7 @@ describe("PromotedAttributesCard", () => {
                         drawnByCollection={drawnByCollection}
                         itemNotes={itemNotes}
                         unarrangedHidden={unarrangedHidden}
+                        omitDrawn={omitDrawn}
                         onChange={(attributes) => stored.push(attributes)}
                     />
                 </ParentComponent.Provider>,

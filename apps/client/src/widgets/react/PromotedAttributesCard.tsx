@@ -61,6 +61,11 @@ export interface PromotedAttributesCardProps {
      * little room. A definition created from this card is shown all the same.
      */
     unarrangedHidden?: boolean;
+    /**
+     * Leaves out what `drawnByCollection` names, for a collection that always draws those itself,
+     * such as a calendar's dates. Otherwise they are listed with their switch held off.
+     */
+    omitDrawn?: boolean;
     /** Called with the whole list after every change, for the caller to store. */
     onChange: (attributes: PromotedAttribute[]) => void;
 }
@@ -73,10 +78,12 @@ export interface PromotedAttributesCardProps {
  * reports the order and what is hidden, which the caller stores.
  */
 export default function PromotedAttributesCard({
-    heading, instruction, note, settings, drawnByCollection, itemNotes, unarrangedHidden, onChange
+    heading, instruction, note, settings, drawnByCollection, itemNotes, unarrangedHidden, omitDrawn,
+    onChange
 }: PromotedAttributesCardProps) {
     const resolve = (stored: PromotedAttributeSetting[] | undefined) => resolvePromotedAttributes(
-        note, stored, drawnByCollection, itemNotes, { unarrangedHidden });
+        note, stored, drawnByCollection, itemNotes, { unarrangedHidden })
+        .filter((attribute) => !omitDrawn || !attribute.drawnByCollection);
     const [ shown, setShown ] = useState(() => resolve(settings));
     const shownRef = useRef(shown);
     shownRef.current = shown;
@@ -89,10 +96,12 @@ export default function PromotedAttributesCard({
     const [ lastDrawn, setLastDrawn ] = useState(drawn);
     if (lastDrawn !== drawn) {
         setLastDrawn(drawn);
-        setShown((was) => was.map((attribute) => ({
-            ...attribute,
-            drawnByCollection: drawnByCollection?.includes(attribute.name) ?? false
-        })));
+        setShown((was) => omitDrawn
+            ? resolve(storedPromotedAttributes(was))
+            : was.map((attribute) => ({
+                ...attribute,
+                drawnByCollection: drawnByCollection?.includes(attribute.name) ?? false
+            })));
     }
     // A card that joins through a branch change brings no attribute row for `entitiesReloaded`, so
     // the list is resolved again when the definition names of `itemNotes` change.
