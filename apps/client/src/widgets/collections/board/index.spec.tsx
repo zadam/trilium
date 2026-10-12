@@ -1904,6 +1904,7 @@ describe("Board column rename", () => {
             .querySelector<HTMLTextAreaElement>(".board-new-item.inserting textarea");
         if (!field) throw new Error("expected the field for a new card to be open");
         field.value = "Made";
+        field.dispatchEvent(new Event("input", { bubbles: true }));
         await act(async () => {
             field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
             await flush();
