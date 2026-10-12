@@ -1,5 +1,5 @@
-import { ClipboardPipeline, Plugin, UpcastWriter, viewToPlainText } from "ckeditor5";
-import type { Editor, EditingView, ViewDocumentClipboardOutputEvent, ViewDocumentFragment, ViewElement, ViewNode } from "ckeditor5";
+import { ClipboardPipeline, Plugin, plainTextToHtml, UpcastWriter, viewToPlainText } from "ckeditor5";
+import type { Editor, EditingView, ViewDocumentClipboardInputEvent, ViewDocumentClipboardOutputEvent, ViewDocumentFragment, ViewElement, ViewNode } from "ckeditor5";
 
 /** The blocks that `IndentBlock` indents with a margin. */
 const INDENTABLE_BLOCKS = new Set(["p", "h1", "h2", "h3", "h4", "h5", "h6"]);
@@ -11,6 +11,10 @@ const INDENTABLE_BLOCKS = new Set(["p", "h1", "h2", "h3", "h4", "h5", "h6"]);
  * drops, so text pasted into a code note or another application loses it. The plugin rewrites the
  * `text/plain` flavor with one tab per indent level at the start of each line of an indented block.
  * The `text/html` flavor keeps the margin and is left as it is.
+ *
+ * In the other direction, a paste that carries only plain text turns the tabs that lead every line of
+ * a paragraph into that paragraph's indent, so the copy round-trips. A paste into a code block keeps
+ * its tabs, as `CodeBlockEditing` rebuilds the content from the plain text after this plugin.
  */
 export default class ClipboardPlainTextIndent extends Plugin {
 
@@ -34,7 +38,50 @@ export default class ClipboardPlainTextIndent extends Plugin {
             },
             { priority: "lowest" }
         );
+
+        // `high`, to replace the HTML before `ClipboardPipeline` converts it at `low` priority.
+        this.listenTo<ViewDocumentClipboardInputEvent>(
+            this.editor.editing.view.document,
+            "clipboardInput",
+            (_evt, data) => {
+                if (data.dataTransfer.getData("text/html")) {
+                    return;
+                }
+
+                const html = indentedPlainTextToHtml(this.editor, data.dataTransfer.getData("text/plain"));
+                if (html) {
+                    data.content = html;
+                }
+            },
+            { priority: "high" }
+        );
     }
+}
+
+/**
+ * Converts plain text to HTML as `plainTextToHtml()` does, with the tabs that lead every line of a
+ * paragraph turned into that paragraph's indent: one level per tab, as a margin `IndentBlock` reads
+ * back. Returns `null` when no line starts with a tab, or when `IndentBlock` is not loaded or
+ * indents with classes.
+ */
+export function indentedPlainTextToHtml(editor: Editor, text: string): string | null {
+    if (!/^\t/m.test(text) || !editor.plugins.has("IndentBlock") || editor.config.get("indentBlock")?.classes?.length) {
+        return null;
+    }
+
+    const offset = indentOffset(editor);
+    const side = editor.locale.contentLanguageDirection === "rtl" ? "right" : "left";
+
+    return text.split(/\r?\n\r?\n/).map((paragraph) => {
+        const lines = paragraph.split(/\r?\n/);
+        const level = Math.min(...lines.filter((line) => line.trim()).map(leadingTabs));
+        const indented = Number.isFinite(level) && level > 0;
+        const body = plainTextToHtml(indented ? lines.map((line) => line.slice(level)).join("\n") : paragraph)
+            .replace(/^<p>([\s\S]*)<\/p>$/, "$1");
+        const style = indented ? ` style="margin-${side}:${level * offset.value}${offset.unit}"` : "";
+
+        return `<p${style}>${body}</p>`;
+    }).join("");
 }
 
 /**
@@ -107,6 +154,10 @@ function indentLevel(block: ViewElement, offset: { value: number; unit: string }
     }
 
     return match[2] === offset.unit ? Math.max(1, Math.round(value / offset.value)) : 1;
+}
+
+function leadingTabs(line: string) {
+    return line.length - line.replace(/^\t+/, "").length;
 }
 
 /** Whether nothing follows `node` inside `block`, so a line break there starts no new line of text. */

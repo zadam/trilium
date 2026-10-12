@@ -12,6 +12,8 @@ Paragraphs can be indented using the following buttons from the <a class="refer
 
 When indented paragraphs or headings are copied and pasted as plain text, for example into a <a class="reference-link" href="../Code.md">Code</a> note or another application, each indentation level becomes a tab at the start of the line. A copy that stays within a single paragraph contains only its text, without the indentation.
 
+The reverse also works: when plain text is pasted into a text note, each paragraph whose lines all start with tabs is indented by one level per tab. Pasting into a code block keeps the tabs as they are.
+
 ## Markdown import
 
 If the clipboard contains Markdown text, it can be easily imported into text notes. Simply copy a Markdown-formatted text and press the <span class="tn-icon cke cke-trilium-markdown-mark"></span> to insert its visual representation.

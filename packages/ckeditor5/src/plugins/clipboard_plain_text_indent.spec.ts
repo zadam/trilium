@@ -1,4 +1,4 @@
-import { _setModelData as setModelData, Essentials, Heading, Indent, IndentBlock, Paragraph } from "ckeditor5";
+import { _setModelData as setModelData, CodeBlock, Essentials, Heading, Indent, IndentBlock, Paragraph } from "ckeditor5";
 import type { ClassicEditor, ViewDocumentFragment } from "ckeditor5";
 import { describe, expect, it } from "vitest";
 
@@ -93,6 +93,86 @@ describe("ClipboardPlainTextIndent", () => {
         ) as ViewDocumentFragment;
 
         expect(viewToIndentedPlainText(editor, content)).not.toContain("\t");
+    });
+
+    describe("on paste", () => {
+        const PLUGINS = [Essentials, Paragraph, Indent, IndentBlock, CodeBlock];
+
+        async function pasteInto(text: string, { html = "", plugins = [...PLUGINS, ClipboardPlainTextIndent], config = {} } = {}) {
+            const editor = await createTestEditor(plugins, config);
+            paste(editor, text, html);
+            return editor.getData();
+        }
+
+        function paste(editor: ClassicEditor, text: string, html = "") {
+            const dataTransfer = recordingDataTransfer();
+            dataTransfer.setData("text/plain", text);
+            if (html) {
+                dataTransfer.setData("text/html", html);
+            }
+            editor.editing.view.document.fire("paste", { dataTransfer, preventDefault: () => {}, stopPropagation: () => {} });
+        }
+
+        it("turns lines led by tabs into paragraphs indented one level per tab", async () => {
+            const text = [
+                "Plain text", "\tOne", "\t\tTwo", "\t\t\tThree", "\t\t\tThree again", "\t\tTwo", "\tOne", "Plain text"
+            ].join("\n\n");
+
+            expect(await pasteInto(text)).toBe([
+                "<p>Plain text</p>",
+                `<p style="margin-left:40px;">One</p>`,
+                `<p style="margin-left:80px;">Two</p>`,
+                `<p style="margin-left:120px;">Three</p>`,
+                `<p style="margin-left:120px;">Three again</p>`,
+                `<p style="margin-left:80px;">Two</p>`,
+                `<p style="margin-left:40px;">One</p>`,
+                "<p>Plain text</p>"
+            ].join(""));
+        });
+
+        it("indents a paragraph by the tabs all of its lines share", async () => {
+            const data = await pasteInto("\t\tDeeper\n\tShallower\n\n\tSame\n\tSame\n\nNone\n\tSome");
+
+            expect(data).toMatch(/^<p style="margin-left:40px;">(&nbsp;| )+Deeper<br>Shallower<\/p>/);
+            expect(data).toContain(`<p style="margin-left:40px;">Same<br>Same</p>`);
+            expect(data).toMatch(/<p>None<br>(&nbsp;| )+Some<\/p>$/);
+        });
+
+        it("restores what a copy of indented paragraphs wrote", async () => {
+            const html = `<p>Top</p><p style="margin-left:40px;">One<br>Two</p><p style="margin-left:80px;">Deep</p>`;
+            const source = await createEditor(html);
+
+            expect(await pasteInto(copy(source).getData("text/plain"))).toBe(html);
+        });
+
+        it("counts levels in the configured offset and indents right-to-left content on the right", async () => {
+            expect(await pasteInto("\t\tTwo", { config: { indentBlock: { offset: 2, unit: "em" } } }))
+                .toBe(`<p style="margin-left:4em;">Two</p>`);
+            expect(await pasteInto("\tShalom", { config: { language: { content: "he" } } }))
+                .toBe(`<p style="margin-right:40px;">Shalom</p>`);
+        });
+
+        it("keeps the tabs of a paste into a code block", async () => {
+            const editor = await createTestEditor([...PLUGINS, ClipboardPlainTextIndent]);
+            setModelData(editor.model, `<codeBlock language="plaintext">[]</codeBlock>`);
+            paste(editor, "\tfoo\n\tbar");
+
+            expect(editor.getData()).toBe(`<pre><code class="language-plaintext">\tfoo\n\tbar</code></pre>`);
+        });
+
+        it("leaves the paste to CKEditor when there is HTML, no leading tab, or no margin-based indent", async () => {
+            const cases: [string, Parameters<typeof pasteInto>[1]][] = [
+                ["\tTabbed", { html: "<p>Tabbed</p>" }],
+                ["Inner\ttab\n\nNo indent", {}],
+                ["\tTabbed", { config: { indentBlock: { classes: ["indent-1", "indent-2"] } } }],
+                ["\tTabbed", { plugins: [Essentials, Paragraph, ClipboardPlainTextIndent] }]
+            ];
+
+            for (const [text, options] of cases) {
+                const plugins = (options?.plugins ?? PLUGINS).filter((plugin) => plugin !== ClipboardPlainTextIndent);
+                expect(await pasteInto(text, options)).toBe(await pasteInto(text, { ...options, plugins }));
+            }
+        });
     });
 });
 
