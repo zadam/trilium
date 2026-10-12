@@ -45,7 +45,8 @@
     "scripting-error": "Scriptnoten kunne ikke køres",
     "unhandled-error": {
       "title": "En baggrundsopgave mislykkedes",
-      "details-button": "Vis flere detaljer…"
+      "details-button": "Vis flere detaljer…",
+      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor."
     }
   }
 }
