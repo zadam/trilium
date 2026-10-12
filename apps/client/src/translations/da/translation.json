@@ -46,7 +46,18 @@
     "unhandled-error": {
       "title": "En baggrundsopgave mislykkedes",
       "details-button": "Vis flere detaljer…",
-      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor."
+      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor.",
+      "details-title": "Teknisk information"
     }
+  },
+  "add_link": {
+    "add_link": "Tilføj link",
+    "edit_link": "Ændre link",
+    "fix_link": "Fix linket",
+    "help_on_links": "Hjælp til links",
+    "note": "Note",
+    "search_note": "Søg efter en note ud fra dens navn",
+    "link_title_mirrors": "Linkets titel afspejler notens aktuelle titel",
+    "link_title_arbitrary": "Linkets titel kan ændres frit"
   }
 }
