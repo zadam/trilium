@@ -93,7 +93,7 @@ Our documentation is available in multiple formats:
   * Der findes [3rd party services for hosting synchronisation
     server](https://docs.triliumnotes.org/user-guide/setup/server/cloud-hosting)
 * [Sharing](https://docs.triliumnotes.org/user-guide/advanced-usage/sharing)
-  (publishing) notes to public internet
+  (publicering) af noter på det offentlige internet
 * Strong [note
   encryption](https://docs.triliumnotes.org/user-guide/concepts/notes/protected-notes)
   with per-note granularity
