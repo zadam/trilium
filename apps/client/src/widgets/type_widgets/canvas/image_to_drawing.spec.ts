@@ -5,7 +5,7 @@ import server from "../../../services/server";
 import toast from "../../../services/toast";
 import { convertImageToDrawing } from "./image_to_drawing";
 
-vi.mock("../../../services/server", () => ({ default: { upload: vi.fn() } }));
+vi.mock("../../../services/server", () => ({ default: { upload: vi.fn(), remove: vi.fn() } }));
 vi.mock("../../../services/toast", () => ({ default: { showError: vi.fn() } }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 vi.mock("@excalidraw/excalidraw", () => ({
@@ -14,6 +14,7 @@ vi.mock("@excalidraw/excalidraw", () => ({
 }));
 
 const upload = vi.mocked(server.upload);
+const remove = vi.mocked(server.remove);
 
 describe("convertImageToDrawing", () => {
     let imageType: string;
@@ -44,6 +45,7 @@ describe("convertImageToDrawing", () => {
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
         upload.mockReset();
+        remove.mockReset();
     });
 
     it("attaches the image and a drawing that shows it, locked and centered", async () => {
@@ -101,6 +103,18 @@ describe("convertImageToDrawing", () => {
         upload.mockResolvedValueOnce({ uploaded: false, message: "No." });
         expect(await convertImageToDrawing("n1", "api/attachments/i1/image/a.png")).toBeNull();
         expect(upload).toHaveBeenCalledOnce();
+        expect(remove).not.toHaveBeenCalled();
+        expect(toast.showError).toHaveBeenCalledOnce();
+    });
+
+    it("removes the copy of the image when the drawing cannot be attached", async () => {
+        upload.mockResolvedValueOnce({ uploaded: true, url: "#root/n1?attachmentId=img1" })
+            .mockResolvedValueOnce({ uploaded: false, message: "No." });
+        remove.mockRejectedValueOnce(new Error("Offline."));
+
+        expect(await convertImageToDrawing("n1", "api/attachments/i1/image/a.png", "c1"))
+            .toBeNull();
+        expect(remove).toHaveBeenCalledExactlyOnceWith("attachments/img1", "c1");
         expect(toast.showError).toHaveBeenCalledOnce();
     });
 });

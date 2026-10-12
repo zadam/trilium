@@ -15,11 +15,13 @@ import { randomString } from "../../../services/utils";
  * The drawing refers to the image by file ID, so the image is attached again, titled with that ID.
  */
 export async function convertImageToDrawing(noteId: string, src: string, componentId?: string) {
+    let imageAttachmentId: string | undefined;
     try {
         const image = await fetchImage(src);
         const { width, height } = await getNaturalSize(image);
         const fileId = `${randomString(20)}.${imageExtensionForMime(image.type)}`;
-        await upload(noteId, new File([ image ], fileId, { type: image.type }), componentId);
+        const imageFile = new File([ image ], fileId, { type: image.type });
+        imageAttachmentId = await upload(noteId, imageFile, componentId);
 
         const { convertToExcalidrawElements } = await import("@excalidraw/excalidraw");
         const elements = convertToExcalidrawElements([ {
@@ -40,6 +42,10 @@ export async function convertImageToDrawing(noteId: string, src: string, compone
     } catch (e) {
         console.error(`Could not convert the image '${src}' to a drawing canvas`, e);
         toast.showError(t("image.cannot-convert-to-drawing"));
+        if (imageAttachmentId) {
+            // The next save of the note schedules a copy left behind for erasure.
+            await server.remove(`attachments/${imageAttachmentId}`, componentId).catch(() => {});
+        }
         return null;
     }
 }

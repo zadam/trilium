@@ -311,7 +311,7 @@ describe("checkImageAttachments", () => {
             expect(shown.utcDateScheduledForErasureSince).toBeTruthy();
         });
 
-        it("copies along with a foreign canvas drawing the images the note lacks", () => {
+        it("copies with a foreign drawing the images the note lacks and keeps the rest", () => {
             const source = buildNote({
                 title: "Source",
                 attachments: [
@@ -332,6 +332,8 @@ describe("checkImageAttachments", () => {
                 attachments: [ { title: "f2.png", role: "image", mime: "image/png" } ]
             });
             mockAttachmentSaves(target);
+            const [ kept ] = target.getAttachments();
+            kept.utcDateScheduledForErasureSince = "2025-01-01 00:00:00.000Z";
 
             const copies: BAttachment[] = [];
             const setContent = vi.spyOn(BAttachment.prototype, "setContent")
@@ -347,6 +349,7 @@ describe("checkImageAttachments", () => {
                     { ownerId: target.noteId, title: "Canvas.excalidraw" },
                     { ownerId: target.noteId, title: "f1.png" }
                 ]);
+                expect(kept.utcDateScheduledForErasureSince).toBeNull();
             } finally {
                 getAttachments.mockRestore();
                 setContent.mockRestore();

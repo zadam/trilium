@@ -23,7 +23,7 @@ import { evaluateTemplateSafe } from "./safe_template.js";
 import { sanitizeHtml } from "./sanitizer.js";
 import { getSql } from "./sql/index.js";
 import type TaskContext from "./task_context.js";
-import { decodeBase64, decodeUtf8 } from "./utils/binary.js";
+import { decodeBase64, decodeUtf8, encodeBase64 } from "./utils/binary.js";
 import date_utils from "./utils/date.js";
 import { isValidEntityId, newEntityId, replaceAll, toMap, unescapeHtml } from "./utils/index.js";
 import ws from "./ws.js";
@@ -546,9 +546,13 @@ export function checkImageAttachments(note: BNote, content: string) {
     }
 
     const attachments = note.getAttachments();
+    const existingAttachmentIds = new Set(attachments.map((att) => att.attachmentId));
+    // The attachments of other notes that the content refers to, which this note takes copies of.
+    const unknownAttachments = isCanvas ? [] : becca.getAttachments(Array.from(foundAttachmentIds)
+        .filter((foundAttId) => !existingAttachmentIds.has(foundAttId)));
     const foundFileIds = isCanvas
         ? collectCanvasImageFileIds(content)
-        : collectDrawingImageFileIds(attachments, foundAttachmentIds);
+        : collectDrawingImageFileIds([ ...attachments, ...unknownAttachments ], foundAttachmentIds);
 
     for (const attachment of attachments) {
         // Only attachments that live in the note content are auto-scheduled for erasure when nothing
@@ -592,10 +596,6 @@ export function checkImageAttachments(note: BNote, content: string) {
     if (isCanvas) {
         return { forceFrontendReload: false, content };
     }
-
-    const existingAttachmentIds = new Set<string | undefined>(attachments.map((att) => att.attachmentId));
-    const unknownAttachmentIds = Array.from(foundAttachmentIds).filter((foundAttId) => !existingAttachmentIds.has(foundAttId));
-    const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
     for (const unknownAttachment of unknownAttachments) {
         // A role says who made the attachment and why, so the copy's role is decided by how this note
@@ -722,6 +722,47 @@ function copyDrawingImages(note: BNote, drawing: BAttachment) {
         copy.ownerId = note.noteId;
         copy.setContent(image.getContent(), { forceSave: true });
     }
+}
+
+/**
+ * The content of `entity` for a copy outside its note, such as a download: a canvas drawing gets
+ * the images that it refers to by file ID inline, from the image attachments of its owner.
+ */
+function getPortableContent(entity: BNote | BAttachment) {
+    const content = entity.getContent();
+    const owner = entity instanceof BAttachment && entity.mime === CANVAS_ATTACHMENT_MIME
+        ? becca.getNote(entity.ownerId)
+        : null;
+    if (!owner) {
+        return content;
+    }
+
+    const json = decodeUtf8(content);
+    let scene: { files?: Record<string, unknown> } | null = null;
+    try {
+        scene = JSON.parse(json);
+    } catch {
+        // Malformed content goes out as it is stored.
+    }
+    if (!scene || typeof scene !== "object") {
+        return content;
+    }
+
+    const files = { ...scene.files };
+    const fileIds = collectCanvasImageFileIds(json);
+    for (const image of owner.getAttachments()) {
+        if (!fileIds.has(image.title) || files[image.title]) {
+            continue;
+        }
+
+        files[image.title] = {
+            id: image.title,
+            mimeType: image.mime,
+            dataURL: `data:${image.mime};base64,${encodeBase64(image.getContent())}`,
+            created: Date.now()
+        };
+    }
+    return JSON.stringify({ ...scene, files });
 }
 
 function findImageLinks(content: string, foundLinks: FoundLink[]) {
@@ -1139,10 +1180,7 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
 
     saveRevisionIfNeeded(note);
 
-    const { forceFrontendReload, content: newContent } = saveLinks(note, content);
-
-    note.setContent(newContent, { forceFrontendReload });
-
+    // Saved before the links, so that `checkImageAttachments()` reads the drawings of this save.
     if (attachments?.length > 0) {
         const existingAttachmentsByTitle = toMap(note.getAttachments(), "title");
 
@@ -1171,6 +1209,10 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
             }
         }
     }
+
+    const { forceFrontendReload, content: newContent } = saveLinks(note, content);
+
+    note.setContent(newContent, { forceFrontendReload });
 }
 
 export interface UndeleteNoteOptions {
@@ -1558,6 +1600,7 @@ export default {
     createNewNote,
     createNewNoteWithTarget,
     updateNoteData,
+    getPortableContent,
     undeleteNote,
     protectNoteRecursively,
     duplicateSubtree,
