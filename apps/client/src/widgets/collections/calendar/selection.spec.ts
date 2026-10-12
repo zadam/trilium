@@ -47,13 +47,13 @@ describe("withAllDay", () => {
             .toEqual({ startDate: "2026-06-05", endDate: "2026-06-06", startTime: null, endTime: null });
     });
 
-    it("gives a whole-day draft default hours within its first day", () => {
+    it("gives a whole-day draft default hours and keeps its days", () => {
         expect(withAllDay({ startDate: "2026-06-05", endDate: "2026-06-07" }, false))
-            .toEqual({ startDate: "2026-06-05", endDate: null, startTime: "09:00", endTime: "10:00" });
+            .toEqual({ startDate: "2026-06-05", endDate: "2026-06-07", startTime: "09:00", endTime: "10:00" });
     });
 
     it("keeps an end time the event already holds when hours are added", () => {
         expect(withAllDay({ startDate: "2026-06-05", endTime: "11:30" }, false))
-            .toEqual({ startDate: "2026-06-05", endDate: null, startTime: "09:00", endTime: "11:30" });
+            .toEqual({ startDate: "2026-06-05", startTime: "09:00", endTime: "11:30" });
     });
 });

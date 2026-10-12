@@ -28,7 +28,7 @@ In either cases, a small popup will show with a prompt for a title and the date 
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 
-To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. A timed event spans a single day, so adding a time to a range of days keeps only the first one.
+To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. Adding or removing a time keeps the dates, so an event can start at a time on one day and end at a time on another (for example, a night shift). If the end date is left empty, the event ends on the day it starts, or on the next day when the end time is before the start time.
 
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
 
@@ -56,7 +56,7 @@ When an event is clicked, a popup will show near the event which contains the fo
     *   Color picker to change the color of the event.
     *   Button to remove the event from the calendar, which can optionally delete its corresponding note.
 *   Calendar-specific features:
-    *   The date, or the first and last day for an all-day event.
+    *   The start date and, for an event spanning several days, the end date.
     *   The start and end time with the duration to the right of them, and a <span class="tn-icon bx bx-x"></span> button that removes the time, making the event all-day. An all-day event shows an _Add time_ button instead.
     *   A full recurrence editor, opened from the dropdown below the time, to have the same event show up weekly, monthly, etc.
 *   The <a class="reference-link" href="../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> of the marker, if any.

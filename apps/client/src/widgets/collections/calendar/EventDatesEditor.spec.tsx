@@ -68,7 +68,8 @@ describe("EventDatesEditor", () => {
 
         mount(buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" }));
         expect(addTimeButton()).toBeNull();
-        expect(dateInputs()).toHaveLength(1);
+        // A timed event has an end date too; empty, it ends on the day it starts.
+        expect([ ...dateInputs() ].map((input) => input.value)).toEqual([ "2026-06-05", "" ]);
         expect(timeInputs()).toHaveLength(2);
         expect(timeInputs()[0].closest(".calendar-event-row")?.contains(removeTimeButton())).toBe(true);
         expect(timeInputs()[0].value).toBe("13:00");
@@ -77,7 +78,7 @@ describe("EventDatesEditor", () => {
         expect(timeInputs()[0].closest(".calendar-event-row")?.querySelector(".calendar-event-duration")).not.toBeNull();
     });
 
-    it("adding a time gives the day hours to edit and lets a span of days go", () => {
+    it("adding a time gives the days hours to edit and keeps the span of days", () => {
         const note = buildNote({ title: "Fair", "#startDate": "2026-06-05", "#endDate": "2026-06-07" });
         mount(note);
 
@@ -85,11 +86,25 @@ describe("EventDatesEditor", () => {
 
         expect(setLabel).toHaveBeenCalledWith(note.noteId, "startTime", "09:00");
         expect(setLabel).toHaveBeenCalledWith(note.noteId, "endTime", "10:00");
-        expect(removeLabel).toHaveBeenCalledWith(note, "endDate");
+        expect(removeLabel).not.toHaveBeenCalled();
         // The fields answer the press at once, ahead of the labels echoing back.
         expect(timeInputs()).toHaveLength(2);
         expect(document.activeElement).toBe(timeInputs()[0]);
-        expect(dateInputs()).toHaveLength(1);
+        expect(dateInputs()).toHaveLength(2);
+    });
+
+    it("shows and edits the end date of a timed event that spans several days", () => {
+        const note = buildNote({
+            title: "Night shift", "#startDate": "2026-06-05", "#endDate": "2026-06-06",
+            "#startTime": "22:00", "#endTime": "01:00"
+        });
+        mount(note);
+
+        expect([ ...dateInputs() ].map((input) => input.value)).toEqual([ "2026-06-05", "2026-06-06" ]);
+        expect(duration()).toBe("calendar_view.duration_hours|3");
+
+        commitValue(dateInputs()[1], "2026-06-07");
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "endDate", "2026-06-07");
     });
 
     it("removing the time takes the hours off and keeps the dates", () => {

@@ -16,15 +16,15 @@ const DEFAULT_END_TIME = "10:00";
 
 /**
  * Switches an event between all-day and timed, for the new-event popup and the event popover
- * alike (see EventDatesFields). A timed event spans a single day, so adding hours drops the end
- * date. An end time the event already holds is kept.
+ * alike (see EventDatesFields). The days are kept either way, a timed event being able to span
+ * several of them, and so is an end time the event already holds.
  */
 export function withAllDay(draft: EventDraft, allDay: boolean): EventDraft {
     if (allDay) {
         return { ...draft, startTime: null, endTime: null };
     }
 
-    return { ...draft, endDate: null, startTime: DEFAULT_START_TIME, endTime: draft.endTime ?? DEFAULT_END_TIME };
+    return { ...draft, startTime: DEFAULT_START_TIME, endTime: draft.endTime ?? DEFAULT_END_TIME };
 }
 
 /** A point in viewport coordinates — where a click or a drag's end fell, anchoring a popover

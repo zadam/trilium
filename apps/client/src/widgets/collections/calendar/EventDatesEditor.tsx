@@ -54,11 +54,10 @@ export default function EventDatesEditor({ note, repeats }: {
 }
 
 /**
- * The date and time rows of an event, shared by the event popover and the new-event popup. Two
- * shapes, told apart by whether the event has hours: a whole-day event is a span of days — a start
- * date and, where it runs longer, an end date — while a timed one is a single day and the hours
- * within it, with their duration. Fields commit as they are left, and hand the whole edited event
- * to `onChange`.
+ * The date and time rows of an event, shared by the event popover and the new-event popup. The
+ * date row holds a start date and, where the event runs longer than a day, an end date; the time
+ * row holds the hours and their duration, or the button to add them for an all-day event. Fields
+ * commit as they are left, and hand the whole edited event to `onChange`.
  */
 export function EventDatesFields({ value, allDay, onChange }: {
     value: EventDraft;
@@ -81,18 +80,16 @@ export function EventDatesFields({ value, allDay, onChange }: {
                     onCommit={(date) => date && onChange({ ...value, startDate: date })}
                     inputProps={{ className: "form-control", "aria-label": t("calendar.dates.start_date") }}
                 />
-                {allDay && <>
-                    <span className="calendar-event-row-separator" aria-hidden="true">–</span>
-                    <LabelValueInput
-                        labelType="date"
-                        value={endDate ?? ""}
-                        commitOn="blur"
-                        // Emptied, the event is a single day: the label goes rather than
-                        // staying blank, which is how the builder reads a day-long event.
-                        onCommit={(date) => onChange({ ...value, endDate: date || null })}
-                        inputProps={{ className: "form-control", "aria-label": t("calendar.dates.end_date") }}
-                    />
-                </>}
+                <span className="calendar-event-row-separator" aria-hidden="true">–</span>
+                <LabelValueInput
+                    labelType="date"
+                    value={endDate ?? ""}
+                    commitOn="blur"
+                    // Emptied, the event ends on the day it starts: the label goes rather than
+                    // staying blank, which is how the builder reads a single-day event.
+                    onCommit={(date) => onChange({ ...value, endDate: date || null })}
+                    inputProps={{ className: "form-control", "aria-label": t("calendar.dates.end_date") }}
+                />
             </EventRow>
 
             <EventTimeRow

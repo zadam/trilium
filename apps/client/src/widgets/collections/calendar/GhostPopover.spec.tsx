@@ -135,7 +135,7 @@ describe("GhostPopover", () => {
         expect(end.value).toBe("10:00");
         expect(duration()).toBe("calendar_view.duration_hours|1");
 
-        expect(dateInputs()).toHaveLength(1);
+        expect(dateInputs()).toHaveLength(2);
         commitValue(start, "14:00");
         commitValue(timeInputs()[1], "15:30");
         expect(duration()).toBe("calendar_view.duration_hours_minutes|1|30");
@@ -143,7 +143,7 @@ describe("GhostPopover", () => {
         await act(async () => { createButton()?.click(); });
 
         expect(onCommit).toHaveBeenCalledWith("", {
-            startDate: "2026-06-05", endDate: null, startTime: "14:00", endTime: "15:30"
+            startDate: "2026-06-05", startTime: "14:00", endTime: "15:30"
         });
     });
 
@@ -168,6 +168,6 @@ describe("GhostPopover", () => {
         expect(timeInputs()).toHaveLength(0);
         expect(document.activeElement).toBe(document.querySelector(".calendar-event-add-time"));
         await act(async () => { createButton()?.click(); });
-        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-05", startTime: null, endTime: null, endDate: null });
+        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-05", startTime: null, endTime: null });
     });
 });
