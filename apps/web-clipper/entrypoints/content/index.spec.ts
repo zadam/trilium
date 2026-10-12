@@ -3,6 +3,8 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
 vi.mock("@/lib/toast", () => ({}));
+const setFloatingElements = vi.hoisted(() => vi.fn());
+vi.mock("@/floating_elements.js", () => ({ setFloatingElements }));
 
 import contentScript from "./index";
 
@@ -239,6 +241,34 @@ describe("content script", () => {
                 [ null, { name: "closeTabs", tabIds: [ 1, 2 ] } ]
             ]);
         });
+    });
+
+    it("scrolls the page when given a position, and answers where it is scrolled to", async () => {
+        const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        vi.spyOn(window, "scrollY", "get").mockReturnValue(240);
+        vi.spyOn(document.documentElement, "scrollHeight", "get").mockReturnValue(3000);
+        const position = {
+            scrollX: window.scrollX,
+            scrollY: 240,
+            viewportHeight: window.innerHeight,
+            viewportWidth: window.innerWidth,
+            pageHeight: 3000,
+            devicePixelRatio: window.devicePixelRatio
+        };
+
+        expect(await send({ name: "trilium-scroll-to" })).toEqual(position);
+        expect(scrollTo).not.toHaveBeenCalled();
+
+        expect(await send({ name: "trilium-scroll-to", x: 5, y: 240 })).toEqual(position);
+        expect(scrollTo).toHaveBeenCalledWith({ left: 5, top: 240, behavior: "instant" });
+    });
+
+    it("changes or restores the floating elements for a full-page screenshot", async () => {
+        expect(await send({ name: "trilium-set-floating-elements", step: "rest" })).toBe(true);
+        expect(setFloatingElements).toHaveBeenCalledWith("rest");
+
+        expect(await send({ name: "trilium-set-floating-elements" })).toBeUndefined();
+        expect(setFloatingElements).toHaveBeenCalledOnce();
     });
 
     it("answers unknown messages with nothing", async () => {

@@ -1,4 +1,8 @@
+import Bookmark from "@boxicons/js/icons/Bookmark";
 import Crop from "@boxicons/js/icons/Crop";
+import FileDetail from "@boxicons/js/icons/FileDetail";
+import Globe from "@boxicons/js/icons/Globe";
+import Paperclip from "@boxicons/js/icons/Paperclip";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { render } from "preact";
@@ -30,8 +34,12 @@ const PAGE = {
 const WHOLE_PAGE = { ...PAGE, content: `<nav>Menu</nav><p>Body</p><img src="i1">` };
 /** How `readable-page.js` reads the tab, by variant, as `browser.scripting.executeScript()` answers. */
 let pageReadings: Record<string, unknown> = {};
-const executeScript = vi.fn(async ({ args }: { args?: [ string ] }): Promise<unknown> =>
-    args ? [ { result: pageReadings[args[0]] } ] : []);
+/** Whether the tab shows a PDF, as the check run in the tab answers. */
+let pdfTab = false;
+const executeScript = vi.fn(async ({ args, func }: { args?: [ string ], func?: unknown }): Promise<unknown> => {
+    if (args) return [ { result: pageReadings[args[0]] } ];
+    return func ? [ { result: pdfTab } ] : [];
+});
 const tabsQuery = vi.fn(async (): Promise<{ id?: number, title?: string, url?: string }[]> => [ { id: 7 } ]);
 const SELECTION = {
     title: "Page title",
@@ -51,6 +59,8 @@ const tabsSendMessage = vi.fn(async (_tabId: number, message: { name: string }):
     return selection;
 });
 const closeWindow = vi.fn();
+const disconnect = vi.fn();
+const connect = vi.fn((_info: { name: string }) => ({ disconnect }));
 let container: HTMLElement;
 
 describe("popup", () => {
@@ -59,7 +69,8 @@ describe("popup", () => {
         selection = undefined;
         metadata = {};
         pageReadings = { article: PAGE, wholePage: WHOLE_PAGE };
-        Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage });
+        pdfTab = false;
+        Object.assign(fakeBrowser.runtime, { sendMessage, openOptionsPage, connect });
         Object.assign(fakeBrowser.commands, { getAll: getAllCommands });
         Object.assign(fakeBrowser.tabs, { query: tabsQuery, sendMessage: tabsSendMessage });
         Object.assign(fakeBrowser, { scripting: { executeScript } });
@@ -83,7 +94,7 @@ describe("popup", () => {
     it("asks for the connection status and shows it in the footer", async () => {
         expect(sendMessage).toHaveBeenCalledWith({ name: "send-trilium-search-status" });
         expect(status()).toEqual({ dot: "status-dot status-dot-pending", text: "Looking for Trilium…" });
-        expect(captureButtons()).toHaveLength(4);
+        expect(captureButtons()).toHaveLength(5);
         expect(container.querySelector(".popup-header")).toBeNull();
         expect([ ...container.querySelectorAll(".connection button") ].map((b) => b.getAttribute("aria-label")))
             .toEqual([ "Check the connection again", "Options", "Help" ]);
@@ -95,7 +106,7 @@ describe("popup", () => {
         expect(container.querySelector(".connection .status-ok")).not.toBeNull();
         expect(captureButtons().every((button) => !button.disabled)).toBe(true);
         expect(button("Save page to Trilium")?.title).toBe("");
-        expect(button("Crop screenshot")?.title).toBe("Crop screenshot (Ctrl+Shift+E)");
+        expect(button("Area screenshot")?.title).toBe("Area screenshot (Ctrl+Shift+E)");
         expect(sendMessage).toHaveBeenCalledWith({ name: "trigger-trilium-search-note-url" });
 
         await receive({
@@ -174,20 +185,25 @@ describe("popup", () => {
         expect(container.querySelector(".notices")).toBeNull();
     });
 
-    it("sends the capture actions, closing the popup for screenshots", async () => {
-        await click("Crop screenshot");
+    it("sends the capture actions, closing the popup only to crop on the page", async () => {
+        await click("Area screenshot");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-cropped-screenshot" });
+        expect(closeWindow).toHaveBeenCalledOnce();
         await click("Visible area screenshot");
+        await flush();
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-whole-screenshot" });
-        expect(closeWindow).toHaveBeenCalledTimes(2);
+        await click("Full page screenshot");
+        await flush();
+        expect(sendMessage).toHaveBeenCalledWith({ name: "save-full-page-screenshot" });
 
-        await click("All tabs in window");
+        await click("All tabs in this window");
+        await flush();
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-tabs" });
         await click("Check the connection again");
         expect(sendMessage).toHaveBeenCalledWith({ name: "trigger-trilium-search" });
         await click("Options");
         expect(openOptionsPage).toHaveBeenCalledOnce();
-        expect(closeWindow).toHaveBeenCalledTimes(2);
+        expect(closeWindow).toHaveBeenCalledOnce();
 
         const openWindow = vi.spyOn(window, "open").mockImplementation(() => null);
         await click("Help");
@@ -198,9 +214,10 @@ describe("popup", () => {
         expect(getAllCommands).toHaveBeenCalledOnce();
         expect(shortcutOf("Save page to Trilium")).toEqual({ text: "Alt+Shift+S", keys: [ "Alt", "Shift", "S" ] });
         expect(toolbar()).toEqual([
-            { label: "Crop", title: "Crop screenshot (Ctrl+Shift+E)" },
-            { label: "Screenshot", title: "Visible area screenshot" },
-            { label: "Tabs", title: "All tabs in window" }
+            { label: "Area", title: "Area screenshot (Ctrl+Shift+E)" },
+            { label: "Visible", title: "Visible area screenshot" },
+            { label: "Full page", title: "Full page screenshot" },
+            { label: "All tabs", title: "All tabs in this window" }
         ]);
         expect(container.querySelectorAll(".toolbar-action kbd")).toHaveLength(0);
 
@@ -221,12 +238,12 @@ describe("popup", () => {
         expect(heading?.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(heading?.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBe("Published 2024-05-01");
-        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
+        const dateIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(4) > .page-field-icon");
         expect(dateIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(dateIcon?.title).toBe(
             "The date the page was published. It is saved in the #publishedDate label of the note.");
         expect(modifiedDate()).toBe("Updated 2024-06-12");
-        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(4) > .page-field-icon");
+        const modifiedIcon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(5) > .page-field-icon");
         expect(modifiedIcon?.querySelector("svg.icon path")).not.toBeNull();
         expect(modifiedIcon?.title).toBe(
             "The date the page was last modified. It is saved in the #modifiedDate label of the note.");
@@ -253,6 +270,8 @@ describe("popup", () => {
         expect(variants()).toEqual([ [ "Article", "false", false ], [ "Whole page", "true", false ] ]);
         expect(placeholder()).toBe("Reading the page…");
         expect(button("Save page to Trilium")?.disabled).toBe(true);
+        await ctrlEnter(".note-text");
+        expect(sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({ name: "save-whole-page" }));
 
         await act(() => finishReading());
         await flush();
@@ -308,11 +327,10 @@ describe("popup", () => {
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: WHOLE_PAGE });
     });
 
-    it("saves the extracted page with the edited title, and closes", async () => {
+    it("saves the extracted page with the edited title", async () => {
         await type(".page-title", "  My title ");
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-whole-page", page: { ...PAGE, title: "My title" } });
-        expect(closeWindow).toHaveBeenCalledOnce();
 
         await type(".page-title", "   ");
         await click("Save page to Trilium");
@@ -323,7 +341,7 @@ describe("popup", () => {
         pageReadings = { article: { ...PAGE, labels: {} }, wholePage: WHOLE_PAGE };
         await rerender();
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
-        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(2);
+        expect(container.querySelectorAll(".page-fields > .page-field")).toHaveLength(3);
         expect(publishedDate()).toBeUndefined();
         expect(modifiedDate()).toBeUndefined();
     });
@@ -349,10 +367,11 @@ describe("popup", () => {
         expect(container.querySelector(".no-items")).toBeNull();
         expect(container.querySelector(".clip-mode")).toBeNull();
         expect(container.querySelector(".clip-hint")?.textContent).toBe("This page has nothing to save; save it as a bookmark.");
+        expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
         expect(document.activeElement).toBe(container.querySelector(".page-body .note-text"));
         expect(container.querySelector(".page-meta")).toBeNull();
         expect(button("Save bookmark")?.disabled).toBe(false);
-        expect(captureButtons().map((action) => action.disabled)).toEqual([ false, false, false, false ]);
+        expect(captureButtons().map((action) => action.disabled)).toEqual([ false, false, false, false, false ]);
     });
 
     it("keeps only the actions that need no access to a page out of reach", async () => {
@@ -363,8 +382,8 @@ describe("popup", () => {
             "The extension cannot access this page.\nIf it is a regular web page, reload it."
         );
         expect(container.querySelector(".page-preview")).toBeNull();
-        expect(captureButtons().map((action) => action.disabled)).toEqual([ true, true, false ]);
-        expect(button("Crop screenshot")?.title).toBe(UNREACHABLE);
+        expect(captureButtons().map((action) => action.disabled)).toEqual([ true, true, true, false ]);
+        expect(button("Area screenshot")?.title).toBe(UNREACHABLE);
         expect(button("Visible area screenshot")?.title).toBe(UNREACHABLE);
 
         tabsQuery.mockResolvedValueOnce([ {} ]);
@@ -380,6 +399,8 @@ describe("popup", () => {
         expect(tabsSendMessage).toHaveBeenCalledWith(7, { name: "trilium-save-selection" });
         expect(modes()).toEqual([ [ "Selection", "true" ], [ "Page", "false" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(SELECTION));
+        // The heading shows the icon Trilium gives the note each mode saves.
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Paperclip).content));
         expect(shortcutOf("Save selection").keys).toEqual([ "Ctrl", "Shift", "S" ]);
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
         expect(publishedDate()).toBeUndefined();
@@ -388,15 +409,19 @@ describe("popup", () => {
         await click("Page");
         expect(modes()).toEqual([ [ "Selection", "false" ], [ "Page", "true" ], [ "Bookmark", "false" ] ]);
         expect(frameDocument()).toBe(previewDocument(PAGE));
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Globe).content));
         expect(publishedDate()).toBe("Published 2024-05-01");
         await click("Save page to Trilium");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+
+        await click("Bookmark");
+        expect(headingIcon()).toEqual(pathsOf(iconVariant(Bookmark).content));
 
         await click("Selection");
         await type(".page-title", " Quote ");
         await click("Save selection");
         expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-selection", selection: { ...SELECTION, title: "Quote" } });
-        expect(closeWindow).toHaveBeenCalledTimes(2);
+        expect(closeWindow).not.toHaveBeenCalled();
     });
 
     it("saves the selection of a page with nothing else to save, and ignores an empty one", async () => {
@@ -422,27 +447,36 @@ describe("popup", () => {
         expect(frameDocument()).toBe(previewDocument(selection as typeof SELECTION));
     });
 
-    it("tells the user when the background script cannot be reached", async () => {
+    it("tells the user when the background script cannot be reached, with the reason for a save", async () => {
         const alertMock = vi.fn();
         vi.stubGlobal("alert", alertMock);
         sendMessage.mockRejectedValueOnce(new Error("Receiving end does not exist."));
+        await click("All tabs in this window");
+        await flush();
+        expect(saveStatus()).toEqual({
+            kind: "callout callout-error save-status",
+            text: "Saving to Trilium failed: the popup could not reach the extension's background script"
+                + " (Receiving end does not exist.)."
+        });
+        expect(alertMock).not.toHaveBeenCalled();
 
-        await click("All tabs in window");
-
+        sendMessage.mockRejectedValueOnce(new Error("Receiving end does not exist."));
+        await click("Check the connection again");
         expect(alertMock).toHaveBeenCalledWith("Calling browser runtime failed. Refreshing page might help.");
     });
 
     it("writes a bookmark in the card, keeping the note across modes", async () => {
         tabsQuery.mockResolvedValueOnce([ { id: 7, title: "A page", url: "https://example.com/post" } ]);
         await rerender();
-        expect(container.querySelector(".note-text")).toBeNull();
 
         await click("Bookmark");
         expect(modes()).toEqual([ [ "Page", "false" ], [ "Bookmark", "true" ] ]);
-        const textArea = container.querySelector(".page-body .note-text");
+        const textArea = container.querySelector(".page-body .page-fields.bookmark .note-text");
         expect(textArea).not.toBeNull();
+        expect(container.querySelector(".page-body")?.className).toBe("page-body");
         expect(document.activeElement).toBe(textArea);
-        expect(textArea?.getAttribute("placeholder")).toBe("Add a note about this page");
+        expect(container.querySelector<HTMLElement>(".page-field:first-child > .page-field-icon")?.title)
+            .toBe("Your note about the page. It is saved as the content of the note.");
         expect(container.querySelector(".page-body iframe")).toBeNull();
         expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("An article");
         expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
@@ -452,19 +486,21 @@ describe("popup", () => {
 
         await type(".page-body .note-text", "Worth a read");
         await click("Page");
-        expect(container.querySelector(".note-text")).toBeNull();
+        expect(container.querySelector(".page-fields.bookmark")).toBeNull();
         await click("Bookmark");
         expect(container.querySelector<HTMLTextAreaElement>(".page-body .note-text")?.value).toBe("Worth a read");
         expect(closeWindow).not.toHaveBeenCalled();
 
-        sendMessage.mockResolvedValueOnce(true);
+        sendMessage.mockResolvedValueOnce({ noteId: "n1", message: "Link with note has been saved to Trilium." });
         await click("Save bookmark");
+        await flush();
         expect(sendMessage).toHaveBeenLastCalledWith({
             name: "save-link-with-note",
             title: "An article",
             content: "<p>Worth a read</p>"
         });
-        expect(closeWindow).toHaveBeenCalledOnce();
+        expect(saveStatus()?.text).toBe("Link with note has been saved to Trilium.Open note");
+        expect(closeWindow).not.toHaveBeenCalled();
     });
 
     it("shows the page's description atop the preview in every mode, and saves it as edited", async () => {
@@ -476,7 +512,7 @@ describe("popup", () => {
         expect(description()?.value).toBe("All about the post");
         expect(description()?.getAttribute("aria-label")).toBe("Page description");
         expect(description()?.getAttribute("placeholder")).toBe("Add a description");
-        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:first-child > .page-field-icon");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
         expect(icon?.querySelector("svg.icon path")).not.toBeNull();
         expect(icon?.title).toBe(
             "The page's description. It is saved in the #pageDescription label of the note.");
@@ -559,7 +595,7 @@ describe("popup", () => {
         expect(author()?.value).toBe("Jane Doe");
         expect(author()?.getAttribute("aria-label")).toBe("Author");
         expect(author()?.getAttribute("placeholder")).toBe("Add an author");
-        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(2) > .page-field-icon");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:nth-child(3) > .page-field-icon");
         expect(icon?.querySelector("svg.icon path")).not.toBeNull();
         expect(icon?.title).toBe("The page's author. It is saved in the #pageAuthor label of the note.");
 
@@ -659,14 +695,12 @@ describe("popup", () => {
         await click("Bookmark");
         await type(".page-title", "  Read later. Soon ");
         await type(".page-body .note-text", " It has <b>tips</b>\nand more ");
-        sendMessage.mockResolvedValueOnce(true);
         await ctrlEnter(".page-body .note-text");
         expect(sendMessage).toHaveBeenCalledWith({
             name: "save-link-with-note",
             title: "Read later. Soon",
             content: "<p>It has &lt;b&gt;tips&lt;/b&gt;</p><p>and more</p>"
         });
-        expect(closeWindow).toHaveBeenCalledOnce();
     });
 
     it("keeps the bookmark open when it could not be saved, and leaves an empty title to the page", async () => {
@@ -678,16 +712,184 @@ describe("popup", () => {
         });
         expect(sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({ name: "save-link-with-note" }));
 
-        sendMessage.mockResolvedValueOnce(undefined);
+        sendMessage.mockResolvedValueOnce({ error: "Trilium was not found." });
         await ctrlEnter(".page-title");
+        await flush();
         expect(sendMessage).toHaveBeenCalledWith({ name: "save-link-with-note", title: "", content: "" });
         expect(container.querySelector(".page-body .note-text")).not.toBeNull();
-        expect(closeWindow).not.toHaveBeenCalled();
+        expect(saveStatus()).toEqual({ kind: "callout callout-error save-status", text: "Trilium was not found." });
+        expect(button("Save bookmark")?.disabled).toBe(false);
 
-        const calls = sendMessage.mock.calls.length;
         await click("Page");
         await ctrlEnter(".page-title");
-        expect(sendMessage).toHaveBeenCalledTimes(calls);
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+        expect(closeWindow).not.toHaveBeenCalled();
+    });
+
+    it("asks for a note in every mode, and saves it above the clipped content", async () => {
+        selection = SELECTION;
+        await rerender();
+        const note = () => container.querySelector<HTMLTextAreaElement>(".page-fields > .page-field:first-child > .note-text");
+        expect(note()).not.toBeNull();
+        expect(document.activeElement).toBe(note());
+        expect(note()?.getAttribute("aria-label")).toBe("Your note");
+        expect(note()?.getAttribute("placeholder")).toBe("Add a note about this page");
+        const icon = container.querySelector<HTMLElement>(".page-fields > .page-field:first-child > .page-field-icon");
+        expect(icon?.querySelector("svg.icon path")).not.toBeNull();
+        expect(icon?.title).toBe("Your note about the page. It is saved above the clipped content.");
+
+        await type(".note-text", " Worth <b>reading</b>\nlater ");
+        await click("Save selection");
+        const aside = `<aside class="admonition note"><p>Worth &lt;b&gt;reading&lt;/b&gt;</p><p>later</p></aside>`;
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-selection",
+            selection: { ...SELECTION, title: "An article", content: aside + SELECTION.content }
+        });
+
+        await click("Page");
+        expect(document.activeElement).toBe(note());
+        expect(note()?.value).toBe(" Worth <b>reading</b>\nlater ");
+        await ctrlEnter(".note-text");
+        expect(sendMessage).toHaveBeenLastCalledWith({
+            name: "save-whole-page",
+            page: { ...PAGE, content: aside + PAGE.content }
+        });
+        sendMessage.mockClear();
+        await ctrlEnter(".page-author");
+        expect(sendMessage).toHaveBeenCalledOnce();
+
+        await type(".note-text", " \n ");
+        await click("Save page to Trilium");
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-whole-page", page: PAGE });
+    });
+
+    describe("a PDF", () => {
+        const PDF_TAB = { id: 7, title: "Annual report", url: "https://example.com/files/report.pdf" };
+
+        it("offers to save the PDF in Chrome's viewer as a file, or a bookmark of it", async () => {
+            pdfTab = true;
+            tabsQuery.mockResolvedValueOnce([ PDF_TAB ]);
+            await rerender();
+
+            expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
+            expect(headingIcon()).toEqual(pathsOf(iconVariant(FileDetail).content));
+            expect(container.querySelector<HTMLInputElement>(".page-title")?.value).toBe("Annual report");
+            expect(container.querySelector(".page-meta")?.textContent).toBe("example.com");
+            expect(container.querySelector(".clip-hint")?.textContent).toBe("The PDF is saved as a file in Trilium.");
+            expect(container.querySelector(".note-text")).toBeNull();
+            expect(container.querySelector(".page-author")).toBeNull();
+            expect(container.querySelector(".page-content")).toBeNull();
+            expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
+            expect(placeholder()).toBeUndefined();
+            expect(shortcutOf("Save PDF to Trilium").text).toBe("Alt+Shift+S");
+
+            await type(".page-title", "Edited");
+            await type(".page-description", " Key   figures ");
+            let answerSave: (answer: unknown) => void = () => {};
+            sendMessage.mockReturnValueOnce(new Promise((resolve) => answerSave = resolve));
+            await click("Save PDF to Trilium");
+            expect(sendMessage).toHaveBeenLastCalledWith({
+                name: "save-pdf", url: PDF_TAB.url, title: "Edited", description: "Key figures"
+            });
+            expect(saveStatus()).toEqual({ kind: "callout callout-info save-status", text: "Saving to Trilium…" });
+            expect(button("Save PDF to Trilium")?.disabled).toBe(true);
+            await ctrlEnter(".page-title");
+            expect(sendMessageCalls("save-pdf")).toBe(1);
+
+            answerSave({ noteId: "n1", message: "PDF has been saved to Trilium." });
+            await flush();
+            expect(saveStatus()).toEqual({
+                kind: "callout callout-success save-status", text: "PDF has been saved to Trilium.Open note"
+            });
+            expect(button("Save PDF to Trilium")?.disabled).toBe(true);
+            expect(closeWindow).not.toHaveBeenCalled();
+
+            await click("Bookmark");
+            expect(button("Save bookmark")?.disabled).toBe(false);
+            expect(container.querySelector(".page-body")?.className).toBe("page-body compact");
+            expect(container.querySelector(".note-text")).not.toBeNull();
+            expect(container.querySelector(".clip-hint")).toBeNull();
+        });
+
+        it("offers it in Firefox's viewer, where the website names the type, keeping out what needs the page", async () => {
+            const fetchMock = vi.fn(async () => new Response(null, { headers: { "Content-Type": "application/pdf" } }));
+            vi.stubGlobal("fetch", fetchMock);
+            executeScript.mockRejectedValueOnce(new Error("Missing host permission for the tab"));
+            executeScript.mockRejectedValueOnce(new Error("Missing host permission for the tab"));
+            tabsSendMessage.mockRejectedValueOnce(new Error("Could not establish connection."));
+            tabsSendMessage.mockRejectedValueOnce(new Error("Could not establish connection."));
+            tabsQuery.mockResolvedValueOnce([ { ...PDF_TAB, title: "report.pdf" } ]);
+            await rerender();
+
+            expect(fetchMock).toHaveBeenCalledWith(PDF_TAB.url,
+                expect.objectContaining({ method: "HEAD", credentials: "include" }));
+            expect(container.querySelector(".capture-actions > .no-items")).toBeNull();
+            expect(modes()).toEqual([ [ "PDF", "true" ], [ "Bookmark", "false" ] ]);
+            expect(button("Area screenshot")?.disabled).toBe(true);
+            expect(button("All tabs in this window")?.disabled).toBe(false);
+
+            sendMessage.mockResolvedValueOnce({ error: "Saving a PDF needs a newer version of Trilium." });
+            await click("Save PDF to Trilium");
+            expect(sendMessage).toHaveBeenLastCalledWith({ name: "save-pdf", url: PDF_TAB.url, title: "report.pdf" });
+            await flush();
+            expect(saveStatus()).toEqual({
+                kind: "callout callout-error save-status",
+                text: "Saving a PDF needs a newer version of Trilium."
+            });
+
+            sendMessage.mockResolvedValueOnce(undefined);
+            await click("Save PDF to Trilium");
+            await flush();
+            expect(saveStatus()?.text)
+                .toBe("Saving to Trilium failed: the extension's background script gave no answer.");
+            expect(sendMessageCalls("save-pdf")).toBe(2);
+            expect(closeWindow).not.toHaveBeenCalled();
+        });
+    });
+
+    it("stays open while a save runs, then shows how it went in place of the clipped notice", async () => {
+        expect(connect).toHaveBeenCalledWith({ name: "popup" });
+        await receive({ name: "trilium-previously-visited", searchNote: { status: "found", noteId: "clipped" } });
+        expect(container.querySelector(".already-visited")).not.toBeNull();
+        let answerSave: (answer: unknown) => void = () => {};
+        sendMessage.mockReturnValueOnce(new Promise((resolve) => answerSave = resolve));
+        await click("All tabs in this window");
+        expect(saveStatus()).toEqual({ kind: "callout callout-info save-status", text: "Saving to Trilium…" });
+        expect(container.querySelector(".already-visited")).toBeNull();
+        expect(container.querySelector(".capture-actions .save-status")).toBeNull();
+        for (const action of captureButtons()) {
+            expect(action.disabled, action.getAttribute("aria-label") ?? "").toBe(true);
+        }
+        expect(button("Area screenshot")?.title).toBe("Trilium is saving the last clipping.");
+
+        answerSave({ noteId: "n1", message: "2 links have been saved to Trilium.", tabIds: [ 7, 8 ] });
+        await flush();
+        expect(saveStatus()).toEqual({
+            kind: "callout callout-success save-status",
+            text: "2 links have been saved to Trilium.Open noteClose saved tabs"
+        });
+        expect(captureButtons().every((action) => !action.disabled)).toBe(true);
+        await clickLink("Close saved tabs");
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "closeTabs", tabIds: [ 7, 8 ] });
+        expect(closeWindow).toHaveBeenCalledOnce();
+
+        sendMessage.mockResolvedValueOnce({ noteId: "n2", message: "Page has been saved to Trilium." });
+        await click("Save page to Trilium");
+        await flush();
+        expect(saveStatus()?.text).toBe("Page has been saved to Trilium.Open note");
+        expect(button("Save page to Trilium")?.disabled).toBe(true);
+        expect(button("All tabs in this window")?.disabled).toBe(false);
+        await click("Whole page");
+        await flush();
+        expect(button("Save page to Trilium")?.disabled).toBe(false);
+        await click("Article");
+        expect(button("Save page to Trilium")?.disabled).toBe(true);
+        await clickLink("Open note");
+        expect(sendMessage).toHaveBeenLastCalledWith({ name: "openNoteInTrilium", noteId: "n2" });
+        expect(closeWindow).toHaveBeenCalledTimes(2);
+
+        await act(() => render(null, container));
+        expect(disconnect).toHaveBeenCalledOnce();
     });
 
     it("renders itself into the page's root element", async () => {
@@ -776,7 +978,7 @@ describe("icons", () => {
         await act(() => render(<Popup />, container));
 
         const icons = container.querySelectorAll("button > svg.icon");
-        expect(icons).toHaveLength(7);
+        expect(icons).toHaveLength(8);
         for (const icon of icons) {
             expect(icon.getAttribute("aria-hidden")).toBe("true");
             expect(icon.getAttribute("viewBox")).toBe("0 0 24 24");
@@ -807,6 +1009,22 @@ async function receive(message: object) {
     await act(async () => {
         await fakeBrowser.runtime.onMessage.trigger(message, {}, () => {});
     });
+}
+
+/** The save in progress or how the last one went, as the popup shows it: its classes and its text. */
+function saveStatus() {
+    const status = container.querySelector(".popup > .notices:first-child > .save-status");
+    return status ? { kind: status.className, text: status.textContent } : undefined;
+}
+
+function sendMessageCalls(name: string) {
+    return sendMessage.mock.calls.filter(([ message ]) => (message as { name?: string }).name === name).length;
+}
+
+async function clickLink(text: string) {
+    const link = [ ...container.querySelectorAll("a") ].find((a) => a.textContent === text);
+    expect(link, text).toBeDefined();
+    await act(() => link?.click());
 }
 
 /** Lets the promises the effects start, such as reading the shortcuts, settle. */
@@ -888,6 +1106,18 @@ function toolbar() {
 function modes() {
     return [ ...container.querySelectorAll(".clip-mode button") ]
         .map((option) => [ option.textContent, option.getAttribute("aria-pressed") ]);
+}
+
+/** The path data of the icon in the preview heading. */
+function headingIcon() {
+    const icon = container.querySelector(".page-heading .page-icon svg.icon");
+    expect(icon).not.toBeNull();
+    return pathsOf(icon?.innerHTML ?? "");
+}
+
+/** The path data of an icon's markup, which the DOM serializes differently from Boxicons. */
+function pathsOf(markup: string) {
+    return [ ...markup.matchAll(/ d="([^"]*)"/g) ].map(([ , d ]) => d);
 }
 
 /** How many times the popup read the whole page. */

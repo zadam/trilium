@@ -7,30 +7,37 @@ import Article from "@boxicons/js/icons/Article";
 import Bookmark from "@boxicons/js/icons/Bookmark";
 import Calendar from "@boxicons/js/icons/Calendar";
 import Cog from "@boxicons/js/icons/Cog";
-import Crop from "@boxicons/js/icons/Crop";
+import FileDetail from "@boxicons/js/icons/FileDetail";
+import Fullscreen from "@boxicons/js/icons/Fullscreen";
+import GalleryVertical from "@boxicons/js/icons/GalleryVertical";
 import Globe from "@boxicons/js/icons/Globe";
 import HelpCircle from "@boxicons/js/icons/HelpCircle";
 import Highlight from "@boxicons/js/icons/Highlight";
 import History from "@boxicons/js/icons/History";
+import InfoCircle from "@boxicons/js/icons/InfoCircle";
 import Lock from "@boxicons/js/icons/Lock";
+import Paperclip from "@boxicons/js/icons/Paperclip";
 import RefreshCw from "@boxicons/js/icons/RefreshCw";
 import Screenshot from "@boxicons/js/icons/Screenshot";
-import Tabs from "@boxicons/js/icons/Tabs";
 import Unlink from "@boxicons/js/icons/Unlink";
 import User from "@boxicons/js/icons/User";
+import WindowIcon from "@boxicons/js/icons/Window";
 import Youtube from "@boxicons/js/icons/Youtube";
 import monospaceFontUrl from "@triliumnext/client/src/fonts/JetBrainsMono-Light.woff2?url";
 import type { ComponentChildren } from "preact";
 import { Fragment, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { extractPage, type PageVariant, type ReadablePage } from "@/utils";
+import {
+    describeError, extractPage, isPdfTab, type PageVariant, type ReadablePage, type SaveOutcome
+} from "@/utils";
 
 import type { TriliumSearchNoteStatus, TriliumSearchStatus } from "../background/trilium_server_facade";
 
 const HELP_URL = "https://docs.triliumnotes.org/user-guide/setup/web-clipper";
 const DISCONNECTED_TITLE = "This action can't be performed without active connection to Trilium.";
 const UNREACHABLE_TITLE = "This action is not available on this page.";
+const SAVING_TITLE = "Trilium is saving the last clipping.";
 
 type PopupMessage = {
     name: "trilium-search-status";
@@ -68,13 +75,30 @@ interface TabContent {
     url?: string;
     /** What the page says about itself, which a note clip saves in its `#pageDescription` label. */
     description?: string;
+    /** Whether the tab shows a PDF in the browser's viewer, which is saved as a file. */
+    pdf: boolean;
 }
 
 /**
- * What the card saves: the selection, the page (`clipType: "page"`), or a note about the page with a
- * link to it (`clipType: "note"`), which the popup calls a bookmark.
+ * What the card saves: the selection, the page (`clipType: "page"`), the PDF the tab shows as a file
+ * (`clipType: "file"`), or a note about the page with a link to it (`clipType: "note"`), which the
+ * popup calls a bookmark.
  */
-type ClipMode = "selection" | "page" | "note";
+type ClipMode = "selection" | "page" | "pdf" | "note";
+
+/**
+ * What the card saves: its mode, and in Page mode also the reading of the page, as in `page:article`.
+ */
+type ClipChoice = Exclude<ClipMode, "page"> | `page:${PageVariant}`;
+
+/**
+ * A save the popup asked for, in progress or as it went. `clip` is what the card chose when the card
+ * saved, which keeps the card from saving the same clip twice.
+ */
+type SaveState = ({ status: "saving" } | SaveOutcome) & { clip?: ClipChoice };
+
+/** Sends a save to the background, and what the card chose when the card saves. */
+type SaveHandler = (message: object, clip?: ClipChoice) => void;
 
 /** What the user has chosen and typed in the card, kept by `Popup` so a reconnection does not lose it. */
 interface Draft {
@@ -126,7 +150,11 @@ const PREVIEW_STYLE = `
     .embed-chip-detail { color: light-dark(#666, #bbb); }
 `;
 
-const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", note: "Bookmark" };
+const MODE_LABELS: Record<ClipMode, string> = { selection: "Selection", page: "Page", pdf: "PDF", note: "Bookmark" };
+/** The icon of the note each mode saves, as Trilium draws it from the note's `#clipType`. */
+const MODE_ICONS: Record<ClipMode, IconDefinition> = {
+    selection: Paperclip, page: Globe, pdf: FileDetail, note: Bookmark
+};
 
 const VARIANT_LABELS: Record<PageVariant, string> = { article: "Article", wholePage: "Whole page" };
 
@@ -140,6 +168,7 @@ const VARIANT_UNAVAILABLE: Record<PageVariant, string> = {
 const SAVE_BUTTONS: Record<ClipMode, { icon: IconDefinition, label: string, command: string, shortcut?: string }> = {
     selection: { icon: Highlight, label: "Save selection", command: "saveSelection" },
     page: { icon: Article, label: "Save page to Trilium", command: "saveWholePage" },
+    pdf: { icon: FileDetail, label: "Save PDF to Trilium", command: "saveWholePage" },
     note: { icon: Bookmark, label: "Save bookmark", command: "", shortcut: "Ctrl+Enter" }
 };
 
@@ -153,6 +182,7 @@ export function Popup() {
     const [ clippedNoteId, setClippedNoteId ] = useState<string | null>(null);
     const [ shortcuts, setShortcuts ] = useState<Shortcuts>({});
     const [ draft, setDraft ] = useState<Draft>({ text: "" });
+    const [ saveState, setSaveState ] = useState<SaveState>();
 
     useEffect(() => {
         function onMessage(message: PopupMessage) {
@@ -169,11 +199,22 @@ export function Popup() {
         }
 
         browser.runtime.onMessage.addListener(onMessage);
+        // Tells the background that the popup is open, so it leaves the outcome of a save to it.
+        const port = browser.runtime.connect({ name: "popup" });
         void sendMessage({ name: "send-trilium-search-status" });
         void browser.commands.getAll().then((commands) => setShortcuts(shortcutsByCommand(commands)));
 
-        return () => browser.runtime.onMessage.removeListener(onMessage);
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+            port.disconnect();
+        };
     }, []);
+
+    /** Keeps the popup open while Trilium saves, and shows how it went. */
+    async function save(message: object, clip?: ClipChoice) {
+        setSaveState({ status: "saving", clip });
+        setSaveState({ ...await requestSave(message), clip });
+    }
 
     const status = describeStatus(searchStatus);
     const isMismatch = searchStatus?.status === "version-mismatch";
@@ -188,15 +229,18 @@ export function Popup() {
                 shortcuts={shortcuts}
                 draft={draft}
                 onDraftChange={setDraft}
+                saveState={saveState}
+                onSave={(message, clip) => void save(message, clip)}
             />
         );
     }
 
     return (
         <div className="popup">
-            {(clippedNoteId || isMismatch) && (
+            {(saveState || clippedNoteId || isMismatch) && (
                 <div className="notices">
-                    {clippedNoteId && (
+                    {saveState && <SaveStatus state={saveState} />}
+                    {!saveState && clippedNoteId && (
                         <div className="callout callout-info already-visited">
                             <span>Web page already clipped.</span>
                             <a
@@ -246,11 +290,13 @@ export function Popup() {
     );
 }
 
-function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
+function CaptureActions({ disabled, shortcuts, draft, onDraftChange, saveState, onSave: save }: {
     disabled: boolean;
     shortcuts: Shortcuts;
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
+    saveState: SaveState | undefined;
+    onSave: SaveHandler;
 }) {
     /** `undefined` while the page is read. */
     const [ tab, setTab ] = useState<TabContent>();
@@ -259,23 +305,30 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
         void readActiveTab().then(setTab);
     }, []);
 
-    function sendAndClose(name: string) {
-        void sendMessage({ name });
+    /** Cropping happens on the page, which the popup would cover, so it closes. */
+    function cropScreenshot() {
+        void sendMessage({ name: "save-cropped-screenshot" });
         window.close();
     }
 
-    const disabledReason = disabled ? DISCONNECTED_TITLE : undefined;
+    const saving = saveState && "status" in saveState;
+    const disabledReason = disabled ? DISCONNECTED_TITLE : saving ? SAVING_TITLE : undefined;
     const pageDisabledReason = disabledReason ?? (tab?.page === "inaccessible" ? UNREACHABLE_TITLE : undefined);
 
     let main: ComponentChildren;
-    if (tab?.page === "inaccessible") {
+    if (tab?.page === "inaccessible" && !tab.pdf) {
         main = (
             <EmptyState icon={Lock}>
                 {"The extension cannot access this page.\nIf it is a regular web page, reload it."}
             </EmptyState>
         );
     } else {
-        main = <PagePreview tab={tab} disabled={disabled} shortcuts={shortcuts} draft={draft} onDraftChange={onDraftChange} />;
+        main = (
+            <PagePreview
+                tab={tab} disabled={disabled} shortcuts={shortcuts} draft={draft} onDraftChange={onDraftChange}
+                saveState={saveState} onSave={save}
+            />
+        );
     }
 
     return (
@@ -284,22 +337,65 @@ function CaptureActions({ disabled, shortcuts, draft, onDraftChange }: {
 
             <div className="toolbar">
                 <ToolbarAction
-                    icon={Crop} label="Crop" name="Crop screenshot"
+                    icon={Screenshot} label="Area" name="Area screenshot"
                     shortcut={shortcuts.saveCroppedScreenshot} disabledReason={pageDisabledReason}
-                    onClick={() => sendAndClose("save-cropped-screenshot")}
+                    onClick={cropScreenshot}
                 />
                 <ToolbarAction
-                    icon={Screenshot} label="Screenshot" name="Visible area screenshot"
+                    icon={Fullscreen} label="Visible" name="Visible area screenshot"
                     disabledReason={pageDisabledReason}
-                    onClick={() => sendAndClose("save-whole-screenshot")}
+                    onClick={() => save({ name: "save-whole-screenshot" })}
                 />
                 <ToolbarAction
-                    icon={Tabs} label="Tabs" name="All tabs in window"
+                    icon={GalleryVertical} label="Full page" name="Full page screenshot"
+                    shortcut={shortcuts.saveFullPageScreenshot} disabledReason={pageDisabledReason}
+                    onClick={() => save({ name: "save-full-page-screenshot" })}
+                />
+                <ToolbarAction
+                    icon={WindowIcon} label="All tabs" name="All tabs in this window"
                     shortcut={shortcuts.saveTabs} disabledReason={disabledReason}
-                    onClick={() => sendMessage({ name: "save-tabs" })}
+                    onClick={() => save({ name: "save-tabs" })}
                 />
             </div>
         </div>
+    );
+}
+
+/**
+ * The save in progress, or how the last one went, with links to the note and the saved tabs. It
+ * takes the place of the notice that the page was already clipped.
+ */
+function SaveStatus({ state }: { state: SaveState }) {
+    if ("status" in state) {
+        return <div className="callout callout-info save-status">Saving to Trilium…</div>;
+    }
+    if ("error" in state) {
+        return <div className="callout callout-error save-status">{state.error}</div>;
+    }
+
+    const { noteId, tabIds } = state;
+    return (
+        <div className="callout callout-success save-status">
+            <span>{state.message}</span>
+            <span className="save-status-links">
+                <ActionLink message={{ name: "openNoteInTrilium", noteId }}>Open note</ActionLink>
+                {tabIds && <ActionLink message={{ name: "closeTabs", tabIds }}>Close saved tabs</ActionLink>}
+            </span>
+        </div>
+    );
+}
+
+/** A link that sends `message` to the background, and closes the popup. */
+function ActionLink({ message, children }: { message: object, children: ComponentChildren }) {
+    return (
+        <a
+            href="#"
+            onClick={(e) => {
+                e.preventDefault();
+                void sendMessage(message);
+                window.close();
+            }}
+        >{children}</a>
     );
 }
 
@@ -343,13 +439,15 @@ function EmptyState({ icon, className, children }: {
  * page offers. The page's HTML comes from an arbitrary website, so it is shown only in a sandboxed
  * frame.
  */
-function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
+function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange, saveState, onSave: save }: {
     /** `undefined` while the page is read. */
     tab: TabContent | undefined;
     disabled: boolean;
     shortcuts: Shortcuts;
     draft: Draft;
     onDraftChange: (draft: Draft) => void;
+    saveState: SaveState | undefined;
+    onSave: SaveHandler;
 }) {
     const { mode: chosenMode, variant: chosenVariant, title, description, author, text } = draft;
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -362,9 +460,10 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     /** Either reading: both carry the same title and labels. */
     const pageReading = page?.article ?? page?.wholePage ?? undefined;
     const selection = tab?.selection ?? undefined;
-    const modes = tab ? availableModes(!!page, selection) : [];
+    const modes = tab ? availableModes(!!page, selection, tab.pdf) : [];
     const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0];
     const clip = mode === "selection" ? selection : mode === "page" ? pageClip : undefined;
+    const choice: ClipChoice | undefined = mode === "page" ? `page:${variant}` : mode;
     const shownTitle = title ?? (pageReading ?? selection)?.title ?? tab?.title ?? "";
     const shownDescription =
         description ?? tab?.description ?? pageReading?.labels.pageDescription ?? "";
@@ -382,19 +481,17 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     }, [ tabId, unreadVariant ]);
 
     useEffect(() => {
-        if (mode === "note") textAreaRef.current?.focus();
+        textAreaRef.current?.focus();
     }, [ mode ]);
 
-    /** Keeps the popup open when the note could not be saved, so its text is not lost. */
-    async function saveNote() {
+    function saveNote() {
         const content = text.trim();
-        const result = await sendMessage({
+        save({
             name: "save-link-with-note",
             title: shownTitle.trim(),
             content: content ? textToHtml(content) : "",
             ...(savedDescription && { description: savedDescription })
-        });
-        if (result) window.close();
+        }, choice);
     }
 
     function saveClip(content: SelectedContent) {
@@ -402,38 +499,59 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
         if (mode === "page") {
             labels = withLabel(labels, "pageAuthor", savedAuthor);
         }
-        const titled = { ...content, title: shownTitle.trim() || content.title, ...(labels && { labels }) };
-        void sendMessage(mode === "selection"
+        const titled = {
+            ...content,
+            title: shownTitle.trim() || content.title,
+            content: withNote(content.content, text),
+            ...(labels && { labels })
+        };
+        save(mode === "selection"
             ? { name: "save-selection", selection: titled }
-            : { name: "save-whole-page", page: titled });
-        window.close();
+            : { name: "save-whole-page", page: titled }, choice);
     }
 
-    function saveNoteOnCtrlEnter(e: KeyboardEvent) {
-        if (mode === "note" && e.key === "Enter" && e.ctrlKey) {
-            e.preventDefault();
-            void saveNote();
-        }
+    function savePdf() {
+        save({
+            name: "save-pdf",
+            url: tab?.url,
+            title: shownTitle.trim(),
+            ...(savedDescription && { description: savedDescription })
+        }, choice);
     }
 
+    const busy = saveState
+        && ("status" in saveState || ("noteId" in saveState && saveState.clip === choice));
     let onSave: (() => void) | undefined;
     if (mode === "note") {
-        onSave = () => void saveNote();
+        onSave = saveNote;
+    } else if (mode === "pdf") {
+        onSave = savePdf;
     } else if (clip) {
         onSave = () => saveClip(clip);
     }
+    if (busy) onSave = undefined;
 
-    const pageUrl = mode === "note" ? tab?.url : clip?.pageUrl;
+    function saveOnCtrlEnter(e: KeyboardEvent) {
+        if (onSave && e.key === "Enter" && e.ctrlKey) {
+            e.preventDefault();
+            onSave();
+        }
+    }
+
+    const pageUrl = mode === "note" || mode === "pdf" ? tab?.url : clip?.pageUrl;
     const pageLabels = mode === "page" ? pageReading?.labels : undefined;
     const published = pageLabels?.publishedDate;
     const modified = pageLabels?.modifiedDate;
     const button = SAVE_BUTTONS[mode ?? "page"];
+    const bookmarkOnly = mode === "note" && modes.length === 1;
+    /** The body fits its fields where there is no preview to give room to. */
+    const compact = tab?.pdf || bookmarkOnly;
 
     return (
         <div className="page-preview">
             {mode && (
                 <div className="page-heading">
-                    <span className="page-icon"><Icon icon={Globe} /></span>
+                    <span className="page-icon"><Icon icon={MODE_ICONS[mode]} /></span>
                     <div className="page-heading-text">
                         <input
                             type="text"
@@ -442,7 +560,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             placeholder="Note title"
                             value={shownTitle}
                             onInput={(e) => onDraftChange({ ...draft, title: e.currentTarget.value })}
-                            onKeyDown={saveNoteOnCtrlEnter}
+                            onKeyDown={saveOnCtrlEnter}
                         />
                         {pageUrl && <div className="page-meta">{new URL(pageUrl).hostname}</div>}
                     </div>
@@ -459,13 +577,36 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                 </div>
             )}
 
-            {mode === "note" && modes.length === 1 && (
+            {bookmarkOnly && (
                 <div className="clip-hint">This page has nothing to save; save it as a bookmark.</div>
             )}
+            {mode === "pdf" && <div className="clip-hint">The PDF is saved as a file in Trilium.</div>}
 
-            <div className="page-body">
+            <div className={compact ? "page-body compact" : "page-body"}>
                 {mode && (
-                    <div className="page-fields">
+                    <div className={mode === "note" ? "page-fields bookmark" : "page-fields"}>
+                        {mode !== "pdf" && (
+                            <div className="page-field">
+                                <span
+                                    className="page-field-icon"
+                                    title={mode === "note"
+                                        ? "Your note about the page. It is saved as the content of the note."
+                                        : "Your note about the page. It is saved above the clipped content."}
+                                >
+                                    <Icon icon={InfoCircle} />
+                                </span>
+                                <textarea
+                                    ref={textAreaRef}
+                                    className="note-text"
+                                    aria-label="Your note"
+                                    placeholder="Add a note about this page"
+                                    rows={1}
+                                    value={text}
+                                    onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
+                                    onKeyDown={saveOnCtrlEnter}
+                                />
+                            </div>
+                        )}
                         <div className="page-field">
                             <span
                                 className="page-field-icon"
@@ -480,7 +621,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                 rows={2}
                                 value={shownDescription}
                                 onInput={(e) => onDraftChange({ ...draft, description: e.currentTarget.value })}
-                                onKeyDown={saveNoteOnCtrlEnter}
+                                onKeyDown={saveOnCtrlEnter}
                             />
                         </div>
                         {mode === "page" && (
@@ -498,6 +639,7 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                                     placeholder="Add an author"
                                     value={shownAuthor}
                                     onInput={(e) => onDraftChange({ ...draft, author: e.currentTarget.value })}
+                                    onKeyDown={saveOnCtrlEnter}
                                 />
                             </div>
                         )}
@@ -524,16 +666,6 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
                             </div>
                         )}
                     </div>
-                )}
-                {mode === "note" && (
-                    <textarea
-                        ref={textAreaRef}
-                        className="note-text"
-                        value={text}
-                        placeholder="Add a note about this page"
-                        onInput={(e) => onDraftChange({ ...draft, text: e.currentTarget.value })}
-                        onKeyDown={saveNoteOnCtrlEnter}
-                    />
                 )}
                 {mode === "page" && page && (
                     <div className="page-variant" role="group" aria-label="How to read the page">
@@ -576,6 +708,12 @@ function PagePreview({ tab, disabled, shortcuts, draft, onDraftChange }: {
     );
 }
 
+/** A clip's content with the user's note above it as an admonition, or as it is without a note. */
+function withNote(content: string, note: string) {
+    const text = note.trim();
+    return text ? `<aside class="admonition note">${textToHtml(text)}</aside>${content}` : content;
+}
+
 /** A clip's labels with the label `name` as the user left it, or without it when `value` is empty. */
 function withLabel(labels: Record<string, string> | undefined, name: string, value: string) {
     const { [name]: _, ...others } = labels ?? {};
@@ -599,11 +737,12 @@ function fitToContent(frame: HTMLIFrameElement) {
     }).observe(root);
 }
 
-/** The modes the page offers, the default first: the selection, then the page, then a note. */
-function availableModes(hasPage: boolean, selection: SelectedContent | undefined): ClipMode[] {
+/** The modes the page offers, the default first: the selection, the page or the PDF, then a note. */
+function availableModes(hasPage: boolean, selection: SelectedContent | undefined, pdf: boolean): ClipMode[] {
     const modes: ClipMode[] = [];
     if (selection) modes.push("selection");
     if (hasPage) modes.push("page");
+    if (pdf) modes.push("pdf");
     modes.push("note");
     return modes;
 }
@@ -662,12 +801,20 @@ function describeStatus(status: TriliumSearchStatus | undefined) {
 /** Asks the content script of the active tab for its readable page and its selection, together. */
 async function readActiveTab(): Promise<TabContent> {
     const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id === undefined) return { page: "inaccessible", selection: null };
+    if (tab?.id === undefined) return { page: "inaccessible", selection: null, pdf: false };
 
-    const [ page, selection, description ] = await Promise.all([
-        readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
+    const [ pdf, page, selection, description ] = await Promise.all([
+        isPdfTab(tab), readPage(tab.id), readSelection(tab.id), readDescription(tab.id)
     ]);
-    return { page, selection, title: tab.title, url: tab.url, description };
+    // The page around Chrome's PDF viewer has nothing to save but the PDF.
+    return {
+        page: pdf && typeof page === "object" ? "unreadable" : page,
+        selection,
+        title: tab.title,
+        url: tab.url,
+        description,
+        pdf
+    };
 }
 
 /**
@@ -807,6 +954,22 @@ export function iconVariant(icon: IconDefinition, pack: IconPack = "basic"): Ico
 /** A version mismatch counts as connected, so the buttons stay enabled and report it on use. */
 function isConnected(status: TriliumSearchStatus) {
     return status.status === "found-desktop" || status.status === "found-server" || status.status === "version-mismatch";
+}
+
+/** Sends a save to the background, and answers how it went, or why the background did not answer. */
+async function requestSave(message: object): Promise<SaveOutcome> {
+    let outcome: SaveOutcome | undefined;
+    try {
+        console.log("Sending message", message);
+        outcome = await browser.runtime.sendMessage(message);
+    } catch (e) {
+        console.error("Sending the save to the background script failed:", e);
+        return {
+            error: "Saving to Trilium failed: the popup could not reach the extension's background script"
+                + ` (${describeError(e)}).`
+        };
+    }
+    return outcome ?? { error: "Saving to Trilium failed: the extension's background script gave no answer." };
 }
 
 async function sendMessage(message: object) {

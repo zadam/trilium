@@ -14,7 +14,7 @@ WXT allows easy development of the plugin, with full TypeScript support and live
 *   Run `pnpm --filter web-clipper dev` to enter dev mode for Chrome (with manifest v3).
 *   Run `pnpm --filter web-clipper dev:firefox` to enter dev mode for Firefox (with manifest v2).
 
-This will open a separate browser instance in which the extension is automatically injected.
+This will open a separate browser instance in which the extension is automatically injected. Its profile is kept in `apps/web-clipper/.wxt/chrome-data` or `.wxt/firefox-data`, so the extension's settings and its toolbar button stay between runs; delete the folder to start with a fresh profile.
 
 > [!NOTE]
 > On NixOS, the same development commands work just fine. Just make sure the browser is available in the system path:

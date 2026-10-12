@@ -9,6 +9,11 @@ export function getMaxMigrationVersion() {
 
 // Migrations should be kept in descending order, so the latest migration is first.
 export const MIGRATIONS: (SqlMigration | JsMigration)[] = [
+    // Delete the globe icon the web clipper wrote onto clippings, so they take the icon of their clipType
+    {
+        version: 241,
+        module: () => import("./0241__drop_clipper_globe_icon.js")
+    },
     // Give every board its own select definition for the label it groups by, so the columns stop
     // living only in the board.json attachment
     {

@@ -17,12 +17,12 @@ body {
         padding: 10px 12px;
     }
 
-    .callout-info {
+    .callout-info,
+    .save-status {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        background: color-mix(in srgb, var(--admonition-note-accent-color) 15%, var(--main-background-color));
 
         a {
             flex-shrink: 0;
@@ -32,8 +32,29 @@ body {
         }
     }
 
+    .callout-info {
+        background: color-mix(in srgb, var(--admonition-note-accent-color) 15%, var(--main-background-color));
+    }
+
+    .callout-success {
+        background: color-mix(in srgb, var(--status-ok-color) 18%, var(--main-background-color));
+    }
+
     .callout-warning {
         background: color-mix(in srgb, var(--admonition-warning-accent-color) 15%, var(--main-background-color));
+    }
+
+    .callout-error {
+        background: color-mix(in srgb, var(--status-error-color) 18%, var(--main-background-color));
+    }
+
+    .save-status-links {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        align-items: flex-end;
+        gap: 6px;
+        white-space: nowrap;
     }
 
     .capture-actions {
@@ -165,6 +186,18 @@ body {
             border-radius: 6px;
             background: var(--main-background-color);
 
+            &.compact {
+                height: auto;
+
+                .page-fields {
+                    border-bottom: 0;
+                }
+
+                .page-fields.bookmark .note-text {
+                    min-height: auto;
+                }
+            }
+
             &:has(.page-content)::after {
                 content: "";
                 flex: none;
@@ -181,6 +214,14 @@ body {
             flex: none;
             padding: 6px 8px 6px 6px;
             border-bottom: 1px solid var(--main-border-color);
+
+            &.bookmark {
+                border-bottom: 0;
+
+                .note-text {
+                    min-height: 6lh;
+                }
+            }
         }
 
         .page-field {
@@ -202,6 +243,7 @@ body {
             }
         }
 
+        .note-text,
         .page-description,
         .page-author {
             --input-background-color: transparent;
@@ -223,6 +265,11 @@ body {
             }
         }
 
+        .note-text {
+            max-height: 10lh;
+            color: var(--main-text-color);
+        }
+
         .page-date {
             padding: 4px 6px;
             color: var(--muted-text-color);
@@ -237,25 +284,6 @@ body {
             height: 200px;
             border: 0;
             background: var(--main-background-color);
-        }
-
-        .note-text {
-            --input-background-color: transparent;
-            --input-hover-background: transparent;
-            --input-focus-background: transparent;
-
-            display: block;
-            flex: 1 0 120px;
-            width: 100%;
-            padding: 8px;
-            border: 0;
-            border-radius: 6px;
-            resize: none;
-
-            &:focus {
-                outline: 0;
-                box-shadow: inset 0 0 0 2px var(--input-focus-outline-color);
-            }
         }
 
         .clip-hint {
@@ -322,7 +350,7 @@ body {
 
     .toolbar {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 4px;
     }
 
