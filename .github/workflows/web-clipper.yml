@@ -69,7 +69,9 @@ jobs:
             --channel unlisted \
             --source-dir .output/firefox-mv2 \
             --upload-source-code .output/*-sources.zip \
-            --artifacts-dir .output
+            --artifacts-dir "$RUNNER_TEMP/signed"
+          chrome_zip=$(basename .output/*-chrome.zip)
+          mv "$RUNNER_TEMP"/signed/*.xpi ".output/${chrome_zip%-chrome.zip}-firefox.xpi"
 
       - name: Release web clipper extension
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
@@ -79,8 +81,8 @@ jobs:
           prerelease: ${{ contains(github.ref, '-rc') }}
           fail_on_unmatched_files: true
           files: |
-            apps/web-clipper/.output/*.zip
-            apps/web-clipper/.output/*.xpi
+            apps/web-clipper/.output/*-chrome.zip
+            apps/web-clipper/.output/*-firefox.xpi
           discussion_category_name: Releases
           make_latest: false
           token: ${{ secrets.RELEASE_PAT }}
