@@ -6,7 +6,7 @@ import { t } from "../../../services/i18n";
 import LabelValueInput from "../../attribute_widgets/label_value_input";
 import { EventDuration, EventRow, EventTimeRow } from "./EventField";
 import { useEventLabel } from "./hooks";
-import { EventDraft, withAllDay } from "./selection";
+import { EventDraft, normalizeEventDates, withAllDay, withStart } from "./selection";
 
 /**
  * Edits when an existing event happens, through the date and time labels the calendar draws it by
@@ -66,7 +66,10 @@ export function EventDatesFields({ value, allDay, onChange }: {
     allDay: boolean;
     onChange(next: EventDraft): void;
 }) {
-    const { startDate, endDate, startTime, endTime } = value;
+    // Shown and handed on with the end date it actually ends on, which an edit then writes back.
+    const event = normalizeEventDates(value);
+    const { startDate, endDate, startTime, endTime } = event;
+    const change = (next: EventDraft) => onChange(normalizeEventDates(next));
 
     return (
         <>
@@ -77,7 +80,7 @@ export function EventDatesFields({ value, allDay, onChange }: {
                     commitOn="blur"
                     // Never emptied: without a start date the note stops being an event at all.
                     // The field snaps back.
-                    onCommit={(date) => date && onChange({ ...value, startDate: date })}
+                    onCommit={(date) => date && change(withStart(event, { startDate: date }))}
                     inputProps={{ className: "form-control", "aria-label": t("calendar.dates.start_date") }}
                 />
                 <span className="calendar-event-row-separator" aria-hidden="true">–</span>
@@ -87,15 +90,15 @@ export function EventDatesFields({ value, allDay, onChange }: {
                     commitOn="blur"
                     // Emptied, the event ends on the day it starts: the label goes rather than
                     // staying blank, which is how the builder reads a single-day event.
-                    onCommit={(date) => onChange({ ...value, endDate: date || null })}
+                    onCommit={(date) => change({ ...event, endDate: date || null })}
                     inputProps={{ className: "form-control", "aria-label": t("calendar.dates.end_date") }}
                 />
             </EventRow>
 
             <EventTimeRow
                 hasTime={!allDay}
-                onAdd={() => onChange(withAllDay(value, false))}
-                onRemove={() => onChange(withAllDay(value, true))}
+                onAdd={() => change(withAllDay(event, false))}
+                onRemove={() => change(withAllDay(event, true))}
             >
                 <LabelValueInput
                     labelType="time"
@@ -103,7 +106,7 @@ export function EventDatesFields({ value, allDay, onChange }: {
                     commitOn="blur"
                     // Never emptied either: a timed event without a start time is the all-day
                     // shape, and the button beside the hours is the way to say that.
-                    onCommit={(time) => time && onChange({ ...value, startTime: time })}
+                    onCommit={(time) => time && change(withStart(event, { startTime: time }))}
                     inputProps={{ className: "form-control", "aria-label": t("calendar.dates.start_time") }}
                 />
                 <span className="calendar-event-row-separator" aria-hidden="true">–</span>
@@ -111,10 +114,10 @@ export function EventDatesFields({ value, allDay, onChange }: {
                     labelType="time"
                     value={endTime ?? ""}
                     commitOn="blur"
-                    onCommit={(time) => time && onChange({ ...value, endTime: time })}
+                    onCommit={(time) => time && change({ ...event, endTime: time })}
                     inputProps={{ className: "form-control", "aria-label": t("calendar.dates.end_time") }}
                 />
-                {startDate && <EventDuration event={value} />}
+                {startDate && <EventDuration event={event} />}
             </EventTimeRow>
         </>
     );

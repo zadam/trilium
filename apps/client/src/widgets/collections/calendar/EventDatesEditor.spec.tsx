@@ -93,6 +93,33 @@ describe("EventDatesEditor", () => {
         expect(dateInputs()).toHaveLength(2);
     });
 
+    it("shows the day an event actually ends on, and writes it once an edit is made", () => {
+        // Stored as ending at 08:00 on its own start day, which the calendar draws as the next day.
+        const note = buildNote({
+            title: "Shift", "#startDate": "2026-10-16", "#endDate": "2026-10-16",
+            "#startTime": "09:00", "#endTime": "08:00"
+        });
+        mount(note);
+
+        expect([ ...dateInputs() ].map((input) => input.value)).toEqual([ "2026-10-16", "2026-10-17" ]);
+        expect(setLabel).not.toHaveBeenCalled();
+
+        commitValue(timeInputs()[1], "07:00");
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "endTime", "07:00");
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "endDate", "2026-10-17");
+    });
+
+    it("moves the end time with the start time, keeping the duration", () => {
+        const note = buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" });
+        mount(note);
+
+        commitValue(timeInputs()[0], "16:00");
+
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "startTime", "16:00");
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "endTime", "17:30");
+        expect(setLabel).not.toHaveBeenCalledWith(note.noteId, "endDate", expect.anything());
+    });
+
     it("shows and edits the end date of a timed event that spans several days", () => {
         const note = buildNote({
             title: "Night shift", "#startDate": "2026-06-05", "#endDate": "2026-06-06",

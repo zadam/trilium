@@ -44,8 +44,10 @@
   again, press the <span class="tn-icon bx bx-x"></span> button at the end
   of the row. Adding or removing a time keeps the dates, so an event can
   start at a time on one day and end at a time on another (for example, a
-  night shift). If the end date is left empty, the event ends on the day
-  it starts, or on the next day when the end time is before the start time.</p>
+  night shift). Changing the start date or time moves the end by the same
+  amount, keeping the duration. An empty end date means the event ends on
+  the day it starts; setting the end time before the start time moves the
+  end date to the next day.</p>
 <p>After creating the event, it will show up on the calendar. To edit the
   content of the event (including recurrence), click on it to bring it into
   the popup view.</p>
@@ -346,6 +348,10 @@ class="table">
 </p>
 <p>The calendar displays all the child notes of the Collection that have
   a <code>#startDate</code>. An <code>#endDate</code> can optionally be added.</p>
+<p>A text note with a start date is shown with the <span class="tn-icon bx bx-calendar-event"></span> icon
+  in the note tree and elsewhere, unless it has an icon of its own (set with <code>#iconClass</code>).
+  The start date is read from the label <code>#calendar:startDate</code> names,
+  if any.</p>
 <p>The start date &amp; end date can easily be edited from the calendar collection
   itself by clicking on the event. To edit the date while in the event note
   itself, the following attributes can be added to the Collection note:</p><pre><code class="language-text-x-trilium-auto">#viewType=calendar #label:startDate(inheritable)="promoted,alias=Start Date,single,date"

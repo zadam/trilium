@@ -10,7 +10,7 @@ import FormTextBox from "../../react/FormTextBox";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
 import { EventDatesFields } from "./EventDatesEditor";
-import { AnchorPoint, EventDraft, narrowAnchorRect } from "./selection";
+import { AnchorPoint, EventDraft, narrowAnchorRect, normalizeEventDates } from "./selection";
 
 /**
  * The ghost: the form an event is decided in before its note exists. It asks for the name, shows
@@ -50,8 +50,8 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
 }) {
     const [ title, setTitle ] = useState("");
     // The range as dragged, until the user changes whether it is all-day or edits its hours.
-    const [ draft, setDraft ] = useState(initialDraft);
-    useEffect(() => setDraft(initialDraft), [ initialDraft ]);
+    const [ draft, setDraft ] = useState(() => normalizeEventDates(initialDraft));
+    useEffect(() => setDraft(normalizeEventDates(initialDraft)), [ initialDraft ]);
     const allDay = !draft.startTime;
     // Committing is asked for once, however many times Enter falls before the note arrives and
     // the form goes: each ask would make its own note.

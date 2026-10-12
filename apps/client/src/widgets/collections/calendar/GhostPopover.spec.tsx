@@ -158,6 +158,22 @@ describe("GhostPopover", () => {
         expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-08", endDate: "2026-06-10" });
     });
 
+    it("leaves the end date empty for a slot within a single day", () => {
+        // A drag within one day of the week view names that day as the end date too.
+        act(() => render(
+            <GhostPopover
+                draft={{ startDate: "2026-06-05", endDate: "2026-06-05", startTime: "09:00", endTime: "09:30" }}
+                anchor={null}
+                container={container}
+                onCommit={vi.fn()}
+                onCancel={() => {}}
+                onDismiss={() => {}}
+            />,
+            container));
+
+        expect(dateInputs().map((input) => input.value)).toEqual([ "2026-06-05", "" ]);
+    });
+
     it("lets the hours be removed again, making the draft whole-day", async () => {
         const onCommit = vi.fn().mockResolvedValue(undefined);
         mount(onCommit);

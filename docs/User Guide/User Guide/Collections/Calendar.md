@@ -28,7 +28,7 @@ In either cases, a small popup will show with a prompt for a title and the date 
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 
-To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. Adding or removing a time keeps the dates, so an event can start at a time on one day and end at a time on another (for example, a night shift). If the end date is left empty, the event ends on the day it starts, or on the next day when the end time is before the start time.
+To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. Adding or removing a time keeps the dates, so an event can start at a time on one day and end at a time on another (for example, a night shift). Changing the start date or time moves the end by the same amount, keeping the duration. An empty end date means the event ends on the day it starts; setting the end time before the start time moves the end date to the next day.
 
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
 
@@ -166,6 +166,8 @@ For each note of the calendar, the following attributes can be used:
 ![](8_Calendar_image.png)
 
 The calendar displays all the child notes of the Collection that have a `#startDate`. An `#endDate` can optionally be added.
+
+A text note with a start date is shown with the <span class="tn-icon bx bx-calendar-event"></span> icon in the note tree and elsewhere, unless it has an icon of its own (set with `#iconClass`). The start date is read from the label `#calendar:startDate` names, if any.
 
 The start date & end date can easily be edited from the calendar collection itself by clicking on the event. To edit the date while in the event note itself, the following attributes can be added to the Collection note:
 

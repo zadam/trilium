@@ -1,3 +1,5 @@
+import { getTimedDurationMinutes } from "./utils";
+
 /**
  * An event still being decided on: the range the reader dragged out, standing for a note that does
  * not exist yet. Nothing is created until the draft is committed (see GhostPopover), so a ghost
@@ -25,6 +27,63 @@ export function withAllDay(draft: EventDraft, allDay: boolean): EventDraft {
     }
 
     return { ...draft, startTime: DEFAULT_START_TIME, endTime: draft.endTime ?? DEFAULT_END_TIME };
+}
+
+/**
+ * Makes the end date say the day an event actually ends on, so the date fields never contradict
+ * how the calendar draws it (see buildEvent in event_builder.ts):
+ *
+ * - A timed event whose end falls before its start ends on the first day the end time comes after
+ *   the start: the start day itself, or the next day for an end time before the start time.
+ * - An all-day event whose end date is before its start date lasts a single day.
+ * - An end date equal to the start date is emptied, an empty end date meaning the event ends on the
+ *   day it starts.
+ *
+ * Returns the event unchanged where its end date is already right.
+ */
+export function normalizeEventDates(event: EventDraft): EventDraft {
+    const { startDate, startTime, endTime } = event;
+    let endDate = event.endDate || null;
+
+    if (startTime && endTime) {
+        // ISO dates and 24-hour times compare correctly as strings.
+        if (`${endDate ?? startDate}T${endTime}` < `${startDate}T${startTime}`) {
+            endDate = endTime < startTime ? addDays(startDate, 1) : startDate;
+        }
+    } else if (endDate && endDate < startDate) {
+        endDate = null;
+    }
+
+    if (endDate === startDate) {
+        endDate = null;
+    }
+
+    return endDate === (event.endDate || null) ? event : { ...event, endDate };
+}
+
+/**
+ * Moves an event to a new start date or start time, keeping how long it lasts, as calendar apps do:
+ * the end moves by as much as the start, across midnight where it has to. Only an edit of the end
+ * itself changes the duration.
+ */
+export function withStart(event: EventDraft, start: { startDate?: string; startTime?: string }): EventDraft {
+    const current = normalizeEventDates(event);
+    const next = { ...current, ...start };
+    const duration = getTimedDurationMinutes(current);
+
+    if (duration !== null && next.startTime) {
+        const [ hours, minutes ] = next.startTime.split(":").map(Number);
+        const endMinute = hours * 60 + minutes + duration;
+        const endOfDay = endMinute % (24 * 60);
+        const endDay = Math.floor(endMinute / (24 * 60));
+        // Back on the start day: an end date the event had is cleared, a missing one stays missing.
+        next.endDate = endDay > 0 ? addDays(next.startDate, endDay) : (current.endDate ? null : current.endDate);
+        next.endTime = `${pad(Math.floor(endOfDay / 60))}:${pad(endOfDay % 60)}`;
+    } else if (current.endDate) {
+        next.endDate = addDays(current.endDate, daysBetween(current.startDate, next.startDate));
+    }
+
+    return normalizeEventDates(next);
 }
 
 /** A point in viewport coordinates — where a click or a drag's end fell, anchoring a popover
@@ -82,3 +141,18 @@ export function narrowAnchorRect(rect: DOMRect, point: AnchorPoint | null): DOMR
  *  a window that narrow fills it, and the card is then placed by the viewport whatever anchor it is
  *  handed. */
 const MAX_ANCHOR_WIDTH = 480;
+
+/** Adds days to an ISO date, counted in calendar days so a daylight saving change cannot shift it. */
+function addDays(isoDate: string, days: number) {
+    const [ year, month, day ] = isoDate.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day + days));
+    return date.toISOString().slice(0, 10);
+}
+
+function daysBetween(from: string, to: string) {
+    return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / (24 * 60 * 60 * 1000);
+}
+
+function pad(value: number) {
+    return String(value).padStart(2, "0");
+}
