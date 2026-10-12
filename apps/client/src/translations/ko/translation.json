@@ -1349,7 +1349,8 @@
     "link-distance": "링크 거리",
     "too-many-notes_other": "여기에 노트가 {{count}}개 있습니다. 모두 표시하면 속도가 느려질 수 있습니다.",
     "show-anyway": "지도 표시",
-    "expand": "지도 펼치기"
+    "expand": "지도 펼치기",
+    "fit-to-view": "화면에 맞추기"
   },
   "note_paths": {
     "title": "노트 경로",
@@ -1647,7 +1648,9 @@
     "disabled_button_enable": "렌더 노트 활성화",
     "error_title": "스크립트 노트 실행 실패",
     "error_show_details": "세부 정보 보기",
-    "error_note_label": "스크립트 노트:"
+    "error_note_label": "스크립트 노트:",
+    "disabled_read_only": "이 렌더링 노트는 외부 소스에서 가져온 것이므로 활성화되지 않습니다.",
+    "nothing_to_display": "이 노트에는 표시할 내용이 없습니다."
   },
   "web_view_setup": {
     "title": "웹페이지의 실시간 뷰를 직접 Trilium에 생성합니다",
