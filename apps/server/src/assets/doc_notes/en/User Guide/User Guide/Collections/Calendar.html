@@ -549,14 +549,13 @@ class="table">
 <h3>Displaying an age on a recurring event</h3>
 <p>A birthday or an anniversary repeats every year, and what is interesting
   about each occurrence is the number of years it marks. <code>#calendar:titleTemplate</code> sets
-  the title an event is displayed with, and is filled in again for every occurrence
-  the recurrence rule produces:</p><pre><code class="language-text-x-trilium-auto">#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${age})"</code></pre>
-<p>The event is then displayed as &ldquo;John Smith (35)&rdquo; in 2025, &ldquo;John
-  Smith (36)&rdquo; in 2026, and so on. Only the calendar is affected; the
-  note keeps its own title.</p>
+  the title an event is displayed with, and is filled in again for every
+  occurrence the recurrence rule produces:</p><pre><code class="language-text-x-trilium-auto">#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"</code></pre>
+<p>The event is then displayed as “John Smith (35)” in 2025, “John Smith
+  (36)” in 2026, and so on. Only the calendar is affected; the note keeps
+  its own title.</p>
 <p>The following values can be used in the template:</p>
-<figure
-class="table">
+<figure class="table">
   <table>
     <thead>
       <tr>
@@ -572,7 +571,7 @@ class="table">
           or the attribute <code>#calendar:title</code> points to.</td>
       </tr>
       <tr>
-        <td><code>${age}</code>
+        <td><code>${years}</code>
         </td>
         <td>The whole years between <code>#startDate</code> and the occurrence being
           displayed. It is <code>0</code> on the first occurrence.</td>
@@ -592,9 +591,10 @@ class="table">
   </table>
 </figure>
 <p>To use the same template for every event of a calendar, make the label
-  inheritable on the Collection note:</p><pre><code class="language-text-x-trilium-auto">#calendar:titleTemplate(inheritable)="${title} (${age})"</code></pre>
-<aside class="admonition note">
-  <p>A template that cannot be read &mdash; an unknown value, or an expression
-    other than a value and the <code>format</code> call shown above &mdash; leaves
-    the event with its plain title and reports the reason in the browser console.</p>
+  inheritable on the Collection note:</p><pre><code class="language-text-x-trilium-auto">#calendar:titleTemplate(inheritable)="${title} (${years})"</code></pre>
+<aside
+class="admonition note">
+  <p>A template that cannot be read — an unknown value, or an expression other
+    than a value and the <code>format</code> call shown above — leaves the event
+    with its plain title and reports the reason in the browser console.</p>
 </aside>

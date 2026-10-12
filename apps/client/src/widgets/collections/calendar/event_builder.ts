@@ -226,7 +226,7 @@ export async function buildEvent(note: FNote, {
  *
  * Runs as the chip is drawn rather than in {@link buildEvent} because FullCalendar expands a
  * `#recurrence` rule into occurrences itself: a repeating event is one {@link EventInput} with
- * one title, so `${age}` — the whole years from `#startDate` to this occurrence — is only known
+ * one title, so `${years}` — the whole years from `#startDate` to this occurrence — is only known
  * here.
  *
  * A template {@link evaluateTemplate} rejects leaves the event with its plain title.
@@ -238,7 +238,7 @@ export function buildOccurrenceTitle({ title, start, extendedProps }: Occurrence
     }
 
     // Both dates as plain days, without the time: a DST shift between them would otherwise take an
-    // hour off the span and round `age` down by a year.
+    // hour off the span and round `years` down by a year.
     const occurrenceDay = formatDateToLocalISO(start);
     const seriesStartDay = dayjs(seriesStart.split("T")[0]);
     const occurrence = occurrenceDay ? dayjs(occurrenceDay) : seriesStartDay;
@@ -246,7 +246,7 @@ export function buildOccurrenceTitle({ title, start, extendedProps }: Occurrence
     try {
         return evaluateTemplate(titleTemplate, {
             title,
-            age: occurrence.diff(seriesStartDay, "year"),
+            years: occurrence.diff(seriesStartDay, "year"),
             date: occurrence,
             startDate: seriesStartDay
         });

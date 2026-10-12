@@ -13,7 +13,7 @@
  * - ${parentNote.getLabelValue('authorName')}
  * - ${note.title}
  * - ${note.dateCreatedObj.format('MM-DD')}
- * - ${title} (${age})
+ * - ${title} (${years})
  */
 
 /** Allowed method names that can be called on template variables. */

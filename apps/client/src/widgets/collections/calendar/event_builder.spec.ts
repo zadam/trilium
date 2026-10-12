@@ -470,14 +470,14 @@ describe("Recurrence", () => {
                 "#startDate": "1990-05-12",
                 "#startTime": "09:00",
                 "#recurrence": "RRULE:FREQ=YEARLY",
-                "#calendar:titleTemplate": "${title} (${age})"
+                "#calendar:titleTemplate": "${title} (${years})"
             }
         ]);
         const events = await buildEvents(noteIds);
 
         expect(events[0]).toMatchObject({
             title: "John Smith",
-            titleTemplate: "${title} (${age})",
+            titleTemplate: "${title} (${years})",
             // The date as the label holds it, the start time not yet worked into it.
             seriesStart: "1990-05-12"
         });
@@ -610,25 +610,25 @@ describe("buildOccurrenceTitle", () => {
     });
 
     it("counts the whole years from the start date to the occurrence", () => {
-        expect(buildOccurrenceTitle(occurrence("${title} (${age})", new Date(2026, 4, 12))))
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(2026, 4, 12))))
             .toBe("John Smith (36)");
-        expect(buildOccurrenceTitle(occurrence("${title} turns ${age}", new Date(2027, 4, 12))))
+        expect(buildOccurrenceTitle(occurrence("${title} turns ${years}", new Date(2027, 4, 12))))
             .toBe("John Smith turns 37");
         // The day the series itself starts on, which is where the count starts.
-        expect(buildOccurrenceTitle(occurrence("${title} (${age})", new Date(1990, 4, 12))))
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(1990, 4, 12))))
             .toBe("John Smith (0)");
     });
 
     it("reads both the occurrence's date and the series'", () => {
         const template =
-            "${title}, born ${startDate.format('YYYY')}, turns ${age} in ${date.format('YYYY')}";
+            "${title}, born ${startDate.format('YYYY')}, turns ${years} in ${date.format('YYYY')}";
         expect(buildOccurrenceTitle(occurrence(template, new Date(2026, 4, 12))))
             .toBe("John Smith, born 1990, turns 36 in 2026");
     });
 
     it("falls back to the plain title for a template the evaluator rejects, saying so once", () => {
         const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        const broken = occurrence("${nmae} (${age})", new Date(2026, 4, 12));
+        const broken = occurrence("${nmae} (${years})", new Date(2026, 4, 12));
 
         expect(buildOccurrenceTitle(broken)).toBe("John Smith");
         expect(buildOccurrenceTitle(broken)).toBe("John Smith");

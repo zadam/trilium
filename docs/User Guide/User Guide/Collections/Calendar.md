@@ -305,7 +305,7 @@ Moreover, if there are more relations of the same name, they will be displayed a
 A birthday or an anniversary repeats every year, and what is interesting about each occurrence is the number of years it marks. `#calendar:titleTemplate` sets the title an event is displayed with, and is filled in again for every occurrence the recurrence rule produces:
 
 ```
-#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${age})"
+#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"
 ```
 
 The event is then displayed as “John Smith (35)” in 2025, “John Smith (36)” in 2026, and so on. Only the calendar is affected; the note keeps its own title.
@@ -315,14 +315,14 @@ The following values can be used in the template:
 | Value | Description |
 | --- | --- |
 | `${title}` | The title the event would otherwise be displayed with: the note title, or the attribute `#calendar:title` points to. |
-| `${age}` | The whole years between `#startDate` and the occurrence being displayed. It is `0` on the first occurrence. |
+| `${years}` | The whole years between `#startDate` and the occurrence being displayed. It is `0` on the first occurrence. |
 | `${date}` | The date of the occurrence being displayed, as a [day.js](https://day.js.org/docs/en/display/format) object. For example, `${date.format('YYYY')}`. |
 | `${startDate}` | The date the event starts on, in the same form. For example, `${startDate.format('YYYY')}`. |
 
 To use the same template for every event of a calendar, make the label inheritable on the Collection note:
 
 ```
-#calendar:titleTemplate(inheritable)="${title} (${age})"
+#calendar:titleTemplate(inheritable)="${title} (${years})"
 ```
 
 > [!NOTE]
