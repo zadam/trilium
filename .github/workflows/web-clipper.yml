@@ -58,13 +58,28 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+      - name: Sign the Firefox extension
+        if: ${{ startsWith(github.ref, 'refs/tags/web-clipper-v') }}
+        working-directory: apps/web-clipper
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          pnpm exec web-ext sign \
+            --channel unlisted \
+            --source-dir .output/firefox-mv2 \
+            --upload-source-code .output/*-sources.zip \
+            --artifacts-dir .output
+
       - name: Release web clipper extension
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         if: ${{ startsWith(github.ref, 'refs/tags/web-clipper-v') }}
         with:
           draft: false
           fail_on_unmatched_files: true
-          files: apps/web-clipper/.output/*.zip
+          files: |
+            apps/web-clipper/.output/*.zip
+            apps/web-clipper/.output/*.xpi
           discussion_category_name: Releases
           make_latest: false
           token: ${{ secrets.RELEASE_PAT }}
