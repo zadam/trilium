@@ -1774,13 +1774,10 @@
   },
   "editable_text": {
     "placeholder": "Notunuzun içeriğini buraya yazın...",
-    "editor_crashed_title": "Metin düzenleyici çöktü",
-    "editor_crashed_content": "İçeriğiniz başarıyla kurtarıldı, ancak en son değişikliklerinizin bir kısmı kaydedilmemiş olabilir.",
     "editor_crashed_details_button": "Daha fazla ayrıntı görüntüle...",
     "editor_crashed_details_intro": "Bu hatayı birkaç kez yaşarsanız, aşağıdaki bilgiyi yapıştırarak GitHub üzerinden bildirmeyi düşünün.",
     "editor_crashed_details_title": "Teknik bilgi",
-    "auto-detect-language": "Otomatik algılandı",
-    "keeps-crashing": "Düzenleme bileşeni sürekli çöküyor. Lütfen Trilium'u yeniden başlatmayı deneyin. Sorun devam ederse, bir hata bildirimi oluşturmayı düşünün."
+    "auto-detect-language": "Otomatik algılandı"
   },
   "empty": {
     "open_note_instruction": "Aşağıdaki girişe notun başlığını yazarak bir not açın veya ağaçtan bir not seçin.",

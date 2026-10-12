@@ -1215,9 +1215,6 @@
   "editable_text": {
     "placeholder": "Geben Sie hier den Inhalt Ihrer Notiz ein...",
     "auto-detect-language": "Automatisch erkannt",
-    "keeps-crashing": "Die Bearbeitungskomponente stürzt immer wieder ab. Bitte starten Sie Trilium neu. Wenn das Problem weiterhin besteht, erstellen Sie einen Fehlerbericht.",
-    "editor_crashed_title": "Der Texteditor ist abgestürzt",
-    "editor_crashed_content": "Ihr Inhalt wurde erfolgreich wiederhergestellt, aber kürzlich gemachte Änderungen wurden unter Umständen nicht gespeichert.",
     "editor_crashed_details_button": "Mehr Details anzeigen...",
     "editor_crashed_details_intro": "Falls dieser Fehler häufiger auftritt, ziehen Sie in Betracht uns diesen über GitHub zu melden, indem Sie die folgenden Informationen bereitstellen.",
     "editor_crashed_details_title": "Technische Informationen"

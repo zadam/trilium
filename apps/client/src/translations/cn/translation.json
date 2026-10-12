@@ -1253,9 +1253,6 @@
   "editable_text": {
     "placeholder": "在这里输入你的笔记内容...",
     "auto-detect-language": "自动检测",
-    "keeps-crashing": "编辑组件时持续崩溃。请尝试重启 Trilium。如果问题仍然存在，请考虑提交错误报告。",
-    "editor_crashed_title": "文本编辑器崩溃",
-    "editor_crashed_content": "你的内容已经成功恢复，但是某些最近的内容可能没有保存。",
     "editor_crashed_details_button": "浏览更多明细...",
     "editor_crashed_details_intro": "如果你多次遇到此错误，请考虑通过粘贴以下信息在 GitHub 上报告。",
     "editor_crashed_details_title": "技术信息",
