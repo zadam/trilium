@@ -94,23 +94,23 @@ Our documentation is available in multiple formats:
     server](https://docs.triliumnotes.org/user-guide/setup/server/cloud-hosting)
 * [Sharing](https://docs.triliumnotes.org/user-guide/advanced-usage/sharing)
   (publicering) af noter på det offentlige internet
-* Strong [note
+* Stærk [note
   encryption](https://docs.triliumnotes.org/user-guide/concepts/notes/protected-notes)
-  with per-note granularity
-* Sketching diagrams, based on [Excalidraw](https://excalidraw.com/) (note type
-  "canvas")
+  med kryptering på enkeltnoteniveau
+* Tegn diagrammer med Excalidraw (notetypen »canvas«)
 * [Relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and
+  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) og
   [note/link maps](https://docs.triliumnotes.org/user-guide/note-types/note-map)
-  for visualizing notes and their relations
-* Mind maps, based on [Mind Elixir](https://docs.mind-elixir.com/)
-* [Geo maps](https://docs.triliumnotes.org/user-guide/collections/geomap) with
-  location pins and GPX tracks
-* [Scripting](https://docs.triliumnotes.org/user-guide/scripts) - see [Advanced
+  til visualisering af noter og deres relationer
+* Tankekort baseret på [Mind Elixir](https://docs.mind-elixir.com/)
+* [Geo maps](https://docs.triliumnotes.org/user-guide/collections/geomap) med
+  positionsmarkører og GPX-spor
+* [Scripting](https://docs.triliumnotes.org/user-guide/scripts) – se [Advanced
   showcases](https://docs.triliumnotes.org/user-guide/advanced-usage/advanced-showcases)
 * [REST API](https://docs.triliumnotes.org/user-guide/advanced-usage/etapi) for
   automation
-* Scales well in both usability and performance upwards of 100 000 notes
+* Fungerer godt med hensyn til både brugervenlighed og ydeevne, selv med over
+  100.000 noter
 * Touch optimized [mobile
   frontend](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend) for
   smartphones and tablets
