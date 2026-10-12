@@ -13,6 +13,7 @@ import dialog from "../../../services/dialog";
 import { getHue, parseColor } from "../../../services/css_class_manager";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
+import { noteTypeOptionIcon } from "../../../services/note_types";
 import { isMobile } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Icon from "../../react/Icon";
@@ -39,14 +40,13 @@ const MIN_CARD_HEIGHT = 32;
 /** How long an open takes. Matches `--board-expand-duration` in the board's own rules. */
 export const EXPAND_MS = 200;
 import NoteLink from "../../react/NoteLink";
+import TemplatePill, { type TemplateChoice } from "../../react/TemplatePill";
 import {
     BoardActionsContext, BoardDragStateContext, BoardEditingContext, BoardOverlayHostContext,
     BoardSelectionModeContext
 } from ".";
 import BoardApi from "./api";
 import Card from "./card";
-import CardTemplatePill from "./card_template_pill";
-import { cardTemplateIcon, type CardTemplates } from "./card_templates";
 import { DEFAULT_CARD_ICON, DEFAULT_COLUMN_ICON, INBOX_COLUMN } from "./columns";
 import { ColumnToolbar, RAIL_EXIT_MS } from "./card_toolbar";
 import { openColumnContextMenu, openColumnSortMenu, openCreateCardMenu } from "./context_menu";
@@ -133,7 +133,7 @@ export default function Column({
      */
     standsAside?: number,
     /** What a new card is made from, and how the reader picks something else. */
-    cardTemplates: CardTemplates,
+    cardTemplates: TemplateChoice,
     /** Whether the inbox also collects notes deeper than the board's direct children. */
     nested?: boolean,
     /** The note limit, absent if disabled. */
@@ -1020,7 +1020,7 @@ function AddNewItem({
 }: {
     column: string,
     api: BoardApi,
-    cardTemplates: CardTemplates,
+    cardTemplates: TemplateChoice,
     /** Whether the column orders its own cards, which leaves the reader no end to pick. */
     isSorted?: boolean,
     isCreating?: boolean,
@@ -1044,7 +1044,7 @@ function AddNewItem({
     // unsaved, so that reaching for something else and coming back does not cost the title.
     const [ initialTitle, setInitialTitle ] = useState("");
     // The icon a card made from the current template would carry.
-    const templateIcon = cardTemplateIcon(cardTemplates.current) ?? DEFAULT_CARD_ICON;
+    const templateIcon = noteTypeOptionIcon(cardTemplates.current) ?? DEFAULT_CARD_ICON;
     // Kept between cards, unlike the title: a run of cards is often a run of the same kind of card.
     const [ icon, setIcon ] = useState(templateIcon);
     /** The template icon `icon` was last set from, telling a picked icon from a followed one. */
@@ -1147,7 +1147,14 @@ function AddNewItem({
                     // cards is already at the end the reader asked for, and a sorted column places
                     // the card itself.
                     openPlacements={!insert && !isSorted ? openCreateCardMenu : undefined}
-                    footer={(hold) => <CardTemplatePill {...cardTemplates} {...hold} />}
+                    footer={(hold) => (
+                        <TemplatePill
+                            {...cardTemplates}
+                            {...hold}
+                            title={t("board_view.card-template")}
+                            moreText={t("board_view.more-templates")}
+                        />
+                    )}
                     icon={{
                         current: icon,
                         onSelect: setIcon,

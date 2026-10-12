@@ -19,8 +19,9 @@ import { buildNote } from "../../../test/easy-froca";
 import { BoardViewData } from ".";
 import BoardApi, { getPendingWrites, PendingColumnWrites } from "./api";
 import { ColumnItem, ColumnMap } from "./data";
-import { BOARD_TEMPLATE_ID, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN } from "./columns";
-import { DEFAULT_CARD_TEMPLATES } from "./card_templates";
+import {
+    BOARD_TEMPLATE_ID, DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN
+} from "./columns";
 import { COLUMN_ID_LENGTH } from "./reference";
 
 vi.mock("../../../services/bulk_action", () => ({

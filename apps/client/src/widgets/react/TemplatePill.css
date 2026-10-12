@@ -1,0 +1,35 @@
+.template-pill .template-pill-button {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  max-width: 100%;
+  height: 1.6em;
+  border: 1px solid var(--main-border-color);
+  border-radius: 999px;
+  padding-inline: 0.5em;
+  background-color: transparent;
+  color: var(--muted-text-color);
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.template-pill .template-pill-button:hover {
+  border-color: var(--main-text-color);
+  color: var(--main-text-color);
+}
+
+.template-pill .template-pill-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tn-dropdown-portal.template-pill .dropdown-item {
+  display: flex;
+  align-items: center;
+}
+
+.tn-dropdown-portal.template-pill .template-pill-current {
+  margin-inline-start: auto;
+  padding-inline-start: 1.5em;
+}

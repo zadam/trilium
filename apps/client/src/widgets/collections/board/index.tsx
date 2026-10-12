@@ -25,7 +25,7 @@ import type {
 } from "../../../services/shortcut_hints";
 import ws from "../../../services/ws";
 import { isMobile } from "../../../services/utils";
-import { type NoteTypeOption, resolveNoteTypeOptions } from "../../../services/note_types";
+import { type NoteTypeOption } from "../../../services/note_types";
 import {
     type PromotedAttributeSetting, resolvePromotedAttributes, visiblePromotedAttributeNames
 } from "../promoted_attributes";
@@ -38,6 +38,7 @@ import {
     useTrackedElement, useTriliumEvent
 } from "../../react/hooks";
 import OverlayControlGroup, { OverlayControlButton } from "../../react/OverlayControlGroup";
+import { type TemplateChoiceConfig, useTemplateChoice } from "../../react/TemplatePill";
 import { ShortcutHintOverlayButton } from "../../shortcut_hints/shortcut_hint_button";
 import { onWheelHorizontalScroll } from "../../widget_utils";
 import { useDragPan } from "../../react/drag_pan";
@@ -59,7 +60,6 @@ import {
     COLUMN_WIDTH_LABEL, columnWidthClass, DEFAULT_GROUP_BY, getStatusDefinition, INBOX_COLUMN
 } from "./columns";
 import Column, { clearGap, EXPAND_MS, placeCard, settleCards } from "./column";
-import { currentCardTemplate, DEFAULT_CARD_TEMPLATES } from "./card_templates";
 import BoardGroupBy, { groupingOptions } from "./group_by";
 import { useBoardReference } from "./reference";
 import { openBoardContextMenu } from "./context_menu";
@@ -82,7 +82,8 @@ export interface HoldOpen {
     onClosed: () => void;
 }
 
-export interface BoardViewData {
+/** The card templates default to `DEFAULT_CARD_TEMPLATES`. */
+export interface BoardViewData extends TemplateChoiceConfig {
     /**
      * The columns of the default grouping. Every other grouping keeps its own list under
      * `<attribute>ViewColumns`, so switching the grouping cannot mix two of them.
@@ -90,13 +91,6 @@ export interface BoardViewData {
     columns?: BoardColumnData[];
     /** @see BoardViewData.columns */
     [key: `${string}ViewColumns`]: BoardColumnData[] | undefined;
-    /**
-     * What a new card can be made from, as {@link NoteTypeOption} ids. Absent until the reader picks
-     * for the board, which is what `DEFAULT_CARD_TEMPLATES` stands in for.
-     */
-    templates?: string[];
-    /** The one last used, which the next card is made from. */
-    template?: string;
     /**
      * Which promoted attributes the cards show, and in what order. An attribute the list does not
      * name is shown after the ones it does; see {@link resolvePromotedAttributes}.
@@ -658,22 +652,23 @@ function Board({
         });
     }, [ api, collapseAllColumns, expandAllColumns, inboxEnabled, includeArchived, isReadOnly ]);
 
-    // Read from the api rather than from the prop, since a pick moves the api's own copy ahead of
-    // the board's; keyed on the prop so that a change from anywhere else is followed too.
-    const offeredTemplates = useMemo(
-        () => resolveNoteTypeOptions(api.getCardTemplateIds(), availableTemplates),
-        [ api, viewConfig, availableTemplates ]);
     // Handed to the api as well, for the cards made from somewhere other than the editor: an
     // insert beside another card reaches for the same template without being given one.
     useEffect(
         () => api.setAvailableCardTemplates(availableTemplates), [ api, availableTemplates ]);
 
-    const cardTemplates = useMemo(() => ({
-        offered: offeredTemplates,
-        current: currentCardTemplate(offeredTemplates, api.getLastCardTemplateId()),
-        onSelect: (template: NoteTypeOption) => api.setLastCardTemplateId(template.id),
-        onMore: () => setIsEditingProperties(true)
-    }), [ api, viewConfig, offeredTemplates ]);
+    const selectCardTemplate = useCallback(
+        (template: NoteTypeOption) => api.setLastCardTemplateId(template.id), [ api ]);
+    const editCardTemplates = useCallback(() => setIsEditingProperties(true), []);
+    // Read from the api rather than from the prop, since a pick moves the api's own copy ahead of
+    // the board's.
+    const cardTemplates = useTemplateChoice({
+        ids: api.getCardTemplateIds(),
+        lastUsedId: api.getLastCardTemplateId(),
+        available: availableTemplates,
+        onSelect: selectCardTemplate,
+        onMore: editCardTemplates
+    });
 
     // Held while the names are the same, since a new array would redraw every card on every render.
     const shownAttributesRef = useRef<string[]>([]);

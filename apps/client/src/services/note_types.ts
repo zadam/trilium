@@ -159,6 +159,25 @@ export function resolveNoteTypeOptions(ids: NoteTypeId[], available: NoteTypeOpt
     });
 }
 
+/**
+ * The option a new note is made from: the stored one if it is still offered, otherwise the first.
+ *
+ * A stored option can have been removed from the list, or its template note deleted.
+ */
+export function currentNoteTypeOption(offered: NoteTypeOption[], stored: string | undefined) {
+    return offered.find((option) => option.id === stored) ?? offered[0];
+}
+
+/**
+ * The icon a note made from `option` carries, in the form `IconPicker` writes.
+ *
+ * `FNote.getIcon()` prefixes its result with `tn-icon` and an `#iconClass` label does not, so a
+ * template note's icon needs that prefix removed to compare with a picked one.
+ */
+export function noteTypeOptionIcon(option: NoteTypeOption | undefined) {
+    return option?.icon.replace(/^tn-icon\s+/, "");
+}
+
 /** The name of the group an option stands in, for a list the reader picks from. */
 export function noteTypeOptionGroupTitle(group: NoteTypeOptionGroup) {
     switch (group) {

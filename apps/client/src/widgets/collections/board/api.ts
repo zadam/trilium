@@ -10,10 +10,13 @@ import dialog from "../../../services/dialog";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
-import { type NoteTypeOption, resolveNoteTypeOptions } from "../../../services/note_types";
+import {
+    currentNoteTypeOption, type NoteTypeOption, resolveNoteTypeOptions
+} from "../../../services/note_types";
 import server from "../../../services/server";
 import ws from "../../../services/ws";
 import toast from "../../../services/toast";
+import { offeredTemplateIds } from "../../react/TemplatePill";
 import {
     type PromotedAttribute, resolvePromotedAttributes, storedPromotedAttributes,
     visiblePromotedAttributeNames
@@ -22,11 +25,10 @@ import {
     DEFAULT_SORT, MANUAL_SORT, parseSortKey, parseStoredSortKey, type SortKey, type StoredSortKey
 } from "../sorting";
 import { BoardColumnData, BoardViewData } from ".";
-import { currentCardTemplate, DEFAULT_CARD_TEMPLATES } from "./card_templates";
 import {
     type BoardStatusDefinition, canStoreColumnsInDefinition, COLUMN_WIDTH_LABEL, type ColumnWidth,
-    DEFAULT_COLUMN_ICON, DEFAULT_COLUMN_WIDTH, DEFAULT_GROUP_BY, INBOX_COLUMN, INBOX_COLUMN_ICON,
-    parseColumnWidth
+    DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, DEFAULT_COLUMN_WIDTH, DEFAULT_GROUP_BY, INBOX_COLUMN,
+    INBOX_COLUMN_ICON, parseColumnWidth
 } from "./columns";
 import { readColumns, writeColumns } from "./column_storage";
 import { cardNotes, ColumnItem, ColumnMap } from "./data";
@@ -959,15 +961,14 @@ export default class BoardApi {
 
     /** What a card is made from now: the one last used, or the first the board offers. */
     getCurrentCardTemplate() {
-        return currentCardTemplate(
+        return currentNoteTypeOption(
             resolveNoteTypeOptions(this.getCardTemplateIds(), this.availableTemplates),
             this.getLastCardTemplateId());
     }
 
     /** The templates the board offers, or the stock set until the reader has picked for it. */
     getCardTemplateIds() {
-        const stored = this.viewConfig?.templates;
-        return stored?.length ? stored : DEFAULT_CARD_TEMPLATES;
+        return offeredTemplateIds(this.viewConfig, DEFAULT_CARD_TEMPLATES);
     }
 
     /** Which of them a new card is made from, until another is picked. */
