@@ -4520,13 +4520,13 @@ describe("Board properties from the note menu", () => {
         expect(isOpen()).toBe(false);
 
         await act(async () => {
-            await host.handleEvent("showBoardProperties", { ntxId: "ntx-2" });
+            await host.handleEvent("showCollectionProperties", { ntxId: "ntx-2" });
             await flush();
         });
         expect(isOpen()).toBe(false);
 
         await act(async () => {
-            await host.handleEvent("showBoardProperties", { ntxId: "ntx-1" });
+            await host.handleEvent("showCollectionProperties", { ntxId: "ntx-1" });
             await flush();
         });
         expect(isOpen()).toBe(true);

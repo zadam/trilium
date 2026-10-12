@@ -3687,7 +3687,11 @@
     "hours_other": "{{count}} hours",
     "duration_minutes": "{{minutes}} min",
     "duration_hours": "{{hours}} h",
-    "duration_hours_minutes": "{{hours}} h {{minutes}} min"
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min",
+    "properties": "Calendar properties",
+    "event_templates": "Event templates",
+    "event_templates_hint": "Choose what note types and note templates you would like to use when creating new calendar events.",
+    "new_template_name": "New event template"
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",

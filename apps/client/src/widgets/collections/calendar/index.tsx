@@ -11,7 +11,7 @@ import "./index.css";
 import { DISPLAYABLE_LOCALE_IDS } from "@triliumnext/commons";
 import clsx from "clsx";
 import { Calendar as FullCalendar, DateClickInfo, DateSelectInfo, EventChangeInfo, EventClickInfo, EventDisplayInfo, EventSourceFuncInfo, LocaleInput, MountInfo, PluginInput } from "fullcalendar";
-import { RefObject } from "preact";
+import { createPortal, RefObject } from "preact";
 import { lazy, Suspense } from "preact/compat";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
@@ -31,23 +31,12 @@ import { FormListItem } from "../../react/FormList";
 import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useSpacedUpdate, useTriliumEvent, useTriliumOption, useTriliumOptionInt } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
 import { ViewModeProps } from "../interface";
-import { changeEvent, newEvent } from "./api";
+import { type CalendarViewData, changeEvent, newEvent } from "./api";
 import Calendar from "./calendar";
 import { openCalendarContextMenu } from "./context_menu";
 import { CalendarSelection, EventDraft } from "./selection";
 import { buildEvents, buildEventsForCalendar } from "./event_builder";
 import { formatDateToLocalISO, formatTimeToLocalISO, isAttributeChangeAffecting, isBranchChangeAffecting, isValidDuration, parseDurationSeconds, parseStartEndDateFromEvent, parseStartEndTimeFromEvent } from "./utils";
-
-interface CalendarViewData {
-
-}
-
-interface CalendarViewData {
-    type: string;
-    name: string;
-    previousText: string;
-    nextText: string;
-}
 
 const CALENDAR_VIEWS = [
     {
@@ -120,7 +109,9 @@ export const LOCALE_MAPPINGS: Record<DISPLAYABLE_LOCALE_IDS, (() => Promise<{ de
     ar: () => import("fullcalendar/locales/ar")
 };
 
-export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProps<CalendarViewData>) {
+export default function CalendarView({
+    note, noteIds, onOpenNote, viewConfig, saveConfig
+}: ViewModeProps<CalendarViewData>) {
     const parentComponent = useContext(ParentComponent);
     const { noteContext } = useNoteContext();
     const isReadOnly = useEffectiveReadOnly(note, noteContext);
@@ -129,6 +120,7 @@ export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProp
     // The event the view's popovers stand for — a chip clicked, or a range just dragged out (see
     // CalendarSelection).
     const [ selection, setSelection ] = useState<CalendarSelection | null>(null);
+    const [ isEditingProperties, setIsEditingProperties ] = useState(false);
 
     const [ calendarRoot ] = useNoteLabelBoolean(note, "calendarRoot");
     const [ workspaceCalendarRoot ] = useNoteLabelBoolean(note, "workspaceCalendarRoot");
@@ -284,6 +276,13 @@ export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProp
         }
     }, [ onOpenNote ]);
 
+    // The note actions menu offers the properties dialog, which lives here rather than in the menu.
+    useTriliumEvent("showCollectionProperties", ({ ntxId }) => {
+        if (ntxId === noteContext?.ntxId && isEditable) {
+            setIsEditingProperties(true);
+        }
+    });
+
     // React to changes.
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const api = calendarRef.current;
@@ -334,6 +333,7 @@ export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProp
         <div className="calendar-view" ref={containerRef} tabIndex={100}>
             <CalendarCollectionProperties
                 note={note} calendarRef={calendarRef} containerRef={containerRef} isReadOnly={isReadOnly}
+                onOpenProperties={isEditable ? () => setIsEditingProperties(true) : undefined}
             />
             <Calendar
                 events={eventBuilder}
@@ -415,15 +415,28 @@ export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProp
                     />
                 </Suspense>
             )}
+            {isEditingProperties && createPortal(
+                <Suspense fallback={null}>
+                    <CalendarProperties
+                        note={note}
+                        viewConfig={viewConfig}
+                        saveConfig={saveConfig}
+                        onClose={() => setIsEditingProperties(false)}
+                    />
+                </Suspense>,
+                document.body
+            )}
         </div>
     );
 }
 
-function CalendarCollectionProperties({ note, calendarRef, containerRef, isReadOnly }: {
+function CalendarCollectionProperties({ note, calendarRef, containerRef, isReadOnly, onOpenProperties }: {
     note: FNote;
     calendarRef: RefObject<FullCalendar | null>;
     containerRef: RefObject<HTMLDivElement | null>;
     isReadOnly: boolean;
+    /** Opens `CalendarProperties`, absent for a calendar that creates no events. */
+    onOpenProperties?: () => void;
 }) {
     const { title, viewType: currentViewType } = useOnDatesSet(calendarRef);
     const currentViewData = CALENDAR_VIEWS.find(v => calendarRef.current && v.type === currentViewType);
@@ -445,6 +458,11 @@ function CalendarCollectionProperties({ note, calendarRef, containerRef, isReadO
             rightChildren={<>
                 {!isMobileLocal && <CalendarViewSwitcher calendarRef={calendarRef} containerRef={containerRef} />}
             </>}
+            optionsChildren={onOpenProperties && (
+                <FormListItem icon="bx bx-cog" onClick={onOpenProperties}>
+                    {t("calendar_view.properties")}
+                </FormListItem>
+            )}
         />
     );
 }
@@ -813,3 +831,5 @@ function useOnDatesSet(calendarRef: RefObject<FullCalendar | null>) {
 const EventPopover = lazy(() => import("./EventPopover"));
 /** Loaded on the first event drafted, as only an editable calendar drafts one. */
 const GhostPopover = lazy(() => import("./GhostPopover"));
+/** Loaded when the properties dialog is first opened. */
+const CalendarProperties = lazy(() => import("./CalendarProperties"));

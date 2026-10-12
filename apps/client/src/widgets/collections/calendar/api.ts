@@ -1,4 +1,4 @@
-import { AttributeRow } from "@triliumnext/commons";
+import { AttributeRow, buildNoteTypeId } from "@triliumnext/commons";
 
 import FNote from "../../../entities/fnote";
 import { setAttribute } from "../../../services/attributes";
@@ -6,7 +6,14 @@ import dialog from "../../../services/dialog";
 import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
 import { deleteNoteOrBranch } from "../../../services/note_deletion";
+import { type TemplateChoiceConfig } from "../../react/TemplatePill";
 import { EventLabelName } from "./utils";
+
+/** What the calendar stores in its view config. */
+export type CalendarViewData = TemplateChoiceConfig;
+
+/** What a calendar offers to make its events from until the reader picks for it. */
+export const DEFAULT_EVENT_TEMPLATES = [ buildNoteTypeId("text", "text/html") ];
 
 interface NewEventOpts {
     /** Left out, the note is named the way any new child of the calendar is — by the calendar's

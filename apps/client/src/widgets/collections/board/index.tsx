@@ -1351,7 +1351,7 @@ function Board({
     }, [ selection, handleBoardKeys ]);
 
     // The note actions menu offers the properties dialog, which lives here rather than in the menu.
-    useTriliumEvent("showBoardProperties", ({ ntxId }) => {
+    useTriliumEvent("showCollectionProperties", ({ ntxId }) => {
         if (ntxId === noteContext?.ntxId) {
             setIsEditingProperties(true);
         }
