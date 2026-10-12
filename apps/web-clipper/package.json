@@ -26,6 +26,6 @@
   "dependencies": {
     "@boxicons/js": "1.0.1",
     "defuddle": "0.19.5",
-    "preact": "11.0.0"
+    "preact": "11.0.1"
   }
 }

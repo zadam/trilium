@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "happy-dom": "20.14.6",
-    "preact": "11.0.0"
+    "preact": "11.0.1"
   }
 }
