@@ -26,6 +26,7 @@
     --ck-focus-disabled-outer-shadow: none;
 
     --ck-border-radius: 6px;
+    --ck-toolbar-text-font-size: 13px;
 }
 
 /* Toolbar button in on state */
