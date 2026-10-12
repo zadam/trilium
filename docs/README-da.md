@@ -70,26 +70,26 @@ Our documentation is available in multiple formats:
 * Rich WYSIWYG note editor including e.g. tables, images and
   [math](https://docs.triliumnotes.org/user-guide/note-types/text) with markdown
   [autoformat](https://docs.triliumnotes.org/user-guide/note-types/text/markdown-formatting)
-* Support for editing [notes with source
-  code](https://docs.triliumnotes.org/user-guide/note-types/code), including
-  syntax highlighting
-* Fast and easy [navigation between
+* Understøttelse af redigering af [notes with source
+  code](https://docs.triliumnotes.org/user-guide/note-types/code), herunder
+  syntaksfremhævning
+* Hurtig og nem [navigation between
   notes](https://docs.triliumnotes.org/user-guide/concepts/navigation/note-navigation),
-  full text search and [note
+  fuldtekstsøgning og [note
   hoisting](https://docs.triliumnotes.org/user-guide/concepts/navigation/note-hoisting)
-* Seamless [note
+* Problemfri [note
   versioning](https://docs.triliumnotes.org/user-guide/concepts/notes/note-revisions)
-* Note
+* Notens
   [attributes](https://docs.triliumnotes.org/user-guide/advanced-usage/attributes)
-  can be used for note organization, querying and advanced
+  kan bruges til organisering af noter, søgning og avanceret
   [scripting](https://docs.triliumnotes.org/user-guide/scripts)
-* UI available in English, German, Spanish, French, Romanian, and Chinese
-  (simplified and traditional)
-* Direct [OpenID and TOTP
-  integration](https://docs.triliumnotes.org/user-guide/setup/server/mfa) for
-  more secure login
+* Brugergrænsefladen findes på engelsk, tysk, spansk, fransk, rumænsk og
+  kinesisk (forenklet og traditionelt)
+* Direkte [OpenID and TOTP
+  integration](https://docs.triliumnotes.org/user-guide/setup/server/mfa) for et
+  mere sikkert login
 * [Synchronization](https://docs.triliumnotes.org/user-guide/setup/synchronization)
-  with self-hosted sync server
+  med en selvhostet synkroniseringsserver
   * there are [3rd party services for hosting synchronisation
     server](https://docs.triliumnotes.org/user-guide/setup/server/cloud-hosting)
 * [Sharing](https://docs.triliumnotes.org/user-guide/advanced-usage/sharing)
