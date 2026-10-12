@@ -30,4 +30,10 @@
     body.print-live :not(:has(.print-live-target), .print-live-target, .print-live-target *) {
         display: none !important;
     }
+
+    body.print-live .print-live-unscroll {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
 }

@@ -13,6 +13,8 @@ const TARGET_CLASS = "print-live-target";
 /** Holds the `media` a theme stylesheet had before {@link startLivePrint} limited it to the screen. */
 const ORIGINAL_MEDIA_ATTR = "data-live-print-media";
 const PRINT_CSS_ATTR = "data-live-print-css";
+/** Marks a scroll container that prints at its full height, without a scrollbar. */
+const UNSCROLL_CLASS = "print-live-unscroll";
 
 let activeTarget: HTMLElement | undefined;
 
@@ -22,6 +24,13 @@ export async function startLivePrint(note: FNote, target: HTMLElement) {
     activeTarget = target;
     document.body.classList.add(ACTIVE_CLASS);
     target.classList.add(TARGET_CLASS);
+
+    for (const el of target.querySelectorAll<HTMLElement>("*")) {
+        const { overflowX, overflowY } = getComputedStyle(el);
+        if ([ overflowX, overflowY ].some((overflow) => overflow === "auto" || overflow === "scroll")) {
+            el.classList.add(UNSCROLL_CLASS);
+        }
+    }
 
     // Paper gets the light baseline (`theme-light.css`), as on the `?print` page, which loads no theme.
     for (const link of document.querySelectorAll<HTMLLinkElement>("link[data-theme-stylesheet]")) {
@@ -38,6 +47,9 @@ export function endLivePrint() {
     if (!activeTarget) return;
 
     activeTarget.classList.remove(TARGET_CLASS);
+    for (const el of activeTarget.querySelectorAll(`.${UNSCROLL_CLASS}`)) {
+        el.classList.remove(UNSCROLL_CLASS);
+    }
     activeTarget = undefined;
     document.body.classList.remove(ACTIVE_CLASS);
 

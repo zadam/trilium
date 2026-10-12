@@ -86,8 +86,9 @@ $dateEl.text(new Date());</code></pre>
 <ul>
   <li>The content is laid out again at the width of the page, so elements sized
     by the script for the screen (such as charts) might not fit.</li>
-  <li>Containers with a fixed height and scrolling are cut off on paper. Use
-    a <code>~printCss</code> relation to give them an automatic height.</li>
+  <li>Scrolling areas, such as a table in a scrolling container, are printed
+    at their full height, without a scrollbar.</li>
+  <li>To adjust the layout for printing, use a <code>~printCss</code> relation.</li>
   <li>The light colors are used for printing, whatever the current theme.</li>
 </ul>
 <h2>Examples</h2>

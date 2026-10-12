@@ -72,6 +72,24 @@ describe("live print", () => {
         expect(theme.media).toBe("screen");
     });
 
+    it("prints scroll containers at full height without a scrollbar", async () => {
+        const note = buildNote({ id: "live-scroll", title: "Scroll", type: "render" });
+        const target = document.createElement("div");
+        target.innerHTML = `
+            <div class="scroller" style="overflow-y: auto; max-height: 100px"><table></table></div>
+            <div class="clipped" style="overflow: hidden"></div>`;
+        document.body.appendChild(target);
+
+        await startLivePrint(note, target);
+
+        expect(target.querySelector(".scroller")?.classList.contains("print-live-unscroll")).toBe(true);
+        expect(target.querySelector(".clipped")?.classList.contains("print-live-unscroll")).toBe(false);
+
+        endLivePrint();
+
+        expect(target.querySelector(".print-live-unscroll")).toBeNull();
+    });
+
     it("prints through the browser dialog and restores the window afterwards", async () => {
         const note = buildNote({ id: "live-browser", title: "Browser", type: "render" });
         const target = document.createElement("div");
