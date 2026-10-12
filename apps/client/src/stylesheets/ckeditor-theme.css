@@ -120,6 +120,7 @@ div.ck.ck-dialog {
     --ck-border-radius: var(--bs-border-radius);
 
     --ck-focus-ring: 1px solid var(--input-focus-outline-color, var(--main-border-color));
+    --ck-button-focus-border-color: var(--input-focus-outline-color, var(--main-border-color));
     --ck-color-focus-border: var(--input-focus-outline-color, var(--main-border-color));
     --ck-focus-outer-shadow: none;
     --ck-focus-disabled-outer-shadow: none;
