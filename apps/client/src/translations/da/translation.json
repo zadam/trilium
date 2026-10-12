@@ -1,5 +1,52 @@
 {
   "about": {
-    "version_label": "Version:"
+    "version_label": "Version:",
+    "build_info": "Build: {{buildDate}},revision:<buildRevision />",
+    "contributors_label": "Bidragsydere:",
+    "contributor_roles": {
+      "lead-dev": "Hovedudvikler",
+      "original-dev": "oprindelig udvikler"
+    },
+    "role_brief_history": {
+      "lead-dev": "Elian Doran grundlagde TriliumNext i 2024, en community-fork, der blev oprettet, efter at Zadam trak sig tilbage fra projektet. Zadam overførte senere det oprindelige repository til TriliumNext-teamet, så de to projekter igen blev samlet til ét.",
+      "original-dev": "Den 25. december 2017 udgav Zadam den første betaversion af Trilium (stavet med ét »l«, i modsætning til blomsten). Utilfreds med de eksisterende noteorganiseringsværktøjer byggede han en avanceret, selvhostet, hierarkisk vidensbase, som fik over 22.000 stjerner på GitHub. I 2024, da livet blev mere travlt, satte han projektet i vedligeholdelsestilstand."
+    },
+    "contributor_full_list": "Se hele samfundet",
+    "channel": {
+      "nightly": "Natlige"
+    },
+    "data_directory": "Data mappe:",
+    "github_tooltip": "Indberet fejl, foreslå funktioner, eller bidrag på GitHub.",
+    "license_tooltip": "Se licens",
+    "donate": "Donation",
+    "donate_tooltip": "Donér for at støtte dette projekt"
+  },
+  "toast": {
+    "critical-error": {
+      "title": "Kritisk fejl",
+      "message": "Der er opstået en kritisk fejl, som forhindrer klientprogrammet i at starte:\n\n{{message}}\n\nDet skyldes sandsynligvis, at et script ikke kørte som forventet. Prøv at starte programmet i fejlsikret tilstand, og løs problemet."
+    },
+    "widget-error": {
+      "title": "Kunne ikke initialisere en widget",
+      "message-unknown": "En ukendt widget kunne ikke initialiseres på grund af:\n\n{{message}}"
+    },
+    "bundle-error": {
+      "title": "Kunne ikke indlæse et brugerdefineret script",
+      "message": "Scriptet kunne ikke køres på grund af:\n\n{{message}}"
+    },
+    "widget-list-error": {
+      "title": "Kunne ikke hente listen over widgets fra serveren"
+    },
+    "widget-render-error": {
+      "title": "Kunne ikke vise en brugerdefineret React-widget"
+    },
+    "widget-missing-parent": "Den brugerdefinerede widget mangler den obligatoriske egenskab '{{property}}'\n\nHvis scriptet skal køres uden et brugergrænsefladeelement, skal du i stedet bruge '#run=frontendStartup'",
+    "open-script-note": "Åbn scriptnote",
+    "scripting-error": "Scriptnoten kunne ikke køres",
+    "unhandled-error": {
+      "title": "En baggrundsopgave mislykkedes",
+      "details-button": "Vis flere detaljer…",
+      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor."
+    }
   }
 }
