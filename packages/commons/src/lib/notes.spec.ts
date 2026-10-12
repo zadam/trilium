@@ -338,7 +338,7 @@ describe("getNoteContentType", () => {
             [ "video", "file" ],
             [ "office", undefined ],
             [ "file", undefined ],
-            [ "mermaid", "mermaid" ]
+            [ "mermaid", undefined ]
         ]);
         expect(getContentRendererGroup("constructor")).toBeUndefined();
     });

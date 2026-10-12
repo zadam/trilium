@@ -12,7 +12,6 @@ import {
     type TextRepresentationResponse
 } from "@triliumnext/commons";
 import DOMPurify from "dompurify";
-import type { MermaidConfig } from "mermaid";
 import { h, type JSX, render } from "preact";
 
 import type Component from "../components/component.js";
@@ -29,7 +28,6 @@ import renderText, {
 } from "./content_renderer_text.js";
 import renderDoc from "./doc_renderer.js";
 import { getAttachmentImageUrl, getNoteImageUrl } from "./image_urls.js";
-import { getMermaidConfig, postprocessMermaidSvg } from "./mermaid.js";
 import { renderOfficeToHtml } from "./office_renderer.js";
 import openService from "./open.js";
 import { waitForPendingRenders } from "./pending_renders.js";
@@ -202,14 +200,12 @@ export async function getRenderedContent(this: {} | { ctx: string }, entity: FNo
         await renderCanvasDrawing(entity, $renderedContent, options);
     } else if (type === "image" && options.mediaEnvironment === "embedded") {
         await renderImageViewer(entity, $renderedContent);
-    } else if (["image", "canvas", "mindMap", "spreadsheet"].includes(type)) {
+    } else if (["image", "canvas", "mermaid", "mindMap", "spreadsheet"].includes(type)) {
         await renderImage(entity, $renderedContent, options);
     } else if (!options.tooltip && type === "office") {
         await renderOffice(entity, $renderedContent, options);
     } else if (!options.tooltip && ["file", "pdf", "audio", "video"].includes(type)) {
         await renderFile(entity, type, $renderedContent, options);
-    } else if (type === "mermaid") {
-        await renderMermaid(entity, $renderedContent);
     } else if (type === "render" && entity instanceof FNote) {
         const $content = $("<div>");
 
@@ -289,7 +285,6 @@ export const CONTENT_RENDERERS = {
         pdf: () => import("../widgets/type_widgets/file/PdfViewer"),
         media: () => import("../widgets/type_widgets/file/MediaPreview")
     },
-    mermaid: () => import("mermaid"),
     render: () => import("./render.js"),
     webView: () => import("../widgets/type_widgets/WebView"),
     llmChat: () => import("../widgets/type_widgets/llm_chat/ChatPreview"),
@@ -763,41 +758,6 @@ async function renderMedia(entity: FNote | FAttachment, environment: MediaEnviro
         await mountInteractiveWidget(h(MediaPreview, { entity, environment }), container);
     }
     $content.append($container);
-}
-
-async function renderMermaid(note: FNote | FAttachment, $renderedContent: JQuery<HTMLElement>) {
-    const mermaid = (await CONTENT_RENDERERS.mermaid()).default;
-
-    const blob = await note.getBlob();
-    const content = blob?.content || "";
-
-    $renderedContent.css("display", "flex").css("justify-content", "space-around");
-
-    mermaid.mermaidAPI.initialize({ ...fitToContainer(getMermaidConfig()), startOnLoad: false });
-
-    try {
-        const { svg } = await mermaid.mermaidAPI.render(`in-mermaid-graph-${idCounter++}`, content);
-
-        $renderedContent.append($(postprocessMermaidSvg(svg)));
-    } catch (e) {
-        const $error = $("<p>The diagram could not displayed.</p>");
-
-        $renderedContent.append($error);
-    }
-}
-
-/**
- * Sets `useMaxWidth` on every diagram type, so the SVG takes the width of the card, tooltip or
- * include box that holds it instead of the diagram's natural size, which the container crops.
- */
-function fitToContainer(config: MermaidConfig): MermaidConfig {
-    const fitted: Record<string, unknown> = { ...config };
-    for (const [ key, value ] of Object.entries(config)) {
-        if (value && typeof value === "object" && "useMaxWidth" in value) {
-            fitted[key] = { ...value, useMaxWidth: true };
-        }
-    }
-    return fitted as MermaidConfig;
 }
 
 /**

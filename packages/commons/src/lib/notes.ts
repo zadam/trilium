@@ -287,7 +287,6 @@ export const CONTENT_RENDERER_GROUPS: Readonly<Record<string, string>> = {
     pdf: "file",
     audio: "file",
     video: "file",
-    mermaid: "mermaid",
     render: "render",
     webView: "webView",
     llmChat: "llmChat"
