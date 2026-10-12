@@ -58,7 +58,8 @@ export interface TemplateVariables {
  * @throws Error if an expression cannot be safely evaluated
  */
 export function evaluateTemplate(template: string, variables: TemplateVariables): string {
-    return template.replace(/\$\{([^}]+)\}/g, (_match, expression: string) => {
+    // `{` is excluded too, so a `${` without a closing brace scans only to the next brace.
+    return template.replace(/\$\{([^{}]+)\}/g, (_match, expression: string) => {
         const result = evaluateExpression(expression.trim(), variables);
         return result == null ? "" : String(result);
     });

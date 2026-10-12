@@ -120,6 +120,16 @@ describe("safe_template - evaluateTemplate", () => {
             "[]"
         );
     });
+
+    it("leaves unclosed and nested braces as text, in linear time", () => {
+        expect(evaluateTemplate("${title", { title: "x" })).toBe("${title");
+        expect(evaluateTemplate("${${title}", { title: "x" })).toBe("${x");
+
+        const unclosed = "${{|".repeat(50_000);
+        const start = performance.now();
+        expect(evaluateTemplate(unclosed, {})).toBe(unclosed);
+        expect(performance.now() - start).toBeLessThan(1000);
+    });
 });
 
 describe("safe_template - rejected expressions", () => {
