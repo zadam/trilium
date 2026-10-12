@@ -125,7 +125,8 @@ describe("PromotedAttributesCard", () => {
         expect(icons()).toEqual([
             "bx bx-calendar", "bx bx-toggle-left", "bx bx-text", "bx bx-transfer"
         ]);
-        // And says which kind it is, in the words the editor lists them under.
+        // Named in the words the editor lists them under, as the icon's tooltip rather than a badge.
+        expect(container.querySelector(".promoted-attribute-type")).toBeNull();
         expect(types()).toEqual([
             "attribute_detail.date", "attribute_detail.boolean", "attribute_detail.text",
             "attribute_detail.relation_type"
@@ -544,7 +545,7 @@ describe("PromotedAttributesCard", () => {
 
     function types() {
         return segments().map((segment) =>
-            segment.querySelector(".promoted-attribute-type .text")?.textContent);
+            segment.querySelector(".tn-icon")?.getAttribute("aria-label"));
     }
 
     function icons() {

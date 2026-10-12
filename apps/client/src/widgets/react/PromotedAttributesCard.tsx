@@ -21,7 +21,7 @@ import ActionButton from "./ActionButton";
 import { Badge } from "./Badge";
 import FormToggle from "./FormToggle";
 import { useTriliumEvent } from "./hooks";
-import Icon from "./Icon";
+import { TooltipIcon } from "./Icon";
 import { type SortableItem, SortableCard } from "./SortableCard";
 
 /** Each kind of definition by name, holding the title and icon `AttributeDetail` lists it with. */
@@ -262,14 +262,14 @@ export default function PromotedAttributesCard({
                     const attribute = shown.find((candidate) => candidate.name === item.key);
                     return attribute && (
                         <>
-                            {item.icon && <Icon icon={item.icon} />}
-                            <span className="promoted-attribute-name">{item.caption}</span>
-
-                            <Badge
-                                className="promoted-attribute-type"
-                                text={promotedAttributeType(attribute).title}
-                                outline
+                            <TooltipIcon
+                                icon={item.icon}
+                                tooltip={promotedAttributeType(attribute).title}
+                                tooltipClass="tooltip-top"
+                                role="img"
+                                aria-label={promotedAttributeType(attribute).title}
                             />
+                            <span className="promoted-attribute-name">{item.caption}</span>
 
                             {attribute.isConflicting && (
                                 <Badge
