@@ -731,8 +731,7 @@ function useEventDisplayCustomization(parentNote: FNote, componentId: string | u
      * theme hands out the very classes its time and title would have worn, so what is drawn here is
      * Forma's chip with an icon in it rather than something of ours standing in for one.
      *
-     * The title comes from buildOccurrenceTitle() rather than from the event, so a repeating event
-     * can title each of its occurrences differently.
+     * `buildOccurrenceTitle()` gives each occurrence of a recurring event its own title.
      */
     const eventContent = useCallback((e: EventDisplayInfo) => {
         const { iconClass, promotedAttributes } = e.event.extendedProps;

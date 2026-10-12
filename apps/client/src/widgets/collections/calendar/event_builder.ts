@@ -130,8 +130,7 @@ export async function buildEvent(note: FNote, {
     const colorClass = note.getColorClass();
     const events: EventInput[] = [];
 
-    // The day the series starts on, read before the code below appends the start time and the
-    // exclusive end date. buildOccurrenceTitle() counts every occurrence from it.
+    // Read before the start time is appended; `buildOccurrenceTitle()` counts years from it.
     const seriesStart = startDate;
     const titleTemplate = note.getLabelValue("calendar:titleTemplate");
 
@@ -221,15 +220,9 @@ export async function buildEvent(note: FNote, {
 }
 
 /**
- * Builds the title one occurrence of an event is drawn with: the note's `#calendar:titleTemplate`
- * filled in for the day the occurrence falls on, or the plain title when the note has no template.
- *
- * Runs as the chip is drawn rather than in {@link buildEvent} because FullCalendar expands a
- * `#recurrence` rule into occurrences itself: a repeating event is one {@link EventInput} with
- * one title, so `${years}` — the whole years from `#startDate` to this occurrence — is only known
- * here.
- *
- * A template {@link evaluateTemplate} rejects leaves the event with its plain title.
+ * Returns the title of one occurrence: `#calendar:titleTemplate` evaluated for the occurrence's
+ * date, or `title` when the template is missing or invalid. `eventContent` calls it per chip,
+ * because the rrule plugin expands occurrences after `buildEvent()` runs.
  */
 export function buildOccurrenceTitle({ title, start, extendedProps }: OccurrenceEvent) {
     const { titleTemplate, seriesStart } = extendedProps;
@@ -237,8 +230,7 @@ export function buildOccurrenceTitle({ title, start, extendedProps }: Occurrence
         return title;
     }
 
-    // Both dates as plain days, without the time: a DST shift between them would otherwise take an
-    // hour off the span and round `years` down by a year.
+    // Compares dates without times, so a DST shift between them cannot round `years` down.
     const occurrenceDay = formatDateToLocalISO(start);
     const seriesStartDay = dayjs(seriesStart.split("T")[0]);
     const occurrence = occurrenceDay ? dayjs(occurrenceDay) : seriesStartDay;
@@ -256,23 +248,21 @@ export function buildOccurrenceTitle({ title, start, extendedProps }: Occurrence
     }
 }
 
-/** The parts of a FullCalendar event {@link buildOccurrenceTitle} reads. */
+/** The fields of a FullCalendar `EventApi` that `buildOccurrenceTitle()` reads. */
 interface OccurrenceEvent {
     title: string;
-    /** Where this occurrence starts; the template is filled in for that day. */
     start: Date | null;
     extendedProps: {
         titleTemplate?: string | null;
-        /** The `#startDate` the series is counted from, as {@link buildEvent} wrote it. */
+        /** `#startDate` without the start time, as `buildEvent()` stores it. */
         seriesStart?: string | null;
     };
 }
 
-/** Templates already reported. {@link buildOccurrenceTitle} runs for every chip the calendar
- *  draws, so a rejected template would otherwise be logged once per chip. */
+/** Templates already logged, so an invalid one is reported once rather than once per chip. */
 const brokenTitleTemplates = new Set<string>();
 
-/** Logs a template {@link evaluateTemplate} rejects, once per template. */
+/** Logs a template that `evaluateTemplate()` rejects, once per template. */
 function reportBrokenTitleTemplate(template: string, error: unknown) {
     if (brokenTitleTemplates.has(template)) {
         return;

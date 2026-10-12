@@ -478,7 +478,6 @@ describe("Recurrence", () => {
         expect(events[0]).toMatchObject({
             title: "John Smith",
             titleTemplate: "${title} (${years})",
-            // The date as the label holds it, the start time not yet worked into it.
             seriesStart: "1990-05-12"
         });
     });
@@ -594,13 +593,8 @@ describe("Recurrence", () => {
     });
 });
 
-/**
- * The title a chip is drawn under, which a repeating event names once per occurrence: the calendar
- * asks for it as each chip is drawn (see eventContent in index.tsx), the occurrence's own date in
- * hand.
- */
 describe("buildOccurrenceTitle", () => {
-    /** An event as FullCalendar hands it to a chip, this occurrence falling on the given day. */
+    /** A FullCalendar event for the occurrence that starts on `start`. */
     function occurrence(titleTemplate: string | null, start: Date, seriesStart = "1990-05-12") {
         return { title: "John Smith", start, extendedProps: { titleTemplate, seriesStart } };
     }
@@ -614,7 +608,6 @@ describe("buildOccurrenceTitle", () => {
             .toBe("John Smith (36)");
         expect(buildOccurrenceTitle(occurrence("${title} turns ${years}", new Date(2027, 4, 12))))
             .toBe("John Smith turns 37");
-        // The day the series itself starts on, which is where the count starts.
         expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(1990, 4, 12))))
             .toBe("John Smith (0)");
     });
