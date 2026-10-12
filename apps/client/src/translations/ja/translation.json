@@ -2248,7 +2248,10 @@
     "editor_crashed_details_intro": "このエラーが何度も発生する場合は、以下の情報を貼り付けて GitHub に報告することを検討してください。",
     "editor_crashed_details_title": "技術情報",
     "nothing_selected_to_cut": "まずテキストを選択して、サブノートとして切り出してください。",
-    "uploading_attachment": "添付ファイルをアップロード中"
+    "uploading_attachment": "添付ファイルをアップロード中",
+    "editor_error_title": "テキストエディターでエラーが発生しました",
+    "editor_error_content": "エディターに最新の変更内容が正しく表示されていない可能性があります。続行するにはエディターを再読み込みしてください。変更内容は事前に保存されます。",
+    "editor_error_reload_button": "エディターを再読み込み"
   },
   "empty": {
     "open_note_instruction": "以下の入力欄にノートのタイトルを入力するか、ツリー内のノートを選択してノートを開きます。",
