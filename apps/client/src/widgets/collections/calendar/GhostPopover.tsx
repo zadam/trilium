@@ -10,6 +10,7 @@ import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
+import { EventDuration } from "./EventField";
 import { AnchorPoint, EventDraft, narrowAnchorRect, withAllDay } from "./selection";
 
 /**
@@ -112,7 +113,7 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
 
             <div className="calendar-ghost-when">
                 <span className="bx bx-calendar" />
-                <span className="calendar-ghost-dates">{describeDates(draft)}</span>
+                <span className="calendar-ghost-dates">{describeDates(draft)}<EventDuration event={draft} /></span>
                 <FormToggle
                     switchOnName={t("calendar.dates.all_day")}
                     switchOffName={t("calendar.dates.all_day")}

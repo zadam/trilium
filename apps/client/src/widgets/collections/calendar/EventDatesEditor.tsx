@@ -8,7 +8,7 @@ import { t } from "../../../services/i18n";
 import LabelValueInput from "../../attribute_widgets/label_value_input";
 import FormToggle from "../../react/FormToggle";
 import { useUniqueName } from "../../react/hooks";
-import { EventField, EventFieldControls, EventFieldRow } from "./EventField";
+import { EventDuration, EventField, EventFieldControls, EventFieldRow } from "./EventField";
 import { useEventLabel } from "./hooks";
 import { DEFAULT_END_TIME, DEFAULT_START_TIME } from "./selection";
 
@@ -102,7 +102,10 @@ export default function EventDatesEditor({ note, repeats }: {
             </EventField>
 
             {!allDay && (
-                <EventField name={t("calendar.dates.time")}>
+                <EventField name={<>
+                    {t("calendar.dates.time")}
+                    {startDate && <EventDuration event={{ startDate, endDate, startTime, endTime }} />}
+                </>}>
                     <EventFieldControls className="calendar-event-range">
                         <LabelValueInput
                             labelType="time"

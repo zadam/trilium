@@ -168,6 +168,34 @@ export function isValidDuration(str: string | null | undefined): str is string {
     return totalSeconds >= MIN_DURATION_SECONDS && totalSeconds <= MAX_DURATION_SECONDS;
 }
 
+/**
+ * How long a timed event lasts in minutes, in wall-clock time, or `null` for an all-day event or
+ * one missing its end time. An end before the start runs into the next day, as `buildEvent()`
+ * draws it.
+ */
+export function getTimedDurationMinutes({ startDate, endDate, startTime, endTime }: {
+    startDate: string;
+    endDate?: string | null;
+    startTime?: string | null;
+    endTime?: string | null;
+}): number | null {
+    if (!startTime || !endTime) return null;
+
+    const days = endDate && endDate > startDate ? (dayNumber(endDate) - dayNumber(startDate)) : 0;
+    const minutes = days * 24 * 60 + minuteOfDay(endTime) - minuteOfDay(startTime);
+    return minutes < 0 ? minutes + 24 * 60 : minutes;
+}
+
+function dayNumber(isoDate: string) {
+    const [ year, month, day ] = isoDate.split("-").map(Number);
+    return Date.UTC(year, month - 1, day) / (24 * 60 * 60 * 1000);
+}
+
+function minuteOfDay(time: string) {
+    const [ hours, minutes ] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
 // Source: https://stackoverflow.com/a/30465299/4898894
 export function getMonthsInDateRange(startDate: string, endDate: string) {
     const start = startDate.split("-");

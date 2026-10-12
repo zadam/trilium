@@ -28,7 +28,7 @@ In either cases, a small popup will show with a prompt for a title and the date 
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 
-To give the event a time before creating it (for example, after clicking a day in the month view), turn off the _All day_ toggle and set the start and end time. A timed event spans a single day, so turning off _All day_ for a range of days keeps only the first one.
+To give the event a time before creating it (for example, after clicking a day in the month view), turn off the _All day_ toggle and set the start and end time; the duration is shown next to the date. A timed event spans a single day, so turning off _All day_ for a range of days keeps only the first one.
 
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
 
@@ -57,7 +57,7 @@ When an event is clicked, a popup will show near the event which contains the fo
     *   Button to remove the event from the calendar, which can optionally delete its corresponding note.
 *   Calendar-specific features:
     *   A toggle for all-day events.
-    *   A start/end date & time selector.
+    *   A start/end date & time selector. For a timed event, the duration is shown next to the _Time_ label.
     *   A full recurrence editor, to have the same event show up weekly, monthly, etc.
 *   The <a class="reference-link" href="../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> of the marker, if any.
 *   The note's content which can be edited directly from the panel.

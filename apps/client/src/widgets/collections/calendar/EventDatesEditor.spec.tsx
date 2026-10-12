@@ -11,6 +11,12 @@ import { buildNote } from "../../../test/easy-froca";
 import { ParentComponent } from "../../react/react_utils";
 import EventDatesEditor from "./EventDatesEditor";
 
+// i18next is never initialized under test, so t() renders the key with the interpolated values
+// appended, e.g. "calendar_view.duration_hours_minutes|1|30".
+vi.mock("../../../services/i18n", () => ({
+    t: (key: string, opts?: Record<string, unknown>) => [ key, ...Object.values(opts ?? {}) ].join("|")
+}));
+
 describe("EventDatesEditor", () => {
     let container: HTMLElement;
     const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined);
@@ -39,6 +45,7 @@ describe("EventDatesEditor", () => {
     const allDayBox = () => container.querySelector<HTMLInputElement>("input[type='checkbox']");
     const dateInputs = () => container.querySelectorAll<HTMLInputElement>("input[type='date']");
     const timeInputs = () => container.querySelectorAll<HTMLInputElement>("input[type='time']");
+    const duration = () => container.querySelector(".calendar-event-duration")?.textContent;
 
     /** Commits a field as leaving it does — the inputs commit on blur, bound as focusout (see
      *  the preact/compat note in label_value_input.tsx). */
@@ -52,6 +59,7 @@ describe("EventDatesEditor", () => {
         expect(allDayBox()?.checked).toBe(true);
         expect(dateInputs()).toHaveLength(2);
         expect(timeInputs()).toHaveLength(0);
+        expect(duration()).toBeUndefined();
         expect(dateInputs()[0].value).toBe("2026-06-05");
         expect(dateInputs()[1].value).toBe("2026-06-07");
 
@@ -61,6 +69,7 @@ describe("EventDatesEditor", () => {
         expect(timeInputs()).toHaveLength(2);
         expect(timeInputs()[0].value).toBe("13:00");
         expect(timeInputs()[1].value).toBe("14:30");
+        expect(duration()).toBe(" · calendar_view.duration_hours_minutes|1|30");
     });
 
     it("switching all-day off gives the day hours to edit and lets a span of days go", () => {

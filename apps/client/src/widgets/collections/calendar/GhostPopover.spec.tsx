@@ -5,6 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import GhostPopover from "./GhostPopover";
 import { EventDraft } from "./selection";
 
+// i18next is never initialized under test, so t() renders the key with the interpolated values
+// appended, e.g. "calendar_view.duration_hours_minutes|1|30".
+vi.mock("../../../services/i18n", () => ({
+    t: (key: string, opts?: Record<string, unknown>) => [ key, ...Object.values(opts ?? {}) ].join("|")
+}));
+
 describe("GhostPopover", () => {
     let container: HTMLElement;
 
@@ -38,6 +44,7 @@ describe("GhostPopover", () => {
     const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions button");
     const titleInput = () => document.querySelector<HTMLInputElement>(".calendar-ghost-body input");
     const timeInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=time]") ];
+    const duration = () => document.querySelector(".calendar-event-duration")?.textContent;
 
     it("asks for the note once, however many times the ask is made before it arrives", async () => {
         // A request still out, which is the window each further Enter would make its own note in.
@@ -110,16 +117,19 @@ describe("GhostPopover", () => {
         if (!allDay) throw new Error("The ghost has no all-day switch.");
         expect(allDay.checked).toBe(true);
         expect(timeInputs()).toHaveLength(0);
+        expect(duration()).toBeUndefined();
 
         act(() => { allDay.dispatchEvent(new Event("input", { bubbles: true })); });
         const [ start, end ] = timeInputs();
         expect(start.value).toBe("09:00");
         expect(end.value).toBe("10:00");
+        expect(duration()).toBe(" · calendar_view.duration_hours|1");
 
         start.value = "14:00";
         act(() => { start.dispatchEvent(new Event("input", { bubbles: true })); });
         end.value = "15:30";
         act(() => { end.dispatchEvent(new Event("input", { bubbles: true })); });
+        expect(duration()).toBe(" · calendar_view.duration_hours_minutes|1|30");
         await act(async () => { createButton()?.click(); });
 
         expect(onCommit).toHaveBeenCalledWith("", {

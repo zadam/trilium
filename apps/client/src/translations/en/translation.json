@@ -3682,7 +3682,10 @@
     "minutes_one": "{{count}} minute",
     "minutes_other": "{{count}} minutes",
     "hours_one": "{{count}} hour",
-    "hours_other": "{{count}} hours"
+    "hours_other": "{{count}} hours",
+    "duration_minutes": "{{minutes}} min",
+    "duration_hours": "{{hours}} h",
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min"
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",
