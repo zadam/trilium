@@ -335,11 +335,10 @@ function DevelopmentActions({ note, noteContext }: { note: FNote, noteContext?: 
             <FormListItem
                 icon="bx bx-error"
                 disabled={note.type !== "text"}
-                onClick={() => {
-                    noteContext?.getTextEditor(editor => {
-                        editor.editing.view.change(() => {
-                            throw new Error("Editor crashed.");
-                        });
+                onClick={async () => {
+                    const editor = await noteContext?.getTextEditor();
+                    editor?.editing.view.change(() => {
+                        throw new Error("Editor crashed.");
                     });
                 }}>Crash editor</FormListItem>
         </>

@@ -1,4 +1,4 @@
-import { CKTextEditor, ClassicEditor, EditorWatchdog, PopupEditor, SnippetDefinition, type WatchdogConfig } from "@triliumnext/ckeditor5";
+import { type CKEditorError, CKTextEditor, ClassicEditor, onTextEditorError, PopupEditor, SnippetDefinition } from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS } from "@triliumnext/commons";
 import { HTMLAttributes, RefObject } from "preact";
 import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
@@ -27,7 +27,7 @@ export interface CKEditorApi {
 /**
  * The `EventInfo` CKEditor hands to every listener as its *first* argument. Listeners on
  * `show:warning` receive `(evt, data)` in that order — getting it backwards throws inside the
- * event handler, which the watchdog reports as an editor crash (see #10859).
+ * event handler, which reaches `onEditorError` as an editor error (see #10859).
  */
 export interface NotificationEventInfo {
     stop(): void;
@@ -42,25 +42,30 @@ export interface NotificationEventData {
     title: string;
 }
 
-interface CKEditorWithWatchdogProps extends Pick<HTMLAttributes<HTMLDivElement>, "className" | "tabIndex"> {
+interface CKEditorProps extends Pick<HTMLAttributes<HTMLDivElement>, "className" | "tabIndex"> {
     contentLanguage: string | null | undefined;
     isClassicEditor?: boolean;
-    watchdogRef: RefObject<EditorWatchdog | null>;
-    watchdogConfig?: WatchdogConfig;
+    editorRef: RefObject<CKTextEditor | null>;
     onNotificationWarning?: (evt: NotificationEventInfo, data: NotificationEventData) => void;
     onNotificationInfo?: (evt: NotificationEventInfo, data: NotificationEventData) => void;
-    onWatchdogStateChange?: (watchdog: EditorWatchdog) => void;
+    /** Called with each error that escapes the editor. The editor keeps running after it. */
+    onEditorError?: (error: CKEditorError) => void;
     onChange: () => void;
-    /** Called upon whenever a new CKEditor instance is initialized, whether it's the first initialization, after a crash or after a config change that requires it (e.g. content language). */
+    /** Called each time a CKEditor instance is built: on the first render and after a config change that requires it (e.g. content language). */
     onEditorInitialized?: (editor: CKTextEditor) => void;
     editorApi: RefObject<CKEditorApi | null>;
     templates: SnippetDefinition[];
+    /** Rebuilds the editor each time it changes, e.g. to recover from an error. */
+    rebuildKey?: number;
     containerRef?: RefObject<HTMLDivElement | null>;
 }
 
-export default function CKEditorWithWatchdog({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, watchdogRef: externalWatchdogRef, watchdogConfig, onNotificationWarning, onNotificationInfo, onWatchdogStateChange, onChange, onEditorInitialized, editorApi, templates }: CKEditorWithWatchdogProps) {
+export default function CKEditor({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, editorRef: externalEditorRef, onNotificationWarning, onNotificationInfo, onEditorError, onChange, onEditorInitialized, editorApi, templates, rebuildKey }: CKEditorProps) {
     const containerRef = useSyncedRef<HTMLDivElement>(externalContainerRef, null);
-    const watchdogRef = useRef<EditorWatchdog>(null);
+    const editorRef = useRef<CKTextEditor>(null);
+    const stopReportingErrorsRef = useRef<() => void>(undefined);
+    const onEditorErrorRef = useRef(onEditorError);
+    onEditorErrorRef.current = onEditorError;
     // Serializes editor build/teardown so overlapping effect runs never operate on the same
     // container concurrently. Under Vite + Prefresh HMR, effects are force-re-run (ignoring the
     // dependency array) and can fire several times in quick succession; without this queue two
@@ -126,13 +131,13 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
 
     useImperativeHandle(editorApi, () => ({
         hasSelection() {
-            const model = watchdogRef.current?.editor?.model;
+            const model = editorRef.current?.model;
             const selection = model?.document.selection;
 
             return !selection?.isCollapsed;
         },
         getSelectedText() {
-            const range = watchdogRef.current?.editor?.model.document.selection.getFirstRange();
+            const range = editorRef.current?.model.document.selection.getFirstRange();
             let text = "";
 
             if (!range) {
@@ -148,7 +153,7 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
             return text;
         },
         addLink(notePath, linkTitle, externalLink) {
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (!editor) return;
 
             if (linkTitle) {
@@ -164,15 +169,15 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
             editor.editing.view.focus();
         },
         addLinkToEditor(linkHref, linkTitle) {
-            watchdogRef.current?.editor?.model.change((writer) => {
-                const insertPosition = watchdogRef.current?.editor?.model.document.selection.getFirstPosition();
+            editorRef.current?.model.change((writer) => {
+                const insertPosition = editorRef.current?.model.document.selection.getFirstPosition();
                 if (insertPosition) {
                     writer.insertText(linkTitle, { linkHref }, insertPosition);
                 }
             });
         },
         addContentEmbed(noteId, boxSize) {
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (!editor) return;
 
             editor?.model.change((writer) => {
@@ -187,7 +192,7 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
             });
         },
         addHtmlToEditor(html: string) {
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (!editor) return;
 
             editor.model.change((writer) => {
@@ -207,7 +212,7 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
             editor.editing.view.focus();
         },
         async addImage(noteId) {
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (!editor) return;
 
             const note = await froca.getNote(noteId);
@@ -250,6 +255,15 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
         }
     });
 
+    async function destroyEditor() {
+        const editor = editorRef.current;
+        editorRef.current = null;
+        externalEditorRef.current = null;
+        stopReportingErrorsRef.current?.();
+        stopReportingErrorsRef.current = undefined;
+        await editor?.destroy();
+    }
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -262,57 +276,35 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
             const scrollContainer = container.closest<HTMLElement>(".scrolling-container");
             const scrollTop = scrollContainer?.scrollTop ?? 0;
 
-            // Ensure any previous watchdog is fully destroyed
-            if (watchdogRef.current) {
-                try {
-                    await watchdogRef.current.destroy();
-                } catch (e) {
-                    console.warn("Watchdog destroy failed", e);
-                }
-                watchdogRef.current = null;
-            }
-
+            await destroyEditor().catch((e) => console.warn("CKEditor destroy failed", e));
             if (isStale) return;
 
-            const watchdog = buildWatchdog(!!isClassicEditor, watchdogConfig);
-            watchdogRef.current = watchdog;
-            externalWatchdogRef.current = watchdog;
-
-            watchdog.setCreator(async () => {
-                if (isStale) {
-                    throw new Error("Editor creation cancelled");
-                }
-
-                const editor = await buildEditor(container, !!isClassicEditor, {
-                    isClassicEditor: !!isClassicEditor,
-                    uiLanguage: uiLanguage as DISPLAYABLE_LOCALE_IDS,
-                    contentLanguage: contentLanguage ?? null,
-                    templates: templatesRef.current,
-                    getNoteLocation: () => noteLocationRef.current
-                });
-
-                if (isStale) {
-                    await editor.destroy();
-                    throw new Error("Editor creation cancelled");
-                }
-
-                setEditor(editor);
-
-                if (import.meta.env.VITE_CKEDITOR_ENABLE_INSPECTOR === "true") {
-                    const CKEditorInspector = (await import("@ckeditor/ckeditor5-inspector")).default;
-                    CKEditorInspector.attach(editor);
-                }
-
-                onEditorInitialized?.(editor);
-
-                return editor;
+            const editor = await buildEditor(container, !!isClassicEditor, {
+                isClassicEditor: !!isClassicEditor,
+                uiLanguage: uiLanguage as DISPLAYABLE_LOCALE_IDS,
+                contentLanguage: contentLanguage ?? null,
+                templates: templatesRef.current,
+                getNoteLocation: () => noteLocationRef.current
             });
 
-            if (onWatchdogStateChange) {
-                watchdog.on("stateChange", () => onWatchdogStateChange(watchdog));
+            if (isStale) {
+                await editor.destroy();
+                return;
             }
 
-            await watchdog.create(container, {});
+            editorRef.current = editor;
+            externalEditorRef.current = editor;
+            stopReportingErrorsRef.current = onTextEditorError(editor, (error) => {
+                onEditorErrorRef.current?.(error);
+            });
+            setEditor(editor);
+
+            if (import.meta.env.VITE_CKEDITOR_ENABLE_INSPECTOR === "true") {
+                const CKEditorInspector = (await import("@ckeditor/ckeditor5-inspector")).default;
+                CKEditorInspector.attach(editor);
+            }
+
+            onEditorInitialized?.(editor);
 
             if (isStale || !scrollContainer || !scrollTop) return;
 
@@ -351,20 +343,15 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
         contentLanguage, uiLanguage, isClassicEditor, multilineToolbar, mathFieldEnabled,
         doubleQuoteStyle, singleQuoteStyle, punctuationReplacements, mathReplacements, symbolReplacements,
         customReplacements, defaultContentLanguage, htmlSupportEnabled, allowedHtmlTags,
-        aiEnabled, llmProviders
+        aiEnabled, llmProviders, rebuildKey
     ]);
 
     // Destroys the editor when the component goes away, after a build still in progress.
     useEffect(() => () => {
         buildQueueRef.current = buildQueueRef.current
-            .then(async () => {
-                const watchdog = watchdogRef.current;
-                watchdogRef.current = null;
-                externalWatchdogRef.current = null;
-                await watchdog?.destroy();
-            })
+            .then(destroyEditor)
             .catch((e) => {
-                console.warn("Watchdog destroy failed", e);
+                console.warn("CKEditor destroy failed", e);
             });
     }, []);
 
@@ -421,14 +408,6 @@ export default function CKEditorWithWatchdog({ containerRef: externalContainerRe
     return (
         <div ref={containerRef} className={className} tabIndex={tabIndex} />
     );
-}
-
-function buildWatchdog(isClassicEditor: boolean, watchdogConfig?: WatchdogConfig): EditorWatchdog {
-    if (isClassicEditor) {
-        return new EditorWatchdog(ClassicEditor, watchdogConfig);
-    }
-    return new EditorWatchdog(PopupEditor, watchdogConfig);
-
 }
 
 async function buildEditor(element: HTMLElement, isClassicEditor: boolean, opts: BuildEditorOptions) {

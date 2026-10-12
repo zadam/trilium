@@ -818,7 +818,7 @@ div[data-notify="container"] {
     position: absolute;
     display: block;
 
-    margin: var(--ck-spacing-large) 0;
+    margin: var(--ck-spacing-large, var(--ck-spacing-lg)) 0;
 
     color: var(--muted-text-color);
 }
