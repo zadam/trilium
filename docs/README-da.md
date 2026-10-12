@@ -22,54 +22,56 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 | [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
-Trilium Notes is a free and open-source, cross-platform hierarchical note taking
-application with focus on building large personal knowledge bases.
+Trilium Notes er et gratis open source-notatprogram til flere platforme, der
+organiserer noter hierarkisk og fokuserer på at opbygge store personlige
+vidensbaser.
 
-Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
-Notes", with one `l`.
+Leder du efter »Trillium Notes«? Projektets officielle stavemåde er »Trilium
+Notes« med ét »l«.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
 ## ⏬ Download
 - [Latest release](https://github.com/TriliumNext/Trilium/releases/latest) –
-  stable version, recommended for most users.
+  stabil version, anbefales til de fleste brugere.
 - [Nightly build](https://github.com/TriliumNext/Trilium/releases/tag/nightly) –
-  unstable development version, updated daily with the latest features and
-  fixes.
+  ustabil udviklingsversion, opdateres dagligt med de nyeste funktioner og
+  rettelser.
 
-## 📚 Documentation
+## 📚 Dokumentation
 
-**Visit our comprehensive documentation at
+**Besøg vores omfattende dokumentation på
 [docs.triliumnotes.org](https://docs.triliumnotes.org/)**
 
-Our documentation is available in multiple formats:
-- **Online Documentation**: Browse the full documentation at
+Vores dokumentation findes i flere formater:
+- **Onlinedokumentation**: Gennemse den fulde dokumentation på
   [docs.triliumnotes.org](https://docs.triliumnotes.org/)
-- **In-App Help**: Press `F1` within Trilium to access the same documentation
-  directly in the application
-- **GitHub**: Navigate through the [User Guide](./User%20Guide/User%20Guide/) in
-  this repository
+- **Hjælp i programmet**: Tryk på `F1` i Trilium for at åbne den samme
+  dokumentation direkte i programmet
+- **GitHub**: Gennemse [User Guide](./User%20Guide/User%20Guide/) i dette
+  repository
 
-### Quick Links
+### Hurtige links
 - [Getting Started Guide](https://docs.triliumnotes.org/)
 - [Installation Instructions](https://docs.triliumnotes.org/user-guide/setup)
 - [Docker
   Setup](https://docs.triliumnotes.org/user-guide/setup/server/installation/docker)
 - [Upgrading
   TriliumNext](https://docs.triliumnotes.org/user-guide/setup/upgrading)
-- [Basic Concepts and
-  Features](https://docs.triliumnotes.org/user-guide/concepts/notes)
-- [Patterns of Personal Knowledge
-  Base](https://docs.triliumnotes.org/user-guide/misc/patterns-of-personal-knowledge)
+- [Grundlæggende begreber og
+  funktioner](https://docs.triliumnotes.org/user-guide/concepts/notes)
+- [Mønstre for personlige
+  vidensbaser](https://docs.triliumnotes.org/user-guide/misc/patterns-of-personal-knowledge)
 
 ## 🎁 Funktioner
 
-* Notes can be arranged into arbitrarily deep tree. Single note can be placed
-  into multiple places in the tree (see
-  [cloning](https://docs.triliumnotes.org/user-guide/concepts/notes/cloning))
-* Rich WYSIWYG note editor including e.g. tables, images and
-  [math](https://docs.triliumnotes.org/user-guide/note-types/text) with markdown
-  [autoformat](https://docs.triliumnotes.org/user-guide/note-types/text/markdown-formatting)
+* Noter kan organiseres i et træ med vilkårligt mange niveauer. Den samme note
+  kan placeres flere steder i træet (se
+  [kloning](https://docs.triliumnotes.org/user-guide/concepts/notes/cloning))
+* Avanceret visuel noteeditor med bl.a. tabeller, billeder og
+  [matematik](https://docs.triliumnotes.org/user-guide/note-types/text) med
+  Markdown-[automatisk
+  formatering](https://docs.triliumnotes.org/user-guide/note-types/text/markdown-formatting)
 * Understøttelse af redigering af [notes with source
   code](https://docs.triliumnotes.org/user-guide/note-types/code), herunder
   syntaksfremhævning
