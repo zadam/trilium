@@ -10,11 +10,14 @@ const mocks = vi.hoisted(() => ({
     setupSearch: vi.fn().mockRejectedValue(new Error("search failed")),
     setupToC: vi.fn(),
     setupFooter: vi.fn(),
+    setupSpeculation: vi.fn(),
+    whenActivated: vi.fn((callback: () => void) => callback()),
     setupMath: vi.fn(),
     setupMermaid: vi.fn(),
     applyTabs: vi.fn(),
     revealFragment: vi.fn(),
-    enhanceLinkPreviews: vi.fn()
+    enhanceLinkPreviews: vi.fn(),
+    setupAppView: vi.fn()
 }));
 
 vi.mock("./page/layout.js", () => ({ default: mocks.setupLayout }));
@@ -23,8 +26,15 @@ vi.mock("./page/theme_switch.js", () => ({ default: mocks.setupThemeSelector }))
 vi.mock("./page/search.js", () => ({ default: mocks.setupSearch }));
 vi.mock("./page/toc.js", () => ({ default: mocks.setupToC }));
 vi.mock("./page/footer.js", () => ({ default: mocks.setupFooter }));
+vi.mock("./page/speculation.js", () => ({
+    default: mocks.setupSpeculation,
+    whenActivated: mocks.whenActivated
+}));
 vi.mock("./content/math.js", () => ({ default: mocks.setupMath }));
 vi.mock("./content/mermaid.js", () => ({ default: mocks.setupMermaid }));
+vi.mock("./content/app_view.js", () => ({ default: mocks.setupAppView }));
+vi.mock("./content/note_view.js", () => ({ default: "mountNoteView" }));
+vi.mock("./content/collection_view.js", () => ({ default: "mountCollection" }));
 vi.mock("@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js", () => ({
     applyTabs: mocks.applyTabs,
     revealFragment: mocks.revealFragment
@@ -39,13 +49,16 @@ describe("share theme entry", () => {
     // Vitest clears the calls of every mock before each test.
     let pageSetupCalls: number[] = [];
     let loggedErrors: unknown[] = [];
+    let deferredSetups = 0;
 
     beforeAll(async () => {
         await import("./index.js");
         await vi.waitFor(() => expect(consoleError).toHaveBeenCalledTimes(2));
         pageSetupCalls = [ mocks.setupThemeSelector, mocks.setupToC, mocks.setupExpanders,
-            mocks.setupLayout, mocks.setupSearch, mocks.setupFooter ]
+            mocks.setupLayout, mocks.setupSearch, mocks.setupFooter,
+            mocks.setupSpeculation ]
             .map((setup) => setup.mock.calls.length);
+        deferredSetups = mocks.whenActivated.mock.calls.length;
         loggedErrors = consoleError.mock.calls.map(([ error ]) => (error as Error).message);
     });
 
@@ -57,7 +70,9 @@ describe("share theme entry", () => {
     });
 
     it("sets up every part of the page, logging what one throws or rejects with", () => {
-        expect(pageSetupCalls).toEqual([ 1, 1, 1, 1, 1, 1 ]);
+        expect(pageSetupCalls).toEqual([ 1, 1, 1, 1, 1, 1, 1 ]);
+        // The theme waits for a prerendered page to be shown.
+        expect(deferredSetups).toBe(1);
         expect(loggedErrors.sort()).toEqual([ "search failed", "theme switch failed" ]);
     });
 
@@ -109,6 +124,22 @@ describe("share theme entry", () => {
 
         expect(mocks.setupMath).toHaveBeenCalledTimes(2);
         expect(mocks.applyTabs).not.toHaveBeenCalled();
+    });
+
+    it("mounts the app view of a hosted note or a collection with its own module", async () => {
+        const mountedModules = async () => Promise.all(mocks.setupAppView.mock.calls
+            .map(async ([ container, load ]) => [ container, (await load()).default ]));
+
+        document.body.className = "type-noteMap";
+        document.body.innerHTML = `<div id="content"><div class="share-note-view"></div></div>`;
+        document.dispatchEvent(new Event("DOMContentLoaded"));
+        expect(await mountedModules()).toEqual([ [ ".share-note-view", "mountNoteView" ] ]);
+
+        mocks.setupAppView.mockClear();
+        document.body.className = "type-book";
+        document.body.innerHTML = `<div id="content"></div>`;
+        document.dispatchEvent(new Event("DOMContentLoaded"));
+        expect(await mountedModules()).toEqual([ [ ".share-collection", "mountCollection" ] ]);
     });
 
     it("draws a Mermaid note's diagram and leaves other notes alone", () => {

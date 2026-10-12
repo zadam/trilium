@@ -51,14 +51,14 @@
     "dev:linter-check": "cross-env NODE_OPTIONS=--max_old_space_size=4096 eslint .",
     "dev:linter-fix": "cross-env NODE_OPTIONS=--max_old_space_size=4096 eslint . --fix",
     "postinstall": "pnpm prepare",
-    "prepare": "pnpm run --filter pdfjs-viewer --filter share-theme build && pnpm run --filter web-clipper postinstall",
+    "prepare": "pnpm run --filter pdfjs-viewer build && pnpm run --filter web-clipper postinstall",
     "update-contributors": "tsx ./scripts/update-contributors.ts"
   },
   "private": true,
   "devDependencies": {
     "@fast-csv/parse": "5.0.8",
     "@stylistic/eslint-plugin": "5.10.0",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@triliumnext/server": "workspace:*",
     "@types/express": "5.0.6",
     "@types/node": "24.19.1",
@@ -73,16 +73,16 @@
     "eslint-config-preact": "2.0.0",
     "eslint-plugin-playwright": "2.12.1",
     "eslint-plugin-simple-import-sort": "14.0.0",
-    "happy-dom": "20.14.5",
+    "happy-dom": "20.14.6",
     "http-server": "14.1.1",
     "jiti": "2.7.0",
     "js-yaml": "5.4.3",
-    "playwright": "1.63.0",
+    "playwright": "1.64.0",
     "tslib": "2.8.1",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1",
-    "vite": "8.3.2",
+    "vite": "8.3.4",
     "vitest": "5.0.3"
   },
   "license": "AGPL-3.0-only",
@@ -99,5 +99,5 @@
     "url": "https://github.com/TriliumNext/Trilium/issues"
   },
   "homepage": "https://triliumnotes.org",
-  "packageManager": "pnpm@12.9.1"
+  "packageManager": "pnpm@12.10.1"
 }

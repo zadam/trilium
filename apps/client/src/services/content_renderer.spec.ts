@@ -1,4 +1,4 @@
-import { attachmentIcon } from "@triliumnext/commons";
+import { attachmentIcon, CONTENT_RENDERER_GROUPS } from "@triliumnext/commons";
 import { h, VNode } from "preact";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -58,13 +58,6 @@ vi.mock("./open.js", () => ({
     }
 }));
 
-const getMermaidConfig = vi.fn(() => ({ theme: "default", layout: "dagre", look: "classic" }));
-const postprocessMermaidSvg = vi.fn((...args: any[]) => `<svg class="mm">${args[0]}</svg>`);
-vi.mock("./mermaid.js", () => ({
-    getMermaidConfig: () => getMermaidConfig(),
-    postprocessMermaidSvg: (...a: any[]) => postprocessMermaidSvg(...a)
-}));
-
 // isOfficeMimeType comes (unmocked) from @triliumnext/commons; only the server
 // round-trip is stubbed out.
 const renderOfficeToHtml = vi.fn(async (..._args: any[]) => ({ css: "", html: `<div class="office-doc">converted</div>` }));
@@ -73,9 +66,11 @@ vi.mock("./office_renderer.js", () => ({
 }));
 
 const mermaidRender = vi.fn(async (..._args: any[]) => ({ svg: "<g/>" }));
-const mermaidInitialize = vi.fn((..._args: any[]) => {});
 vi.mock("mermaid", () => ({
-    default: { mermaidAPI: { initialize: (...a: any[]) => mermaidInitialize(...a), render: (...a: any[]) => mermaidRender(...a) } }
+    default: {
+        render: (...a: any[]) => mermaidRender(...a),
+        mermaidAPI: { render: (...a: any[]) => mermaidRender(...a) }
+    }
 }));
 
 const pdfViewerComponent = vi.fn((_props: any) => null);
@@ -133,10 +128,12 @@ vi.mock("@triliumnext/commons/src/lib/markdown_renderer", async (orig) => ({
 
 // --- Imports AFTER the mocks. ---
 import appContext from "../components/app_context.js";
+import Component from "../components/component.js";
 import type { SaveState } from "../components/note_context.js";
 import FAttachment from "../entities/fattachment.js";
 import { buildNote } from "../test/easy-froca.js";
 import {
+    CONTENT_RENDERERS,
     disposeInteractiveContent,
     getEmbedBoxSize,
     getRenderedContent as rawGetRenderedContent,
@@ -180,6 +177,14 @@ beforeEach(() => {
     vi.clearAllMocks();
     isProtectedSessionAvailable.mockReturnValue(false);
     (window as any).electronApi = undefined;
+});
+
+describe("CONTENT_RENDERERS", () => {
+    /** The static export reads the groups from the table in commons, the build from this one. */
+    it("has an entry for every group the static export names a renderer by", () => {
+        const groups = new Set(Object.values(CONTENT_RENDERER_GROUPS));
+        expect([ ...groups ].filter((group) => !Object.hasOwn(CONTENT_RENDERERS, group))).toEqual([]);
+    });
 });
 
 describe("getEmbedBoxSize", () => {
@@ -817,6 +822,12 @@ describe("getRenderedContent render / doc / protectedSession / mermaid", () => {
         expect($renderedContent.find(".render-ok").length).toBe(1);
     });
 
+    it("mounts a JSX render note under the given parent component", async () => {
+        const parentComponent = new Component();
+        await getRenderedContent(buildNote({ title: "R", type: "render" }), { parentComponent });
+        expect(renderServiceRender.mock.lastCall?.[3]).toBe(parentComponent);
+    });
+
     it("render error callback shows an admonition with the error message", async () => {
         renderServiceRender.mockImplementationOnce(async (_n: any, $content: any, onError: any) => {
             onError(new Error("kaput"));
@@ -860,32 +871,15 @@ describe("getRenderedContent render / doc / protectedSession / mermaid", () => {
         expect(enterProtectedSession).toHaveBeenCalledOnce();
     });
 
-    it("renders a mermaid diagram and post-processes the svg", async () => {
+    it("shows a mermaid note's saved SVG instead of rendering its source", async () => {
         const note = buildNote({ title: "M", type: "mermaid", content: "graph TD; A-->B" });
         const { type, $renderedContent } = await getRenderedContent(note);
         expect(type).toBe("mermaid");
-        expect(mermaidInitialize).toHaveBeenCalledOnce();
-        expect(mermaidInitialize).toHaveBeenCalledWith(
-            expect.objectContaining({ layout: "dagre", look: "classic", startOnLoad: false })
-        );
-        expect(postprocessMermaidSvg).toHaveBeenCalledWith("<g/>");
-        expect($renderedContent.find("svg.mm").length).toBe(1);
-    });
-
-    it("renders a mermaid error message when rendering throws", async () => {
-        mermaidRender.mockRejectedValueOnce(new Error("bad diagram"));
-        const note = buildNote({ title: "MErr", type: "mermaid", content: "bogus" });
-        const { $renderedContent } = await getRenderedContent(note);
-        expect($renderedContent.find("p").length).toBe(1);
-        expect(postprocessMermaidSvg).not.toHaveBeenCalled();
-    });
-
-    it("handles a mermaid note with no blob content", async () => {
-        const note = buildNote({ title: "MEmpty", type: "mermaid" });
-        note.getBlob = (async () => null) as any;
-        const { type } = await getRenderedContent(note);
-        expect(type).toBe("mermaid");
-        expect(mermaidRender).toHaveBeenCalled();
+        const $img = $renderedContent.find("img");
+        expect($img.length).toBe(1);
+        expect($img.attr("src")).toContain(`api/images/${note.noteId}/`);
+        expect($renderedContent.find("svg").length).toBe(0);
+        expect(mermaidRender).not.toHaveBeenCalled();
     });
 });
 

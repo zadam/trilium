@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getImageAttachmentTitle,
-    getMimeIcon, getNoteIcon, MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE,
-    NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS, parseMindMapNoteLink
+    CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getContentRendererGroup,
+    getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
+    MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS,
+    parseMindMapNoteLink
 } from "./notes.js";
 import { NoteType } from "./rows.js";
 
@@ -108,6 +109,21 @@ describe("getNoteIcon", () => {
         expect(getNoteIcon(buildArgs({
             type: "file", mime: "application/gpx+xml", getLabelValue: located()
         }))).toBe("bx bx-trip");
+    });
+
+    it("draws a web clipping by its clip type, behind its own icon", () => {
+        const clipped = (clipType: string) => (name: string) => name === "clipType" ? clipType : null;
+
+        expect([ "clippings", "page", "note", "tabs" ].map((clipType) =>
+            getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))))
+            .toEqual([ "bx bx-paperclip", "bx bx-globe", "bx bx-bookmark", "bx bx-window-alt" ]);
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), isFolder: () => true })))
+            .toBe("bx bx-globe");
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), iconClass: "bx bx-star" })))
+            .toBe("bx bx-star");
+        for (const clipType of [ "unknown", "constructor" ]) {
+            expect(getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))).toBe("bx bx-note");
+        }
     });
 
     it("draws a shape note as the shape its label names, by the same rules as a pin", () => {
@@ -272,5 +288,58 @@ describe("getMimeIcon", () => {
         // these return a function, which survives the `??` and is handed on as an icon class.
         expect(getMimeIcon("constructor")).toBe("bx bx-file");
         expect(getMimeIcon("toString")).toBe("bx bx-file");
+    });
+});
+
+describe("isFullWidthNoteType", () => {
+    it("takes the full width for canvas-like types and for PDF, video and audio files", () => {
+        for (const type of [ "code", "image", "mermaid", "book", "canvas", "webView", "mindMap", "spreadsheet" ]) {
+            expect(isFullWidthNoteType(type, "")).toBe(true);
+        }
+        expect(isFullWidthNoteType("file", "application/pdf")).toBe(true);
+        expect(isFullWidthNoteType("file", "video/mp4")).toBe(true);
+        expect(isFullWidthNoteType("file", "audio/ogg")).toBe(true);
+
+        expect(isFullWidthNoteType("text", "text/html")).toBe(false);
+        expect(isFullWidthNoteType("file", "application/zip")).toBe(false);
+        expect(isFullWidthNoteType("search", "")).toBe(false);
+    });
+});
+
+describe("getNoteContentType", () => {
+    it("names the content a note renders as, and the group of its renderer", () => {
+        const kinds = [
+            [ "code", "text/x-gfm", false ],
+            [ "code", "application/json", true ],
+            [ "file", "application/json", true ],
+            [ "code", "application/json", false ],
+            [ "file", "application/json", false ],
+            [ "file", "application/pdf", false ],
+            [ "file", CANVAS_ATTACHMENT_MIME, false ],
+            [ "file", "audio/mpeg", false ],
+            [ "file", "video/mp4", false ],
+            [ "file", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", false ],
+            [ "file", "application/zip", false ],
+            [ "mermaid", "text/vnd.mermaid", false ]
+        ] as const;
+
+        expect(kinds.map(([ type, mime, hasIconPackLabel ]) => {
+            const kind = getNoteContentType(type, mime, hasIconPackLabel);
+            return [ kind, getContentRendererGroup(kind) ];
+        })).toEqual([
+            [ "markdown", "markdown" ],
+            [ "iconPack", "iconPack" ],
+            [ "iconPack", "iconPack" ],
+            [ "code", undefined ],
+            [ "code", undefined ],
+            [ "pdf", "file" ],
+            [ "canvasDrawing", "file" ],
+            [ "audio", "file" ],
+            [ "video", "file" ],
+            [ "office", undefined ],
+            [ "file", undefined ],
+            [ "mermaid", undefined ]
+        ]);
+        expect(getContentRendererGroup("constructor")).toBeUndefined();
     });
 });

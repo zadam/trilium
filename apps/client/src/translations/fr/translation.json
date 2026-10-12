@@ -987,12 +987,9 @@
   "editable_text": {
     "placeholder": "Saisir le contenu de votre note ici...",
     "auto-detect-language": "Détecté automatiquement",
-    "editor_crashed_title": "L'éditeur de texte a cessé de fonctionner",
-    "editor_crashed_content": "Votre contenu a été récupéré avec succès, mais certaines de vos modifications les plus récentes n'ont peut-être pas été enregistrées.",
     "editor_crashed_details_button": "Afficher plus de détails...",
     "editor_crashed_details_intro": "Si cette erreur se produit plusieurs fois, pensez à la signaler sur GitHub en collant les informations ci-dessous.",
-    "editor_crashed_details_title": "Informations techniques",
-    "keeps-crashing": "Le composant d'édition cesse de fonctionner. Veuillez essayer de redémarrer Trilium. Si le problème persiste, envisager de créer un rapport de bogue."
+    "editor_crashed_details_title": "Informations techniques"
   },
   "empty": {
     "open_note_instruction": "Ouvrez une note en tapant son titre dans la zone ci-dessous ou choisissez une note dans l'arborescence.",

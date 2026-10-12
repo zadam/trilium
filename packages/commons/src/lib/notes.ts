@@ -4,6 +4,7 @@
 
 import { isFontMimeType } from "./font_mimes.js";
 import { MIME_TYPES_DICT, type MimeTypeDefinition } from "./mime_type.js";
+import { isOfficeMimeType } from "./office.js";
 import { NoteType } from "./rows.js";
 
 export const NOTE_TYPE_ICONS = {
@@ -133,6 +134,14 @@ export const GEO_SHAPE_ICONS: Record<string, string> = {
     circle: "bx bx-shape-circle"
 };
 
+/** The icon of a note made by the web clipper, keyed by its `#clipType` label. */
+export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
+    [ "clippings", "bx bx-paperclip" ],
+    [ "page", "bx bx-globe" ],
+    [ "note", "bx bx-bookmark" ],
+    [ "tabs", "bx bx-window-alt" ]
+]);
+
 /**
  * The icon a note is drawn under: its own `#iconClass` where it has one, and a default read off
  * what the note is otherwise.
@@ -142,7 +151,8 @@ export const GEO_SHAPE_ICONS: Record<string, string> = {
  * The geo map therefore writes no `#iconClass` onto a marker or a shape it creates, so an icon it
  * hands down through
  * `#child:iconClass` or a template still applies, and redrawing a shape as another kind changes the
- * icon with it. `iconClass` stays an argument rather than being read here because the share tree
+ * icon with it. A note the web clipper made is drawn by its `#clipType` ({@link CLIP_TYPE_ICONS}).
+ * `iconClass` stays an argument rather than being read here because the share tree
  * narrows it to the prefixes an icon pack supplies.
  */
 export function getNoteIcon({
@@ -175,6 +185,10 @@ export function getNoteIcon({
         const shape = getLabelValue(GEO_SHAPE_ATTRIBUTE) || getLabelValue(MAP_SHAPE_ATTRIBUTE);
         if (shape) {
             return GEO_SHAPE_ICONS[shape.split(":", 1)[0]] ?? GEO_SHAPE_ICONS.line;
+        }
+        const clipIcon = CLIP_TYPE_ICONS.get(getLabelValue("clipType") ?? "");
+        if (clipIcon) {
+            return clipIcon;
         }
         if (isFolder()) {
             return "bx bx-folder";
@@ -213,6 +227,82 @@ export function getMimeIcon(mime: string | undefined | null): string {
 export function getCodeLanguageIcon(language: Pick<MimeTypeDefinition, "icon"> | undefined): string {
     return language?.icon ?? NOTE_TYPE_ICONS.code;
 }
+
+/**
+ * Whether a note of `type` and `mime` always takes the full width of the content, whatever its
+ * `#fullContentWidth` label says: canvas-like types, and files shown in a viewer (PDF, video, audio).
+ */
+export function isFullWidthNoteType(type: string, mime: string) {
+    if (FULL_WIDTH_NOTE_TYPES.includes(type)) {
+        return true;
+    }
+
+    return type === "file"
+        && (mime === "application/pdf" || mime.startsWith("video/") || mime.startsWith("audio/"));
+}
+
+/** Whether a `code` note of `mime` holds Markdown, which renders as text rather than as code. */
+export function isMarkdownMime(mime: string) {
+    return MARKDOWN_MIME_TYPES.includes(mime);
+}
+
+/**
+ * The kind of content a note renders as, which picks its renderer: `iconPack` for an icon pack's
+ * manifest, `markdown` for a Markdown code note, else what {@link getFileContentType} names.
+ *
+ * @param hasIconPackLabel whether the note carries `#iconPack`, disabled or not.
+ */
+export function getNoteContentType(type: string, mime: string, hasIconPackLabel: boolean) {
+    if ((type === "code" || type === "file") && mime === "application/json" && hasIconPackLabel) {
+        return "iconPack";
+    }
+    if (type === "code" && isMarkdownMime(mime)) {
+        return "markdown";
+    }
+    return getFileContentType(type, mime);
+}
+
+/** Narrows a file, or a `viewConfig` attachment, to the kind of file its media type names. */
+export function getFileContentType(type: string, mime: string) {
+    if (type === "file" && mime === "application/pdf") return "pdf";
+    if (type === "file" && mime === CANVAS_ATTACHMENT_MIME) return "canvasDrawing";
+    if ((type === "file" || type === "viewConfig") && mime === "application/json") return "code";
+    if (type === "file" && mime.startsWith("audio/")) return "audio";
+    if (type === "file" && mime.startsWith("video/")) return "video";
+    if (type === "file" && isOfficeMimeType(mime)) return "office";
+    return type;
+}
+
+/**
+ * The group of the share theme's manifest, `content:<group>`, that holds the renderer the app
+ * loads on demand for each kind of content {@link getNoteContentType} names. A kind it renders
+ * with nothing loaded on demand, such as text or code, has none. Each group is a key of the
+ * client's `CONTENT_RENDERERS`.
+ */
+export const CONTENT_RENDERER_GROUPS: Readonly<Record<string, string>> = {
+    iconPack: "iconPack",
+    markdown: "markdown",
+    image: "image",
+    canvasDrawing: "file",
+    pdf: "file",
+    audio: "file",
+    video: "file",
+    render: "render",
+    webView: "webView",
+    llmChat: "llmChat"
+};
+
+/** The group {@link CONTENT_RENDERER_GROUPS} names for content of `kind`, or `undefined` for none. */
+export function getContentRendererGroup(kind: string) {
+    return lookUpMime(CONTENT_RENDERER_GROUPS, kind);
+}
+
+const MARKDOWN_MIME_TYPES = [ "text/markdown", "text/x-markdown", "text/x-gfm" ];
+
+const FULL_WIDTH_NOTE_TYPES = [
+    "code", "image", "mermaid", "book", "render", "canvas", "webView", "noteMap", "relationMap",
+    "mindMap", "spreadsheet"
+];
 
 function getFileMimeIcon(mime: string): string {
     if (mime.startsWith("video/")) return "bx bx-video";

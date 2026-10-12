@@ -33,6 +33,7 @@ describe("Check artifacts are present", () => {
             "assets",
             "share-theme",
             "ckeditor5-content.css",
+            "ckeditor5-content-colors.css",
             "ckeditor5-multicolumn.css"
         ];
 

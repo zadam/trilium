@@ -30,11 +30,24 @@ packages/share-theme/
   src/page/            page chrome: one script next to its CSS (layout, header, navigation,
                        search, toc, theme_switch, footer)
   src/content/         content enhancements (math, mermaid) and content CSS
-  scripts/build.ts     esbuild → dist/scripts.js + dist/scripts.css (run by tsx)
+apps/client/vite-plugins.mts   shareTheme(): the client and standalone builds bundle the theme
 ```
 
 `packages/share-theme/package.json` exports `./templates/*` and `./model/*` **from source** (core
-imports the model as `@triliumnext/share-theme/model/page`); everything else resolves to `dist/`.
+imports the model as `@triliumnext/share-theme/model/page`). The theme has no build of its own:
+`shareTheme()` in the client's Vite config writes it into the app's output.
+
+- `scripts.js` and its chunks go to `src/`, beside the app's chunks, so the two share what both
+  import (Mermaid, commons, the tabs code). `/share/assets/` maps to that directory: an
+  `express.static` route on the server, and in standalone stubs in `share/assets/` that load their
+  namesakes in `src/`.
+- `scripts.css` and `tree.js` come from builds of their own, targeting `chrome96`. `scripts.css`
+  keeps the import order of `index.ts`, which the app's chunking would change; `tree.js` is one
+  file, since the first paint waits for it.
+- `src/share_theme.json` lists the files a page can load, and apart those only Mermaid loads.
+  The static export copies them into `assets/` (`getShareThemeExportFiles()`).
+- A library the theme should load only on demand, and the export copy only when needed, goes in
+  `LAZY_LIBRARIES` with its own condition in the export.
 
 ## The render pipeline
 
@@ -53,7 +66,9 @@ imports the model as `@triliumnext/share-theme/model/page`); everything else res
    the content as it is. The default `page.ejs` additionally gets the output of
    `preparePageContent()`: content with heading anchors and image `alt`/`loading`, `headings` and
    `toc`.
-5. **Browser** — `scripts.js` wires the tree, search, ToC scroll tracking, theme switch, footer
+5. **Browser** — `tree.js`, the first entry of `jsToLoad` and the only `blocking="render"` one,
+   restores the tree's expansion, scroll position and clicked clone before the first paint.
+   `scripts.js` then wires the expand buttons, search, ToC scroll tracking, theme switch, footer
    date, math, Mermaid, link previews and tabs. `boot_script.ejs` runs inline in `<head>` before the
    first paint (theme class, collapsed panes, `window.glob`).
 
@@ -107,6 +122,9 @@ template* page of the User Guide. So:
 - **No inline scripts besides `boot_script.ejs`.** Top-level `const`/`let` in a classic inline
   script is a global binding shared with `~shareHtml` snippets — keep everything inside the IIFE.
   `boot_script.spec.ts` enforces both and that `page.ejs` has no `<script>`.
+- Code that must run before the first paint and needs the DOM goes in `tree.ts`'s bundle, which is
+  render-blocking; keep it small, since every page waits for it. Everything else stays in
+  `scripts.js`, and `~shareJs` scripts never block.
 - Anything needed before the first paint is driven from the root class the boot script sets
   (`theme-dark`/`theme-light`, `left-pane-collapsed`) — the theme switch is styled from it, not
   from `:checked`, so it needs no script to look right.
@@ -115,8 +133,8 @@ template* page of the User Guide. So:
 - Code shared with the app comes from commons or ckeditor5 by subpath
   (`@triliumnext/commons/src/lib/…`, e.g. `enhanceLinkPreviews`, `getMermaidConfig`,
   `applyTabs`); shared content CSS comes from `packages/ckeditor5/src/theme/`.
-- Mermaid loads the client's `share_mermaid` entry through the `client/share_mermaid.json`
-  manifest, so diagrams match the app; it redraws on theme change.
+- Mermaid is a plain `import("mermaid")`, the app's own copy, so diagrams match the app; it
+  redraws on theme change.
 
 ## Testing
 
@@ -162,9 +180,10 @@ can call any of them.
 
 ## Running and seeing a change
 
-- The share theme bundle is served from `packages/share-theme/dist` in development: run
-  `pnpm --filter @triliumnext/share-theme build` (or `dev` to watch) after changing its scripts
-  or CSS.
+- In development, the client's and standalone's Vite servers answer `scripts.js` and `tree.js`
+  from source and `scripts.css` empty (Vite injects the styles), so a script or style change
+  needs no rebuild. To see the built output, run `pnpm client:build`; an export from a
+  development server needs it too, since it copies the files `share_theme.json` lists.
 - The Node provider **caches each template after the first read**, and core changes need the
   server to restart: restart the dev server after changing a template or the renderer.
 - Standalone bundles the templates (`?raw` imports): a **new partial** must be added to

@@ -75,11 +75,11 @@
       <tr>
         <td><code>logo</code>
         </td>
-        <td>The site logo in the header: <code>href</code> (<code>#shareRootLink</code>,
-          otherwise the site's root page), <code>image</code> (the <code>~shareLogo</code> image,
-          or <code>null</code>), <code>icon</code> (the icon classes of the site's root
-          note, shown when there is no <code>image</code>), and <code>width</code> and <code>height</code> for
-          the image.</td>
+        <td>The site logo above the navigation tree and, on a narrow screen, in the
+          header: <code>href</code> (<code>#shareRootLink</code>, otherwise the site's
+          root page), <code>image</code> (the <code>~shareLogo</code> image, or <code>null</code>), <code>icon</code> (the
+          icon classes of the site's root note, shown when there is no <code>image</code>),
+          and <code>width</code> and <code>height</code> for the image.</td>
       </tr>
       <tr>
         <td><code>navigation</code>
@@ -92,19 +92,33 @@
         <td><code>contentClasses</code>
         </td>
         <td>The classes of the content element: <code>type-&lt;note type&gt;</code>, <code>ck-content</code> for
-          text and Markdown notes, and <code>no-content</code> when the note has no
-          content of its own.</td>
+          text and Markdown notes, <code>full-height</code> for a note that takes the
+          whole page (such as a PDF, a web view, a calendar, a geo map or an image),
+          and <code>no-content</code> when the note has no content of its own.</td>
       </tr>
       <tr>
         <td><code>childLinks</code>
         </td>
-        <td>The links to the note's visible children, each with <code>title</code>, <code>href</code>, <code>isExternal</code> and <code>type</code>.</td>
+        <td>The links to the note's visible children, each with <code>title</code>, <code>href</code>, <code>isExternal</code>, <code>type</code>, <code>icon</code> (its
+          icon classes), <code>excerpt</code> (its <code>#shareDescription</code> or
+          the start of its text, with a line break between paragraphs, or <code>null</code>)
+          and <code>children</code> (when it has no excerpt, its first ten visible
+          children, each with <code>title</code>, <code>href</code>, <code>isExternal</code> and <code>icon</code>).
+          Empty for a note that is not a collection, a text note or a code note,
+          for a note that takes the whole page, and with <code>#hideChildrenOverview</code>.</td>
+      </tr>
+      <tr>
+        <td><code>childLinksLayout</code>
+        </td>
+        <td>How the default template lays <code>childLinks</code> out: <code>list</code> for
+          a collection whose view type is list, <code>grid</code> otherwise.</td>
       </tr>
       <tr>
         <td><code>prevNext</code>
         </td>
         <td>The pages before and after the note in the navigation tree, as <code>previous</code> and <code>next</code>,
-          each with <code>title</code> and <code>href</code>, or <code>null</code>.</td>
+          each with <code>title</code> and <code>href</code>, or <code>null</code>. Both <code>null</code> for
+          a note that takes the whole page.</td>
       </tr>
       <tr>
         <td><code>language</code>
@@ -117,7 +131,21 @@
         <td><code>lastUpdated</code>
         </td>
         <td>When the note was last changed, as <code>iso</code> for a <code>&lt;time&gt;</code> element
-          and as <code>text</code> in the application's language, or <code>null</code>.</td>
+          and as <code>text</code> in the application's language, or <code>null</code>,
+          which it also is for a note that takes the whole page.</td>
+      </tr>
+      <tr>
+        <td><code>showTitle</code>
+        </td>
+        <td>Whether the default template shows the note's title above the content.
+          Always <code>true</code>.</td>
+      </tr>
+      <tr>
+        <td><code>titleIcon</code>
+        </td>
+        <td>The icon classes of the note, which the default template shows beside
+          the title in a row of its own for a note that takes the whole page; <code>null</code> for
+          any other note.</td>
       </tr>
       <tr>
         <td><code>snippets</code>
@@ -143,6 +171,14 @@
         </td>
         <td>Resolved favicon and logo URLs. Without <code>~shareLogo</code>, <code>logoUrl</code> is
           the Trilium logo.</td>
+      </tr>
+      <tr>
+        <td><code>fontPreloads</code>
+        </td>
+        <td>The icon fonts to preload, each with <code>href</code> and <code>type</code> (the
+          font's media type): Boxicons, and the icon packs used by the logo, the
+          navigation tree or the subpages. The default template adds a <code>&lt;link rel="preload" as="font" crossorigin&gt;</code> for
+          each, so that the icons do not appear only after the first paint.</td>
       </tr>
       <tr>
         <td><code>isStatic</code>

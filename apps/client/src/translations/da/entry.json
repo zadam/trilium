@@ -1,0 +1,17 @@
+{
+    "set_password": {
+        "passwords-dont-match": "Det indtastede kodeord matcher ikke."
+    },
+    "setup": {
+        "heading": "Kom i gang med Trilium",
+        "new-document": "Ny vidensbase",
+        "new-document-description": "Start med en tom vidensbase, og kom i gang med det samme.",
+        "sync-from-desktop": "Tilknyt en skrivebordsapp",
+        "sync-from-desktop-description": "Du har kun en Trilium-skrivebordsapp kørende på en anden enhed. Denne enhed synkroniserer sine data fra den skrivebordsapp.",
+        "sync-from-server": "Opret forbindelse til en eksisterende server",
+        "sync-from-server-description": "Du har en Trilium-server kørende et andet sted (enten selvhostet eller i skyen). Denne enhed synkroniserer sine data fra serveren.",
+        "next": "Næste",
+        "init-in-progress": "Initialisering af dokumentet er i gang",
+        "redirecting": "Du bliver snart viderestillet til programmet."
+    }
+}

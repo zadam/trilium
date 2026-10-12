@@ -103,7 +103,7 @@ When cards are sorted by an attribute, they are ordered according to the followi
 | Date, Date & time | oldest → newest |
 | Time | earliest hour (closest to 0) → latest hour (closest to 24) |
 | Checkbox | unchecked → checked |
-| Select | The order in which the options are declared.     <br>For example, a select attribute declared with “Low”, “Medium”, and “High” options will be sorted as follows: Low → Medium → High. |
+| Select | The order in which the options are declared.      <br>For example, a select attribute declared with “Low”, “Medium”, and “High” options will be sorted as follows: Low → Medium → High. |
 | Color | Grays → colors. Colors are ordered by their color-wheel [hue](https://en.wikipedia.org/wiki/Hue) angle (from 0° to 360°). |
 
 Relation attributes are ordered according to the title of the target note.
@@ -211,7 +211,7 @@ You can select multiple cards in the following ways:
 *   **Using only the keyboard:**
     *   To add the currently focused card to the selection, press <kbd>Ctrl</kbd> + <kbd>Space</kbd>. Repeat this for the other cards you want to select. Pressing <kbd>Ctrl</kbd> + <kbd>Space</kbd> again on a selected card will deselect it.
     *   To select a continuous sequence of cards within a column, hold <kbd>Shift</kbd> and use the <kbd>Up</kbd> and <kbd>Down</kbd> arrow keys to expand or shrink the selection.
-    *   To select every card in the column the focus is in, press <kbd>Ctrl</kbd> + <kbd>A</kbd>. The same action is available from the column menu, as <span class="tn-icon bx bx-selection"></span> **Select all cards**.
+    *   To select every card in the column the focus is in, press <kbd>Ctrl</kbd> + <kbd>A</kbd>. The same action is available from the column menu, as <span class="tn-icon bx bx-selection"></span>**Select all cards**.
     *   Press <kbd>Esc</kbd> to clear the selection.
 
 ### Moving cards between columns
@@ -315,7 +315,7 @@ To create a new attribute, follow these steps:
 5.  Press **Save & close**.
 
 > [!NOTE]
-> For each newly created attribute, Trilium creates an attribute definition on the board collection note. A card displays the attributes declared as inheritable on the board note, as well as any attribute the card gets a definition for from elsewhere, for example through <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a> or another parent note it is cloned under. Attributes that only the cards define are listed after the board's own.
+> For each newly created attribute, Trilium creates an attribute definition on the board collection note. A card displays the attributes declared as inheritable on the board note, as well as any attribute the card gets a definition for from elsewhere, for example through <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a> or another parent note it is cloned under. Attributes that only the cards define are listed after the board's own.
 
 Here is an example of the attributes you can define for a typical Kanban board used to track tasks:
 
@@ -449,3 +449,7 @@ The filter persists even after you close the tab. When you reopen the collection
 You can create a link that opens the board and points out a specific column or card. Open the **column menu** or the card’s context menu, select <span class="tn-icon bx bx-copy"></span> **Copy reference**, and then paste the link where you need it.
 
 In a text note, the pasted link displays the title, icon, and color of the column or card it points to. In a Markdown or code note, the plain link address is pasted instead. Opening the link scrolls the board to the column or card and focuses it. If the column belongs to a different grouping attribute, the board switches to that attribute first.
+
+## Read-only boards
+
+A board marked as [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) only shows its cards. It has no buttons to add a card or a column, column and card titles can't be renamed, and column icons can't be changed. Cards and columns can't be dragged, moved or deleted with the keyboard, and notes dragged in from the note tree aren't added. The context menus of a card or a column keep only the entries that change nothing, such as opening the note or <span class="tn-icon bx bx-copy"></span> _Copy reference_, and the board's own menu doesn't open. The cards can still be grouped by another attribute, but the choice isn't saved, and no new grouping attribute can be created.

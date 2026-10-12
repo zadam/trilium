@@ -1206,12 +1206,9 @@
   "editable_text": {
     "auto-detect-language": "تم اكتشافه تلقائيا",
     "placeholder": "اكتب محتوى ملاحظة الكود الخاصة بك هنا...",
-    "editor_crashed_title": "تعطّل محرر النصوص",
-    "editor_crashed_content": "تم استعادة المحتوى بنجاح، لكن قد لا تكون بعض أحدث التغييرات قد تم حفظها.",
     "editor_crashed_details_button": "عرض المزيد من التفاصيل...",
     "editor_crashed_details_intro": "إذا واجهت هذا الخطأ عدة مرات، يُرجى التفكير في الإبلاغ عنه على GitHub عبر لصق المعلومات أدناه.",
-    "editor_crashed_details_title": "معلومات تقنية",
-    "keeps-crashing": "مكوّن التحرير يتعطّل باستمرار. يُرجى محاولة إعادة تشغيل Trilium. إذا استمرت المشكلة، ففكّر في إنشاء تقرير خطأ."
+    "editor_crashed_details_title": "معلومات تقنية"
   },
   "editor": {
     "title": "محرر"

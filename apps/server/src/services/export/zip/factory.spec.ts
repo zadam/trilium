@@ -42,7 +42,9 @@ let readFileSyncSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
     readFileSyncSpy = vi.spyOn(fs, "readFileSync").mockImplementation(((file: string) =>
-        (String(file).endsWith("multicolumn.css") ? ".columns {}" : "body { color: red; }")
+        (String(file).endsWith("multicolumn.css") ? ".columns {}"
+            : /content[_-]colors\.css$/.test(String(file)) ? ".colors {}"
+                : "body { color: red; }")
     ) as any);
 });
 
@@ -57,12 +59,12 @@ describe("serverZipExportProviderFactory", () => {
         const provider = await factory("html", data);
 
         expect(provider).toBeInstanceOf(FakeHtml);
-        expect((provider as any).opts.contentCss).toBe("body { color: red; }\n.columns {}");
+        expect((provider as any).opts.contentCss).toBe("body { color: red; }\n.colors {}\n.columns {}");
         // production reads the bundled css next to the resource dir
         const readPaths = readFileSyncSpy.mock.calls.map(([ file ]) => String(file));
-        expect(readPaths).toHaveLength(2);
-        expect(path.basename(readPaths[0])).toBe("ckeditor5-content.css");
-        expect(path.basename(readPaths[1])).toBe("ckeditor5-multicolumn.css");
+        expect(readPaths.map((file) => path.basename(file))).toEqual([
+            "ckeditor5-content.css", "ckeditor5-content-colors.css", "ckeditor5-multicolumn.css"
+        ]);
         expect(readPaths.some((file) => file.includes("node_modules"))).toBe(false);
     });
 
@@ -71,16 +73,18 @@ describe("serverZipExportProviderFactory", () => {
         const provider = await factory("html", data);
 
         const readPaths = readFileSyncSpy.mock.calls.map(([ file ]) => String(file));
-        expect(readPaths).toHaveLength(2);
+        expect(readPaths).toHaveLength(3);
         expect(readPaths[0]).toContain("ckeditor5-content.css");
         // dev resolves the file from the ckeditor5 package (under node_modules),
         // unlike the production path which reads from the resource dir.
         expect(readPaths[0]).toContain("node_modules");
-        // The multicolumn stylesheet comes from the workspace's own editor package.
-        expect(path.normalize(readPaths[1]))
-            .toContain(path.join("packages", "ckeditor5", "src", "theme", "multicolumn.css"));
+        // The content colors and the multicolumn stylesheet come from the workspace's own editor package.
+        const theme = path.join("packages", "ckeditor5", "src", "theme");
+        expect(path.normalize(readPaths[1])).toContain(path.join(theme, "content_colors.css"));
+        expect(path.normalize(readPaths[2])).toContain(path.join(theme, "multicolumn.css"));
         expect(fs.existsSync(readPaths[1])).toBe(true);
-        expect((provider as any).opts.contentCss).toBe("body { color: red; }\n.columns {}");
+        expect(fs.existsSync(readPaths[2])).toBe(true);
+        expect((provider as any).opts.contentCss).toBe("body { color: red; }\n.colors {}\n.columns {}");
     });
 
     it("builds a Markdown provider without reading any CSS", async () => {

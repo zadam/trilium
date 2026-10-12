@@ -30,13 +30,13 @@ async function main() {
     build.copy("/node_modules/@hyzyla/pdfium/dist/pdfium.wasm", "assets/pdfium.wasm");
     // The Codex ACP adapter runs as a script of its own in a worker thread. See codex_binary.ts.
     build.copy("/node_modules/@agentclientprotocol/codex-acp/dist/index.js", "assets/codex-acp.mjs");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/", "dist");
     build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
     build.copyNodeModules([ "better-sqlite3" ]);
     build.trimBetterSqlite3();
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
+    build.copy("/packages/ckeditor5/src/theme/content_colors.css", "ckeditor5-content-colors.css");
     build.copy("/packages/ckeditor5/src/theme/multicolumn.css", "ckeditor5-multicolumn.css");
 
     build.buildFrontend();

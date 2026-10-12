@@ -736,6 +736,10 @@
     "language": "The language this note's content is written in, which drives spell checking and text direction.",
     "original_file_name": "The name the file had when it was imported, kept so that it can be exported under it again.",
     "page_url": "The address a clipped page came from, shown beside the note title.",
+    "page_description": "The description of a clipped page, shown in the details of the note's \"Web clip\" badge.",
+    "page_author": "The author of a clipped page, shown in the details of the note's \"Web clip\" badge.",
+    "published_date": "The date a clipped page was published, shown in the details of the note's \"Web clip\" badge.",
+    "modified_date": "The date a clipped page was last updated, shown in the details of the note's \"Web clip\" badge.",
     "command": "Which built-in command a launcher runs when it is pressed.",
     "display_mode": "Which pane a split editor shows: <code>source</code>, <code>preview</code>, or <code>split</code> for both. Overrides what <code>#readOnly</code> would otherwise choose.",
     "search_string": "The query a saved search runs.",
@@ -1340,6 +1344,7 @@
     "title": "Note Map",
     "fix-nodes": "Fix nodes",
     "link-distance": "Link distance",
+    "fit-to-view": "Fit to view",
     "too-many-notes_one": "There is {{count}} note here. Showing it may slow things down.",
     "too-many-notes_other": "There are {{count}} notes here. Showing them all may slow things down.",
     "show-anyway": "Show map"
@@ -1550,15 +1555,15 @@
   },
   "editable_text": {
     "placeholder": "Type the content of your note here...",
-    "editor_crashed_title": "The text editor crashed",
-    "editor_crashed_content": "Your content was recovered successfully, but a few of your most recent changes may not have been saved.",
     "editor_crashed_details_button": "View more details...",
     "editor_crashed_details_intro": "If you experience this error several times, consider reporting it on GitHub by pasting the information below.",
     "editor_crashed_details_title": "Technical information",
     "auto-detect-language": "Auto-detected",
-    "keeps-crashing": "Editing component keeps crashing. Please try restarting Trilium. If problem persists, consider creating a bug report.",
     "nothing_selected_to_cut": "Select some text first to cut it into a sub-note.",
-    "uploading_attachment": "Uploading attachment"
+    "uploading_attachment": "Uploading attachment",
+    "editor_error_title": "The text editor ran into an error",
+    "editor_error_content": "The editor might not show your latest changes correctly. Reload the editor to continue: your changes are saved first.",
+    "editor_error_reload_button": "Reload editor"
   },
   "empty": {
     "open_note_instruction": "Open a note by typing the note's title into the input below or choose a note in the tree.",
@@ -1699,6 +1704,8 @@
     "setup_sample_created": "A sample note was created as a child note.",
     "disabled_description": "This render notes comes from an external source. To protect you from malicious content, it is not enabled by default. Make sure you trust the source before enabling it.",
     "disabled_button_enable": "Enable render note",
+    "disabled_read_only": "This render note comes from an external source, so it is not enabled.",
+    "nothing_to_display": "This note has nothing to display.",
     "error_title": "The script note failed to run",
     "error_show_details": "Show details",
     "error_note_label": "Script note:"
@@ -3441,7 +3448,7 @@
     "content_hints_enabled": "Content hints",
     "content_hints_description": "Show short hints in the bottom corner of the editor that explain how to interact with the element under the caret or pointer.",
     "auto_link_previews_enabled": "Autogenerate link previews",
-    "auto_link_previews_description": "Automatically turn a detected link into a preview showing the title, description and image of the web page. Inserting a preview from the toolbar always works, regardless of this setting.",
+    "auto_link_previews_description": "Automatically turn a detected link into a preview showing the title, description and image of the web page, and save the tabs sent by the web clipper as inline previews. Inserting a preview from the toolbar always works, regardless of this setting.",
     "html_support_enabled": "Preserve unsupported HTML tags",
     "html_support_description": "Keep the HTML tags that the editor has no feature of its own for, as listed under Options → Other → HTML import tags. They appear as blocks that cannot be edited directly, and an unrecognised tag may not be visible at all while editing. With this off, such tags are dropped from a note the first time it is edited and saved; importing is unaffected either way."
   },
@@ -3814,6 +3821,10 @@
     "shared_unshare": "Remove share",
     "clipped_note": "Web clip",
     "clipped_note_description": "This note was originally taken from {{url}}.\n\nClick to navigate to the source webpage.",
+    "clipped_note_details": "This note was taken from a web page. Click to see the page's description, author and dates.",
+    "clipped_note_author": "Author",
+    "clipped_note_published": "Published",
+    "clipped_note_modified": "Updated",
     "doc_url": "Online docs",
     "doc_url_description": "Click to view this page on the online documentation website.",
     "execute_script": "Run script",
