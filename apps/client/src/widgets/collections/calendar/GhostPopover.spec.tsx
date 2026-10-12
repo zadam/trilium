@@ -139,7 +139,7 @@ describe("GhostPopover", () => {
         mount(onCommit, { ...choice, current: TEXT });
         // A row of the form like the dates, led by its own icon and showing the template's.
         const row = field()?.closest(".calendar-event-row");
-        expect(row?.querySelector(".calendar-event-row-icon.bx-copy")).not.toBeNull();
+        expect(row?.querySelector(".calendar-event-row-icon.bx-detail")).not.toBeNull();
         expect(field()?.querySelector(".select-button .bx-note")).not.toBeNull();
         expect(field()?.classList.contains("template-pill")).toBe(false);
         expect(fieldName()).toBe("Text");

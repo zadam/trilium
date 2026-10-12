@@ -115,7 +115,7 @@ export default function GhostPopover({
 
             <div className="calendar-ghost-when">
                 <EventDatesFields value={draft} onChange={setDraft} />
-                <EventRow icon="bx-copy" title={t("calendar_view.template")}>
+                <EventRow icon="bx-detail" title={t("calendar_view.template")}>
                     <TemplateDropdown
                         {...templates}
                         title={t("calendar_view.event_template")}
