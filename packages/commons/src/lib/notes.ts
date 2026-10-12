@@ -142,6 +142,9 @@ export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
     [ "tabs", "bx bx-window-alt" ]
 ]);
 
+/** The icon of a calendar event, a text note with a start date (see {@link getEventStartDate}). */
+export const CALENDAR_EVENT_ICON = "bx bx-calendar-event";
+
 /**
  * The icon a note is drawn under: its own `#iconClass` where it has one, and a default read off
  * what the note is otherwise.
@@ -151,7 +154,8 @@ export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
  * The geo map therefore writes no `#iconClass` onto a marker or a shape it creates, so an icon it
  * hands down through
  * `#child:iconClass` or a template still applies, and redrawing a shape as another kind changes the
- * icon with it. A note the web clipper made is drawn by its `#clipType` ({@link CLIP_TYPE_ICONS}).
+ * icon with it. A note the web clipper made is drawn by its `#clipType` ({@link CLIP_TYPE_ICONS}),
+ * and a calendar event by {@link CALENDAR_EVENT_ICON}.
  * `iconClass` stays an argument rather than being read here because the share tree
  * narrows it to the prefixes an icon pack supplies.
  */
@@ -190,6 +194,9 @@ export function getNoteIcon({
         if (clipIcon) {
             return clipIcon;
         }
+        if (getEventStartDate(getLabelValue)) {
+            return CALENDAR_EVENT_ICON;
+        }
         if (isFolder()) {
             return "bx bx-folder";
         }
@@ -203,6 +210,15 @@ export function getNoteIcon({
     }
 
     return NOTE_TYPE_ICONS[type];
+}
+
+/**
+ * The start date of a calendar event: the value of the label `#calendar:startDate` names, falling
+ * back to `#startDate`, as the calendar collection reads it.
+ */
+export function getEventStartDate(getLabelValue: (name: string) => string | null) {
+    const customLabelName = getLabelValue("calendar:startDate");
+    return (customLabelName && getLabelValue(customLabelName)) || getLabelValue("startDate");
 }
 
 /**

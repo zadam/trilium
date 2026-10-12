@@ -1295,10 +1295,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     #processAttributeRows(attributeRows: AttributeRow[], refreshCtx: RefreshContext) {
         for (const attrRow of attributeRows) {
-            // `geolocation` and `mapPosition` decide the icon of a note that has none of its own
-            // (see getNoteIcon).
+            // `geolocation`, `mapPosition` and `startDate` decide the icon of a note that has none
+            // of its own (see getNoteIcon).
             const dirtyingLabels = ["iconClass", "cssClass", "workspace", "workspaceIconClass",
-                "color", GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE];
+                "color", GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE, "startDate"];
 
             if (attrRow.type === "label" && dirtyingLabels.includes(attrRow.name ?? "") && attrRow.noteId) {
                 if (attrRow.isInheritable) {
