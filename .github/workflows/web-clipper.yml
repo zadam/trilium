@@ -76,6 +76,7 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/web-clipper-v') }}
         with:
           draft: false
+          prerelease: ${{ contains(github.ref, '-rc') }}
           fail_on_unmatched_files: true
           files: |
             apps/web-clipper/.output/*.zip
