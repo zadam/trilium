@@ -1558,7 +1558,8 @@
     "nothing_selected_to_cut": "Select some text first to cut it into a sub-note.",
     "uploading_attachment": "Uploading attachment",
     "editor_error_title": "The text editor ran into an error",
-    "editor_error_content": "The editor is still open, but it might not work correctly until you reload Trilium. If anything looks wrong, copy your latest changes somewhere safe first."
+    "editor_error_content": "The editor might not show your latest changes correctly. Reload the editor to continue: your changes are saved first.",
+    "editor_error_reload_button": "Reload editor"
   },
   "empty": {
     "open_note_instruction": "Open a note by typing the note's title into the input below or choose a note in the tree.",

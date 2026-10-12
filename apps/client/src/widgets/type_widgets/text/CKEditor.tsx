@@ -55,10 +55,12 @@ interface CKEditorProps extends Pick<HTMLAttributes<HTMLDivElement>, "className"
     onEditorInitialized?: (editor: CKTextEditor) => void;
     editorApi: RefObject<CKEditorApi | null>;
     templates: SnippetDefinition[];
+    /** Rebuilds the editor each time it changes, e.g. to recover from an error. */
+    rebuildKey?: number;
     containerRef?: RefObject<HTMLDivElement | null>;
 }
 
-export default function CKEditor({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, editorRef: externalEditorRef, onNotificationWarning, onNotificationInfo, onEditorError, onChange, onEditorInitialized, editorApi, templates }: CKEditorProps) {
+export default function CKEditor({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, editorRef: externalEditorRef, onNotificationWarning, onNotificationInfo, onEditorError, onChange, onEditorInitialized, editorApi, templates, rebuildKey }: CKEditorProps) {
     const containerRef = useSyncedRef<HTMLDivElement>(externalContainerRef, null);
     const editorRef = useRef<CKTextEditor>(null);
     const stopReportingErrorsRef = useRef<() => void>(undefined);
@@ -274,7 +276,7 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
             const scrollContainer = container.closest<HTMLElement>(".scrolling-container");
             const scrollTop = scrollContainer?.scrollTop ?? 0;
 
-            await destroyEditor();
+            await destroyEditor().catch((e) => console.warn("CKEditor destroy failed", e));
             if (isStale) return;
 
             const editor = await buildEditor(container, !!isClassicEditor, {
@@ -341,7 +343,7 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
         contentLanguage, uiLanguage, isClassicEditor, multilineToolbar, mathFieldEnabled,
         doubleQuoteStyle, singleQuoteStyle, punctuationReplacements, mathReplacements, symbolReplacements,
         customReplacements, defaultContentLanguage, htmlSupportEnabled, allowedHtmlTags,
-        aiEnabled, llmProviders
+        aiEnabled, llmProviders, rebuildKey
     ]);
 
     // Destroys the editor when the component goes away, after a build still in progress.

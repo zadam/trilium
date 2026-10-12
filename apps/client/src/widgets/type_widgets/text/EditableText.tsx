@@ -154,6 +154,16 @@ export default function EditableText({
         }
     });
     const templates = useTemplates();
+    const [ editorRebuildKey, setEditorRebuildKey ] = useState(0);
+
+    /** Saves what the model holds, then builds a new editor from the saved content. */
+    async function reloadEditor() {
+        try {
+            await spacedUpdate.updateNowIfNecessary();
+        } finally {
+            setEditorRebuildKey((key) => key + 1);
+        }
+    }
 
     useSearchTermsConsumer(note, noteContext, ntxId);
     // A hidden widget leaves the link target to the one on display.
@@ -601,7 +611,8 @@ export default function EditableText({
                 templates={templates}
                 onNotificationWarning={onNotificationWarning}
                 onNotificationInfo={onNotificationInfo}
-                onEditorError={reportEditorError}
+                onEditorError={(error) => reportEditorError(error, reloadEditor)}
+                rebuildKey={editorRebuildKey}
                 onChange={() => {
                     spacedUpdate.scheduleUpdate();
                     const editor = editorRef.current;
@@ -750,13 +761,13 @@ function useTemplates() {
 }
 
 /**
- * Tells the user about an error that escaped the editor in a toast, which opens the error details
- * for a bug report. The editor keeps running, so a later error replaces the toast. The global error
- * handlers in `glob.ts` log the error.
+ * Tells the user about an error that escaped the editor in a toast, which offers to reload the
+ * editor and opens the error details for a bug report. The editor keeps running until then, so a
+ * later error replaces the toast. The global error handlers in `glob.ts` log the error.
  *
  * Exported for testing.
  */
-export function reportEditorError(error: CKEditorError) {
+export function reportEditorError(error: CKEditorError, reloadEditor: () => void) {
     const details = JSON.stringify({
         message: error.message,
         stack: error.stack,
@@ -769,6 +780,13 @@ export function reportEditorError(error: CKEditorError) {
         title: t("editable_text.editor_error_title"),
         message: t("editable_text.editor_error_content"),
         buttons: [
+            {
+                text: t("editable_text.editor_error_reload_button"),
+                onClick: ({ dismissToast }) => {
+                    dismissToast();
+                    reloadEditor();
+                }
+            },
             {
                 text: t("editable_text.editor_crashed_details_button"),
                 onClick: ({ dismissToast }) => {
@@ -784,8 +802,7 @@ export function reportEditorError(error: CKEditorError) {
                     });
                 }
             }
-        ],
-        timeout: 20_000
+        ]
     });
 }
 

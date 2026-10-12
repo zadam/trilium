@@ -117,6 +117,34 @@ describe("CKEditor", () => {
         expect(mocks.reportingEditor).toBe(props.editorRef.current);
     });
 
+    it("rebuilds the editor for a new rebuildKey, even when destroying the old one fails", async () => {
+        const props = {
+            contentLanguage: null,
+            editorRef: createRef<CKTextEditor>(),
+            onChange: vi.fn(),
+            editorApi: createRef<CKEditorApi>(),
+            templates: []
+        };
+        await act(async () => {
+            render(<CKEditor {...props} rebuildKey={0} />, host);
+        });
+        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledOnce());
+        const crashedEditor = props.editorRef.current;
+
+        mocks.destroy.mockRejectedValueOnce(new Error("destroy failed"));
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        await act(async () => {
+            render(<CKEditor {...props} rebuildKey={1} />, host);
+        });
+
+        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(2));
+        expect(mocks.destroy).toHaveBeenCalledOnce();
+        expect(props.editorRef.current).not.toBeNull();
+        expect(props.editorRef.current).not.toBe(crashedEditor);
+        expect(warn).toHaveBeenCalledWith("CKEditor destroy failed", expect.any(Error));
+        warn.mockRestore();
+    });
+
     it("hands the errors of its editor to onEditorError, until it destroys the editor", async () => {
         const onEditorError = vi.fn();
         const props = {

@@ -43,13 +43,14 @@ const {
 } = await import("./EditableText");
 
 describe("reportEditorError", () => {
-    it("shows a toast that opens the details, leaving the log to the global handler", () => {
+    it("shows a toast that reloads the editor or opens the details, leaving the log to the global handler", () => {
         vi.clearAllMocks();
         const logError = vi.fn();
         vi.stubGlobal("logError", logError);
         const error = new Error("unexpected-error Original error: TypeError: boom") as CKEditorError;
+        const reloadEditor = vi.fn();
 
-        reportEditorError(error);
+        reportEditorError(error, reloadEditor);
 
         expect(logError).not.toHaveBeenCalled();
         expect(showPersistent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
@@ -58,9 +59,21 @@ describe("reportEditorError", () => {
             message: "editable_text.editor_error_content"
         }));
 
-        const [ { buttons } ] = showPersistent.mock.calls[0];
+        const [ { buttons, timeout } ] = showPersistent.mock.calls[0];
+        expect(timeout).toBeUndefined();
+        expect(buttons.map((button: { text: string }) => button.text)).toEqual([
+            "editable_text.editor_error_reload_button",
+            "editable_text.editor_crashed_details_button"
+        ]);
+
+        const dismissReload = vi.fn();
+        buttons[0].onClick({ dismissToast: dismissReload });
+        expect(dismissReload).toHaveBeenCalledOnce();
+        expect(reloadEditor).toHaveBeenCalledOnce();
+        expect(showInfoDialog).not.toHaveBeenCalled();
+
         const dismissToast = vi.fn();
-        buttons[0].onClick({ dismissToast });
+        buttons[1].onClick({ dismissToast });
         expect(dismissToast).toHaveBeenCalledOnce();
         expect(showInfoDialog).toHaveBeenCalledExactlyOnceWith(
             expect.anything(),
