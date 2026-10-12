@@ -39,6 +39,12 @@
     > input {
         flex: 1 1 0;
         min-width: 0;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .select-button {
+        --bs-btn-padding-y: 0.25rem;
+        --bs-btn-padding-x: 0.5rem;
     }
 
     /* As wide as an `ActionButton`, so the icons line up with the popover's toolbar above them. */
