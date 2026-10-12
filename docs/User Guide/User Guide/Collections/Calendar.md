@@ -28,6 +28,8 @@ In either cases, a small popup will show with a prompt for a title and the date 
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 
+To give the event a time before creating it (for example, after clicking a day in the month view), turn off the _All day_ toggle and set the start and end time. A timed event spans a single day, so turning off _All day_ for a range of days keeps only the first one.
+
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
 
 > [!NOTE]

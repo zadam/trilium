@@ -10,6 +10,7 @@ import FormToggle from "../../react/FormToggle";
 import { useUniqueName } from "../../react/hooks";
 import { EventField, EventFieldControls, EventFieldRow } from "./EventField";
 import { useEventLabel } from "./hooks";
+import { DEFAULT_END_TIME, DEFAULT_START_TIME } from "./selection";
 
 /**
  * Edits when the event happens, through the date and time labels the calendar draws it by (see
@@ -126,9 +127,3 @@ export default function EventDatesEditor({ note, repeats }: {
         </>
     );
 }
-
-/** The hours a day gets when it stops being whole: a meeting-sized block in mid-morning, put there
- *  to be edited rather than kept. An end time the note already had (a half-said timed event) is
- *  honoured instead. */
-const DEFAULT_START_TIME = "09:00";
-const DEFAULT_END_TIME = "10:00";

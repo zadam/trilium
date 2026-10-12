@@ -37,6 +37,7 @@ describe("GhostPopover", () => {
     /** The form's only button, which is the one that asks for the note. */
     const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions button");
     const titleInput = () => document.querySelector<HTMLInputElement>(".calendar-ghost-body input");
+    const timeInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=time]") ];
 
     it("asks for the note once, however many times the ask is made before it arrives", async () => {
         // A request still out, which is the window each further Enter would make its own note in.
@@ -70,7 +71,7 @@ describe("GhostPopover", () => {
         // And a second try really does ask again.
         await act(async () => { createButton()?.click(); });
         expect(onCommit).toHaveBeenCalledTimes(2);
-        expect(onCommit).toHaveBeenLastCalledWith("Fair");
+        expect(onCommit).toHaveBeenLastCalledWith("Fair", draft);
     });
 
     it("focuses the title field once the popover is shown", async () => {
@@ -98,6 +99,31 @@ describe("GhostPopover", () => {
         await act(async () => { createButton()?.click(); });
 
         // Committing blank is meaningful: the note is then named by the calendar's #titleTemplate.
-        expect(onCommit).toHaveBeenCalledWith("");
+        expect(onCommit).toHaveBeenCalledWith("", draft);
+    });
+
+    it("lets a whole-day draft be given hours before it is created", async () => {
+        const onCommit = vi.fn().mockResolvedValue(undefined);
+        mount(onCommit);
+
+        const allDay = document.querySelector<HTMLInputElement>(".calendar-ghost-when .switch-toggle");
+        if (!allDay) throw new Error("The ghost has no all-day switch.");
+        expect(allDay.checked).toBe(true);
+        expect(timeInputs()).toHaveLength(0);
+
+        act(() => { allDay.dispatchEvent(new Event("input", { bubbles: true })); });
+        const [ start, end ] = timeInputs();
+        expect(start.value).toBe("09:00");
+        expect(end.value).toBe("10:00");
+
+        start.value = "14:00";
+        act(() => { start.dispatchEvent(new Event("input", { bubbles: true })); });
+        end.value = "15:30";
+        act(() => { end.dispatchEvent(new Event("input", { bubbles: true })); });
+        await act(async () => { createButton()?.click(); });
+
+        expect(onCommit).toHaveBeenCalledWith("", {
+            startDate: "2026-06-05", endDate: null, startTime: "14:00", endTime: "15:30"
+        });
     });
 });

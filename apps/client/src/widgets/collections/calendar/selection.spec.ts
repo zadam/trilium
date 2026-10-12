@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { narrowAnchorRect } from "./selection";
+import { narrowAnchorRect, withAllDay } from "./selection";
 
 describe("narrowAnchorRect", () => {
     afterEach(() => {
@@ -38,5 +38,17 @@ describe("narrowAnchorRect", () => {
 
         window.glob.isRtl = true;
         expect(narrowAnchorRect(span, null)).toEqual(new DOMRect(1580, 200, 0, 20));
+    });
+});
+
+describe("withAllDay", () => {
+    it("drops the hours of a timed draft and keeps its days", () => {
+        expect(withAllDay({ startDate: "2026-06-05", endDate: "2026-06-06", startTime: "23:00", endTime: "01:00" }, true))
+            .toEqual({ startDate: "2026-06-05", endDate: "2026-06-06", startTime: null, endTime: null });
+    });
+
+    it("gives a whole-day draft default hours within its first day", () => {
+        expect(withAllDay({ startDate: "2026-06-05", endDate: "2026-06-07" }, false))
+            .toEqual({ startDate: "2026-06-05", endDate: null, startTime: "09:00", endTime: "10:00" });
     });
 });

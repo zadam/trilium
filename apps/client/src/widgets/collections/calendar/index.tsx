@@ -187,12 +187,12 @@ export default function CalendarView({ note, noteIds, onOpenNote }: ViewModeProp
      * could be dragged out beside it. Whatever else the note may hold is a click on its chip away
      * — which is where such a surface would have opened anyway.
      */
-    const commitDraft = useCallback(async (title: string) => {
+    const commitDraft = useCallback(async (title: string, draft: EventDraft) => {
         if (!selection || !("draft" in selection)) return;
 
         await newEvent(note, {
             title: title.trim() || undefined,
-            ...selection.draft,
+            ...draft,
             componentId: parentComponent?.componentId
         });
 

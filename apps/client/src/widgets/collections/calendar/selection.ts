@@ -10,6 +10,22 @@ export interface EventDraft {
     endTime?: string | null;
 }
 
+/** The hours an event gets when it stops being all-day, for the user to edit. */
+export const DEFAULT_START_TIME = "09:00";
+export const DEFAULT_END_TIME = "10:00";
+
+/**
+ * Switches a draft between all-day and timed. A timed event spans a single day, so turning off
+ * all-day drops the end date, as `EventDatesEditor` does for an existing event.
+ */
+export function withAllDay(draft: EventDraft, allDay: boolean): EventDraft {
+    if (allDay) {
+        return { ...draft, startTime: null, endTime: null };
+    }
+
+    return { ...draft, endDate: null, startTime: DEFAULT_START_TIME, endTime: DEFAULT_END_TIME };
+}
+
 /** A point in viewport coordinates — where a click or a drag's end fell, anchoring a popover
  *  beside it where nothing better can be found on the grid (see the anchor helpers). */
 export interface AnchorPoint {

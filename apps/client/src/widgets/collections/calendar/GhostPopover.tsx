@@ -7,15 +7,17 @@ import { isMobile } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Button from "../../react/Button";
 import FormTextBox from "../../react/FormTextBox";
+import FormToggle from "../../react/FormToggle";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
-import { AnchorPoint, EventDraft, narrowAnchorRect } from "./selection";
+import { AnchorPoint, EventDraft, narrowAnchorRect, withAllDay } from "./selection";
 
 /**
- * The ghost: the form an event is decided in before its note exists. It asks for the one thing the
- * drag did not say — the name — and writes out the one thing it did; everything else an event can
- * hold waits for the note, a click on its chip away. Dismissed — Escape, the close button, a press
- * anywhere else — the draft simply evaporates: nothing was created.
+ * The ghost: the form an event is decided in before its note exists. It asks for the name, shows
+ * the days the drag covered, and lets the user switch all-day off to give the event hours, as a
+ * click in the month view drafts a whole day. Everything else an event can hold waits for the
+ * note, a click on its chip away. Dismissed — Escape, the close button, a press anywhere else —
+ * the draft simply evaporates: nothing was created.
  *
  * A desktop stands it beside the range that called for it, a draft being born of a place: the form
  * appears where the eye already is, and the grid does not reflow under the very range just dragged.
@@ -27,7 +29,7 @@ import { AnchorPoint, EventDraft, narrowAnchorRect } from "./selection";
  * calendar's own `#titleTemplate` where one is set (see getNewNoteTitle in trilium-core), which
  * the old title prompt used to override with whatever stood in its box.
  */
-export default function GhostPopover({ draft, anchor, container, onCommit, onCancel, onDismiss }: {
+export default function GhostPopover({ draft: initialDraft, anchor, container, onCommit, onCancel, onDismiss }: {
     draft: EventDraft;
     /** Where the drag ended, in viewport coordinates — which of the shading's pieces to stand by,
      *  and the anchor of last resort when the shading cannot be found at all. */
@@ -36,7 +38,7 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
     container: HTMLElement | null;
     /** Answers when the note has been made, or rejects having failed to make one — the ghost stays
      *  up for a second try either way it is told (see {@link commit}). */
-    onCommit(title: string): Promise<void> | void;
+    onCommit(title: string, draft: EventDraft): Promise<void> | void;
     /** The draft given up on: Escape, or the close button. */
     onCancel(): void;
     /**
@@ -47,6 +49,10 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
     onDismiss(): void;
 }) {
     const [ title, setTitle ] = useState("");
+    // The range as dragged, until the user changes whether it is all-day or edits its hours.
+    const [ draft, setDraft ] = useState(initialDraft);
+    useEffect(() => setDraft(initialDraft), [ initialDraft ]);
+    const allDay = !draft.startTime;
     // Committing is asked for once, however many times Enter falls before the note arrives and
     // the form goes: each ask would make its own note.
     const [ committing, setCommitting ] = useState(false);
@@ -75,7 +81,7 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
         if (committing) return;
         setCommitting(true);
         try {
-            await onCommit(title);
+            await onCommit(title, draft);
         } catch {
             setCommitting(false);
         }
@@ -106,8 +112,32 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
 
             <div className="calendar-ghost-when">
                 <span className="bx bx-calendar" />
-                {describeDraft(draft)}
+                <span className="calendar-ghost-dates">{describeDates(draft)}</span>
+                <FormToggle
+                    switchOnName={t("calendar.dates.all_day")}
+                    switchOffName={t("calendar.dates.all_day")}
+                    currentValue={allDay}
+                    onChange={(on) => setDraft((d) => withAllDay(d, on))}
+                />
             </div>
+
+            {!allDay && (
+                <div className="calendar-ghost-time">
+                    <FormTextBox
+                        type="time"
+                        currentValue={draft.startTime ?? ""}
+                        aria-label={t("calendar.dates.start_time")}
+                        onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
+                    />
+                    <span className="calendar-ghost-time-separator" aria-hidden="true">–</span>
+                    <FormTextBox
+                        type="time"
+                        currentValue={draft.endTime ?? ""}
+                        aria-label={t("calendar.dates.end_time")}
+                        onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
+                    />
+                </div>
+            )}
 
             <div className="calendar-ghost-actions">
                 <Button
@@ -195,24 +225,17 @@ function ghostAnchorRect(container: HTMLElement | null, point: AnchorPoint | nul
 }
 
 /**
- * When the draft happens, written out for the form: the one thing the drag already decided.
- * Decorative and short-lived — the note's real date fields take over the moment the draft is
- * committed — so the browser's own formatter is enough.
+ * The days the draft spans, written out for the form. The hours have fields of their own. The
+ * browser's formatter is enough, since the note's date labels take over once the draft is created.
  */
-function describeDraft({ startDate, endDate, startTime, endTime }: EventDraft) {
-    // Taken apart by hand: `new Date("2026-08-05")` reads as UTC midnight, which is the evening
-    // before in half the world's timezones.
+function describeDates({ startDate, endDate }: EventDraft) {
+    // Parsed by hand: `new Date("2026-08-05")` reads as UTC midnight, which is the evening before
+    // in timezones west of UTC.
     const date = (iso: string) => {
         const [ year, month, day ] = iso.split("-").map(Number);
         return new Date(year, month - 1, day)
             .toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
     };
-
-    if (startTime) {
-        return endDate && endDate !== startDate
-            ? `${date(startDate)}, ${startTime} – ${date(endDate)}, ${endTime ?? ""}`
-            : `${date(startDate)}, ${startTime}${endTime ? ` – ${endTime}` : ""}`;
-    }
 
     return endDate && endDate !== startDate ? `${date(startDate)} – ${date(endDate)}` : date(startDate);
 }
