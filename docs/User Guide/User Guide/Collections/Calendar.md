@@ -302,13 +302,21 @@ Moreover, if there are more relations of the same name, they will be displayed a
 
 ### Displaying an age on a recurring event
 
-A birthday or an anniversary repeats every year, and what is interesting about each occurrence is the number of years it marks. `#calendar:titleTemplate` sets the title an event is displayed with, and is filled in again for every occurrence the recurrence rule produces:
+A birthday or an anniversary repeats every year, and what is interesting about each occurrence is the number of years it marks. To display it:
+
+1.  Set the event's start date to the original date (for example, the date of birth).
+2.  Click the event, then select the _Repeats_ dropdown.
+3.  Select _Yearly_ and check _Show the number of years in the title_.
+
+The event is then displayed as “John Smith (35)” in 2025, “John Smith (36)” in 2026, and so on. Only the calendar is affected; the note keeps its own title.
+
+The checkbox sets the `#calendar:titleTemplate` label, which sets the title an event is displayed with and is filled in again for every occurrence the recurrence rule produces:
 
 ```
 #startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"
 ```
 
-The event is then displayed as “John Smith (35)” in 2025, “John Smith (36)” in 2026, and so on. Only the calendar is affected; the note keeps its own title.
+To word the title differently, edit the label directly. The checkbox is then disabled, as it is when the template is inherited, so that it never overwrites a template of your own.
 
 The following values can be used in the template:
 

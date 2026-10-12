@@ -1088,7 +1088,9 @@
       "count": "After",
       "times": "times",
       "custom_rule": "Rule",
-      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition."
+      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition.",
+      "count_years": "Show the number of years in the title",
+      "count_years_locked": "This event already has a title template, set on the note or inherited by it. Change it in the note's attributes."
     }
   },
   "close_pane_button": {

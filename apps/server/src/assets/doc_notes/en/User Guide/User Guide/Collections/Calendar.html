@@ -548,12 +548,22 @@ class="table">
   to loop infinitely).</p><pre><code class="language-text-x-trilium-auto">#calendar:title="shortName" #shortName="John S."</code></pre>
 <h3>Displaying an age on a recurring event</h3>
 <p>A birthday or an anniversary repeats every year, and what is interesting
-  about each occurrence is the number of years it marks. <code>#calendar:titleTemplate</code> sets
-  the title an event is displayed with, and is filled in again for every
-  occurrence the recurrence rule produces:</p><pre><code class="language-text-x-trilium-auto">#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"</code></pre>
+  about each occurrence is the number of years it marks. To display it:</p>
+<ol>
+  <li>Set the event's start date to the original date (for example, the date
+    of birth).</li>
+  <li>Click the event, then select the <em>Repeats</em> dropdown.</li>
+  <li>Select <em>Yearly</em> and check <em>Show the number of years in the title</em>.</li>
+</ol>
 <p>The event is then displayed as “John Smith (35)” in 2025, “John Smith
   (36)” in 2026, and so on. Only the calendar is affected; the note keeps
   its own title.</p>
+<p>The checkbox sets the <code>#calendar:titleTemplate</code> label, which
+  sets the title an event is displayed with and is filled in again for every
+  occurrence the recurrence rule produces:</p><pre><code class="language-text-x-trilium-auto">#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"</code></pre>
+<p>To word the title differently, edit the label directly. The checkbox is
+  then disabled, as it is when the template is inherited, so that it never
+  overwrites a template of your own.</p>
 <p>The following values can be used in the template:</p>
 <figure class="table">
   <table>
