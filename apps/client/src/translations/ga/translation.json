@@ -3929,7 +3929,23 @@
       "tabs": "Cluaisíní",
       "tab-title": "Teideal an chluaisín",
       "tab-0": "Cluaisín %0",
-      "tab-content": "Ábhar an chluaisín"
+      "tab-content": "Ábhar an chluaisín",
+      "add-tab": "Cuir cluaisín leis",
+      "remove-tab": "Bain an cluaisín",
+      "move-tab-left": "Bog an cluaisín ar chlé",
+      "move-tab-right": "Bog an cluaisín ar dheis",
+      "copy-link-to-tab": "Cóipeáil an nasc chuig an gcluaisín",
+      "tabs-toolbar": "Barra uirlisí cluaisíní",
+      "insert-titled-tabs-that-show-one-panel-at-a-time": "Cuir isteach cluaisíní le teidil a thaispeánann painéal amháin ag an am.",
+      "multicolumn-layout": "Leagan amach ilcholúnach",
+      "multicolumn-layout-toolbar": "Barra uirlisí leagan amach ilcholúnach",
+      "multiple-column-layout": "Leagan amach ilcholúnach",
+      "0-columns": "%0 colún",
+      "column-layout": "Leagan amach na gcolún",
+      "0-columns-layout": "Leagan amach %0 colún",
+      "arrange-content-in-0-equal-columns-side-by-side": "Socraigh an t-ábhar i gcolúin chomhionanna taobh le taobh.",
+      "0-columns-1": "%0 colún (%1)",
+      "remove-layout": "Bain an leagan amach"
     },
     "task-state-dropped-title": "Stádas tascanna neamhbhailí",
     "task-state-dropped-message_one": "Tá sainmhíniú stádais tasc saincheaptha neamhbhailí agus níor tugadh aird air.",
@@ -3943,6 +3959,9 @@
       "text-formatting": "Formáidiú téacs",
       "insert": "Cuir isteach",
       "alignment": "Ailíniú"
+    },
+    "colors": {
+      "pink": "Bándearg"
     }
   },
   "security": {
@@ -4723,11 +4742,39 @@
     "label_marker": "Tagraíonn sé do lipéad. Brúigh Enter chun liosta na lipéad a fheiceáil",
     "label_marker_negated": "Eisíonn sé lipéad. Brúigh Enter chun liosta na lipéad a fheiceáil",
     "relation_marker": "Tagraíonn sé do chaidreamh. Brúigh Enter chun liosta na gcaidreamh a fheiceáil",
-    "relation_marker_negated": "Eisíonn sé gaol. Brúigh Enter chun an liosta de na gaolta a fheiceáil"
+    "relation_marker_negated": "Eisíonn sé gaol. Brúigh Enter chun an liosta de na gaolta a fheiceáil",
+    "property_links": "Leanann ar aghaidh leis na nótaí a bhfuil nasc chucu leis an nóta seo",
+    "property_backlinks": "Leanann sé ar aghaidh leis na nótaí a nascann leis an nóta seo"
   },
   "lightbox": {
     "image": "Íomhá",
     "pdf": "PDF",
     "open_original": "Oscail an bunleagan i gcluaisín nua"
+  },
+  "split_button": {
+    "more_actions": "Tuilleadh gníomhartha"
+  },
+  "menu": {
+    "no_matches": "Gan aon mheaitseáil",
+    "filter": "Scagaire",
+    "filter_placeholder": "Clóscríobh chun scagadh a dhéanamh…",
+    "back": "Ar ais"
+  },
+  "block_reference": {
+    "copy_one": "Cóipeáil an tagairt don bhloc seo",
+    "copy_two": "Cóipeáil an tagairt do na bloic seo ({{count}})",
+    "copy_few": "Cóipeáil an tagairt do na bloic seo ({{count}})",
+    "copy_many": "Cóipeáil an tagairt do na bloic seo ({{count}})",
+    "copy_other": "Cóipeáil an tagairt do na bloic seo ({{count}})",
+    "copy_tab": "Cóipeáil an nasc chuig an gcluaisín seo",
+    "paste_as_link": "Greamaigh an tagairt mar nasc",
+    "paste_as_excerpt": "Greamaigh an tagairt mar shliocht",
+    "no_reference_on_clipboard": "Níl tagairt bhloic sa ghearrthaisce.",
+    "broken": "Tagairt bhriste",
+    "not_found": "Níorbh fhéidir teacht ar bhloc a bhí á thagairt. D’fhéadfadh sé gur scriosadh é.",
+    "untitled": "Bloc",
+    "excerpt": "Sliocht",
+    "excerpt_description": "Níl á fheiceáil agat faoi láthair ach cuid den nóta seo. Brúigh an cnaipe {{icon}} chun an nóta iomlán a oscailt i gcluaisín nua.",
+    "edit_excerpt": "Cuir sliocht in eagar"
   }
 }
