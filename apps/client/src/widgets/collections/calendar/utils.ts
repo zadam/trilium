@@ -120,6 +120,17 @@ export type EventLabelName = "startDate" | "endDate" | "startTime" | "endTime" |
 export const EVENT_LABELS: EventLabelName[] = [ "startDate", "endDate", "startTime", "endTime", "recurrence" ];
 
 /**
+ * The label names the calendar draws events by: the stock ones, and the custom names `note` sets
+ * through `#calendar:startDate` and its siblings.
+ */
+export function drawnEventLabels(note: FNote): string[] {
+    const customNames = EVENT_LABELS
+        .map((name) => note.getLabelValue(`calendar:${name}`))
+        .filter((name): name is string => !!name);
+    return [ ...EVENT_LABELS, ...customNames ];
+}
+
+/**
  * Allows the user to customize the attribute from which to obtain a particular value. For example, if `customLabelNameAttribute` is `calendar:startDate`
  * and `defaultLabelName` is `startDate` and the note at hand has `#calendar:startDate=myStartDate #myStartDate=2025-02-26` then the value returned will
  * be `2025-02-26`. If there is no custom attribute value, then the value of the default attribute is returned instead (e.g. `#startDate`).

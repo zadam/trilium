@@ -84,6 +84,7 @@ describe("PromotedAttributesCard", () => {
     let settings: PromotedAttributeSetting[] | undefined;
     let drawnByCollection: string[] | undefined;
     let itemNotes: FNote[] | undefined;
+    let unarrangedHidden: boolean | undefined;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -91,6 +92,7 @@ describe("PromotedAttributesCard", () => {
         settings = undefined;
         drawnByCollection = undefined;
         itemNotes = undefined;
+        unarrangedHidden = undefined;
         defined = [ definition("label:dueDate", { alias: "Due" }), definition("label:owner") ];
         mocks.detail.opts = null;
         mocks.confirm.mockResolvedValue(true);
@@ -473,6 +475,48 @@ describe("PromotedAttributesCard", () => {
         });
     });
 
+    describe("for a collection that hides what nobody has arranged", () => {
+        beforeEach(() => { unarrangedHidden = true; });
+
+        it("lists every definition, switched off until the reader shows it", () => {
+            settings = [ { name: "owner" } ];
+            draw();
+
+            expect(names()).toEqual([ unnamed("owner"), "Due" ]);
+            expect(shown()).toEqual([ true, false ]);
+        });
+
+        it("shows what was created here, and reports it", async () => {
+            draw();
+            act(() => { adder()?.click(); });
+
+            await save({
+                type: "label", name: "label:priority", value: "promoted,single,text",
+                isInheritable: true
+            });
+            defined = [ ...defined, definition("label:priority") ];
+            await reported();
+
+            expect(names()).toEqual([ "Due", unnamed("owner"), unnamed("priority") ]);
+            expect(shown()).toEqual([ false, false, true ]);
+            expect(stored.at(-1)?.map(({ name, hidden }) => ({ name, hidden }))).toEqual([
+                { name: "dueDate", hidden: true },
+                { name: "owner", hidden: true },
+                { name: "priority", hidden: false }
+            ]);
+        });
+
+        it("keeps a definition made elsewhere switched off, writing nothing", async () => {
+            draw();
+
+            defined = [ ...defined, definition("label:priority") ];
+            await reported();
+
+            expect(shown()).toEqual([ false, false, false ]);
+            expect(stored).toEqual([]);
+        });
+    });
+
     // #region The card, and what the test does to it
 
     function draw() {
@@ -486,6 +530,7 @@ describe("PromotedAttributesCard", () => {
                         settings={settings}
                         drawnByCollection={drawnByCollection}
                         itemNotes={itemNotes}
+                        unarrangedHidden={unarrangedHidden}
                         onChange={(attributes) => stored.push(attributes)}
                     />
                 </ParentComponent.Provider>,

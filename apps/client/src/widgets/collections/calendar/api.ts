@@ -8,10 +8,14 @@ import note_create from "../../../services/note_create";
 import { deleteNoteOrBranch } from "../../../services/note_deletion";
 import { type NoteTypeOption } from "../../../services/note_types";
 import { type TemplateChoiceConfig } from "../../react/TemplateDropdown";
+import { type PromotedAttributeSetting } from "../promoted_attributes";
 import { EventLabelName } from "./utils";
 
 /** What the calendar stores in its view config. */
-export type CalendarViewData = TemplateChoiceConfig;
+export interface CalendarViewData extends TemplateChoiceConfig {
+    /** Which attributes the events show, and in what order. See `buildEvents()`. */
+    promotedAttributes?: PromotedAttributeSetting[];
+}
 
 /** What a calendar offers to make its events from until the reader picks for it. */
 export const DEFAULT_EVENT_TEMPLATES = [ buildNoteTypeId("text", "text/html") ];

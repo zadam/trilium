@@ -40,16 +40,45 @@ vi.mock("../../react/TemplateSelectionCard", () => ({
     )
 }));
 
+// PromotedAttributesCard is tested in its own spec. These tests check the props the dialog passes
+// and where onChange writes.
+vi.mock("../../react/PromotedAttributesCard", () => ({
+    default: ({
+        heading, instruction, settings, drawnByCollection, itemNotes, unarrangedHidden, onChange
+    }: {
+        heading: string, instruction: string, settings?: { name: string }[],
+        drawnByCollection?: string[], itemNotes?: FNote[], unarrangedHidden?: boolean,
+        onChange: (attributes: { name: string, hidden: boolean }[]) => void
+    }) => (
+        <div
+            className="attributes-stub"
+            data-heading={heading}
+            data-instruction={instruction}
+            data-settings={settings?.map((setting) => setting.name).join(",")}
+            data-drawn={drawnByCollection?.join(",")}
+            data-items={itemNotes?.map((item) => item.noteId).join(",")}
+            data-unarranged-hidden={String(!!unarrangedHidden)}
+            onClick={() => onChange([
+                { name: "mood", hidden: false }, { name: "where", hidden: true }
+            ])}
+        />
+    )
+}));
+
 describe("CalendarProperties", () => {
     let container: HTMLElement;
     let saved: CalendarViewData[];
-    const calendar = buildNote({ id: "calendar1", title: "Calendar" }) as unknown as FNote;
+    const calendar = buildNote({
+        id: "calendar1", title: "Calendar", "#calendar:startDate": "myStart",
+        children: [ { id: "event1", title: "Fair", "#startDate": "2025-05-05" } ]
+    }) as unknown as FNote;
 
-    function draw(viewConfig: CalendarViewData | undefined) {
+    function draw(viewConfig: CalendarViewData | undefined, note = calendar) {
         act(() => {
             render(
                 <CalendarProperties
-                    note={calendar}
+                    note={note}
+                    eventNoteIds={[ "event1" ]}
                     viewConfig={viewConfig}
                     saveConfig={(config) => saved.push(config)}
                     onClose={() => {}}
@@ -115,6 +144,38 @@ describe("CalendarProperties", () => {
     });
 
     /** On a phone the new-event form is itself a dialog, opened before this one from its template field. */
+    it("lists the event attributes, which start hidden, and stores them beside the rest", () => {
+        draw({ template: "type:text:text/html", promotedAttributes: [ { name: "mood" } ] });
+        const card = document.querySelector<HTMLElement>(
+            ".calendar-properties-dialog .attributes-stub");
+
+        expect(card?.dataset.heading).toBe("calendar_view.event_attributes");
+        expect(card?.dataset.instruction).toBe("calendar_view.event_attributes_hint");
+        expect(card?.dataset.settings).toBe("mood");
+        expect(card?.dataset.unarrangedHidden).toBe("true");
+        // The date labels, custom names included, are drawn by the calendar itself.
+        expect(card?.dataset.drawn?.split(",")).toEqual([
+            "startDate", "endDate", "startTime", "endTime", "recurrence", "myStart"
+        ]);
+        expect(card?.dataset.items).toBe("event1");
+
+        act(() => card?.click());
+        expect(saved).toEqual([ {
+            template: "type:text:text/html",
+            promotedAttributes: [ { name: "mood" }, { name: "where", hidden: true } ]
+        } ]);
+    });
+
+    it("mentions the #calendar:displayedAttributes label when the calendar has one", () => {
+        const labelled = buildNote({
+            title: "Labelled", "#calendar:displayedAttributes": "mood"
+        }) as unknown as FNote;
+        draw(undefined, labelled);
+
+        expect(document.querySelector<HTMLElement>(".attributes-stub")?.dataset.instruction)
+            .toBe("calendar_view.event_attributes_overridden");
+    });
+
     it("opens over the dialog already open rather than closing it", () => {
         const sheet = document.createElement("div");
         sheet.className = "modal";

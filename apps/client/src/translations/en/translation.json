@@ -3695,7 +3695,10 @@
     "event_template": "Select an event template",
     "more_templates": "More templates…",
     "template": "Template",
-    "general": "General"
+    "general": "General",
+    "event_attributes": "Event attributes",
+    "event_attributes_hint": "Choose which attributes appear on the events, and in what order. New attributes are hidden until you turn them on.",
+    "event_attributes_overridden": "This calendar has a calendar:displayedAttributes label, so the events show the attributes listed there instead of the ones chosen here."
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",

@@ -145,7 +145,14 @@ export default function CalendarView({
     // of the function, and a new one empties the grid before it fetches.
     const rootEventBuilder = useMemo(() =>
         async (e: EventSourceFuncInfo) => await buildEventsForCalendar(note, e), [note]);
-    const collectionEventBuilder = useMemo(() => async () => await buildEvents(noteIds), [noteIds]);
+    // Keyed on the settings' content, since a restored config replaces the array.
+    const attributeSettings = viewConfig?.promotedAttributes;
+    const attributeSettingsKey = JSON.stringify(attributeSettings ?? []);
+    const collectionEventBuilder = useMemo(
+        () => async () =>
+            await buildEvents(noteIds, { calendar: note, settings: attributeSettings }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [ noteIds, note, attributeSettingsKey ]);
     const eventBuilder = isCalendarRoot ? rootEventBuilder : collectionEventBuilder;
 
     const plugins = usePlugins(isEditable, isCalendarRoot);
@@ -441,6 +448,7 @@ export default function CalendarView({
                     <CalendarProperties
                         note={note}
                         viewConfig={viewConfig}
+                        eventNoteIds={noteIds}
                         saveConfig={saveConfig}
                         onClose={() => setIsEditingProperties(false)}
                     />

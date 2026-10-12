@@ -56,6 +56,11 @@ export interface PromotedAttributesCardProps {
      * ones only these notes define have no edit or delete button.
      */
     itemNotes?: Iterable<FNote>;
+    /**
+     * Starts what the settings have never named switched off, for a collection whose items have
+     * little room. A definition created from this card is shown all the same.
+     */
+    unarrangedHidden?: boolean;
     /** Called with the whole list after every change, for the caller to store. */
     onChange: (attributes: PromotedAttribute[]) => void;
 }
@@ -68,10 +73,15 @@ export interface PromotedAttributesCardProps {
  * reports the order and what is hidden, which the caller stores.
  */
 export default function PromotedAttributesCard({
-    heading, instruction, note, settings, drawnByCollection, itemNotes, onChange
+    heading, instruction, note, settings, drawnByCollection, itemNotes, unarrangedHidden, onChange
 }: PromotedAttributesCardProps) {
-    const [ shown, setShown ] =
-        useState(() => resolvePromotedAttributes(note, settings, drawnByCollection, itemNotes));
+    const resolve = (stored: PromotedAttributeSetting[] | undefined) => resolvePromotedAttributes(
+        note, stored, drawnByCollection, itemNotes, { unarrangedHidden });
+    const [ shown, setShown ] = useState(() => resolve(settings));
+    const shownRef = useRef(shown);
+    shownRef.current = shown;
+    /** Names of the definitions created from this card, to show once they load. */
+    const madeHere = useRef(new Set<string>());
     // What the collection draws can change while the card stands, a board being regrouped from
     // its header. The rows are marked again where they are, keeping their order and what is
     // hidden; the marks are not stored, so nothing is written back for them.
@@ -90,8 +100,7 @@ export default function PromotedAttributesCard({
     const [ lastItemDefinitions, setLastItemDefinitions ] = useState(itemDefinitions);
     if (lastItemDefinitions !== itemDefinitions) {
         setLastItemDefinitions(itemDefinitions);
-        setShown((was) => resolvePromotedAttributes(
-            note, storedPromotedAttributes(was), drawnByCollection, itemNotes));
+        setShown((was) => resolve(storedPromotedAttributes(was)));
     }
     const [ detail, setDetail ] = useState<AttributeDetailOpts | null>(null);
     /** The definition the editor last reported, which `save` writes. */
@@ -105,10 +114,25 @@ export default function PromotedAttributesCard({
         const notes = [ note, ...itemNotes ?? [] ];
         const affects = loadResults.getAttributeRows().some((attribute) =>
             notes.some((affected) => attributes.isAffecting(attribute, affected)));
-        if (affects) {
-            setShown((was) => resolvePromotedAttributes(
-                note, storedPromotedAttributes(was), drawnByCollection, itemNotes));
+        if (!affects) return;
+
+        const was = shownRef.current;
+        const next = resolve(storedPromotedAttributes(was));
+        // A definition made here is one the reader asked for, so it is shown even where what nobody
+        // has arranged starts hidden, and stored as such.
+        const made = next.filter((attribute) => attribute.hidden
+            && madeHere.current.has(attribute.name)
+            && !was.some((previous) => previous.name === attribute.name));
+        if (!made.length) {
+            setShown(next);
+            return;
         }
+
+        for (const attribute of made) {
+            madeHere.current.delete(attribute.name);
+        }
+        store(next.map((attribute) =>
+            made.includes(attribute) ? { ...attribute, hidden: false } : attribute));
     });
 
     const items = useMemo(() => shown.map((attribute) => ({
@@ -180,6 +204,9 @@ export default function PromotedAttributesCard({
 
         const [ type, name ] = extractAttributeDefinitionTypeAndName(definition.name);
         const isRenamed = !!was && was.name !== definition.name;
+        if (!was) {
+            madeHere.current.add(name);
+        }
         if (isRenamed && was) {
             const [ , previous ] = extractAttributeDefinitionTypeAndName(was.name);
             await renameAttributeInSubtree(note.noteId, type, previous, name);

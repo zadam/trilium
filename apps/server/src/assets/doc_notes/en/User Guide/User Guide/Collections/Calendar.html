@@ -183,6 +183,27 @@
 <p>The dialog is not available on a read-only calendar, or on a calendar
   marked with <code>#calendarRoot</code> or <code>#workspaceCalendarRoot</code> (see <a
   href="#using-with-the-journal--calendar">Using with the Journal / calendar</a>).</p>
+<h3>Event attributes</h3>
+<p>Events can show the values of their attributes below their title, in the
+  month view, and in the week and day views for all-day events and for timed
+  ones tall enough to hold them. To choose which attributes are shown, open
+  the <span class="tn-icon bx bx-cog"></span>  <em>Calendar properties</em> dialog
+  (see <a href="#event-templates">Event templates</a> for how to open it) and
+  find <em>Event attributes</em>. It lists the <a class="reference-link" href="#root/_help_OFXdgB2nNk1F">Promoted Attributes</a> the
+  calendar defines, and those its events define themselves. Here you can:</p>
+<ul>
+  <li>Turn an attribute on to show it on the events. New attributes are hidden
+    until you turn them on, which keeps the calendar from getting cluttered.</li>
+  <li>Drag an attribute by its handle to change the order in which the events
+    show them.</li>
+  <li>Create a new attribute, which is shown on the events right away, or edit
+    or delete one the calendar defines.</li>
+</ul>
+<p>The dates, times and recurrence of the events are drawn by the calendar
+  itself, so they are listed but cannot be switched on.</p>
+<p>If an event has a <code>#calendar:displayedAttributes</code> label, including
+  one inherited from the calendar, the attributes listed in that label are
+  shown instead.</p>
 <h2>Configuring the calendar using attributes</h2>
 <p>The following attributes can be added to the Collection type:</p>
 <figure
@@ -335,8 +356,9 @@ class="table">
       <tr>
         <td><code>#calendar:displayedAttributes</code>
         </td>
-        <td>Allows displaying the value of one or more attributes in the calendar
-          like this:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <td>Takes precedence over the <a href="#event-attributes">Event attributes</a> chosen
+          in the calendar's properties. Allows displaying the value of one or more
+          attributes in the calendar, in the order given, like this:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <br>
           <br>
           <img src="6_Calendar_image.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

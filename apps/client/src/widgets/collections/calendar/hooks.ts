@@ -1,6 +1,6 @@
 import FNote from "../../../entities/fnote";
 import { useNoteLabel, useNoteLabelByName } from "../../react/hooks";
-import { EVENT_LABELS, EventLabelName } from "./utils";
+import { drawnEventLabels, EventLabelName } from "./utils";
 
 /**
  * Reads and writes one of the labels the calendar draws an event by, honouring the note's own
@@ -32,13 +32,11 @@ export function useEventLabel(note: FNote, defaultName: EventLabelName): [string
  * names the note has pointed the calendar at instead.
  */
 export function useEventLabelOmissions(note: FNote): string[] {
-    const [ customStartDate ] = useNoteLabel(note, "calendar:startDate");
-    const [ customEndDate ] = useNoteLabel(note, "calendar:endDate");
-    const [ customStartTime ] = useNoteLabel(note, "calendar:startTime");
-    const [ customEndTime ] = useNoteLabel(note, "calendar:endTime");
-    const [ customRecurrence ] = useNoteLabel(note, "calendar:recurrence");
-
-    const customNames = [ customStartDate, customEndDate, customStartTime, customEndTime, customRecurrence ]
-        .filter((name): name is string => !!name);
-    return [ ...EVENT_LABELS, ...customNames ];
+    // Read for their changes: each redraws the caller, which `drawnEventLabels()` then reads again.
+    useNoteLabel(note, "calendar:startDate");
+    useNoteLabel(note, "calendar:endDate");
+    useNoteLabel(note, "calendar:startTime");
+    useNoteLabel(note, "calendar:endTime");
+    useNoteLabel(note, "calendar:recurrence");
+    return drawnEventLabels(note);
 }

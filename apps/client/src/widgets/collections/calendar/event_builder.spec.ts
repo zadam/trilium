@@ -211,6 +211,63 @@ describe("Promoted attributes", () => {
         ]);
     });
 
+    describe("chosen in the calendar's properties", () => {
+        let built = 0;
+
+        /** A calendar with two events, under ids of their own: froca keeps attributes across builds. */
+        function calendar() {
+            built++;
+            const note = buildNote({
+                title: "Calendar",
+                "#label:location(inheritable)": "promoted,alias=Where,single,text",
+                "#label:mood(inheritable)": "promoted,single,text",
+                "#label:weight(inheritable)": "promoted,single,text",
+                "#label:startDate(inheritable)": "promoted,single,date",
+                children: [
+                    {
+                        id: `fair${built}`, title: "Fair", "#startDate": "2025-05-05",
+                        "#location": "Park", "#mood": "good", "#weight": "70"
+                    },
+                    {
+                        id: `gym${built}`, title: "Gym", "#startDate": "2025-05-06", "#weight": "71",
+                        "#mood": "tired", "#calendar:displayedAttributes": "weight"
+                    }
+                ]
+            });
+            return { note, fair: `fair${built}`, gym: `gym${built}` };
+        }
+
+        it("shows the attributes switched on in the settings, in order, under their alias", async () => {
+            const { note, fair } = calendar();
+            const events = await buildEvents([ fair ], {
+                calendar: note,
+                settings: [ { name: "mood" }, { name: "weight", hidden: true }, { name: "location" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "mood", "good" ], [ "Where", "Park" ] ]);
+        });
+
+        it("leaves off what nobody arranged, and the dates the calendar draws itself", async () => {
+            const { note, fair } = calendar();
+            const events = await buildEvents([ fair ], {
+                calendar: note,
+                settings: [ { name: "startDate" }, { name: "mood" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "mood", "good" ] ]);
+        });
+
+        it("gives way to an event's own #calendar:displayedAttributes", async () => {
+            const { note, gym } = calendar();
+            const events = await buildEvents([ gym ], {
+                calendar: note,
+                settings: [ { name: "mood" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "weight", "71" ] ]);
+        });
+    });
+
     it("supports start time and end time", async () => {
         const noteIds = buildNotes([
             { title: "Note 1", "#startDate": "2025-05-05", "#startTime": "13:36", "#endTime": "14:56" },

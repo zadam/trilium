@@ -102,6 +102,16 @@ describe("resolvePromotedAttributes", () => {
         expect(visiblePromotedAttributeNames(resolved)).toEqual([ "requiresResearch", "owner" ]);
     });
 
+    it("hides an attribute the settings have never named, for a collection that opts in", () => {
+        const resolved = resolvePromotedAttributes(
+            collection(DEFINED), [ { name: "owner" } ], [], [], { unarrangedHidden: true });
+
+        expect(visiblePromotedAttributeNames(resolved)).toEqual([ "owner" ]);
+        // Still listed, after the arranged ones, so the reader can switch it on.
+        expect(resolved.map((attribute) => attribute.name))
+            .toEqual([ "owner", "dueDate", "requiresResearch" ]);
+    });
+
     /** Writing the result back is what prunes the config. */
     it("leaves out what the settings name and the note no longer defines", () => {
         const settings: PromotedAttributeSetting[] = [

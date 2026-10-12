@@ -111,6 +111,18 @@ By default, a new event is a <a class="reference-link" href="../Note%20Types/Te
 
 The dialog is not available on a read-only calendar, or on a calendar marked with `#calendarRoot` or `#workspaceCalendarRoot` (see [Using with the Journal / calendar](#using-with-the-journal--calendar)).
 
+### Event attributes
+
+Events can show the values of their attributes below their title, in the month view, and in the week and day views for all-day events and for timed ones tall enough to hold them. To choose which attributes are shown, open the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it) and find _Event attributes_. It lists the <a class="reference-link" href="../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> the calendar defines, and those its events define themselves. Here you can:
+
+*   Turn an attribute on to show it on the events. New attributes are hidden until you turn them on, which keeps the calendar from getting cluttered.
+*   Drag an attribute by its handle to change the order in which the events show them.
+*   Create a new attribute, which is shown on the events right away, or edit or delete one the calendar defines.
+
+The dates, times and recurrence of the events are drawn by the calendar itself, so they are listed but cannot be switched on.
+
+If an event has a `#calendar:displayedAttributes` label, including one inherited from the calendar, the attributes listed in that label are shown instead.
+
 ## Configuring the calendar using attributes
 
 The following attributes can be added to the Collection type:
@@ -171,7 +183,7 @@ For each note of the calendar, the following attributes can be used:
 | `#calendar:color` | **❌️ Removed since v0.100.0. Use** `#color` **instead.**       <br>  <br>Similar to `#color`, but applies the color only for the event in the calendar and not for other places such as the note tree. |
 | `#iconClass` | If present, the icon of the note will be displayed to the left of the event title. |
 | `#calendar:title` | Changes the title of an event to point to an attribute of the note other than the title, can either a label or a relation (without the `#` or `~` symbol). See _Use-cases_ for more information. |
-| `#calendar:displayedAttributes` | Allows displaying the value of one or more attributes in the calendar like this:            <br>  <br>![](6_Calendar_image.png)           <br>  <br>`#weight="70" #Mood="Good" #calendar:displayedAttributes="weight,Mood"`          <br>  <br>It can also be used with relations, case in which it will display the title of the target note:           <br>  <br>`~assignee=@My assignee #calendar:displayedAttributes="assignee"` |
+| `#calendar:displayedAttributes` | Takes precedence over the [Event attributes](#event-attributes) chosen in the calendar's properties. Allows displaying the value of one or more attributes in the calendar, in the order given, like this:            <br>  <br>![](6_Calendar_image.png)           <br>  <br>`#weight="70" #Mood="Good" #calendar:displayedAttributes="weight,Mood"`          <br>  <br>It can also be used with relations, case in which it will display the title of the target note:           <br>  <br>`~assignee=@My assignee #calendar:displayedAttributes="assignee"` |
 | `#calendar:startDate` | Allows using a different label to represent the start date, other than `startDate` (e.g. `expiryDate`). The label name **must not be** prefixed with `#`. If the label is not defined for a note, the default will be used instead. |
 | `#calendar:endDate` | Similar to `#calendar:startDate`, allows changing the attribute which is being used to read the end date. |
 | `#calendar:startTime` | Similar to `#calendar:startDate`, allows changing the attribute which is being used to read the start time. |
