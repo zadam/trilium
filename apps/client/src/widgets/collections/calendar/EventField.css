@@ -36,8 +36,11 @@
     align-items: center;
     gap: 6px;
 
+    /* A native date or time input with `width: auto` is as wide as its fields and picker icon.
+       It can still shrink when the row is narrower than that, as on a phone. */
     > input {
-        flex: 1 1 0;
+        flex: 0 1 auto;
+        width: auto;
         min-width: 0;
         padding: 0.25rem 0.5rem;
     }
