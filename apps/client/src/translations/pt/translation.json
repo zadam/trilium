@@ -903,12 +903,9 @@
   "editable_text": {
     "placeholder": "Digite o conteúdo da sua nota aqui…",
     "auto-detect-language": "Detetado automaticamente",
-    "editor_crashed_title": "O editor de texto quebrou",
     "editor_crashed_details_button": "Ver mais detalhes...",
     "editor_crashed_details_title": "Informação técnica",
-    "editor_crashed_details_intro": "Se teve este erro várias vezes, considerer reportar no GitHub disponibilizando a informação abaixo.",
-    "editor_crashed_content": "O seu conteudo foi recuperado com sucesso, mas alguns das alterações mais recentes podem não ter sido gravadas.",
-    "keeps-crashing": "Componente de edição a rebentar continuamente. Por favor tentar reiniciar Trilium. Se o problema persistir, considere abrir um bug report."
+    "editor_crashed_details_intro": "Se teve este erro várias vezes, considerer reportar no GitHub disponibilizando a informação abaixo."
   },
   "empty": {
     "open_note_instruction": "Abra uma nota a digitar o título da nota no campo abaixo ou escolha uma nota na árvore.",

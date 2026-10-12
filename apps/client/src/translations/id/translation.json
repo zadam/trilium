@@ -1329,13 +1329,10 @@
   },
   "editable_text": {
     "placeholder": "Ketik isi catatan Anda di sini...",
-    "editor_crashed_title": "Editor teks mengalami crash",
-    "editor_crashed_content": "Konten Anda berhasil dipulihkan, tetapi beberapa perubahan terbaru Anda mungkin belum tersimpan.",
     "editor_crashed_details_button": "Lihat detail selengkapnya...",
     "editor_crashed_details_intro": "Jika Anda mengalami kesalahan ini beberapa kali, pertimbangkan untuk melaporkannya di GitHub dengan menempelkan informasi di bawah ini.",
     "editor_crashed_details_title": "Informasi teknis",
     "auto-detect-language": "Terdeteksi otomatis",
-    "keeps-crashing": "Komponen editor terus mengalami crash. Silakan coba mulai ulang Trilium. Jika masalah tetap berlanjut, pertimbangkan untuk membuat laporan bug.",
     "nothing_selected_to_cut": "Pilih beberapa teks terlebih dahulu untuk memotongnya menjadi sub-catatan."
   },
   "empty": {

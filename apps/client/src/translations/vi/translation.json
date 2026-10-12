@@ -1561,13 +1561,10 @@
   },
   "editable_text": {
     "placeholder": "Nhập nội dung ghi chú của bạn tại đây...",
-    "editor_crashed_title": "Trình soạn thảo văn bản đã gặp sự cố",
-    "editor_crashed_content": "Nội dung của bạn đã được khôi phục thành công, nhưng một số thay đổi gần đây nhất của bạn có thể chưa được lưu.",
     "editor_crashed_details_button": "Xem thêm chi tiết...",
     "editor_crashed_details_intro": "Nếu bạn gặp lỗi này nhiều lần, hãy cân nhắc báo cáo trên GitHub bằng cách dán thông tin bên dưới.",
     "editor_crashed_details_title": "Thông tin kỹ thuật",
     "auto-detect-language": "Tự động phát hiện",
-    "keeps-crashing": "Thành phần chỉnh sửa liên tục gặp sự cố. Vui lòng thử khởi động lại Trilium. Nếu vấn đề vẫn tiếp diễn, hãy cân nhắc tạo báo cáo lỗi.",
     "nothing_selected_to_cut": "Hãy chọn một số văn bản trước để cắt nó thành một ghi chú con.",
     "uploading_attachment": "Đang tải lên tệp đính kèm"
   },

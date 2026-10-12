@@ -756,9 +756,6 @@
   "editable_text": {
     "placeholder": "Scrieți conținutul notiței aici...",
     "auto-detect-language": "Automat",
-    "keeps-crashing": "Componenta de editare se blochează în continuu. Încercați să reporniți Trilium. Dacă problema persistă, luați în considerare să raportați această problemă.",
-    "editor_crashed_title": "Editorul text a avut o eroare",
-    "editor_crashed_content": "Conținutul a fost recuperat cu succes, dar este posibil ca o parte din cele mai recente modificări ale dvs. să nu se fi salvat.",
     "editor_crashed_details_button": "Mai multe detalii...",
     "editor_crashed_details_intro": "Dacă întâmpinați frecvent această eroare, considerați să o raportați pe GitHub copiând informația de mai jos.",
     "editor_crashed_details_title": "Informații tehnice",

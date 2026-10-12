@@ -1535,13 +1535,10 @@
   },
   "editable_text": {
     "placeholder": "여기에 노트의 내용을 입력하세요...",
-    "editor_crashed_title": "텍스트 편집기가 크래시 났습니다",
-    "editor_crashed_content": "내용은 성공적으로 복구되었지만, 최근 변경 사항 중 일부는 저장되지 않았을 수 있습니다.",
     "editor_crashed_details_button": "자세히 보기...",
     "editor_crashed_details_intro": "이 오류가 여러 번 발생한다면, 아래 정보를 붙여넣어 GitHub에 신고하는 것을 고려해 보세요.",
     "editor_crashed_details_title": "기술 정보",
     "auto-detect-language": "자동 탐지",
-    "keeps-crashing": "편집 구성 요소가 계속 비정상 종료됩니다. Trilium을 다시 시작하세요. 문제가 계속되면 버그 보고서 작성을 고려하세요.",
     "nothing_selected_to_cut": "먼저 하위 노트로 분리할 텍스트를 선택하세요.",
     "uploading_attachment": "첨부 파일 업로드 중"
   },
