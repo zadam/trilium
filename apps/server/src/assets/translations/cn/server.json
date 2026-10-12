@@ -395,7 +395,8 @@
     "heading-link": "链接到此章节",
     "previous": "上一页",
     "next": "下一页",
-    "page-navigation": "上一页和下一页"
+    "page-navigation": "上一页和下一页",
+    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面"
   },
   "hidden_subtree_templates": {
     "text-snippet": "文本片段",
