@@ -9,24 +9,6 @@
         gap: 4px;
     }
 
-    /* Fields sharing one line, splitting what is left of it evenly. Parted by more than the
-       controls within a field are, so the line reads as two fields rather than as one field's
-       worth of controls. */
-    .calendar-event-field-row {
-        display: flex;
-        gap: 16px;
-
-        > * {
-            flex: 1 1 0;
-            min-width: 0;
-        }
-
-        /* Except those that asked for no more room than they need (see EventField's `compact`). */
-        > .calendar-event-field-compact {
-            flex: 0 0 auto;
-        }
-    }
-
     /* Faded as the promoted grid fades its labels (see theme-next/shell.css), so the event's own
        fields and the note's promoted ones read as one form when they stand in the same dock. */
     .calendar-event-field-name {
@@ -46,5 +28,43 @@
         > .tn-number-unit-pair {
             flex: 0 1 auto;
         }
+    }
+}
+
+.calendar-event-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    > input {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    /* As wide as an `ActionButton`, so the icons line up with the popover's toolbar above them. */
+    .calendar-event-row-icon {
+        flex: 0 0 var(--icon-button-size);
+        font-size: 1.1em;
+        text-align: center;
+        color: var(--muted-text-color);
+    }
+
+    .calendar-event-row-separator {
+        opacity: 0.75;
+    }
+
+    .calendar-event-switches {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .calendar-event-duration {
+        flex: none;
+        white-space: nowrap;
+        font-size: 0.9em;
+        color: var(--muted-text-color);
     }
 }

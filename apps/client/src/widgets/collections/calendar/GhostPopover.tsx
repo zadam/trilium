@@ -10,7 +10,7 @@ import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
-import { EventDuration } from "./EventField";
+import { EventDuration, EventRow } from "./EventField";
 import { AnchorPoint, EventDraft, narrowAnchorRect, withAllDay } from "./selection";
 
 /**
@@ -112,33 +112,40 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
             />
 
             <div className="calendar-ghost-when">
-                <span className="bx bx-calendar" />
-                <span className="calendar-ghost-dates">{describeDates(draft)}<EventDuration event={draft} /></span>
-                <FormToggle
-                    switchOnName={t("calendar.dates.all_day")}
-                    switchOffName={t("calendar.dates.all_day")}
-                    currentValue={allDay}
-                    onChange={(on) => setDraft((d) => withAllDay(d, on))}
-                />
-            </div>
+                <EventRow icon="bx-calendar" title={t("calendar.dates.date")}>
+                    <span>{describeDates(draft)}</span>
+                </EventRow>
 
-            {!allDay && (
-                <div className="calendar-ghost-time">
-                    <FormTextBox
-                        type="time"
-                        currentValue={draft.startTime ?? ""}
-                        aria-label={t("calendar.dates.start_time")}
-                        onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
-                    />
-                    <span className="calendar-ghost-time-separator" aria-hidden="true">–</span>
-                    <FormTextBox
-                        type="time"
-                        currentValue={draft.endTime ?? ""}
-                        aria-label={t("calendar.dates.end_time")}
-                        onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
-                    />
-                </div>
-            )}
+                <EventRow>
+                    <div className="calendar-event-switches">
+                        <FormToggle
+                            switchOnName={t("calendar.dates.all_day")}
+                            switchOffName={t("calendar.dates.all_day")}
+                            currentValue={allDay}
+                            onChange={(on) => setDraft((d) => withAllDay(d, on))}
+                        />
+                    </div>
+                </EventRow>
+
+                {!allDay && (
+                    <EventRow icon="bx-time-five" title={t("calendar.dates.time")}>
+                        <FormTextBox
+                            type="time"
+                            currentValue={draft.startTime ?? ""}
+                            aria-label={t("calendar.dates.start_time")}
+                            onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
+                        />
+                        <span className="calendar-event-row-separator" aria-hidden="true">–</span>
+                        <FormTextBox
+                            type="time"
+                            currentValue={draft.endTime ?? ""}
+                            aria-label={t("calendar.dates.end_time")}
+                            onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
+                        />
+                        <EventDuration event={draft} />
+                    </EventRow>
+                )}
+            </div>
 
             <div className="calendar-ghost-actions">
                 <Button

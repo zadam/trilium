@@ -113,7 +113,7 @@ describe("GhostPopover", () => {
         const onCommit = vi.fn().mockResolvedValue(undefined);
         mount(onCommit);
 
-        const allDay = document.querySelector<HTMLInputElement>(".calendar-ghost-when .switch-toggle");
+        const allDay = document.querySelector<HTMLInputElement>(".calendar-event-switches .switch-toggle");
         if (!allDay) throw new Error("The ghost has no all-day switch.");
         expect(allDay.checked).toBe(true);
         expect(timeInputs()).toHaveLength(0);
@@ -123,13 +123,14 @@ describe("GhostPopover", () => {
         const [ start, end ] = timeInputs();
         expect(start.value).toBe("09:00");
         expect(end.value).toBe("10:00");
-        expect(duration()).toBe(" · calendar_view.duration_hours|1");
+        expect(duration()).toBe("calendar_view.duration_hours|1");
 
         start.value = "14:00";
         act(() => { start.dispatchEvent(new Event("input", { bubbles: true })); });
         end.value = "15:30";
         act(() => { end.dispatchEvent(new Event("input", { bubbles: true })); });
-        expect(duration()).toBe(" · calendar_view.duration_hours_minutes|1|30");
+        expect(duration()).toBe("calendar_view.duration_hours_minutes|1|30");
+        expect(timeInputs()[0].closest(".calendar-event-row")?.querySelector(".calendar-event-duration")).not.toBeNull();
         await act(async () => { createButton()?.click(); });
 
         expect(onCommit).toHaveBeenCalledWith("", {

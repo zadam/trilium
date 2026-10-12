@@ -14,30 +14,8 @@
 
     .calendar-ghost-when {
         display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--muted-text-color);
-        font-size: 0.9em;
-
-        .calendar-ghost-dates {
-            flex: 1;
-            min-width: 0;
-        }
-    }
-
-    .calendar-ghost-time {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-
-        > input {
-            flex: 1 1 0;
-            min-width: 0;
-        }
-
-        .calendar-ghost-time-separator {
-            opacity: 0.75;
-        }
+        flex-direction: column;
+        gap: 10px;
     }
 
     .calendar-ghost-actions {
@@ -51,7 +29,7 @@
  * room around what it holds — all of which a dialog brings for the sheet.
  */
 .calendar-ghost-popover {
-    width: 340px;
+    width: 460px;
 
     .calendar-ghost-header {
         display: flex;

@@ -21,17 +21,14 @@ export function EventFieldList({ children }: { children: ComponentChildren }) {
  * one input to speak for ({@link htmlFor}), and reads as a heading where the field is a group —
  * a row of weekday toggles has no single input to point at.
  */
-export function EventField({ name, htmlFor, compact, children }: {
-    name: ComponentChildren;
+export function EventField({ name, htmlFor, children }: {
+    name: string;
     /** The id of the field's input, for a field that has exactly one. */
     htmlFor?: string;
-    /** Take no more of a shared line than the field's own name and control need, leaving the rest
-     *  to whatever stands beside it (see {@link EventFieldRow}). */
-    compact?: boolean;
     children: ComponentChildren;
 }) {
     return (
-        <div className={clsx("calendar-event-field", compact && "calendar-event-field-compact")}>
+        <div className="calendar-event-field">
             <label className="calendar-event-field-name" for={htmlFor}>{name}</label>
             {children}
         </div>
@@ -39,11 +36,22 @@ export function EventField({ name, htmlFor, compact, children }: {
 }
 
 /**
- * Two or more whole fields sharing one line, each with its own name over its own control — for
- * fields short enough that a line apiece would leave the column mostly air.
+ * One line of when an event happens, led by an icon that names what the line holds, with the icon's
+ * name as its tooltip. A line without an icon is indented to the same column, so its controls line
+ * up with the ones above. Shared by the event popover and the new-event popup.
  */
-export function EventFieldRow({ children }: { children: ComponentChildren }) {
-    return <div className="calendar-event-field-row">{children}</div>;
+export function EventRow({ icon, title, children }: {
+    /** A boxicons class such as `bx-calendar`. */
+    icon?: string;
+    title?: string;
+    children: ComponentChildren;
+}) {
+    return (
+        <div className="calendar-event-row">
+            <span className={clsx("calendar-event-row-icon", icon && `bx ${icon}`)} title={title} aria-hidden="true" />
+            {children}
+        </div>
+    );
 }
 
 /**
@@ -58,8 +66,7 @@ export function EventFieldControls({ className, children }: {
 }
 
 /**
- * How long a timed event lasts, appended to the line that summarizes when it happens. Renders
- * nothing for an all-day event. An end before the start reads as running into the next day (see
+ * How long a timed event lasts, at the end of its time row. Renders nothing for an all-day event. An end before the start reads as running into the next day (see
  * {@link getTimedDurationMinutes}).
  */
 export function EventDuration({ event }: { event: Parameters<typeof getTimedDurationMinutes>[0] }) {
@@ -73,5 +80,5 @@ export function EventDuration({ event }: { event: Parameters<typeof getTimedDura
         : !minutes
             ? t("calendar_view.duration_hours", { hours })
             : t("calendar_view.duration_hours_minutes", { hours, minutes });
-    return <span className="calendar-event-duration"> · {text}</span>;
+    return <span className="calendar-event-duration">{text}</span>;
 }

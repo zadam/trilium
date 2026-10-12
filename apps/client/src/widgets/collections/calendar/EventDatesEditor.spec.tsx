@@ -69,7 +69,8 @@ describe("EventDatesEditor", () => {
         expect(timeInputs()).toHaveLength(2);
         expect(timeInputs()[0].value).toBe("13:00");
         expect(timeInputs()[1].value).toBe("14:30");
-        expect(duration()).toBe(" · calendar_view.duration_hours_minutes|1|30");
+        expect(duration()).toBe("calendar_view.duration_hours_minutes|1|30");
+        expect(timeInputs()[0].closest(".calendar-event-row")?.querySelector(".calendar-event-duration")).not.toBeNull();
     });
 
     it("switching all-day off gives the day hours to edit and lets a span of days go", () => {
