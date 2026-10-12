@@ -762,8 +762,9 @@ function useTemplates() {
 
 /**
  * Tells the user about an error that escaped the editor in a toast, which offers to reload the
- * editor and opens the error details for a bug report. The editor keeps running until then, so a
- * later error replaces the toast. The global error handlers in `glob.ts` log the error.
+ * editor and opens the error details for a bug report; the toast returns once the details close.
+ * The editor keeps running until it is reloaded, so a later error replaces the toast. The global
+ * error handlers in `glob.ts` log the error.
  *
  * Exported for testing.
  */
@@ -774,36 +775,41 @@ export function reportEditorError(error: CKEditorError, reloadEditor: () => void
         date: new Date().toISOString()
     }, null, 4);
 
-    toast.showPersistent({
-        id: "editor-error",
-        icon: "bx bx-bug",
-        title: t("editable_text.editor_error_title"),
-        message: t("editable_text.editor_error_content"),
-        buttons: [
-            {
-                text: t("editable_text.editor_error_reload_button"),
-                onClick: ({ dismissToast }) => {
-                    dismissToast();
-                    reloadEditor();
+    showErrorToast();
+
+    function showErrorToast() {
+        toast.showPersistent({
+            id: "editor-error",
+            icon: "bx bx-bug",
+            title: t("editable_text.editor_error_title"),
+            message: t("editable_text.editor_error_content"),
+            buttons: [
+                {
+                    text: t("editable_text.editor_error_reload_button"),
+                    onClick: ({ dismissToast }) => {
+                        dismissToast();
+                        reloadEditor();
+                    }
+                },
+                {
+                    text: t("editable_text.editor_crashed_details_button"),
+                    onClick: async ({ dismissToast }) => {
+                        dismissToast();
+                        await dialog.info(<>
+                            <p>{t("editable_text.editor_crashed_details_intro")}</p>
+                            <h3>{t("editable_text.editor_crashed_details_title")}</h3>
+                            <pre><code class="language-application-json">{details}</code></pre>
+                        </>, {
+                            title: t("editable_text.editor_error_title"),
+                            size: "lg",
+                            copyToClipboardButton: true
+                        });
+                        showErrorToast();
+                    }
                 }
-            },
-            {
-                text: t("editable_text.editor_crashed_details_button"),
-                onClick: ({ dismissToast }) => {
-                    dismissToast();
-                    dialog.info(<>
-                        <p>{t("editable_text.editor_crashed_details_intro")}</p>
-                        <h3>{t("editable_text.editor_crashed_details_title")}</h3>
-                        <pre><code class="language-application-json">{details}</code></pre>
-                    </>, {
-                        title: t("editable_text.editor_error_title"),
-                        size: "lg",
-                        copyToClipboardButton: true
-                    });
-                }
-            }
-        ]
-    });
+            ]
+        });
+    }
 }
 
 /**
