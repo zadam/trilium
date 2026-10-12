@@ -31,13 +31,3 @@
   border-color: var(--main-text-color);
   color: var(--main-text-color);
 }
-
-.tn-dropdown-portal.template-dropdown .dropdown-item {
-  display: flex;
-  align-items: center;
-}
-
-.tn-dropdown-portal.template-dropdown .template-dropdown-current {
-  margin-inline-start: auto;
-  padding-inline-start: 1.5em;
-}

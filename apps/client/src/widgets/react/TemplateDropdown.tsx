@@ -67,13 +67,10 @@ export default function TemplateDropdown({
         <FormListItem
             key={template.id}
             icon={template.icon}
+            checked={template.id === current?.id}
             onClick={() => onSelect(template)}
         >
             {template.title}
-            {/* A check mark rather than a highlight, which reads as the row under the pointer. */}
-            {template.id === current?.id && (
-                <Icon className="template-dropdown-current" icon="bx bx-check" />
-            )}
         </FormListItem>
     )), [ offered, current, onSelect ]);
 

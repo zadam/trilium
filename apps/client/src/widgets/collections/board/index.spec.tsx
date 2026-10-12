@@ -2523,7 +2523,7 @@ describe("Board column rename", () => {
             "Text", "Markdown", "Canvas", "Spreadsheet", "board_view.more-templates"
         ]);
         // The one a card would be made from is ticked, rather than standing out by its background.
-        expect(items.map(item => !!item.querySelector(".template-dropdown-current")))
+        expect(items.map(item => !!item.querySelector(".menu-trailing-icon")))
             .toEqual([ true, false, false, false, false ]);
         expect(items.some(item => item.classList.contains("active"))).toBe(false);
 
@@ -2543,7 +2543,7 @@ describe("Board column rename", () => {
         });
         const reopened = [ ...document.querySelectorAll<HTMLElement>(".template-pill") ].at(-1);
         expect([ ...(reopened?.querySelectorAll(".dropdown-item") ?? []) ]
-            .map(item => !!item.querySelector(".template-dropdown-current")))
+            .map(item => !!item.querySelector(".menu-trailing-icon")))
             .toEqual([ false, false, true, false, false ]);
 
         await type(editor, "Drawn");
