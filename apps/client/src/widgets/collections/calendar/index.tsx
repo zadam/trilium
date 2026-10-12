@@ -28,6 +28,7 @@ import ActionButton from "../../react/ActionButton";
 import Button, { ButtonGroup } from "../../react/Button";
 import CollapseOnOverflow from "../../react/CollapseOnOverflow";
 import Dropdown from "../../react/Dropdown";
+import { FLOATING_LAYER_SELECTOR } from "../../react/floating_layers";
 import { FormListItem } from "../../react/FormList";
 import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteTypeOptions, useSpacedUpdate, useTriliumEvent, useTriliumOption, useTriliumOptionInt } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
@@ -215,11 +216,7 @@ export default function CalendarView({
             saveConfig({ ...viewConfig, template: template.id });
         }
     }, [ viewConfig, saveConfig ]);
-    // The draft is let go first: on a phone it is a dialog itself, and Bootstrap does not stack two.
-    const editEventTemplates = useCallback(() => {
-        cancelDraft();
-        setIsEditingProperties(true);
-    }, [ cancelDraft ]);
+    const editEventTemplates = useCallback(() => setIsEditingProperties(true), []);
     const eventTemplates = useTemplateChoice({
         ids: offeredTemplateIds(viewConfig, DEFAULT_EVENT_TEMPLATES),
         lastUsedId: viewConfig?.template,
@@ -381,8 +378,9 @@ export default function CalendarView({
                 // that very range, whichever shell it wears, which is what the exemption names.
                 // Letting it decide is what spares a press on the grid: the next selection has
                 // already begun by then, and FullCalendar knows not to clear what the same press
-                // has just made.
-                unselectCancel=".calendar-ghost-popover, .calendar-ghost-sheet"
+                // has just made. A press in a dialog or menu over the ghost, such as the template
+                // menu or `CalendarProperties`, leaves the ghost standing, so it keeps the shading too.
+                unselectCancel={`.calendar-ghost-popover, .calendar-ghost-sheet, ${FLOATING_LAYER_SELECTOR}`}
                 // Named by us so the ghost can find the shading it stands beside, v7 drawing it
                 // under a hashed class otherwise (see ghostAnchorRect in GhostPopover). The look
                 // is Forma's own, which is one declaration off the palette.

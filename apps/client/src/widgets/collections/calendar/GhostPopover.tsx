@@ -7,6 +7,7 @@ import { type NoteTypeOption } from "../../../services/note_types";
 import { isMobile } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Button from "../../react/Button";
+import { isWithinFloatingLayer } from "../../react/floating_layers";
 import FormTextBox from "../../react/FormTextBox";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
@@ -95,7 +96,8 @@ export default function GhostPopover({
         if (isMobile()) return;
 
         const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onCancel();
+            // An Escape in a dialog or menu opened over the popover closes only that.
+            if (e.key === "Escape" && !isWithinFloatingLayer(e.target)) onCancel();
         };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);

@@ -31,6 +31,7 @@ export default function CalendarProperties({ note, viewConfig, saveConfig, onClo
             size="lg"
             scrollable
             show
+            stackable
             onHidden={onClose}
         >
             <TemplateSelectionCard

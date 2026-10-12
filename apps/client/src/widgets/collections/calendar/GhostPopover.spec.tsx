@@ -116,6 +116,36 @@ describe("GhostPopover", () => {
         expect(visibilityAtFocus.every((visibility) => visibility === "visible")).toBe(true);
     });
 
+    it("is given up on by Escape, except an Escape meant for a dialog or menu opened over it", () => {
+        const onCancel = vi.fn();
+        act(() => render(
+            <GhostPopover
+                draft={draft}
+                anchor={{ x: 10, y: 10 }}
+                container={container}
+                templates={{ offered: [ TEXT ], current: TEXT, onSelect() {}, onMore() {} }}
+                onCommit={vi.fn()}
+                onCancel={onCancel}
+                onDismiss={() => {}}
+            />,
+            container));
+        const escape = (target: Element | null) => act(() => {
+            target?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        });
+
+        // The calendar's properties dialog, opened from the template field's menu.
+        const dialog = document.createElement("div");
+        dialog.className = "modal";
+        dialog.appendChild(document.createElement("input"));
+        document.body.appendChild(dialog);
+        escape(dialog.querySelector("input"));
+        expect(onCancel).not.toHaveBeenCalled();
+
+        expect(titleInput()).not.toBeNull();
+        escape(titleInput());
+        expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
     it("hands over the title as typed, an empty one standing for the calendar's own naming", async () => {
         const onCommit = vi.fn().mockResolvedValue(undefined);
         mount(onCommit);

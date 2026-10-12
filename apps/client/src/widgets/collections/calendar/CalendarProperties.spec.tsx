@@ -90,6 +90,22 @@ describe("CalendarProperties", () => {
         expect(draw({ templates: [ "note:mine" ] })?.dataset.templates).toBe("note:mine");
     });
 
+    /** On a phone the new-event form is itself a dialog, opened before this one from its template field. */
+    it("opens over the dialog already open rather than closing it", () => {
+        const sheet = document.createElement("div");
+        sheet.className = "modal";
+        document.body.appendChild(sheet);
+        glob.activeDialog = $(sheet);
+
+        try {
+            draw(undefined);
+            expect(glob.activeDialog?.[0]).toBe(sheet);
+        } finally {
+            glob.activeDialog = null;
+            sheet.remove();
+        }
+    });
+
     it("stores what the card reports beside the rest of the config, and refuses an empty list", () => {
         const card = draw({ templates: [ "type:text:text/html" ], template: "type:text:text/html" });
         expect(card).not.toBeNull();
