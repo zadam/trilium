@@ -67,6 +67,14 @@ It's possible to refresh the note via:
 *   The <span class="tn-icon bx bx-refresh"></span> button in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20buttons.md">Note buttons</a> area.
 *   The “Render active note” [keyboard shortcut](../Basic%20Concepts%20and%20Features/Keyboard%20Shortcuts.md) (not assigned by default).
 
+## Printing
+
+A render note can be printed or exported as PDF from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> once its `~renderNote` relation is set (see <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Printing%20%26%20Exporting%20as%20PDF.md">Printing &amp; Exporting as PDF</a>). Unlike other notes, it is printed exactly as it is displayed: the script does not run again, so what was typed, selected or loaded in the note is kept.
+
+*   The content is laid out again at the width of the page, so elements sized by the script for the screen (such as charts) might not fit.
+*   Containers with a fixed height and scrolling are cut off on paper. Use a `~printCss` relation to give them an automatic height.
+*   The light colors are used for printing, whatever the current theme.
+
 ## Examples
 
 *   <a class="reference-link" href="../Advanced%20Usage/Advanced%20Showcases/Weight%20Tracker.md">Weight Tracker</a> which is present in the <a class="reference-link" href="../Advanced%20Usage/Database/Demo%20Notes.md">Demo Notes</a>.

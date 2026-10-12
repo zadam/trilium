@@ -2,6 +2,7 @@ import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../components/component";
+import { endLivePrint } from "../../services/live_print";
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
 import { ParentComponent } from "../react/react_utils";
@@ -43,9 +44,12 @@ describe("PrintPreviewDialog", () => {
         (window as any).electronApi = { printing };
         URL.createObjectURL = vi.fn(() => `blob:preview-${++urlCount}`);
         URL.revokeObjectURL = vi.fn();
+        // happy-dom has no FontFaceSet, which a live print waits on.
+        (document as any).fonts = { ready: Promise.resolve() };
     });
 
     afterEach(() => {
+        endLivePrint();
         delete (window as any).electronApi;
     });
 
@@ -86,5 +90,47 @@ describe("PrintPreviewDialog", () => {
 
         deliver({ requestId: firstId as number, buffer: new Uint8Array([ 2 ]) });
         expect(viewer()?.getAttribute("data-url")).toBe(currentUrl);
+    });
+
+    it("prints a live target from the window, keeping it prepared until the print is done", async () => {
+        const note = buildNote({ id: "print-live", title: "Live", type: "render" });
+        const host = new Component();
+        renderInto(
+            <ParentComponent.Provider value={host}>
+                <PrintPreviewDialog />
+            </ParentComponent.Provider>
+        );
+        const show = async () => {
+            const liveTarget = document.createElement("div");
+            document.body.appendChild(liveTarget);
+            await act(async () => {
+                await host.handleEvent("showPrintPreview", { note, notePath: "root/print-live", liveTarget });
+            });
+            await vi.waitFor(() => expect(printing.exportAsPdfPreview).toHaveBeenCalled());
+            return liveTarget;
+        };
+        const close = () => {
+            const closeButton = document.querySelector<HTMLButtonElement>(".print-preview-dialog .btn-close");
+            expect(closeButton).toBeTruthy();
+            act(() => closeButton?.click());
+        };
+
+        // Closing without printing restores the window.
+        const cancelled = await show();
+        expect(cancelled.classList.contains("print-live-target")).toBe(true);
+        expect(printing.exportAsPdfPreview).toHaveBeenCalledWith(expect.objectContaining({ live: true }));
+        close();
+        await vi.waitFor(() => expect(cancelled.classList.contains("print-live-target")).toBe(false));
+
+        // Printing leaves it prepared: `print-done` from the main process ends it.
+        printing.exportAsPdfPreview.mockClear();
+        const printed = await show();
+        deliver({ requestId: requestIds().at(-1) as number, buffer: new Uint8Array([ 1 ]) });
+        const systemPrint = document.querySelector<HTMLAnchorElement>(".print-preview-dialog .modal-footer a");
+        expect(systemPrint).toBeTruthy();
+        act(() => systemPrint?.click());
+        expect(printing.printFromPreview).toHaveBeenCalledWith(expect.objectContaining({ live: true, silent: false }));
+        await vi.waitFor(() => expect(document.querySelector(".print-preview-dialog.show")).toBeNull());
+        expect(printed.classList.contains("print-live-target")).toBe(true);
     });
 });

@@ -467,4 +467,39 @@ describe("setupPrintingHandlers", () => {
             expect(e2.sender.send).toHaveBeenCalledWith("print-done", { type: "error", message: "load string", stack: undefined });
         });
     });
+
+    describe("live printing", () => {
+        async function fireLive(channel: string, payload: object) {
+            const fn = h.on.get(channel);
+            if (!fn) throw new Error(`no on-handler for ${channel}`);
+            const sender = {
+                send: vi.fn(),
+                printToPDF: vi.fn(async () => Buffer.from("live-pdf")),
+                print: vi.fn((_opts: unknown, cb: (success: boolean) => void) => cb(true))
+            };
+            await fn({ sender }, { ...payload, live: true });
+            return sender;
+        }
+
+        it("previews the sender's own window, leaving it prepared", async () => {
+            const sender = await fireLive("export-as-pdf-preview", PDF_OPTS);
+
+            expect(h.loadURL).not.toHaveBeenCalled();
+            expect(h.printToPDF).not.toHaveBeenCalled();
+            expect(sender.printToPDF).toHaveBeenCalledOnce();
+            expect(sender.send).toHaveBeenCalledWith("export-as-pdf-preview-result", expect.objectContaining({ requestId: 7, buffer: Buffer.from("live-pdf") }));
+            expect(sender.send).not.toHaveBeenCalledWith("print-done", expect.anything());
+            expect(h.destroy).not.toHaveBeenCalled();
+        });
+
+        it("prints the sender's own window and reports print-done so it is restored", async () => {
+            const sender = await fireLive("print-from-preview", { ...PDF_OPTS, silent: true, deviceName: "HP" });
+
+            expect(h.loadURL).not.toHaveBeenCalled();
+            expect(h.print).not.toHaveBeenCalled();
+            expect(sender.print).toHaveBeenCalledWith(expect.objectContaining({ silent: true, deviceName: "HP" }), expect.any(Function));
+            expect(sender.send).toHaveBeenCalledWith("print-done", { type: "single-note" });
+            expect(h.destroy).not.toHaveBeenCalled();
+        });
+    });
 });
