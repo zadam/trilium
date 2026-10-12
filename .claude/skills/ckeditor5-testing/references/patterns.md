@@ -203,6 +203,42 @@ it( 'throws on invalid config', () => {
 
 For `CKEditorError`, match the error id substring.
 
+### Errors that escape the editor (`onEditorError()`)
+
+CKEditor 49 reports an escaped error from `window`'s `error` and `unhandledrejection` events, and
+only a `CKEditorError` whose `context` resolves to a ready editor. Native errors arrive wrapped by
+`CKEditorError.rethrowUnexpectedError(error, context)` (`unexpected-error … Original error: …`).
+Test a listener by dispatching the event a thrown error would raise (`src/editor_errors.spec.ts`):
+
+```ts
+function escape( error: Error ) {
+	const listener = () => {};
+	window.addEventListener( 'error', listener );
+	window.dispatchEvent( new ErrorEvent( 'error', { error } ) );
+	window.removeEventListener( 'error', listener );
+}
+```
+
+The extra listener is the point: Vitest's browser runner reports an `error` event as an
+**unhandled error** (failing the run) whenever no user listener is registered on `window`, and
+`preventDefault()` does not change that. Once the code under test unregisters its own listener, an
+event dispatched without one fails the file even though every test passed.
+
+## Measuring real CSS
+
+Specs that assert layout load a stylesheet and read `getComputedStyle()` /
+`getBoundingClientRect()` (`tile_row_view.spec.ts`, `multicolumn_layout.spec.ts`):
+
+- `import url from "ckeditor5/ckeditor5.css?url"` plus a `<link>` loads CKEditor's sheet as the app
+  does. `?inline` returns the CSS text with `@import`s resolved — use it to load a client
+  stylesheet chain (`apps/client/src/stylesheets/style.css?inline`) into a `<style>`. `?raw` keeps
+  `@import` lines as text, which the browser then cannot resolve.
+- Disable transitions (`* { transition: none !important; }`) before reading `box-shadow` or
+  colors of a state you just entered; otherwise you read the transition's first frame.
+- `element.focus()` from a test counts as `:focus-visible`.
+- To compare a stylesheet between two CKEditor versions, don't write a spec: use `ck_css.mjs` from
+  the `ckeditor5-plugin-development` skill (`references/upgrading-ckeditor.md`).
+
 ## Reaching 100% coverage
 
 `ckeditor5` gates `src/**` at 100%
