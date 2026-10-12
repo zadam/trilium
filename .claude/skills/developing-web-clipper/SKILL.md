@@ -210,11 +210,15 @@ Check a manifest change in the built `manifest.json`, e.g.
 
 CI (`.github/workflows/web-clipper.yml`) builds both zips; it runs no tests, so a
 `web-clipper-v*` tag ships whatever the tagged commit holds — the tests run only in `dev.yml`, on
-pushes and pull requests. **Mozilla's review rebuilds from the
-sources zip**, which the `zip:sources:*` hooks assemble from `apps/web-clipper` plus a copied
-`tsconfig.base.json` and the Chrome-only offscreen page. Since the pages import
-`@triliumnext/client` stylesheets and fonts, those files must go into the sources zip as well — the
-hook does not do that yet, so fix it before the next Firefox submission.
+pushes and pull requests.
+
+**Mozilla's review rebuilds from the sources zip.** `zip.sourcesRoot` is the repository root and
+`zip.includeSources` an allowlist (WXT 0.21): the workspace files and lockfile, `apps/web-clipper`,
+and the `apps/client` stylesheets and fonts the pages import. A new import from outside
+`apps/web-clipper` goes on that list. The `zip:sources:done` hook adds the Chrome-only offscreen
+page, which WXT leaves out, and copies `README.md` (the reviewer's build instructions) to the
+archive root. WXT prints "Could not get stats of '…'" for every file of the sources zip, because it
+looks the paths up from the package directory rather than `sourcesRoot`; the archive is complete.
 
 To compare bundle sizes with `main`, build it in a temporary `git worktree` (never stash). `main`
 may still need dependencies the branch removed (`cash-dom`): give the worktree its own

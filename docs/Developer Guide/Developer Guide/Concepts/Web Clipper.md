@@ -33,7 +33,9 @@ The default port is:
 ## Building
 
 *   Run `build` (Chrome) or `build:firefox` to generate the output files, which will be in `.output/[browser]`.
-*   Run `zip` or `zip:firefox` to generate the ZIP files.
+*   Run `zip` or `zip:firefox` to generate the ZIP files. `zip:firefox` also generates the sources ZIP that Mozilla's reviewers build the extension from.
+
+The sources ZIP has the monorepo's layout: the workspace files and lockfile, `apps/web-clipper`, and the stylesheets and fonts the Clipper imports from `apps/client`, listed in `zip.includeSources` in `wxt.config.ts`. A new import from outside `apps/web-clipper` must be added to that list. `apps/web-clipper/README.md`, which tells the reviewers how to build, is copied to the root of the ZIP.
 
 ## CI
 
