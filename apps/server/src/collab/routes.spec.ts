@@ -2,7 +2,7 @@ import { becca, cls, getSql } from "@triliumnext/core";
 import { initShare, shaca } from "@triliumnext/core/src/share/index.js";
 import { getShareProvider } from "@triliumnext/core/src/share/share_provider.js";
 import supertest from "supertest";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { type ApiTestContext, bootLoggedInApp } from "../../spec/support/internal_api.js";
 
@@ -47,8 +47,22 @@ describe("share edit API", () => {
 
         await setShareEdit({ enabled: true }).expect(400);
         await setShareEdit({ enabled: true, password: "abc" }).expect(400);
+        // The labels land inside a transaction, whose commit sends them to the host's open
+        // clients; the route is asynchronous, so no wrapper opens one for it.
+        const sql = getSql();
+        const runTransaction = sql.transactional.bind(sql);
+        let writtenInTransaction = false;
+        const transactional = vi.spyOn(sql, "transactional").mockImplementation((fn) => {
+            const before = becca.getNoteOrThrow(ROOT).hasOwnedLabel("shareEdit");
+            const result = runTransaction(fn);
+            const after = becca.getNoteOrThrow(ROOT).hasOwnedLabel("shareEdit");
+            writtenInTransaction ||= !before && after;
+            return result;
+        });
         await setShareEdit({ enabled: true, password: "secret1", attachments: false })
             .expect(200, { enabled: true, needsPassword: true, attachments: false });
+        transactional.mockRestore();
+        expect(writtenInTransaction).toBe(true);
 
         const session = await guest.get(SESSION).expect(200);
         expect(session.body).toMatchObject({

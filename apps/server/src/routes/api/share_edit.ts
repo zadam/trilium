@@ -1,4 +1,4 @@
-import { becca, type BNote, ValidationError } from "@triliumnext/core";
+import { becca, type BNote, getSql, ValidationError } from "@triliumnext/core";
 import {
     hashShareEditPassword, MIN_SHARE_EDIT_PASSWORD_LENGTH, SHARE_ATTACHMENTS_LABEL,
     SHARE_EDIT_LABEL, SHARE_EDIT_PASSWORD_LABEL
@@ -18,15 +18,19 @@ interface ShareEditBody {
 /**
  * Opens or closes the note's subtree to editing on its shared page, as the Shared badge's menu
  * asks: the three labels are written inheritable on the note. Opening needs a password or an
- * explicit `open`; a later call keeps the password it does not replace.
+ * explicit `open`; a later call keeps the password it does not replace. The route is
+ * asynchronous for the hash, so the writes open their own transaction, whose commit sends the
+ * changes to the host's clients.
  */
 async function setShareEdit(req: Request<{ noteId: string }>) {
     const note = becca.getNoteOrThrow(req.params.noteId);
     const body = (req.body ?? {}) as ShareEditBody;
     if (body.enabled !== true) {
-        for (const name of SHARE_EDIT_LABELS) {
-            note.removeLabel(name);
-        }
+        getSql().transactional(() => {
+            for (const name of SHARE_EDIT_LABELS) {
+                note.removeLabel(name);
+            }
+        });
         return { enabled: false };
     }
 
@@ -41,17 +45,19 @@ async function setShareEdit(req: Request<{ noteId: string }>) {
         throw new ValidationError("Choose a password, or open editing to anyone with the link.");
     }
 
-    setInheritableLabel(note, SHARE_EDIT_LABEL, "");
-    if (passwordHash !== null) {
-        setInheritableLabel(note, SHARE_EDIT_PASSWORD_LABEL, passwordHash);
-    } else if (body.open === true) {
-        note.removeLabel(SHARE_EDIT_PASSWORD_LABEL);
-    }
-    if (body.attachments === true) {
-        setInheritableLabel(note, SHARE_ATTACHMENTS_LABEL, "");
-    } else if (body.attachments === false) {
-        note.removeLabel(SHARE_ATTACHMENTS_LABEL);
-    }
+    getSql().transactional(() => {
+        setInheritableLabel(note, SHARE_EDIT_LABEL, "");
+        if (passwordHash !== null) {
+            setInheritableLabel(note, SHARE_EDIT_PASSWORD_LABEL, passwordHash);
+        } else if (body.open === true) {
+            note.removeLabel(SHARE_EDIT_PASSWORD_LABEL);
+        }
+        if (body.attachments === true) {
+            setInheritableLabel(note, SHARE_ATTACHMENTS_LABEL, "");
+        } else if (body.attachments === false) {
+            note.removeLabel(SHARE_ATTACHMENTS_LABEL);
+        }
+    });
 
     return {
         enabled: true,
