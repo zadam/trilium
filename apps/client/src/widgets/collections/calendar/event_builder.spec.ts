@@ -34,6 +34,16 @@ describe("Building events", () => {
         expect(events).toHaveLength(0);
     });
 
+    it("leaves out template notes, but not the events made from them", async () => {
+        const noteIds = buildNotes([
+            { id: "meeting", title: "Meeting", "#template": "", "#startDate": "2025-05-05" },
+            { title: "Standup", "~template": "meeting", "#startDate": "2025-05-07" }
+        ]);
+        const events = await buildEvents(noteIds);
+
+        expect(events.map((event) => event.title)).toEqual([ "Standup" ]);
+    });
+
     it("supports both start date and end date", async () => {
         const noteIds = buildNotes([
             { title: "Note 1", "#startDate": "2025-05-05", "#endDate": "2025-05-05" },

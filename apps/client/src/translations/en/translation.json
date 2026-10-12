@@ -3691,7 +3691,9 @@
     "properties": "Calendar properties",
     "event_templates": "Event templates",
     "event_templates_hint": "Choose what note types and note templates you would like to use when creating new calendar events.",
-    "new_template_name": "New event template"
+    "new_template_name": "New event template",
+    "event_template": "Select an event template",
+    "more_templates": "More templates…"
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",

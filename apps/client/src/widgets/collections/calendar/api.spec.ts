@@ -141,6 +141,26 @@ describe("newEvent", () => {
         // The note is not switched to: the pane opens on it where the calendar stands.
         expect(opts.activate).toBe(false);
     });
+
+    it("makes the note from the template it is given, and a text note without one", async () => {
+        const calendar = buildNote({ title: "Calendar" });
+
+        await newEvent(calendar, {
+            startDate: "2026-06-05",
+            template: {
+                id: "template:meeting", title: "Meeting", icon: "bx bx-group", group: "user",
+                options: { type: "canvas", mime: "application/json", templateNoteId: "meeting" }
+            }
+        });
+        expect(creationRequest().opts).toMatchObject({
+            type: "canvas", mime: "application/json", templateNoteId: "meeting"
+        });
+
+        vi.mocked(note_create.createNote).mockClear();
+        await newEvent(calendar, { startDate: "2026-06-05" });
+        expect(creationRequest().opts.type).toBe("text");
+        expect(creationRequest().opts.templateNoteId).toBeUndefined();
+    });
 });
 
 describe("removeFromCalendar", () => {

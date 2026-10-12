@@ -20,6 +20,7 @@ import contextMenu from "../../../menus/context_menu";
 import date_notes from "../../../services/date_notes";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
+import { type NoteTypeOption } from "../../../services/note_types";
 import note_tooltip from "../../../services/note_tooltip";
 import { isMobile } from "../../../services/utils";
 import CollectionProperties from "../../note_bars/CollectionProperties";
@@ -28,10 +29,11 @@ import Button, { ButtonGroup } from "../../react/Button";
 import CollapseOnOverflow from "../../react/CollapseOnOverflow";
 import Dropdown from "../../react/Dropdown";
 import { FormListItem } from "../../react/FormList";
-import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useSpacedUpdate, useTriliumEvent, useTriliumOption, useTriliumOptionInt } from "../../react/hooks";
+import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteTypeOptions, useSpacedUpdate, useTriliumEvent, useTriliumOption, useTriliumOptionInt } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
+import { offeredTemplateIds, useTemplateChoice } from "../../react/TemplatePill";
 import { ViewModeProps } from "../interface";
-import { type CalendarViewData, changeEvent, newEvent } from "./api";
+import { type CalendarViewData, changeEvent, DEFAULT_EVENT_TEMPLATES, newEvent } from "./api";
 import Calendar from "./calendar";
 import { openCalendarContextMenu } from "./context_menu";
 import { CalendarSelection, EventDraft } from "./selection";
@@ -179,12 +181,15 @@ export default function CalendarView({
      * could be dragged out beside it. Whatever else the note may hold is a click on its chip away
      * — which is where such a surface would have opened anyway.
      */
-    const commitDraft = useCallback(async (title: string, draft: EventDraft) => {
+    const commitDraft = useCallback(async (
+        title: string, draft: EventDraft, template: NoteTypeOption | undefined
+    ) => {
         if (!selection || !("draft" in selection)) return;
 
         await newEvent(note, {
             title: title.trim() || undefined,
             ...draft,
+            template,
             componentId: parentComponent?.componentId
         });
 
@@ -203,6 +208,25 @@ export default function CalendarView({
         calendarRef.current?.unselect();
         setSelection(null);
     }, []);
+
+    const availableTemplates = useNoteTypeOptions(isEditable);
+    const selectEventTemplate = useCallback((template: NoteTypeOption) => {
+        if (template.id !== viewConfig?.template) {
+            saveConfig({ ...viewConfig, template: template.id });
+        }
+    }, [ viewConfig, saveConfig ]);
+    // The draft is let go first: on a phone it is a dialog itself, and Bootstrap does not stack two.
+    const editEventTemplates = useCallback(() => {
+        cancelDraft();
+        setIsEditingProperties(true);
+    }, [ cancelDraft ]);
+    const eventTemplates = useTemplateChoice({
+        ids: offeredTemplateIds(viewConfig, DEFAULT_EVENT_TEMPLATES),
+        lastUsedId: viewConfig?.template,
+        available: availableTemplates,
+        onSelect: selectEventTemplate,
+        onMore: editEventTemplates
+    });
 
     /**
      * The ghost pressed away from, which is a different thing: the press itself settles what
@@ -407,6 +431,7 @@ export default function CalendarView({
                         draft={selection.draft}
                         anchor={selection.anchor}
                         container={containerRef.current}
+                        templates={eventTemplates}
                         /* Handed over whole rather than fired and forgotten: a creation that fails has
                            to reach the ghost, which is what opens its form again for another try. */
                         onCommit={commitDraft}

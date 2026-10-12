@@ -6,6 +6,7 @@ import dialog from "../../../services/dialog";
 import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
 import { deleteNoteOrBranch } from "../../../services/note_deletion";
+import { type NoteTypeOption } from "../../../services/note_types";
 import { type TemplateChoiceConfig } from "../../react/TemplatePill";
 import { EventLabelName } from "./utils";
 
@@ -24,6 +25,8 @@ interface NewEventOpts {
     startTime?: string | null;
     endTime?: string | null;
     componentId?: string;
+    /** What the note is made from, a text note where absent. */
+    template?: NoteTypeOption;
 }
 
 interface ChangeEventOpts {
@@ -34,7 +37,9 @@ interface ChangeEventOpts {
     componentId?: string;
 }
 
-export async function newEvent(parentNote: FNote, { title, startDate, endDate, startTime, endTime, componentId }: NewEventOpts) {
+export async function newEvent(parentNote: FNote, {
+    title, startDate, endDate, startTime, endTime, componentId, template
+}: NewEventOpts) {
     const attributes: Omit<AttributeRow, "noteId" | "attributeId">[] = [];
     attributes.push({
         type: "label",
@@ -69,6 +74,7 @@ export async function newEvent(parentNote: FNote, { title, startDate, endDate, s
         isProtected: parentNote.isProtected,
         content: "",
         type: "text",
+        ...(template?.options ?? {}),
         attributes,
         activate: false
     }, componentId);

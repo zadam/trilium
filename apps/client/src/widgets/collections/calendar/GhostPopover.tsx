@@ -3,12 +3,14 @@ import "./GhostPopover.css";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
+import { type NoteTypeOption } from "../../../services/note_types";
 import { isMobile } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Button from "../../react/Button";
 import FormTextBox from "../../react/FormTextBox";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
+import TemplatePill, { type TemplateChoice } from "../../react/TemplatePill";
 import { EventDatesFields } from "./EventDatesEditor";
 import { AnchorPoint, EventDraft, narrowAnchorRect, normalizeEventDates } from "./selection";
 
@@ -26,16 +28,20 @@ import { AnchorPoint, EventDraft, narrowAnchorRect, normalizeEventDates } from "
  * calendar's own `#titleTemplate` where one is set (see getNewNoteTitle in trilium-core), which
  * the old title prompt used to override with whatever stood in its box.
  */
-export default function GhostPopover({ draft: initialDraft, anchor, container, onCommit, onCancel, onDismiss }: {
+export default function GhostPopover({
+    draft: initialDraft, anchor, container, templates, onCommit, onCancel, onDismiss
+}: {
     draft: EventDraft;
     /** Where the drag ended, in viewport coordinates — which of the shading's pieces to stand by,
      *  and the anchor of last resort when the shading cannot be found at all. */
     anchor: AnchorPoint | null;
     /** The calendar the range's shading is read out of (see {@link ghostAnchorRect}). */
     container: HTMLElement | null;
+    /** What the event is made from, picked with the pill beside the create button. */
+    templates: TemplateChoice;
     /** Answers when the note has been made, or rejects having failed to make one — the ghost stays
      *  up for a second try either way it is told (see {@link commit}). */
-    onCommit(title: string, draft: EventDraft): Promise<void> | void;
+    onCommit(title: string, draft: EventDraft, template: NoteTypeOption | undefined): Promise<void> | void;
     /** The draft given up on: Escape, or the close button. */
     onCancel(): void;
     /**
@@ -77,7 +83,7 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
         if (committing) return;
         setCommitting(true);
         try {
-            await onCommit(title, draft);
+            await onCommit(title, draft, templates.current);
         } catch {
             setCommitting(false);
         }
@@ -111,6 +117,11 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
             </div>
 
             <div className="calendar-ghost-actions">
+                <TemplatePill
+                    {...templates}
+                    title={t("calendar_view.event_template")}
+                    moreText={t("calendar_view.more_templates")}
+                />
                 <Button
                     kind="primary"
                     text={t("calendar_view.create_event")}

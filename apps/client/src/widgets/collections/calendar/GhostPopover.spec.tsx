@@ -2,6 +2,8 @@ import { render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { type NoteTypeOption } from "../../../services/note_types";
+import { type TemplateChoice } from "../../react/TemplatePill";
 import GhostPopover from "./GhostPopover";
 import { EventDraft } from "./selection";
 
@@ -26,13 +28,21 @@ describe("GhostPopover", () => {
     });
 
     const draft: EventDraft = { startDate: "2026-06-05" };
+    const TEXT: NoteTypeOption = {
+        id: "type:text:text/html", title: "Text", icon: "bx bx-note", group: "type",
+        options: { type: "text", mime: "text/html" }
+    };
 
-    function mount(onCommit: (title: string) => Promise<void> | void) {
+    function mount(
+        onCommit: (title: string) => Promise<void> | void,
+        templates: TemplateChoice = { offered: [ TEXT ], current: TEXT, onSelect() {}, onMore() {} }
+    ) {
         act(() => render(
             <GhostPopover
                 draft={draft}
                 anchor={{ x: 10, y: 10 }}
                 container={container}
+                templates={templates}
                 onCommit={onCommit}
                 onCancel={() => {}}
                 onDismiss={() => {}}
@@ -40,8 +50,8 @@ describe("GhostPopover", () => {
             container));
     }
 
-    /** The form's only button, which is the one that asks for the note. */
-    const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions button");
+    /** The button that asks for the note, beside the template pill. */
+    const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions .btn-primary");
     const titleInput = () => document.querySelector<HTMLInputElement>(".calendar-ghost-body input");
     const timeInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=time]") ];
     const dateInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=date]") ];
@@ -85,7 +95,7 @@ describe("GhostPopover", () => {
         // And a second try really does ask again.
         await act(async () => { createButton()?.click(); });
         expect(onCommit).toHaveBeenCalledTimes(2);
-        expect(onCommit).toHaveBeenLastCalledWith("Fair", draft);
+        expect(onCommit).toHaveBeenLastCalledWith("Fair", draft, TEXT);
     });
 
     it("focuses the title field once the popover is shown", async () => {
@@ -113,7 +123,27 @@ describe("GhostPopover", () => {
         await act(async () => { createButton()?.click(); });
 
         // Committing blank is meaningful: the note is then named by the calendar's #titleTemplate.
-        expect(onCommit).toHaveBeenCalledWith("", draft);
+        expect(onCommit).toHaveBeenCalledWith("", draft, TEXT);
+    });
+
+    it("names the template the event is made from, and makes it from the one shown at the commit", async () => {
+        const canvas: NoteTypeOption = {
+            ...TEXT, id: "type:canvas:application/json", title: "Canvas",
+            options: { type: "canvas", mime: "application/json" }
+        };
+        const onCommit = vi.fn().mockResolvedValue(undefined);
+        const choice = { offered: [ TEXT, canvas ], onSelect() {}, onMore() {} };
+        const pillName = () => document.querySelector(".calendar-ghost-actions .template-pill-name");
+
+        mount(onCommit, { ...choice, current: TEXT });
+        expect(pillName()?.textContent).toBe("Text");
+
+        // A pick is stored by the calendar, which hands the ghost the new choice.
+        mount(onCommit, { ...choice, current: canvas });
+        expect(pillName()?.textContent).toBe("Canvas");
+
+        await act(async () => { createButton()?.click(); });
+        expect(onCommit).toHaveBeenCalledWith("", draft, canvas);
     });
 
     it("lets a whole-day draft be given hours before it is created", async () => {
@@ -144,7 +174,7 @@ describe("GhostPopover", () => {
 
         expect(onCommit).toHaveBeenCalledWith("", {
             startDate: "2026-06-05", startTime: "14:00", endTime: "15:30"
-        });
+        }, TEXT);
     });
 
     it("lets the days of a draft be changed before it is created", async () => {
@@ -155,7 +185,8 @@ describe("GhostPopover", () => {
         commitValue(dateInputs()[1], "2026-06-10");
         await act(async () => { createButton()?.click(); });
 
-        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-08", endDate: "2026-06-10" });
+        expect(onCommit).toHaveBeenCalledWith(
+            "", { startDate: "2026-06-08", endDate: "2026-06-10" }, TEXT);
     });
 
     it("leaves the end date empty for a slot within a single day", () => {
@@ -165,6 +196,7 @@ describe("GhostPopover", () => {
                 draft={{ startDate: "2026-06-05", endDate: "2026-06-05", startTime: "09:00", endTime: "09:30" }}
                 anchor={null}
                 container={container}
+                templates={{ offered: [ TEXT ], current: TEXT, onSelect() {}, onMore() {} }}
                 onCommit={vi.fn()}
                 onCancel={() => {}}
                 onDismiss={() => {}}
@@ -184,6 +216,7 @@ describe("GhostPopover", () => {
         expect(timeInputs()).toHaveLength(0);
         expect(document.activeElement).toBe(document.querySelector(".calendar-event-add-time"));
         await act(async () => { createButton()?.click(); });
-        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-05", startTime: null, endTime: null });
+        expect(onCommit).toHaveBeenCalledWith(
+            "", { startDate: "2026-06-05", startTime: null, endTime: null }, TEXT);
     });
 });

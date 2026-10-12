@@ -20,7 +20,13 @@
 
     .calendar-ghost-actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .calendar-ghost-actions .template-pill {
+        min-width: 0;
     }
 }
 

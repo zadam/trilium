@@ -28,6 +28,8 @@ In either cases, a small popup will show with a prompt for a title and the date 
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 
+The template the event's note is made from is shown at the bottom of the popup, next to the _Create_ button. To make the event from another note type or template, press it and select one from the list; the calendar remembers the choice for the next event. Select _More templates…_ to change which templates are listed (see [Event templates](#event-templates)).
+
 To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. Adding or removing a time keeps the dates, so an event can start at a time on one day and end at a time on another (for example, a night shift). Changing the start date or time moves the end by the same amount, keeping the duration. An empty end date means the event ends on the day it starts; setting the end time before the start time moves the end date to the next day.
 
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
@@ -94,6 +96,18 @@ In the <a class="reference-link" href="Collection%20Properties.md">Collection P
 *   Display week numbers on the calendar.
 *   Set the slot duration (the length of each time row in day/week view).
 *   Set the slot label interval (how often time labels appear on the axis in day/week view).
+
+### Event templates
+
+By default, a new event is a <a class="reference-link" href="../Note%20Types/Text.md">Text</a> note. To make events from other note types, or from <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a> with predefined content and attributes (such as a color), open the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, and find _Event templates_. Here you can:
+
+*   Include a note type or note template already created in your knowledge base by pressing the <span class="tn-icon bx bx-list-plus"></span> _Add existing template_ button and then selecting the desired note type or template.
+*   Create a new template by pressing the <span class="tn-icon bx bx-plus"></span> _Create a new template_ button. The template is created as a child of the calendar, and is not shown as an event.
+*   Press the <span class="tn-icon bx bx-x"></span> button to remove a template from the list. The template is removed only from the list, not deleted.
+*   Press the <span class="tn-icon bx bx-dots-vertical-rounded"></span> button of a custom template to edit, open in a new window, duplicate, or delete it.
+*   Drag a template by its handle to reorder the list shown when creating an event.
+
+The dialog is not available on a read-only calendar, or on a calendar marked with `#calendarRoot` or `#workspaceCalendarRoot` (see [Using with the Journal / calendar](#using-with-the-journal--calendar)).
 
 ## Configuring the calendar using attributes
 

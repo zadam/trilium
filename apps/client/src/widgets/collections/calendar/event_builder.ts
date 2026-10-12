@@ -24,6 +24,11 @@ export async function buildEvents(noteIds: string[]) {
     const events: EventSourceInput = [];
 
     for (const note of notes) {
+        // An event template created from `CalendarProperties` is a child of the calendar, not an event.
+        if (note.hasLabel("template")) {
+            continue;
+        }
+
         const startDate = getCustomisableLabel(note, "startDate", "calendar:startDate");
 
         if (!startDate) {
