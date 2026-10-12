@@ -9,8 +9,8 @@ import Button from "../../react/Button";
 import FormTextBox from "../../react/FormTextBox";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
-import { EventDuration, EventRow, EventTimeRow } from "./EventField";
-import { AnchorPoint, EventDraft, narrowAnchorRect, withAllDay } from "./selection";
+import { EventDatesFields } from "./EventDatesEditor";
+import { AnchorPoint, EventDraft, narrowAnchorRect } from "./selection";
 
 /**
  * The ghost: the form an event is decided in before its note exists. It asks for the name, shows
@@ -111,30 +111,7 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
             />
 
             <div className="calendar-ghost-when">
-                <EventRow icon="bx-calendar" title={t("calendar.dates.date")}>
-                    <span>{describeDates(draft)}</span>
-                </EventRow>
-
-                <EventTimeRow
-                    hasTime={!allDay}
-                    onAdd={() => setDraft((d) => withAllDay(d, false))}
-                    onRemove={() => setDraft((d) => withAllDay(d, true))}
-                >
-                    <FormTextBox
-                        type="time"
-                        currentValue={draft.startTime ?? ""}
-                        aria-label={t("calendar.dates.start_time")}
-                        onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
-                    />
-                    <span className="calendar-event-row-separator" aria-hidden="true">–</span>
-                    <FormTextBox
-                        type="time"
-                        currentValue={draft.endTime ?? ""}
-                        aria-label={t("calendar.dates.end_time")}
-                        onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
-                    />
-                    <EventDuration event={draft} />
-                </EventTimeRow>
+                <EventDatesFields value={draft} allDay={allDay} onChange={setDraft} />
             </div>
 
             <div className="calendar-ghost-actions">
@@ -220,20 +197,4 @@ function ghostAnchorRect(container: HTMLElement | null, point: AnchorPoint | nul
     }
 
     return new DOMRect(point?.x ?? 0, point?.y ?? 0, 0, 0);
-}
-
-/**
- * The days the draft spans, written out for the form. The hours have fields of their own. The
- * browser's formatter is enough, since the note's date labels take over once the draft is created.
- */
-function describeDates({ startDate, endDate }: EventDraft) {
-    // Parsed by hand: `new Date("2026-08-05")` reads as UTC midnight, which is the evening before
-    // in timezones west of UTC.
-    const date = (iso: string) => {
-        const [ year, month, day ] = iso.split("-").map(Number);
-        return new Date(year, month - 1, day)
-            .toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-    };
-
-    return endDate && endDate !== startDate ? `${date(startDate)} – ${date(endDate)}` : date(startDate);
 }

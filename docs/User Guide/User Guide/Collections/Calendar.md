@@ -24,7 +24,7 @@ To create a new event:
 *   First, click the desired day (month & year views) or the desired timeslot (day view).
 *   Alternatively, drag across multiple days (or time slots) to set both the start and end date.
 
-In either cases, a small popup will show with a prompt for a title and the date & time of the event that will be created.
+In either cases, a small popup will show with a prompt for a title and the date & time of the event that will be created. The date and time can be changed there the same way as in the popup view of an existing event (see below).
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
 

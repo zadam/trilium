@@ -44,6 +44,13 @@ describe("GhostPopover", () => {
     const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions button");
     const titleInput = () => document.querySelector<HTMLInputElement>(".calendar-ghost-body input");
     const timeInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=time]") ];
+    const dateInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=date]") ];
+
+    /** Commits a field as leaving it does, as the event popover's fields do (see EventDatesFields). */
+    function commitValue(input: HTMLInputElement, value: string) {
+        input.value = value;
+        act(() => { input.dispatchEvent(new Event("focusout")); });
+    }
     const duration = () => document.querySelector(".calendar-event-duration")?.textContent;
 
     it("asks for the note once, however many times the ask is made before it arrives", async () => {
@@ -116,6 +123,8 @@ describe("GhostPopover", () => {
         const addTime = document.querySelector<HTMLButtonElement>(".calendar-event-add-time");
         if (!addTime) throw new Error("The ghost has no button to add a time.");
         expect(timeInputs()).toHaveLength(0);
+        // The same date fields as the event popover: a start and an end day for a whole-day draft.
+        expect(dateInputs().map((input) => input.value)).toEqual([ "2026-06-05", "" ]);
         expect(addTime.closest(".calendar-event-row")?.querySelector(".bx-time-five")).not.toBeNull();
         expect(duration()).toBeUndefined();
 
@@ -126,10 +135,9 @@ describe("GhostPopover", () => {
         expect(end.value).toBe("10:00");
         expect(duration()).toBe("calendar_view.duration_hours|1");
 
-        start.value = "14:00";
-        act(() => { start.dispatchEvent(new Event("input", { bubbles: true })); });
-        end.value = "15:30";
-        act(() => { end.dispatchEvent(new Event("input", { bubbles: true })); });
+        expect(dateInputs()).toHaveLength(1);
+        commitValue(start, "14:00");
+        commitValue(timeInputs()[1], "15:30");
         expect(duration()).toBe("calendar_view.duration_hours_minutes|1|30");
         expect(timeInputs()[0].closest(".calendar-event-row")?.querySelector(".calendar-event-duration")).not.toBeNull();
         await act(async () => { createButton()?.click(); });
@@ -137,6 +145,17 @@ describe("GhostPopover", () => {
         expect(onCommit).toHaveBeenCalledWith("", {
             startDate: "2026-06-05", endDate: null, startTime: "14:00", endTime: "15:30"
         });
+    });
+
+    it("lets the days of a draft be changed before it is created", async () => {
+        const onCommit = vi.fn().mockResolvedValue(undefined);
+        mount(onCommit);
+
+        commitValue(dateInputs()[0], "2026-06-08");
+        commitValue(dateInputs()[1], "2026-06-10");
+        await act(async () => { createButton()?.click(); });
+
+        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-08", endDate: "2026-06-10" });
     });
 
     it("lets the hours be removed again, making the draft whole-day", async () => {
