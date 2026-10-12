@@ -1,4 +1,4 @@
-import { dayjs } from "@triliumnext/commons";
+import { dayjs, evaluateTemplate } from "@triliumnext/commons";
 import clsx from "clsx";
 import { EventInput, EventSourceFuncInfo, EventSourceInput } from "fullcalendar";
 import * as rruleLib from 'rrule';
@@ -11,7 +11,9 @@ import toastService from "../../../services/toast";
 import {
     type PromotedAttributeSetting, resolvePromotedAttributes, visiblePromotedAttributeNames
 } from "../promoted_attributes";
-import { drawnEventLabels, getCustomisableLabel, getMonthsInDateRange } from "./utils";
+import {
+    drawnEventLabels, formatDateToLocalISO, getCustomisableLabel, getMonthsInDateRange
+} from "./utils";
 
 interface Event {
     startDate: string,
@@ -128,6 +130,10 @@ export async function buildEvent(note: FNote, {
     const colorClass = note.getColorClass();
     const events: EventInput[] = [];
 
+    // Read before the start time is appended; `buildOccurrenceTitle()` counts years from it.
+    const seriesStart = startDate;
+    const titleTemplate = note.getLabelValue("calendar:titleTemplate");
+
     const shownAttributes =
         note.getLabelValue("calendar:displayedAttributes")?.split(",") ?? displayedAttributes;
     let displayedAttributesData: Array<[string, string]> | null = null;
@@ -173,6 +179,8 @@ export async function buildEvent(note: FNote, {
             url: `#${note.noteId}?popup`,
             noteId: note.noteId,
             iconClass: note.getLabelValue("iconClass"),
+            titleTemplate,
+            seriesStart,
             promotedAttributes: displayedAttributesData,
             className: clsx({archived: isArchived}, colorClass)
         };
@@ -209,6 +217,60 @@ export async function buildEvent(note: FNote, {
         events.push(eventData);
     }
     return events;
+}
+
+/**
+ * Returns the title of one occurrence: `#calendar:titleTemplate` evaluated for the occurrence's
+ * date, or `title` when the template is missing or invalid. `eventContent` calls it per chip,
+ * because the rrule plugin expands occurrences after `buildEvent()` runs.
+ */
+export function buildOccurrenceTitle({ title, start, extendedProps }: OccurrenceEvent) {
+    const { titleTemplate, seriesStart } = extendedProps;
+    if (!titleTemplate || !seriesStart) {
+        return title;
+    }
+
+    // Compares dates without times, so a DST shift between them cannot round `years` down.
+    const occurrenceDay = formatDateToLocalISO(start);
+    const seriesStartDay = dayjs(seriesStart.split("T")[0]);
+    const occurrence = occurrenceDay ? dayjs(occurrenceDay) : seriesStartDay;
+
+    try {
+        return evaluateTemplate(titleTemplate, {
+            title,
+            years: occurrence.diff(seriesStartDay, "year"),
+            date: occurrence,
+            startDate: seriesStartDay
+        });
+    } catch (error) {
+        reportBrokenTitleTemplate(titleTemplate, error);
+        return title;
+    }
+}
+
+/** The fields of a FullCalendar `EventApi` that `buildOccurrenceTitle()` reads. */
+interface OccurrenceEvent {
+    title: string;
+    start: Date | null;
+    extendedProps: {
+        titleTemplate?: string | null;
+        /** `#startDate` without the start time, as `buildEvent()` stores it. */
+        seriesStart?: string | null;
+    };
+}
+
+/** Templates already logged, so an invalid one is reported once rather than once per chip. */
+const brokenTitleTemplates = new Set<string>();
+
+/** Logs a template that `evaluateTemplate()` rejects, once per template. */
+function reportBrokenTitleTemplate(template: string, error: unknown) {
+    if (brokenTitleTemplates.has(template)) {
+        return;
+    }
+
+    brokenTitleTemplates.add(template);
+    const reason = error instanceof Error ? error.message : error;
+    console.error(`Invalid #calendar:titleTemplate "${template}": ${reason}`);
 }
 
 /**

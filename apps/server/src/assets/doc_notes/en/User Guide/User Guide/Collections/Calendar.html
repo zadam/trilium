@@ -356,6 +356,13 @@ class="table">
           See <em>Use-cases</em> for more information.</td>
       </tr>
       <tr>
+        <td><code>#calendar:titleTemplate</code>
+        </td>
+        <td>Changes the title an event is displayed with on the calendar, filled in
+          again for every occurrence of a repeating event. See <em>Use-cases</em> for
+          displaying an age on a birthday.</td>
+      </tr>
+      <tr>
         <td><code>#calendar:displayedAttributes</code>
         </td>
         <td>Takes precedence over the <a href="#event-attributes">Event attributes</a> chosen
@@ -541,3 +548,65 @@ class="table">
   it. Note that it's not possible to use a relation here as well for safety
   reasons (an accidental recursion &nbsp;of attributes could cause the application
   to loop infinitely).</p><pre><code class="language-text-x-trilium-auto">#calendar:title="shortName" #shortName="John S."</code></pre>
+<h3>Displaying an age on a recurring event</h3>
+<p>A birthday or an anniversary repeats every year, and what is interesting
+  about each occurrence is the number of years it marks. To display it:</p>
+<ol>
+  <li>Set the event's start date to the original date (for example, the date
+    of birth).</li>
+  <li>Click the event, then select the <em>Repeats</em> dropdown.</li>
+  <li>Select <em>Yearly</em> and check <em>Show the number of years in the title</em>.</li>
+</ol>
+<p>The event is then displayed as “John Smith (35)” in 2025, “John Smith
+  (36)” in 2026, and so on. Only the calendar is affected; the note keeps
+  its own title.</p>
+<p>The checkbox sets the <code>#calendar:titleTemplate</code> label, which
+  sets the title an event is displayed with and is filled in again for every
+  occurrence the recurrence rule produces:</p><pre><code class="language-text-x-trilium-auto">#startDate=1990-05-12 #recurrence="FREQ=YEARLY" #calendar:titleTemplate="${title} (${years})"</code></pre>
+<p>To word the title differently, edit the label directly. The checkbox is
+  then disabled, as it is when the template is inherited, so that it never
+  overwrites a template of your own.</p>
+<p>The following values can be used in the template:</p>
+<figure class="table">
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>${title}</code>
+        </td>
+        <td>The title the event would otherwise be displayed with: the note title,
+          or the attribute <code>#calendar:title</code> points to.</td>
+      </tr>
+      <tr>
+        <td><code>${years}</code>
+        </td>
+        <td>The whole years between <code>#startDate</code> and the occurrence being
+          displayed. It is <code>0</code> on the first occurrence.</td>
+      </tr>
+      <tr>
+        <td><code>${date}</code>
+        </td>
+        <td>The date of the occurrence being displayed, as a <a href="https://day.js.org/docs/en/display/format">day.js</a> object.
+          For example, <code>${date.format('YYYY')}</code>.</td>
+      </tr>
+      <tr>
+        <td><code>${startDate}</code>
+        </td>
+        <td>The date the event starts on, in the same form. For example, <code>${startDate.format('YYYY')}</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</figure>
+<p>To use the same template for every event of a calendar, make the label
+  inheritable on the Collection note:</p><pre><code class="language-text-x-trilium-auto">#calendar:titleTemplate(inheritable)="${title} (${years})"</code></pre>
+<aside
+class="admonition note">
+  <p>A template that cannot be read — an unknown value, or an expression other
+    than a value and the <code>format</code> call shown above — leaves the event
+    with its plain title and reports the reason in the browser console.</p>
+</aside>

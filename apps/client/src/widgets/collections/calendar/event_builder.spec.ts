@@ -6,7 +6,7 @@ import themePlugin from "fullcalendar/themes/forma";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { buildNote, buildNotes } from "../../../test/easy-froca.js";
-import { buildEvent, buildEvents } from "./event_builder.js";
+import { buildEvent, buildEvents, buildOccurrenceTitle } from "./event_builder.js";
 import { LOCALE_MAPPINGS } from "./index.js";
 import { serializeRecurrence } from "./recurrence.js";
 import { isValidDuration, parseDurationSeconds } from "./utils.js";
@@ -463,6 +463,25 @@ describe("Recurrence", () => {
         consoleSpy.mockRestore();
     });
 
+    it("carries the title template and the day the series starts on", async () => {
+        const noteIds = buildNotes([
+            {
+                title: "John Smith",
+                "#startDate": "1990-05-12",
+                "#startTime": "09:00",
+                "#recurrence": "RRULE:FREQ=YEARLY",
+                "#calendar:titleTemplate": "${title} (${years})"
+            }
+        ]);
+        const events = await buildEvents(noteIds);
+
+        expect(events[0]).toMatchObject({
+            title: "John Smith",
+            titleTemplate: "${title} (${years})",
+            seriesStart: "1990-05-12"
+        });
+    });
+
     describe("in a time zone ahead of UTC", () => {
         useTimeZone("Europe/Bucharest");
 
@@ -571,6 +590,44 @@ describe("Recurrence", () => {
                 "2026-11-29 21:00"
             ]);
         });
+    });
+});
+
+describe("buildOccurrenceTitle", () => {
+    /** A FullCalendar event for the occurrence that starts on `start`. */
+    function occurrence(titleTemplate: string | null, start: Date, seriesStart = "1990-05-12") {
+        return { title: "John Smith", start, extendedProps: { titleTemplate, seriesStart } };
+    }
+
+    it("leaves an event with no template under its plain title", () => {
+        expect(buildOccurrenceTitle(occurrence(null, new Date(2026, 4, 12)))).toBe("John Smith");
+    });
+
+    it("counts the whole years from the start date to the occurrence", () => {
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(2026, 4, 12))))
+            .toBe("John Smith (36)");
+        expect(buildOccurrenceTitle(occurrence("${title} turns ${years}", new Date(2027, 4, 12))))
+            .toBe("John Smith turns 37");
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(1990, 4, 12))))
+            .toBe("John Smith (0)");
+    });
+
+    it("reads both the occurrence's date and the series'", () => {
+        const template =
+            "${title}, born ${startDate.format('YYYY')}, turns ${years} in ${date.format('YYYY')}";
+        expect(buildOccurrenceTitle(occurrence(template, new Date(2026, 4, 12))))
+            .toBe("John Smith, born 1990, turns 36 in 2026");
+    });
+
+    it("falls back to the plain title for a template the evaluator rejects, saying so once", () => {
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        const broken = occurrence("${nmae} (${years})", new Date(2026, 4, 12));
+
+        expect(buildOccurrenceTitle(broken)).toBe("John Smith");
+        expect(buildOccurrenceTitle(broken)).toBe("John Smith");
+        expect(consoleSpy).toHaveBeenCalledOnce();
+        expect(consoleSpy.mock.calls[0]?.[0]).toContain("#calendar:titleTemplate");
+        consoleSpy.mockRestore();
     });
 });
 
