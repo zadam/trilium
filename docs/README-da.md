@@ -90,7 +90,7 @@ Our documentation is available in multiple formats:
   mere sikkert login
 * [Synchronization](https://docs.triliumnotes.org/user-guide/setup/synchronization)
   med en selvhostet synkroniseringsserver
-  * there are [3rd party services for hosting synchronisation
+  * Der findes [3rd party services for hosting synchronisation
     server](https://docs.triliumnotes.org/user-guide/setup/server/cloud-hosting)
 * [Sharing](https://docs.triliumnotes.org/user-guide/advanced-usage/sharing)
   (publishing) notes to public internet
