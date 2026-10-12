@@ -194,3 +194,15 @@ div.ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
 div.ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
     overflow-x: clip;
 }
+
+:root .ck.ck-editor__editable_inline {
+    --ck-editor-editable-padding: 0 .6em;
+
+    & > :first-child {
+        margin-top: .9em;
+    }
+
+    & > :last-child {
+        margin-bottom: .9em;
+    }
+}

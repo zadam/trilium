@@ -3,6 +3,7 @@ import "ckeditor5/ckeditor5.css";
 // admonition plugin (which was forked from block-quote) but styles `blockquote`, not admonitions —
 // the client's theme-next stylesheet overrides parts of it with `!important`.
 import "./theme/blockquote.css";
+import "./theme/content_colors.css";
 import "./theme/code_block_toolbar.css";
 import "./theme/link_embed_form.css";
 import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
