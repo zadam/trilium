@@ -427,6 +427,21 @@ describe("useCanvasDrawingPersistence", () => {
         expect(await getFits([ { ...TALL, isDeleted: true } ])).toEqual([]);
     });
 
+    it("keeps the view of a drawing over a locked image inside the image", async () => {
+        const image = {
+            id: "i1", type: "image", version: 1, locked: true, x: 0, y: 0, width: 1000, height: 1000
+        };
+        const saved = { elements: [ image ], appState: { zoom: { value: 1 } } };
+        const { attachment } = buildAttachment(saved);
+        await mount(attachment, undefined);
+
+        const view = { width: 1000, height: 500, zoom: { value: 0.25 }, scrollX: 0, scrollY: 0 };
+        drawingProps?.onChange?.([ image ] as never, view as never, {});
+        expect(updateScene).toHaveBeenCalledExactlyOnceWith({
+            appState: { zoom: { value: 0.5 }, scrollX: 500, scrollY: 0 }
+        });
+    });
+
     it("saves nothing without an editor", async () => {
         const loaded = [ { id: "r1", type: "rectangle", version: 3 } ];
         const { attachment } = buildAttachment({ elements: loaded });

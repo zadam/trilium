@@ -7,7 +7,8 @@ import { useCallback, useRef } from "preact/hooks";
 import {
     type AppState,
     type ExcalidrawImperativeAPI,
-    type ExcalidrawProps
+    type ExcalidrawProps,
+    type UIOptions
 } from "@excalidraw/excalidraw/types";
 import options from "../../../services/options";
 import "./Canvas.css";
@@ -49,6 +50,8 @@ export interface CanvasEditorProps {
     isEmbedded?: boolean;
     /** Whether Excalidraw keeps its desktop layout however small the editor is. */
     isDesktopLayout?: boolean;
+    /** Limits the pans and zooms of the user. Excalidraw compares it by identity. */
+    constrainView?: UIOptions["constrainView"];
     /** Rendered inside Excalidraw, where its hooks such as `useI18n()` work. */
     children?: ComponentChildren;
 }
@@ -56,7 +59,7 @@ export interface CanvasEditorProps {
 /** The Excalidraw editor of a canvas note or drawing, loaded and saved by `persistence`. */
 export function CanvasEditor({
     apiRef, isReadOnly, colorScheme, persistence, isEmbedded = false, isDesktopLayout = false,
-    children
+    constrainView, children
 }: CanvasEditorProps) {
     const [ locale ] = useTriliumOption("locale");
     const noteDrop = useCanvasNoteDrop(apiRef, isReadOnly);
@@ -133,7 +136,8 @@ export function CanvasEditor({
                             saveToActiveFile: false,
                             export: false
                         },
-                        getFormFactor: isDesktopLayout ? getDesktopFormFactor : undefined
+                        getFormFactor: isDesktopLayout ? getDesktopFormFactor : undefined,
+                        constrainView
                     }}
                     onLinkOpen={onLinkOpen}
                     validateEmbeddable={validateEmbeddable}

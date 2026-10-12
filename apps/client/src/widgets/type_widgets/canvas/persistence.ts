@@ -1,10 +1,8 @@
-import {
-    CaptureUpdateAction, exportToSvg, getCommonBounds, getSceneVersion
-} from "@excalidraw/excalidraw";
+import { CaptureUpdateAction, exportToSvg, getSceneVersion } from "@excalidraw/excalidraw";
 import { ExcalidrawElement, NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import {
     AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState,
-    ExcalidrawProps, LibraryItem, NormalizedZoomValue
+    ExcalidrawProps, LibraryItem
 } from "@excalidraw/excalidraw/types";
 import { deferred, type DeferredPromise } from "@triliumnext/commons";
 import { RefObject } from "preact";
@@ -17,7 +15,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
-import { MAX_ZOOM, MIN_ZOOM } from "./CanvasEmbedTools";
+import { getBoundedView, getFittedView } from "./drawing_view";
 import {
     buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
 } from "./image_attachments";
@@ -403,14 +401,14 @@ export function useCanvasDrawingPersistence(
         excalidrawAPI: (api) => {
             apiRef.current = api;
         },
-        onChange: (elements, { width, height }) => {
+        onChange: (elements, state) => {
             const api = apiRef.current;
             // Excalidraw reports its size only once the drawing is laid out in the note.
-            const view = isFitPendingRef.current && getFittedView(elements, width, height);
-            if (api && view) {
-                isFitPendingRef.current = false;
-                api.updateScene({ appState: view });
-            }
+            const fitted = isFitPendingRef.current
+                && getFittedView(elements, state.width, state.height);
+            if (fitted) isFitPendingRef.current = false;
+            const view = fitted || getBoundedView(elements, state);
+            if (api && view) api.updateScene({ appState: view });
             if (!api || !editor) return;
 
             const sceneVersion = getSceneVersion(api.getSceneElements());
@@ -430,28 +428,6 @@ export function useCanvasDrawingPersistence(
             currentSceneVersion.current = sceneVersion;
             editor.scheduleSave(() => serializeDrawing(api, referencedFileIds.current));
         }
-    };
-}
-
-/**
- * The view of a drawing `width` by `height` that saved none, such as one converted from an image:
- * its content fit in the drawing and centered. `null` without content or a size.
- */
-function getFittedView(
-    elements: readonly ExcalidrawElement[],
-    width: number,
-    height: number
-): Pick<AppState, "zoom" | "scrollX" | "scrollY"> | null {
-    const shown = elements.filter((element) => !element.isDeleted);
-    if (!shown.length || !width || !height) return null;
-
-    const [ minX, minY, maxX, maxY ] = getCommonBounds(shown);
-    const fit = Math.min(width / (maxX - minX), height / (maxY - minY));
-    const zoom = Math.min(Math.max(fit, MIN_ZOOM), MAX_ZOOM);
-    return {
-        zoom: { value: zoom as NormalizedZoomValue },
-        scrollX: width / 2 / zoom - (minX + maxX) / 2,
-        scrollY: height / 2 / zoom - (minY + maxY) / 2
     };
 }
 

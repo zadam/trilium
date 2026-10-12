@@ -20,6 +20,7 @@ import { useEditableEmbed } from "../text/editable_embed";
 import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
 import CanvasEmbedTools from "./CanvasEmbedTools";
+import { getBoundedView } from "./drawing_view";
 import { loadDrawingFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
 
 interface CanvasDrawingProps {
@@ -69,6 +70,7 @@ export default function CanvasDrawing({ attachment, editor }: CanvasDrawingProps
                 isReadOnly={!isEditable}
                 colorScheme={colorScheme}
                 persistence={persistence}
+                constrainView={getBoundedView}
                 isEmbedded
                 isDesktopLayout={isDesktop()}
             >
@@ -163,6 +165,7 @@ function DetailDrawing({ attachment, note, noteContext, editor }: DetailDrawingP
             isReadOnly={!canEdit}
             colorScheme={colorScheme}
             persistence={persistence}
+            constrainView={getBoundedView}
         >
             <CanvasDrawingMenu apiRef={apiRef} isEditable={canEdit} />
         </CanvasEditor>
