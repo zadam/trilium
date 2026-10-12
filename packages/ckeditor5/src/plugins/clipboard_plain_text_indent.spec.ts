@@ -136,10 +136,14 @@ describe("ClipboardPlainTextIndent", () => {
             expect(data).toMatch(/^<p style="margin-left:40px;">(&nbsp;| )+Deeper<br>Shallower<\/p>/);
             expect(data).toContain(`<p style="margin-left:40px;">Same<br>Same</p>`);
             expect(data).toMatch(/<p>None<br>(&nbsp;| )+Some<\/p>$/);
+
+            expect(await pasteInto("\tOne\n\n\n\n\tTwo")).toBe(
+                `<p style="margin-left:40px;">One</p><p>&nbsp;</p><p style="margin-left:40px;">Two</p>`
+            );
         });
 
         it("restores what a copy of indented paragraphs wrote", async () => {
-            const html = `<p>Top</p><p style="margin-left:40px;">One<br>Two</p><p style="margin-left:80px;">Deep</p>`;
+            const html = `<p>Top</p><p style="margin-left:40px;">One<br><br>Two</p><p style="margin-left:80px;">Deep</p>`;
             const source = await createEditor(html);
 
             expect(await pasteInto(copy(source).getData("text/plain"))).toBe(html);
