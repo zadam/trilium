@@ -43,7 +43,7 @@ const {
 } = await import("./EditableText");
 
 describe("reportEditorError", () => {
-    it("logs the error and shows a toast that opens its details", () => {
+    it("shows a toast that opens the details, leaving the log to the global handler", () => {
         vi.clearAllMocks();
         const logError = vi.fn();
         vi.stubGlobal("logError", logError);
@@ -51,7 +51,7 @@ describe("reportEditorError", () => {
 
         reportEditorError(error);
 
-        expect(logError).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("TypeError: boom"));
+        expect(logError).not.toHaveBeenCalled();
         expect(showPersistent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
             id: "editor-error",
             title: "editable_text.editor_error_title",

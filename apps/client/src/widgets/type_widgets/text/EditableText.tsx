@@ -750,8 +750,9 @@ function useTemplates() {
 }
 
 /**
- * Logs an error that escaped the editor and tells the user about it in a toast, which opens the
- * error details for a bug report. The editor keeps running, so a later error replaces the toast.
+ * Tells the user about an error that escaped the editor in a toast, which opens the error details
+ * for a bug report. The editor keeps running, so a later error replaces the toast. The global error
+ * handlers in `glob.ts` log the error.
  *
  * Exported for testing.
  */
@@ -761,7 +762,6 @@ export function reportEditorError(error: CKEditorError) {
         stack: error.stack,
         date: new Date().toISOString()
     }, null, 4);
-    logError(`CKEditor error: ${details}`);
 
     toast.showPersistent({
         id: "editor-error",
