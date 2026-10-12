@@ -58,7 +58,10 @@ vi.mock("./open.js", () => ({
     }
 }));
 
-const getMermaidConfig = vi.fn(() => ({ theme: "default", layout: "dagre", look: "classic" }));
+const getMermaidConfig = vi.fn(() => ({
+    theme: "default", layout: "dagre", look: "classic",
+    flowchart: { useMaxWidth: false }, gantt: { useMaxWidth: false }, pie: { useMaxWidth: true }
+}));
 const postprocessMermaidSvg = vi.fn((...args: any[]) => `<svg class="mm">${args[0]}</svg>`);
 vi.mock("./mermaid.js", () => ({
     getMermaidConfig: () => getMermaidConfig(),
@@ -884,6 +887,10 @@ describe("getRenderedContent render / doc / protectedSession / mermaid", () => {
         expect(mermaidInitialize).toHaveBeenCalledWith(
             expect.objectContaining({ layout: "dagre", look: "classic", startOnLoad: false })
         );
+        const config = mermaidInitialize.mock.calls[0][0];
+        expect(config.flowchart).toEqual({ useMaxWidth: true });
+        expect(config.gantt).toEqual({ useMaxWidth: true });
+        expect(config.pie).toEqual({ useMaxWidth: true });
         expect(postprocessMermaidSvg).toHaveBeenCalledWith("<g/>");
         expect($renderedContent.find("svg.mm").length).toBe(1);
     });

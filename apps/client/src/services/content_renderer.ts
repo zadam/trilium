@@ -12,6 +12,7 @@ import {
     type TextRepresentationResponse
 } from "@triliumnext/commons";
 import DOMPurify from "dompurify";
+import type { MermaidConfig } from "mermaid";
 import { h, type JSX, render } from "preact";
 
 import type Component from "../components/component.js";
@@ -772,7 +773,7 @@ async function renderMermaid(note: FNote | FAttachment, $renderedContent: JQuery
 
     $renderedContent.css("display", "flex").css("justify-content", "space-around");
 
-    mermaid.mermaidAPI.initialize({ ...getMermaidConfig(), startOnLoad: false });
+    mermaid.mermaidAPI.initialize({ ...fitToContainer(getMermaidConfig()), startOnLoad: false });
 
     try {
         const { svg } = await mermaid.mermaidAPI.render(`in-mermaid-graph-${idCounter++}`, content);
@@ -783,6 +784,20 @@ async function renderMermaid(note: FNote | FAttachment, $renderedContent: JQuery
 
         $renderedContent.append($error);
     }
+}
+
+/**
+ * Sets `useMaxWidth` on every diagram type, so the SVG takes the width of the card, tooltip or
+ * include box that holds it instead of the diagram's natural size, which the container crops.
+ */
+function fitToContainer(config: MermaidConfig): MermaidConfig {
+    const fitted: Record<string, unknown> = { ...config };
+    for (const [ key, value ] of Object.entries(config)) {
+        if (value && typeof value === "object" && "useMaxWidth" in value) {
+            fitted[key] = { ...value, useMaxWidth: true };
+        }
+    }
+    return fitted as MermaidConfig;
 }
 
 /**
