@@ -168,12 +168,14 @@ body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__pane
 
 /* Dropdown panel containing a toolbar */
 :root .ck.ck-dropdown__panel:has(>.ck-toolbar) {
-    --ck-editor-popup-padding: calc(var(--menu-padding-size) - var(--ck-spacing-small));
+    --ck-editor-popup-padding: calc(
+        var(--menu-padding-size) - var(--ck-spacing-small, var(--ck-spacing-sm))
+    );
 }
 
 /* Bulleted / number list toolbar */
 .ck-list-styles-list {
-    --ck-spacing-large: var(--ck-spacing-small);
+    --ck-list-styles-list-padding: var(--ck-spacing-small, var(--ck-spacing-sm));
 }
 
 :root ul.ck.ck-list,
@@ -240,7 +242,7 @@ body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__pane
 /* List item checkmark container */
 
 :root .ck.ck-list-item-button .ck.ck-list-item-button__check-holder {
-    margin-inline-start: var(--ck-spacing-small);
+    margin-inline-start: var(--ck-spacing-small, var(--ck-spacing-sm));
     margin-inline-end: var(--menu-padding-size);
 }
 
@@ -357,7 +359,9 @@ div.ck.ck-collapsible {
     min-width: 200px;
     grid-template-columns: repeat(3, auto);
     justify-content: space-between;
-    padding-bottom: calc(var(--ck-spacing-medium) + var(--menu-padding-size));
+    padding-bottom: calc(
+        var(--ck-spacing-medium, var(--ck-spacing-base)) + var(--menu-padding-size)
+    );
 }
 
 /* Table dropdown */
@@ -376,7 +380,7 @@ div.ck.ck-collapsible {
 
 /* Selected rows / column counter */
 .ck.ck-insert-table-dropdown__label {
-    margin-top: var(--ck-spacing-medium);
+    margin-top: var(--ck-spacing-medium, var(--ck-spacing-base));
 }
 
 /* Admonitions dropdown */

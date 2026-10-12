@@ -4,7 +4,7 @@
 
 .ck.ck-content-embed-tools {
     display: flex;
-    gap: var(--ck-spacing-small);
+    gap: var(--ck-spacing-small, var(--ck-spacing-sm));
     border-inline-end: 1px solid var(--ck-content-embed-tools-divider-color);
-    padding-inline-end: var(--ck-spacing-small);
+    padding-inline-end: var(--ck-spacing-small, var(--ck-spacing-sm));
 }
