@@ -110,6 +110,32 @@ describe("EventDatesEditor", () => {
         expect(setLabel).toHaveBeenLastCalledWith(note.noteId, "endTime", "18:00");
     });
 
+    it("drops a pending edit when it shows another event with the same hours", () => {
+        mount(buildNote({ title: "First", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" }));
+        commitValue(timeInputs()[1], "15:00");
+
+        const second = buildNote({ title: "Second", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" });
+        mount(second);
+        expect(timeInputs()[1].value).toBe("14:30");
+
+        commitValue(timeInputs()[0], "16:00");
+        expect(setLabel).toHaveBeenLastCalledWith(second.noteId, "endTime", "17:30");
+    });
+
+    it("shows the stored hours again after a failed write, so the edit can be retried", async () => {
+        const note = buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" });
+        mount(note);
+        setLabel.mockRejectedValueOnce(new Error("offline"));
+
+        commitValue(timeInputs()[1], "15:00");
+        await act(() => new Promise((resolve) => setTimeout(resolve)));
+        expect(timeInputs()[1].value).toBe("14:30");
+
+        commitValue(timeInputs()[1], "15:00");
+        expect(setLabel).toHaveBeenCalledTimes(2);
+        expect(setLabel).toHaveBeenLastCalledWith(note.noteId, "endTime", "15:00");
+    });
+
     it("shows the day an event actually ends on, and writes it once an edit is made", () => {
         // Stored as ending at 08:00 on its own start day, which the calendar draws as the next day.
         const note = buildNote({

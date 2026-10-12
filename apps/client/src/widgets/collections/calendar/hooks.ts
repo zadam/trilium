@@ -10,21 +10,17 @@ import { EVENT_LABELS, EventLabelName } from "./utils";
  * on the grid does (see changeEvent in api.ts). Clearing clears the stock label too: a stale value
  * left there would come back through the builder's fallback the moment the renamed one went.
  */
-export function useEventLabel(note: FNote, defaultName: EventLabelName): [string | null, (value: string | null) => void] {
+export function useEventLabel(note: FNote, defaultName: EventLabelName): [string | null, (value: string | null) => Promise<unknown>] {
     const [ customName ] = useNoteLabel(note, `calendar:${defaultName}`);
     const [ customValue, setCustomValue ] = useNoteLabelByName(note, customName || defaultName);
     const [ stockValue, setStockValue ] = useNoteLabelByName(note, defaultName);
 
     const value = (customName ? customValue : null) || stockValue || null;
     const setValue = (newValue: string | null) => {
-        if (customName) {
-            setCustomValue(newValue);
-            if (newValue === null) {
-                setStockValue(null);
-            }
-        } else {
-            setStockValue(newValue);
+        if (!customName) {
+            return setStockValue(newValue);
         }
+        return Promise.all([ setCustomValue(newValue), newValue === null && setStockValue(null) ]);
     };
 
     return [ value, setValue ];

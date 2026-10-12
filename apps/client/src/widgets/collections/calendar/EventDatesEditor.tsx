@@ -1,5 +1,5 @@
 import { ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
@@ -23,17 +23,22 @@ export default function EventDatesEditor({ note, repeats }: {
     const [ endTime, setEndTime ] = useEventLabel(note, "endTime");
 
     // The labels change only when the server echoes a write, so the last edit is kept here and the
-    // next edit is compared against it. A label change from the server replaces it.
+    // next edit is compared against it. Another note, a label change from the server or a failed
+    // write replaces it with the stored labels.
     const stored: EventDraft = { startDate: startDate ?? "", endDate, startTime, endTime };
+    const storedRef = useRef(stored);
+    storedRef.current = stored;
     const [ value, setValue ] = useState(stored);
-    useEffect(() => setValue(stored), [ startDate, endDate, startTime, endTime ]);
+    useEffect(() => setValue(stored), [ note, startDate, endDate, startTime, endTime ]);
 
     const onChange = (next: EventDraft) => {
         setValue(next);
-        if (next.startDate !== value.startDate) setStartDate(next.startDate);
-        if ((next.endDate ?? null) !== (value.endDate ?? null)) setEndDate(next.endDate ?? null);
-        if ((next.startTime ?? null) !== (value.startTime ?? null)) setStartTime(next.startTime ?? null);
-        if ((next.endTime ?? null) !== (value.endTime ?? null)) setEndTime(next.endTime ?? null);
+        const writes: Promise<unknown>[] = [];
+        if (next.startDate !== value.startDate) writes.push(setStartDate(next.startDate));
+        if ((next.endDate ?? null) !== (value.endDate ?? null)) writes.push(setEndDate(next.endDate ?? null));
+        if ((next.startTime ?? null) !== (value.startTime ?? null)) writes.push(setStartTime(next.startTime ?? null));
+        if ((next.endTime ?? null) !== (value.endTime ?? null)) writes.push(setEndTime(next.endTime ?? null));
+        Promise.all(writes).catch(() => setValue(storedRef.current));
     };
 
     return (
