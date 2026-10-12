@@ -46,6 +46,13 @@ describe("Route transport & middleware", () => {
             expect(res.body.isMainWindow).toBe(false);
         });
 
+        it("includes the server's platform and CPU architecture in the payload", async () => {
+            // The client picks the Antigravity ACP server download for the machine running Trilium.
+            const res = await supertest(app).get("/bootstrap").expect(200);
+            expect(res.body.platform).toBe(process.platform);
+            expect(res.body.arch).toBe(process.arch);
+        });
+
         it("includes platform in the setup (uninitialized DB) payload", async () => {
             // The setup window relies on `glob.platform` to apply the
             // platform-darwin drag-region CSS on macOS.
@@ -96,12 +103,14 @@ describe("Route transport & middleware", () => {
         });
 
         it("serves a [statusCode, string] handler result as plain text", async () => {
-            // /api/login/token returns [401, "Incorrect credential"] on a bad
-            // password — exercising apiResultHandler's array form and send()'s
-            // text-error branch.
-            const res = await supertest(app).post("/api/login/token").send({ password: "wrong" }).expect(401);
+            // /api/onenote-import/device-poll returns [400, "No sign-in is in progress."] on a
+            // session without a pending sign-in — exercising apiResultHandler's array form and
+            // send()'s text-error branch.
+            const res = await ctx.agent.post("/api/onenote-import/device-poll")
+                .set("x-csrf-token", ctx.csrfToken)
+                .expect(400);
             expect(res.headers["content-type"]).toContain("text/plain");
-            expect(res.text).toBe("Incorrect credential");
+            expect(res.text).toBe("No sign-in is in progress.");
         });
 
         it("maps a thrown ValidationError to a 400 JSON body", async () => {

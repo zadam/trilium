@@ -20,6 +20,7 @@ async function main() {
     // The image compression worker, which lives in the server it embeds. Built here too so the
     // desktop app can compress off-thread rather than falling back to doing it in the main process.
     await build.buildBackend([ "../server/src/services/image_worker.ts" ]);
+    await build.buildTesseractWorker("../server/src/services/ocr/tesseract_worker.ts");
 
     // Copy assets.
     build.copy("src/assets", "assets/");
@@ -28,7 +29,9 @@ async function main() {
     // The LLM skill sheets moved to core with the rest of the stack, but the
     // Node hosts still read them from RESOURCE_DIR. See server core_assets.ts.
     build.copy("/packages/trilium-core/src/assets/llm/skills", "assets/llm/skills/");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/", "dist");
+    // The Codex ACP adapter runs as a script of its own in a worker thread. See the server's
+    // codex_binary.ts.
+    build.copy("/node_modules/@agentclientprotocol/codex-acp/dist/index.js", "assets/codex-acp.mjs");
     build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
@@ -37,6 +40,8 @@ async function main() {
     build.trimBetterSqlite3({ includeMusl: false });
 
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
+    build.copy("/packages/ckeditor5/src/theme/content_colors.css", "ckeditor5-content-colors.css");
+    build.copy("/packages/ckeditor5/src/theme/multicolumn.css", "ckeditor5-multicolumn.css");
 
     build.buildFrontend();
 

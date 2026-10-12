@@ -60,11 +60,11 @@ export interface ModalProps {
      * Gives access to the underlying modal element. This is useful for manipulating the modal directly
      * or for attaching event listeners.
      */
-    modalRef?: RefObject<HTMLDivElement>;
+    modalRef?: RefObject<HTMLDivElement | null>;
     /**
      * Gives access to the underlying form element of the modal. This is only set if `onSubmit` is provided.
      */
-    formRef?: RefObject<HTMLFormElement>;
+    formRef?: RefObject<HTMLFormElement | null>;
     bodyStyle?: CSSProperties;
     /**
      * Controls whether the modal is shown. Setting it to `true` will trigger the modal to be displayed to the user, whereas setting it to `false` will hide the modal.
@@ -109,8 +109,8 @@ export interface ModalProps {
 
 export default function Modal({ children, className, size, title, customTitleBarButtons: titleBarButtons, header, footer, footerStyle, footerAlignment, onShown, onSubmit, helpPageId, minWidth, maxWidth, zIndex, scrollable, onHidden, modalRef: externalModalRef, formRef, bodyStyle, show, stackable, keepInDom, noFocus, sidebar, hideSidebarHeader, isFullPageOnMobile, ariaLabel }: ModalProps) {
     const modalRef = useSyncedRef<HTMLDivElement>(externalModalRef);
-    const modalInstanceRef = useRef<BootstrapModal>();
-    const elementToFocus = useRef<Element | null>();
+    const modalInstanceRef = useRef<BootstrapModal | undefined>(undefined);
+    const elementToFocus = useRef<Element | null | undefined>(undefined);
 
     /*
      * Bootstrap writes classes of its own onto this element — `show` above all, which is what makes
@@ -171,6 +171,18 @@ export default function Modal({ children, className, size, title, customTitleBar
             modalElement.removeEventListener("hidden.bs.modal", onModalHidden);
         };
     }, [ onShown, onHidden ]);
+
+    // While this modal is shown, ensure it is the only modal trapping focus. Bootstrap has no stacked
+    // modal support: every underlying modal keeps its own focus-trap active and steals focus from inputs
+    // in the modal on top (e.g. the custom-dictionary editor in the quick-edit popup that opens over the
+    // Options dialog gets no cursor). Suspend the other modals' traps here and restore them on close.
+    //
+    // Must run before the effect that opens the dialog: `openDialog` focuses the new backdrop, and
+    // a trap still active at that point pulls focus into the modal underneath.
+    useEffect(() => {
+        if (!show || !modalRef.current) return;
+        return suspendModalFocusTraps(modalRef.current);
+    }, [ show ]);
 
     useEffect(() => {
         if (show && modalRef.current) {
@@ -236,15 +248,6 @@ export default function Modal({ children, className, size, title, customTitleBar
     useEffect(() => () => {
         modalInstanceRef.current?.hide();
     }, []);
-
-    // While this modal is shown, ensure it is the only modal trapping focus. Bootstrap has no stacked
-    // modal support: every underlying modal keeps its own focus-trap active and steals focus from inputs
-    // in the modal on top (e.g. the custom-dictionary editor in the quick-edit popup that opens over the
-    // Options dialog gets no cursor). Suspend the other modals' traps here and restore them on close.
-    useEffect(() => {
-        if (!show || !modalRef.current) return;
-        return suspendModalFocusTraps(modalRef.current);
-    }, [ show ]);
 
     // Memoize styles to prevent recreation on every render
     const dialogStyle = useMemo<CSSProperties>(() => {

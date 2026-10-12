@@ -183,7 +183,7 @@ export function sameWindow(a: ColumnWindow, b: ColumnWindow) {
  * @param enabled whether to window this column at all.
  */
 export function useColumnWindow(
-    areaRef: RefObject<HTMLElement>,
+    areaRef: RefObject<HTMLElement | null>,
     noteIds: readonly string[],
     enabled: boolean
 ) {

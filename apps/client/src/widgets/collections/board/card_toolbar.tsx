@@ -1,8 +1,8 @@
 import "./card_toolbar.css";
 
 import clsx from "clsx";
-import { type ComponentChildren, createContext } from "preact";
-import { createPortal, useSyncExternalStore } from "preact/compat";
+import { type ComponentChildren, createContext, createPortal } from "preact";
+import { useSyncExternalStore } from "preact/compat";
 import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
@@ -104,7 +104,8 @@ interface SelectionToolbarProps {
     isLeaving: boolean;
     /** How many cards are picked out. With none, there is nothing to press. */
     count: number;
-    onDelete: () => void;
+    /** Deletes the cards picked out, which a read-only board does not offer. */
+    onDelete?: () => void;
     /** Opens the context menu for the selection, at the button. */
     onMore: (event: MouseEvent) => void;
 }
@@ -118,13 +119,13 @@ export function SelectionToolbar({
 }: SelectionToolbarProps) {
     return (
         <Rail host={host} isLeaving={isLeaving}>
-            <OverlayControlButton
+            {onDelete && <OverlayControlButton
                 title={t("board_view.delete-note")}
                 icon="bx-trash"
                 className="board-remove-button"
                 disabled={count === 0}
                 onClick={onDelete}
-            />
+            />}
             <OverlayControlButton
                 title={t("board_view.more-actions")}
                 icon="bx-dots-vertical-rounded"

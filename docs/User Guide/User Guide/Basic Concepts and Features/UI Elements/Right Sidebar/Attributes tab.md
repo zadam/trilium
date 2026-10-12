@@ -30,7 +30,7 @@ Interaction:
     *   For labels, clicking on the value edits its in-place.
         *   Press <kbd>Enter</kbd> to confirm or click outside the input box, or <kbd>Esc</kbd> to dismiss.
         *   For multi-line text, <kbd>Ctrl</kbd>+<kbd>Enter</kbd> confirms whereas <kbd>Enter</kbd> creates a newline.
-    *   For boolean values, clicking on the checkbox will toggle its state.
+    *   For checkbox attributes, clicking on the checkbox will toggle its state.
     *   For labels without a value, a value can be added by clicking on the _No value_ text which appears while the mouse is hovered on the item.
     *   For relations, there is a dedicated pencil button instead.
 *   An attribute can be deleted by pressing the X button to its right, which only appears while hovered. A confirmation screen is displayed first to ensure the attribute is not accidentally deleted.
@@ -66,4 +66,4 @@ For attribute definition (see <a class="reference-link" href="../../../Advanced
 
 ## Mobile
 
-The attributes can also be edited visually on mobile, but not as part of the sidebar. Go to <a class="reference-link" href="../Note%20buttons.md">Note buttons</a> and select _Note attributes_.
+The attributes can also be edited visually on mobile, but not as part of the sidebar. Go to <a class="reference-link" href="../Note%20menu.md">Note menu</a> and select _Note attributes_.

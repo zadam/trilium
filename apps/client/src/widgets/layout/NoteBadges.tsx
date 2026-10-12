@@ -1,17 +1,28 @@
 import "./NoteBadges.css";
 
-import { isOfficeMimeType } from "@triliumnext/commons";
+import { isOfficeMimeType, safeHostname } from "@triliumnext/commons";
 import { clsx } from "clsx";
-import { useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
+import type { SaveState } from "../../components/note_context";
+import FNote from "../../entities/fnote";
+import attributes from "../../services/attributes";
+import branches from "../../services/branches";
 import { copyTextWithToast } from "../../services/clipboard_ext";
+import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { goToLinkExt } from "../../services/link";
+import server from "../../services/server";
+import { buildShareLink } from "../../services/share_link";
+import sync from "../../services/sync";
+import { isElectron, isMobileApp, isStandalone } from "../../services/utils";
 import { Badge, BadgeWithDropdown } from "../react/Badge";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
-import { useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty } from "../react/hooks";
-import { useShareState } from "../ribbon/BasicPropertiesTab";
-import { useShareInfo } from "../shared_info";
+import {
+    useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelByName, useNoteProperty,
+    useTriliumEvent, useTriliumOption
+} from "../react/hooks";
+import Icon from "../react/Icon";
 import { ActiveContentBadges } from "./ActiveContentBadges";
 import { SnippetBadge } from "./SnippetBadge";
 
@@ -82,23 +93,27 @@ export function OfficePreviewBadge() {
 function ShareBadge() {
     const { note } = useNoteContext();
     const [ , switchShareState ] = useShareState(note);
-    const { isSharedExternally, linkHref } = useShareInfo(note);
+    const { scope, linkHref } = useShareInfo(note);
+    const badge = SHARE_BADGES[scope];
 
     return (linkHref &&
         <BadgeWithDropdown
-            icon={isSharedExternally ? "bx bx-world" : "bx bx-share-alt"}
-            text={isSharedExternally ? t("breadcrumb_badges.shared_publicly") : t("breadcrumb_badges.shared_locally")}
+            icon={badge.icon}
+            text={t(badge.text)}
+            tooltip={badge.tooltip && t(badge.tooltip, { format: t("export.format_share_name") })}
             className="share-badge"
         >
-            <FormListItem
-                icon="bx bx-copy"
-                onClick={() => copyTextWithToast(linkHref)}
-            >{t("breadcrumb_badges.shared_copy_to_clipboard")}</FormListItem>
-            <FormListItem
-                icon="bx bx-link-external"
-                onClick={(e) => goToLinkExt(e, linkHref)}
-            >{t("breadcrumb_badges.shared_open_in_browser")}</FormListItem>
-            <FormDropdownDivider />
+            {scope !== "export-only" && <>
+                <FormListItem
+                    icon="bx bx-copy"
+                    onClick={() => copyTextWithToast(linkHref)}
+                >{t("breadcrumb_badges.shared_copy_to_clipboard")}</FormListItem>
+                <FormListItem
+                    icon="bx bx-link-external"
+                    onClick={(e) => goToLinkExt(e, linkHref)}
+                >{t("breadcrumb_badges.shared_open_in_browser")}</FormListItem>
+                <FormDropdownDivider />
+            </>}
             <FormListItem
                 icon="bx bx-unlink"
                 onClick={() => switchShareState(false)}
@@ -107,10 +122,29 @@ function ShareBadge() {
     );
 }
 
-function ClippedNoteBadge() {
+const SHARE_BADGES: Record<ShareScope, { icon: string; text: string; tooltip?: string }> = {
+    public: { icon: "bx bx-world", text: "breadcrumb_badges.shared_publicly" },
+    local: { icon: "bx bx-share-alt", text: "breadcrumb_badges.shared_locally" },
+    preview: {
+        icon: "bx bx-show",
+        text: "breadcrumb_badges.shared_preview",
+        tooltip: "breadcrumb_badges.shared_preview_description"
+    },
+    "export-only": {
+        icon: "bx bx-export",
+        text: "breadcrumb_badges.shared_export_only",
+        tooltip: "breadcrumb_badges.shared_export_only_description"
+    }
+};
+
+export function ClippedNoteBadge() {
     const { note } = useNoteContext();
     const isHelpNote = !!note?.noteId.startsWith("_help");
     const [ url ] = useNoteLabel(note, isHelpNote ? "docUrl" : "pageUrl");
+    const [ description ] = useNoteLabel(note, "pageDescription");
+    const [ author ] = useNoteLabel(note, "pageAuthor");
+    const [ published ] = useNoteLabel(note, "publishedDate");
+    const [ modified ] = useNoteLabel(note, "modifiedDate");
 
     if (!url) return;
 
@@ -126,32 +160,75 @@ function ClippedNoteBadge() {
         );
     }
 
+    const fields = [
+        { icon: "bx bx-user", label: t("breadcrumb_badges.clipped_note_author"), value: author },
+        { icon: "bx bx-calendar", label: t("breadcrumb_badges.clipped_note_published"), value: published },
+        { icon: "bx bx-history", label: t("breadcrumb_badges.clipped_note_modified"), value: modified }
+    ].filter((field) => field.value);
+
+    if (!description && !fields.length) {
+        return (
+            <Badge
+                className="clipped-note-badge"
+                icon="bx bx-globe"
+                text={t("breadcrumb_badges.clipped_note")}
+                tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
+                href={url}
+            />
+        );
+    }
+
     return (
-        <Badge
+        <BadgeWithDropdown
+            panel
             className="clipped-note-badge"
             icon="bx bx-globe"
             text={t("breadcrumb_badges.clipped_note")}
-            tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
-            href={url}
-        />
+            tooltip={t("breadcrumb_badges.clipped_note_details")}
+            dropdownProps={{ dropdownContainerClassName: "clipped-note-details-panel" }}
+        >
+            <div className="clipped-note-details">
+                <div className="clipped-note-source">
+                    <Icon icon="bx bx-globe" />
+                    <a className="tn-link external" href={url} target="_blank" rel="noopener noreferrer">
+                        {safeHostname(url)}
+                    </a>
+                </div>
+                {description && <p className="clipped-note-description pre-wrap-text">{description}</p>}
+                {fields.length > 0 && (
+                    <dl className="clipped-note-fields">
+                        {fields.map((field) => (
+                            <div key={field.icon}>
+                                <dt><Icon icon={field.icon} />{field.label}</dt>
+                                <dd>{field.value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                )}
+            </div>
+        </BadgeWithDropdown>
     );
 }
 
-function ExecuteBadge() {
-    const { note, parentComponent } = useNoteContext();
+export function ExecuteBadge() {
+    const { note, ntxId, parentComponent } = useNoteContext();
     const isScript = note?.isTriliumScript();
     const isSql = note?.isTriliumSqlite();
     const isExecutable = isScript || isSql;
     const [ executeDescription ] = useNoteLabel(note, "executeDescription");
     const [ executeButton ] = useNoteLabelBoolean(note, "executeButton");
+    const [ executeTitle ] = useNoteLabel(note, "executeTitle");
+    // `#executeButton` is typed as a flag, but the User Guide documents its value as the button's title.
+    const [ executeButtonValue ] = useNoteLabelByName(note, "executeButton");
+    const title = executeTitle || (executeButtonValue !== "true" && executeButtonValue !== "false" && executeButtonValue);
 
     return (note && isExecutable && (executeDescription || executeButton) &&
         <Badge
             className="execute-badge"
             icon="bx bx-play"
-            text={isScript ? t("breadcrumb_badges.execute_script") : t("breadcrumb_badges.execute_sql")}
+            text={title || (isScript ? t("breadcrumb_badges.execute_script") : t("breadcrumb_badges.execute_sql"))}
             tooltip={executeDescription || (isScript ? t("breadcrumb_badges.execute_script_description") : t("breadcrumb_badges.execute_sql_description"))}
-            onClick={() => parentComponent.triggerCommand("runActiveNote")}
+            onClick={() => parentComponent.triggerCommand("runActiveNote", { ntxId })}
         />
     );
 }
@@ -161,12 +238,18 @@ const SAVE_STATE_DEBOUNCE_MS = 200;
 export function SaveStatusBadge() {
     const { noteContext} = useNoteContext();
     const saveState = useGetContextDataFrom(noteContext, "saveState");
-    const [debouncedState, setDebouncedState] = useState(saveState);
+
+    return <SaveStateBadge state={saveState?.state} />;
+}
+
+/** The badge of `state`, which follows a change of the state once it lasts a moment. */
+export function SaveStateBadge({ state }: { state: SaveState | undefined }) {
+    const [debouncedState, setDebouncedState] = useState(state);
 
     useEffect(() => {
-        const timer = setTimeout(() => setDebouncedState(saveState), SAVE_STATE_DEBOUNCE_MS);
+        const timer = setTimeout(() => setDebouncedState(state), SAVE_STATE_DEBOUNCE_MS);
         return () => clearTimeout(timer);
-    }, [saveState]);
+    }, [state]);
 
     if (!debouncedState) return;
 
@@ -193,14 +276,121 @@ export function SaveStatusBadge() {
         }
     };
 
-    const { icon, title, tooltip } = stateConfig[debouncedState.state];
+    const { icon, title, tooltip } = stateConfig[debouncedState];
 
     return (
         <Badge
-            className={clsx("save-status-badge", debouncedState.state)}
+            className={clsx("save-status-badge", debouncedState)}
             icon={icon}
             text={title}
             tooltip={tooltip}
         />
     );
+}
+
+export function useShareState(note: FNote | null | undefined) {
+    const [ isShared, setIsShared ] = useState(false);
+    const refreshState = useCallback(() => {
+        setIsShared(!!note?.hasAncestor("_share"));
+    }, [ note ]);
+
+    useEffect(() => refreshState(), [ refreshState ]);
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        if (note && loadResults.getBranchRows().find((b) => b.noteId === note.noteId)) {
+            refreshState();
+        }
+    });
+
+    const switchShareState = useCallback(async (shouldShare: boolean) => {
+        if (!note) return;
+
+        if (shouldShare) {
+            await branches.cloneNoteToParentNote(note.noteId, "_share");
+        } else {
+            if (note?.getParentBranches().length === 1 && !(await dialog.confirm(t("shared_switch.shared-branch")))) {
+                return;
+            }
+
+            const shareBranch = note?.getParentBranches().find((b) => b.parentNoteId === "_share");
+            if (!shareBranch?.branchId) return;
+            await server.remove(`branches/${shareBranch.branchId}?taskId=no-progress-reporting`);
+        }
+
+        sync.syncNow(true);
+    }, [ note ]);
+
+    return [ isShared, switchShareState ] as const;
+}
+
+function useShareInfo(note: FNote | null | undefined) {
+    const [ linkHref, setLinkHref ] = useState<string>();
+    const [ syncServerHost ] = useTriliumOption("syncServerHost");
+
+    function refresh() {
+        if (!note) return;
+        if (note.noteId === "_share" || !note?.hasAncestor("_share")) {
+            setLinkHref(undefined);
+            return;
+        }
+
+        setLinkHref(buildShareLink(getShareId(note), syncServerHost));
+    }
+
+    useEffect(refresh, [ note, syncServerHost ]);
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        if (loadResults.getAttributeRows().find((attr) => attr.name?.startsWith("_share") && attributes.isAffecting(attr, note))) {
+            refresh();
+        } else if (loadResults.getBranchRows().find((branch) => branch.noteId === note?.noteId)) {
+            refresh();
+        }
+    });
+
+    return {
+        linkHref,
+        scope: getShareScope({
+            isElectron: isElectron(),
+            isStandalone: !!isStandalone,
+            isMobileApp: isMobileApp(),
+            syncServerHost
+        })
+    };
+}
+
+/**
+ * Where a shared note can be opened from. `local` is the desktop app without a sync server, which
+ * serves the page on the loopback address. `preview` is the standalone build without a sync server,
+ * which renders the page in its own service worker, so only this browser can open it. `export-only`
+ * is the mobile app without a sync server: its link opens nowhere, so the static export is the only
+ * way to publish the note. A server cannot tell whether it is reachable from outside, so it always
+ * reports `public`.
+ */
+export function getShareScope({ isElectron, isStandalone, isMobileApp, syncServerHost }: {
+    isElectron: boolean;
+    isStandalone: boolean;
+    isMobileApp: boolean;
+    syncServerHost: string | null | undefined;
+}): ShareScope {
+    if (syncServerHost) {
+        return "public";
+    }
+
+    if (isMobileApp) {
+        return "export-only";
+    }
+
+    if (isStandalone) {
+        return "preview";
+    }
+
+    return isElectron ? "local" : "public";
+}
+
+type ShareScope = "public" | "local" | "preview" | "export-only";
+
+function getShareId(note: FNote) {
+    if (note.hasOwnedLabel("shareRoot")) {
+        return "";
+    }
+
+    return note.getOwnedLabelValue("shareAlias") || note.noteId;
 }

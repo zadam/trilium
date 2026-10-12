@@ -1,24 +1,24 @@
 import type { HighlightedTokenInfo } from "@triliumnext/commons";
 import DOMPurify from "dompurify";
-import type { CSSProperties, HTMLProps, RefObject } from "preact/compat";
+import type { CSSProperties, HTMLAttributes, RefObject } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 
 import { useImperativeSearchHighlighlighting } from "./hooks";
 
 type HTMLElementLike = string | HTMLElement | JQuery<HTMLElement>;
 
-interface RawHtmlProps extends Pick<HTMLProps<HTMLElement>, "tabindex" | "dir"> {
+interface RawHtmlProps extends Pick<HTMLAttributes<HTMLElement>, "tabindex" | "dir"> {
     className?: string;
     html?: HTMLElementLike;
     style?: CSSProperties;
     onClick?: (e: MouseEvent) => void;
 }
 
-export default function RawHtml({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLSpanElement>}) {
+export default function RawHtml({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLSpanElement | null>}) {
     return <span ref={containerRef} {...getProps(props)} />;
 }
 
-export function RawHtmlBlock({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLDivElement>}) {
+export function RawHtmlBlock({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLDivElement | null>}) {
     return <div ref={containerRef} {...getProps(props)} />;
 }
 
@@ -33,17 +33,9 @@ function getProps({ className, html, style, onClick, dir, tabindex }: RawHtmlPro
     };
 }
 
-export function getHtml(html: string | HTMLElement | JQuery<HTMLElement>) {
-    if (typeof html === "object" && "length" in html) {
-        html = html[0];
-    }
-
-    if (typeof html === "object" && "outerHTML" in html) {
-        html = html.outerHTML;
-    }
-
+export function getHtml(html: HTMLElementLike) {
     return {
-        __html: html as string
+        __html: toHtmlString(html)
     };
 }
 
@@ -77,13 +69,26 @@ export function HighlightedText({ className, text, highlightedTokens }: {
  * Use this instead of {@link RawHtml} when the HTML originates from
  * untrusted sources (e.g. LLM responses, user-generated markdown).
  */
-export function SanitizedHtml({ className, html, style }: { className?: string; html: string; style?: CSSProperties }) {
+export function SanitizedHtml({ className, html, style }: { className?: string; html?: HTMLElementLike; style?: CSSProperties }) {
     return (
         <div
             className={className}
             style={style}
             // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(toHtmlString(html ?? "")) }}
         />
     );
+}
+
+/** The markup an element-like value stands for, so both renderers take the same inputs. */
+function toHtmlString(html: HTMLElementLike): string {
+    if (typeof html === "object" && "length" in html) {
+        html = html[0];
+    }
+
+    if (typeof html === "object" && "outerHTML" in html) {
+        html = html.outerHTML;
+    }
+
+    return html as string;
 }

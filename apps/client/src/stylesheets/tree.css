@@ -30,7 +30,8 @@ span.fancytree-node.fancytree-hide {
 .fancytree-node {
     display: flex;
     align-items: center;
-    height: 2.4em;
+    /* The line box follows the tree font; the space around it stays fixed. */
+    height: calc(1lh + 14px);
     padding: 4px;
     border: 1px solid transparent;
     border-radius: 5px;
@@ -170,16 +171,12 @@ span.fancytree-node.protected > span.fancytree-custom-icon {
 }
 
 .note-indicator-icon.clone-indicator::before {
-    content: "\eb3d"; /* bx-link-alt */
+    content: "\ed82";
+    opacity: 0.5;
 }
 
 .note-indicator-icon.shared-indicator::before {
     content: "\ec03"; /* bx-share-alt */
-}
-
-body.experimental-feature-new-layout .note-indicator-icon.clone-indicator::before {
-    content: "\ed82";
-    opacity: 0.5;
 }
 
 span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {

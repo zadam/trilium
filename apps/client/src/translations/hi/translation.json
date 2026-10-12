@@ -62,12 +62,6 @@
     "sql_console_saved_message": "SQL कंसोल नोट {{note_path}} में सेव कर दिया गया है",
     "electron_api_docs_button_title": "इलेक्ट्रॉन API डॉक्यूमेंटेशन खोलें"
   },
-  "hide_floating_buttons_button": {
-    "button_title": "बटन छुपाएं"
-  },
-  "show_floating_buttons_button": {
-    "button_title": "बटन दिखाएं"
-  },
   "add_link": {
     "note": "नोट",
     "add_link": "लिंक ऐड करें",
@@ -258,8 +252,7 @@
     "copy_to_clipboard": "क्लिपबोर्ड पर कॉपी करें"
   },
   "jump_to_note": {
-    "search_placeholder": "नोट के नाम या टाइप से सर्च करें > कमांड्स के लिए..।",
-    "search_button": "पूरे टेक्स्ट में सर्च करें"
+    "search_placeholder": "नोट के नाम या टाइप से सर्च करें > कमांड्स के लिए..।"
   },
   "markdown_import": {
     "dialog_title": "Markdown इम्पोर्ट",
@@ -281,8 +274,7 @@
     "search_placeholder": "नाम के द्वारा पाथ सर्च करें (खाली होने पर डिफ़ॉल्ट)",
     "modal_title": "नोट टाइप चुनें",
     "modal_body": "नए नोट का टाइप / टेम्पलेट चुनें:",
-    "templates": "टेम्पलेट्स",
-    "builtin_templates": "इन-बिल्ट टेम्पलेट्स"
+    "templates": "टेम्पलेट्स"
   },
   "password_not_set": {
     "title": "पासवर्ड सेट नहीं है",
@@ -416,7 +408,6 @@
     "hide_relations": "उन रिलेशंस के नाम जिन्हें छुपाना है",
     "title_template": "इस नोट के नीचे बनने वाले नोट्स का डिफ़ॉल्ट टाइटल।",
     "template": "नया नोट बनाते समय यह उपलब्ध टेम्पलेट्स में दिखेगा",
-    "toc": "<code>#toc</code> या <code>#toc=show</code> से Table of Contents दिखेगा, <code>#toc=hide</code> से छुप जाएगा।",
     "color": "नोट का रंग तय करता है (जैसे 'red' या #a13d5f)",
     "keyboard_shortcut": "एक कीबोर्ड शॉर्टकट तय करता है जिससे सीधे इस नोट पर जाया जा सकेगा (जैसे 'ctrl+alt+e')",
     "keep_current_hoisting": "इस लिंक को खोलने से मौजूदा 'hoisting' नहीं बदलेगी।",
@@ -424,7 +415,6 @@
     "execute_description": "बटन के साथ दिखने वाला विवरण",
     "exclude_from_note_map": "इस लेबल वाले नोट्स 'Note Map' से छुपा दिए जाएंगे",
     "new_notes_on_top": "नए नोट्स पेरेंट के सबसे ऊपर बनेंगे, न कि नीचे।",
-    "hide_highlight_widget": "हाइलाइट लिस्ट विजेट छुपाएं",
     "run_on_note_creation": "बैकएंड पर नोट बनने पर चलता है",
     "run_on_child_note_creation": "इस नोट के नीचे नया नोट बनने पर चलता है",
     "run_on_note_title_change": "नोट टाइटल बदलने पर चलता है",
@@ -630,15 +620,6 @@
   "create_pane_button": {
     "create_new_split": "नया स्प्लिट बनाएं"
   },
-  "edit_button": {
-    "edit_this_note": "इस नोट को एडिट करें"
-  },
-  "show_toc_widget_button": {
-    "show_toc": "Table of Contents दिखाएं"
-  },
-  "show_highlights_list_widget_button": {
-    "show_highlights_list": "हाइलाइट्स लिस्ट दिखाएं"
-  },
   "global_menu": {
     "menu": "मेन्यू",
     "options": "विकल्प",
@@ -730,25 +711,11 @@
     "active": "प्रोटेक्टेड सेशन सक्रिय है। बाहर निकलने के लिए क्लिक करें।",
     "inactive": "प्रोटेक्टेड सेशन शुरू करने के लिए क्लिक करें"
   },
-  "revisions_button": {
-    "note_revisions": "नोट रिविज़न"
-  },
   "note_launcher": {
     "this_launcher_doesnt_define_target_note": "यह लॉन्चर टारगेट नोट को परिभाषित नहीं करता।"
   },
-  "copy_image_reference_button": {
-    "button_title": "इमेज रेफरेंस क्लिपबोर्ड पर कॉपी करें, इसे टेक्स्ट नोट में पेस्ट किया जा सकता है।"
-  },
-  "svg_export_button": {
-    "button_title": "डायग्राम को SVG की तरह एक्सपोर्ट करें"
-  },
   "relation_map_buttons": {
     "create_child_note_title": "सब-नोट बनाएं और मैप में जोड़ें"
-  },
-  "zpetne_odkazy": {
-    "backlink_one": "{{count}} बैकलिंक",
-    "backlink_other": "",
-    "relation": "रिलेशन"
   },
   "mobile_detail_menu": {
     "insert_child_note": "सब-नोट डालें",
@@ -775,8 +742,6 @@
   "basic_properties": {
     "note_type": "नोट टाइप",
     "editable": "एडिट करने योग्य",
-    "basic_properties": "बुनियादी गुण",
-    "language": "भाषा",
     "configure_code_notes": "कोड नोट्स कॉन्फ़िगर करें..।"
   },
   "book_properties": {
@@ -806,37 +771,23 @@
     "open_all_confirm_other": "यह नए टैब में {{count}} नोट्स खोलेगा। जारी रखें?"
   },
   "edited_notes": {
-    "no_edited_notes_found": "इस दिन अभी तक कोई एडिट किया गया नोट नहीं है..।",
-    "title": "एडिट किए गए नोट्स",
-    "deleted": "(डिलीट किया गया)"
+    "no_edited_notes_found": "इस दिन अभी तक कोई एडिट किया गया नोट नहीं है..।"
   },
   "file_properties": {
-    "note_id": "नोट ID",
     "original_file_name": "असली फ़ाइल का नाम",
-    "file_type": "फ़ाइल टाइप",
-    "file_size": "फ़ाइल साइज़",
     "download": "डाउनलोड करें",
     "open": "बाहर खोलें",
-    "upload_new_revision": "नया रिविज़न अपलोड करें",
     "upload_success": "नई फ़ाइल रिविज़न अपलोड कर दी गई है।",
-    "upload_failed": "नई फ़ाइल रिविज़न का अपलोड फ़ेल हो गया।",
-    "title": "फ़ाइल"
+    "upload_failed": "नई फ़ाइल रिविज़न का अपलोड फ़ेल हो गया।"
   },
   "image_properties": {
-    "original_file_name": "असली फ़ाइल का नाम",
-    "file_type": "फ़ाइल टाइप",
-    "file_size": "फ़ाइल साइज़",
-    "download": "डाउनलोड करें",
-    "open": "खोलें",
     "copy_reference_to_clipboard": "रेफरेंस क्लिपबोर्ड पर कॉपी करें",
     "upload_new_revision": "नया रिविज़न अपलोड करें",
     "upload_success": "नई इमेज रिविज़न अपलोड कर दी गई है।",
-    "upload_failed": "नई इमेज रिविज़न का अपलोड फ़ेल हो गया: {{message}}",
-    "title": "इमेज"
+    "upload_failed": "नई इमेज रिविज़न का अपलोड फ़ेल हो गया: {{message}}"
   },
   "inherited_attribute_list": {
     "title": "विरासत में मिले एट्रिब्यूट्स",
-    "no_inherited_attributes": "विरासत में मिला कोई एट्रिब्यूट नहीं है।",
     "none": "कोई नहीं"
   },
   "note_info_widget": {
@@ -854,8 +805,6 @@
     "show_similar_notes": "मिलते-जुलते नोट्स दिखाएं"
   },
   "note_map": {
-    "open_full": "पूरा फैलाएं",
-    "collapse": "नॉर्मल साइज़ में समेटें",
     "title": "नोट मैप",
     "fix-nodes": "नोड्स फिक्स करें",
     "link-distance": "लिंक की दूरी",
@@ -866,18 +815,10 @@
   "note_paths": {
     "title": "नोट पाथ",
     "clone_button": "नोट को नई जगह क्लोन करें..।",
-    "intro_placed": "यह नोट इन पाथ्स पर रखा गया है:",
     "intro_not_placed": "यह नोट अभी तक ट्री में नहीं रखा गया है।",
     "outside_hoisted": "यह पाथ 'hoisted' नोट के बाहर है, आपको उसे 'unhoist' करना होगा।",
     "archived": "आर्काइव किया गया",
     "search": "खोजें"
-  },
-  "note_properties": {
-    "this_note_was_originally_taken_from": "यह नोट मूल रूप से यहाँ से लिया गया था:",
-    "info": "सूचना"
-  },
-  "owned_attribute_list": {
-    "owned_attributes": "खुद के एट्रिब्यूट्स"
   },
   "promoted_attributes": {
     "promoted_attributes": "प्रमोटेड एट्रिब्यूट्स",
@@ -889,12 +830,6 @@
     "add_new_attribute": "नया एट्रिब्यूट जोड़ें",
     "remove_this_attribute": "यह एट्रिब्यूट हटाएं",
     "remove_color": "रंग वाला लेबल हटाएं"
-  },
-  "script_executor": {
-    "query": "क्वेरी (Query)",
-    "script": "स्क्रिप्ट",
-    "execute_query": "क्वेरी चलाएं",
-    "execute_script": "स्क्रिप्ट चलाएं"
   },
   "search_definition": {
     "add_search_option": "सर्च विकल्प जोड़ें:",
@@ -996,7 +931,6 @@
     "label_rock_or_pop": "दिए गए लेबल्स में से कम से कम एक होना चाहिए",
     "label_year_comparison": "नंबरों की तुलना (साथ ही >, >=, < भी)।",
     "label_date_created": "पिछले महीने बने नोट्स",
-    "error": "सर्च एरर: {{error}}",
     "search_prefix": "खोजें:"
   },
   "attachment_detail": {
@@ -1024,13 +958,10 @@
   },
   "editable_text": {
     "placeholder": "अपने नोट का कंटेंट यहाँ लिखें..।",
-    "editor_crashed_title": "टेक्स्ट एडिटर क्रैश हो गया है",
-    "editor_crashed_content": "आपका कंटेंट सफलतापूर्वक रिकवर कर लिया गया है, लेकिन आपके कुछ हालिया बदलाव शायद सेव न हुए हों।",
     "editor_crashed_details_button": "ज़्यादा जानकारी देखें..।",
     "editor_crashed_details_intro": "अगर यह एरर बार-बार आता है, तो नीचे दी गई जानकारी GitHub पर डालकर इसकी रिपोर्ट करें।",
     "editor_crashed_details_title": "तकनीकी जानकारी",
-    "auto-detect-language": "अपने-आप पहचानें",
-    "keeps-crashing": "एडिटिंग विजेट बार-बार क्रैश हो रहा है। कृपया Trilium को रीस्टार्ट करके देखें। अगर समस्या बनी रहती है, तो बग रिपोर्ट (bug report) करें।"
+    "auto-detect-language": "अपने-आप पहचानें"
   },
   "empty": {
     "open_note_instruction": "नीचे दिए गए बॉक्स में टाइटल लिखकर नोट खोलें या ट्री में से कोई नोट चुनें।",
@@ -1062,11 +993,8 @@
     "connection_exists": "इन नोट्स के बीच '{{name}}' नाम का संबंध पहले से मौजूद है।",
     "start_dragging_relations": "यहाँ से रिलेशंस ड्रैग करना शुरू करें और उन्हें किसी दूसरे नोट पर छोड़ दें।",
     "note_not_found": "नोट {{noteId}} नहीं मिला!",
-    "cannot_match_transform": "ट्रांसफ़ॉर्म (transform) मैच नहीं हो सका: {{transform}}",
     "note_already_in_diagram": "नोट \"{{title}}\" पहले से डायग्राम में है।",
-    "enter_title_of_new_note": "नए नोट का टाइटल लिखें",
     "default_new_note_title": "नया नोट",
-    "click_on_canvas_to_place_new_note": "नया नोट रखने के लिए कैनवस (canvas) पर क्लिक करें",
     "rename_relation": "रिलेशन का नाम बदलें"
   },
   "render": {
@@ -1152,8 +1080,6 @@
   "experimental_features": {
     "title": "प्रायोगिक विकल्प (Experimental Options)",
     "disclaimer": "ये विकल्प अभी टेस्टिंग में (experimental) हैं और इनसे अस्थिरता आ सकती है। सावधानी से इस्तेमाल करें।",
-    "new_layout_name": "नया लेआउट",
-    "new_layout_description": "आधुनिक लुक और बेहतर उपयोग के लिए नया लेआउट आज़माएं। आने वाले वर्ज़न्स में इसमें काफी बदलाव हो सकते हैं।",
     "llm_name": "AI / LLM चैट",
     "llm_description": "बड़े भाषा मॉडल (LLMs) द्वारा संचालित एआई चैट साइडबार और एलएलएम चैट नोट्स इनेबल करें।"
   },
@@ -1192,9 +1118,6 @@
     "title": "नेटिव टाइटल बार (ऐप रीस्टार्ट ज़रूरी है)",
     "enabled": "चालू",
     "disabled": "बंद"
-  },
-  "ribbon": {
-    "edited_notes_message": "दिन वाले नोट्स (day notes) पर 'एडिट किए गए नोट्स' वाला टैब अपने-आप खुल जाएगा"
   },
   "theme": {
     "title": "एप्लिकेशन थीम",
@@ -1360,17 +1283,7 @@
     "italic": "इटैलिक (Italic) टेक्स्ट",
     "underline": "अंडरलाइन टेक्स्ट",
     "color": "रंगीन टेक्स्ट",
-    "bg_color": "बैकग्राउंड रंग वाला टेक्स्ट",
-    "visibility_title": "हाइलाइट्स लिस्ट दिखाना (Visibility)",
-    "visibility_description": "आप हर नोट के लिए #hideHighlightWidget लेबल लगाकर हाइलाइट्स विजेट छुपा सकते हैं।",
-    "shortcut_info": "आप दाएं पैनल (हाइलाइट्स के साथ) को तुरंत खोलने/बंद करने के लिए शॉर्टकट सेट कर सकते हैं (Options -> Shortcuts में 'toggleRightPane' नाम से)।"
-  },
-  "table_of_contents": {
-    "title": "विषय-सूची (Table of Contents)",
-    "description": "जब नोट में तय संख्या से ज़्यादा हेडिंग्स होंगी, तो विषय-सूची अपने-आप दिखने लगेगी। आप इस संख्या को बदल सकते हैं:",
-    "unit": "हेडिंग्स",
-    "disable_info": "आप इसे बंद करने के लिए कोई बहुत बड़ी संख्या भी सेट कर सकते हैं।",
-    "shortcut_info": "आप दाएं पैनल (TOC के साथ) को तुरंत खोलने/बंद करने के लिए शॉर्टकट सेट कर सकते हैं (Options -> Shortcuts में 'toggleRightPane' नाम से)।"
+    "bg_color": "बैकग्राउंड रंग वाला टेक्स्ट"
   },
   "text_auto_read_only_size": {
     "title": "ऑटोमैटिक रीड-ओनली साइज़",
@@ -1623,9 +1536,7 @@
     "unrecognized_role": "अटैचमेंट रोल '{{role}}' की पहचान नहीं हुई।"
   },
   "bookmark_switch": {
-    "bookmark": "बुकमार्क",
-    "bookmark_this_note": "इस नोट को बाएं पैनल में बुकमार्क करें",
-    "remove_bookmark": "बुकमार्क हटाएं"
+    "bookmark": "बुकमार्क"
   },
   "editability_select": {
     "auto": "ऑटो (Auto)",
@@ -1663,7 +1574,6 @@
     "copy-note-path-to-clipboard": "नोट का पाथ (Path) कॉपी करें",
     "protect-subtree": "सब-ट्री को सुरक्षित (Protect) करें",
     "unprotect-subtree": "सुरक्षा हटाएं (Unprotect)",
-    "copy-clone": "कॉपी / क्लोन (Clone)",
     "clone-to": "इसमें क्लोन करें..।",
     "cut": "कट (Cut)",
     "move-to": "इसमें ले जाएं (Move)..।",
@@ -1678,14 +1588,7 @@
     "convert-to-attachment-confirm": "क्या आप वाकई चुने हुए नोट्स को अटैचमेंट में बदलना चाहते हैं? यह सिर्फ़ इमेज नोट्स पर काम करेगा।",
     "open-in-popup": "तुरंत एडिट करें"
   },
-  "shared_info": {
-    "shared_publicly": "यह नोट सार्वजनिक रूप से {{- link}} पर शेयर किया गया है।",
-    "shared_locally": "यह नोट लोकल नेटवर्क पर {{- link}} पर शेयर किया गया है।",
-    "help_link": "मदद के लिए <a href=\"https://triliumnext.github.io/Docs/Wiki/sharing.html\">wiki</a> देखें।"
-  },
   "read-only-info": {
-    "read-only-note": "आप सिर्फ़ पढ़ने वाला (Read-only) नोट देख रहे हैं।",
-    "auto-read-only-note": "तेज़ी से लोड करने के लिए यह नोट 'रीड-ओनली' मोड में दिखाया जा रहा है।",
     "edit-note": "नोट एडिट करें"
   },
   "note_types": {
@@ -1711,28 +1614,20 @@
     "ai-chat": "AI चैट",
     "task-list": "काम की लिस्ट (Task List)",
     "new-feature": "नया",
-    "collections": "कलेक्शन्स",
     "markdown": "Markdown",
     "llm-chat": "AI चैट",
     "spreadsheet": "स्प्रेडशीट (Spreadsheet)"
   },
   "protect_note": {
-    "toggle-on": "नोट सुरक्षित (Protect) करें",
-    "toggle-off": "नोट की सुरक्षा हटाएं",
-    "toggle-on-hint": "नोट सुरक्षित नहीं है, सुरक्षित करने के लिए क्लिक करें",
-    "toggle-off-hint": "नोट सुरक्षित है, सुरक्षा हटाने के लिए क्लिक करें"
+    "toggle-on": "नोट सुरक्षित (Protect) करें"
   },
   "shared_switch": {
     "shared": "शेयर किया गया",
-    "toggle-on-title": "नोट शेयर करें",
-    "toggle-off-title": "नोट को अनशेयर (Unshare) करें",
     "shared-branch": "यह नोट सिर्फ़ शेयर फ़ोल्डर में है, अनशेयर करने से यह डिलीट हो जाएगा। क्या आप जारी रखना चाहते हैं?",
     "inherited": "इस नोट को यहाँ से अनशेयर नहीं किया जा सकता क्योंकि यह ऊपर वाले फ़ोल्डर से शेयर हो रहा है।"
   },
   "template_switch": {
-    "template": "टेम्पलेट (Template)",
-    "toggle-on-hint": "नोट को टेम्पलेट बनाएं",
-    "toggle-off-hint": "टेम्पलेट हटाएं"
+    "template": "टेम्पलेट (Template)"
   },
   "open-help-page": "मदद का पेज खोलें",
   "find": {
@@ -1744,10 +1639,8 @@
     "replace_all": "सभी बदलें"
   },
   "highlights_list_2": {
-    "title": "हाइलाइट्स लिस्ट",
     "title_with_count_one": "{{count}} हाइलाइट",
     "title_with_count_other": "",
-    "options": "विकल्प",
     "menu_configure": "हाइलाइट्स लिस्ट सेट करें..।",
     "no_highlights": "कोई हाइलाइट नहीं मिली।"
   },
@@ -1755,7 +1648,6 @@
     "placeholder": "तुरंत खोजें (Quick search)",
     "searching": "खोजा जा रहा है..।",
     "no-results": "कोई परिणाम नहीं मिला",
-    "more-results": "... और {{number}} परिणाम।",
     "show-in-full-search": "पूरी खोज (Full search) में दिखाएं"
   },
   "note_tree": {
@@ -1807,7 +1699,6 @@
     "created_on": "<Value /> को बना",
     "last_modified": "<Value /> को बदला गया",
     "note_type_switcher_label": "{{type}} से इसमें बदलें:",
-    "note_type_switcher_others": "अन्य नोट टाइप",
     "note_type_switcher_templates": "टेम्पलेट (Template)",
     "note_type_switcher_collection": "कलेक्शन (Collection)",
     "edited_notes": "आज बदले गए नोट्स",
@@ -1845,7 +1736,6 @@
   },
   "toc": {
     "table_of_contents": "विषय-सूची (TOC)",
-    "options": "विकल्प",
     "no_headings": "कोई हेडिंग नहीं मिली।"
   },
   "watched_file_update_status": {
@@ -1926,9 +1816,6 @@
     "tab_width": "टैब चौड़ाई",
     "tab_width_unit": "स्पेस"
   },
-  "classic_editor_toolbar": {
-    "title": "फॉर्मेटिंग (Formatting)"
-  },
   "editor": {
     "title": "एडिटर (Editor)"
   },
@@ -1936,12 +1823,10 @@
     "editor_type": {
       "label": "फॉर्मेटिंग टूलबार",
       "floating": {
-        "title": "तैरता हुआ (Floating)",
-        "description": "टूल्स कर्सर के पास दिखेंगे;"
+        "title": "तैरता हुआ (Floating)"
       },
       "fixed": {
-        "title": "स्थायी (Fixed)",
-        "description": "टूल्स ऊपर 'Formatting' टैब में दिखेंगे।"
+        "title": "स्थायी (Fixed)"
       },
       "multiline-toolbar": "जगह न होने पर टूलबार को कई लाइन्स में दिखाएं।",
       "toolbar_style": "टूलबार स्टाइल"
@@ -1979,12 +1864,9 @@
     "zoom-factor": "ज़ूम फैक्टर (Zoom factor)"
   },
   "note_autocomplete": {
-    "search-for": "\"{{term}}\" के लिए खोजें",
     "create-note": "चाइल्ड नोट \"{{term}}\" बनाएं और लिंक करें",
     "insert-external-link": "\"{{term}}\" का बाहरी लिंक जोड़ें",
-    "clear-text-field": "टेक्स्ट साफ़ करें",
-    "show-recent-notes": "हाल के नोट्स दिखाएं",
-    "full-text-search": "पूरी खोज (Full text search)"
+    "clear-text-field": "टेक्स्ट साफ़ करें"
   },
   "note_tooltip": {
     "note-has-been-deleted": "नोट डिलीट कर दिया गया है।",
@@ -2046,13 +1928,6 @@
   "switch_layout_button": {
     "title_vertical": "एडिटर पैनल नीचे ले जाएं",
     "title_horizontal": "एडिटर पैनल बाईं ओर ले जाएं"
-  },
-  "toggle_read_only_button": {
-    "unlock-editing": "एडिटिंग अनलॉक करें",
-    "lock-editing": "एडिटिंग लॉक करें"
-  },
-  "png_export_button": {
-    "button_title": "डायग्राम को PNG में एक्सपोर्ट करें"
   },
   "svg": {
     "export_to_png": "डायग्राम PNG में एक्सपोर्ट नहीं हो सका।",
@@ -2178,9 +2053,6 @@
     "background_effects_title": "बैकग्राउंड इफेक्ट्स अब तैयार हैं",
     "background_effects_message": "विंडोज़ और मैक के लिए बैकग्राउंड इफेक्ट्स अब उपलब्ध हैं। ये ऐप को और भी सुंदर बनाते हैं।",
     "background_effects_button": "बैकग्राउंड इफेक्ट्स चालू करें",
-    "new_layout_title": "नया लेआउट",
-    "new_layout_message": "हमने ट्रिलियम के लिए एक नया और आधुनिक लेआउट बनाया है। इसे आप 'Appearance' सेटिंग्स से बदल भी सकते हैं।",
-    "new_layout_button": "और जानकारी",
     "dismiss": "हटाएँ",
     "scripting_disabled_title": "बैकएंड स्क्रिप्टिंग अक्षम कर दी गई है",
     "scripting_disabled_message": "सुरक्षा के लिए अब बैकएंड स्क्रिप्टिंग डिफ़ॉल्ट रूप से अक्षम है। आपके नोट्स में बैकएंड स्क्रिप्ट हैं (#run लेबल वाले नोट्स) जो अब स्वचालित रूप से निष्पादित नहीं होंगे।\n\nयदि आप इन स्क्रिप्ट्स पर निर्भर हैं, तो आप सुरक्षा सेटिंग्स में बैकएंड स्क्रिप्टिंग को फिर से इनेबल कर सकते हैं।",
@@ -2193,9 +2065,6 @@
     "related_code_blocks": "टेक्स्ट नोट्स में कोड ब्लॉक्स के लिए कलर स्कीम",
     "related_code_notes": "कोड नोट्स के लिए कलर स्कीम",
     "ui": "यूजर इंटरफ़ेस (UI)",
-    "ui_old_layout": "पुराना लेआउट",
-    "ui_new_layout": "नया लेआउट",
-    "ui_layout_style": "लेआउट स्टाइल",
     "ui_layout_orientation": "लॉन्च बार ओरिएंटेशन"
   },
   "units": {
@@ -2564,7 +2433,6 @@
     "thought_process": "विचार प्रक्रिया",
     "tool_calls": "{{count}} टूल कॉल",
     "input": "इनपुट",
-    "input_streaming": "इनपुट (स्ट्रीमिंग…)",
     "edit_index": "{{total}} में से {{index}} संपादित करें",
     "result": "परिणाम",
     "error": "त्रुटि",
@@ -2649,7 +2517,6 @@
     "page_size": "पेज साइज",
     "scale": "स्केल",
     "margins": "मार्जिन",
-    "render_error": "वर्तमान सेटिंग्स के साथ PDF रेंडर करने में असमर्थ। कृपया मार्जिन और स्केल की जांच करें।",
     "margins_default": "डिफ़ॉल्ट",
     "margins_none": "कोई नहीं",
     "margins_minimum": "न्यूनतम",
@@ -2714,9 +2581,6 @@
   "llm": {
     "feature_not_enabled": "AI इंटीग्रेशन का उपयोग करने के लिए सेटिंग्स → एडवांस्ड → एक्सपेरिमेंटल फीचर्स में LLM एक्सपेरिमेंटल फीचर को इनेबल करें।",
     "add_provider": "प्रोवाइडर जोड़ें",
-    "add_provider_title": "AI प्रोवाइडर जोड़ें",
-    "configured_providers": "कॉन्फ़िगर किए गए प्रोवाइडर्स",
-    "no_providers_configured": "अभी तक कोई प्रोवाइडर कॉन्फ़िगर नहीं है।",
     "provider_name": "नाम",
     "actions": "क्रियाएं",
     "delete_provider": "डिलीट करें",
@@ -2803,7 +2667,6 @@
       "insert-a-toggleable-section-that-hides-shows-content-on-click": "एक टॉगल करने योग्य सेक्शन डालें जो क्लिक करने पर कंटेंट को छुपाता/दिखाता है।",
       "insert-an-anchor-for-internal-linking": "इंटरनल लिंकिंग के लिए एक एंकर डालें",
       "insert-an-empty-mermaid-diagram": "एक खाली मरमेड डायग्राम डालें",
-      "insert-the-current-date-and-time": "करंट डेट और टाइम डालें",
       "justify-text-alignment": "टेक्स्ट अलाइनमेंट जस्टिफाई करें",
       "right-click-or-press-0-to-change-state": "अधिक टास्क स्टेट्स के लिए राइट क्लिक करें।\nस्टेट्स के बीच साइकिल करने के लिए %0 दबाएं।",
       "select-collapsible-block": "कोलाप्सिबल ब्लॉक चुनें",

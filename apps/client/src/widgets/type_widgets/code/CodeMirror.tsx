@@ -19,7 +19,7 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
 
 export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, allowKeyboardSuggestions, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
-    const codeEditorRef = useRef<VanillaCodeMirror>();
+    const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
 
     // Create CodeMirror instance.
     useEffect(() => {

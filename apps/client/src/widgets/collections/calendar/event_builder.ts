@@ -8,7 +8,12 @@ import FNote from "../../../entities/fnote";
 import froca from "../../../services/froca";
 import server from "../../../services/server";
 import toastService from "../../../services/toast";
-import { formatDateToLocalISO, getCustomisableLabel, getMonthsInDateRange } from "./utils";
+import {
+    type PromotedAttributeSetting, resolvePromotedAttributes, visiblePromotedAttributeNames
+} from "../promoted_attributes";
+import {
+    drawnEventLabels, formatDateToLocalISO, getCustomisableLabel, getMonthsInDateRange
+} from "./utils";
 
 interface Event {
     startDate: string,
@@ -17,13 +22,34 @@ interface Event {
     endTime?: string | null,
     isArchived?: boolean,
     recurrence?: string | null;
+    /**
+     * The attributes shown on the event, by name and in order, unless the note has its own
+     * `#calendar:displayedAttributes` list.
+     */
+    displayedAttributes?: string[];
 }
 
-export async function buildEvents(noteIds: string[]) {
+export async function buildEvents(noteIds: string[], displayed?: {
+    /** The calendar, which defines the attributes its events can show. */
+    calendar: FNote;
+    /** What the calendar's properties arranged, as its view config stores it. */
+    settings: PromotedAttributeSetting[] | undefined;
+}) {
     const notes = await froca.getNotes(noteIds);
     const events: EventSourceInput = [];
+    // Resolved against the events as well, which can define attributes of their own.
+    const displayedAttributes = displayed
+        ? visiblePromotedAttributeNames(resolvePromotedAttributes(
+            displayed.calendar, displayed.settings, drawnEventLabels(displayed.calendar), notes,
+            { unarrangedHidden: true }))
+        : [];
 
     for (const note of notes) {
+        // An event template created from `CalendarProperties` is a child of the calendar, not an event.
+        if (note.hasLabel("template")) {
+            continue;
+        }
+
         const startDate = getCustomisableLabel(note, "startDate", "calendar:startDate");
 
         if (!startDate) {
@@ -36,7 +62,9 @@ export async function buildEvents(noteIds: string[]) {
         const recurrence = getCustomisableLabel(note, "recurrence", "calendar:recurrence");
         const isArchived = note.hasLabel("archived");
         try {
-            events.push(await buildEvent(note, { startDate, endDate, startTime, endTime, recurrence, isArchived }));
+            events.push(await buildEvent(note, {
+                startDate, endDate, startTime, endTime, recurrence, isArchived, displayedAttributes
+            }));
         } catch (error) {
             if (error instanceof Error) {
                 const errorMessage = error.message;
@@ -94,7 +122,9 @@ export async function buildEventsForCalendar(note: FNote, e: EventSourceFuncInfo
     return events.flat();
 }
 
-export async function buildEvent(note: FNote, { startDate, endDate, startTime, endTime, recurrence, isArchived }: Event) {
+export async function buildEvent(note: FNote, {
+    startDate, endDate, startTime, endTime, recurrence, isArchived, displayedAttributes = []
+}: Event) {
     const customTitleAttributeName = note.getLabelValue("calendar:title");
     const titles = await parseCustomTitle(customTitleAttributeName, note);
     const colorClass = note.getColorClass();
@@ -105,16 +135,17 @@ export async function buildEvent(note: FNote, { startDate, endDate, startTime, e
     const seriesStart = startDate;
     const titleTemplate = note.getLabelValue("calendar:titleTemplate");
 
-    const calendarDisplayedAttributes = note.getLabelValue("calendar:displayedAttributes")?.split(",");
+    const shownAttributes =
+        note.getLabelValue("calendar:displayedAttributes")?.split(",") ?? displayedAttributes;
     let displayedAttributesData: Array<[string, string]> | null = null;
-    if (calendarDisplayedAttributes) {
-        displayedAttributesData = await buildDisplayedAttributes(note, calendarDisplayedAttributes);
+    if (shownAttributes.length) {
+        displayedAttributesData = await buildDisplayedAttributes(note, shownAttributes);
     }
 
     // An event with no start time takes the whole day, which is how the editor writes one too (see
     // EventDatesEditor). When the event repeats this has to be said outright rather than left to
     // FullCalendar's rrule plugin to infer from the rule: the plugin reads the whole of the rule
-    // looking for a time, so an `UNTIL=…T235959Z` — which the recurrence editor writes for an end
+    // looking for a time, so an `UNTIL=…T235959` — which the recurrence editor writes for an end
     // date (see recurrence.ts) — makes it take the event for a timed one whatever its DTSTART says.
     const allDay = !startTime;
 
@@ -163,7 +194,8 @@ export async function buildEvent(note: FNote, { startDate, endDate, startTime, e
             // invented for hours the event does not have. `DTSTART;VALUE=DATE:` — the way iCalendar
             // spells the same thing — is not an option: the rrule library drops a DTSTART written
             // that way without a word and starts the series from today instead.
-            const rruleString = `DTSTART:${dayjs(startDate).format(allDay ? "YYYYMMDD" : "YYYYMMDD[T]HHmmss")}\n${recurrence}`;
+            const dtStart = dayjs(startDate).format(allDay ? "YYYYMMDD" : "YYYYMMDD[T]HHmmss");
+            const rruleString = `DTSTART:${dtStart}\n${toLocalDates(recurrence)}`;
 
             // Validate rrule string
             let rruleValid = true;
@@ -252,6 +284,17 @@ function reportBrokenTitleTemplate(template: string, error: unknown) {
 }
 
 /**
+ * Rewrites the UTC dates of `UNTIL` and `EXDATE` (`…T235959Z`) as local time, like the DTSTART
+ * that `buildEvent()` writes. FullCalendar's rrule plugin reads the whole rule as UTC when any of
+ * them carries a zone, which moves every occurrence by the local UTC offset.
+ */
+function toLocalDates(recurrence: string) {
+    return recurrence
+        .replace(/\b(UNTIL=\d{8}T\d{6})Z\b/gi, "$1")
+        .replace(/^EXDATE:.*$/gim, (line) => line.replace(/(\d{8}T\d{6})Z\b/gi, "$1"));
+}
+
+/**
  * How long one occurrence of a recurring event lasts, as the duration object FullCalendar builds
  * its own from rather than as an `HH:mm` string. A string of hours and minutes has nowhere to put
  * days: a whole-day occurrence came out of it as `"00:00"` — no length at all — and a span of days
@@ -293,8 +336,10 @@ async function parseCustomTitle(customTitlettributeName: string | null, note: FN
     return [note.title];
 }
 
-async function buildDisplayedAttributes(note: FNote, calendarDisplayedAttributes: string[]) {
-    const filteredDisplayedAttributes = note.getAttributes().filter((attr): boolean => calendarDisplayedAttributes.includes(attr.name));
+/** The values of the named attributes, in the order named. */
+async function buildDisplayedAttributes(note: FNote, names: string[]) {
+    const all = note.getAttributes();
+    const filteredDisplayedAttributes = names.flatMap((name) => all.filter((attr) => attr.name === name));
     const result: Array<[string, string]> = [];
 
     for (const attribute of filteredDisplayedAttributes) {

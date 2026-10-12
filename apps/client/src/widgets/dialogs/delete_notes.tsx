@@ -25,6 +25,12 @@ export interface ResolveOptions {
     proceed: boolean;
     deleteAllClones?: boolean;
     eraseNotes?: boolean;
+    /**
+     * How many notes the preview says the deletion takes down, which the backend reports progress
+     * against. Carried from here because the dialog has already asked for it, and because the toast
+     * then counts towards the number the reader was shown before they confirmed.
+     */
+    noteCountToDelete?: number;
 }
 
 interface ShowDeleteNotesDialogOpts {
@@ -116,7 +122,12 @@ export default function DeleteNotesDialog() {
                 <Button text={t("delete_notes.delete")} kind="primary"
                     buttonRef={okButtonRef}
                     onClick={() => {
-                        opts.callback?.({ proceed: true, deleteAllClones, eraseNotes });
+                        opts.callback?.({
+                            proceed: true,
+                            deleteAllClones,
+                            eraseNotes,
+                            noteCountToDelete: noteIdsToBeDeleted.length
+                        });
                         setShown(false);
                     }} />
             </>}
@@ -179,7 +190,6 @@ function DeleteAllClonesOption({ cloneInfo, deleteAllClones, setDeleteAllClones 
 
 const ROW_HEIGHT = 36;
 const VIRTUALIZE_THRESHOLD = 100;
-const MAX_LIST_HEIGHT = 400;
 
 function DeletedNoteRow({ index, style, noteIds }: RowComponentProps<{ noteIds: string[] }>) {
     return (
@@ -202,7 +212,6 @@ function DeletedNotes({ noteIdsToBeDeleted }: { noteIdsToBeDeleted: DeleteNotesP
                             rowCount={noteIdsToBeDeleted.length}
                             rowHeight={ROW_HEIGHT}
                             rowProps={{ noteIds: noteIdsToBeDeleted }}
-                            style={{ maxHeight: MAX_LIST_HEIGHT }}
                         />
                     ) : (
                         <ul className="preview-list">

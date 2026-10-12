@@ -1,8 +1,8 @@
 import type { AiQuickAction, AiQuickActionFooter, AiQuickActionGroup, CKTextEditor } from "@triliumnext/ckeditor5";
 
 import type { CommandNames } from "../components/app_context.js";
-import appContext from "../components/app_context.js";
 import { t } from "../services/i18n.js";
+import { getEditorNoteId } from "../widgets/react/NoteStore.js";
 import type { MenuItem } from "./context_menu.js";
 
 /**
@@ -139,22 +139,27 @@ function buildQuickActionItems(
  * happily report its own stale model selection for it.
  */
 export async function getTextEditorAtSelection(): Promise<CKTextEditor | null> {
-    if (appContext.tabManager.getActiveContextNote()?.type !== "text") {
-        return null;
-    }
-
-    try {
-        const editor = await appContext.tabManager.getActiveContext()?.getTextEditor();
-        const domRoot = editor?.editing.view.getDomRoot();
-        const anchorNode = window.getSelection()?.anchorNode;
-
-        if (editor && domRoot && anchorNode && domRoot.contains(anchorNode)) {
-            return editor;
-        }
-    } catch (error) {
-        // Editor not ready or the request timed out.
-        console.error("Failed to read the text editor at the selection:", error);
-    }
-
-    return null;
+    return getTextEditorContaining(window.getSelection()?.anchorNode);
 }
+
+/**
+ * Returns the text editor of a note whose editable contains `node`, or `null` when no such editor
+ * does. Takes the right-click target instead of the DOM selection, because a right-click does not
+ * move the selection in every browser.
+ *
+ * Reads the editor off the innermost editable root around `node`, so it finds the editor of a split
+ * pane the right-click did not activate, of a dialog such as the quick edit, and of an included
+ * note edited in place. An editor that holds no note, such as the attribute editor, does not count.
+ */
+export async function getTextEditorContaining(
+    node: Node | null | undefined
+): Promise<CKTextEditor | null> {
+    const element = node instanceof Element ? node : node?.parentElement;
+    const editor = element?.closest<EditorRootElement>(EDITOR_ROOT_SELECTOR)?.ckeditorInstance;
+    return editor && getEditorNoteId(editor) ? editor : null;
+}
+
+/** The editable root of a text editor, which CKEditor gives a reference to the editor. */
+type EditorRootElement = HTMLElement & { ckeditorInstance?: CKTextEditor | null };
+
+const EDITOR_ROOT_SELECTOR = ".ck-editor__editable:not(.ck-editor__nested-editable)";

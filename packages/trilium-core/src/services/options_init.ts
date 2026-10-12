@@ -221,7 +221,6 @@ const defaultOptions: DefaultOption[] = [
     { name: "centerContent", value: "false", isSynced: false },
     { name: "compressImages", value: "true", isSynced: true },
     { name: "downloadImagesAutomatically", value: "true", isSynced: true },
-    { name: "minTocHeadings", value: "5", isSynced: true },
     { name: "highlightsList", value: '["underline","color","bgColor"]', isSynced: true },
     { name: "checkForUpdates", value: "true", isSynced: true },
     { name: "disableTray", value: "false", isSynced: false },
@@ -268,7 +267,6 @@ const defaultOptions: DefaultOption[] = [
     { name: "backdropEffectsEnabled", value: "true", isSynced: false },
     { name: "smoothScrollEnabled", value: "true", isSynced: false },
     { name: "hardwareAccelerationEnabled", value: "true", isSynced: false },
-    { name: "newLayout", value: "true", isSynced: true },
 
     // PDF
     { name: "pdfSignatures", value: "{}", isSynced: true },
@@ -322,13 +320,13 @@ const defaultOptions: DefaultOption[] = [
     { name: "textNoteEmojiCompletionEnabled", value: "true", isSynced: true },
     { name: "textNoteCompletionEnabled", value: "true", isSynced: true },
     { name: "textNoteSlashCommandsEnabled", value: "true", isSynced: true },
+    { name: "mathFieldEnabled", value: "true", isSynced: true },
     { name: "textNoteContentHintsEnabled", value: "true", isSynced: true },
     { name: "textNoteAutoLinkPreviewsEnabled", value: "true", isSynced: true },
     // Off: the tags this carries are the ones the editor has no feature for, and GHS's handling of
     // them is worse than their absence. See `textNoteHtmlSupportEnabled` for what turning it off costs.
     { name: "textNoteHtmlSupportEnabled", value: "false", isSynced: true },
     { name: "clipboardImageEmbedEnabled", value: "true", isSynced: true },
-    { name: "includeNoteDefaultBoxSize", value: "medium", isSynced: true },
 
     // HTML import configuration
     { name: "layoutOrientation", value: "vertical", isSynced: false },
@@ -355,7 +353,7 @@ const defaultOptions: DefaultOption[] = [
     {
         name: "seenCallToActions",
         value: JSON.stringify([
-            "new_layout", "background_effects", "next_theme"
+            "background_effects", "next_theme"
         ]),
         isSynced: true
     },
@@ -365,6 +363,7 @@ const defaultOptions: DefaultOption[] = [
     // Was previously the "llm" experimental feature; inherit the value from there for existing users.
     { name: "aiEnabled", value: (optionsMap) => optionsMap.experimentalFeatures?.includes('"llm"') ? "true" : "false", isSynced: true },
     { name: "llmProviders", value: "[]", isSynced: true },
+    { name: "llmWebSearchProvider", value: "", isSynced: true },
     { name: "aiAssistantModel", value: "", isSynced: true },
     { name: "mcpEnabled", value: "false", isSynced: false },
 

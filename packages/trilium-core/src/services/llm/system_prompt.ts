@@ -61,18 +61,18 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
         );
     } else if (config.contextNoteId) {
         parts.push(
-            `You can see the current note's metadata above, but you cannot search or access other notes. If the user asks about other notes, inform them that "Note access" is disabled and they need to enable it in the chat settings (click on the model name dropdown and toggle "Note access").`
+            `You can see the current note's metadata above, but you cannot search or access other notes. If the user asks about other notes, inform them that "Note access" is disabled and they can turn it on with ${NOTE_ACCESS_TOGGLE}.`
         );
     } else {
         parts.push(
-            `You do not have access to the user's notes. If the user asks about their notes, inform them that "Note access" is disabled and they need to enable it in the chat settings (click on the model name dropdown and toggle "Note access").`
+            `You do not have access to the user's notes. If the user asks about their notes, inform them that "Note access" is disabled and they can turn it on with ${NOTE_ACCESS_TOGGLE}.`
         );
     }
 
     // Web search hint
     if (!config.enableWebSearch) {
         parts.push(
-            `You do not have access to web search. If the user asks for current/real-time information, news, or anything that requires searching the web, inform them that "Web search" is disabled and they need to enable it in the chat settings (click on the model name dropdown and toggle "Web search").`
+            `You do not have access to web search. If the user asks for current/real-time information, news, or anything that requires searching the web, inform them that "Web search" is disabled and they can turn it on by ${WEB_SEARCH_TOGGLE}.`
         );
     }
 
@@ -102,8 +102,10 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
             + `**Tables** — GitHub-style pipe tables: a header row, a \`---\` separator row, then the data rows.\n\n`
             + `**Collapsible blocks** — use the standard HTML \`<details>\`/\`<summary>\` form; the \`<summary>\` is the always-visible title. Placed back-to-back with nothing between them, consecutive collapsible blocks are grouped into an accordion — handy when presenting several options or alternatives the user can expand one at a time. Example:\n`
             + `<details><summary>Option A</summary>\nDetails about the first option.\n</details>\n<details><summary>Option B</summary>\nDetails about the second option.\n</details>\n\n`
+            + buildTabsHint(config.enableNoteTools === true)
             + `**Footnotes** — use \`[^1]\` in text and \`[^1]: explanation\` at the bottom.\n\n`
             + `**Keyboard keys** — wrap each key in a \`<kbd>\` tag when documenting shortcuts, e.g. \`<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd>\`.\n\n`
+            + buildIconHint(config.enableNoteTools === true)
             + buildTaskListHint()
     );
 
@@ -111,6 +113,27 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
     // `parts` is never empty — the `: undefined` arm is unreachable defence.
     /* v8 ignore next */
     return parts.length > 0 ? parts.join("\n\n") : undefined;
+}
+
+/**
+ * The inline-icon hint: the `tn-icon` span Trilium's text notes store and the chat renders. The
+ * icon search tool is named only when note tools are on, since it is one of them.
+ */
+function buildIconHint(canSearchIcons: boolean): string {
+    const find = canSearchIcons ? ", find one with search_icons" : "";
+    return `**Icons** — insert an inline icon as \`<span class="tn-icon bx bx-cog"></span>\`, with the icon's classes in place of \`bx bx-cog\` (Boxicons such as \`bx bx-star\`, or an installed icon pack's${find}). Use one to show a button or other UI element the user should look for, e.g. "click <span class="tn-icon bx bx-cog"></span> to open the settings"; not as decoration, and not in note titles.\n\n`;
+}
+
+/**
+ * The content-tabs hint. The note tools return text notes as Markdown, so a model that can edit
+ * notes is also told to keep the indentation that holds a tab's content inside the tab.
+ */
+function buildTabsHint(canEditNotes: boolean): string {
+    const keep = canEditNotes
+        ? " When editing a note that has content tabs, keep each `===` line and the four-space indentation of its content, or the content leaves the tab."
+        : "";
+    return `**Content tabs** — for content that comes in parallel variants of which the reader needs only one (steps for each operating system, the same snippet in several languages). Each tab is a \`=== "Title"\` line followed by its content indented four spaces; consecutive tabs form one block, and \`===! "Title"\` starts a new block straight after another. Prefer a collapsible accordion when the reader might want to open several options.${keep} Example:\n`
+        + "=== \"Windows\"\n\n    Run `setup.exe`.\n\n=== \"Linux\"\n\n    Run `./setup.sh`.\n\n";
 }
 
 /**
@@ -127,3 +150,11 @@ function buildTaskListHint(): string {
     const lines = custom.map(s => `- \`- [${s.markdownSymbol}]\` — ${s.title}${s.isCompleted ? " (completed)" : ""}`);
     return `${base} This workspace also defines extra task states — recognize these markers in the user's notes, and use them when a task fits:\n${lines.join("\n")}`;
 }
+
+/**
+ * Where the user turns a capability on: the Tools menu beside the model selector in
+ * `ChatInputBar`. The icon class must match the toggle button of `ChatToolsDropdown`.
+ */
+const TOOLS_MENU = `the <span class="tn-icon bx bx-shield-quarter"></span> "Tools" menu next to the model selector, below the message box (include the icon exactly as written, so the user sees the same icon)`;
+const NOTE_ACCESS_TOGGLE = `the "Note access" switch in ${TOOLS_MENU}`;
+const WEB_SEARCH_TOGGLE = `choosing a search source under "Web search" in ${TOOLS_MENU}`;

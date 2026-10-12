@@ -529,7 +529,9 @@ export function checkImageAttachments(note: BNote, content: string) {
                 // data-favicon="api/attachments/{id}/image/...">
                 { pattern: /data-(?:image|favicon)="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image/g, previewPicture: true },
                 // <a href="...attachmentId={id}">
-                { pattern: /href="[^"]+attachmentId=([a-zA-Z0-9_]+)/g }
+                { pattern: /href="[^"]+attachmentId=([a-zA-Z0-9_]+)/g },
+                // <figure class="include-note" data-attachment-id="{id}">
+                { pattern: /data-attachment-id="([a-zA-Z0-9_]+)"/g }
             ];
 
         for (const { pattern, previewPicture } of patterns) {
@@ -642,6 +644,12 @@ export function checkImageAttachments(note: BNote, content: string) {
             new RegExp(`href="[^"]+attachmentId=${unknownAttachment.attachmentId}[^"]*"`, "g"),
             `href="#root/${localAttachment.ownerId}?viewMode=attachments&amp;attachmentId=${localAttachment.attachmentId}"`
         );
+        // replace embeds
+        content = replaceAll(
+            content,
+            `data-attachment-id="${unknownAttachment.attachmentId}"`,
+            `data-attachment-id="${localAttachment.attachmentId}"`
+        );
     }
 
     return {
@@ -739,7 +747,7 @@ function saveBookmarks(note: BNote, content: string) {
 }
 
 function findInternalLinks(content: string, foundLinks: FoundLink[]) {
-    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g;
+    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?(?:\?[^"]*)?"/g;
     let match;
 
     while ((match = re.exec(content))) {
@@ -843,7 +851,8 @@ export function findLlmChatLinks(content: string, foundLinks: FoundLink[]) {
 }
 
 function findIncludeNoteLinks(content: string, foundLinks: FoundLink[]) {
-    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9_]+)"[^>]*>/g;
+    // Includes saved before captions existed are `<section>` elements.
+    const re = /<(?:figure|section) class="include-note[^>]+data-note-id="([a-zA-Z0-9_]+)"[^>]*>/g;
     let match;
 
     while ((match = re.exec(content))) {
@@ -1096,6 +1105,14 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
         const existingAttachmentsByTitle = toMap(note.getAttachments(), "title");
 
         for (const { attachmentId, role, mime, title, position, content, encoding } of attachments) {
+            // An attachment deleted since the client read it, or one of another note, is not saved.
+            if (attachmentId && becca.getAttachment(attachmentId)?.ownerId !== noteId) {
+                getLog().info(
+                    `Skipped attachment '${attachmentId}', which note '${noteId}' does not own.`
+                );
+                continue;
+            }
+
             const decodedContent = encoding === "base64" && typeof content === "string"
                 ? decodeBase64(content) : content;
 
@@ -1349,7 +1366,14 @@ function replaceByMap(str: string, mapObj: Record<string, string>) {
     return str.replace(re, (matched) => mapObj[matched]);
 }
 
-function duplicateSubtree(origNoteId: string, newParentNoteId: string) {
+/**
+ * Copies a note and its descendants into `newParentNoteId`, right after the original, and appends
+ * `notes.duplicate-note-suffix` to the copy's title.
+ *
+ * With `withChildren: false`, only the note itself is copied; links and relations to its children
+ * keep pointing at the original children.
+ */
+function duplicateSubtree(origNoteId: string, newParentNoteId: string, { withChildren = true }: { withChildren?: boolean } = {}) {
     if (origNoteId === "root") {
         throw new Error("Duplicating root is not possible");
     }
@@ -1360,9 +1384,11 @@ function duplicateSubtree(origNoteId: string, newParentNoteId: string) {
     // might be null if orig note is not in the target newParentNoteId
     const origBranch = origNote.getParentBranches().find((branch) => branch.parentNoteId === newParentNoteId);
 
-    const noteIdMapping = getNoteIdMapping(origNote);
+    const noteIdMapping = withChildren
+        ? getNoteIdMapping(origNote)
+        : { [origNote.noteId]: newEntityId() };
 
-    const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
+    const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping, withChildren);
 
     const duplicateNoteSuffix = t("notes.duplicate-note-suffix");
 
@@ -1393,7 +1419,7 @@ function duplicateSubtreeWithoutRoot(origNoteId: string, newNoteId: string) {
     }
 }
 
-function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | undefined, newParentNoteId: string, noteIdMapping: Record<string, string>) {
+function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | undefined, newParentNoteId: string, noteIdMapping: Record<string, string>, withChildren = true) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot duplicate note '${origNote.noteId}' because it is protected and protected session is not available. Enter protected session and try again.`);
     }
@@ -1443,9 +1469,11 @@ function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | und
             attr.save({ skipValidation: true });
         }
 
-        for (const childBranch of origNote.getChildBranches()) {
-            if (childBranch) {
-                duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+        if (withChildren) {
+            for (const childBranch of origNote.getChildBranches()) {
+                if (childBranch) {
+                    duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+                }
             }
         }
 

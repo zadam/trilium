@@ -9,6 +9,7 @@ async function main() {
     // Its own call so it lands beside the bundle rather than under a `services/` path: the pool
     // looks for it next to whatever is running, and desktop builds it the same way.
     await build.buildBackend([ "src/services/image_worker.ts" ]);
+    await build.buildTesseractWorker("src/services/ocr/tesseract_worker.ts");
 
     // Copy assets
     build.copy("src/assets", "assets/");
@@ -27,13 +28,16 @@ async function main() {
     // `import.meta.url`, which in a split bundle is a hash-named file under chunks/, so the bytes
     // are handed to it explicitly from here instead. See pdf_renderer.ts.
     build.copy("/node_modules/@hyzyla/pdfium/dist/pdfium.wasm", "assets/pdfium.wasm");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/", "dist");
+    // The Codex ACP adapter runs as a script of its own in a worker thread. See codex_binary.ts.
+    build.copy("/node_modules/@agentclientprotocol/codex-acp/dist/index.js", "assets/codex-acp.mjs");
     build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
     build.copyNodeModules([ "better-sqlite3" ]);
     build.trimBetterSqlite3();
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
+    build.copy("/packages/ckeditor5/src/theme/content_colors.css", "ckeditor5-content-colors.css");
+    build.copy("/packages/ckeditor5/src/theme/multicolumn.css", "ckeditor5-multicolumn.css");
 
     build.buildFrontend();
 }

@@ -2,8 +2,7 @@ import "./appearance_fonts.css";
 
 import { customFontFamily, customFontNoteId, customFontOption, FontFamily, OptionNames, SYSTEM_MONOSPACE_FONT_STACK, SYSTEM_SANS_SERIF_FONT_STACK, UserFont } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChildren, Fragment } from "preact";
-import { createPortal } from "preact/compat";
+import { ComponentChildren, createPortal, Fragment } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { Trans } from "react-i18next";
 

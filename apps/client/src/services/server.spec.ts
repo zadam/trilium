@@ -216,6 +216,15 @@ describe("ajax error handling", () => {
         expect((window as any).logError).not.toHaveBeenCalled();
     });
 
+    it("stays silent on 400 when silentBadRequest is set, still rejecting with the body", async () => {
+        (window as any).$.ajax = (opts: AjaxOptions) => {
+            opts.error({ status: 400, responseText: JSON.stringify({ message: "CLI not found" }) });
+        };
+        await expect(server.postWithTimeout("url", 1000, {}, undefined, { silentBadRequest: true }))
+            .rejects.toBe(JSON.stringify({ message: "CLI not found" }));
+        expect(toastMock.showError).not.toHaveBeenCalled();
+    });
+
     it("reports validation errors (400) and still rejects when reportError throws", async () => {
         (window as any).$.ajax = (opts: AjaxOptions) => {
             opts.error({ status: 400, responseText: JSON.stringify({ message: "Bad input" }) });
@@ -226,26 +235,14 @@ describe("ajax error handling", () => {
         expect(toastMock.showError).toHaveBeenCalledWith("Bad input");
     });
 
-    it("shows a reverse-proxy-blocked toast for encoded-character 400s", async () => {
+    it("reports a plain 400 on a URL with encoded characters as an unknown error", async () => {
         (window as any).$.ajax = (opts: AjaxOptions) => {
-            // string response (not an object) -> falls through to the else branch
             opts.error({ status: 400, responseText: "plain error" });
         };
-        await expect(server.get("notes/foo%23bar")).rejects.toBeDefined();
-        expect(toastMock.showPersistent).toHaveBeenCalledWith(
-            expect.objectContaining({ id: "reverse-proxy-blocked" })
-        );
+        await expect(server.get("quick-search?searchString=%23book%2Fa")).rejects.toBeDefined();
+        expect(toastMock.showPersistent).not.toHaveBeenCalled();
+        expect(toastMock.showErrorTitleAndMessage).toHaveBeenCalled();
         expect((window as any).logError).toHaveBeenCalled();
-    });
-
-    it("shows a reverse-proxy-blocked toast for %2F-encoded 400s", async () => {
-        (window as any).$.ajax = (opts: AjaxOptions) => {
-            opts.error({ status: 400, responseText: "plain error" });
-        };
-        await expect(server.get("notes/foo%2Fbar")).rejects.toBeDefined();
-        expect(toastMock.showPersistent).toHaveBeenCalledWith(
-            expect.objectContaining({ id: "reverse-proxy-blocked" })
-        );
     });
 
     it("falls back to the '-' placeholder when the message is an empty string", async () => {

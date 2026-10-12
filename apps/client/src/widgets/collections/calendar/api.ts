@@ -1,4 +1,4 @@
-import { AttributeRow } from "@triliumnext/commons";
+import { AttributeRow, buildNoteTypeId } from "@triliumnext/commons";
 
 import FNote from "../../../entities/fnote";
 import { setAttribute } from "../../../services/attributes";
@@ -6,7 +6,19 @@ import dialog from "../../../services/dialog";
 import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
 import { deleteNoteOrBranch } from "../../../services/note_deletion";
+import { type NoteTypeOption } from "../../../services/note_types";
+import { type TemplateChoiceConfig } from "../../react/TemplateDropdown";
+import { type PromotedAttributeSetting } from "../promoted_attributes";
 import { EventLabelName } from "./utils";
+
+/** What the calendar stores in its view config. */
+export interface CalendarViewData extends TemplateChoiceConfig {
+    /** Which attributes the events show, and in what order. See `buildEvents()`. */
+    promotedAttributes?: PromotedAttributeSetting[];
+}
+
+/** What a calendar offers to make its events from until the reader picks for it. */
+export const DEFAULT_EVENT_TEMPLATES = [ buildNoteTypeId("text", "text/html") ];
 
 interface NewEventOpts {
     /** Left out, the note is named the way any new child of the calendar is — by the calendar's
@@ -17,6 +29,8 @@ interface NewEventOpts {
     startTime?: string | null;
     endTime?: string | null;
     componentId?: string;
+    /** What the note is made from, a text note where absent. */
+    template?: NoteTypeOption;
 }
 
 interface ChangeEventOpts {
@@ -27,7 +41,9 @@ interface ChangeEventOpts {
     componentId?: string;
 }
 
-export async function newEvent(parentNote: FNote, { title, startDate, endDate, startTime, endTime, componentId }: NewEventOpts) {
+export async function newEvent(parentNote: FNote, {
+    title, startDate, endDate, startTime, endTime, componentId, template
+}: NewEventOpts) {
     const attributes: Omit<AttributeRow, "noteId" | "attributeId">[] = [];
     attributes.push({
         type: "label",
@@ -62,6 +78,7 @@ export async function newEvent(parentNote: FNote, { title, startDate, endDate, s
         isProtected: parentNote.isProtected,
         content: "",
         type: "text",
+        ...(template?.options ?? {}),
         attributes,
         activate: false
     }, componentId);

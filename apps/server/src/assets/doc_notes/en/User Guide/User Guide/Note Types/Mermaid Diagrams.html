@@ -2,9 +2,9 @@
   <p>For a quick understanding of the Mermaid syntax, see&nbsp;<a class="reference-link"
     href="#root/_help_WWgeUaBb7UfC">Syntax reference</a>&nbsp;(official documentation).</p>
 </aside>
-<figure class="image image-style-align-center">
-  <img style="aspect-ratio:886/663;" src="2_Mermaid Diagrams_image.png"
-  width="886" height="663">
+<figure class="image">
+  <img style="aspect-ratio:1464/915;" src="Mermaid Diagrams_image.png" width="1464"
+  height="915">
 </figure>
 <p>Trilium supports Mermaid, which adds support for various diagrams such
   as flowchart, sequence diagram, class diagram, state diagram, pie charts,
@@ -34,8 +34,8 @@
     preview is at the top.</li>
 </ul>
 <p>It's possible to switch between the two layouts at any time by pressing
-  the
-  <img src="Mermaid Diagrams_image.png">icon in the&nbsp;<a class="reference-link" href="#root/_help_XpOYSgsLkTJy">Floating buttons</a>&nbsp;area.</p>
+  the&nbsp;<span class="tn-icon bx bxs-dock-left"></span> icon in the&nbsp;<a
+  class="reference-link" href="#root/_help_1P8QXI5edXNd">Note buttons</a>.</p>
 <h2>Interaction</h2>
 <ul>
   <li>The source code of the diagram (in Mermaid format) is displayed on the
@@ -48,34 +48,51 @@
     note (depending on the layout):
     <ul>
       <li>There are dedicated buttons at the bottom-right of the preview to control
-        the zoom in, zoom out or re-center the diagram:
-        <img src="1_Mermaid Diagrams_image.png">
-      </li>
+        the zoom in, zoom out or fit the diagram.</li>
       <li>The preview can be moved around by holding the left mouse button and dragging.</li>
       <li>Zooming can also be done by using the scroll wheel.</li>
       <li>The zoom and position on the preview will remain fixed as the diagram
         changes, to be able to work more easily with large diagrams.</li>
+      <li>Double-clicking the preview resets the zoom/position.</li>
+      <li>The preview can also be focused by clicking on it, case in which keyboard
+        shortcuts can be used:
+        <ul>
+          <li><kbd>+</kbd> or <kbd>E</kbd> to zoom in, <kbd>-</kbd> or <kbd>Q</kbd> to zoom
+            out.</li>
+          <li><kbd>/</kbd> to reset the zoom/position.</li>
+          <li>Arrow keys or <kbd>W</kbd>  <kbd>A</kbd>  <kbd>S</kbd>  <kbd>D</kbd> to pan. Holding <kbd>Shift</kbd> pans
+            faster.</li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>The size of the source/preview panes can be adjusted by hovering over
     the border between them and dragging it with the mouse.</li>
-  <li>In the&nbsp;<a class="reference-link" href="#root/_help_XpOYSgsLkTJy">Floating buttons</a>&nbsp;area:
+  <li>In the&nbsp;<a class="reference-link" href="#root/_help_1P8QXI5edXNd">Note buttons</a>:
     <ul>
-      <li>The source/preview can be laid out left-right or bottom-top via the <em>Move editing pane to the left / bottom</em> option.</li>
-      <li>Press <em>Lock editing</em> to automatically mark the note as read-only.
-        In this mode, the code pane is hidden and the diagram is displayed full-size.
-        Similarly, press <em>Unlock editing</em> to mark a read-only note as editable.</li>
-      <li>Press the <em>Copy image reference to the clipboard</em> to be able to insert
-        the image representation of the diagram into a text note. See&nbsp;<a class="reference-link"
-        href="#root/_help_0Ofbk1aSuVRu">Image references</a>&nbsp;for more information.</li>
-      <li>Press the <em>Export diagram as SVG</em> to download a scalable/vector rendering
-        of the diagram. Can be used to present the diagram without degrading when
-        zooming.</li>
-      <li>Press the <em>Export diagram as PNG</em> to download a normal image (at
-        1x scale, raster) of the diagram. Can be used to send the diagram in more
-        traditional channels such as e-mail.</li>
+      <li>The source/preview can be laid out left-right (via <span class="tn-icon bx bxs-dock-left"></span>)
+        or bottom-top (via <span class="tn-icon bx bxs-dock-bottom"></span>).</li>
+      <li>Press the&nbsp;<span class="tn-icon bx bx-copy"></span> (<em>Copy image reference to the clipboard</em>)
+        to be able to insert the image representation of the diagram into a text
+        note. See&nbsp;<a class="reference-link" href="#root/_help_0Ofbk1aSuVRu">Image references</a>&nbsp;for
+        more information.</li>
     </ul>
   </li>
+  <li>To export the diagram as either SVG or PNG, go to the&nbsp;<a class="reference-link"
+    href="#root/_help_1P8QXI5edXNd">Note buttons</a>&nbsp;and select <em>Export as image</em>:
+    <ul>
+      <li>Select <em>SVG (vector)</em> to download a scalable/vector rendering of
+        the diagram. Can be used to present the diagram without degrading when
+        zooming.</li>
+      <li>Select <em>PNG (raster)</em> to download a normal image (at 1x scale, raster)
+        of the diagram. Can be used to send the diagram in more traditional channels
+        such as e-mail.</li>
+    </ul>
+  </li>
+  <li>The note can be marked as <a href="#root/_help_CoFPLs3dRlXc">read-only</a>,
+    case in which it switches by default to the preview (although it can be
+    switched back using the source/preview buttons) and the source is no longer
+    editable.</li>
 </ul>
 <h2>Errors in the diagram</h2>
 <p>If there is an error in the source code, the error will be displayed in

@@ -1,16 +1,14 @@
-import "./properties.css";
-
 import { useCallback } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
 import dialog from "../../../services/dialog";
 import { t } from "../../../services/i18n";
 import { isMobile } from "../../../services/utils";
+import { CollectionPropertiesDialog } from "../../note_bars/CollectionProperties";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import FormSelect from "../../react/FormSelect";
 import FormToggle from "../../react/FormToggle";
 import { useNoteLabelBoolean, useNoteLabelWithDefault } from "../../react/hooks";
-import Modal from "../../react/Modal";
 import PromotedAttributesCard from "../../react/PromotedAttributesCard";
 import TemplateSelectionCard from "../../react/TemplateSelectionCard";
 import type { PromotedAttribute } from "../promoted_attributes";
@@ -34,11 +32,9 @@ export default function BoardProperties({ api, note, shown, onClose }: {
         (attributes: PromotedAttribute[]) => api.setPromotedAttributes(attributes), [ api ]);
 
     return (
-        <Modal
+        <CollectionPropertiesDialog
             className="board-properties-dialog"
             title={t("board_view.properties-title")}
-            size="lg"
-            scrollable
             show={shown}
             onHidden={onClose}
         >
@@ -50,6 +46,7 @@ export default function BoardProperties({ api, note, shown, onClose }: {
                 note={note}
                 settings={api.getStoredPromotedAttributes()}
                 drawnByCollection={[ api.statusAttribute ]}
+                itemNotes={api.getCardNotes()}
                 onChange={storeAttributes}
             />
 
@@ -61,13 +58,13 @@ export default function BoardProperties({ api, note, shown, onClose }: {
                 templates={api.getCardTemplateIds()}
                 onChange={store}
             />
-        </Modal>
+        </CollectionPropertiesDialog>
     );
 }
 
 /** What the board draws besides its own cards: the inbox column and what is filed as archived. */
 function General({ api, note }: { api: BoardApi, note: FNote }) {
-    const [ inboxShown ] = useNoteLabelBoolean(note, "enableInboxColumn");
+    const [ inboxShown ] = useNoteLabelBoolean(note, "board:showInbox");
     const [ archivedShown ] = useNoteLabelBoolean(note, "includeArchived");
     const [ columnWidth ] =
         useNoteLabelWithDefault(note, COLUMN_WIDTH_LABEL, DEFAULT_COLUMN_WIDTH);

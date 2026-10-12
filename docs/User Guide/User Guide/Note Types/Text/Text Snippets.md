@@ -9,7 +9,7 @@ In the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/
 
 1.  Right click a note where to place the text snippet.
 2.  Select _Insert child note_.
-3.  Select _Text snippet_.
+3.  Select _More_ → _Text snippet_.
 
 Afterwards, simply type in the content of the note the desired text. The text can be formatted in the same manner as a normal text note.
 
@@ -19,7 +19,7 @@ The title of the note will become the title of the template. Optionally, a descr
 
 Once a snippet is created, there are two options to insert it:
 
-1.  From the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a>, by looking for the <img src="1_Text Snippets_image.png" width="19" height="19">button.
+1.  From the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a>, by looking for the <span class="tn-icon cke cke-trilium-template"></span> button.
 2.  Using <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>: 
     1.  To look for a specific template, start typing the name of the template (its title).
     2.  To look for all the templates, type `template`.

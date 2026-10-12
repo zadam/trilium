@@ -825,6 +825,27 @@ describe("FNote paths & hierarchy", () => {
         expect(withActive[0].notePath).toEqual(["root", "plainP", "hoistLeaf"]);
     });
 
+    it("getBestNotePathString still resolves a note that froca has dropped", () => {
+        const root = froca.notes["root"] ?? buildNote({ id: "root", title: "root" });
+        const parent = buildNote({ id: "droppedParent", title: "parent" });
+        registerBranch("br-root-droppedParent", "droppedParent", "root", 0);
+        root.addChild("droppedParent", "br-root-droppedParent", false);
+        parent.addParent("root", "br-root-droppedParent", false);
+
+        const leaf = buildNote({ id: "droppedLeaf", title: "leaf", "#archived": "" });
+        registerBranch("br-droppedParent-droppedLeaf", "droppedLeaf", "droppedParent", 0);
+        parent.addChild("droppedLeaf", "br-droppedParent-droppedLeaf", false);
+        leaf.addParent("droppedParent", "br-droppedParent-droppedLeaf", false);
+
+        // `froca_updater` removes a deleted note from `froca.notes`, while a view can still hold it.
+        delete froca.notes["droppedLeaf"];
+
+        const [ record ] = leaf.getSortedNotePathRecords("root");
+        expect(record.notePath).toEqual(["root", "droppedParent", "droppedLeaf"]);
+        expect(record.isArchived).toBe(true);
+        expect(leaf.getBestNotePathString()).toBe("root/droppedParent/droppedLeaf");
+    });
+
     it("getSortedNotePathRecords comparator exercises both ternary directions (reversed parent order)", () => {
         const root = froca.notes["root"] ?? buildNote({ id: "root", title: "root" });
         const hidden = froca.notes["_hidden"] ?? buildNote({ id: "_hidden", title: "hidden" });
@@ -1179,7 +1200,10 @@ describe("FNote executeScript", () => {
     });
 
     it("posts to the server for a backend script", async () => {
-        const postSpy = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        // Runs through backend_scripting, so a failure is reported against the note rather than as
+        // a request that went wrong — which is why the silent variant is the one called.
+        const postSpy = vi.spyOn(server, "postWithSilentInternalServerError")
+            .mockResolvedValue(undefined);
         const note = makeNote({ type: "code", mime: "application/javascript;env=backend" });
 
         await note.executeScript();

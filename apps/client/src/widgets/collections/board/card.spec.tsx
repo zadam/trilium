@@ -4,7 +4,7 @@
  */
 import { render } from "preact";
 import { act } from "preact/test-utils";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import appContext from "../../../components/app_context";
 import Component from "../../../components/component";
@@ -19,7 +19,7 @@ import utils from "../../../services/utils";
 import { buildNote } from "../../../test/easy-froca";
 import { ParentComponent } from "../../react/react_utils";
 import BoardApi from "./api";
-import BoardView from ".";
+import BoardView, { loadBoardEditing } from ".";
 import { OutsideFilterBadge } from "./card";
 
 // The card menu opens with the shared link items, which reach for the active note context.
@@ -56,6 +56,9 @@ vi.mock("../../attribute_widgets/UserAttributesList", () => ({
     }
 }));
 
+// An editable board draws once its editing code has loaded, which the app fetches on demand.
+beforeAll(() => loadBoardEditing());
+
 describe("Board card", () => {
     let container: HTMLElement | undefined;
     /** froca is module-level, so ids are kept distinct rather than reset between tests. */
@@ -67,9 +70,10 @@ describe("Board card", () => {
     });
 
     afterEach(() => {
-        if (container) {
-            render(null, container);
-            container.remove();
+        const mounted = container;
+        if (mounted) {
+            act(() => render(null, mounted));
+            mounted.remove();
             container = undefined;
         }
     });
@@ -301,6 +305,97 @@ describe("Board card", () => {
         expect(openInPopup).not.toHaveBeenCalled();
     });
 
+    it("hands the icon picker focus on Shift+Tab, leaving the editor standing", async () => {
+        const { first } = await renderBoard();
+        const put = vi.spyOn(server, "put").mockResolvedValue(undefined);
+        // Held on to: the editor takes the place of the title the lookup goes by.
+        const element = card(first);
+
+        await act(async () => { press(element, "F2"); });
+        const editor = element.querySelector<HTMLTextAreaElement>("textarea");
+        if (!editor) throw new Error("expected the title editor");
+        const picker = element.querySelector<HTMLButtonElement>(".title-editor-icon button");
+        if (!picker) throw new Error("expected the icon picker");
+
+        await act(async () => {
+            editor.focus();
+            press(editor, "Tab", { shiftKey: true });
+        });
+
+        expect(document.activeElement).toBe(picker);
+        // The blur the move costs neither closes the editor nor writes the title.
+        expect(element.querySelector("textarea")).toBeTruthy();
+        expect(put).not.toHaveBeenCalled();
+
+        // Space opens the picker, and the board must not read it as the one that opens the card.
+        const openInPopup = vi.spyOn(appContext, "triggerCommand").mockReturnValue(undefined);
+        await act(async () => { press(picker, " "); });
+        expect(openInPopup).not.toHaveBeenCalled();
+        expect(element.querySelector("textarea")).toBeTruthy();
+
+        // Tabbing back puts a `relatedTarget` inside `fieldRef`, which is not the editor losing focus.
+        await act(async () => {
+            picker.dispatchEvent(
+                new FocusEvent("focusout", { bubbles: true, relatedTarget: editor }));
+        });
+        expect(element.querySelector("textarea")).toBeTruthy();
+        expect(put).not.toHaveBeenCalled();
+
+        // A mouse press on the picker takes no focus off the field, which would close the editor
+        // before the click that opens the picker arrived.
+        const pressed = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+        await act(async () => { picker.dispatchEvent(pressed); });
+        expect(pressed.defaultPrevented).toBe(true);
+    });
+
+    it("closes the editor on Escape while the icon picker holds focus", async () => {
+        const { first } = await renderBoard();
+        const put = vi.spyOn(server, "put").mockResolvedValue(undefined);
+        // Held on to: the editor takes the place of the title the lookup goes by.
+        const element = card(first);
+
+        await act(async () => { press(element, "F2"); });
+        const editor = element.querySelector<HTMLTextAreaElement>("textarea");
+        if (!editor) throw new Error("expected the title editor");
+        await act(async () => {
+            editor.value = "Typed but not saved";
+            editor.focus();
+            press(editor, "Tab", { shiftKey: true });
+        });
+        const picker = element.querySelector<HTMLButtonElement>(".title-editor-icon button");
+        if (!picker) throw new Error("expected the icon picker");
+        expect(document.activeElement).toBe(picker);
+
+        await act(async () => { press(picker, "Escape"); });
+
+        expect(element.querySelector("textarea")).toBeFalsy();
+        // Escape discards, so nothing is written on the way out.
+        expect(put).not.toHaveBeenCalled();
+    });
+
+    it("ends the edit once the picker hands focus outside the field", async () => {
+        const { first } = await renderBoard();
+        // Held on to: the editor takes the place of the title the lookup goes by.
+        const element = card(first);
+
+        await act(async () => { press(element, "F2"); });
+        const editor = element.querySelector<HTMLTextAreaElement>("textarea");
+        if (!editor) throw new Error("expected the title editor");
+
+        await act(async () => {
+            editor.focus();
+            press(editor, "Tab", { shiftKey: true });
+        });
+        expect(element.querySelector("textarea")).toBeTruthy();
+
+        const picker = element.querySelector<HTMLButtonElement>(".title-editor-icon button");
+        await act(async () => {
+            picker?.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        });
+
+        expect(element.querySelector("textarea")).toBeFalsy();
+    });
+
     describe("picking several cards out", () => {
         it("marks a card on Ctrl and click, and lets go of it on the next one", async () => {
             const { first, second } = await renderBoard();
@@ -509,13 +604,8 @@ describe("Board card", () => {
         target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, ...init }));
     }
 
-    /**
-     * happy-dom defines no `ondragstart` on elements, so Preact registers the handler under the
-     * prop's own casing rather than the DOM event name (see drag.spec).
-     */
     function fireDrag(target: HTMLElement, type: "dragstart" | "dragend", dataTransfer: unknown) {
-        const cased = type === "dragstart" ? "DragStart" : "DragEnd";
-        const event = new Event(`on${type}` in target ? type : cased, { bubbles: true });
+        const event = new Event(type, { bubbles: true });
         Object.defineProperty(event, "dataTransfer", { value: dataTransfer, configurable: true });
         target.dispatchEvent(event);
     }
@@ -652,7 +742,7 @@ describe("OutsideFilterBadge", () => {
             expect(badge?.getAttribute("role")).toBe("img");
             expect(badge?.getAttribute("aria-label")).toBe("board_view.card-outside-filter");
         } finally {
-            render(null, container);
+            act(() => render(null, container));
             container.remove();
         }
     });

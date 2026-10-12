@@ -1,16 +1,15 @@
 import "./StatusBar.css";
 
-import { Locale, NOTE_TYPE_ICONS, NoteType } from "@triliumnext/commons";
-import { Dropdown as BootstrapDropdown } from "bootstrap";
+import { getCodeLanguageIcon, Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
 import clsx from "clsx";
-import { type ComponentChildren, RefObject } from "preact";
-import { createPortal } from "preact/compat";
+import { type ComponentChildren, createPortal, RefObject } from "preact";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import appContext, { CommandNames } from "../../components/app_context";
 import NoteContext from "../../components/note_context";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
+import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import { ATTRIBUTE_HELP_PAGE } from "../../services/in_app_help";
 import { ViewScope } from "../../services/link";
@@ -18,24 +17,26 @@ import { NOTE_TYPES } from "../../services/note_types";
 import server from "../../services/server";
 import { openInAppHelpFromUrl } from "../../services/utils";
 import { formatDateTime } from "../../utils/formatters";
-import { BacklinksWidget, useBacklinkCount } from "../FloatingButtonsDefinitions";
-import Dropdown, { DropdownProps } from "../react/Dropdown";
+import AttributeEditor, { AttributeEditorImperativeHandlers } from "../attribute_widgets/AttributeEditor";
+import AttributeHelp from "../attribute_widgets/AttributeHelp";
+import InheritedAttributes from "../attribute_widgets/InheritedAttributes";
+import { ContentLanguagesModal, useLanguageSwitcher } from "../dialogs/content_languages";
+import Dropdown, { type DropdownHandle, DropdownPanel, type DropdownPanelProps } from "../react/Dropdown";
 import { FormDropdownDivider, FormListHeader, FormListItem } from "../react/FormList";
 import HelpDropdown from "../react/HelpDropdown";
 import { useActiveNoteContext, useLegacyImperativeHandlers, useNoteLabel, useNoteLabelInt, useNoteLabelOptionalBool, useNoteProperty, useStaticTooltip, useTriliumEvent, useTriliumEvents, useTriliumOptionBool, useTriliumOptionInt, useAttachments } from "../react/hooks";
 import Icon from "../react/Icon";
 import LinkButton from "../react/LinkButton";
+import NoItems from "../react/NoItems";
+import NoteLink from "../react/NoteLink";
 import { ParentComponent } from "../react/react_utils";
-import { ContentLanguagesModal, NoteTypeCodeNoteList, NoteTypeOptionsModal, useLanguageSwitcher, useMimeTypes } from "../ribbon/BasicPropertiesTab";
-import AttributeEditor, { AttributeEditorImperativeHandlers } from "../ribbon/components/AttributeEditor";
-import AttributeHelp from "../ribbon/components/AttributeHelp";
-import InheritedAttributesTab from "../ribbon/InheritedAttributesTab";
-import { NoteSizeWidget, useNoteMetadata } from "../ribbon/NoteInfoTab";
-import { NotePathsWidget, useSortedNotePaths } from "../ribbon/NotePathsTab";
-import SimilarNotesTab from "../ribbon/SimilarNotesTab";
+import { BacklinksWidget, useBacklinkCount } from "../sidebar/Backlinks";
+import { NotePathsWidget, useSortedNotePaths } from "../sidebar/NotePaths";
 import type { RightPaneTabId } from "../sidebar/RightPaneTabs";
 import { useProcessedLocales } from "../type_widgets/options/components/LocaleSelector";
 import Breadcrumb from "./Breadcrumb";
+import { NoteSizeWidget, useNoteMetadata } from "./note_metadata";
+import { codeLanguageItems, NoteTypeOptionsModal, useMimeTypes } from "./NoteTypeSwitcher";
 import { convertIndentation } from "./reindentation";
 
 interface StatusBarContext {
@@ -91,13 +92,17 @@ export default function StatusBar() {
     );
 }
 
-function StatusBarDropdown({ children, icon, text, buttonClassName, titleOptions, dropdownOptions, ...dropdownProps }: Omit<DropdownProps, "hideToggleArrow" | "title" | "titlePosition"> & {
+function StatusBarDropdown({ children, icon, text, buttonClassName, dropdownContainerClassName, titleOptions, panel, ...dropdownProps }: Omit<DropdownPanelProps,"hideToggleArrow" | "title" | "titlePosition"> & {
     title: string;
     icon?: string;
+    /** Opens a {@link DropdownPanel} rather than a menu, for content other than `FormList` rows. */
+    panel?: boolean;
 }) {
+    const Component = panel ? DropdownPanel : Dropdown;
     return (
-        <Dropdown
+        <Component
             buttonClassName={clsx("status-bar-dropdown-button", buttonClassName)}
+            dropdownContainerClassName={clsx("status-bar-dropdown-menu", dropdownContainerClassName)}
             titlePosition="top"
             titleOptions={{
                 popperConfig: {
@@ -107,13 +112,7 @@ function StatusBarDropdown({ children, icon, text, buttonClassName, titleOptions
                 animation: false,
                 ...titleOptions
             }}
-            dropdownOptions={{
-                popperConfig: {
-                    strategy: "fixed",
-                    placement: "top"
-                },
-                ...dropdownOptions
-            }}
+            placement="top"
             text={<>
                 {icon && (<><Icon icon={icon} />&nbsp;</>)}
                 <span className="text">{text}</span>
@@ -121,7 +120,7 @@ function StatusBarDropdown({ children, icon, text, buttonClassName, titleOptions
             {...dropdownProps}
         >
             {children}
-        </Dropdown>
+        </Component>
     );
 }
 
@@ -252,7 +251,7 @@ interface NoteInfoContext extends StatusBarContext {
 }
 
 export function NoteInfoBadge(context: NoteInfoContext) {
-    const dropdownRef = useRef<BootstrapDropdown>(null);
+    const dropdownRef = useRef<DropdownHandle>(null);
     const [ dropdownShown, setDropdownShown ] = useState(false);
     const { note, similarNotesShown, setSimilarNotesShown } = context;
     const noteType = useNoteProperty(note, "type");
@@ -264,11 +263,12 @@ export function NoteInfoBadge(context: NoteInfoContext) {
 
     return (enabled &&
         <StatusBarDropdown
+            panel
             icon="bx bx-info-circle"
             title={t("status_bar.note_info_title")}
             dropdownRef={dropdownRef}
             dropdownContainerClassName="dropdown-note-info"
-            dropdownOptions={{autoClose: "outside" }}
+            autoClose="outside"
             onShown={() => setDropdownShown(true)}
             onHidden={() => setDropdownShown(false)}
         >
@@ -278,7 +278,7 @@ export function NoteInfoBadge(context: NoteInfoContext) {
 }
 
 export function NoteInfoContent({ note, noteType, dropdownRef, setSimilarNotesShown }: Pick<NoteInfoContext, "note" | "setSimilarNotesShown"> & {
-    dropdownRef?: RefObject<BootstrapDropdown>;
+    dropdownRef?: RefObject<DropdownHandle | null>;
     noteType: NoteType;
 }) {
     const { metadata, ...sizeProps } = useNoteMetadata(note);
@@ -324,8 +324,51 @@ function SimilarNotesPane({ note, similarNotesShown, setSimilarNotesShown }: Not
             visible={similarNotesShown}
             setVisible={setSimilarNotesShown}
         >
-            <SimilarNotesTab note={note} />
+            <SimilarNotesList note={note} />
         </BottomPanel>
+    );
+}
+
+export function SimilarNotesList({ note }: { note: FNote | null | undefined }) {
+    const [ similarNotes, setSimilarNotes ] = useState<SimilarNoteResponse>();
+
+    useEffect(() => {
+        if (note) {
+            server.get<SimilarNoteResponse>(`similar-notes/${note.noteId}`).then(async similarNotes => {
+                if (similarNotes) {
+                    const noteIds = similarNotes.flatMap((note) => note.notePath);
+                    await froca.getNotes(noteIds, true); // preload all at once
+                }
+                setSimilarNotes(similarNotes);
+            });
+        }
+
+    }, [ note?.noteId ]);
+
+    return (
+        <div className="similar-notes-widget">
+            {similarNotes?.length ? (
+                <div className="similar-notes-wrapper">
+                    {similarNotes.map(({notePath, score}) => (
+                        <NoteLink
+                            key={notePath.join("/")}
+                            notePath={notePath}
+                            noTnLink
+                            style={{
+                                "font-size": (1 - 1 / (1 + score)) + "em"
+                            }}
+                        />
+                    ))}
+                </div>
+            ) : similarNotes && (
+                // Outside the list's wrapper, whose font size is that of the most similar link.
+                <NoItems
+                    size="small"
+                    icon="bx bx-bar-chart"
+                    text={t("similar_notes.no_similar_notes_found")}
+                />
+            )}
+        </div>
     );
 }
 //#endregion
@@ -340,11 +383,13 @@ function BacklinksBadge({ note, viewScope }: StatusBarContext) {
 
     return (note && count > 0 &&
         <StatusBarDropdown
+            panel
             className="backlinks-badge"
             icon="bx bx-link"
             text={t("status_bar.backlinks", { count })}
             title={t("status_bar.backlinks_title", { count })}
             dropdownContainerClassName="dropdown-backlinks"
+            scrollable
         >
             <BacklinksWidget note={note} />
         </StatusBarDropdown>
@@ -425,8 +470,14 @@ function AttributesPane({ note, noteContext, attributesShown, setAttributesShown
         hidden: !note
     };
 
-    // Show on keyboard shortcuts.
-    useTriliumEvents([ "addNewLabel", "addNewRelation" ], () => setAttributesShown(true));
+    // Show on keyboard shortcuts. The editor is not listening until it mounts, so it is handed the first one.
+    const [ initialCommand, setInitialCommand ] = useState<"addNewLabel" | "addNewRelation">();
+    useTriliumEvents([ "addNewLabel", "addNewRelation" ], (_, eventName) => {
+        if (!editorMounted) {
+            setInitialCommand(eventName);
+        }
+        setAttributesShown(true);
+    });
     useTriliumEvents([ "toggleRibbonTabOwnedAttributes", "toggleRibbonTabInheritedAttributes" ], () => setAttributesShown(!attributesShown));
 
     // Auto-focus the owned attributes.
@@ -453,14 +504,14 @@ function AttributesPane({ note, noteContext, attributesShown, setAttributesShown
             helpContent={<AttributeHelp />}>
 
             <span class="attributes-panel-label">{t("inherited_attribute_list.title")}</span>
-            <InheritedAttributesTab {...context} emptyListString="inherited_attribute_list.none" />
+            <InheritedAttributes {...context} />
 
             {editorMounted && <AttributeEditor
                 {...context}
                 api={api}
+                notePath={noteContext.notePath}
                 ntxId={noteContext.ntxId}
-                // The panel's title bar already carries the same help.
-                hideHelpButton
+                initialCommand={initialCommand}
             />}
         </BottomPanel>
     );
@@ -473,7 +524,7 @@ function AttributesPane({ note, noteContext, attributesShown, setAttributesShown
  * sidebar's connections tab holds, which stays the place to keep it open beside the note.
  */
 function NotePaths({ note, hoistedNoteId, notePath }: StatusBarContext) {
-    const dropdownRef = useRef<BootstrapDropdown>(null);
+    const dropdownRef = useRef<DropdownHandle>(null);
     const sortedNotePaths = useSortedNotePaths(note, hoistedNoteId);
     const count = sortedNotePaths?.length ?? 0;
 
@@ -482,13 +533,13 @@ function NotePaths({ note, hoistedNoteId, notePath }: StatusBarContext) {
 
     return (
         <StatusBarDropdown
+            panel
             className="note-paths-button"
             icon="bx bx-directions"
             title={t("status_bar.note_paths_title")}
             text={t("status_bar.note_paths", { count })}
             dropdownRef={dropdownRef}
             dropdownContainerClassName="dropdown-note-paths"
-            noDropdownListStyle
         >
             <NotePathsWidget sortedNotePaths={sortedNotePaths} currentNotePath={notePath} />
         </StatusBarDropdown>
@@ -606,18 +657,18 @@ function CodeNoteSwitcher({ note }: StatusBarContext) {
     return (noteType === "code" &&
         <>
             <StatusBarDropdown
-                icon={correspondingMimeType?.icon ?? "bx bx-code-curly"}
+                icon={getCodeLanguageIcon(correspondingMimeType)}
                 text={correspondingMimeType?.title}
                 title={t("status_bar.code_note_switcher")}
-                dropdownContainerClassName="dropdown-code-note-switcher tn-dropdown-menu-scrollable"
-            >
-                <NoteTypeCodeNoteList
-                    currentMimeType={currentNoteMime}
-                    mimeTypes={enabledMimeTypes}
-                    changeNoteType={(type, mime) => server.put(`notes/${note.noteId}/type`, { type, mime })}
-                    setModalShown={() => setModalShown(true)}
-                />
-            </StatusBarDropdown>
+                dropdownContainerClassName="dropdown-code-note-switcher"
+                filterable
+                items={codeLanguageItems({
+                    currentMimeType: currentNoteMime,
+                    mimeTypes: enabledMimeTypes,
+                    changeNoteType: (type, mime) => void server.put(`notes/${note.noteId}/type`, { type, mime }),
+                    onConfigure: () => setModalShown(true)
+                })}
+            />
             {createPortal(
                 <NoteTypeOptionsModal modalShown={modalShown} setModalShown={setModalShown} />,
                 document.body

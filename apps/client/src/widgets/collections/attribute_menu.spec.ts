@@ -45,7 +45,13 @@ describe("buildAttributeMenuItems", () => {
         expect(build({ title: "Card" }, [
             attribute({ name: "notes", title: "Notes", labelType: "text" }),
             // A select offering nothing would open on "Not set" alone.
-            attribute({ name: "state", title: "State", labelType: "select" })
+            attribute({ name: "state", title: "State", labelType: "select" }),
+            // Items that define it in different ways would be offered one item's options.
+            attribute({
+                name: "priority", title: "Priority", labelType: "select",
+                selectOptions: [ "Low" ], isConflicting: true
+            }),
+            attribute({ name: "done", title: "Done", labelType: "boolean", isConflicting: true })
         ])).toEqual([]);
     });
 
@@ -64,7 +70,7 @@ describe("buildAttributeMenuItems", () => {
             const note = buildNote({ title: "Card", "#done": "true" });
             const items = buildAttributeMenuItems<string>({ notes: [ note ], attributes: flag });
 
-            expect(items[1]).toMatchObject({ trailingIcon: "bx bx-check" });
+            expect(items[1]).toMatchObject({ checked: true });
             pick(items[1]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(note, "done", [ "false" ]);
         });
@@ -73,7 +79,7 @@ describe("buildAttributeMenuItems", () => {
             const note = buildNote({ title: "Card" });
             const items = buildAttributeMenuItems<string>({ notes: [ note ], attributes: flag });
 
-            expect(items[1]).toMatchObject({ trailingIcon: undefined });
+            expect(items[1]).toMatchObject({ checked: false });
             pick(items[1]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(note, "done", [ "true" ]);
         });
@@ -83,10 +89,10 @@ describe("buildAttributeMenuItems", () => {
             const unset = buildNote({ title: "Two" });
 
             expect(buildAttributeMenuItems<string>({ notes: [ set, unset ], attributes: flag })[1])
-                .toMatchObject({ trailingIcon: undefined });
+                .toMatchObject({ checked: false });
             expect(buildAttributeMenuItems<string>({
                 notes: [ set, buildNote({ title: "Three", "#done": "true" }) ], attributes: flag
-            })[1]).toMatchObject({ trailingIcon: "bx bx-check" });
+            })[1]).toMatchObject({ checked: true });
         });
 
         it("writes the value to every selected item, settling a disagreement", async () => {
@@ -109,7 +115,7 @@ describe("buildAttributeMenuItems", () => {
                     notes: [ note ], attributes: flag
                 });
 
-                expect(items[1]).toMatchObject({ trailingIcon: undefined });
+                expect(items[1]).toMatchObject({ checked: false });
             }
         });
     });
@@ -247,6 +253,8 @@ function attribute(fields: Partial<PromotedAttribute> & { name: string }): Promo
         drawnByCollection: false,
         definitionValue: "",
         isOwned: true,
+        isDefinedByItems: false,
+        isConflicting: false,
         isInheritable: true,
         ...fields
     };

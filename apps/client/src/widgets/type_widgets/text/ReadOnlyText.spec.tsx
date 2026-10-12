@@ -33,6 +33,20 @@ import ReadOnlyText from "./ReadOnlyText";
 // Imported by ReadOnlyText only for its content styles; irrelevant (and heavy) in happy-dom.
 vi.mock("@triliumnext/ckeditor5", () => ({}));
 
+const { watchContentEmbeds, stopWatchingEmbeds, loadEmbeddedNote } = vi.hoisted(() => {
+    const stop = vi.fn();
+    return {
+        watchContentEmbeds: vi.fn(() => stop),
+        stopWatchingEmbeds: stop,
+        loadEmbeddedNote: vi.fn(async () => {})
+    };
+});
+vi.mock("./utils", async (importOriginal) => ({
+    ...await importOriginal<typeof import("./utils")>(),
+    watchContentEmbeds,
+    loadEmbeddedNote
+}));
+
 vi.stubGlobal("logError", vi.fn());
 vi.stubGlobal("logInfo", vi.fn());
 
@@ -102,9 +116,10 @@ describe("ReadOnlyText reacting to content changes (#10575)", () => {
     let cleanupContainer: HTMLElement | undefined;
 
     afterEach(() => {
-        if (cleanupContainer) {
-            render(null, cleanupContainer);
-            cleanupContainer.remove();
+        const mounted = cleanupContainer;
+        if (mounted) {
+            act(() => render(null, mounted));
+            mounted.remove();
             cleanupContainer = undefined;
         }
     });
@@ -181,9 +196,10 @@ describe("ReadOnlyText ?bookmark= handling", () => {
     let cleanupContainer: HTMLElement | undefined;
 
     afterEach(() => {
-        if (cleanupContainer) {
-            render(null, cleanupContainer);
-            cleanupContainer.remove();
+        const mounted = cleanupContainer;
+        if (mounted) {
+            act(() => render(null, mounted));
+            mounted.remove();
             cleanupContainer = undefined;
         }
     });
@@ -236,6 +252,114 @@ describe("ReadOnlyText ?bookmark= handling", () => {
     });
 });
 
+describe("ReadOnlyText ?block= handling", () => {
+    let cleanupContainer: HTMLElement | undefined;
+
+    afterEach(() => {
+        const mounted = cleanupContainer;
+        if (mounted) {
+            act(() => render(null, mounted));
+            mounted.remove();
+            cleanupContainer = undefined;
+        }
+    });
+
+    async function mountWithBlock(block: string | undefined, isVisible = true) {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        const note = buildNote({
+            title: "Blocks",
+            type: "text",
+            content: "<p data-trilium-block-id=\"b1\">One</p>"
+                + "<p data-trilium-block-id=\"b2\">Two</p>"
+        });
+        const parent = new Component();
+        const noteContext = new NoteContext("block-ntx");
+        noteContext.noteId = note.noteId;
+        noteContext.viewScope = { block };
+
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+        cleanupContainer = container;
+        await act(async () => {
+            render(
+                <ParentComponent.Provider value={parent}>
+                    <ReadOnlyText
+                        note={note}
+                        noteContext={noteContext}
+                        ntxId={noteContext.ntxId}
+                        parentComponent={parent}
+                        viewScope={noteContext.viewScope}
+                        isVisible={isVisible}
+                    />
+                </ParentComponent.Provider>,
+                container
+            );
+        });
+        const isBlockKept = noteContext.viewScope?.block === block;
+        await act(async () => {});
+
+        return { parent, noteContext, container, scrollIntoView, isBlockKept };
+    }
+
+    it("reveals the referenced block once the content renders", async () => {
+        const { noteContext, container, scrollIntoView, isBlockKept } = await mountWithBlock("b2");
+
+        expect(isBlockKept).toBe(true);
+        expect(noteContext.viewScope?.block).toBeUndefined();
+        expect(scrollIntoView.mock.contexts)
+            .toEqual([ container.querySelector("[data-trilium-block-id='b2']") ]);
+    });
+
+    it("reveals a block of the open note when a link to it is followed", async () => {
+        const { parent, noteContext, container, scrollIntoView } = await mountWithBlock("b2");
+        const otherContext = new NoteContext("other-ntx");
+        otherContext.noteId = noteContext.noteId;
+
+        noteContext.viewScope = { block: "b1" };
+        await act(async () => {
+            await parent.handleEvent("noteSwitched", { noteContext: otherContext, notePath: "" });
+        });
+        expect(noteContext.viewScope?.block).toBe("b1");
+
+        await act(async () => {
+            await parent.handleEvent("noteSwitched", { noteContext, notePath: "" });
+        });
+        expect(noteContext.viewScope?.block).toBeUndefined();
+        expect(scrollIntoView.mock.contexts.at(-1))
+            .toBe(container.querySelector("[data-trilium-block-id='b1']"));
+    });
+
+    it("labels a link to a block of its note by the text of the block", async () => {
+        const harness = setupHarness({ isVisible: true });
+        cleanupContainer = harness.container;
+        const content = "<p data-trilium-block-id=\"b1\">Opening words</p>"
+            + `<p><a class="reference-link" href="#root/${harness.note.noteId}?block=b1">x</a></p>`;
+        harness.note.getBlob = async () => ({ content }) as never;
+
+        await harness.mount();
+
+        const link = harness.container.querySelector("a.reference-link");
+        expect(link).not.toBeNull();
+        await vi.waitFor(() => expect(link?.textContent).toBe("Opening words"));
+    });
+
+    it("leaves a link to a block of its note to the editor while hidden", async () => {
+        const { parent, noteContext, container, scrollIntoView } = await mountWithBlock(
+            undefined,
+            false
+        );
+        expect(container.querySelector("[data-trilium-block-id='b1']")).not.toBeNull();
+
+        noteContext.viewScope = { block: "b1" };
+        await act(async () => {
+            await parent.handleEvent("noteSwitched", { noteContext, notePath: "" });
+        });
+        expect(noteContext.viewScope?.block).toBe("b1");
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+});
+
 /**
  * The direction is resolved from the note's `#language` label and handed to the content
  * element as `dir`, which is what the RTL rules in the content stylesheets key off (they
@@ -247,9 +371,10 @@ describe("ReadOnlyText text direction", () => {
     let cleanupContainer: HTMLElement | undefined;
 
     afterEach(() => {
-        if (cleanupContainer) {
-            render(null, cleanupContainer);
-            cleanupContainer.remove();
+        const mounted = cleanupContainer;
+        if (mounted) {
+            act(() => render(null, mounted));
+            mounted.remove();
             cleanupContainer = undefined;
         }
     });
@@ -268,5 +393,40 @@ describe("ReadOnlyText text direction", () => {
     it("marks the content left-to-right otherwise", async () => {
         expect((await mountWithLanguage("en"))?.getAttribute("dir")).toBe("ltr");
         expect((await mountWithLanguage(undefined))?.getAttribute("dir")).toBe("ltr");
+    });
+});
+
+describe("ReadOnlyText embedded notes", () => {
+    it("watches its content for embed boxes until it unmounts", async () => {
+        watchContentEmbeds.mockClear();
+        stopWatchingEmbeds.mockClear();
+        const harness = setupHarness({ isVisible: true });
+
+        await harness.mount();
+
+        const content = harness.container.querySelector(".note-detail-readonly-text-content");
+        expect(content).not.toBeNull();
+        expect(watchContentEmbeds.mock.calls).toEqual([ [ content ] ]);
+        expect(stopWatchingEmbeds).not.toHaveBeenCalled();
+
+        await act(async () => render(null, harness.container));
+        harness.container.remove();
+        expect(stopWatchingEmbeds).toHaveBeenCalledOnce();
+    });
+
+    it("loads an embed with the blocks it shows", async () => {
+        loadEmbeddedNote.mockClear();
+        const harness = setupHarness({ isVisible: true });
+        harness.note.getBlob = async () => ({
+            content: "<figure class=\"include-note\" data-note-id=\"src1\""
+                + " data-block=\"b1:b2\"></figure>"
+        }) as never;
+
+        await harness.mount();
+
+        expect(loadEmbeddedNote)
+            .toHaveBeenCalledWith("src1", expect.anything(), undefined, { block: "b1:b2" });
+        await act(async () => render(null, harness.container));
+        harness.container.remove();
     });
 });

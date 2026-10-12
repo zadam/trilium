@@ -173,6 +173,7 @@ describe("NodeRequestProvider.exec", () => {
         expect(sent.host).toBe("sync.example.com");
         expect(sent.port).toBe("8080");
         expect(sent.headers["Content-Type"]).toBe("application/json");
+        expect(sent.cache).toBe("no-store");
     });
 
     it("selects the https client based on the URL scheme", async () => {

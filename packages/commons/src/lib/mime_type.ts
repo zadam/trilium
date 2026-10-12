@@ -16,6 +16,12 @@ export interface MimeTypeDefinition {
     mime: string;
     /** The name of the language/mime type as defined by highlight.js (or one of the aliases), in order to be used for syntax highlighting such as inside code blocks. */
     mdLanguageCode?: string;
+    /**
+     * Other language names that resolve to this entry in `getMimeTypeFromMarkdownName()`: Markdown
+     * fence names, PrismJS and VS Code language IDs. An alias takes precedence over another entry's
+     * `mdLanguageCode`.
+     */
+    aliases?: string[];
     icon?: string;
 }
 
@@ -50,9 +56,9 @@ const MIME_TYPES_DICT_RAW = [
     { title: "ASN.1", mime: "text/x-ttcn-asn" },
     { title: "ASP.NET", mime: "application/x-aspx" },
     { title: "Asterisk", mime: "text/x-asterisk" },
-    { title: "Batch file (DOS)", mime: "application/x-bat", mdLanguageCode: "dos", icon: "bx bx-terminal" },
+    { title: "Batch file (DOS)", mime: "application/x-bat", mdLanguageCode: "dos", aliases: ["bat", "batch"], icon: "bx bx-terminal" },
     { title: "Brainfuck", mime: "text/x-brainfuck", mdLanguageCode: "brainfuck" },
-    { title: "C", mime: "text/x-csrc", mdLanguageCode: "c", default: true },
+    { title: "C", mime: "text/x-csrc", mdLanguageCode: "c", aliases: ["clike"], default: true },
     { title: "C#", mime: "text/x-csharp", mdLanguageCode: "csharp", default: true },
     { title: "C++", mime: "text/x-c++src", mdLanguageCode: "cpp", default: true, icon: "bx bxl-c-plus-plus" },
     { title: "Clojure", mime: "text/x-clojure", mdLanguageCode: "clojure" },
@@ -104,14 +110,14 @@ const MIME_TYPES_DICT_RAW = [
     { title: "HXML", mime: "text/x-hxml" },
     { title: "IDL", mime: "text/x-idl" },
     { title: "Java Server Pages", mime: "application/x-jsp", mdLanguageCode: "java", icon: "bx bxl-java" },
-    { title: "Java", mime: "text/x-java", mdLanguageCode: "java", default: true, icon: "bx bxl-java" },
-    { title: "JavaScript", mime: "text/javascript", mdLanguageCode: "javascript", default: true, icon: "bx bxl-javascript" },
+    { title: "Java", mime: "text/x-java", mdLanguageCode: "java", aliases: ["java"], default: true, icon: "bx bxl-java" },
+    { title: "JavaScript", mime: "text/javascript", mdLanguageCode: "javascript", aliases: ["js"], default: true, icon: "bx bxl-javascript" },
     { title: "JavaScript (Trilium backend)", mime: "application/javascript;env=backend", mdLanguageCode: "javascript", default: true, icon: "bx bxl-javascript" },
     { title: "JavaScript (Trilium frontend)", mime: "application/javascript;env=frontend", mdLanguageCode: "javascript", default: true, icon: "bx bxl-javascript" },
     { title: "Jinja2", mime: "text/jinja2" },
     { title: "JSON-LD", mime: "application/ld+json", mdLanguageCode: "json", icon: "bx bxs-file-json" },
-    { title: "JSON", mime: "application/json", mdLanguageCode: "json", default: true, icon: "bx bxs-file-json" },
-    { title: "JSX", mime: "text/jsx", mdLanguageCode: "jsx", default: true },
+    { title: "JSON", mime: "application/json", mdLanguageCode: "json", aliases: ["json", "jsonc"], default: true, icon: "bx bxs-file-json" },
+    { title: "JSX", mime: "text/jsx", mdLanguageCode: "jsx", aliases: ["javascriptreact"], default: true },
     { title: "Julia", mime: "text/x-julia", mdLanguageCode: "julia" },
     { title: "Kotlin", mime: "text/x-kotlin", mdLanguageCode: "kotlin", default: true },
     { title: "KDL", mime: "application/vnd.kdl", mdLanguageCode: "kdl" },
@@ -136,15 +142,15 @@ const MIME_TYPES_DICT_RAW = [
     { title: "Nix", mime: "text/x-nix", mdLanguageCode: "nix" },
     { title: "NSIS", mime: "text/x-nsis", mdLanguageCode: "nsis" },
     { title: "NTriples", mime: "application/n-triples" },
-    { title: "Objective-C", mime: "text/x-objectivec", mdLanguageCode: "objectivec" },
+    { title: "Objective-C", mime: "text/x-objectivec", mdLanguageCode: "objectivec", aliases: ["objective-c", "objc"] },
     { title: "OCaml", mime: "text/x-ocaml", mdLanguageCode: "ocaml" },
     { title: "Octave", mime: "text/x-octave" },
     { title: "Oz", mime: "text/x-oz" },
     { title: "Pascal", mime: "text/x-pascal", mdLanguageCode: "delphi" },
     { title: "PEG.js", mime: "text/x-pegjs" },
-    { title: "Perl", mime: "text/x-perl", default: true },
+    { title: "Perl", mime: "text/x-perl", aliases: ["perl"], default: true },
     { title: "PGP", mime: "application/pgp" },
-    { title: "PHP", mime: "text/x-php", default: true, icon: "bx bxl-php" },
+    { title: "PHP", mime: "text/x-php", aliases: ["php"], default: true, icon: "bx bxl-php" },
     { title: "Pig", mime: "text/x-pig" },
     { title: "PLSQL", mime: "text/x-plsql", mdLanguageCode: "sql" },
     { title: "PostgreSQL", mime: "text/x-pgsql", mdLanguageCode: "pgsql", icon: "bx bxl-postgresql" },
@@ -153,7 +159,7 @@ const MIME_TYPES_DICT_RAW = [
     { title: "ProtoBuf", mime: "text/x-protobuf", mdLanguageCode: "protobuf" },
     { title: "Pug", mime: "text/x-pug" },
     { title: "Puppet", mime: "text/x-puppet", mdLanguageCode: "puppet" },
-    { title: "Python", mime: "text/x-python", mdLanguageCode: "python", default: true, icon: "bx bxl-python" },
+    { title: "Python", mime: "text/x-python", mdLanguageCode: "python", aliases: ["py"], default: true, icon: "bx bxl-python" },
     { title: "Q", mime: "text/x-q", mdLanguageCode: "q" },
     { title: "R", mime: "text/x-rsrc", mdLanguageCode: "r" },
     { title: "reStructuredText", mime: "text/x-rst" },
@@ -166,7 +172,7 @@ const MIME_TYPES_DICT_RAW = [
     { title: "Scala", mime: "text/x-scala" },
     { title: "Scheme", mime: "text/x-scheme" },
     { title: "SCSS", mime: "text/x-scss", mdLanguageCode: "scss" },
-    { title: "Shell (bash)", mime: "text/x-sh", mdLanguageCode: "sh", default: true, icon: "bx bx-terminal" },
+    { title: "Shell (bash)", mime: "text/x-sh", mdLanguageCode: "sh", aliases: ["bash", "shell", "shellscript", "zsh"], default: true, icon: "bx bx-terminal" },
     { title: "Sieve", mime: "application/sieve" },
     { title: "Slim", mime: "text/x-slim" },
     { title: "Smalltalk", mime: "text/x-stsrc", mdLanguageCode: "smalltalk" },
@@ -176,20 +182,20 @@ const MIME_TYPES_DICT_RAW = [
     { title: "Soy", mime: "text/x-soy" },
     { title: "SPARQL", mime: "application/sparql-query" },
     { title: "Spreadsheet", mime: "text/x-spreadsheet" },
-    { title: "SQL", mime: "text/x-sql", mdLanguageCode: "sql", default: true, icon: "bx bx-data" },
+    { title: "SQL", mime: "text/x-sql", mdLanguageCode: "sql", aliases: ["sql"], default: true, icon: "bx bx-data" },
     { title: "SQLite (Trilium)", mime: "text/x-sqlite;schema=trilium", mdLanguageCode: "sql", default: true, icon: "bx bx-data" },
     { title: "SQLite", mime: "text/x-sqlite", mdLanguageCode: "sql", icon: "bx bx-data" },
     { title: "Squirrel", mime: "text/x-squirrel" },
     { title: "sTeX", mime: "text/x-stex" },
     { title: "Stylus", mime: "text/x-styl", mdLanguageCode: "stylus" },
-    { title: "Swift", mime: "text/x-swift", default: true },
+    { title: "Swift", mime: "text/x-swift", aliases: ["swift"], default: true },
     { title: "SystemVerilog", mime: "text/x-systemverilog" },
     { title: "Tcl", mime: "text/x-tcl", mdLanguageCode: "tcl" },
-    { title: "Terraform (HCL)", mime: "text/x-hcl", mdLanguageCode: "terraform" },
+    { title: "Terraform (HCL)", mime: "text/x-hcl", mdLanguageCode: "terraform", aliases: ["hcl"] },
     { title: "Textile", mime: "text/x-textile" },
     { title: "TiddlyWiki ", mime: "text/x-tiddlywiki" },
     { title: "Tiki wiki", mime: "text/tiki" },
-    { title: "TOML", mime: "text/x-toml", mdLanguageCode: "ini", icon: "bx bx-bracket" },
+    { title: "TOML", mime: "text/x-toml", mdLanguageCode: "ini", aliases: ["toml"], icon: "bx bx-bracket" },
     { title: "Tornado", mime: "text/x-tornado" },
     { title: "Trilium Log", mime: "text/x-trilium-log", icon: "bx bx-list-ul" },
     { title: "troff", mime: "text/troff" },
@@ -197,9 +203,9 @@ const MIME_TYPES_DICT_RAW = [
     { title: "TTCN", mime: "text/x-ttcn" },
     { title: "Turtle", mime: "text/turtle" },
     { title: "Twig", mime: "text/x-twig", mdLanguageCode: "twig" },
-    { title: "TypeScript-JSX", mime: "text/typescript-jsx" },
-    { title: "TypeScript", mime: "application/typescript", mdLanguageCode: "typescript", icon: "bx bxl-typescript" },
-    { title: "VB.NET", mime: "text/x-vb", mdLanguageCode: "vbnet" },
+    { title: "TypeScript-JSX", mime: "text/typescript-jsx", aliases: ["tsx", "typescriptreact"] },
+    { title: "TypeScript", mime: "application/typescript", mdLanguageCode: "typescript", aliases: ["ts"], icon: "bx bxl-typescript" },
+    { title: "VB.NET", mime: "text/x-vb", mdLanguageCode: "vbnet", aliases: ["vb"] },
     { title: "VBScript", mime: "text/vbscript", mdLanguageCode: "vbscript" },
     { title: "Velocity", mime: "text/velocity" },
     { title: "Verilog", mime: "text/x-verilog", mdLanguageCode: "verilog" },
@@ -210,10 +216,52 @@ const MIME_TYPES_DICT_RAW = [
     { title: "XQuery", mime: "application/xquery", mdLanguageCode: "xquery" },
     { title: "xu", mime: "text/x-xu" },
     { title: "Yacas", mime: "text/x-yacas" },
-    { title: "YAML", mime: "text/x-yaml", mdLanguageCode: "yaml", default: true },
+    { title: "YAML", mime: "text/x-yaml", mdLanguageCode: "yaml", aliases: ["yml", "dockercompose"], default: true },
     { title: "Z80", mime: "text/x-z80" }
 ] as const satisfies readonly MimeTypeDefinition[];
 export const MIME_TYPES_DICT = Object.freeze(MIME_TYPES_DICT_RAW as readonly MimeTypeDefinition[]);
+
+/**
+ * Returns a copy of every entry in {@link MIME_TYPES_DICT}, enabled when `enabledMimes` lists it.
+ * `enabledMimes` is the parsed `codeNotesMimeTypes` option; without it, the entries marked
+ * `default` are enabled. `text/plain` is always enabled.
+ */
+export function resolveEnabledMimeTypes(
+    enabledMimes: readonly (string | null)[] | null | undefined
+): MimeType[] {
+    const enabled = enabledMimes ?? MIME_TYPES_DICT.filter((mt) => mt.default).map((mt) => mt.mime);
+    return MIME_TYPES_DICT.map((mt) => ({
+        ...mt,
+        enabled: enabled.includes(mt.mime) || mt.mime === "text/plain"
+    }));
+}
+
+/** Code longer than this many lines is not syntax-highlighted. */
+const HIGHLIGHT_MAX_LINE_COUNT = 500;
+
+/** Code longer than this many characters is not syntax-highlighted, such as one minified line. */
+const HIGHLIGHT_MAX_CHAR_COUNT = 50_000;
+
+/**
+ * Whether code is small enough to syntax-highlight when it is rendered. Highlighting, and
+ * `highlightAuto()` most of all, grows with the size of the code and blocks the thread it runs
+ * on, so code beyond {@link HIGHLIGHT_MAX_LINE_COUNT} lines or {@link HIGHLIGHT_MAX_CHAR_COUNT}
+ * characters stays plain.
+ */
+export function shouldSyntaxHighlight(code: string) {
+    if (code.length > HIGHLIGHT_MAX_CHAR_COUNT) {
+        return false;
+    }
+
+    let lineCount = 1;
+    let index = -1;
+    while ((index = code.indexOf("\n", index + 1)) !== -1) {
+        if (++lineCount > HIGHLIGHT_MAX_LINE_COUNT) {
+            return false;
+        }
+    }
+    return true;
+}
 
 let byMarkdownNameMappings: Record<string, MimeTypeDefinition> | null = null;
 
@@ -223,7 +271,7 @@ export type SupportedMimeTypes = typeof MIME_TYPES_DICT_RAW[number]["mime"] | Me
 /**
  * Given a Markdown language tag (e.g. `css`), it returns a corresponding {@link MimeTypeDefinition} if found.
  *
- * If there are multiple {@link MimeTypeDefinition}s for the language tag, then only the first one is retrieved. For example for `javascript`, the plain "JavaScript" (`text/javascript`) mime type is returned rather than the Trilium frontend/backend script variants.
+ * An entry that lists the tag in its `aliases` wins. Otherwise, if there are multiple {@link MimeTypeDefinition}s for the language tag, then only the first one is retrieved. For example for `javascript`, the plain "JavaScript" (`text/javascript`) mime type is returned rather than the Trilium frontend/backend script variants.
  *
  * @param mdLanguageCode a language tag.
  * @returns the corresponding {@link MimeTypeDefinition} if found, or `undefined` otherwise.
@@ -231,6 +279,11 @@ export type SupportedMimeTypes = typeof MIME_TYPES_DICT_RAW[number]["mime"] | Me
 export function getMimeTypeFromMarkdownName(mdLanguageCode: string) {
     if (!byMarkdownNameMappings) {
         byMarkdownNameMappings = {};
+        for (const mimeType of MIME_TYPES_DICT) {
+            for (const alias of mimeType.aliases ?? []) {
+                byMarkdownNameMappings[alias] = mimeType;
+            }
+        }
         for (const mimeType of MIME_TYPES_DICT) {
             if (mimeType.mdLanguageCode && !byMarkdownNameMappings[mimeType.mdLanguageCode]) {
                 byMarkdownNameMappings[mimeType.mdLanguageCode] = mimeType;
@@ -240,3 +293,40 @@ export function getMimeTypeFromMarkdownName(mdLanguageCode: string) {
 
     return byMarkdownNameMappings[mdLanguageCode];
 }
+
+/**
+ * The code MIME type of a file, from its extension, such as `text/x-python` for `script.py`, or
+ * `undefined` for a file without a known language.
+ */
+export function getMimeTypeFromFileName(fileName: string) {
+    const lowerCaseName = fileName.toLowerCase();
+    const extension = lowerCaseName.includes(".")
+        ? lowerCaseName.slice(lowerCaseName.lastIndexOf(".") + 1)
+        : lowerCaseName;
+    return getMimeTypeFromMarkdownName(LANGUAGES_BY_EXTENSION[extension] ?? extension)?.mime;
+}
+
+/** The Markdown language names of the file extensions that are not language names themselves. */
+const LANGUAGES_BY_EXTENSION: Record<string, string> = {
+    cc: "cpp",
+    cjs: "javascript",
+    clj: "clojure",
+    cs: "csharp",
+    cxx: "cpp",
+    erl: "erlang",
+    ex: "elixir",
+    exs: "elixir",
+    h: "c",
+    hpp: "cpp",
+    hs: "haskell",
+    htm: "html",
+    kt: "kotlin",
+    kts: "kotlin",
+    m: "objectivec",
+    md: "markdown",
+    mjs: "javascript",
+    pl: "perl",
+    ps1: "powershell",
+    rb: "ruby",
+    rs: "rust"
+};

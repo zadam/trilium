@@ -9,7 +9,7 @@ import type { Request } from "../../http_interface";
 import { parse } from "node-html-parser";
 
 import { ValidationError } from "../../errors.js";
-import { trimIcoToSmallestEntry } from "../../services/ico.js";
+import { pngInsideIco, trimIcoToSmallestEntry } from "../../services/ico.js";
 import imageService from "../../services/image.js";
 import { storePictureBytes } from "../../services/image_download.js";
 import { type InspectedImage, inspectImage, UNKNOWN_FORMAT } from "../../services/image_inspect.js";
@@ -200,12 +200,20 @@ async function downloadFavicon(faviconUrl: string): Promise<DownloadedPicture | 
         return undefined;
     }
 
-    // An icon directory gives up the sizes nothing will look at; anything else is kept as it came.
-    const bytes = trimIcoToSmallestEntry(downloaded.bytes, FAVICON_TARGET_EDGE) ?? downloaded.bytes;
+    return asFavicon(downloaded.bytes);
+}
 
-    // The ceiling is on what is kept, not on what arrived: a file that is one large picture has
-    // nothing to give up, and is the case this refuses.
-    return bytes.byteLength <= MAX_FAVICON_SIZE ? asPicture(bytes) : undefined;
+/**
+ * Keeps the part of a favicon a preview draws: the smallest entry of an icon directory, as a plain
+ * PNG when that entry is one, and any other picture as it is. Returns undefined if the bytes are
+ * not a picture or what is kept is too large.
+ */
+function asFavicon(bytes: Uint8Array): DownloadedPicture | undefined {
+    const trimmed = trimIcoToSmallestEntry(bytes, FAVICON_TARGET_EDGE) ?? bytes;
+    const kept = pngInsideIco(trimmed) ?? trimmed;
+
+    // The limit applies to what is kept, so an icon directory with one large entry is refused.
+    return kept.byteLength <= MAX_FAVICON_SIZE ? asPicture(kept) : undefined;
 }
 
 /**
@@ -586,7 +594,7 @@ async function getMetadata(req: Request) {
     // A YouTube link stays resolved even when oEmbed is unreachable: the player embeds from the
     // video ID alone, so the preview is worth showing with or without the title and channel.
     if (videoId) {
-        return await storePictures(noteIdParam, url, await fetchYouTubeMetadata(url, videoId));
+        return await resolveYouTubePreview(noteIdParam, url, videoId);
     }
 
     try {
@@ -615,6 +623,22 @@ async function getMetadata(req: Request) {
         getLog().info(`Failed to fetch link preview metadata: ${e}`);
         return unresolvedMetadata(validatedUrl);
     }
+}
+
+/**
+ * The metadata of a preview for a YouTube video, with its thumbnail and favicon stored as attachments
+ * of the note `noteId`.
+ */
+export async function resolveYouTubePreview(noteId: string, url: string, videoId: string) {
+    return await storePictures(noteId, url, await fetchYouTubeMetadata(url, videoId));
+}
+
+/**
+ * Stores a favicon the caller already holds as an attachment of the note `noteId`, named after the
+ * site of `pageUrl`, and returns its URL. Returns undefined if the bytes are not a usable favicon.
+ */
+export async function storeFavicon(noteId: string, pageUrl: string, bytes: Uint8Array) {
+    return await storePicture(noteId, asFavicon(bytes), "favicon", safeHostname(pageUrl));
 }
 
 /**

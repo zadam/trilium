@@ -26,7 +26,7 @@ There are also a few predefined columns:
 
 ### Creating a new table
 
-Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ and look for _Table_.
+Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ → _Collection_ → _Table_.
 
 ### Adding columns
 
@@ -85,6 +85,10 @@ Simply click on a cell within a row to change its value. The change will not onl
 It is possible to edit a column by right clicking it and selecting _Edit column._ This will basically change the label/relation definition at the collection level.
 
 If the _Name_ field of a column is changed, this will trigger a batch operation in which the corresponding label/relation will be renamed in all the children.
+
+### Read-only tables
+
+On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) table, the cells can't be edited and the rows can't be dragged. The _New row_ and _New column_ buttons are hidden, and the context menus offer only what leaves the notes as they are: sorting and hiding columns, and opening the notes. Columns can still be resized and reordered, but the layout isn't saved.
 
 ## Working with the data
 
