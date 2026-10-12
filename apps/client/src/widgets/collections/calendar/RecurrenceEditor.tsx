@@ -29,8 +29,8 @@ import {
  * Edits how the event repeats, through the note's `#recurrence` label — or whatever label a
  * `#calendar:recurrence` renaming points at instead (see useEventLabel) — structured fields for
  * the everyday rules, the raw RRULE string for one saying more than they can (see recurrence.ts
- * for where that line runs). Rendered as {@link EventField} rows, so it stands in the event
- * popover's field column beside the start and end dates when those grow editors of their own.
+ * for where that line runs). Renders a dropdown whose button names the rule; the rule's fields open
+ * inside it.
  */
 export default function RecurrenceEditor({ note }: { note: FNote }) {
     const [ storedValue, setStoredValue ] = useEventLabel(note, "recurrence");
@@ -58,19 +58,18 @@ export default function RecurrenceEditor({ note }: { note: FNote }) {
     // — a rule is several choices, and the menu going down after the first would make it three
     // trips. Portaled to the body because the popover clips what overflows it (see EventPopover.css).
     return (
-        <EventField name={t("calendar.recurrence.repeats")}>
-            <DropdownPanel
-                className="calendar-recurrence-dropdown"
-                text={modelTitle(model)}
-                autoClose="outside"
-            >
-                <EventFieldList>
-                    <FrequencyField model={model} commit={commit} />
-                    {model.kind === "simple" && <SimpleRuleFields rule={model.rule} commit={commit} />}
-                    {model.kind === "custom" && <CustomRuleField value={model.value} commit={commit} />}
-                </EventFieldList>
-            </DropdownPanel>
-        </EventField>
+        <DropdownPanel
+            className="calendar-recurrence-dropdown"
+            text={modelTitle(model)}
+            title={t("calendar.recurrence.repeats")}
+            autoClose="outside"
+        >
+            <EventFieldList>
+                <FrequencyField model={model} commit={commit} />
+                {model.kind === "simple" && <SimpleRuleFields rule={model.rule} commit={commit} />}
+                {model.kind === "custom" && <CustomRuleField value={model.value} commit={commit} />}
+            </EventFieldList>
+        </DropdownPanel>
     );
 }
 

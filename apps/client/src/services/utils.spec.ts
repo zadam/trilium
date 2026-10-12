@@ -1,3 +1,4 @@
+import type { ViteHotContext } from "vite/types/hot.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import utils, {
@@ -31,6 +32,7 @@ import utils, {
     reloadFrontendApp,
     replaceHtmlEscapedSlashes,
     restartDesktopApp,
+    reuseAcrossHotReloads,
     rootCauseMessage,
     toggleBodyClass
 } from "./utils.js";
@@ -1011,5 +1013,21 @@ describe("isPreAuthScreen", () => {
     it("does NOT flag an unset glob (unit-test / unknown state) — strict === false keeps eager loads working", () => {
         setGlob({});
         expect(isPreAuthScreen()).toBe(false);
+    });
+});
+
+describe("reuseAcrossHotReloads", () => {
+    it("returns the stored instance on re-evaluation, and a fresh one without `hot.data`", () => {
+        const hot = { data: {} } as unknown as ViteHotContext;
+        const create = vi.fn(() => ({}));
+
+        const first = reuseAcrossHotReloads(hot, create);
+        expect(reuseAcrossHotReloads(hot, create)).toBe(first);
+        expect(create).toHaveBeenCalledTimes(1);
+
+        // Vitest's `import.meta.hot` stub has no `data`.
+        const stub = {} as unknown as ViteHotContext;
+        expect(reuseAcrossHotReloads(stub, create)).not.toBe(reuseAcrossHotReloads(stub, create));
+        expect(reuseAcrossHotReloads(undefined, create)).not.toBe(first);
     });
 });

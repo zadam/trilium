@@ -63,9 +63,10 @@ export interface PromotedAttribute {
 /**
  * The attributes a collection can show on its items, in the order the reader put them.
  *
- * The stored settings lead, in their own order, and anything the note has gained since is appended
- * and shown: an attribute nobody has arranged is one the reader has yet to see. What the settings
- * name but the note no longer defines is left out, so writing the result back prunes the config.
+ * The stored settings lead, in their own order, and anything the note has gained since is appended,
+ * shown unless `unarrangedHidden` is set: an attribute nobody has arranged is one the reader has yet
+ * to see. Attributes listed in the settings but no longer defined by the note are left out, so
+ * writing the result back prunes the config.
  *
  * Read from `getAttributeDefinitions()` rather than from the promoted ones: a definition that is
  * not promoted is still drawn on an item, only without an alias, and a note carrying
@@ -83,7 +84,14 @@ export function resolvePromotedAttributes(
     /** Names the collection draws itself, such as the label a board groups by. */
     drawnByCollection: string[] = [],
     /** The notes the collection shows, such as the cards of a board. */
-    items: Iterable<FNote> = []
+    items: Iterable<FNote> = [],
+    { unarrangedHidden = false }: {
+        /**
+         * Hides what the settings have never named, for a collection whose items have little room,
+         * such as a calendar's events. Otherwise it is shown.
+         */
+        unarrangedHidden?: boolean;
+    } = {}
 ): PromotedAttribute[] {
     const defined = new Map<string, PromotedAttribute>();
 
@@ -149,6 +157,7 @@ export function resolvePromotedAttributes(
 
     for (const attribute of defined.values()) {
         if (!ordered.includes(attribute)) {
+            attribute.hidden = unarrangedHidden;
             ordered.push(attribute);
         }
     }

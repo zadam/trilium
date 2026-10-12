@@ -25,11 +25,22 @@
 
     .calendar-event-popover-header {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         gap: 4px;
-        padding: 4px 9px;
+        padding: 4px 9px 8px;
         border-bottom: 1px solid var(--main-border-color);
         flex-shrink: 0;
+
+        /* Lines the toolbar up with the body's fields, whose padding is 1px wider. */
+        > .tn-embedded-note-actions {
+            padding-inline: 1px;
+        }
+    }
+
+    .calendar-event-popover-title {
+        display: flex;
+        align-items: center;
+        gap: 4px;
 
         > .title-row {
             flex: 1;

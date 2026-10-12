@@ -526,7 +526,7 @@ function getDefaultKeyboardActions() {
         {
             friendlyName: t("keyboard_action_names.show-backend-log"),
             actionName: "showBackendLog",
-            iconClass: "bx bx-detail",
+            iconClass: "bx bx-receipt",
             defaultShortcuts: [],
             description: t("keyboard_actions.show-backend-log"),
             scope: "window"

@@ -23,15 +23,15 @@
     .promoted-attributes-widget:not(:has(.promoted-attribute-cell)) {
         display: none;
     }
+}
 
-    .tn-embedded-note-actions {
-        display: flex;
-        align-items: center;
-        gap: 4px;
+.tn-embedded-note-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
-        .tn-embedded-note-color {
-            margin-inline-start: auto;
-        }
+    .tn-embedded-note-color {
+        margin-inline-start: auto;
     }
 }
 
@@ -68,7 +68,7 @@
     }
 }
 
-:root .tn-embedded-note-pane .tn-embedded-note-remove.icon-action {
+:root .tn-embedded-note-actions .tn-embedded-note-remove.icon-action {
     color: var(--dropdown-item-icon-destructive-color);
 }
 

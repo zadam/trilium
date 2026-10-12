@@ -24,9 +24,13 @@ To create a new event:
 *   First, click the desired day (month & year views) or the desired timeslot (day view).
 *   Alternatively, drag across multiple days (or time slots) to set both the start and end date.
 
-In either cases, a small popup will show with a prompt for a title and the date & time of the event that will be created.
+In either cases, a small popup will show with a prompt for a title and the date & time of the event that will be created. The date and time can be changed there the same way as in the popup view of an existing event (see below).
 
 At this point, the event hasn't been created yet to protect against accidental clicks. Add a title optionally and press the _Create_ button. If no title is provided, the event will follow the <a class="reference-link" href="../Advanced%20Usage/Default%20Note%20Title.md">Default Note Title</a> rules.
+
+The <span class="tn-icon bx bx-detail"></span> template field below the date and time shows the note type or template the event's note is made from. To make the event from another one, press the field and select it from the list; the calendar remembers the choice for the next event. Select _More templates…_ to change which templates are listed (see [Event templates](#event-templates)). The date and time entered for the event replace any dates and times the template carries.
+
+To give the event a time before creating it (for example, after clicking a day in the month view), press _Add time_ and set the start and end time; the duration is shown to the right of them. To make the event all-day again, press the <span class="tn-icon bx bx-x"></span> button at the end of the row. Adding or removing a time keeps the dates, so an event can start at a time on one day and end at a time on another (for example, a night shift). Changing the start date or time moves the end by the same amount, keeping the duration. An empty end date means the event ends on the day it starts; setting the end time before the start time moves the end date to the next day.
 
 After creating the event, it will show up on the calendar. To edit the content of the event (including recurrence), click on it to bring it into the popup view.
 
@@ -54,9 +58,9 @@ When an event is clicked, a popup will show near the event which contains the fo
     *   Color picker to change the color of the event.
     *   Button to remove the event from the calendar, which can optionally delete its corresponding note.
 *   Calendar-specific features:
-    *   A toggle for all-day events.
-    *   A start/end date & time selector.
-    *   A full recurrence editor, to have the same event show up weekly, monthly, etc.
+    *   The start date and, for an event spanning several days, the end date.
+    *   The start and end time with the duration to the right of them, and a <span class="tn-icon bx bx-x"></span> button that removes the time, making the event all-day. An all-day event shows an _Add time_ button instead.
+    *   A full recurrence editor, opened from the dropdown below the time, to have the same event show up weekly, monthly, etc.
 *   The <a class="reference-link" href="../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> of the marker, if any.
 *   The note's content which can be edited directly from the panel.
 
@@ -92,6 +96,32 @@ In the <a class="reference-link" href="Collection%20Properties.md">Collection P
 *   Display week numbers on the calendar.
 *   Set the slot duration (the length of each time row in day/week view).
 *   Set the slot label interval (how often time labels appear on the axis in day/week view).
+
+The same settings, together with whether archived notes are shown, are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it). The time slots are listed there whichever view the calendar is in.
+
+### Event templates
+
+By default, a new event is a <a class="reference-link" href="../Note%20Types/Text.md">Text</a> note. To make events from other note types, or from <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a> with predefined content and attributes (such as a color), open the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, and find _Event templates_. Here you can:
+
+*   Include a note type or note template already created in your knowledge base by pressing the <span class="tn-icon bx bx-list-plus"></span> _Add existing template_ button and then selecting the desired note type or template.
+*   Create a new template by pressing the <span class="tn-icon bx bx-plus"></span> _Create a new template_ button. The template is created as a child of the calendar, and is not shown as an event.
+*   Press the <span class="tn-icon bx bx-x"></span> button to remove a template from the list. The template is removed only from the list, not deleted.
+*   Press the <span class="tn-icon bx bx-dots-vertical-rounded"></span> button of a custom template to edit, open in a new window, duplicate, or delete it.
+*   Drag a template by its handle to reorder the list shown when creating an event.
+
+The dialog is not available on a read-only calendar, or on a calendar marked with `#calendarRoot` or `#workspaceCalendarRoot` (see [Using with the Journal / calendar](#using-with-the-journal--calendar)).
+
+### Event attributes
+
+Events can show the values of their attributes below their title, in the month view, and in the week and day views for all-day events and for timed ones tall enough to hold them. To choose which attributes are shown, open the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it) and find _Event attributes_. It lists the <a class="reference-link" href="../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> the calendar defines, and those its events define themselves. Here you can:
+
+*   Turn an attribute on to show it on the events. New attributes are hidden until you turn them on, which keeps the calendar from getting cluttered.
+*   Drag an attribute by its handle to change the order in which the events show them.
+*   Create a new attribute, which is shown on the events right away, or edit or delete one the calendar defines.
+
+The dates, times and recurrence of the events are not listed, as the calendar always shows them itself.
+
+If an event has a `#calendar:displayedAttributes` label, including one inherited from the calendar, the attributes listed in that label are shown instead.
 
 ## Configuring the calendar using attributes
 
@@ -153,7 +183,7 @@ For each note of the calendar, the following attributes can be used:
 | `#calendar:color` | **❌️ Removed since v0.100.0. Use** `#color` **instead.**       <br>  <br>Similar to `#color`, but applies the color only for the event in the calendar and not for other places such as the note tree. |
 | `#iconClass` | If present, the icon of the note will be displayed to the left of the event title. |
 | `#calendar:title` | Changes the title of an event to point to an attribute of the note other than the title, can either a label or a relation (without the `#` or `~` symbol). See _Use-cases_ for more information. |
-| `#calendar:displayedAttributes` | Allows displaying the value of one or more attributes in the calendar like this:            <br>  <br>![](6_Calendar_image.png)           <br>  <br>`#weight="70" #Mood="Good" #calendar:displayedAttributes="weight,Mood"`          <br>  <br>It can also be used with relations, case in which it will display the title of the target note:           <br>  <br>`~assignee=@My assignee #calendar:displayedAttributes="assignee"` |
+| `#calendar:displayedAttributes` | Takes precedence over the [Event attributes](#event-attributes) chosen in the calendar's properties. Allows displaying the value of one or more attributes in the calendar, in the order given, like this:            <br>  <br>![](6_Calendar_image.png)           <br>  <br>`#weight="70" #Mood="Good" #calendar:displayedAttributes="weight,Mood"`          <br>  <br>It can also be used with relations, case in which it will display the title of the target note:           <br>  <br>`~assignee=@My assignee #calendar:displayedAttributes="assignee"` |
 | `#calendar:startDate` | Allows using a different label to represent the start date, other than `startDate` (e.g. `expiryDate`). The label name **must not be** prefixed with `#`. If the label is not defined for a note, the default will be used instead. |
 | `#calendar:endDate` | Similar to `#calendar:startDate`, allows changing the attribute which is being used to read the end date. |
 | `#calendar:startTime` | Similar to `#calendar:startDate`, allows changing the attribute which is being used to read the start time. |
@@ -164,6 +194,8 @@ For each note of the calendar, the following attributes can be used:
 ![](8_Calendar_image.png)
 
 The calendar displays all the child notes of the Collection that have a `#startDate`. An `#endDate` can optionally be added.
+
+A text note with a start date is shown with the <span class="tn-icon bx bx-calendar-event"></span> icon in the note tree and elsewhere, unless it has an icon of its own (set with `#iconClass`). The start date is read from the label `#calendar:startDate` names, if any.
 
 The start date & end date can easily be edited from the calendar collection itself by clicking on the event. To edit the date while in the event note itself, the following attributes can be added to the Collection note:
 
