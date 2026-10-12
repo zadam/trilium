@@ -67,6 +67,7 @@ export default function TemplateDropdown({
         <FormListItem
             key={template.id}
             icon={template.icon}
+            checkable
             checked={template.id === current?.id}
             onClick={() => onSelect(template)}
         >
