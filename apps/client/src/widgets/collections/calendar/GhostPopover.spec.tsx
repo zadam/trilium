@@ -113,14 +113,15 @@ describe("GhostPopover", () => {
         const onCommit = vi.fn().mockResolvedValue(undefined);
         mount(onCommit);
 
-        const allDay = document.querySelector<HTMLInputElement>(".calendar-event-switches .switch-toggle");
-        if (!allDay) throw new Error("The ghost has no all-day switch.");
-        expect(allDay.checked).toBe(true);
+        const addTime = document.querySelector<HTMLButtonElement>(".calendar-event-add-time");
+        if (!addTime) throw new Error("The ghost has no button to add a time.");
         expect(timeInputs()).toHaveLength(0);
+        expect(addTime.closest(".calendar-event-row")?.querySelector(".bx-time-five")).not.toBeNull();
         expect(duration()).toBeUndefined();
 
-        act(() => { allDay.dispatchEvent(new Event("input", { bubbles: true })); });
+        act(() => { addTime.click(); });
         const [ start, end ] = timeInputs();
+        expect(document.activeElement).toBe(start);
         expect(start.value).toBe("09:00");
         expect(end.value).toBe("10:00");
         expect(duration()).toBe("calendar_view.duration_hours|1");
@@ -136,5 +137,18 @@ describe("GhostPopover", () => {
         expect(onCommit).toHaveBeenCalledWith("", {
             startDate: "2026-06-05", endDate: null, startTime: "14:00", endTime: "15:30"
         });
+    });
+
+    it("lets the hours be removed again, making the draft whole-day", async () => {
+        const onCommit = vi.fn().mockResolvedValue(undefined);
+        mount(onCommit);
+
+        act(() => { document.querySelector<HTMLButtonElement>(".calendar-event-add-time")?.click(); });
+        act(() => { document.querySelector<HTMLElement>(".calendar-event-remove-time")?.click(); });
+
+        expect(timeInputs()).toHaveLength(0);
+        expect(document.activeElement).toBe(document.querySelector(".calendar-event-add-time"));
+        await act(async () => { createButton()?.click(); });
+        expect(onCommit).toHaveBeenCalledWith("", { startDate: "2026-06-05", startTime: null, endTime: null, endDate: null });
     });
 });

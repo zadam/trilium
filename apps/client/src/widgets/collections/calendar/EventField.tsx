@@ -1,9 +1,12 @@
 import "./EventField.css";
 
 import clsx from "clsx";
-import { ComponentChildren } from "preact";
+import { ComponentChildren, RefObject } from "preact";
+import { useLayoutEffect, useRef } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
+import ActionButton from "../../react/ActionButton";
+import Button from "../../react/Button";
 import { getTimedDurationMinutes } from "./utils";
 
 /**
@@ -40,14 +43,15 @@ export function EventField({ name, htmlFor, children }: {
  * name as its tooltip. A line without an icon is indented to the same column, so its controls line
  * up with the ones above. Shared by the event popover and the new-event popup.
  */
-export function EventRow({ icon, title, children }: {
+export function EventRow({ icon, title, rowRef, children }: {
     /** A boxicons class such as `bx-calendar`. */
     icon?: string;
     title?: string;
+    rowRef?: RefObject<HTMLDivElement | null>;
     children: ComponentChildren;
 }) {
     return (
-        <div className="calendar-event-row">
+        <div ref={rowRef} className="calendar-event-row">
             <span className={clsx("calendar-event-row-icon", icon && `bx ${icon}`)} title={title} aria-hidden="true" />
             {children}
         </div>
@@ -63,6 +67,56 @@ export function EventFieldControls({ className, children }: {
     children: ComponentChildren;
 }) {
     return <div className={clsx("calendar-event-field-controls", className)}>{children}</div>;
+}
+
+/**
+ * The row of an event's hours. An all-day event has none, so the row offers to add them; a timed
+ * one shows its hours (`children`) with a button that removes them, which makes it all-day again.
+ * Either button hands the focus on to what replaces it: the start time, or the button to add one.
+ */
+export function EventTimeRow({ hasTime, onAdd, onRemove, children }: {
+    hasTime: boolean;
+    onAdd(): void;
+    onRemove(): void;
+    children: ComponentChildren;
+}) {
+    const rowRef = useRef<HTMLDivElement>(null);
+    const moveFocus = useRef(false);
+
+    useLayoutEffect(() => {
+        if (!moveFocus.current) return;
+        moveFocus.current = false;
+        const target = hasTime ? "input" : ".calendar-event-add-time";
+        rowRef.current?.querySelector<HTMLElement>(target)?.focus();
+    }, [ hasTime ]);
+
+    return (
+        <EventRow icon="bx-time-five" title={t("calendar.dates.time")} rowRef={rowRef}>
+            {hasTime ? <>
+                {children}
+                <ActionButton
+                    className="calendar-event-remove-time"
+                    icon="bx bx-x"
+                    text={t("calendar.dates.remove_time")}
+                    onClick={() => {
+                        moveFocus.current = true;
+                        onRemove();
+                    }}
+                />
+            </> : (
+                <Button
+                    className="calendar-event-add-time"
+                    kind="lowProfile"
+                    icon="bx-plus"
+                    text={t("calendar.dates.add_time")}
+                    onClick={() => {
+                        moveFocus.current = true;
+                        onAdd();
+                    }}
+                />
+            )}
+        </EventRow>
+    );
 }
 
 /**

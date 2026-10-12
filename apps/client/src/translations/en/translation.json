@@ -1061,7 +1061,9 @@
       "end_date": "End date",
       "time": "Time",
       "start_time": "Start time",
-      "end_time": "End time"
+      "end_time": "End time",
+      "add_time": "Add time",
+      "remove_time": "Remove time"
     },
     "recurrence": {
       "repeats": "Repeats",

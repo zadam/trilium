@@ -35,6 +35,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    /* Shared by the inputs and the button to add hours, so the time row keeps its height when
+       one replaces the other. */
+    --calendar-event-control-height: 2rem;
+    min-height: var(--calendar-event-control-height);
 
     /* A native date or time input with `width: auto` is as wide as its fields and picker icon.
        It can still shrink when the row is narrower than that, as on a phone. */
@@ -42,7 +46,20 @@
         flex: 0 1 auto;
         width: auto;
         min-width: 0;
+        height: var(--calendar-event-control-height);
         padding: 0.25rem 0.5rem;
+    }
+
+    .calendar-event-add-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        height: var(--calendar-event-control-height);
+        padding: 0 0.5rem;
+
+        .tn-icon {
+            font-size: 1.2em;
+        }
     }
 
     .select-button {
@@ -62,12 +79,9 @@
         opacity: 0.75;
     }
 
-    .calendar-event-switches {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        gap: 16px;
+    .calendar-event-remove-time {
+        flex: none;
+        margin-inline-start: auto;
     }
 
     .calendar-event-duration {

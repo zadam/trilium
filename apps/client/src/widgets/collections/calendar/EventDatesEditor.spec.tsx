@@ -42,7 +42,8 @@ describe("EventDatesEditor", () => {
             container));
     }
 
-    const allDayBox = () => container.querySelector<HTMLInputElement>("input[type='checkbox']");
+    const addTimeButton = () => container.querySelector<HTMLButtonElement>(".calendar-event-add-time");
+    const removeTimeButton = () => container.querySelector<HTMLElement>(".calendar-event-remove-time");
     const dateInputs = () => container.querySelectorAll<HTMLInputElement>("input[type='date']");
     const timeInputs = () => container.querySelectorAll<HTMLInputElement>("input[type='time']");
     const duration = () => container.querySelector(".calendar-event-duration")?.textContent;
@@ -56,47 +57,52 @@ describe("EventDatesEditor", () => {
 
     it("shows a whole-day event as a span of days, and a timed one as a day and its hours", () => {
         mount(buildNote({ title: "Fair", "#startDate": "2026-06-05", "#endDate": "2026-06-07" }));
-        expect(allDayBox()?.checked).toBe(true);
         expect(dateInputs()).toHaveLength(2);
+        // An all-day event has no hours, only the way to add them, on the time row.
         expect(timeInputs()).toHaveLength(0);
+        expect(removeTimeButton()).toBeNull();
+        expect(addTimeButton()?.closest(".calendar-event-row")?.querySelector(".bx-time-five")).not.toBeNull();
         expect(duration()).toBeUndefined();
         expect(dateInputs()[0].value).toBe("2026-06-05");
         expect(dateInputs()[1].value).toBe("2026-06-07");
 
         mount(buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" }));
-        expect(allDayBox()?.checked).toBe(false);
+        expect(addTimeButton()).toBeNull();
         expect(dateInputs()).toHaveLength(1);
         expect(timeInputs()).toHaveLength(2);
+        expect(timeInputs()[0].closest(".calendar-event-row")?.contains(removeTimeButton())).toBe(true);
         expect(timeInputs()[0].value).toBe("13:00");
         expect(timeInputs()[1].value).toBe("14:30");
         expect(duration()).toBe("calendar_view.duration_hours_minutes|1|30");
         expect(timeInputs()[0].closest(".calendar-event-row")?.querySelector(".calendar-event-duration")).not.toBeNull();
     });
 
-    it("switching all-day off gives the day hours to edit and lets a span of days go", () => {
+    it("adding a time gives the day hours to edit and lets a span of days go", () => {
         const note = buildNote({ title: "Fair", "#startDate": "2026-06-05", "#endDate": "2026-06-07" });
         mount(note);
 
-        act(() => allDayBox()?.click());
+        act(() => addTimeButton()?.click());
 
         expect(setLabel).toHaveBeenCalledWith(note.noteId, "startTime", "09:00");
         expect(setLabel).toHaveBeenCalledWith(note.noteId, "endTime", "10:00");
         expect(removeLabel).toHaveBeenCalledWith(note, "endDate");
         // The fields answer the press at once, ahead of the labels echoing back.
         expect(timeInputs()).toHaveLength(2);
+        expect(document.activeElement).toBe(timeInputs()[0]);
         expect(dateInputs()).toHaveLength(1);
     });
 
-    it("switching all-day on takes the hours off and keeps the dates", () => {
+    it("removing the time takes the hours off and keeps the dates", () => {
         const note = buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" });
         mount(note);
 
-        act(() => allDayBox()?.click());
+        act(() => removeTimeButton()?.click());
 
         expect(removeLabel).toHaveBeenCalledWith(note, "startTime");
         expect(removeLabel).toHaveBeenCalledWith(note, "endTime");
         expect(setLabel).not.toHaveBeenCalled();
         expect(dateInputs()).toHaveLength(2);
+        expect(document.activeElement).toBe(addTimeButton());
     });
 
     it("commits an end date as the field is left, and emptying it makes the event a single day", () => {
@@ -127,7 +133,7 @@ describe("EventDatesEditor", () => {
         });
         mount(note);
 
-        expect(allDayBox()?.checked).toBe(true);
+        expect(addTimeButton()).not.toBeNull();
         expect(dateInputs()[0].value).toBe("2026-06-05");
         expect(dateInputs()[1].value).toBe("2026-06-07");
 
@@ -170,10 +176,10 @@ describe("EventDatesEditor", () => {
             "#calendar:endTime": "myEndTime", "#myEndTime": "14:30"
         });
         mount(note);
-        expect(allDayBox()?.checked).toBe(false);
+        expect(addTimeButton()).toBeNull();
         expect(timeInputs()[0].value).toBe("13:00");
 
-        act(() => allDayBox()?.click());
+        act(() => removeTimeButton()?.click());
 
         expect(removeLabel).toHaveBeenCalledWith(note, "myStartTime");
         expect(removeLabel).toHaveBeenCalledWith(note, "startTime");

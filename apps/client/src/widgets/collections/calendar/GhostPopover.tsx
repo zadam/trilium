@@ -7,15 +7,14 @@ import { isMobile } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Button from "../../react/Button";
 import FormTextBox from "../../react/FormTextBox";
-import FormToggle from "../../react/FormToggle";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
-import { EventDuration, EventRow } from "./EventField";
+import { EventDuration, EventRow, EventTimeRow } from "./EventField";
 import { AnchorPoint, EventDraft, narrowAnchorRect, withAllDay } from "./selection";
 
 /**
  * The ghost: the form an event is decided in before its note exists. It asks for the name, shows
- * the days the drag covered, and lets the user switch all-day off to give the event hours, as a
+ * the days the drag covered, and lets the user add hours to the event, as a
  * click in the month view drafts a whole day. Everything else an event can hold waits for the
  * note, a click on its chip away. Dismissed — Escape, the close button, a press anywhere else —
  * the draft simply evaporates: nothing was created.
@@ -116,35 +115,26 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
                     <span>{describeDates(draft)}</span>
                 </EventRow>
 
-                <EventRow>
-                    <div className="calendar-event-switches">
-                        <FormToggle
-                            switchOnName={t("calendar.dates.all_day")}
-                            switchOffName={t("calendar.dates.all_day")}
-                            currentValue={allDay}
-                            onChange={(on) => setDraft((d) => withAllDay(d, on))}
-                        />
-                    </div>
-                </EventRow>
-
-                {!allDay && (
-                    <EventRow icon="bx-time-five" title={t("calendar.dates.time")}>
-                        <FormTextBox
-                            type="time"
-                            currentValue={draft.startTime ?? ""}
-                            aria-label={t("calendar.dates.start_time")}
-                            onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
-                        />
-                        <span className="calendar-event-row-separator" aria-hidden="true">–</span>
-                        <FormTextBox
-                            type="time"
-                            currentValue={draft.endTime ?? ""}
-                            aria-label={t("calendar.dates.end_time")}
-                            onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
-                        />
-                        <EventDuration event={draft} />
-                    </EventRow>
-                )}
+                <EventTimeRow
+                    hasTime={!allDay}
+                    onAdd={() => setDraft((d) => withAllDay(d, false))}
+                    onRemove={() => setDraft((d) => withAllDay(d, true))}
+                >
+                    <FormTextBox
+                        type="time"
+                        currentValue={draft.startTime ?? ""}
+                        aria-label={t("calendar.dates.start_time")}
+                        onChange={(startTime) => startTime && setDraft((d) => ({ ...d, startTime }))}
+                    />
+                    <span className="calendar-event-row-separator" aria-hidden="true">–</span>
+                    <FormTextBox
+                        type="time"
+                        currentValue={draft.endTime ?? ""}
+                        aria-label={t("calendar.dates.end_time")}
+                        onChange={(endTime) => endTime && setDraft((d) => ({ ...d, endTime }))}
+                    />
+                    <EventDuration event={draft} />
+                </EventTimeRow>
             </div>
 
             <div className="calendar-ghost-actions">
