@@ -1267,13 +1267,10 @@
   },
   "editable_text": {
     "placeholder": "Clóscríobh ábhar do nóta anseo...",
-    "editor_crashed_title": "Thuairteáil an t-eagarthóir téacs",
-    "editor_crashed_content": "Aisghabhadh d’ábhar go rathúil, ach b’fhéidir nár sábháladh cuid de do chuid athruithe is déanaí.",
     "editor_crashed_details_button": "Féach tuilleadh sonraí...",
     "editor_crashed_details_intro": "Má bhíonn an earráid seo agat arís agus arís eile, smaoinigh ar í a thuairisciú ar GitHub tríd an bhfaisnéis thíos a ghreamú.",
     "editor_crashed_details_title": "Faisnéis theicniúil",
     "auto-detect-language": "Braite go huathoibríoch",
-    "keeps-crashing": "Tá an chomhpháirt eagarthóireachta ag tuairteáil i gcónaí. Déan iarracht Trilium a atosú. Má leanann an fhadhb, smaoinigh ar thuairisc fabht a chruthú.",
     "nothing_selected_to_cut": "Roghnaigh roinnt téacs ar dtús chun é a ghearradh ina fho-nóta."
   },
   "empty": {

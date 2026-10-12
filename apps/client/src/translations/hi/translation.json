@@ -958,13 +958,10 @@
   },
   "editable_text": {
     "placeholder": "अपने नोट का कंटेंट यहाँ लिखें..।",
-    "editor_crashed_title": "टेक्स्ट एडिटर क्रैश हो गया है",
-    "editor_crashed_content": "आपका कंटेंट सफलतापूर्वक रिकवर कर लिया गया है, लेकिन आपके कुछ हालिया बदलाव शायद सेव न हुए हों।",
     "editor_crashed_details_button": "ज़्यादा जानकारी देखें..।",
     "editor_crashed_details_intro": "अगर यह एरर बार-बार आता है, तो नीचे दी गई जानकारी GitHub पर डालकर इसकी रिपोर्ट करें।",
     "editor_crashed_details_title": "तकनीकी जानकारी",
-    "auto-detect-language": "अपने-आप पहचानें",
-    "keeps-crashing": "एडिटिंग विजेट बार-बार क्रैश हो रहा है। कृपया Trilium को रीस्टार्ट करके देखें। अगर समस्या बनी रहती है, तो बग रिपोर्ट (bug report) करें।"
+    "auto-detect-language": "अपने-आप पहचानें"
   },
   "empty": {
     "open_note_instruction": "नीचे दिए गए बॉक्स में टाइटल लिखकर नोट खोलें या ट्री में से कोई नोट चुनें।",

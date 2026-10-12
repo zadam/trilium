@@ -1262,12 +1262,9 @@
   "editable_text": {
     "placeholder": "Escriba aquí el contenido de su nota...",
     "auto-detect-language": "Detectado automáticamente",
-    "editor_crashed_title": "El editor de texto ha dejado de responder",
-    "editor_crashed_content": "Su contenido ha sido recuperado con éxito, pero puede que algunos de sus cambios más recientes no se hayan guardado.",
     "editor_crashed_details_button": "Ver más detalles...",
     "editor_crashed_details_intro": "Si experimenta este error varias veces, considere informarlo en GitHub adjuntando la siguiente información.",
     "editor_crashed_details_title": "Información técnica",
-    "keeps-crashing": "El componente de edición sigue fallando. Por favor, intente reiniciar Trilium. Si el problema persiste, considere crear un informe de fallos.",
     "nothing_selected_to_cut": "Seleccione primero algo de texto para cortarlo en una subnota.",
     "uploading_attachment": "Subiendo archivo adjunto"
   },
