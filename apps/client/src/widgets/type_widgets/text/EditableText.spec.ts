@@ -6,7 +6,7 @@
  * crash and restarted the editor, which reverted the note to its last saved content — the images
  * being uploaded flickered and vanished instead of a "cannot upload" toast appearing.
  */
-import type { CKTextEditor, FileUploadData } from "@triliumnext/ckeditor5";
+import type { CKEditorError, CKTextEditor, FileUploadData } from "@triliumnext/ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type LoadResults from "../../../services/load_results";
@@ -24,6 +24,9 @@ vi.mock("../../../services/i18n", async (importOriginal) => ({
     t: (key: string) => key
 }));
 
+const showInfoDialog = vi.hoisted(() => vi.fn());
+vi.mock("../../../services/dialog", () => ({ default: { info: showInfoDialog } }));
+
 // Imported by EditableText for editor types and content styles; irrelevant (and heavy) here.
 vi.mock("@triliumnext/ckeditor5", () => ({}));
 
@@ -33,10 +36,40 @@ const {
     notifyAttachmentChanges,
     onNotificationInfo,
     onNotificationWarning,
+    reportEditorError,
     revealLinkTargetWhenReady,
     showFileUploadProgress,
     watchEditorBlocks
 } = await import("./EditableText");
+
+describe("reportEditorError", () => {
+    it("logs the error and shows a toast that opens its details", () => {
+        vi.clearAllMocks();
+        const logError = vi.fn();
+        vi.stubGlobal("logError", logError);
+        const error = new Error("unexpected-error Original error: TypeError: boom") as CKEditorError;
+
+        reportEditorError(error);
+
+        expect(logError).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("TypeError: boom"));
+        expect(showPersistent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            id: "editor-error",
+            title: "editable_text.editor_error_title",
+            message: "editable_text.editor_error_content"
+        }));
+
+        const [ { buttons } ] = showPersistent.mock.calls[0];
+        const dismissToast = vi.fn();
+        buttons[0].onClick({ dismissToast });
+        expect(dismissToast).toHaveBeenCalledOnce();
+        expect(showInfoDialog).toHaveBeenCalledExactlyOnceWith(
+            expect.anything(),
+            expect.objectContaining({ title: "editable_text.editor_error_title", copyToClipboardButton: true })
+        );
+        expect(JSON.stringify(showInfoDialog.mock.calls[0][0])).toContain("TypeError: boom");
+        vi.unstubAllGlobals();
+    });
+});
 
 describe("onNotificationWarning", () => {
     /** The payload `Notification#_showNotification` builds, with the `EventInfo` before it. */

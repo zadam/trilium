@@ -1,27 +1,33 @@
-import type { EditorWatchdog } from "@triliumnext/ckeditor5";
+import type { CKEditorError, CKTextEditor } from "@triliumnext/ckeditor5";
 import { createRef, render } from "preact";
 import { useRef } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import link from "../../../services/link";
-import CKEditorWithWatchdog, { type CKEditorApi } from "./CKEditorWithWatchdog";
+import CKEditor, { type CKEditorApi } from "./CKEditor";
 
 const mocks = vi.hoisted(() => ({
     options: {} as Record<string, string | boolean>,
     create: vi.fn(async () => {}),
     destroy: vi.fn(async () => {}),
+    stopReportingErrors: vi.fn(),
+    reportError: undefined as ((error: Error) => void) | undefined,
+    reportingEditor: undefined as unknown,
     note: undefined as { noteId: string; title: string } | undefined,
     handlers: {} as Record<string, (...args: unknown[]) => unknown>
 }));
 
 vi.mock("@triliumnext/ckeditor5", () => {
-    class MockEditorWatchdog {
-        setCreator() {}
-        on() {}
-        create() {
-            return mocks.create();
+    class MockEditor {
+        plugins = { has: () => false };
+        model = { document: { on() {}, off() {} } };
+
+        static async create() {
+            await mocks.create();
+            return new MockEditor();
         }
+
         destroy() {
             return mocks.destroy();
         }
@@ -29,9 +35,13 @@ vi.mock("@triliumnext/ckeditor5", () => {
 
     return {
         CKTextEditor: class {},
-        ClassicEditor: class {},
-        EditorWatchdog: MockEditorWatchdog,
-        PopupEditor: class {}
+        ClassicEditor: MockEditor,
+        PopupEditor: MockEditor,
+        onTextEditorError: (editor: unknown, callback: (error: Error) => void) => {
+            mocks.reportingEditor = editor;
+            mocks.reportError = callback;
+            return mocks.stopReportingErrors;
+        }
     };
 });
 
@@ -65,56 +75,73 @@ beforeEach(() => {
     mocks.note = undefined;
     mocks.create.mockClear();
     mocks.destroy.mockClear();
+    mocks.stopReportingErrors.mockClear();
+    mocks.reportError = undefined;
+    mocks.reportingEditor = undefined;
     host = document.body.appendChild(document.createElement("div"));
 });
 
-afterEach(() => {
-    render(null, host);
+afterEach(async () => {
+    // The unmount cleanup runs after paint and destroys the editor on the build queue, so both
+    // are flushed before the next test counts calls.
+    await act(async () => render(null, host));
+    await new Promise((resolve) => setTimeout(resolve));
     document.body.innerHTML = "";
 });
 
-describe("CKEditorWithWatchdog", () => {
+describe("CKEditor", () => {
     it("rebuilds an open editor when the MathLive option changes", async () => {
-        const watchdogRef = createRef<EditorWatchdog>();
-        const editorApi = createRef<CKEditorApi>();
         const props = {
             contentLanguage: null,
-            watchdogRef,
-            onChange: vi.fn(),
-            editorApi,
-            templates: []
-        };
-
-        await act(async () => {
-            render(<CKEditorWithWatchdog {...props} />, host);
-        });
-        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
-
-        mocks.options.mathFieldEnabled = false;
-        await act(async () => {
-            render(<CKEditorWithWatchdog {...props} className="force-rerender" />, host);
-        });
-
-        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(2));
-        expect(mocks.destroy).toHaveBeenCalledTimes(1);
-    });
-
-    it("destroys its editor when it goes away", async () => {
-        const props = {
-            contentLanguage: null,
-            watchdogRef: createRef<EditorWatchdog>(),
+            editorRef: createRef<CKTextEditor>(),
             onChange: vi.fn(),
             editorApi: createRef<CKEditorApi>(),
             templates: []
         };
+
         await act(async () => {
-            render(<CKEditorWithWatchdog {...props} />, host);
+            render(<CKEditor {...props} />, host);
+        });
+        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+        const firstEditor = props.editorRef.current;
+
+        mocks.options.mathFieldEnabled = false;
+        await act(async () => {
+            render(<CKEditor {...props} className="force-rerender" />, host);
+        });
+
+        await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(2));
+        expect(mocks.destroy).toHaveBeenCalledTimes(1);
+        expect(mocks.stopReportingErrors).toHaveBeenCalledTimes(1);
+        expect(props.editorRef.current).not.toBe(firstEditor);
+        expect(mocks.reportingEditor).toBe(props.editorRef.current);
+    });
+
+    it("hands the errors of its editor to onEditorError, until it destroys the editor", async () => {
+        const onEditorError = vi.fn();
+        const props = {
+            contentLanguage: null,
+            editorRef: createRef<CKTextEditor>(),
+            onChange: vi.fn(),
+            onEditorError,
+            editorApi: createRef<CKEditorApi>(),
+            templates: []
+        };
+        await act(async () => {
+            render(<CKEditor {...props} />, host);
         });
         await vi.waitFor(() => expect(mocks.create).toHaveBeenCalledOnce());
 
+        expect(props.editorRef.current).not.toBeNull();
+        expect(mocks.reportingEditor).toBe(props.editorRef.current);
+        const error = new Error("editor-error") as CKEditorError;
+        mocks.reportError?.(error);
+        expect(onEditorError).toHaveBeenCalledExactlyOnceWith(error);
+
         await act(async () => render(null, host));
         await vi.waitFor(() => expect(mocks.destroy).toHaveBeenCalledOnce());
-        expect(props.watchdogRef.current).toBeNull();
+        expect(mocks.stopReportingErrors).toHaveBeenCalledOnce();
+        expect(props.editorRef.current).toBeNull();
     });
 
     it("labels its reference links as links in the note it edits", async () => {
@@ -123,13 +150,13 @@ describe("CKEditorWithWatchdog", () => {
             .mockResolvedValue(undefined);
         const props = {
             contentLanguage: null,
-            watchdogRef: createRef<EditorWatchdog>(),
+            editorRef: createRef<CKTextEditor>(),
             onChange: vi.fn(),
             editorApi: createRef<CKEditorApi>(),
             templates: []
         };
         await act(async () => {
-            render(<CKEditorWithWatchdog {...props} />, host);
+            render(<CKEditor {...props} />, host);
         });
 
         const $el = $("<span>");

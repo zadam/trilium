@@ -9,9 +9,9 @@ import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.
 import type { PasteTarget } from "./plugins/cuttonote.js";
 import { CLASSIC_EDITOR_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
 import { BalloonEditor, DecoupledEditor, FindAndReplaceEditing, FindCommand } from "ckeditor5";
-export { default as EditorWatchdog } from "./custom_watchdog";
+export { onTextEditorError } from "./editor_errors.js";
 export { CHAT_INPUT_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
-export type { EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription, WatchdogConfig, WatchdogState } from "ckeditor5";
+export type { CKEditorError, EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription } from "ckeditor5";
 export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
