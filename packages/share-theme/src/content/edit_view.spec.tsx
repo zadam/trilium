@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
     hostProps: {} as Record<string, unknown>
 }));
 
+vi.mock("@triliumnext/client/src/stylesheets/ckeditor-theme.css", () => ({}));
 vi.mock("@triliumnext/client/src/widgets/type_widgets/text/EditableText.css", () => ({}));
 vi.mock("@triliumnext/client/src/components/app_context.js", () => ({
     default: { getComponentByEl: mocks.getComponentByEl }
@@ -112,8 +113,11 @@ describe("mountEditView", () => {
         });
         expect(glob.isDesktop).toBeTypeOf("function");
         expect(glob.froca).toBe(glob.treeCache);
-        (glob.getComponentByEl as (el: unknown) => void)("el");
+        const getComponentByEl = glob.getComponentByEl as (el: unknown) => unknown;
+        expect(getComponentByEl("el")).toBe(mocks.hostProps.component);
         expect(mocks.getComponentByEl).toHaveBeenCalledWith("el");
+        mocks.getComponentByEl.mockReturnValueOnce("widget");
+        expect(getComponentByEl("el")).toBe("widget");
         (glob.getReferenceLinkTitle as (href: string) => void)("#root/x");
         (glob.getReferenceLinkTitleSync as (href: string, stored?: string) => void)("#root/x", "T");
         expect(mocks.getReferenceLinkTitle).toHaveBeenCalledWith("#root/x");
@@ -128,6 +132,15 @@ describe("mountEditView", () => {
             note: { noteId: "note" }, isVisible: true, parentComponent: mocks.hostProps.component
         }), expect.anything());
         expect(container.querySelector(".share-edit-status")?.textContent).toBe("share_edit.status_saved");
+    });
+
+    it("shows its state in the slot the page provides instead of above the editor", async () => {
+        const slot = document.createElement("span");
+        document.body.append(slot);
+        await act(async () => { await mountEditView(container, { ...buildOptions(), statusContainer: slot }); });
+
+        expect(slot.querySelector(".share-edit-status")?.textContent).toBe("share_edit.status_saved");
+        expect(container.querySelector(".share-edit-status")).toBeNull();
     });
 
     it("takes a widget module that is the component itself", async () => {
@@ -147,6 +160,18 @@ describe("mountEditView", () => {
 
         refreshed?.({ ntxId: null, editor: { ui: { view: {} } } });
         expect(container.querySelector(".share-edit-toolbar")?.childElementCount).toBe(0);
+    });
+
+    it("places the toolbar in the slot the page provides instead of above the editor", async () => {
+        const slot = document.createElement("div");
+        document.body.append(slot);
+        await act(async () => { await mountEditView(container, { ...buildOptions(), toolbarContainer: slot }); });
+        const toolbar = document.createElement("div");
+        toolbar.className = "ck-toolbar";
+
+        mocks.eventHandlers.get("textEditorRefreshed")?.({ ntxId: null, editor: { ui: { view: { toolbar: { element: toolbar } } } } });
+        expect(slot.querySelector(".share-edit-toolbar > .ck-toolbar")).toBe(toolbar);
+        expect(container.querySelector(".share-edit-toolbar")).toBeNull();
     });
 
     it("shows the editor's state and keeps a conflict up until the visitor settles it", async () => {

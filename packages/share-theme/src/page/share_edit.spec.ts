@@ -29,9 +29,14 @@ describe("setupShareEdit", () => {
         vi.spyOn(window, "location", "get").mockReturnValue({ reload } as unknown as Location);
         vi.stubGlobal("glob", { isShare: true, isStatic: false });
         document.body.dataset.noteId = "note";
-        document.body.innerHTML = `<div id="content">
-            <div id="title-row"><h1 id="title">Title</h1></div>
-            <p class="rendered">Rendered</p></div>`;
+        document.body.innerHTML = `
+            <div id="title-row"></div>
+            <div id="content">
+                <header id="note-header">
+                    <h1 id="title">Title</h1><div id="note-header-actions"></div>
+                </header>
+                <p class="rendered">Rendered</p>
+            </div>`;
         mocks.mountEditView.mockResolvedValue({ stop: mocks.stop });
         mocks.stop.mockResolvedValue(undefined);
     });
@@ -73,7 +78,7 @@ describe("setupShareEdit", () => {
         });
         await setupShareEdit();
         const bar = document.querySelector(".share-edit-bar");
-        expect(bar?.previousElementSibling?.id).toBe("title-row");
+        expect(bar?.parentElement?.id).toBe("note-header-actions");
         const editButton = document.querySelector<HTMLButtonElement>(".share-edit-start");
         expect(editButton?.textContent).toBe("Edit");
         expect(editButton?.hidden).toBe(false);
@@ -96,7 +101,9 @@ describe("setupShareEdit", () => {
             payload: LOGIN.payload,
             csrfToken: "csrf",
             version: "blob1",
-            attachments: true
+            attachments: true,
+            statusContainer: undefined,
+            toolbarContainer: undefined
         });
         expect(editButton?.hidden).toBe(true);
         expect(document.querySelector<HTMLButtonElement>(".share-edit-stop")?.hidden).toBe(false);
@@ -108,12 +115,43 @@ describe("setupShareEdit", () => {
         expect(mocks.stop).toHaveBeenCalled();
     });
 
-    it("places its bar after a bare title, on a page without a title row", async () => {
+    it("gives the editor slots in the top bar and in the footer's last-updated line", async () => {
+        document.body.innerHTML = `
+            <div id="top-bar"><div id="title-row"></div></div>
+            <div id="content"><h1 id="title">Title</h1><p>Rendered</p></div>
+            <footer id="content-footer">
+                <div class="updated">Last updated on <time>today</time></div>
+            </footer>`;
+        answerSession({ editable: true, needsPassword: false, unlocked: true });
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+
+        const slot = document.querySelector(
+            "#content-footer .updated > .share-edit-status-slot:first-child");
+        expect(slot).not.toBeNull();
+        expect(mocks.mountEditView.mock.calls[0][1].statusContainer).toBe(slot);
+        const toolbarSlot = document.querySelector(
+            "#top-bar > .share-edit-toolbar-slot:has(+ #title-row)");
+        expect(toolbarSlot).not.toBeNull();
+        expect(mocks.mountEditView.mock.calls[0][1].toolbarContainer).toBe(toolbarSlot);
+    });
+
+    it("places its bar after the title of a template without the header's actions", async () => {
         document.body.innerHTML =
             `<div id="content"><h1 id="title">Title</h1><p>Rendered</p></div>`;
         answerSession({ editable: true, needsPassword: false, unlocked: true });
         await setupShareEdit();
         expect(document.querySelector(".share-edit-bar")?.previousElementSibling?.id).toBe("title");
+
+        document.body.innerHTML =
+            `<div id="content"><div id="title-row"><h1 id="title">Title</h1></div>
+                <p>Rendered</p></div>`;
+        answerSession({ editable: true, needsPassword: false, unlocked: true });
+        await setupShareEdit();
+        expect(document.querySelector(".share-edit-bar")?.previousElementSibling?.id)
+            .toBe("title-row");
     });
 
     it("waits for a loading editor before a click on Stop reloads the page", async () => {

@@ -124,6 +124,12 @@ To use the sharing feature, you must have a <a class="reference-link" href="../
 
 When you share a note, you actually share the entire subtree of notes beneath it. If the note has child notes, they will also be included in the shared content. For example, sharing the "Formatting" subtree will display a page with basic navigation for exploring all the notes within that subtree.
 
+### The shared page
+
+A shared page is laid out like the application: the navigation tree of the subtree on the left, and a tab bar above the note. The note starts with its icon, its title and the dates it was created and last modified; once the title scrolls out of view, a title bar under the tab bar shows the icon and the title, as the application's does.
+
+The tab bar keeps the notes a visitor opened during their browser session, so they can switch between them. <kbd>Ctrl</kbd>+click (<kbd>Cmd</kbd>+click on macOS) or a middle click on a note in the tree opens it in a tab behind the open one, the <span class="tn-icon bx bx-plus"></span> button opens the site's start page in a new tab, and the <span class="tn-icon bx bx-left-arrow-alt"></span> and <span class="tn-icon bx bx-right-arrow-alt"></span> buttons go back and forward through the pages seen. The tabs are kept by the browser for that session only; they are not shared between visitors.
+
 ## Viewing and managing shared notes
 
 You can view a list of all shared notes by clicking on "Show Shared Notes Subtree" in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>. This allows you to manage and navigate through all the notes you have made public.
@@ -135,7 +141,7 @@ A shared text note can be opened to editing by its visitors, without accounts. O
 *   **With a password**, which guests enter on the page. One password covers the note and every note below it.
 *   **Anyone with the link**, which needs no password at all. Prefer a password for a page that is linked from anywhere public.
 
-A visitor of the page then sees an _Edit_ button beside the title. Once unlocked, the page hosts Trilium's own text editor, with its toolbar above the note, and saves as the visitor types; the title can be edited as well. _Stop editing_ brings the rendered page back, and _Log out_ ends the visitor's access on a password-protected page.
+A visitor of the page then sees an _Edit_ button at the right of the note's header, where the password field appears when one is needed. Once unlocked, the page hosts Trilium's own text editor, with its toolbar above the note, and saves as the visitor types; the title can be edited as well. _Stop editing_ brings the rendered page back, and _Log out_ ends the visitor's access on a password-protected page.
 
 *   Guests edit text notes only, and never one with the `#readOnly` label. They cannot add, move or delete notes, nor change a note's type.
 *   Every guest change is kept as a revision of the note, marked _Guest edit_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> dialog, so the host can review and restore it.

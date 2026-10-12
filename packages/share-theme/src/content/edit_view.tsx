@@ -1,3 +1,4 @@
+import "@triliumnext/client/src/stylesheets/ckeditor-theme.css";
 import "@triliumnext/client/src/widgets/type_widgets/text/EditableText.css";
 
 import appContext from "@triliumnext/client/src/components/app_context.js";
@@ -12,7 +13,7 @@ import { TYPE_MAPPINGS } from "@triliumnext/client/src/widgets/note_types.js";
 import Alert from "@triliumnext/client/src/widgets/react/Alert.js";
 import Button from "@triliumnext/client/src/widgets/react/Button.js";
 import { useTriliumEvent } from "@triliumnext/client/src/widgets/react/hooks.js";
-import { type ComponentType, render } from "preact";
+import { type ComponentType, createPortal, render } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import ShareAppHost, { type AppPayload, type HostedApp } from "./app_host.js";
@@ -26,6 +27,10 @@ export interface EditViewOptions {
     /** The `blobId` of the note's content, which the first save names. */
     version: string;
     attachments: boolean;
+    /** Where the page shows the editor's state; above the editor without one. */
+    statusContainer?: HTMLElement;
+    /** Where the page shows the editor's toolbar; above the editor without one. */
+    toolbarContainer?: HTMLElement;
 }
 
 export interface EditView {
@@ -63,13 +68,22 @@ const TITLE_SAVE_DELAY = 1000;
  */
 export default async function mountEditView(container: HTMLElement, options: EditViewOptions): Promise<EditView> {
     const status = createStatus();
-    installGlobals(options, status);
     const component = new Component();
+    installGlobals(options, status, component);
     const view = await TYPE_MAPPINGS.editableText.view();
     const Widget = ("default" in view ? view.default : view) as ComponentType<WidgetProps>;
     render(
         <ShareAppHost noteId={options.noteId} payload={options.payload} readOnly={false} component={component}>
-            {(app) => <EditShell app={app} Widget={Widget} status={status} component={component} />}
+            {(app) => (
+                <EditShell
+                    app={app}
+                    Widget={Widget}
+                    status={status}
+                    component={component}
+                    statusContainer={options.statusContainer}
+                    toolbarContainer={options.toolbarContainer}
+                />
+            )}
         </ShareAppHost>,
         container
     );
@@ -86,9 +100,11 @@ export default async function mountEditView(container: HTMLElement, options: Edi
 /**
  * Sets what the app's modules read on a page that saves: the share's API as the server, the CSRF
  * token and where to refresh it, the globals the editor's plugins call, and the share-editing
- * state `services/utils.ts` tells the editor by.
+ * state `services/utils.ts` tells the editor by. The editor's plugins reach the widget's handlers
+ * through the component at an element; the page has no widget element to find, so they get
+ * `component`, which the widget registers its handlers on.
  */
-function installGlobals(options: EditViewOptions, status: Status) {
+function installGlobals(options: EditViewOptions, status: Status, component: Component) {
     // The boot script defines `window.glob` on every shared page.
     const glob = window.glob as unknown as EditGlobals;
     glob.baseApiUrl = "api/";
@@ -98,7 +114,7 @@ function installGlobals(options: EditViewOptions, status: Status) {
     glob.isDesktop = utils.isDesktop;
     glob.isMobile = utils.isMobile;
     glob.getHeaders = server.getHeaders;
-    glob.getComponentByEl = (el) => appContext.getComponentByEl(el);
+    glob.getComponentByEl = (el) => appContext.getComponentByEl(el) ?? component;
     glob.getReferenceLinkTitle = (href) => linkService.getReferenceLinkTitle(href);
     glob.getReferenceLinkTitleSync = (href, storedTitle) => linkService.getReferenceLinkTitleSync(href, storedTitle);
     glob.getActiveContextNote = () => froca.getNoteFromCache(options.noteId) ?? null;
@@ -167,6 +183,8 @@ interface EditShellProps {
     status: Status;
     /** The component the editor reports to, which the page's commands reach it through. */
     component: Component;
+    statusContainer?: HTMLElement;
+    toolbarContainer?: HTMLElement;
 }
 
 /**
@@ -174,7 +192,9 @@ interface EditShellProps {
  * editor is decoupled: its toolbar is an element the host places, as the app's formatting
  * toolbar does when the editor reports itself.
  */
-function EditShell({ app, Widget, status, component }: EditShellProps) {
+function EditShell(
+    { app, Widget, status, component, statusContainer, toolbarContainer }: EditShellProps
+) {
     const [ value, setValue ] = useState(status.value);
     const { conflict } = value;
     const toolbarRef = useRef<HTMLDivElement>(null);
@@ -184,10 +204,14 @@ function EditShell({ app, Widget, status, component }: EditShellProps) {
         toolbarRef.current?.replaceChildren(...(toolbar ? [ toolbar ] : []));
     });
 
+    const state = (
+        <span className="share-edit-status">{t(`share_edit.status_${value.state}`)}</span>
+    );
+    const toolbar = <div ref={toolbarRef} className="share-edit-toolbar" />;
     return (
         <>
-            <div ref={toolbarRef} className="share-edit-toolbar" />
-            <div className="share-edit-status">{t(`share_edit.status_${value.state}`)}</div>
+            {toolbarContainer ? createPortal(toolbar, toolbarContainer) : toolbar}
+            {statusContainer ? createPortal(state, statusContainer) : state}
             {conflict && <Alert type="warning" className="share-edit-conflict">
                 <p>{t("share_edit.conflict")}</p>
                 <Button text={t("share_edit.conflict_reload")} onClick={() => window.location.reload()} />

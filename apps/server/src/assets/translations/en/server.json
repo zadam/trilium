@@ -477,7 +477,14 @@
     "edit-stop": "Stop editing",
     "edit-log-out": "Log out",
     "edit-wrong-password": "Wrong password.",
-    "edit-failed": "Editing could not start. Reload the page and try again."
+    "edit-failed": "Editing could not start. Reload the page and try again.",
+    "created-on": "Created on {{- date}}",
+    "modified-on": "Modified on {{- date}}",
+    "open-notes": "Open notes",
+    "close-tab": "Close tab",
+    "new-tab": "New tab",
+    "go-back": "Go back",
+    "go-forward": "Go forward"
   },
   "hidden_subtree_templates": {
     "text-snippet": "Text Snippet",

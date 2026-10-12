@@ -38,10 +38,13 @@ export default function setupToC() {
         });
     }
 
-    // Marks the entry of the last section scrolled past, or the first entry above every section.
+    // Marks the entry of the last section scrolled under the top bar, whose height `title_row.ts`
+    // gives, or the first entry above every section.
     const changeLinkState = () => {
+        const { style } = document.documentElement;
+        const limit = (parseFloat(style.getPropertyValue("--top-bar-scrolled-height")) || 0) + 50;
         let index = sections.length;
-        while (--index > 0 && sections[index].getBoundingClientRect().top > 50) {
+        while (--index > 0 && sections[index].getBoundingClientRect().top > limit) {
             // Walk back to the last section scrolled past.
         }
 
@@ -53,7 +56,8 @@ export default function setupToC() {
     };
 
     changeLinkState();
-    window.addEventListener("scroll", changeLinkState, { passive: true });
+    // The note scrolls in its own container on a wide screen, and the page on a narrow one.
+    document.addEventListener("scroll", changeLinkState, { capture: true, passive: true });
 }
 
 /** How long a heading link shows its check mark after copying, in milliseconds. */

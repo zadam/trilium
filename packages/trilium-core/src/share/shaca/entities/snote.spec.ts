@@ -32,9 +32,11 @@ describe("SNote", () => {
 
     it("reads its content as text, bytes or JSON", () => {
         const note = (id: string, type: string, mime: string, blobId = id) =>
-            new SNote([ id, id, type, mime, blobId, "2025-01-01", false ]);
+            new SNote([ id, id, type, mime, blobId, "2024-12-31", "2025-01-01", false ]);
 
         const json = note("json", "code", "application/json");
+        expect(json.utcDateCreated).toBe("2024-12-31");
+        expect(json.utcDateModified).toBe("2025-01-01");
         expect(json.hasStringContent()).toBe(true);
         expect(json.getContent()).toBe("{ \"a\": 1 }");
         expect(json.getJsonContent()).toEqual({ a: 1 });

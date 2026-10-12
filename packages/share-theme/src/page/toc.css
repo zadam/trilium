@@ -3,18 +3,19 @@
     flex-direction: column;
     height: fit-content;
     position: sticky;
-    top: 0;
+    top: var(--title-row-height);
     order: 3;
     width: 250px;
     flex-shrink: 0;
-    max-height: 100vh;
+    max-height: calc(100vh - var(--top-bar-height) - var(--title-row-height));
+    transition: top 200ms ease-in, max-height 200ms ease-in;
     overflow-y: auto;
     padding-top: var(--page-top-spacing);
     z-index: 1;
     background: var(--background-primary);
 }
 
-#split-pane:has(#content.full-content-width) #toc-pane:empty {
+#toc-pane:empty {
     display: none;
 }
 
@@ -141,6 +142,7 @@
         right: 0;
         width: 80%;
         max-width: 300px;
+        max-height: none;
         padding: 20px;
         background: var(--background-secondary);
         transform: translateX(100%);

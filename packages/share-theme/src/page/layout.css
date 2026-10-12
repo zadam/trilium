@@ -2,22 +2,12 @@ html {
     --page-top-spacing: 2rem;
 }
 
-/* Past 90rem the navigation pane widens into the space beside the layout, up to 24rem; the padding
-   keeps the content where the 90rem layout puts it. */
+/* Past 90rem the navigation pane widens, up to 24rem; the content takes the rest of the window. */
 #split-pane {
     --left-pane-width: clamp(min(18rem, 25vw), 18rem + (100vw - 90rem) / 2, 24rem);
-    --left-pane-growth: max(0rem, var(--left-pane-width) - 18rem);
 
     display: flex;
     flex-direction: row;
-    max-width: calc(90rem + 2 * var(--left-pane-growth));
-    margin-inline: auto;
-    padding-inline-end: var(--left-pane-growth);
-}
-
-#split-pane:has(#content.full-content-width) {
-    max-width: none;
-    padding-inline-end: 0;
 }
 
 #left-pane {
@@ -53,8 +43,27 @@ html {
     min-width: 0;
     position: relative;
     display: flex;
+    flex-direction: column;
+}
+
+#right-pane-body {
+    display: flex;
     flex-direction: row;
     align-items: flex-start;
+}
+
+/* On a wide screen the note scrolls below the top bar, as in the app's scrolling container. */
+@media screen and (width > 48em) {
+    #right-pane:has(> #scrolling-container) {
+        height: 100vh;
+    }
+
+    #scrolling-container {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        scroll-padding-top: calc(var(--top-bar-scrolled-height) - var(--top-bar-height));
+    }
 }
 
 #main {
@@ -72,20 +81,13 @@ html {
     }
 }
 
-/* A text note reads at a limited width, as in the app, unless it has `#fullContentWidth`. */
-#content.ck-content:not(.full-content-width),
-#content.ck-content:not(.full-content-width) ~ * {
-    max-width: 48rem;
-    margin-inline: auto;
-}
-
 #mobile-backdrop {
     display: none;
 }
 
 @media (max-width: 48em) {
     html {
-        scroll-padding-top: var(--header-height);
+        scroll-padding-top: calc(var(--header-height) + var(--top-bar-scrolled-height));
     }
 
     body:is(.menu-open, .toc-open) {

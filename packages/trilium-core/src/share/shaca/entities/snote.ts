@@ -32,6 +32,7 @@ class SNote extends AbstractShacaEntity {
     type: NoteType;
     mime: string;
     private blobId: string;
+    utcDateCreated: string;
     utcDateModified: string;
     isProtected: boolean;
     parentBranches: SBranch[];
@@ -42,14 +43,19 @@ class SNote extends AbstractShacaEntity {
     targetRelations: SAttribute[];
     attachments: SAttachment[];
 
-    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]: SNoteRow) {
+    constructor(row: SNoteRow) {
         super();
+
+        const [
+            noteId, title, type, mime, blobId, utcDateCreated, utcDateModified, isProtected
+        ] = row;
 
         this.noteId = noteId;
         this.title = isProtected ? "[protected]" : title;
         this.type = type as NoteType;
         this.mime = mime;
         this.blobId = blobId;
+        this.utcDateCreated = utcDateCreated;
         this.utcDateModified = utcDateModified; // used for caching of images
         this.isProtected = isProtected;
 

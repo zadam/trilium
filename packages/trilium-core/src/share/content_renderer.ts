@@ -8,8 +8,8 @@ import { renderToHtml as renderMarkdownToHtml } from "@triliumnext/commons/src/l
 import { renderSpreadsheetToHtml } from "@triliumnext/commons/src/lib/spreadsheet/render_to_html.js";
 import { getLanguage, highlight, highlightAuto, syncMimeTypes } from "@triliumnext/highlightjs";
 import {
-    getChildLinks, getChildLinksLayout, getContentClasses, getHtmlSnippets, getLastUpdated, getNavigationTree, getPageHead, getPageLanguages,
-    getPrevNextLinks, getShareLink, getSiteAncestorIds, getSiteLogo, getTableOfContents, hasActiveItem,
+    getChildLinks, getChildLinksLayout, getContentClasses, getHtmlSnippets, getLastUpdated, getNavigationTree, getNoteHeader, getPageHead,
+    getPageLanguages, getPrevNextLinks, getShareLink, getSiteAncestorIds, getSiteLogo, getTableOfContents, hasActiveItem,
     type NavigationItem, type PageHeading, type ShareNote
 } from "@triliumnext/share-theme/model/page";
 import ejs from "ejs";
@@ -283,7 +283,7 @@ function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) 
         // `canAccessEmbed` is only given with a shaca note, whose children are shaca notes too.
         canAccess: (child) => renderArgs.canAccessEmbed?.(child as SNote) !== false
     });
-    const titleIcon = isFullHeight ? note.getIcon(renderArgs.iconPackSupportedPrefixes) : null;
+    const titleIcon = note.getIcon(renderArgs.iconPackSupportedPrefixes);
     const opts = {
         note,
         header,
@@ -309,11 +309,13 @@ function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) 
             defaultContentLanguage: options.getOptionOrNull("defaultContentLanguage")
         }),
         lastUpdated: isFullHeight ? null : getLastUpdated(note, displayLanguage),
+        noteHeader: isFullHeight ? null : getNoteHeader(note, displayLanguage),
         showTitle: true,
         titleIcon,
+        siteHref: getShareLink(siteRoot, sanitize.sanitizeUrl).href,
         fontPreloads: getFontPreloads(renderArgs.iconPackFonts, [
             logo.icon,
-            ...(titleIcon ? [ titleIcon ] : []),
+            titleIcon,
             ...getNavigationIcons(navigation),
             ...childLinks.flatMap((child) => [ child.icon, ...child.children.map((grandchild) => grandchild.icon) ])
         ]),

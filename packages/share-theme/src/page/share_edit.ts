@@ -23,9 +23,9 @@ interface EditLogin {
 
 /**
  * Offers to edit a text note the host opened to its visitors: asks the share whether the note is
- * editable, then shows an *Edit* button beside the title, which unlocks the note with its password
- * where it has one and mounts the app's editor in place of the rendered content. A page of the
- * static export, and one whose share answers nothing, show nothing.
+ * editable, then shows an *Edit* button at the end of the note's header, which unlocks the note
+ * with its password where it has one and mounts the app's editor in place of the rendered
+ * content. A page of the static export, and one whose share answers nothing, show nothing.
  */
 export default async function setupShareEdit() {
     const noteId = document.body.dataset.noteId;
@@ -40,7 +40,13 @@ export default async function setupShareEdit() {
     }
 
     const controls = buildControls(session.strings ?? {});
-    (title.closest("#title-row") ?? title).after(controls.bar);
+    // A custom template without the header's actions gets the controls below its title.
+    const actions = document.getElementById("note-header-actions");
+    if (actions) {
+        actions.append(controls.bar);
+    } else {
+        (title.closest("#title-row") ?? title).after(controls.bar);
+    }
 
     controls.editButton.addEventListener("click", () => {
         if (session.needsPassword && !session.unlocked) {
@@ -101,8 +107,9 @@ async function unlock(controls: Controls, noteId: string, session: EditSession, 
 
 /**
  * Replaces the rendered content with the app's editor, which the edit view mounts once the
- * app's globals and the page's locale are ready. The rendered content comes back with the page,
- * which *Stop editing* reloads once the editor has saved.
+ * app's globals and the page's locale are ready, with its toolbar in the sticky top bar. The
+ * rendered content comes back with the page, which *Stop editing* reloads once the editor has
+ * saved.
  */
 async function mountEditor(
     noteId: string,
@@ -134,8 +141,36 @@ async function mountEditor(
         payload: login.payload,
         csrfToken: login.csrfToken,
         version: login.version,
-        attachments: !!session.attachments
+        attachments: !!session.attachments,
+        statusContainer: buildStatusSlot(),
+        toolbarContainer: buildToolbarSlot()
     });
+}
+
+/** A slot in the sticky top bar, above the title row, where the page has one. */
+function buildToolbarSlot() {
+    const topBar = document.getElementById("top-bar");
+    if (!topBar) {
+        return undefined;
+    }
+
+    const slot = document.createElement("div");
+    slot.className = "share-edit-toolbar-slot";
+    topBar.insertBefore(slot, topBar.querySelector(":scope > #title-row"));
+    return slot;
+}
+
+/** A slot at the start of the footer's "Last updated" line, where the page has one. */
+function buildStatusSlot() {
+    const updated = document.querySelector("#content-footer .updated");
+    if (!updated) {
+        return undefined;
+    }
+
+    const slot = document.createElement("span");
+    slot.className = "share-edit-status-slot";
+    updated.prepend(slot);
+    return slot;
 }
 
 async function fetchSession(noteId: string): Promise<EditSession | null> {
@@ -147,7 +182,7 @@ async function fetchSession(noteId: string): Promise<EditSession | null> {
     }
 }
 
-/** The bar below the title: the *Edit* button, the password form, and the buttons while editing. */
+/** The controls: the *Edit* button, the password form, and the buttons while editing. */
 function buildControls(strings: Record<string, string>) {
     const bar = document.createElement("div");
     bar.className = "share-edit-bar";
