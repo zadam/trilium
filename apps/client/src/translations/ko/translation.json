@@ -843,7 +843,12 @@
     "map_position": "이미지 맵에서 노트의 위치를 맵 좌표의 <code>x,y</code> 형식으로 지정합니다. <code>map:imageBounds</code> 에서 다른 좌표를 지정하지 않은 경우 이미지의 픽셀 좌표를 사용합니다.",
     "map_shape": "이미지 맵에서 노트가 표시될 도형을 지정합니다. <code>geoShape</code> 와 같은 형식을 사용하지만 <code>x,y</code> 좌표를 사용합니다. 예: <code>circle:400,300 50</code>.",
     "map_image_bounds": "이미지 맵의 왼쪽 위와 오른쪽 아래 모서리 좌표를 <code>x,y x,y</code> 형식으로 지정합니다. 예: <code>-512,-512 512,512</code>. 맵의 위치는 이미지의 픽셀 좌표 대신 이 좌표계를 기준으로 읽고 기록됩니다.",
-    "map_image": "세계 지도 대신 지리 맵의 배경으로 사용할 이미지 노트입니다. 마커와 도형은 <code>mapPosition</code> 및 <code>mapShape</code> 설정을 사용해 배치됩니다."
+    "map_image": "세계 지도 대신 지리 맵의 배경으로 사용할 이미지 노트입니다. 마커와 도형은 <code>mapPosition</code> 및 <code>mapShape</code> 설정을 사용해 배치됩니다.",
+    "page_description": "웹 클리핑한 페이지의 설명입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
+    "page_author": "웹 클리핑한 페이지의 작성자입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
+    "published_date": "웹 클리핑한 페이지의 게시일입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
+    "modified_date": "웹 클리핑한 페이지의 마지막 수정일입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
+    "calendar_title_template": "캘린더에 표시되는 일정의 제목을 지정하며, 반복 일정의 경우 각 발생 날짜에 맞게 값이 채워집니다. <code>${title}</code> 은 제목, <code>${years}</code> 는 시작일로부터 경과한 만 나이(연수)를 나타내며, <code>${date}</code> 와 <code>${startDate}</code> 는 날짜를 나타냅니다. 예를 들어 매년 반복되는 생일 일정에는 <code>${title} (${years})</code> 형식을 사용할 수 있습니다."
   },
   "attribute_editor": {
     "help_text_body1": "레이블을 추가하려면 예를 들어 <code>#rock</code> 값을 입력합니다. 값도 함께 추가하려면 예를 들어 <code>#year = 2020</code> 값을 입력합니다",
@@ -1071,7 +1076,9 @@
       "end_date": "종료일",
       "time": "시간",
       "start_time": "시작 시간",
-      "end_time": "종료 시간"
+      "end_time": "종료 시간",
+      "add_time": "시간 추가",
+      "remove_time": "시간 제거"
     },
     "recurrence": {
       "repeats": "반복",
@@ -1095,7 +1102,9 @@
       "count": "반복 횟수",
       "times": "회",
       "custom_rule": "규칙",
-      "custom_hint": "위 필드보다 더 세부적으로 설정할 수 있는 iCalendar 반복 규칙(RRULE)입니다. 비우면 반복이 중지됩니다."
+      "custom_hint": "위 필드보다 더 세부적으로 설정할 수 있는 iCalendar 반복 규칙(RRULE)입니다. 비우면 반복이 중지됩니다.",
+      "count_years": "제목에 경과 연수 표시",
+      "count_years_locked": "이 일정에는 노트에 설정되었거나 상속받은 제목 템플릿이 이미 있습니다. 노트의 속성에서 변경하세요."
     },
     "expand_details": "일정을 창에 맞게 확장",
     "restore_details": "일정을 캘린더의 원래 위치로 되돌리기"
@@ -1540,7 +1549,10 @@
     "editor_crashed_details_title": "기술 정보",
     "auto-detect-language": "자동 탐지",
     "nothing_selected_to_cut": "먼저 하위 노트로 분리할 텍스트를 선택하세요.",
-    "uploading_attachment": "첨부 파일 업로드 중"
+    "uploading_attachment": "첨부 파일 업로드 중",
+    "editor_error_title": "텍스트 편집기에서 오류가 발생했습니다",
+    "editor_error_content": "편집기에 최근 변경 사항이 올바르게 표시되지 않을 수 있습니다. 계속하려면 편집기를 다시 불러오세요. 변경 사항은 먼저 저장됩니다.",
+    "editor_error_reload_button": "편집기 다시 불러오기"
   },
   "empty": {
     "open_note_instruction": "아래 입력란에 노트 제목을 입력하거나 트리에서 노트를 선택하여 엽니다.",
@@ -2708,7 +2720,8 @@
     "cannot-copy": "이미지 참조를 클립보드에 복사할 수 없었습니다.",
     "image-copied-to-clipboard": "이미지는 클립보드에 복사되었습니다.",
     "cannot-copy-image": "이미지를 클립보드에 복사할 수 없었어요.",
-    "cannot-download": "이미지를 다운로드할 수 없었어요."
+    "cannot-download": "이미지를 다운로드할 수 없었어요.",
+    "cannot-convert-to-drawing": "이미지를 그리기 캔버스로 변환하지 못했습니다."
   },
   "clipboard": {
     "cut": "노트를 클립보드로 잘라냈습니다.",
@@ -3207,7 +3220,7 @@
     "content_hints_enabled": "콘텐츠 힌트",
     "content_hints_description": "에디터 하단 모서리에 캐릿이나 포인터 아래 요소와 어떻게 상호작용하는지 설명하는 짧은 힌트를 표시하세요.",
     "auto_link_previews_enabled": "자동 생성 링크 미리보기",
-    "auto_link_previews_description": "감지한 링크를 웹페이지의 제목, 설명 및 이미지를 보여 주는 미리보기로 자동 변환합니다. 도구 모음에서 직접 삽입한 미리보기에는 이 설정이 적용되지 않습니다.",
+    "auto_link_previews_description": "감지된 링크를 웹페이지의 제목, 설명, 이미지를 보여 주는 미리보기로 자동 변환하고, 웹 클리퍼에서 전송한 탭을 본문 내 미리보기로 저장합니다. 도구 모음에서 미리보기를 삽입하는 기능은 이 설정과 관계없이 항상 사용할 수 있습니다.",
     "html_support_enabled": "지원되지 않는 HTML 태그 유지",
     "html_support_description": "편집기 자체에서 지원하지 않는 HTML 태그를 유지합니다. 해당 태그 목록은 옵션 → 기타 → HTML 가져오기 태그에서 확인할 수 있습니다. 이러한 태그는 직접 편집할 수 없는 블록으로 표시되며, 인식되지 않는 태그는 편집 중에 전혀 보이지 않을 수도 있습니다. 이 옵션을 끄면 해당 태그는 노트를 처음 편집하고 저장할 때 제거되며, 가져오기에는 이 설정의 영향을 받지 않습니다.",
     "mathlive_enabled": "MathLive 시각적 편집기",
@@ -3438,7 +3451,21 @@
     "remove_from_calendar_confirmation": "\"{{title}}\" 일정을 캘린더에서 제거하시겠습니까?",
     "new_event": "새 일정",
     "draft_title_placeholder": "제목 추가",
-    "create_event": "만들기"
+    "create_event": "만들기",
+    "duration_minutes": "{{minutes}}분",
+    "duration_hours": "{{hours}}시간",
+    "duration_hours_minutes": "{{hours}}시간 {{minutes}}분",
+    "properties": "캘린더 속성",
+    "event_templates": "일정 템플릿",
+    "event_templates_hint": "새 캘린더 일정을 만들 때 사용할 노트 유형과 노트 템플릿을 선택하세요.",
+    "new_template_name": "새 일정 템플릿",
+    "event_template": "일정 템플릿 선택",
+    "more_templates": "더 많은 템플릿…",
+    "template": "템플릿",
+    "general": "일반",
+    "event_attributes": "일정 속성",
+    "event_attributes_hint": "일정에 표시할 속성과 표시 순서를 선택하세요. 새 속성은 직접 켜기 전까지 숨겨집니다.",
+    "event_attributes_overridden": "이 캘린더에는 calendar:displayedAttributes 라벨이 있으므로 여기서 선택한 속성 대신 해당 라벨에 나열된 속성이 일정에 표시됩니다."
   },
   "ocr": {
     "extracted_text": "추출된 텍스트 (OCR)",
@@ -3582,7 +3609,11 @@
     "shared_preview": "공유 미리보기",
     "shared_preview_description": "공유 페이지는 이 브라우저에서만 열 수 있으며 Trilium이 이 브라우저에서 실행 중일 때만 사용할 수 있습니다. 게시하려면 하위 트리를 \"{{- format}}\" 형식으로 내보낸 뒤 아무 웹 서버에나 파일을 호스팅하거나 Trilium 서버를 사용하세요.",
     "shared_export_only": "게시되지 않음",
-    "shared_export_only_description": "모바일 앱에서는 공유 페이지를 열 수 없습니다. 이 노트를 게시하려면 하위 트리를 \"{{- format}}\" 형식으로 내보낸 뒤 아무 웹 서버에나 파일을 호스팅하거나 Trilium 서버를 사용하세요."
+    "shared_export_only_description": "모바일 앱에서는 공유 페이지를 열 수 없습니다. 이 노트를 게시하려면 하위 트리를 \"{{- format}}\" 형식으로 내보낸 뒤 아무 웹 서버에나 파일을 호스팅하거나 Trilium 서버를 사용하세요.",
+    "clipped_note_details": "이 노트는 웹페이지에서 가져왔습니다. 클릭하면 페이지 설명, 작성자, 날짜를 볼 수 있습니다.",
+    "clipped_note_author": "작성자",
+    "clipped_note_published": "게시일",
+    "clipped_note_modified": "수정일"
   },
   "status_bar": {
     "language_title": "콘텐츠 언어 변경",
@@ -4161,7 +4192,9 @@
       "0-columns-layout": "%0열 레이아웃",
       "arrange-content-in-0-equal-columns-side-by-side": "내용을 같은 너비의 %0개 열로 나란히 배치합니다.",
       "0-columns-1": "%0열 (%1)",
-      "remove-layout": "레이아웃 제거"
+      "remove-layout": "레이아웃 제거",
+      "convert-image-to-a-drawing-canvas": "이미지를 그리기 캔버스로 변환",
+      "type-content-here": "여기에 내용을 입력하세요…"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
