@@ -1,3 +1,17 @@
+.template-dropdown .template-dropdown-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-dropdown .template-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  max-width: 100%;
+  text-align: start;
+}
+
 .template-pill .template-pill-button {
   display: flex;
   align-items: center;
@@ -18,18 +32,12 @@
   color: var(--main-text-color);
 }
 
-.template-pill .template-pill-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tn-dropdown-portal.template-pill .dropdown-item {
+.tn-dropdown-portal.template-dropdown .dropdown-item {
   display: flex;
   align-items: center;
 }
 
-.tn-dropdown-portal.template-pill .template-pill-current {
+.tn-dropdown-portal.template-dropdown .template-dropdown-current {
   margin-inline-start: auto;
   padding-inline-start: 1.5em;
 }

@@ -3,7 +3,7 @@ import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type NoteTypeOption } from "../../../services/note_types";
-import { type TemplateChoice } from "../../react/TemplatePill";
+import { type TemplateChoice } from "../../react/TemplateDropdown";
 import GhostPopover from "./GhostPopover";
 import { EventDraft } from "./selection";
 
@@ -50,7 +50,7 @@ describe("GhostPopover", () => {
             container));
     }
 
-    /** The button that asks for the note, beside the template pill. */
+    /** The button that asks for the note. */
     const createButton = () => document.querySelector<HTMLButtonElement>(".calendar-ghost-actions .btn-primary");
     const titleInput = () => document.querySelector<HTMLInputElement>(".calendar-ghost-body input");
     const timeInputs = () => [ ...document.querySelectorAll<HTMLInputElement>(".calendar-ghost-body input[type=time]") ];
@@ -133,14 +133,20 @@ describe("GhostPopover", () => {
         };
         const onCommit = vi.fn().mockResolvedValue(undefined);
         const choice = { offered: [ TEXT, canvas ], onSelect() {}, onMore() {} };
-        const pillName = () => document.querySelector(".calendar-ghost-actions .template-pill-name");
+        const field = () => document.querySelector(".calendar-ghost-when .template-dropdown");
+        const fieldName = () => field()?.querySelector(".template-dropdown-name")?.textContent;
 
         mount(onCommit, { ...choice, current: TEXT });
-        expect(pillName()?.textContent).toBe("Text");
+        // A row of the form like the dates, led by its own icon and showing the template's.
+        const row = field()?.closest(".calendar-event-row");
+        expect(row?.querySelector(".calendar-event-row-icon.bx-copy")).not.toBeNull();
+        expect(field()?.querySelector(".select-button .bx-note")).not.toBeNull();
+        expect(field()?.classList.contains("template-pill")).toBe(false);
+        expect(fieldName()).toBe("Text");
 
         // A pick is stored by the calendar, which hands the ghost the new choice.
         mount(onCommit, { ...choice, current: canvas });
-        expect(pillName()?.textContent).toBe("Canvas");
+        expect(fieldName()).toBe("Canvas");
 
         await act(async () => { createButton()?.click(); });
         expect(onCommit).toHaveBeenCalledWith("", draft, canvas);

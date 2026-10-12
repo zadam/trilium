@@ -18,15 +18,14 @@
         gap: 10px;
     }
 
-    .calendar-ghost-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
+    .calendar-ghost-when .template-dropdown {
+        flex: 0 1 auto;
+        min-width: 0;
     }
 
-    .calendar-ghost-actions .template-pill {
-        min-width: 0;
+    .calendar-ghost-actions {
+        display: flex;
+        justify-content: flex-end;
     }
 }
 

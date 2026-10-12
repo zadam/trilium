@@ -6,7 +6,7 @@ import type FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
 import Modal from "../../react/Modal";
 import TemplateSelectionCard from "../../react/TemplateSelectionCard";
-import { offeredTemplateIds } from "../../react/TemplatePill";
+import { offeredTemplateIds } from "../../react/TemplateDropdown";
 import { type CalendarViewData, DEFAULT_EVENT_TEMPLATES } from "./api";
 
 /** The calendar's settings that the collection properties bar does not hold. */

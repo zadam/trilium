@@ -4,13 +4,13 @@ import { describe, expect, it, vi } from "vitest";
 
 import { type NoteTypeOption } from "../../services/note_types";
 import { renderInto } from "../../test/render";
-import { offeredTemplateIds, type TemplateChoice, useTemplateChoice } from "./TemplatePill";
+import { offeredTemplateIds, type TemplateChoice, useTemplateChoice } from "./TemplateDropdown";
 
 function option(id: string, title: string): NoteTypeOption {
     return { id, title, icon: "bx bx-note", group: "type", options: { type: "text" } };
 }
 
-describe("TemplatePill", () => {
+describe("TemplateDropdown", () => {
     it("offers the stored templates, or the defaults while none are stored", () => {
         const defaults = [ "type:text:text/html" ];
 

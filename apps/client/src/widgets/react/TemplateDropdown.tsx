@@ -1,6 +1,7 @@
-import "./TemplatePill.css";
+import "./TemplateDropdown.css";
 
 import { type NoteTypeId } from "@triliumnext/commons";
+import clsx from "clsx";
 import { useMemo, useState } from "preact/hooks";
 
 import {
@@ -23,7 +24,7 @@ export interface TemplateChoice {
 
 /**
  * What a collection stores about its templates in its view config. Extended by the view config of
- * every collection that offers a {@link TemplatePill}.
+ * every collection that offers a {@link TemplateDropdown}.
  */
 export interface TemplateChoiceConfig {
     /**
@@ -39,16 +40,19 @@ export interface TemplateChoiceConfig {
  * A dropdown naming what a new note will be made from, listing what the collection offers and a
  * way to the dialog that decides what that is.
  *
- * The pill reports a pick rather than storing one, so the collection decides where the last used
- * template is kept.
+ * Drawn as a select button showing the template's icon and name, or with `pill` as a small chip
+ * showing the name alone. The dropdown reports a pick rather than storing one, so the collection
+ * decides where the last used template is kept.
  */
-export default function TemplatePill({
-    offered, current, onSelect, onMore, title, moreText, onOpened, onClosed
+export default function TemplateDropdown({
+    offered, current, onSelect, onMore, title, moreText, pill, onOpened, onClosed
 }: TemplateChoice & {
     /** The tooltip of the button, naming what is created. */
     title: string;
     /** The label of the entry that calls `onMore`. */
     moreText: string;
+    /** Draws the button as a chip naming the template, for a field that has no room for more. */
+    pill?: boolean;
     /**
      * Called as the dropdown opens and closes, for a host that closes on losing focus: the menu
      * takes the focus while it is open.
@@ -68,18 +72,21 @@ export default function TemplatePill({
             {template.title}
             {/* A check mark rather than a highlight, which reads as the row under the pointer. */}
             {template.id === current?.id && (
-                <Icon className="template-pill-current" icon="bx bx-check" />
+                <Icon className="template-dropdown-current" icon="bx bx-check" />
             )}
         </FormListItem>
     )), [ offered, current, onSelect ]);
 
     return (
         <Dropdown
-            className="template-pill"
-            buttonClassName="template-pill-button"
-            text={<span className="template-pill-name">{current?.title ?? ""}</span>}
+            className={clsx("template-dropdown", pill && "template-pill")}
+            buttonClassName={pill ? "template-pill-button" : "template-dropdown-button"}
+            text={<>
+                {!pill && current && <Icon icon={current.icon} />}
+                <span className="template-dropdown-name">{current?.title ?? ""}</span>
+            </>}
             title={title}
-            noSelectButtonStyle
+            noSelectButtonStyle={pill}
             onShown={() => {
                 setIsShown(true);
                 onOpened?.();

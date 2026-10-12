@@ -10,8 +10,9 @@ import Button from "../../react/Button";
 import FormTextBox from "../../react/FormTextBox";
 import Modal from "../../react/Modal";
 import Popover from "../../react/Popover";
-import TemplatePill, { type TemplateChoice } from "../../react/TemplatePill";
+import TemplateDropdown, { type TemplateChoice } from "../../react/TemplateDropdown";
 import { EventDatesFields } from "./EventDatesEditor";
+import { EventRow } from "./EventField";
 import { AnchorPoint, EventDraft, narrowAnchorRect, normalizeEventDates } from "./selection";
 
 /**
@@ -37,7 +38,7 @@ export default function GhostPopover({
     anchor: AnchorPoint | null;
     /** The calendar the range's shading is read out of (see {@link ghostAnchorRect}). */
     container: HTMLElement | null;
-    /** What the event is made from, picked with the pill beside the create button. */
+    /** What the event is made from, picked in the row below the dates. */
     templates: TemplateChoice;
     /** Answers when the note has been made, or rejects having failed to make one — the ghost stays
      *  up for a second try either way it is told (see {@link commit}). */
@@ -114,14 +115,16 @@ export default function GhostPopover({
 
             <div className="calendar-ghost-when">
                 <EventDatesFields value={draft} onChange={setDraft} />
+                <EventRow icon="bx-copy" title={t("calendar_view.template")}>
+                    <TemplateDropdown
+                        {...templates}
+                        title={t("calendar_view.event_template")}
+                        moreText={t("calendar_view.more_templates")}
+                    />
+                </EventRow>
             </div>
 
             <div className="calendar-ghost-actions">
-                <TemplatePill
-                    {...templates}
-                    title={t("calendar_view.event_template")}
-                    moreText={t("calendar_view.more_templates")}
-                />
                 <Button
                     kind="primary"
                     text={t("calendar_view.create_event")}

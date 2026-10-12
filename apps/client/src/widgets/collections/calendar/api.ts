@@ -7,7 +7,7 @@ import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
 import { deleteNoteOrBranch } from "../../../services/note_deletion";
 import { type NoteTypeOption } from "../../../services/note_types";
-import { type TemplateChoiceConfig } from "../../react/TemplatePill";
+import { type TemplateChoiceConfig } from "../../react/TemplateDropdown";
 import { EventLabelName } from "./utils";
 
 /** What the calendar stores in its view config. */

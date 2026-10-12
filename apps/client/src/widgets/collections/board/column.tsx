@@ -40,7 +40,7 @@ const MIN_CARD_HEIGHT = 32;
 /** How long an open takes. Matches `--board-expand-duration` in the board's own rules. */
 export const EXPAND_MS = 200;
 import NoteLink from "../../react/NoteLink";
-import TemplatePill, { type TemplateChoice } from "../../react/TemplatePill";
+import TemplateDropdown, { type TemplateChoice } from "../../react/TemplateDropdown";
 import {
     BoardActionsContext, BoardDragStateContext, BoardEditingContext, BoardOverlayHostContext,
     BoardSelectionModeContext
@@ -1148,9 +1148,10 @@ function AddNewItem({
                     // the card itself.
                     openPlacements={!insert && !isSorted ? openCreateCardMenu : undefined}
                     footer={(hold) => (
-                        <TemplatePill
+                        <TemplateDropdown
                             {...cardTemplates}
                             {...hold}
+                            pill
                             title={t("board_view.card-template")}
                             moreText={t("board_view.more-templates")}
                         />

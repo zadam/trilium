@@ -31,7 +31,7 @@ import Dropdown from "../../react/Dropdown";
 import { FormListItem } from "../../react/FormList";
 import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteTypeOptions, useSpacedUpdate, useTriliumEvent, useTriliumOption, useTriliumOptionInt } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
-import { offeredTemplateIds, useTemplateChoice } from "../../react/TemplatePill";
+import { offeredTemplateIds, useTemplateChoice } from "../../react/TemplateDropdown";
 import { ViewModeProps } from "../interface";
 import { type CalendarViewData, changeEvent, DEFAULT_EVENT_TEMPLATES, newEvent } from "./api";
 import Calendar from "./calendar";

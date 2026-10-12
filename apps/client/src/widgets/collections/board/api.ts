@@ -16,7 +16,7 @@ import {
 import server from "../../../services/server";
 import ws from "../../../services/ws";
 import toast from "../../../services/toast";
-import { offeredTemplateIds } from "../../react/TemplatePill";
+import { offeredTemplateIds } from "../../react/TemplateDropdown";
 import {
     type PromotedAttribute, resolvePromotedAttributes, storedPromotedAttributes,
     visiblePromotedAttributeNames

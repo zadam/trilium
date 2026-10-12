@@ -38,7 +38,7 @@ import {
     useTrackedElement, useTriliumEvent
 } from "../../react/hooks";
 import OverlayControlGroup, { OverlayControlButton } from "../../react/OverlayControlGroup";
-import { type TemplateChoiceConfig, useTemplateChoice } from "../../react/TemplatePill";
+import { type TemplateChoiceConfig, useTemplateChoice } from "../../react/TemplateDropdown";
 import { ShortcutHintOverlayButton } from "../../shortcut_hints/shortcut_hint_button";
 import { onWheelHorizontalScroll } from "../../widget_utils";
 import { useDragPan } from "../../react/drag_pan";
