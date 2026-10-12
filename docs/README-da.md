@@ -134,27 +134,28 @@ TriliumNext:
 
 - [awesome-trilium](https://github.com/Nriver/awesome-trilium) for
   tredjepartstemaer, scripts, plugins og meget mere.
-- [TriliumRocks!](https://trilium.rocks/) for tutorials, guides, and much more.
+- [TriliumRocks!](https://trilium.rocks/) for vejledninger, guides og meget
+  mere.
 
-## ❓Why TriliumNext?
+## ❓Hvorfor TriliumNext?
 
-The original Trilium developer ([Zadam](https://github.com/zadam)) has
-graciously given the Trilium repository to the community project which resides
-at https://github.com/TriliumNext
+Den oprindelige Trilium-udvikler ([Zadam](https://github.com/zadam)) har
+generøst overdraget Trilium-repositoriet til fællesskabsprojektet, som findes på
+https://github.com/TriliumNext
 
-### ⬆️Migrating from Zadam/Trilium?
+### ⬆️Migrerer du fra Zadam/Trilium?
 
-There are no special migration steps to migrate from a zadam/Trilium instance to
-a TriliumNext/Trilium instance. Simply [install
-TriliumNext/Trilium](#-installation) as usual and it will use your existing
-database.
+Der er ingen særlige trin for at migrere fra en zadam/Trilium-instans til en
+TriliumNext/Trilium-instans. Du skal blot [installere
+TriliumNext/Trilium](#-installation) som normalt, så bruger programmet din
+eksisterende database.
 
-Versions up to and including
-[v0.90.4](https://github.com/TriliumNext/Trilium/releases/tag/v0.90.4) are
-compatible with the latest zadam/trilium version of
-[v0.63.7](https://github.com/zadam/trilium/releases/tag/v0.63.7). Any later
-versions of TriliumNext/Trilium have their sync versions incremented which
-prevents direct migration.
+Versioner til og med
+[v0.90.4](https://github.com/TriliumNext/Trilium/releases/tag/v0.90.4) er
+kompatible med den nyeste version af zadam/trilium,
+[v0.63.7](https://github.com/zadam/trilium/releases/tag/v0.63.7). I alle nyere
+versioner af TriliumNext/Trilium er synkroniseringsversionen blevet forhøjet,
+hvilket forhindrer direkte migrering.
 
 ## 💬 Discuss with us
 
