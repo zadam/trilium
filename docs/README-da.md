@@ -113,26 +113,27 @@ Vores dokumentation findes i flere formater:
   automation
 * Fungerer godt med hensyn til både brugervenlighed og ydeevne, selv med over
   100.000 noter
-* Touch optimized [mobile
-  frontend](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend) for
-  smartphones and tablets
-* Built-in [dark
-  theme](https://docs.triliumnotes.org/user-guide/concepts/themes), support for
-  user themes
+* Berøringsoptimeret
+  [mobilgrænseflade](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend)
+  til smartphones og tablets
+* Indbygget [mørkt
+  tema](https://docs.triliumnotes.org/user-guide/concepts/themes) med
+  understøttelse af brugertemaer
 * [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
-  and [Markdown import &
-  export](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
-* [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) for
-  easy saving of web content
-* Customizable UI (sidebar buttons, user-defined widgets, ...)
-* [Metrics](https://docs.triliumnotes.org/user-guide/advanced-usage/metrics),
-  along with a Grafana Dashboard.
+  og [import og eksport af
+  Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
+* [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) til
+  nem lagring af webindhold
+* Brugerdefinerbar brugergrænseflade (sidebjælksknapper, brugerdefinerede
+  widgets osv.)
+* [Målinger](https://docs.triliumnotes.org/user-guide/advanced-usage/metrics)
+  samt et Grafana-dashboard.
 
-✨ Check out the following third-party resources/communities for more TriliumNext
-related goodies:
+✨ Se de følgende tredjepartsressourcer og fællesskaber for mere indhold om
+TriliumNext:
 
-- [awesome-trilium](https://github.com/Nriver/awesome-trilium) for 3rd party
-  themes, scripts, plugins and more.
+- [awesome-trilium](https://github.com/Nriver/awesome-trilium) for
+  tredjepartstemaer, scripts, plugins og meget mere.
 - [TriliumRocks!](https://trilium.rocks/) for tutorials, guides, and much more.
 
 ## ❓Why TriliumNext?
