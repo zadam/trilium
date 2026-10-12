@@ -30,6 +30,8 @@ The default port is:
 *   `37743` if in development mode, the port `pnpm desktop:start` runs the desktop app on, so a dev build of the Clipper finds a dev desktop instance.
 *   `37840` in production, the default Trilium port.
 
+`pnpm desktop:start-prod` and `desktop:start-prod-no-dir` run the desktop app on `37841`, so a production build of the Clipper needs that port set in its options to find them.
+
 ## Building
 
 *   Run `build` (Chrome) or `build:firefox` to generate the output files, which will be in `.output/[browser]`.
@@ -39,6 +41,23 @@ The sources ZIP has the monorepo's layout: the workspace files and lockfile, `ap
 
 ## CI
 
-`.github/workflows/web-clipper.yml` handles the building of the web clipper. Whenever the web clipper is modified, it generates the ZIPs and uploads them as artifacts.
+`.github/workflows/web-clipper.yml` handles the building of the web clipper. Whenever the web clipper is modified, it generates the ZIPs and uploads them as artifacts. It also rebuilds the Firefox extension from the sources ZIP and fails if the result differs from the regular build, which catches a file missing from `zip.includeSources`.
 
-There is currently no automatic publishing to the app stores.
+## Releasing
+
+A release is started by pushing a tag. The version is the one in `apps/web-clipper/package.json`, not the tag's: both stores accept only numbers and dots, and a version can be submitted only once.
+
+*   **Release candidate** (`web-clipper-v1.2.0-rc1`, with the version set below the final one, such as `1.1.90`): the Firefox build is signed on Mozilla's unlisted channel, which only signs it and does not list it, and a GitHub pre-release is created with the ZIPs and the signed `.xpi`, which installs in any Firefox.
+*   **Release** (`web-clipper-v1.2.0`, with the version set to `1.2.0`): a GitHub release is created with the ZIPs, and the extension is submitted to the Chrome Web Store and to Firefox Add-ons, where it is published once the review passes. Each store is a job of its own, so a failed one can be re-run without submitting to the other again.
+
+Running the workflow by hand (_Actions_ → _Deploy web clipper extension_ → _Run workflow_) checks the store credentials with a dry run, without uploading anything.
+
+The workflow reads these repository secrets:
+
+| Secret | Store | Value |
+| --- | --- | --- |
+| `AMO_JWT_ISSUER`, `AMO_JWT_SECRET` | Firefox Add-ons | API credentials from the Developer Hub (_Tools_ → _Manage API Keys_), of an account that develops the add-on. |
+| `CHROME_PUBLISHER_ID` | Chrome Web Store | The publisher ID shown in the Chrome Web Store developer dashboard. |
+| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL`, `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY` | Chrome Web Store | A Google Cloud service account with the Chrome Web Store API enabled, added under _Publisher_ → _Settings_ in the Chrome Web Store developer dashboard. The private key is the PEM block, with real line breaks. |
+
+The release text is not generated; write it on the GitHub release once the workflow has created it.

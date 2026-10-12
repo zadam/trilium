@@ -212,13 +212,25 @@ CI (`.github/workflows/web-clipper.yml`) builds both zips; it runs no tests, so 
 `web-clipper-v*` tag ships whatever the tagged commit holds — the tests run only in `dev.yml`, on
 pushes and pull requests.
 
-**Mozilla's review rebuilds from the sources zip.** `zip.sourcesRoot` is the repository root and
-`zip.includeSources` an allowlist (WXT 0.21): the workspace files and lockfile, `apps/web-clipper`,
-and the `apps/client` stylesheets and fonts the pages import. A new import from outside
-`apps/web-clipper` goes on that list. The `zip:sources:done` hook adds the Chrome-only offscreen
-page, which WXT leaves out, and copies `README.md` (the reviewer's build instructions) to the
-archive root. WXT prints "Could not get stats of '…'" for every file of the sources zip, because it
-looks the paths up from the package directory rather than `sourcesRoot`; the archive is complete.
+- **Mozilla's review rebuilds from the sources zip.** `zip.sourcesRoot` is the repository root and
+  `zip.includeSources` an allowlist (WXT 0.21): the workspace files and lockfile,
+  `apps/web-clipper`, and the `apps/client` stylesheets and fonts the pages import. A new import
+  from outside `apps/web-clipper` goes on that list. The `zip:sources:done` hook adds the Chrome-only
+  offscreen page, which WXT leaves out, and copies `README.md` (the reviewer's build instructions)
+  to the archive root.
+- **CI proves the zip builds**: it unzips it into `$RUNNER_TEMP`, installs with
+  `--filter web-clipper`, builds Firefox and `diff -r`s the result against the regular build. WXT
+  prints "Could not get stats of '…'" for every file of the sources zip, because it looks the paths up
+  from the package directory rather than `sourcesRoot`; the archive is complete.
+- **Tags**: `web-clipper-v*-rc*` signs the Firefox build on AMO's unlisted channel (`web-ext sign`)
+  and makes a GitHub pre-release with the `.xpi`. Any other tag makes a release and submits to both
+  stores with `wxt submit` (publish-browser-extension), one matrix job per store, so a failed store
+  re-runs alone. A manual run of the workflow does a `--dry-run` of the submission. The Chrome Web
+  Store uses API v2 with a service account (v1.1 shuts down on 2026-10-15); the private key secret is
+  the PEM with real line breaks, as the library does not unescape `\n`.
+- **Versions are numeric and single-use** in both stores, and WXT cuts a `package.json` version like
+  `1.2.0-rc1` down to `1.2.0`, so an RC carries a version below the final one (`1.1.90`) and the
+  tag alone says "rc".
 
 To compare bundle sizes with `main`, build it in a temporary `git worktree` (never stash). `main`
 may still need dependencies the branch removed (`cash-dom`): give the worktree its own
