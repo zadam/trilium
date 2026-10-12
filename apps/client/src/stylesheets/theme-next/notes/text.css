@@ -327,9 +327,32 @@ div.ck.ck-collapsible {
 
 /* Color picker dropdown */
 
+:root .ck.ck-color-selector {
+    --ck-color-selector-padding: 0;
+    --ck-color-selector-grids-fragment-padding: 0;
+    --ck-button-border-radius: var(--ck-border-radius);
+    --ck-color-grid-padding: 8px;
+}
+
+/* Remove color and color picker buttons */
+:root .ck.ck-color-selector .ck-color-grids-fragment .ck-button:is(
+    .ck-color-selector__remove-color, .ck-color-selector__color-picker
+) {
+    padding-inline-start: calc(
+        var(--ck-color-grid-padding)
+        + (var(--ck-color-grid-tile-size) - var(--ck-icon-size)) / 2
+        - 1px
+    );
+}
+
 /* Color palette */
 :root .ck.ck-color-selector .ck-color-grid {
     --ck-editor-toolbar-button-on-shadow: none; /* Remove the shadow of the selected color button */
+    --ck-color-grid-gap: 5px;
+    --ck-color-grid-tile-border-radius: var(--ck-border-radius);
+    --ck-color-interactive-focus-border: var(--ck-color-focus-border);
+
+    width: auto;
 }
 
 /* Color picker button */
