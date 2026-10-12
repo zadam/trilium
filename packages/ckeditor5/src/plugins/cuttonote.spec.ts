@@ -3,6 +3,8 @@ import {
     _setModelData as setModelData,
     ClassicEditor,
     Essentials,
+    Indent,
+    IndentBlock,
     List,
     Paragraph,
     Table,
@@ -87,6 +89,13 @@ describe("CutToNotePlugin", () => {
         setModelData(editor.model, "<paragraph>foo[bar]baz</paragraph>");
 
         expect(editor.getSelectedPlainText()).toBe("bar");
+    });
+
+    it("keeps block indentation in getSelectedPlainText, as a native copy does", async () => {
+        const indentEditor = await createTestEditor([Essentials, Paragraph, Indent, IndentBlock, CutToNotePlugin]);
+        setModelData(indentEditor.model, `<paragraph>[One</paragraph><paragraph blockIndent="80px">Two]</paragraph>`);
+
+        expect(indentEditor.getSelectedPlainText()).toBe("One\n\n\t\tTwo");
     });
 
     it("pasteContent runs the given flavors through the clipboard paste pipeline", () => {

@@ -10,6 +10,8 @@ Paragraphs can be indented using the following buttons from the <a class="refer
 *   For convenience, keyboard shortcuts are also available. Press <kbd>Tab</kbd> to indent or <kbd>Shift</kbd>+<kbd>Tab</kbd> to decrease the indentation. These shortcuts work even if the cursor is not at the beginning of a paragraph or a list.
 *   Apart from paragraphs, the indent button is also enabled in <a class="reference-link" href="Lists.md">Lists</a> (for nesting) and <a class="reference-link" href="Tables.md">Tables</a>.
 
+When indented paragraphs or headings are copied and pasted as plain text, for example into a <a class="reference-link" href="../Code.md">Code</a> note or another application, each indentation level becomes a tab at the start of the line. A copy that stays within a single paragraph contains only its text, without the indentation.
+
 ## Markdown import
 
 If the clipboard contains Markdown text, it can be easily imported into text notes. Simply copy a Markdown-formatted text and press the <span class="tn-icon cke cke-trilium-markdown-mark"></span> to insert its visual representation.

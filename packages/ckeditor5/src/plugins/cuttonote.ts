@@ -5,10 +5,11 @@ import {
 	ModelLiveRange,
 	Plugin,
 	plainTextToHtml,
-	ViewDataTransfer,
-	viewToPlainText
+	ViewDataTransfer
 } from 'ckeditor5';
 import type { ModelRange, ViewDocumentFragment } from 'ckeditor5';
+
+import { viewToIndentedPlainText } from './clipboard_plain_text_indent.js';
 
 /** A selection pinned by `capturePasteTarget()` for a paste whose content arrives later. */
 export interface PasteTarget {
@@ -67,11 +68,11 @@ export default class CutToNotePlugin extends Plugin {
 	}
 
 	/**
-	 * Returns the selected content as plain text, through the same `viewToPlainText` the native
-	 * copy uses for the `text/plain` clipboard flavor.
+	 * Returns the selected content as plain text, through the same `viewToIndentedPlainText()` the
+	 * native copy uses for the `text/plain` clipboard flavor.
 	 */
 	getSelectedPlainText() {
-		return viewToPlainText(this.editor.editing.view.domConverter, this.getSelectedViewFragment());
+		return viewToIndentedPlainText(this.editor, this.getSelectedViewFragment());
 	}
 
 	/**
