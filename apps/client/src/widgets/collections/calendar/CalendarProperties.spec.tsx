@@ -4,11 +4,17 @@ import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../../entities/fnote";
+import { buildNote } from "../../../test/easy-froca";
 import type { CalendarViewData } from "./api";
 import CalendarProperties from "./CalendarProperties";
 
 // i18next is never initialised under test, so every label would read as undefined.
 vi.mock("../../../services/i18n", () => ({
+    t: (key: string) => key
+}));
+// The settings dropdown's definitions translate through i18next directly, at import.
+vi.mock("i18next", async (importOriginal) => ({
+    ...await importOriginal<typeof import("i18next")>(),
     t: (key: string) => key
 }));
 
@@ -37,7 +43,7 @@ vi.mock("../../react/TemplateSelectionCard", () => ({
 describe("CalendarProperties", () => {
     let container: HTMLElement;
     let saved: CalendarViewData[];
-    const calendar = { noteId: "calendar1" } as FNote;
+    const calendar = buildNote({ id: "calendar1", title: "Calendar" }) as unknown as FNote;
 
     function draw(viewConfig: CalendarViewData | undefined) {
         act(() => {
@@ -88,6 +94,24 @@ describe("CalendarProperties", () => {
         expect(card?.dataset.templates).toBe("type:text:text/html");
 
         expect(draw({ templates: [ "note:mine" ] })?.dataset.templates).toBe("note:mine");
+    });
+
+    it("repeats the settings dropdown's calendar settings in a General card, above the templates", () => {
+        draw(undefined);
+        const general = document.querySelector(".calendar-properties-dialog .calendar-properties-general");
+        const titles = [ ...general?.querySelectorAll(".tn-card-option-title") ?? [] ]
+            .map((title) => title.textContent);
+
+        expect(titles).toEqual([
+            "book_properties_config.hide-weekends",
+            "book_properties_config.display-week-numbers",
+            "calendar_view.time_slots",
+            "calendar_view.slot_duration",
+            "calendar_view.slot_label_interval",
+            "book_properties.include_archived_notes"
+        ]);
+        expect(general?.compareDocumentPosition(document.querySelector(".templates-stub") as Node))
+            .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
     /** On a phone the new-event form is itself a dialog, opened before this one from its template field. */

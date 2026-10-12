@@ -97,6 +97,8 @@ In the <a class="reference-link" href="Collection%20Properties.md">Collection P
 *   Set the slot duration (the length of each time row in day/week view).
 *   Set the slot label interval (how often time labels appear on the axis in day/week view).
 
+The same settings, together with whether archived notes are shown, are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it). The time slots are listed there whichever view the calendar is in.
+
 ### Event templates
 
 By default, a new event is a <a class="reference-link" href="../Note%20Types/Text.md">Text</a> note. To make events from other note types, or from <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a> with predefined content and attributes (such as a color), open the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, and find _Event templates_. Here you can:

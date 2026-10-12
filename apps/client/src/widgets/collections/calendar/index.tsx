@@ -24,6 +24,7 @@ import { type NoteTypeOption } from "../../../services/note_types";
 import note_tooltip from "../../../services/note_tooltip";
 import { isMobile } from "../../../services/utils";
 import CollectionProperties from "../../note_bars/CollectionProperties";
+import { DEFAULT_SLOT_DURATION, DEFAULT_SLOT_LABEL_INTERVAL } from "../../note_bars/collection-properties-config";
 import ActionButton from "../../react/ActionButton";
 import Button, { ButtonGroup } from "../../react/Button";
 import CollapseOnOverflow from "../../react/CollapseOnOverflow";
@@ -80,9 +81,6 @@ const CALENDAR_VIEWS = [
 ];
 
 const SUPPORTED_CALENDAR_VIEW_TYPE = CALENDAR_VIEWS.map(v => v.type);
-
-const DEFAULT_SLOT_DURATION = "00:15:00";
-const DEFAULT_SLOT_LABEL_INTERVAL = "01:00:00";
 
 // Here we hard-code the imports in order to ensure that they are embedded by webpack without having to load all the languages.
 export const LOCALE_MAPPINGS: Record<DISPLAYABLE_LOCALE_IDS, (() => Promise<{ default: LocaleInput }>) | null> = {

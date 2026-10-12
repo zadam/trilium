@@ -3694,7 +3694,8 @@
     "new_template_name": "New event template",
     "event_template": "Select an event template",
     "more_templates": "More templates…",
-    "template": "Template"
+    "template": "Template",
+    "general": "General"
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",
