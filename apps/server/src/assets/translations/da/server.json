@@ -9,6 +9,7 @@
     "activate-next-tab": "Aktivér fanen til højre",
     "activate-previous-tab": "Aktivér fanen til venstre",
     "open-new-window": "Åbn et nyt, tomt vindue",
-    "toggle-tray": "Vis/skjul programmet fra proceslinjens meddelelsesområde"
+    "toggle-tray": "Vis/skjul programmet fra proceslinjens meddelelsesområde",
+    "dialogs": "Dialoger"
   }
 }
