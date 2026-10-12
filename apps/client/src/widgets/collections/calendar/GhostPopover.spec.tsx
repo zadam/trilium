@@ -73,6 +73,24 @@ describe("GhostPopover", () => {
         expect(onCommit).toHaveBeenLastCalledWith("Fair");
     });
 
+    it("focuses the title field once the popover is shown", async () => {
+        // `Popover` keeps the card hidden until `placeFloating()` resolves, and a browser ignores
+        // `focus()` on a hidden element, so the field must be focused only once the card shows.
+        const visibilityAtFocus: string[] = [];
+        const focus = vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (this: HTMLElement) {
+            visibilityAtFocus.push(this.closest<HTMLElement>(".tn-popover")?.style.visibility ?? "");
+        });
+        try {
+            mount(vi.fn());
+            await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+        } finally {
+            focus.mockRestore();
+        }
+
+        expect(visibilityAtFocus).not.toHaveLength(0);
+        expect(visibilityAtFocus.every((visibility) => visibility === "visible")).toBe(true);
+    });
+
     it("hands over the title as typed, an empty one standing for the calendar's own naming", async () => {
         const onCommit = vi.fn().mockResolvedValue(undefined);
         mount(onCommit);

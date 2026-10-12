@@ -53,12 +53,10 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
     const titleRef = useRef<HTMLInputElement>(null);
 
     /**
-     * The field asks for the caret on mount, which a dialog is in no position to grant: it is still
-     * rising, and Bootstrap lays its own focus trap on the dialog as it lands — taking back
-     * whatever the field had claimed. Asked for again once the dialog is up, which is after that.
+     * Focuses the field once its container shows: `Popover` keeps the card hidden until it is
+     * placed, and Bootstrap's focus trap takes the focus back while the `Modal` opens.
      *
-     * Held still between renders, or the dialog would unbind and rebind what it listens for on
-     * every letter typed into the very field this focuses.
+     * Stable across renders, so `Modal` does not rebind its listeners on every keystroke.
      */
     const focusTitle = useCallback(() => titleRef.current?.focus(), []);
 
@@ -98,7 +96,6 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
         <div className="calendar-ghost-body">
             <FormTextBox
                 inputRef={titleRef}
-                autoFocus
                 currentValue={title}
                 placeholder={t("calendar_view.draft_title_placeholder")}
                 onChange={setTitle}
@@ -148,6 +145,7 @@ export default function GhostPopover({ draft, anchor, container, onCommit, onCan
             placement={glob.isRtl ? "left-start" : "right-start"}
             getAnchorRect={() => ghostAnchorRect(container, anchor)}
             onDismiss={onDismiss}
+            onPlaced={focusTitle}
         >
             <div className="calendar-ghost-header">
                 <span className="calendar-ghost-heading">{t("calendar_view.new_event")}</span>
