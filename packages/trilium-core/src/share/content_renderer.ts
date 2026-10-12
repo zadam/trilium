@@ -533,7 +533,10 @@ export function getContent(note: SNote | BNote, options: ShareRenderOptions = {}
         && SHARE_HOSTED_VIEW_TYPES.includes(getViewType(note) ?? "")) {
         renderCollectionView(result, note, options);
     } else if (note.type === "book") {
+        // A collection shows its child notes. What its content still holds from a type it was
+        // switched from is never written into the page, which prints it as HTML.
         result.isEmpty = true;
+        result.content = "";
     } else if (note.type === "webView") {
         renderWebView(note, result);
     } else if ([ "noteMap", "relationMap", "render" ].includes(note.type)) {

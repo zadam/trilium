@@ -38,6 +38,13 @@ describe("content_renderer", () => {
         expect(result.content).toStrictEqual("<p>Protected note cannot be displayed</p>");
     });
 
+    it("prints none of a collection's own content, which a type switch leaves behind", () => {
+        const note = buildShareNote({
+            type: "book", mime: "", content: "<script>alert(1)</script><p>Was a code note</p>"
+        });
+        expect(getContent(note)).toMatchObject({ isEmpty: true, content: "" });
+    });
+
     describe("Text note", () => {
         it("parses simple note", () => {
             const content = trimIndentation`\
