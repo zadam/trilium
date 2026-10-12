@@ -268,10 +268,9 @@ function EventDetails({ note, parentNote, isEditable, maximized, setMaximized, o
 }
 
 /**
- * The event itself, under whatever heads it: its own fields, the note's promoted attributes and
- * the note. Shared by the two shells, which differ only in what they put around this and how they
- * are dismissed. The popover puts {@link EventActions} in its header; the sheet passes them as
- * `children`, above the fields.
+ * The event's fields, the note's promoted attributes and the note, shared by the popover and the
+ * phone sheet. The popover renders {@link EventActions} in its header; the sheet passes them as
+ * `children`, which render above the fields.
  */
 function EventDetailsBody({ note, isEditable, maximized, children }: {
     note: FNote;
@@ -310,9 +309,8 @@ function EventDetailsBody({ note, isEditable, maximized, children }: {
 }
 
 /**
- * The toolbar of an event: the ways of opening its note (see OpenNoteActions), then the ways of
- * changing it, left out rather than disabled where the calendar can't be edited, as the geo pane
- * leaves them out.
+ * The event's toolbar: `OpenNoteActions`, then the editing actions, which are omitted when the
+ * calendar is read-only.
  */
 function EventActions({ note, parentNote, isEditable, onClose }: {
     note: FNote;

@@ -29,7 +29,7 @@
  * room around what it holds — all of which a dialog brings for the sheet.
  */
 .calendar-ghost-popover {
-    width: 460px;
+    width: min(460px, calc(100vw - 4rem));
 
     .calendar-ghost-header {
         display: flex;

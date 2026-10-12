@@ -29,8 +29,8 @@ import {
  * Edits how the event repeats, through the note's `#recurrence` label — or whatever label a
  * `#calendar:recurrence` renaming points at instead (see useEventLabel) — structured fields for
  * the everyday rules, the raw RRULE string for one saying more than they can (see recurrence.ts
- * for where that line runs). Rendered as a dropdown whose button names the rule, shown beside the
- * all-day switch (see EventDatesEditor); the rule's fields open inside it.
+ * for where that line runs). Renders a dropdown whose button names the rule; the rule's fields open
+ * inside it.
  */
 export default function RecurrenceEditor({ note }: { note: FNote }) {
     const [ storedValue, setStoredValue ] = useEventLabel(note, "recurrence");

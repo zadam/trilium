@@ -13,11 +13,8 @@ import { EventDatesFields } from "./EventDatesEditor";
 import { AnchorPoint, EventDraft, narrowAnchorRect, normalizeEventDates } from "./selection";
 
 /**
- * The ghost: the form an event is decided in before its note exists. It asks for the name, shows
- * the days the drag covered, and lets the user add hours to the event, as a
- * click in the month view drafts a whole day. Everything else an event can hold waits for the
- * note, a click on its chip away. Dismissed — Escape, the close button, a press anywhere else —
- * the draft simply evaporates: nothing was created.
+ * The form for a new event before its note exists: a title field and the date and time fields
+ * (`EventDatesFields`). Dismissing it (Escape, the close button, a click outside) creates nothing.
  *
  * A desktop stands it beside the range that called for it, a draft being born of a place: the form
  * appears where the eye already is, and the grid does not reflow under the very range just dragged.
@@ -52,7 +49,6 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
     // The range as dragged, until the user changes whether it is all-day or edits its hours.
     const [ draft, setDraft ] = useState(() => normalizeEventDates(initialDraft));
     useEffect(() => setDraft(normalizeEventDates(initialDraft)), [ initialDraft ]);
-    const allDay = !draft.startTime;
     // Committing is asked for once, however many times Enter falls before the note arrives and
     // the form goes: each ask would make its own note.
     const [ committing, setCommitting ] = useState(false);
@@ -111,7 +107,7 @@ export default function GhostPopover({ draft: initialDraft, anchor, container, o
             />
 
             <div className="calendar-ghost-when">
-                <EventDatesFields value={draft} allDay={allDay} onChange={setDraft} />
+                <EventDatesFields value={draft} onChange={setDraft} />
             </div>
 
             <div className="calendar-ghost-actions">

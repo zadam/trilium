@@ -17,9 +17,8 @@ const DEFAULT_START_TIME = "09:00";
 const DEFAULT_END_TIME = "10:00";
 
 /**
- * Switches an event between all-day and timed, for the new-event popup and the event popover
- * alike (see EventDatesFields). The days are kept either way, a timed event being able to span
- * several of them, and so is an end time the event already holds.
+ * Switches an event between all-day and timed. Keeps the dates, and keeps an existing end time when
+ * adding a time.
  */
 export function withAllDay(draft: EventDraft, allDay: boolean): EventDraft {
     if (allDay) {
@@ -30,16 +29,8 @@ export function withAllDay(draft: EventDraft, allDay: boolean): EventDraft {
 }
 
 /**
- * Makes the end date say the day an event actually ends on, so the date fields never contradict
- * how the calendar draws it (see buildEvent in event_builder.ts):
- *
- * - A timed event whose end falls before its start ends on the first day the end time comes after
- *   the start: the start day itself, or the next day for an end time before the start time.
- * - An all-day event whose end date is before its start date lasts a single day.
- * - An end date equal to the start date is emptied, an empty end date meaning the event ends on the
- *   day it starts.
- *
- * Returns the event unchanged where its end date is already right.
+ * Sets the end date to the day `buildEvent()` draws the event ending on. An end date equal to the
+ * start date becomes `null`.
  */
 export function normalizeEventDates(event: EventDraft): EventDraft {
     const { startDate, startTime, endTime } = event;
@@ -61,11 +52,7 @@ export function normalizeEventDates(event: EventDraft): EventDraft {
     return endDate === (event.endDate || null) ? event : { ...event, endDate };
 }
 
-/**
- * Moves an event to a new start date or start time, keeping how long it lasts, as calendar apps do:
- * the end moves by as much as the start, across midnight where it has to. Only an edit of the end
- * itself changes the duration.
- */
+/** Moves an event to a new start date or start time and shifts the end by the same amount. */
 export function withStart(event: EventDraft, start: { startDate?: string; startTime?: string }): EventDraft {
     const current = normalizeEventDates(event);
     const next = { ...current, ...start };
@@ -76,7 +63,7 @@ export function withStart(event: EventDraft, start: { startDate?: string; startT
         const endMinute = hours * 60 + minutes + duration;
         const endOfDay = endMinute % (24 * 60);
         const endDay = Math.floor(endMinute / (24 * 60));
-        // Back on the start day: an end date the event had is cleared, a missing one stays missing.
+        // A missing end date stays `undefined` rather than becoming `null`.
         next.endDate = endDay > 0 ? addDays(next.startDate, endDay) : (current.endDate ? null : current.endDate);
         next.endTime = `${pad(Math.floor(endOfDay / 60))}:${pad(endOfDay % 60)}`;
     } else if (current.endDate) {

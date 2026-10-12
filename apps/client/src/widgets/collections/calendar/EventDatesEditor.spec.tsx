@@ -91,6 +91,23 @@ describe("EventDatesEditor", () => {
         expect(timeInputs()).toHaveLength(2);
         expect(document.activeElement).toBe(timeInputs()[0]);
         expect(dateInputs()).toHaveLength(2);
+
+        // Removed again before the labels echo back, the hours still come off.
+        act(() => removeTimeButton()?.click());
+        expect(removeLabel).toHaveBeenCalledWith(note, "startTime");
+        expect(removeLabel).toHaveBeenCalledWith(note, "endTime");
+        expect(addTimeButton()).not.toBeNull();
+    });
+
+    it("edits the hours as last entered while the earlier edit has not echoed back", () => {
+        const note = buildNote({ title: "Meeting", "#startDate": "2026-06-05", "#startTime": "13:00", "#endTime": "14:30" });
+        mount(note);
+
+        commitValue(timeInputs()[1], "15:00");
+        expect(timeInputs()[1].value).toBe("15:00");
+        commitValue(timeInputs()[0], "16:00");
+
+        expect(setLabel).toHaveBeenLastCalledWith(note.noteId, "endTime", "18:00");
     });
 
     it("shows the day an event actually ends on, and writes it once an edit is made", () => {

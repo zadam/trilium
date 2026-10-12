@@ -39,9 +39,8 @@ export function EventField({ name, htmlFor, children }: {
 }
 
 /**
- * One line of when an event happens, led by an icon that names what the line holds, with the icon's
- * name as its tooltip. A line without an icon is indented to the same column, so its controls line
- * up with the ones above. Shared by the event popover and the new-event popup.
+ * A row of event controls led by an icon, with `title` as the icon's tooltip. Without `icon`, the
+ * icon column stays empty so the controls align with the rows above.
  */
 export function EventRow({ icon, title, rowRef, children }: {
     /** A boxicons class such as `bx-calendar`. */
@@ -70,9 +69,8 @@ export function EventFieldControls({ className, children }: {
 }
 
 /**
- * The row of an event's hours. An all-day event has none, so the row offers to add them; a timed
- * one shows its hours (`children`) with a button that removes them, which makes it all-day again.
- * Either button hands the focus on to what replaces it: the start time, or the button to add one.
+ * The time row: an "Add time" button when `hasTime` is false, otherwise `children` and a remove
+ * button. After either button is pressed, the focus moves to the control that replaces it.
  */
 export function EventTimeRow({ hasTime, onAdd, onRemove, children }: {
     hasTime: boolean;
@@ -119,10 +117,7 @@ export function EventTimeRow({ hasTime, onAdd, onRemove, children }: {
     );
 }
 
-/**
- * How long a timed event lasts, at the end of its time row. Renders nothing for an all-day event. An end before the start reads as running into the next day (see
- * {@link getTimedDurationMinutes}).
- */
+/** The duration of a timed event (see `getTimedDurationMinutes()`); nothing for an all-day event. */
 export function EventDuration({ event }: { event: Parameters<typeof getTimedDurationMinutes>[0] }) {
     const total = getTimedDurationMinutes(event);
     if (total === null) return null;
