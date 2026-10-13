@@ -1,7 +1,11 @@
 {
   "about": {
     "data_directory": "Datakansio:",
-    "version_label": "Versio:"
+    "version_label": "Versio:",
+    "donate": "Lahjoita",
+    "version": "{{appVersion}} (tietokanta: {{dbVersion}}, synkronointiprotokolla: {{syncVersion}})",
+    "build_info": "Koonti: {{buildDate}}, revisio: <buildRevision />",
+    "donate_tooltip": "Lahjoita tukeaksesi tätä projektia"
   },
   "toast": {
     "critical-error": {
@@ -21,11 +25,14 @@
     "note": "Muistio",
     "search_note": "etsi muistiota sen nimellä",
     "button_edit_link": "Tallenna linkki",
-    "button_fix_link": "Korjaa linkki"
+    "button_fix_link": "Korjaa linkki",
+    "edit_link": "Muokkaa linkkiä",
+    "fix_link": "Korjaa linkki"
   },
   "branch_prefix": {
-    "prefix": "Etuliite: ",
-    "save": "Tallenna"
+    "prefix": "Etuliite",
+    "save": "Tallenna",
+    "cancel": "Peruuta"
   },
   "bulk_actions": {
     "bulk_actions": "Massatoiminnot",
