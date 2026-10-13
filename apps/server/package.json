@@ -36,7 +36,7 @@
     "@anthropic-ai/claude-agent-sdk": "^0.3.207",
     "@hyzyla/pdfium": "2.1.13",
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "ai": "7.0.136",
+    "ai": "7.0.137",
     "better-sqlite3": "13.0.3",
     "i18next": "26.4.2",
     "ipaddr.js": "^2.4.0",
