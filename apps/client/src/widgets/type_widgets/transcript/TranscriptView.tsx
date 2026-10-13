@@ -1,24 +1,31 @@
 import "./TranscriptView.css";
 
 import type { Transcript, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
 import { t } from "../../../services/i18n";
 import { useTriliumEvent } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
 
+/** How close to the end, in pixels, still counts as reading the newest turn. */
+const FOLLOW_THRESHOLD = 16;
+
 /**
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
- * Follows the attachment as a running recording rewrites it.
+ * Follows the attachment as a running recording rewrites it, and keeps a reader who is at the end
+ * there as new turns arrive.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
+    const scrollerRef = useRef<HTMLDivElement>(null);
+    const followRef = useRef(false);
 
     const load = useCallback(() => {
         let current = true;
         void attachment.getBlob().then((blob) => {
             if (current) {
+                followRef.current = isScrolledToEnd(scrollerRef.current);
                 setContent(blob?.content ?? null);
             }
         });
@@ -27,6 +34,12 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
         };
     }, [ attachment ]);
     useEffect(load, [ load ]);
+    useLayoutEffect(() => {
+        const scroller = scrollerRef.current;
+        if (followRef.current && scroller) {
+            scroller.scrollTop = scroller.scrollHeight;
+        }
+    }, [ content ]);
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const { attachmentId } = attachment;
         if (loadResults.getAttachmentRows().some((row) => row.attachmentId === attachmentId)) {
@@ -47,7 +60,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     }
 
     return (
-        <div className="transcript">
+        <div ref={scrollerRef} className="transcript">
             {groupIntoTurns(transcript.utterances).map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
@@ -106,6 +119,13 @@ export function formatOffset(milliseconds: number) {
     return hours
         ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
         : `${minutes}:${seconds}`;
+}
+
+function isScrolledToEnd(scroller: HTMLElement | null) {
+    if (!scroller) {
+        return false;
+    }
+    return scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD;
 }
 
 function speakerName(source: TranscriptSource) {

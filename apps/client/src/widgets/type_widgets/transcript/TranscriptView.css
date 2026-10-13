@@ -1,8 +1,11 @@
 .transcript {
+    box-sizing: border-box;
+    height: 100%;
+    overflow-y: auto;
     padding: 0.5rem 1rem 1rem;
-    max-width: var(--preferred-max-content-width, 900px);
 
     .transcript-turn {
+        max-width: var(--preferred-max-content-width, 900px);
         margin-bottom: 1rem;
     }
 

@@ -78,4 +78,53 @@ describe("TranscriptView", () => {
             "transcript.speaker_others0:03Yes."
         ]);
     });
+
+    it("follows new turns for a reader at the end, not for one who scrolled up", async () => {
+        const utterance = (index: number): TranscriptUtterance =>
+            ({ source: "microphone", offsetMs: index * 60_000, text: `Line ${index}` });
+        // Each reload adds a turn, alternating sources so that none merge.
+        let count = 1;
+        const getBlob = vi.fn(async () => ({
+            content: transcript(Array.from({ length: count }, (_, index) => ({
+                ...utterance(index), source: index % 2 ? "system" : "microphone"
+            })))
+        }));
+        const attachment = { attachmentId: "transcript1", getBlob } as unknown as FAttachment;
+        const component = new Component();
+        const container = renderInto(
+            <ParentComponent.Provider value={component}>
+                <TranscriptView attachment={attachment} />
+            </ParentComponent.Provider>
+        );
+        await vi.waitFor(() => expect(container.querySelector(".transcript")).not.toBeNull());
+
+        // happy-dom lays nothing out: 100px of view over 50px a turn.
+        const scroller = container.querySelector<HTMLElement>(".transcript");
+        if (!scroller) {
+            throw new Error("no scroller");
+        }
+        Object.defineProperty(scroller, "clientHeight", { value: 100 });
+        Object.defineProperty(scroller, "scrollHeight", {
+            get: () => scroller.querySelectorAll(".transcript-turn").length * 50
+        });
+        const addTurn = async () => {
+            count++;
+            const loadResults = new LoadResults([]);
+            const row = { attachmentId: "transcript1", ownerId: "meeting" };
+            loadResults.addAttachmentRow(row as never);
+            await act(async () => {
+                await component.handleEvent("entitiesReloaded", { loadResults });
+            });
+            await vi.waitFor(() =>
+                expect(scroller.querySelectorAll(".transcript-turn")).toHaveLength(count));
+        };
+
+        await addTurn();
+        await addTurn();
+        expect(scroller.scrollTop).toBe(150);
+
+        scroller.scrollTop = 0;
+        await addTurn();
+        expect(scroller.scrollTop).toBe(0);
+    });
 });
