@@ -225,7 +225,7 @@ function pipe(source, media) {
 async function captureSystemAudio() {
     const media = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
     });
     for (const track of media.getVideoTracks()) {
         track.stop();
