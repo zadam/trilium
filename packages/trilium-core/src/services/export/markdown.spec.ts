@@ -1029,25 +1029,76 @@ describe("Markdown export", () => {
         });
     });
 
-    it("exports the columns of a multicolumn layout one after another", () => {
-        const html =
-            "<p>Before</p>" +
-            "<section class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-3\">" +
-                "<section><p>First <strong>column</strong></p><ul><li>One</li></ul></section>" +
-                "<section><h2>Second</h2><p>Text</p></section>" +
-            "</section>" +
-            "<p>After</p>";
-        expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
-            Before
+    describe("multicolumn layouts", () => {
+        const column = (content: string) =>
+            `<div class="trilium-multicolumn-column">${content}</div>`;
+        const layout = (ratios: string, ...columns: string[]) =>
+            `<div class="trilium-multicolumn-layout" data-trilium-column-ratios="${ratios}">` +
+            `${columns.map(column).join("")}</div>`;
 
-            First **column**
+        it("writes each column as Markdown between the HTML tags of the layout", () => {
+            const html = `<p>Before</p>${layout("1-3",
+                "<p>First <strong>column</strong></p><ul><li>One</li></ul>",
+                "<h2>Second</h2><p>Text</p>"
+            )}<p>After</p>`;
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                Before
 
-            *   One
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-3">
+                <div class="trilium-multicolumn-column">
 
-            ## Second
+                First **column**
 
-            Text
+                *   One
 
-            After`);
+                </div>
+                <div class="trilium-multicolumn-column">
+
+                ## Second
+
+                Text
+
+                </div>
+                </div>
+
+                After`);
+        });
+
+        it("keeps a nested layout and the empty columns that Turndown would drop", () => {
+            const html = layout("1-1",
+                layout("1-2-1", "<p>Inner</p>", "<p>&nbsp;</p>", "<p>&nbsp;</p>"),
+                "<p>Outer</p>"
+            ) + layout("3-1", "<p>&nbsp;</p>", "<p>&nbsp;</p>");
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+                <div class="trilium-multicolumn-column">
+
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-2-1">
+                <div class="trilium-multicolumn-column">
+
+                Inner
+
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                </div>
+
+                </div>
+                <div class="trilium-multicolumn-column">
+
+                Outer
+
+                </div>
+                </div>
+
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="3-1">
+                <div class="trilium-multicolumn-column">
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                </div>`);
+        });
     });
 });

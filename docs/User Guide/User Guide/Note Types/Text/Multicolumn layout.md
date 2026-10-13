@@ -33,4 +33,4 @@ When a layout has too little room for its columns (narrower than about 500 pixel
 ## Printing and exporting
 
 *   When printing or [exporting to PDF](../../Basic%20Concepts%20and%20Features/Notes/Printing%20%26%20Exporting%20as%20PDF.md), the columns are printed side by side.
-*   Markdown has no columns, so Markdown export writes the content of the columns one after another.
+*   Markdown has no columns, so Markdown export keeps the layout and each column as HTML `<div>` tags, with the content of each column written as Markdown between them. Importing the file back restores the layout. Markdown viewers that don't support HTML show the content of the columns one after another.

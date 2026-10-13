@@ -50,11 +50,11 @@ The response streams in as it is generated, and can be interrupted at any point 
 
 Nothing is written into the note until you say so. The review offers:
 
-*   **Result** which displays the response as it will be inserted.
-*   **Changes** which displays an inline diff against the original, with insertions and deletions marked. When the model rewrote the passage rather than editing it, the review opens on _Result_ instead: a diff of two texts with little in common is harder to read than the answer itself.
-*   **Try again**, to re-run the same instruction.
-*   **Replace**, which substitutes the original passage
-*   **Insert below**, which keeps the original and adds the response after it.
+*   _Result_, which displays the response as it will be inserted.
+*   _Changes_, which displays an inline diff against the original, with insertions and deletions marked. When the model rewrote the passage rather than editing it, the review opens on _Result_ instead: a diff of two texts with little in common is harder to read than the answer itself.
+*   _Try again_, to re-run the same instruction.
+*   _Replace_, which substitutes the original passage
+*   _Insert below_, which keeps the original and adds the response after it.
 
 Trilium also reports the model that produced it, the tokens consumed and, for providers that report it, the price.
 

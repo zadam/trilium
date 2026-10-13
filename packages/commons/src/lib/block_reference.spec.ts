@@ -8,6 +8,7 @@ import {
     getEditableBlockRun,
     getListItemNumber,
     isValidBlockId,
+    MULTICOLUMN_COLUMN_CLASS,
     MULTICOLUMN_LAYOUT_CLASS,
     parseBlockRange,
     resolveBlockRange,
@@ -147,20 +148,20 @@ describe("sliceToBlockReference", () => {
 
     it("drops a layout left with one column around the blocks, and keeps one with more", () => {
         const layout = (...columns: BlockNode[]) =>
-            el("section", { class: `${MULTICOLUMN_LAYOUT_CLASS} wide` }, ...columns);
+            el("div", { class: `${MULTICOLUMN_LAYOUT_CLASS} wide` }, ...columns);
         const target = block("p", "b", text("B"));
         const inner = layout(
-            el("section", {}, el("p", {}, text("A")), target),
-            el("section", {}, el("p", {}, text("C")))
+            layoutColumn(el("p", {}, text("A")), target),
+            layoutColumn(el("p", {}, text("C")))
         );
-        const root = el("div", {}, layout(el("section", {}, inner), el("section", {})));
+        const root = el("div", {}, layout(layoutColumn(inner), layoutColumn()));
 
         expect(sliceToBlockReference(root, "b")).toBe(true);
         expect(render(root)).toBe(`<div>${render(target)}</div>`);
 
         const across = layout(
-            el("section", {}, block("p", "x")),
-            el("section", {}, block("p", "y"))
+            layoutColumn(block("p", "x")),
+            layoutColumn(block("p", "y"))
         );
         const otherRoot = el("div", {}, across);
         sliceToBlockReference(otherRoot, "x:y");
@@ -265,9 +266,9 @@ describe("getEditableBlockRun", () => {
     it("finds the blocks of a column of a multicolumn layout", () => {
         const first = block("p", "a");
         const last = block("p", "b");
-        const column = el("section", {}, el("p", {}), first, last);
+        const column = layoutColumn(el("p", {}), first, last);
         const root = el("div", {},
-            el("section", { class: MULTICOLUMN_LAYOUT_CLASS }, column, el("section", {})));
+            el("div", { class: MULTICOLUMN_LAYOUT_CLASS }, column, layoutColumn()));
 
         expect(getEditableBlockRun(root, "a:b")).toEqual({ parent: column, first, last });
     });
@@ -361,6 +362,10 @@ function removeFromParent(node: BlockNode) {
 
 function el(tagName: string, attributes: Record<string, string>, ...children: BlockNode[]) {
     return new TestElement(tagName.toUpperCase(), attributes, children);
+}
+
+function layoutColumn(...children: BlockNode[]) {
+    return el("div", { class: MULTICOLUMN_COLUMN_CLASS }, ...children);
 }
 
 function block(tagName: string, id: string, ...children: BlockNode[]) {

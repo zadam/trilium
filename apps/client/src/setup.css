@@ -41,6 +41,7 @@ body.setup {
                 display: flex;
                 width: 750px;
                 height: 650px;
+                max-height: 100%;
                 top: unset;
                 overflow: hidden;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);

@@ -49,9 +49,9 @@ Long lines can be displayed on multiple lines:
 
 The status bar at the bottom of the editor shows the current indentation settings and language. Clicking on the indentation indicator opens a menu with three sections:
 
-1.  **Indent Using** — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
-2.  **Display Width** — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.
-3.  **Re-indent Content To** — convert existing indentation to a different style. For example, re-indent a file from 4 spaces to 2 spaces, or from spaces to tabs. This rewrites the leading whitespace on every line while preserving alignment remainders.
+1.  _Indent Using_ — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
+2.  _Display Width_ — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.
+3.  _Re-indent Content To_ — convert existing indentation to a different style. For example, re-indent a file from 4 spaces to 2 spaces, or from spaces to tabs. This rewrites the leading whitespace on every line while preserving alignment remainders.
 
 Clicking the language indicator lets you change the note's MIME type. As in the _Note type_ selector, typing narrows the list of languages.
 

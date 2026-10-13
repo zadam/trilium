@@ -1,4 +1,4 @@
-import { MULTICOLUMN_LAYOUT_CLASS } from "@triliumnext/commons";
+import { MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS } from "@triliumnext/commons";
 
 /** Model element names of the multicolumn layout. */
 export const ELEMENTS = {
@@ -10,6 +10,7 @@ export const ELEMENTS = {
 export const RATIOS_ATTRIBUTE = "columnRatios";
 
 export const LAYOUT_CLASS = MULTICOLUMN_LAYOUT_CLASS;
+export const COLUMN_CLASS = MULTICOLUMN_COLUMN_CLASS;
 export const RATIOS_DATA_ATTRIBUTE = "data-trilium-column-ratios";
 
 /** Custom property that marks the editing-view widget element of a layout. */

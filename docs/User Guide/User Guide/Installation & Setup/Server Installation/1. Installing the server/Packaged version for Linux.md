@@ -66,6 +66,7 @@ sudo systemctl enable --now -q trilium
 The script is available in <a class="reference-link" href="Packaged%20version%20for%20Linux/Simple%20auto-update%20for%20server.dat">Simple auto-update for server</a>.
 
 *   Run as the same User Trilium runs.
+    
     *   If you run as `root` please remove `sudo` from the commands.
 *   Requires `jq`:
     

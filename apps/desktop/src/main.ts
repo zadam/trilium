@@ -28,6 +28,7 @@ import CompositeMessagingProvider from "./composite_messaging_provider";
 import IpcMessagingProvider from "./ipc_messaging_provider";
 import DesktopPlatformProvider from "./platform_provider";
 import { registerTriliumAppScheme, setupTriliumAppProtocol } from "./protocol";
+import { setupAsarReadStreams } from "./services/asar_read_stream";
 import { applyLaunchOnStartup, setupAutoLaunch, wasLaunchedHidden } from "./services/auto_launch";
 import { setupCustomDictionary } from "./services/custom_dictionary";
 import { setupReferer } from "./services/referer";
@@ -63,6 +64,7 @@ export async function main() {
     }
 
     registerTriliumAppScheme();
+    setupAsarReadStreams();
 
     const userDataPath = getUserData();
     app.setPath("userData", userDataPath);
