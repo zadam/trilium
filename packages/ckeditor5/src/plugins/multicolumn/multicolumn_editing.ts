@@ -109,7 +109,7 @@ export default class MulticolumnEditing extends Plugin {
             view: (model, { writer }) => {
                 const column: ViewEditableElement & PlaceholderableViewElement =
                     writer.createEditableElement("div", { class: COLUMN_CLASS });
-                column.placeholder = getColumnPlaceholder(t, model.index ?? 0);
+                column.placeholder = getColumnPlaceholder(t, model.index);
                 enableViewPlaceholder({
                     view: editor.editing.view,
                     element: column,
@@ -155,9 +155,9 @@ export default class MulticolumnEditing extends Plugin {
 
 /**
  * The placeholder of the column at `index`, which names its position. A layout has at most
- * `MAX_COLUMNS` (four) columns.
+ * `MAX_COLUMNS` (four) columns. A column in a layout always has an index.
  */
-function getColumnPlaceholder(t: LocaleTranslate, index: number) {
+function getColumnPlaceholder(t: LocaleTranslate, index: number | null) {
     switch (index) {
         case 0: return t("Type the content of the first column");
         case 1: return t("Type the content of the second column");

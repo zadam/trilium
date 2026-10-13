@@ -62,6 +62,7 @@ export class ConvertImageToDrawingCommand extends Command {
         const editor = this.editor;
         const image = this.getSelectedBlockImage();
         const src = image?.getAttribute("src");
+        /* v8 ignore next -- `refresh()` disables the command without a block image with a src. */
         if (!image || typeof src !== "string") return;
 
         const size = this.getShownSize(image);
@@ -105,16 +106,16 @@ export class ConvertImageToDrawingCommand extends Command {
         const editing = this.editor.editing;
         const viewElement = editing.mapper.toViewElement(image);
         const figure = viewElement && editing.view.domConverter.mapViewToDom(viewElement);
+        /* v8 ignore next -- the editing view renders the selected image as a `<figure>`. */
         if (!(figure instanceof HTMLElement)) return {};
 
-        const { width, height } = figure.querySelector("img")?.getBoundingClientRect()
-            ?? { width: 0, height: 0 };
-        if (!width || !height) return {};
+        const rect = figure.querySelector("img")?.getBoundingClientRect();
+        if (!rect?.width || !rect.height) return {};
 
         const em = parseFloat(getComputedStyle(figure).fontSize);
         return {
-            [SIZE_ATTRIBUTES.width]: toEm(width / em, MIN_EMBED_SIZE.width),
-            [SIZE_ATTRIBUTES.height]: toEm(height / em, MIN_EMBED_SIZE.height)
+            [SIZE_ATTRIBUTES.width]: toEm(rect.width / em, MIN_EMBED_SIZE.width),
+            [SIZE_ATTRIBUTES.height]: toEm(rect.height / em, MIN_EMBED_SIZE.height)
         };
     }
 
@@ -129,10 +130,7 @@ export class ConvertImageToDrawingCommand extends Command {
 const CONVERTING = "converting";
 
 function getCaption(image: ModelElement) {
-    for (const child of image.getChildren()) {
-        if (child.is("element", "caption")) return child;
-    }
-    return null;
+    return [ ...image.getChildren() ].find((child) => child.is("element", "caption"));
 }
 
 /** `value` in `em`, rounded to hundredths and no less than `min`. */

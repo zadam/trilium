@@ -247,6 +247,7 @@ function getButtonFace(tool: ContentEmbedTool) {
  * keystroke of `ButtonView` throws on a key that CKEditor cannot parse, such as `?`.
  */
 function addKeystrokes(dropdown: DropdownView, children: ContentEmbedTool[]) {
+    /* v8 ignore next -- `addListToDropdown()` creates `listView` before this runs. */
     const buttons = [ ...dropdown.listView?.items ?? [] ]
         .filter(item => item instanceof ListItemView)
         .map(item => item.children.first);
