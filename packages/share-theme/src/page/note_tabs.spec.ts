@@ -282,6 +282,40 @@ describe("setupNoteTabs", () => {
         expect(readTabs().tabs.map((tab) => tab.noteId)).toEqual([ "page" ]);
     });
 
+    it("takes the tabs and the place later pages left on a back/forward cache return", () => {
+        renderPage();
+        setupNoteTabs();
+        const page = readTabs().tabs[0];
+        const later = {
+            noteId: "later", title: "Later", icon: "tn-icon bx bx-note",
+            href: "https://example.com/share/later"
+        };
+        writeTabs({ tabs: [ page, later ], active: 1 });
+        const entries = [ "/share/page?x=1", "/share/later" ];
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries, index: 1 }));
+        const pageShow = (persisted: boolean) =>
+            window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted }));
+
+        pageShow(false);
+        expect(document.querySelectorAll(".note-tab")).toHaveLength(1);
+
+        pageShow(true);
+        const tabs = document.querySelectorAll(".note-tab");
+        expect([ ...tabs ].map((tab) => tab.querySelector(".note-tab-title")?.textContent))
+            .toEqual([ "Page", "Later" ]);
+        expect(tabs[0].classList.contains("active")).toBe(true);
+        expect(readTabs().active).toBe(0);
+        expect(document.querySelector<HTMLButtonElement>("#history-back")?.disabled).toBe(true);
+        expect(document.querySelector<HTMLButtonElement>("#history-forward")?.disabled).toBe(false);
+        expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? ""))
+            .toStrictEqual({ entries, index: 0 });
+
+        // The restored page adds a tab once per click, as before.
+        document.querySelector("#menu a[href$='/child']")?.dispatchEvent(
+            new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+        expect(readTabs().tabs.map((tab) => tab.noteId)).toEqual([ "page", "later", "child" ]);
+    });
+
     it("waits for a prerendered page to be shown, and leaves a page without the bar alone", () => {
         Object.defineProperty(document, "prerendering", { value: true, configurable: true });
         renderPage();

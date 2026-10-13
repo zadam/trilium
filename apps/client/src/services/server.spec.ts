@@ -228,14 +228,18 @@ describe("ajax error handling", () => {
         expect((window as any).logError).not.toHaveBeenCalled();
     });
 
-    it("stays silent on 409 for a caller resolving the conflict, still rejecting", async () => {
-        const body = JSON.stringify({ stale: { blobId: "newer" } });
-        (window as any).$.ajax = (opts: AjaxOptions) => {
-            opts.error({ status: 409, responseText: body });
-        };
-        await expect(server.putWithSilentConflict("url", {}))
-            .rejects.toBe(JSON.stringify({ stale: { blobId: "newer" } }));
+    it("stays silent on 409 and 401 for a caller handling the refusal, and rejects", async () => {
+        for (const [ status, body ] of [
+            [ 409, JSON.stringify({ stale: { blobId: "newer" } }) ],
+            [ 401, JSON.stringify({ locked: true }) ]
+        ] as const) {
+            (window as any).$.ajax = (opts: AjaxOptions) => {
+                opts.error({ status, responseText: body });
+            };
+            await expect(server.putWithSilentRefusal("url", {})).rejects.toBe(body);
+        }
         expect(toastMock.showError).not.toHaveBeenCalled();
+        expect(toastMock.showErrorTitleAndMessage).not.toHaveBeenCalled();
         expect((window as any).logError).not.toHaveBeenCalled();
     });
 

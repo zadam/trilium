@@ -11,7 +11,6 @@ html {
     background: var(--background-primary);
 }
 
-/* The app's title row: the note's icon and title. */
 #title-row {
     display: flex;
     align-items: center;
@@ -21,10 +20,6 @@ html {
     border-bottom: 1px solid var(--main-border-color);
 }
 
-/*
- * At the top of the scrolling note, over its content and beside its scrollbar, shown once the note
- * header's title scrolls under the bar. Its negative margin keeps it from taking room of its own.
- */
 #title-row.floating {
     --floating-title-row-height: 48px;
 
@@ -84,7 +79,6 @@ html {
     }
 }
 
-/* The app's inline title: the icon, the title and the note's dates at the top of the content. */
 #note-header {
     display: flex;
     flex-wrap: wrap;
@@ -165,7 +159,6 @@ html {
         padding-inline: 1rem;
     }
 
-    /* The page scrolls under the header and the top bar. */
     #title-row.floating {
         --floating-title-row-height: 44px;
 

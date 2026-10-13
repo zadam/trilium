@@ -31,11 +31,21 @@ export interface EditViewOptions {
     statusContainer?: HTMLElement;
     /** Where the page shows the editor's toolbar; above the editor without one. */
     toolbarContainer?: HTMLElement;
+    /**
+     * Called once the server refuses a save because the visitor's access ended, such as by a new
+     * password; the page unlocks the note again and calls {@link EditView.resume}.
+     */
+    onLocked?: () => void;
 }
 
 export interface EditView {
-    /** Saves what the editor and the title still hold. */
-    stop(): Promise<void>;
+    /**
+     * Saves what the editor and the title still hold, and resolves to whether all of it is
+     * stored, which the page waits for before it leaves the editor.
+     */
+    stop(): Promise<boolean>;
+    /** Saves what was held while the access was lost, under the token of the new unlock. */
+    resume(csrfToken: string): void;
 }
 
 /** What the app's modules read from `window.glob` on a page that saves, beyond the boot script's. */
@@ -69,7 +79,18 @@ const TITLE_SAVE_DELAY = 1000;
 export default async function mountEditView(container: HTMLElement, options: EditViewOptions): Promise<EditView> {
     const status = createStatus();
     const component = new Component();
-    installGlobals(options, status, component);
+    const resumes = new Set<() => void>();
+    // The page asks for the access once, however many saves were refused meanwhile.
+    const onLocked = (resume?: () => void) => {
+        if (resume) {
+            resumes.add(resume);
+        }
+        if (!status.value.locked) {
+            status.set({ ...status.value, locked: true });
+            options.onLocked?.();
+        }
+    };
+    installGlobals(options, status, component, onLocked);
     const view = await TYPE_MAPPINGS.editableText.view();
     const Widget = ("default" in view ? view.default : view) as ComponentType<WidgetProps>;
     render(
@@ -87,12 +108,24 @@ export default async function mountEditView(container: HTMLElement, options: Edi
         </ShareAppHost>,
         container
     );
-    const title = makeTitleEditable(options.title, options.noteId, container);
+    const title = makeTitleEditable(options.title, options.noteId, container, onLocked);
 
     return {
         async stop() {
-            await title.flush();
+            const titleSaved = await title.flush();
             await component.triggerCommand("saveNoteDetailNow");
+            const { state, conflict, locked } = status.value;
+            return titleSaved && state === "saved" && !conflict && !locked;
+        },
+        resume(csrfToken) {
+            (window.glob as unknown as EditGlobals).csrfToken = csrfToken;
+            status.set({ ...status.value, locked: false });
+            const pending = [ ...resumes ];
+            resumes.clear();
+            for (const resume of pending) {
+                resume();
+            }
+            void title.flush();
         }
     };
 }
@@ -104,7 +137,12 @@ export default async function mountEditView(container: HTMLElement, options: Edi
  * through the component at an element; the page has no widget element to find, so they get
  * `component`, which the widget registers its handlers on.
  */
-function installGlobals(options: EditViewOptions, status: Status, component: Component) {
+function installGlobals(
+    options: EditViewOptions,
+    status: Status,
+    component: Component,
+    onLocked: (resume: () => void) => void
+) {
     // The boot script defines `window.glob` on every shared page.
     const glob = window.glob as unknown as EditGlobals;
     glob.baseApiUrl = "api/";
@@ -124,7 +162,9 @@ function installGlobals(options: EditViewOptions, status: Status, component: Com
         version: options.version,
         attachments: options.attachments,
         onSaveState: (state) => status.report(state),
-        onConflict: (stale, retry) => status.set({ state: "error", conflict: { stale, retry } })
+        onConflict: (stale, retry) =>
+            status.set({ ...status.value, state: "error", conflict: { stale, retry } }),
+        onLocked
     };
 }
 
@@ -136,13 +176,18 @@ interface Conflict {
 interface StatusValue {
     state: SaveState;
     conflict?: Conflict;
+    /** Whether saves wait for the page to unlock the note again. */
+    locked?: boolean;
 }
 
 /** The editor's state, which the globals write and {@link EditShell} shows. */
 interface Status {
     value: StatusValue;
     set(value: StatusValue): void;
-    /** Shows the state the editor reports; a conflict stays up until the visitor settles it. */
+    /**
+     * Shows the state the editor reports; a conflict and a lost access stay up until the visitor
+     * settles them.
+     */
     report(state: SaveState): void;
     subscribe(listener: (value: StatusValue) => void): () => void;
 }
@@ -158,7 +203,7 @@ function createStatus(): Status {
             }
         },
         report(state) {
-            status.set({ state, conflict: status.value.conflict });
+            status.set({ ...status.value, state });
         },
         subscribe(listener) {
             listeners.add(listener);
@@ -205,7 +250,11 @@ function EditShell(
     });
 
     const state = (
-        <span className="share-edit-status">{t(`share_edit.status_${value.state}`)}</span>
+        <span className="share-edit-status">
+            {t(conflict || value.locked
+                ? "share_edit.status_not_saved"
+                : `share_edit.status_${value.state}`)}
+        </span>
     );
     const toolbar = <div ref={toolbarRef} className="share-edit-toolbar" />;
     return (
@@ -214,12 +263,19 @@ function EditShell(
             {statusContainer ? createPortal(state, statusContainer) : state}
             {conflict && <Alert type="warning" className="share-edit-conflict">
                 <p>{t("share_edit.conflict")}</p>
-                <Button text={t("share_edit.conflict_reload")} onClick={() => window.location.reload()} />
+                <Button
+                    text={t("share_edit.conflict_reload")}
+                    onClick={() => {
+                        // The visitor drops the version `useSaveBeforeLeaving` still holds.
+                        appContext.beforeUnloadListeners = [];
+                        window.location.reload();
+                    }}
+                />
                 <Button
                     text={t("share_edit.conflict_keep")}
                     kind="primary"
                     onClick={() => {
-                        status.set({ state: "unsaved" });
+                        status.set({ ...status.value, state: "unsaved", conflict: undefined });
                         conflict.retry();
                     }}
                 />
@@ -240,21 +296,38 @@ function EditShell(
 
 /**
  * Makes the page's title editable the way the app's title box is: typing saves it once the
- * visitor pauses, Enter moves into the content, and leaving the title saves it at once.
+ * visitor pauses, Enter moves into the content, and leaving the title saves it at once. Saves run
+ * one after another, and a title counts as saved only once the server stored it, so a failed one
+ * is sent again. `flush` resolves to whether the title is stored.
  */
-function makeTitleEditable(title: HTMLElement, noteId: string, container: HTMLElement) {
+function makeTitleEditable(
+    title: HTMLElement, noteId: string, container: HTMLElement, onLocked: () => void
+) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     // An element's `textContent` is a string, whatever the DOM types allow.
     const readTitle = () => String(title.textContent).trim();
     let saved = readTitle();
-    const save = async () => {
+    let saving = Promise.resolve(true);
+    const save = () => {
         clearTimeout(timer);
         timer = undefined;
-        const text = readTitle();
-        if (text && text !== saved) {
-            saved = text;
-            await server.put(`notes/${noteId}/title`, { title: text });
-        }
+        saving = saving.then(async () => {
+            const text = readTitle();
+            if (!text || text === saved) {
+                return true;
+            }
+            try {
+                await server.putWithSilentRefusal(`notes/${noteId}/title`, { title: text });
+                saved = text;
+                return true;
+            } catch (e) {
+                if (isLockedRefusal(e)) {
+                    onLocked();
+                }
+                return false;
+            }
+        });
+        return saving;
     };
 
     title.contentEditable = "true";
@@ -273,4 +346,13 @@ function makeTitleEditable(title: HTMLElement, noteId: string, container: HTMLEl
     title.addEventListener("blur", () => void save());
 
     return { flush: save };
+}
+
+/** Whether a refused request's response says the visitor's access ended. */
+function isLockedRefusal(response: unknown) {
+    try {
+        return (JSON.parse(String(response)) as { locked?: unknown }).locked === true;
+    } catch {
+        return false;
+    }
 }

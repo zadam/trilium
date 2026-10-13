@@ -22,7 +22,12 @@ vi.mock("../../services/i18n", () => ({
 
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
-import { ExecuteBadge, getShareScope, OfficePreviewBadge, useShareEditState } from "./NoteBadges";
+import appContext from "../../components/app_context";
+import froca from "../../services/froca";
+import server from "../../services/server";
+import {
+    ExecuteBadge, getShareScope, OfficePreviewBadge, toggleShareEdit, useShareEditState
+} from "./NoteBadges";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -101,8 +106,61 @@ describe("useShareEditState", () => {
             "title": "Locked", "#shareEdit": "", "#shareEditPassword": "salt$hash"
         })} />);
 
-        expect(states.at(0)).toEqual({ canEdit: false, attachments: false, needsPassword: false });
-        expect(states.at(1)).toEqual({ canEdit: true, attachments: true, needsPassword: false });
-        expect(states.at(2)).toEqual({ canEdit: true, attachments: false, needsPassword: true });
+        const read = states.map(({ canEdit, attachments, needsPassword }) =>
+            [ canEdit, attachments, needsPassword ]);
+        expect(read).toEqual([
+            [ false, false, false ], [ true, true, false ], [ true, false, true ]
+        ]);
+    });
+
+    it("tells a branch closed below an editable note, and one opened below a locked one", () => {
+        const states: ReturnType<typeof useShareEditState>[] = [];
+        function Reader({ note }: { note: FNote }) {
+            states.push(useShareEditState(note));
+            return null;
+        }
+        const editable = "#shareEdit(inheritable)";
+        const password = "#shareEditPassword(inheritable)";
+        const site = buildNote({
+            "title": "Site", [editable]: "", [password]: "salt$hash",
+            "children": [
+                { "title": "Closed", [editable]: "false" },
+                { "title": "Open", [editable]: "", [password]: "" },
+                { title: "Inherits" }
+            ]
+        });
+        for (const childId of site.children) {
+            const child = froca.getNoteFromCache(childId);
+            if (child) {
+                renderInto(<Reader note={child} />);
+            }
+        }
+        renderInto(<Reader note={buildNote({ "title": "Alone", [editable]: "false" })} />);
+
+        const read = states.map(({ canEdit, needsPassword, reopensFromParent }) =>
+            [ canEdit, needsPassword, reopensFromParent ]);
+        expect(read).toEqual([
+            [ false, true, true ],
+            [ true, false, false ],
+            [ true, true, false ],
+            [ false, false, false ]
+        ]);
+    });
+});
+
+describe("toggleShareEdit", () => {
+    it("turns editing off, back to the ancestor's on a closed branch, else by dialog", async () => {
+        const put = vi.spyOn(server, "put").mockResolvedValue({});
+        const triggerCommand = vi.spyOn(appContext, "triggerCommand").mockResolvedValue(undefined);
+        const note = buildNote({ title: "Branch" });
+
+        await toggleShareEdit(note, false, false);
+        expect(put).toHaveBeenLastCalledWith(`notes/${note.noteId}/share-edit`, { enabled: false });
+        await toggleShareEdit(note, true, true);
+        expect(put).toHaveBeenLastCalledWith(`notes/${note.noteId}/share-edit`, { enabled: true });
+        expect(triggerCommand).not.toHaveBeenCalled();
+        await toggleShareEdit(note, true, false);
+        expect(triggerCommand).toHaveBeenCalledWith("showShareEditDialog", { note });
+        expect(put).toHaveBeenCalledTimes(2);
     });
 });

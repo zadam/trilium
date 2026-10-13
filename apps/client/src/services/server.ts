@@ -87,9 +87,13 @@ async function put<T>(url: string, data?: unknown, componentId?: string) {
     return await call<T>("PUT", url, componentId, { data });
 }
 
-/** A PUT whose caller handles a 409 itself, such as a save the server refuses as stale. */
-async function putWithSilentConflict<T>(url: string, data?: unknown, componentId?: string) {
-    return await call<T>("PUT", url, componentId, { data, silentConflict: true });
+/**
+ * A PUT whose caller handles the server's refusal itself: a 409 for a save over an older version,
+ * a 401 for one whose access ended, as a guest's save on a shared page meets.
+ */
+async function putWithSilentRefusal<T>(url: string, data?: unknown, componentId?: string) {
+    return await call<T>("PUT", url, componentId,
+        { data, silentConflict: true, silentUnauthorized: true });
 }
 
 async function patch<T>(url: string, data: unknown, componentId?: string) {
@@ -465,7 +469,7 @@ export default {
     postWithSilentInternalServerError,
     postWithTimeout,
     put,
-    putWithSilentConflict,
+    putWithSilentRefusal,
     patch,
     remove,
     upload,

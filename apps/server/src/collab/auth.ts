@@ -21,7 +21,10 @@ export type ShareEditResolution =
         shared: SNote;
         /** `null` where the note's subtree is not open to editing. */
         policy: ShareEditPolicy | null;
-        /** Whether the session holds a grant on the subtree, or is the host's own. */
+        /**
+         * Whether the session is the host's own, or holds a grant on the subtree issued under its
+         * current password or open editing.
+         */
         unlocked: boolean;
     };
 
@@ -50,7 +53,8 @@ export function resolveShareEdit(req: Request, noteId: unknown): ShareEditResolu
     }
 
     const policy = getShareEditPolicy(shared);
-    const unlocked = !!policy && (!!req.session.loggedIn || !!req.session.shareEdit?.[policy.rootNoteId]);
+    const grant = policy ? req.session.shareEdit?.[policy.rootNoteId] : undefined;
+    const unlocked = !!policy && (!!req.session.loggedIn || grant?.key === policy.grantKey);
     return { note, shared, policy, unlocked };
 }
 
@@ -68,7 +72,8 @@ export function shareEditAccess(req: Request, res: Response, next: NextFunction)
         return;
     }
     if (!unlocked) {
-        res.status(401).json({ message: "Unlock editing first." });
+        // `locked` tells the page to ask for the password again rather than retry.
+        res.status(401).json({ message: "Unlock editing first.", locked: true });
         return;
     }
 

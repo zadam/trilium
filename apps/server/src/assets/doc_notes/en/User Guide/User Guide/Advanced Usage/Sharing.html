@@ -275,16 +275,37 @@ class="image">
 <ul>
   <li>Guests edit text notes only, and never one with the <code>#readOnly</code> label.
     They cannot add, move or delete notes, nor change a note's type.</li>
-  <li>Every guest change is kept as a revision of the note, marked <em>Guest edit</em> in
-    the <a class="reference-link" href="#root/_help_vZWERwf8U3nx">Note Revisions</a> dialog,
-    so the host can review and restore it.</li>
+  <li>Guest changes go into the note's revisions under the same rules as the
+    host's own edits: a snapshot of the note is saved at most once per revision
+    interval, and never for a note with <code>#disableVersioning</code>. These
+    revisions are marked <em>Guest edit</em> in the <a class="reference-link"
+    href="#root/_help_vZWERwf8U3nx">Note Revisions</a> dialog, so the host can
+    review and restore them.</li>
   <li>The editor leaves out what reaches the host's other notes: snippets, included
     notes, internal links, link previews and the AI assistant. A guest's content
     goes through the same sanitizer as imported HTML.</li>
   <li><em>Allow attachments</em>, in the same menu, lets guests upload images
     and files into the notes they edit.</li>
   <li>When the note changed on the server while a guest was editing it, the
-    page says so and lets the guest reload or keep their version.</li>
+    page says so and lets the guest reload or keep their version. Until the
+    guest chooses, their changes stay unsaved, and <em>Stop editing</em> keeps
+    the editor open.</li>
+  <li>A new password ends the editing of guests who unlocked the page with the
+    old one. The page then asks them for the new password and keeps what they
+    typed meanwhile, which it saves once they enter it. Where editing was opened
+    to anyone instead, the page unlocks again on its own.</li>
+</ul>
+<p>The settings hold for the note they are changed on and for the notes below
+  it. On a note that inherits them from an ancestor:</p>
+<ul>
+  <li>Turning off <em>Guests can edit</em> closes that note and the notes below
+    it only, with <code>#shareEdit=false</code>. Turning it back on hands them
+    back to the ancestor's settings.</li>
+  <li><em>Allow attachments</em> applies to that note and the notes below it,
+    overriding what the ancestor allows.</li>
+  <li>Setting a password, or opening editing to anyone, gives that note and
+    the notes below it settings of their own, unlocked separately from the
+    ancestor's.</li>
 </ul>
 <p>In the note tree, a shared note guests can edit shows a <span class="tn-icon bx bx-group"></span> icon
   in place of the share icon. Editing is offered by a server installation
@@ -505,9 +526,10 @@ class="admonition note">
       <tr>
         <td><code>#shareEdit</code>
         </td>
-        <td>visitors of the shared page can edit this note and the notes below it.
-          Set from the Shared badge's menu, which also writes <code>#shareEditPassword</code>,
-          the hashed password that unlocks editing, and <code>#shareAttachments</code>,
+        <td>visitors of the shared page can edit this note and the notes below it; <code>#shareEdit=false</code> closes
+          a branch below an editable note. Set from the Shared badge's menu, which
+          also writes <code>#shareEditPassword</code>, the hashed password that unlocks
+          editing (empty to open a branch below a password-protected note), and <code>#shareAttachments</code>,
           which lets guests upload images and files.</td>
       </tr>
       <tr>

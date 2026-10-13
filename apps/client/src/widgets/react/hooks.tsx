@@ -252,9 +252,11 @@ export function useSaveBeforeLeaving<T>(
 
 /**
  * Saves the content through the guest API of the shared page editing it, naming the version it was
- * loaded from. A save the server refuses as stale is handed to the page, which lets the visitor
- * reload or send the editor's content again with `retry`; it is not a failure to retry on its own.
- * Returns whether the content was saved. Exported for testing.
+ * loaded from. A save the server refuses, as stale or because the visitor's access ended, is handed
+ * to the page, which lets the visitor reload, keep their version or unlock the note again, and
+ * sends the editor's content again with `retry`. Until then the save fails without sending
+ * anything, so the spaced update keeps the content unsaved rather than dropping it. Returns whether
+ * the content was saved, which it is not off a shared page. Exported for testing.
  */
 export async function saveOnShare(
     noteId: string,
@@ -266,32 +268,61 @@ export async function saveOnShare(
     if (!shareEdit) {
         return false;
     }
+    if (shareEdit.stale) {
+        throw new Error(SHARE_EDIT_CONFLICT);
+    }
+    if (shareEdit.locked) {
+        throw new Error(SHARE_EDIT_LOCKED);
+    }
 
     try {
-        const { blobId } = await server.putWithSilentConflict<{ blobId: string }>(
+        const { blobId } = await server.putWithSilentRefusal<{ blobId: string }>(
             `notes/${noteId}/data`, { content: data.content, baseBlobId: shareEdit.version }, componentId);
         shareEdit.version = blobId;
         return true;
     } catch (e) {
-        const stale = readStaleVersion(e);
-        if (!stale) {
-            throw e;
+        const { stale, locked } = readRefusal(e);
+        if (stale) {
+            shareEdit.stale = stale;
+            shareEdit.onConflict(stale, () => {
+                shareEdit.version = stale.blobId;
+                delete shareEdit.stale;
+                retry();
+            });
+            throw new Error(SHARE_EDIT_CONFLICT);
         }
-        shareEdit.onConflict(stale, () => {
-            shareEdit.version = stale.blobId;
-            retry();
-        });
-        return false;
+        if (locked) {
+            shareEdit.locked = true;
+            shareEdit.onLocked(() => {
+                delete shareEdit.locked;
+                retry();
+            });
+            throw new Error(SHARE_EDIT_LOCKED);
+        }
+        throw e;
     }
 }
 
-/** The version a refused save's response names, or `null` for any other failure. */
-function readStaleVersion(response: unknown): { blobId: string } | null {
+const SHARE_EDIT_CONFLICT =
+    "The note changed since it was loaded; the page asks whether to keep this version.";
+const SHARE_EDIT_LOCKED = "The access to editing ended; the page asks for the password again.";
+
+/**
+ * What a refused guest save's response names: the newer version it was refused over, or whether
+ * the visitor's access ended. Neither for any other failure.
+ */
+function readRefusal(response: unknown): { stale?: { blobId: string }; locked?: boolean } {
     try {
-        const { stale } = JSON.parse(String(response)) as { stale?: { blobId?: unknown } };
-        return typeof stale?.blobId === "string" ? { blobId: stale.blobId } : null;
+        const { stale, locked } = JSON.parse(String(response)) as {
+            stale?: { blobId?: unknown };
+            locked?: unknown;
+        };
+        return {
+            stale: typeof stale?.blobId === "string" ? { blobId: stale.blobId } : undefined,
+            locked: locked === true
+        };
     } catch {
-        return null;
+        return {};
     }
 }
 

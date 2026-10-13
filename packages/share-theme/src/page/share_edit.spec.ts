@@ -6,7 +6,8 @@ import setupShareEdit, { type EditSession } from "./share_edit.js";
 const mocks = vi.hoisted(() => ({
     prepareAppHost: vi.fn(),
     mountEditView: vi.fn(),
-    stop: vi.fn()
+    stop: vi.fn(),
+    resume: vi.fn()
 }));
 
 vi.mock("../content/app_view.js", () => ({ prepareAppHost: mocks.prepareAppHost }));
@@ -14,7 +15,8 @@ vi.mock("../content/edit_view.js", () => ({ default: mocks.mountEditView }));
 
 const STRINGS = {
     edit: "Edit", unlock: "Unlock", password: "Password", stop: "Stop", logOut: "Log out",
-    wrongPassword: "Wrong password.", failed: "Failed."
+    wrongPassword: "Wrong password.", failed: "Failed.", unsaved: "Not saved yet.",
+    locked: "Locked."
 };
 const LOGIN = { csrfToken: "csrf", version: "blob1", payload: { notes: [] } };
 
@@ -37,8 +39,8 @@ describe("setupShareEdit", () => {
                 </header>
                 <p class="rendered">Rendered</p>
             </div>`;
-        mocks.mountEditView.mockResolvedValue({ stop: mocks.stop });
-        mocks.stop.mockResolvedValue(undefined);
+        mocks.mountEditView.mockResolvedValue({ stop: mocks.stop, resume: mocks.resume });
+        mocks.stop.mockResolvedValue(true);
     });
 
     afterEach(() => {
@@ -103,7 +105,8 @@ describe("setupShareEdit", () => {
             version: "blob1",
             attachments: true,
             statusContainer: undefined,
-            toolbarContainer: undefined
+            toolbarContainer: undefined,
+            onLocked: expect.any(Function)
         });
         expect(editButton?.hidden).toBe(true);
         expect(document.querySelector<HTMLButtonElement>(".share-edit-stop")?.hidden).toBe(false);
@@ -223,18 +226,107 @@ describe("setupShareEdit", () => {
         }));
     });
 
-    it("reports an editor that fails to mount; English without the share's texts", async () => {
+    it("asks for the password again once access ends, and resumes the editor with it", async () => {
+        answerSession({ editable: true, needsPassword: true, unlocked: false, strings: STRINGS });
+        await setupShareEdit();
+        const form = document.querySelector<HTMLFormElement>(".share-edit-login");
+        const input = document.querySelector<HTMLInputElement>(".share-edit-password");
+        const error = document.querySelector<HTMLElement>(".share-edit-error");
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        if (input) input.value = "secret1";
+        answerJson(LOGIN);
+        form?.dispatchEvent(new Event("submit", { cancelable: true }));
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+        const { onLocked } = mocks.mountEditView.mock.calls[0][1] as { onLocked(): void };
+
+        answerSession({ editable: true, needsPassword: true, unlocked: false });
+        onLocked();
+        await vi.waitFor(() => expect(form?.hidden).toBe(false));
+        expect(input?.value).toBe("");
+        expect(error?.textContent).toBe("Locked.");
+        expect(document.querySelector<HTMLButtonElement>(".share-edit-stop")?.hidden).toBe(false);
+
+        // The old password no longer unlocks it.
+        if (input) input.value = "secret1";
+        fetchMock.mockResolvedValueOnce({ ok: false, status: 401 });
+        form?.dispatchEvent(new Event("submit", { cancelable: true }));
+        await vi.waitFor(() => expect(error?.textContent).toBe("Wrong password."));
+        expect(mocks.resume).not.toHaveBeenCalled();
+
+        if (input) input.value = "secret2";
+        answerJson({ ...LOGIN, csrfToken: "csrf2" });
+        form?.dispatchEvent(new Event("submit", { cancelable: true }));
+        await vi.waitFor(() => expect(mocks.resume).toHaveBeenCalledWith("csrf2"));
+        expect(fetchMock).toHaveBeenCalledWith("api/edit/login", expect.objectContaining({
+            body: JSON.stringify({ noteId: "note", password: "secret2" })
+        }));
+        expect(mocks.mountEditView).toHaveBeenCalledTimes(1);
+        expect(form?.hidden).toBe(true);
+        expect(error?.hidden).toBe(true);
+
+        // Logging out sends the token of the session unlocked last.
+        fetchMock.mockResolvedValueOnce({ ok: true, status: 204 });
+        document.querySelector<HTMLButtonElement>(".share-edit-log-out")?.click();
+        await vi.waitFor(() => expect(reload).toHaveBeenCalled());
+        expect(fetchMock).toHaveBeenLastCalledWith("api/edit/logout", expect.objectContaining({
+            headers: expect.objectContaining({ "x-csrf-token": "csrf2" })
+        }));
+    });
+
+    it("unlocks again on its own once access ends where no password is needed", async () => {
+        answerSession({ editable: true, needsPassword: false, unlocked: true, strings: STRINGS });
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+        const { onLocked } = mocks.mountEditView.mock.calls[0][1] as { onLocked(): void };
+
+        answerSession({ editable: true, needsPassword: false, unlocked: false });
+        answerJson({ ...LOGIN, csrfToken: "csrf3" });
+        onLocked();
+        await vi.waitFor(() => expect(mocks.resume).toHaveBeenCalledWith("csrf3"));
+        expect(document.querySelector<HTMLFormElement>(".share-edit-login")?.hidden).toBe(true);
+
+        // A share that stopped answering asks for the password, which then tells what is wrong.
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        onLocked();
+        const form = document.querySelector<HTMLFormElement>(".share-edit-login");
+        await vi.waitFor(() => expect(form?.hidden).toBe(false));
+    });
+
+    it("stays in the editor while something is unsaved, and says so", async () => {
+        answerSession({ editable: true, needsPassword: true, unlocked: true, strings: STRINGS });
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+
+        mocks.stop.mockResolvedValue(false);
+        document.querySelector<HTMLButtonElement>(".share-edit-stop")?.click();
+        await vi.waitFor(() => expect(document.querySelector(".share-edit-error")?.textContent)
+            .toBe("Not saved yet."));
+        document.querySelector<HTMLButtonElement>(".share-edit-log-out")?.click();
+        await flush();
+        expect(mocks.stop).toHaveBeenCalledTimes(2);
+        expect(fetchMock).not.toHaveBeenCalledWith("api/edit/logout", expect.anything());
+        expect(reload).not.toHaveBeenCalled();
+    });
+
+    it("reports an editor that fails to mount; no labels without the share's texts", async () => {
         const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
         answerSession({ editable: true, needsPassword: false, unlocked: true });
         await setupShareEdit();
-        expect(document.querySelector(".share-edit-start")?.textContent).toBe("Edit");
-        expect(document.querySelector(".share-edit-stop")?.textContent).toBe("Stop editing");
+        expect(document.querySelector(".share-edit-start")?.textContent).toBe("");
+        expect(document.querySelector(".share-edit-stop")?.textContent).toBe("");
 
         mocks.mountEditView.mockRejectedValueOnce(new Error("no editor"));
         answerJson(LOGIN);
         document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
         await vi.waitFor(() => expect(consoleError).toHaveBeenCalled());
         expect(document.querySelector(".share-edit-error")?.textContent).toBe("failed");
+        // An editor that never mounted holds nothing to save.
+        document.querySelector<HTMLButtonElement>(".share-edit-stop")?.click();
+        await vi.waitFor(() => expect(reload).toHaveBeenCalled());
 
         // A page whose title went away cannot mount the editor.
         document.getElementById("title")?.remove();

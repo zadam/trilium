@@ -121,13 +121,8 @@ function ShareBadge() {
                     title={t("breadcrumb_badges.shared_guests_can_edit")}
                     helpTooltip={t("breadcrumb_badges.shared_guests_can_edit_description")}
                     currentValue={shareEdit.canEdit}
-                    onChange={async (enabled) => {
-                        if (enabled) {
-                            await appContext.triggerCommand("showShareEditDialog", { note });
-                        } else {
-                            await setShareEdit(note, { enabled: false });
-                        }
-                    }}
+                    onChange={(enabled) =>
+                        toggleShareEdit(note, enabled, shareEdit.reopensFromParent)}
                 />
                 {shareEdit.canEdit && <>
                     <FormListToggleableItem
@@ -156,12 +151,32 @@ function ShareBadge() {
     );
 }
 
-/** Whether guests of the note's shared page can edit it, read from the labels the host set. */
+/**
+ * Whether guests of the note's shared page can edit it, read from the labels the host set, and
+ * whether the note closes a branch below an ancestor whose editing it can go back to.
+ */
 export function useShareEditState(note: FNote | null | undefined) {
     const [ canEdit ] = useNoteLabelBoolean(note, "shareEdit");
     const [ attachments ] = useNoteLabelBoolean(note, "shareAttachments");
     const [ passwordHash ] = useNoteLabel(note, "shareEditPassword");
-    return { canEdit, attachments, needsPassword: !!passwordHash };
+    const reopensFromParent = !canEdit && note?.getOwnedLabelValue("shareEdit") === "false"
+        && note.getParentNotes().some((parent) => parent.isLabelTruthy("shareEdit"));
+    return { canEdit, attachments, needsPassword: !!passwordHash, reopensFromParent };
+}
+
+/**
+ * Turns guest editing of `note` on or off from the Shared badge's menu. A branch closed below an
+ * editable ancestor goes back to the ancestor's editing; any other note asks for a password, or
+ * for open editing, in the dialog.
+ */
+export async function toggleShareEdit(note: FNote, enabled: boolean, reopensFromParent: boolean) {
+    if (!enabled) {
+        await setShareEdit(note, { enabled: false });
+    } else if (reopensFromParent) {
+        await setShareEdit(note, { enabled: true });
+    } else {
+        await appContext.triggerCommand("showShareEditDialog", { note });
+    }
 }
 
 async function setShareEdit(note: FNote, settings: { enabled: boolean; attachments?: boolean }) {

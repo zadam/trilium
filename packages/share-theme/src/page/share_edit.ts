@@ -48,23 +48,33 @@ export default async function setupShareEdit() {
         (title.closest("#title-row") ?? title).after(controls.bar);
     }
 
+    const editing: Editing = { relock: null };
     controls.editButton.addEventListener("click", () => {
         if (session.needsPassword && !session.unlocked) {
             controls.showLogin();
             controls.passwordInput.focus();
         } else {
-            void unlock(controls, noteId, session);
+            void unlock(controls, noteId, session, editing);
         }
     });
     controls.loginForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        void unlock(controls, noteId, session, controls.passwordInput.value);
+        const password = controls.passwordInput.value;
+        void (editing.relock?.(password) ?? unlock(controls, noteId, session, editing, password));
     });
 }
 
 type Controls = ReturnType<typeof buildControls>;
 
-async function unlock(controls: Controls, noteId: string, session: EditSession, password?: string) {
+interface Editing {
+    /** Once the editor is open, unlocks the note again after the visitor's access ended. */
+    relock: ((password?: string) => Promise<void>) | null;
+}
+
+/** Unlocks the note for this session, saying in `controls` what went wrong when it cannot. */
+async function login(
+    controls: Controls, noteId: string, password?: string
+): Promise<EditLogin | null> {
     controls.setError(null);
     const response = await fetch("api/edit/login", {
         method: "POST",
@@ -74,29 +84,68 @@ async function unlock(controls: Controls, noteId: string, session: EditSession, 
     if (response.status === 401) {
         controls.setError("wrongPassword");
         controls.passwordInput.select();
-        return;
+        return null;
     }
     if (!response.ok) {
         controls.setError("failed");
+        return null;
+    }
+    return await response.json() as EditLogin;
+}
+
+async function unlock(
+    controls: Controls, noteId: string, session: EditSession, editing: Editing, password?: string
+) {
+    const first = await login(controls, noteId, password);
+    if (!first) {
         return;
     }
 
-    const login = await response.json() as EditLogin;
-    controls.showEditing(!!session.needsPassword);
-    const mounted = mountEditor(noteId, login, session, controls);
-    // A click while the editor is still loading waits for it, so nothing pending is lost.
-    controls.stopButton.addEventListener("click", () => {
-        void mounted.then((view) => view.stop()).then(() => window.location.reload());
+    let { csrfToken } = first;
+    let canLogOut = !!session.needsPassword;
+    controls.showEditing(canLogOut);
+    // A new password, or closing and reopening editing, ends the access: the editor holds what
+    // it could not save, and the note is unlocked again, without a password where none is needed.
+    const onLocked = async () => {
+        const current = await fetchSession(noteId);
+        if (current?.editable && !current.needsPassword) {
+            await editing.relock?.();
+            return;
+        }
+        controls.passwordInput.value = "";
+        controls.showLogin();
+        controls.setError("locked");
+        controls.passwordInput.focus();
+    };
+    const mounted = mountEditor(noteId, first, session, controls, () => void onLocked());
+    editing.relock = async (again?: string) => {
+        const next = await login(controls, noteId, again);
+        if (!next) {
+            return;
+        }
+        csrfToken = next.csrfToken;
+        canLogOut ||= again !== undefined;
+        controls.showEditing(canLogOut);
+        (await mounted).resume(csrfToken);
+    };
+    // A click while the editor is still loading waits for it, so nothing pending is lost, and the
+    // editor stays open while something is unsaved. An editor that never mounted holds nothing.
+    const leave = async (beforeReload?: () => Promise<unknown>) => {
+        const saved = await mounted.then((view) => view.stop(), () => true);
+        if (!saved) {
+            controls.setError("unsaved");
+            return;
+        }
+        await beforeReload?.();
+        window.location.reload();
+    };
+    const logOut = () => fetch("api/edit/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        body: JSON.stringify({ noteId })
     });
-    controls.logOutButton.addEventListener("click", () => {
-        void mounted.then((view) => view.stop())
-            .then(() => fetch("api/edit/logout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "x-csrf-token": login.csrfToken },
-                body: JSON.stringify({ noteId })
-            }))
-            .then(() => window.location.reload());
-    });
+    controls.stopButton.addEventListener("click", () => void leave());
+    controls.logOutButton.addEventListener("click", () => void leave(logOut));
     try {
         await mounted;
     } catch (e) {
@@ -115,7 +164,8 @@ async function mountEditor(
     noteId: string,
     login: EditLogin,
     session: EditSession,
-    controls: Controls
+    controls: Controls,
+    onLocked: () => void
 ): Promise<EditView> {
     const content = document.getElementById("content");
     const title = document.getElementById("title");
@@ -143,7 +193,8 @@ async function mountEditor(
         version: login.version,
         attachments: !!session.attachments,
         statusContainer: buildStatusSlot(),
-        toolbarContainer: buildToolbarSlot()
+        toolbarContainer: buildToolbarSlot(),
+        onLocked
     });
 }
 
@@ -204,11 +255,11 @@ function buildControls(strings: Record<string, string>) {
     const logOutButton = find<HTMLButtonElement>(".share-edit-log-out");
     const error = find<HTMLParagraphElement>(".share-edit-error");
 
-    editButton.textContent = strings.edit ?? "Edit";
-    passwordInput.placeholder = strings.password ?? "Password";
-    find(".share-edit-login button").textContent = strings.unlock ?? "Unlock editing";
-    stopButton.textContent = strings.stop ?? "Stop editing";
-    logOutButton.textContent = strings.logOut ?? "Log out";
+    editButton.textContent = strings.edit ?? "";
+    passwordInput.placeholder = strings.password ?? "";
+    find(".share-edit-login button").textContent = strings.unlock ?? "";
+    stopButton.textContent = strings.stop ?? "";
+    logOutButton.textContent = strings.logOut ?? "";
 
     return {
         bar,
@@ -227,7 +278,7 @@ function buildControls(strings: Record<string, string>) {
             stopButton.hidden = false;
             logOutButton.hidden = !canLogOut;
         },
-        setError(key: "wrongPassword" | "failed" | null) {
+        setError(key: "wrongPassword" | "failed" | "unsaved" | "locked" | null) {
             error.hidden = key === null;
             error.textContent = key === null ? "" : strings[key] ?? key;
         }

@@ -6,6 +6,7 @@ import {
     buildEditPayload, SHARE_EDIT_PASSWORD_LABEL, verifyShareEditPassword
 } from "@triliumnext/core/src/collab/share_edit.js";
 import imageService from "@triliumnext/core/src/services/image.js";
+import { getBlobRow } from "@triliumnext/core/src/share/froca_payload.js";
 import { isShareNoteReadable } from "@triliumnext/core/src/share/index.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -80,7 +81,9 @@ function getSession(req: Request, res: Response) {
             stop: t("share_theme.edit-stop"),
             logOut: t("share_theme.edit-log-out"),
             wrongPassword: t("share_theme.edit-wrong-password"),
-            failed: t("share_theme.edit-failed")
+            failed: t("share_theme.edit-failed"),
+            unsaved: t("share_theme.edit-unsaved"),
+            locked: t("share_theme.edit-locked")
         }
     };
 }
@@ -117,16 +120,26 @@ async function login(req: Request, res: Response) {
         await regenerateSession(req);
         req.session.shareEdit = {
             ...grants,
-            [policy.rootNoteId]: { guestId: coreUtils.randomSecureToken(16), since: new Date().toISOString() }
+            [policy.rootNoteId]: {
+                guestId: coreUtils.randomSecureToken(16),
+                since: new Date().toISOString(),
+                key: policy.grantKey
+            }
         };
     }
 
     const canAccess = (child: { noteId: string }) =>
         isShareNoteReadable(child.noteId, { getHeader: (name) => req.header(name) });
+    // The content goes with its version: content the editor fetched on its own could be newer,
+    // which its first save would then report as a conflict.
+    const version = note.blobId ?? "";
     return {
         csrfToken: issueCsrfToken(req, res),
-        version: note.blobId ?? "",
-        payload: buildEditPayload(shared, canAccess)
+        version,
+        payload: {
+            ...buildEditPayload(shared, canAccess),
+            blobs: { [note.noteId]: { ...getBlobRow(note), blobId: version } }
+        }
     };
 }
 

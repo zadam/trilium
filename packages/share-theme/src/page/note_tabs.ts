@@ -48,21 +48,9 @@ export default function setupNoteTabs() {
 }
 
 function setupTabBar(bar: HTMLElement, key: string, noteId: string, siteId: string) {
-    const state = readTabs(key);
     const page = readPageTab(noteId);
+    let state = openPageTab(readTabs(key), page);
     const closeLabel = bar.parentElement?.dataset.closeTab ?? "";
-
-    // The page's tab: the active one when it shows this note, else the first that does, else a
-    // new one at the end. The page's title and icon are the current ones.
-    let index = state.tabs[state.active]?.noteId === noteId
-        ? state.active
-        : state.tabs.findIndex((tab) => tab.noteId === noteId);
-    if (index < 0) {
-        index = state.tabs.push(page) - 1;
-    } else {
-        state.tabs[index] = page;
-    }
-    state.active = index;
 
     const render = () => {
         writeStorage(key, state);
@@ -161,6 +149,14 @@ function setupTabBar(bar: HTMLElement, key: string, noteId: string, siteId: stri
         render();
     });
 
+    // A page restored from the back/forward cache shows the tabs the pages after it left.
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+            state = openPageTab(readTabs(key), page);
+            render();
+        }
+    });
+
     // The bar hides its scrollbar, so the wheel moves it sideways.
     bar.addEventListener("wheel", (event) => {
         if (bar.scrollWidth > bar.clientWidth && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
@@ -170,6 +166,23 @@ function setupTabBar(bar: HTMLElement, key: string, noteId: string, siteId: stri
     }, { passive: false });
 
     render();
+}
+
+/**
+ * Marks the page's tab active in `state`: the active one when it shows the page's note, else the
+ * first that does, else a new one at the end. The tab takes the page's current title and icon.
+ */
+function openPageTab(state: TabState, page: NoteTab): TabState {
+    let index = state.tabs[state.active]?.noteId === page.noteId
+        ? state.active
+        : state.tabs.findIndex((tab) => tab.noteId === page.noteId);
+    if (index < 0) {
+        index = state.tabs.push(page) - 1;
+    } else {
+        state.tabs[index] = page;
+    }
+    state.active = index;
+    return state;
 }
 
 /** The page's own tab, from its title row. */
@@ -196,25 +209,34 @@ function readTabs(key: string): TabState {
 
 /**
  * Back and forward through this browser tab's pages of the site, as the app's buttons. The
- * browser tells how the page was reached, which places it in the history kept in session storage.
+ * browser tells how the page was reached, which places it in the history kept in session storage;
+ * a page restored from the back/forward cache was reached through the history.
  */
 function setupHistoryButtons(key: string) {
-    const timing = performance.getEntriesByType("navigation")[0] as
-        PerformanceNavigationTiming | undefined;
-    const page = location.pathname + location.search;
-    const history = advanceHistory(readHistory(key), page, timing?.type ?? "navigate");
-    writeStorage(key, history);
-
     const back = document.querySelector<HTMLButtonElement>("button#history-back");
     const forward = document.querySelector<HTMLButtonElement>("button#history-forward");
-    if (back) {
-        back.disabled = history.index <= 0;
-        back.addEventListener("click", () => window.history.back());
-    }
-    if (forward) {
-        forward.disabled = history.index >= history.entries.length - 1;
-        forward.addEventListener("click", () => window.history.forward());
-    }
+    const page = location.pathname + location.search;
+    const place = (navigation: string) => {
+        const history = advanceHistory(readHistory(key), page, navigation);
+        writeStorage(key, history);
+        if (back) {
+            back.disabled = history.index <= 0;
+        }
+        if (forward) {
+            forward.disabled = history.index >= history.entries.length - 1;
+        }
+    };
+
+    back?.addEventListener("click", () => window.history.back());
+    forward?.addEventListener("click", () => window.history.forward());
+    const timing = performance.getEntriesByType("navigation")[0] as
+        PerformanceNavigationTiming | undefined;
+    place(timing?.type ?? "navigate");
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+            place("back_forward");
+        }
+    });
 }
 
 /**

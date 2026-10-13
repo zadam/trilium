@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
     getNoteFromCache: vi.fn(),
     triggerCommand: vi.fn(),
     widget: vi.fn(() => <p className="widget">Editor</p>),
+    beforeUnloadListeners: [] as unknown[],
     viewModule: undefined as unknown,
     hostProps: {} as Record<string, unknown>
 }));
@@ -23,7 +24,15 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@triliumnext/client/src/stylesheets/ckeditor-theme.css", () => ({}));
 vi.mock("@triliumnext/client/src/widgets/type_widgets/text/EditableText.css", () => ({}));
 vi.mock("@triliumnext/client/src/components/app_context.js", () => ({
-    default: { getComponentByEl: mocks.getComponentByEl }
+    default: {
+        getComponentByEl: mocks.getComponentByEl,
+        get beforeUnloadListeners() {
+            return mocks.beforeUnloadListeners;
+        },
+        set beforeUnloadListeners(listeners: unknown[]) {
+            mocks.beforeUnloadListeners = listeners;
+        }
+    }
 }));
 vi.mock("@triliumnext/client/src/components/component.js", () => ({
     default: class Component { triggerCommand = mocks.triggerCommand; }
@@ -39,7 +48,7 @@ vi.mock("@triliumnext/client/src/services/link.js", () => ({
     }
 }));
 vi.mock("@triliumnext/client/src/services/server.js", () => ({
-    default: { put: mocks.put, getHeaders: mocks.getHeaders }
+    default: { putWithSilentRefusal: mocks.put, getHeaders: mocks.getHeaders }
 }));
 vi.mock("@triliumnext/client/src/services/utils.js", () => ({
     default: { isDesktop: () => true, isMobile: () => false },
@@ -183,8 +192,9 @@ describe("mountEditView", () => {
         act(() => shareEdit?.onSaveState("saving"));
         expect(status()).toBe("share_edit.status_saving");
 
+        // Nothing is sent again until the visitor chooses, so the state does not promise a retry.
         act(() => shareEdit?.onConflict({ blobId: "newer" }, retry));
-        expect(status()).toBe("share_edit.status_error");
+        expect(status()).toBe("share_edit.status_not_saved");
         expect(container.querySelector(".share-edit-conflict")).not.toBeNull();
         act(() => shareEdit?.onSaveState("saved"));
         expect(container.querySelector(".share-edit-conflict")).not.toBeNull();
@@ -195,10 +205,105 @@ describe("mountEditView", () => {
         expect(container.querySelector(".share-edit-conflict")).toBeNull();
         expect(status()).toBe("share_edit.status_unsaved");
 
+        // Reloading drops the visitor's version, so the page no longer asks to wait for its save.
+        mocks.beforeUnloadListeners = [ () => false ];
         act(() => shareEdit?.onConflict({ blobId: "newest" }, retry));
         act(() => buttons[0]?.click());
         act(() => container.querySelector<HTMLButtonElement>(".share-edit-conflict button")?.click());
         expect(reload).toHaveBeenCalled();
+        expect(mocks.beforeUnloadListeners).toEqual([]);
+    });
+
+    it("lets the page go once the title and note are saved, with no conflict open", async () => {
+        let view: EditView | undefined;
+        await act(async () => { view = await mountEditView(container, buildOptions()); });
+        const shareEdit = (window.glob as unknown as { shareEdit: ShareEditGlobals }).shareEdit;
+        expect(await view?.stop()).toBe(true);
+
+        act(() => shareEdit.onSaveState("error"));
+        expect(await view?.stop()).toBe(false);
+        act(() => shareEdit.onSaveState("saved"));
+        act(() => shareEdit.onConflict({ blobId: "newer" }, vi.fn()));
+        expect(await view?.stop()).toBe(false);
+    });
+
+    it("holds the note while its access is lost, and resumes with the new token", async () => {
+        const onLocked = vi.fn();
+        let view: EditView | undefined;
+        const options = { ...buildOptions(), onLocked };
+        await act(async () => { view = await mountEditView(container, options); });
+        const glob = window.glob as unknown as { csrfToken: string; shareEdit: ShareEditGlobals };
+        const status = () => container.querySelector(".share-edit-status")?.textContent;
+        const resume = vi.fn();
+
+        act(() => glob.shareEdit.onLocked(resume));
+        act(() => glob.shareEdit.onLocked(vi.fn()));
+        // The page asks for the password once, however many saves were refused meanwhile.
+        expect(onLocked).toHaveBeenCalledTimes(1);
+        expect(status()).toBe("share_edit.status_not_saved");
+        expect(await view?.stop()).toBe(false);
+
+        act(() => view?.resume("csrf2"));
+        expect(glob.csrfToken).toBe("csrf2");
+        expect(resume).toHaveBeenCalledTimes(1);
+        expect(status()).toBe("share_edit.status_saved");
+        expect(await view?.stop()).toBe(true);
+    });
+
+    it("asks for access again for a refused title, and sends it on resuming", async () => {
+        const onLocked = vi.fn();
+        let view: EditView | undefined;
+        const options = { ...buildOptions(), onLocked };
+        await act(async () => { view = await mountEditView(container, options); });
+        mocks.put.mockRejectedValueOnce(JSON.stringify({ locked: true }));
+
+        title.textContent = "Renamed";
+        title.dispatchEvent(new Event("blur"));
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(onLocked).toHaveBeenCalledTimes(1);
+
+        act(() => view?.resume("csrf2"));
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(mocks.put).toHaveBeenCalledTimes(2);
+        expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Renamed" });
+    });
+
+    it("keeps a title the server did not store, and sends it again", async () => {
+        let view: EditView | undefined;
+        await act(async () => { view = await mountEditView(container, buildOptions()); });
+        const offline = new Error("offline");
+        mocks.put.mockRejectedValueOnce(offline).mockRejectedValueOnce(offline);
+
+        title.textContent = "Renamed";
+        title.dispatchEvent(new Event("blur"));
+        // Stopping sends the title again, which the server refuses once more.
+        expect(await view?.stop()).toBe(false);
+        title.dispatchEvent(new Event("blur"));
+        expect(await view?.stop()).toBe(true);
+        expect(mocks.put).toHaveBeenCalledTimes(3);
+        expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Renamed" });
+    });
+
+    it("waits for a title still being sent before it lets the page go", async () => {
+        let view: EditView | undefined;
+        await act(async () => { view = await mountEditView(container, buildOptions()); });
+        let store: () => void = () => {};
+        mocks.put.mockReturnValueOnce(new Promise<void>((resolve) => {
+            store = resolve;
+        }));
+
+        title.textContent = "Renamed";
+        title.dispatchEvent(new Event("blur"));
+        let left: boolean | undefined;
+        const leaving = view?.stop().then((value) => {
+            left = value;
+        });
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(left).toBeUndefined();
+        store();
+        await leaving;
+        expect(left).toBe(true);
+        expect(mocks.put).toHaveBeenCalledTimes(1);
     });
 
     it("saves the title once typing pauses, on blur, and before stopping", async () => {

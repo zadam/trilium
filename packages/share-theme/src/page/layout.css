@@ -2,7 +2,6 @@ html {
     --page-top-spacing: 2rem;
 }
 
-/* Past 90rem the navigation pane widens, up to 24rem; the content takes the rest of the window. */
 #split-pane {
     --left-pane-width: clamp(min(18rem, 25vw), 18rem + (100vw - 90rem) / 2, 24rem);
 
@@ -52,7 +51,6 @@ html {
     align-items: flex-start;
 }
 
-/* On a wide screen the note scrolls below the top bar, as in the app's scrolling container. */
 @media screen and (width > 48em) {
     #right-pane:has(> #scrolling-container) {
         height: 100vh;

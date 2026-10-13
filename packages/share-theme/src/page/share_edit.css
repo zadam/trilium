@@ -61,10 +61,7 @@
     color: var(--error-color, #c33);
 }
 
-/*
- * The app's `ckeditor-theme.css` draws the editor from these, on `body`. The chrome takes the
- * page's pane colors; the content keeps the accent `content.css` draws it with when viewed.
- */
+/* Read by the app's `ckeditor-theme.css`, from `body`. */
 body:has(#content.share-editing) {
     --main-background-color: var(--background-primary);
     --main-text-color: var(--text-primary);
@@ -99,15 +96,10 @@ body:has(#content.share-editing) {
     display: none !important;
 }
 
-/* The table of contents links the rendered headings, which the editor has replaced. */
 #right-pane:has(#content.share-editing) #toc-pane {
     display: none;
 }
 
-/*
- * The block drag handle as the app draws it: on the page's background until hovered, in the
- * margin. It stays under the sticky top bar and the header, which cover a block scrolled under them.
- */
 body:has(#content.share-editing) .ck.ck-button.ck-block-toolbar-button {
     --share-edit-handle-hover-surface:
         linear-gradient(var(--hover-item-background-color), var(--hover-item-background-color)),
@@ -123,6 +115,7 @@ body:has(#content.share-editing) .ck.ck-button.ck-block-toolbar-button {
     color: var(--muted-text-color);
     transform: translateX(7px);
     translate: -40% 0;
+    /* Under `#top-bar`, `#title-row.floating` and `#header` (z-index 1). */
     z-index: 0;
 
     &:active {
@@ -130,13 +123,10 @@ body:has(#content.share-editing) .ck.ck-button.ck-block-toolbar-button {
     }
 }
 
-/* The editor takes the height of its content, so the page's footer stays where it was. */
 .share-edit-view {
     > .note-detail-editable-text {
         height: auto;
 
-        /* A widget's outline and handles draw just outside its box, into the margin, as in the
-           app's scrolling container; the editable's own overflow would clip them. */
         > .note-detail-editable-text-editor {
             overflow: unset;
             margin-inline: 4px;
@@ -167,10 +157,7 @@ body:has(#content.share-editing) .ck.ck-button.ck-block-toolbar-button {
     }
 }
 
-/*
- * The app's classic formatting toolbar (`FormattingToolbar.css`, `theme-next/notes/text.css`): a
- * band across the top bar, over the tab row's surface, whose buttons show only when hovered or on.
- */
+/* The values of the app's `FormattingToolbar.css` and `theme-next/notes/text.css`. */
 #top-bar > .share-edit-toolbar-slot > .share-edit-toolbar {
     min-height: 39px;
     background:

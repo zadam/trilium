@@ -11,7 +11,10 @@ import type SNote from "../share/shaca/entities/snote.js";
 /** Opens the subtree of the note that owns it to editing on the shared page. */
 export const SHARE_EDIT_LABEL = "shareEdit";
 
-/** The password that unlocks editing, as `<salt>$<hash>` in base64; without it, anyone can edit. */
+/**
+ * The password that unlocks editing, as `<salt>$<hash>` in base64. Without it, or empty below a
+ * password-protected ancestor, anyone can edit.
+ */
 export const SHARE_EDIT_PASSWORD_LABEL = "shareEditPassword";
 
 /** Lets guests who edit upload images and files into the notes. */
@@ -28,6 +31,11 @@ export interface ShareEditPolicy {
     rootNoteId: string;
     needsPassword: boolean;
     attachments: boolean;
+    /**
+     * What a session's grant on the subtree must hold: the salt of the password's hash, new with
+     * every password the host sets, or `open`. A grant holding another one unlocks nothing.
+     */
+    grantKey: string;
 }
 
 /** The policy guests edit `note` under, or `null` where its subtree is not open to editing. */
@@ -37,10 +45,12 @@ export function getShareEditPolicy(note: SNote): ShareEditPolicy | null {
         return null;
     }
 
+    const password = note.getSecretLabelValue(SHARE_EDIT_PASSWORD_LABEL);
     return {
         rootNoteId: label.note.noteId,
-        needsPassword: note.getSecretLabelValue(SHARE_EDIT_PASSWORD_LABEL) !== null,
-        attachments: note.isLabelTruthy(SHARE_ATTACHMENTS_LABEL)
+        needsPassword: !!password,
+        attachments: note.isLabelTruthy(SHARE_ATTACHMENTS_LABEL),
+        grantKey: password ? password.split("$")[0] : "open"
     };
 }
 

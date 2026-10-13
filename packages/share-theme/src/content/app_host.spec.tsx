@@ -31,7 +31,8 @@ const mocks = vi.hoisted(() => ({
         getImageUrl: vi.fn(),
         loadNotes: vi.fn()
     },
-    createStaticFrocaSource: vi.fn()
+    createStaticFrocaSource: vi.fn(),
+    createShareFrocaSource: vi.fn()
 }));
 
 vi.mock("@triliumnext/client/src/components/app_context.js", () => ({ default: mocks.appContext }));
@@ -57,7 +58,7 @@ vi.mock("@triliumnext/client/src/widgets/react/react_utils.js", () => ({
     ParentComponent: createContext<unknown>(null)
 }));
 vi.mock("./share_froca_source.js", () => ({
-    createShareFrocaSource: () => mocks.shareSource,
+    createShareFrocaSource: mocks.createShareFrocaSource,
     createStaticFrocaSource: mocks.createStaticFrocaSource
 }));
 
@@ -77,6 +78,7 @@ describe("ShareAppHost", () => {
         mocks.froca.getNoteFromCache.mockImplementation(
             (noteId: string) => mocks.froca.notes.get(noteId));
         mocks.createStaticFrocaSource.mockReturnValue(mocks.staticSource);
+        mocks.createShareFrocaSource.mockReturnValue(mocks.shareSource);
         mocks.appContext.tabManager = undefined;
     });
 
@@ -133,11 +135,17 @@ describe("ShareAppHost", () => {
         const component = new Component();
         let parent: unknown;
 
-        mount(buildPayload(), () => <ParentReader onRead={(value) => { parent = value; }} />,
-            { readOnly: false, component });
+        const blob = {
+            blobId: "blob1", content: "", contentLength: 0, dateModified: "", utcDateModified: ""
+        };
+        const blobs = { board: blob };
+        const readParent = () => <ParentReader onRead={(value) => { parent = value; }} />;
+        mount({ ...buildPayload(), blobs }, readParent, { readOnly: false, component });
 
         const rows = mocks.froca.addResp.mock.calls[0][0];
         expect(rows.attributes).toEqual([]);
+        expect(rows).not.toHaveProperty("blobs");
+        expect(mocks.createShareFrocaSource).toHaveBeenLastCalledWith(expect.any(Object), blobs);
         expect(parent).toBe(component);
     });
 

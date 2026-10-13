@@ -91,6 +91,10 @@ describe("share edit API", () => {
         const { csrfToken, version, payload } = login.body;
         expect(csrfToken).toBeTruthy();
         expect(version).toBe(becca.getNoteOrThrow(NOTE).blobId);
+        // The editor starts from the content of that version, not from one fetched later.
+        expect(payload.blobs).toEqual({ [NOTE]: expect.objectContaining({
+            blobId: version, content: becca.getNoteOrThrow(NOTE).getContent()
+        }) });
         expect(payload.notes.map((note: { noteId: string }) => note.noteId)).toEqual([ NOTE ]);
         expect(payload.options.textNoteEditorType).toBe("ckeditor-classic");
         expect(payload.assetPath).toMatch(/^\.\.\/assets\//);
@@ -126,6 +130,37 @@ describe("share edit API", () => {
         await guest.put(DATA).set("x-csrf-token", csrfToken).send({ content: "<p>x</p>" }).expect(401);
     });
 
+    it("ends the grants of a replaced password, a reopened subtree and open editing", async () => {
+        const guest = supertest.agent(host.app);
+        const rename = (csrfToken: string) => guest.put(`/share/api/notes/${NOTE}/title`)
+            .set("x-csrf-token", csrfToken).send({ title: "Child note" });
+        const login = (password?: string) =>
+            guest.post("/share/api/edit/login").send({ noteId: NOTE, password });
+        const first = (await login("secret1").expect(200)).body;
+        await rename(first.csrfToken).expect(200);
+
+        await setShareEdit({ enabled: true, password: "secret2" }).expect(200);
+        expect((await guest.get(SESSION).expect(200)).body.unlocked).toBe(false);
+        // The refusal says so, for the page to ask for the password again.
+        expect((await rename(first.csrfToken).expect(401)).body.locked).toBe(true);
+        await login().expect(401);
+        await login("secret1").expect(401);
+        const second = (await login("secret2").expect(200)).body;
+        await rename(second.csrfToken).expect(200);
+
+        // The same password set again has a new salt, so it ends the grant as well.
+        await setShareEdit({ enabled: false }).expect(200);
+        await setShareEdit({ enabled: true, password: "secret2" }).expect(200);
+        await rename(second.csrfToken).expect(401);
+
+        // A grant of open editing ends once the subtree takes a password.
+        await setShareEdit({ enabled: true, open: true }).expect(200);
+        const open = (await login().expect(200)).body;
+        await rename(open.csrfToken).expect(200);
+        await setShareEdit({ enabled: true, password: "secret1" }).expect(200);
+        await rename(open.csrfToken).expect(401);
+    });
+
     it("stores an upload once attachments are allowed, and an open subtree needs no password", async () => {
         await setShareEdit({ enabled: true, open: true, attachments: true })
             .expect(200, { enabled: true, needsPassword: false, attachments: true });
@@ -151,5 +186,65 @@ describe("share edit API", () => {
         await guest.get(SESSION).expect(200, { editable: false });
         await guest.put(DATA).set("x-csrf-token", csrfToken).send({ content: "<p>x</p>" }).expect(403);
         expect(becca.getNoteOrThrow(ROOT).getOwnedAttributes().map((attr) => attr.name)).not.toContain("shareEdit");
+    });
+
+    it("overrides what a note inherits for its branch, and hands the branch back", async () => {
+        const setChild = (body: Record<string, unknown>) => host.agent
+            .put(`/api/notes/${NOTE}/share-edit`).set("x-csrf-token", host.csrfToken).send(body);
+        const guest = supertest.agent(host.app);
+        const session = async () => (await guest.get(SESSION).expect(200)).body;
+        const editLabels = [ "shareEdit", "shareEditPassword", "shareAttachments" ];
+        const owned = (noteId: string) => Object.fromEntries(becca.getNoteOrThrow(noteId)
+            .getOwnedAttributes()
+            .filter((attr) => attr.type === "label" && editLabels.includes(attr.name))
+            .map((label) => [ label.name, label.value ]));
+        const locked = { enabled: true, needsPassword: true };
+        const open = { enabled: true, needsPassword: false };
+
+        await setShareEdit({ enabled: true, password: "secret1", attachments: false }).expect(200);
+        expect(await session())
+            .toMatchObject({ editable: true, rootNoteId: ROOT, needsPassword: true });
+
+        // Off on the child closes its branch only; on again gives the branch back to its ancestor.
+        await setChild({ enabled: false }).expect(200, { enabled: false });
+        expect(owned(NOTE)).toEqual({ shareEdit: "false" });
+        expect(await session()).toEqual({ editable: false });
+        expect(becca.getNoteOrThrow(ROOT).isLabelTruthy("shareEdit")).toBe(true);
+        await setChild({ enabled: true }).expect(200, { ...locked, attachments: false });
+        expect(owned(NOTE)).toEqual({});
+        expect(await session()).toMatchObject({ editable: true, rootNoteId: ROOT });
+
+        // Attachments are set on the child where they differ from what it inherits.
+        await setChild({ enabled: true, attachments: true })
+            .expect(200, { ...locked, attachments: true });
+        expect(owned(NOTE)).toEqual({ shareAttachments: "" });
+        await setShareEdit({ enabled: true, attachments: true }).expect(200);
+        await setChild({ enabled: true, attachments: false })
+            .expect(200, { ...locked, attachments: false });
+        expect(owned(NOTE)).toEqual({ shareAttachments: "false" });
+        await setShareEdit({ enabled: true, attachments: false }).expect(200);
+        await setChild({ enabled: true, attachments: false })
+            .expect(200, { ...locked, attachments: false });
+        expect(owned(NOTE)).toEqual({});
+
+        // Open editing or a password makes the child the root of a branch of its own.
+        await setChild({ enabled: true, open: true }).expect(200, { ...open, attachments: false });
+        expect(owned(NOTE)).toEqual({ shareEdit: "", shareEditPassword: "" });
+        expect(await session())
+            .toMatchObject({ editable: true, rootNoteId: NOTE, needsPassword: false });
+        await setChild({ enabled: true, password: "branch1" })
+            .expect(200, { ...locked, attachments: false });
+        expect(await session()).toMatchObject({ rootNoteId: NOTE, needsPassword: true });
+        await guest.post("/share/api/edit/login")
+            .send({ noteId: NOTE, password: "branch1" }).expect(200);
+
+        // Without an ancestor to fall back on, off removes the labels and on needs a password.
+        await setShareEdit({ enabled: false }).expect(200);
+        expect(owned(ROOT)).toEqual({});
+        await setChild({ enabled: false }).expect(200);
+        expect(owned(NOTE)).toEqual({});
+        await setChild({ enabled: true }).expect(400);
+        await setChild({ enabled: true, attachments: true }).expect(400);
+        expect(owned(NOTE)).toEqual({});
     });
 });

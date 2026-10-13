@@ -1,6 +1,7 @@
 import appContext from "@triliumnext/client/src/components/app_context.js";
 import Component from "@triliumnext/client/src/components/component.js";
 import TabManager from "@triliumnext/client/src/components/tab_manager.js";
+import type { FBlobRow } from "@triliumnext/client/src/entities/fblob.js";
 import type FNote from "@triliumnext/client/src/entities/fnote.js";
 import linkContextMenu from "@triliumnext/client/src/menus/link_context_menu.js";
 import froca from "@triliumnext/client/src/services/froca.js";
@@ -28,6 +29,11 @@ export interface AppPayload extends ShareFrocaRows {
      * `../`, under which the notes the views read are files instead of the share's API.
      */
     exportBasePath?: string;
+    /**
+     * The content of notes the page already holds, by note ID, which froca reads instead of the
+     * share's: the note a guest edits, as of the version its first save names.
+     */
+    blobs?: Record<string, FBlobRow>;
 }
 
 export interface HostedApp {
@@ -97,13 +103,13 @@ export default function ShareAppHost({
 }
 
 function loadPayload(noteId: string, payload: AppPayload, readOnly: boolean): HostedApp | null {
-    const { options: optionValues, links, ...rows } = payload;
+    const { options: optionValues, links, blobs, ...rows } = payload;
     options.load(Object.fromEntries(Object.entries(optionValues)
         .flatMap(([ name, value ]) => (value === null ? [] : [ [ name, value ] ]))));
 
     const staticSource = payload.exportBasePath === undefined
         ? undefined : createStaticFrocaSource(links, payload.exportBasePath);
-    const source = staticSource ?? createShareFrocaSource(links);
+    const source = staticSource ?? createShareFrocaSource(links, blobs);
     froca.setSource(withRootAnchors(source));
     setImageUrlResolver(staticSource?.getImageUrl);
     linkContextMenu.setShareLinkResolver(source.getNoteLink);

@@ -38,9 +38,10 @@ export declare module "express-session" {
         csrfInitialized?: true;
         /**
          * What a visitor of a shared page unlocked for editing, by the note whose `#shareEdit`
-         * opens its subtree. `guestId` tells the visitor's saves apart.
+         * opens its subtree. `guestId` tells the visitor's saves apart; `key` is the policy's
+         * `grantKey` when the grant was issued, which a new password or closing editing replaces.
          */
-        shareEdit?: Record<string, { guestId: string; since: string }>;
+        shareEdit?: Record<string, { guestId: string; since: string; key: string }>;
         /**
          * One-shot SSO rejection reason set by the OIDC afterCallback when a login is refused (wrong account,
          * or an attempt before enrollment). Read and cleared by the login page so the message shows once.

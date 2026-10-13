@@ -26,19 +26,29 @@ describe("share edit policy", () => {
         addLabel("open", "shareEdit", "", true);
         const root = buildShareNote({ id: "root", children: [
             { id: "child", children: [ { id: "grandchild" } ] },
-            { id: "closed", children: [ { id: "closedChild" } ] }
+            { id: "closed", children: [ { id: "closedChild" } ] },
+            { id: "openBranch" }
         ] });
         addLabel("root", "shareEdit", "", true);
         addLabel("root", "shareEditPassword", "salt$hash", true);
         addLabel("child", "shareAttachments", "", true);
         addLabel("closed", "shareEdit", "false", true);
+        addLabel("openBranch", "shareEdit", "", true);
+        addLabel("openBranch", "shareEditPassword", "", true);
         const grandchild = shaca.getNote("grandchild");
 
         expect(getShareEditPolicy(shaca.getNote("plain"))).toBeNull();
-        expect(getShareEditPolicy(shaca.getNote("openChild")))
-            .toEqual({ rootNoteId: "open", needsPassword: false, attachments: false });
-        expect(getShareEditPolicy(root)).toEqual({ rootNoteId: "root", needsPassword: true, attachments: false });
-        expect(getShareEditPolicy(grandchild)).toEqual({ rootNoteId: "root", needsPassword: true, attachments: true });
+        // A grant holds the salt of the password's hash, new with every password, or `open`.
+        expect(getShareEditPolicy(shaca.getNote("openChild"))).toEqual(
+            { rootNoteId: "open", needsPassword: false, attachments: false, grantKey: "open" });
+        expect(getShareEditPolicy(root)).toEqual(
+            { rootNoteId: "root", needsPassword: true, attachments: false, grantKey: "salt" });
+        expect(getShareEditPolicy(grandchild)).toEqual(
+            { rootNoteId: "root", needsPassword: true, attachments: true, grantKey: "salt" });
+        // An empty password opens a branch below a password-protected ancestor.
+        expect(getShareEditPolicy(shaca.getNote("openBranch"))).toEqual({
+            rootNoteId: "openBranch", needsPassword: false, attachments: false, grantKey: "open"
+        });
         // A note closes its own subtree with #shareEdit=false.
         expect(getShareEditPolicy(shaca.getNote("closed"))).toBeNull();
         expect(getShareEditPolicy(shaca.getNote("closedChild"))).toBeNull();

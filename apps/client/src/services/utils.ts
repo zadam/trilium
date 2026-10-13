@@ -16,8 +16,20 @@ export interface ShareEditGlobals {
     /** Whether the host lets guests upload images and files into the note. */
     attachments: boolean;
     onSaveState(state: SaveState): void;
-    /** Reports a save the server refused as stale; `retry` sends the editor's content again. */
+    /**
+     * Reports a save the server refused as stale; `retry` sends the editor's content again over
+     * the newer version.
+     */
     onConflict(stale: { blobId: string }, retry: () => void): void;
+    /** The newer version a refused save named, until the visitor keeps their own content. */
+    stale?: { blobId: string };
+    /**
+     * Reports a save refused because the visitor's access ended, such as by a new password;
+     * `resume` sends the editor's content again once the page unlocked the note again.
+     */
+    onLocked(resume: () => void): void;
+    /** Set while the visitor's access is lost, until the page unlocked the note again. */
+    locked?: boolean;
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { FAttachmentRow } from "@triliumnext/client/src/entities/fattachment.js";
+import type { FBlobRow } from "@triliumnext/client/src/entities/fblob.js";
 import type { Bundle } from "@triliumnext/client/src/services/bundle.js";
 import type { FrocaSource, SubtreeResponse } from "@triliumnext/client/src/services/froca-interface.js";
 import type { ImageUrlResolver } from "@triliumnext/client/src/services/image_urls.js";
@@ -18,9 +19,12 @@ export interface ShareFrocaSource extends FrocaSource {
 /**
  * Reads the notes, attachments and blobs froca lacks from the share's API, relative to the page,
  * and records the share link of each note it loads in `links`. A note no row has linked yet links
- * to `./<noteId>`, which the share redirects to the note's own link.
+ * to `./<noteId>`, which the share redirects to the note's own link. The content of a note in
+ * `blobs` comes from there instead.
  */
-export function createShareFrocaSource(links: Record<string, string>): ShareFrocaSource {
+export function createShareFrocaSource(
+    links: Record<string, string>, blobs: Record<string, FBlobRow> = {}
+): ShareFrocaSource {
     return {
         getNoteLink: (noteId) => links[noteId] ?? `./${encodeURIComponent(noteId)}`,
         loadNotes: async (noteIds) => {
@@ -32,8 +36,9 @@ export function createShareFrocaSource(links: Record<string, string>): ShareFroc
         getSiblingAttachments: (attachmentId) =>
             getJson(`api/attachments/${encodeURIComponent(attachmentId)}/all`),
         getAttachments: (noteId) => getJson(`api/notes/${encodeURIComponent(noteId)}/attachments`),
-        getBlob: (entityType, entityId) =>
-            getJson(`api/${entityType}/${encodeURIComponent(entityId)}/blob`),
+        getBlob: async (entityType, entityId) =>
+            (entityType === "notes" ? blobs[entityId] : undefined)
+                ?? getJson(`api/${entityType}/${encodeURIComponent(entityId)}/blob`),
         searchNoteIds: async (query, ancestorNoteId) => {
             const params = new URLSearchParams({ search: query, ancestorNoteId });
             const { results } = await getJson<{ results: { noteId: string }[] }>(`api/notes?${params}`);

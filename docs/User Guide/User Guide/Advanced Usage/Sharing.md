@@ -144,10 +144,17 @@ A shared text note can be opened to editing by its visitors, without accounts. O
 A visitor of the page then sees an _Edit_ button at the right of the note's header, where the password field appears when one is needed. Once unlocked, the page hosts Trilium's own text editor, with its toolbar above the note, and saves as the visitor types; the title can be edited as well. _Stop editing_ brings the rendered page back, and _Log out_ ends the visitor's access on a password-protected page.
 
 *   Guests edit text notes only, and never one with the `#readOnly` label. They cannot add, move or delete notes, nor change a note's type.
-*   Every guest change is kept as a revision of the note, marked _Guest edit_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> dialog, so the host can review and restore it.
+*   Guest changes go into the note's revisions under the same rules as the host's own edits: a snapshot of the note is saved at most once per revision interval, and never for a note with `#disableVersioning`. These revisions are marked _Guest edit_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> dialog, so the host can review and restore them.
 *   The editor leaves out what reaches the host's other notes: snippets, included notes, internal links, link previews and the AI assistant. A guest's content goes through the same sanitizer as imported HTML.
 *   _Allow attachments_, in the same menu, lets guests upload images and files into the notes they edit.
-*   When the note changed on the server while a guest was editing it, the page says so and lets the guest reload or keep their version.
+*   When the note changed on the server while a guest was editing it, the page says so and lets the guest reload or keep their version. Until the guest chooses, their changes stay unsaved, and _Stop editing_ keeps the editor open.
+*   A new password ends the editing of guests who unlocked the page with the old one. The page then asks them for the new password and keeps what they typed meanwhile, which it saves once they enter it. Where editing was opened to anyone instead, the page unlocks again on its own.
+
+The settings hold for the note they are changed on and for the notes below it. On a note that inherits them from an ancestor:
+
+*   Turning off _Guests can edit_ closes that note and the notes below it only, with `#shareEdit=false`. Turning it back on hands them back to the ancestor's settings.
+*   _Allow attachments_ applies to that note and the notes below it, overriding what the ancestor allows.
+*   Setting a password, or opening editing to anyone, gives that note and the notes below it settings of their own, unlocked separately from the ancestor's.
 
 In the note tree, a shared note guests can edit shows a <span class="tn-icon bx bx-group"></span> icon in place of the share icon. Editing is offered by a server installation and by the desktop app on its local network; the standalone and mobile apps, which serve no pages, do not offer it.
 
@@ -306,7 +313,7 @@ The URL must be absolute and include the scheme (e.g. `https://`).
         </tr>
         <tr>
             <td><code>#shareEdit</code></td>
-            <td>visitors of the shared page can edit this note and the notes below it. Set from the Shared badge's menu, which also writes <code>#shareEditPassword</code>, the hashed password that unlocks editing, and <code>#shareAttachments</code>, which lets guests upload images and files.</td>
+            <td>visitors of the shared page can edit this note and the notes below it; <code>#shareEdit=false</code> closes a branch below an editable note. Set from the Shared badge's menu, which also writes <code>#shareEditPassword</code>, the hashed password that unlocks editing (empty to open a branch below a password-protected note), and <code>#shareAttachments</code>, which lets guests upload images and files.</td>
         </tr>
         <tr>
             <td><code>#shareIndex</code></td>

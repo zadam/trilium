@@ -90,7 +90,7 @@ html {
     white-space: nowrap;
 }
 
-/* The icon buttons of the app's default theme, `theme-next/forms.css`; also the tab row's. */
+/* The icon buttons of the app's default theme, `theme-next/forms.css`. */
 .header-button {
     color: var(--text-menu);
     background: transparent;
