@@ -648,7 +648,8 @@
     "page_description": "剪藏页面的描述，显示在笔记的「网页剪藏」徽章详情中。",
     "published_date": "剪藏页面的发布日期，显示在笔记的「网页剪藏」徽章详情中。",
     "modified_date": "剪藏页面的最后更新日期，显示在笔记的「网页剪藏」徽章详情中。",
-    "calendar_title_template": "事件在日历上的标题格式，会为重复事件的每次出现填写。可读取 <code>${title}</code>, <code>${years}</code> （自开始日期起的整年数）以及日期 <code>${date}</code> and <code>${startDate}</code>, 例如在每年的生日上使用 <code>${title} (${years})</code> 。"
+    "calendar_title_template": "事件在日历上的标题格式，会为重复事件的每次出现填写。可读取 <code>${title}</code>, <code>${years}</code> （自开始日期起的整年数）以及日期 <code>${date}</code> and <code>${startDate}</code>, 例如在每年的生日上使用 <code>${title} (${years})</code> 。",
+    "board_hide_add_column": "对于看板集合，在最后一列之后隐藏 <em>添加列</em> 按钮。仍可从看板或列的上下文菜单中添加列。"
   },
   "attribute_editor": {
     "help_text_body1": "要添加标签，只需输入例如 <code>#rock</code> ；或者如果你还想同时添加数值，则可输入例如 <code>#year = 2020</code>",
@@ -2647,7 +2648,9 @@
     "reset-selection": "重置选择",
     "expand-column": "展开列",
     "delete-column-notes_other": "同时删除此列中的{{count}}笔记",
-    "select-all-cards": "全选卡片"
+    "select-all-cards": "全选卡片",
+    "show-add-column-button": "显示「添加列」按钮",
+    "show-add-column-button-description": "仍可从看板或列的上下文菜单中添加列。"
   },
   "command_palette": {
     "tree-action-name": "树形：{{name}}",
@@ -3782,7 +3785,14 @@
       "arrange-content-in-0-equal-columns-side-by-side": "将内容并排排列为 %0 个等宽栏。",
       "0-columns-1": "%0 栏（%1）",
       "remove-layout": "移除布局",
-      "convert-image-to-a-drawing-canvas": "将图片转换为绘图画布"
+      "convert-image-to-a-drawing-canvas": "将图片转换为绘图画布",
+      "tab-alignment": "标签页对齐",
+      "align-tabs-at-top": "顶部对齐标签页",
+      "align-tabs-at-bottom": "底部对齐标签页",
+      "type-the-content-of-the-first-column": "输入第一栏的内容",
+      "type-the-content-of-the-second-column": "输入第二栏的内容",
+      "type-the-content-of-the-third-column": "输入第三栏的内容",
+      "type-the-content-of-the-fourth-column": "输入第四栏的内容"
     },
     "toolbar-groups": {
       "text-formatting": "文本格式",
@@ -4496,6 +4506,7 @@
     "excerpt": "摘录",
     "excerpt_description": "你目前看到的只是该笔记的一个片段。按 {{icon}} 按钮即可在新标签页中打开整条笔记。",
     "edit_excerpt": "编辑摘录",
-    "copy_tab": "复制此标签页的链接"
+    "copy_tab": "复制此标签页的链接",
+    "copy_share_link_other": "复制指向这 {{count}} 个块的公开链接"
   }
 }
