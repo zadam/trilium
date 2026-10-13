@@ -1,6 +1,6 @@
 import { getLog } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
-import { app, BrowserWindow, desktopCapturer, ipcMain, session } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import fs from "fs";
 import path from "path";
 import type { OfflineRecognizer, Vad } from "sherpa-onnx-node";
@@ -90,8 +90,7 @@ export async function startTranscription() {
             .executeJavaScript("captureSystemAudio()", true);
         log.info(`Transcription: capturing system audio from ${tracks}.`);
     } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        log.error(`Transcription: system audio unavailable: ${message}`);
+        log.error(`Transcription: system audio unavailable: ${(e as Error)?.message ?? e}`);
     }
 }
 
@@ -172,7 +171,7 @@ function formatOffset(milliseconds: number) {
 /**
  * The window runs only {@link CAPTURE_PAGE}, a local file, so it gets Node integration to reach
  * `ipcRenderer` without a preload. Its in-memory session grants the microphone and screen capture
- * and nothing else; every screen capture request gets the first screen plus the system audio.
+ * and nothing else; every screen capture request gets the window itself plus the system audio.
  */
 async function createCaptureWindow() {
     const captureSession = session.fromPartition("transcription");
@@ -181,13 +180,10 @@ async function createCaptureWindow() {
     captureSession.setPermissionRequestHandler((_webContents, permission, callback) =>
         callback(isAllowed(permission)));
     captureSession.setPermissionCheckHandler((_webContents, permission) => isAllowed(permission));
-    captureSession.setDisplayMediaRequestHandler((_request, callback) => {
-        desktopCapturer.getSources({ types: ["screen"] }).then(([screen]) => {
-            callback(screen ? { video: screen, audio: "loopback" } : {});
-        }).catch((e) => {
-            getLog().error(`Transcription: no screen to capture: ${e}`);
-            callback({});
-        });
+    // Capturing the requesting frame instead of a screen keeps the Wayland screen-cast portal
+    // out of the request.
+    captureSession.setDisplayMediaRequestHandler((request, callback) => {
+        callback({ video: request.frame ?? undefined, audio: "loopback" });
     });
 
     const pagePath = path.join(app.getPath("temp"), "trilium-transcription.html");
@@ -200,7 +196,10 @@ async function createCaptureWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             sandbox: false,
-            autoplayPolicy: "no-user-gesture-required"
+            autoplayPolicy: "no-user-gesture-required",
+            // Without hardware acceleration, a hidden window renders no frames, so the
+            // self-capture in CAPTURE_PAGE times out waiting for its video source.
+            offscreen: true
         }
     });
     window.webContents.on("console-message", ({ message }) =>
@@ -226,6 +225,8 @@ async function captureSystemAudio() {
     const media = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+    }).catch((e) => {
+        throw new Error(e.name + ": " + e.message);
     });
     for (const track of media.getVideoTracks()) {
         track.stop();
