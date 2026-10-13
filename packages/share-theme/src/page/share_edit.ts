@@ -67,27 +67,39 @@ export default async function setupShareEdit() {
 type Controls = ReturnType<typeof buildControls>;
 
 interface Editing {
-    /** Once the editor is open, unlocks the note again after the visitor's access ended. */
-    relock: ((password?: string) => Promise<void>) | null;
+    /**
+     * Once the editor is open, unlocks the note again after the visitor's access ended, and
+     * resolves to whether it did.
+     */
+    relock: ((password?: string) => Promise<boolean>) | null;
 }
 
-/** Unlocks the note for this session, saying in `controls` what went wrong when it cannot. */
+/**
+ * Unlocks the note for this session, saying in `controls` what went wrong when it cannot: a wrong
+ * password, or `failure` for a share that does not answer or refuses otherwise.
+ */
 async function login(
-    controls: Controls, noteId: string, password?: string
+    controls: Controls, noteId: string, password?: string, failure: "failed" | "retry" = "failed"
 ): Promise<EditLogin | null> {
     controls.setError(null);
-    const response = await fetch("api/edit/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteId, password })
-    });
+    let response: Response;
+    try {
+        response = await fetch("api/edit/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ noteId, password })
+        });
+    } catch {
+        controls.setError(failure);
+        return null;
+    }
     if (response.status === 401) {
         controls.setError("wrongPassword");
         controls.passwordInput.select();
         return null;
     }
     if (!response.ok) {
-        controls.setError("failed");
+        controls.setError(failure);
         return null;
     }
     return await response.json() as EditLogin;
@@ -106,27 +118,31 @@ async function unlock(
     controls.showEditing(canLogOut);
     // A new password, or closing and reopening editing, ends the access: the editor holds what
     // it could not save, and the note is unlocked again, without a password where none is needed.
+    // Where that fails, or the share does not answer, the form stays up to try again, with the
+    // password optional unless the share asks for one.
     const onLocked = async () => {
         const current = await fetchSession(noteId);
-        if (current?.editable && !current.needsPassword) {
-            await editing.relock?.();
+        const needsPassword = !!current?.needsPassword;
+        if (current?.editable && !needsPassword && await editing.relock?.()) {
             return;
         }
         controls.passwordInput.value = "";
+        controls.passwordInput.required = needsPassword;
         controls.showLogin();
-        controls.setError("locked");
+        controls.setError(needsPassword ? "locked" : "retry");
         controls.passwordInput.focus();
     };
     const mounted = mountEditor(noteId, first, session, controls, () => void onLocked());
     editing.relock = async (again?: string) => {
-        const next = await login(controls, noteId, again);
+        const next = await login(controls, noteId, again || undefined, "retry");
         if (!next) {
-            return;
+            return false;
         }
         csrfToken = next.csrfToken;
-        canLogOut ||= again !== undefined;
+        canLogOut ||= !!again;
         controls.showEditing(canLogOut);
         (await mounted).resume(csrfToken);
+        return true;
     };
     // A click while the editor is still loading waits for it, so nothing pending is lost, and the
     // editor stays open while something is unsaved. An editor that never mounted holds nothing.
@@ -278,7 +294,7 @@ function buildControls(strings: Record<string, string>) {
             stopButton.hidden = false;
             logOutButton.hidden = !canLogOut;
         },
-        setError(key: "wrongPassword" | "failed" | "unsaved" | "locked" | null) {
+        setError(key: "wrongPassword" | "failed" | "unsaved" | "locked" | "retry" | null) {
             error.hidden = key === null;
             error.textContent = key === null ? "" : strings[key] ?? key;
         }

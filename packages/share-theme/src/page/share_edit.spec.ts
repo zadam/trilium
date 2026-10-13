@@ -16,7 +16,7 @@ vi.mock("../content/edit_view.js", () => ({ default: mocks.mountEditView }));
 const STRINGS = {
     edit: "Edit", unlock: "Unlock", password: "Password", stop: "Stop", logOut: "Log out",
     wrongPassword: "Wrong password.", failed: "Failed.", unsaved: "Not saved yet.",
-    locked: "Locked."
+    locked: "Locked.", retry: "Try again."
 };
 const LOGIN = { csrfToken: "csrf", version: "blob1", payload: { notes: [] } };
 
@@ -287,11 +287,62 @@ describe("setupShareEdit", () => {
         await vi.waitFor(() => expect(mocks.resume).toHaveBeenCalledWith("csrf3"));
         expect(document.querySelector<HTMLFormElement>(".share-edit-login")?.hidden).toBe(true);
 
-        // A share that stopped answering asks for the password, which then tells what is wrong.
+        // A share that stopped answering offers to try again, the password being optional.
+        const form = document.querySelector<HTMLFormElement>(".share-edit-login");
+        const input = document.querySelector<HTMLInputElement>(".share-edit-password");
+        const error = document.querySelector<HTMLElement>(".share-edit-error");
         fetchMock.mockRejectedValueOnce(new Error("offline"));
         onLocked();
-        const form = document.querySelector<HTMLFormElement>(".share-edit-login");
         await vi.waitFor(() => expect(form?.hidden).toBe(false));
+        expect(error?.textContent).toBe("Try again.");
+        expect(input?.required).toBe(false);
+    });
+
+    it("offers to try again when unlocking on its own fails, and resumes on a retry", async () => {
+        answerSession({ editable: true, needsPassword: false, unlocked: true, strings: STRINGS });
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+        const { onLocked } = mocks.mountEditView.mock.calls[0][1] as { onLocked(): void };
+        const form = document.querySelector<HTMLFormElement>(".share-edit-login");
+        const input = document.querySelector<HTMLInputElement>(".share-edit-password");
+        const error = document.querySelector<HTMLElement>(".share-edit-error");
+
+        // The login itself fails: the connection dropped after the session answered.
+        answerSession({ editable: true, needsPassword: false, unlocked: false });
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        onLocked();
+        await vi.waitFor(() => expect(form?.hidden).toBe(false));
+        expect(error?.textContent).toBe("Try again.");
+        expect(input?.required).toBe(false);
+        expect(mocks.resume).not.toHaveBeenCalled();
+
+        // A server error on the retry keeps the offer up.
+        fetchMock.mockResolvedValueOnce({ ok: false, status: 502 });
+        form?.dispatchEvent(new Event("submit", { cancelable: true }));
+        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(5));
+        expect(error?.textContent).toBe("Try again.");
+        expect(form?.hidden).toBe(false);
+
+        answerJson({ ...LOGIN, csrfToken: "csrf4" });
+        form?.dispatchEvent(new Event("submit", { cancelable: true }));
+        await vi.waitFor(() => expect(mocks.resume).toHaveBeenCalledWith("csrf4"));
+        expect(fetchMock).toHaveBeenLastCalledWith("api/edit/login", expect.objectContaining({
+            body: JSON.stringify({ noteId: "note" })
+        }));
+        expect(form?.hidden).toBe(true);
+        expect(error?.hidden).toBe(true);
+    });
+
+    it("says so when the first unlock cannot reach the share", async () => {
+        answerSession({ editable: true, needsPassword: false, unlocked: true, strings: STRINGS });
+        await setupShareEdit();
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(document.querySelector(".share-edit-error")?.textContent)
+            .toBe("Failed."));
+        expect(mocks.mountEditView).not.toHaveBeenCalled();
     });
 
     it("stays in the editor while something is unsaved, and says so", async () => {

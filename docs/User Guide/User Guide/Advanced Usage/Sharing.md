@@ -148,7 +148,7 @@ A visitor of the page then sees an _Edit_ button at the right of the note's head
 *   The editor leaves out what reaches the host's other notes: snippets, included notes, internal links, link previews and the AI assistant. A guest's content goes through the same sanitizer as imported HTML.
 *   _Allow attachments_, in the same menu, lets guests upload images and files into the notes they edit.
 *   When the note changed on the server while a guest was editing it, the page says so and lets the guest reload or keep their version. Until the guest chooses, their changes stay unsaved, and _Stop editing_ keeps the editor open.
-*   A new password ends the editing of guests who unlocked the page with the old one. The page then asks them for the new password and keeps what they typed meanwhile, which it saves once they enter it. Where editing was opened to anyone instead, the page unlocks again on its own.
+*   A new password ends the editing of guests who unlocked the page with the old one. The page then asks them for the new password and keeps what they typed meanwhile, which it saves once they enter it. Where editing was opened to anyone instead, the page unlocks again on its own, and when it cannot reach the server it offers _Unlock editing_ to try again.
 
 The settings hold for the note they are changed on and for the notes below it. On a note that inherits them from an ancestor:
 

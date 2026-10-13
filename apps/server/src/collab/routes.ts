@@ -83,7 +83,8 @@ function getSession(req: Request, res: Response) {
             wrongPassword: t("share_theme.edit-wrong-password"),
             failed: t("share_theme.edit-failed"),
             unsaved: t("share_theme.edit-unsaved"),
-            locked: t("share_theme.edit-locked")
+            locked: t("share_theme.edit-locked"),
+            retry: t("share_theme.edit-retry")
         }
     };
 }
