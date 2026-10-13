@@ -77,18 +77,14 @@ async function processEntityChanges(entityChanges: EntityChange[]) {
         await froca.reloadNotes(missingNoteIds);
     }
 
+    // Read from the entity changes rather than `loadResults`, which skips the notes froca has not
+    // loaded: a text note can show the image of such a note without loading it.
+    invalidateNoteImages(getImageNoteIds(entityChanges));
+
     if (!loadResults.isEmpty()) {
         if (loadResults.hasAttributeRelatedChanges()) {
             noteAttributeCache.invalidate();
         }
-
-        // A note's image is its content or one of its attachments, such as `canvas-export.svg`.
-        invalidateNoteImages([
-            ...loadResults.getNoteIds(),
-            // An erased attachment arrives without its row.
-            ...loadResults.getAttachmentRows()
-                .flatMap((row) => (row?.ownerId ? [ row.ownerId ] : []))
-        ]);
 
         await appContext.triggerEvent("entitiesReloaded", { loadResults });
     }
@@ -329,6 +325,25 @@ function processAttachment(loadResults: LoadResults, ec: EntityChange) {
     }
 
     loadResults.addAttachmentRow(attachmentEntity, ec.componentId);
+}
+
+/**
+ * Returns the notes whose image might have changed: a note's image is its content or one of its
+ * attachments, such as `canvas-export.svg`. An erased attachment arrives without its row.
+ */
+function getImageNoteIds(entityChanges: EntityChange[]) {
+    const noteIds: string[] = [];
+    for (const ec of entityChanges) {
+        if (ec.entityName === "notes") {
+            noteIds.push(ec.entityId);
+        } else if (ec.entityName === "attachments") {
+            const ownerId = (ec.entity as FAttachmentRow | undefined)?.ownerId;
+            if (ownerId) {
+                noteIds.push(ownerId);
+            }
+        }
+    }
+    return noteIds;
 }
 
 export default {

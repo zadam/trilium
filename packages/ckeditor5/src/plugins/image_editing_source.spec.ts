@@ -54,4 +54,24 @@ describe("ImageEditingSource", () => {
         expect(onDataChange).not.toHaveBeenCalled();
         expect(editor.getData()).not.toContain("?v=");
     });
+
+    it("refreshes images added later and drops the ones removed from the document", async () => {
+        let version = 1;
+        const resolve = vi.fn((src: string) => `${src}?v=${version}`);
+        const editor = await createEditor(resolve);
+        const plugin = editor.plugins.get(ImageEditingSource);
+
+        editor.setData(`<figure class="image"><img src="${INLINE_SRC}"></figure>`);
+        version = 2;
+        resolve.mockClear();
+        plugin.refresh();
+
+        expect(renderedSources(editor)).toEqual([`${INLINE_SRC}?v=2`]);
+        // The images of the replaced content are not resolved again.
+        expect(resolve.mock.calls).toEqual([ [ INLINE_SRC ] ]);
+
+        resolve.mockClear();
+        plugin.refresh();
+        expect(resolve.mock.calls).toEqual([ [ INLINE_SRC ] ]);
+    });
 });

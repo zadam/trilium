@@ -31,6 +31,9 @@ export default class ImageEditingSource extends Plugin {
         return "ImageEditingSource" as const;
     }
 
+    /** The images the editing downcast rendered. `refresh()` drops those that left the document. */
+    private readonly _images = new Set<ModelElement>();
+
     init() {
         const editor = this.editor;
 
@@ -46,6 +49,7 @@ export default class ImageEditingSource extends Plugin {
                             return;
                         }
 
+                        this._images.add(data.item);
                         conversionApi.writer.setAttribute("src", this._resolve(src), img);
                     },
                     { priority: "low" }
@@ -55,30 +59,30 @@ export default class ImageEditingSource extends Plugin {
     }
 
     /**
-     * Points every image of the editing view at the URL `resolve` returns for it now. It changes
-     * the view only, so the document does not fire `change:data` and the note is not saved again.
+     * Points every image of the editing view at the URL `resolve` returns for it now. It visits the
+     * images the converter rendered rather than the whole document, and changes the view only, so
+     * the document does not fire `change:data` and the note is not saved again.
      */
     refresh() {
         const editor = this.editor;
-        const imageUtils = editor.plugins.get(ImageUtils);
+        const graveyard = editor.model.document.graveyard;
         const updates: { img: ViewElement; url: string }[] = [];
 
-        for (const root of editor.model.document.getRoots()) {
-            for (const item of editor.model.createRangeIn(root).getItems()) {
-                if (!item.is("element") || !imageUtils.isImage(item)) {
-                    continue;
-                }
+        for (const image of this._images) {
+            if (!image.isAttached() || image.root === graveyard) {
+                this._images.delete(image);
+                continue;
+            }
 
-                const src = item.getAttribute("src");
-                const img = this._findViewImg(item);
-                if (typeof src !== "string" || !img) {
-                    continue;
-                }
+            const src = image.getAttribute("src");
+            const img = this._findViewImg(image);
+            if (typeof src !== "string" || !img) {
+                continue;
+            }
 
-                const url = this._resolve(src);
-                if (img.getAttribute("src") !== url) {
-                    updates.push({ img, url });
-                }
+            const url = this._resolve(src);
+            if (img.getAttribute("src") !== url) {
+                updates.push({ img, url });
             }
         }
 

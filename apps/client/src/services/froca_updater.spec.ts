@@ -830,4 +830,18 @@ describe("froca_updater - note images", () => {
         }) ]);
         expect(getNoteImageSourceToLoad(src)).not.toBe(afterAttachment);
     });
+
+    it("gives a new URL to the image of a note that froca has not loaded", async () => {
+        const src = "api/images/notInFroca/Picture";
+        const before = getNoteImageSourceToLoad(src);
+
+        await process([ ec({
+            entityName: "notes",
+            entityId: "notInFroca",
+            entity: { noteId: "notInFroca", title: "Picture", type: "image" } as any
+        }) ]);
+
+        expect(triggerSpy).not.toHaveBeenCalled();
+        expect(getNoteImageSourceToLoad(src)).not.toBe(before);
+    });
 });
