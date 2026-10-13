@@ -199,7 +199,9 @@
       "end_date": "終了日",
       "time": "時間",
       "start_time": "開始時刻",
-      "end_time": "終了時刻"
+      "end_time": "終了時刻",
+      "add_time": "時刻を追加",
+      "remove_time": "時刻を削除"
     },
     "recurrence": {
       "repeats": "繰り返し",
@@ -223,7 +225,9 @@
       "count": "回数",
       "times": "回",
       "custom_rule": "ルール",
-      "custom_hint": "上記のフィールドでは指定できない追加条件を含む iCalendar の繰り返しルール（RRULE）です。これをクリアすると、繰り返し設定が解除されます。"
+      "custom_hint": "上記のフィールドでは指定できない追加条件を含む iCalendar の繰り返しルール（RRULE）です。これをクリアすると、繰り返し設定が解除されます。",
+      "count_years": "タイトルに経過年数を表示",
+      "count_years_locked": "このイベントには、すでにタイトルテンプレートが設定されています。ノートで設定されているか、ノートから継承されています。変更する場合は、ノートの属性で行ってください。"
     },
     "expand_details": "イベントを最大化してウィンドウ全体に表示",
     "restore_details": "イベントをカレンダー上の元の位置の横に戻す"
@@ -1646,7 +1650,8 @@
     "page_description": "クリップしたページの説明。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "page_author": "クリップしたページの作成者。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "published_date": "クリップしたページの公開日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
-    "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。"
+    "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
+    "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -2393,7 +2398,8 @@
     "cannot-copy": "画像参照をクリップボードにコピーできませんでした。",
     "image-copied-to-clipboard": "画像がクリップボードにコピーされました。",
     "cannot-copy-image": "画像をクリップボードにコピーできませんでした。",
-    "cannot-download": "画像をダウンロードできませんでした。"
+    "cannot-download": "画像をダウンロードできませんでした。",
+    "cannot-convert-to-drawing": "画像を描画キャンバスに変換できませんでした。"
   },
   "entrypoints": {
     "note-revision-created": "ノートの改訂版が作成されました。",
@@ -2733,7 +2739,21 @@
     "remove_from_calendar_confirmation": "イベント \"{{title}}\" をカレンダーから削除してもよろしいですか？",
     "new_event": "新しいイベント",
     "draft_title_placeholder": "タイトルを追加",
-    "create_event": "作成"
+    "create_event": "作成",
+    "duration_minutes": "{{minutes}} 分",
+    "duration_hours": "{{hours}} 時間",
+    "duration_hours_minutes": "{{hours}} 時間 {{minutes}} 分",
+    "properties": "カレンダーのプロパティ",
+    "event_templates": "イベントテンプレート",
+    "event_templates_hint": "新しいカレンダーイベントを作成する際に使用するノートのタイプとノートテンプレートを選択します。",
+    "new_template_name": "新しいイベントテンプレート",
+    "event_template": "イベントテンプレートを選択",
+    "more_templates": "その他のテンプレート…",
+    "template": "テンプレート",
+    "general": "一般",
+    "event_attributes": "イベントの属性",
+    "event_attributes_hint": "イベントに表示する属性と、その表示順序を選択します。新しい属性は、有効にするまで非表示になっています。",
+    "event_attributes_overridden": "このカレンダーには calendar:displayedAttributes ラベルが設定されているため、ここで選択した属性ではなく、そのラベルにリストされている属性がイベントに表示されます。"
   },
   "read-only-info": {
     "edit-note": "ノートを編集"
@@ -3761,7 +3781,9 @@
       "0-columns-layout": "%0 列レイアウト",
       "arrange-content-in-0-equal-columns-side-by-side": "コンテンツを %0 個の等幅な列に並べて配置します。",
       "0-columns-1": "%0 列 (%1)",
-      "remove-layout": "レイアウトを削除"
+      "remove-layout": "レイアウトを削除",
+      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換",
+      "type-content-here": "ここに内容を入力…"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
