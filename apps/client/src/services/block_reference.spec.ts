@@ -1,13 +1,12 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CommandNames } from "../components/app_context.js";
 import type { MenuCommandItem, MenuItem } from "../menus/context_menu.js";
 import {
     buildBlockReferenceMenuItems, consumeBlockReference, copyBlockReference, copyBlockShareLink,
-    copyTabReference, getBlockRangeElements, getClipboardBlockReference, highlightBlockReference,
-    openBlockHandleMenu, revealHighlightedBlocks
+    copyTabReference, getClipboardBlockReference, highlightBlockReference, openBlockHandleMenu,
+    revealHighlightedBlocks
 } from "./block_reference.js";
 import type { ViewScope } from "./link.js";
 
@@ -51,85 +50,28 @@ afterEach(() => {
 });
 
 describe("consumeBlockReference", () => {
-    it("reveals a block, flashes it for a moment and consumes the reference", () => {
-        const container = buildContainer(
-            "<details><summary>s</summary><p data-trilium-block-id=\"a\">A</p></details>"
-        );
-        const block = container.querySelector("p");
+    it("shows the blocks and consumes the reference", () => {
+        const container = buildContainer("<p data-trilium-block-id=\"a\">A</p>");
         const viewScope: ViewScope = { block: "a" };
 
         consumeBlockReference(container, viewScope);
 
-        expect(container.querySelector("details")?.open).toBe(true);
-        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
-        expect(scrollIntoView.mock.contexts[0]).toBe(block);
-        expect(block?.classList.contains("block-reference-flash")).toBe(true);
+        expect(scrollIntoView.mock.contexts[0]).toBe(container.querySelector("p"));
+        expect(getFlashed(container)).toEqual([ "A" ]);
         expect(viewScope.block).toBeUndefined();
         expect(showError).not.toHaveBeenCalled();
-
-        vi.advanceTimersByTime(1500);
-        expect(block?.classList.contains("block-reference-flash")).toBe(false);
     });
 
-    it("shows the tab that holds the block", () => {
-        const container = buildContainer(
-            `<div class="trilium-tabs">` +
-                `<section class="trilium-tab"><p class="trilium-tab-title">A</p><div class="trilium-tab-panel"></div></section>` +
-                `<section class="trilium-tab"><p class="trilium-tab-title">B</p><div class="trilium-tab-panel"><p data-trilium-block-id="a">A</p></div></section>` +
-            `</div>`
-        );
-        applyTabs(container, { placeholder: "" });
-
-        consumeBlockReference(container, { block: "a" });
-
-        expect(container.querySelector(".trilium-tab--active > .trilium-tab-title")?.textContent).toBe("B");
-    });
-
-    it("scrolls to the title of a linked tab, which has no box of its own", () => {
-        const container = buildContainer(
-            `<div class="trilium-tabs"><section class="trilium-tab" data-trilium-block-id="t">` +
-                `<p class="trilium-tab-title">A</p><div class="trilium-tab-panel"><p>a</p></div>` +
-            `</section></div>`
-        );
-        const title = container.querySelector(".trilium-tab-title");
-        expect(title).not.toBeNull();
-
-        consumeBlockReference(container, { block: "t" });
-
-        expect(scrollIntoView).toHaveBeenCalledTimes(1);
-        expect(scrollIntoView.mock.contexts[0]).toBe(title);
-    });
-
-    it("flashes the outermost elements of a range", () => {
-        const container = buildContainer(
-            "<p>before</p><p data-trilium-block-id=\"a\">A</p><blockquote><p>quote</p></blockquote>"
-            + "<ul><li><p data-trilium-block-id=\"b\">B</p><p>rest of item</p></li>"
-            + "<li>after</li></ul>"
-        );
-
-        consumeBlockReference(container, { block: "b:a" });
-
-        expect(getFlashed(container)).toEqual([ "A", "quote", "B" ]);
-    });
-
-    it("shows the block still found of a broken range, and says that it is broken", () => {
+    it("says so when a block is missing or the reference is malformed", () => {
         const container = buildContainer("<p data-trilium-block-id=\"b\">B</p>");
 
         consumeBlockReference(container, { block: "gone:b" });
-
-        expect(getFlashed(container)).toEqual([ "B" ]);
-        expect(scrollIntoView).toHaveBeenCalledTimes(1);
-        expect(showError).toHaveBeenCalledWith("block_reference.not_found");
-    });
-
-    it("only says so when no block is found, or the reference is malformed", () => {
-        const container = buildContainer("<p data-trilium-block-id=\"a\">A</p>");
-
         consumeBlockReference(container, { block: "gone" });
         consumeBlockReference(container, { block: "a:b:c" });
 
-        expect(scrollIntoView).not.toHaveBeenCalled();
-        expect(showError).toHaveBeenCalledTimes(2);
+        expect(getFlashed(container)).toEqual([ "B" ]);
+        expect(showError).toHaveBeenCalledTimes(3);
+        expect(showError).toHaveBeenCalledWith("block_reference.not_found");
     });
 
     it("waits for the content, and does nothing without a reference", () => {
@@ -141,20 +83,6 @@ describe("consumeBlockReference", () => {
 
         expect(viewScope.block).toBe("a");
         expect(showError).not.toHaveBeenCalled();
-    });
-});
-
-describe("getBlockRangeElements", () => {
-    it("returns a single block, or the blocks between two in a list", () => {
-        const container = buildContainer(
-            "<ol><li data-trilium-block-id=\"a\">A</li><li>B</li>"
-            + "<li data-trilium-block-id=\"c\">C</li><li>D</li></ol>"
-        );
-        const [ first, , third ] = container.querySelectorAll("li");
-
-        expect(getBlockRangeElements(first, first)).toEqual([ first ]);
-        expect(getBlockRangeElements(first, third).map((element) => element.textContent))
-            .toEqual([ "A", "B", "C" ]);
     });
 });
 

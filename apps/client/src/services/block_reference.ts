@@ -1,5 +1,7 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { CLASSES as TAB_CLASSES } from "@triliumnext/ckeditor5/src/plugins/tabs/constants.js";
+import {
+    flashBlocks, getBlockBoxes, getBlockRangeElements, showBlockReference
+} from "@triliumnext/ckeditor5/src/plugins/block_reference/block_reference_read_only.js";
 import {
     type BlockRange, encodeBlockParameter, formatBlockRange, parseBlockRange, resolveBlockRange,
     resolveBlockReference
@@ -17,9 +19,6 @@ import { t } from "./i18n.js";
 import { calculateHash, parseNavigationStateFromUrl, type ViewScope } from "./link.js";
 import toast from "./toast.js";
 
-const FLASH_CLASS = "block-reference-flash";
-/** The duration of the `block-reference-flash` animation in `block_reference.css`. */
-const FLASH_DURATION_MS = 1500;
 const HIGHLIGHT_CLASS = "block-reference-highlight";
 
 /** A reference to blocks of a note, read from the clipboard. */
@@ -206,16 +205,9 @@ export function consumeBlockReference(
         return;
     }
 
-    const { start, end } = resolveBlockReference<HTMLElement>(container, viewScope.block);
+    const isFound = showBlockReference(container, viewScope.block);
     viewScope.block = undefined;
-
-    const first = start ?? end;
-    if (first) {
-        revealElement(first);
-        getBlockBoxes(first).top.scrollIntoView({ behavior: "smooth", block: "center" });
-        flashBlocks(start && end ? getBlockRangeElements(start, end) : [ first ]);
-    }
-    if (!start || !end) {
+    if (!isFound) {
         toast.showError(t("block_reference.not_found"));
     }
 }
@@ -257,53 +249,6 @@ export function revealHighlightedBlocks(container: HTMLElement) {
     const viewportTop = container.getBoundingClientRect().top + container.clientTop;
     const margin = Math.max(0, (container.clientHeight - height) / 2);
     container.scrollTop += top - viewportTop - margin;
-}
-
-/**
- * Returns the elements that render the top and bottom of `block`. A tab is `display: contents`, so
- * its title and panel render it.
- */
-function getBlockBoxes(block: Element): { top: Element; bottom: Element } {
-    if (block.classList.contains(TAB_CLASSES.tab)) {
-        const title = block.querySelector(`:scope > .${TAB_CLASSES.tabTitle}`);
-        const panel = block.querySelector(`:scope > .${TAB_CLASSES.tabPanel}`);
-        if (title && panel) {
-            return { top: title, bottom: panel };
-        }
-    }
-    return { top: block, bottom: block };
-}
-
-/** The outermost elements inside the range from `start` to `end`, both included. */
-export function getBlockRangeElements(start: Element, end: Element) {
-    const range = start.ownerDocument.createRange();
-    range.setStartBefore(start);
-    range.setEndAfter(end);
-    return getElementsInRange(range, range.commonAncestorContainer);
-}
-
-function getElementsInRange(range: Range, parent: Node): Element[] {
-    const elements: Element[] = [];
-    for (const child of Array.from(parent.childNodes)) {
-        if (!(child instanceof Element) || !range.intersectsNode(child)) {
-            continue;
-        }
-
-        if (isInRange(range, child)) {
-            elements.push(child);
-        } else {
-            elements.push(...getElementsInRange(range, child));
-        }
-    }
-
-    return elements;
-}
-
-function isInRange(range: Range, node: Node) {
-    const nodeRange = range.cloneRange();
-    nodeRange.selectNode(node);
-    return range.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-        && range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0;
 }
 
 function getCopyItem(count: number, copyReference: () => void): MenuItem<CommandNames> {
@@ -431,11 +376,4 @@ function parseBlockReferenceHref(href: string): ClipboardBlockReference | null {
     }
 
     return { noteId, block, href: calculateHash({ notePath, viewScope: { block } }) };
-}
-
-function flashBlocks(elements: Element[]) {
-    for (const element of elements) {
-        element.classList.add(FLASH_CLASS);
-        setTimeout(() => element.classList.remove(FLASH_CLASS), FLASH_DURATION_MS);
-    }
 }

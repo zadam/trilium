@@ -12,7 +12,7 @@ Inside a <a class="reference-link" href="Content%20tabs.md">Content tabs</a> blo
 
 The link shows the title of the note, followed by the beginning of the referenced text. A link to blocks of the same note shows only the beginning of the referenced text.
 
-If the note is [shared](../../Advanced%20Usage/Sharing.md), the menu of the block handle also offers _Copy public link to this block_. It copies the web address of the shared page with the reference added, to send to people who read the note outside Trilium.
+If the note is [shared](../../Advanced%20Usage/Sharing.md), the menu of the block handle also offers _Copy public link to this block_. It copies the web address of the shared page with the reference added, to send to people who read the note outside Trilium. Opening the address scrolls the shared page to the referenced blocks and flashes them.
 
 The _Paste_ submenu of the context menu offers two more ways to insert a copied reference:
 

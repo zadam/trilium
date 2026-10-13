@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (classList.contains("type-book")) {
         $try(() => setupAppView(".share-collection", () => import("./content/collection_view.js")));
     }
+    whenActivated(() => $try(showLinkedBlocks));
 });
 
 function setupTabs() {
@@ -90,4 +91,14 @@ function setupTabs() {
     const showFragment = () => revealFragment(location.hash)?.scrollIntoView();
     showFragment();
     window.addEventListener("hashchange", showFragment);
+}
+
+/** Scrolls to the blocks that the `block` URL parameter points at and flashes them. */
+async function showLinkedBlocks() {
+    const block = new URLSearchParams(location.search).get("block");
+    if (block) {
+        const { showBlockReference } = await import(
+            "@triliumnext/ckeditor5/src/plugins/block_reference/block_reference_read_only.js");
+        showBlockReference(document.body, block);
+    }
 }
