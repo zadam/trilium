@@ -1,15 +1,19 @@
 declare module "sherpa-onnx-node" {
-    export interface OnlineStream {
+    export interface OfflineStream {
         acceptWaveform(wave: { samples: Float32Array; sampleRate: number }): void;
     }
 
-    export class OnlineRecognizer {
-        constructor(config: object);
-        createStream(): OnlineStream;
-        isReady(stream: OnlineStream): boolean;
-        decode(stream: OnlineStream): void;
-        isEndpoint(stream: OnlineStream): boolean;
-        reset(stream: OnlineStream): void;
-        getResult(stream: OnlineStream): { text: string };
+    export class OfflineRecognizer {
+        static createAsync(config: object): Promise<OfflineRecognizer>;
+        createStream(): OfflineStream;
+        decodeAsync(stream: OfflineStream): Promise<{ text: string }>;
+    }
+
+    export class Vad {
+        constructor(config: object, bufferSizeInSeconds: number);
+        acceptWaveform(samples: Float32Array): void;
+        isEmpty(): boolean;
+        front(enableExternalBuffer: boolean): { start: number; samples: Float32Array };
+        pop(): void;
     }
 }
