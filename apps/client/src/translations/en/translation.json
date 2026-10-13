@@ -4584,5 +4584,11 @@
     "starting": "Starting the recording…",
     "stop": "Stop recording",
     "stopping": "Finishing the transcript…"
+  },
+  "transcript": {
+    "speaker_me": "Me",
+    "speaker_others": "Others",
+    "empty": "Nothing has been transcribed yet.",
+    "unreadable": "This transcript cannot be read."
   }
 }

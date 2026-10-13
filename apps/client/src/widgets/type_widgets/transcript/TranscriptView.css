@@ -1,0 +1,38 @@
+.transcript {
+    padding: 0.5rem 1rem 1rem;
+    max-width: var(--preferred-max-content-width, 900px);
+
+    .transcript-turn {
+        margin-bottom: 1rem;
+    }
+
+    .transcript-turn-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .transcript-speaker {
+        font-weight: 600;
+    }
+
+    .transcript-microphone .transcript-speaker {
+        color: var(--main-text-color);
+    }
+
+    .transcript-system .transcript-speaker {
+        color: var(--muted-text-color);
+    }
+
+    .transcript-time {
+        font-size: 0.85em;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted-text-color);
+    }
+
+    p {
+        margin: 0;
+        white-space: pre-wrap;
+    }
+}
