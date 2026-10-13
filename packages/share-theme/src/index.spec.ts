@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
     setupMermaid: vi.fn(),
     applyTabs: vi.fn(),
     revealFragment: vi.fn(),
+    showBlockReference: vi.fn(),
     enhanceLinkPreviews: vi.fn(),
     setupAppView: vi.fn()
 }));
@@ -38,6 +39,9 @@ vi.mock("./content/collection_view.js", () => ({ default: "mountCollection" }));
 vi.mock("@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js", () => ({
     applyTabs: mocks.applyTabs,
     revealFragment: mocks.revealFragment
+}));
+vi.mock("@triliumnext/ckeditor5/src/plugins/block_reference/block_reference_read_only.js", () => ({
+    showBlockReference: mocks.showBlockReference
 }));
 vi.mock("@triliumnext/commons/src/lib/link_embed_dom.js", () => ({
     enhanceLinkPreviews: mocks.enhanceLinkPreviews
@@ -106,6 +110,35 @@ describe("share theme entry", () => {
 
         window.dispatchEvent(new Event("hashchange"));
         expect(panel.scrollIntoView).toHaveBeenCalledTimes(2);
+    });
+
+    it("shows the linked blocks once the page is shown, after the tabs and diagrams", async () => {
+        let drawDiagrams = () => {};
+        mocks.setupMermaid.mockReturnValueOnce(new Promise<void>((resolve) => {
+            drawDiagrams = resolve;
+        }));
+        document.body.className = "type-text";
+        document.body.innerHTML = `<div id="content"></div>`;
+        history.replaceState(null, "", "?block=a%201:b");
+
+        document.dispatchEvent(new Event("DOMContentLoaded"));
+        await vi.dynamicImportSettled();
+        expect(mocks.showBlockReference).not.toHaveBeenCalled();
+
+        drawDiagrams();
+        await vi.waitFor(() => expect(mocks.showBlockReference)
+            .toHaveBeenCalledExactlyOnceWith(document.body, "a 1:b"));
+        expect(mocks.whenActivated).toHaveBeenCalledOnce();
+        expect(mocks.applyTabs.mock.invocationCallOrder[0])
+            .toBeLessThan(mocks.showBlockReference.mock.invocationCallOrder[0]);
+
+        mocks.showBlockReference.mockClear();
+        history.replaceState(null, "", "?other=1");
+        document.dispatchEvent(new Event("DOMContentLoaded"));
+        await vi.dynamicImportSettled();
+
+        expect(mocks.showBlockReference).not.toHaveBeenCalled();
+        history.replaceState(null, "", location.pathname);
     });
 
     it("treats content styled as text like a text note, with or without a content element", () => {

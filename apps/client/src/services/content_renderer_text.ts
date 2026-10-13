@@ -1,6 +1,7 @@
 import {
-    type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey, getNestedEmbedOptions,
-    getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed, sliceToBlockReference
+    BLOCK_ID_ATTRIBUTE, type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey,
+    getNestedEmbedOptions, getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed,
+    sliceToBlockReference
 } from "@triliumnext/commons";
 
 import FAttachment from "../entities/fattachment.js";
@@ -194,6 +195,10 @@ export async function rewriteMermaidDiagramsInContainer(container: HTMLDivElemen
         const div = document.createElement("div");
         div.classList.add("mermaid-diagram");
         div.textContent = code.textContent;
+        const blockId = code.getAttribute(BLOCK_ID_ATTRIBUTE);
+        if (blockId) {
+            div.setAttribute(BLOCK_ID_ATTRIBUTE, blockId);
+        }
         mermaidBlock.replaceWith(div);
     }
 }

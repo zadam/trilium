@@ -54,6 +54,18 @@ describe("setupMermaid", () => {
         expect(diagram?.querySelector("svg")?.id).not.toBe(firstId);
     });
 
+    it("keeps the block ID of a code block on its drawing, for links to the block", async () => {
+        stubMermaid();
+        document.body.innerHTML = `<div id="content"><pre>`
+            + `<code class="language-mermaid" data-trilium-block-id="d1">graph TD; A--&gt;B</code>`
+            + `</pre></div>`;
+
+        await setupMermaid();
+
+        expect(document.querySelector("#content > .mermaid")?.getAttribute("data-trilium-block-id"))
+            .toBe("d1");
+    });
+
     it("draws a Mermaid note in place of its image, keeping the source", async () => {
         const fakeMermaid = stubMermaid();
         document.body.innerHTML = MERMAID_NOTE;
