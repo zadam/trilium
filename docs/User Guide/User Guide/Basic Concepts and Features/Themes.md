@@ -22,8 +22,7 @@ Trilium supports custom user themes, allowing you to personalize the application
   font-style: normal;
   font-weight: 400;
   src: url('/custom/fonts/raleway.woff2') format('woff2');
-}
-
+}&#10;
 :root {
     --main-font-family: 'Raleway' !important;
     --main-font-size: normal;
@@ -31,8 +30,7 @@ Trilium supports custom user themes, allowing you to personalize the application
     --tree-font-size: normal;
     --detail-font-family: inherit;
     --detail-font-size: normal;
-    --detail-text-font-family: 'Garamond' !important;
-
+    --detail-text-font-family: 'Garamond' !important;&#10;
     --main-background-color: #404552;
     --main-text-color: #AFB8C6;
     --main-border-color: #AFB8C6;
@@ -61,12 +59,10 @@ Trilium supports custom user themes, allowing you to personalize the application
     --modal-background-color: #404552;
     --modal-backdrop-color: black;
     --scrollbar-border-color: rgba(175, 184, 198, 0.5);
-}
-
+}&#10;
 body .note-detail-text {
     font-size: 120%;
-}
-
+}&#10;
 body .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
 }</code></pre>
