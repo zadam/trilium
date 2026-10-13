@@ -1,6 +1,7 @@
 {
   "about": {
-    "data_directory": "Datakansio:"
+    "data_directory": "Datakansio:",
+    "version_label": "Versio:"
   },
   "toast": {
     "critical-error": {
@@ -18,7 +19,9 @@
     "link_title": "Linkin otsikko",
     "button_add_link": "Lisää linkki",
     "note": "Muistio",
-    "search_note": "etsi muistiota sen nimellä"
+    "search_note": "etsi muistiota sen nimellä",
+    "button_edit_link": "Tallenna linkki",
+    "button_fix_link": "Korjaa linkki"
   },
   "branch_prefix": {
     "prefix": "Etuliite: ",
