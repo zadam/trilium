@@ -84,6 +84,9 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const hasSource = ["text", "code", "relationMap", "mermaid", "canvas", "mindMap", "spreadsheet", "llmChat"].includes(noteType) || note.isSvg();
     const isSearchOrBook = ["search", "book"].includes(noteType);
     const isBoard = noteType === "book" && viewType === "board";
+    // A calendar root makes day notes rather than events, so it has no templates to configure.
+    const isEventCalendar = noteType === "book" && viewType === "calendar"
+        && !note.hasLabel("calendarRoot") && !note.hasLabel("workspaceCalendarRoot");
     const isHelpPage = note.noteId.startsWith("_help");
     const [syncServerHost] = useTriliumOption("syncServerHost");
     const { isReadOnly, enableEditing } = useIsNoteReadOnly(note, noteContext);
@@ -174,8 +177,9 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                 {note.type === "render" && <CommandItem command="renderActiveNote" icon="bx bx-extension" text={t("note_actions.re_render_note")}
                 />}
 
-                {isBoard && <CommandItem icon="bx bx-cog" text={t("board_view.properties")}
-                    command={() => parentComponent?.triggerEvent("showBoardProperties", { ntxId: noteContext?.ntxId })} />}
+                {(isBoard || isEventCalendar) && <CommandItem icon="bx bx-cog"
+                    text={isBoard ? t("board_view.properties") : t("calendar_view.properties")}
+                    command={() => parentComponent?.triggerEvent("showCollectionProperties", { ntxId: noteContext?.ntxId })} />}
 
                 <FormDropdownSubmenu icon="bx bx-wrench" title={t("note_actions.advanced")}>
                     <CommandItem command="openNoteExternally" icon="bx bx-file-find" disabled={isSearchOrBook || !isElectron} text={t("note_actions.open_note_externally")} title={t("note_actions.open_note_externally_title")} />

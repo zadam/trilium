@@ -270,6 +270,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "maxNestingDepth", valueType: "number", hasUserValue: true },
     { type: "label", name: "includeArchived", valueType: "boolean", hasUserValue: true },
     { type: "label", name: "board:showInbox", valueType: "boolean", hasUserValue: true },
+    { type: "label", name: "board:hideAddColumn", valueType: "boolean", hasUserValue: true },
     // Carried by a card that stands in for another note: opening it navigates there instead.
     { type: "relation", name: "board:cardRedirectTo" },
     // The previous name of the relation above. Still read, so existing boards keep redirecting.
@@ -290,6 +291,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "calendar:slotDuration", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:slotLabelInterval", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:title", valueType: "text", hasUserValue: true },
+    { type: "label", name: "calendar:titleTemplate", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:displayedAttributes", valueType: "text", hasUserValue: true },
     // Each names the label an event reads a given field from, overriding the default listed after it.
     { type: "label", name: "calendar:startDate", valueType: "text", hasUserValue: true },

@@ -11,7 +11,7 @@ import FNote, { type FNoteRow } from "../entities/fnote.js";
 import type { Bundle } from "./bundle.js";
 import type { Froca, FrocaSource, NoteMapFilters, SavedAttachment, SubtreeResponse } from "./froca-interface.js";
 import server from "./server.js";
-import { isPreAuthScreen } from "./utils.js";
+import { isPreAuthScreen, reuseAcrossHotReloads } from "./utils.js";
 
 
 interface SearchNoteResponse {
@@ -495,6 +495,6 @@ const SERVER_SOURCE: FrocaSource = {
     }
 };
 
-const froca = new FrocaImpl();
+const froca = reuseAcrossHotReloads(import.meta.hot, () => new FrocaImpl());
 
 export default froca;

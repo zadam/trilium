@@ -1,3 +1,4 @@
+import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
 import ExcelJS from "exceljs";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -116,6 +117,27 @@ describe("Files API (core)", () => {
             expect(res.status).toBe(200);
             expect(res.body).toContain("attachment payload");
             expect(res.headers["Content-Disposition"]).toBeUndefined();
+        });
+
+        it("downloads and opens a canvas drawing with the images it refers to inside", async () => {
+            const { noteId } = await createTextNote(api, { title: "Has a drawing" });
+            const scene = { elements: [ { type: "image", fileId: "f1.png" } ], files: {} };
+            for (const body of [
+                { role: "file", mime: CANVAS_ATTACHMENT_MIME, title: "Canvas.excalidraw",
+                    content: JSON.stringify(scene) },
+                { role: "image", mime: "image/png", title: "f1.png", content: "abc" }
+            ]) {
+                const save = await api.post(`/api/notes/${noteId}/attachments`, { body });
+                expect(save.status).toBe(204);
+            }
+            const list = await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`);
+            const drawing = list.body.find(({ mime }) => mime === CANVAS_ATTACHMENT_MIME);
+
+            for (const action of [ "download", "open" ]) {
+                const res = await api.get(`/api/attachments/${drawing?.attachmentId}/${action}`);
+                expect(JSON.parse(String(res.body)).files["f1.png"]?.dataURL)
+                    .toBe("data:image/png;base64,YWJj");
+            }
         });
 
         it("404s when downloading a missing attachment", async () => {

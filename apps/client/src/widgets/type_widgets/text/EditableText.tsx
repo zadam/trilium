@@ -35,6 +35,7 @@ import {
 } from "../../react/hooks";
 import IconPicker from "../../react/IconPicker";
 import { setEditorNoteId } from "../../react/NoteStore";
+import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
 import AttachmentSaves, { useNoteEditor } from "./attachment_saves";
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
@@ -291,6 +292,9 @@ export default function EditableText({
         },
         focusContentEmbed(attachmentId: string) {
             focusedAttachmentIdRef.current = attachmentId;
+        },
+        convertImageToDrawing(src: string) {
+            return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
         },
         getAttachmentHref,
         getNoteId() {

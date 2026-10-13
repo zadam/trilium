@@ -106,30 +106,25 @@ Sample `selection.json` excerpt:
     <summary>A tiny Node.js script to produce the manifest</summary>
     <p>Place <code>selection.json</code> in the same directory and run with Node 20+):</p>
     <pre><code class="language-text-javascript">import { join } from "node:path";
-import { readFileSync, writeFileSync } from "node:fs";
-
+import { readFileSync, writeFileSync } from "node:fs";&#10;
 function processIconPack(packName) {
     const path = join(packName);
     const selectionMeta = JSON.parse(readFileSync(join(path, "selection.json"), "utf-8"));
-    const icons = {};
-
+    const icons = {};&#10;
     for (const icon of selectionMeta.icons) {
         let name = icon.properties.name;
         if (name.endsWith(`-${packName}`)) {
             name = name.split("-").slice(0, -1).join("-");
-        }
-
+        }&#10;
         const id = `ph-${name}`;
         icons[id] = {
             glyph: `${String.fromCharCode(icon.properties.code)}`,
             terms: [ name ]
         };
-    }
-
+    }&#10;
     writeFileSync("manifest.json", JSON.stringify(icons, null, 2), "utf8");
     console.log("manifest.json created");
-}
-
+}&#10;
 processIconPack("light");</code></pre>
     <p>What to do with the script:</p>
     <ul>

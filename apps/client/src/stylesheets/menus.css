@@ -67,7 +67,7 @@ body.desktop .tabulator-popup-container,
     color: var(--muted-text-color);
 }
 
-.dropdown-menu .disabled {
+.dropdown-menu .disabled:not(.form-checkbox) {
     color: #888 !important;
     pointer-events: none;
 }

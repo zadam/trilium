@@ -171,7 +171,7 @@ class BAttachment extends AbstractBeccaEntity<BAttachment> {
             title: this.title,
             type: (attachmentRoleToNoteTypeMapping as any)[this.role],
             mime: this.mime,
-            content: this.getContent(),
+            content: noteService.getPortableContent(this),
             isProtected: this.isProtected
         });
 

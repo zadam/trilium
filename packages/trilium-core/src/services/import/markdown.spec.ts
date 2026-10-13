@@ -593,6 +593,20 @@ $$`;
                 .toStrictEqual(`<details class="trilium-collapsible">Just some <em>text</em> here</details>`);
         });
 
+        it("round-trips a code block with blank lines inside a collapsible block or a table kept as HTML", () => {
+            const code = `<pre><code class="language-text-x-trilium-auto">a {\n}\n\n  \n:root {\n    --x: 1;\n}</code></pre>`;
+
+            for (const html of [
+                `<details class="trilium-collapsible"><summary>S</summary>${code}<p>After</p></details><p>Outside</p>`,
+                `<figure class="table"><table><tbody><tr><td>${code}</td><td>B</td></tr></tbody></table></figure><p>Outside</p>`
+            ]) {
+                const markdown = markdownExportService.toMarkdown(html);
+
+                expect(markdown).toContain("<pre>");
+                expect(markdownService.renderToHtml(markdown, "Title")).toStrictEqual(html);
+            }
+        });
+
         it("leaves a <details> shown inside a fenced code block as escaped sample text", () => {
             const input = trimIndentation`\
                 \`\`\`html

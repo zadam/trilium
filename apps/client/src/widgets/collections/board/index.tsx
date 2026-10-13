@@ -25,7 +25,7 @@ import type {
 } from "../../../services/shortcut_hints";
 import ws from "../../../services/ws";
 import { isMobile } from "../../../services/utils";
-import { type NoteTypeOption, resolveNoteTypeOptions } from "../../../services/note_types";
+import { type NoteTypeOption } from "../../../services/note_types";
 import {
     type PromotedAttributeSetting, resolvePromotedAttributes, visiblePromotedAttributeNames
 } from "../promoted_attributes";
@@ -38,6 +38,7 @@ import {
     useTrackedElement, useTriliumEvent
 } from "../../react/hooks";
 import OverlayControlGroup, { OverlayControlButton } from "../../react/OverlayControlGroup";
+import { type TemplateChoiceConfig, useTemplateChoice } from "../../react/TemplateDropdown";
 import { ShortcutHintOverlayButton } from "../../shortcut_hints/shortcut_hint_button";
 import { onWheelHorizontalScroll } from "../../widget_utils";
 import { useDragPan } from "../../react/drag_pan";
@@ -59,7 +60,6 @@ import {
     COLUMN_WIDTH_LABEL, columnWidthClass, DEFAULT_GROUP_BY, getStatusDefinition, INBOX_COLUMN
 } from "./columns";
 import Column, { clearGap, EXPAND_MS, placeCard, settleCards } from "./column";
-import { currentCardTemplate, DEFAULT_CARD_TEMPLATES } from "./card_templates";
 import BoardGroupBy, { groupingOptions } from "./group_by";
 import { useBoardReference } from "./reference";
 import { openBoardContextMenu } from "./context_menu";
@@ -82,7 +82,8 @@ export interface HoldOpen {
     onClosed: () => void;
 }
 
-export interface BoardViewData {
+/** The card templates default to `DEFAULT_CARD_TEMPLATES`. */
+export interface BoardViewData extends TemplateChoiceConfig {
     /**
      * The columns of the default grouping. Every other grouping keeps its own list under
      * `<attribute>ViewColumns`, so switching the grouping cannot mix two of them.
@@ -90,13 +91,6 @@ export interface BoardViewData {
     columns?: BoardColumnData[];
     /** @see BoardViewData.columns */
     [key: `${string}ViewColumns`]: BoardColumnData[] | undefined;
-    /**
-     * What a new card can be made from, as {@link NoteTypeOption} ids. Absent until the reader picks
-     * for the board, which is what `DEFAULT_CARD_TEMPLATES` stands in for.
-     */
-    templates?: string[];
-    /** The one last used, which the next card is made from. */
-    template?: string;
     /**
      * Which promoted attributes the cards show, and in what order. An attribute the list does not
      * name is shown after the ones it does; see {@link resolvePromotedAttributes}.
@@ -288,6 +282,9 @@ const NO_COLUMNS: ReadonlySet<string> = new Set();
 /** Shared empty map for a filter under which no column has been opened or closed by hand. */
 const NO_FILTER_COLLAPSE: ReadonlyMap<string, boolean> = new Map();
 
+/** Scripts set upright in vertical text, which a collapsed column's title has to read top-down for. */
+const UPRIGHT_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
 const NAVIGATION_HINTS: ShortcutHint[] = [
     { keys: [ "Up", "Down" ], labelKey: "board_view.hints.navigate_items" },
     { keys: [ "Left", "Right" ], labelKey: "board_view.hints.navigate_columns" },
@@ -408,6 +405,7 @@ function Board({
     let viewConfig = adoptedConfig ?? storedConfig;
     const [ includeArchived ] = useNoteLabelBoolean(parentNote, "includeArchived");
     const [ inboxEnabled ] = useNoteLabelBoolean(parentNote, "board:showInbox");
+    const [ addColumnHidden ] = useNoteLabelBoolean(parentNote, "board:hideAddColumn");
     // Read undefaulted: a board naming no width wears no class, so `--board-column-width` keeps
     // whatever it inherits.
     const [ storedColumnWidth ] = useNoteLabel(parentNote, COLUMN_WIDTH_LABEL);
@@ -658,22 +656,23 @@ function Board({
         });
     }, [ api, collapseAllColumns, expandAllColumns, inboxEnabled, includeArchived, isReadOnly ]);
 
-    // Read from the api rather than from the prop, since a pick moves the api's own copy ahead of
-    // the board's; keyed on the prop so that a change from anywhere else is followed too.
-    const offeredTemplates = useMemo(
-        () => resolveNoteTypeOptions(api.getCardTemplateIds(), availableTemplates),
-        [ api, viewConfig, availableTemplates ]);
     // Handed to the api as well, for the cards made from somewhere other than the editor: an
     // insert beside another card reaches for the same template without being given one.
     useEffect(
         () => api.setAvailableCardTemplates(availableTemplates), [ api, availableTemplates ]);
 
-    const cardTemplates = useMemo(() => ({
-        offered: offeredTemplates,
-        current: currentCardTemplate(offeredTemplates, api.getLastCardTemplateId()),
-        onSelect: (template: NoteTypeOption) => api.setLastCardTemplateId(template.id),
-        onMore: () => setIsEditingProperties(true)
-    }), [ api, viewConfig, offeredTemplates ]);
+    const selectCardTemplate = useCallback(
+        (template: NoteTypeOption) => api.setLastCardTemplateId(template.id), [ api ]);
+    const editCardTemplates = useCallback(() => setIsEditingProperties(true), []);
+    // Read from the api rather than from the prop, since a pick moves the api's own copy ahead of
+    // the board's.
+    const cardTemplates = useTemplateChoice({
+        ids: api.getCardTemplateIds(),
+        lastUsedId: api.getLastCardTemplateId(),
+        available: availableTemplates,
+        onSelect: selectCardTemplate,
+        onMore: editCardTemplates
+    });
 
     // Held while the names are the same, since a new array would redraw every card on every render.
     const shownAttributesRef = useRef<string[]>([]);
@@ -806,6 +805,7 @@ function Board({
         }
     }), [ api, shownColumns, byColumn, storedColumns, isInRelationMode ]);
     useSetContextData(noteContext, "boardColumns", outline);
+    const hasCjkTitles = outline.columns.some(({ title }) => UPRIGHT_SCRIPT.test(title));
 
     // Reveals the column or card a `?column=` or `?card=` link names. Takes `shownColumns` rather
     // than every column, so that a column hidden because it is archived is reported instead of
@@ -1356,7 +1356,7 @@ function Board({
     }, [ selection, handleBoardKeys ]);
 
     // The note actions menu offers the properties dialog, which lives here rather than in the menu.
-    useTriliumEvent("showBoardProperties", ({ ntxId }) => {
+    useTriliumEvent("showCollectionProperties", ({ ntxId }) => {
         if (ntxId === noteContext?.ntxId) {
             setIsEditingProperties(true);
         }
@@ -1466,7 +1466,8 @@ function Board({
                         className={clsx("board-view-container", {
                             pannable: isPannable,
                             panning: isPanning,
-                            selecting: isSelecting
+                            selecting: isSelecting,
+                            "cjk-titles": hasCjkTitles
                         })}
                         onKeyDown={handleKeyDown}
                         onClick={clearSelectionOutsideCards}
@@ -1539,7 +1540,9 @@ function Board({
 
                         </div>
 
-                        {editing && <editing.AddNewColumn
+                        {/* The board's menu opens its column editor in this slot, so the slot is
+                            drawn while that editor is open even with the button hidden. */}
+                        {editing && (!addColumnHidden || isCreatingColumn) && <editing.AddNewColumn
                             api={api}
                             isInRelationMode={isInRelationMode}
                             columnCount={shownColumns.length}

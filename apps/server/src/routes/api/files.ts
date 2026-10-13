@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import tmp from "tmp";
 
-import { becca } from "@triliumnext/core";
+import { becca, note_service as noteService } from "@triliumnext/core";
 import dataDirs from "../../services/data_dir.js";
 import { getLog } from "@triliumnext/core";
 import utils from "../../services/utils.js";
@@ -21,7 +21,7 @@ function saveNoteToTmpDir(req: Request<{ noteId: string }>) {
 function saveAttachmentToTmpDir(req: Request<{ attachmentId: string }>) {
     const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const fileName = attachment.getFileName();
-    const content = attachment.getContent();
+    const content = noteService.getPortableContent(attachment);
 
     if (!attachment.attachmentId) {
         throw new ValidationError("Missing attachment ID.");

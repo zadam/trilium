@@ -19,6 +19,13 @@ You can create a new column by pressing the <span class="tn-icon bx bx-plus"></s
 
 Enter the new name (which must not match another column), optionally select an icon by pressing the circle at the start of the text box, and then press the (+) button or <kbd>Enter</kbd>. Click or tap outside the text box, or press <kbd>Esc</kbd>, to dismiss it.
 
+Columns can also be added from a context menu:
+
+*   To add a column at the end of the board, right-click an empty area of the board and select <span class="tn-icon bx bx-columns"></span> **Add new column**.
+*   To add a column next to an existing one, open its column menu and select <span class="tn-icon bx bx-columns"></span> **Add new column** → **Before** (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>) or **After** (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>).
+
+Once a board is set up, the **Add column** button can be hidden. To do so, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties** and turn off **Show the "Add column" button** (under the **General** section), or apply the `#board:hideAddColumn` label to the board note. Columns can still be added from the context menus above.
+
 ### Reordering columns
 
 The order of the columns can be changed at any time. There are several ways to do this:
@@ -58,6 +65,8 @@ Once a column is collapsed, its cards are no longer visible, but the column can 
 *   **Move a card to a collapsed column using the keyboard:** The column will temporarily expand to reveal the moved card. You can then continue moving the selected cards up or down, or to another column.
 
 Collapsed columns can still be reordered, and their menus remain available.
+
+A collapsed column shows its title vertically, read from the bottom up. If any column title on the board contains Chinese, Japanese or Korean characters, the titles of all collapsed columns read from the top down instead, so that those characters stay upright.
 
 #### Expanding
 
@@ -112,7 +121,7 @@ Cards with attributes that have no value set are always sorted at the end of the
 
 #### Configuring the default sorting options
 
-Every new column uses the **Board's default** sorting option, which is initially set to manual sorting on new boards. However, the default can be changed to any other sorting criterion and direction. To configure it, go to **Note menu** → **Board properties** → **Default card order** (under the **General** section).
+Every new column uses the **Board's default** sorting option, which is initially set to manual sorting on new boards. However, the default can be changed to any other sorting criterion and direction. To configure it, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties** → **Default card order** (under the **General** section).
 
 Once the default is changed, all columns set to the **Board's default** sorting option will follow the new sorting options.
 
@@ -157,7 +166,7 @@ Optionally, the inbox column can also list nested notes from the board collectio
 
 ### Changing the width of columns
 
-There are three predefined widths for board columns: narrow (default), medium, and wide. To change the width, open the **Note menu** → **Board properties** → **Column width** (under the **General** section). This option applies to every column on the board, except in the mobile version.
+There are three predefined widths for board columns: narrow (default), medium, and wide. To change the width, open the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties** → **Column width** (under the **General** section). This option applies to every column on the board, except in the mobile version.
 
 The same option is also available through the `#board:columnWidth` label (read more about <a class="reference-link" href="../Advanced%20Usage/Attributes.md">Attributes</a>) on the board note, which accepts “`narrow`”, “`medium`”, or “`wide`” as its value.
 
@@ -308,7 +317,7 @@ By default, the face of a card displays a minimal set of information: the title,
 
 To create a new attribute, follow these steps:
 
-1.  Go to **Note menu** → **Board properties**, find the **Card attributes** section, and then press the <span class="tn-icon bx bx-plus"></span> **Create a new attribute** button.
+1.  Go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties**, find the **Card attributes** section, and then press the <span class="tn-icon bx bx-plus"></span> **Create a new attribute** button.
 2.  Enter a name for the attribute. This is the internal name used by Trilium, so do not use spaces or special characters.
 3.  Select a type (text, number, checkbox, and so on).
 4.  Set the display name. This is the name shown on the card.
@@ -333,7 +342,7 @@ For attributes of the “select” or “checkbox” type, you can quickly chang
 
 #### Reordering, hiding, redefining, and deleting custom attributes
 
-Go to **Note menu** → **Board properties**. Under the **Card attributes** section, you can:
+Go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties**. Under the **Card attributes** section, you can:
 
 *   Hold the **\=** handle shown beside an attribute, and then drag the item up or down to reorder the attributes. This determines the order in which the attributes are displayed on the card.
 *   Turn off the toggle to hide an attribute from the card's face. The attribute remains available when you edit the card. For the current grouping attribute, the toggle is disabled.
@@ -348,7 +357,7 @@ If cards define an attribute with the same name but a different type or differen
 
 When you create a new card, Trilium offers four templates by default: **Text**, **Markdown**, **Canvas**, and **Spreadsheet**. You can customize this list to include other note types or custom templates with predefined placeholder content and prefilled card attributes.
 
-To customize the card templates, go to **Note menu** → **Board properties** and find **Card templates**. Here you can:
+To customize the card templates, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties** and find **Card templates**. Here you can:
 
 *   Include a note type or note template already created in your knowledge base by pressing the <span class="tn-icon bx bx-list-plus"></span> **Add existing template** button and then selecting the desired note type or template.
 *   Create a new template by pressing the <span class="tn-icon bx bx-plus"></span> **Create a new template** button. The template editor will open, where you can define the icon, title, default attribute values, and default content. The note template will be created as a child of the board collection.
@@ -386,7 +395,7 @@ Switching the grouping attribute lets you view your cards by priority, category,
 
 #### Deleting a grouping attribute
 
-To delete a grouping attribute, go to **Note menu** → **Board properties**, find the attribute under the **Card attributes** section, and press the corresponding <span class="tn-icon bx bx-trash"></span> button.
+To delete a grouping attribute, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → **Board properties**, find the attribute under the **Card attributes** section, and press the corresponding <span class="tn-icon bx bx-trash"></span> button.
 
 #### Grouping by relations
 

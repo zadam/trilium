@@ -1104,44 +1104,13 @@ body#trilium-app.motion-disabled .board-view.editing-open :is(
   max-width: calc(100% - 2 * var(--card-icon-inset));
 }
 
-/* A quiet chip rather than a button: it names what the card will be, and is pressed only to change
-   it. The name is cut rather than wrapped, the field being one line tall to begin with. */
-.board-view-container .card-template-pill .card-template-pill-button {
-  display: flex;
-  align-items: center;
-  gap: 0.3em;
-  max-width: 100%;
+.board-view-container .template-pill .template-pill-button {
   height: var(--card-template-pill-height);
-  border: 1px solid var(--main-border-color);
-  border-radius: 999px;
-  padding-inline: 0.5em;
-  background-color: transparent;
   color: var(--board-muted-text-color);
-  font-size: 0.85em;
-  line-height: 1;
 }
 
-.board-view-container .card-template-pill .card-template-pill-button:hover {
-  border-color: var(--main-text-color);
+.board-view-container .template-pill .template-pill-button:hover {
   color: var(--board-text-color);
-}
-
-/* The menu is drawn at the end of the page, so it is named rather than nested in the board. The
-   tick stands at the trailing edge, where a shortcut would. */
-.tn-dropdown-portal.card-template-pill .dropdown-item {
-  display: flex;
-  align-items: center;
-}
-
-.tn-dropdown-portal.card-template-pill .card-template-current {
-  margin-inline-start: auto;
-  padding-inline-start: 1.5em;
-}
-
-.board-view-container .card-template-pill .card-template-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* A card or column lands where the reader may not be looking, so it announces itself. */
@@ -1496,6 +1465,27 @@ body.mobile .column-drop-placeholder {
    does not take from it. */
 .board-view-container .board-column.collapsed h3 > .column-sort {
   transform: rotate(-90deg);
+}
+
+/* Top-down, the only direction in which CJK characters stay upright. Applied to the whole board so
+   its collapsed columns all read the same way. */
+.board-view-container.cjk-titles .board-column.collapsed h3 > .title,
+.board-view-container.cjk-titles .board-column.collapsed h3 > .counter-badge {
+  transform: none;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-sort {
+  transform: rotate(90deg);
+}
+
+/* Read top-down, the header leads with the icon as it does when expanded. Sorted last and then
+   reversed, the menu stays on top, where it is on every other board. */
+.board-view-container.cjk-titles .board-column.collapsed h3 {
+  flex-direction: column-reverse;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-menu {
+  order: 1;
 }
 
 /* Swapped: `padding` is physical, so it does not turn with the count. */

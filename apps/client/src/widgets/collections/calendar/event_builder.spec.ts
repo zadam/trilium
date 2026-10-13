@@ -6,7 +6,7 @@ import themePlugin from "fullcalendar/themes/forma";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { buildNote, buildNotes } from "../../../test/easy-froca.js";
-import { buildEvent, buildEvents } from "./event_builder.js";
+import { buildEvent, buildEvents, buildOccurrenceTitle } from "./event_builder.js";
 import { LOCALE_MAPPINGS } from "./index.js";
 import { serializeRecurrence } from "./recurrence.js";
 import { isValidDuration, parseDurationSeconds } from "./utils.js";
@@ -32,6 +32,16 @@ describe("Building events", () => {
         const events = await buildEvents(noteIds);
 
         expect(events).toHaveLength(0);
+    });
+
+    it("leaves out template notes, but not the events made from them", async () => {
+        const noteIds = buildNotes([
+            { id: "meeting", title: "Meeting", "#template": "", "#startDate": "2025-05-05" },
+            { title: "Standup", "~template": "meeting", "#startDate": "2025-05-07" }
+        ]);
+        const events = await buildEvents(noteIds);
+
+        expect(events.map((event) => event.title)).toEqual([ "Standup" ]);
     });
 
     it("supports both start date and end date", async () => {
@@ -199,6 +209,63 @@ describe("Promoted attributes", () => {
         expect(event[0]?.promotedAttributes).toMatchObject([
             [ "mood", "happy" ]
         ]);
+    });
+
+    describe("chosen in the calendar's properties", () => {
+        let built = 0;
+
+        /** A calendar with two events, under ids of their own: froca keeps attributes across builds. */
+        function calendar() {
+            built++;
+            const note = buildNote({
+                title: "Calendar",
+                "#label:location(inheritable)": "promoted,alias=Where,single,text",
+                "#label:mood(inheritable)": "promoted,single,text",
+                "#label:weight(inheritable)": "promoted,single,text",
+                "#label:startDate(inheritable)": "promoted,single,date",
+                children: [
+                    {
+                        id: `fair${built}`, title: "Fair", "#startDate": "2025-05-05",
+                        "#location": "Park", "#mood": "good", "#weight": "70"
+                    },
+                    {
+                        id: `gym${built}`, title: "Gym", "#startDate": "2025-05-06", "#weight": "71",
+                        "#mood": "tired", "#calendar:displayedAttributes": "weight"
+                    }
+                ]
+            });
+            return { note, fair: `fair${built}`, gym: `gym${built}` };
+        }
+
+        it("shows the attributes switched on in the settings, in order, under their alias", async () => {
+            const { note, fair } = calendar();
+            const events = await buildEvents([ fair ], {
+                calendar: note,
+                settings: [ { name: "mood" }, { name: "weight", hidden: true }, { name: "location" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "mood", "good" ], [ "Where", "Park" ] ]);
+        });
+
+        it("leaves off what nobody arranged, and the dates the calendar draws itself", async () => {
+            const { note, fair } = calendar();
+            const events = await buildEvents([ fair ], {
+                calendar: note,
+                settings: [ { name: "startDate" }, { name: "mood" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "mood", "good" ] ]);
+        });
+
+        it("gives way to an event's own #calendar:displayedAttributes", async () => {
+            const { note, gym } = calendar();
+            const events = await buildEvents([ gym ], {
+                calendar: note,
+                settings: [ { name: "mood" } ]
+            });
+
+            expect(events[0]?.promotedAttributes).toEqual([ [ "weight", "71" ] ]);
+        });
     });
 
     it("supports start time and end time", async () => {
@@ -396,6 +463,25 @@ describe("Recurrence", () => {
         consoleSpy.mockRestore();
     });
 
+    it("carries the title template and the day the series starts on", async () => {
+        const noteIds = buildNotes([
+            {
+                title: "John Smith",
+                "#startDate": "1990-05-12",
+                "#startTime": "09:00",
+                "#recurrence": "RRULE:FREQ=YEARLY",
+                "#calendar:titleTemplate": "${title} (${years})"
+            }
+        ]);
+        const events = await buildEvents(noteIds);
+
+        expect(events[0]).toMatchObject({
+            title: "John Smith",
+            titleTemplate: "${title} (${years})",
+            seriesStart: "1990-05-12"
+        });
+    });
+
     describe("in a time zone ahead of UTC", () => {
         useTimeZone("Europe/Bucharest");
 
@@ -504,6 +590,44 @@ describe("Recurrence", () => {
                 "2026-11-29 21:00"
             ]);
         });
+    });
+});
+
+describe("buildOccurrenceTitle", () => {
+    /** A FullCalendar event for the occurrence that starts on `start`. */
+    function occurrence(titleTemplate: string | null, start: Date, seriesStart = "1990-05-12") {
+        return { title: "John Smith", start, extendedProps: { titleTemplate, seriesStart } };
+    }
+
+    it("leaves an event with no template under its plain title", () => {
+        expect(buildOccurrenceTitle(occurrence(null, new Date(2026, 4, 12)))).toBe("John Smith");
+    });
+
+    it("counts the whole years from the start date to the occurrence", () => {
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(2026, 4, 12))))
+            .toBe("John Smith (36)");
+        expect(buildOccurrenceTitle(occurrence("${title} turns ${years}", new Date(2027, 4, 12))))
+            .toBe("John Smith turns 37");
+        expect(buildOccurrenceTitle(occurrence("${title} (${years})", new Date(1990, 4, 12))))
+            .toBe("John Smith (0)");
+    });
+
+    it("reads both the occurrence's date and the series'", () => {
+        const template =
+            "${title}, born ${startDate.format('YYYY')}, turns ${years} in ${date.format('YYYY')}";
+        expect(buildOccurrenceTitle(occurrence(template, new Date(2026, 4, 12))))
+            .toBe("John Smith, born 1990, turns 36 in 2026");
+    });
+
+    it("falls back to the plain title for a template the evaluator rejects, saying so once", () => {
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        const broken = occurrence("${nmae} (${years})", new Date(2026, 4, 12));
+
+        expect(buildOccurrenceTitle(broken)).toBe("John Smith");
+        expect(buildOccurrenceTitle(broken)).toBe("John Smith");
+        expect(consoleSpy).toHaveBeenCalledOnce();
+        expect(consoleSpy.mock.calls[0]?.[0]).toContain("#calendar:titleTemplate");
+        consoleSpy.mockRestore();
     });
 });
 

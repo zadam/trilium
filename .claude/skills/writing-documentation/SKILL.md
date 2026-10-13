@@ -137,8 +137,12 @@ skeletons per page kind are [references/page-templates.md](references/page-templ
 5. Other pages by title as a pill, preceded by a non-breaking space:
    `&nbsp;<a class="reference-link" href="../Rel/Path%20Name.md">Path Name</a>` (text = target title).
    Inline phrases as `[phrase](../Rel/Path.md)`. Issues go to "[report the issue](…/Troubleshooting/Reporting%20issues.md)".
-6. UI labels and menu items in _italics_; paths with `→`: `<Options pill> → _Appearance_ → _Fonts_`.
-   Settings by their UI path, never by option key.
+   **A part of the app's chrome that has a page under _UI Elements_ is always a pill** — Note menu,
+   Note Tree, Launch Bar, Options, Global menu, Right Sidebar, Status bar… — never `**Note menu**`
+   or plain text, on every mention, including the first segment of a menu path. `check` warns on
+   the bold form and prints the pill to paste.
+6. UI labels and menu items in _italics_; paths with `→`: `<Options pill> → _Appearance_ → _Fonts_`,
+   `<Note menu pill> → _Board properties_`. Settings by their UI path, never by option key.
 7. Keys: `<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>`, no spaces. Labels/relations in backticks with
    prefix: `` `#board:groupBy` ``, `` `~template` ``. Files, values, env vars, syntax in backticks.
 8. A button is shown by its icon: `<span class="tn-icon cke cke-<name>"></span>` for a text-editor
