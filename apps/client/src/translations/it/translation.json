@@ -688,7 +688,7 @@
     "reset-column-sorting": "Ripristina le impostazioni predefinite per l'ordinamento di tutte le colonne",
     "reset-column-sorting-confirm": "Vuoi ripristinare le impostazioni predefinite per le opzioni di ordinamento di tutte le colonne della vista corrente?",
     "sorted-no-reorder": "Non è possibile riordinare le schede, poiché si tratta di una colonna ordinata.",
-    "copy-reference": "Riferimento alla copia",
+    "copy-reference": "Copia riferimento",
     "reference-column-missing": "Quella rubrica non è più presente su questo forum.",
     "reference-archived": "Quella scheda è archiviata, quindi non viene visualizzata sulla bacheca.",
     "reference-missing": "Quella carta non è più presente su questa scacchiera.",
