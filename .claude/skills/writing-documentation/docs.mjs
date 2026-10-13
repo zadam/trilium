@@ -570,6 +570,10 @@ function checkStructure(index, errors, warnings) {
 function checkContent(index, errors, warnings) {
     const { treeName } = index;
     const titleByFile = new Map(index.pages.filter((p) => p.file).map((p) => [p.file, p.title]));
+    // Pages for a part of the app's chrome, which other pages name with a pill rather than in bold.
+    const uiElements = index.pages
+        .filter((p) => p.file && !p.isClone && p.ancestors.some((a) => a.title === "UI Elements"))
+        .map((p) => ({ page: p, bold: new RegExp(`\\*\\*${p.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\*\\*`, "i") }));
     for (const page of index.pages) {
         if (!page.file || page.isClone || !page.file.endsWith(".md")) continue;
         const md = readPage(page);
@@ -598,6 +602,9 @@ function checkContent(index, errors, warnings) {
             if (/[A-Za-z]\\\\[A-Za-z]/.test(l)) warnings.push(`${at}: stray backslash inside a word ("${l.match(/\w*\\\\\w*/)[0]}")`);
             if (/\b(colour|centre|organis(e|ation)|customis|behaviour|synchronis|recognis|licence\b|grey\b)/i.test(l) && !/```|http/.test(l)) warnings.push(`${at}: British spelling (the docs are US English)`);
             if (/TriliumNext Notes/.test(l)) warnings.push(`${at}: "TriliumNext Notes" — the product is "Trilium"`);
+            for (const ui of uiElements) {
+                if (ui.page !== page && ui.bold.test(l)) warnings.push(`${at}: **${ui.page.title}** in bold — name it with a pill: <a class="reference-link" href="${relativeHref(page, ui.page)}">${escapeHtml(ui.page.title)}</a>`);
+            }
             if (/\b(Ctrl|Shift|Alt|Cmd)\s*\+\s*\w/.test(l) && !/<kbd>/.test(l) && !/^\s*[`|]|```/.test(l)) warnings.push(`${at}: plain-text shortcut — write each key as <kbd>…</kbd>`);
             for (const [, href, text] of l.matchAll(/<a class="reference-link" href="([^"]+)">([^<]*)<\/a>/g)) {
                 const target = resolveRelative(dir, unescapeHtml(href));
