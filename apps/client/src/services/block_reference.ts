@@ -1,7 +1,8 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { CLASSES as TAB_CLASSES } from "@triliumnext/ckeditor5/src/plugins/tabs/constants.js";
 import {
-    type BlockRange, formatBlockRange, parseBlockRange, resolveBlockRange, resolveBlockReference
+    type BlockRange, encodeBlockParameter, formatBlockRange, parseBlockRange, resolveBlockRange,
+    resolveBlockReference
 } from "@triliumnext/commons";
 
 import type { CommandNames } from "../components/app_context.js";
@@ -9,7 +10,7 @@ import contextMenu, { type MenuItem } from "../menus/context_menu.js";
 import type { ClipboardAccess } from "../menus/table_context_menu.js";
 import { getTextEditorContaining } from "../menus/text_editor_context_menu.js";
 import { getBlockExcerpt } from "./block_excerpts.js";
-import { copyHtmlWithToast } from "./clipboard_ext.js";
+import { copyHtmlWithToast, copyTextWithToast } from "./clipboard_ext.js";
 import { revealElement } from "./collapsible.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
@@ -40,18 +41,39 @@ export interface BlockReferenceMenuItems {
     paste: MenuItem<CommandNames>[];
 }
 
+/** The actions of the block handle menu. */
+export interface BlockHandleMenuActions {
+    /** Copies a reference to the selected blocks. */
+    copyReference: () => void;
+    /** Copies a link to the selected blocks on the shared page of the note, if it is shared. */
+    copyShareLink?: () => void;
+}
+
 /** The component of a text editor that copies references to the blocks of its note. */
 interface BlockReferenceHost {
     copyBlockReference?(): Promise<void>;
     copyTabReference?(): void;
 }
 
-/** Opens the menu of the block handle at `event`, which copies a reference to `count` blocks. */
-export function openBlockHandleMenu(event: MouseEvent, count: number, copyReference: () => void) {
+/** Opens the menu of the block handle at `event`, for `count` selected blocks. */
+export function openBlockHandleMenu(
+    event: MouseEvent,
+    count: number,
+    { copyReference, copyShareLink }: BlockHandleMenuActions
+) {
+    const items = [ getCopyItem(count, copyReference) ];
+    if (copyShareLink) {
+        items.push({
+            title: t("block_reference.copy_share_link", { count }),
+            uiIcon: "bx bx-world",
+            handler: copyShareLink
+        });
+    }
+
     void contextMenu.show({
         x: event.pageX,
         y: event.pageY,
-        items: [ getCopyItem(count, copyReference) ],
+        items,
         selectMenuItemHandler: () => {}
     });
 }
@@ -122,6 +144,19 @@ export async function copyTabReference(
     await copyReference(editor, editor.execute("assignTabReference"), notePath, noteTitle);
 }
 
+/**
+ * Gives ids to the selected blocks of `editor`, flashes the blocks and copies a link to them on
+ * the shared page of the note, whose URL is `shareLink`.
+ */
+export function copyBlockShareLink(editor: CKTextEditor, shareLink: string) {
+    const target = editor.execute("assignBlockReference");
+    if (!target || !flashBlockRange(editor, target)) {
+        return;
+    }
+
+    copyTextWithToast(`${shareLink}?block=${encodeBlockParameter(formatBlockRange(target))}`);
+}
+
 /** Flashes the blocks of `target` and copies a reference link to them. */
 async function copyReference(
     editor: CKTextEditor,
@@ -129,21 +164,34 @@ async function copyReference(
     notePath: string,
     noteTitle: string
 ) {
-    const root = editor.editing.view.getDomRoot();
-    const { start, end } = target && root
-        ? resolveBlockRange<HTMLElement>(root, target)
-        : { start: null, end: null };
-    if (!target || !start || !end) {
+    const blocks = target && flashBlockRange(editor, target);
+    if (!target || !blocks) {
         return;
     }
 
-    flashBlocks(getBlockRangeElements(start, end));
     const href = calculateHash({ notePath, viewScope: { block: formatBlockRange(target) } });
     const $link = $("<a>")
         .addClass("reference-link")
         .attr("href", href)
-        .text(`${noteTitle} - ${getBlockExcerpt(start, end)}`);
+        .text(`${noteTitle} - ${getBlockExcerpt(blocks.start, blocks.end)}`);
     await copyHtmlWithToast($link[0].outerHTML, href);
+}
+
+/**
+ * Flashes the blocks of `target` in `editor`. Returns the first and the last block, or `null` when
+ * one of them is not found.
+ */
+function flashBlockRange(editor: CKTextEditor, target: BlockRange) {
+    const root = editor.editing.view.getDomRoot();
+    const { start, end } = root
+        ? resolveBlockRange<HTMLElement>(root, target)
+        : { start: null, end: null };
+    if (!start || !end) {
+        return null;
+    }
+
+    flashBlocks(getBlockRangeElements(start, end));
+    return { start, end };
 }
 
 /**

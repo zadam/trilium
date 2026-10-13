@@ -4572,6 +4572,8 @@
   "block_reference": {
     "copy_one": "Copy reference to this block",
     "copy_other": "Copy reference to these {{count}} blocks",
+    "copy_share_link_one": "Copy public link to this block",
+    "copy_share_link_other": "Copy public link to these {{count}} blocks",
     "copy_tab": "Copy link to this tab",
     "paste_as_link": "Paste reference as a link",
     "paste_as_excerpt": "Paste reference as an excerpt",
