@@ -74,4 +74,24 @@ describe("ImageEditingSource", () => {
         plugin.refresh();
         expect(resolve.mock.calls).toEqual([ [ INLINE_SRC ] ]);
     });
+
+    it("leaves an image without a src alone", async () => {
+        const resolve = vi.fn((src: string) => `${src}?v=1`);
+        const editor = await createEditor(resolve);
+        const root = editor.model.document.getRoot();
+        const image = root?.getChild(0);
+        expect(image?.is("element", "imageBlock")).toBe(true);
+
+        resolve.mockClear();
+        editor.model.change((writer) => {
+            if (image?.is("element")) {
+                writer.removeAttribute("src", image);
+            }
+        });
+        editor.plugins.get(ImageEditingSource).refresh();
+
+        // Only the inline image, which keeps its src, is resolved again.
+        expect(resolve.mock.calls).toEqual([ [ INLINE_SRC ] ]);
+        expect(renderedSources(editor)).toEqual([ "", `${INLINE_SRC}?v=1` ]);
+    });
 });

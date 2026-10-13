@@ -106,6 +106,8 @@ export default class ImageEditingSource extends Plugin {
     /** The `<img>` of an image block's `<figure>` or of an inline image's wrapper. */
     private _findViewImg(image: ModelElement) {
         const viewElement = this.editor.editing.mapper.toViewElement(image);
+        /* v8 ignore next -- `ImageEditing` maps every attached image to a view element before
+           its `src` is converted, and `refresh()` skips the images that left the document. */
         if (!viewElement) {
             return undefined;
         }
