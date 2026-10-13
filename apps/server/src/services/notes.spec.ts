@@ -1,4 +1,5 @@
-import { BAttribute, becca, becca_easy_mocking, checkImageAttachments, collectCanvasImageFileIds, findBookmarks, findLlmChatLinks, findMindMapLinks, saveLinks } from "@triliumnext/core";
+import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
+import { BAttachment, BAttribute, becca, becca_easy_mocking, checkImageAttachments, collectCanvasImageFileIds, findBookmarks, findLlmChatLinks, findMindMapLinks, saveLinks } from "@triliumnext/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { randomString } from "./utils.js";
@@ -283,6 +284,75 @@ describe("checkImageAttachments", () => {
                 expect(content).toBe(embedOf("localAtt2"));
             } finally {
                 getAttachments.mockRestore();
+            }
+        });
+
+        it("keeps the images that an embedded canvas drawing shows while it is embedded", () => {
+            const note = buildNote({
+                title: "Test",
+                attachments: [
+                    { id: "drawing1", ...DRAWING },
+                    { title: "f1.png", role: "image", mime: "image/png" },
+                    { title: "f2.png", role: "image", mime: "image/png" }
+                ]
+            });
+            mockAttachmentSaves(note);
+            const [ drawing, shown, removed ] = note.getAttachments();
+            setDrawingContent(drawing, "f1.png");
+            shown.utcDateScheduledForErasureSince = "2025-01-01 00:00:00.000Z";
+
+            checkImageAttachments(note, embedOf("drawing1"));
+            expect(drawing.utcDateScheduledForErasureSince).toBeFalsy();
+            expect(shown.utcDateScheduledForErasureSince).toBeNull();
+            expect(removed.utcDateScheduledForErasureSince).toBeTruthy();
+
+            checkImageAttachments(note, "<p>The drawing is gone.</p>");
+            expect(drawing.utcDateScheduledForErasureSince).toBeTruthy();
+            expect(shown.utcDateScheduledForErasureSince).toBeTruthy();
+        });
+
+        it("copies with a foreign drawing the images the note lacks and keeps the rest", () => {
+            const source = buildNote({
+                title: "Source",
+                attachments: [
+                    { id: "foreignDrawing", ...DRAWING },
+                    { title: "f1.png", role: "image", mime: "image/png" },
+                    { title: "f2.png", role: "image", mime: "image/png" },
+                    { title: "unrelated.png", role: "image", mime: "image/png" }
+                ]
+            });
+            const [ foreign, ...images ] = source.getAttachments();
+            setDrawingContent(foreign, "f1.png", "f2.png");
+            for (const image of images) {
+                image.getContent = () => new Uint8Array([ 1 ]);
+            }
+
+            const target = buildNote({
+                title: "Target",
+                attachments: [ { title: "f2.png", role: "image", mime: "image/png" } ]
+            });
+            mockAttachmentSaves(target);
+            const [ kept ] = target.getAttachments();
+            kept.utcDateScheduledForErasureSince = "2025-01-01 00:00:00.000Z";
+
+            const copies: BAttachment[] = [];
+            const setContent = vi.spyOn(BAttachment.prototype, "setContent")
+                .mockImplementation(function (this: BAttachment) {
+                    copies.push(this);
+                });
+            const getAttachments = vi.spyOn(becca, "getAttachments").mockReturnValue([ foreign ]);
+
+            try {
+                checkImageAttachments(target, embedOf("foreignDrawing"));
+
+                expect(copies.map(({ ownerId, title }) => ({ ownerId, title }))).toEqual([
+                    { ownerId: target.noteId, title: "Canvas.excalidraw" },
+                    { ownerId: target.noteId, title: "f1.png" }
+                ]);
+                expect(kept.utcDateScheduledForErasureSince).toBeNull();
+            } finally {
+                getAttachments.mockRestore();
+                setContent.mockRestore();
             }
         });
     });
@@ -1121,4 +1191,13 @@ describe("findLlmChatLinks", () => {
 /** An embed of the attachment, as the text editor saves one. */
 function embedOf(attachmentId: string) {
     return `<section class="include-note" data-attachment-id="${attachmentId}">` + "</section>";
+}
+
+const DRAWING = { title: "Canvas.excalidraw", role: "file", mime: CANVAS_ATTACHMENT_MIME };
+
+/** Gives `drawing` a scene with an image element for each of `fileIds`. */
+function setDrawingContent(drawing: BAttachment, ...fileIds: string[]) {
+    const elements = fileIds.map((fileId) => ({ type: "image", fileId }));
+    const content = JSON.stringify({ type: "excalidraw", version: 2, elements, files: {} });
+    drawing.getContent = () => new TextEncoder().encode(content);
 }

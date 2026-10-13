@@ -116,4 +116,10 @@ describe("CanvasEditor", () => {
         await mount();
         expect(getFormFactor()).toBeUndefined();
     });
+
+    it("passes the limits of the view to Excalidraw", async () => {
+        const constrainView = vi.fn();
+        await mount({ constrainView });
+        expect(excalidrawProps.mock.lastCall?.[0].UIOptions?.constrainView).toBe(constrainView);
+    });
 });

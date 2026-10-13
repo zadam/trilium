@@ -33,6 +33,7 @@ import {
     registerContentEmbedTools,
     showContentEmbedFullscreen
 } from "../text/content_embed_tools";
+import { getBoundedView, MAX_ZOOM, MIN_ZOOM } from "./drawing_view";
 
 /** The tools with a button of their own, in the order of their buttons. */
 export const MAIN_TOOLS = [
@@ -50,10 +51,8 @@ const FULLSCREEN = "fullscreen";
 /** The commands that click Excalidraw's own `button-undo` and `button-redo`. */
 export const HISTORY_ACTIONS = [ "undo", "redo" ] as const;
 
-/** Excalidraw's zoom step and limits, from its own zoom buttons. */
+/** Excalidraw's zoom step, from its own zoom buttons. */
 export const ZOOM_STEP = 0.1;
-export const MIN_ZOOM = 0.1;
-export const MAX_ZOOM = 30;
 /** The zoom that each zoom button sets, from the current one. */
 export const ZOOMS: Record<string, (zoom: number) => number> = {
     zoomOut: (zoom) => zoom - ZOOM_STEP,
@@ -213,7 +212,9 @@ export class CanvasTools implements ContentEmbedToolProvider {
         if (id === FULLSCREEN) {
             showContentEmbedFullscreen(this.rootRef.current);
         } else if (getZoom) {
-            api.updateScene({ appState: getZoomState(appState, getZoom(appState.zoom.value)) });
+            const view = getZoomState(appState, getZoom(appState.zoom.value));
+            const boundedView = getBoundedView(api.getSceneElements(), { ...appState, ...view });
+            api.updateScene({ appState: boundedView ?? view });
         } else if (this.isEditable) {
             this.runEditingTool(api, appState, id);
         }

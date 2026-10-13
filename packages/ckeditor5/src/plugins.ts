@@ -39,6 +39,7 @@ import AutoformatMath from "./plugins/math/autoformat_math.js";
 import CopyAnchorLinkButton from "./plugins/copy_anchor_link.js";
 import CopyLinkUrlButton from "./plugins/copy_link_url.js";
 import ImageActions from "./plugins/image_actions.js";
+import ImageToDrawing from "./plugins/image_to_drawing.js";
 import ClipboardBareImage from "./plugins/clipboard_bare_image.js";
 import ClipboardImageEmbed from "./plugins/clipboard_image_embed.js";
 import ClipboardPageStyles from "./plugins/clipboard_page_styles.js";
@@ -119,6 +120,7 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     CopyAnchorLinkButton,
     CopyLinkUrlButton,
     ImageActions,
+    ImageToDrawing,
     ClipboardImageEmbed,
     ClipboardBareImage,
     ClipboardPageStyles,

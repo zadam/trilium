@@ -59,13 +59,12 @@ vi.mock("../../../services/utils", async (importOriginal) => ({
     isMobile: () => layout.onMobile
 }));
 
-vi.mock("../../../services/note_types", () => ({
+vi.mock("../../../services/note_types", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../../services/note_types")>()),
     getNoteTypeOptions: vi.fn(async () => {
         templateReads++;
         return NOTE_TYPE_OPTIONS;
     }),
-    resolveNoteTypeOptions: (ids: string[], available: { id: string }[]) =>
-        ids.flatMap(id => available.filter(option => option.id === id)),
     noteTypeOptionGroupTitle: (group: string) => `group:${group}`,
     default: {}
 }));
@@ -1955,7 +1954,7 @@ describe("Board column rename", () => {
             await flush();
         });
 
-        return slot?.querySelector(".card-template-pill button")?.textContent ?? "";
+        return slot?.querySelector(".template-pill button")?.textContent ?? "";
     }
 
     /**
@@ -2184,7 +2183,7 @@ describe("Board column rename", () => {
 
         const field = column.querySelector<HTMLElement>(".board-new-item.inserting");
         expect(field?.querySelector(".title-editor-icon button")).toBeTruthy();
-        expect(field?.querySelector(".card-template-pill button")?.textContent).toContain("Text");
+        expect(field?.querySelector(".template-pill button")?.textContent).toContain("Text");
         expect(field?.querySelector("textarea")?.placeholder).toBeTruthy();
 
         // Escape takes it down again, having made nothing.
@@ -2516,7 +2515,7 @@ describe("Board column rename", () => {
         });
 
         const editor = slot?.querySelector<HTMLTextAreaElement>("textarea");
-        const pill = slot?.querySelector<HTMLElement>(".card-template-pill button");
+        const pill = slot?.querySelector<HTMLElement>(".template-pill button");
         if (!editor || !pill) throw new Error("expected the editor and its template pill");
 
         // The first the board offers, until something else is picked.
@@ -2530,13 +2529,13 @@ describe("Board column rename", () => {
 
         // The menu is portalled to the page, and the boards this file rendered before left theirs
         // behind, so it is the last one that belongs to the board under test.
-        const menu = [ ...document.querySelectorAll<HTMLElement>(".card-template-pill") ].at(-1);
+        const menu = [ ...document.querySelectorAll<HTMLElement>(".template-pill") ].at(-1);
         const items = [ ...(menu?.querySelectorAll<HTMLElement>(".dropdown-item") ?? []) ];
         expect(items.map(item => item.textContent?.trim())).toEqual([
             "Text", "Markdown", "Canvas", "Spreadsheet", "board_view.more-templates"
         ]);
         // The one a card would be made from is ticked, rather than standing out by its background.
-        expect(items.map(item => !!item.querySelector(".card-template-current")))
+        expect(items.map(item => !!item.querySelector(".menu-trailing-icon")))
             .toEqual([ true, false, false, false, false ]);
         expect(items.some(item => item.classList.contains("active"))).toBe(false);
 
@@ -2554,9 +2553,9 @@ describe("Board column rename", () => {
             $(pill.closest(".dropdown") as HTMLElement).children("button:not([aria-expanded=true])").trigger("click");
             await flush();
         });
-        const reopened = [ ...document.querySelectorAll<HTMLElement>(".card-template-pill") ].at(-1);
+        const reopened = [ ...document.querySelectorAll<HTMLElement>(".template-pill") ].at(-1);
         expect([ ...(reopened?.querySelectorAll(".dropdown-item") ?? []) ]
-            .map(item => !!item.querySelector(".card-template-current")))
+            .map(item => !!item.querySelector(".menu-trailing-icon")))
             .toEqual([ false, false, true, false, false ]);
 
         await type(editor, "Drawn");
@@ -2567,7 +2566,7 @@ describe("Board column rename", () => {
 
         expect(created).toHaveBeenCalledWith("Doing", "Drawn", "bottom", undefined,
             expect.objectContaining({ id: "type:canvas:application/json" }));
-        expect(slot?.querySelector(".card-template-pill button")?.textContent).toContain("Canvas");
+        expect(slot?.querySelector(".template-pill button")?.textContent).toContain("Canvas");
     });
 
     /**
@@ -2589,7 +2588,7 @@ describe("Board column rename", () => {
         });
 
         const editor = slot?.querySelector<HTMLTextAreaElement>("textarea");
-        const pill = slot?.querySelector<HTMLElement>(".card-template-pill button");
+        const pill = slot?.querySelector<HTMLElement>(".template-pill button");
         if (!editor || !pill) throw new Error("expected the editor and its pill");
         await type(editor, "Still here");
 
@@ -2780,7 +2779,7 @@ describe("Board column rename", () => {
             await flush();
         });
 
-        const pill = slot?.querySelector<HTMLElement>(".card-template-pill button");
+        const pill = slot?.querySelector<HTMLElement>(".template-pill button");
         if (!pill) throw new Error("expected the template pill");
         await act(async () => {
             pill.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
@@ -2788,7 +2787,7 @@ describe("Board column rename", () => {
             await flush();
         });
 
-        const menus = [ ...document.querySelectorAll<HTMLElement>(".card-template-pill") ];
+        const menus = [ ...document.querySelectorAll<HTMLElement>(".template-pill") ];
         const more = [ ...(menus.at(-1)?.querySelectorAll<HTMLElement>(".dropdown-item") ?? []) ]
             .find(item => item.textContent?.includes("more-templates"));
         if (!more) throw new Error("expected a way to the dialog");
@@ -2889,7 +2888,7 @@ describe("Board column rename", () => {
 
     /** Picks one of the templates the pill offers, by where it stands in its menu. */
     async function pickTemplate(slot: HTMLElement | null | undefined, index: number) {
-        const pill = slot?.querySelector<HTMLElement>(".card-template-pill button");
+        const pill = slot?.querySelector<HTMLElement>(".template-pill button");
         if (!pill) throw new Error("expected the template pill");
 
         await act(async () => {
@@ -2900,7 +2899,7 @@ describe("Board column rename", () => {
 
         // The menu is portalled to the page, and the boards rendered before left theirs behind, so
         // the last one is the board under test.
-        const menu = [ ...document.querySelectorAll<HTMLElement>(".card-template-pill") ].at(-1);
+        const menu = [ ...document.querySelectorAll<HTMLElement>(".template-pill") ].at(-1);
         const items = [ ...(menu?.querySelectorAll<HTMLElement>(".dropdown-item") ?? []) ];
         await act(async () => {
             items[index].click();
@@ -4533,13 +4532,13 @@ describe("Board properties from the note menu", () => {
         expect(isOpen()).toBe(false);
 
         await act(async () => {
-            await host.handleEvent("showBoardProperties", { ntxId: "ntx-2" });
+            await host.handleEvent("showCollectionProperties", { ntxId: "ntx-2" });
             await flush();
         });
         expect(isOpen()).toBe(false);
 
         await act(async () => {
-            await host.handleEvent("showBoardProperties", { ntxId: "ntx-1" });
+            await host.handleEvent("showCollectionProperties", { ntxId: "ntx-1" });
             await flush();
         });
         expect(isOpen()).toBe(true);

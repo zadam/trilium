@@ -61,7 +61,7 @@
     "@playwright/test": "1.64.0",
     "@triliumnext/server": "workspace:*",
     "@types/express": "5.0.6",
-    "@types/node": "24.19.1",
+    "@types/node": "24.19.2",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vitest/browser-playwright": "5.0.3",
     "@vitest/coverage-v8": "5.0.3",
@@ -99,5 +99,5 @@
     "url": "https://github.com/TriliumNext/Trilium/issues"
   },
   "homepage": "https://triliumnotes.org",
-  "packageManager": "pnpm@12.10.1"
+  "packageManager": "pnpm@12.11.2"
 }

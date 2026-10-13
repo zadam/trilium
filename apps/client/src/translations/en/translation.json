@@ -782,6 +782,7 @@
     "calendar_slot_duration": "How long each timeslot of a calendar lasts, as <code>HH:MM:SS</code>. Defaults to 15 minutes.",
     "calendar_slot_label_interval": "How often the timeslots of a calendar are labeled, as <code>HH:MM:SS</code>. Defaults to an hour.",
     "calendar_title": "Names the attribute an event takes its title from, instead of the note title. Either a label or a relation, written without <code>#</code> or <code>~</code>.",
+    "calendar_title_template": "How an event is titled on the calendar, filled in for every occurrence of a repeating one. Reads <code>${title}</code>, <code>${years}</code> (whole years since the start date) and the dates <code>${date}</code> and <code>${startDate}</code>, e.g. <code>${title} (${years})</code> on a yearly birthday.",
     "calendar_displayed_attributes": "Comma-delimited attribute names whose values are shown on the event. A relation is shown as the title of the note it points at.",
     "calendar_start_date": "Names the label an event reads its start date from, instead of <code>#startDate</code>. Written without the <code>#</code>.",
     "calendar_end_date": "Names the label an event reads its end date from, instead of <code>#endDate</code>.",
@@ -1061,7 +1062,9 @@
       "end_date": "End date",
       "time": "Time",
       "start_time": "Start time",
-      "end_time": "End time"
+      "end_time": "End time",
+      "add_time": "Add time",
+      "remove_time": "Remove time"
     },
     "recurrence": {
       "repeats": "Repeats",
@@ -1085,7 +1088,9 @@
       "count": "After",
       "times": "times",
       "custom_rule": "Rule",
-      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition."
+      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition.",
+      "count_years": "Show the number of years in the title",
+      "count_years_locked": "This event already has a title template, set on the note or inherited by it. Change it in the note's attributes."
     }
   },
   "close_pane_button": {
@@ -2853,7 +2858,8 @@
     "cannot-copy": "Could not copy the image reference to clipboard.",
     "image-copied-to-clipboard": "The image has been copied to clipboard.",
     "cannot-copy-image": "Could not copy the image to clipboard.",
-    "cannot-download": "Could not download the image."
+    "cannot-download": "Could not download the image.",
+    "cannot-convert-to-drawing": "Could not convert the image to a drawing canvas."
   },
   "clipboard": {
     "cut": "Note(s) have been cut into clipboard.",
@@ -3682,7 +3688,21 @@
     "minutes_one": "{{count}} minute",
     "minutes_other": "{{count}} minutes",
     "hours_one": "{{count}} hour",
-    "hours_other": "{{count}} hours"
+    "hours_other": "{{count}} hours",
+    "duration_minutes": "{{minutes}} min",
+    "duration_hours": "{{hours}} h",
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min",
+    "properties": "Calendar properties",
+    "event_templates": "Event templates",
+    "event_templates_hint": "Choose what note types and note templates you would like to use when creating new calendar events.",
+    "new_template_name": "New event template",
+    "event_template": "Select an event template",
+    "more_templates": "More templates…",
+    "template": "Template",
+    "general": "General",
+    "event_attributes": "Event attributes",
+    "event_attributes_hint": "Choose which attributes appear on the events, and in what order. New attributes are hidden until you turn them on.",
+    "event_attributes_overridden": "This calendar has a calendar:displayedAttributes label, so the events show the attributes listed there instead of the ones chosen here."
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",
@@ -4245,6 +4265,7 @@
       "changes": "Changes",
       "click-on-the-arrow-or-press-0-to-collapse-expand": "Click on the arrow or press %0 to collapse/expand.",
       "collapsible-block": "Collapsible block",
+      "convert-image-to-a-drawing-canvas": "Convert image to a drawing canvas",
       "convert-to-link": "Convert to link",
       "copy-anchor-reference-link": "Copy anchor reference link",
       "copy-formatting": "Copy formatting",
@@ -4418,7 +4439,8 @@
       "0-columns-layout": "%0 columns layout",
       "arrange-content-in-0-equal-columns-side-by-side": "Arrange content in %0 equal columns side by side.",
       "0-columns-1": "%0 columns (%1)",
-      "remove-layout": "Remove layout"
+      "remove-layout": "Remove layout",
+      "type-content-here": "Type content here…"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

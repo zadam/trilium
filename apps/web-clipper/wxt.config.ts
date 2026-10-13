@@ -1,10 +1,8 @@
 import { mkdirSync } from "fs";
-import { copyFile, readFile, rm, writeFile } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
 import JSZip from "jszip";
 import { resolve } from "path";
 import { defineConfig } from "wxt";
-
-let originalTsConfig: object;
 
 export default defineConfig({
     webExt: {
@@ -80,7 +78,29 @@ export default defineConfig({
         }
     }),
     zip: {
-        artifactTemplate: "trilium-web-clipper-{{version}}-{{browser}}.zip"
+        artifactTemplate: "trilium-web-clipper-{{version}}-{{browser}}.zip",
+        sourcesTemplate: "trilium-web-clipper-{{version}}-sources.zip",
+        // AMO rebuilds the extension from the sources zip, so it holds the monorepo files the
+        // build reads: the workspace and lockfile, the clipper, and the client styles and fonts.
+        sourcesRoot: resolve("../.."),
+        includeSources: [
+            "package.json",
+            "pnpm-workspace.yaml",
+            "pnpm-lock.yaml",
+            "tsconfig.base.json",
+            "patches/**",
+            "apps/web-clipper/**",
+            "apps/client/package.json",
+            "apps/client/src/stylesheets/buttons.css",
+            "apps/client/src/stylesheets/theme-next/buttons.css",
+            "apps/client/src/stylesheets/theme-next/forms.css",
+            "apps/client/src/fonts/Inter/**",
+            "apps/client/src/fonts/JetBrainsMono-Light.woff2"
+        ],
+        excludeSources: [
+            "apps/web-clipper/test-output/**",
+            "apps/web-clipper/*.tsbuildinfo"
+        ]
     },
     hooks: {
         "build:manifestGenerated": (wxt, manifest) => {
@@ -90,29 +110,14 @@ export default defineConfig({
                 Object.assign(action, { default_area: "navbar" });
             }
         },
-        'zip:sources:start': async () => {
-            // Rewrite tsconfig.base.json into the web-clipper app folder
-            await copyFile("../../tsconfig.base.json", "./tsconfig.base.json");
-
-            originalTsConfig = JSON.parse(await readFile("./tsconfig.json", "utf-8"));
-            const adjustedTsConfig = {
-                ...originalTsConfig,
-                extends: ["./tsconfig.base.json", "./.wxt/tsconfig.json"]
-            };
-
-            await writeFile("./tsconfig.json", JSON.stringify(adjustedTsConfig, null, 4), 'utf-8');
-        },
         "zip:sources:done": async (_wxt, sourcesZipPath) => {
-            // Restore original tsconfig.json
-            await writeFile("./tsconfig.json", JSON.stringify(originalTsConfig, null, 4), 'utf-8');
-
-            // Remove the copied tsconfig.base.json
-            await rm("./tsconfig.base.json");
-
             // wxt always excludes skipped entrypoints (offscreen is Chrome-only) from the
             // sources zip, but AMO needs complete sources to reproduce the build.
             const archive = await JSZip.loadAsync(await readFile(sourcesZipPath));
-            archive.file("entrypoints/offscreen/index.html", await readFile("entrypoints/offscreen/index.html"));
+            archive.file("apps/web-clipper/entrypoints/offscreen/index.html",
+                await readFile("entrypoints/offscreen/index.html"));
+            // The reviewer's build instructions, where the archive opens.
+            archive.file("README.md", await readFile("README.md"));
             await writeFile(sourcesZipPath, await archive.generateAsync({
                 type: "nodebuffer",
                 compression: "DEFLATE"

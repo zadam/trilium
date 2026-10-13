@@ -17,7 +17,7 @@ vi.mock("./persistence", () => ({
         return {};
     },
     parseContent: (content: string) => JSON.parse(content),
-    getInlineFiles: () => ({})
+    loadDrawingFiles: async () => ({ files: {}, referencedFileIds: new Set() })
 }));
 const { detailEditor, attachmentEditorMounts, canvasEditorMounts } = vi.hoisted(() => ({
     detailEditor: { canEdit: () => true, release: vi.fn() },
@@ -68,6 +68,7 @@ const {
 } = await import("./CanvasDrawing");
 const { default: CanvasDrawingMenu } = await import("./CanvasDrawingMenu");
 const { default: CanvasEmbedTools } = await import("./CanvasEmbedTools");
+const { getBoundedView } = await import("./drawing_view");
 
 /** Horizontal edges by class name; happy-dom computes no layout. */
 const edges: Record<string, { left: number; right: number }> = {
@@ -652,6 +653,9 @@ describe("CanvasDrawing", () => {
 
         await mountDetail("Owner");
         expect(getEditingState()).toEqual({ isReadOnly: false, menu: true, tools: undefined });
+        expect(canvasEditorProps).toHaveBeenLastCalledWith(
+            expect.objectContaining({ constrainView: getBoundedView })
+        );
         const detailDrawingEditor = persistenceArgs.mock.lastCall?.[1] as ContentEditor;
         detailDrawingEditor.release();
         expect(detailEditor.release).toHaveBeenCalledWith("a1");
@@ -668,7 +672,7 @@ describe("CanvasDrawing", () => {
         const device = window.glob.device;
         await mount();
         expect(canvasEditorProps).toHaveBeenLastCalledWith(
-            expect.objectContaining({ isDesktopLayout: true })
+            expect.objectContaining({ isDesktopLayout: true, constrainView: getBoundedView })
         );
 
         render(null, box);

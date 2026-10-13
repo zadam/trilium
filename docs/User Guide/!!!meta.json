@@ -9037,7 +9037,7 @@
                                 {
                                     "type": "label",
                                     "name": "iconClass",
-                                    "value": "bx bx-copy",
+                                    "value": "bx bx-detail",
                                     "isInheritable": false,
                                     "position": 110
                                 }
