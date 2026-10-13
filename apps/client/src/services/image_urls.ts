@@ -50,6 +50,60 @@ export function resolveContentImageUrls(html: string) {
     });
 }
 
+/**
+ * Marks the images of the notes `noteIds` as changed, so that {@link getNoteImageSourceToLoad}
+ * returns a URL the browser has not loaded yet. Within one page, the browser reuses an image it
+ * loaded before for the same URL and ignores `Cache-Control: no-store`.
+ */
+export function invalidateNoteImages(noteIds: Iterable<string>) {
+    for (const noteId of noteIds) {
+        lastNoteImageVersion++;
+        noteImageVersions.set(noteId, lastNoteImageVersion);
+    }
+}
+
+/**
+ * Returns the URL to load the image `src` from: for the image of a note that changed since the page
+ * loaded, `src` with the current version in a `v` parameter, otherwise `src` itself.
+ */
+export function getNoteImageSourceToLoad(src: string) {
+    const storedSrc = stripNoteImageVersion(src);
+    const noteId = storedSrc.match(NOTE_IMAGE_URL)?.[1];
+    const version = noteId ? noteImageVersions.get(noteId) : undefined;
+    if (version === undefined) {
+        return storedSrc;
+    }
+
+    return `${storedSrc}${storedSrc.includes("?") ? "&" : "?"}v=${version}`;
+}
+
+/** Returns `src` without the version that {@link getNoteImageSourceToLoad} adds. */
+export function stripNoteImageVersion(src: string) {
+    return NOTE_IMAGE_URL.test(src) ? src.replace(NOTE_IMAGE_VERSION, "") : src;
+}
+
+/** Points each note image under `container` at the URL {@link getNoteImageSourceToLoad} returns. */
+export function applyNoteImageVersions(container: ParentNode) {
+    for (const img of container.querySelectorAll("img")) {
+        const src = img.getAttribute("src");
+        if (!src) {
+            continue;
+        }
+
+        const url = getNoteImageSourceToLoad(src);
+        if (url !== src) {
+            img.setAttribute("src", url);
+        }
+    }
+}
+
+const noteImageVersions = new Map<string, number>();
+let lastNoteImageVersion = 0;
+
+/** The image of a note on the API, capturing the `noteId`. */
+const NOTE_IMAGE_URL = /(?:^|\/)api\/images\/(\w+)\//;
+const NOTE_IMAGE_VERSION = /[?&]v=\d+$/;
+
 /** An image of the API in an attribute of a note's HTML, naming a note or an attachment. */
 const CONTENT_IMAGE_URL =
     /(src|data-image|data-favicon)="[^"]*?api\/(?:images\/(\w+)\/|attachments\/(\w+)\/image\/)[^"]*"/g;
