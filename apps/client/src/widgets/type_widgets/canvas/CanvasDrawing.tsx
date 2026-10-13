@@ -24,7 +24,9 @@ import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
 import CanvasEmbedTools, { CanvasTools } from "./CanvasEmbedTools";
 import { type DrawingView, getBoundedView, getCenteredView, getFittedView } from "./drawing_view";
-import { loadDrawingFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
+import {
+    exportDrawingPicture, loadDrawingFiles, parseContent, useCanvasDrawingPersistence
+} from "./persistence";
 
 interface CanvasDrawingProps {
     attachment: FAttachment;
@@ -350,23 +352,11 @@ function placePicture({ svg, x, y, width, height }: ScenePicture, view: DrawingV
 export async function renderCanvasDrawingPicture(entity: FNote | FAttachment) {
     const blob = await entity.getBlob();
     const content = parseContent(blob?.content ?? "", entity);
-    const elements = (content.elements ?? []).filter((element) => !element.isDeleted);
-    if (!elements.length) {
-        return null;
-    }
-
-    const svg = await exportToSvg({
-        elements,
-        appState: {
-            ...content.appState,
-            exportBackground: true,
-            // Follows the theme as the editor does, except in print, which stays light.
-            exportWithDarkMode: glob.device !== "print" && getEffectiveThemeStyle() === "dark"
-        },
-        files: (await loadDrawingFiles(entity, content)).files,
-        exportPadding: 5
-    });
-    svg.classList.add("canvas-drawing-picture");
+    // Follows the theme as the editor does, except in print, which stays light.
+    const isDark = glob.device !== "print" && getEffectiveThemeStyle() === "dark";
+    const files = (await loadDrawingFiles(entity, content)).files;
+    const svg = await exportDrawingPicture(content, files, isDark);
+    svg?.classList.add("canvas-drawing-picture");
     return svg;
 }
 

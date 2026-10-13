@@ -247,13 +247,22 @@
     generated code.</li>
   <li>In a <a href="#root/_help_CoFPLs3dRlXc">read-only note</a>, the drawing
     shows as a still picture too.</li>
+  <li>On a <a href="#root/_help_R9pX4DGra2Vt">shared page</a>, the drawing is
+    shown as a picture at its own size, whatever the size of its box, in light
+    or dark colors to match the page. Each change to the drawing saves this
+    picture as an SVG image attachment of the note, also named with a generated
+    code.</li>
 </ul>
 <h3>Limitations</h3>
 <ul>
   <li>The Excalidraw shape library is not saved for a drawing canvas.</li>
   <li>Outside the editor, for example in a tooltip, when printing or in the
-    list of attachments, the drawing is shown as a picture. On a <a href="#root/_help_R9pX4DGra2Vt">shared page</a>,
-    it appears as a link to download its <code>.excalidraw</code> file.</li>
+    list of attachments, the drawing is shown as a picture.</li>
+  <li>A drawing has no picture for shared pages until its first change, except
+    one converted from an image. Until then, for example for an attached <code>.excalidraw</code> file,
+    a shared page shows a link to download the drawing instead.</li>
+  <li>In Safari, the picture of a drawing on a shared page follows the light
+    or dark appearance of the system rather than the theme chosen on the page.</li>
   <li>A copy of a drawing canvas pasted in the same note shares the drawing
     with the original, so a change to one shows in the other only after the
     note is opened again. A copy pasted in another note gets a drawing of its

@@ -4,7 +4,7 @@ import {
     AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState,
     ExcalidrawProps, LibraryItem
 } from "@excalidraw/excalidraw/types";
-import { deferred, type DeferredPromise } from "@triliumnext/commons";
+import { deferred, type DeferredPromise, getDrawingPictureTitle } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
@@ -446,7 +446,10 @@ export function useCanvasDrawingPersistence(
             if (sceneVersion === currentSceneVersion.current && !isAppStateChanged) return;
 
             currentSceneVersion.current = sceneVersion;
-            editor.scheduleSave(() => serializeDrawing(api, referencedFileIds.current));
+            editor.scheduleSave(
+                () => serializeDrawing(api, referencedFileIds.current),
+                (content) => saveDrawingPicture(attachment, content, api.getFiles())
+            );
         }
     };
 }
@@ -456,7 +459,10 @@ export function useCanvasDrawingPersistence(
  * to by file ID, which the note that owns `entity` keeps as image attachments titled with that ID.
  * `referencedFileIds` lists the latter.
  */
-export async function loadDrawingFiles(entity: FNote | FAttachment, content: CanvasContent) {
+export async function loadDrawingFiles(
+    entity: FNote | Pick<FAttachment, "ownerId">,
+    content: CanvasContent
+) {
     const files: BinaryFiles = {};
     for (const file of Object.values(content.files ?? {})) {
         files[file.id] = file;
@@ -479,6 +485,102 @@ export async function loadDrawingFiles(entity: FNote | FAttachment, content: Can
     }
 
     return { files, referencedFileIds };
+}
+
+/**
+ * The picture of the canvas drawing `scene` with the images `files`, as the list of attachments and
+ * shared pages show it, or `null` for an empty drawing.
+ */
+export async function exportDrawingPicture(
+    scene: CanvasContent,
+    files: BinaryFiles,
+    isDark: boolean
+) {
+    const elements = (scene.elements ?? []).filter((element) => !element.isDeleted);
+    if (!elements.length) {
+        return null;
+    }
+
+    return exportToSvg({
+        elements,
+        appState: { ...scene.appState, exportBackground: true, exportWithDarkMode: isDark },
+        files,
+        exportPadding: 5
+    });
+}
+
+/** The saved content that the latest picture of each canvas drawing comes from, by its ID. */
+const drawnPictureContents = new Map<string, string>();
+
+/** The picture of an empty canvas drawing. */
+const EMPTY_PICTURE = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>`;
+
+/** The filter that Excalidraw draws a drawing in dark colors with. */
+export const DRAWING_DARK_FILTER = "invert(93%) hue-rotate(180deg)";
+/** The filter that keeps the colors of a picture in a drawing drawn with `DRAWING_DARK_FILTER`. */
+export const IMAGE_DARK_FILTER = "invert(100%) hue-rotate(180deg) saturate(1.25)";
+
+/** The class of a saved picture, which scopes its own style. */
+const SAVED_PICTURE_CLASS = "trilium-drawing-picture";
+
+/**
+ * Draws a saved picture in the dark colors of Excalidraw while the page that shows it has a dark
+ * color scheme, with the filters of Excalidraw's dark export: the root inverted, the pictures in
+ * it, except SVG ones, inverted back.
+ */
+const SAVED_PICTURE_STYLE = `@media (prefers-color-scheme: dark) {
+    svg.${SAVED_PICTURE_CLASS} {
+        filter: ${DRAWING_DARK_FILTER};
+    }
+    svg.${SAVED_PICTURE_CLASS} image:not([href^="data:image/svg+xml"]) {
+        filter: ${IMAGE_DARK_FILTER};
+    }
+}`;
+
+/**
+ * Saves the picture of the canvas drawing in `drawing`, drawn from its saved `content`, as the
+ * image attachment that shared pages show in place of the drawing. The picture follows the light
+ * or dark color scheme of the page. `files` are the images of the drawing already loaded; the
+ * others load from the note.
+ */
+export async function saveDrawingPicture(
+    drawing: Pick<FAttachment, "attachmentId" | "ownerId">,
+    content: string,
+    files: BinaryFiles = {}
+) {
+    const { attachmentId, ownerId } = drawing;
+    drawnPictureContents.set(attachmentId, content);
+    try {
+        const scene = JSON.parse(content) as CanvasContent;
+        const isLoaded = (scene.elements ?? []).every((element) =>
+            !("fileId" in element) || !element.fileId || files[element.fileId]);
+        const picture = await exportDrawingPicture(
+            scene,
+            isLoaded ? files : (await loadDrawingFiles(drawing, scene)).files,
+            false
+        );
+        // A newer save draws a picture of its own.
+        if (drawnPictureContents.get(attachmentId) !== content) return;
+
+        if (picture) {
+            const style = picture.ownerDocument.createElementNS(picture.namespaceURI, "style");
+            style.textContent = SAVED_PICTURE_STYLE;
+            picture.classList.add(SAVED_PICTURE_CLASS);
+            picture.prepend(style);
+        }
+        await server.post(`notes/${ownerId}/attachments?matchBy=title`, {
+            role: IMAGE_ROLE,
+            mime: "image/svg+xml",
+            title: getDrawingPictureTitle(attachmentId),
+            content: picture?.outerHTML ?? EMPTY_PICTURE
+        });
+    } catch (e) {
+        console.error(`Could not save the picture of the canvas drawing '${attachmentId}'`, e);
+    } finally {
+        if (drawnPictureContents.get(attachmentId) === content) {
+            drawnPictureContents.delete(attachmentId);
+        }
+    }
 }
 
 /**

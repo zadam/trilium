@@ -10,6 +10,7 @@
  * still-empty initializing scene as a change worth saving. Only subsequent loads (note
  * switches on an already-initialized instance) may use `updateScene`.
  */
+import { exportToSvg } from "@excalidraw/excalidraw";
 import { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from "@excalidraw/excalidraw/types";
 import { type RefObject, render } from "preact";
 import { act } from "preact/test-utils";
@@ -20,7 +21,9 @@ import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import server from "../../../services/server";
 import { buildNote } from "../../../test/easy-froca";
-import useCanvasPersistence, { useCanvasDrawingPersistence } from "./persistence";
+import useCanvasPersistence, {
+    saveDrawingPicture, useCanvasDrawingPersistence
+} from "./persistence";
 
 interface FakeElement {
     id: string;
@@ -346,7 +349,7 @@ describe("useCanvasDrawingPersistence", () => {
         sceneElements = [ { ...loaded[0], version: 4 }, loaded[1] ];
         change();
         expect(editor.scheduleSave).toHaveBeenCalledTimes(1);
-        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        const [ getContent, onSaved ] = editor.scheduleSave.mock.calls[0];
         expect(JSON.parse(getContent())).toEqual({
             type: "excalidraw",
             version: 2,
@@ -357,6 +360,17 @@ describe("useCanvasDrawingPersistence", () => {
                 viewBackgroundColor: "transparent"
             }
         });
+
+        // Once saved, the drawing saves its picture, drawn with the images Excalidraw holds.
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        vi.mocked(exportToSvg).mockClear().mockResolvedValueOnce(svgOf("picture"));
+        await act(async () => onSaved(getContent()));
+        expect(vi.mocked(exportToSvg).mock.calls[0]?.[0].files).toBe(sceneFiles);
+        expect(post).toHaveBeenCalledExactlyOnceWith(
+            "notes/undefined/attachments?matchBy=title",
+            expect.objectContaining({ title: "a1.svg" })
+        );
+        post.mockRestore();
 
         appState = { ...appState, viewBackgroundColor: "#ffc9c9" };
         change();
@@ -494,3 +508,108 @@ describe("useCanvasDrawingPersistence", () => {
         expect(() => change()).not.toThrow();
     });
 });
+
+describe("saveDrawingPicture", () => {
+    const drawing = { attachmentId: "d1", ownerId: "n1" };
+    const IMAGE = { id: "f1", dataURL: "data:image/png;base64,AA==", mimeType: "image/png" };
+    const image = { id: "i1", type: "image", fileId: "f1" };
+
+    /** The saved pictures that `post` sent, with their whitespace collapsed. */
+    function getSavedPictures(post: { mock: { calls: unknown[][] } }) {
+        return post.mock.calls.map(([ , data ]) =>
+            (data as { content: string }).content.replace(/\s+/g, " "));
+    }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+        vi.mocked(exportToSvg).mockReset();
+    });
+
+    it("saves the picture of a drawing, titled after it, in the colors of its page", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        vi.mocked(exportToSvg).mockResolvedValueOnce(svgOf("picture"));
+        const files = { f1: IMAGE };
+        const content = JSON.stringify({
+            elements: [ image, { id: "gone", type: "line", isDeleted: true } ],
+            appState: { viewBackgroundColor: "#ffc9c9" }
+        });
+
+        await saveDrawingPicture(drawing, content, files as never);
+        expect(exportToSvg).toHaveBeenCalledExactlyOnceWith({
+            elements: [ image ],
+            appState: {
+                viewBackgroundColor: "#ffc9c9", exportBackground: true, exportWithDarkMode: false
+            },
+            files,
+            exportPadding: 5
+        });
+        expect(post).toHaveBeenCalledExactlyOnceWith("notes/n1/attachments?matchBy=title", {
+            role: "image", mime: "image/svg+xml", title: "d1.svg", content: expect.any(String)
+        });
+        // Dark while its page is dark, as Excalidraw's dark export: pictures in it keep their colors.
+        const [ picture ] = getSavedPictures(post);
+        expect(picture).toMatch(/^<svg id="picture" class="trilium-drawing-picture"><style>/);
+        expect(picture).toContain("@media (prefers-color-scheme: dark) { "
+            + "svg.trilium-drawing-picture { filter: invert(93%) hue-rotate(180deg); } "
+            + `svg.trilium-drawing-picture image:not([href^="data:image/svg+xml"]) { `
+            + "filter: invert(100%) hue-rotate(180deg) saturate(1.25); } }</style></svg>");
+
+        // An empty drawing shows nothing.
+        await saveDrawingPicture(drawing, JSON.stringify({ elements: [] }));
+        expect(post.mock.calls[1]?.[1]).toEqual(expect.objectContaining({
+            content: `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>`
+        }));
+    });
+
+    it("saves only the picture of the latest content, and none of a malformed one", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        let drawFirst: (svg: SVGSVGElement) => void = () => {};
+        vi.mocked(exportToSvg)
+            .mockImplementationOnce(() => new Promise((resolve) => { drawFirst = resolve; }))
+            .mockResolvedValueOnce(svgOf("second"));
+
+        const first = saveDrawingPicture(drawing, JSON.stringify({ elements: [ image ] }), {
+            f1: IMAGE
+        } as never);
+        const second = JSON.stringify({ elements: [ image, { ...image, id: "i2" } ] });
+        await saveDrawingPicture(drawing, second, { f1: IMAGE } as never);
+        drawFirst(svgOf("first"));
+        await first;
+        expect(getSavedPictures(post)).toEqual([ expect.stringMatching(/^<svg id="second"/) ]);
+
+        await saveDrawingPicture(drawing, "{");
+        expect(post).toHaveBeenCalledOnce();
+        expect(error).toHaveBeenCalledOnce();
+    });
+
+    it("loads from the note the images that are not loaded yet", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        vi.mocked(exportToSvg).mockResolvedValueOnce(svgOf("picture"));
+        const owner = buildNote({ title: "Owner" });
+        owner.getAttachmentsByRole = (async () => [
+            { attachmentId: "img1", title: "f1" }
+        ]) as never;
+        vi.stubGlobal("fetch", vi.fn(async () => ({
+            ok: true,
+            blob: async () => new Blob([ "ABC" ], { type: "image/png" })
+        })));
+
+        await saveDrawingPicture(
+            { attachmentId: "d1", ownerId: owner.noteId },
+            JSON.stringify({ elements: [ image ] })
+        );
+        expect(vi.mocked(exportToSvg).mock.calls[0]?.[0].files).toEqual({
+            f1: expect.objectContaining({ dataURL: "data:image/png;base64,QUJD" })
+        });
+        expect(post).toHaveBeenCalledOnce();
+    });
+});
+
+/** An empty SVG element for `exportToSvg()` to draw. */
+function svgOf(id: string) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.id = id;
+    return svg;
+}

@@ -118,8 +118,15 @@ export interface AttachmentEditor {
     canEdit(attachment: FAttachment): boolean;
     /** The content of the attachment that is not saved yet, or `undefined`. */
     getUnsavedContent(attachmentId: string): string | undefined;
-    /** Schedules a save of `attachment`. The save reads the content from `getContent`. */
-    scheduleSave(attachment: FAttachment, getContent: () => string): void;
+    /**
+     * Schedules a save of `attachment`. The save reads the content from `getContent`, and runs
+     * `onSaved` with it once it saves, unless a newer change waits by then.
+     */
+    scheduleSave(
+        attachment: FAttachment,
+        getContent: () => string,
+        onSaved?: (content: string) => void
+    ): void;
     /** Reads the unsaved content of the attachment now, before its editor unmounts. */
     release(attachmentId: string): void;
 }
@@ -130,8 +137,11 @@ export interface NoteEditor {
     canEdit(note: FNote): boolean;
     /** The content of the note that is not saved yet, or `undefined`. */
     getUnsavedContent(noteId: string): string | undefined;
-    /** Schedules a save of `note`. The save reads the content from `getContent`. */
-    scheduleSave(note: FNote, getContent: () => string): void;
+    /**
+     * Schedules a save of `note`. The save reads the content from `getContent`, and runs `onSaved`
+     * with it once it saves, unless a newer change waits by then.
+     */
+    scheduleSave(note: FNote, getContent: () => string, onSaved?: (content: string) => void): void;
     /** Reads the unsaved content of the note now, before its editor unmounts. */
     release(noteId: string): void;
     /** How the saving of the note goes, or `undefined` before its first change. */
@@ -453,7 +463,7 @@ export interface ContentEditor {
     /** Whether the rendered content can change the note or attachment. */
     canEdit(): boolean;
     getUnsavedContent(): string | undefined;
-    scheduleSave(getContent: () => string): void;
+    scheduleSave(getContent: () => string, onSaved?: (content: string) => void): void;
     release(): void;
     /**
      * How the saving goes, for content that saves on its own rather than with the note that shows
@@ -472,7 +482,7 @@ export function bindAttachmentEditor(
     return {
         canEdit: () => editor.canEdit(attachment),
         getUnsavedContent: () => editor.getUnsavedContent(attachment.attachmentId),
-        scheduleSave: (getContent) => editor.scheduleSave(attachment, getContent),
+        scheduleSave: (getContent, onSaved) => editor.scheduleSave(attachment, getContent, onSaved),
         release: () => editor.release(attachment.attachmentId)
     };
 }
@@ -490,7 +500,7 @@ function getContentEditor(
     return editor && EDITABLE_NOTE_TYPES.has(entity.type) ? {
         canEdit: () => editor.canEdit(entity),
         getUnsavedContent: () => editor.getUnsavedContent(entity.noteId),
-        scheduleSave: (getContent) => editor.scheduleSave(entity, getContent),
+        scheduleSave: (getContent, onSaved) => editor.scheduleSave(entity, getContent, onSaved),
         release: () => editor.release(entity.noteId),
         getSaveState: () => editor.getSaveState(entity.noteId),
         subscribeSaveState: (listener) => editor.subscribeSaveState(listener)

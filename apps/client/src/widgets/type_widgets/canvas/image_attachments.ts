@@ -97,7 +97,7 @@ async function getCanvasImageAttachments(note: FNote) {
 }
 
 /** Reads a blob as a base64 `data:` URL. */
-function blobToDataURL(blob: Blob): Promise<string> {
+export function blobToDataURL(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);

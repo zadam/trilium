@@ -40,13 +40,17 @@ vi.mock("./persistence", () => ({
         return {};
     },
     parseContent: (content: string) => JSON.parse(content),
-    loadDrawingFiles: async () => ({ files: {}, referencedFileIds: new Set() })
+    loadDrawingFiles: async () => ({ files: {}, referencedFileIds: new Set() }),
+    exportDrawingPicture
 }));
-const { detailEditor, attachmentEditorMounts, canvasEditorMounts } = vi.hoisted(() => ({
-    detailEditor: { canEdit: () => true, release: vi.fn() },
-    attachmentEditorMounts: vi.fn(),
-    canvasEditorMounts: vi.fn()
-}));
+const { detailEditor, attachmentEditorMounts, canvasEditorMounts, exportDrawingPicture } =
+    vi.hoisted(() => ({
+        detailEditor: { canEdit: () => true, release: vi.fn() },
+        attachmentEditorMounts: vi.fn(),
+        canvasEditorMounts: vi.fn(),
+        exportDrawingPicture: vi.fn(async (_scene: unknown, _files: unknown, _isDark: boolean) =>
+            document.createElementNS("http://www.w3.org/2000/svg", "svg"))
+    }));
 vi.mock("../text/attachment_saves", () => ({
     useAttachmentEditor: () => {
         useEffect(() => attachmentEditorMounts(), []);
@@ -930,8 +934,6 @@ describe("CanvasDrawing", () => {
 
 describe("renderCanvasDrawingPicture", () => {
     it("draws in the dark colors of a dark theme on screen, and in the light ones in print", async () => {
-        vi.mocked(exportToSvg).mockImplementation(async () =>
-            document.createElementNS("http://www.w3.org/2000/svg", "svg"));
         const content = JSON.stringify({ elements: [ { id: "e1" } ], appState: {} });
         const drawing = { getBlob: async () => ({ content }) } as never;
         const { theme, device } = window.glob;
@@ -946,7 +948,7 @@ describe("renderCanvasDrawingPicture", () => {
         window.glob.theme = theme;
 
         expect(picture?.classList.contains("canvas-drawing-picture")).toBe(true);
-        expect(vi.mocked(exportToSvg).mock.calls.map(([ { appState } ]) => appState?.exportWithDarkMode))
+        expect(exportDrawingPicture.mock.calls.map(([ , , isDark ]) => isDark))
             .toEqual([ true, false, false ]);
     });
 });

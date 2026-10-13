@@ -130,9 +130,12 @@ A drawing canvas is an Excalidraw canvas, like the one of a <a class="reference-
 *   In the desktop layout, Excalidraw keeps its desktop interface however small the box is. In the mobile layout, a narrow or short box switches it to a compact interface. For more room, choose _Full_, or show the title and press <span class="tn-icon bx bx-fullscreen"></span> _Fullscreen_.
 *   Pictures added to the drawing are stored in the same attachment. A converted image is kept as an image attachment of the note instead, named with a generated code.
 *   In a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), the drawing shows as a still picture too.
+*   On a [shared page](../../Advanced%20Usage/Sharing.md), the drawing is shown as a picture at its own size, whatever the size of its box, in light or dark colors to match the page. Each change to the drawing saves this picture as an SVG image attachment of the note, also named with a generated code.
 
 ### Limitations
 
 *   The Excalidraw shape library is not saved for a drawing canvas.
-*   Outside the editor, for example in a tooltip, when printing or in the list of attachments, the drawing is shown as a picture. On a [shared page](../../Advanced%20Usage/Sharing.md), it appears as a link to download its `.excalidraw` file.
+*   Outside the editor, for example in a tooltip, when printing or in the list of attachments, the drawing is shown as a picture.
+*   A drawing has no picture for shared pages until its first change, except one converted from an image. Until then, for example for an attached `.excalidraw` file, a shared page shows a link to download the drawing instead.
+*   In Safari, the picture of a drawing on a shared page follows the light or dark appearance of the system rather than the theme chosen on the page.
 *   A copy of a drawing canvas pasted in the same note shares the drawing with the original, so a change to one shows in the other only after the note is opened again. A copy pasted in another note gets a drawing of its own.

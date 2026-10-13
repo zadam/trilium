@@ -23,11 +23,21 @@ interface PendingSave<T> {
     getContent?: () => string;
     /** The content read when the editor went away. */
     content?: string;
+    /** Runs with the content once it saves, unless a newer change waits by then. */
+    onSaved?: (content: string) => void;
     /**
      * Numbers the change, uniquely among all changes, so that a save drops only the change it
      * sent, also when it is retried.
      */
     revision: number;
+}
+
+/** A change that a save sent. */
+interface SentRevision {
+    id: string;
+    revision: number;
+    content: string;
+    onSaved?: (content: string) => void;
 }
 
 /**
@@ -37,7 +47,7 @@ interface PendingSave<T> {
 abstract class PendingSaves<T, I extends object> {
     protected pending = new Map<string, PendingSave<T>>();
     private lastRevision = 0;
-    private sentRevisions = new WeakMap<I, { id: string; revision: number }>();
+    private sentRevisions = new WeakMap<I, SentRevision>();
 
     getUnsavedContent(id: string) {
         const save = this.pending.get(id);
@@ -52,26 +62,38 @@ abstract class PendingSaves<T, I extends object> {
         }
     }
 
-    /** Drops the changes that `items`, as returned by `collectItems()`, saved. */
+    /**
+     * Drops the changes that `items`, as returned by `collectItems()`, saved, and runs the
+     * `onSaved` of each.
+     */
     markSaved(items: I[] | undefined) {
         for (const item of items ?? []) {
             const sent = this.sentRevisions.get(item);
             if (sent && this.pending.get(sent.id)?.revision === sent.revision) {
                 this.pending.delete(sent.id);
+                sent.onSaved?.(sent.content);
             }
         }
     }
 
-    protected schedule(id: string, entity: T, getContent: () => string) {
-        this.pending.set(id, { entity, getContent, revision: ++this.lastRevision });
+    protected schedule(
+        id: string,
+        entity: T,
+        getContent: () => string,
+        onSaved?: (content: string) => void
+    ) {
+        this.pending.set(id, { entity, getContent, onSaved, revision: ++this.lastRevision });
     }
 
     /** One item for each change, with the content read at the time of the call. */
     protected collectItems(toItem: (id: string, entity: T, content: string) => I) {
         const items: I[] = [];
         for (const [ id, save ] of this.pending) {
-            const item = toItem(id, save.entity, readContent(save));
-            this.sentRevisions.set(item, { id, revision: save.revision });
+            const content = readContent(save);
+            const item = toItem(id, save.entity, content);
+            this.sentRevisions.set(item, {
+                id, revision: save.revision, content, onSaved: save.onSaved
+            });
             items.push(item);
         }
 
@@ -105,8 +127,12 @@ export default class AttachmentSaves
         return !!this.noteId && attachment.ownerId === this.noteId;
     }
 
-    scheduleSave(attachment: FAttachment, getContent: () => string) {
-        this.schedule(attachment.attachmentId, attachment, getContent);
+    scheduleSave(
+        attachment: FAttachment,
+        getContent: () => string,
+        onSaved?: (content: string) => void
+    ) {
+        this.schedule(attachment.attachmentId, attachment, getContent, onSaved);
         this.scheduleUpdate();
     }
 
@@ -143,8 +169,8 @@ export class NoteSaves extends PendingSaves<FNote, SavedNote> implements NoteEdi
         return note.noteId !== this.getHostNoteId() && note.isContentAvailable();
     }
 
-    scheduleSave(note: FNote, getContent: () => string) {
-        this.schedule(note.noteId, note, getContent);
+    scheduleSave(note: FNote, getContent: () => string, onSaved?: (content: string) => void) {
+        this.schedule(note.noteId, note, getContent, onSaved);
         this.setSaveState(note.noteId, "unsaved");
         this.scheduleUpdate();
     }

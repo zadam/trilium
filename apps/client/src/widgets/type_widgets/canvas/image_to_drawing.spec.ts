@@ -12,6 +12,8 @@ vi.mock("@excalidraw/excalidraw", () => ({
     convertToExcalidrawElements: (skeletons: object[]) =>
         skeletons.map((skeleton) => ({ id: "e1", ...skeleton }))
 }));
+const saveDrawingPicture = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("./persistence", () => ({ saveDrawingPicture }));
 
 const upload = vi.mocked(server.upload);
 const remove = vi.mocked(server.remove);
@@ -46,6 +48,7 @@ describe("convertImageToDrawing", () => {
         vi.restoreAllMocks();
         upload.mockReset();
         remove.mockReset();
+        saveDrawingPicture.mockClear();
     });
 
     it("attaches the image and a drawing that shows it, locked and centered", async () => {
@@ -83,6 +86,27 @@ describe("convertImageToDrawing", () => {
             files: {},
             appState: {}
         });
+        expect(toast.showError).not.toHaveBeenCalled();
+
+        await vi.waitFor(() => expect(saveDrawingPicture).toHaveBeenCalledOnce());
+        expect(saveDrawingPicture).toHaveBeenCalledWith(
+            { attachmentId: "att2", ownerId: "n1" },
+            await drawing.text(),
+            { [image.name]: {
+                id: image.name,
+                mimeType: "image/png",
+                dataURL: "data:image/png;base64,cG5n",
+                created: expect.any(Number)
+            } }
+        );
+    });
+
+    it("keeps the drawing when its picture cannot be saved", async () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        saveDrawingPicture.mockRejectedValueOnce(new Error("Offline."));
+
+        expect(await convertImageToDrawing("n1", "api/attachments/i1/image/a.png")).toBe("att2");
+        await vi.waitFor(() => expect(error).toHaveBeenCalledOnce());
         expect(toast.showError).not.toHaveBeenCalled();
     });
 

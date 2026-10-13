@@ -60,18 +60,21 @@ describe("AttachmentSaves", () => {
         } ]);
     });
 
-    it("keeps a change made while a save runs", () => {
+    it("keeps a change made while a save runs, and reports only the last change saved", () => {
         const { saves } = setUp();
-        saves.scheduleSave(drawing, () => "saved");
+        const onSaved = vi.fn();
+        saves.scheduleSave(drawing, () => "saved", onSaved);
         const sent = saves.collect();
 
-        saves.scheduleSave(drawing, () => "changed meanwhile");
+        saves.scheduleSave(drawing, () => "changed meanwhile", onSaved);
         saves.markSaved(sent);
         expect(saves.getUnsavedContent("drawing1")).toBe("changed meanwhile");
+        expect(onSaved).not.toHaveBeenCalled();
 
         saves.markSaved(saves.collect());
         expect(saves.getUnsavedContent("drawing1")).toBeUndefined();
         expect(saves.collect()).toStrictEqual([]);
+        expect(onSaved.mock.calls).toStrictEqual([ [ "changed meanwhile" ] ]);
     });
 
     it("ignores a save of other data", () => {

@@ -1,4 +1,4 @@
-import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, CANVAS_ATTACHMENT_MIME, dayjs, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
+import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, CANVAS_ATTACHMENT_MIME, dayjs, getDrawingPictureTitle, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
 import { t } from "i18next";
 import { parse as parseHtml } from "node-html-parser";
 
@@ -552,7 +552,7 @@ export function checkImageAttachments(note: BNote, content: string) {
         .filter((foundAttId) => !existingAttachmentIds.has(foundAttId)));
     const foundFileIds = isCanvas
         ? collectCanvasImageFileIds(content)
-        : collectDrawingImageFileIds([ ...attachments, ...unknownAttachments ], foundAttachmentIds);
+        : collectDrawingImageTitles([ ...attachments, ...unknownAttachments ], foundAttachmentIds);
 
     for (const attachment of attachments) {
         // Only attachments that live in the note content are auto-scheduled for erasure when nothing
@@ -634,7 +634,7 @@ export function checkImageAttachments(note: BNote, content: string) {
             getLog().info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.ownerId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
         }
 
-        copyDrawingImages(note, unknownAttachment);
+        copyDrawingImages(note, unknownAttachment, localAttachment);
 
         // Replace image links — every one of them. A string first argument to replace() rewrites
         // only the first match, which was survivable while each reference had an attachment of its
@@ -686,40 +686,51 @@ export function collectCanvasImageFileIds(content: string): Set<string> {
     return fileIds;
 }
 
-/** The file IDs of the images that the canvas drawings among `attachments` in the content show. */
-function collectDrawingImageFileIds(attachments: BAttachment[], foundAttachmentIds: Set<string>) {
-    const fileIds = new Set<string>();
+/**
+ * The titles of the image attachments that the canvas drawings among `attachments` in the content
+ * keep: the images they show, titled with their file IDs, and the picture of each drawing.
+ */
+function collectDrawingImageTitles(attachments: BAttachment[], foundAttachmentIds: Set<string>) {
+    const titles = new Set<string>();
     for (const attachment of attachments) {
-        if (attachment.mime !== CANVAS_ATTACHMENT_MIME
-            || !foundAttachmentIds.has(attachment.attachmentId ?? "")) {
+        const { attachmentId } = attachment;
+        if (attachment.mime !== CANVAS_ATTACHMENT_MIME || !attachmentId
+            || !foundAttachmentIds.has(attachmentId)) {
             continue;
         }
 
+        titles.add(getDrawingPictureTitle(attachmentId));
         for (const fileId of collectCanvasImageFileIds(decodeUtf8(attachment.getContent()))) {
-            fileIds.add(fileId);
+            titles.add(fileId);
         }
     }
-    return fileIds;
+    return titles;
 }
 
 /**
  * Copies to `note` the images that the canvas drawing of another note shows, which its owner keeps
- * titled with their file IDs, unless `note` has attachments of those titles already.
+ * titled with their file IDs, unless `note` has attachments of those titles already. The picture of
+ * the drawing becomes the picture of `copiedDrawing`, its copy in `note`.
  */
-function copyDrawingImages(note: BNote, drawing: BAttachment) {
+function copyDrawingImages(note: BNote, drawing: BAttachment, copiedDrawing: BAttachment) {
     const owner = becca.getNote(drawing.ownerId);
     if (drawing.mime !== CANVAS_ATTACHMENT_MIME || !owner) {
         return;
     }
 
     const fileIds = collectCanvasImageFileIds(decodeUtf8(drawing.getContent()));
+    const pictureTitle = getDrawingPictureTitle(drawing.attachmentId ?? "");
     for (const image of owner.getAttachments()) {
-        if (!fileIds.has(image.title) || note.getAttachmentByTitle(image.title)) {
+        const title = image.title === pictureTitle && copiedDrawing.attachmentId
+            ? getDrawingPictureTitle(copiedDrawing.attachmentId)
+            : fileIds.has(image.title) && image.title;
+        if (!title || note.getAttachmentByTitle(title)) {
             continue;
         }
 
         const copy = image.copy();
         copy.ownerId = note.noteId;
+        copy.title = title;
         copy.setContent(image.getContent(), { forceSave: true });
     }
 }

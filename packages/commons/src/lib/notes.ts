@@ -62,6 +62,15 @@ export const CANVAS_ATTACHMENT_MIME = "application/vnd.excalidraw+json";
 /** The title of the attachment a new canvas drawing is saved in. */
 export const CANVAS_ATTACHMENT_TITLE = "Canvas.excalidraw";
 
+/**
+ * The title of the SVG image attachment that holds the picture of the canvas drawing saved in
+ * attachment `attachmentId`. The note that owns the drawing owns the picture, and shared pages show
+ * the picture in place of the drawing.
+ */
+export function getDrawingPictureTitle(attachmentId: string) {
+    return `${attachmentId}.svg`;
+}
+
 /** The content of a new, empty canvas drawing. */
 export const EMPTY_CANVAS_CONTENT = JSON.stringify({
     type: "excalidraw",

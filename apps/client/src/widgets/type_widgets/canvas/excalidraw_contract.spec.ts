@@ -12,6 +12,7 @@ const {
 const { MAX_ZOOM, MIN_ZOOM } = await import("./drawing_view");
 const { LIBRARY_SIDEBAR } = await import("./CanvasDrawingMenu");
 const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
+const { DRAWING_DARK_FILTER, IMAGE_DARK_FILTER } = await import("./persistence");
 
 /** The classes of Trilium that `CanvasDrawing.css` selects. Every other class is Excalidraw's. */
 const TRILIUM_CLASSES = new Set([
@@ -30,8 +31,8 @@ const CODE_CLASSES = [
 
 /**
  * Checks what the canvas drawing relies on beyond Excalidraw's API: the classes and test ids it
- * selects, the translations of its toolbar, and the zoom it copies. A failure after an upgrade of
- * Excalidraw names the parts to review.
+ * selects, the translations of its toolbar, the zoom and the dark filters it copies. A failure
+ * after an upgrade of Excalidraw names the parts to review.
  */
 describe("Excalidraw contract of the canvas drawing", () => {
     // Vitest resolves the `development` export, so both folders come from `dist`.
@@ -87,6 +88,22 @@ describe("Excalidraw contract of the canvas drawing", () => {
         expect(source).toContain("viewportX:appState.width/2+appState.offsetLeft");
         expect(source).toContain("baseScrollX=appState.scrollX+(appLayerX-appLayerX/currentZoom)");
         expect(source).toContain("zoomOffsetScrollX=-(appLayerX-appLayerX/nextZoom)");
+    });
+
+    it("exports in dark colors with the filters that a saved picture applies", () => {
+        const compact = (text: string) => text.replace(/\s+/g, "");
+        const source = compact(readBundle(developmentDir, [ ".js" ]));
+
+        expect(source).toContain(compact(`var THEME_FILTER = "${DRAWING_DARK_FILTER}";`));
+        expect(source).toContain(compact(`var IMAGE_INVERT_FILTER = "${IMAGE_DARK_FILTER}";`));
+        expect(source).toContain(compact(
+            `if (exportWithDarkMode) { svgRoot.setAttribute("filter", THEME_FILTER); }`));
+        expect(source).toContain(compact(`
+            const use = svgRoot.ownerDocument.createElementNS(SVG_NS, "use");
+            use.setAttribute("href", \`#\${symbolId}\`);
+            if (renderConfig.exportWithDarkMode && fileData.mimeType !== MIME_TYPES.svg) {
+                use.setAttribute("filter", IMAGE_INVERT_FILTER);
+            }`));
     });
 
     it("opens the library in the sidebar that the main menu names", () => {
