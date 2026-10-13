@@ -35,13 +35,13 @@ vi.mock("./content_renderer.js", () => ({
     getEmbedBoxSize: () => "medium"
 }));
 
-const scrollIntoView = vi.fn();
+const scrollBy = vi.fn();
 const getComponentByEl = vi.fn();
 
 beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    Element.prototype.scrollIntoView = scrollIntoView;
+    Element.prototype.scrollBy = scrollBy;
     glob.getComponentByEl = getComponentByEl;
 });
 
@@ -56,7 +56,7 @@ describe("consumeBlockReference", () => {
 
         consumeBlockReference(container, viewScope);
 
-        expect(scrollIntoView.mock.contexts[0]).toBe(container.querySelector("p"));
+        expect(scrollBy).toHaveBeenCalledOnce();
         expect(getFlashed(container)).toEqual([ "A" ]);
         expect(viewScope.block).toBeUndefined();
         expect(showError).not.toHaveBeenCalled();

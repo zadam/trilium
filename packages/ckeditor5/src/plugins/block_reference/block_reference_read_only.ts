@@ -7,11 +7,13 @@ import { revealTab } from "../tabs/tabs_read_only.js";
 const FLASH_CLASS = "block-reference-flash";
 /** The duration of the `block-reference-flash` animation in `block_reference.css`. */
 const FLASH_DURATION_MS = 1500;
+/** The smallest gap above the shown blocks, as a share of the height of their scroll container. */
+const MIN_TOP_GAP = 0.15;
 
 /**
  * Scrolls to the blocks that `value`, a `block` link parameter, points at in `container` and
- * flashes them. Of a broken range, the block found is shown. Returns `false` when a block is
- * missing.
+ * flashes them. The blocks are centered, but start at least 15% below the top of their scroll
+ * container. Of a broken range, the block found is shown. Returns `false` when a block is missing.
  *
  * The module imports nothing from CKEditor, so pages that only display content can load it.
  */
@@ -19,9 +21,10 @@ export function showBlockReference(container: Element, value: string) {
     const { start, end } = resolveBlockReference<HTMLElement>(container, value);
     const first = start ?? end;
     if (first) {
+        const last = start && end ? end : first;
         reveal(first);
-        getBlockBoxes(first).top.scrollIntoView({ behavior: "smooth", block: "center" });
-        flashBlocks(start && end ? getBlockRangeElements(start, end) : [ first ]);
+        scrollToBlocks(first, last);
+        flashBlocks(getBlockRangeElements(first, last));
     }
 
     return !!start && !!end;
@@ -56,6 +59,30 @@ export function getBlockRangeElements(start: Element, end: Element) {
     range.setStartBefore(start);
     range.setEndAfter(end);
     return getElementsInRange(range, range.commonAncestorContainer);
+}
+
+/** Smoothly scrolls to center the blocks from `first` to `last`, keeping `MIN_TOP_GAP` above. */
+function scrollToBlocks(first: Element, last: Element) {
+    const scroller = getScrollContainer(first);
+    const top = getBlockBoxes(first).top.getBoundingClientRect().top;
+    const height = getBlockBoxes(last).bottom.getBoundingClientRect().bottom - top;
+    const viewportTop = scroller === first.ownerDocument.scrollingElement
+        ? 0
+        : scroller.getBoundingClientRect().top + scroller.clientTop;
+    const viewportHeight = scroller.clientHeight;
+    const gap = Math.max(viewportHeight * MIN_TOP_GAP, (viewportHeight - height) / 2);
+    scroller.scrollBy({ top: top - viewportTop - gap, behavior: "smooth" });
+}
+
+/** The nearest ancestor of `element` that scrolls vertically, else the document's scroller. */
+function getScrollContainer(element: Element) {
+    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+        const { overflowY } = getComputedStyle(parent);
+        if ([ "auto", "scroll" ].includes(overflowY) && parent.scrollHeight > parent.clientHeight) {
+            return parent;
+        }
+    }
+    return element.ownerDocument.scrollingElement ?? element.ownerDocument.documentElement;
 }
 
 /** Opens the `<details>` and shows the tabs that enclose `element`. */
