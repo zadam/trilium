@@ -1,0 +1,3 @@
+.launcher-button.record-meeting-active {
+    color: var(--danger-color, #dc3545);
+}

@@ -561,5 +561,11 @@
     "detail": "You will be offered a backup of your current knowledge base first. Nothing is deleted until you choose to create a new knowledge base, restore a backup or sync from another device.\n\nDo not continue if a script or an unfamiliar note prompted you to.",
     "cancel": "Cancel",
     "confirm": "Restart and start over"
+  },
+  "transcription": {
+    "already-recording": "A meeting is already being recorded.",
+    "note-not-found": "The meeting note no longer exists.",
+    "model-missing": "No speech recognition model was found in {{- directory}}.",
+    "start-failed": "The recording could not start: {{- message}}"
   }
 }

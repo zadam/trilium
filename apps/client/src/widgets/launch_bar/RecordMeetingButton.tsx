@@ -1,9 +1,12 @@
-import { dayjs } from "@triliumnext/commons";
-import { useCallback } from "preact/hooks";
+import "./RecordMeetingButton.css";
+
+import { dayjs, type TranscriptionState, type TranscriptionStatus } from "@triliumnext/commons";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
 import dateNoteService from "../../services/date_notes";
 import { t } from "../../services/i18n";
 import noteCreateService from "../../services/note_create";
+import toast from "../../services/toast";
 import {
     LaunchBarActionButton,
     LauncherNoteProps,
@@ -14,23 +17,93 @@ import {
 export const MEETING_RECORDING_LABEL = "meetingRecording";
 
 /**
- * Launcher button that starts a meeting recording. For now it only creates the meeting note in the
- * inbox and opens it.
+ * Launcher button that records a meeting: the first click creates the meeting note and starts the
+ * recording, the second stops it. Desktop only, since the main process does the recording.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
+    const { status } = useTranscriptionState();
     const handleClick = useCallback(() => {
-        void createMeetingNote();
-    }, []);
+        void toggleRecording(status);
+    }, [ status ]);
 
     return (
         <LaunchBarActionButton
             launcherNote={launcherNote}
-            icon={icon}
-            text={title}
             onClick={handleClick}
+            {...getAppearance(status, icon, title)}
         />
     );
+}
+
+const BUSY_ICON = "bx bx-loader-alt bx-spin";
+
+function getAppearance(status: TranscriptionStatus, idleIcon: string, idleTitle: string) {
+    switch (status) {
+        case "idle":
+            return { icon: idleIcon, text: idleTitle };
+        case "starting":
+            return { icon: BUSY_ICON, text: t("record_meeting.starting"), disabled: true };
+        case "recording":
+            return {
+                icon: "bx bx-stop-circle",
+                text: t("record_meeting.stop"),
+                className: "record-meeting-active"
+            };
+        case "stopping":
+            return { icon: BUSY_ICON, text: t("record_meeting.stopping"), disabled: true };
+    }
+}
+
+/** Follows the main process's recording, which every window shares. */
+export function useTranscriptionState() {
+    const [ state, setState ] = useState<TranscriptionState>({ status: "idle", noteId: null });
+
+    useEffect(() => {
+        const api = window.electronApi?.transcription;
+        if (!api) {
+            return;
+        }
+
+        let mounted = true;
+        void api.getState().then((current) => {
+            if (mounted) {
+                setState(current);
+            }
+        });
+        const unsubscribe = api.onStateChanged(setState);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
+    }, []);
+
+    return state;
+}
+
+/** Starts a recording into a new meeting note when idle, stops the running one when recording. */
+export async function toggleRecording(status: TranscriptionStatus) {
+    const api = window.electronApi?.transcription;
+    if (!api) {
+        return;
+    }
+
+    if (status === "recording") {
+        await api.stop();
+        return;
+    }
+    if (status !== "idle") {
+        return;
+    }
+
+    const note = (await createMeetingNote())?.note;
+    if (!note) {
+        return;
+    }
+    const error = await api.start(note.noteId);
+    if (error) {
+        toast.showError(error);
+    }
 }
 
 /** Creates a text note titled with the current date and time in the inbox, and opens it. */

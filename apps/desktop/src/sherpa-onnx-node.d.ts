@@ -15,5 +15,6 @@ declare module "sherpa-onnx-node" {
         isEmpty(): boolean;
         front(enableExternalBuffer: boolean): { start: number; samples: Float32Array };
         pop(): void;
+        flush(): void;
     }
 }

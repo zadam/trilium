@@ -713,6 +713,41 @@ export interface ElectronDialogApi {
     confirmStartOver(): Promise<boolean>;
 }
 
+/** Phase of the meeting transcription; at most one recording runs at a time. */
+export type TranscriptionStatus = "idle" | "starting" | "recording" | "stopping";
+
+/** What {@link ElectronTranscriptionApi} reports to every window. */
+export interface TranscriptionState {
+    status: TranscriptionStatus;
+    /** The meeting note the recording belongs to, or `null` when idle. */
+    noteId: string | null;
+}
+
+/**
+ * Meeting transcription, recorded and transcribed on this computer by the main process. The
+ * renderer only starts and stops it; the audio never passes through the renderer.
+ */
+export interface ElectronTranscriptionApi {
+    /**
+     * Starts recording the microphone and the system audio for the meeting note `noteId`.
+     *
+     * @returns An empty string once recording runs, or an error message when it cannot start.
+     */
+    start(noteId: string): Promise<string>;
+
+    /** Stops the recording, once the speech already captured has been transcribed. */
+    stop(): Promise<void>;
+
+    getState(): Promise<TranscriptionState>;
+
+    /**
+     * Calls `callback` every time the state changes, in any window.
+     *
+     * @returns A function that removes the listener.
+     */
+    onStateChanged(callback: (state: TranscriptionState) => void): () => void;
+}
+
 /**
  * The complete surface exposed to the renderer as `window.electronApi` via
  * `contextBridge`. The renderer must access Electron-only functionality through
@@ -757,4 +792,6 @@ export interface ElectronApi {
     dialog: ElectronDialogApi;
     /** Choosing a backup to restore during setup, read where it lies rather than uploaded. */
     restore: ElectronRestoreApi;
+    /** Meeting transcription: starting and stopping a recording, and following its state. */
+    transcription: ElectronTranscriptionApi;
 }

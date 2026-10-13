@@ -4579,6 +4579,9 @@
     "edit_excerpt": "Edit excerpt"
   },
   "record_meeting": {
-    "note_title": "Meeting {{date}}"
+    "note_title": "Meeting {{date}}",
+    "starting": "Starting the recording…",
+    "stop": "Stop recording",
+    "stopping": "Finishing the transcript…"
   }
 }
