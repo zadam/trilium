@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildNote } from "../test/easy-froca";
-import { endLivePrint, printLiveInBrowser, startLivePrint } from "./live_print";
+import { endLivePrint, getLivePrintTarget, printLiveInBrowser, startLivePrint } from "./live_print";
 
 function addThemeLink(href: string, media?: string) {
     const link = document.createElement("link");
@@ -105,5 +105,19 @@ describe("live print", () => {
 
         window.dispatchEvent(new Event("afterprint"));
         expect(target.classList.contains("print-live-target")).toBe(false);
+    });
+});
+
+describe("getLivePrintTarget", () => {
+    it("prints the render output only while the render widget is the one shown", () => {
+        const noteDetail = document.createElement("div");
+        noteDetail.innerHTML = `<div class="note-detail-render"><div class="note-detail-render-content">Output</div></div>`;
+        const content = noteDetail.querySelector(".note-detail-render-content");
+
+        expect(getLivePrintTarget(noteDetail, "render")).toBe(content);
+        // Another view of the note (attachments, source) keeps the render widget mounted but hidden.
+        expect(getLivePrintTarget(noteDetail, "attachmentList")).toBeUndefined();
+        expect(getLivePrintTarget(noteDetail, undefined)).toBeUndefined();
+        expect(getLivePrintTarget(null, "render")).toBeUndefined();
     });
 });

@@ -18,6 +18,16 @@ const UNSCROLL_CLASS = "print-live-unscroll";
 
 let activeTarget: HTMLElement | undefined;
 
+/**
+ * Returns the element of `noteDetail` that a live print prints when it shows the type widget
+ * `shownType`, or `undefined` when the note prints on the `?print` page instead.
+ */
+export function getLivePrintTarget(noteDetail: HTMLElement | null, shownType: string | undefined) {
+    // Another view of a render note (source, attachments) keeps the render widget mounted but hidden.
+    if (shownType !== "render") return undefined;
+    return noteDetail?.querySelector<HTMLElement>(".note-detail-render-content") ?? undefined;
+}
+
 /** Prepares the window to print `target`, ending any live print still active. */
 export async function startLivePrint(note: FNote, target: HTMLElement) {
     endLivePrint();
