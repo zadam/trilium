@@ -1,17 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 
+import { OPTIONAL_REQUEST_TIMEOUT_MS } from "@/utils";
+
 const { facade, TriliumError } = vi.hoisted(() => ({
     facade: {
         callService: vi.fn<(method: string, path: string, body?: unknown) => Promise<any>>(),
         triggerSearchForTrilium: vi.fn(),
         sendTriliumSearchStatusToPopup: vi.fn(),
-        triggerSearchNoteByUrl: vi.fn()
+        triggerSearchNoteByUrl: vi.fn(),
+        requireMinorVersion: vi.fn(async (_minor: number, _feature: string) => {})
     },
     TriliumError: class extends Error {
 
         constructor(readonly reason: string, message: string) {
             super(message);
+        }
+
+    }
+}));
+
+const backgroundStitcher = vi.hoisted(() => ({ created: vi.fn(), add: vi.fn(), finish: vi.fn() }));
+vi.mock("@/screenshot", async (importOriginal) => ({
+    ...await importOriginal<typeof import("@/screenshot")>(),
+    ScreenshotStitcher: class {
+
+        add = backgroundStitcher.add;
+        finish = backgroundStitcher.finish;
+
+        constructor(request: unknown) {
+            backgroundStitcher.created(request);
         }
 
     }
@@ -25,13 +43,14 @@ vi.mock("./trilium_server_facade", () => ({
         triggerSearchForTrilium = facade.triggerSearchForTrilium;
         sendTriliumSearchStatusToPopup = facade.sendTriliumSearchStatusToPopup;
         triggerSearchNoteByUrl = facade.triggerSearchNoteByUrl;
+        requireMinorVersion = facade.requireMinorVersion;
 
     }
 }));
 
 import background from "./index";
 
-type Tab = { id?: number, title?: string, url?: string };
+type Tab = { id?: number, title?: string, url?: string, favIconUrl?: string };
 type ContextMenuClick = {
     menuItemId: string,
     pageUrl?: string,
@@ -52,13 +71,19 @@ const GENERIC_FAILURE_TOAST = { name: "toast", message: expect.any(String), note
 
 let onCommand: (command: string) => Promise<void>;
 let onContextMenuClicked: (info: ContextMenuClick) => Promise<void>;
+let onConnect: (port: FakePort) => void;
 let tabs: Tab[];
 let tabMessageHandler: (message: { name: string }) => unknown;
 const tabsSendMessage = vi.fn(
     (_tabId: number, message: { name: string }) => Promise.resolve(tabMessageHandler(message)));
 /** How `readable-page.js` reads the active tab, by variant; nothing to save unless a test says so. */
 let pageReadings: Record<string, unknown>;
-const executeScript = vi.fn(async ({ args }: { args?: [ string ] }) => args ? [ { result: pageReadings[args[0]] } ] : []);
+/** Whether the active tab shows a PDF, as the check run in the tab answers. */
+let pdfTab: boolean;
+const executeScript = vi.fn(async ({ args, func }: { args?: [ string ], func?: unknown }) => {
+    if (args) return [ { result: pageReadings[args[0]] } ];
+    return func ? [ { result: pdfTab } ] : [];
+});
 const contextMenusCreate = vi.fn();
 const contextMenusRemoveAll = vi.fn(async () => {});
 const getContexts = vi.fn(async (): Promise<unknown[]> => []);
@@ -66,9 +91,10 @@ const createDocument = vi.fn(async () => {});
 const runtimeSendMessage = vi.fn(async (_message: unknown): Promise<unknown> => PNG);
 /** Answers a picture for a web address, and decodes a `data:` URL as the browser does. */
 const browserFetch = globalThis.fetch;
-const fetchMock = vi.fn(async (url: string) => (url.startsWith("data:")
+const fetchMockDefault = async (url: string) => (url.startsWith("data:")
     ? browserFetch(url)
-    : new Response(new Blob([ "img" ], { type: "image/png" }))));
+    : new Response(new Blob([ "img" ], { type: "image/png" })));
+const fetchMock = vi.fn(fetchMockDefault);
 const SVG = "<svg xmlns='http://www.w3.org/2000/svg'></svg>";
 
 describe("background", () => {
@@ -77,6 +103,7 @@ describe("background", () => {
         tabs = [ ACTIVE_TAB ];
         tabMessageHandler = () => undefined;
         pageReadings = {};
+        pdfTab = false;
         facade.callService.mockResolvedValue({ noteId: "saved" });
         vi.stubGlobal("fetch", fetchMock);
         vi.spyOn(console, "log").mockImplementation(() => {});
@@ -102,11 +129,19 @@ describe("background", () => {
             getZoom: async () => 1.5,
             captureVisibleTab: async () => PNG
         });
-        Object.assign(fakeBrowser.runtime, { getContexts, sendMessage: runtimeSendMessage });
+        Object.assign(fakeBrowser.runtime, {
+            getContexts,
+            sendMessage: runtimeSendMessage,
+            onConnect: {
+                addListener: (listener: typeof onConnect) => {
+                    onConnect = listener;
+                }
+            }
+        });
         Object.assign(fakeBrowser, { offscreen: { createDocument }, scripting: { executeScript } });
 
         background.main();
-        await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(6));
+        await vi.waitFor(() => expect(contextMenusCreate).toHaveBeenCalledTimes(7));
     });
 
     afterEach(() => {
@@ -121,6 +156,7 @@ describe("background", () => {
             "trilium-save-selection",
             "trilium-save-cropped-screenshot",
             "trilium-save-whole-screenshot",
+            "trilium-save-full-page-screenshot",
             "trilium-save-page",
             "trilium-save-link",
             "trilium-save-image"
@@ -258,7 +294,14 @@ describe("background", () => {
             await onCommand("saveSelection");
             expect(await lastToast()).toMatchObject({
                 ...GENERIC_FAILURE_TOAST,
-                message: expect.stringContaining("unexpected")
+                message: "Saving to Trilium failed: unexpected"
+            });
+
+            // An error from another realm, or a value that is not an error at all, still names its cause.
+            facade.callService.mockRejectedValue({ message: "Could not establish connection." });
+            await onCommand("saveSelection");
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: Could not establish connection."
             });
         });
 
@@ -289,7 +332,7 @@ describe("background", () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-page" });
             await sendRuntimeMessage({ name: "save-whole-page" });
 
-            expect(executeScript).toHaveBeenCalledTimes(6);
+            expect(executeScript).toHaveBeenCalledTimes(9);
             expect(executeScript).toHaveBeenCalledWith({ target: { tabId: 7 }, files: [ "/readable-page.js" ] });
             expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ args: [ "wholePage" ] }));
             expect(facade.callService).toHaveBeenCalledTimes(3);
@@ -324,6 +367,8 @@ describe("background", () => {
             await onCommand("saveWholePage");
 
             tabs = [ ACTIVE_TAB ];
+            // Once for the PDF check, once for the page.
+            executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
             executeScript.mockRejectedValueOnce(new Error("Cannot access a chrome:// URL"));
             await onCommand("saveWholePage");
             expect(await lastToast()).toMatchObject({
@@ -331,7 +376,7 @@ describe("background", () => {
                 message: "Saving to Trilium failed: Cannot access a chrome:// URL"
             });
 
-            expect(executeScript).toHaveBeenCalledTimes(5);
+            expect(executeScript).toHaveBeenCalledTimes(7);
             expect(facade.callService).not.toHaveBeenCalled();
         });
 
@@ -374,6 +419,120 @@ describe("background", () => {
         });
     });
 
+    describe("saving a PDF", () => {
+        const PDF = "%PDF-1.7 bytes";
+        const PDF_DATA_URL = `data:application/pdf;base64,${btoa(PDF)}`;
+
+        function answerPdf(body: BodyInit = PDF, headers: Record<string, string> = {}, status = 200) {
+            fetchMock.mockImplementation(async () => new Response(body, { status, headers }));
+        }
+
+        afterEach(() => {
+            fetchMock.mockImplementation(fetchMockDefault);
+        });
+
+        it("saves the PDF the tab shows as a file, from the shortcut, the menu and the popup", async () => {
+            pdfTab = true;
+            answerPdf(PDF, { "Content-Disposition": "inline; filename*=UTF-8''Annual%20report.pdf" });
+
+            await onCommand("saveWholePage");
+            await onContextMenuClicked({ menuItemId: "trilium-save-page" });
+            await sendRuntimeMessage({ name: "save-whole-page" });
+
+            expect(executeScript).not.toHaveBeenCalledWith(expect.objectContaining({ files: [ "/readable-page.js" ] }));
+            expect(facade.requireMinorVersion).toHaveBeenCalledWith(1, "Saving a PDF");
+            expect(fetchMock).toHaveBeenCalledWith(PAGE_URL, { credentials: "include" });
+            expect(facade.callService.mock.calls).toEqual(Array(3).fill([ "POST", "files", {
+                title: "Active page",
+                fileName: "Annual report.pdf",
+                pageUrl: PAGE_URL,
+                dataUrl: PDF_DATA_URL
+            } ]));
+            expect(await lastToast()).toMatchObject({ message: "PDF has been saved to Trilium.", noteId: "saved" });
+        });
+
+        it("saves the PDF the popup names, with the user's title and description", async () => {
+            answerPdf();
+            const pdfUrl = "https://example.com/files/report";
+
+            await expect(sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "Edited", description: "Summary" }))
+                .resolves.toEqual({ noteId: "saved", message: "PDF has been saved to Trilium." });
+
+            expect(fetchMock).toHaveBeenCalledWith(pdfUrl, { credentials: "include" });
+            expect(lastPayload()).toEqual({
+                title: "Edited",
+                fileName: "report.pdf",
+                pageUrl: pdfUrl,
+                dataUrl: PDF_DATA_URL,
+                labels: { pageDescription: "Summary" }
+            });
+
+            await sendRuntimeMessage({ name: "save-pdf", url: pdfUrl, title: "" });
+            expect(lastPayload()).toMatchObject({ title: "Active page" });
+            expect(lastPayload()).not.toHaveProperty("labels");
+        });
+
+        it("names the file as the website does, or else after its address", async () => {
+            const savedFileName = async (url: string, disposition?: string) => {
+                answerPdf(PDF, disposition ? { "Content-Disposition": disposition } : {});
+                await sendRuntimeMessage({ name: "save-pdf", url, title: "T" });
+                return (lastPayload() as { fileName?: string }).fileName;
+            };
+
+            expect(await savedFileName(PAGE_URL, `attachment; filename="Q3 results.PDF"`)).toBe("Q3 results.PDF");
+            expect(await savedFileName(PAGE_URL, "attachment; filename=plain")).toBe("plain.pdf");
+            expect(await savedFileName(PAGE_URL, "attachment; filename*=UTF-8''%E0%A4%A")).toBe("%E0%A4%A.pdf");
+            expect(await savedFileName("https://example.com/a/%C3%A9t%C3%A9.pdf?x=1")).toBe("été.pdf");
+            expect(await savedFileName("https://example.com/a/%E0%A4%A")).toBe("%E0%A4%A.pdf");
+            expect(await savedFileName("https://example.com/a/", "inline")).toBeUndefined();
+        });
+
+        it("saves nothing that is not a PDF, too large, or out of reach, and says why", async () => {
+            const failure = async (message: object) => {
+                facade.callService.mockClear();
+                tabsSendMessage.mockClear();
+                const answer = await sendRuntimeMessage({ name: "save-pdf", url: PAGE_URL, title: "T", ...message });
+                expect(facade.callService).not.toHaveBeenCalled();
+                const toastMessage = (await lastToast() as { message?: string } | undefined)?.message;
+                expect(answer).toEqual({ error: toastMessage });
+                return toastMessage;
+            };
+
+            facade.requireMinorVersion.mockRejectedValueOnce(
+                new TriliumError("version-mismatch", "Saving a PDF needs a newer version of Trilium."));
+            expect(await failure({})).toBe("Saving a PDF needs a newer version of Trilium.");
+            expect(fetchMock).not.toHaveBeenCalled();
+
+            answerPdf("Not found", {}, 404);
+            expect(await failure({})).toBe("Saving to Trilium failed: The PDF could not be downloaded: HTTP 404");
+
+            answerPdf("<html></html>");
+            expect(await failure({})).toBe("Saving to Trilium failed: The page is not a PDF.");
+
+            const TOO_LARGE = "Saving to Trilium failed: The PDF is larger than 100 MB, the most the clipper saves.";
+            answerPdf(PDF, { "Content-Length": String(100 * 1024 * 1024 + 1) });
+            expect(await failure({})).toBe(TOO_LARGE);
+
+            const unannounced = new Response(PDF);
+            vi.spyOn(unannounced, "blob").mockResolvedValue({ size: 100 * 1024 * 1024 + 1 } as Blob);
+            fetchMock.mockResolvedValueOnce(unannounced);
+            expect(await failure({})).toBe(TOO_LARGE);
+
+            answerPdf();
+            vi.stubGlobal("FileReader", class {
+
+                result = null;
+                onloadend: (() => void) | null = null;
+
+                readAsDataURL() {
+                    setTimeout(() => this.onloadend?.());
+                }
+
+            });
+            expect(await failure({})).toBe("Saving to Trilium failed: The PDF could not be read.");
+        });
+    });
+
     describe("screenshots", () => {
         it("crops the screenshot in an offscreen document and saves it as an image", async () => {
             tabMessageHandler = () => ({
@@ -394,7 +553,7 @@ describe("background", () => {
             expect(payload).toEqual({
                 title: "Active page",
                 content: expect.stringMatching(/^<img src="[A-Za-z0-9]{20}">$/),
-                images: [ { imageId: expect.any(String), src: "inline.png", dataUrl: PNG } ],
+                images: [ { imageId: expect.any(String), src: "inline.png", dataUrl: PNG, screenshot: true } ],
                 pageUrl: PAGE_URL
             });
             const { content, images } = payload as {
@@ -444,7 +603,7 @@ describe("background", () => {
                 pageUrl: MENU_URL
             });
             expect(lastPayload()).toMatchObject({
-                images: [ { src: "inline.png", dataUrl: PNG } ],
+                images: [ { src: "inline.png", dataUrl: PNG, screenshot: true } ],
                 pageUrl: MENU_URL
             });
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
@@ -489,6 +648,246 @@ describe("background", () => {
         });
     });
 
+    describe("full page screenshots", () => {
+        const captureVisibleTab = vi.fn(async () => PNG);
+        let tabActive: boolean;
+        /** What the offscreen document was asked to stitch, and the images it answers with. */
+        let offscreen: { request?: unknown, slices: { y: number }[], parts: string[] };
+
+        beforeEach(() => {
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            tabActive = true;
+            offscreen = { slices: [], parts: [ CROPPED_PNG ] };
+            Object.assign(fakeBrowser.tabs, {
+                get: async () => ({ active: tabActive }),
+                captureVisibleTab
+            });
+            runtimeSendMessage.mockImplementation(async (message) => {
+                const { type, request, slice, index = 0 } = message as {
+                    type?: string, request?: unknown, slice: { y: number }, index?: number
+                };
+                switch (type) {
+                    case "STITCH_BEGIN": offscreen.request = request; return {};
+                    case "STITCH_ADD": offscreen.slices.push(slice); return {};
+                    case "STITCH_FINISH": return { count: offscreen.parts.length };
+                    case "STITCH_PART": return { dataUrl: offscreen.parts[index] };
+                    default: return PNG;
+                }
+            });
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+            runtimeSendMessage.mockImplementation(async () => PNG);
+        });
+
+        /** Runs an action to its end, letting the waits between captures pass. */
+        async function run(action: Promise<unknown>) {
+            await vi.runAllTimersAsync();
+            await action;
+            vi.useRealTimers();
+        }
+
+        /**
+         * What the page was asked to do, in order: the positions it was scrolled to (`undefined`
+         * only asks where it is) and the steps of changing its floating elements.
+         */
+        function pageSteps() {
+            return tabsSendMessage.mock.calls
+                .map(([ , message ]) => message as { name: string, y?: number, step?: string })
+                .filter((message) => [ "trilium-scroll-to", "trilium-set-floating-elements" ].includes(message.name))
+                .map((message) => (message.name === "trilium-scroll-to" ? message.y : message.step));
+        }
+
+        const sliceTops = () => offscreen.slices.map((slice) => slice.y);
+
+        it("captures the page a viewport at a time, stitching each capture offscreen", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const captureTimes: number[] = [];
+            captureVisibleTab.mockImplementation(async () => {
+                captureTimes.push(Date.now());
+                return PNG;
+            });
+
+            await run(onCommand("saveFullPageScreenshot"));
+
+            expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300 ]);
+            expect(offscreen.request).toEqual({ pageHeight: 1200, devicePixelRatio: 1 });
+            expect(offscreen.slices).toEqual([ { dataUrl: PNG, y: 0 }, { dataUrl: PNG, y: 500 }, { dataUrl: PNG, y: 700 } ]);
+            const intervals = captureTimes.slice(1).map((time, index) => time - (captureTimes[index] ?? 0));
+            expect(intervals.every((interval) => interval >= 550)).toBe(true);
+            expect(lastPayload()).toMatchObject({
+                content: expect.stringMatching(/^<img src="[A-Za-z0-9]{20}">$/),
+                images: [ { src: "inline.png", dataUrl: CROPPED_PNG } ],
+                pageUrl: PAGE_URL
+            });
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+        });
+
+        it("saves a page stitched into several images as one image after another", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+            offscreen.parts = [ PNG, CROPPED_PNG ];
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            const { content, images } = lastPayload() as {
+                content: string, images: { imageId: string, dataUrl: string, screenshot: boolean }[]
+            };
+            expect(images.map((image) => [ image.dataUrl, image.screenshot ])).toEqual([ [ PNG, true ], [ CROPPED_PNG, true ] ]);
+            expect(content).toBe(images.map((image) => `<img src="${image.imageId}">`).join(""));
+        });
+
+        it("stops where the page stops scrolling, and says when a page is too long to capture in full", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 5000, scrollLimit: 1000 });
+            await run(onContextMenuClicked({ menuItemId: "trilium-save-full-page-screenshot", pageUrl: MENU_URL }));
+            expect(sliceTops()).toEqual([ 0, 500 ]);
+            expect(lastPayload()).toMatchObject({ pageUrl: MENU_URL });
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            offscreen.slices = [];
+            simulatePage({ viewportHeight: 2000, pageHeight: 200001, devicePixelRatio: 4 });
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(offscreen.request).toEqual({ pageHeight: 200000, devicePixelRatio: 4 });
+            expect(sliceTops()).toEqual(Array.from({ length: 100 }, (_, index) => index * 2000));
+            expect(await lastToast()).toMatchObject({
+                message: "Screenshot has been saved to Trilium, but the page was too long to capture in full."
+            });
+        });
+
+        it("captures the page as it is laid out once its scrollbars are hidden", async () => {
+            simulatePage({ viewportHeight: 500, pageHeight: 1200, prepared: { viewportHeight: 515, pageHeight: 1100 } });
+
+            await run(onCommand("saveFullPageScreenshot"));
+
+            expect(offscreen.request).toEqual({ pageHeight: 1100, devicePixelRatio: 1 });
+            expect(sliceTops()).toEqual([ 0, 515, 585 ]);
+        });
+
+        it("stops and scrolls back when another tab is opened, even if scrolling back fails", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const scrollPage = tabMessageHandler;
+            tabMessageHandler = (message) => {
+                const { y, step } = message as { y?: number, step?: string };
+                if (y === 300 || step === "restore") throw new Error("The tab is gone.");
+                return scrollPage(message);
+            };
+            tabActive = false;
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            expect(captureVisibleTab).not.toHaveBeenCalled();
+            expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "restore", 300 ]);
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: The screenshot was stopped because another tab was opened."
+            });
+        });
+
+        it("takes one full-page screenshot at a time, the next once the last one ends or fails", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            Object.assign(fakeBrowser.tabs, {
+                get: vi.fn().mockResolvedValueOnce({ active: false }).mockResolvedValue({ active: true })
+            });
+
+            await run(Promise.all([
+                sendRuntimeMessage({ name: "save-full-page-screenshot" }),
+                onCommand("saveFullPageScreenshot")
+            ]));
+
+            expect(pageSteps()).toEqual([
+                undefined, 0, "first", 0, "restore", 300,
+                undefined, 0, "first", 0, "rest", 500, 1000, "restore", 300
+            ]);
+            expect(sliceTops()).toEqual([ 0, 500, 700 ]);
+            expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+        });
+
+        it("takes a queued screenshot of the tab it was asked for, stopping when another tab is open", async () => {
+            simulatePage({ startY: 300, viewportHeight: 500, pageHeight: 1200 });
+            const otherTab: Tab = { id: 8, title: "Other page", url: "https://example.com/other" };
+            const get = vi.fn(async (tabId: number) => {
+                tabs = [ otherTab ];
+                return { active: tabId === otherTab.id };
+            });
+            Object.assign(fakeBrowser.tabs, { get });
+
+            await run(Promise.all([
+                sendRuntimeMessage({ name: "save-full-page-screenshot" }),
+                sendRuntimeMessage({ name: "save-full-page-screenshot" })
+            ]));
+
+            expect(get.mock.calls).toEqual([ [ 7 ], [ 7 ] ]);
+            const pageTabs = tabsSendMessage.mock.calls
+                .filter(([ , message ]) => (message as { name: string }).name !== "toast")
+                .map(([ tabId ]) => tabId);
+            expect(new Set(pageTabs)).toEqual(new Set([ 7 ]));
+            expect(captureVisibleTab).not.toHaveBeenCalled();
+            expect(facade.callService).not.toHaveBeenCalled();
+        });
+
+        it("reports a page that does not answer, a failed stitch, and a tab without an ID", async () => {
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(await lastToast()).toMatchObject({
+                message: "Saving to Trilium failed: The page could not be read. Reload it and try again."
+            });
+
+            vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+            runtimeSendMessage.mockImplementation(async () => ({ error: "Too tall" }));
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+            expect(await lastToast()).toMatchObject({ message: "Saving to Trilium failed: Too tall" });
+
+            tabs = [ { title: "Tab without id" } ];
+            await sendRuntimeMessage({ name: "save-full-page-screenshot" });
+            expect(facade.callService).not.toHaveBeenCalled();
+        });
+
+        it("stitches in the background page under Manifest V2", async () => {
+            vi.stubGlobal("__MANIFEST_VERSION__", 2);
+            backgroundStitcher.finish.mockReturnValue([ CROPPED_PNG ]);
+            simulatePage({ viewportHeight: 500, pageHeight: 500 });
+
+            await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+            expect(runtimeSendMessage).not.toHaveBeenCalled();
+            expect(backgroundStitcher.created).toHaveBeenCalledWith({ pageHeight: 500, devicePixelRatio: 1 });
+            expect(backgroundStitcher.add).toHaveBeenCalledWith({ dataUrl: PNG, y: 0 });
+            expect(lastPayload()).toMatchObject({ images: [ { dataUrl: CROPPED_PNG } ] });
+        });
+
+        it("captures the page by area with Firefox's captureTab, without scrolling through it", async () => {
+            vi.stubGlobal("__MANIFEST_VERSION__", 2);
+            backgroundStitcher.finish.mockReturnValue([ CROPPED_PNG ]);
+            const captureTab = vi.fn(async () => PNG);
+            Object.assign(fakeBrowser.tabs, { captureTab });
+            try {
+                simulatePage({ startY: 300, viewportHeight: 500, viewportWidth: 800, pageHeight: 12000, devicePixelRatio: 2 });
+                await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+
+                expect(pageSteps()).toEqual([ undefined, 0, "first", 0, "restore", 300 ]);
+                // 4,096 CSS px is 8,192 device pixels; each area reaches a pixel into the next.
+                expect(captureTab.mock.calls).toEqual([ 0, 4096, 8192 ].map((y) => [ 7, {
+                    format: "png",
+                    rect: { x: 0, y, width: 800, height: Math.min(4097, 12000 - y) }
+                } ]));
+                expect(backgroundStitcher.created).toHaveBeenCalledWith({ pageHeight: 12000, devicePixelRatio: 2 });
+                expect(backgroundStitcher.add.mock.calls).toEqual([ 0, 4096, 8192 ].map((y) => [ { dataUrl: PNG, y } ]));
+                expect(captureVisibleTab).not.toHaveBeenCalled();
+                expect(await lastToast()).toMatchObject({ message: "Screenshot has been saved to Trilium." });
+
+                // A page loaded before the extension was updated does not give its width.
+                vi.useFakeTimers({ toFake: [ "setTimeout", "Date" ] });
+                captureTab.mockClear();
+                simulatePage({ viewportHeight: 500, pageHeight: 500 });
+                await run(sendRuntimeMessage({ name: "save-full-page-screenshot" }));
+                expect(captureTab).not.toHaveBeenCalled();
+                expect(captureVisibleTab).toHaveBeenCalledOnce();
+            } finally {
+                Reflect.deleteProperty(fakeBrowser.tabs, "captureTab");
+            }
+        });
+    });
+
     describe("context menu", () => {
         it("saves an image by fetching it", async () => {
             await onContextMenuClicked({ menuItemId: "trilium-save-image", pageUrl: PAGE_URL });
@@ -499,7 +898,7 @@ describe("background", () => {
                 srcUrl: "https://example.com/cat.png",
                 pageUrl: PAGE_URL
             });
-            expect(fetchMock).toHaveBeenCalledWith("https://example.com/cat.png");
+            expect(fetchMock).toHaveBeenCalledWith("https://example.com/cat.png", undefined);
             expect(lastPayload()).toMatchObject({
                 title: "Active page",
                 images: [ {
@@ -508,6 +907,7 @@ describe("background", () => {
                 } ],
                 pageUrl: PAGE_URL
             });
+            expect((lastPayload() as { images: object[] }).images[0]).not.toHaveProperty("screenshot");
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
 
             fetchMock.mockResolvedValueOnce(new Response("Not found", { status: 404 }));
@@ -623,7 +1023,12 @@ describe("background", () => {
                     + "<li><a href=\"https://c.com/1\">C1</a></li>"
                     + "<li><a href=\"https://d.com/1\">D1</a></li>"
                     + "</ul>",
-                clipType: "tabs"
+                clipType: "tabs",
+                tabs: [ "a.com/1", "b.com/1", "b.com/2", "c.com/1", "d.com/1" ].map((path) => ({
+                    url: `https://${path}`,
+                    title: path.replace(/^(\w)\.com\//, (_, letter: string) => letter.toUpperCase()),
+                    favicon: undefined
+                }))
             });
             expect(await lastToast()).toMatchObject({ noteId: "saved", tabIds: [ 1, 2, 4, 5 ] });
         });
@@ -642,12 +1047,57 @@ describe("background", () => {
                 content: "<ul><li><a href=\"https://a.com/?x=1&amp;y=&quot;2&quot;\">"
                     + "&lt;b&gt;Bold&lt;/b&gt; &amp; &quot;quoted&quot;</a></li>"
                     + "<li><a href=\"https://a.com/untitled\">https://a.com/untitled</a></li></ul>",
-                clipType: "tabs"
+                clipType: "tabs",
+                tabs: [
+                    { url: "https://a.com/?x=1&y=\"2\"", title: "<b>Bold</b> & \"quoted\"" },
+                    { url: "https://a.com/untitled", title: "https://a.com/untitled" }
+                ]
             });
             expect(await lastToast()).toMatchObject({
                 message: "2 links have been saved to Trilium.",
                 tabIds: [ 2, 3 ]
             });
+        });
+
+        it("sends each favicon it can read as a data URL", async () => {
+            tabs = [
+                { id: 1, title: "Missing", url: "https://a.com/", favIconUrl: "https://a.com/missing.ico" },
+                { id: 2, title: "Fetched", url: "https://b.com/", favIconUrl: "https://b.com/favicon.png" },
+                { id: 3, title: "Inline", url: "https://c.com/", favIconUrl: "data:image/svg+xml,<svg/>" },
+                { id: 4, title: "Browser page", url: "chrome://newtab/", favIconUrl: "chrome://theme/icon" }
+            ];
+            // The favicons are fetched in tab order; the second and third get the default answer.
+            fetchMock.mockImplementationOnce(async () => new Response("Not found", { status: 404 }));
+            fetchMock.mockImplementationOnce(fetchMockDefault);
+            fetchMock.mockImplementationOnce(fetchMockDefault);
+            fetchMock.mockImplementationOnce(async () => {
+                throw new TypeError("Failed to fetch");
+            });
+
+            await onCommand("saveTabs");
+
+            expect((lastPayload() as { tabs: unknown }).tabs).toEqual([
+                { url: "https://a.com/", title: "Missing", favicon: undefined },
+                { url: "https://b.com/", title: "Fetched", favicon: "data:image/png;base64,aW1n" },
+                { url: "https://c.com/", title: "Inline", favicon: "data:image/svg+xml;base64,PHN2Zy8+" },
+                { url: "chrome://newtab/", title: "Browser page", favicon: undefined }
+            ]);
+        });
+
+        it("saves the tabs without a favicon that does not arrive in time", async () => {
+            tabs = [
+                { id: 1, title: "Slow", url: "https://a.com/", favIconUrl: "https://a.com/favicon.ico" }
+            ];
+            const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(() => AbortSignal.abort());
+            fetchMock.mockImplementationOnce((_url: string, init?: RequestInit) => (init?.signal?.aborted
+                ? Promise.reject(new DOMException("The operation timed out.", "TimeoutError"))
+                : new Promise(() => {})));
+
+            await onCommand("saveTabs");
+
+            expect(timeout).toHaveBeenCalledWith(OPTIONAL_REQUEST_TIMEOUT_MS);
+            expect((lastPayload() as { tabs: unknown }).tabs)
+                .toEqual([ { url: "https://a.com/", title: "Slow", favicon: undefined } ]);
         });
 
         it("adds no ellipsis for up to three tabs and shows why saving failed", async () => {
@@ -672,7 +1122,9 @@ describe("background", () => {
                 content
             });
 
-            await expect(saveWithTitle("  ", "Note")).resolves.toBe(true);
+            await expect(saveWithTitle("  ", "Note")).resolves.toEqual({
+                noteId: "saved", message: "Link with note has been saved to Trilium."
+            });
             expect(facade.callService).toHaveBeenLastCalledWith("POST", "notes", {
                 title: "Active page",
                 content: "Note",
@@ -682,12 +1134,63 @@ describe("background", () => {
             expect(await lastToast()).toMatchObject({ noteId: "saved" });
 
             facade.callService.mockRejectedValue(TRILIUM_FAILURE);
-            await expect(saveWithTitle("Mine")).resolves.toBeUndefined();
+            await expect(saveWithTitle("Mine")).resolves.toEqual({ error: "Trilium was not found." });
             expect(lastPayload()).toMatchObject({ title: "Mine" });
 
             tabs = [ { id: 7, url: "https://example.com/untitled" } ];
             await saveWithTitle("");
             expect(lastPayload()).toMatchObject({ title: "" });
+        });
+
+        it("answers the popup with the outcome of each save, toasting only once it is closed", async () => {
+            const popup = connect("popup");
+            connect("other");
+            const page = { title: "Article", content: "<p>Body</p>", images: [], clipType: "page" };
+            const selectionClip = { title: "Quote", content: "<p>Quote</p>", images: [] };
+            tabs = [ ACTIVE_TAB, { id: 8, title: "Other", url: "https://example.org/" } ];
+
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toEqual({
+                noteId: "saved", message: "Page has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-selection", selection: selectionClip })).resolves.toEqual({
+                noteId: "saved", message: "Selection has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-whole-screenshot" })).resolves.toEqual({
+                noteId: "saved", message: "Screenshot has been saved to Trilium."
+            });
+            await expect(sendRuntimeMessage({ name: "save-tabs" })).resolves.toEqual({
+                noteId: "saved", message: "2 links have been saved to Trilium.", tabIds: [ 7, 8 ]
+            });
+            facade.callService.mockRejectedValueOnce(TRILIUM_FAILURE);
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toEqual({
+                error: "Trilium was not found."
+            });
+            expect(await lastToast()).toBeUndefined();
+
+            popup.disconnect();
+            await expect(sendRuntimeMessage({ name: "save-whole-page", page })).resolves.toMatchObject({ noteId: "saved" });
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "saved" });
+            facade.callService.mockRejectedValueOnce(TRILIUM_FAILURE);
+            await sendRuntimeMessage({ name: "save-whole-page", page });
+            expect(await lastToast()).toMatchObject(FAILURE_TOAST);
+
+            // A popup opened while the save runs did not ask for it, and receives no answer to show.
+            const asker = connect("popup");
+            let finishSave: ((resp: unknown) => void) | undefined;
+            facade.callService.mockImplementationOnce(() => new Promise((resolve) => finishSave = resolve));
+            const answer = sendRuntimeMessage({ name: "save-whole-page", page });
+            await vi.waitFor(() => expect(finishSave).toBeDefined());
+            asker.disconnect();
+            connect("popup");
+            finishSave?.({ noteId: "late" });
+            await answer;
+            expect(await lastToast()).toMatchObject({ message: "Page has been saved to Trilium.", noteId: "late" });
+        });
+
+        it("answers nothing for a crop the user cancels", async () => {
+            tabMessageHandler = () => ({ rect: null });
+            await expect(sendRuntimeMessage({ name: "save-cropped-screenshot" })).resolves.toBeUndefined();
+            expect(facade.callService).not.toHaveBeenCalled();
         });
 
         it("labels a bookmark with the description the popup sends", async () => {
@@ -750,9 +1253,30 @@ describe("background", () => {
     });
 });
 
+type FakePort = { name: string, onDisconnect: { addListener(listener: () => void): void }, disconnect(): void };
+
+/** Connects a page of the extension to the background, as the popup does while it is open. */
+function connect(name: string) {
+    let onDisconnect = () => {};
+    const port: FakePort = {
+        name,
+        onDisconnect: { addListener: (listener) => onDisconnect = listener },
+        disconnect: () => onDisconnect()
+    };
+    onConnect(port);
+    return port;
+}
+
+/**
+ * Sends a message as Chrome delivers it: Chrome ignores a promise the listener returns, and waits for
+ * `sendResponse()` only when the listener returns `true`.
+ */
 async function sendRuntimeMessage(message: object) {
-    const [ result ] = await fakeBrowser.runtime.onMessage.trigger(message, {}, () => {});
-    return result;
+    let sendResponse: (response: unknown) => void = () => {};
+    const response = new Promise((resolve) => sendResponse = resolve);
+    const [ result ] = await fakeBrowser.runtime.onMessage.trigger(message, {}, sendResponse);
+    expect(result).toBe(true);
+    return await response;
 }
 
 function lastPayload() {
@@ -765,6 +1289,39 @@ async function lastToast() {
         .map(([ , message ]) => message)
         .filter((message) => message.name === "toast")
         .at(-1);
+}
+
+/**
+ * Answers the content script's scroll messages for a page of `pageHeight` that scrolls no further
+ * than `scrollLimit`, starting at `startY`.
+ */
+/**
+ * Answers the content script's messages for a page of `pageHeight` that scrolls no further than
+ * `scrollLimit`, starting at `startY`. `prepared` is the size it has once its scrollbars are
+ * hidden.
+ */
+function simulatePage({
+    startY = 0, viewportHeight, viewportWidth, pageHeight, scrollLimit = pageHeight, devicePixelRatio = 1, prepared
+}: {
+    startY?: number, viewportHeight: number, viewportWidth?: number, pageHeight: number, scrollLimit?: number,
+    devicePixelRatio?: number, prepared?: { viewportHeight: number, pageHeight: number }
+}) {
+    let scrollY = startY;
+    let size = { viewportHeight, pageHeight, scrollLimit };
+    tabMessageHandler = (message) => {
+        const { y, step } = message as { y?: number, step?: string };
+        if (step === "first" && prepared) {
+            size = { ...prepared, scrollLimit: prepared.pageHeight };
+        }
+        if (message.name !== "trilium-scroll-to") return undefined;
+        if (y !== undefined) {
+            scrollY = Math.max(0, Math.min(y, size.scrollLimit - size.viewportHeight));
+        }
+        return {
+            scrollX: 0, scrollY, viewportHeight: size.viewportHeight, pageHeight: size.pageHeight, devicePixelRatio,
+            ...(viewportWidth && { viewportWidth })
+        };
+    };
 }
 
 function stubImageLoading() {

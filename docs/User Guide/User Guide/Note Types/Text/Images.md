@@ -41,6 +41,10 @@ The first set of options configure the alignment are, in order:
 | <span class="tn-icon cke cke-object-inline-right"></span> | Wrap text | ![](3_Images_image.png) | The image will be displayed to the left or the right of the text. |
 | <span class="tn-icon cke cke-object-left"></span> | Block align | ![](2_Images_image.png) | Similarly to _Centered image_, the image will be displayed as a block and aligned either to the left or to the right, but not allowing text to flow on either of its sides. |
 
+### Drawing over an image
+
+To draw or write over an image, press the <span class="tn-icon bx bxs-pen"></span> _Convert image to a drawing canvas_ button of its toolbar. The image becomes a drawing canvas that shows all of it, locked in place. See the drawing canvases section of <a class="reference-link" href="Include%20Note.md">Include Note</a>.
+
 ## Compression
 
 Since Trilium isn't really meant to be primary storage for image data, it attempts to compress and resize (with pretty aggressive settings) uploaded images before storing them to the database. You may then notice some quality degradation. Basic quality settings is available in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Media_.

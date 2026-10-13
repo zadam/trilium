@@ -1295,10 +1295,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     #processAttributeRows(attributeRows: AttributeRow[], refreshCtx: RefreshContext) {
         for (const attrRow of attributeRows) {
-            // `geolocation` and `mapPosition` decide the icon of a note that has none of its own
-            // (see getNoteIcon); `shareEdit` decides the share indicator's icon.
+            // `geolocation`, `mapPosition` and `startDate` decide the icon of a note that has none
+            // of its own (see getNoteIcon); `shareEdit` decides the share indicator's icon.
             const dirtyingLabels = ["iconClass", "cssClass", "workspace", "workspaceIconClass",
-                "color", "shareEdit", GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE];
+                "color", "shareEdit", GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE, "startDate"];
 
             if (attrRow.type === "label" && dirtyingLabels.includes(attrRow.name ?? "") && attrRow.noteId) {
                 if (attrRow.isInheritable) {

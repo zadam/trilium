@@ -1024,9 +1024,6 @@
   "editable_text": {
     "placeholder": "在這裡輸入您的筆記內容…",
     "auto-detect-language": "自動檢測",
-    "keeps-crashing": "編輯元件持續發生崩潰。請嘗試重新啟動 Trilium。若問題仍存在，請考慮提交錯誤報告。",
-    "editor_crashed_title": "文字編輯器崩潰",
-    "editor_crashed_content": "您的內容已成功恢復，但最近的幾項變更可能未被儲存。",
     "editor_crashed_details_button": "檢視更多資訊⋯",
     "editor_crashed_details_intro": "若您多次遇到此錯誤，請考慮在 GitHub 回報以下資訊。",
     "editor_crashed_details_title": "技術資訊"

@@ -71,6 +71,12 @@ Buttons and links:
 - `Button` — the general button (also carries the tooltip for a *disabled* control via a wrapper, since a disabled `<button>` emits no pointer events). `ActionButton` — icon button with consistent styling. `SplitButton` — a button with its related actions in a `Dropdown` menu on a toggle beside it; its rows are `FormListItem`s.
 - `HelpButton`, `HelpTooltipButton`, `HelpDropdown` — open in-app help pages; don't invent a new "?" affordance.
 - A menu row's shortcut is `FormListItem`'s `keyboardShortcut` (an action's configured keys) or `shortcut` (literal text); never put keycaps into its label by hand.
+- **Everything at a menu row's trailing edge is a `FormListItem` prop, never a child.** Children render inside the row's label, not in the row's flex layout, so an `Icon` or badge placed there sits right after the text, and `margin-inline-start: auto` can't push it to the edge. Use:
+  - `checked` for the current choice: a trailing check when the row has an icon of its own, and in place of the icon when it has none; add `checkable` so a menu announces it as a checkbox row;
+  - `trailingIcon` for any other end-of-row icon;
+  - `keyboardShortcut` / `shortcut` for keys.
+
+  The template dropdown once hand-placed a `bx-check` in its rows and it landed mid-row; specs find the real mark as `.menu-trailing-icon`.
 
 **Never hand-roll `<a className="tn-link">`.** Which link component to reach for depends on what the link *is*:
 

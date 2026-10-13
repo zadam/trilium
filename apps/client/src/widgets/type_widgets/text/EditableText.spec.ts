@@ -6,7 +6,7 @@
  * crash and restarted the editor, which reverted the note to its last saved content — the images
  * being uploaded flickered and vanished instead of a "cannot upload" toast appearing.
  */
-import type { CKTextEditor, FileUploadData } from "@triliumnext/ckeditor5";
+import type { CKEditorError, CKTextEditor, FileUploadData } from "@triliumnext/ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type LoadResults from "../../../services/load_results";
@@ -24,6 +24,9 @@ vi.mock("../../../services/i18n", async (importOriginal) => ({
     t: (key: string) => key
 }));
 
+const showInfoDialog = vi.hoisted(() => vi.fn());
+vi.mock("../../../services/dialog", () => ({ default: { info: showInfoDialog } }));
+
 // Imported by EditableText for editor types and content styles; irrelevant (and heavy) here.
 vi.mock("@triliumnext/ckeditor5", () => ({}));
 
@@ -33,6 +36,7 @@ const {
     notifyAttachmentChanges,
     onNotificationInfo,
     onNotificationWarning,
+    reportEditorError,
     revealLinkTargetWhenReady,
     saveNow,
     showFileUploadProgress,
@@ -58,6 +62,71 @@ describe("saveNow", () => {
         const offline = () => Promise.reject(new Error("offline"));
         const failed = saveNow({ updateNowIfNecessary: offline });
         await expect(failed).resolves.toBeUndefined();
+    });
+});
+
+describe("reportEditorError", () => {
+    it("shows a toast that reloads the editor or opens the details, leaving the log to the global handler", () => {
+        vi.clearAllMocks();
+        const logError = vi.fn();
+        vi.stubGlobal("logError", logError);
+        const error = new Error("unexpected-error Original error: TypeError: boom") as CKEditorError;
+        const reloadEditor = vi.fn();
+
+        reportEditorError(error, reloadEditor);
+
+        expect(logError).not.toHaveBeenCalled();
+        expect(showPersistent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+            id: "editor-error",
+            title: "editable_text.editor_error_title",
+            message: "editable_text.editor_error_content"
+        }));
+
+        const [ { buttons, timeout } ] = showPersistent.mock.calls[0];
+        expect(timeout).toBeUndefined();
+        expect(buttons.map((button: { text: string }) => button.text)).toEqual([
+            "editable_text.editor_error_reload_button",
+            "editable_text.editor_crashed_details_button"
+        ]);
+
+        const dismissReload = vi.fn();
+        buttons[0].onClick({ dismissToast: dismissReload });
+        expect(dismissReload).toHaveBeenCalledOnce();
+        expect(reloadEditor).toHaveBeenCalledOnce();
+        expect(showInfoDialog).not.toHaveBeenCalled();
+
+        const dismissToast = vi.fn();
+        buttons[1].onClick({ dismissToast });
+        expect(dismissToast).toHaveBeenCalledOnce();
+        expect(showInfoDialog).toHaveBeenCalledExactlyOnceWith(
+            expect.anything(),
+            expect.objectContaining({ title: "editable_text.editor_error_title", copyToClipboardButton: true })
+        );
+        expect(JSON.stringify(showInfoDialog.mock.calls[0][0])).toContain("TypeError: boom");
+        vi.unstubAllGlobals();
+    });
+
+    it("shows the toast again once the details dialog closes, so the editor can still be reloaded", async () => {
+        vi.clearAllMocks();
+        let closeDialog = () => {};
+        showInfoDialog.mockImplementationOnce(() => new Promise<void>((resolve) => {
+            closeDialog = resolve;
+        }));
+        const reloadEditor = vi.fn();
+
+        reportEditorError(new Error("unexpected-error") as CKEditorError, reloadEditor);
+        const [ { buttons } ] = showPersistent.mock.calls[0];
+        buttons[1].onClick({ dismissToast: vi.fn() });
+
+        await Promise.resolve();
+        expect(showPersistent).toHaveBeenCalledOnce();
+
+        closeDialog();
+        await vi.waitFor(() => expect(showPersistent).toHaveBeenCalledTimes(2));
+        const [ { id, buttons: buttonsAgain } ] = showPersistent.mock.calls[1];
+        expect(id).toBe("editor-error");
+        buttonsAgain[0].onClick({ dismissToast: vi.fn() });
+        expect(reloadEditor).toHaveBeenCalledOnce();
     });
 });
 

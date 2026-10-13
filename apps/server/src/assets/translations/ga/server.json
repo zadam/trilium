@@ -342,7 +342,8 @@
   "content_renderer": {
     "note-cannot-be-displayed": "Ní féidir an cineál nóta seo a thaispeáint.",
     "included-note-requires-credentials": "Tá an nóta seo atá san áireamh cosanta ag pasfhocal agus ní féidir é a thaispeáint anseo.",
-    "broken-block-reference": "Tagairt bhriste"
+    "broken-block-reference": "Tagairt bhriste",
+    "play-video": "Seinn físeán"
   },
   "pdf": {
     "export_filter": "Doiciméad PDF (*.pdf)",
@@ -384,7 +385,22 @@
     "toggle-toc": "Clár Ábhair a Athsholáthar",
     "logo-alt": "Lógó",
     "login": "Logáil Isteach",
-    "tab-title": "Teideal an chluaisín"
+    "tab-title": "Teideal an chluaisín",
+    "appearance": "Cuma",
+    "theme-light": "Solas",
+    "theme-dark": "Dorcha",
+    "theme-system": "Córas",
+    "theme-current": "Cuma: {{- theme}}",
+    "subpages-of": "Fo-leathanaigh de {{- title}}",
+    "hidden-subpages_one": "{{count}} fho-leathanach atá i bhfolach ón gcrann",
+    "hidden-subpages_two": "{{count}} fo-leathanach atá i bhfolach ón gcrann",
+    "hidden-subpages_few": "{{count}} fo-leathanach atá i bhfolach ón gcrann",
+    "hidden-subpages_many": "{{count}} fo-leathanach atá i bhfolach ón gcrann",
+    "hidden-subpages_other": "{{count}} fo-leathanach atá i bhfolach ón gcrann",
+    "heading-link": "Nasc chuig an rannán seo",
+    "previous": "Roimhe seo",
+    "next": "Ar Aghaidh",
+    "page-navigation": "Leathanaigh roimhe seo agus an chéad leathanach eile"
   },
   "hidden_subtree_templates": {
     "text-snippet": "Sleachta Téacs",

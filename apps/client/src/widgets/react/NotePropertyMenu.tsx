@@ -5,7 +5,10 @@ import { useContext } from "preact/hooks";
 import Component from "../../components/component";
 import FNote from "../../entities/fnote";
 import NoteContextAwareWidget from "../note_context_aware_widget";
+import { OptionCardSection } from "./Card";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem, FormListToggleableItem } from "./FormList";
+import FormSelect from "./FormSelect";
+import FormToggle from "./FormToggle";
 import HelpTooltipButton from "./HelpTooltipButton";
 import FormTextBox from "./FormTextBox";
 import { useNoteLabel, useNoteLabelBoolean } from "./hooks";
@@ -147,6 +150,33 @@ export function ViewProperty({ note, property }: { note: FNote, property: BookPr
             return <OptionGroupPropertyView note={note} property={property} />;
         case "separator":
             return <FormDropdownDivider />;
+    }
+}
+
+/**
+ * A property as a row of a settings card, for a dialog that offers what the collection's settings
+ * dropdown does. Covers switches, option groups and the submenus holding them; buttons and the
+ * other kinds that only make sense in a menu render nothing.
+ */
+export function ViewPropertySection({ note, property }: { note: FNote, property: BookProperty }) {
+    switch (property.type) {
+        case "checkbox":
+            return <CheckBoxPropertySection note={note} property={property} />;
+        case "option-group":
+            return <OptionGroupPropertySection note={note} property={property} />;
+        case "submenu":
+            return (
+                <OptionCardSection
+                    label={property.label}
+                    description={property.helpTooltip}
+                    subSectionsVisible
+                    subSections={property.children.map((child, index) => (
+                        <ViewPropertySection key={index} note={note} property={child} />
+                    ))}
+                />
+            );
+        default:
+            return null;
     }
 }
 
@@ -303,5 +333,42 @@ function CheckBoxPropertyView({ note, property }: { note: FNote, property: Check
             currentValue={ property.reverseValue ? !value : value }
             onChange={newValue => setValue(property.reverseValue ? !newValue : newValue)}
         />
+    );
+}
+
+function CheckBoxPropertySection({ note, property }: { note: FNote, property: CheckBoxProperty }) {
+    const [ value, setValue ] = useNoteLabelBoolean(note, property.bindToLabel);
+    return (
+        <OptionCardSection
+            name={property.bindToLabel}
+            label={property.label}
+            description={property.helpTooltip}
+        >
+            <FormToggle
+                currentValue={property.reverseValue ? !value : value}
+                onChange={(newValue) => setValue(property.reverseValue ? !newValue : newValue)}
+            />
+        </OptionCardSection>
+    );
+}
+
+function OptionGroupPropertySection({ note, property }: {
+    note: FNote, property: OptionGroupProperty & PropertyHelp
+}) {
+    const [ value, setValue ] = useNoteLabel(note, property.bindToLabel);
+    return (
+        <OptionCardSection
+            name={property.bindToLabel}
+            label={property.label}
+            description={property.helpTooltip}
+        >
+            <FormSelect
+                values={property.options}
+                keyProperty="value"
+                titleProperty="label"
+                currentValue={value ?? property.defaultValue ?? undefined}
+                onChange={setValue}
+            />
+        </OptionCardSection>
     );
 }

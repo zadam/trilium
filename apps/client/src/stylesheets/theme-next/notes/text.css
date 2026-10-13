@@ -21,11 +21,13 @@
     --ck-color-split-button-hover-background: var(--ck-editor-toolbar-dropdown-button-open-background);
 
     --ck-focus-ring: 1px solid transparent;
+    --ck-button-focus-border-color: transparent;
     --ck-color-focus-border: var(--input-focus-outline-color);
     --ck-focus-outer-shadow: none;
     --ck-focus-disabled-outer-shadow: none;
 
     --ck-border-radius: 6px;
+    --ck-toolbar-text-font-size: 13px;
 }
 
 /* Toolbar button in on state */
@@ -78,6 +80,7 @@
 /* Focus visible */
 .ck.ck-toolbar .ck-button:focus-visible {
     --ck-focus-ring: 1px solid var(--input-focus-outline-color);
+    --ck-button-focus-border-color: var(--input-focus-outline-color);
 }
 
 /* Remove the border from hovered split arrow button */
@@ -168,12 +171,14 @@ body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__pane
 
 /* Dropdown panel containing a toolbar */
 :root .ck.ck-dropdown__panel:has(>.ck-toolbar) {
-    --ck-editor-popup-padding: calc(var(--menu-padding-size) - var(--ck-spacing-small));
+    --ck-editor-popup-padding: calc(
+        var(--menu-padding-size) - var(--ck-spacing-small, var(--ck-spacing-sm))
+    );
 }
 
 /* Bulleted / number list toolbar */
 .ck-list-styles-list {
-    --ck-spacing-large: var(--ck-spacing-small);
+    --ck-list-styles-list-padding: var(--ck-spacing-small, var(--ck-spacing-sm));
 }
 
 :root ul.ck.ck-list,
@@ -240,7 +245,7 @@ body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__pane
 /* List item checkmark container */
 
 :root .ck.ck-list-item-button .ck.ck-list-item-button__check-holder {
-    margin-inline-start: var(--ck-spacing-small);
+    margin-inline-start: var(--ck-spacing-small, var(--ck-spacing-sm));
     margin-inline-end: var(--menu-padding-size);
 }
 
@@ -324,9 +329,32 @@ div.ck.ck-collapsible {
 
 /* Color picker dropdown */
 
+:root .ck.ck-color-selector {
+    --ck-color-selector-padding: 0;
+    --ck-color-selector-grids-fragment-padding: 0;
+    --ck-button-border-radius: var(--ck-border-radius);
+    --ck-color-grid-padding: 8px;
+}
+
+/* Remove color and color picker buttons */
+:root .ck.ck-color-selector .ck-color-grids-fragment .ck-button:is(
+    .ck-color-selector__remove-color, .ck-color-selector__color-picker
+) {
+    padding-inline-start: calc(
+        var(--ck-color-grid-padding)
+        + (var(--ck-color-grid-tile-size) - var(--ck-icon-size)) / 2
+        - 1px
+    );
+}
+
 /* Color palette */
 :root .ck.ck-color-selector .ck-color-grid {
     --ck-editor-toolbar-button-on-shadow: none; /* Remove the shadow of the selected color button */
+    --ck-color-grid-gap: 5px;
+    --ck-color-grid-tile-border-radius: var(--ck-border-radius);
+    --ck-color-interactive-focus-border: var(--ck-color-focus-border);
+
+    width: auto;
 }
 
 /* Color picker button */
@@ -357,7 +385,9 @@ div.ck.ck-collapsible {
     min-width: 200px;
     grid-template-columns: repeat(3, auto);
     justify-content: space-between;
-    padding-bottom: calc(var(--ck-spacing-medium) + var(--menu-padding-size));
+    padding-bottom: calc(
+        var(--ck-spacing-medium, var(--ck-spacing-base)) + var(--menu-padding-size)
+    );
 }
 
 /* Table dropdown */
@@ -376,7 +406,7 @@ div.ck.ck-collapsible {
 
 /* Selected rows / column counter */
 .ck.ck-insert-table-dropdown__label {
-    margin-top: var(--ck-spacing-medium);
+    margin-top: var(--ck-spacing-medium, var(--ck-spacing-base));
 }
 
 /* Admonitions dropdown */

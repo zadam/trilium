@@ -738,6 +738,10 @@
     "language": "The language this note's content is written in, which drives spell checking and text direction.",
     "original_file_name": "The name the file had when it was imported, kept so that it can be exported under it again.",
     "page_url": "The address a clipped page came from, shown beside the note title.",
+    "page_description": "The description of a clipped page, shown in the details of the note's \"Web clip\" badge.",
+    "page_author": "The author of a clipped page, shown in the details of the note's \"Web clip\" badge.",
+    "published_date": "The date a clipped page was published, shown in the details of the note's \"Web clip\" badge.",
+    "modified_date": "The date a clipped page was last updated, shown in the details of the note's \"Web clip\" badge.",
     "command": "Which built-in command a launcher runs when it is pressed.",
     "display_mode": "Which pane a split editor shows: <code>source</code>, <code>preview</code>, or <code>split</code> for both. Overrides what <code>#readOnly</code> would otherwise choose.",
     "search_string": "The query a saved search runs.",
@@ -780,6 +784,7 @@
     "calendar_slot_duration": "How long each timeslot of a calendar lasts, as <code>HH:MM:SS</code>. Defaults to 15 minutes.",
     "calendar_slot_label_interval": "How often the timeslots of a calendar are labeled, as <code>HH:MM:SS</code>. Defaults to an hour.",
     "calendar_title": "Names the attribute an event takes its title from, instead of the note title. Either a label or a relation, written without <code>#</code> or <code>~</code>.",
+    "calendar_title_template": "How an event is titled on the calendar, filled in for every occurrence of a repeating one. Reads <code>${title}</code>, <code>${years}</code> (whole years since the start date) and the dates <code>${date}</code> and <code>${startDate}</code>, e.g. <code>${title} (${years})</code> on a yearly birthday.",
     "calendar_displayed_attributes": "Comma-delimited attribute names whose values are shown on the event. A relation is shown as the title of the note it points at.",
     "calendar_start_date": "Names the label an event reads its start date from, instead of <code>#startDate</code>. Written without the <code>#</code>.",
     "calendar_end_date": "Names the label an event reads its end date from, instead of <code>#endDate</code>.",
@@ -1062,7 +1067,9 @@
       "end_date": "End date",
       "time": "Time",
       "start_time": "Start time",
-      "end_time": "End time"
+      "end_time": "End time",
+      "add_time": "Add time",
+      "remove_time": "Remove time"
     },
     "recurrence": {
       "repeats": "Repeats",
@@ -1086,7 +1093,9 @@
       "count": "After",
       "times": "times",
       "custom_rule": "Rule",
-      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition."
+      "custom_hint": "An iCalendar recurrence rule (RRULE) that says more than the fields above can. Clearing it stops the repetition.",
+      "count_years": "Show the number of years in the title",
+      "count_years_locked": "This event already has a title template, set on the note or inherited by it. Change it in the note's attributes."
     }
   },
   "close_pane_button": {
@@ -1556,15 +1565,15 @@
   },
   "editable_text": {
     "placeholder": "Type the content of your note here...",
-    "editor_crashed_title": "The text editor crashed",
-    "editor_crashed_content": "Your content was recovered successfully, but a few of your most recent changes may not have been saved.",
     "editor_crashed_details_button": "View more details...",
     "editor_crashed_details_intro": "If you experience this error several times, consider reporting it on GitHub by pasting the information below.",
     "editor_crashed_details_title": "Technical information",
     "auto-detect-language": "Auto-detected",
-    "keeps-crashing": "Editing component keeps crashing. Please try restarting Trilium. If problem persists, consider creating a bug report.",
     "nothing_selected_to_cut": "Select some text first to cut it into a sub-note.",
-    "uploading_attachment": "Uploading attachment"
+    "uploading_attachment": "Uploading attachment",
+    "editor_error_title": "The text editor ran into an error",
+    "editor_error_content": "The editor might not show your latest changes correctly. Reload the editor to continue: your changes are saved first.",
+    "editor_error_reload_button": "Reload editor"
   },
   "empty": {
     "open_note_instruction": "Open a note by typing the note's title into the input below or choose a note in the tree.",
@@ -2855,7 +2864,8 @@
     "cannot-copy": "Could not copy the image reference to clipboard.",
     "image-copied-to-clipboard": "The image has been copied to clipboard.",
     "cannot-copy-image": "Could not copy the image to clipboard.",
-    "cannot-download": "Could not download the image."
+    "cannot-download": "Could not download the image.",
+    "cannot-convert-to-drawing": "Could not convert the image to a drawing canvas."
   },
   "clipboard": {
     "cut": "Note(s) have been cut into clipboard.",
@@ -3449,7 +3459,7 @@
     "content_hints_enabled": "Content hints",
     "content_hints_description": "Show short hints in the bottom corner of the editor that explain how to interact with the element under the caret or pointer.",
     "auto_link_previews_enabled": "Autogenerate link previews",
-    "auto_link_previews_description": "Automatically turn a detected link into a preview showing the title, description and image of the web page. Inserting a preview from the toolbar always works, regardless of this setting.",
+    "auto_link_previews_description": "Automatically turn a detected link into a preview showing the title, description and image of the web page, and save the tabs sent by the web clipper as inline previews. Inserting a preview from the toolbar always works, regardless of this setting.",
     "html_support_enabled": "Preserve unsupported HTML tags",
     "html_support_description": "Keep the HTML tags that the editor has no feature of its own for, as listed under Options → Other → HTML import tags. They appear as blocks that cannot be edited directly, and an unrecognised tag may not be visible at all while editing. With this off, such tags are dropped from a note the first time it is edited and saved; importing is unaffected either way."
   },
@@ -3684,7 +3694,21 @@
     "minutes_one": "{{count}} minute",
     "minutes_other": "{{count}} minutes",
     "hours_one": "{{count}} hour",
-    "hours_other": "{{count}} hours"
+    "hours_other": "{{count}} hours",
+    "duration_minutes": "{{minutes}} min",
+    "duration_hours": "{{hours}} h",
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min",
+    "properties": "Calendar properties",
+    "event_templates": "Event templates",
+    "event_templates_hint": "Choose what note types and note templates you would like to use when creating new calendar events.",
+    "new_template_name": "New event template",
+    "event_template": "Select an event template",
+    "more_templates": "More templates…",
+    "template": "Template",
+    "general": "General",
+    "event_attributes": "Event attributes",
+    "event_attributes_hint": "Choose which attributes appear on the events, and in what order. New attributes are hidden until you turn them on.",
+    "event_attributes_overridden": "This calendar has a calendar:displayedAttributes label, so the events show the attributes listed there instead of the ones chosen here."
   },
   "ocr": {
     "extracted_text": "Extracted Text (OCR)",
@@ -3822,6 +3846,10 @@
     "shared_unshare": "Remove share",
     "clipped_note": "Web clip",
     "clipped_note_description": "This note was originally taken from {{url}}.\n\nClick to navigate to the source webpage.",
+    "clipped_note_details": "This note was taken from a web page. Click to see the page's description, author and dates.",
+    "clipped_note_author": "Author",
+    "clipped_note_published": "Published",
+    "clipped_note_modified": "Updated",
     "doc_url": "Online docs",
     "doc_url_description": "Click to view this page on the online documentation website.",
     "execute_script": "Run script",
@@ -4249,6 +4277,7 @@
       "changes": "Changes",
       "click-on-the-arrow-or-press-0-to-collapse-expand": "Click on the arrow or press %0 to collapse/expand.",
       "collapsible-block": "Collapsible block",
+      "convert-image-to-a-drawing-canvas": "Convert image to a drawing canvas",
       "convert-to-link": "Convert to link",
       "copy-anchor-reference-link": "Copy anchor reference link",
       "copy-formatting": "Copy formatting",
@@ -4422,7 +4451,8 @@
       "0-columns-layout": "%0 columns layout",
       "arrange-content-in-0-equal-columns-side-by-side": "Arrange content in %0 equal columns side by side.",
       "0-columns-1": "%0 columns (%1)",
-      "remove-layout": "Remove layout"
+      "remove-layout": "Remove layout",
+      "type-content-here": "Type content here…"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

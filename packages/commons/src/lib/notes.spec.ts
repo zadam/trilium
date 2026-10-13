@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getContentRendererGroup,
+    CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getContentRendererGroup,
     getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
     MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS,
     parseMindMapNoteLink
@@ -109,6 +109,42 @@ describe("getNoteIcon", () => {
         expect(getNoteIcon(buildArgs({
             type: "file", mime: "application/gpx+xml", getLabelValue: located()
         }))).toBe("bx bx-trip");
+    });
+
+    it("draws a web clipping by its clip type, behind its own icon", () => {
+        const clipped = (clipType: string) => (name: string) => name === "clipType" ? clipType : null;
+
+        expect([ "clippings", "page", "note", "tabs" ].map((clipType) =>
+            getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))))
+            .toEqual([ "bx bx-paperclip", "bx bx-globe", "bx bx-bookmark", "bx bx-window-alt" ]);
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), isFolder: () => true })))
+            .toBe("bx bx-globe");
+        expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), iconClass: "bx bx-star" })))
+            .toBe("bx bx-star");
+        for (const clipType of [ "unknown", "constructor" ]) {
+            expect(getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))).toBe("bx bx-note");
+        }
+    });
+
+    it("draws a calendar event by its start date, under its own name where it renames it", () => {
+        const labelled = (labels: Record<string, string>) => (name: string) => labels[name] ?? null;
+
+        expect(getNoteIcon(buildArgs({ getLabelValue: labelled({ startDate: "2026-10-12" }) })))
+            .toBe(CALENDAR_EVENT_ICON);
+        expect(getNoteIcon(buildArgs({
+            getLabelValue: labelled({ startDate: "2026-10-12" }), isFolder: () => true
+        }))).toBe(CALENDAR_EVENT_ICON);
+        expect(getNoteIcon(buildArgs({
+            getLabelValue: labelled({ "calendar:startDate": "due", due: "2026-10-12" })
+        }))).toBe(CALENDAR_EVENT_ICON);
+        expect(getNoteIcon(buildArgs({
+            getLabelValue: labelled({ startDate: "2026-10-12" }), iconClass: "bx bx-cake"
+        }))).toBe("bx bx-cake");
+        expect(getNoteIcon(buildArgs({ getLabelValue: labelled({ startDate: "" }) })))
+            .toBe("bx bx-note");
+        expect(getNoteIcon(buildArgs({
+            type: "file", mime: "application/pdf", getLabelValue: labelled({ startDate: "2026-10-12" })
+        }))).toBe("bx bxs-file-pdf");
     });
 
     it("draws a shape note as the shape its label names, by the same rules as a pin", () => {
@@ -323,7 +359,7 @@ describe("getNoteContentType", () => {
             [ "video", "file" ],
             [ "office", undefined ],
             [ "file", undefined ],
-            [ "mermaid", "mermaid" ]
+            [ "mermaid", undefined ]
         ]);
         expect(getContentRendererGroup("constructor")).toBeUndefined();
     });

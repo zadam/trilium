@@ -841,7 +841,7 @@ export function useNoteLabel(note: FNote | undefined | null, labelName: FilterLa
  * themselves, e.g. a label a `#calendar:startDate` renaming points at. Prefer {@link useNoteLabel}
  * wherever the name is a builtin one, as it holds the name to the declared vocabulary.
  */
-export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => void] {
+export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => Promise<unknown>] {
     const [ , setLabelValue ] = useState<string | null | undefined>();
 
     useEffect(() => setLabelValue(note?.getLabelValue(labelName) ?? null), [ note, labelName ]);
@@ -858,12 +858,12 @@ export function useNoteLabelByName(note: FNote | undefined | null, labelName: st
         }
     });
 
-    const setter = useCallback((value: string | null | undefined) => {
+    const setter = useCallback(async (value: string | null | undefined) => {
         if (note) {
             if (value !== null) {
-                attributes.setLabel(note.noteId, labelName, value);
+                await attributes.setLabel(note.noteId, labelName, value);
             } else {
-                attributes.removeOwnedLabelByName(note, labelName);
+                await attributes.removeOwnedLabelByName(note, labelName);
             }
         }
     }, [note, labelName]);

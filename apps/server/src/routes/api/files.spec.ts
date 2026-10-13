@@ -1,3 +1,4 @@
+import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
 import { becca, cls, note_service as noteService, ValidationError } from "@triliumnext/core";
 import type { Request } from "express";
 import fs from "fs";
@@ -41,6 +42,30 @@ describe("Files API", () => {
             const uploadReq = fileReq({ attachmentId } as Record<string, string>, undefined, {}, { filePath: tmpFilePath }) as unknown as Request<{ attachmentId: string }>;
             cls.init(() => filesRoute.uploadModifiedFileToAttachment(uploadReq));
             expect(becca.getAttachmentOrThrow(attachmentId).getContent()).toBe("edited-att");
+        });
+
+        it("saves a canvas drawing to a temp file with the images it refers to inside", () => {
+            const drawing = cls.init(() => {
+                const { note } = noteService.createNewNote({
+                    parentNoteId: "root", title: "Drawing note", type: "text", content: "<p>x</p>"
+                });
+                note.saveAttachment({
+                    role: "image", mime: "image/png", title: "f1.png", content: "abc"
+                });
+                return note.saveAttachment({
+                    role: "file",
+                    mime: CANVAS_ATTACHMENT_MIME,
+                    title: "Canvas.excalidraw",
+                    content: JSON.stringify({ elements: [ { type: "image", fileId: "f1.png" } ] })
+                });
+            });
+            const req = fileReq({ attachmentId: drawing.attachmentId ?? "" });
+
+            const { tmpFilePath } = cls.init(() => filesRoute.saveAttachmentToTmpDir(
+                req as unknown as Request<{ attachmentId: string }>));
+
+            const scene = JSON.parse(fs.readFileSync(tmpFilePath, "utf8"));
+            expect(scene.files?.["f1.png"]?.dataURL).toBe("data:image/png;base64,YWJj");
         });
 
         it("rejects uploading from an unknown temp path", () => {

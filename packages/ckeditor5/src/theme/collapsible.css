@@ -12,7 +12,7 @@
 .trilium-collapsible-drop-indicator {
     position: fixed;
     height: 2px;
-    background: var(--ck-document-outline-item-active-color);
+    background: var(--ck-clipboard-drop-target-color);
     border-radius: 1px;
     pointer-events: none;
     z-index: 10000;

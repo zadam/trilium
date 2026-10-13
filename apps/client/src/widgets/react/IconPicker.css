@@ -28,6 +28,10 @@
     overflow: auto;
 }
 
+.icon-picker .icon-list > [role="grid"] {
+    padding-bottom: var(--scroll-fade-top);
+}
+
 .icon-picker .icon-list span {
     display: inline-block;
     padding: 10px;

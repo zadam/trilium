@@ -148,7 +148,18 @@ export default defineConfig(() => ({
             deps: {
                 // The plugin reads `rrule` through a namespace import, which Node resolves to the
                 // package's CommonJS build with no named exports. Bundling it applies Vite's interop.
-                inline: ["@fullcalendar/rrule"]
+                inline: [
+                    "@fullcalendar/rrule",
+                    // Univer's components and the React libraries under them run on preact/compat
+                    // in the app, so specs bundle them to apply the same `react` alias.
+                    /@univerjs\/design/,
+                    /@radix-ui\//,
+                    /@floating-ui\/react-dom/,
+                    /react-remove-scroll/,
+                    /react-style-singleton/,
+                    /use-callback-ref/,
+                    /use-sidecar/
+                ]
             }
         },
         reporters: [

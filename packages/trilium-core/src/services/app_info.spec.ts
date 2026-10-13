@@ -20,7 +20,7 @@ describe("app_info", () => {
         // These are protocol constants; bumping them is a deliberate,
         // breaking change, so they are locked here as a regression guard.
         expect(appInfo.syncVersion).toBe(40);
-        expect(appInfo.clipperProtocolVersion).toBe("1.0");
+        expect(appInfo.clipperProtocolVersion).toBe("1.1");
     });
 
     it("reports a valid current UTC timestamp", () => {

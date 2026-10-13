@@ -28,7 +28,7 @@ A link preview can be displayed in one of three modes:
 
 ## Inserting a link preview
 
-There are two ways to create one:
+There are three ways to create one:
 
 ### 1\. By pasting a URL
 
@@ -49,6 +49,12 @@ If the link is not accessible to the Trilium server (or the network request fail
 ### 2\. By using the "Link preview" toolbar button
 
 Click **Link preview** in the formatting toolbar to open the _Link preview_ popup. Paste the URL and choose the type of preview.
+
+### 3\. By saving browser tabs from the Web Clipper
+
+When the <a class="reference-link" href="../../Installation%20%26%20Setup/Web%20Clipper.md">Web Clipper</a> saves the tabs of a window, each tab becomes an _inline_ link preview showing the title and favicon the browser displays for it. Because this data comes from the browser, pages behind a login keep their real title, and the Trilium server does not contact the saved pages.
+
+When _Autogenerate link previews_ is turned off, the tabs are saved as a list of plain links instead.
 
 ## Altering an existing link preview
 

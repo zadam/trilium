@@ -7,8 +7,8 @@ const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
 const SERVER = { triliumServerUrl: "https://trilium.example", authToken: "secret" };
 const LOCAL_DATE_TIME = /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}[+-]\d\d:\d\d$/;
 const DESKTOP_HANDSHAKE = "http://127.0.0.1:37743/api/clipper/handshake";
-const FOUND_DESKTOP = { status: "found-desktop", port: 37743, url: "http://127.0.0.1:37743" };
-const FOUND_SERVER = { status: "found-server", url: "https://trilium.example", token: "secret" };
+const FOUND_DESKTOP = { status: "found-desktop", port: 37743, url: "http://127.0.0.1:37743", protocolMinor: 0 };
+const FOUND_SERVER = { status: "found-server", url: "https://trilium.example", token: "secret", protocolMinor: 0 };
 
 type PopupMessage = { name: string, triliumSearch?: unknown, searchNote?: unknown };
 const sendMessage = vi.fn(async (_message: PopupMessage) => {});
@@ -65,7 +65,7 @@ describe("TriliumServerFacade", () => {
             await vi.advanceTimersByTimeAsync(60 * 1000);
             expect(fetchMock).toHaveBeenCalledTimes(2);
             expect(searchStatuses()).toEqual([
-                { status: "found-desktop", port: 12345, url: "http://127.0.0.1:12345" }
+                { status: "found-desktop", port: 12345, url: "http://127.0.0.1:12345", protocolMinor: 2 }
             ]);
         });
 
@@ -304,6 +304,26 @@ describe("TriliumServerFacade", () => {
             fetchMock.mockResolvedValue(handshake("2.0"));
             await facade.triggerSearchForTrilium();
             await expect(facade.callService("GET", "notes-by-url/x")).rejects.toThrow(
+                expect.objectContaining({ message: expect.stringContaining("Update the web clipper") }));
+        });
+
+        it("rejects a feature that needs a later minor version than Trilium has", async () => {
+            fetchMock.mockResolvedValue(handshake("1"));
+            const facade = await createFacade();
+
+            await expect(facade.requireMinorVersion(1, "Saving a PDF")).rejects.toThrow(expect.objectContaining({
+                reason: "version-mismatch",
+                message: "Saving a PDF needs a newer version of Trilium. Update Trilium to the latest version."
+            }));
+            await expect(facade.requireMinorVersion(0, "Saving a PDF")).resolves.toBeUndefined();
+
+            fetchMock.mockResolvedValue(handshake("1.1"));
+            await facade.triggerSearchForTrilium();
+            await expect(facade.requireMinorVersion(1, "Saving a PDF")).resolves.toBeUndefined();
+
+            fetchMock.mockResolvedValue(handshake("2.0"));
+            await facade.triggerSearchForTrilium();
+            await expect(facade.requireMinorVersion(1, "Saving a PDF")).rejects.toThrow(
                 expect.objectContaining({ message: expect.stringContaining("Update the web clipper") }));
         });
     });

@@ -1147,12 +1147,9 @@
   "editable_text": {
     "placeholder": "Wpisz treść swojej notatki tutaj...",
     "auto-detect-language": "Wykryto automatycznie",
-    "editor_crashed_title": "Edytor tekstu uległ awarii",
-    "editor_crashed_content": "Twoja treść została pomyślnie odzyskana, ale kilka z twoich ostatnich zmian mogło nie zostać zapisanych.",
     "editor_crashed_details_button": "Zobacz więcej szczegółów...",
     "editor_crashed_details_intro": "Jeśli napotkasz ten błąd wielokrotnie, rozważ zgłoszenie go na GitHub, wklejając poniższe informacje.",
-    "editor_crashed_details_title": "Informacje techniczne",
-    "keeps-crashing": "Komponent edycji ciągle ulega awarii. Proszę spróbować zrestartować Trilium. Jeśli problem będzie się powtarzał, rozważ utworzenie zgłoszenia błędu."
+    "editor_crashed_details_title": "Informacje techniczne"
   },
   "empty": {
     "open_note_instruction": "Otwórz notatkę, wpisując tytuł notatki w polu poniżej lub wybierz notatkę w drzewie.",

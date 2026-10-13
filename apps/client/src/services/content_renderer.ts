@@ -22,13 +22,12 @@ import imageContextMenuService from "../menus/image_context_menu.js";
 import { t } from "../services/i18n.js";
 import { type MediaEnvironment, showsFileActions } from "../widgets/type_widgets/file/media_environment.js";
 import type { LlmChatContent, StoredMessage } from "../widgets/type_widgets/llm_chat/llm_chat_types.js";
-import type { BoxSize } from "../widgets/type_widgets/text/CKEditorWithWatchdog.js";
+import type { BoxSize } from "../widgets/type_widgets/text/CKEditor.js";
 import renderText, {
     postProcessRichContent, renderChildrenList, renderTextContent
 } from "./content_renderer_text.js";
 import renderDoc from "./doc_renderer.js";
 import { getAttachmentImageUrl, getNoteImageUrl } from "./image_urls.js";
-import { getMermaidConfig, postprocessMermaidSvg } from "./mermaid.js";
 import { renderOfficeToHtml } from "./office_renderer.js";
 import openService from "./open.js";
 import { waitForPendingRenders } from "./pending_renders.js";
@@ -201,14 +200,12 @@ export async function getRenderedContent(this: {} | { ctx: string }, entity: FNo
         await renderCanvasDrawing(entity, $renderedContent, options);
     } else if (type === "image" && options.mediaEnvironment === "embedded") {
         await renderImageViewer(entity, $renderedContent);
-    } else if (["image", "canvas", "mindMap", "spreadsheet"].includes(type)) {
+    } else if (["image", "canvas", "mermaid", "mindMap", "spreadsheet"].includes(type)) {
         await renderImage(entity, $renderedContent, options);
     } else if (!options.tooltip && type === "office") {
         await renderOffice(entity, $renderedContent, options);
     } else if (!options.tooltip && ["file", "pdf", "audio", "video"].includes(type)) {
         await renderFile(entity, type, $renderedContent, options);
-    } else if (type === "mermaid") {
-        await renderMermaid(entity, $renderedContent);
     } else if (type === "render" && entity instanceof FNote) {
         const $content = $("<div>");
 
@@ -288,7 +285,6 @@ export const CONTENT_RENDERERS = {
         pdf: () => import("../widgets/type_widgets/file/PdfViewer"),
         media: () => import("../widgets/type_widgets/file/MediaPreview")
     },
-    mermaid: () => import("mermaid"),
     render: () => import("./render.js"),
     webView: () => import("../widgets/type_widgets/WebView"),
     llmChat: () => import("../widgets/type_widgets/llm_chat/ChatPreview"),
@@ -762,27 +758,6 @@ async function renderMedia(entity: FNote | FAttachment, environment: MediaEnviro
         await mountInteractiveWidget(h(MediaPreview, { entity, environment }), container);
     }
     $content.append($container);
-}
-
-async function renderMermaid(note: FNote | FAttachment, $renderedContent: JQuery<HTMLElement>) {
-    const mermaid = (await CONTENT_RENDERERS.mermaid()).default;
-
-    const blob = await note.getBlob();
-    const content = blob?.content || "";
-
-    $renderedContent.css("display", "flex").css("justify-content", "space-around");
-
-    mermaid.mermaidAPI.initialize({ ...getMermaidConfig(), startOnLoad: false });
-
-    try {
-        const { svg } = await mermaid.mermaidAPI.render(`in-mermaid-graph-${idCounter++}`, content);
-
-        $renderedContent.append($(postprocessMermaidSvg(svg)));
-    } catch (e) {
-        const $error = $("<p>The diagram could not displayed.</p>");
-
-        $renderedContent.append($error);
-    }
 }
 
 /**

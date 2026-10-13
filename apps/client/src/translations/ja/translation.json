@@ -1642,7 +1642,11 @@
     "map_position": "イメージマップ上でのノートの位置。マップの座標系における <code>x,y</code> で指定します。<code>map:imageBounds</code> で別の座標系が指定されていない限り、画像のピクセル数が基準となります。",
     "map_shape": "イメージマップ上でノートを描画する際の形状。<code>geoShape</code> と同じ形式ですが、座標は <code>x,y</code> を使用します。例: <code>circle:400,300 50</code>。",
     "map_image_bounds": "イメージマップの左上隅と右下隅の座標。<code>x,y x,y</code> の形式で指定します。例: <code>-512,-512 512,512</code>。マップ上の位置は、画像のピクセル単位ではなく、この座標系に基づいて読み書きされます。",
-    "map_image": "世界地図の代わりに、ジオマップを描画するための画像ノートです。マーカーや図形は、<code>mapPosition</code> および <code>mapShape</code> を使用して配置されます。"
+    "map_image": "世界地図の代わりに、ジオマップを描画するための画像ノートです。マーカーや図形は、<code>mapPosition</code> および <code>mapShape</code> を使用して配置されます。",
+    "page_description": "クリップしたページの説明。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
+    "page_author": "クリップしたページの作成者。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
+    "published_date": "クリップしたページの公開日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
+    "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -1899,7 +1903,7 @@
     "content_hints_enabled": "コンテンツのヒント",
     "content_hints_description": "エディターの右下隅に、カーソルまたはポインターの下にある要素の操作方法を説明する短いヒントを表示します。",
     "auto_link_previews_enabled": "リンクプレビューを自動生成",
-    "auto_link_previews_description": "検出されたリンクを、ウェブページのタイトル、説明、画像を表示するプレビューに自動的に変換します。ツールバーからプレビューを挿入する操作は、この設定にかかわらず常に機能します。",
+    "auto_link_previews_description": "検出されたリンクを、Web ページのタイトル、説明、画像を含むプレビューに自動的に変換し、Web クリッパーから送信されたタブをインラインプレビューとして保存します。ツールバーからのプレビュー挿入は、この設定に関係なく常に機能します。",
     "html_support_enabled": "サポートされていない HTML タグを保持する",
     "html_support_description": "「オプション」→「その他」→「HTMLインポートタグ」に記載されている、エディタが独自機能を持たないHTMLタグを保持します。これらは直接編集できないブロックとして表示されますが、認識されないタグは編集画面上で全く表示されない場合もあります。この設定を無効にすると、該当するタグは、ノートを最初に編集・保存した時点で削除されます（インポート処理自体には影響しません）。",
     "mathlive_enabled": "MathLive ビジュアルエディター",
@@ -2027,7 +2031,8 @@
     "fix-nodes": "ノードを修正",
     "too-many-notes_other": "ここに {{count}} 件のノートがあります。表示すると処理速度が遅くなる可能性があります。",
     "show-anyway": "マップを表示",
-    "expand": "マップを展開"
+    "expand": "マップを展開",
+    "fit-to-view": "画面に合わせて表示"
   },
   "promoted_attributes": {
     "unset-field-placeholder": "未設定",
@@ -2082,7 +2087,7 @@
     "restore_note_pane": "ノートをマップの横に戻す",
     "note_color": "ノートの色",
     "remove_from_map": "マップから削除",
-    "fit_to_view": "画面に合わせる",
+    "fit_to_view": "画面に合わせて表示",
     "hints": {
       "title": "リレーションマップ",
       "paste_notes": "コピーまたは切り取ったノートを貼り付け",
@@ -2239,14 +2244,14 @@
   "editable_text": {
     "placeholder": "ここにノートの内容を入力...",
     "auto-detect-language": "自動検出",
-    "keeps-crashing": "編集コンポーネントがクラッシュし続けます。Trilium を再起動してください。問題が解決しない場合は、バグレポートの作成をご検討ください。",
-    "editor_crashed_title": "テキストエディターがクラッシュしました",
-    "editor_crashed_content": "コンテンツは正常に復元されましたが、最近の変更の一部が保存されていない可能性があります。",
     "editor_crashed_details_button": "詳細を見る...",
     "editor_crashed_details_intro": "このエラーが何度も発生する場合は、以下の情報を貼り付けて GitHub に報告することを検討してください。",
     "editor_crashed_details_title": "技術情報",
     "nothing_selected_to_cut": "まずテキストを選択して、サブノートとして切り出してください。",
-    "uploading_attachment": "添付ファイルをアップロード中"
+    "uploading_attachment": "添付ファイルをアップロード中",
+    "editor_error_title": "テキストエディターでエラーが発生しました",
+    "editor_error_content": "エディターに最新の変更内容が正しく表示されていない可能性があります。続行するにはエディターを再読み込みしてください。変更内容は事前に保存されます。",
+    "editor_error_reload_button": "エディターを再読み込み"
   },
   "empty": {
     "open_note_instruction": "以下の入力欄にノートのタイトルを入力するか、ツリー内のノートを選択してノートを開きます。",
@@ -2788,7 +2793,11 @@
     "shared_preview": "共有プレビュー",
     "shared_preview_description": "共有ページを開けるのはこのブラウザのみであり、かつ Trilium がそのブラウザで開かれている間だけです。公開するには、サブツリーを \"{{- format}}\" としてエクスポートし、任意の Web サーバーでファイルをホストするか、Trilium サーバーを使用してください。",
     "shared_export_only": "未公開",
-    "shared_export_only_description": "モバイルアプリでは共有ページを開くことができません。このノートを公開するには、サブツリーを \"{{- format}}\" としてエクスポートし、任意の Web サーバーでファイルをホストするか、Trilium サーバーを使用してください。"
+    "shared_export_only_description": "モバイルアプリでは共有ページを開くことができません。このノートを公開するには、サブツリーを \"{{- format}}\" としてエクスポートし、任意の Web サーバーでファイルをホストするか、Trilium サーバーを使用してください。",
+    "clipped_note_details": "このノートは Web ページから作成されました。クリックすると、ページの説明、作成者、日付を確認できます。",
+    "clipped_note_author": "作成者",
+    "clipped_note_published": "公開日",
+    "clipped_note_modified": "更新日"
   },
   "status_bar": {
     "language_title": "コンテンツの言語を変更",
@@ -2886,7 +2895,9 @@
     "disabled_button_enable": "レンダリングノートを有効",
     "error_title": "スクリプトの実行に失敗しました",
     "error_show_details": "詳細を表示",
-    "error_note_label": "スクリプトノート:"
+    "error_note_label": "スクリプトノート:",
+    "disabled_read_only": "このレンダリングノートは外部ソースからのものであるため、有効になっていません。",
+    "nothing_to_display": "このノートには表示する内容がありません。"
   },
   "active_content_badges": {
     "type_icon_pack": "アイコンパック",

@@ -1,3 +1,4 @@
+import { type FloatingElementsStep, setFloatingElements } from "@/floating_elements.js";
 import {
     createLink, descriptionLabels, getImages, getPageDescription, getPageLocationOrigin,
     makeLinksAbsolute, type Rect
@@ -141,7 +142,10 @@ export default defineContentScript({
             });
         }
 
-        async function prepareMessageResponse(message: {name: string, noteId?: string, message?: string, tabIds?: string[]}) {
+        async function prepareMessageResponse(message: {
+            name: string, noteId?: string, message?: string, tabIds?: string[], x?: number, y?: number,
+            step?: FloatingElementsStep
+        }) {
             console.info(`Message: ${  message.name}`);
 
             if (message.name === "toast") {
@@ -211,6 +215,23 @@ export default defineContentScript({
                     rect: await getRectangleArea(),
                     devicePixelRatio: window.devicePixelRatio
                 };
+            }
+            else if (message.name === "trilium-scroll-to") {
+                if (message.y !== undefined) {
+                    window.scrollTo({ left: message.x, top: message.y, behavior: "instant" });
+                }
+                return {
+                    scrollX: window.scrollX,
+                    scrollY: window.scrollY,
+                    viewportHeight: window.innerHeight,
+                    viewportWidth: window.innerWidth,
+                    pageHeight: document.documentElement.scrollHeight,
+                    devicePixelRatio: window.devicePixelRatio
+                };
+            }
+            else if (message.name === "trilium-set-floating-elements" && message.step) {
+                setFloatingElements(message.step);
+                return true;
             }
             else if (message.name === "trilium-get-page-metadata") {
                 return { description: getPageDescription() };

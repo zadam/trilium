@@ -82,7 +82,7 @@ export default function buildLaunchBarConfig() {
             title: t("hidden-subtree.backend-log-title"),
             type: "launcher",
             targetNoteId: "_backendLog",
-            icon: "bx bx-detail"
+            icon: "bx bx-receipt"
         },
         {
             id: "_zenMode",

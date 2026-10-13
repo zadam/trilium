@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vite
 
 const translate = vi.hoisted(() => (key: string) => `t:${key}`);
 vi.mock("@excalidraw/excalidraw", () => ({
-    useI18n: () => ({ t: translate, langCode: "en" })
+    useI18n: () => ({ t: translate, langCode: "en" }),
+    getCommonBounds: ([ { x, y, width, height } ]: FakeElement[]) => [ x, y, x + width, y + height ]
 }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 
@@ -265,6 +266,16 @@ describe("CanvasEmbedTools", () => {
         expect(api.updateScene).toHaveBeenCalledTimes(3);
     });
 
+    it("keeps a zoom of a drawing over a locked image inside the image", async () => {
+        const { provider } = await mount();
+        api.setElements([ { type: "image", locked: true, x: 0, y: 0, width: 800, height: 400 } ]);
+
+        provider.execute("zoomOut");
+        expect(api.updateScene).toHaveBeenLastCalledWith({
+            appState: { zoom: { value: 1 }, scrollX: 0, scrollY: 0 }
+        });
+    });
+
     it("offers and runs only the zoom while the drawing is read-only", async () => {
         const { provider } = await mount(false);
         const listener = vi.fn();
@@ -294,6 +305,15 @@ describe("CanvasEmbedTools", () => {
 });
 
 /** The part of Excalidraw's app state that the tools read. */
+interface FakeElement {
+    type: string;
+    locked: boolean;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 interface FakeAppState {
     activeTool: { type: string; locked: boolean };
     zoom: { value: number };
@@ -313,6 +333,7 @@ function createApi() {
         width: 800,
         height: 400
     };
+    let elements: FakeElement[] = [];
     let onChange: ((elements: unknown[], appState: AppState) => void) | undefined;
     const unsubscribe = vi.fn();
     const setActiveTool = vi.fn();
@@ -321,6 +342,7 @@ function createApi() {
 
     const api = {
         getAppState,
+        getSceneElements: () => elements,
         setActiveTool,
         updateScene,
         onChange: (callback: typeof onChange) => {
@@ -334,6 +356,9 @@ function createApi() {
         unsubscribe,
         setActiveTool,
         updateScene,
+        setElements(next: FakeElement[]) {
+            elements = next;
+        },
         change(next: Partial<FakeAppState>) {
             appState = { ...appState, ...next };
             onChange?.([], getAppState());
