@@ -643,7 +643,12 @@
     "map_position": "笔记在图像地图上的位置，格式为地图坐标中的 <code>x,y</code>：即图像的像素坐标，除非 <code>map:imageBounds</code> 指定了其他坐标。",
     "map_shape": "笔记在图像地图上绘制为的形状，格式与 <code>geoShape</code> 相同，但点用 <code>x,y</code> 表示，例如 <code>circle:400,300 50</code>。",
     "map_image_bounds": "图像地图左上角与右下角的坐标，格式为 <code>x,y x,y</code>，例如 <code>-512,-512 512,512</code>。地图上的位置将以这些坐标读写，而不是图像的像素坐标。",
-    "map_image": "用于在其上绘制地理地图（而非世界地图）的图像笔记。之后标记和形状将使用 <code>mapPosition</code> 和 <code>mapShape</code> 来放置。"
+    "map_image": "用于在其上绘制地理地图（而非世界地图）的图像笔记。之后标记和形状将使用 <code>mapPosition</code> 和 <code>mapShape</code> 来放置。",
+    "page_author": "剪藏页面的作者，显示在笔记的「网页剪藏」徽章详情中。",
+    "page_description": "剪藏页面的描述，显示在笔记的「网页剪藏」徽章详情中。",
+    "published_date": "剪藏页面的发布日期，显示在笔记的「网页剪藏」徽章详情中。",
+    "modified_date": "剪藏页面的最后更新日期，显示在笔记的「网页剪藏」徽章详情中。",
+    "calendar_title_template": "事件在日历上的标题格式，会为重复事件的每次出现填写。可读取 <code>${title}</code>, <code>${years}</code> （自开始日期起的整年数）以及日期 <code>${date}</code> and <code>${startDate}</code>, 例如在每年的生日上使用 <code>${title} (${years})</code> 。"
   },
   "attribute_editor": {
     "help_text_body1": "要添加标签，只需输入例如 <code>#rock</code> ；或者如果你还想同时添加数值，则可输入例如 <code>#year = 2020</code>",
@@ -828,7 +833,9 @@
       "end_date": "结束日期",
       "time": "时间",
       "start_time": "开始日期",
-      "end_time": "结束日期"
+      "end_time": "结束日期",
+      "add_time": "添加时间",
+      "remove_time": "移除时间"
     },
     "recurrence": {
       "repeats": "重复",
@@ -852,7 +859,9 @@
       "count": "在",
       "times": "次后",
       "custom_rule": "规则",
-      "custom_hint": "一条 iCalendar 重复规则（RRULE），可表达比上述字段更复杂的规则。清除它将停止重复。"
+      "custom_hint": "一条 iCalendar 重复规则（RRULE），可表达比上述字段更复杂的规则。清除它将停止重复。",
+      "count_years": "在标题中显示年数",
+      "count_years_locked": "此事件已有标题模板，已设置在笔记上或由笔记继承。请在笔记的属性中修改它。"
     },
     "expand_details": "展开事件以填满窗口",
     "restore_details": "将事件放回日历中的原位置"
@@ -1257,7 +1266,10 @@
     "editor_crashed_details_intro": "如果你多次遇到此错误，请考虑通过粘贴以下信息在 GitHub 上报告。",
     "editor_crashed_details_title": "技术信息",
     "nothing_selected_to_cut": "请先选中一些文本，再将其剪切为子笔记。",
-    "uploading_attachment": "正在上传附件"
+    "uploading_attachment": "正在上传附件",
+    "editor_error_title": "文本编辑器出现错误",
+    "editor_error_content": "编辑器可能无法正确显示你的最新更改。请重新加载编辑器以继续：你的更改会先被保存。",
+    "editor_error_reload_button": "重新加载编辑器"
   },
   "empty": {
     "open_note_instruction": "通过在下面的输入框中输入笔记标题或在树中选择笔记来打开笔记。",
@@ -2107,7 +2119,8 @@
     "cannot-copy": "无法将图片引用复制到剪贴板。",
     "image-copied-to-clipboard": "图片已复制到剪贴板。",
     "cannot-copy-image": "无法将图片复制到剪贴板。",
-    "cannot-download": "无法下载图片。"
+    "cannot-download": "无法下载图片。",
+    "cannot-convert-to-drawing": "无法将图片转换为绘图画布。"
   },
   "clipboard": {
     "cut": "笔记已剪切到剪贴板。",
@@ -2427,7 +2440,7 @@
     "content_hints_enabled": "内容提示",
     "content_hints_description": "在编辑器底部角落显示简短提示，说明如何操作光标或指针指向的元素。",
     "auto_link_previews_enabled": "自动生成链接预览",
-    "auto_link_previews_description": "自动将检测到的链接转换为预览，显示网页的标题、描述和图片。从工具栏插入预览始终有效，不受此设置影响。",
+    "auto_link_previews_description": "自动将检测到的链接转换为预览，显示网页的标题、描述和图片，并将 Web Clipper 发送的标签页保存为内联预览。从工具栏插入预览始终有效，不受此设置影响。",
     "html_support_enabled": "保留不支持的 HTML 标签",
     "html_support_description": "保留编辑器自身没有对应功能、但列于「选项 → 其他 → HTML 导入标签」中的 HTML 标签。它们会显示为无法直接编辑的块，无法识别的标签在编辑时甚至可能完全不可见。关闭此选项后，此类标签会在笔记首次被编辑并保存时被丢弃；无论开启还是关闭，导入都不受影响。",
     "mathlive_enabled": "MathLive 可视化编辑器",
@@ -2726,7 +2739,21 @@
     "remove_from_calendar_confirmation": "确定要将事件「{{title}}」从日历中移除吗？",
     "new_event": "新建事件",
     "draft_title_placeholder": "添加标题",
-    "create_event": "创建"
+    "create_event": "创建",
+    "duration_minutes": "{{minutes}} 分钟",
+    "duration_hours": "{{hours}} 小时",
+    "duration_hours_minutes": "{{hours}} 小时 {{minutes}} 分钟",
+    "properties": "日历属性",
+    "event_templates": "事件模板",
+    "event_templates_hint": "选择在创建新日历事件时要使用的笔记类型和笔记模板。",
+    "new_template_name": "新建事件模板",
+    "event_template": "选择一个事件模板",
+    "more_templates": "更多模板…",
+    "template": "模板",
+    "general": "常规",
+    "event_attributes": "事件属性",
+    "event_attributes_hint": "选择要在事件上显示哪些属性以及显示顺序。新属性在开启前处于隐藏状态。",
+    "event_attributes_overridden": "此日历带有 calendar:displayedAttributes 标签，因此事件会显示该标签中列出的属性，而不是此处选择的属性。"
   },
   "read-only-info": {
     "edit-note": "编辑笔记"
@@ -2786,7 +2813,11 @@
     "shared_preview": "分享预览",
     "shared_preview_description": "只有此浏览器能打开分享页面，且仅在 Trilium 处于打开状态时可访问。如需发布，请将子树导出为「{{- format}}」并将文件托管在任意 Web 服务器上，或使用 Trilium 服务器。",
     "shared_export_only": "未发布",
-    "shared_export_only_description": "移动端应用无法打开分享页面。如需发布此笔记，请将子树导出为「{{- format}}」并将文件托管在任意 Web 服务器上，或使用 Trilium 服务器。"
+    "shared_export_only_description": "移动端应用无法打开分享页面。如需发布此笔记，请将子树导出为「{{- format}}」并将文件托管在任意 Web 服务器上，或使用 Trilium 服务器。",
+    "clipped_note_details": "此笔记取自网页。点击查看页面的描述、作者和日期。",
+    "clipped_note_author": "作者",
+    "clipped_note_published": "发布时间",
+    "clipped_note_modified": "更新时间"
   },
   "status_bar": {
     "language_title": "更改内容语言",
@@ -3750,7 +3781,9 @@
       "0-columns-layout": "%0 栏布局",
       "arrange-content-in-0-equal-columns-side-by-side": "将内容并排排列为 %0 个等宽栏。",
       "0-columns-1": "%0 栏（%1）",
-      "remove-layout": "移除布局"
+      "remove-layout": "移除布局",
+      "convert-image-to-a-drawing-canvas": "将图片转换为绘图画布",
+      "type-content-here": "在此输入内容…"
     },
     "toolbar-groups": {
       "text-formatting": "文本格式",
