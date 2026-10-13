@@ -5,11 +5,34 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import Component from "../../../components/component";
 import type { ContentEditor } from "../../../services/content_renderer";
+import LoadResults from "../../../services/load_results";
 import { buildNote } from "../../../test/easy-froca";
+import { ParentComponent } from "../../react/react_utils";
 import { getContentEmbedTools } from "../text/content_embed_tools";
 
-vi.mock("@excalidraw/excalidraw", () => ({ exportToSvg: vi.fn() }));
+interface Box {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+vi.mock("@excalidraw/excalidraw", () => ({
+    exportToSvg: vi.fn(),
+    getCommonBounds: (elements: Box[]) => [
+        Math.min(...elements.map(({ x }) => x)),
+        Math.min(...elements.map(({ y }) => y)),
+        Math.max(...elements.map(({ x, width }) => x + width)),
+        Math.max(...elements.map(({ y, height }) => y + height))
+    ]
+}));
+// happy-dom lays nothing out: every picture of a drawing has a box of 400 × 200.
+vi.mock("../../react/hooks", async (importOriginal) => ({
+    ...await importOriginal<typeof import("../../react/hooks")>(),
+    useElementSize: () => ({ width: 400, height: 200 })
+}));
 vi.mock("./Canvas", () => ({ CanvasEditor: MockCanvasEditor }));
 vi.mock("./persistence", () => ({
     useCanvasDrawingPersistence: (...args: unknown[]) => {
@@ -39,7 +62,14 @@ interface MockCanvasEditorProps {
     apiRef?: RefObject<unknown>;
     isDesktopLayout?: boolean;
     isReadOnly?: boolean;
+    persistence?: { onChange?: (...args: unknown[]) => void };
     children?: ComponentChildren;
+}
+
+/** The options that `LiveDrawing` gives its persistence. */
+interface PersistenceOptions {
+    initialView?: unknown;
+    onSceneShown?: () => void;
 }
 
 /** Renders Excalidraw's focusable container after a render, as once its language loads. */
@@ -549,10 +579,27 @@ describe("useNoteScrollingWheel", () => {
 });
 
 describe("CanvasDrawing", () => {
-    const ATTACHMENT = { attachmentId: "a1" } as never;
+    const SCENE = JSON.stringify({ elements: [ { x: 50, y: 30, width: 200, height: 100 } ] });
+    const ATTACHMENT = {
+        attachmentId: "a1",
+        getBlob: async () => ({ content: sceneContent })
+    } as never;
+    const EDITOR = {
+        canEdit: () => true,
+        release: vi.fn(),
+        getUnsavedContent: () => undefined
+    } as unknown as ContentEditor;
     let box: HTMLElement;
+    let sceneContent: string;
 
     beforeEach(() => {
+        sceneContent = SCENE;
+        vi.mocked(exportToSvg).mockReset().mockImplementation(async () => {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", "200");
+            svg.setAttribute("height", "100");
+            return svg;
+        });
         box = document.createElement("div");
         box.className = "include-note-content";
         box.tabIndex = -1;
@@ -564,9 +611,10 @@ describe("CanvasDrawing", () => {
         box.remove();
     });
 
-    async function mount(editor?: ContentEditor) {
+    /** Mounts the drawing, which `editor` saves, or none for `null`. */
+    async function mount(editor: ContentEditor | null = EDITOR) {
         await act(async () => {
-            render(<CanvasDrawing attachment={ATTACHMENT} editor={editor} />, box);
+            render(<CanvasDrawing attachment={ATTACHMENT} editor={editor ?? undefined} />, box);
         });
         return box.querySelector(".excalidraw");
     }
@@ -596,36 +644,155 @@ describe("CanvasDrawing", () => {
         });
     }
 
-    it("follows the Editable toggle of its embed, saving all along", async () => {
-        const editor = { canEdit: () => true, release: vi.fn() } as unknown as ContentEditor;
+    it("edits in Excalidraw while its embed is editable, else shows a picture", async () => {
         const embed = document.createElement("figure");
         embed.className = "include-note";
         embed.setAttribute("data-editable", "true");
         embed.append(box);
         document.body.append(embed);
+        const getPicture = () => box.querySelector(".canvas-drawing-view");
+        const getExcalidraw = () => box.querySelector(".excalidraw");
+        sceneContent = JSON.stringify({
+            elements: [ { x: 50, y: 30, width: 200, height: 100 } ],
+            appState: { zoom: { value: 1 }, scrollX: 0, scrollY: 0 }
+        });
 
-        await mount(editor);
+        await mount();
         expect(getEditingState()).toEqual({ isReadOnly: false, menu: true, tools: true });
-        // `CanvasEmbedTools`, not rendered by the mock editor, adds the only buttons.
-        expect(getContentEmbedTools(embed)).toBeNull();
+        expect(getPicture()).toBeNull();
+        await new Promise(requestAnimationFrame);
+        expect(exportToSvg).not.toHaveBeenCalled();
+        expect(getContentEmbedTools(embed)?.hasEditableFlag).toBe(true);
 
+        // Excalidraw stays, read-only, until the picture of the drawing shows at the same view.
+        const options = persistenceArgs.mock.lastCall?.[4] as PersistenceOptions;
+        // Excalidraw counts as drawn on the frame after it shows the scene.
+        await act(async () => {
+            options.onSceneShown?.();
+            await new Promise(requestAnimationFrame);
+        });
+        const { onChange } = (canvasEditorProps.mock.lastCall?.[0] as MockCanvasEditorProps)
+            .persistence ?? {};
+        onChange?.([], { zoom: { value: 2 }, scrollX: 10, scrollY: 20 }, {});
         await setEmbedEditable(embed, false);
-        expect(getEditingState()).toEqual({ isReadOnly: true, menu: false, tools: false });
-        expect(persistenceArgs).toHaveBeenLastCalledWith(
-            ATTACHMENT, editor, expect.anything(), expect.anything()
-        );
+        expect(getEditingState().isReadOnly).toBe(true);
+        expect(getPicture()).not.toBeNull();
+        await vi.waitFor(() => expect(getExcalidraw()).toBeNull());
+        expect(box.querySelector<SVGElement>(".canvas-drawing-view > svg")?.style.left)
+            .toBe("120px");
+        expect(getContentEmbedTools(embed)?.hasEditableFlag).toBe(true);
 
+        // The picture stays until Excalidraw shows the drawing, opened at the view of the picture.
         await setEmbedEditable(embed, true);
-        expect(getEditingState()).toEqual({ isReadOnly: false, menu: true, tools: true });
+        expect(getExcalidraw()).not.toBeNull();
+        expect(getPicture()).not.toBeNull();
+        const reopened = persistenceArgs.mock.lastCall?.[4] as PersistenceOptions;
+        expect(reopened.initialView).toEqual({ zoom: { value: 2 }, scrollX: 10, scrollY: 20 });
+        await act(async () => reopened.onSceneShown?.());
+        await vi.waitFor(() => expect(getPicture()).toBeNull());
 
-        // An attachment that the note cannot save is read-only, with no toggle to offer.
+        // An attachment that the note cannot save shows as a picture, with no toggle to offer.
         render(null, box);
-        await mount({ canEdit: () => false } as unknown as ContentEditor);
-        expect(getEditingState()).toEqual({ isReadOnly: true, menu: false, tools: undefined });
-        expect(persistenceArgs).toHaveBeenLastCalledWith(
-            ATTACHMENT, undefined, expect.anything(), expect.anything()
-        );
+        persistenceArgs.mockClear();
+        await mount({ ...EDITOR, canEdit: () => false });
+        await vi.waitFor(() => expect(box.querySelector(".canvas-drawing-view > svg"))
+            .not.toBeNull());
+        expect(getExcalidraw()).toBeNull();
+        expect(persistenceArgs).not.toHaveBeenCalled();
+        expect(getContentEmbedTools(embed)).toBeNull();
         embed.remove();
+    });
+
+    it("shows the picture at the saved view, else fit, on the drawing's background", async () => {
+        sceneContent = JSON.stringify({
+            elements: [ { x: 50, y: 30, width: 200, height: 100 } ],
+            appState: {
+                zoom: { value: 2 }, scrollX: 10, scrollY: 20, viewBackgroundColor: "#ffc9c9"
+            }
+        });
+        await mount(null);
+        const layer = box.querySelector<HTMLElement>(".canvas-drawing-view");
+        const svg = await vi.waitFor(() => {
+            const shown = box.querySelector<SVGElement>(".canvas-drawing-view > svg");
+            if (!shown) throw new Error("Expected the picture.");
+            return shown;
+        });
+        // At (50 + 10) × 2 and (30 + 20) × 2, twice the 200 × 100 of the shapes.
+        expect([ svg.style.left, svg.style.top, svg.style.width, svg.style.height ])
+            .toEqual([ "120px", "100px", "400px", "200px" ]);
+        expect(layer?.style.getPropertyValue("--canvas-drawing-view-background")).toBe("#ffc9c9");
+        expect(vi.mocked(exportToSvg)).toHaveBeenLastCalledWith(expect.objectContaining({
+            appState: expect.objectContaining({ exportBackground: false }),
+            exportPadding: 0
+        }));
+
+        // Without a saved view, fit in the 400 × 200 box, centered.
+        render(null, box);
+        sceneContent = JSON.stringify({ elements: [ { x: 50, y: 30, width: 200, height: 100 } ] });
+        await mount(null);
+        await vi.waitFor(() => expect(box.querySelector<SVGElement>(".canvas-drawing-view > svg")
+            ?.style.left).toBe("0px"));
+        const fitted = box.querySelector<SVGElement>(".canvas-drawing-view > svg");
+        expect([ fitted?.style.top, fitted?.style.width, fitted?.style.height ])
+            .toEqual([ "0px", "400px", "200px" ]);
+
+        // A saved view past the left edge of the image of an image canvas moves back inside it.
+        render(null, box);
+        sceneContent = JSON.stringify({
+            elements: [ { type: "image", locked: true, x: 0, y: 0, width: 800, height: 400 } ],
+            appState: { zoom: { value: 1 }, scrollX: 100, scrollY: 0 }
+        });
+        await mount(null);
+        await vi.waitFor(() => expect(box.querySelector<SVGElement>(".canvas-drawing-view > svg")
+            ?.style.left).toBe("600px"));
+    });
+
+    it("centers the picture once fullscreen changes its size, as Excalidraw does", async () => {
+        sceneContent = JSON.stringify({
+            elements: [ { x: 50, y: 30, width: 200, height: 100 } ],
+            appState: { zoom: { value: 2 }, scrollX: 10, scrollY: 20 }
+        });
+        await mount(null);
+        const getSvg = () => box.querySelector<SVGElement>(".canvas-drawing-view > svg");
+        await vi.waitFor(() => expect(getSvg()?.style.left).toBe("120px"));
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect")
+            .mockReturnValue({ width: 400, height: 200 } as DOMRect);
+
+        await act(async () => {
+            box.dispatchEvent(new Event("enterFullscreen", { bubbles: true }));
+        });
+
+        // The center of the shapes, (150, 80), in the middle of the 400 × 200 box at zoom 2.
+        expect([ getSvg()?.style.left, getSvg()?.style.top ]).toEqual([ "0px", "0px" ]);
+        vi.restoreAllMocks();
+    });
+
+    it("renders the picture again when the drawing saves, and not for other saves", async () => {
+        const parent = new Component();
+        await act(async () => {
+            render(
+                <ParentComponent.Provider value={parent}>
+                    <CanvasDrawing attachment={ATTACHMENT} />
+                </ParentComponent.Provider>,
+                box
+            );
+        });
+        await vi.waitFor(() => expect(exportToSvg).toHaveBeenCalledTimes(1));
+
+        const save = async (attachmentId: string) => {
+            const loadResults = new LoadResults([]);
+            loadResults.addAttachmentRow({ attachmentId } as never, "any");
+            await act(async () => {
+                await parent.handleEvent("entitiesReloaded", { loadResults });
+            });
+        };
+        await save("other");
+        sceneContent = JSON.stringify({ elements: [ { x: 0, y: 0, width: 10, height: 10 } ] });
+        await save("a1");
+        await vi.waitFor(() => expect(exportToSvg).toHaveBeenCalledTimes(2));
+        await save("a1");
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(exportToSvg).toHaveBeenCalledTimes(2);
     });
 
     it("is editable outside an embed, which has no Editable toggle", async () => {

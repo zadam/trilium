@@ -23,14 +23,13 @@ import zoomInIcon from "boxicons/svg/regular/bx-zoom-in.svg?raw";
 import zoomOutIcon from "boxicons/svg/regular/bx-zoom-out.svg?raw";
 import handIcon from "boxicons/svg/solid/bxs-hand.svg?raw";
 import type { RefObject } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
 import {
     type ContentEmbedTool,
     type ContentEmbedToolbarItem,
     type ContentEmbedToolProvider,
-    registerContentEmbedTools,
     showContentEmbedFullscreen
 } from "../text/content_embed_tools";
 import { getBoundedView, MAX_ZOOM, MIN_ZOOM } from "./drawing_view";
@@ -91,17 +90,20 @@ interface CanvasEmbedToolsProps {
     /** The element of the drawing, inside the embed whose toolbar shows the tools. */
     rootRef: RefObject<HTMLElement | null>;
     apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+    /** The tools of the drawing, which the drawing adds to the toolbar of its embed. */
+    tools: CanvasTools;
     /** Whether the Editable toggle of the embed is on. A read-only drawing offers the zoom only. */
     isEditable: boolean;
 }
 
 /**
- * Adds Excalidraw's tools, undo and redo, and zoom to the toolbar of the embed that shows the
- * drawing. Renders inside `<Excalidraw>`, for its translations.
+ * Gives `tools` Excalidraw's tools, undo and redo, and zoom, while Excalidraw shows the drawing.
+ * Renders inside `<Excalidraw>`, for its translations.
  */
-export default function CanvasEmbedTools({ rootRef, apiRef, isEditable }: CanvasEmbedToolsProps) {
+export default function CanvasEmbedTools({
+    rootRef, apiRef, tools, isEditable
+}: CanvasEmbedToolsProps) {
     const { t, langCode } = useExcalidrawTranslation();
-    const [ tools ] = useState(() => new CanvasTools(rootRef));
 
     useEffect(() => tools.setTranslate(t), [ tools, t, langCode ]);
     useEffect(() => tools.setEditable(isEditable), [ tools, isEditable ]);
@@ -112,12 +114,10 @@ export default function CanvasEmbedTools({ rootRef, apiRef, isEditable }: Canvas
         if (!root || !api) return;
 
         const disconnect = tools.connect(api);
-        const unregister = registerContentEmbedTools(root, tools);
         // `CanvasDrawing.css` hides Excalidraw's own controls while these replace them.
         root.setAttribute("data-embed-tools", "");
         return () => {
             root.removeAttribute("data-embed-tools");
-            unregister();
             disconnect();
         };
     }, [ tools, rootRef, apiRef ]);
@@ -131,7 +131,10 @@ export function useExcalidrawTranslation() {
     return useI18n() as unknown as { t: Translate; langCode: string };
 }
 
-/** Excalidraw's tools and commands, as buttons of the toolbar of the embed with the drawing. */
+/**
+ * Excalidraw's tools and commands, as buttons of the toolbar of the embed with the drawing. Without
+ * Excalidraw, as while the drawing shows as a picture, only fullscreen.
+ */
 export class CanvasTools implements ContentEmbedToolProvider {
     readonly hiddenToolbarItems: readonly ContentEmbedToolbarItem[] = [
         "contentEmbedBoxSizeDropdown", "toggleContentEmbedTitle", "convertEmbedToLink"
@@ -185,7 +188,7 @@ export class CanvasTools implements ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[] {
         const appState = this.api?.getAppState();
         if (!appState) {
-            return [];
+            return this.getFullscreenTools();
         }
 
         const zoomTools = [
@@ -198,20 +201,23 @@ export class CanvasTools implements ContentEmbedToolProvider {
     }
 
     execute(id: string) {
-        const api = this.api;
-        if (!api) return;
-
         // The embed covers the drawing with a backdrop until the drawing has the focus.
         const container = this.rootRef.current?.querySelector<HTMLElement>(".excalidraw-container");
         if (container && !container.contains(document.activeElement)) {
             container.focus({ preventScroll: true });
         }
 
-        const appState = api.getAppState();
-        const getZoom = ZOOMS[id];
         if (id === FULLSCREEN) {
             showContentEmbedFullscreen(this.rootRef.current);
-        } else if (getZoom) {
+            return;
+        }
+
+        const api = this.api;
+        if (!api) return;
+
+        const appState = api.getAppState();
+        const getZoom = ZOOMS[id];
+        if (getZoom) {
             const view = getZoomState(appState, getZoom(appState.zoom.value));
             const boundedView = getBoundedView(api.getSceneElements(), { ...appState, ...view });
             api.updateScene({ appState: boundedView ?? view });

@@ -15,7 +15,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
-import { getBoundedView, getFittedView } from "./drawing_view";
+import { type DrawingView, getBoundedView, getFittedView } from "./drawing_view";
 import {
     buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
 } from "./image_attachments";
@@ -351,6 +351,13 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
     };
 }
 
+interface DrawingPersistenceOptions {
+    /** The view to open the drawing at, instead of the saved one. */
+    initialView?: DrawingView | null;
+    /** Called once Excalidraw shows the loaded scene. */
+    onSceneShown?: () => void;
+}
+
 /**
  * Loads a canvas drawing from an attachment and passes its changes to `editor`, which saves them.
  * Without `editor`, the drawing is read-only.
@@ -359,7 +366,8 @@ export function useCanvasDrawingPersistence(
     attachment: FAttachment,
     editor: ContentEditor | undefined,
     apiRef: RefObject<ExcalidrawImperativeAPI | null>,
-    theme: AppState["theme"]
+    theme: AppState["theme"],
+    { initialView, onSceneShown }: DrawingPersistenceOptions = {}
 ): Partial<ExcalidrawProps> {
     const currentSceneVersion = useRef(0);
     /** The saved part of the app state, read from the editor at the first change. */
@@ -368,6 +376,9 @@ export function useCanvasDrawingPersistence(
     const initialSceneAppliedRef = useRef(true);
     const referencedFileIds = useRef<ReadonlySet<string>>(new Set());
     const isFitPendingRef = useRef(false);
+    /** Whether the loaded scene shows nothing, known once it loads. */
+    const isLoadedSceneEmptyRef = useRef(false);
+    const isSceneShownRef = useRef(false);
 
     const [ initialData ] = useState(async (): Promise<ExcalidrawInitialDataState> => {
         const unsavedContent = editor?.getUnsavedContent();
@@ -381,13 +392,16 @@ export function useCanvasDrawingPersistence(
         const elements = content.elements ?? [];
         currentSceneVersion.current = getSceneVersion(elements);
         initialSceneAppliedRef.current = currentSceneVersion.current === 0;
-        isFitPendingRef.current = !content.appState?.zoom
-            && elements.some((element) => !element.isDeleted);
+        isLoadedSceneEmptyRef.current = !elements.some((element) => !element.isDeleted);
+        isFitPendingRef.current = !initialView && !content.appState?.zoom
+            && !isLoadedSceneEmptyRef.current;
 
         return {
             elements,
             // A drawing shows the background of the note unless one is picked for it.
-            appState: { viewBackgroundColor: "transparent", ...content.appState, theme },
+            appState: {
+                viewBackgroundColor: "transparent", ...content.appState, ...initialView, theme
+            },
             files: loaded.files
         };
     });
@@ -409,9 +423,15 @@ export function useCanvasDrawingPersistence(
             if (fitted) isFitPendingRef.current = false;
             const view = fitted || getBoundedView(elements, state);
             if (api && view) api.updateScene({ appState: view });
-            if (!api || !editor) return;
+            if (!api) return;
 
             const sceneVersion = getSceneVersion(api.getSceneElements());
+            if (!isSceneShownRef.current && (isLoadedSceneEmptyRef.current || sceneVersion)) {
+                isSceneShownRef.current = true;
+                onSceneShown?.();
+            }
+            if (!editor) return;
+
             if (!initialSceneAppliedRef.current) {
                 if (sceneVersion === 0) return;
                 initialSceneAppliedRef.current = true;

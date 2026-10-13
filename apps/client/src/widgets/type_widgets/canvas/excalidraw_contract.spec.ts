@@ -16,7 +16,8 @@ const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
 /** The classes of Trilium that `CanvasDrawing.css` selects. Every other class is Excalidraw's. */
 const TRILIUM_CLASSES = new Set([
     "note-detail", "canvas-drawing", "canvas-drawing-editor", "canvas-render",
-    "canvas-drawing-picture", "toolbar-over-panel", "recentering", "include-note",
+    "canvas-drawing-picture", "canvas-drawing-view", "theme-dark", "toolbar-over-panel",
+    "recentering", "include-note",
     "include-note-body",
     "include-note-content", "active", "tn-icon"
 ]);

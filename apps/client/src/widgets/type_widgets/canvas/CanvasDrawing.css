@@ -19,6 +19,7 @@
 
     /* Resets the typography inherited from the text note. */
     > .canvas-drawing-editor {
+        position: relative;
         height: 100%;
         font-size: var(--canvas-drawing-font-size);
         line-height: var(--bs-body-line-height);
@@ -26,6 +27,7 @@
         overflow-wrap: normal;
 
         > .canvas-render {
+            position: relative;
             height: 100%;
             transition: opacity 150ms ease-out;
         }
@@ -152,7 +154,7 @@
 
 /* Excalidraw hides its overflow, so its rounded container clips what it draws. */
 .include-note-content:not(:fullscreen) .canvas-drawing {
-    &, .excalidraw-container {
+    &, .excalidraw-container, .canvas-drawing-view {
         border-radius: var(--_canvas-drawing-top-radius) var(--_canvas-drawing-top-radius)
                        var(--_canvas-drawing-bottom-radius) var(--_canvas-drawing-bottom-radius);
     }
@@ -164,6 +166,29 @@
     /* Below the toolbar, clear of the "Exit fullscreen" button of the embed. */
     .Island.App-menu__left {
         top: calc(var(--lg-button-size) + 1rem);
+    }
+}
+
+/* The picture of the drawing that `DrawingPicture` places, under Excalidraw while both show. */
+.canvas-drawing-view {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+
+    &::before {
+        position: absolute;
+        inset: 0;
+        background-color: var(--canvas-drawing-view-background, transparent);
+        content: "";
+    }
+
+    /* Excalidraw's `THEME_FILTER`, which its dark theme gives the whole canvas. */
+    &.theme-dark::before {
+        filter: invert(93%) hue-rotate(180deg);
+    }
+
+    > svg {
+        position: absolute;
     }
 }
 

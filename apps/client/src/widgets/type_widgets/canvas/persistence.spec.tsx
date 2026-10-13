@@ -231,12 +231,13 @@ describe("useCanvasDrawingPersistence", () => {
     let appState: Record<string, unknown>;
     let updateScene: ReturnType<typeof vi.fn>;
 
-    function DrawingProbe({ attachment, editor, apiRef }: {
+    function DrawingProbe({ attachment, editor, apiRef, options }: {
         attachment: FAttachment;
         editor: ContentEditor | undefined;
         apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+        options?: Parameters<typeof useCanvasDrawingPersistence>[4];
     }) {
-        drawingProps = useCanvasDrawingPersistence(attachment, editor, apiRef, "light");
+        drawingProps = useCanvasDrawingPersistence(attachment, editor, apiRef, "light", options);
         return null;
     }
 
@@ -273,7 +274,11 @@ describe("useCanvasDrawingPersistence", () => {
         } satisfies ContentEditor;
     }
 
-    async function mount(attachment: FAttachment, editor: ContentEditor | undefined) {
+    async function mount(
+        attachment: FAttachment,
+        editor: ContentEditor | undefined,
+        options?: Parameters<typeof useCanvasDrawingPersistence>[4]
+    ) {
         const api = {
             getSceneElements: () => sceneElements,
             getAppState: () => appState,
@@ -283,7 +288,12 @@ describe("useCanvasDrawingPersistence", () => {
         const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
         await act(async () => {
             render(
-                <DrawingProbe attachment={attachment} editor={editor} apiRef={apiRef} />,
+                <DrawingProbe
+                    attachment={attachment}
+                    editor={editor}
+                    apiRef={apiRef}
+                    options={options}
+                />,
                 container
             );
         });
@@ -440,6 +450,38 @@ describe("useCanvasDrawingPersistence", () => {
         expect(updateScene).toHaveBeenCalledExactlyOnceWith({
             appState: { zoom: { value: 0.5 }, scrollX: 500, scrollY: 0 }
         });
+    });
+
+    it("opens at the view it is given, which needs no fit, and tells once it shows", async () => {
+        const loaded = [ { id: "r1", type: "rectangle", version: 3 } ];
+        const placed = [ { ...loaded[0], x: 0, y: 0, width: 100, height: 100 } ];
+        const view = { zoom: { value: 2 }, scrollX: 5, scrollY: 6 };
+        const onSceneShown = vi.fn();
+        const { attachment } = buildAttachment({ elements: placed, appState: { zoom: 1 } });
+
+        const initialData = await mount(attachment, buildEditor(), {
+            initialView: view as never,
+            onSceneShown
+        });
+        expect(initialData.appState).toEqual(expect.objectContaining(view));
+
+        // Excalidraw reports its empty scene, then the loaded one, twice.
+        change();
+        expect(onSceneShown).not.toHaveBeenCalled();
+        sceneElements = loaded;
+        const sized = { ...appState, width: 1000, height: 500 };
+        drawingProps?.onChange?.(placed as never, sized as never, {});
+        change();
+        expect(onSceneShown).toHaveBeenCalledOnce();
+        expect(updateScene).not.toHaveBeenCalled();
+
+        act(() => render(null, container));
+        sceneElements = [];
+        const empty = vi.fn();
+        const { attachment: emptyDrawing } = buildAttachment({ elements: [] });
+        await mount(emptyDrawing, undefined, { onSceneShown: empty });
+        change();
+        expect(empty).toHaveBeenCalledOnce();
     });
 
     it("saves nothing without an editor", async () => {

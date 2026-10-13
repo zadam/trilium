@@ -1,6 +1,6 @@
 import type { AppState, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { render } from "preact";
-import { useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
@@ -11,9 +11,9 @@ vi.mock("@excalidraw/excalidraw", () => ({
 }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 
-const { default: CanvasEmbedTools } = await import("./CanvasEmbedTools");
+const { default: CanvasEmbedTools, CanvasTools } = await import("./CanvasEmbedTools");
 const {
-    getContentEmbedTools, watchContentEmbedTools
+    getContentEmbedTools, registerContentEmbedTools, watchContentEmbedTools
 } = await import("../text/content_embed_tools");
 
 const MAIN_TOOL_IDS = [
@@ -40,10 +40,18 @@ describe("CanvasEmbedTools", () => {
         container.remove();
     });
 
-    /** A drawing with Excalidraw's container and its undo and redo buttons. */
+    /**
+     * A drawing with Excalidraw's container and its undo and redo buttons, which adds its tools to
+     * the toolbar of its embed, as `CanvasDrawing` does.
+     */
     function Drawing({ isEditable }: { isEditable: boolean }) {
         const rootRef = useRef<HTMLDivElement>(null);
         const apiRef = useRef<ExcalidrawImperativeAPI>(api.api);
+        const [ tools ] = useState(() => new CanvasTools(rootRef));
+        useEffect(() => {
+            const root = rootRef.current;
+            return root ? registerContentEmbedTools(root, tools) : undefined;
+        }, [ tools ]);
         return (
             <figure className="include-note" data-box-size="medium">
                 <div className="include-note-content">
@@ -54,6 +62,7 @@ describe("CanvasEmbedTools", () => {
                         <CanvasEmbedTools
                             rootRef={rootRef}
                             apiRef={apiRef}
+                            tools={tools}
                             isEditable={isEditable}
                         />
                     </div>
@@ -223,6 +232,27 @@ describe("CanvasEmbedTools", () => {
         expect(box.requestFullscreen).toHaveBeenCalledOnce();
         expect(api.updateScene).not.toHaveBeenCalled();
         expect(api.setActiveTool).not.toHaveBeenCalled();
+    });
+
+    it("offers and runs fullscreen alone without Excalidraw, as for a picture", () => {
+        const embed = document.createElement("figure");
+        embed.className = "include-note";
+        Object.assign(embed.dataset, { hideTitle: "true", boxSize: "medium" });
+        const box = document.createElement("div");
+        box.className = "include-note-content";
+        box.requestFullscreen = vi.fn(async () => {});
+        const root = document.createElement("div");
+        box.append(root);
+        embed.append(box);
+        container.append(embed);
+        const tools = new CanvasTools({ current: root });
+
+        expect(tools.getTools()).toEqual([
+            { id: "fullscreen", label: "common.fullscreen", icon: ICON, group: "zoom" }
+        ]);
+        tools.execute("zoomIn");
+        tools.execute("fullscreen");
+        expect(box.requestFullscreen).toHaveBeenCalledOnce();
     });
 
     it("runs a tool with the focus in the drawing", async () => {

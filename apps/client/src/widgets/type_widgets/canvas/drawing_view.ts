@@ -6,7 +6,7 @@ import type { AppState, NormalizedZoomValue } from "@excalidraw/excalidraw/types
 export const MIN_ZOOM = 0.1;
 export const MAX_ZOOM = 30;
 
-type DrawingView = Pick<AppState, "zoom" | "scrollX" | "scrollY">;
+export type DrawingView = Pick<AppState, "zoom" | "scrollX" | "scrollY">;
 
 /**
  * The view of a drawing `width` by `height` that saved none, such as one converted from an image:
@@ -21,6 +21,28 @@ export function getFittedView(
     if (!shown.length || !width || !height) return null;
 
     return fitView(getCommonBounds(shown), width, height);
+}
+
+/**
+ * `view` moved so that it centers the content of a drawing `width` by `height` at the same zoom, as
+ * Excalidraw's `scrollToContent()` does. `null` without content.
+ */
+export function getCenteredView(
+    elements: readonly ExcalidrawElement[],
+    view: DrawingView,
+    width: number,
+    height: number
+): DrawingView | null {
+    const shown = elements.filter((element) => !element.isDeleted);
+    if (!shown.length) return null;
+
+    const [ minX, minY, maxX, maxY ] = getCommonBounds(shown);
+    const zoom = view.zoom.value;
+    return {
+        zoom: view.zoom,
+        scrollX: width / 2 / zoom - (minX + maxX) / 2,
+        scrollY: height / 2 / zoom - (minY + maxY) / 2
+    };
 }
 
 /**
