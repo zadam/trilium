@@ -77,7 +77,9 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
                 threshold: 0.5,
                 minSilenceDuration: 0.5,
                 minSpeechDuration: 0.25,
-                maxSpeechDuration: 20,
+                // Past this length, sherpa ends the segment at the next 0.1 s pause, so
+                // continuous speech is committed within about 10 s.
+                maxSpeechDuration: 8,
                 windowSize: VAD_WINDOW_SIZE
             },
             sampleRate: SAMPLE_RATE,
