@@ -15,11 +15,13 @@ import Tabs from "../tabs/tabs.js";
 import { getDefaultRatios } from "./constants.js";
 import Multicolumn from "./multicolumn.js";
 
+const column = (content: string) => `<div class="trilium-multicolumn-column">${content}</div>`;
+
 const TWO_COLUMNS =
-    "<section class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-3\">" +
-        "<section><p>First column</p></section>" +
-        "<section><p>Second column</p></section>" +
-    "</section>";
+    "<div class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-3\">" +
+        column("<p>First column</p>") +
+        column("<p>Second column</p>") +
+    "</div>";
 
 describe("MulticolumnEditing", () => {
     let editor: ClassicEditor;
@@ -60,7 +62,7 @@ describe("MulticolumnEditing", () => {
             const widget = root?.querySelector(".trilium-multicolumn-layout");
             expect(widget?.classList.contains("ck-widget")).toBe(true);
             expect(widget?.getAttribute("data-trilium-column-ratios")).toBe("1-3");
-            const columns = widget?.querySelectorAll(":scope > section") ?? [];
+            const columns = widget?.querySelectorAll(":scope > .trilium-multicolumn-column") ?? [];
             expect([...columns].map(column => column.getAttribute("contenteditable")))
                 .toEqual(["true", "true"]);
             expect(columns[0]?.getAttribute("aria-label")).toContain("Column");
@@ -77,8 +79,8 @@ describe("MulticolumnEditing", () => {
             expect(widget?.getAttribute("data-trilium-column-ratios")).toBe("3-1");
         });
 
-        it("reads a plain section outside a layout as something else", () => {
-            editor.setData("<section><p>Text</p></section>");
+        it("reads a column outside a layout as its content", () => {
+            editor.setData(column("<p>Text</p>"));
 
             expect(model()).toBe("<paragraph>Text</paragraph>");
         });
@@ -88,7 +90,7 @@ describe("MulticolumnEditing", () => {
         /** Whether the first block of each column shows the placeholder. */
         function placeholders() {
             const root = editor.editing.view.getDomRoot();
-            const columns = root?.querySelectorAll(".trilium-multicolumn-layout > section") ?? [];
+            const columns = root?.querySelectorAll(".trilium-multicolumn-column") ?? [];
             return [...columns].map(column =>
                 column.firstElementChild?.classList.contains("ck-placeholder") ?? false);
         }
@@ -148,16 +150,16 @@ describe("MulticolumnEditing", () => {
 
     describe("post-fixer", () => {
         it("removes a layout without columns", () => {
-            editor.setData("<p>Before</p><section class=\"trilium-multicolumn-layout\"></section>");
+            editor.setData("<p>Before</p><div class=\"trilium-multicolumn-layout\"></div>");
 
             expect(model()).toBe("<paragraph>Before</paragraph>");
         });
 
         it("adds an empty column to a layout with one column", () => {
             editor.setData(
-                "<section class=\"trilium-multicolumn-layout\">" +
-                    "<section><p>Only</p></section>" +
-                "</section>"
+                "<div class=\"trilium-multicolumn-layout\">" +
+                    "<div class=\"trilium-multicolumn-column\"><p>Only</p></div>" +
+                "</div>"
             );
 
             expect(model()).toBe(
@@ -170,9 +172,9 @@ describe("MulticolumnEditing", () => {
 
         it("merges the columns past the fourth into the fourth, in order", () => {
             const columns = ["A", "B", "C", "D", "E", "F"]
-                .map(text => `<section><p>${text}</p></section>`)
+                .map(text => column(`<p>${text}</p>`))
                 .join("");
-            editor.setData(`<section class="trilium-multicolumn-layout">${columns}</section>`);
+            editor.setData(`<div class="trilium-multicolumn-layout">${columns}</div>`);
 
             expect(model()).toBe(
                 "<multicolumnLayout columnRatios=\"1-1-1-1\">" +
@@ -189,20 +191,20 @@ describe("MulticolumnEditing", () => {
         it("merges columns past the fourth without adding blank lines for empty ones", () => {
             const columns = ["<p>A</p>", "<p>B</p>", "<p>C</p>", "", "<p>E</p>", ""];
             editor.setData(
-                "<section class=\"trilium-multicolumn-layout\">" +
-                    columns.map(column => `<section>${column}</section>`).join("") +
-                "</section>"
+                "<div class=\"trilium-multicolumn-layout\">" +
+                    columns.map(column).join("") +
+                "</div>"
             );
 
             expect((layoutAt(0).getChild(3) as ModelElement).childCount).toBe(1);
-            expect(editor.getData()).toContain("<section><p>E</p></section></section>");
+            expect(editor.getData()).toContain(`${column("<p>E</p>")}</div>`);
         });
 
         it("gives an empty column a paragraph", () => {
             editor.setData(
-                "<section class=\"trilium-multicolumn-layout\">" +
-                    "<section></section><section><p>B</p></section>" +
-                "</section>"
+                "<div class=\"trilium-multicolumn-layout\">" +
+                    column("") + column("<p>B</p>") +
+                "</div>"
             );
 
             expect(model()).toBe(
@@ -215,11 +217,11 @@ describe("MulticolumnEditing", () => {
 
         it("resets weights that are missing, unknown or meant for another column count", () => {
             const layout = (ratios: string) =>
-                `<section class="trilium-multicolumn-layout"${ratios}>` +
-                    "<section><p>A</p></section>" +
-                    "<section><p>B</p></section>" +
-                    "<section><p>C</p></section>" +
-                "</section>";
+                `<div class="trilium-multicolumn-layout"${ratios}>` +
+                    "<div class=\"trilium-multicolumn-column\"><p>A</p></div>" +
+                    "<div class=\"trilium-multicolumn-column\"><p>B</p></div>" +
+                    "<div class=\"trilium-multicolumn-column\"><p>C</p></div>" +
+                "</div>";
             editor.setData(
                 layout("") +
                 layout(" data-trilium-column-ratios=\"2-5-1\"") +
@@ -240,14 +242,14 @@ describe("MulticolumnEditing", () => {
 
         it("fixes a layout nested in a column", () => {
             editor.setData(
-                "<section class=\"trilium-multicolumn-layout\">" +
-                    "<section>" +
-                        "<section class=\"trilium-multicolumn-layout\">" +
-                            "<section><p>Inner</p></section>" +
-                        "</section>" +
-                    "</section>" +
-                    "<section><p>Outer</p></section>" +
-                "</section>"
+                "<div class=\"trilium-multicolumn-layout\">" +
+                    "<div class=\"trilium-multicolumn-column\">" +
+                        "<div class=\"trilium-multicolumn-layout\">" +
+                            "<div class=\"trilium-multicolumn-column\"><p>Inner</p></div>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div class=\"trilium-multicolumn-column\"><p>Outer</p></div>" +
+                "</div>"
             );
 
             expect(model()).toBe(

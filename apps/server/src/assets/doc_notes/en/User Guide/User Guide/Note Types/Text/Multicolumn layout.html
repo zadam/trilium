@@ -62,6 +62,9 @@
 <ul>
   <li>When printing or <a href="#root/_help_NRnIZmSMc5sj">exporting to PDF</a>,
     the columns are printed side by side.</li>
-  <li>Markdown has no columns, so Markdown export writes the content of the
+  <li>Markdown has no columns, so Markdown export keeps the layout and each
+    column as HTML <code>&lt;div&gt;</code> tags, with the content of each column
+    written as Markdown between them. Importing the file back restores the
+    layout. Markdown viewers that don't support HTML show the content of the
     columns one after another.</li>
 </ul>
