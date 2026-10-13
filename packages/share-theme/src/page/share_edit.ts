@@ -133,19 +133,25 @@ async function unlock(
         controls.setError(needsPassword ? "locked" : "retry");
         controls.passwordInput.focus();
     };
-    const logOut = () => fetch("api/edit/logout", {
+    const logOut = (signal?: AbortSignal) => fetch("api/edit/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ noteId })
+        body: JSON.stringify({ noteId }),
+        signal
     });
-    // Saves that keep failing end the editing, which the page says once it is back.
-    const giveUp = async () => {
-        await logOut().catch(() => undefined);
+    // Saves that keep failing end the editing, which the page says once it is back. The editor
+    // keeps its leave guards until the page leaves, so a logout that stalls is cut short.
+    const giveUp = async (release: () => void) => {
+        const abort = new AbortController();
+        const timer = setTimeout(() => abort.abort(), LOGOUT_WAIT);
+        await logOut(abort.signal).catch(() => undefined);
+        clearTimeout(timer);
         rememberEnded(noteId);
+        release();
         window.location.reload();
     };
-    const mounted = mountEditor(
-        noteId, first, session, controls, () => void onLocked(), () => void giveUp());
+    const mounted = mountEditor(noteId, first, session, controls, () => void onLocked(),
+        (release) => void giveUp(release));
     editing.relock = async (again?: string) => {
         const next = await login(controls, noteId, again || undefined, "retry");
         if (!next) {
@@ -188,7 +194,7 @@ async function mountEditor(
     session: EditSession,
     controls: Controls,
     onLocked: () => void,
-    onSavesFailing: () => void
+    onSavesFailing: EditViewOptions["onSavesFailing"]
 ): Promise<EditView> {
     const content = document.getElementById("content");
     const title = document.getElementById("title");
@@ -248,6 +254,8 @@ function buildStatusSlot() {
     return slot;
 }
 
+/** How long the page waits for the logout of a guest whose saves kept failing. */
+const LOGOUT_WAIT = 5000;
 /** The note whose page logged out as saves kept failing, kept for the page it reloads to. */
 const ENDED_KEY = "shareEditEnded";
 

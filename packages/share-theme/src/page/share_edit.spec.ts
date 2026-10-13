@@ -51,6 +51,7 @@ describe("setupShareEdit", () => {
         vi.clearAllMocks();
         delete document.body.dataset.noteId;
         sessionStorage.clear();
+        vi.useRealTimers();
     });
 
     it("asks nothing on a static export's page, nor shows anything for a locked note", async () => {
@@ -242,12 +243,16 @@ describe("setupShareEdit", () => {
 
         // The share does not answer, and the page leaves the editor regardless.
         fetchMock.mockRejectedValueOnce(new Error("offline"));
-        options.onSavesFailing();
+        const release = vi.fn();
+        options.onSavesFailing(release);
         await vi.waitFor(() => expect(reload).toHaveBeenCalled());
         expect(fetchMock).toHaveBeenLastCalledWith("api/edit/logout", expect.objectContaining({
             headers: expect.objectContaining({ "x-csrf-token": "csrf" })
         }));
         expect(mocks.stop).not.toHaveBeenCalled();
+        // The editor lets go of its leave guards right before the page leaves.
+        const [ released ] = release.mock.invocationCallOrder;
+        expect(released).toBeLessThan(reload.mock.invocationCallOrder[0]);
 
         const error = () => document.querySelector<HTMLElement>(".share-edit-error");
         document.body.innerHTML = PAGE;
@@ -273,12 +278,40 @@ describe("setupShareEdit", () => {
         const calls = mocks.mountEditView.mock.calls as [ unknown, [ unknown, EditViewOptions ] ];
         const [ , [ , again ] ] = calls;
         fetchMock.mockResolvedValueOnce({ ok: true, status: 204 });
-        again.onSavesFailing();
+        again.onSavesFailing(vi.fn());
         await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(2));
         document.body.innerHTML = PAGE;
         answerSession(session);
         await setupShareEdit();
         expect(error()?.hidden).toBe(true);
+    });
+
+    it("cuts a stalled logout short, keeping the editor's guards until it leaves", async () => {
+        answerSession({ editable: true, needsPassword: false, unlocked: true, strings: STRINGS });
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+        const [ [ , options ] ] =
+            mocks.mountEditView.mock.calls as [ [ unknown, EditViewOptions ] ];
+
+        vi.useFakeTimers();
+        let signal: AbortSignal | undefined;
+        fetchMock.mockImplementationOnce((_url: string, init: RequestInit) => {
+            signal = init.signal ?? undefined;
+            return new Promise((_resolve, reject) => {
+                signal?.addEventListener("abort", () => reject(new Error("aborted")));
+            });
+        });
+        const release = vi.fn();
+        options.onSavesFailing(release);
+        await vi.advanceTimersByTimeAsync(4_999);
+        expect(release).not.toHaveBeenCalled();
+        expect(reload).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(1);
+        expect(signal?.aborted).toBe(true);
+        expect(release).toHaveBeenCalled();
+        expect(reload).toHaveBeenCalled();
     });
 
     it("asks for the password again once access ends, and resumes the editor with it", async () => {

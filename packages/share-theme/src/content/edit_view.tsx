@@ -37,10 +37,10 @@ export interface EditViewOptions {
      */
     onLocked?: () => void;
     /**
-     * Called once saves keep failing for over a minute, none of them stored; the view lets go of
-     * what it holds first, so the page can log out of editing without asking to stay.
+     * Called once saves keep failing for over a minute, none of them stored; the page logs out of
+     * editing and calls `release` right before it leaves, so that leaving does not ask to stay.
      */
-    onSavesFailing: () => void;
+    onSavesFailing: (release: () => void) => void;
 }
 
 export interface EditView {
@@ -75,6 +75,8 @@ export type { ShareEditGlobals };
 
 /** How long after the last keystroke the title is saved. */
 const TITLE_SAVE_DELAY = 1000;
+/** How long after the server refused the title it is sent again. */
+const TITLE_RETRY_DELAY = 5000;
 /** How long saves can keep failing, none of them stored, before the page logs out of editing. */
 const SAVE_FAILURE_LIMIT = 60_000;
 
@@ -100,8 +102,9 @@ export default async function mountEditView(container: HTMLElement, options: Edi
     const giveUp = () => {
         if (!ended) {
             ended = true;
-            appContext.beforeUnloadListeners = [];
-            options.onSavesFailing();
+            options.onSavesFailing(() => {
+                appContext.beforeUnloadListeners = [];
+            });
         }
     };
     installGlobals(options, status, component, onLocked, createFailureClock(giveUp));
@@ -341,7 +344,8 @@ function EditShell(
 
 /**
  * Makes the page's title editable as the app's title box is, saving after a pause, on leaving and
- * on `flush`, one save at a time; a title counts as saved once the server stored it.
+ * on `flush`, one save at a time; a title counts as saved once the server stored it, and a refused
+ * one is sent again after {@link TITLE_RETRY_DELAY}.
  */
 function makeTitleEditable(
     title: HTMLElement, noteId: string, container: HTMLElement, onLocked: () => void,
@@ -371,6 +375,7 @@ function makeTitleEditable(
                     onLocked();
                 }
                 clock.failed();
+                timer ??= setTimeout(() => void save(), TITLE_RETRY_DELAY);
                 return false;
             }
         });

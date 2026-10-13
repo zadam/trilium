@@ -292,36 +292,46 @@ describe("mountEditView", () => {
         vi.advanceTimersByTime(1);
         act(() => shareEdit.onSaveState("error"));
         expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
-        // The page leaves without asking, as nothing it holds can be saved.
+        // Leaving still asks to stay until the page lets go, right before it leaves.
+        expect(mocks.beforeUnloadListeners).toHaveLength(1);
+        const [ [ release ] ] = options.onSavesFailing.mock.calls as [ [ () => void ] ];
+        release();
         expect(mocks.beforeUnloadListeners).toEqual([]);
         act(() => shareEdit.onSaveState("error"));
         expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
     });
 
-    it("counts the title's failing saves apart from the note's", async () => {
+    it("sends a refused title again, and logs out once it keeps failing", async () => {
         const options = { ...buildOptions(), onSavesFailing: vi.fn() };
         await act(async () => { await mountEditView(container, options); });
         const shareEdit = (window.glob as unknown as { shareEdit: ShareEditGlobals }).shareEdit;
         const offline = new Error("offline");
-        const rename = async (text: string) => {
-            title.textContent = text;
-            title.dispatchEvent(new Event("blur"));
-            await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        const wait = async (ms: number) => {
+            await act(async () => { await vi.advanceTimersByTimeAsync(ms); });
         };
 
         mocks.put.mockRejectedValueOnce(offline);
-        await rename("One");
-        vi.advanceTimersByTime(60_001);
-        // A stored title starts the minute again.
-        await rename("Two");
+        title.textContent = "Renamed";
+        title.dispatchEvent(new Event("blur"));
+        await wait(0);
+        await wait(4_999);
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+        await wait(1);
+        expect(mocks.put).toHaveBeenCalledTimes(2);
+        // Once stored, the title is not sent again.
+        await wait(60_000);
+        expect(mocks.put).toHaveBeenCalledTimes(2);
+
         mocks.put.mockRejectedValue(offline);
-        await rename("Three");
-        vi.advanceTimersByTime(60_001);
+        title.textContent = "Again";
+        title.dispatchEvent(new Event("blur"));
+        await wait(60_000);
         // The note's stored saves leave the title's failures counting.
         act(() => shareEdit.onSaveState("saved"));
         expect(options.onSavesFailing).not.toHaveBeenCalled();
-        await rename("Four");
+        await wait(5_000);
         expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
+        expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Again" });
     });
 
     it("holds the page while a title is not stored yet, and sends it", async () => {
