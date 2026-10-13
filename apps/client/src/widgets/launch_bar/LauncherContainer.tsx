@@ -3,7 +3,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from "preact/hooks";
 import FNote from "../../entities/fnote";
 import { isExperimentalFeatureEnabled } from "../../services/experimental_features";
 import froca from "../../services/froca";
-import { isDesktop, isMobile } from "../../services/utils";
+import { isDesktop, isElectron, isMobile } from "../../services/utils";
 import TabSwitcher from "../mobile_widgets/TabSwitcher";
 import { useTriliumEvent } from "../react/hooks";
 import { onWheelHorizontalScroll } from "../widget_utils";
@@ -14,6 +14,7 @@ import HistoryNavigationButton from "./HistoryNavigation";
 import { LaunchBarContext } from "./launch_bar_widgets";
 import { CommandButton, CustomWidget, NoteLauncher, QuickSearchLauncherWidget, ScriptLauncher, TodayLauncher } from "./LauncherDefinitions";
 import ProtectedSessionStatusWidget from "./ProtectedSessionStatusWidget";
+import RecordMeetingButton from "./RecordMeetingButton";
 import SidebarChatButton from "./SidebarChatButton";
 import SpacerWidget from "./SpacerWidget";
 import SyncStatus from "./SyncStatus";
@@ -105,6 +106,8 @@ function initBuiltinWidget(note: FNote, isHorizontalLayout: boolean) {
             return <TabSwitcher launcherNote={note} />;
         case "sidebarChat":
             return isExperimentalFeatureEnabled("llm") ? <SidebarChatButton launcherNote={note} /> : undefined;
+        case "recordMeeting":
+            return isElectron() ? <RecordMeetingButton launcherNote={note} /> : undefined;
         case "colorSchemeSwitcher":
             return <ColorSchemeSwitcher launcherNote={note} />;
         default:

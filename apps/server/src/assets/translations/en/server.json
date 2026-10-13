@@ -329,7 +329,8 @@
     "localization": "Language & Region",
     "inbox-title": "Inbox",
     "tab-switcher-title": "Tab Switcher",
-    "sidebar-chat-title": "AI Chat"
+    "sidebar-chat-title": "AI Chat",
+    "record-meeting-title": "Record meeting"
   },
   "notes": {
     "new-note": "New note",
