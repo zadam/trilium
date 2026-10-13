@@ -72,6 +72,14 @@ export const EMPTY_CANVAS_CONTENT = JSON.stringify({
 });
 
 /**
+ * The media type of a file attached under `fileName`: {@link CANVAS_ATTACHMENT_MIME} for an
+ * Excalidraw file, so that it shows as a canvas drawing, else `mime`.
+ */
+export function getAttachedFileMime(fileName: string, mime: string) {
+    return fileName.toLowerCase().endsWith(".excalidraw") ? CANVAS_ATTACHMENT_MIME : mime;
+}
+
+/**
  * The note a mind map node's link points at, or `null` where it points somewhere else entirely.
  *
  * A node carries one link of its own — Mind Elixir's `hyperLink` — which the editor writes as the

@@ -1,3 +1,5 @@
+import { getAttachedFileMime } from "@triliumnext/commons";
+
 import { Request, Response } from "../../http_interface";
 import becca from "../../becca/becca";
 import type BAttachment from "../../becca/entities/battachment";
@@ -86,7 +88,7 @@ function updateAttachment(req: Request<{ attachmentId: string }>) {
 
     attachment.getNote().saveRevision();
 
-    attachment.mime = file.mimetype.toLowerCase();
+    attachment.mime = getAttachedFileMime(file.originalname, file.mimetype.toLowerCase());
     attachment.setContent(file.buffer, { forceSave: true });
 
     return {

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getContentRendererGroup,
-    getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
+    CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE,
+    getAttachedFileMime, getContentRendererGroup, getImageAttachmentTitle, getMimeIcon,
+    getNoteContentType, getNoteIcon, isFullWidthNoteType,
     MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS,
     parseMindMapNoteLink
 } from "./notes.js";
@@ -362,5 +363,25 @@ describe("getNoteContentType", () => {
             [ "mermaid", undefined ]
         ]);
         expect(getContentRendererGroup("constructor")).toBeUndefined();
+    });
+});
+
+describe("getAttachedFileMime", () => {
+    it("saves an Excalidraw file as a canvas drawing and keeps the type of any other", () => {
+        expect([
+            getAttachedFileMime("Drawing.excalidraw", "application/octet-stream"),
+            getAttachedFileMime("Sketch.EXCALIDRAW", ""),
+            getAttachedFileMime("Drawing.excalidraw", "application/json"),
+            getAttachedFileMime("data.json", "application/json"),
+            getAttachedFileMime("excalidraw", "application/octet-stream"),
+            getAttachedFileMime("Drawing.excalidraw.md", "text/markdown")
+        ]).toEqual([
+            CANVAS_ATTACHMENT_MIME,
+            CANVAS_ATTACHMENT_MIME,
+            CANVAS_ATTACHMENT_MIME,
+            "application/json",
+            "application/octet-stream",
+            "text/markdown"
+        ]);
     });
 });

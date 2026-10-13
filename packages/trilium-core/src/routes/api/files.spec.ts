@@ -285,6 +285,10 @@ describe("Files API (core)", () => {
             expect(res.body).toEqual({ uploaded: true });
             expect(becca.getAttachmentOrThrow(attachmentId).getContent().toString()).toBe("new-att");
             expect(await revisionCount(noteId)).toBe(1);
+
+            const drawing = upload("{}", "application/octet-stream", "Drawing.excalidraw");
+            await api.put(`/api/attachments/${attachmentId}/file`, { file: drawing });
+            expect(becca.getAttachmentOrThrow(attachmentId).mime).toBe(CANVAS_ATTACHMENT_MIME);
         });
 
         it("reports a request that carries no file instead of writing an empty one", async () => {
