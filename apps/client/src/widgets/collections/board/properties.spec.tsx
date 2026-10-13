@@ -88,6 +88,7 @@ describe("Board properties", () => {
         const api = {
             setInboxEnabled: async (enabled: boolean) => { toggled.push([ "inbox", enabled ]); },
             setArchivedShown: async (shown: boolean) => { toggled.push([ "archived", shown ]); },
+            setAddColumnShown: async (shown: boolean) => { toggled.push([ "add-column", shown ]); },
             getCardTemplateIds: () => [ "type:text:text/html" ],
             setCardTemplateIds: async (ids: string[]) => { stored.push(ids); },
             getStoredPromotedAttributes: () => [ { name: "dueDate" }, { name: "owner" } ],
@@ -159,16 +160,25 @@ describe("Board properties", () => {
             const rows = general()
                 ?.querySelectorAll(".tn-card-section:not(.tn-card-section-nested)") ?? [];
 
-            expect(rows.length).toBe(4);
+            expect(rows.length).toBe(5);
             expect(toggleAt(0)?.classList.contains("on")).toBe(false);
             expect(toggleAt(1)?.classList.contains("on")).toBe(true);
+            expect(toggleAt(2)?.classList.contains("on")).toBe(true);
+
+            labels["board:hideAddColumn"] = "true";
+            act(() => { render(null, container); });
+            draw();
+            expect(toggleAt(2)?.classList.contains("on")).toBe(false);
         });
 
         it("asks the board to show each of them", () => {
             act(() => { toggleAt(0)?.click(); });
             act(() => { toggleAt(1)?.click(); });
+            act(() => { toggleAt(2)?.click(); });
 
-            expect(toggled).toEqual([ [ "inbox", true ], [ "archived", false ] ]);
+            expect(toggled).toEqual([
+                [ "inbox", true ], [ "archived", false ], [ "add-column", false ]
+            ]);
         });
 
         function toggleAt(index: number) {

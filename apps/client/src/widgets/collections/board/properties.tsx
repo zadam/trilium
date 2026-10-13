@@ -66,6 +66,7 @@ export default function BoardProperties({ api, note, shown, onClose }: {
 function General({ api, note }: { api: BoardApi, note: FNote }) {
     const [ inboxShown ] = useNoteLabelBoolean(note, "board:showInbox");
     const [ archivedShown ] = useNoteLabelBoolean(note, "includeArchived");
+    const [ addColumnHidden ] = useNoteLabelBoolean(note, "board:hideAddColumn");
     const [ columnWidth ] =
         useNoteLabelWithDefault(note, COLUMN_WIDTH_LABEL, DEFAULT_COLUMN_WIDTH);
     const defaultSort = useBoardSort(note);
@@ -97,6 +98,17 @@ function General({ api, note }: { api: BoardApi, note: FNote }) {
                 <FormToggle
                     currentValue={archivedShown}
                     onChange={(shown) => api.setArchivedShown(shown)}
+                />
+            </OptionCardSection>
+
+            <OptionCardSection
+                name="board-show-add-column"
+                label={t("board_view.show-add-column-button")}
+                description={t("board_view.show-add-column-button-description")}
+            >
+                <FormToggle
+                    currentValue={!addColumnHidden}
+                    onChange={(shown) => api.setAddColumnShown(shown)}
                 />
             </OptionCardSection>
 

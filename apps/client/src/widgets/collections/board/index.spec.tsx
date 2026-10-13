@@ -257,11 +257,12 @@ describe("Collapsed board columns", () => {
     });
 
     /** A board whose first column is stored collapsed and holds two cards. */
-    async function setup({ keepCollapsed = false } = {}) {
+    async function setup({ keepCollapsed = false, hideAddColumn = false } = {}) {
         const note = buildNote({
             title: "Board",
             "#collection": "",
             "#viewType": "board",
+            ...(hideAddColumn ? { "#board:hideAddColumn": "true" } : {}),
             children: [
                 { id: "card1", title: "First", "#status": "To Do" },
                 { id: "card2", title: "Second", "#status": "To Do" },
@@ -699,6 +700,40 @@ describe("Collapsed board columns", () => {
         show.mockRestore();
         archived.mockRestore();
     });
+
+    it("leaves out the add-column button when hidden, and still opens its editor from the menu",
+        async () => {
+            const { mountPoint } = await setup({ hideAddColumn: true });
+            const show = vi.spyOn(contextMenu, "show").mockImplementation(async () => {});
+
+            expect(mountPoint.querySelector(".board-view-container")).not.toBeNull();
+            expect(mountPoint.querySelector(".board-add-column")).toBeNull();
+
+            mountPoint.querySelector(".board-view-container")
+                ?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
+            const items = show.mock.calls.at(-1)?.[0].items ?? [];
+            const addColumn = items.find(item =>
+                item && "uiIcon" in item && item.uiIcon === "bx bx-columns");
+            if (!addColumn || !("handler" in addColumn)) {
+                throw new Error("expected an add-column entry");
+            }
+
+            await act(async () => {
+                addColumn.handler?.(addColumn, {} as never);
+                await flush();
+            });
+            const editor = mountPoint.querySelector<HTMLInputElement>(".board-add-column input");
+            if (!editor) throw new Error("expected the add-column editor to be open");
+
+            await act(async () => {
+                editor.dispatchEvent(new FocusEvent("blur"));
+                editor.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+                await flush();
+            });
+            expect(mountPoint.querySelector(".board-add-column")).toBeNull();
+
+            show.mockRestore();
+        });
 
     /** A column and a card answer for their own presses, and the board does not speak over them. */
     it("leaves a press inside a column to the column", async () => {

@@ -158,6 +158,7 @@ export const ATTR_HELP: AttrHelpMap = {
         maxNestingDepth: t("attribute_detail.max_nesting_depth"),
         includeArchived: t("attribute_detail.include_archived"),
         "board:showInbox": t("attribute_detail.board_show_inbox"),
+        "board:hideAddColumn": t("attribute_detail.board_hide_add_column"),
         "board:columnWidth": t("attribute_detail.board_column_width"),
         "board:sortColumns": t("attribute_detail.board_sort_columns"),
         "board:sortColumnsDescending": t("attribute_detail.board_sort_columns_descending"),

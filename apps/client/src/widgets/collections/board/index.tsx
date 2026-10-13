@@ -405,6 +405,7 @@ function Board({
     let viewConfig = adoptedConfig ?? storedConfig;
     const [ includeArchived ] = useNoteLabelBoolean(parentNote, "includeArchived");
     const [ inboxEnabled ] = useNoteLabelBoolean(parentNote, "board:showInbox");
+    const [ addColumnHidden ] = useNoteLabelBoolean(parentNote, "board:hideAddColumn");
     // Read undefaulted: a board naming no width wears no class, so `--board-column-width` keeps
     // whatever it inherits.
     const [ storedColumnWidth ] = useNoteLabel(parentNote, COLUMN_WIDTH_LABEL);
@@ -1539,7 +1540,9 @@ function Board({
 
                         </div>
 
-                        {editing && <editing.AddNewColumn
+                        {/* The board's menu opens its column editor in this slot, so the slot is
+                            drawn while that editor is open even with the button hidden. */}
+                        {editing && (!addColumnHidden || isCreatingColumn) && <editing.AddNewColumn
                             api={api}
                             isInRelationMode={isInRelationMode}
                             columnCount={shownColumns.length}
