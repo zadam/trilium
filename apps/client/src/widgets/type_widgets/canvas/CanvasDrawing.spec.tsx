@@ -487,20 +487,15 @@ describe("useTopLayerContextMenu", () => {
 });
 
 describe("useNoteScrollingWheel", () => {
-    const IMAGE = { type: "image", locked: true, isDeleted: false };
     let container: HTMLElement;
-    let elements: object[];
-    const api = { getSceneElements: () => elements };
 
     function WheelProbe() {
         const rootRef = useRef<HTMLDivElement>(null);
-        const apiRef = useRef(api as unknown as ExcalidrawImperativeAPI);
-        useNoteScrollingWheel(rootRef, apiRef);
+        useNoteScrollingWheel(rootRef);
         return <div ref={rootRef}><div className="excalidraw-container"><canvas /></div></div>;
     }
 
     beforeEach(async () => {
-        elements = [ IMAGE ];
         container = document.createElement("div");
         document.body.append(container);
         await act(async () => render(<WheelProbe />, container));
@@ -536,26 +531,20 @@ describe("useNoteScrollingWheel", () => {
         return listener.mock.calls.length > 0;
     }
 
-    it("scrolls the note with the wheel over a locked image, which zooms with Ctrl or Cmd", () => {
+    it("gives the wheel over the drawing to the note, with any modifier key", () => {
         expect(reachesDrawing()).toBe(false);
         expect(reachesDrawing({ shiftKey: true, deltaY: 0, deltaX: 100 })).toBe(false);
-        expect(reachesDrawing({ ctrlKey: true })).toBe(true);
-        expect(reachesDrawing({ metaKey: true })).toBe(true);
-
-        elements = [ { ...IMAGE, isDeleted: true }, { type: "rectangle", locked: false } ];
-        expect(reachesDrawing()).toBe(true);
+        expect(reachesDrawing({ ctrlKey: true })).toBe(false);
+        expect(reachesDrawing({ metaKey: true })).toBe(false);
     });
 
-    it("leaves the wheel to an unlocked image, and to a drawing in fullscreen", () => {
-        elements = [ { ...IMAGE, locked: false } ];
-        expect(reachesDrawing()).toBe(true);
-
-        elements = [ IMAGE ];
+    it("leaves the wheel to a drawing in fullscreen", () => {
         Object.defineProperty(document, "fullscreenElement", {
             value: container.firstElementChild,
             configurable: true
         });
         expect(reachesDrawing()).toBe(true);
+        expect(reachesDrawing({ ctrlKey: true })).toBe(true);
     });
 });
 
@@ -644,21 +633,18 @@ describe("CanvasDrawing", () => {
         expect(getEditingState()).toEqual({ isReadOnly: false, menu: true, tools: true });
     });
 
-    it("scrolls the note with the wheel over an image canvas", async () => {
+    it("gives the wheel over the drawing to the note", async () => {
         await mount();
-        const { apiRef } = canvasEditorProps.mock.lastCall?.[0] as MockCanvasEditorProps;
         const excalidraw = box.querySelector(".excalidraw");
-        if (!apiRef || !excalidraw) {
+        if (!excalidraw) {
             throw new Error("Expected the editor.");
         }
-        apiRef.current = { getSceneElements: () => [ { type: "image", locked: true } ] };
         const listener = vi.fn();
         excalidraw.addEventListener("wheel", listener);
 
         excalidraw.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 100 }));
 
         expect(listener).not.toHaveBeenCalled();
-        apiRef.current = null;
     });
 
     it("centers the drawing after a change of fullscreen, hidden until then", async () => {

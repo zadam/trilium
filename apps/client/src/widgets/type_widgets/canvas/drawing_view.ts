@@ -51,7 +51,7 @@ export function getBoundedView(
 }
 
 /** The locked image at the bottom of a drawing, which bounds its view, or `null`. */
-export function getBoundingImage(elements: readonly ExcalidrawElement[]) {
+function getBoundingImage(elements: readonly ExcalidrawElement[]) {
     const area = elements.find((element) => !element.isDeleted);
     return area?.type === "image" && area.locked ? area : null;
 }

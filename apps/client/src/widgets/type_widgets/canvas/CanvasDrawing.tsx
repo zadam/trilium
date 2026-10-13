@@ -20,7 +20,7 @@ import { useEditableEmbed } from "../text/editable_embed";
 import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
 import CanvasEmbedTools from "./CanvasEmbedTools";
-import { getBoundedView, getBoundingImage } from "./drawing_view";
+import { getBoundedView } from "./drawing_view";
 import { loadDrawingFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
 
 interface CanvasDrawingProps {
@@ -55,7 +55,7 @@ export default function CanvasDrawing({ attachment, editor }: CanvasDrawingProps
     const isRecentering = useRecenteringOnFullscreen(rootRef, apiRef);
     useSidePanels(rootRef, isEditable);
     useTopLayerContextMenu(rootRef, apiRef);
-    useNoteScrollingWheel(rootRef, apiRef);
+    useNoteScrollingWheel(rootRef);
 
     return (
         <div
@@ -204,28 +204,24 @@ function useRecenteringOnFullscreen(
 }
 
 /**
- * Scrolls the note with the wheel over a drawing bounded by a locked image, which the Hand tool
- * pans instead. With Ctrl or Cmd, and in fullscreen, the wheel stays the drawing's.
+ * Gives the wheel over the drawing to the note, as over the text around it, so that the drawing
+ * zooms and pans with the buttons and the Hand tool of its toolbar only. In fullscreen, where
+ * Excalidraw shows its own controls, the wheel stays the drawing's.
  */
-export function useNoteScrollingWheel(
-    rootRef: RefObject<HTMLElement | null>,
-    apiRef: RefObject<ExcalidrawImperativeAPI | null>
-) {
+export function useNoteScrollingWheel(rootRef: RefObject<HTMLElement | null>) {
     useEffect(() => {
         const root = rootRef.current;
         if (!root) return;
 
         // Runs before Excalidraw's own listener on its container, which prevents the scroll.
         const onWheel = (event: WheelEvent) => {
-            const elements = apiRef.current?.getSceneElements();
-            if (event.ctrlKey || event.metaKey || document.fullscreenElement?.contains(root)
-                || !elements || !getBoundingImage(elements)) return;
-
-            event.stopPropagation();
+            if (!document.fullscreenElement?.contains(root)) {
+                event.stopPropagation();
+            }
         };
         root.addEventListener("wheel", onWheel, { capture: true });
         return () => root.removeEventListener("wheel", onWheel, { capture: true });
-    }, [ rootRef, apiRef ]);
+    }, [ rootRef ]);
 }
 
 /**
