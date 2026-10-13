@@ -69,9 +69,32 @@ const CLIPS = [
     [ "German, 4 s", `${HF}/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3/resolve/1a468a35cbba69418f126de829e75261dea4a4e4/test_wavs/de.wav` ]
 ];
 
+/** The live sources. Each runs its own VAD in the worker and is labeled in the log. */
+const SOURCES = {
+    microphone: {
+        button: "listen-microphone",
+        label: "Listen to the microphone",
+        // Echo cancellation keeps the tab's audio, played through the speakers, out of the microphone.
+        open: () => navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true } })
+    },
+    tab: {
+        button: "listen-tab",
+        label: "Listen to a tab",
+        // Chrome requires video to share audio; the video track is never read.
+        open: () => navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+            systemAudio: "include",
+            selfBrowserSurface: "exclude",
+            preferCurrentTab: false
+        })
+    }
+};
+
 const $ = (id) => document.getElementById(id);
 const worker = new Worker("worker.js");
-let microphone = null;
+/** The running captures, by source. */
+const captures = new Map();
 
 for (const model of MODELS) {
     $("model").append(new Option(model.label, model.id));
@@ -87,9 +110,10 @@ worker.onmessage = ({ data }) => {
         case "downloaded": return void reportPersistence();
         case "loaded": return log(`Loaded ${data.model}: copy into MEMFS ${ms(data.timings.copyToMemfsMs)}, create recognizer ${ms(data.timings.createRecognizerMs)}, WebAssembly memory ${data.heapAfterLoad} MiB.`);
         case "result": return log(`${data.label}: ${ms(data.ms)} for ${ms(data.audioMs)} of audio (RTF ${data.rtf.toFixed(2)}), memory ${data.heap} MiB\n  → ${data.text}`);
-        case "utterance": return log(`[${ms(data.offsetMs)}] ${data.text}\n  (${ms(data.ms)} for ${ms(data.audioMs)}, RTF ${data.rtf.toFixed(2)}, lag ${ms(data.lagMs)})`);
-        case "live-started": return log("Listening.");
-        case "live-stopped": return log("Stopped listening.");
+        case "utterance": return log(`${data.source} [${ms(data.offsetMs)}] ${data.text}\n  (${ms(data.ms)} for ${ms(data.audioMs)}, RTF ${data.rtf.toFixed(2)}, lag ${ms(data.lagMs)})`);
+        case "peak": return log(`${data.source}: loudest sample ${data.peak.toFixed(4)} in the last 5 s`);
+        case "live-started": return log(`${data.source}: listening.`);
+        case "live-stopped": return log(`${data.source}: stopped listening.`);
         case "deleted": return log(`Deleted ${data.model} from OPFS.`);
         case "log": return console.debug(data.text);
         case "error": return log(`Error: ${data.message}`);
@@ -108,19 +132,39 @@ $("transcribe").onclick = async () => {
     const samples = await decodeClip(url);
     worker.postMessage({ type: "transcribe", label, samples }, [ samples.buffer ]);
 };
-$("listen").onclick = async () => {
-    if (microphone) {
-        microphone.stop();
-        microphone = null;
-        worker.postMessage({ type: "live-stop" });
-        $("listen").textContent = "Listen to the microphone";
-        return;
+for (const [ source, { button, label, open } ] of Object.entries(SOURCES)) {
+    $(button).textContent = label;
+    $(button).onclick = () => (captures.has(source) ? stopSource(source) : startSource(source, open));
+}
+
+async function startSource(source, open) {
+    let media;
+    try {
+        media = await open();
+    } catch (e) {
+        return log(`${source}: ${e.message}`);
     }
-    worker.postMessage({ type: "live-start" });
-    microphone = await captureMicrophone((samples) =>
-        worker.postMessage({ type: "samples", samples }, [ samples.buffer ]));
-    $("listen").textContent = "Stop listening";
-};
+    const [ track ] = media.getAudioTracks();
+    if (!track) {
+        stopTracks(media);
+        return log(`${source}: nothing to listen to. Share a tab and tick "Share tab audio" (or "Share system audio" for a whole screen).`);
+    }
+    log(`${source}: ${track.label}, ${JSON.stringify(track.getSettings())}`);
+    // Ending the share from the browser's own bar ends the track.
+    track.addEventListener("ended", () => stopSource(source));
+
+    worker.postMessage({ type: "live-start", source });
+    captures.set(source, captureAudio(media, (samples) =>
+        worker.postMessage({ type: "samples", source, samples }, [ samples.buffer ])));
+    $(SOURCES[source].button).textContent = `Stop: ${SOURCES[source].label.toLowerCase()}`;
+}
+
+function stopSource(source) {
+    captures.get(source)?.stop();
+    captures.delete(source);
+    worker.postMessage({ type: "live-stop", source });
+    $(SOURCES[source].button).textContent = SOURCES[source].label;
+}
 
 /** Asks the browser not to evict the models under storage pressure. Only the page can ask. */
 async function reportPersistence() {
@@ -149,21 +193,26 @@ async function decodeClip(url) {
     }
 }
 
-async function captureMicrophone(onSamples) {
-    const media = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+/** Feeds a stream's audio, downmixed and resampled to mono 16 kHz, to `onSamples`. */
+function captureAudio(media, onSamples) {
     const context = new AudioContext({ sampleRate: 16000 });
     const processor = context.createScriptProcessor(4096, 1, 1);
     processor.onaudioprocess = (e) => onSamples(e.inputBuffer.getChannelData(0).slice());
-    context.createMediaStreamSource(media).connect(processor);
+    // Only the audio tracks: a MediaStreamSource rejects a stream whose first track is video.
+    context.createMediaStreamSource(new MediaStream(media.getAudioTracks())).connect(processor);
     processor.connect(context.destination);
     return {
         stop() {
-            for (const track of media.getTracks()) {
-                track.stop();
-            }
+            stopTracks(media);
             void context.close();
         }
     };
+}
+
+function stopTracks(media) {
+    for (const track of media.getTracks()) {
+        track.stop();
+    }
 }
 
 function showProgress({ file, loaded, total, cached, ms: took }) {

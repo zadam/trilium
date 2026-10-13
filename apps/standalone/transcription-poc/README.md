@@ -9,8 +9,13 @@ node apps/standalone/transcription-poc/fetch-assets.mjs   # once: the wasm build
 node apps/standalone/transcription-poc/serve.mjs          # http://localhost:5555/
 ```
 
-Pick a model, *Download to OPFS* (from Hugging Face, pinned revisions), *Load*, then *Transcribe clip* or
-*Listen to the microphone*. Timings and the WebAssembly memory size go to the log.
+Pick a model, *Download to OPFS* (from Hugging Face, pinned revisions), *Load*, then *Transcribe clip*,
+*Listen to the microphone* or *Listen to a tab*; the two live sources can run together, each with its own
+VAD. Timings and the WebAssembly memory size go to the log.
+
+*Listen to a tab* uses `getDisplayMedia`, so the browser asks which tab or screen to share, and audio
+arrives only when "Share tab audio" (or "Share system audio") is ticked. Firefox and Safari return no
+audio from it.
 
 ## How it works
 

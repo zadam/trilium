@@ -18,9 +18,8 @@ self.Module = {
 importScripts("vendor/sherpa-onnx-wasm-main-vad-asr.js", "vendor/sherpa-onnx-asr.js", "vendor/sherpa-onnx-vad.js");
 
 let recognizer = null;
-let vad = null;
-let pending = new Float32Array(0);
-let liveSamples = 0;
+/** One VAD per live source ("microphone", "tab"), so their utterances never mix. */
+const lives = new Map();
 
 self.onmessage = async ({ data }) => {
     try {
@@ -28,9 +27,9 @@ self.onmessage = async ({ data }) => {
             case "download": return await download(data.model);
             case "load": return await load(data.model);
             case "transcribe": return transcribeClip(data.label, data.samples);
-            case "live-start": return startLive();
-            case "samples": return acceptLive(data.samples);
-            case "live-stop": return stopLive();
+            case "live-start": return startLive(data.source);
+            case "samples": return acceptLive(data.source, data.samples);
+            case "live-stop": return stopLive(data.source);
             case "delete": return await deleteModel(data.model);
         }
     } catch (e) {
@@ -127,10 +126,11 @@ async function load(model) {
 }
 
 function unload() {
+    for (const source of lives.keys()) {
+        stopLive(source);
+    }
     recognizer?.free();
     recognizer = null;
-    vad?.free();
-    vad = null;
 }
 
 function transcribeClip(label, samples) {
@@ -142,10 +142,10 @@ function transcribeClip(label, samples) {
     post("result", { label, text, ms, audioMs, rtf: ms / audioMs, heap: heapMiB() });
 }
 
-function startLive() {
+function startLive(source) {
     requireRecognizer();
-    vad?.free();
-    vad = createVad(Module, {
+    lives.get(source)?.vad.free();
+    const vad = createVad(Module, {
         sileroVad: {
             model: "/models/silero_vad.onnx",
             threshold: 0.5,
@@ -161,49 +161,63 @@ function startLive() {
         debug: 0,
         bufferSizeInSeconds: 60
     });
-    pending = new Float32Array(0);
-    liveSamples = 0;
-    post("live-started", {});
+    lives.set(source, { vad, pending: new Float32Array(0), samples: 0, peak: 0, peakSince: performance.now() });
+    post("live-started", { source });
 }
 
-function acceptLive(samples) {
-    if (!vad) {
+function acceptLive(source, samples) {
+    const live = lives.get(source);
+    if (!live) {
         return;
     }
-    liveSamples += samples.length;
-    const all = new Float32Array(pending.length + samples.length);
-    all.set(pending);
-    all.set(samples, pending.length);
+    live.samples += samples.length;
+    reportPeak(source, live, samples);
+    const all = new Float32Array(live.pending.length + samples.length);
+    all.set(live.pending);
+    all.set(samples, live.pending.length);
     let offset = 0;
     for (; offset + VAD_WINDOW <= all.length; offset += VAD_WINDOW) {
-        vad.acceptWaveform(all.subarray(offset, offset + VAD_WINDOW));
+        live.vad.acceptWaveform(all.subarray(offset, offset + VAD_WINDOW));
     }
-    pending = all.slice(offset);
-    drainVad();
+    live.pending = all.slice(offset);
+    drainVad(source, live);
 }
 
-function stopLive() {
-    if (!vad) {
+function stopLive(source) {
+    const live = lives.get(source);
+    if (!live) {
         return;
     }
-    vad.flush();
-    drainVad();
-    vad.free();
-    vad = null;
-    post("live-stopped", {});
+    live.vad.flush();
+    drainVad(source, live);
+    live.vad.free();
+    lives.delete(source);
+    post("live-stopped", { source });
 }
 
-function drainVad() {
-    while (!vad.isEmpty()) {
-        const segment = vad.front();
-        vad.pop();
+/** Logs the loudest sample every 5 s, to tell a silent capture from one without speech. */
+function reportPeak(source, live, samples) {
+    for (const sample of samples) {
+        live.peak = Math.max(live.peak, Math.abs(sample));
+    }
+    if (performance.now() - live.peakSince >= 5000) {
+        post("peak", { source, peak: live.peak });
+        live.peak = 0;
+        live.peakSince = performance.now();
+    }
+}
+
+function drainVad(source, live) {
+    while (!live.vad.isEmpty()) {
+        const segment = live.vad.front();
+        live.vad.pop();
         const started = performance.now();
         const text = decode(segment.samples);
         const ms = performance.now() - started;
         const audioMs = segment.samples.length / SAMPLE_RATE * 1000;
         // How far the transcript trails the speaker once this utterance is out.
-        const lagMs = (liveSamples - segment.start) / SAMPLE_RATE * 1000 - audioMs + ms;
-        post("utterance", { text, ms, audioMs, rtf: ms / audioMs, lagMs, offsetMs: segment.start / SAMPLE_RATE * 1000 });
+        const lagMs = (live.samples - segment.start) / SAMPLE_RATE * 1000 - audioMs + ms;
+        post("utterance", { source, text, ms, audioMs, rtf: ms / audioMs, lagMs, offsetMs: segment.start / SAMPLE_RATE * 1000 });
     }
 }
 
