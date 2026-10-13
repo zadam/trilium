@@ -17,7 +17,7 @@
     "@triliumnext/highlightjs": "workspace:*",
     "@triliumnext/share-theme": "workspace:*",
     "@triliumnext/turndown-plugin-gfm": "workspace:*",
-    "ai": "7.0.136",
+    "ai": "7.0.137",
     "async-mutex": "0.5.0",
     "chardet": "2.2.0",
     "color": "5.0.3",
