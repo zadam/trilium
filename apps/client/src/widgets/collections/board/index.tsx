@@ -288,6 +288,9 @@ const NO_COLUMNS: ReadonlySet<string> = new Set();
 /** Shared empty map for a filter under which no column has been opened or closed by hand. */
 const NO_FILTER_COLLAPSE: ReadonlyMap<string, boolean> = new Map();
 
+/** Scripts set upright in vertical text, which a collapsed column's title has to read top-down for. */
+const UPRIGHT_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
 const NAVIGATION_HINTS: ShortcutHint[] = [
     { keys: [ "Up", "Down" ], labelKey: "board_view.hints.navigate_items" },
     { keys: [ "Left", "Right" ], labelKey: "board_view.hints.navigate_columns" },
@@ -806,6 +809,7 @@ function Board({
         }
     }), [ api, shownColumns, byColumn, storedColumns, isInRelationMode ]);
     useSetContextData(noteContext, "boardColumns", outline);
+    const hasCjkTitles = outline.columns.some(({ title }) => UPRIGHT_SCRIPT.test(title));
 
     // Reveals the column or card a `?column=` or `?card=` link names. Takes `shownColumns` rather
     // than every column, so that a column hidden because it is archived is reported instead of
@@ -1466,7 +1470,8 @@ function Board({
                         className={clsx("board-view-container", {
                             pannable: isPannable,
                             panning: isPanning,
-                            selecting: isSelecting
+                            selecting: isSelecting,
+                            "cjk-titles": hasCjkTitles
                         })}
                         onKeyDown={handleKeyDown}
                         onClick={clearSelectionOutsideCards}

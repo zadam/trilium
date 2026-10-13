@@ -1109,6 +1109,18 @@ describe("Board column creation", () => {
         expect(saved.at(-1)?.columns?.map(c => c.value)).toEqual([ "To Do", "Done", "In Progress" ]);
         expect(columnTitles(container)).toEqual([ "To Do", "Done", "In Progress" ]);
     });
+
+    it("sets every collapsed title upright once a column is named in CJK", async () => {
+        const { container } = await setup();
+        const board = container.querySelector<HTMLElement>(".board-view-container");
+        if (!board) throw new Error("expected the board container");
+        expect(board.classList.contains("cjk-titles")).toBe(false);
+
+        await addColumn(container, "English 中文 あい");
+
+        expect(columnTitles(container)).toContain("English 中文 あい");
+        expect(board.classList.contains("cjk-titles")).toBe(true);
+    });
 });
 
 describe("Board column rename", () => {
