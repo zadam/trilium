@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
     triggerCommand: vi.fn(),
     widget: vi.fn(() => <p className="widget">Editor</p>),
     beforeUnloadListeners: [] as unknown[],
+    addBeforeUnloadListener: vi.fn(),
     viewModule: undefined as unknown,
     hostProps: {} as Record<string, unknown>
 }));
@@ -26,6 +27,7 @@ vi.mock("@triliumnext/client/src/widgets/type_widgets/text/EditableText.css", ()
 vi.mock("@triliumnext/client/src/components/app_context.js", () => ({
     default: {
         getComponentByEl: mocks.getComponentByEl,
+        addBeforeUnloadListener: mocks.addBeforeUnloadListener,
         get beforeUnloadListeners() {
             return mocks.beforeUnloadListeners;
         },
@@ -266,6 +268,31 @@ describe("mountEditView", () => {
         await act(async () => { await vi.advanceTimersByTimeAsync(0); });
         expect(mocks.put).toHaveBeenCalledTimes(2);
         expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Renamed" });
+    });
+
+    it("holds the page while a title is not stored yet, and sends it", async () => {
+        await act(async () => { await mountEditView(container, buildOptions()); });
+        const [ [ isSaved ] ] = mocks.addBeforeUnloadListener.mock.calls as [ [ () => boolean ] ];
+        expect(isSaved()).toBe(true);
+
+        let store: () => void = () => {};
+        mocks.put.mockReturnValueOnce(new Promise<void>((resolve) => {
+            store = resolve;
+        }));
+        title.textContent = "Renamed";
+        expect(isSaved()).toBe(false);
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(mocks.put).toHaveBeenCalledWith("notes/note/title", { title: "Renamed" });
+        // Still being sent.
+        expect(isSaved()).toBe(false);
+        store();
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(isSaved()).toBe(true);
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+
+        // An empty title is never sent, so it holds nothing.
+        title.textContent = " ";
+        expect(isSaved()).toBe(true);
     });
 
     it("keeps a title the server did not store, and sends it again", async () => {

@@ -23,7 +23,7 @@ export function isGuestEditableNote(note: BNote): boolean {
 
 /**
  * Runs the HTML through the sanitizer imported HTML goes through, then drops inline `data:` images
- * and include-note sections, through which content could bring in an attachment or another note.
+ * and includes of any element, through which content could bring in an attachment or another note.
  */
 export function sanitizeGuestContent(html: string): string {
     const document = parse(sanitize.sanitizeHtml(html));
@@ -34,7 +34,7 @@ export function sanitizeGuestContent(html: string): string {
         }
     }
 
-    for (const include of document.querySelectorAll("section.include-note")) {
+    for (const include of document.querySelectorAll(".include-note")) {
         include.remove();
     }
 

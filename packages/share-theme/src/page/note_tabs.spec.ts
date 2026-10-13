@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import setupNoteTabs, { advanceHistory, type PageHistory, type TabState } from "./note_tabs.js";
+import setupNoteTabs, { type PageHistory, placePage, type TabState } from "./note_tabs.js";
 
 const TABS_KEY = "share-tabs:site";
 const HISTORY_KEY = "share-history:site";
@@ -33,7 +33,6 @@ describe("setupNoteTabs", () => {
         // One URL stands in for the location, so that a navigation shows in its `href`.
         const url = new URL("https://example.com/share/page?x=1#top");
         vi.spyOn(window, "location", "get").mockImplementation(() => url as unknown as Location);
-        vi.spyOn(performance, "getEntriesByType").mockReturnValue([]);
         document.body.dataset.noteId = "page";
         document.body.dataset.ancestorNoteId = "site";
     });
@@ -45,6 +44,7 @@ describe("setupNoteTabs", () => {
         listeners.length = 0;
         vi.restoreAllMocks();
         sessionStorage.clear();
+        window.history.replaceState(null, "");
         document.body.innerHTML = "";
         delete document.body.dataset.noteId;
         delete document.body.dataset.ancestorNoteId;
@@ -207,8 +207,10 @@ describe("setupNoteTabs", () => {
         setupNoteTabs();
         expect(readTabs().tabs.map((tab) => tab.noteId)).toEqual([ "page" ]);
         expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? "")).toStrictEqual({
-            entries: [ "/share/page?x=1" ], index: 0
+            entries: [ "/share/page?x=1" ], index: 0, start: 0
         });
+        // The page's browser history entry records where it stands.
+        expect(window.history.state).toStrictEqual({ sharePagePosition: 0 });
 
         sessionStorage.setItem(TABS_KEY, JSON.stringify({
             tabs: [ null, { noteId: 1 }, { noteId: "kept", title: "Kept", icon: "", href: "./kept" } ], active: "0"
@@ -223,9 +225,11 @@ describe("setupNoteTabs", () => {
             .toEqual([ "Kept", "Page" ]);
     });
 
-    it("moves back and forward through the pages seen, as the buttons allow", () => {
-        sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries: [ "/share/a", "/share/page?x=1", "/share/c" ], index: 0 }));
-        vi.spyOn(performance, "getEntriesByType").mockReturnValue([ { type: "back_forward" } as PerformanceNavigationTiming ]);
+    it("moves back and forward through the pages seen, at the position the entry holds", () => {
+        const entries = [ "/share/a", "/share/page?x=1", "/share/c" ];
+        // As a page before positions kept it, without `start`.
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries, index: 0 }));
+        window.history.replaceState({ other: "kept", sharePagePosition: 1 }, "");
         const back = vi.spyOn(window.history, "back").mockImplementation(() => {});
         const forward = vi.spyOn(window.history, "forward").mockImplementation(() => {});
         renderPage();
@@ -235,6 +239,9 @@ describe("setupNoteTabs", () => {
         const forwardButton = document.querySelector<HTMLButtonElement>("#history-forward");
         expect(backButton?.disabled).toBe(false);
         expect(forwardButton?.disabled).toBe(false);
+        expect(window.history.state).toStrictEqual({ other: "kept", sharePagePosition: 1 });
+        expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? ""))
+            .toStrictEqual({ entries, index: 1, start: 0 });
         backButton?.click();
         forwardButton?.click();
         expect(back).toHaveBeenCalledOnce();
@@ -244,7 +251,7 @@ describe("setupNoteTabs", () => {
     it("keeps what it can read of the storage, and manages with what a page lacks", () => {
         sessionStorage.setItem(TABS_KEY, JSON.stringify({ tabs: "none", active: 0 }));
         sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries: [ "/share/a" ], index: "0" }));
-        vi.spyOn(performance, "getEntriesByType").mockReturnValue([ {} as PerformanceNavigationTiming ]);
+        window.history.replaceState("not an object", "");
         document.body.innerHTML = `
             <nav id="menu"><ul>
                 <li><a href="https://example.com/share/orphan">Orphan</a></li>
@@ -258,8 +265,9 @@ describe("setupNoteTabs", () => {
             active: 0
         });
         expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? "")).toStrictEqual({
-            entries: [ "/share/page?x=1" ], index: 0
+            entries: [ "/share/page?x=1" ], index: 0, start: 0
         });
+        expect(window.history.state).toStrictEqual({ sharePagePosition: 0 });
 
         const links = document.querySelectorAll<HTMLAnchorElement>("#menu a");
         links[0].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
@@ -292,7 +300,7 @@ describe("setupNoteTabs", () => {
         };
         writeTabs({ tabs: [ page, later ], active: 1 });
         const entries = [ "/share/page?x=1", "/share/later" ];
-        sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries, index: 1 }));
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ entries, index: 1, start: 0 }));
         const pageShow = (persisted: boolean) =>
             window.dispatchEvent(Object.assign(new Event("pageshow"), { persisted }));
 
@@ -308,7 +316,7 @@ describe("setupNoteTabs", () => {
         expect(document.querySelector<HTMLButtonElement>("#history-back")?.disabled).toBe(true);
         expect(document.querySelector<HTMLButtonElement>("#history-forward")?.disabled).toBe(false);
         expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? ""))
-            .toStrictEqual({ entries, index: 0 });
+            .toStrictEqual({ entries, index: 0, start: 0 });
 
         // The restored page adds a tab once per click, as before.
         document.querySelector("#menu a[href$='/child']")?.dispatchEvent(
@@ -365,24 +373,33 @@ describe("setupNoteTabs", () => {
     }
 });
 
-describe("advanceHistory", () => {
-    const history: PageHistory = { entries: [ "/a", "/b", "/c" ], index: 1 };
+describe("placePage", () => {
+    // A → B → A, standing on B.
+    const history: PageHistory = { entries: [ "/a", "/b", "/a" ], index: 1, start: 0 };
 
-    it("stays on a reload, moves to the nearest entry on back or forward, else drops what lay ahead", () => {
-        expect(advanceHistory(history, "/b", "reload")).toBe(history);
-        expect(advanceHistory(history, "/b", "navigate")).toBe(history);
-        expect(advanceHistory({ entries: [ "/a", "/b", "/a" ], index: 2 }, "/a", "back_forward")).toStrictEqual({
-            entries: [ "/a", "/b", "/a" ], index: 2
-        });
-        expect(advanceHistory(history, "/c", "back_forward")).toStrictEqual({ entries: [ "/a", "/b", "/c" ], index: 2 });
-        expect(advanceHistory(history, "/d", "back_forward")).toStrictEqual({ entries: [ "/a", "/b", "/d" ], index: 2 });
-        expect(advanceHistory(history, "/d", "navigate")).toStrictEqual({ entries: [ "/a", "/b", "/d" ], index: 2 });
-        expect(advanceHistory({ entries: [], index: -1 }, "/a", "navigate")).toStrictEqual({ entries: [ "/a" ], index: 0 });
+    it("goes to the position the history entry holds, else to a new entry after the page", () => {
+        // Back to the first A, or forward to the second: the entry tells the two apart.
+        expect(placePage(history, "/a", 0)).toStrictEqual({ ...history, index: 0 });
+        expect(placePage(history, "/a", 2)).toStrictEqual({ ...history, index: 2 });
+        expect(placePage(history, "/b", 1)).toStrictEqual(history);
 
-        const long = { entries: Array.from({ length: 50 }, (_, i) => `/${i}`), index: 49 };
-        const advanced = advanceHistory(long, "/50", "navigate");
-        expect(advanced.entries).toHaveLength(50);
-        expect(advanced.entries[0]).toBe("/1");
-        expect(advanced.index).toBe(49);
+        // A new entry, or one whose position names another page, drops what lay ahead.
+        const added = { entries: [ "/a", "/b", "/c" ], index: 2, start: 0 };
+        expect(placePage(history, "/c", undefined)).toStrictEqual(added);
+        expect(placePage(history, "/c", 2)).toStrictEqual(added);
+        expect(placePage({ entries: [], index: -1, start: 0 }, "/a", undefined))
+            .toStrictEqual({ entries: [ "/a" ], index: 0, start: 0 });
+    });
+
+    it("keeps the last fifty pages, counting positions from the first page", () => {
+        const entries = Array.from({ length: 50 }, (_, i) => `/${i}`);
+        const long = { entries, index: 49, start: 0 };
+        const next = placePage(long, "/50", undefined);
+        expect(next).toMatchObject({ index: 50, start: 1 });
+        expect(next.entries).toHaveLength(50);
+        expect(next.entries[0]).toBe("/1");
+        expect(placePage(next, "/50", 50)).toStrictEqual(next);
+        // A position before the pages kept is taken as a new entry.
+        expect(placePage(next, "/0", 0)).toMatchObject({ index: 51, start: 2 });
     });
 });

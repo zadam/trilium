@@ -57,6 +57,13 @@ describe("guest writes", () => {
         expect(saved).not.toContain("include-note");
         expect(note.getRelations("internalLink")).toEqual([]);
         expect(sanitizeGuestContent("<p>plain</p>")).toBe("<p>plain</p>");
+        // An include in any element, as the share renders every `.include-note`.
+        const includes = sanitizeGuestContent([
+            "<figure class=\"include-note\" data-note-id=\"abc\"></figure>",
+            "<div class=\"box include-note\" data-note-id=\"abc\"></div><p>kept</p>"
+        ].join(""));
+        expect(includes).not.toContain("include-note");
+        expect(includes).toContain("<p>kept</p>");
     });
 
     it("refuses a save over a newer version, and one past the size cap", () => {

@@ -20,10 +20,15 @@ export interface TabState {
 /** The pages of one site this browser tab went through, oldest first, and where it stands. */
 export interface PageHistory {
     entries: string[];
+    /** The position of the shown page, counted from the first page the tab saw. */
     index: number;
+    /** The position of `entries[0]`, past the pages dropped to keep the list short. */
+    start: number;
 }
 
 const MAX_HISTORY = 50;
+/** Where a page's browser history entry keeps its position in the {@link PageHistory}. */
+const POSITION_KEY = "sharePagePosition";
 
 /**
  * The app's tab bar: the notes opened in this browser session, kept in session storage, behind
@@ -206,67 +211,73 @@ function readTabs(key: string): TabState {
 }
 
 /**
- * Back and forward through this browser tab's pages of the site, placing the page in the history
- * kept in session storage by how it was reached.
+ * Back and forward through this browser tab's pages of the site. Each page's browser history entry
+ * keeps its position, which a reload, back, forward and the back/forward cache come back to.
  */
 function setupHistoryButtons(key: string) {
     const back = document.querySelector<HTMLButtonElement>("button#history-back");
     const forward = document.querySelector<HTMLButtonElement>("button#history-forward");
     const page = location.pathname + location.search;
-    const place = (navigation: string) => {
-        const history = advanceHistory(readHistory(key), page, navigation);
+    const place = () => {
+        const history = placePage(readHistory(key), page, readEntryPosition());
         writeStorage(key, history);
+        writeEntryPosition(history.index);
         if (back) {
-            back.disabled = history.index <= 0;
+            back.disabled = history.index <= history.start;
         }
         if (forward) {
-            forward.disabled = history.index >= history.entries.length - 1;
+            forward.disabled = history.index >= history.start + history.entries.length - 1;
         }
     };
 
     back?.addEventListener("click", () => window.history.back());
     forward?.addEventListener("click", () => window.history.forward());
-    const timing = performance.getEntriesByType("navigation")[0] as
-        PerformanceNavigationTiming | undefined;
-    place(timing?.type ?? "navigate");
+    place();
     window.addEventListener("pageshow", (event) => {
         if (event.persisted) {
-            place("back_forward");
+            place();
         }
     });
 }
 
 /**
- * Where a page load leaves the site's history in this browser tab: a reload stays, back and forward
- * move to the nearest entry, and any other navigation drops what lay ahead, as the browser does.
+ * Where a page stands in the site's history in this browser tab: at `recorded`, the position its
+ * history entry holds, else on a new entry after the current page, dropping what lay ahead.
  */
-export function advanceHistory(
-    history: PageHistory, path: string, navigation: string
+export function placePage(
+    history: PageHistory, path: string, recorded: number | undefined
 ): PageHistory {
-    const { entries, index } = history;
-    if (navigation === "back_forward") {
-        const nearest = entries
-            .map((entry, position) => (entry === path ? position : -1))
-            .filter((position) => position >= 0)
-            .sort((a, b) => Math.abs(a - index) - Math.abs(b - index))[0];
-        if (nearest !== undefined) {
-            return { entries, index: nearest };
-        }
+    const { entries, index, start } = history;
+    if (recorded !== undefined && entries[recorded - start] === path) {
+        return { ...history, index: recorded };
     }
-    if (entries[index] === path) {
-        return history;
-    }
-    const kept = [ ...entries.slice(0, index + 1), path ].slice(-MAX_HISTORY);
-    return { entries: kept, index: kept.length - 1 };
+    const kept = [ ...entries.slice(0, index - start + 1), path ];
+    const dropped = Math.max(0, kept.length - MAX_HISTORY);
+    return { entries: kept.slice(dropped), index: index + 1, start: start + dropped };
+}
+
+function readEntryPosition() {
+    const state: unknown = window.history.state;
+    const position = state && typeof state === "object"
+        ? (state as Record<string, unknown>)[POSITION_KEY] : undefined;
+    return typeof position === "number" ? position : undefined;
+}
+
+/** Keeps whatever else the entry's state holds. */
+function writeEntryPosition(position: number) {
+    const state: unknown = window.history.state;
+    const kept = state && typeof state === "object" ? state : {};
+    window.history.replaceState({ ...kept, [POSITION_KEY]: position }, "");
 }
 
 function readHistory(key: string): PageHistory {
     const stored = readStorage(key) as Partial<PageHistory> | null;
     if (Array.isArray(stored?.entries) && typeof stored.index === "number"
             && stored.entries.every((entry) => typeof entry === "string")) {
-        return { entries: stored.entries, index: stored.index };
+        const start = typeof stored.start === "number" ? stored.start : 0;
+        return { entries: stored.entries, index: stored.index, start };
     }
-    return { entries: [], index: -1 };
+    return { entries: [], index: -1, start: 0 };
 }
 
 /** What session storage holds under `key`, or `null` when it holds nothing readable. */

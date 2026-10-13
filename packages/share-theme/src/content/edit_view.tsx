@@ -322,6 +322,15 @@ function makeTitleEditable(
         });
         return saving;
     };
+    // Leaving with a title not stored yet asks to stay, as for the note's content, and sends it.
+    appContext.addBeforeUnloadListener(() => {
+        const text = readTitle();
+        if (!text || text === saved) {
+            return true;
+        }
+        void save();
+        return false;
+    });
 
     title.contentEditable = "true";
     title.spellcheck = true;
