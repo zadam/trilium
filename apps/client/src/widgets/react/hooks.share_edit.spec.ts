@@ -1,15 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
+import server from "../../services/server";
 import SpacedUpdate from "../../services/spaced_update";
 import type { ShareEditGlobals } from "../../services/utils";
-
-const mocks = vi.hoisted(() => ({ putWithSilentRefusal: vi.fn() }));
-vi.mock("../../services/server", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("../../services/server")>();
-    const putWithSilentRefusal = mocks.putWithSilentRefusal;
-    return { ...actual, default: { ...actual.default, putWithSilentRefusal } };
-});
-
 import { saveOnShare } from "./hooks";
 
 /** What the guest API answers a save over an older version with. */
@@ -22,8 +15,11 @@ describe("saveOnShare", () => {
         version: "blob1", attachments: false, onSaveState: vi.fn(), onConflict, onLocked
     };
 
+    let putWithSilentRefusal: MockInstance<typeof server.putWithSilentRefusal>;
+
     beforeEach(() => {
         vi.clearAllMocks();
+        putWithSilentRefusal = vi.spyOn(server, "putWithSilentRefusal");
         shareEdit.version = "blob1";
         delete shareEdit.stale;
         delete shareEdit.locked;
@@ -31,22 +27,23 @@ describe("saveOnShare", () => {
     });
 
     afterEach(() => {
+        vi.restoreAllMocks();
         vi.unstubAllGlobals();
         vi.useRealTimers();
     });
 
     it("saves against the loaded version and adopts the saved one", async () => {
-        mocks.putWithSilentRefusal.mockResolvedValue({ blobId: "blob2" });
+        putWithSilentRefusal.mockResolvedValue({ blobId: "blob2" });
 
         expect(await saveOnShare("note", { content: "<p>x</p>" }, "component", vi.fn())).toBe(true);
 
-        expect(mocks.putWithSilentRefusal).toHaveBeenCalledWith(
+        expect(putWithSilentRefusal).toHaveBeenCalledWith(
             "notes/note/data", { content: "<p>x</p>", baseBlobId: "blob1" }, "component");
         expect(shareEdit.version).toBe("blob2");
     });
 
     it("keeps a stale save pending, unsent, until the visitor keeps their version", async () => {
-        mocks.putWithSilentRefusal.mockRejectedValueOnce(STALE);
+        putWithSilentRefusal.mockRejectedValueOnce(STALE);
         const retry = vi.fn();
         const save = () => saveOnShare("note", { content: "<p>x</p>" }, undefined, retry);
 
@@ -56,39 +53,39 @@ describe("saveOnShare", () => {
 
         // The spaced update's own retries send nothing while the visitor has not chosen.
         await expect(save()).rejects.toThrow(/changed/);
-        expect(mocks.putWithSilentRefusal).toHaveBeenCalledTimes(1);
+        expect(putWithSilentRefusal).toHaveBeenCalledTimes(1);
 
         onConflict.mock.calls[0][1]();
         expect(shareEdit.version).toBe("newer");
         expect(retry).toHaveBeenCalled();
-        mocks.putWithSilentRefusal.mockResolvedValueOnce({ blobId: "blob3" });
+        putWithSilentRefusal.mockResolvedValueOnce({ blobId: "blob3" });
         expect(await save()).toBe(true);
-        expect(mocks.putWithSilentRefusal).toHaveBeenLastCalledWith(
+        expect(putWithSilentRefusal).toHaveBeenLastCalledWith(
             "notes/note/data", { content: "<p>x</p>", baseBlobId: "newer" }, undefined);
     });
 
     it("holds a save refused for lost access, unsent, until the page unlocks again", async () => {
-        mocks.putWithSilentRefusal.mockRejectedValueOnce(JSON.stringify({ locked: true }));
+        putWithSilentRefusal.mockRejectedValueOnce(JSON.stringify({ locked: true }));
         const retry = vi.fn();
         const save = () => saveOnShare("note", { content: "<p>x</p>" }, undefined, retry);
 
         await expect(save()).rejects.toThrow(/access/);
         expect(onLocked).toHaveBeenCalledWith(expect.any(Function));
         await expect(save()).rejects.toThrow(/access/);
-        expect(mocks.putWithSilentRefusal).toHaveBeenCalledTimes(1);
+        expect(putWithSilentRefusal).toHaveBeenCalledTimes(1);
 
         onLocked.mock.calls[0][0]();
         expect(retry).toHaveBeenCalled();
-        mocks.putWithSilentRefusal.mockResolvedValueOnce({ blobId: "blob2" });
+        putWithSilentRefusal.mockResolvedValueOnce({ blobId: "blob2" });
         expect(await save()).toBe(true);
-        expect(mocks.putWithSilentRefusal).toHaveBeenLastCalledWith(
+        expect(putWithSilentRefusal).toHaveBeenLastCalledWith(
             "notes/note/data", { content: "<p>x</p>", baseBlobId: "blob1" }, undefined);
     });
 
     it("leaves the refused content unsaved in the spaced update, with an error", async () => {
         vi.useFakeTimers();
         vi.stubGlobal("logError", vi.fn());
-        mocks.putWithSilentRefusal.mockRejectedValue(STALE);
+        putWithSilentRefusal.mockRejectedValue(STALE);
         const states: string[] = [];
         const spacedUpdate: SpacedUpdate<{ content: string }> = new SpacedUpdate({
             key: "note",
@@ -105,10 +102,10 @@ describe("saveOnShare", () => {
     });
 
     it("rethrows any other failure, and saves nothing off a shared page", async () => {
-        mocks.putWithSilentRefusal.mockRejectedValue("Network down");
+        putWithSilentRefusal.mockRejectedValue("Network down");
         const save = () => saveOnShare("note", { content: "" }, undefined, vi.fn());
         await expect(save()).rejects.toBe("Network down");
-        mocks.putWithSilentRefusal.mockRejectedValue(JSON.stringify({ message: "no stale here" }));
+        putWithSilentRefusal.mockRejectedValue(JSON.stringify({ message: "no stale here" }));
         await expect(save()).rejects.toBeDefined();
         expect(onConflict).not.toHaveBeenCalled();
 

@@ -7,7 +7,8 @@ vi.mock("../../../services/search.js", () => ({
 }));
 
 const shareState = vi.hoisted(() => ({ isShare: false }));
-vi.mock("../../../services/utils.js", () => ({
+vi.mock("../../../services/utils.js", async (importOriginal) => ({
+    ...await importOriginal<typeof import("../../../services/utils.js")>(),
     get isShare() {
         return shareState.isShare;
     }
