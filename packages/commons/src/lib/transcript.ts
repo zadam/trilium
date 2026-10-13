@@ -9,6 +9,8 @@ export interface TranscriptUtterance {
     source: TranscriptSource;
     /** Milliseconds from the start of the recording to the start of the utterance. */
     offsetMs: number;
+    /** Length of the utterance in milliseconds. Absent from transcripts recorded before it was kept. */
+    durationMs?: number;
     text: string;
 }
 

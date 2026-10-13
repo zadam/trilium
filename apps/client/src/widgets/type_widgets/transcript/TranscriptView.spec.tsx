@@ -32,9 +32,21 @@ describe("transcript helpers", () => {
             { source: "system", offsetMs: 5000, text: "Yes." },
             { source: "microphone", offsetMs: 7000, text: "Good." }
         ])).toEqual([
-            { source: "microphone", offsetMs: 1000, text: "Hello. Can you hear me?" },
-            { source: "system", offsetMs: 5000, text: "Yes." },
-            { source: "microphone", offsetMs: 7000, text: "Good." }
+            { source: "microphone", offsetMs: 1000, paragraphs: [ "Hello. Can you hear me?" ] },
+            { source: "system", offsetMs: 5000, paragraphs: [ "Yes." ] },
+            { source: "microphone", offsetMs: 7000, paragraphs: [ "Good." ] }
+        ]);
+    });
+
+    it("starts a new paragraph within a turn after a long pause", () => {
+        const turns = groupIntoTurns([
+            { source: "system", offsetMs: 0, durationMs: 8000, text: "First point," },
+            { source: "system", offsetMs: 8100, durationMs: 3000, text: "continued." },
+            { source: "system", offsetMs: 12_600, durationMs: 2000, text: "Short pause." },
+            { source: "system", offsetMs: 17_000, durationMs: 2000, text: "Second point." }
+        ]);
+        expect(turns.map((turn) => turn.paragraphs)).toEqual([
+            [ "First point, continued. Short pause.", "Second point." ]
         ]);
     });
 
@@ -51,8 +63,9 @@ describe("TranscriptView", () => {
         const getBlob = vi.fn()
             .mockResolvedValueOnce({ content: transcript([]) })
             .mockResolvedValueOnce({ content: transcript([
-                { source: "microphone", offsetMs: 1500, text: "Can you hear me?" },
-                { source: "system", offsetMs: 3000, text: "Yes." }
+                { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "Can you hear me?" },
+                { source: "microphone", offsetMs: 6000, durationMs: 1000, text: "Hello?" },
+                { source: "system", offsetMs: 8000, text: "Yes." }
             ]) });
         const attachment = { attachmentId: "transcript1", getBlob } as unknown as FAttachment;
         const component = new Component();
@@ -74,9 +87,10 @@ describe("TranscriptView", () => {
             .map((turn) => turn.textContent);
         await vi.waitFor(() => expect(turns()).toHaveLength(2));
         expect(turns()).toEqual([
-            "transcript.speaker_me0:01Can you hear me?",
-            "transcript.speaker_others0:03Yes."
+            "transcript.speaker_me0:01Can you hear me?Hello?",
+            "transcript.speaker_others0:08Yes."
         ]);
+        expect(container.querySelectorAll(".transcript-microphone p")).toHaveLength(2);
     });
 
     it("follows new turns for a reader at the end, not for one who scrolled up", async () => {

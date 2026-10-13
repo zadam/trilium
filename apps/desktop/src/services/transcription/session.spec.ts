@@ -72,7 +72,7 @@ beforeEach(() => {
 });
 
 describe("RecordingSession", () => {
-    it("labels each source's utterances with their offset from the recording start", async () => {
+    it("labels each source's utterances with their offset from the recording start and length", async () => {
         const { session, capture, engine, sink, deliver, written } = createHarness();
         await session.start();
         expect(sink.open).toHaveBeenCalledExactlyOnceWith(1000);
@@ -87,8 +87,8 @@ describe("RecordingSession", () => {
 
         expect(engine.createSegmenter).toHaveBeenCalledTimes(2);
         expect(written).toEqual([
-            { source: "microphone", offsetMs: 1500, text: "utterance 1" },
-            { source: "system", offsetMs: 3000, text: "utterance 2" }
+            { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "utterance 1" },
+            { source: "system", offsetMs: 3000, durationMs: 1000, text: "utterance 2" }
         ]);
     });
 
@@ -110,7 +110,7 @@ describe("RecordingSession", () => {
 
         expect(capture.stop).toHaveBeenCalledOnce();
         expect(sink.write).toHaveBeenCalledExactlyOnceWith({
-            source: "microphone", offsetMs: 1000, text: "utterance 3"
+            source: "microphone", offsetMs: 1000, durationMs: 1000, text: "utterance 3"
         });
         expect(sink.close).toHaveBeenCalledOnce();
         expect(sink.write.mock.invocationCallOrder[0])

@@ -11,6 +11,9 @@ import NoItems from "../../react/NoItems";
 /** How close to the end, in pixels, still counts as reading the newest turn. */
 const FOLLOW_THRESHOLD = 16;
 
+/** How long a pause within one speaker's turn starts a new paragraph. */
+const PARAGRAPH_PAUSE_MS = 2000;
+
 /**
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, and keeps a reader who is at the end
@@ -67,18 +70,18 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                         <span className="transcript-speaker">{speakerName(turn.source)}</span>
                         <span className="transcript-time">{formatOffset(turn.offsetMs)}</span>
                     </div>
-                    <p>{turn.text}</p>
+                    {turn.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
                 </div>
             ))}
         </div>
     );
 }
 
-/** Consecutive utterances from one source, read as one paragraph. */
+/** Consecutive utterances from one source, split into paragraphs at long pauses. */
 export interface TranscriptTurn {
     source: TranscriptSource;
     offsetMs: number;
-    text: string;
+    paragraphs: string[];
 }
 
 /** Reads a transcript attachment's content, or returns `null` for content of another shape. */
@@ -96,16 +99,24 @@ export function parseTranscript(content: string | null): Transcript | null {
     }
 }
 
-/** Joins each run of utterances from one source into a turn, timed by its first utterance. */
+/**
+ * Joins each run of utterances from one source into a turn, timed by its first utterance, and
+ * starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more. An utterance without
+ * a `durationMs` never starts one, since the pause before the next is unknown.
+ */
 export function groupIntoTurns(utterances: TranscriptUtterance[]): TranscriptTurn[] {
     const turns: TranscriptTurn[] = [];
-    for (const { source, offsetMs, text } of utterances) {
+    let previousEndMs: number | null = null;
+    for (const { source, offsetMs, durationMs, text } of utterances) {
         const last = turns.at(-1);
-        if (last?.source === source) {
-            last.text += ` ${text}`;
+        if (last?.source !== source) {
+            turns.push({ source, offsetMs, paragraphs: [ text ] });
+        } else if (previousEndMs !== null && offsetMs - previousEndMs >= PARAGRAPH_PAUSE_MS) {
+            last.paragraphs.push(text);
         } else {
-            turns.push({ source, offsetMs, text });
+            last.paragraphs[last.paragraphs.length - 1] += ` ${text}`;
         }
+        previousEndMs = durationMs === undefined ? null : offsetMs + durationMs;
     }
     return turns;
 }

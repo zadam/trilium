@@ -90,9 +90,10 @@ export class RecordingSession {
                 return;
             }
 
+            const durationMs = samples.length / SAMPLE_RATE * 1000;
             for (const sink of this.options.sinks) {
                 try {
-                    await sink.write({ source, offsetMs, text });
+                    await sink.write({ source, offsetMs, durationMs, text });
                 } catch (e) {
                     getLog().error(`Transcription: a sink failed: ${e}`);
                 }
