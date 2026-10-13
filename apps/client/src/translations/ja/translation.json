@@ -798,7 +798,9 @@
     "reset-selection": "選択を解除",
     "expand-column": "列を展開",
     "delete-column-notes_other": "この列にある {{count}} 件のノートも削除",
-    "select-all-cards": "すべてのカードを選択"
+    "select-all-cards": "すべてのカードを選択",
+    "show-add-column-button": "\"列を追加\" ボタンを表示",
+    "show-add-column-button-description": "ボードや列のコンテキストメニューから列を追加することは引き続き可能です。"
   },
   "code_buttons": {
     "execute_button_title": "スクリプトを実行",
@@ -1651,7 +1653,8 @@
     "page_author": "クリップしたページの作成者。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "published_date": "クリップしたページの公開日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
-    "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。"
+    "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。",
+    "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
