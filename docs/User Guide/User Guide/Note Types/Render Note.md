@@ -76,6 +76,8 @@ A render note can be printed or exported as PDF from the <a class="reference-lin
 *   To adjust the layout for printing, use a `~printCss` relation.
 *   The light colors are used for printing, whatever the current theme.
 
+When a render note is printed as part of a <a class="reference-link" href="../Collections/List%20View.md">List View</a> collection, or from another view such as its attachments, it is not on screen, so its script runs again for the print. In a collection, the output is printed without the note's own styles.
+
 ## Examples
 
 *   <a class="reference-link" href="../Advanced%20Usage/Advanced%20Showcases/Weight%20Tracker.md">Weight Tracker</a> which is present in the <a class="reference-link" href="../Advanced%20Usage/Database/Demo%20Notes.md">Demo Notes</a>.
