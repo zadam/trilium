@@ -190,7 +190,6 @@ function DeleteAllClonesOption({ cloneInfo, deleteAllClones, setDeleteAllClones 
 
 const ROW_HEIGHT = 36;
 const VIRTUALIZE_THRESHOLD = 100;
-const MAX_LIST_HEIGHT = 400;
 
 function DeletedNoteRow({ index, style, noteIds }: RowComponentProps<{ noteIds: string[] }>) {
     return (
@@ -213,7 +212,6 @@ function DeletedNotes({ noteIdsToBeDeleted }: { noteIdsToBeDeleted: DeleteNotesP
                             rowCount={noteIdsToBeDeleted.length}
                             rowHeight={ROW_HEIGHT}
                             rowProps={{ noteIds: noteIdsToBeDeleted }}
-                            style={{ maxHeight: MAX_LIST_HEIGHT }}
                         />
                     ) : (
                         <ul className="preview-list">

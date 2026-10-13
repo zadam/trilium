@@ -102,3 +102,14 @@
     margin-left: 0.3rem;
 }
 
+
+/* Sized as the glyphs beside it in `.expandable-line` (0.9rem in a 1.4rem line). */
+.llm-chat-tool-call-provider {
+    display: flex;
+    height: 1.4rem;
+    align-items: center;
+
+    .masked-icon {
+        --masked-icon-size: 0.9rem;
+    }
+}

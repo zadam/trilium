@@ -15,10 +15,12 @@ import { type RefObject, render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type FAttachment from "../../../entities/fattachment";
 import type FNote from "../../../entities/fnote";
+import type { ContentEditor } from "../../../services/content_renderer";
 import server from "../../../services/server";
 import { buildNote } from "../../../test/easy-froca";
-import useCanvasPersistence from "./persistence";
+import useCanvasPersistence, { useCanvasDrawingPersistence } from "./persistence";
 
 interface FakeElement {
     id: string;
@@ -26,11 +28,25 @@ interface FakeElement {
     version: number;
 }
 
+interface PlacedElement {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    isDeleted?: boolean;
+}
+
 vi.mock("@excalidraw/excalidraw", () => ({
     // Mirrors the real behavior closely enough for change tracking: the version of a scene
     // is derived from its elements, and an empty scene is always version 0.
     getSceneVersion: (elements: FakeElement[]) => elements.reduce((sum, el) => sum + (el.version ?? 0), 0),
     exportToSvg: vi.fn(async () => ({ outerHTML: "<svg/>" })),
+    getCommonBounds: (elements: PlacedElement[]) => [
+        Math.min(...elements.map(({ x }) => x)),
+        Math.min(...elements.map(({ y }) => y)),
+        Math.max(...elements.map(({ x, width }) => x + width)),
+        Math.max(...elements.map(({ y, height }) => y + height))
+    ],
     CaptureUpdateAction: { IMMEDIATELY: "IMMEDIATELY", NEVER: "NEVER", EVENTUALLY: "EVENTUALLY" }
 }));
 
@@ -41,7 +57,10 @@ type PersistenceProps = ReturnType<typeof useCanvasPersistence>;
 
 let props: PersistenceProps | undefined;
 
-function Probe({ note, apiRef }: { note: FNote; apiRef: RefObject<ExcalidrawImperativeAPI> }) {
+function Probe({ note, apiRef }: {
+    note: FNote;
+    apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+}) {
     props = useCanvasPersistence(note, null, apiRef, "light", false);
     return null;
 }
@@ -97,12 +116,12 @@ describe("useCanvasPersistence content loading (#10279)", () => {
     });
 
     afterEach(() => {
-        render(null, container);
+        act(() => render(null, container));
         container.remove();
         vi.useRealTimers();
     });
 
-    async function mount(note: FNote, apiRef: RefObject<ExcalidrawImperativeAPI>) {
+    async function mount(note: FNote, apiRef: RefObject<ExcalidrawImperativeAPI | null>) {
         await act(async () => {
             render(<Probe note={note} apiRef={apiRef} />, container);
         });
@@ -114,7 +133,7 @@ describe("useCanvasPersistence content loading (#10279)", () => {
     it("routes the first content through initialData, never through updateScene", async () => {
         const { note } = buildCanvasNote([ "a1", "a2" ]);
         const { api, updateScene } = buildApi(() => []);
-        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI>;
+        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
 
         await mount(note, apiRef);
 
@@ -128,7 +147,7 @@ describe("useCanvasPersistence content loading (#10279)", () => {
         const { note, elements } = buildCanvasNote([ "a1", "a2" ]);
         let sceneElements: FakeElement[] = [];
         const { api } = buildApi(() => sceneElements);
-        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI>;
+        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
 
         await mount(note, apiRef);
         await resolvedInitialData();
@@ -166,7 +185,7 @@ describe("useCanvasPersistence content loading (#10279)", () => {
         const { note: noteA } = buildCanvasNote([ "a1" ]);
         const { note: noteB } = buildCanvasNote([ "b1" ]);
         const { api, updateScene } = buildApi(() => []);
-        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI>;
+        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
 
         await mount(noteA, apiRef);
         await resolvedInitialData();
@@ -184,7 +203,7 @@ describe("useCanvasPersistence content loading (#10279)", () => {
         const { note: noteA } = buildCanvasNote([ "a1" ]);
         const { note: noteB } = buildCanvasNote([ "b1" ]);
         const { api, updateScene } = buildApi(() => []);
-        const apiRef = { current: null } as RefObject<ExcalidrawImperativeAPI>;
+        const apiRef = { current: null } as RefObject<ExcalidrawImperativeAPI | null>;
 
         await mount(noteA, apiRef);
         await resolvedInitialData();
@@ -199,5 +218,237 @@ describe("useCanvasPersistence content loading (#10279)", () => {
 
         expect(updateScene).toHaveBeenCalledTimes(1);
         expect(loadedElementIds(updateScene)).toEqual([ "b1" ]);
+    });
+});
+
+describe("useCanvasDrawingPersistence", () => {
+    const IMAGE = { id: "f1", dataURL: "data:image/png;base64,AA==", mimeType: "image/png" };
+    const UNUSED_IMAGE = { ...IMAGE, id: "f2" };
+    let container: HTMLElement;
+    let drawingProps: ReturnType<typeof useCanvasDrawingPersistence> | undefined;
+    let sceneElements: FakeElement[];
+    let sceneFiles: Record<string, unknown>;
+    let appState: Record<string, unknown>;
+    let updateScene: ReturnType<typeof vi.fn>;
+
+    function DrawingProbe({ attachment, editor, apiRef }: {
+        attachment: FAttachment;
+        editor: ContentEditor | undefined;
+        apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+    }) {
+        drawingProps = useCanvasDrawingPersistence(attachment, editor, apiRef, "light");
+        return null;
+    }
+
+    beforeEach(() => {
+        drawingProps = undefined;
+        sceneElements = [];
+        sceneFiles = { f1: IMAGE, f2: UNUSED_IMAGE };
+        updateScene = vi.fn();
+        appState = {
+            scrollX: 1, scrollY: 2, zoom: { value: 1 }, gridModeEnabled: false,
+            viewBackgroundColor: "transparent", theme: "light"
+        };
+        container = document.createElement("div");
+        document.body.appendChild(container);
+    });
+
+    afterEach(() => {
+        act(() => render(null, container));
+        container.remove();
+        vi.unstubAllGlobals();
+    });
+
+    function buildAttachment(content: object) {
+        const getBlob = vi.fn(async () => ({ content: JSON.stringify(content) }));
+        return { attachment: { attachmentId: "a1", getBlob } as unknown as FAttachment, getBlob };
+    }
+
+    function buildEditor(unsavedContent?: string) {
+        return {
+            canEdit: () => true,
+            getUnsavedContent: vi.fn(() => unsavedContent),
+            scheduleSave: vi.fn(),
+            release: vi.fn()
+        } satisfies ContentEditor;
+    }
+
+    async function mount(attachment: FAttachment, editor: ContentEditor | undefined) {
+        const api = {
+            getSceneElements: () => sceneElements,
+            getAppState: () => appState,
+            getFiles: () => sceneFiles,
+            updateScene
+        } as unknown as ExcalidrawImperativeAPI;
+        const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
+        await act(async () => {
+            render(
+                <DrawingProbe attachment={attachment} editor={editor} apiRef={apiRef} />,
+                container
+            );
+        });
+        return await (drawingProps?.initialData as Promise<ExcalidrawInitialDataState>);
+    }
+
+    function change() {
+        drawingProps?.onChange?.([], appState as never, {});
+    }
+
+    it("loads the drawing with its images, over the note unless it has a background", async () => {
+        const elements = [ { id: "r1", type: "rectangle", version: 3 } ];
+        const { attachment } = buildAttachment({ elements, files: { f1: IMAGE }, appState: {} });
+        expect(await mount(attachment, buildEditor())).toEqual({
+            elements,
+            appState: { viewBackgroundColor: "transparent", theme: "light" },
+            files: { f1: IMAGE }
+        });
+
+        act(() => render(null, container));
+        const colored = buildAttachment({ elements, appState: { viewBackgroundColor: "#ffc9c9" } });
+        expect((await mount(colored.attachment, buildEditor())).appState)
+            .toEqual({ viewBackgroundColor: "#ffc9c9", theme: "light" });
+    });
+
+    it("loads the content that the note has not saved yet over the saved one", async () => {
+        const { attachment, getBlob } = buildAttachment({ elements: [] });
+        const unsaved = JSON.stringify({ elements: [ { id: "u1", type: "line", version: 1 } ] });
+
+        const initialData = await mount(attachment, buildEditor(unsaved));
+        expect(initialData.elements?.map((element) => element.id)).toEqual([ "u1" ]);
+        expect(getBlob).not.toHaveBeenCalled();
+    });
+
+    it("saves a change to the scene or to its background, with the images it uses", async () => {
+        const loaded = [
+            { id: "r1", type: "rectangle", version: 3 },
+            { id: "i1", type: "image", version: 1, fileId: "f1" }
+        ];
+        const { attachment } = buildAttachment({ elements: loaded, files: { f1: IMAGE } });
+        const editor = buildEditor();
+        await mount(attachment, editor);
+
+        // Excalidraw reports its empty scene, then the loaded one, before any edit.
+        change();
+        sceneElements = loaded;
+        change();
+        expect(editor.scheduleSave).not.toHaveBeenCalled();
+
+        sceneElements = [ { ...loaded[0], version: 4 }, loaded[1] ];
+        change();
+        expect(editor.scheduleSave).toHaveBeenCalledTimes(1);
+        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        expect(JSON.parse(getContent())).toEqual({
+            type: "excalidraw",
+            version: 2,
+            elements: sceneElements,
+            files: { f1: IMAGE },
+            appState: {
+                scrollX: 1, scrollY: 2, zoom: { value: 1 }, gridModeEnabled: false,
+                viewBackgroundColor: "transparent"
+            }
+        });
+
+        appState = { ...appState, viewBackgroundColor: "#ffc9c9" };
+        change();
+        change();
+        expect(editor.scheduleSave).toHaveBeenCalledTimes(2);
+
+        act(() => render(null, container));
+        expect(editor.release).toHaveBeenCalledOnce();
+    });
+
+    it("loads the images it refers to from its note and saves them by reference", async () => {
+        const owner = buildNote({ title: "Owner" });
+        const getAttachmentsByRole = vi.fn(async () => [
+            { attachmentId: "img1", title: "f9.png" },
+            { attachmentId: "img2", title: "other.png" }
+        ]);
+        owner.getAttachmentsByRole = getAttachmentsByRole as never;
+        const fetchImage = vi.fn(async () => ({
+            ok: true,
+            blob: async () => new Blob([ "ABC" ], { type: "image/png" })
+        }));
+        vi.stubGlobal("fetch", fetchImage);
+        const loaded = [
+            { id: "i1", type: "image", version: 1, fileId: "f1" },
+            { id: "i9", type: "image", version: 1, fileId: "f9.png" }
+        ];
+        const { attachment } = buildAttachment({ elements: loaded, files: { f1: IMAGE } });
+        const drawing = { ...attachment, ownerId: owner.noteId } as unknown as FAttachment;
+        const editor = buildEditor();
+
+        const initialData = await mount(drawing, editor);
+        expect(getAttachmentsByRole).toHaveBeenCalledWith("image");
+        expect(fetchImage).toHaveBeenCalledExactlyOnceWith("api/attachments/img1/image/f9.png");
+        expect(initialData.files).toEqual({
+            f1: IMAGE,
+            "f9.png": {
+                id: "f9.png", dataURL: "data:image/png;base64,QUJD", mimeType: "image/png",
+                created: expect.any(Number)
+            }
+        });
+
+        sceneElements = loaded;
+        change();
+        sceneElements = [ { ...loaded[0], version: 2 }, loaded[1] ];
+        sceneFiles = initialData.files ?? {};
+        change();
+        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        expect(JSON.parse(getContent()).files).toEqual({ f1: IMAGE });
+    });
+
+    it("fits a drawing without a saved view in the size that Excalidraw reports", async () => {
+        const TALL = { x: -400, y: -400, width: 800, height: 800 };
+        const LATER = { x: 150, y: 60, width: 10, height: 10 };
+        async function getFits(loaded: PlacedElement[], savedAppState: object = {}) {
+            act(() => render(null, container));
+            updateScene.mockClear();
+            const { attachment } = buildAttachment({ elements: loaded, appState: savedAppState });
+            await mount(attachment, undefined);
+            // The empty scene, then the loaded one before the drawing is laid out, then more.
+            for (const [ elements, width, height ] of [
+                [ [], 1000, 400 ], [ loaded, 0, 0 ], [ [ ...loaded, LATER ], 1000, 400 ],
+                [ [ ...loaded, LATER ], 1000, 400 ]
+            ] as const) {
+                drawingProps?.onChange?.(elements as never, { width, height } as never, {});
+            }
+            return updateScene.mock.calls.map(([ { appState } ]) => appState);
+        }
+
+        expect(await getFits([ TALL ]))
+            .toEqual([ { zoom: { value: 0.5 }, scrollX: 1000, scrollY: 400 } ]);
+        expect(await getFits([ { x: 100, y: 50, width: 800, height: 200 } ]))
+            .toEqual([ { zoom: { value: 1.25 }, scrollX: -100, scrollY: 10 } ]);
+        expect((await getFits([ { x: 0, y: 0, width: 100_000, height: 100 } ]))[0]?.zoom)
+            .toEqual({ value: 0.1 });
+
+        expect(await getFits([ TALL ], { zoom: { value: 2 }, scrollX: 5, scrollY: 6 })).toEqual([]);
+        expect(await getFits([])).toEqual([]);
+        expect(await getFits([ { ...TALL, isDeleted: true } ])).toEqual([]);
+    });
+
+    it("keeps the view of a drawing over a locked image inside the image", async () => {
+        const image = {
+            id: "i1", type: "image", version: 1, locked: true, x: 0, y: 0, width: 1000, height: 1000
+        };
+        const saved = { elements: [ image ], appState: { zoom: { value: 1 } } };
+        const { attachment } = buildAttachment(saved);
+        await mount(attachment, undefined);
+
+        const view = { width: 1000, height: 500, zoom: { value: 0.25 }, scrollX: 0, scrollY: 0 };
+        drawingProps?.onChange?.([ image ] as never, view as never, {});
+        expect(updateScene).toHaveBeenCalledExactlyOnceWith({
+            appState: { zoom: { value: 0.5 }, scrollX: 500, scrollY: 0 }
+        });
+    });
+
+    it("saves nothing without an editor", async () => {
+        const loaded = [ { id: "r1", type: "rectangle", version: 3 } ];
+        const { attachment } = buildAttachment({ elements: loaded });
+        const initialData = await mount(attachment, undefined);
+        expect(initialData.elements).toEqual(loaded);
+
+        sceneElements = [ { ...loaded[0], version: 9 } ];
+        expect(() => change()).not.toThrow();
     });
 });

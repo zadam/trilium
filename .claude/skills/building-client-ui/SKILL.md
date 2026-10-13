@@ -7,7 +7,7 @@ description: Use when building or changing any UI in the Trilium client (`apps/c
 
 The client is a Preact app (legacy widgets are jQuery `BasicWidget`s; new UI is Preact). Shared components live in `apps/client/src/widgets/react/`. **Always reuse them instead of writing raw HTML elements or a custom implementation** — every hand-rolled `<input>`, `<select>`, `<button>`, `<a>`, pill or overlay button is a second copy of styling, focus handling and accessibility that drifts.
 
-The general styling rules (no inline styles, one `.css` file per component imported at the top, scope by root class + native CSS nesting) are in the repo `CLAUDE.md`; this skill is about *which component* and *how to drive it*.
+The general styling rules (no inline styles, one `.css` file per component imported at the top, scope by root class + native CSS nesting, no CSS comments beyond a browser workaround, a value shared with another file or a stacking contract) are in the repo `CLAUDE.md`; this skill is about *which component* and *how to drive it*.
 
 > **CLAUDE.md still foregrounds the jQuery widget lifecycle** (`doRenderBody` / `refreshWithNote` / `this.$widget`). That is for maintaining existing widgets. New UI is a `.tsx` component using the hooks below; reach for `useLegacyWidget` only to embed an existing jQuery widget into a Preact tree.
 
@@ -71,6 +71,12 @@ Buttons and links:
 - `Button` — the general button (also carries the tooltip for a *disabled* control via a wrapper, since a disabled `<button>` emits no pointer events). `ActionButton` — icon button with consistent styling. `SplitButton` — a button with its related actions in a `Dropdown` menu on a toggle beside it; its rows are `FormListItem`s.
 - `HelpButton`, `HelpTooltipButton`, `HelpDropdown` — open in-app help pages; don't invent a new "?" affordance.
 - A menu row's shortcut is `FormListItem`'s `keyboardShortcut` (an action's configured keys) or `shortcut` (literal text); never put keycaps into its label by hand.
+- **Everything at a menu row's trailing edge is a `FormListItem` prop, never a child.** Children render inside the row's label, not in the row's flex layout, so an `Icon` or badge placed there sits right after the text, and `margin-inline-start: auto` can't push it to the edge. Use:
+  - `checked` for the current choice: a trailing check when the row has an icon of its own, and in place of the icon when it has none; add `checkable` so a menu announces it as a checkbox row;
+  - `trailingIcon` for any other end-of-row icon;
+  - `keyboardShortcut` / `shortcut` for keys.
+
+  The template dropdown once hand-placed a `bx-check` in its rows and it landed mid-row; specs find the real mark as `.menu-trailing-icon`.
 
 **Never hand-roll `<a className="tn-link">`.** Which link component to reach for depends on what the link *is*:
 
@@ -147,7 +153,7 @@ Rules for `OverlayControlButton`, which cover every case seen so far:
 - **`active`/`disabled` are props**, not classes concatenated into `className`.
 - **Pass `overCanvas`** when the group stands over something that is dragged (a map), so a press on a button is not taken for the start of a drag.
 - **Where the group stands is the group's own**, via `placement` (`top`/`bottom` × `start`/`center`/`end`): it pins itself over the nearest positioned ancestor, and its tooltips open away from that edge. **Never write `position: absolute` plus insets at the call site.** What the caller does hand over, in that widget's CSS, is the room to keep from the edges (`--overlay-group-inset`, or the per-edge `--overlay-group-inset-top`/`-bottom`/`-start`/`-end` where one edge differs — a fullscreen map clearing a notch, which spells that inset `var(--safe-area-inset-top, env(safe-area-inset-top))`, never a bare `env()`, since Android leaves `env()` at `0`) and the `z-index`. `titlePosition` overrides the tooltip direction and is rarely right; only add a class to a *button* if a rule actually uses it.
-- **Overlay controls exist in every layout.** Never gate a group on `isExperimentalFeatureEnabled("new-layout")`, and when an action moves onto a group, **delete its twin in `FloatingButtonsDefinitions.tsx`** rather than keeping both: that bar only renders in the old layout (`desktop_layout.tsx` mounts it with `!isNewLayout`), so a layout-gated group plus a floating fallback means two implementations of one button that drift. Keep the underlying app commands (e.g. `relationMapResetZoomIn`) even once the group is their only caller — note scripts can fire them via `api.triggerCommand`.
+- **Overlay controls exist in every layout.** Never gate a group on `isExperimentalFeatureEnabled("new-layout")`, and when an action moves onto a group, **delete its twin in `FloatingButtonsDefinitions.tsx`** rather than keeping both: that bar only renders in the old layout (`desktop_layout.tsx` mounts it with `!isNewLayout`), so a layout-gated group plus a floating fallback means two implementations of one button that drift. A Preact view wires its own groups to callbacks — the relation map's toolbars call `useMapZoom` and `useNotePlacement` directly rather than going through app events.
 - Reuse shared labels from the `common` translation namespace (e.g. `common.fullscreen`) rather than adding a per-widget copy of a string the app already has.
 
 Worked examples to read before adding a new one: `apps/client/src/widgets/type_widgets/mind_map/MapToolbar.tsx` (group + toolbar + fullscreen), `type_widgets/relation_map/MapToolbar.tsx`, `collections/geomap/MapToolbar.tsx`, `type_widgets/helpers/SvgSplitEditor.tsx`.
@@ -182,6 +188,56 @@ Two `Modal` footguns:
 
 Full prop reference, `LazyDialog` mechanics and the eager exceptions: [references/dialogs.md](references/dialogs.md).
 
+## Preact 11 conventions
+
+**Where a name comes from.** Components, `createPortal`, `Fragment` and every type come from
+`preact`; hooks come from `preact/hooks`. Import from `preact/compat` only what nothing else
+provides: `memo`, `lazy`, `Suspense`, `flushSync`, `useSyncExternalStore`.
+
+- The DOM helper types are top-level exports of `preact`: `CSSProperties`, `HTMLAttributes`,
+  `ButtonHTMLAttributes`, `TargetedMouseEvent` (and the pointer, focus, keyboard, wheel and drag
+  twins), `MouseEventHandler`. The `JSX` namespace keeps only `JSX.Element` and
+  `JSX.IntrinsicElements`.
+- `MutableRef` is gone; its shape is `RefObject<T>`. `HTMLProps` exists only in compat; use
+  `HTMLAttributes`.
+- In an ambient `.d.ts` (`types-lib.d.ts`), import the Preact types an augmentation uses
+  explicitly: inside `declare module "preact"`, a name Preact only re-exports does not resolve.
+  `skipLibCheck` keeps `.d.ts` errors silent, so the broken augmentation shows up only where the
+  element is used.
+
+**Refs.** `useRef<T>(null)` returns `RefObject<T | null>`, so a hook or prop taking an element ref
+declares `RefObject<T | null>`. The argument-less `useRef<T>()` is gone: a value ref is
+`useRef<T | undefined>(undefined)`, and a callback type needs parentheses,
+`useRef<(() => void) | undefined>(undefined)`, or the union lands on its return type. Passing a
+nullable ref to `useImperativeHandle` infers `T` without its `null`; give both type arguments.
+
+**Unmount cleanups.** A removed component's `useEffect` cleanups run after the next paint, not during
+the unmount. A cleanup that must happen while the tree is torn down goes in `useLayoutEffect`
+instead:
+
+- it reports to a host that lets go of its state right after `render(null)` (`useForwardedKeys()`
+  clearing the editor's `aria-activedescendant` for `createHostedList()`);
+- it reads a child or library instance, which a class component's `componentWillUnmount()` tears
+  down synchronously (the canvas attachment editor's `release()` reading Excalidraw's scene).
+
+Clearing a timer, aborting a request or setting a flag can stay a passive cleanup: a frame late does
+no harm, and Preact runs all pending cleanups before any new effect.
+
+**`preact/compat` is always loaded**, and its `options.vnode` hook changes every element: `onChange`
+on a text-like `<input>`/`<textarea>` (including `range` and `color`) fires on `input`, `onFocus`/
+`onBlur` are the bubbling `focusin`/`focusout`, and numeric style values get `px`. Still write the
+unit (`` `${width}px` ``): core no longer adds it. `defaultProps` also works only through compat;
+use parameter defaults.
+
+**Per-element attribute types.** `role` is typed by element, following ARIA in HTML:
+
+- `<menu>` requires a `role`. Our menus use `role="none"`, as their rows carry their own roles.
+- Props spread onto a `<button>` are `ButtonHTMLAttributes`, not the generic `HTMLAttributes`.
+- `<input>` and `<img>` are discriminated unions keyed on `type` and on the accessible name. A
+  wrapper forwarding its caller's props cannot prove which branch it hits, so it casts once where
+  it spreads them (`AccessibleInputHTMLAttributes`, `AccessibleImgHTMLAttributes`), as `FormTextBox`
+  and `SafeImage` do. Narrowing the wrapper's props does not satisfy the union.
+
 ## Footgun checklist
 
 - **Reinventing a hook** — `useState` + `server.get` + a manual `entitiesReloaded` listener that a hook already provides. Check the catalogue.
@@ -192,6 +248,8 @@ Full prop reference, `LazyDialog` mechanics and the eager exceptions: [reference
 - **Bootstrap utility classes or inline static styles on `Form*` components** — use the sibling per-component `.css` scoped under a root class.
 - **Hand-rolled overlay buttons** — `tn-overlay-*` classes at a call site instead of `OverlayControlGroup` / `OverlayControlButton`.
 - **Copying the jQuery lifecycle** (`doRenderBody` / `refreshWithNote` / `this.$widget`) into new `.tsx` — use `useLegacyWidget` only to embed an existing widget.
+- **A `useEffect` cleanup that must run during the unmount** — it runs after paint; reporting to a host or reading a child instance belongs in a `useLayoutEffect` cleanup (see "Preact 11 conventions").
+- **Importing core names through `preact/compat`** — `createPortal`, hooks and types come from `preact` / `preact/hooks`; compat is for `memo`, `lazy`, `Suspense`, `flushSync`, `useSyncExternalStore`.
 - **Diagnosing a style or placement bug from the stylesheets** — the load order in a hand-built test page does not match the app's, so the bug can fail to reproduce and send you after the wrong cause. Measure computed styles in a running instance: [references/inspecting-the-running-app.md](references/inspecting-the-running-app.md).
 
 > Not a footgun here: `isElectron()` / `isMac()` from `apps/client/src/services/utils.ts` are runtime checks safe at module load. The "call only after init" trap is a **trilium-core** concern (`utils/index.ts` → `getPlatform()`), not client UI.

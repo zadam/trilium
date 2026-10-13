@@ -13,7 +13,7 @@ This feature allows inserting Unicode emoji characters. Simply select a category
 
 Emojis can also be searched by their English name and the skin tone can be selected via a combo box to the right.
 
-There is also the possibility of inserting emojis directly by typing `:` followed by a name of an emoji, triggering the display of a list of emojis. Simply use the arrow keys to select one and press <kbd>Enter</kbd> to insert it.
+There is also the possibility of inserting emojis directly by typing `:` followed by a name of an emoji, triggering the display of a list of emojis. Simply use the arrow keys to select one and press <kbd>Enter</kbd> or <kbd>Tab</kbd> to insert it.
 
 <img src="1_Insert buttons_plus.png" width="272" height="187">
 
@@ -29,9 +29,17 @@ Interaction:
 *   The window can be dragged around by the top bar where the title is, to avoid it getting in the way of the text.
 *   Click on the _Category_ selector to filter the characters.
 
+## Multicolumn layout
+
+See the dedicated <a class="reference-link" href="Multicolumn%20layout.md">Multicolumn layout</a> page.
+
 ## Math equations
 
 See the dedicated <a class="reference-link" href="Math%20Equations.md">Math Equations</a> page.
+
+## Drawing canvas
+
+Choose <span class="tn-icon bx bx-pen"></span> _Drawing canvas_ to draw on an Excalidraw canvas inside the text. See _Drawing canvases_ in <a class="reference-link" href="Include%20Note.md">Include Note</a>.
 
 ## Mermaid diagram
 

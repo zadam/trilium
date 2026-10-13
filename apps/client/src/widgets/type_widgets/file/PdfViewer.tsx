@@ -2,7 +2,7 @@ import type { HTMLAttributes, RefObject } from "preact";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { onEffectiveThemeStyleChange } from "../../../services/theme";
-import { useSyncedRef, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
+import { useSyncedRef, useTriliumOption } from "../../react/hooks";
 
 interface FontDefinition {
     name: string;
@@ -15,7 +15,7 @@ const FONTS: FontDefinition[] = [
 ];
 
 interface PdfViewerProps extends Pick<HTMLAttributes<HTMLIFrameElement>, "tabIndex"> {
-    iframeRef?: RefObject<HTMLIFrameElement>;
+    iframeRef?: RefObject<HTMLIFrameElement | null>;
     /** Relative URLs resolve against /pdfjs/web; build API paths with {@link getPdfUrl} instead. */
     pdfUrl: string;
     onLoad?(): void;
@@ -48,7 +48,6 @@ interface PdfViewerProps extends Pick<HTMLAttributes<HTMLIFrameElement>, "tabInd
 export default function PdfViewer({ iframeRef: externalIframeRef, pdfUrl, onLoad, editable, toolbar = true, disableSelection, minPixelRatio, noteId, ntxId }: PdfViewerProps) {
     const iframeRef = useSyncedRef(externalIframeRef, null);
     const [ locale ] = useTriliumOption("locale");
-    const [ newLayout ] = useTriliumOptionBool("newLayout");
     const injectStyles = useStyleInjection(iframeRef, disableSelection);
 
     return (
@@ -56,7 +55,7 @@ export default function PdfViewer({ iframeRef: externalIframeRef, pdfUrl, onLoad
             ref={iframeRef}
             class="pdf-preview"
             style={{width: "100%", height: "100%"}}
-            src={`pdfjs/web/viewer.html?v=${glob.triliumVersion}&file=${pdfUrl}&locale=${locale}&sidebar=${newLayout ? "0" : "1"}&editable=${editable ? "1" : "0"}&toolbar=${toolbar ? "1" : "0"}${minPixelRatio ? `&minPixelRatio=${minPixelRatio}` : ""}${noteId ? getAddressParams(noteId, ntxId) : ""}`}
+            src={`pdfjs/web/viewer.html?v=${glob.triliumVersion}&file=${pdfUrl}&locale=${locale}&sidebar=0&editable=${editable ? "1" : "0"}&toolbar=${toolbar ? "1" : "0"}${minPixelRatio ? `&minPixelRatio=${minPixelRatio}` : ""}${noteId ? getAddressParams(noteId, ntxId) : ""}`}
             onLoad={() => {
                 injectStyles();
                 onLoad?.();
@@ -69,7 +68,10 @@ function getAddressParams(noteId: string, ntxId: string | null | undefined) {
     return `&noteId=${encodeURIComponent(noteId)}${ntxId ? `&ntxId=${encodeURIComponent(ntxId)}` : ""}`;
 }
 
-function useStyleInjection(iframeRef: RefObject<HTMLIFrameElement>, disableSelection?: boolean) {
+function useStyleInjection(
+    iframeRef: RefObject<HTMLIFrameElement | null>,
+    disableSelection?: boolean
+) {
     const styleRef = useRef<HTMLStyleElement | null>(null);
 
     // First load.

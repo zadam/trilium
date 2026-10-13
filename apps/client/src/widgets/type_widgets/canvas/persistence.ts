@@ -1,15 +1,24 @@
 import { CaptureUpdateAction, exportToSvg, getSceneVersion } from "@excalidraw/excalidraw";
 import { ExcalidrawElement, NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
-import { AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState, ExcalidrawProps, LibraryItem } from "@excalidraw/excalidraw/types";
+import {
+    AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState,
+    ExcalidrawProps, LibraryItem
+} from "@excalidraw/excalidraw/types";
 import { deferred, type DeferredPromise } from "@triliumnext/commons";
 import { RefObject } from "preact";
-import { useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import NoteContext from "../../../components/note_context";
+import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
+import type { ContentEditor } from "../../../services/content_renderer";
+import froca from "../../../services/froca";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
-import { buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments } from "./image_attachments";
+import { getBoundedView, getFittedView } from "./drawing_view";
+import {
+    buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
+} from "./image_attachments";
 
 interface AttachmentMetadata {
     title: string;
@@ -25,7 +34,7 @@ export interface CanvasContent {
 /** Subset of the app state that should be persisted whenever they change. This explicitly excludes transient state like the current selection or zoom level. */
 type ImportantAppState = Pick<AppState, "gridModeEnabled" | "viewBackgroundColor">;
 
-export default function useCanvasPersistence(note: FNote, noteContext: NoteContext | null | undefined, apiRef: RefObject<ExcalidrawImperativeAPI>, theme: AppState["theme"], isReadOnly: boolean): Partial<ExcalidrawProps> {
+export default function useCanvasPersistence(note: FNote, noteContext: NoteContext | null | undefined, apiRef: RefObject<ExcalidrawImperativeAPI | null>, theme: AppState["theme"], isReadOnly: boolean): Partial<ExcalidrawProps> {
     const libraryChanged = useRef(false);
 
     /**
@@ -60,7 +69,8 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
     // loaded via `updateScene` in that window is wiped — and the wipe then looks like a
     // user edit and gets saved over the note (#10279). Excalidraw awaits this promise and
     // applies its value as part of that very reset, so the first load cannot be clobbered.
-    const initialDataRef = useRef<DeferredPromise<ExcalidrawInitialDataState | null>>();
+    const initialDataRef =
+        useRef<DeferredPromise<ExcalidrawInitialDataState | null> | undefined>(undefined);
     if (!initialDataRef.current) {
         initialDataRef.current = deferred<ExcalidrawInitialDataState | null>();
     }
@@ -341,7 +351,130 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
     };
 }
 
-function parseContent(newContent: string, note: FNote): CanvasContent {
+/**
+ * Loads a canvas drawing from an attachment and passes its changes to `editor`, which saves them.
+ * Without `editor`, the drawing is read-only.
+ */
+export function useCanvasDrawingPersistence(
+    attachment: FAttachment,
+    editor: ContentEditor | undefined,
+    apiRef: RefObject<ExcalidrawImperativeAPI | null>,
+    theme: AppState["theme"]
+): Partial<ExcalidrawProps> {
+    const currentSceneVersion = useRef(0);
+    /** The saved part of the app state, read from the editor at the first change. */
+    const appStateToCompare = useRef<ImportantAppState | null>(null);
+    // Same guard as the canvas note: the scene is empty until Excalidraw applies `initialData`.
+    const initialSceneAppliedRef = useRef(true);
+    const referencedFileIds = useRef<ReadonlySet<string>>(new Set());
+    const isFitPendingRef = useRef(false);
+
+    const [ initialData ] = useState(async (): Promise<ExcalidrawInitialDataState> => {
+        const unsavedContent = editor?.getUnsavedContent();
+        const blobContent = unsavedContent === undefined
+            ? (await attachment.getBlob())?.content ?? ""
+            : unsavedContent;
+        const content = parseContent(blobContent, attachment);
+        const loaded = await loadDrawingFiles(attachment, content);
+        referencedFileIds.current = loaded.referencedFileIds;
+
+        const elements = content.elements ?? [];
+        currentSceneVersion.current = getSceneVersion(elements);
+        initialSceneAppliedRef.current = currentSceneVersion.current === 0;
+        isFitPendingRef.current = !content.appState?.zoom
+            && elements.some((element) => !element.isDeleted);
+
+        return {
+            elements,
+            // A drawing shows the background of the note unless one is picked for it.
+            appState: { viewBackgroundColor: "transparent", ...content.appState, theme },
+            files: loaded.files
+        };
+    });
+
+    // A layout cleanup runs during the unmount, before Excalidraw's `componentWillUnmount()` empties
+    // the scene that `release()` reads; a passive one runs after paint.
+    useLayoutEffect(() => () => editor?.release(), [ editor ]);
+
+    return {
+        initialData,
+        excalidrawAPI: (api) => {
+            apiRef.current = api;
+        },
+        onChange: (elements, state) => {
+            const api = apiRef.current;
+            // Excalidraw reports its size only once the drawing is laid out in the note.
+            const fitted = isFitPendingRef.current
+                && getFittedView(elements, state.width, state.height);
+            if (fitted) isFitPendingRef.current = false;
+            const view = fitted || getBoundedView(elements, state);
+            if (api && view) api.updateScene({ appState: view });
+            if (!api || !editor) return;
+
+            const sceneVersion = getSceneVersion(api.getSceneElements());
+            if (!initialSceneAppliedRef.current) {
+                if (sceneVersion === 0) return;
+                initialSceneAppliedRef.current = true;
+            }
+
+            const appState = getImportantAppState(api.getAppState());
+            const previousAppState = appStateToCompare.current;
+            appStateToCompare.current = appState;
+            const isAppStateChanged = !!previousAppState
+                && (previousAppState.gridModeEnabled !== appState.gridModeEnabled
+                    || previousAppState.viewBackgroundColor !== appState.viewBackgroundColor);
+            if (sceneVersion === currentSceneVersion.current && !isAppStateChanged) return;
+
+            currentSceneVersion.current = sceneVersion;
+            editor.scheduleSave(() => serializeDrawing(api, referencedFileIds.current));
+        }
+    };
+}
+
+/**
+ * The images of the canvas drawing in `content`: the ones it keeps inline, and the ones it refers
+ * to by file ID, which the note that owns `entity` keeps as image attachments titled with that ID.
+ * `referencedFileIds` lists the latter.
+ */
+export async function loadDrawingFiles(entity: FNote | FAttachment, content: CanvasContent) {
+    const files: BinaryFiles = {};
+    for (const file of Object.values(content.files ?? {})) {
+        files[file.id] = file;
+    }
+
+    const referencedFileIds = new Set<string>();
+    for (const element of content.elements ?? []) {
+        if ("fileId" in element && element.fileId && !files[element.fileId]) {
+            referencedFileIds.add(element.fileId);
+        }
+    }
+
+    if (referencedFileIds.size) {
+        const owner = entity instanceof FNote ? entity : await froca.getNote(entity.ownerId);
+        const images = (await owner?.getAttachmentsByRole(IMAGE_ROLE) ?? [])
+            .filter((attachment) => referencedFileIds.has(attachment.title));
+        for (const file of (await loadImageFiles(images)).files) {
+            files[file.id] = file;
+        }
+    }
+
+    return { files, referencedFileIds };
+}
+
+/**
+ * The content of a canvas drawing. Unlike a canvas note, a drawing keeps its images inline, except
+ * the ones it refers to by file ID.
+ */
+function serializeDrawing(api: ExcalidrawImperativeAPI, referencedFileIds: ReadonlySet<string>) {
+    const elements = api.getSceneElements();
+    const files = getActiveFiles(elements, api.getFiles());
+    for (const fileId of referencedFileIds) {
+        delete files[fileId];
+    }
+    return JSON.stringify(buildSceneContent(elements, api.getAppState(), files));
+}
+
+export function parseContent(newContent: string, entity: FNote | FAttachment): CanvasContent {
     let content: CanvasContent = {
         elements: [],
         files: [],
@@ -351,13 +484,17 @@ function parseContent(newContent: string, note: FNote): CanvasContent {
         try {
             content = JSON.parse(newContent) as CanvasContent;
         } catch (err) {
-            console.error("Error parsing content. Probably note.type changed. Starting with empty canvas", note, err);
+            console.error(
+                "Error parsing content. Probably note.type changed. Starting with empty canvas",
+                entity,
+                err
+            );
         }
     }
     return content;
 }
 
-async function getData(api: ExcalidrawImperativeAPI, appStateToCompare: RefObject<Partial<ImportantAppState>>) {
+async function getData(api: ExcalidrawImperativeAPI, appStateToCompare: RefObject<Partial<ImportantAppState> | null>) {
     const elements = api.getSceneElements();
     const appState = api.getAppState();
 
@@ -375,39 +512,55 @@ async function getData(api: ExcalidrawImperativeAPI, appStateToCompare: RefObjec
     });
     const svgString = svg.outerHTML;
 
-    const activeFiles: Record<string, BinaryFileData> = {};
-    elements.forEach((element: NonDeletedExcalidrawElement) => {
-        if ("fileId" in element && element.fileId) {
-            activeFiles[element.fileId] = files[element.fileId];
-        }
-    });
+    appStateToCompare.current = getImportantAppState(appState);
 
-    const importantAppState: ImportantAppState = {
-        gridModeEnabled: appState.gridModeEnabled,
-        viewBackgroundColor: appState.viewBackgroundColor
-    };
-    appStateToCompare.current = importantAppState;
-
-    const content = {
-        type: "excalidraw",
-        version: 2,
-        elements,
-        // Images are persisted as attachments (keyed by fileId), not inline, so the content stays
-        // small. Elements keep their `fileId`; the bytes are reattached on load. Kept as an empty
-        // object for shape compatibility with loadData() and legacy content.
-        files: {} as Record<string, BinaryFileData>,
-        appState: {
-            scrollX: appState.scrollX,
-            scrollY: appState.scrollY,
-            zoom: appState.zoom,
-            ...importantAppState
-        }
-    };
+    // Images are persisted as attachments (keyed by fileId), not inline, so the content stays
+    // small. Elements keep their `fileId`; the bytes are reattached on load. Kept as an empty
+    // object for shape compatibility with loadData() and legacy content.
+    const content = buildSceneContent(elements, appState, {});
 
     return {
         content,
         svg: svgString,
-        activeFiles
+        activeFiles: getActiveFiles(elements, files)
+    };
+}
+
+/** The scene as the content of a canvas note or of a canvas drawing stores it. */
+function buildSceneContent(
+    elements: readonly NonDeletedExcalidrawElement[],
+    appState: AppState,
+    files: Record<string, BinaryFileData>
+) {
+    return {
+        type: "excalidraw",
+        version: 2,
+        elements,
+        files,
+        appState: {
+            scrollX: appState.scrollX,
+            scrollY: appState.scrollY,
+            zoom: appState.zoom,
+            ...getImportantAppState(appState)
+        }
+    };
+}
+
+/** The files that an element of the scene uses. */
+function getActiveFiles(elements: readonly NonDeletedExcalidrawElement[], files: BinaryFiles) {
+    const activeFiles: Record<string, BinaryFileData> = {};
+    for (const element of elements) {
+        if ("fileId" in element && element.fileId) {
+            activeFiles[element.fileId] = files[element.fileId];
+        }
+    }
+    return activeFiles;
+}
+
+function getImportantAppState(appState: AppState): ImportantAppState {
+    return {
+        gridModeEnabled: appState.gridModeEnabled,
+        viewBackgroundColor: appState.viewBackgroundColor
     };
 }
 

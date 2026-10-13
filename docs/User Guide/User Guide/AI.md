@@ -85,10 +85,28 @@ Pricing information is displayed for known models. The pricing information (pric
 
 The AI can optionally search the web to find more information about a specific topic. 
 
-This feature is on by default but it can easily be disabled by clicking on the model selector at the bottom of the chat and unchecking _Web search_.
+Where the search comes from is chosen under _Web search_ in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu next to the model selector at the bottom of the chat:
 
-> [!NOTE]
-> Currently only the search native to the LLM provider is supported. External search providers such as Exa, Tavily & SearXNG are not yet supported.
+*   _Disabled_ turns web search off for this chat.
+*   _Use the model's built-in search_, the default, lets the model search with its provider's own search. Anthropic, OpenAI and Google Gemini models have one, as do Claude Code, Google Antigravity and OpenAI Codex. DeepSeek, Ollama, LM Studio and custom endpoints don't, so this choice is disabled for their models.
+*   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which the <span class="tn-icon bx bx-cog"></span> button beside the _Web search_ heading in the menu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
+
+To use SearXNG, enable its JSON output by adding `json` to the search formats in the instance's `settings.yml`. SearXNG turns JSON off by default, and without it every search fails.
+
+```yaml
+search:
+  formats:
+    - html
+    - json
+```
+
+SearXNG doesn't use API keys, so leave the API key empty. Fill it in only if your instance sits behind a proxy that requires a token; Trilium sends it as a bearer token in the `Authorization` header.
+
+Whether web search is on is kept per chat; the search source is shared by all chats. A choice the current model can't use stays in the menu, disabled; hover the <span class="tn-icon bx bx-info-circle"></span> icon next to it to see why. Claude Code, GitHub Copilot, Google Antigravity and OpenAI Codex run their own tools, so they can't use a search provider.
+
+In the chat, a search run through a search provider shows that provider's logo at the start of its line instead of the <span class="tn-icon bx bx-search"></span> magnifier; hover the logo to see the provider's name.
+
+With a search provider, the model can also read the pages it finds, or a link you give it, as text: Trilium fetches the page itself and hands the model up to its first 20,000 characters. Addresses on your own machine or network are refused. In the browser version most sites don't allow being read this way, so reading a page there usually fails.
 
 ### Thinking
 
@@ -96,7 +114,7 @@ Some models reason before they answer. While the model is thinking, its reasonin
 
 How much a model thinks is set per chat, in one of two ways depending on the model:
 
-*   Most models have an _Extended thinking_ switch, next to _Web search_.
+*   Most models have an <span class="tn-icon bx bx-brain"></span> _Extended thinking_ button, next to the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ button.
 *   Models that offer several levels of reasoning (DeepSeek V4, OpenAI Codex, Antigravity) have a <span class="tn-icon bx bx-brain"></span> reasoning effort dropdown next to the model selector instead. _None_, where offered, turns thinking off; higher levels give better answers to hard questions, but take longer and cost more.
 
 > [!NOTE]
@@ -106,7 +124,7 @@ How much a model thinks is set per chat, in one of two ways depending on the mod
 
 Tools allow the agentic AI to understand and operate on notes directly within your Trilium instance.
 
-This feature is on by default but it can easily be disabled by clicking on the model selector at the bottom of the chat and unchecking _Note access_.
+This feature is on by default. To turn it off, press the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ button next to the model selector at the bottom of the chat and switch off _Note access_. The _Tools_ button is highlighted while note access or web search is on.
 
 Here are a few tools that Trilium provides for the LLM:
 
@@ -142,7 +160,7 @@ When the reply stops moving for a couple of seconds while the AI is still at wor
 > Currently there is **no permission management** implemented for note tools, meaning that the LLM could potentially remove existing notes or clutter the tree with notes. Generally most actions are easily reversible (deleting the notes, restoring deleted notes, reverting modifications to a note), but there are some that are harder to revert (e.g. setting an attribute because there is no attribute history).
 
 > [!NOTE]
-> Gemini has a special case in which _Note access_ and _Web search_ can't be both enabled at the same time.
+> Gemini can't use its built-in search while note access is on. While it is, the built-in search choice in the _Tools_ menu is disabled and says why; a search provider works with note access on.
 
 ### Attachments
 

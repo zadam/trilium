@@ -52,11 +52,6 @@ export async function openDialog($dialog: JQuery<HTMLElement>, closeActDialog = 
     $dialog.on("hidden.bs.modal", () => {
         sendDialogHome($dialog[0]);
 
-        const $autocompleteEl = $(".aa-input");
-        if ("autocomplete" in $autocompleteEl) {
-            $autocompleteEl.autocomplete("close");
-        }
-
         if (!glob.activeDialog || glob.activeDialog === $dialog) {
             focusSavedElement();
         }

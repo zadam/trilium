@@ -1,7 +1,7 @@
 import "./AddProviderModal.css";
 
-import type { LlmModelInfo } from "@triliumnext/commons";
-import { createPortal } from "preact/compat";
+import type { LlmModelInfo, LlmProviderKind } from "@triliumnext/commons";
+import { createPortal } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Trans } from "react-i18next";
 
@@ -22,6 +22,8 @@ export interface LlmProviderConfig {
     id: string;
     name: string;
     provider: string;
+    /** Absent in configurations saved before search providers existed, all of which are `"llm"`. */
+    kind?: LlmProviderKind;
     apiKey: string;
     baseURL?: string;
     /** Models the user selected for this provider, with full metadata for offline rendering. */
@@ -71,6 +73,12 @@ export interface ProviderType {
      */
     needsHostProcess?: boolean;
     /**
+     * The service's API refuses the CORS preflight of a request made from a web page, so the
+     * standalone build, which calls it with the page's own `fetch`, cannot reach it. Shown disabled
+     * there, as {@link needsHostProcess} is.
+     */
+    refusesBrowserRequests?: boolean;
+    /**
      * How the provider authenticates: a key it requires (vendor APIs), one it may
      * take (self-hosted endpoints that sit behind a proxy or gateway), or none at
      * all (subscription auth). Defaults to `"required"`.
@@ -111,7 +119,12 @@ const PROVIDER_GROUPS = [
     { id: "custom", columns: 1, headingKey: "llm.provider_group_custom", descriptionKey: "llm.provider_group_custom_description" }
 ] as const;
 
-type ProviderGroupId = (typeof PROVIDER_GROUPS)[number]["id"];
+const SEARCH_PROVIDER_GROUPS = [
+    { id: "search-cloud", columns: 2, headingKey: "llm.search_provider_group_cloud", descriptionKey: "llm.search_provider_group_cloud_description" },
+    { id: "search-local", columns: 2, headingKey: "llm.search_provider_group_local", descriptionKey: "llm.search_provider_group_local_description" }
+] as const;
+
+type ProviderGroupId = (typeof PROVIDER_GROUPS)[number]["id"] | (typeof SEARCH_PROVIDER_GROUPS)[number]["id"];
 
 export const PROVIDER_TYPES: ProviderType[] = [
     { id: "anthropic", name: "Anthropic", group: "cloud", defaultBaseUrl: "https://api.anthropic.com/v1", iconUrl: PROVIDER_ICONS.anthropic },
@@ -154,6 +167,25 @@ export const PROVIDER_TYPES: ProviderType[] = [
         setupHintKey: "llm.setup_hint_openai_compatible", apiKey: "optional", baseUrl: "required"
     }
 ];
+
+/** Web search services, configured in the same `llmProviders` option with `kind: "search"`. */
+export const SEARCH_PROVIDER_TYPES: ProviderType[] = [
+    { id: "brave", name: "Brave Search", group: "search-cloud", defaultBaseUrl: "https://api.search.brave.com/res/v1", iconUrl: PROVIDER_ICONS.brave, refusesBrowserRequests: true },
+    { id: "tavily", name: "Tavily", group: "search-cloud", defaultBaseUrl: "https://api.tavily.com", iconUrl: PROVIDER_ICONS.tavily },
+    { id: "exa", name: "Exa", group: "search-cloud", defaultBaseUrl: "https://api.exa.ai", iconUrl: PROVIDER_ICONS.exa, refusesBrowserRequests: true },
+    { id: "serper", name: "Serper", group: "search-cloud", defaultBaseUrl: "https://google.serper.dev", iconUrl: PROVIDER_ICONS.serper },
+    { id: "perplexity", name: "Perplexity", group: "search-cloud", defaultBaseUrl: "https://api.perplexity.ai", iconUrl: PROVIDER_ICONS.perplexity, refusesBrowserRequests: true },
+    {
+        id: "searxng", name: "SearXNG", group: "search-local", defaultBaseUrl: "http://localhost:8888", prefillBaseUrl: true,
+        iconUrl: PROVIDER_ICONS.searxng,
+        setupHintKey: "llm.setup_hint_searxng", apiKey: "optional", baseUrl: "required"
+    }
+];
+
+/** The provider type with `providerId`, of either kind. */
+export function findProviderType(providerId: string | undefined): ProviderType | undefined {
+    return PROVIDER_TYPES.find(p => p.id === providerId) ?? SEARCH_PROVIDER_TYPES.find(p => p.id === providerId);
+}
 
 /**
  * Whether an endpoint is one the app could actually reach. An empty field is not invalid — it means
@@ -209,26 +241,29 @@ interface AddProviderModalProps {
     existingProvider?: LlmProviderConfig;
     /** Step to open on. Pass "models" to jump straight to model selection (e.g. editing from the chat picker). */
     initialStep?: ProviderStep;
+    /** Which kind of provider to add. When editing, the kind of {@link existingProvider} applies instead. */
+    kind?: LlmProviderKind;
 }
 
-export default function AddProviderModal({ show, onHidden, onSave, existingProvider, initialStep }: AddProviderModalProps) {
+export default function AddProviderModal({ show, onHidden, onSave, existingProvider, initialStep, kind: kindToAdd = "llm" }: AddProviderModalProps) {
     const isEdit = !!existingProvider;
+    const kind = existingProvider ? (existingProvider.kind ?? "llm") : kindToAdd;
+    const isSearch = kind === "search";
+    const providerTypes = isSearch ? SEARCH_PROVIDER_TYPES : PROVIDER_TYPES;
+    const providerGroups = isSearch ? SEARCH_PROVIDER_GROUPS : PROVIDER_GROUPS;
     const firstStep = initialStep ?? (isEdit ? "connection" : "provider");
     const [step, setStep] = useState<ProviderStep>(firstStep);
-    const [selectedProvider, setSelectedProvider] = useState(existingProvider?.provider ?? PROVIDER_TYPES[0].id);
+    const [selectedProvider, setSelectedProvider] = useState(existingProvider?.provider ?? providerTypes[0].id);
     // Whether the user has actually picked a provider. `selectedProvider` always
     // holds one so the connection step has something to work with, but on a fresh
     // add nothing should *look* chosen — clicking a card is the choice, and it
     // moves on immediately, so a pre-highlighted card would be a lie.
     const [providerChosen, setProviderChosen] = useState(firstStep !== "provider");
     const [apiKey, setApiKey] = useState(existingProvider?.apiKey ?? "");
-    const [baseUrl, setBaseUrl] = useState(existingProvider?.baseURL ?? prefilledBaseUrl(existingProvider?.provider ?? PROVIDER_TYPES[0].id));
+    const [baseUrl, setBaseUrl] = useState(existingProvider?.baseURL ?? prefilledBaseUrl(existingProvider?.provider ?? providerTypes[0].id));
     const [selectedModels, setSelectedModels] = useState<LlmModelInfo[]>(existingProvider?.selectedModels ?? []);
 
-    const providerType = useMemo(
-        () => PROVIDER_TYPES.find(p => p.id === selectedProvider),
-        [selectedProvider]
-    );
+    const providerType = useMemo(() => findProviderType(selectedProvider), [selectedProvider]);
     const apiKeyMode = providerType?.apiKey ?? "required";
     // Self-hosted providers show the endpoint as their primary connection detail;
     // vendor providers keep it tucked away as an advanced override.
@@ -258,7 +293,7 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
         ? <span className="text-danger">{t("llm.base_url_invalid")}</span>
         : providerType?.setupHintKey
             ? <Trans i18nKey={providerType.setupHintKey} components={{ Code: <code /> }} />
-            : t("llm.base_url_description");
+            : isSearch ? t("llm.search_base_url_description") : t("llm.base_url_description");
 
     // Rendered in one of two slots: ahead of the key for self-hosted providers
     // (the endpoint is their primary connection detail) or after it for vendor
@@ -289,7 +324,7 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
     const seedDefaultModels = !existingProvider?.selectedModels;
 
     function reset() {
-        const initialProvider = existingProvider?.provider ?? PROVIDER_TYPES[0].id;
+        const initialProvider = existingProvider?.provider ?? providerTypes[0].id;
         setStep(firstStep);
         setSelectedProvider(initialProvider);
         setProviderChosen(firstStep !== "provider");
@@ -308,9 +343,10 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
             id: existingProvider?.id ?? `${selectedProvider}_${Date.now()}`,
             name: providerType?.name || selectedProvider,
             provider: selectedProvider,
+            ...(isSearch && { kind }),
             apiKey: usesApiKey ? trimmedApiKey : "",
             ...(baseUrlMode !== "none" && trimmedBaseUrl && { baseURL: trimmedBaseUrl }),
-            selectedModels
+            ...(!isSearch && { selectedModels })
         };
 
         onSave(saved);
@@ -324,10 +360,10 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
         ? t("llm.edit_provider_title", { name: existingProvider?.name ?? providerType?.name ?? selectedProvider })
         : t("llm.add_provider_title_named", { name: providerType?.name ?? selectedProvider });
 
-    const steps: WizardStep<ProviderStep>[] = [
+    const allSteps: WizardStep<ProviderStep>[] = [
         {
             id: "provider",
-            title: t("llm.add_provider_title"),
+            title: isSearch ? t("llm.add_search_provider") : t("llm.add_model_provider"),
             // Choosing a card advances on its own, so the step needs no primary action —
             // but Enter must still not advance with whichever provider happens to be
             // first in the list, hence the guard.
@@ -337,13 +373,13 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
                 // One card per group rather than one "Provider" card holding them all:
                 // the groups are the step's structure, so each gets the heading and the
                 // enclosure, and the choices below it are only the ones it describes.
-                PROVIDER_GROUPS.map(group => (
+                providerGroups.map(group => (
                     <ProviderGroup
                         key={group.id}
                         heading={t(group.headingKey)}
                         description={t(group.descriptionKey)}
                         columns={group.columns}
-                        providers={PROVIDER_TYPES.filter(p => p.group === group.id)}
+                        providers={providerTypes.filter(p => p.group === group.id)}
                         selectedProvider={providerChosen ? selectedProvider : undefined}
                         onSelect={selectProviderType}
                     />
@@ -413,6 +449,8 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
             )
         }
     ];
+    // Search providers have no models to choose, so their wizard ends at the connection step.
+    const steps = isSearch ? allSteps.filter(s => s.id !== "models") : allSteps;
 
     return createPortal(
         <WizardModal
@@ -480,9 +518,7 @@ function ProviderGroup({ heading, description, columns, providers, selectedProvi
                         // A provider this build can't run keeps its place in the list but
                         // states why in place of its blurb — the blurb describes a setup
                         // that isn't on offer here, so it would only mislead.
-                        const unavailableReason = provider.needsHostProcess && isStandalone
-                            ? t("llm.provider_unavailable_standalone")
-                            : undefined;
+                        const unavailableReason = standaloneUnavailableReason(provider);
                         return (
                             <SelectableCard
                                 key={provider.id}
@@ -503,6 +539,20 @@ function ProviderGroup({ heading, description, columns, providers, selectedProvi
     );
 }
 
+/** Why the standalone build cannot use `provider`, or `undefined` where it can or this is not that build. */
+function standaloneUnavailableReason(provider: ProviderType): string | undefined {
+    if (!isStandalone) {
+        return undefined;
+    }
+    if (provider.needsHostProcess) {
+        return t("llm.provider_unavailable_standalone");
+    }
+    if (provider.refusesBrowserRequests) {
+        return t("llm.search_provider_unavailable_standalone");
+    }
+    return undefined;
+}
+
 /**
  * The endpoint a freshly picked provider starts with. Only self-hosted providers
  * prefill: their port is the one thing the user must get right and it differs per
@@ -510,7 +560,7 @@ function ProviderGroup({ heading, description, columns, providers, selectedProvi
  * unedited field must not store a redundant override).
  */
 export function prefilledBaseUrl(providerId: string): string {
-    const providerType = PROVIDER_TYPES.find(p => p.id === providerId);
+    const providerType = findProviderType(providerId);
     return providerType?.prefillBaseUrl ? providerType.defaultBaseUrl : "";
 }
 

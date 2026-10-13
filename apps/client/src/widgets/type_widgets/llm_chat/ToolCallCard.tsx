@@ -5,7 +5,9 @@ import { Trans } from "react-i18next";
 import appContext from "../../../components/app_context.js";
 import { t } from "../../../services/i18n.js";
 import ActionButton from "../../react/ActionButton.js";
+import MaskedIcon from "../../react/MaskedIcon.js";
 import { NewNoteLink } from "../../react/NoteLink.js";
+import { providerIconUrl } from "../options/llm/provider_icons.js";
 import { EditNoteContentDiff, isSmallEdit, parseNoteContentEdits } from "./EditNoteContentDiff.js";
 import { ExpandableSection } from "./ExpandableCard.js";
 import { isFailedToolCall, type ToolCall } from "./llm_chat_types.js";
@@ -109,10 +111,36 @@ function toolNameIcon(toolName: string): string {
     return "bx bx-wrench";
 }
 
-function toolCallIcon(toolCall: ToolCall): string {
+function toolCallIcon(toolCall: ToolCall) {
     if (isFailedToolCall(toolCall)) return "bx bx-error-circle";
     if (!toolCall.result) return "bx bx-loader-alt bx-spin";
-    return toolNameIcon(toolCall.toolName);
+    const searchProvider = readSearchProvider(toolCall);
+    return searchProvider ? <SearchProviderIcon {...searchProvider} /> : toolNameIcon(toolCall.toolName);
+}
+
+/**
+ * The search provider named in a `web_search` result, which a configured search provider's
+ * search carries and the model's built-in search does not.
+ */
+function readSearchProvider(toolCall: ToolCall): { type: string; name: string } | undefined {
+    if (toolCall.toolName !== "web_search" || !toolCall.result) return undefined;
+    try {
+        const { searchProvider } = JSON.parse(toolCall.result) ?? {};
+        return typeof searchProvider?.type === "string" && typeof searchProvider.name === "string"
+            ? { type: searchProvider.type, name: searchProvider.name }
+            : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/** The logo of the search provider that ran a search, in place of the magnifier. */
+function SearchProviderIcon({ type, name }: { type: string; name: string }) {
+    return (
+        <span className="llm-chat-tool-call-provider" title={t("llm_chat.searched_with", { name })}>
+            <MaskedIcon url={providerIconUrl(type)} />
+        </span>
+    );
 }
 
 /** The message of a failed call: the `error` field of a JSON result, or else the whole result. */
@@ -206,7 +234,7 @@ function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
         return (
             <div className={`expandable-line ${className}`}>
                 <div className="expandable-line-header">
-                    <span className={icon} />
+                    {typeof icon === "string" ? <span className={icon} /> : icon}
                     <span className="expandable-section-label">{label}</span>
                     {debugButton}
                 </div>
@@ -257,7 +285,11 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     const anyPending = toolCalls.some(tc => !tc.result);
     const anyError = toolCalls.some(isFailedToolCall);
 
-    const icon = anyPending ? "bx bx-loader-alt bx-spin" : toolNameIcon(first.toolName);
+    const searchProvider = readSearchProvider(first);
+    const icon = anyPending ? "bx bx-loader-alt bx-spin"
+        : searchProvider && toolCalls.every(tc => readSearchProvider(tc)?.type === searchProvider.type)
+            ? <SearchProviderIcon {...searchProvider} />
+            : toolNameIcon(first.toolName);
     const friendlyName = t(`llm.tools.${first.toolName}`, { defaultValue: first.toolName });
     const label = (
         <>

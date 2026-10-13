@@ -1,8 +1,11 @@
 import "./Attachment.css";
 
-import { attachmentIcon, isImageAttachmentRole } from "@triliumnext/commons";
+import {
+    type AttachmentRow, attachmentIcon, CANVAS_ATTACHMENT_MIME, isImageAttachmentRole
+} from "@triliumnext/commons";
 import { t } from "i18next";
 import { Fragment } from "preact";
+import { lazy, Suspense } from "preact/compat";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type NoteContext from "../../components/note_context";
@@ -16,11 +19,13 @@ import {
 } from "../../services/attachment_actions";
 import { partitionAttachmentsByGroup } from "../../services/attachment_groups";
 import { attachmentRoleLabel } from "../../services/attachment_role_names";
-import content_renderer from "../../services/content_renderer";
+import content_renderer, { hasRenderedPreview } from "../../services/content_renderer";
 import froca from "../../services/froca";
 import image from "../../services/image";
+import { getAttachmentImageUrl } from "../../services/image_urls";
 import { type ViewScope } from "../../services/link";
 import options from "../../services/options";
+import protected_session_holder from "../../services/protected_session_holder";
 import utils from "../../services/utils";
 import { showImageCompressionDialog } from "../dialogs/image_compression/image_compression_dialog";
 import ActionButton from "../react/ActionButton";
@@ -40,6 +45,9 @@ import SiblingNavigator from "../react/SiblingNavigator";
 import { TextPreview } from "./File";
 import MediaPreview from "./file/MediaPreview";
 import { TypeWidgetProps } from "./type_widget";
+
+const CanvasDrawingDetail = lazy(() =>
+    import("./canvas/CanvasDrawing").then((module) => module.CanvasDrawingDetail));
 
 /**
  * Displays the full list of attachments of a note and allows the user to interact with them.
@@ -198,6 +206,7 @@ export function AttachmentDetail({ note, viewScope, noteContext }: TypeWidgetPro
 }
 
 function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, viewScope }: { attachment: FAttachment, isFullDetail?: boolean, ownerNote?: FNote, noteContext?: NoteContext, viewScope?: ViewScope }) {
+    const parentComponent = useContext(ParentComponent);
     const contentWrapper = useRef<HTMLDivElement>(null);
     const imageViewerWrapper = useRef<HTMLDivElement>(null);
     const [ title, setTitle ] = useState(attachment.title);
@@ -209,9 +218,12 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
     // Same reason, for the content itself: replacing an attachment changes neither its id nor its title, so
     // without this nothing here re-renders and the viewer/player would keep showing what it first loaded.
     const [ modified, setModified ] = useState(attachment.utcDateModified);
+    // Counts the changes that another component saved, which the drawing editor loads again.
+    const [ externalRevision, setExternalRevision ] = useState(0);
     // "importSource" attachments (e.g. OneNote debug source) behave like ordinary files for
     // preview, OCR and link-copying purposes.
     const isFileLike = isFileLikeAttachment(attachment);
+    const hasTextPreview = isFileLike && !hasRenderedPreview(attachment);
     const isPicture = isImageAttachmentRole(attachment.role);
 
     // Opened in full detail, an image gets the interactive zoom/pan viewer and audio/video the full media
@@ -220,8 +232,12 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
     // in either view, is rendered imperatively via the content renderer.
     const isZoomableImage = !!isFullDetail && isPicture;
     const isPlayableMedia = !!isFullDetail && (attachment.mime.startsWith("audio/") || attachment.mime.startsWith("video/"));
-    const rendersItself = isZoomableImage || isPlayableMedia;
-    const imageSrc = `api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(attachment.title)}?${modified}`;
+    // A canvas drawing gets the Excalidraw editor, which saves with `useAttachmentEditor()`.
+    const isEditableDrawing = !!isFullDetail && !!ownerNote && isFileLike
+        && attachment.mime === CANVAS_ATTACHMENT_MIME
+        && (!attachment.isProtected || protected_session_holder.isProtectedSessionAvailable());
+    const rendersItself = isZoomableImage || isPlayableMedia || isEditableDrawing;
+    const imageSrc = getAttachmentImageUrl(attachment.attachmentId, attachment.title, modified);
 
     /** Unmounts whatever the content renderer previously mounted here (a media player), so that replacing
      *  or discarding the content doesn't leak its Preact root — or leave its audio playing. */
@@ -241,7 +257,7 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
                 });
         }
 
-        if (isFileLike) {
+        if (hasTextPreview) {
             attachment.getBlob().then(blob => setTextContent(blob?.content ?? null));
         }
 
@@ -255,9 +271,13 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
         return disposeContent;
     }, [ attachment, rendersItself ]);
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
-        if (loadResults.getAttachmentRows().find(attachment => attachment.attachmentId)) {
-            refresh();
+        const isThis = (row: AttachmentRow) => row.attachmentId === attachment.attachmentId;
+        if (!loadResults.getAttachmentRows().some(isThis)) return;
+
+        if (loadResults.getAttachmentRows(parentComponent?.componentId).some(isThis)) {
+            setExternalRevision((revision) => revision + 1);
         }
+        refresh();
     });
 
     // Electron right-click menu (copy image / reference) for the interactive image viewer.
@@ -329,6 +349,21 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
                             ownerNote={ownerNote}
                             viewScope={viewScope}
                         />
+                    </div>
+                ) : isEditableDrawing && ownerNote ? (
+                    <div
+                        key="canvas-drawing"
+                        className="attachment-content-wrapper attachment-canvas-drawing"
+                    >
+                        <Suspense fallback={null}>
+                            <CanvasDrawingDetail
+                                key={attachment.attachmentId}
+                                revision={externalRevision}
+                                attachment={attachment}
+                                note={ownerNote}
+                                noteContext={noteContext}
+                            />
+                        </Suspense>
                     </div>
                 ) : (
                     <div key="rendered" ref={contentWrapper} className="attachment-content-wrapper" />

@@ -97,6 +97,11 @@ export interface LlmChatConfig {
     systemPrompt?: string;
     /** Enable web search tool */
     enableWebSearch?: boolean;
+    /**
+     * The config id of the search provider that answers {@link enableWebSearch}, in place of the
+     * model's built-in search. Absent, or naming no configured search provider, means built-in.
+     */
+    webSearchProviderId?: string;
     /** Enable note tools (search and read notes) */
     enableNoteTools?: boolean;
     /** Enable extended thinking for deeper reasoning */
@@ -123,6 +128,17 @@ export interface LlmModelPricing {
     input: number;
     /** Cost per million output tokens in USD */
     output: number;
+}
+
+/**
+ * What a configuration in the `llmProviders` option provides: chat models (`"llm"`) or web
+ * search (`"search"`). A configuration without a `kind` is `"llm"`.
+ */
+export type LlmProviderKind = "llm" | "search";
+
+/** Whether a stored provider configuration is of `kind`, treating a missing `kind` as `"llm"`. */
+export function isProviderOfKind(config: { kind?: LlmProviderKind }, kind: LlmProviderKind): boolean {
+    return (config.kind ?? "llm") === kind;
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { AttachmentRow, AttributeType, CloneResponse, EraseExcessRevisionsOptions, NoteRow, NoteType, RevisionRow, RevisionSource } from "@triliumnext/commons";
-import { dayjs, getNoteIcon } from "@triliumnext/commons";
+import { dayjs, getNoteIcon, isMarkdownMime } from "@triliumnext/commons";
 
 import cloningService from "../../services/cloning.js";
 import dateUtils from "../../services/utils/date.js";
@@ -50,9 +50,11 @@ interface ConvertOpts {
 }
 
 /** A note's title in the two forms scoring needs, cached together since both derive from it. */
-interface SearchableTitle {
+export interface SearchableTitle {
     normalized: string;
     words: string[];
+    /** The title lowercased with its diacritics kept, or `null` when it has none. */
+    accented: string | null;
 }
 
 /**
@@ -297,7 +299,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     /** @returns true if this note is a Markdown code note */
     isMarkdown() {
-        return this.type === "code" && (this.mime === "text/markdown" || this.mime === "text/x-markdown" || this.mime === "text/x-gfm");
+        return this.type === "code" && isMarkdownMime(this.mime);
     }
 
     /** @returns true if this note is an image */
@@ -827,7 +829,12 @@ class BNote extends AbstractBeccaEntity<BNote> {
     getSearchableTitle(): SearchableTitle {
         if (!this.__searchableTitleCache) {
             const normalized = normalizeSearchText(this.title);
-            this.__searchableTitleCache = { normalized, words: tokenizeNormalizedText(normalized) };
+            const lowercased = this.title.toLowerCase();
+            this.__searchableTitleCache = {
+                normalized,
+                words: tokenizeNormalizedText(normalized),
+                accented: lowercased === normalized ? null : lowercased
+            };
         }
 
         return this.__searchableTitleCache;

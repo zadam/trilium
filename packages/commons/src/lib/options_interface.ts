@@ -156,7 +156,6 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoReadonlySizeCode: number;
     maxContentWidth: number;
     centerContent: boolean;
-    minTocHeadings: number;
     eraseUnusedAttachmentsAfterSeconds: number;
     eraseUnusedAttachmentsAfterTimeScale: number;
     logRetentionDays: number;
@@ -291,7 +290,6 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     /** Whether copying note content embeds internal images as data: URIs so they paste into external apps (internal paste stays reference-based). Hidden kill-switch. */
     clipboardImageEmbedEnabled: boolean;
     backgroundEffects: boolean;
-    newLayout: boolean;
 
     // PDF settings
     /**
@@ -321,6 +319,8 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     aiEnabled: boolean;
     /** JSON array of configured LLM providers with their API keys */
     llmProviders: string;
+    /** Config id of the search provider the chat's web search uses; empty for the model's built-in search. */
+    llmWebSearchProvider: string;
     /** The model the text editor's AI assistant runs on, as JSON `{ providerId, provider, model }`; empty to follow the first configured provider's default. */
     aiAssistantModel: string;
     /** Whether the MCP (Model Context Protocol) server endpoint is enabled. */

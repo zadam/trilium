@@ -17,6 +17,7 @@ on:
 
 jobs:
   build-and-deploy:
+    if: ${{ !startsWith(github.event.release.tag_name, 'web-clipper-v') }}
     runs-on: ubuntu-latest
     name: Build & deploy website
 

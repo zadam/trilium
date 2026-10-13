@@ -1,4 +1,5 @@
 import {
+    ButtonView,
     ClassicEditor,
     Command,
     DropdownView,
@@ -11,6 +12,7 @@ import {
     SplitButtonView
 } from "ckeditor5";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
+import bxPen from "boxicons/svg/regular/bx-pen.svg?raw";
 import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -137,5 +139,57 @@ describe("FileUploadUI", () => {
 
         const labels = createDropdown().items.map((item) => item.label);
         expect(labels).toEqual([ "Attach file as a link" ]);
+    });
+
+    describe("drawingCanvas", () => {
+        function createCanvasButton() {
+            const button = editor.ui.componentFactory.create("drawingCanvas");
+            if (!(button instanceof ButtonView)) {
+                throw new Error("Expected a button.");
+            }
+            return button;
+        }
+
+        it("embeds an editable empty drawing, medium, untitled and focused, quietly", async () => {
+            const button = createCanvasButton();
+            const execute = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
+            const focus = vi.spyOn(editor.editing.view, "focus");
+
+            expect([ button.label, button.icon, button.tooltip ])
+                .toEqual([ "Drawing canvas", bxPen, true ]);
+
+            button.fire("execute");
+
+            expect(execute).toHaveBeenCalledExactlyOnceWith("fileUpload", {
+                file: [ expect.any(File) ],
+                asEmbed: true,
+                boxSize: "medium",
+                hideTitle: true,
+                editable: true,
+                quiet: true,
+                focusEmbed: true
+            });
+            const [ file ] = (execute.mock.calls[0][1] as { file: File[] }).file;
+            expect([ file.name, file.type ])
+                .toEqual([ "Canvas.excalidraw", "application/vnd.excalidraw+json" ]);
+            expect(JSON.parse(await file.text())).toEqual({
+                type: "excalidraw", version: 2, elements: [], files: {}, appState: {}
+            });
+            expect(focus).toHaveBeenCalled();
+        });
+
+        it("is enabled only where a file can be attached and an embed can go", async () => {
+            const button = createCanvasButton();
+            expect(button.isEnabled).toBe(true);
+
+            embedCommand.forceDisabled("spec");
+            expect(button.isEnabled).toBe(false);
+            embedCommand.clearForceDisabled("spec");
+            command.forceDisabled("spec");
+            expect(button.isEnabled).toBe(false);
+
+            editor = await createTestEditor([Essentials, Paragraph, FileUploadUI]);
+            expect(createCanvasButton().isEnabled).toBe(false);
+        });
     });
 });

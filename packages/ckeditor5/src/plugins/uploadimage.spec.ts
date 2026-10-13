@@ -167,12 +167,14 @@ describe("UploadimagePlugin", () => {
         installGlobMock({
             getHeaders,
             getActiveContextNote: () => ({ noteId: "noteAbc" }),
-            getComponentByEl: () => ({ getNoteId: () => "editorNote" })
+            getComponentByEl: () => ({ componentId: "editor1", getNoteId: () => "editorNote" })
         });
 
         void createAdapter(new File(["content"], "pic.png", { type: "image/png" })).upload();
 
         expect((await awaitSentXhr()).url).toBe("api/notes/editorNote/attachments/upload");
+        // As a change of the editor, which then does not redraw the embed it completes.
+        expect(getHeaders).toHaveBeenCalledWith({ "trilium-component-id": "editor1" });
     });
 
     it("asks for a link only for a loader marked to upload as one", async () => {

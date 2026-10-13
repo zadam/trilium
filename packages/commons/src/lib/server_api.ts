@@ -382,12 +382,33 @@ export interface SearchResultDetails {
     noteTitle: string;
     notePathTitle: string;
     highlightedNotePathTitle?: string;
+    /** The note's own title as the path shows it, highlighted. */
+    highlightedNoteTitle?: string;
+    /** The path to the note, without its own title, highlighted; empty for a top-level note. */
+    highlightedParentPathTitle?: string;
     contentSnippet?: string;
     highlightedContentSnippet?: string;
     attributeSnippet?: string;
     highlightedAttributeSnippet?: string;
+    /**
+     * The text each query token matched in {@link contentSnippet}, spelled as the note has it
+     * (with its diacritics, or the word a fuzzy match found), for the find bar to look for.
+     */
+    matchedTerms?: string[];
     icon: string;
 }
+
+/**
+ * One row of `GET /api/autocomplete`: a recently visited note when the query is empty, a search
+ * result otherwise. Only search results carry the attribute snippet, and only recent notes the
+ * time of the visit.
+ */
+export type AutocompleteResult = Pick<SearchResultDetails, "notePath" | "noteTitle" | "notePathTitle"
+    | "highlightedNotePathTitle" | "highlightedNoteTitle" | "highlightedParentPathTitle"
+    | "attributeSnippet" | "highlightedAttributeSnippet" | "icon"> & {
+    /** When the note was last visited, as `recent_notes.utcDateCreated` holds it. */
+    utcDateVisited?: string;
+};
 
 /** Response for `GET /api/quick-search/:searchString`. */
 export interface QuickSearchResponse {
@@ -845,6 +866,13 @@ export interface TemplatesResponse {
     newTemplateNoteIds: string[];
 }
 
+/** A media type the notes carry, as the search autocomplete offers it after `note.mime`. */
+export interface NoteMimeCount {
+    mime: string;
+    /** How many notes carry it, system notes left out. */
+    count: number;
+}
+
 export interface CloneResponse {
     success: boolean;
     message?: string;
@@ -1063,6 +1091,8 @@ export type BootstrapDefinition = {
     arch?: string;
     isElectron: boolean;
     isStandalone: boolean;
+    /** Set by a shared page's boot script, which defines a `glob` of its own. */
+    isShare?: boolean;
     /**
      * Absolute URL prefix for the WebSocket (e.g. `ws://127.0.0.1:8080/`),
      * sent by the desktop app because the renderer page lives on the

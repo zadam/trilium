@@ -1,3 +1,7 @@
+// Scripts build their vnodes with core's `h`, so compat's `options.vnode` hook is what gives their
+// components `defaultProps` and their numeric styles a `px` unit.
+import "preact/compat";
+
 import { createContext, Fragment, h, VNode } from "preact";
 import * as hooks from "preact/hooks";
 

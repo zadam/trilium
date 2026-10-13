@@ -1,11 +1,13 @@
 import { dayjs, filterAttributeName, isValidAttributeName } from "@triliumnext/commons";
+import type { ViteHotContext } from "vite/types/hot.js";
 
 import FNote from "../entities/fnote";
+import { getNoteImageUrl } from "./image_urls.js";
 import type { ViewMode, ViewScope } from "./link.js";
 
 const SVG_MIME = "image/svg+xml";
 
-export const isShare = !window.glob;
+export const isShare = !window.glob || !!window.glob.isShare;
 
 /**
  * True when the client is showing a *pre-auth* SPA screen — the login screen (`loggedIn: false`),
@@ -677,7 +679,7 @@ function copyHtmlToClipboard(html: string, plainText: string = html) {
 }
 
 export function createImageSrcUrl(note: FNote) {
-    return `api/images/${note.noteId}/${encodeURIComponent(note.title)}?timestamp=${Date.now()}`;
+    return getNoteImageUrl(note.noteId, note.title, `timestamp=${Date.now()}`);
 }
 
 
@@ -956,6 +958,21 @@ export function* causeChain(e: unknown): Generator<unknown> {
         yield error;
         error = error instanceof Error ? error.cause : undefined;
     }
+}
+
+/**
+ * Returns the instance a previous evaluation of the calling module stored in `hot.data`, or
+ * creates and stores one. Pass `import.meta.hot` from a module that holds an app-wide
+ * singleton: an HMR update can import that module again under a new `?t=` URL, and without
+ * this the re-evaluated copy builds a second, uninitialized instance.
+ */
+export function reuseAcrossHotReloads<T>(hot: ViteHotContext | undefined, create: () => T): T {
+    const data = hot?.data as { instance?: T } | undefined;
+    if (!data) {
+        return create();
+    }
+    data.instance ??= create();
+    return data.instance;
 }
 
 export function replaceHtmlEscapedSlashes(str: string) {

@@ -17,7 +17,7 @@ import { createTestEditor } from "../../../test/editor-kit.js";
 import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ContentEmbed from "../content_embed/content_embed.js";
 import { isUploadAsLink } from "../uploadimage.js";
-import FileUploadCommand from "./fileuploadcommand.js";
+import FileUploadCommand, { isFocusUpload, isQuietUpload } from "./fileuploadcommand.js";
 
 /**
  * Minimal plugin that registers the 'reference' model schema AND the downcast
@@ -146,12 +146,10 @@ describe("FileUploadCommand", () => {
         ));
     });
 
-    it("inserts an embed placeholder per file, in the size the host gives its type", () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                getEmbedBoxSize: (mime: string) => (mime === "image/png" ? "medium" : "tiny")
-            })
-        });
+    it("inserts an embed placeholder per file, in the size the host gives its type and size", () => {
+        const getEmbedBoxSize = vi.fn((mime: string, _size: number) =>
+            (mime === "image/png" ? "medium" : "tiny"));
+        installGlobMock({ getComponentByEl: () => ({ getEmbedBoxSize }) });
         setModelData(editor.model, "<paragraph>foo[]bar</paragraph>");
 
         editor.execute("fileUpload", {
@@ -170,6 +168,7 @@ describe("FileUploadCommand", () => {
             "</contentEmbed>" +
             "<paragraph>\\[\\]bar</paragraph>$"
         ));
+        expect(getEmbedBoxSize.mock.calls).toEqual([ [ "text/plain", 1 ], [ "image/png", 1 ] ]);
     });
 
     it("sizes the embeds medium for a host that names no size", () => {
@@ -182,6 +181,80 @@ describe("FileUploadCommand", () => {
         });
 
         expect(getModelData(editor.model)).toMatch(/^<contentEmbed boxSize="medium" /);
+        expect(getModelData(editor.model)).not.toMatch(/editable|hideTitle/);
+    });
+
+    it("gives the embeds the box size, hidden title and editing the caller asks for", () => {
+        const getEmbedBoxSize = vi.fn(() => "tiny");
+        installGlobMock({ getComponentByEl: () => ({ getEmbedBoxSize }) });
+        setModelData(editor.model, "<paragraph>[]</paragraph>");
+
+        editor.execute("fileUpload", {
+            file: [
+                new File(["{}"], "Canvas.excalidraw", { type: "application/vnd.excalidraw+json" })
+            ],
+            asEmbed: true,
+            boxSize: "medium",
+            hideTitle: true,
+            editable: true
+        });
+
+        expect(getModelData(editor.model)).toMatch(new RegExp(
+            "^<contentEmbed boxSize=\"medium\" editable=\"true\" hideTitle=\"true\" " +
+            "uploadFileName=\"Canvas.excalidraw\""
+        ));
+        expect(getEmbedBoxSize).not.toHaveBeenCalled();
+    });
+
+    it("places an embed that takes the focus as an image, keeping the text and the cursor", () => {
+        installGlobMock({ getComponentByEl: () => ({}) });
+        const insert = (data: string, focusEmbed: boolean) => {
+            setModelData(editor.model, data);
+            editor.execute("fileUpload", {
+                file: [ new File([ "{}" ], "Canvas.excalidraw") ],
+                asEmbed: true,
+                focusEmbed
+            });
+            return getModelData(editor.model).replace(/<contentEmbed[^>]*><\/contentEmbed>/, "<E>");
+        };
+
+        // Beside the block of the selection, which collapses to its start.
+        expect([
+            insert("<paragraph>f[oo] bar</paragraph><paragraph>baz</paragraph>", true),
+            insert("<paragraph>foo [bar</paragraph><paragraph>ba]z</paragraph>", true),
+            insert("<paragraph>foo[] bar</paragraph>", true),
+            insert("<paragraph>[foo bar]</paragraph>", true),
+            insert("<paragraph>foo bar[]</paragraph>", true),
+            insert(
+                "<paragraph>foo</paragraph><paragraph>[]</paragraph><paragraph>bar</paragraph>",
+                true
+            )
+        ]).toEqual([
+            "<E><paragraph>f[]oo bar</paragraph><paragraph>baz</paragraph>",
+            "<E><paragraph>foo []bar</paragraph><paragraph>baz</paragraph>",
+            "<E><paragraph>foo[] bar</paragraph>",
+            "<paragraph>[]foo bar</paragraph><E>",
+            "<paragraph>foo bar[]</paragraph><E>",
+            // An empty line becomes the embed, as it becomes an image.
+            "<paragraph>foo[]</paragraph><E><paragraph>bar</paragraph>"
+        ]);
+        // Other embeds take the place of the selection.
+        expect(insert("<paragraph>f[oo] bar</paragraph>", false))
+            .toBe("<paragraph>f</paragraph><E><paragraph>[] bar</paragraph>");
+    });
+
+    it("marks the loaders of a quiet upload and of a focus upload, and only those", () => {
+        installGlobMock({ getComponentByEl: () => ({}) });
+        setModelData(editor.model, "<paragraph>[]</paragraph>");
+        const createLoaderSpy = vi.spyOn(editor.plugins.get(FileRepository), "createLoader");
+
+        editor.execute("fileUpload", { file: [ new File(["1"], "one.txt") ] });
+        editor.execute("fileUpload", { file: [ new File(["2"], "two.txt") ], quiet: true });
+        editor.execute("fileUpload", { file: [ new File(["3"], "three.txt") ], focusEmbed: true });
+
+        const loaders = createLoaderSpy.mock.results.map(({ value }) => value as FileLoader);
+        expect(loaders.map(isQuietUpload)).toEqual([ false, true, false ]);
+        expect(loaders.map(isFocusUpload)).toEqual([ false, false, true ]);
     });
 
     it("marks the loader of every file to upload as a link, for an embed too", () => {

@@ -10,8 +10,10 @@ vi.mock("../../../services/llm_chat.js", () => ({
 // The chat picker now reads the user's selected models straight from the
 // `llmProviders` option (no server fetch), so stub that service.
 const optionsGetJsonMock = vi.hoisted(() => vi.fn());
+/** The `llmWebSearchProvider` option, unset unless a test picks a search provider. */
+const webSearchProvider = vi.hoisted(() => ({ id: undefined as string | undefined }));
 vi.mock("../../../services/options.js", () => ({
-    default: { getJson: optionsGetJsonMock }
+    default: { getJson: optionsGetJsonMock, get: () => webSearchProvider.id }
 }));
 
 // useTriliumEvent subscribes to the app-wide event bus; stub it so the hook
@@ -86,6 +88,7 @@ describe("useLlmChat", () => {
     });
 
     afterEach(() => {
+        webSearchProvider.id = undefined;
         if (host) {
             render(null, host);
             host.remove();
@@ -160,6 +163,29 @@ describe("useLlmChat", () => {
         expect(options.model).toBe("sonnet");
         expect(options.provider).toBe("claude-agent");
         expect(options.providerId).toBe("ca_1");
+    });
+
+    it("sends the chosen search provider, unless the model runs its own agent loop", async () => {
+        optionsGetJsonMock.mockReturnValue([ ...PROVIDERS, { id: "s1", name: "Tavily", provider: "tavily", kind: "search" } ]);
+        webSearchProvider.id = "s1";
+        await mountChat();
+        const send = async () => {
+            await act(async () => {
+                api().setInput("hello");
+            });
+            await act(async () => {
+                await api().handleSubmit(new Event("submit"));
+            });
+            return streamChatCompletionMock.mock.calls.at(-1)?.[1];
+        };
+
+        // The default model is Claude Code, which searches with its own tools.
+        expect(await send()).toMatchObject({ enableWebSearch: false, webSearchProviderId: undefined });
+
+        await act(async () => {
+            api().setSelectedModel("llama3.2", "ollama", "ol_1");
+        });
+        expect(await send()).toMatchObject({ enableWebSearch: true, webSearchProviderId: "s1" });
     });
 
     it("holds back a message whose attachments the model cannot read, until the model changes", async () => {

@@ -98,9 +98,9 @@ export default function PrintPreviewDialog() {
     const [note, setNote] = useState<FNote>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
-    const bufferRef = useRef<Uint8Array>();
+    const bufferRef = useRef<Uint8Array | undefined>(undefined);
     const notePathRef = useRef("");
-    const pdfUrlRef = useRef<string>();
+    const pdfUrlRef = useRef<string | undefined>(undefined);
     const requestIdRef = useRef(0);
 
 

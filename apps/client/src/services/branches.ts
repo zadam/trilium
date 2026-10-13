@@ -80,21 +80,25 @@ async function moveToParentNote(branchIdsToMove: string[], newParentBranchId: st
         return;
     }
 
-    branchIdsToMove = filterRootNote(branchIdsToMove);
-
-    for (const branchIdToMove of branchIdsToMove) {
+    const movableBranchIds: string[] = [];
+    for (const branchIdToMove of filterRootNote(branchIdsToMove)) {
         const branchToMove = froca.getBranch(branchIdToMove);
 
         if (!branchToMove || branchToMove.noteId === hoistedNoteService.getHoistedNoteId() || (await branchToMove.getParentNote())?.type === "search") {
             continue;
         }
 
-        const resp = await server.put<Response>(`branches/${branchIdToMove}/move-to/${newParentBranchId}`, undefined, componentId);
+        movableBranchIds.push(branchIdToMove);
+    }
 
-        if (!resp.success) {
-            toastService.showError(resp.message);
-            return;
-        }
+    if (movableBranchIds.length === 0) {
+        return;
+    }
+
+    const resp = await server.put<Response>(`branches/move-to/${newParentBranchId}`, { branchIds: movableBranchIds }, componentId);
+
+    if (!resp.success) {
+        toastService.showError(resp.message);
     }
 }
 

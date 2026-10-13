@@ -3,7 +3,8 @@ import { RefObject } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { streamChatCompletion } from "../../../services/llm_chat.js";
-import { type ModelOption, type ModelProviderGroup, readSelectedModels, resolveSelectedModel, unreadableAttachments } from "../../../services/llm_providers.js";
+import { type ModelOption, type ModelProviderGroup, readSearchProviders, readSelectedModels, resolveSelectedModel, resolveWebSearch, unreadableAttachments } from "../../../services/llm_providers.js";
+import optionService from "../../../services/options.js";
 import { randomString } from "../../../services/utils.js";
 import { useTriliumEvent } from "../../react/hooks.js";
 import { estimateTokens, quantizeDraftTokens } from "./chat_context_usage.js";
@@ -122,10 +123,10 @@ export interface UseLlmChatReturn {
     lastCompletionTokens: number;
     /** Coarse estimate of the unsent draft, quantized so typing rarely re-renders. */
     draftTokens: number;
-    messagesEndRef: RefObject<HTMLDivElement>;
-    scrollContainerRef: RefObject<HTMLDivElement>;
+    messagesEndRef: RefObject<HTMLDivElement | null>;
+    scrollContainerRef: RefObject<HTMLDivElement | null>;
     /** Trailing spacer below the last message; sized so the active turn can park near the top. */
-    bottomSpacerRef: RefObject<HTMLDivElement>;
+    bottomSpacerRef: RefObject<HTMLDivElement | null>;
     /** Whether the timeline is scrolled away from the bottom (drives the jump-to-bottom button). */
     showScrollToBottom: boolean;
     /** Jump the timeline to the latest content. */
@@ -274,7 +275,7 @@ export function useLlmChat(
     // The reply-input editor, registered by ChatInputBar once its CKEditor has initialized. Held in a
     // ref so timeline actions (e.g. quoting a selection) can write into it without a render-order
     // dependency.
-    const inputEditorRef = useRef<InputEditorApi | undefined>();
+    const inputEditorRef = useRef<InputEditorApi | undefined>(undefined);
     const isInputFocusPendingRef = useRef(false);
     const registerInputEditor = useCallback((api: InputEditorApi | undefined) => {
         inputEditorRef.current = api;
@@ -603,13 +604,21 @@ export function useLlmChat(
         const matchedModel = availableModels.find(m =>
             m.id === selectedModel && (!selectedProvider || m.provider === selectedProvider));
         const selectedModelProvider = selectedProvider ?? matchedModel?.provider;
+        const webSearch = resolveWebSearch({
+            modelProvider: selectedModelProvider,
+            enableWebSearch,
+            enableNoteTools,
+            searchProviderId: optionService.get("llmWebSearchProvider") ?? "",
+            searchProviders: readSearchProviders()
+        });
         const streamOptions: Parameters<typeof streamChatCompletion>[1] = {
             model: selectedModel || undefined,
             provider: selectedModelProvider,
             // The config id pins the exact provider instance when several of the
             // same type are configured (e.g. OpenAI + self-hosted Ollama).
             providerId: selectedProviderId ?? matchedModel?.providerId,
-            enableWebSearch,
+            enableWebSearch: webSearch.enableWebSearch,
+            webSearchProviderId: webSearch.webSearchProviderId,
             enableNoteTools,
             contextNoteId,
             chatNoteId: chatNoteIdRef.current

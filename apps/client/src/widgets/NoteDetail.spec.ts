@@ -10,7 +10,8 @@ import froca from "../services/froca";
 // global the test env doesn't provide. The pure function under test never touches the tree, so stub it.
 vi.mock("./note_tree", () => ({ default: class {} }));
 
-import { getExtendedWidgetType, isContextInActiveTab, useDeferredDetailFocus } from "./NoteDetail";
+import { getExtendedWidgetType, useDeferredDetailFocus } from "./NoteDetail";
+import { isContextInActiveTab } from "./react/hooks";
 
 const FAKE_NOTE_ID = "blob-stub-note";
 

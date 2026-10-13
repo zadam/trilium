@@ -155,9 +155,6 @@
     "theme_group_light": "Світлі теми",
     "theme_group_dark": "Темні теми"
   },
-  "classic_editor_toolbar": {
-    "title": "Форматування"
-  },
   "editor": {
     "title": "Редактор"
   },
@@ -165,12 +162,10 @@
     "editor_type": {
       "label": "Панель інструментів форматування",
       "floating": {
-        "title": "Плаваюче",
-        "description": "інструменти редагування з’являються поруч із курсором;"
+        "title": "Плаваюче"
       },
       "fixed": {
-        "title": "Фіксоване",
-        "description": "інструменти редагування відображаються на вкладці стрічки Форматування."
+        "title": "Фіксоване"
       },
       "multiline-toolbar": "Відображати панель інструментів на кількох рядках, якщо вона не поміщається."
     }
@@ -325,8 +320,7 @@
     "copy_to_clipboard": "Копіювати в буфер обміну"
   },
   "jump_to_note": {
-    "search_placeholder": "Пошук нотатки за її назвою або типом > для команд...",
-    "search_button": "Повнотекстовий Пошук"
+    "search_placeholder": "Пошук нотатки за її назвою або типом > для команд..."
   },
   "markdown_import": {
     "dialog_title": "Імпорт з Markdown",
@@ -348,8 +342,7 @@
     "search_placeholder": "пошук шляху за назвою (за замовчуванням, якщо порожня)",
     "modal_title": "Вибрати тип нотатки",
     "modal_body": "Вибрати тип/шаблон нової нотатки:",
-    "templates": "Шаблони",
-    "builtin_templates": "Вбудовані Шаблони"
+    "templates": "Шаблони"
   },
   "password_not_set": {
     "title": "Пароль не встановлено",
@@ -462,7 +455,6 @@
     "hide_relations": "назви зв'язків, розділені комами, які слід приховати. Усі інші будуть відображені.",
     "title_template": "заголовок нотаток за замовчуванням, створених як дочірні елементи цієї нотатки. Значення оцінюється як рядок JavaScript\nі таким чином може бути збагачене динамічним контентом за допомогою вставлених змінних <code>now</code> та <code>parentNote</code>. Приклади:\n\n<ul>\nЛітературні твори <li><code>${parentNote.getLabelValue('authorName')}</code></li>\n<li><code>Журнал для ${now.format('РРРР-ММ-ДД ГГ:мм:сс')</code></li>\n</ul>\n\nДив. <a href=\"https://triliumnext.github.io/Docs/Wiki/default-note-title.html\">вікі з деталями</a>, документацію API для <a href=\"https://zadam.github.io/trilium/backend_api/Note.html\">parentNote</a> та <a href=\"https://day.js.org/docs/en/display/format\">now</a> для отримання детальної інформації.",
     "template": "Ця нотатка з'явиться у списку доступних шаблонів під час створення нової нотатки",
-    "toc": "<code>#toc</code> або <code>#toc=show</code> примусово покаже Зміст, <code>#toc=hide</code> примусово приховає його. Якщо мітка не існує, дотримується глобального налаштування",
     "color": "визначає колір нотатки в дереві нотаток, посиланнях тощо. Використовуйте будь-яке дійсне значення кольору CSS, наприклад, 'red' або #a13d5f",
     "keyboard_shortcut": "Визначає комбінацію клавіш, щоб негайно перейти до цієї нотатки. Приклад: «ctrl+alt+e». Щоб зміни набули чинності, потрібне перезавантаження інтерфейсу.",
     "keep_current_hoisting": "Відкриття цього посилання не змінить хостинг, навіть якщо нотатка не відображається в поточному піддереві хостінгу.",
@@ -470,7 +462,6 @@
     "execute_description": "Більш детальний опис поточного коду, що відображається разом із кнопкою виконання",
     "exclude_from_note_map": "Нотатки з цією міткою будуть приховані на Карті Нотатки",
     "new_notes_on_top": "Нові нотатки будуть створені зверху батьківської нотатки, а не знизу.",
-    "hide_highlight_widget": "Приховати віджет Основні моменти",
     "run_on_note_creation": "виконується, коли нотатка створюється на серверній частині. Використовуйте цей зв'язок, якщо потрібно запустити скрипт для всіх нотаток, створених у певному піддереві. У такому випадку створіть його на батьківській нотатці піддерева та зробіть його успадковуваним. Нова нотатка, створена в піддереві (будь-якої глибини), запустить скрипт.",
     "run_on_child_note_creation": "виконується, коли створюється нова нотатка під нотаткою, де визначено цей зв'язок",
     "run_on_note_title_change": "виконується, коли змінюється заголовок нотатки (включає також створення нотатки)",
@@ -695,15 +686,6 @@
   "create_pane_button": {
     "create_new_split": "Створити новий розділ"
   },
-  "edit_button": {
-    "edit_this_note": "Редагувати цю нотатку"
-  },
-  "show_toc_widget_button": {
-    "show_toc": "Показати Зміст"
-  },
-  "show_highlights_list_widget_button": {
-    "show_highlights_list": "Показати Список Основних моментів"
-  },
   "zen_mode": {
     "button_exit": "Вихід з Дзен-режиму"
   },
@@ -756,9 +738,6 @@
     "active": "Захищений сеанс активний. Натисніть, щоб вийти з захищеного сеансу.",
     "inactive": "Натисніть, щоб увійти до захищеного сеансу"
   },
-  "revisions_button": {
-    "note_revisions": "Версії Нотатки"
-  },
   "update_available": {
     "update_available": "Доступне оновлення"
   },
@@ -772,26 +751,8 @@
     "opening_api_docs_message": "Відкриття документації API...",
     "sql_console_saved_message": "Нотатку консолі SQL збережено в {{note_path}}"
   },
-  "copy_image_reference_button": {
-    "button_title": "Копіювати посилання на зображення в буфер обміну, можна вставити в текстову нотатку."
-  },
-  "hide_floating_buttons_button": {
-    "button_title": "Приховати кнопки"
-  },
-  "show_floating_buttons_button": {
-    "button_title": "Показати кнопки"
-  },
-  "svg_export_button": {
-    "button_title": "Експорт діаграми у форматі SVG"
-  },
   "relation_map_buttons": {
     "create_child_note_title": "Створити нову дочірню нотатку та додати її до цієї Карти зв'язків"
-  },
-  "zpetne_odkazy": {
-    "relation": "зв'язок",
-    "backlink_one": "{{count}} Зворотне посилання",
-    "backlink_few": "{{count}} Зворотні посилання",
-    "backlink_many": "{{count}} Зворотні посилання"
   },
   "mobile_detail_menu": {
     "insert_child_note": "Вставити дочірню нотатку",
@@ -819,8 +780,6 @@
   "basic_properties": {
     "note_type": "Тип нотатки",
     "editable": "Редагув.",
-    "basic_properties": "Основні Властивості",
-    "language": "Мова",
     "configure_code_notes": "Конфігурація нотатки з кодом..."
   },
   "book_properties": {
@@ -845,37 +804,23 @@
     "hide_child_notes": "Приховати дочірні нотатки в дереві"
   },
   "edited_notes": {
-    "no_edited_notes_found": "Цього дня ще немає редагованих нотаток...",
-    "title": "Редаговані нотатки",
-    "deleted": "(видалено)"
+    "no_edited_notes_found": "Цього дня ще немає редагованих нотаток..."
   },
   "file_properties": {
-    "note_id": "ID Нотатки",
     "original_file_name": "Оригінальне ім'я файлу",
-    "file_type": "Тип файлу",
-    "file_size": "Розмір файлу",
     "download": "Завантажити",
     "open": "Відкрити зовні",
-    "upload_new_revision": "Завантажити нову версію",
     "upload_success": "Завантажено нову версію файлу.",
-    "upload_failed": "Не вдалося завантажити нову версію файлу.",
-    "title": "Файл"
+    "upload_failed": "Не вдалося завантажити нову версію файлу."
   },
   "image_properties": {
-    "original_file_name": "Оригінальне ім'я файлу",
-    "file_type": "Тип файлу",
-    "file_size": "Розмір файлу",
-    "download": "Завантажити",
-    "open": "Відкрити",
     "copy_reference_to_clipboard": "Копіювати посилання в буфер обміну",
     "upload_new_revision": "Завантажити нову версію",
     "upload_success": "Нову версію зображення завантажено.",
-    "upload_failed": "Не вдалося завантажити нову версію зображення: {{message}}",
-    "title": "Зображення"
+    "upload_failed": "Не вдалося завантажити нову версію зображення: {{message}}"
   },
   "inherited_attribute_list": {
     "title": "Успадковані Атрибути",
-    "no_inherited_attributes": "Немає успадкованих атрибутів.",
     "none": "пусто"
   },
   "note_info_widget": {
@@ -894,8 +839,6 @@
     "show_similar_notes": "Показати схожі нотатки"
   },
   "note_map": {
-    "open_full": "Розгорнути на повний розмір",
-    "collapse": "Згорнути до звичайного розміру",
     "title": "Карта Нотатки",
     "fix-nodes": "Виправити вузли",
     "link-distance": "Відстань зв'язку"
@@ -903,18 +846,10 @@
   "note_paths": {
     "title": "Шляхи Нотатки",
     "clone_button": "Клонувати нотатку в нове місце...",
-    "intro_placed": "Цю нотатку розміщено за такими шляхами:",
     "intro_not_placed": "Цю нотатку ще не розміщено в дереві нотаток.",
     "archived": "Архівовано",
     "search": "Пошук",
     "outside_hoisted": "Цей шлях знаходиться поза межами закріпленої нотатки і вам доведеться відкріпити."
-  },
-  "note_properties": {
-    "this_note_was_originally_taken_from": "Цю нотатку було спочатку взято з:",
-    "info": "Інформація"
-  },
-  "owned_attribute_list": {
-    "owned_attributes": "Власні Атрибути"
   },
   "promoted_attributes": {
     "promoted_attributes": "Просунуті Атрибути",
@@ -926,12 +861,6 @@
     "add_new_attribute": "Додати новий атрибут",
     "remove_this_attribute": "Видалити цей атрибут",
     "remove_color": "Видалити кольорову мітку"
-  },
-  "script_executor": {
-    "query": "Запит",
-    "script": "Скрипт",
-    "execute_query": "Виконати запит",
-    "execute_script": "Виконати скрипт"
   },
   "search_definition": {
     "add_search_option": "Додати опцію пошуку:",
@@ -1050,12 +979,9 @@
   "editable_text": {
     "placeholder": "Введіть тут вміст вашої нотатки...",
     "auto-detect-language": "Автовизначено",
-    "editor_crashed_title": "Збій текстового редактора",
-    "editor_crashed_content": "Ваш контент успішно відновлено, але деякі з ваших останніх змін могли бути не збережені.",
     "editor_crashed_details_button": "Переглянути більше деталей...",
     "editor_crashed_details_intro": "Якщо ви стикаєтеся з цією помилкою кілька разів, подумайте про те, щоб повідомити про неї на GitHub, вставивши наведену нижче інформацію.",
-    "editor_crashed_details_title": "Технічна інформація",
-    "keeps-crashing": "Компонент редагування постійно аварійно завершує роботу. Спробуйте перезапустити Trilium. Якщо проблема не зникає, спробуйте створити звіт про помилку."
+    "editor_crashed_details_title": "Технічна інформація"
   },
   "empty": {
     "open_note_instruction": "Відкрийте нотатку, ввівши її заголовок в поле нижче, або виберіть нотатку в дереві.",
@@ -1087,11 +1013,8 @@
     "connection_exists": "Зв'язок '{{name}}' між цими нотатками вже існує.",
     "start_dragging_relations": "Почніть перетягувати зв'язки звідси та перемістіть їх на іншу нотатку.",
     "note_not_found": "Нотатка {{noteId}} не знайдена!",
-    "cannot_match_transform": "Неможливо порівняти перетворення: {{transform}}",
     "note_already_in_diagram": "Нотатка\"{{title}}\" вже є на діаграмі.",
-    "enter_title_of_new_note": "Введіть заголовок нової нотатки",
-    "default_new_note_title": "нова нотатка",
-    "click_on_canvas_to_place_new_note": "Натисніть на полотно, щоб розмістити нову нотатку"
+    "default_new_note_title": "нова нотатка"
   },
   "backend_log": {
     "refresh": "Оновити"
@@ -1172,9 +1095,6 @@
     "title": "Нативний рядок заголовка (потрібен перезапуск)",
     "enabled": "увімкнено",
     "disabled": "вимкнено"
-  },
-  "ribbon": {
-    "edited_notes_message": "Вкладка стрічки Редаговані нотатки автоматично відкриватиметься для денних нотаток"
   },
   "theme": {
     "title": "Тема програми",
@@ -1352,17 +1272,7 @@
     "italic": "Курсив",
     "underline": "Підкреслений текст",
     "color": "Кольоровий текст",
-    "bg_color": "Текст із кольором фону",
-    "visibility_title": "Видимість Списку основних моментів",
-    "visibility_description": "Ви можете приховати віджет основних моментів для кожної нотатки окремо, додавши мітку #hideHighlightWidget.",
-    "shortcut_info": "Ви можете налаштувати комбінацію клавіш для швидкого перемикання правої панелі (включно з основними моментами) у меню Параметри -> Комбінації клавіш (назва «toggleRightPane»)."
-  },
-  "table_of_contents": {
-    "title": "Зміст",
-    "description": "Зміст відображатиметься в текстових нотатках, якщо нотатка містить більше заголовків, ніж визначено. Ви можете налаштувати цю кількість:",
-    "unit": "заголовки",
-    "disable_info": "Ви також можете скористатися цим параметром, щоб ефективно вимкнути зміст, встановивши дуже велике число.",
-    "shortcut_info": "Ви можете налаштувати комбінацію клавіш для швидкого перемикання правої панелі (включно зі змістом) у меню Параметри -> Комбінації клавіш (назва «toggleRightPane»)."
+    "bg_color": "Текст із кольором фону"
   },
   "text_auto_read_only_size": {
     "title": "Автоматичний розмір лише для читання",
@@ -1435,7 +1345,6 @@
     "placeholder": "введіть тут заголовок нотатки...",
     "note_type_switcher_label": "Змінити з {{type}} на:",
     "note_type_switcher_collection": "Колекція",
-    "note_type_switcher_others": "Інший тип нотатки",
     "created_on": "Створено <Value />",
     "last_modified": "Змінено <Value />"
   },
@@ -1462,8 +1371,7 @@
     "new_tab": "Нова вкладка"
   },
   "toc": {
-    "table_of_contents": "Зміст",
-    "options": "Параметри"
+    "table_of_contents": "Зміст"
   },
   "watched_file_update_status": {
     "file_last_modified": "Файл <code class=\"file-path\"></code> востаннє змінювався <span class=\"file-last-modified\"></span>.",
@@ -1523,12 +1431,9 @@
     "zoom-factor": "Коефіцієнт масштабування"
   },
   "note_autocomplete": {
-    "search-for": "Пошук для \"{{term}}\"",
     "create-note": "Створити та зв'язати дочірню нотатку \"{{term}}\"",
     "insert-external-link": "Вставити зовнішнє посилання у \"{{term}}\"",
-    "clear-text-field": "Очистити текстове поле",
-    "show-recent-notes": "Показати останні нотатки",
-    "full-text-search": "Повнотекстовий пошук"
+    "clear-text-field": "Очистити текстове поле"
   },
   "note_tooltip": {
     "note-has-been-deleted": "Нотатку видалено.",
@@ -1590,13 +1495,6 @@
   "switch_layout_button": {
     "title_vertical": "Перемістити панель редагування вниз",
     "title_horizontal": "Перемістити панель редагування ліворуч"
-  },
-  "toggle_read_only_button": {
-    "unlock-editing": "Розблокувати редагування",
-    "lock-editing": "Заблокувати редагування"
-  },
-  "png_export_button": {
-    "button_title": "Експорт діаграми у форматі PNG"
   },
   "svg": {
     "export_to_png": "Не вдалося експортувати діаграму у формат PNG."
@@ -1687,9 +1585,7 @@
     "unrecognized_role": "Нерозпізнана роль вкладення '{{role}}'."
   },
   "bookmark_switch": {
-    "bookmark": "Закладка",
-    "bookmark_this_note": "Додати цю нотатку до закладок на лівій бічній панелі",
-    "remove_bookmark": "Видалити закладку"
+    "bookmark": "Закладка"
   },
   "editability_select": {
     "auto": "Авто",
@@ -1722,7 +1618,6 @@
     "copy-note-path-to-clipboard": "Копіювати шлях до нотатки в буфер обміну",
     "protect-subtree": "Захистити піддерево",
     "unprotect-subtree": "Зняти захист піддерева",
-    "copy-clone": "Копіювати / клонувати",
     "clone-to": "Клонувати до...",
     "cut": "Вирізати",
     "move-to": "Перемістити до...",
@@ -1742,11 +1637,6 @@
     "hide-subtree": "Сховати піддерево",
     "open-in-a-new-window": "Відкрити у новому вікні",
     "show-subtree": "Показати піддерево"
-  },
-  "shared_info": {
-    "shared_publicly": "Ця нотатка опублікована на {{- link}}.",
-    "shared_locally": "Цю нотатку опубліковано локально на {{- link}}.",
-    "help_link": "Щоб отримати допомогу, відвідайте <a href=\"https://triliumnext.github.io/Docs/Wiki/sharing.html\">вікі</a>."
   },
   "note_types": {
     "text": "Текст",
@@ -1769,26 +1659,18 @@
     "beta-feature": "Бета",
     "task-list": "Список завдань",
     "new-feature": "Нова",
-    "collections": "Колекції",
     "render-note": "Рендерінг Нотатки"
   },
   "protect_note": {
-    "toggle-on": "Захист нотатки",
-    "toggle-off": "Зняти захист нотатки",
-    "toggle-on-hint": "Нотатку не захищено, натисніть, щоб захистити її",
-    "toggle-off-hint": "Нотатку захищено, натисніть, щоб зняти захист"
+    "toggle-on": "Захист нотатки"
   },
   "shared_switch": {
     "shared": "Спільне",
-    "toggle-on-title": "Поділитися нотаткою",
-    "toggle-off-title": "Скасувати спільний доступ до нотатки",
     "shared-branch": "Ця нотатка існує лише як спільна нотатка, скасування спільного доступу призведе до її видалення. Ви хочете продовжити та таким чином видалити цю нотатку?",
     "inherited": "Спільний доступ до нотатки тут не можна скасувати, оскільки вона успадкована від предка."
   },
   "template_switch": {
-    "template": "Шаблон",
-    "toggle-on-hint": "Зробити нотатку шаблоном",
-    "toggle-off-hint": "Видалити нотатку як шаблон"
+    "template": "Шаблон"
   },
   "open-help-page": "Відкрити сторінку довідки",
   "find": {
@@ -1800,8 +1682,6 @@
     "replace_all": "Замінити все"
   },
   "highlights_list_2": {
-    "title": "Список основних моментів",
-    "options": "Параметри",
     "title_with_count_one": "{{count}} виділення",
     "title_with_count_few": "{{count}} виділення",
     "title_with_count_many": "{{count}} виділень"
@@ -1951,7 +1831,6 @@
     }
   },
   "read-only-info": {
-    "auto-read-only-note": "Для швидшого завантаження ця нотатка відображається в режимі \"лише для читання\".",
     "edit-note": "Редагувати нотатку"
   },
   "note-color": {

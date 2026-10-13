@@ -1,4 +1,3 @@
-import { type CompletionContext, completionStatus, startCompletion } from "@codemirror/autocomplete";
 import type { EditorView } from "@codemirror/view";
 import type { QuickSearchResponse } from "@triliumnext/commons";
 import { options, type VNode } from "preact";
@@ -12,11 +11,12 @@ import server from "../services/server";
 import { renderInto } from "../test/render";
 import QuickSearch from "./quick_search";
 import { ParentComponent } from "./react/react_utils";
+import type { SearchCompletion } from "./search/search_completions";
 
 // The completions fetch attribute names and values through the server, so a spec that opens them
-// supplies its own source.
+// supplies its own.
 const completions = vi.hoisted(() => ({
-    source: null as ((context: CompletionContext) => unknown) | null
+    at: null as ((before: string, explicit: boolean) => SearchCompletion | null) | null
 }));
 // Echoes the key and its interpolation, so a spec can tell which message a row shows.
 vi.mock("../services/i18n", async (importOriginal) => ({
@@ -24,16 +24,14 @@ vi.mock("../services/i18n", async (importOriginal) => ({
     t: (key: string, options?: object) => (options ? `${key} ${JSON.stringify(options)}` : key)
 }));
 
-vi.mock("./ribbon/search_completions", () => ({
-    searchCompletionSource: (context: CompletionContext) => completions.source?.(context) ?? null,
-    searchCompletionIcon: () => undefined,
-    searchCompletionReactivates: () => false
+vi.mock("./search/search_completions", () => ({
+    searchCompletionAt: (before: string, explicit: boolean) => completions.at?.(before, explicit) ?? null
 }));
 
 describe("QuickSearch", () => {
     afterEach(() => {
         vi.restoreAllMocks();
-        completions.source = null;
+        completions.at = null;
     });
 
     it("renders the search field, focuses it on the quickSearch shortcut and marks a typed query", async () => {
@@ -63,7 +61,7 @@ describe("QuickSearch", () => {
         typeQuery(editor, "  hello ");
         pressEnter(editor);
 
-        expect(get).toHaveBeenCalledWith("quick-search/hello");
+        expect(get).toHaveBeenCalledWith("quick-search?searchString=hello");
         const [ first ] = await waitForResults(30);
 
         expect(first.getAttribute("href")).toBe(calculateHash({
@@ -74,8 +72,20 @@ describe("QuickSearch", () => {
         expect(first.classList.contains("no-tooltip-preview")).toBe(true);
         expect(first.querySelector(".quick-search-item-icon")?.classList.contains("bx-note")).toBe(true);
         expect(first.querySelector(".search-result-title")?.innerHTML).toBe("<b>Note</b> 0");
-        expect(first.querySelector(".search-result-attributes")?.innerHTML).toBe("#year=1954 #author=tolkien");
+        const badges = first.querySelectorAll(".search-result-attributes > .ext-badge.outline");
+        const values = [ ...badges ].map((badge) => badge.querySelector(".attribute-badge-value")?.textContent);
+        expect(values).toEqual([ "1954", "tolkien" ]);
         expect(first.querySelector(".search-result-content")?.innerHTML).toBe("about <b>hello</b>");
+    });
+
+    it("sends a query with a slash as a query parameter", async () => {
+        const get = vi.spyOn(server, "get").mockResolvedValue(response(0, []));
+        const { editor } = await mount();
+
+        typeQuery(editor, "中/英");
+        pressEnter(editor);
+
+        expect(get).toHaveBeenCalledWith(`quick-search?searchString=${encodeURIComponent("中/英")}`);
     });
 
     it("links to the plain note path when the search highlighted nothing", async () => {
@@ -186,7 +196,7 @@ describe("QuickSearch", () => {
         typeQuery(editor, "hello");
         await act(async () => button.click());
         await waitForResults(3);
-        expect(get).toHaveBeenCalledWith("quick-search/hello");
+        expect(get).toHaveBeenCalledWith("quick-search?searchString=hello");
         expect(button.classList.contains("active")).toBe(true);
 
         await act(async () => button.click());
@@ -311,7 +321,10 @@ describe("QuickSearch", () => {
 
     it("drops an open completion list on Escape before the results", async () => {
         vi.spyOn(server, "get").mockResolvedValue(response(3, []));
-        completions.source = () => ({ from: 0, options: [ { label: "and" }, { label: "asc" } ] });
+        completions.at = (before, explicit) => (explicit ? {
+            kind: "entries", key: "keywords", from: before.length, query: "", preselect: true,
+            entries: () => [ { id: "and", title: "and", insert: "and" }, { id: "asc", title: "asc", insert: "asc" } ]
+        } : null);
         const { editor } = await mount();
 
         typeQuery(editor, "a");
@@ -319,13 +332,14 @@ describe("QuickSearch", () => {
         await waitForResults(3);
         editor.focus();
 
-        startCompletion(editor);
-        await vi.waitFor(() => expect(completionStatus(editor.state)).toBe("active"));
-        // The list drops the keys pressed within its `interactionDelay` of opening.
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        act(() => {
+            editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", { key: " ", ctrlKey: true, bubbles: true, cancelable: true }));
+        });
+        const completionList = () => document.querySelector(".note-autocomplete-menu:not(.quick-search-menu)");
+        await vi.waitFor(() => expect(completionList()).not.toBeNull());
 
         pressKey(editor.contentDOM, "Escape");
-        expect(completionStatus(editor.state)).toBe(null);
+        await vi.waitFor(() => expect(completionList()).toBeNull());
         expect(menu()).not.toBeNull();
 
         pressKey(editor.contentDOM, "Escape");
@@ -369,6 +383,8 @@ describe("QuickSearch", () => {
         expect(footer?.classList.contains("quick-search-footer")).toBe(true);
         const button = footer?.querySelector<HTMLButtonElement>(".show-in-full-search");
         if (!button) throw new Error("The footer has no full search button.");
+        // Its key is in the shortcut hints, not on the button.
+        expect(button.querySelector("kbd")).toBeNull();
 
         await act(async () => button.click());
         expect(triggerCommand).toHaveBeenCalledWith("searchNotes", { searchString: "#book AND tolkien" });
@@ -551,7 +567,7 @@ function response(count: number, highlightedTokens: string[]): QuickSearchRespon
         noteTitle: `Note ${index}`,
         notePathTitle: `Note ${index}`,
         highlightedNotePathTitle: `<b>Note</b> ${index}`,
-        highlightedAttributeSnippet: "#year=1954<br>#author=tolkien",
+        highlightedAttributeSnippet: "#year=&quot;1954&quot;<br>#author=&quot;tolkien&quot;",
         highlightedContentSnippet: "about <b>hello</b>",
         icon: "bx bx-note"
     }));

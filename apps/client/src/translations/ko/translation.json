@@ -65,7 +65,9 @@
     "anchor": "앵커(선택)",
     "anchor_none": "없음(노트 전체 링크)",
     "edit_link": "링크 편집",
-    "button_edit_link": "링크 저장"
+    "button_edit_link": "링크 저장",
+    "fix_link": "링크 수정",
+    "button_fix_link": "링크 수정"
   },
   "branch_prefix": {
     "save": "저장",
@@ -361,7 +363,8 @@
     "box_size_medium": "중형(~30줄)",
     "box_size_full": "전체(상자에 전체 텍스트가 표시됨)",
     "box_size_expandable": "확장 가능(기본적으로 축소됨)",
-    "button_include": "노트 포함"
+    "button_include": "노트 포함",
+    "box_size_tiny": "작게 (제목과 작업만 한 줄로 표시)"
   },
   "info": {
     "modalTitle": "정보 메시지",
@@ -370,8 +373,7 @@
     "copy_to_clipboard": "클립보드에 복사"
   },
   "jump_to_note": {
-    "search_placeholder": "노트 이름으로 검색하거나 >를 입력하여 명령 사용...",
-    "search_button": "전체 텍스트 검색"
+    "search_placeholder": "노트 이름으로 검색하거나 >를 입력하여 명령 사용..."
   },
   "markdown_editor": {
     "image_upload_failed": "\"{{name}}\" 이미지를 업로드할 수 없습니다."
@@ -401,8 +403,31 @@
       "math": "수식",
       "collapsible_summary": "요약",
       "collapsible_details": "세부정보",
-      "table_column": "열 {{number}}"
-    }
+      "table_column": "열 {{number}}",
+      "tab_title": "탭 {{number}}",
+      "tab_content": "내용"
+    },
+    "titles": {
+      "date": "날짜/시간 삽입",
+      "include": "노트 포함",
+      "image": "이미지 업로드",
+      "link": "내부 링크",
+      "math": "수식",
+      "footnote": "각주",
+      "mermaid": "Mermaid 다이어그램",
+      "mermaid_template": "Mermaid 다이어그램: {{name}}",
+      "collapsible": "접을 수 있는 블록",
+      "page_break": "페이지 나누기",
+      "table": "표",
+      "note": "노트",
+      "tip": "팁",
+      "important": "중요",
+      "caution": "주의",
+      "warning": "경고",
+      "todo": "작업: {{title}}",
+      "tabs": "탭"
+    },
+    "tabs": "한 번에 하나의 패널을 표시하는 제목 있는 탭 삽입"
   },
   "move_to": {
     "dialog_title": "노트를 이동할 위치...",
@@ -418,8 +443,7 @@
     "search_placeholder": "이름으로 경로 검색(비워 두면 기본 경로)",
     "modal_title": "노트 유형 선택",
     "modal_body": "새 노트의 노트 유형/템플릿 선택:",
-    "templates": "템플릿",
-    "builtin_templates": "내장 템플릿"
+    "templates": "템플릿"
   },
   "password_not_set": {
     "title": "비밀번호가 설정되지 않았습니다",
@@ -639,7 +663,6 @@
     "hide_relations": "숨길 관계 이름을 쉼표로 구분하여 입력합니다. 그 밖의 관계는 모두 표시됩니다.",
     "title_template": "이 노트의 하위 노트로 생성될 때 기본으로 사용되는 제목입니다. 이 값은 JavaScript 문자열로 평가되므로 \n동적인 내용을 넣을 수 있습니다. 주입된 <code>now</code> 및 <code>parentNote</code> 변수를 통해 가능합니다. 예시:\n\n<ul>\n    <li><code>${parentNote.getLabelValue('authorName')}'s literary works</code></li>\n    <li><code>Log for ${now.format('YYYY-MM-DD HH:mm:ss')}</code></li>\n</ul>\n\n자세한 내용은 <a href=\"https://triliumnext.github.io/Docs/Wiki/default-note-title.html\">wiki with details</a>, API 문서는 <a href=\"https://zadam.github.io/trilium/backend_api/Note.html\">parentNote</a> 및 <a href=\"https://day.js.org/docs/en/display/format\">now</a> 를 참고해 주세요.",
     "template": "이 노트는 새 노트를 생성할 때 사용 가능한 템플릿 선택에 나타납니다.",
-    "toc": "<code>#toc</code> 또는 <code>#toc=show</code> 값을 사용하면 목차가 강제로 표시되고, <code>#toc=hide</code> 값을 사용하면 목차가 강제로 숨겨집니다. 해당 레이블이 없으면 전역 설정을 따릅니다.",
     "color": "노트 트리와 링크 등에서 노트의 색상을 정의합니다. 'red' 또는 '#a13d5f'처럼 유효한 CSS 색상 값을 사용합니다.",
     "keyboard_shortcut": "이 노트로 바로 전환되는 키보드 단축키를 정의합니다. 예시: 'ctrl+alt+e'. 변경 사항이 적용되려면 프론트엔드 재로드가 필요합니다.",
     "keep_current_hoisting": "현재 루트로 보는 하위 트리에 노트를 표시할 수 없어도 이 링크를 열 때 루트 보기 상태를 변경하지 않습니다.",
@@ -647,7 +670,6 @@
     "execute_description": "실행 버튼과 함께 현재 코드 노트에 대한 더 긴 설명이 표시됩니다.",
     "exclude_from_note_map": "이 라벨이 붙은 노트는 노트 맵에서 숨겨집니다.",
     "new_notes_on_top": "새로운 노트는 상위 노트의 상단에 생성되며, 하단에 생성되지 않습니다.",
-    "hide_highlight_widget": "이 노트에서만 하이라이트 목록을 숨기고 다른 노트에는 계속 표시합니다.",
     "run_on_note_creation": "백엔드에서 노트가 생성될 때 실행됩니다. 특정 하위 트리에서 생성되는 모든 노트에 스크립트를 실행하려면 이 관계를 하위 트리의 루트 노트에 만들고 상속 가능하게 설정합니다. 그러면 하위 트리 안의 어느 깊이에서 새 노트가 생성되어도 스크립트가 실행됩니다.",
     "run_on_child_note_creation": "이 관계가 정의된 노트 아래에서 새 노트가 생성될 때 실행됩니다.",
     "run_on_note_title_change": "노트 제목이 변경되면 실행됩니다(노트 생성도 포함).",
@@ -680,7 +702,6 @@
     "color_type": "색상",
     "relation_type": "관계",
     "versioning_limit": "이 노트가 유지할 수 있는 수정본 횟수를 제한하여 전역 설정을 덮어줍니다.",
-    "similar_notes_widget_disabled": "이 노트의 유사 노트 리본 탭을 비활성화합니다. 이전 레이아웃에서만 적용됩니다.",
     "llm_chat_home": "새 AI 채팅을 이 노트의 하위 노트로 만듭니다.",
     "workspace_llm_chat_home": "이 작업 공간의 상위 노트를 루트로 볼 때 새 AI 채팅을 이 노트의 하위 노트로 만듭니다.",
     "date_pattern": "이 달력 루트 아래에서 생성되는 일별 노트의 제목 패턴입니다. 예: <code>{dateNumberPadded} - {weekDay}</code>.",
@@ -783,7 +804,7 @@
     "geolocation": "지리 맵에서 노트를 배치할 위도와 경도입니다.",
     "map_type": "그릴 노트 맵의 종류를 지정합니다. 노트 간 관계를 표시하려면 <code>link</code> 값을, 계층 구조를 표시하려면 <code>tree</code> 값을 사용합니다.",
     "map_style": "컬렉션 속성에서 제공하는 래스터 또는 벡터 스타일 중 지리 맵에 사용할 스타일을 지정합니다.",
-    "map_scale": "지리 맵에 축척 막대를 표시합니다.",
+    "map_scale": "지리 맵에는 축척 막대를 표시하고, 이미지 맵에는 가장자리를 따라 좌표 눈금자를 표시합니다.",
     "map_hide_labels": "지리 맵의 마커 옆에 표시되는 노트 제목을 숨깁니다.",
     "presentation_theme": "프레젠테이션에 사용할 테마입니다.",
     "slide_background": "슬라이드의 배경을 색상 또는 CSS 그라데이션으로 지정합니다.",
@@ -818,7 +839,11 @@
     "board_show_inbox": "보드 컬렉션에서 받은 편지함 열을 표시합니다. 이 열에는 보드의 어떤 열에도 할당되지 않은 모든 하위 노트가 나열됩니다.",
     "board_column_width": "보드 컬렉션에서 열이 표시되는 너비를 지정합니다: <code>narrow</code>, <code>medium</code> 또는 <code>wide</code>. 모바일에서는 무시되며, 모바일 화면에 맞는 너비로 표시됩니다.",
     "board_sort_columns": "보드 컬렉션에서 열이 카드를 정렬하는 순서를 지정합니다. 열에 별도의 정렬 순서가 지정되지 않은 경우 이 설정을 따릅니다. <code>title</code>, <code>creationDate</code> 또는 <code>attr:</code> 뒤에 승격된 속성의 이름을 지정할 수 있습니다.",
-    "board_sort_columns_descending": "보드 컬렉션에서 <code>#board:sortColumns</code> 설정의 정렬 순서를 반대로 적용합니다."
+    "board_sort_columns_descending": "보드 컬렉션에서 <code>#board:sortColumns</code> 설정의 정렬 순서를 반대로 적용합니다.",
+    "map_position": "이미지 맵에서 노트의 위치를 맵 좌표의 <code>x,y</code> 형식으로 지정합니다. <code>map:imageBounds</code> 에서 다른 좌표를 지정하지 않은 경우 이미지의 픽셀 좌표를 사용합니다.",
+    "map_shape": "이미지 맵에서 노트가 표시될 도형을 지정합니다. <code>geoShape</code> 와 같은 형식을 사용하지만 <code>x,y</code> 좌표를 사용합니다. 예: <code>circle:400,300 50</code>.",
+    "map_image_bounds": "이미지 맵의 왼쪽 위와 오른쪽 아래 모서리 좌표를 <code>x,y x,y</code> 형식으로 지정합니다. 예: <code>-512,-512 512,512</code>. 맵의 위치는 이미지의 픽셀 좌표 대신 이 좌표계를 기준으로 읽고 기록됩니다.",
+    "map_image": "세계 지도 대신 지리 맵의 배경으로 사용할 이미지 노트입니다. 마커와 도형은 <code>mapPosition</code> 및 <code>mapShape</code> 설정을 사용해 배치됩니다."
   },
   "attribute_editor": {
     "help_text_body1": "레이블을 추가하려면 예를 들어 <code>#rock</code> 값을 입력합니다. 값도 함께 추가하려면 예를 들어 <code>#year = 2020</code> 값을 입력합니다",
@@ -1081,15 +1106,6 @@
   "create_pane_button": {
     "create_new_split": "새 분할 생성"
   },
-  "edit_button": {
-    "edit_this_note": "이 노트 편집"
-  },
-  "show_toc_widget_button": {
-    "show_toc": "목차 보기"
-  },
-  "show_highlights_list_widget_button": {
-    "show_highlights_list": "하이라이트 목록 보기"
-  },
   "options": {
     "title": "옵션",
     "back": "모든 옵션으로 돌아가기",
@@ -1199,9 +1215,6 @@
     "active": "보호된 세션이 활성화되어 있습니다. 보호된 세션을 떠나려면 클릭하세요.",
     "inactive": "보호된 세션을 시작하려면 클릭"
   },
-  "revisions_button": {
-    "note_revisions": "노트 수정본"
-  },
   "update_available": {
     "update_available": "업데이트 가능"
   },
@@ -1216,21 +1229,11 @@
     "opening_api_docs_message": "API 문서를 여는 중...",
     "sql_console_saved_message": "SQL 콘솔 노트가 {{note_path}}에 저장되었습니다"
   },
-  "copy_image_reference_button": {
-    "button_title": "클립보드에 이미지 참조를 복사해 텍스트 노트에 붙여넣을 수 있습니다."
-  },
-  "hide_floating_buttons_button": {
-    "button_title": "버튼 숨기기"
-  },
-  "show_floating_buttons_button": {
-    "button_title": "버튼 표시"
-  },
-  "svg_export_button": {
-    "button_title": "다이어그램을 SVG로 내보내기"
-  },
   "relation_map_buttons": {
     "create_child_note_title": "하위 노트를 만들어 맵에 추가",
-    "create_child_note_text": "노트 추가"
+    "create_child_note_text": "노트 추가",
+    "create_child_note_cancel_title": "노트 추가 취소",
+    "create_child_note_cancel_text": "취소"
   },
   "image_navigation": {
     "previous": "이전 이미지: {{- title}}",
@@ -1252,8 +1255,6 @@
     "esc_hint": "닫기"
   },
   "zpetne_odkazy": {
-    "backlink_other": "백링크 {{count}}개",
-    "relation": "관계",
     "no_backlinks": "이 노트로 연결되는 노트가 없습니다."
   },
   "mobile_detail_menu": {
@@ -1281,8 +1282,6 @@
   "basic_properties": {
     "note_type": "노트 유형",
     "editable": "편집 가능",
-    "basic_properties": "기본 속성",
-    "language": "언어",
     "configure_code_notes": "코드 노트 설정하기..."
   },
   "book_properties": {
@@ -1312,37 +1311,23 @@
     "open_all_limit_exceeded": "한 번에 열 수 있는 노트가 너무 많습니다({{count}}). 최대 {{max}}개까지 열 수 있으므로 먼저 결과 범위를 좁혀보세요."
   },
   "edited_notes": {
-    "no_edited_notes_found": "아직 이날 편집한 노트가 없습니다...",
-    "title": "편집된 노트",
-    "deleted": "(삭제됨)"
+    "no_edited_notes_found": "아직 이날 편집한 노트가 없습니다..."
   },
   "file_properties": {
-    "note_id": "노트 ID",
     "original_file_name": "원본 파일 이름",
-    "file_type": "파일 형식",
-    "file_size": "파일 크기",
     "download": "다운로드",
     "open": "외부에서 열기",
-    "upload_new_revision": "새 수정본 업로드",
     "upload_success": "새 파일 수정본이 업로드되었습니다.",
-    "upload_failed": "새 파일 수정본 업로드에 실패했습니다.",
-    "title": "파일"
+    "upload_failed": "새 파일 수정본 업로드에 실패했습니다."
   },
   "image_properties": {
-    "original_file_name": "원본 파일 이름",
-    "file_type": "파일 형식",
-    "file_size": "파일 크기",
-    "download": "다운로드",
-    "open": "열기",
     "copy_reference_to_clipboard": "참조를 클립보드에 복사",
     "upload_new_revision": "새 수정본 업로드",
     "upload_success": "새 이미지 수정본이 업로드되었습니다.",
-    "upload_failed": "새 이미지 수정본을 업로드하지 못했습니다: {{message}}",
-    "title": "이미지"
+    "upload_failed": "새 이미지 수정본을 업로드하지 못했습니다: {{message}}"
   },
   "inherited_attribute_list": {
     "title": "상속 속성",
-    "no_inherited_attributes": "상속된 속성이 없습니다.",
     "none": "없음"
   },
   "note_info_widget": {
@@ -1359,30 +1344,21 @@
     "show_similar_notes": "유사한 노트 표시"
   },
   "note_map": {
-    "open_full": "완전 확장하기",
-    "collapse": "일반 크기로 접기",
     "title": "노트 맵",
     "fix-nodes": "고정 노드",
     "link-distance": "링크 거리",
     "too-many-notes_other": "여기에 노트가 {{count}}개 있습니다. 모두 표시하면 속도가 느려질 수 있습니다.",
     "show-anyway": "지도 표시",
-    "expand": "지도 펼치기"
+    "expand": "지도 펼치기",
+    "fit-to-view": "화면에 맞추기"
   },
   "note_paths": {
     "title": "노트 경로",
     "clone_button": "노트를 새 위치로 복제...",
-    "intro_placed": "이 노트는 다음 경로에 배치되어 있습니다:",
     "intro_not_placed": "이 노트는 아직 노트 트리에 배치되지 않았습니다.",
     "outside_hoisted": "이 경로는 현재 루트로 보는 노트 밖에 있으므로 루트 보기를 해제해야 합니다.",
     "archived": "보관됨",
     "search": "검색"
-  },
-  "note_properties": {
-    "this_note_was_originally_taken_from": "이 노트는 원래 다음 출처에서 가져온 것입니다:",
-    "info": "정보"
-  },
-  "owned_attribute_list": {
-    "owned_attributes": "직접 속성"
   },
   "promoted_attributes": {
     "promoted_attributes": "표시 속성",
@@ -1411,12 +1387,6 @@
     "display_on_items": "컬렉션 항목에 속성 표시",
     "conflicting": "여러 정의",
     "conflicting_tooltip": "항목마다 이 속성을 서로 다른 방식으로 정의하고 있어 텍스트로 정렬되며, 항목 메뉴에서는 값을 설정할 수 없습니다."
-  },
-  "script_executor": {
-    "query": "쿼리",
-    "script": "스크립트",
-    "execute_query": "쿼리 실행",
-    "execute_script": "스크립트 실행"
   },
   "search_definition": {
     "add_search_option": "검색 옵션 추가:",
@@ -1524,7 +1494,8 @@
       "completions": "제안 표시",
       "new_line": "새 줄",
       "run_search": "검색 실행"
-    }
+    },
+    "error_title": "검색 오류"
   },
   "attachment_detail": {
     "open_help_page": "첨부 파일 도움말 페이지 열기",
@@ -1564,14 +1535,12 @@
   },
   "editable_text": {
     "placeholder": "여기에 노트의 내용을 입력하세요...",
-    "editor_crashed_title": "텍스트 편집기가 크래시 났습니다",
-    "editor_crashed_content": "내용은 성공적으로 복구되었지만, 최근 변경 사항 중 일부는 저장되지 않았을 수 있습니다.",
     "editor_crashed_details_button": "자세히 보기...",
     "editor_crashed_details_intro": "이 오류가 여러 번 발생한다면, 아래 정보를 붙여넣어 GitHub에 신고하는 것을 고려해 보세요.",
     "editor_crashed_details_title": "기술 정보",
     "auto-detect-language": "자동 탐지",
-    "keeps-crashing": "편집 구성 요소가 계속 비정상 종료됩니다. Trilium을 다시 시작하세요. 문제가 계속되면 버그 보고서 작성을 고려하세요.",
-    "nothing_selected_to_cut": "먼저 하위 노트로 분리할 텍스트를 선택하세요."
+    "nothing_selected_to_cut": "먼저 하위 노트로 분리할 텍스트를 선택하세요.",
+    "uploading_attachment": "첨부 파일 업로드 중"
   },
   "empty": {
     "open_note_instruction": "아래 입력란에 노트 제목을 입력하거나 트리에서 노트를 선택하여 엽니다.",
@@ -1646,11 +1615,26 @@
     "connection_exists": "이 노트들 사이의 '{{name}}' 연결고리는 이미 존재합니다.",
     "start_dragging_relations": "여기에서 관계를 끌어 다른 노트에 놓으세요.",
     "note_not_found": "노트 {{noteId}}을(를) 찾을 수 없습니다!",
-    "cannot_match_transform": "변환 매칭 불가: {{transform}}",
     "note_already_in_diagram": "\"{{title}}\"은 이미 도표에 표시되어 있습니다.",
-    "enter_title_of_new_note": "새 노트의 제목 입력",
     "default_new_note_title": "새 노트",
-    "click_on_canvas_to_place_new_note": "캔버스를 클릭하면 새 노트를 넣으세요"
+    "rename": "이름 변경",
+    "new_relation": "새 관계",
+    "create_relation": "관계 생성",
+    "relation_name_placeholder": "관계 이름",
+    "add_note_toast_title": "새 노트",
+    "add_note_instruction": "맵을 클릭하여 새 노트를 배치하거나 Escape 키를 눌러 취소하세요.",
+    "close_note_pane": "닫기",
+    "expand_note_pane": "노트를 펼쳐 맵을 채우기",
+    "restore_note_pane": "노트를 맵 옆으로 되돌리기",
+    "note_color": "노트 색상",
+    "remove_from_map": "맵에서 제거",
+    "fit_to_view": "화면에 맞추기",
+    "hints": {
+      "title": "관계 맵",
+      "paste_notes": "복사하거나 잘라낸 노트 붙여넣기",
+      "cancel_adding_note": "노트 추가 취소",
+      "close_note_pane": "노트 패널 닫기"
+    }
   },
   "render": {
     "setup_title": "이 노트 안에 사용자 지정 HTML 또는 Preact JSX를 표시합니다",
@@ -1661,7 +1645,9 @@
     "disabled_button_enable": "렌더 노트 활성화",
     "error_title": "스크립트 노트 실행 실패",
     "error_show_details": "세부 정보 보기",
-    "error_note_label": "스크립트 노트:"
+    "error_note_label": "스크립트 노트:",
+    "disabled_read_only": "이 렌더링 노트는 외부 소스에서 가져온 것이므로 활성화되지 않습니다.",
+    "nothing_to_display": "이 노트에는 표시할 내용이 없습니다."
   },
   "web_view_setup": {
     "title": "웹페이지의 실시간 뷰를 직접 Trilium에 생성합니다",
@@ -1770,8 +1756,6 @@
   "experimental_features": {
     "title": "실험적 옵션",
     "disclaimer": "이러한 선택지는 실험적이며 불안정성을 초래할 수 있습니다. 조심해서 사용하세요.",
-    "new_layout_name": "새 레이아웃",
-    "new_layout_description": "더 현대적인 디자인과 향상된 사용성을 위해 새로운 레이아웃을 사용해 보세요. 향후 릴리스에서 크게 변경될 수 있습니다.",
     "llm_name": "AI / LLM 채팅",
     "llm_description": "AI 채팅 사이드바와 대형 언어 모델이 지원하는 LLM 채팅 노트를 활성화하세요."
   },
@@ -1824,9 +1808,6 @@
     "enabled": "활성화",
     "disabled": "비활성화"
   },
-  "ribbon": {
-    "edited_notes_message": "편집된 노트 리본 탭은 하루 노트에 자동으로 열립니다"
-  },
   "theme": {
     "title": "사용자 인터페이스",
     "theme_label": "애플리케이션 테마",
@@ -1855,7 +1836,8 @@
     "layout-vertical-title": "수직",
     "layout-horizontal-title": "수평",
     "layout-vertical-description": "실행 표시줄이 왼쪽에 표시됩니다(기본값)",
-    "layout-horizontal-description": "실행 표시줄은 탭 바 아래에 배치되고, 탭 바는 전체 너비로 표시됩니다."
+    "layout-horizontal-description": "실행 표시줄은 탭 바 아래에 배치되고, 탭 바는 전체 너비로 표시됩니다.",
+    "edited_notes_expanded": "데일리 노트에서 \"이 날 편집된 노트\" 펼치기"
   },
   "ui-performance": {
     "title": "성능",
@@ -2027,17 +2009,7 @@
     "italic": "이탤릭 텍스트",
     "underline": "밑줄 그린 텍스트",
     "color": "컬러 텍스트",
-    "bg_color": "배경색이 있는 텍스트",
-    "visibility_title": "하이라이트 목록 가시성",
-    "visibility_description": "#hideHighlightWidget 라벨을 추가하면 노트별로 하이라이트 위젯을 숨길 수 있습니다.",
-    "shortcut_info": "옵션 -> 단축키(이름 'toggleRightPane')에서 오른쪽 창(하이라이트 포함)을 빠르게 토글할 수 있는 단축키를 설정할 수 있습니다."
-  },
-  "table_of_contents": {
-    "title": "목차",
-    "description": "목차는 노트에 정해진 제목 수가 많을 때 텍스트 노트에 나타납니다. 이 번호는 다음과 같이 맞춤 설정할 수 있습니다:",
-    "unit": "개",
-    "disable_info": "이 옵션을 사용해 매우 높은 수치를 설정해 TOC를 효과적으로 비활성화할 수도 있습니다.",
-    "shortcut_info": "옵션 -> 단축키(이름 'toggleRightPane')에서 오른쪽 창(TOC 포함)을 빠르게 토글할 수 있는 단축키를 설정할 수 있습니다."
+    "bg_color": "배경색이 있는 텍스트"
   },
   "text_auto_read_only_size": {
     "title": "자동 읽기 전용 크기",
@@ -2356,9 +2328,7 @@
     "kind_and_size": "{{role}} · {{size}}"
   },
   "bookmark_switch": {
-    "bookmark": "북마크",
-    "bookmark_this_note": "이 노트를 왼쪽 패널에 북마크로 추가",
-    "remove_bookmark": "북마크 제거"
+    "bookmark": "북마크"
   },
   "editability_select": {
     "auto": "자동",
@@ -2396,7 +2366,6 @@
     "copy-note-path-to-clipboard": "노트 경로를 클립보드에 복사",
     "protect-subtree": "하위 트리 보호",
     "unprotect-subtree": "하위 트리 보호 해제",
-    "copy-clone": "복사 / 복제",
     "clone-to": "다음 위치로 복제...",
     "cut": "잘라내기",
     "move-to": "다음 위치로 이동...",
@@ -2408,18 +2377,13 @@
     "apply-bulk-actions": "대량 작업 적용",
     "converted-to-attachments_other": "노트 {{count}}개를 첨부 파일로 변환했습니다.",
     "convert-to-attachment-confirm": "선택한 노트를 각 상위 노트의 첨부 파일로 변환하시겠습니까? 이미지 노트에만 적용하며 다른 노트는 건너뜁니다.",
-    "open-in-popup": "빠른 편집"
-  },
-  "shared_info": {
-    "shared_publicly": "이 노트는 {{- link}}에서 공개적으로 공유됩니다.",
-    "shared_locally": "이 노트는 {{- link}}에서 로컬로 공유되고 있습니다.",
-    "help_link": "도움이 필요하시면 방문하세요 <a href=\"https://triliumnext.github.io/Docs/Wiki/sharing.html\">위키</a>.",
-    "shared_preview": "이 노트는 {{- link}}에서 공유되고 있지만, 이 페이지는 이 브라우저에서만 열 수 있으며 Trilium이 이 브라우저에서 실행 중일 때만 사용할 수 있습니다. 다른 사람이 볼 수 있도록 게시하려면 Trilium 서버가 필요합니다.",
-    "shared_export_only": "이 노트는 공유되어 있지만 모바일 앱에서는 공유 페이지를 열 수 없습니다. 게시하려면 하위 트리를 \"{{format}}\" 형식으로 내보낸 뒤 아무 웹 서버에나 파일을 호스팅하거나 Trilium 서버를 사용하세요."
+    "open-in-popup": "빠른 편집",
+    "duplicate-with-children": "노트와 하위 노트",
+    "duplicate-note-only": "이 노트만",
+    "clone": "복제",
+    "clone-tooltip": "같은 노트를 두 위치에서 동시에 사용할 수 있도록 복제"
   },
   "read-only-info": {
-    "read-only-note": "현재 읽기 전용 노트를 보고 있습니다.",
-    "auto-read-only-note": "이 노트는 더 빠른 로딩을 위해 읽기 전용 모드로 표시됩니다.",
     "edit-note": "노트 편집"
   },
   "note_types": {
@@ -2447,16 +2411,14 @@
     "llm-chat": "AI 채팅",
     "task-list": "작업 목록",
     "new-feature": "신규",
-    "collections": "컬렉션",
     "spreadsheet": "스프레드시트",
     "note-types": "노트 유형",
-    "built-in-templates": "기본 제공 템플릿"
+    "built-in-templates": "기본 제공 템플릿",
+    "more": "더 보기",
+    "widget-preset-sample": "위젯에서 보내는 인사"
   },
   "protect_note": {
-    "toggle-on": "노트 보호",
-    "toggle-off": "노트 보호 해제",
-    "toggle-on-hint": "노트가 보호되지 않았습니다. 클릭하면 보호할 수 있습니다",
-    "toggle-off-hint": "노트가 보호되어 있습니다. 클릭하면 보호를 해제할 수 있습니다"
+    "toggle-on": "노트 보호"
   },
   "llm_chat": {
     "placeholder": "메시지를 입력하세요...",
@@ -2465,7 +2427,7 @@
     "empty_state": "아래에 메시지를 입력하여 대화를 시작하세요.",
     "searching_web": "웹에서 검색하는 중...",
     "web_search": "웹 검색",
-    "web_search_unavailable_gemini": "노트 접근이 켜져 있을 때 Gemini 모델에서는 지원되지 않습니다 — Google API는 두 가지 결합을 허용하지 않습니다. 노트 접근을 비활성화하거나 웹 검색을 위해 다른 제공업체로 전환하세요.",
+    "web_search_unavailable_gemini": "Gemini는 기본 제공 검색과 노트 접근을 함께 사용할 수 없습니다. 노트 접근을 끄거나 대신 검색 제공자를 선택하세요.",
     "note_tools": "노트 접근",
     "sources": "출처",
     "sources_summary": "{{sites}} 사이트에서 {{count}} 출처",
@@ -2563,7 +2525,15 @@
     "attachment_count_other": "첨부 파일 {{count}}개",
     "attribute_count_other": "({{count}}개 속성)",
     "search_icons_count_other": "({{count}}개 아이콘)",
-    "web_sources_count_other": "({{count}}개 출처)"
+    "web_sources_count_other": "({{count}}개 출처)",
+    "tools": "도구",
+    "note_tools_description": "노트를 검색하고 읽고 편집합니다",
+    "web_search_disabled": "사용 안 함",
+    "web_search_builtin": "모델의 기본 제공 검색 사용",
+    "manage_search_providers": "검색 제공자 관리…",
+    "web_search_builtin_unsupported": "이 모델에는 기본 제공 웹 검색 기능이 없습니다. 대신 검색 제공자를 선택하세요.",
+    "web_search_provider_unsupported": "이 모델의 제공자는 자체 도구를 사용해 웹을 검색합니다.",
+    "searched_with": "{{name}}으로 검색함"
   },
   "sidebar_chat": {
     "title": "AI 채팅",
@@ -2585,15 +2555,11 @@
   },
   "shared_switch": {
     "shared": "공유",
-    "toggle-on-title": "노트 공유",
-    "toggle-off-title": "노트 공유 취소",
     "shared-branch": "이 노트는 공유 노트로만 존재하므로 공유를 해제하면 삭제됩니다. 계속하여 이 노트를 삭제하시겠습니까?",
     "inherited": "노트는 조상으로부터 상속받아 공유되기 때문에 여기서 해제할 수 없습니다."
   },
   "template_switch": {
-    "template": "템플릿",
-    "toggle-on-hint": "노트를 템플릿으로 만드세요",
-    "toggle-off-hint": "노트를 템플릿에서 해제"
+    "template": "템플릿"
   },
   "full_content_width_switch": {
     "title": "전체 너비"
@@ -2609,9 +2575,7 @@
     "replace_all": "모두 바꾸기"
   },
   "highlights_list_2": {
-    "title": "하이라이트 목록",
     "title_with_count_other": "하이라이트 {{count}}개",
-    "options": "옵션",
     "menu_configure": "하이라이트 리스트 설정하기...",
     "no_highlights": "하이라이트는 찾지 못했습니다."
   },
@@ -2619,7 +2583,13 @@
     "placeholder": "빠른 검색",
     "searching": "검색 중...",
     "no-results": "검색 결과가 없음",
-    "show-in-full-search": "전체 검색에서 보기"
+    "show-in-full-search": "전체 검색에서 보기",
+    "hints": {
+      "title": "빠른 검색 결과",
+      "to_results": "검색 결과로 이동",
+      "page": "검색 결과에서 한 페이지씩 이동",
+      "close": "검색 결과 닫기"
+    }
   },
   "note_tree": {
     "collapse-title": "노트 트리 접기",
@@ -2678,11 +2648,11 @@
     "created_on": "생성일 <Value />",
     "last_modified": "수정됨 <Value />",
     "note_type_switcher_label": "{{type}}에서 다음으로 전환하세요:",
-    "note_type_switcher_others": "기타 노트 유형",
     "note_type_switcher_templates": "템플릿",
     "note_type_switcher_collection": "컬렉션",
     "edited_notes": "이 날 편집된 노트",
-    "promoted_attributes": "표시 속성"
+    "promoted_attributes": "표시 속성",
+    "note_type_switcher_all": "모든 유형"
   },
   "search_result": {
     "no_notes_found": "주어진 검색 매개변수에 대한 노트는 발견되지 않았습니다.",
@@ -2690,7 +2660,8 @@
     "search_now": "지금 검색",
     "result_count_other": "{{count}}개 결과",
     "page_size": "페이지당",
-    "snippet_unavailable": "미리보기를 사용할 수 없습니다."
+    "snippet_unavailable": "미리보기를 사용할 수 없습니다.",
+    "searching": "검색 중..."
   },
   "sql_result": {
     "not_executed": "쿼리는 아직 실행되지 않았습니다.",
@@ -2719,7 +2690,6 @@
   },
   "toc": {
     "table_of_contents": "목차",
-    "options": "옵션",
     "no_headings": "제목이 없습니다."
   },
   "watched_file_update_status": {
@@ -2745,7 +2715,8 @@
     "copied": "노트는 클립보드에 복사되었습니다.",
     "copy_failed": "권한 문제로 인해 클립보드에 복사할 수 없습니다.",
     "copy_success": "클립보드에 복사했습니다.",
-    "copied_without_links": "노트가 클립보드에 복사되었지만, 노트 링크를 시스템 클립보드에 넣을 수 없습니다."
+    "copied_without_links": "노트가 클립보드에 복사되었지만, 노트 링크를 시스템 클립보드에 넣을 수 없습니다.",
+    "paste_notes": "노트 붙여넣기"
   },
   "entrypoints": {
     "note-revision-created": "노트 수정이 생성되었습니다.",
@@ -2816,9 +2787,6 @@
     "tab_width": "탭 폭",
     "tab_width_unit": "칸"
   },
-  "classic_editor_toolbar": {
-    "title": "포맷팅"
-  },
   "editor": {
     "title": "편집기"
   },
@@ -2827,12 +2795,10 @@
       "label": "서식 도구 모음",
       "toolbar_style": "툴바 스타일",
       "floating": {
-        "title": "플로팅",
-        "description": "편집 도구는 커서 근처에 나타납니다;"
+        "title": "플로팅"
       },
       "fixed": {
-        "title": "고정",
-        "description": "편집 도구는 \"서식\" 리본 탭에 나타납니다."
+        "title": "고정"
       },
       "multiline-toolbar": "툴바가 한 줄에 맞지 않으면 여러 줄로 표시"
     }
@@ -2864,7 +2830,15 @@
     "open_note_in_other_split": "다른 분할 창에서 노트 열기",
     "open_note_in_new_window": "새 창에서 노트 열기",
     "open_note_in_popup": "빠른 편집",
-    "open_note": "노트 열기"
+    "open_note": "노트 열기",
+    "convert_link_to_embed": "링크를 임베드로 변환",
+    "convert_link_to_included_note": "링크를 포함된 노트로 변환",
+    "convert_embed_to_link": "링크로 변환",
+    "include_size": "크기",
+    "show_title": "제목 표시",
+    "show_caption": "캡션 표시",
+    "editable": "편집 가능",
+    "convert_link_to_note_excerpt": "링크를 노트 발췌로 변환"
   },
   "electron_integration": {
     "desktop-application": "데스크톱 애플리케이션",
@@ -2876,20 +2850,33 @@
     "zoom-factor": "확대/축소 배율"
   },
   "note_autocomplete": {
-    "search-for": "\"{{term}}\" 검색",
     "create-note": "노트 \"{{term}}\" 생성",
     "insert-external-link": "\"{{term}}\" 외부 링크 삽입",
     "clear-text-field": "입력 내용 지우기",
-    "show-recent-notes": "최근 노트 표시",
-    "full-text-search": "전체 텍스트 검색",
     "create-note-into": "{{parentTitle}}에 노트 \"{{term}}\" 생성",
     "create-note-into-day-note": "오늘의 데일리 노트에 \"{{term}}\" 노트 생성",
     "create-note-into-root": "최상위에 \"{{term}}\" 노트 생성",
-    "create-child-note": "자식 노트 \"{{term}}\" 생성"
+    "create-child-note": "자식 노트 \"{{term}}\" 생성",
+    "show-in-full-search": "전체 검색에서 \"{{term}}\"의 모든 결과 표시",
+    "include-note-contents": "결과에 \"{{term}}\"의 노트 내용 포함",
+    "include-contents": "노트 내용 포함",
+    "hints": {
+      "title": "노트 검색 결과",
+      "move": "결과 사이 이동",
+      "open": "강조 표시된 결과 열기"
+    },
+    "recent": {
+      "today": "오늘",
+      "yesterday": "어제",
+      "past_week": "지난 7일",
+      "past_month": "지난 30일",
+      "older": "이전"
+    }
   },
   "note_tooltip": {
     "note-has-been-deleted": "노트는 삭제되었습니다.",
-    "quick-edit": "빠른 편집"
+    "quick-edit": "빠른 편집",
+    "attachment-info": "첨부 파일 • {{size}}"
   },
   "geo-map": {
     "create-child-note-title": "새 하위 노트를 만들어 맵에 추가",
@@ -2944,7 +2931,9 @@
     "draw-rectangle-instruction": "지도에서 한쪽 모서리를 클릭한 다음 반대쪽 모서리를 다시 클릭하세요. 한쪽 모서리에서 다른 쪽 모서리까지 드래그할 수도 있습니다. Escape 키를 눌러 취소할 수 있습니다.",
     "draw-circle": "지도에 원 그리기",
     "draw-circle-toast-title": "원 그리기",
-    "draw-circle-instruction": "지도에서 중심점을 클릭한 다음 원의 반경이 될 위치를 다시 클릭하세요. 중심점에서 바깥쪽으로 드래그할 수도 있습니다. Escape 키를 눌러 취소할 수 있습니다."
+    "draw-circle-instruction": "지도에서 중심점을 클릭한 다음 원의 반경이 될 위치를 다시 클릭하세요. 중심점에서 바깥쪽으로 드래그할 수도 있습니다. Escape 키를 눌러 취소할 수 있습니다.",
+    "image-unavailable": "이 맵의 이미지를 불러올 수 없습니다. map:image 관계가 가리키는 노트가 이미지인지 확인하세요.",
+    "image-svg-unsupported": "SVG 이미지는 맵으로 사용할 수 없습니다. 대신 이미지를 PNG, JPEG 또는 WebP로 변환하세요."
   },
   "geo-map-context": {
     "open-location": "위치 열기",
@@ -3178,17 +3167,10 @@
     "title_vertical": "편집 창을 맨 아래로 이동",
     "title_horizontal": "편집 창을 왼쪽으로 이동"
   },
-  "toggle_read_only_button": {
-    "unlock-editing": "편집 잠금 해제",
-    "lock-editing": "편집 잠금"
-  },
   "display_mode": {
     "source": "소스 보기",
     "split": "분할 보기",
     "preview": "미리보기"
-  },
-  "png_export_button": {
-    "button_title": "다이어그램을 PNG로 내보내기"
   },
   "svg": {
     "export_to_png": "이 다이어그램은 PNG로 내보낼 수 없었습니다.",
@@ -3517,9 +3499,6 @@
     "background_effects_title": "배경 효과가 이제 안정적으로 변했습니다",
     "background_effects_message": "Windows와 macOS 기기에서는 배경 효과가 이제 안정적입니다. 배경 효과는 배경을 흐리게 하여 사용자 인터페이스에 색감을 더합니다.",
     "background_effects_button": "배경 효과 활성화",
-    "new_layout_title": "새 레이아웃",
-    "new_layout_message": "Trilium에 현대적인 새 레이아웃을 도입했습니다. 리본을 제거하고 기본 인터페이스에 자연스럽게 통합했으며, 새 상태 표시줄과 확장 가능한 섹션(예: 표시 속성)이 주요 기능을 담당합니다.\n\n새 레이아웃은 기본적으로 활성화됩니다. 옵션 → 모양에서 일시적으로 비활성화할 수 있습니다.",
-    "new_layout_button": "추가 정보",
     "scripting_disabled_title": "백엔드 스크립팅이 비활성화되었습니다",
     "scripting_disabled_message": "보안상 백엔드 스크립팅은 기본적으로 비활성화되어 있습니다. 노트에는 백엔드 스크립트(#run 라벨이 붙은 노트)가 포함되어 있는데, 이들은 더 이상 자동으로 실행되지 않습니다.\n\n이 스크립트에 의존한다면 보안 설정에서 백엔드 스크립팅을 다시 활성화할 수 있습니다.",
     "scripting_disabled_button": "보안 설정 열기",
@@ -3533,10 +3512,7 @@
     "related_code_blocks": "텍스트 노트 내 코드 블록의 색상 체계",
     "related_code_notes": "코드 노트의 색상 체계",
     "ui": "사용자 인터페이스",
-    "ui_layout_style": "레이아웃 스타일",
-    "ui_layout_orientation": "실행 표시줄 방향",
-    "ui_old_layout": "이전 레이아웃",
-    "ui_new_layout": "새 레이아웃"
+    "ui_layout_orientation": "실행 표시줄 방향"
   },
   "units": {
     "percentage": "%"
@@ -3560,9 +3536,7 @@
   },
   "server": {
     "unknown_http_error_title": "서버와의 통신 오류",
-    "unknown_http_error_content": "상태 코드: {{statusCode}}\nURL: {{method}} {{url}}\n메시지: {{message}}",
-    "reverse_proxy_blocked_title": "리버스 프록시에 의해 차단된 요청",
-    "reverse_proxy_blocked_message": "일부 요청이 Trilium에 도달하기 전에 거부되었습니다(HTTP 400). URL의 퍼센트 인코딩된 문자를 차단하는 리버스 프록시가 원인일 가능성이 높습니다.\n\nTraefik 3.6.4~3.6.6 버전에서는 기본적으로 이러한 동작이 발생합니다. Traefik 3.6.7 이상으로 업그레이드하거나 설정에서 인코딩된 문자를 허용하세요."
+    "unknown_http_error_content": "상태 코드: {{statusCode}}\nURL: {{method}} {{url}}\n메시지: {{message}}"
   },
   "tab_history_navigation_buttons": {
     "go-back": "이전 노트로 돌아가기",
@@ -3697,7 +3671,10 @@
     "annotation_drawing": "{{pageNumber}}페이지에 그리기",
     "annotation_highlight": "{{pageNumber}}페이지에 강조 표시",
     "annotation_note": "{{pageNumber}}페이지에 노트",
-    "annotation_text_box": "{{pageNumber}}페이지에 텍스트 상자"
+    "annotation_text_box": "{{pageNumber}}페이지에 텍스트 상자",
+    "copy_reference": "참조 복사",
+    "page_reference": "{{pageNumber}}페이지",
+    "annotation_reference": "{{pageNumber}}페이지의 주석"
   },
   "platform_indicator": {
     "available_on": "{{platform}}에서 이용 가능"
@@ -3840,7 +3817,6 @@
   "llm": {
     "feature_not_enabled": "설정 → 고급 → 실험 기능에서 LLM 실험 기능을 활성화하여 AI 통합을 활용하세요.",
     "add_provider": "공급자 추가",
-    "add_provider_title": "AI 공급자 추가",
     "edit_provider_title": "{{- name}} 편집",
     "edit_provider": "편집",
     "save": "저장",
@@ -3853,9 +3829,6 @@
     "models_select_all": "모두 선택",
     "models_select_none": "선택 해제",
     "models_reset_defaults": "기본값으로 초기화하기",
-    "provider_model_count_other": "모델 {{count}}개",
-    "configured_providers": "구성된 공급자",
-    "no_providers_configured": "아직 설정된 제공자가 없습니다.",
     "provider_name": "이름",
     "beta": "베타",
     "actions": "작업",
@@ -3940,13 +3913,29 @@
     "antigravity_setup_download": "Trilium을 실행하는 기기에서 Google의 <Link>ACP 레지스트리 항목</Link> 페이지를 열어 사용 중인 플랫폼용 압축 파일을 다운로드하고, 계속 보관할 폴더에 압축을 풉니다.",
     "antigravity_setup_archive": "<Link>Trilium을 실행하는 기기용 압축 파일</Link> 항목을 열어 다운로드한 뒤, 해당 기기에서 계속 보관할 폴더에 압축을 풉니다.",
     "antigravity_setup_path": "해당 폴더를 <Code>PATH</Code> 환경 변수에 추가하거나, <Code>TRILIUM_ANTIGRAVITY_ACP_PATH</Code> 환경 변수의 값을 해당 폴더 안의 <Code>agy_acp_server.par</Code> 파일로 설정합니다. Windows에서는 <Code>agy_acp_server.exe</Code> 파일을 사용합니다. 그런 다음 Trilium을 다시 시작합니다.",
-    "codex_agent_description": "OpenAI Codex를 통해 ChatGPT 요금제(Free, Go, Plus, Pro 또는 Business)의 Codex 사용량을 사용하므로 API 키가 필요하지 않습니다.\n\nCodex CLI는 Trilium을 실행하는 기기에 설치되어 있어야 합니다. 셀프 호스팅의 경우 서버이고, 데스크톱에서는 이 컴퓨터입니다. 예를 들어 해당 기기에서 \"npm install -g @openai/codex\" 명령을 실행하여 설치할 수 있습니다.\n\n처음으로 모델 목록을 불러오면 해당 기기의 브라우저에서 ChatGPT 로그인 페이지가 열립니다."
+    "codex_agent_description": "OpenAI Codex를 통해 ChatGPT 요금제(Free, Go, Plus, Pro 또는 Business)의 Codex 사용량을 사용하므로 API 키가 필요하지 않습니다.\n\nCodex CLI는 Trilium을 실행하는 기기에 설치되어 있어야 합니다. 셀프 호스팅의 경우 서버이고, 데스크톱에서는 이 컴퓨터입니다. 예를 들어 해당 기기에서 \"npm install -g @openai/codex\" 명령을 실행하여 설치할 수 있습니다.\n\n처음으로 모델 목록을 불러오면 해당 기기의 브라우저에서 ChatGPT 로그인 페이지가 열립니다.",
+    "search_providers": "검색 제공자",
+    "no_search_providers_configured": "아직 구성된 검색 제공자가 없습니다.",
+    "add_search_provider": "검색 제공자 추가",
+    "search_provider_group_cloud": "검색 API",
+    "search_provider_group_cloud_description": "API 키를 사용하며, 서비스에 따라 월별 무료 사용량이 제공되거나 검색 건별로 요금이 부과됩니다. 검색 내용은 제공자의 서버로 전송됩니다.",
+    "search_provider_group_local": "셀프 호스팅",
+    "search_provider_group_local_description": "직접 운영하는 메타검색 인스턴스입니다. 검색 요청은 해당 인스턴스와 그 인스턴스가 사용하는 검색 엔진에만 전달됩니다.",
+    "search_base_url_description": "선택 사항입니다. 프록시 또는 게이트웨이를 통해 동일한 API에 연결합니다.",
+    "model_providers": "모델 제공자",
+    "add_model_provider": "모델 제공자 추가",
+    "no_model_providers_configured": "아직 구성된 모델 제공자가 없습니다.",
+    "provider_no_models": "선택된 모델이 없어 채팅에 표시되지 않습니다.",
+    "search_provider_unavailable_standalone": "브라우저 버전에서는 사용할 수 없습니다. 이 서비스는 웹 페이지에서 보낸 요청을 거부하므로 데스크톱 또는 서버 버전에서만 사용할 수 있습니다.",
+    "setup_hint_searxng": "SearXNG 인스턴스의 주소입니다. <Code>settings.yml</Code> 파일의 <Code>search.formats</Code> 항목에 <Code>json</Code> 값이 포함되어 있어야 합니다."
   },
   "common": {
     "save": "저장",
     "cancel": "취소",
     "fullscreen": "전체 화면",
-    "exit_fullscreen": "전체 화면 종료"
+    "exit_fullscreen": "전체 화면 종료",
+    "open_in_new_tab": "새 탭에서 열기",
+    "more_actions": "추가 작업"
   },
   "spreadsheet": {
     "read-only": "이 노트는 읽기 전용입니다.",
@@ -4138,12 +4127,49 @@
       "sort": "정렬",
       "ascending": "오름차순",
       "descending": "내림차순",
-      "some-rows-were-sorted-together-because-merged-cells-tie-them-to-each-other": "병합된 셀로 서로 연결되어 있어 일부 행이 함께 정렬되었습니다"
+      "some-rows-were-sorted-together-because-merged-cells-tie-them-to-each-other": "병합된 셀로 서로 연결되어 있어 일부 행이 함께 정렬되었습니다",
+      "attach-and-embed-file": "파일을 첨부하고 임베드",
+      "attach-file": "파일 첨부",
+      "attach-file-as-a-link": "파일을 링크로 첨부",
+      "convert-to-link": "링크로 변환",
+      "upload-files-as-attachments-and-insert-embeds": "파일을 첨부 파일로 업로드하고 임베드를 삽입합니다.",
+      "upload-files-as-attachments-and-insert-links": "파일을 첨부 파일로 업로드하고 링크를 삽입합니다.",
+      "caption-for-the-included-note": "포함된 노트의 캡션",
+      "enter-caption": "캡션 입력",
+      "tiny": "작게",
+      "show-title": "제목 표시",
+      "more-actions": "추가 작업",
+      "drawing-canvas": "그리기 캔버스",
+      "editable": "편집 가능",
+      "insert-a-canvas-to-draw-on": "그림을 그릴 수 있는 캔버스를 삽입합니다.",
+      "tabs": "탭",
+      "tab-title": "탭 제목",
+      "tab-0": "탭 %0",
+      "tab-content": "탭 내용",
+      "add-tab": "탭 추가",
+      "remove-tab": "탭 제거",
+      "move-tab-left": "탭을 왼쪽으로 이동",
+      "move-tab-right": "탭을 오른쪽으로 이동",
+      "copy-link-to-tab": "탭 링크 복사",
+      "tabs-toolbar": "탭 도구 모음",
+      "insert-titled-tabs-that-show-one-panel-at-a-time": "한 번에 하나의 패널을 표시하는 제목 있는 탭을 삽입합니다.",
+      "multicolumn-layout": "다중 열 레이아웃",
+      "multicolumn-layout-toolbar": "다중 열 레이아웃 도구 모음",
+      "multiple-column-layout": "여러 열 레이아웃",
+      "0-columns": "%0열",
+      "column-layout": "열 레이아웃",
+      "0-columns-layout": "%0열 레이아웃",
+      "arrange-content-in-0-equal-columns-side-by-side": "내용을 같은 너비의 %0개 열로 나란히 배치합니다.",
+      "0-columns-1": "%0열 (%1)",
+      "remove-layout": "레이아웃 제거"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
       "insert": "삽입",
       "alignment": "맞춤"
+    },
+    "colors": {
+      "pink": "분홍색"
     }
   },
   "contextual_help": {
@@ -4409,7 +4435,9 @@
     "label_marker": "라벨을 참조합니다. Enter 키를 눌러 라벨 목록 보기",
     "label_marker_negated": "라벨을 제외합니다. Enter 키를 눌러 라벨 목록 보기",
     "relation_marker": "관계를 참조합니다. Enter 키를 눌러 관계 목록 보기",
-    "relation_marker_negated": "관계를 제외합니다. Enter 키를 눌러 관계 목록 보기"
+    "relation_marker_negated": "관계를 제외합니다. Enter 키를 눌러 관계 목록 보기",
+    "property_links": "이 노트가 링크하는 노트에서 계속 검색",
+    "property_backlinks": "이 노트를 링크하는 노트에서 계속 검색"
   },
   "lightbox": {
     "image": "이미지",
@@ -4418,5 +4446,24 @@
   },
   "split_button": {
     "more_actions": "추가 작업"
+  },
+  "menu": {
+    "no_matches": "일치하는 항목 없음",
+    "filter": "필터",
+    "filter_placeholder": "필터할 내용을 입력…",
+    "back": "뒤로"
+  },
+  "block_reference": {
+    "paste_as_link": "참조를 링크로 붙여넣기",
+    "paste_as_excerpt": "참조를 발췌로 붙여넣기",
+    "no_reference_on_clipboard": "클립보드에 블록 참조가 없습니다.",
+    "broken": "끊어진 참조",
+    "not_found": "참조된 블록을 찾을 수 없습니다. 삭제되었을 수 있습니다.",
+    "untitled": "블록",
+    "excerpt": "발췌",
+    "excerpt_description": "현재 이 노트의 일부만 보고 있습니다. {{icon}} 버튼을 눌러 전체 노트를 새 탭에서 여세요.",
+    "edit_excerpt": "발췌 편집",
+    "copy_other": "이 {{count}}개 블록의 참조 복사",
+    "copy_tab": "이 탭의 링크 복사"
   }
 }

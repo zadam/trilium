@@ -103,7 +103,6 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "customRequestHandler", valueType: "text", isDangerous: true },
     { type: "label", name: "customResourceProvider", valueType: "text", isDangerous: true },
     { type: "label", name: "widget", valueType: "boolean", isDangerous: true },
-    { type: "label", name: "similarNotesWidgetDisabled", valueType: "boolean" },
     { type: "label", name: "workspace", valueType: "boolean" },
     { type: "label", name: "workspaceIconClass", valueType: "text" },
     { type: "label", name: "workspaceTabBackgroundColor", valueType: "color" },
@@ -187,8 +186,6 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "textSnippetDescription", valueType: "text", hasUserValue: true },
     // Offers the note's content as an instruction in the text editor's AI assistant menu.
     { type: "label", name: "aiQuickAction", valueType: "boolean" },
-    // Forces the table of contents open or shut; without the label the heading count decides.
-    { type: "label", name: "toc", valueType: "select", selectOptions: [ "show", "hide" ] },
     { type: "label", name: "color", valueType: "color" },
     { type: "label", name: "keepCurrentHoisting", valueType: "boolean" },
     { type: "label", name: "executeButton", valueType: "boolean" },
@@ -198,7 +195,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "clipperInbox", valueType: "boolean" },
     // Stamped by the web clipper on what it saves, recording which of its actions produced the note.
     { type: "label", name: "clipType", valueType: "select", selectOptions: [
-        "clippings", "page", "note", "tabs"
+        "clippings", "page", "note", "tabs", "file"
     ] },
     { type: "label", name: "sentFromSender", valueType: "boolean" },
     { type: "label", name: "hideChildrenOverview", valueType: "boolean" },
@@ -207,13 +204,17 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "mediaNotesPlayMode", valueType: "select", selectOptions: [ "loop", "next" ] },
     { type: "label", name: "collection", valueType: "boolean" },
     { type: "label", name: "webViewSrc", valueType: "url", isDangerous: true },
-    { type: "label", name: "hideHighlightWidget", valueType: "boolean" },
     { type: "label", name: "iconPack", valueType: "text", isDangerous: true },
     { type: "label", name: "docName", valueType: "text", isDangerous: true },
     { type: "label", name: "docUrl", valueType: "url", isDangerous: true },
     { type: "label", name: "language", valueType: "text", hasUserValue: true },
     { type: "label", name: "originalFileName", valueType: "text", hasUserValue: true },
     { type: "label", name: "pageUrl", valueType: "url", hasUserValue: true },
+    // Metadata the web clipper saves with a page; shown in the "Web clip" badge's details.
+    { type: "label", name: "pageDescription", valueType: "text", hasUserValue: true },
+    { type: "label", name: "pageAuthor", valueType: "text", hasUserValue: true },
+    { type: "label", name: "publishedDate", valueType: "date", hasUserValue: true },
+    { type: "label", name: "modifiedDate", valueType: "date", hasUserValue: true },
     { type: "label", name: "command", valueType: "text", hasUserValue: true },
     // Which half of the split editor a code-like note opens on; without it the read-only state decides.
     { type: "label", name: "displayMode", valueType: "select", hasUserValue: true, selectOptions: [
@@ -289,6 +290,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "calendar:slotDuration", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:slotLabelInterval", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:title", valueType: "text", hasUserValue: true },
+    { type: "label", name: "calendar:titleTemplate", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:displayedAttributes", valueType: "text", hasUserValue: true },
     // Each names the label an event reads a given field from, overriding the default listed after it.
     { type: "label", name: "calendar:startDate", valueType: "text", hasUserValue: true },
@@ -306,6 +308,12 @@ const BUILTIN_ATTRIBUTES = [
     // A shape drawn onto a geo map: a kind, a colon, then a `lat,lng` per vertex (see the
     // client's geomap/shapes.ts).
     { type: "label", name: "geoShape", valueType: "text", hasUserValue: true },
+    // The counterparts of `geolocation` and `geoShape` on a map drawn over an image (`~map:image`):
+    // `x,y` in the map's coordinates, which are the image's own pixels unless the map names others.
+    { type: "label", name: "mapPosition", valueType: "text", hasUserValue: true },
+    { type: "label", name: "mapShape", valueType: "text", hasUserValue: true },
+    // The coordinates of an image map's top-left and bottom-right corners, as `x,y x,y`.
+    { type: "label", name: "map:imageBounds", valueType: "text", hasUserValue: true },
     // Which note map a note map note draws; anything but `tree` is read as `link`.
     { type: "label", name: "mapType", valueType: "select", hasUserValue: true, selectOptions: [
         "link", "tree"
@@ -355,6 +363,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: "relation", name: "runOnChildNoteCreation", isDangerous: true },
     { type: "relation", name: "runOnAttributeCreation", isDangerous: true },
     { type: "relation", name: "runOnAttributeChange", isDangerous: true },
+    // The image a geo map draws in place of a world map.
+    { type: "relation", name: "map:image" },
     { type: "relation", name: "template" },
     // Set on a template: where a note created from it goes when no parent is picked explicitly.
     { type: "relation", name: "template:newNoteDefaultParent" },

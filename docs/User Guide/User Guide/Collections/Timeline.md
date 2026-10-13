@@ -14,7 +14,7 @@ To turn an existing collection into a timeline, change its view type to _Timelin
 
 ## Interaction
 
-*   To create a note with dates, drag across the days on the _New note_ row at the bottom of the timeline, type its title and press <kbd>Enter</kbd>. Clicking the _New note_ row creates a note without dates.
+*   To create a note with dates, drag across the days on the _New note_ row at the bottom of the timeline, type its title and press <kbd>Enter</kbd>. As in the <a class="reference-link" href="Calendar.md">Calendar</a>, the <span class="tn-icon bx bx-detail"></span> template field selects the note type or template the note is made from; the timeline remembers the choice for the next note, and _More templates…_ opens the dialog where the listed templates are chosen, described under _Event templates_ in the Calendar page. Clicking the _New note_ row creates a note without dates.
 *   To add a note to the timeline, click the <span class="tn-icon bx bx-plus"></span> button in the header of the left column. To add a child note under a row, hover the row and click its <span class="tn-icon bx bx-plus"></span> button. The new note opens beside the button, where it can be named and dated.
 *   To schedule a note, drag across the days on its row. This sets its start and end dates, replacing any it already had.
 *   To move a bar, drag it along its row. To change its start or end date, drag one of its edges.

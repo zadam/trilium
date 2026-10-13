@@ -1,4 +1,6 @@
 # Providers
+Providers are added in the _Model Providers_ section of the AI settings, with _Add Model Provider_. Each one lists the models selected for it, which are the ones the chat offers; a provider with no models selected is not offered in the chat.
+
 ## Cloud providers using API keys
 
 Currently, the following cloud providers are supported:

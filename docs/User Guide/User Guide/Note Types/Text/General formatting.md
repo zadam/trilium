@@ -71,6 +71,20 @@ Colors applied with older versions of Trilium are shown exactly as they were pic
 
 Older browsers that can't adapt colors show them exactly as they were picked.
 
+When you paste text copied from a web page in Chrome, Edge or a Chromium-based app (such as Visual Studio Code), Trilium removes the page's styling:
+
+*   Text and background colors.
+*   Fonts and font sizes.
+*   Table borders, backgrounds and spacing.
+
+The following formatting is preserved:
+
+*   Bold, italic, underline and strikethrough.
+*   Subscript and superscript.
+*   Links, code and tables.
+
+Colors are preserved when pasting from Word, Google Docs or another note.
+
 To remove either the background or foreground color of a text, select the corresponding formatting button and press _Remove color_ or use the _Remove formatting_ toolbar item.
 
 ## Remove formatting

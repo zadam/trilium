@@ -1,6 +1,11 @@
+// The client always runs with `preact/compat` loaded, and its `options.vnode` hook changes how
+// every element renders (`onChange` on a text input is `input`, `onFocus` is `focusin`). Loaded
+// here so a spec renders the same way whether or not its own imports reach compat.
+import "preact/compat";
+
 import { Modal } from "bootstrap";
 import $ from "jquery";
-import { vi } from "vitest";
+import { afterAll, vi } from "vitest";
 
 // Top level, not in a beforeAll: vi.mock is hoisted either way, and nesting it only makes the order lie.
 vi.mock("../services/ws.js", mockWebsocket);
@@ -8,6 +13,8 @@ vi.mock("../services/server.js", mockServer);
 
 injectGlobals();
 survivePendingModalCallbacks();
+deferSelectionChange();
+drainBootstrapTransitions();
 
 function injectGlobals() {
     const uncheckedWindow = window as any;
@@ -40,6 +47,29 @@ function survivePendingModalCallbacks() {
         this._dialog = this._element;
         this._focustrap = { activate() {}, deactivate() {} };
         this._backdrop = { show() {}, hide() {}, dispose() {} };
+    };
+}
+
+/**
+ * Fires `selectionchange` after the code that moved the selection, as browsers do.
+ *
+ * happy-dom dispatches it from inside `Selection.collapse()`. CodeMirror moves the DOM selection
+ * during `EditorView.update()`, and its listener updates the view again, which throws
+ * "Calls to EditorView.update are not allowed while an update is in progress".
+ */
+function deferSelectionChange() {
+    const dispatch = document.dispatchEvent.bind(document);
+    // happy-dom's `dispatchEvent()` calls itself again for each event phase.
+    const deferred = new WeakSet<Event>();
+
+    document.dispatchEvent = (event: Event) => {
+        if (event.type !== "selectionchange" || deferred.has(event)) {
+            return dispatch(event);
+        }
+
+        deferred.add(event);
+        queueMicrotask(() => dispatch(event));
+        return true;
     };
 }
 
@@ -125,4 +155,16 @@ function mockServer() {
             async remove(_url: string) {}
         }
     };
+}
+
+/**
+ * Lets Bootstrap's transition timers run out before the file's environment is torn down.
+ *
+ * happy-dom runs no transitions, so Bootstrap ends each one with a `setTimeout()` of about 5ms that
+ * dispatches `transitionend` itself. A file that ends with a dialog still opening or closing leaves
+ * one pending, and once the window is gone its `new Event()` belongs to another realm than the
+ * element, which throws outside any test.
+ */
+function drainBootstrapTransitions() {
+    afterAll(() => new Promise((resolve) => setTimeout(resolve, 50)));
 }

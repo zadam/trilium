@@ -2,10 +2,10 @@ import type { HighlightedTokenInfo, SearchResultDetails } from "@triliumnext/com
 
 import { t } from "../../../services/i18n";
 import { calculateHash, type ViewScope } from "../../../services/link";
-import { Badge } from "../../react/Badge";
+import { AttributeSnippetBadges } from "../../react/Badge";
 import { useNote, useNoteTitle } from "../../react/hooks";
 import Icon from "../../react/Icon";
-import RawHtml, { HighlightedText, RawHtmlBlock } from "../../react/RawHtml";
+import { HighlightedText, RawHtmlBlock } from "../../react/RawHtml";
 
 interface SearchResultCardProps {
     noteId: string;
@@ -28,8 +28,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const icon = note?.getIcon() ?? details?.icon ?? "bx bx-note";
     const breadcrumb = getBreadcrumbTitle(details?.notePathTitle);
 
-    const searchTerms = toPlainSearchTerms(highlightedTokens);
-    const viewScope: ViewScope = { searchTerms };
+    const viewScope: ViewScope = { searchTerms: searchTermsFor(details, highlightedTokens) };
     const href = calculateHash({ notePath: noteId, viewScope });
 
     return (
@@ -44,7 +43,10 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
                 {breadcrumb && <span className="search-result-card-path">{breadcrumb}</span>}
             </div>
             <SearchResultSnippet details={details} loading={loading} />
-            <SearchResultBadges snippet={details?.highlightedAttributeSnippet} />
+            <AttributeSnippetBadges
+                snippet={details?.highlightedAttributeSnippet}
+                className="search-result-card-badges"
+            />
         </a>
     );
 }
@@ -64,27 +66,23 @@ function SearchResultSnippet({ details, loading }: { details: SearchResultDetail
     return <RawHtmlBlock className="search-result-card-snippet" html={details.highlightedContentSnippet ?? ""} />;
 }
 
-function SearchResultBadges({ snippet }: { snippet: string | undefined }) {
-    if (!snippet) return null;
-
-    const lines = snippet.split(/<br\s*\/?>/i).map((line) => line.trim()).filter(Boolean);
-    if (lines.length === 0) return null;
-
-    return (
-        <div className="search-result-card-badges">
-            {lines.map((line, index) => (
-                <Badge key={index} outline text={<RawHtml html={line} />} />
-            ))}
-        </div>
-    );
-}
-
 /** The breadcrumb shows the ancestor path only, i.e. the note-path title minus the note's own title. */
 export function getBreadcrumbTitle(notePathTitle: string | undefined): string {
     if (!notePathTitle) return "";
     const parts = notePathTitle.split(" › ");
     parts.pop();
     return parts.join(" › ");
+}
+
+/**
+ * The terms the find bar looks for in a result opened from a search: the words as the note spells
+ * them, so it matches "ktorý" for the query "ktory", or the query's plain tokens without details.
+ */
+export function searchTermsFor(
+    details: Pick<SearchResultDetails, "matchedTerms"> | undefined,
+    highlightedTokens: (string | HighlightedTokenInfo)[] | null | undefined
+): string[] {
+    return details?.matchedTerms?.length ? details.matchedTerms : toPlainSearchTerms(highlightedTokens);
 }
 
 /** Plain tokens only (regex tokens can't round-trip as literal search terms). */

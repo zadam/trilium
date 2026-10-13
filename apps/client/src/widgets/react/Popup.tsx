@@ -2,8 +2,9 @@ import "./Popup.css";
 
 import { arrow, autoUpdate, computePosition, flip, hide, offset, type OffsetOptions, type Placement, type ReferenceElement, shift, size } from "@floating-ui/dom";
 import clsx from "clsx";
-import { type ComponentChildren, createContext, type HTMLAttributes, type Ref } from "preact";
-import { createPortal } from "preact/compat";
+import {
+    type ComponentChildren, createContext, createPortal, type HTMLAttributes, type Ref
+} from "preact";
 import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 
 /**
@@ -13,8 +14,11 @@ import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from "preac
  */
 export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | "className" | "role" | "style" | "tabIndex"
         | "onClick" | "onPointerMove" | "onContextMenu" | "aria-labelledby"> {
-    /** What it stands beside: an element, or a point in the viewport such as where a right-click landed. */
-    anchor: HTMLElement | { x: number, y: number };
+    /**
+     * What it stands beside: an element, a point in the viewport such as where a right-click landed,
+     * or a rect that is no element, such as a text editor's caret.
+     */
+    anchor: HTMLElement | { x: number, y: number } | ReferenceElement;
     /**
      * The side of the anchor it prefers, flipped to the other side where that one has no room.
      * Below the anchor, lined up with its start, by default.
@@ -113,11 +117,13 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
             reportPlaced();
             return;
         }
-        const reference = anchor instanceof HTMLElement ? anchor : pointAt(anchor.x, anchor.y);
+        const reference = "x" in anchor ? pointAt(anchor.x, anchor.y) : anchor;
         // A placement settles after the fact, by which time it can have closed.
         let closed = false;
         // Places it now, and again whenever its anchor moves or the viewport or it changes size.
-        const options = { placement, offset: gap, capHeight, shiftAcross: !(anchor instanceof HTMLElement) };
+        // Only a menu at a point moves over it. A rect, such as a caret, marks text the popup must not
+        // cover, so the popup keeps to one side and its height is capped to the room there.
+        const options = { placement, offset: gap, capHeight, shiftAcross: "x" in anchor };
         const stopUpdating = autoUpdate(reference, popup, () => void placeFloating(popup, reference, options).then(() => {
             if (!closed) reportPlaced();
             // Resolved after the stylesheet took over, so what it wrote goes again.
@@ -127,7 +133,7 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
             closed = true;
             stopUpdating();
         };
-    }, [ anchor instanceof HTMLElement ? anchor : undefined, anchorX, anchorY, placement, gap, capHeight, placedByStylesheet ]);
+    }, [ "x" in anchor ? undefined : anchor, anchorX, anchorY, placement, gap, capHeight, placedByStylesheet ]);
 
     const dismiss = useRef(onDismiss);
     dismiss.current = onDismiss;
@@ -244,6 +250,11 @@ export interface FloatingPlacement {
     /** Hides it while its anchor is scrolled out of view, as a submenu whose row scrolled away. */
     hideWithAnchor?: boolean;
     /**
+     * Keeps its top at this viewport y instead of where its height would place it, for a popup
+     * whose content changes while it is read. With {@link capHeight}, the cap is the room below it.
+     */
+    pinTop?: number;
+    /**
      * An arrow element inside it. Its offset along the edge facing the anchor is set to point at
      * the anchor, at least `padding` pixels from the corners.
      */
@@ -256,7 +267,7 @@ export interface FloatingPlacement {
  * near the viewport's edge. It stays hidden until placed, so it never paints at a stale position.
  * Resolves to the placement Floating UI chose.
  */
-export async function placeFloating(element: HTMLElement, anchor: ReferenceElement, { placement, offset: gap, shiftAcross, capHeight, hideWithAnchor, arrow: pointer }: FloatingPlacement) {
+export async function placeFloating(element: HTMLElement, anchor: ReferenceElement, { placement, offset: gap, shiftAcross, capHeight, hideWithAnchor, pinTop, arrow: pointer }: FloatingPlacement) {
     const padding = viewportPadding();
     const { x, y, placement: placed, middlewareData } = await computePosition(anchor, element, {
         strategy: "fixed",
@@ -277,7 +288,10 @@ export async function placeFloating(element: HTMLElement, anchor: ReferenceEleme
     });
 
     element.style.left = `${x}px`;
-    element.style.top = `${y}px`;
+    element.style.top = `${pinTop ?? y}px`;
+    if (capHeight && pinTop !== undefined) {
+        element.style.maxHeight = `${document.documentElement.clientHeight - pinTop - padding.bottom}px`;
+    }
     element.style.visibility = middlewareData.hide?.referenceHidden ? "hidden" : "visible";
     if (pointer) {
         // Only the offset along the facing edge; the stylesheet sets the other axis.

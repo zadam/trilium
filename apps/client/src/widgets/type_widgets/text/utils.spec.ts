@@ -1,3 +1,4 @@
+import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { attachmentIcon } from "@triliumnext/commons";
 import type { VNode } from "preact";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -39,6 +40,7 @@ import { getDownloadAction, getOpenExternallyAction } from "../../../services/at
 import content_renderer from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import link from "../../../services/link";
+import { registerContentEmbedTools } from "./content_embed_tools";
 import ContentEmbed, {
     getNoteActions,
     type ContentEmbedAction,
@@ -132,7 +134,8 @@ describe("loadEmbeddedNote", () => {
             title,
             content,
             contentType: "pdf",
-            notePath: "noteY"
+            notePath: "noteY",
+            isExcerpt: false
         });
     });
 
@@ -173,6 +176,42 @@ describe("loadEmbeddedNote", () => {
     });
 });
 
+describe("loadEmbeddedNote of blocks", () => {
+    it("shows only the blocks, and opens the note at them", async () => {
+        const wrapper = createWrapper();
+        const figure = inPage(document.createElement("figure"));
+        figure.className = "include-note";
+        figure.dataset.boxSize = "tiny";
+
+        const onBlockChange = vi.fn();
+        await loadEmbeddedNote("noteY", $(wrapper), "medium", { block: "b1:b2", onBlockChange });
+
+        const viewScope = { block: "b1:b2" };
+        expect(link.createLink)
+            .toHaveBeenCalledWith("noteY", expect.objectContaining({ viewScope }));
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(note,
+            expect.objectContaining({ block: "b1:b2", onBlockChange }));
+        expect(lastMount().props).toMatchObject({ viewScope, isExcerpt: true });
+
+        await loadEmbeddedNote("noteY", $(figure), undefined, { block: "b1" });
+
+        expect(lastMount().type).toBe(TinyContentEmbed);
+        expect(lastMount().props.viewScope).toEqual({ block: "b1" });
+        expect(lastMount().container.classList.contains("excerpt")).toBe(true);
+    });
+
+    it("marks the wrapper of an excerpt, and unmarks it for a whole note", async () => {
+        const wrapper = createWrapper();
+
+        await loadEmbeddedNote("noteY", $(wrapper), "medium", { block: "b1" });
+        expect(wrapper.className).toBe("include-note-wrapper excerpt");
+
+        await loadEmbeddedNote("noteY", $(wrapper), "medium");
+        expect(wrapper.className).toBe("include-note-wrapper");
+        expect(lastMount().props.isExcerpt).toBe(false);
+    });
+});
+
 describe("loadEmbeddedAttachment", () => {
     it("mounts a box with the attachment, opened in its note", async () => {
         const wrapper = createWrapper();
@@ -198,6 +237,22 @@ describe("loadEmbeddedAttachment", () => {
             notePath: "owner",
             viewScope: ATTACHMENT_SCOPE
         });
+    });
+
+    it("passes the attachment editor to the renderer, and the focus to the box", async () => {
+        const attachmentEditor = { canEdit: vi.fn() } as never;
+
+        await loadEmbeddedAttachment("att1", $(createWrapper()), "medium", {
+            attachmentEditor,
+            isFocused: true
+        });
+
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
+            interactive: true,
+            mediaEnvironment: "embedded",
+            attachmentEditor
+        });
+        expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
     });
 
     it("leaves the box alone for a deleted attachment", async () => {
@@ -319,7 +374,7 @@ describe("refreshEmbeddedNote", () => {
     it("reloads every embed of the note, of either element", async () => {
         const container = inPage(document.createElement("div"));
         container.innerHTML = `<figure class="include-note" data-note-id="noteY"></figure>`
-            + `<section class="include-note" data-note-id="noteY"></section>`
+            + `<section class="include-note" data-note-id="noteY" data-block="b1"></section>`
             + `<figure class="include-note" data-note-id="other"></figure>`;
         const [ figure, section ] = [ ...container.children ];
 
@@ -331,11 +386,15 @@ describe("refreshEmbeddedNote", () => {
         const mountedIn = vi.mocked(content_renderer.mountInteractiveWidget).mock.calls
             .map(([ , wrapper ]) => wrapper.parentElement);
         expect(mountedIn).toEqual([ figure, section ]);
+        expect(vi.mocked(content_renderer.getRenderedContent).mock.calls
+            .map(([ , options ]) => options?.block)).toEqual([ undefined, "b1" ]);
     });
 });
 
 describe("watchContentEmbeds", () => {
     let container: HTMLElement;
+    const update = vi.fn();
+    const editor = { ui: { update } } as unknown as CKTextEditor;
 
     beforeEach(() => {
         container = document.createElement("div");
@@ -383,6 +442,29 @@ describe("watchContentEmbeds", () => {
         await flush();
         expect(disposed()).toHaveLength(2);
     });
+
+    it("updates the editor when content in an embed adds or removes toolbar buttons", () => {
+        const provider = { getTools: () => [], execute: vi.fn(), subscribe: () => () => {} };
+        const [ inside, outside ] = [ container, document.body ].map((parent) => {
+            const element = document.createElement("div");
+            parent.append(element);
+            return element;
+        });
+        update.mockClear();
+        const stop = watchContentEmbeds(container, editor);
+
+        const unregisterInside = registerContentEmbedTools(inside, provider);
+        expect(update).toHaveBeenCalledTimes(1);
+        registerContentEmbedTools(outside, provider)();
+        expect(update).toHaveBeenCalledTimes(1);
+        unregisterInside();
+        expect(update).toHaveBeenCalledTimes(2);
+
+        stop();
+        registerContentEmbedTools(inside, provider)();
+        expect(update).toHaveBeenCalledTimes(2);
+        outside.remove();
+    });
 });
 
 describe("openContentEmbedMenu", () => {
@@ -390,14 +472,19 @@ describe("openContentEmbedMenu", () => {
         const anchor = document.createElement("button");
         const noteEmbed = inPage(document.createElement("figure"));
         noteEmbed.dataset.noteId = "noteY";
+        const blockEmbed = inPage(document.createElement("figure"));
+        blockEmbed.dataset.noteId = "noteY";
+        blockEmbed.dataset.block = "b1";
         const embed = inPage(document.createElement("figure"));
         embed.dataset.attachmentId = "att1";
 
         await openContentEmbedMenu(noteEmbed, anchor);
+        await openContentEmbedMenu(blockEmbed, anchor);
         await openContentEmbedMenu(embed, anchor);
 
         expect(vi.mocked(linkContextMenu.openContextMenu).mock.calls).toEqual([
             [ "noteY", { anchor, target: noteEmbed }, {} ],
+            [ "noteY", { anchor, target: blockEmbed }, { block: "b1" } ],
             [ "owner", { anchor, target: embed }, ATTACHMENT_SCOPE ]
         ]);
     });

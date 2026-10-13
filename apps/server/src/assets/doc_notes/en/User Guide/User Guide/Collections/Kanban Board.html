@@ -1,7 +1,7 @@
 <p>The Board view lets you arrange subnotes as cards on a <a href="https://en.wikipedia.org/wiki/Kanban_board">Kanban board</a>.</p>
 <h2>Creating a Kanban board</h2>
 <p>Right-click an existing note in the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>,
-  select <strong>Insert child note</strong>, and look for <strong>Kanban Board</strong>.</p>
+  select <em>Insert child note</em> → <em>Collection</em> → <em>Kanban Board</em>.</p>
 <h2>How it works</h2>
 <p>When you first create a collection of the <em>Board</em> type, a few subnotes
   are created, each with a <code>#status</code> label set. The board then groups
@@ -76,6 +76,10 @@
     moving the selected cards up or down, or to another column.</li>
 </ul>
 <p>Collapsed columns can still be reordered, and their menus remain available.</p>
+<p>A collapsed column shows its title vertically, read from the bottom up.
+  If any column title on the board contains Chinese, Japanese or Korean characters,
+  the titles of all collapsed columns read from the top down instead, so
+  that those characters stay upright.</p>
 <h4>Expanding</h4>
 <p>You can restore a collapsed column so that its content is visible again
   in the following ways:</p>
@@ -163,7 +167,7 @@
       </tr>
       <tr>
         <td>Select</td>
-        <td>The order in which the options are declared.&nbsp;&nbsp;&nbsp;
+        <td>The order in which the options are declared.&nbsp;&nbsp;&nbsp;&nbsp;
           <br>For example, a select attribute declared with “Low”, “Medium”, and “High”
           options will be sorted as follows: Low → Medium → High.</td>
       </tr>
@@ -354,7 +358,7 @@
         use the <kbd>Up</kbd> and <kbd>Down</kbd> arrow keys to expand or shrink the
         selection.</li>
       <li>To select every card in the column the focus is in, press <kbd>Ctrl</kbd> + <kbd>A</kbd>.
-        The same action is available from the column menu, as <span class="tn-icon bx bx-selection"></span>  <strong>Select all cards</strong>.</li>
+        The same action is available from the column menu, as <span class="tn-icon bx bx-selection"></span><strong>Select all cards</strong>.</li>
       <li>Press <kbd>Esc</kbd> to clear the selection.</li>
     </ul>
   </li>
@@ -499,9 +503,9 @@ class="admonition warning">
   <p>For each newly created attribute, Trilium creates an attribute definition
     on the board collection note. A card displays the attributes declared as
     inheritable on the board note, as well as any attribute the card gets a
-    definition for from elsewhere, for example through <a class="reference-link"
-    href="#root/_help_KC1HB96bqqHX">Templates</a> or another parent note it
-    is cloned under. Attributes that only the cards define are listed after
+    definition for from elsewhere, for example through&nbsp;<a class="reference-link"
+    href="#root/_help_KC1HB96bqqHX">Templates</a>&nbsp;or another parent note
+    it is cloned under. Attributes that only the cards define are listed after
     the board's own.</p>
 </aside>
 <p>Here is an example of the attributes you can define for a typical Kanban
@@ -704,3 +708,14 @@ class="admonition warning">
   link address is pasted instead. Opening the link scrolls the board to the
   column or card and focuses it. If the column belongs to a different grouping
   attribute, the board switches to that attribute first.</p>
+<h2>Read-only boards</h2>
+<p>A board marked as <a href="#root/_help_CoFPLs3dRlXc">read-only</a> only
+  shows its cards. It has no buttons to add a card or a column, column and
+  card titles can't be renamed, and column icons can't be changed. Cards
+  and columns can't be dragged, moved or deleted with the keyboard, and notes
+  dragged in from the note tree aren't added. The context menus of a card
+  or a column keep only the entries that change nothing, such as opening
+  the note or <span class="tn-icon bx bx-copy"></span>  <em>Copy reference</em>,
+  and the board's own menu doesn't open. The cards can still be grouped by
+  another attribute, but the choice isn't saved, and no new grouping attribute
+  can be created.</p>

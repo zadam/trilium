@@ -72,7 +72,7 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
     // Web search hint
     if (!config.enableWebSearch) {
         parts.push(
-            `You do not have access to web search. If the user asks for current/real-time information, news, or anything that requires searching the web, inform them that "Web search" is disabled and they can turn it on with ${WEB_SEARCH_TOGGLE}.`
+            `You do not have access to web search. If the user asks for current/real-time information, news, or anything that requires searching the web, inform them that "Web search" is disabled and they can turn it on by ${WEB_SEARCH_TOGGLE}.`
         );
     }
 
@@ -102,6 +102,7 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
             + `**Tables** — GitHub-style pipe tables: a header row, a \`---\` separator row, then the data rows.\n\n`
             + `**Collapsible blocks** — use the standard HTML \`<details>\`/\`<summary>\` form; the \`<summary>\` is the always-visible title. Placed back-to-back with nothing between them, consecutive collapsible blocks are grouped into an accordion — handy when presenting several options or alternatives the user can expand one at a time. Example:\n`
             + `<details><summary>Option A</summary>\nDetails about the first option.\n</details>\n<details><summary>Option B</summary>\nDetails about the second option.\n</details>\n\n`
+            + buildTabsHint(config.enableNoteTools === true)
             + `**Footnotes** — use \`[^1]\` in text and \`[^1]: explanation\` at the bottom.\n\n`
             + `**Keyboard keys** — wrap each key in a \`<kbd>\` tag when documenting shortcuts, e.g. \`<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd>\`.\n\n`
             + buildIconHint(config.enableNoteTools === true)
@@ -124,6 +125,18 @@ function buildIconHint(canSearchIcons: boolean): string {
 }
 
 /**
+ * The content-tabs hint. The note tools return text notes as Markdown, so a model that can edit
+ * notes is also told to keep the indentation that holds a tab's content inside the tab.
+ */
+function buildTabsHint(canEditNotes: boolean): string {
+    const keep = canEditNotes
+        ? " When editing a note that has content tabs, keep each `===` line and the four-space indentation of its content, or the content leaves the tab."
+        : "";
+    return `**Content tabs** — for content that comes in parallel variants of which the reader needs only one (steps for each operating system, the same snippet in several languages). Each tab is a \`=== "Title"\` line followed by its content indented four spaces; consecutive tabs form one block, and \`===! "Title"\` starts a new block straight after another. Prefer a collapsible accordion when the reader might want to open several options.${keep} Example:\n`
+        + "=== \"Windows\"\n\n    Run `setup.exe`.\n\n=== \"Linux\"\n\n    Run `./setup.sh`.\n\n";
+}
+
+/**
  * The task-list formatting hint, extended with the workspace's user-defined multi-state checkboxes so
  * the model recognizes their markers (e.g. `- [/]` = "Doing") in the user's notes and can produce them.
  * Falls back to just the native open/completed states when no custom states are configured.
@@ -139,12 +152,9 @@ function buildTaskListHint(): string {
 }
 
 /**
- * Where the user turns a capability on: the icon toggles beside the model
- * selector in `ChatInputBar`. The icon classes must match the toggles' own.
+ * Where the user turns a capability on: the Tools menu beside the model selector in
+ * `ChatInputBar`. The icon class must match the toggle button of `ChatToolsDropdown`.
  */
-const NOTE_ACCESS_TOGGLE = describeToggle("bx bx-note", "Note access");
-const WEB_SEARCH_TOGGLE = describeToggle("bx bx-globe", "Web search");
-
-function describeToggle(iconClass: string, label: string): string {
-    return `the <span class="tn-icon ${iconClass}"></span> "${label}" toggle next to the model selector, below the message box (include the icon exactly as written, so the user sees the same icon)`;
-}
+const TOOLS_MENU = `the <span class="tn-icon bx bx-shield-quarter"></span> "Tools" menu next to the model selector, below the message box (include the icon exactly as written, so the user sees the same icon)`;
+const NOTE_ACCESS_TOGGLE = `the "Note access" switch in ${TOOLS_MENU}`;
+const WEB_SEARCH_TOGGLE = `choosing a search source under "Web search" in ${TOOLS_MENU}`;

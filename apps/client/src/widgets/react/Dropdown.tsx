@@ -1,10 +1,12 @@
 import type { Placement } from "@floating-ui/dom";
 import type { Tooltip } from "bootstrap";
 import clsx from "clsx";
-import { ComponentChildren, HTMLAttributes } from "preact";
-import { CSSProperties, HTMLProps } from "preact/compat";
-import { MutableRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import {
+    ButtonHTMLAttributes, ComponentChildren, CSSProperties, HTMLAttributes, RefObject
+} from "preact";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
+import type { MenuItem } from "../../menus/context_menu";
 import { isMobile, isNarrowLayout, onNarrowLayoutChange } from "../../services/utils";
 import { focusListItem } from "./FormList";
 import { useTooltip, useUniqueName } from "./hooks";
@@ -16,14 +18,21 @@ type DataAttributes = {
     [key: `data-${string}`]: string | number | boolean | undefined;
 };
 
-export interface DropdownProps extends Pick<HTMLProps<HTMLDivElement>, "id" | "className"> {
+export interface DropdownProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | "className"> {
     buttonClassName?: string;
-    buttonProps?: Partial<HTMLAttributes<HTMLButtonElement> & DataAttributes>;
-    children: ComponentChildren;
+    buttonProps?: Partial<ButtonHTMLAttributes<HTMLButtonElement> & DataAttributes>;
+    children?: ComponentChildren;
+    /**
+     * For a {@link Dropdown}, its rows as data instead of {@link children}: a row runs its
+     * `handler`, then closes the menu.
+     */
+    items?: MenuItem<unknown>[];
+    /** For a {@link Dropdown} of {@link items}, offers an input at its top that filters them. */
+    filterable?: boolean;
     title?: string;
     dropdownContainerStyle?: CSSProperties;
     dropdownContainerClassName?: string;
-    dropdownContainerRef?: MutableRef<HTMLDivElement | null>;
+    dropdownContainerRef?: RefObject<HTMLDivElement | null>;
     hideToggleArrow?: boolean;
     /** If set to true, then the dropdown button will be considered an icon action (without normal border and sized for icons only). */
     iconAction?: boolean;
@@ -41,7 +50,7 @@ export interface DropdownProps extends Pick<HTMLProps<HTMLDivElement>, "id" | "c
      * keeps a menu open whatever this says.
      */
     autoClose?: boolean | "inside" | "outside";
-    dropdownRef?: MutableRef<DropdownHandle | null>;
+    dropdownRef?: RefObject<DropdownHandle | null>;
     titlePosition?: "top" | "right" | "bottom" | "left";
     titleOptions?: Partial<Tooltip.Options>;
     mobileBackdrop?: boolean;
@@ -94,6 +103,12 @@ export default function Dropdown(props: DropdownProps) {
                     bottomSheet={bottomSheet}
                     startAt={startAt}
                     isWanted={isWanted}
+                    items={props.items}
+                    filterable={props.filterable}
+                    onSelect={(item, e) => {
+                        item.handler?.(item, e);
+                        if (!item.items) close();
+                    }}
                     onDismiss={() => dismiss("outside")}
                     onClose={close}
                 >

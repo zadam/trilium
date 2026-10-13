@@ -97,6 +97,33 @@ describe("Popup", () => {
         expect(tall.style.maxHeight).toBe(`${800 - 330 - 5}px`);
     });
 
+    it("keeps a top it is pinned to, whatever its height, and caps its height to the room below", async () => {
+        const layer = document.createElement("div");
+        document.body.append(layer);
+        anchorAt(100, 600);
+        vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(400);
+        // Unpinned, too tall for the room beside its anchor, it moves up to fit.
+        await placeFloating(layer, anchor, { placement: "right-start", capHeight: true });
+        expect(parseFloat(layer.style.top)).toBeLessThan(600);
+
+        await placeFloating(layer, anchor, { placement: "right-start", capHeight: true, pinTop: 250 });
+        expect(layer.style.top).toBe("250px");
+        expect(layer.style.maxHeight).toBe(`${800 - 250 - 5}px`);
+        // Its side still follows the room it has.
+        expect(layer.style.left).toBe("180px");
+        layer.remove();
+    });
+
+    it("keeps to one side of a caret, never over the line typed, however long it is", async () => {
+        vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(1000);
+        const caret = { getBoundingClientRect: () => DOMRect.fromRect({ x: 100, y: 300, width: 1, height: 16 }) };
+        const popup = await open({ anchor: caret });
+
+        // Below the caret, with the room down to the viewport's edge less its gap.
+        expect(popup.style.top).toBe("316px");
+        expect(popup.style.maxHeight).toBe(`${800 - 316 - 5}px`);
+    });
+
     it("keeps clear of the screen's safe areas, such as a notch or a gesture bar", async () => {
         // The insets a device reports, as the probe reads them from the stylesheet.
         const measure = window.getComputedStyle.bind(window);

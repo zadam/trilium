@@ -11,6 +11,7 @@ To insert an inline code:
 
 *   Via the [Formatting toolbar](Formatting%20toolbar.md), look for the <span class="tn-icon cke cke-code"></span> button.
 *   Type \`code\` where `code` is the desired text to be automatically formatted as inline code.
+*   Paste a single line copied from Visual Studio Code. See [Code blocks](Developer-specific%20formatting/Code%20blocks.md) for pasting several lines.
 
 ### Code blocks
 

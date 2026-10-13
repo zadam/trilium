@@ -1,5 +1,9 @@
 import { Plugin, type ListDropdownButtonDefinition, Collection, ViewModel, createDropdown, addListToDropdown, DropdownButtonView, type Command } from "ckeditor5";
-import ContentEmbed, { BOX_SIZE_COMMAND_NAME, BOX_SIZES, type BoxSizeValue, getBoxSizeLabel } from "./content_embed.js";
+import ContentEmbed, {
+    BOX_SIZE_COMMAND_NAME, BOX_SIZES, type BoxSizeValue, getBoxSizeLabel, isToolbarItemHidden
+} from "./content_embed.js";
+
+export const CONTENT_EMBED_BOX_SIZE_DROPDOWN = "contentEmbedBoxSizeDropdown";
 
 /**
  * Toolbar item which displays the list of box sizes for embeds in a dropdown.
@@ -16,8 +20,9 @@ export default class ContentEmbedBoxSizeDropdown extends Plugin {
 
         const itemDefinitions = this._getBoxSizeListItemDefinitions();
         const command = editor.commands.get(BOX_SIZE_COMMAND_NAME) as Command & { value: BoxSizeValue | null };
+        const contentEmbed = editor.plugins.get(ContentEmbed);
 
-        componentFactory.add("contentEmbedBoxSizeDropdown", _locale => {
+        componentFactory.add(CONTENT_EMBED_BOX_SIZE_DROPDOWN, _locale => {
             const dropdownView = createDropdown(editor.locale, DropdownButtonView);
             const boxSizeLabel = editor.t("Box size");
             dropdownView.buttonView.set({
@@ -26,6 +31,10 @@ export default class ContentEmbedBoxSizeDropdown extends Plugin {
                 label: boxSizeLabel
             });
             dropdownView.bind("isEnabled").to(command, "isEnabled");
+            dropdownView.bind("class").to(contentEmbed, "selectedEmbedTools", (tools) => {
+                const isHidden = isToolbarItemHidden(tools, CONTENT_EMBED_BOX_SIZE_DROPDOWN);
+                return isHidden ? "ck-hidden" : undefined;
+            });
             dropdownView.buttonView.bind("label").to(command, "value", (value) => {
                 if (!value) return boxSizeLabel;
                 return getBoxSizeLabel(editor.t, value);

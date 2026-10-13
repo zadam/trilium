@@ -9,7 +9,7 @@ import {
 	type ViewRange
 } from 'ckeditor5';
 import { getAttachmentId } from '../referencelink.js';
-import FileUploadCommand from './fileuploadcommand';
+import FileUploadCommand, { isFocusUpload, isQuietUpload } from './fileuploadcommand';
 
 /** A file attachment upload, announced by the `upload` event of `FileUploadEditing`. */
 export interface FileUploadData {
@@ -145,9 +145,16 @@ export default class FileUploadEditing extends Plugin {
 				return promise;
 			} )
 			.then( data => {
+				const attachmentId = getAttachmentId( data.default );
+				// Before `attachmentId` is set: setting it makes the host render the embed.
+				const isEmbed = fileElement.is( 'element', 'contentEmbed' );
+				if ( attachmentId && isEmbed && isFocusUpload( loader ) ) {
+					glob.getComponentByEl<EditorComponent>( editor.editing.view.getDomRoot() )
+						.focusContentEmbed?.( attachmentId );
+				}
+
 				model.enqueueChange( { isUndoable: false }, writer => {
-					if ( fileElement.is( 'element', 'contentEmbed' ) ) {
-						const attachmentId = getAttachmentId( data.default );
+					if ( isEmbed ) {
 						writer.setAttribute( 'attachmentId', attachmentId, fileElement );
 					} else {
 						writer.setAttribute( 'href', data.default, fileElement );
@@ -179,11 +186,13 @@ export default class FileUploadEditing extends Plugin {
 				} );
 			} );
 
-		this.fire<FileUploadEvent>( 'upload', {
-			fileName: String( fileElement.getAttribute( 'uploadFileName' ) ?? '' ),
-			loader,
-			done: Promise.allSettled( [ upload ] ).then( () => undefined )
-		} );
+		if ( !isQuietUpload( loader ) ) {
+			this.fire<FileUploadEvent>( 'upload', {
+				fileName: String( fileElement.getAttribute( 'uploadFileName' ) ?? '' ),
+				loader,
+				done: Promise.allSettled( [ upload ] ).then( () => undefined )
+			} );
+		}
 
 		return upload;
 

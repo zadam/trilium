@@ -193,9 +193,9 @@ describe("ColorPicker", () => {
             // Two rapid changes within the debounce interval collapse into a single report.
             await act(async () => {
                 input.value = "#aabbcc";
-                input.dispatchEvent(new Event("change", { bubbles: true }));
+                input.dispatchEvent(new Event("input", { bubbles: true }));
                 input.value = "#ddeeff";
-                input.dispatchEvent(new Event("change", { bubbles: true }));
+                input.dispatchEvent(new Event("input", { bubbles: true }));
             });
             expect(onChange).not.toHaveBeenCalled();
 
@@ -217,7 +217,7 @@ describe("ColorPicker", () => {
 
             await act(async () => {
                 input.value = "#aabbcc";
-                input.dispatchEvent(new Event("change", { bubbles: true }));
+                input.dispatchEvent(new Event("input", { bubbles: true }));
             });
             await act(async () => { vi.advanceTimersByTime(250); });
             onChange.mockClear();

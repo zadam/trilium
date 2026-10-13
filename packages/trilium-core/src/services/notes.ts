@@ -1,4 +1,4 @@
-import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, dayjs, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
+import { type AttachmentRow, attachmentRoleTraits, type AttributeRow, type BranchRow, CANVAS_ATTACHMENT_MIME, dayjs, isEmbeddedAttachmentRole, isImageAttachmentRole, type NoteRow, NOTE_TYPE_IMAGE_ATTACHMENTS, type NoteType, parseMindMapNoteLink } from "@triliumnext/commons";
 import { t } from "i18next";
 import { parse as parseHtml } from "node-html-parser";
 
@@ -23,7 +23,7 @@ import { evaluateTemplateSafe } from "./safe_template.js";
 import { sanitizeHtml } from "./sanitizer.js";
 import { getSql } from "./sql/index.js";
 import type TaskContext from "./task_context.js";
-import { decodeBase64 } from "./utils/binary.js";
+import { decodeBase64, decodeUtf8, encodeBase64 } from "./utils/binary.js";
 import date_utils from "./utils/date.js";
 import { isValidEntityId, newEntityId, replaceAll, toMap, unescapeHtml } from "./utils/index.js";
 import ws from "./ws.js";
@@ -496,7 +496,8 @@ function writeExtractedText(blobId: string | undefined, extractedText: string, i
 export function checkImageAttachments(note: BNote, content: string) {
     // Canvas references images by the Excalidraw fileId stored as the attachment *title* in its
     // scene JSON, so orphans are detected by title; every other type references them by attachmentId
-    // embedded in the content (an image URL or attachment link).
+    // embedded in the content (an image URL or attachment link), and by title from the scenes of
+    // the canvas drawings it embeds.
     const isCanvas = note.type === "canvas";
     const foundAttachmentIds = new Set<string>();
     /**
@@ -505,7 +506,6 @@ export function checkImageAttachments(note: BNote, content: string) {
      * reached any other way was put there by hand and takes the role that says so.
      */
     const previewPictureIds = new Set<string>();
-    const foundCanvasFileIds = isCanvas ? collectCanvasImageFileIds(content) : new Set<string>();
 
     if (!isCanvas) {
         let match;
@@ -546,6 +546,13 @@ export function checkImageAttachments(note: BNote, content: string) {
     }
 
     const attachments = note.getAttachments();
+    const existingAttachmentIds = new Set(attachments.map((att) => att.attachmentId));
+    // The attachments of other notes that the content refers to, which this note takes copies of.
+    const unknownAttachments = isCanvas ? [] : becca.getAttachments(Array.from(foundAttachmentIds)
+        .filter((foundAttId) => !existingAttachmentIds.has(foundAttId)));
+    const foundFileIds = isCanvas
+        ? collectCanvasImageFileIds(content)
+        : collectDrawingImageFileIds([ ...attachments, ...unknownAttachments ], foundAttachmentIds);
 
     for (const attachment of attachments) {
         // Only attachments that live in the note content are auto-scheduled for erasure when nothing
@@ -572,9 +579,8 @@ export function checkImageAttachments(note: BNote, content: string) {
             continue;
         }
 
-        const attachmentInContent = isCanvas
-            ? foundCanvasFileIds.has(attachment.title)
-            : !!attachment.attachmentId && foundAttachmentIds.has(attachment.attachmentId);
+        const attachmentInContent = foundFileIds.has(attachment.title)
+            || (!!attachment.attachmentId && foundAttachmentIds.has(attachment.attachmentId));
 
         if (attachment.utcDateScheduledForErasureSince && attachmentInContent) {
             attachment.utcDateScheduledForErasureSince = null;
@@ -590,10 +596,6 @@ export function checkImageAttachments(note: BNote, content: string) {
     if (isCanvas) {
         return { forceFrontendReload: false, content };
     }
-
-    const existingAttachmentIds = new Set<string | undefined>(attachments.map((att) => att.attachmentId));
-    const unknownAttachmentIds = Array.from(foundAttachmentIds).filter((foundAttId) => !existingAttachmentIds.has(foundAttId));
-    const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
     for (const unknownAttachment of unknownAttachments) {
         // A role says who made the attachment and why, so the copy's role is decided by how this note
@@ -631,6 +633,8 @@ export function checkImageAttachments(note: BNote, content: string) {
             ws.sendMessageToAllClients({ type: "toast", message: `Attachment '${localAttachment.title}' has been copied to note '${note.title}'.` });
             getLog().info(`Copied attachment '${unknownAttachment.attachmentId}' of note '${unknownAttachment.ownerId}' to new '${localAttachment.attachmentId}' of note '${note.noteId}'`);
         }
+
+        copyDrawingImages(note, unknownAttachment);
 
         // Replace image links — every one of them. A string first argument to replace() rewrites
         // only the first match, which was survivable while each reference had an attachment of its
@@ -680,6 +684,85 @@ export function collectCanvasImageFileIds(content: string): Set<string> {
     }
 
     return fileIds;
+}
+
+/** The file IDs of the images that the canvas drawings among `attachments` in the content show. */
+function collectDrawingImageFileIds(attachments: BAttachment[], foundAttachmentIds: Set<string>) {
+    const fileIds = new Set<string>();
+    for (const attachment of attachments) {
+        if (attachment.mime !== CANVAS_ATTACHMENT_MIME
+            || !foundAttachmentIds.has(attachment.attachmentId ?? "")) {
+            continue;
+        }
+
+        for (const fileId of collectCanvasImageFileIds(decodeUtf8(attachment.getContent()))) {
+            fileIds.add(fileId);
+        }
+    }
+    return fileIds;
+}
+
+/**
+ * Copies to `note` the images that the canvas drawing of another note shows, which its owner keeps
+ * titled with their file IDs, unless `note` has attachments of those titles already.
+ */
+function copyDrawingImages(note: BNote, drawing: BAttachment) {
+    const owner = becca.getNote(drawing.ownerId);
+    if (drawing.mime !== CANVAS_ATTACHMENT_MIME || !owner) {
+        return;
+    }
+
+    const fileIds = collectCanvasImageFileIds(decodeUtf8(drawing.getContent()));
+    for (const image of owner.getAttachments()) {
+        if (!fileIds.has(image.title) || note.getAttachmentByTitle(image.title)) {
+            continue;
+        }
+
+        const copy = image.copy();
+        copy.ownerId = note.noteId;
+        copy.setContent(image.getContent(), { forceSave: true });
+    }
+}
+
+/**
+ * The content of `entity` for a copy outside its note, such as a download: a canvas drawing gets
+ * the images that it refers to by file ID inline, from the image attachments of its owner.
+ */
+function getPortableContent(entity: BNote | BAttachment) {
+    const content = entity.getContent();
+    const owner = entity instanceof BAttachment && entity.mime === CANVAS_ATTACHMENT_MIME
+        ? becca.getNote(entity.ownerId)
+        : null;
+    if (!owner) {
+        return content;
+    }
+
+    const json = decodeUtf8(content);
+    let scene: { files?: Record<string, unknown> } | null = null;
+    try {
+        scene = JSON.parse(json);
+    } catch {
+        // Malformed content goes out as it is stored.
+    }
+    if (!scene || typeof scene !== "object") {
+        return content;
+    }
+
+    const files = { ...scene.files };
+    const fileIds = collectCanvasImageFileIds(json);
+    for (const image of owner.getAttachments()) {
+        if (!fileIds.has(image.title) || files[image.title]) {
+            continue;
+        }
+
+        files[image.title] = {
+            id: image.title,
+            mimeType: image.mime,
+            dataURL: `data:${image.mime};base64,${encodeBase64(image.getContent())}`,
+            created: Date.now()
+        };
+    }
+    return JSON.stringify({ ...scene, files });
 }
 
 function findImageLinks(content: string, foundLinks: FoundLink[]) {
@@ -747,7 +830,7 @@ function saveBookmarks(note: BNote, content: string) {
 }
 
 function findInternalLinks(content: string, foundLinks: FoundLink[]) {
-    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g;
+    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?(?:\?[^"]*)?"/g;
     let match;
 
     while ((match = re.exec(content))) {
@@ -1097,14 +1180,19 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
 
     saveRevisionIfNeeded(note);
 
-    const { forceFrontendReload, content: newContent } = saveLinks(note, content);
-
-    note.setContent(newContent, { forceFrontendReload });
-
+    // Saved before the links, so that `checkImageAttachments()` reads the drawings of this save.
     if (attachments?.length > 0) {
         const existingAttachmentsByTitle = toMap(note.getAttachments(), "title");
 
         for (const { attachmentId, role, mime, title, position, content, encoding } of attachments) {
+            // An attachment deleted since the client read it, or one of another note, is not saved.
+            if (attachmentId && becca.getAttachment(attachmentId)?.ownerId !== noteId) {
+                getLog().info(
+                    `Skipped attachment '${attachmentId}', which note '${noteId}' does not own.`
+                );
+                continue;
+            }
+
             const decodedContent = encoding === "base64" && typeof content === "string"
                 ? decodeBase64(content) : content;
 
@@ -1121,6 +1209,10 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
             }
         }
     }
+
+    const { forceFrontendReload, content: newContent } = saveLinks(note, content);
+
+    note.setContent(newContent, { forceFrontendReload });
 }
 
 export interface UndeleteNoteOptions {
@@ -1358,7 +1450,14 @@ function replaceByMap(str: string, mapObj: Record<string, string>) {
     return str.replace(re, (matched) => mapObj[matched]);
 }
 
-function duplicateSubtree(origNoteId: string, newParentNoteId: string) {
+/**
+ * Copies a note and its descendants into `newParentNoteId`, right after the original, and appends
+ * `notes.duplicate-note-suffix` to the copy's title.
+ *
+ * With `withChildren: false`, only the note itself is copied; links and relations to its children
+ * keep pointing at the original children.
+ */
+function duplicateSubtree(origNoteId: string, newParentNoteId: string, { withChildren = true }: { withChildren?: boolean } = {}) {
     if (origNoteId === "root") {
         throw new Error("Duplicating root is not possible");
     }
@@ -1369,9 +1468,11 @@ function duplicateSubtree(origNoteId: string, newParentNoteId: string) {
     // might be null if orig note is not in the target newParentNoteId
     const origBranch = origNote.getParentBranches().find((branch) => branch.parentNoteId === newParentNoteId);
 
-    const noteIdMapping = getNoteIdMapping(origNote);
+    const noteIdMapping = withChildren
+        ? getNoteIdMapping(origNote)
+        : { [origNote.noteId]: newEntityId() };
 
-    const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
+    const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping, withChildren);
 
     const duplicateNoteSuffix = t("notes.duplicate-note-suffix");
 
@@ -1402,7 +1503,7 @@ function duplicateSubtreeWithoutRoot(origNoteId: string, newNoteId: string) {
     }
 }
 
-function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | undefined, newParentNoteId: string, noteIdMapping: Record<string, string>) {
+function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | undefined, newParentNoteId: string, noteIdMapping: Record<string, string>, withChildren = true) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot duplicate note '${origNote.noteId}' because it is protected and protected session is not available. Enter protected session and try again.`);
     }
@@ -1452,9 +1553,11 @@ function duplicateSubtreeInner(origNote: BNote, origBranch: BBranch | null | und
             attr.save({ skipValidation: true });
         }
 
-        for (const childBranch of origNote.getChildBranches()) {
-            if (childBranch) {
-                duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+        if (withChildren) {
+            for (const childBranch of origNote.getChildBranches()) {
+                if (childBranch) {
+                    duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+                }
             }
         }
 
@@ -1497,6 +1600,7 @@ export default {
     createNewNote,
     createNewNoteWithTarget,
     updateNoteData,
+    getPortableContent,
     undeleteNote,
     protectNoteRecursively,
     duplicateSubtree,

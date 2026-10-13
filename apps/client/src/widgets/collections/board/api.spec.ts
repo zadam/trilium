@@ -19,8 +19,9 @@ import { buildNote } from "../../../test/easy-froca";
 import { BoardViewData } from ".";
 import BoardApi, { getPendingWrites, PendingColumnWrites } from "./api";
 import { ColumnItem, ColumnMap } from "./data";
-import { BOARD_TEMPLATE_ID, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN } from "./columns";
-import { DEFAULT_CARD_TEMPLATES } from "./card_templates";
+import {
+    BOARD_TEMPLATE_ID, DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN
+} from "./columns";
 import { COLUMN_ID_LENGTH } from "./reference";
 
 vi.mock("../../../services/bulk_action", () => ({
@@ -403,9 +404,9 @@ describe("BoardApi column mutations", () => {
         );
 
         let releaseSecond = () => {};
+        const second = new Promise<void>((resolve) => { releaseSecond = resolve; });
         failNextRename();
-        vi.mocked(executeBulkActions).mockImplementationOnce(
-            () => new Promise<void>((resolve) => { releaseSecond = resolve; }));
+        vi.mocked(executeBulkActions).mockImplementationOnce(() => second);
 
         const failing = api.renameColumn("Done", "Shipped");
         const running = api.removeColumn("To Do");
@@ -478,9 +479,9 @@ describe("BoardApi column mutations", () => {
         );
 
         let releaseSecond = () => {};
+        const second = new Promise<void>((resolve) => { releaseSecond = resolve; });
         vi.mocked(executeBulkActions).mockRejectedValueOnce(new Error("offline"));
-        vi.mocked(executeBulkActions).mockImplementationOnce(
-            () => new Promise<void>((resolve) => { releaseSecond = resolve; }));
+        vi.mocked(executeBulkActions).mockImplementationOnce(() => second);
 
         // The same column, deleted twice over before either has answered.
         const failing = api.removeColumn("Done");

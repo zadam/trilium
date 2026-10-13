@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
     triggerCommand: vi.fn(),
     openContextWithNote: vi.fn(),
     isMobile: vi.fn(() => false),
+    isShare: false,
     isDesktop: vi.fn(() => true),
     getClosestNtxId: vi.fn((): string | null => null),
     /** The splits of the active tab, which decide the "new split" vs "other split" wording. */
@@ -27,7 +28,10 @@ vi.mock("./text_editor_context_menu", () => ({
     getTextEditorContaining: mocks.getTextEditorContaining
 }));
 
-vi.mock("../services/content_renderer", () => ({ getEmbedBoxSize: mocks.getEmbedBoxSize }));
+vi.mock("../services/content_renderer", () => ({
+    EXCERPT_BOX_SIZE: "full",
+    getEmbedBoxSize: mocks.getEmbedBoxSize
+}));
 
 vi.mock("./context_menu", () => ({ default: { show: mocks.show } }));
 
@@ -44,7 +48,10 @@ vi.mock("../services/i18n", () => ({ t: (key: string) => key }));
 vi.mock("../services/utils", () => ({
     default: { isDesktop: mocks.isDesktop },
     escapeHtml: (text: string) => text,
-    isMobile: mocks.isMobile
+    isMobile: mocks.isMobile,
+    get isShare() {
+        return mocks.isShare;
+    }
 }));
 
 vi.mock("../widgets/widget_utils", () => ({ getClosestNtxId: mocks.getClosestNtxId }));
@@ -113,6 +120,16 @@ describe("getItems", () => {
             .toMatchObject({ title: "link_context_menu.open_note_in_new_split" });
     });
 
+    it("offers only a new tab and a new window on a shared page, which has no splits or popup", () => {
+        mocks.isShare = true;
+        try {
+            expect(linkContextMenu.getItems(contextMenuEvent()).map((item) => "command" in item && item.command))
+                .toEqual([ "openNoteInNewTab", "openNoteInNewWindow" ]);
+        } finally {
+            mocks.isShare = false;
+        }
+    });
+
     /** For a menu with entries of its own, which lists quick edit and folds the rest away. */
     it("folds the three places into one submenu, quick edit standing on its own", () => {
         const open = linkContextMenu.getOpenNoteItem(contextMenuEvent());
@@ -132,6 +149,29 @@ describe("getItems", () => {
 });
 
 describe("handleLinkContextMenuItem", () => {
+    it("opens the note's shared page in a browser tab or window on a shared page", () => {
+        const open = vi.spyOn(window, "open").mockReturnValue(null);
+        mocks.isShare = true;
+        linkContextMenu.setShareLinkResolver((noteId) => (noteId === "n1" ? "./first-note" : null));
+        try {
+            expect(handle("openNoteInNewTab")).toBe(true);
+            expect(open).toHaveBeenLastCalledWith("./first-note", "_blank", "noopener");
+            expect(handle("openNoteInNewWindow")).toBe(true);
+            expect(open).toHaveBeenLastCalledWith("./first-note", "_blank", "noopener,popup");
+            expect(mocks.openContextWithNote).not.toHaveBeenCalled();
+            expect(mocks.triggerCommand).not.toHaveBeenCalled();
+
+            // A note without a shared page has nowhere to be opened.
+            open.mockClear();
+            expect(linkContextMenu.handleLinkContextMenuItem("openNoteInNewTab", contextMenuEvent(), "root/n2")).toBe(false);
+            expect(open).not.toHaveBeenCalled();
+        } finally {
+            mocks.isShare = false;
+            linkContextMenu.setShareLinkResolver(undefined);
+            open.mockRestore();
+        }
+    });
+
     it("opens a new tab under the given hoisting, falling back to the active context's", () => {
         expect(handle("openNoteInNewTab", VIEW_SCOPE, "explicitHoist")).toBe(true);
         expect(mocks.openContextWithNote).toHaveBeenCalledWith("root/n1", {
@@ -379,6 +419,38 @@ describe("openContextMenu", () => {
         expect(mocks.show.mock.calls[1][0].items).toHaveLength(4);
     });
 
+    it("offers converting a link to blocks of a note to an excerpt of full size", async () => {
+        const execute = vi.fn();
+        mocks.getNote.mockResolvedValue({ noteId: "n1" });
+        mocks.getEmbedBoxSize.mockReturnValue("medium");
+        mocks.getTextEditorContaining.mockResolvedValue({
+            commands: { get: () => ({ isEnabled: true }) },
+            plugins: { get: () => ({ canConvertLinkToEmbed: () => true }) },
+            execute
+        });
+        const editable = document.createElement("div");
+        editable.className = "ck-editor__editable";
+        editable.setAttribute("contenteditable", "true");
+        editable.innerHTML = `<p><a class="reference-link" href="#root/n1?block=b1">Note</a></p>`;
+        const link = editable.querySelector("a");
+        expect(link).not.toBeNull();
+
+        await linkContextMenu.openContextMenu(
+            "root/n1", contextMenuEvent(link ?? undefined), { block: "b1" }
+        );
+
+        const item = mocks.show.mock.calls[0][0].items.at(-1);
+        expect(item).toMatchObject({
+            title: "link_context_menu.convert_link_to_note_excerpt",
+            uiIcon: "bx bx-window-alt"
+        });
+        item.handler();
+        expect(execute).toHaveBeenCalledWith("convertLinkToEmbed", {
+            domElement: link,
+            boxSize: "full"
+        });
+    });
+
     describe("opened on an embed in a note being edited", () => {
         const CHECK = "bx bx-check";
         const execute = vi.fn();
@@ -475,13 +547,13 @@ describe("openContextMenu", () => {
                         title: "link_context_menu.show_title",
                         uiIcon: "bx bx-window-alt",
                         enabled: true,
-                        trailingIcon: undefined
+                        checked: false
                     },
                     {
                         title: "link_context_menu.show_caption",
                         uiIcon: "bx bx-captions",
                         enabled: true,
-                        trailingIcon: CHECK
+                        checked: true
                     },
                     { kind: "separator" },
                     { title: "Rename" },
@@ -504,6 +576,27 @@ describe("openContextMenu", () => {
             execute.mockClear();
             items[12].handler();
             expect(execute).not.toHaveBeenCalled();
+        });
+
+        it("offers Editable above the size, for content that has an editable mode", async () => {
+            state = { ...state, isEditable: true, isEditableToggleable: true };
+            const items = await openOn(editable.querySelector("a"));
+
+            expect(items.slice(6, 9)).toMatchObject([
+                { kind: "separator" },
+                {
+                    title: "link_context_menu.editable",
+                    uiIcon: "bx bx-edit-alt",
+                    checked: true
+                },
+                { title: "link_context_menu.include_size" }
+            ]);
+            expect(items).toHaveLength(14);
+            expect(pick(items[7])).toEqual([ [ "toggleContentEmbedEditable", undefined ] ]);
+
+            state = { ...state, isEditable: false };
+            expect((await openOn(editable.querySelector("a")))[7])
+                .toMatchObject({ title: "link_context_menu.editable", checked: false });
         });
 
         it("appends the commands of an embedded note, its conversion in a group of its own", async () => {
@@ -533,8 +626,8 @@ describe("openContextMenu", () => {
             expect((await openOn(editable.querySelector("a"), {})).slice(4)).toMatchObject([
                 { kind: "separator" },
                 { title: "link_context_menu.include_size" },
-                { title: "link_context_menu.show_title", enabled: false, trailingIcon: CHECK },
-                { title: "link_context_menu.show_caption", enabled: false, trailingIcon: undefined }
+                { title: "link_context_menu.show_title", enabled: false, checked: true },
+                { title: "link_context_menu.show_caption", enabled: false, checked: false }
             ]);
 
             // A link in the embedded content, an embed the editor does not know, and an editor

@@ -22,7 +22,7 @@ import FormList, { focusListItem, FormDropdownDivider, FormDropdownSubmenu, Form
 describe("FormDropdownDivider", () => {
     it("draws a separator among the rows, whose click closes no menu", () => {
         const host = document.createElement("div");
-        render(<menu><FormDropdownDivider /></menu>, host);
+        render(<menu role="none"><FormDropdownDivider /></menu>, host);
         const divider = host.querySelector(".dropdown-divider");
         const pageHeard = vi.fn();
         host.addEventListener("click", pageHeard);
@@ -39,7 +39,7 @@ describe("FormListHeader", () => {
     it("heads the rows after it as text, out of the list's own roles", () => {
         const host = document.createElement("div");
         // A name the user wrote, such as a board column's status.
-        render(<menu><FormListHeader text="<b>Doing</b>" /></menu>, host);
+        render(<menu role="none"><FormListHeader text="<b>Doing</b>" /></menu>, host);
         const row = host.querySelector("menu > li");
 
         // Its heading speaks for it, so the row reads as no list item of the menu's.
@@ -52,7 +52,7 @@ describe("FormListItem", () => {
     it("lays its row out as one span of icon, gap and content, as a menu's rows are", () => {
         const host = document.createElement("div");
         render((
-            <menu>
+            <menu role="none">
                 <FormListItem icon="bx bx-copy" iconClassName="use-note-color" badges={[ { text: "new" } ]}>Copy</FormListItem>
             </menu>
         ), host);
@@ -71,7 +71,7 @@ describe("FormListItem", () => {
     it("ends its row with a shortcut, then a trailing icon, leaving its own icon standing", () => {
         const host = document.createElement("div");
         render((
-            <menu>
+            <menu role="none">
                 <FormListItem icon="bx bx-sort" shortcut="Ctrl+S" trailingIcon="bx bx-check">By title</FormListItem>
             </menu>
         ), host);
@@ -86,7 +86,7 @@ describe("FormListItem", () => {
     it("shows no shortcuts on a phone, which has no keyboard to press them on", () => {
         const host = document.createElement("div");
         const rows = () => render((
-            <menu>
+            <menu role="none">
                 <FormListItem shortcut="Ctrl+S">Save</FormListItem>
                 <FormListItem keyboardShortcut="copyNotesToClipboard">Copy</FormListItem>
             </menu>
@@ -112,7 +112,7 @@ describe("FormListItem presses", () => {
         const host = document.createElement("div");
         const onClick = vi.fn();
         render((
-            <menu>
+            <menu role="none">
                 <FormListItem {...props} onClick={onClick}>Size <input className="size" /><input type="checkbox" /></FormListItem>
             </menu>
         ), host);
@@ -160,7 +160,7 @@ describe("FormListItem presses", () => {
 describe("FormListCustomItem", () => {
     it("holds a control of its own in a row outside any menu too, where there is none to join", () => {
         const host = document.createElement("div");
-        render(<menu><FormListCustomItem><button className="swatch" /></FormListCustomItem></menu>, host);
+        render(<menu role="none"><FormListCustomItem><button className="swatch" /></FormListCustomItem></menu>, host);
         const row = host.querySelector("menu > li");
 
         expect(row?.className).toBe("dropdown-custom-item");
@@ -173,7 +173,7 @@ describe("FormListCustomItem", () => {
 describe("FormDropdownSubmenu", () => {
     it("renders its title as a header above its rows outside a menu", () => {
         const host = document.createElement("div");
-        render(<menu><FormDropdownSubmenu icon="bx bx-chip" title="Advanced">
+        render(<menu role="none"><FormDropdownSubmenu icon="bx bx-chip" title="Advanced">
             <FormListItem>Reload</FormListItem>
         </FormDropdownSubmenu></menu>, host);
         const rows = [ ...host.querySelectorAll("menu > li") ];
@@ -226,7 +226,7 @@ describe("FormListToggleableItem", () => {
     function mountToggle(props: { onChange(value: boolean): void | Promise<void>, disabled?: boolean }) {
         const pageHeard = vi.fn();
         const container = mount(
-            <menu onClick={pageHeard}>
+            <menu role="none" onClick={pageHeard}>
                 <FormListToggleableItem title="Shared" currentValue={false} helpPage="R9pX4DGra2Vt" {...props} />
             </menu>
         );

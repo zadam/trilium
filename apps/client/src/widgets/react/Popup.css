@@ -37,6 +37,7 @@ body .tn-popup {
      */
     margin: calc(0px - var(--tn-popup-padding));
     padding: var(--tn-popup-padding);
+    scroll-padding-block: var(--tn-popup-padding);
     border-radius: inherit;
     overflow-y: auto;
 }

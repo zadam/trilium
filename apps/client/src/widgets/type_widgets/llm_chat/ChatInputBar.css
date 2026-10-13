@@ -203,9 +203,24 @@
 
 /* Control row, inside the island */
 .llm-chat-options {
+    container: llm-chat-options / inline-size;
     display: flex;
     align-items: center;
     gap: 0.25rem;
+}
+
+/* Compact: the model and reasoning effort pickers show only their icon; the tooltips carry the
+   model name and the level. The label collapses to no width rather than `display: none`, so its
+   line of text still sets the button's height. */
+@container llm-chat-options (width < 23rem) {
+    .llm-chat-input-form .llm-chat-model-select .llm-chat-model-select-name:not(.llm-chat-model-placeholder) {
+        width: 0;
+    }
+
+    .llm-chat-input-form .llm-chat-model-select .llm-chat-model-icon,
+    .llm-chat-input-form .llm-chat-model-select .llm-chat-reasoning-effort-icon {
+        margin-inline-end: 0;
+    }
 }
 
 /* Model selector */
@@ -233,10 +248,6 @@
     gap: 0.0625rem;
     margin-inline-end: auto;
     flex-shrink: 0;
-}
-
-.llm-chat-capability-unavailable {
-    display: inline-flex;
 }
 
 .llm-chat-input-form .llm-chat-capability.icon-action {

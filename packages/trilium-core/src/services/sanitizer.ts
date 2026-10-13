@@ -84,7 +84,10 @@ export function sanitizeHtml(dirtyHtml: string) {
             figure: {
                 float: [/^\s*(left|right|none)\s*$/],
                 width: sizeRegex,
-                height: sizeRegex
+                height: sizeRegex,
+                // The size of a resized embed.
+                "--include-note-width": sizeRegex,
+                "--include-note-height": sizeRegex
             },
             img: {
                 // Allow fractional ratios too (e.g. OneNote reports 577.5×277.5 screen clippings).

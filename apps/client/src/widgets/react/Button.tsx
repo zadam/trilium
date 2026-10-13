@@ -1,7 +1,7 @@
 import "./Button.css";
 
 import type { Tooltip } from "bootstrap";
-import type { ComponentChildren, CSSProperties, JSX, RefObject } from "preact";
+import type { ComponentChildren, CSSProperties, MouseEventHandler, RefObject } from "preact";
 import { useMemo, useRef } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
@@ -11,6 +11,7 @@ import ActionButton from "./ActionButton";
 import Dropdown from "./Dropdown";
 import { useStaticTooltip } from "./hooks";
 import Icon from "./Icon";
+import { useCommandTrigger } from "./react_utils";
 import { renderShortcutKbds } from "./shortcut_kbd";
 
 const cachedIsMobile = isMobile();
@@ -18,7 +19,7 @@ const cachedIsMobile = isMobile();
 export interface ButtonProps {
     name?: string;
     /** Reference to the button element. Mostly useful for requesting focus. */
-    buttonRef?: RefObject<HTMLButtonElement>;
+    buttonRef?: RefObject<HTMLButtonElement | null>;
     text: string | ComponentChildren;
     className?: string;
     icon?: string;
@@ -30,7 +31,7 @@ export interface ButtonProps {
      * the press's own target to know where to act — opening a note in the tab the button stands in,
      * for one (see `openInCurrentNoteContext`).
      */
-    onClick?: JSX.MouseEventHandler<HTMLButtonElement>;
+    onClick?: MouseEventHandler<HTMLButtonElement>;
     kind?: "primary" | "secondary" | "lowProfile";
     disabled?: boolean;
     size?: "normal" | "small" | "micro";
@@ -42,6 +43,7 @@ export interface ButtonProps {
 }
 
 function Button({ name, buttonRef, className, text, onClick, keyboardShortcut, icon, kind, disabled, disabledTooltip, size, style, triggerCommand, ...restProps }: ButtonProps) {
+    const triggerOwnCommand = useCommandTrigger(triggerCommand);
     // Memoize classes array to prevent recreation
     const classes = useMemo(() => {
         const classList: string[] = ["btn"];
@@ -86,11 +88,10 @@ function Button({ name, buttonRef, className, text, onClick, keyboardShortcut, i
             name={name}
             className={classes}
             type={onClick || triggerCommand ? "button" : "submit"}
-            onClick={onClick}
+            onClick={onClick ?? triggerOwnCommand}
             ref={buttonRef}
             disabled={disabled}
             style={style}
-            data-trigger-command={triggerCommand}
             {...restProps}
         >
             {icon && <Icon icon={`bx ${icon}`} />}

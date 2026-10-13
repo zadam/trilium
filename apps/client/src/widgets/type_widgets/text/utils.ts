@@ -1,43 +1,66 @@
+import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { attachmentIcon } from "@triliumnext/commons";
 import { h, type JSX } from "preact";
 
 import appContext from "../../../components/app_context";
 import linkContextMenu from "../../../menus/link_context_menu";
-import content_renderer from "../../../services/content_renderer";
+import content_renderer, {
+    type AttachmentEditor, type NoteEditor
+} from "../../../services/content_renderer";
 import { getEmbedCaption } from "../../../services/content_renderer_text";
 import froca from "../../../services/froca";
 import link, { ViewScope } from "../../../services/link";
 import utils from "../../../services/utils";
+import { watchContentEmbedTools } from "./content_embed_tools";
 import ContentEmbed, { getNoteActions, TinyContentEmbed } from "./ContentEmbed";
+
+interface EmbeddedNoteOptions {
+    /** Saves the changes that the content makes to the note, such as a code note. */
+    noteEditor?: NoteEditor;
+    /** The blocks of the note to show, a `block` link parameter. The whole note when left out. */
+    block?: string;
+    /** Points the embed at the blocks that its editor holds, once they change. */
+    onBlockChange?: (block: string) => void;
+}
 
 /**
  * Fills an embed box with a note. Without a box size of its own, the box takes the one of its
  * embed.
  */
-export async function loadEmbeddedNote(noteId: string, $el: JQuery<HTMLElement>, boxSize?: string) {
+export async function loadEmbeddedNote(
+    noteId: string,
+    $el: JQuery<HTMLElement>,
+    boxSize?: string,
+    { noteEditor, block, onBlockChange }: EmbeddedNoteOptions = {}
+) {
     const note = await froca.getNote(noteId);
     if (!note) return;
 
     const el = $el[0];
     const size = boxSize ?? getEmbedBoxSize(el);
+    const viewScope: ViewScope | undefined = block ? { block } : undefined;
+    const isExcerpt = !!block;
     if (size === "tiny") {
         const $link = await link.createLink(note.noteId, {
             showTooltip: false,
-            showNotePath: true
+            showNotePath: true,
+            viewScope
         });
         const box = h(TinyContentEmbed, {
             icon: note.getIcon(),
             title: $link[0],
             notePath: note.noteId,
+            viewScope,
             actions: getNoteActions(note.noteId)
         });
-        await mountEmbedBox(el, box);
+        await mountEmbedBox(el, box, undefined, isExcerpt);
         return;
     }
 
     const $link = await link.createLink(note.noteId, {
         showTooltip: false,
-        showNoteIcon: true
+        showNoteIcon: true,
+        viewScope
     });
 
     // The embed widget itself is the first level of embedding, so the embedded note's own
@@ -45,7 +68,10 @@ export async function loadEmbeddedNote(noteId: string, $el: JQuery<HTMLElement>,
     const { $renderedContent, type } = await content_renderer.getRenderedContent(note, {
         interactive: true,
         embedsAsReferenceLinks: true,
-        mediaEnvironment: "embedded"
+        mediaEnvironment: "embedded",
+        noteEditor,
+        block,
+        onBlockChange
     });
 
     const box = h(ContentEmbed, {
@@ -53,9 +79,18 @@ export async function loadEmbeddedNote(noteId: string, $el: JQuery<HTMLElement>,
         title: $link[0],
         content: $renderedContent[0],
         contentType: type,
-        notePath: note.noteId
+        notePath: note.noteId,
+        viewScope,
+        isExcerpt
     });
-    await mountEmbedBox(el, box, $renderedContent);
+    await mountEmbedBox(el, box, $renderedContent, isExcerpt);
+}
+
+interface EmbeddedAttachmentOptions {
+    /** Saves the changes that the content makes to the attachment, such as a canvas drawing. */
+    attachmentEditor?: AttachmentEditor;
+    /** Whether the content takes the focus once the box is mounted. */
+    isFocused?: boolean;
 }
 
 /**
@@ -65,7 +100,8 @@ export async function loadEmbeddedNote(noteId: string, $el: JQuery<HTMLElement>,
 export async function loadEmbeddedAttachment(
     attachmentId: string,
     $el: JQuery<HTMLElement>,
-    boxSize?: string
+    boxSize?: string,
+    { attachmentEditor, isFocused }: EmbeddedAttachmentOptions = {}
 ) {
     const attachment = await froca.getAttachment(attachmentId, true);
     if (!attachment) return;
@@ -98,7 +134,7 @@ export async function loadEmbeddedAttachment(
     });
     const { $renderedContent, type } = await content_renderer.getRenderedContent(
         attachment,
-        { interactive: true, mediaEnvironment: "embedded" }
+        { interactive: true, mediaEnvironment: "embedded", attachmentEditor }
     );
 
     const box = h(ContentEmbed, {
@@ -107,7 +143,8 @@ export async function loadEmbeddedAttachment(
         content: $renderedContent[0],
         contentType: type,
         notePath: attachment.ownerId,
-        viewScope
+        viewScope,
+        ...(isFocused ? { isFocusedOnMount: true } : {})
     });
     await mountEmbedBox(el, box, $renderedContent);
 }
@@ -116,7 +153,16 @@ export async function loadEmbeddedAttachment(
  * Mounts `box` in the embed `el`. An embed that left the page while it loaded gets no box,
  * and `content` rendered for it is disposed: `watchContentEmbeds()` has already passed it.
  */
-async function mountEmbedBox(el: HTMLElement, box: JSX.Element, content?: JQuery<HTMLElement>) {
+/**
+ * Mounts `box` in the wrapper of the embed `el`, which carries the `excerpt` class while
+ * `isExcerpt`. The class is not saved with the note.
+ */
+async function mountEmbedBox(
+    el: HTMLElement,
+    box: JSX.Element,
+    content?: JQuery<HTMLElement>,
+    isExcerpt = false
+) {
     if (!el.isConnected) {
         if (content) {
             content_renderer.disposeInteractiveContent(content);
@@ -124,7 +170,9 @@ async function mountEmbedBox(el: HTMLElement, box: JSX.Element, content?: JQuery
         return;
     }
 
-    await content_renderer.mountInteractiveWidget(box, getWrapper(el));
+    const wrapper = getWrapper(el);
+    wrapper.classList.toggle("excerpt", isExcerpt);
+    await content_renderer.mountInteractiveWidget(box, wrapper);
 }
 
 function getEmbedBoxSize(el: HTMLElement) {
@@ -158,7 +206,7 @@ function getWrapper(el: HTMLElement) {
  * opens from the embed, so that the text editor that contains it stays focused.
  */
 export async function openContentEmbedMenu(embed: HTMLElement, anchor: HTMLElement) {
-    const { noteId, attachmentId } = embed.dataset;
+    const { noteId, attachmentId, block } = embed.dataset;
     const origin = linkContextMenu.getOriginBelow(anchor, embed);
 
     if (attachmentId) {
@@ -170,7 +218,7 @@ export async function openContentEmbedMenu(embed: HTMLElement, anchor: HTMLEleme
             });
         }
     } else if (noteId) {
-        await linkContextMenu.openContextMenu(noteId, origin, {});
+        await linkContextMenu.openContextMenu(noteId, origin, block ? { block } : {});
     }
 }
 
@@ -183,14 +231,19 @@ export async function getAttachmentHref(attachmentId: string) {
 }
 
 /**
- * Unmounts the embed boxes, and what they show, once they leave `container`. The returned
- * function stops watching and unmounts the boxes still in it.
+ * Unmounts the embed boxes, and what they show, once they leave `container`, and updates `editor`,
+ * if any, when their content adds buttons to the toolbar of its embed. The returned function
+ * stops watching and unmounts the boxes still in it.
  */
-export function watchContentEmbeds(container: HTMLElement) {
+export function watchContentEmbeds(container: HTMLElement, editor?: CKTextEditor) {
     const observer = new MutationObserver(disposeRemoved);
     observer.observe(container, { childList: true, subtree: true });
+    // The toolbar of an embed reads the buttons of its content when the editor updates, so
+    // content that adds them after its embed was selected has the editor update again.
+    const stopWatchingTools = watchContentEmbedTools(container, () => editor?.ui.update());
 
     return () => {
+        stopWatchingTools();
         disposeRemoved(observer.takeRecords());
         observer.disconnect();
         content_renderer.disposeInteractiveContent($(container));
@@ -208,10 +261,18 @@ function disposeRemoved(records: MutationRecord[]) {
     }
 }
 
-export function refreshEmbeddedNote(container: HTMLDivElement, noteId: string) {
-    const embeddedNotes = container.querySelectorAll(`.include-note[data-note-id="${noteId}"]`);
+export function refreshEmbeddedNote(
+    container: HTMLDivElement,
+    noteId: string,
+    options?: EmbeddedNoteOptions
+) {
+    const embeddedNotes =
+        container.querySelectorAll<HTMLElement>(`.include-note[data-note-id="${noteId}"]`);
     for (const embeddedNote of embeddedNotes) {
-        loadEmbeddedNote(noteId, $(embeddedNote as HTMLElement));
+        loadEmbeddedNote(noteId, $(embeddedNote), undefined, {
+            ...options,
+            block: embeddedNote.dataset.block
+        });
     }
 }
 

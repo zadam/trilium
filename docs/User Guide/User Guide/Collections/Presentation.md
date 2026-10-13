@@ -5,7 +5,7 @@ The Presentation view allows the creation of slideshows directly from within Tri
 
 ### Creating a new presentation
 
-Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ and look for _Presentation_.
+Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ → _Collection_ → _Presentation_.
 
 ## How it works
 
@@ -16,9 +16,9 @@ Right click on an existing note in the <a class="reference-link" href="../Basic
 
 ## Interaction and navigation
 
-In the floating buttons section (top-right):
+In the floating toolbar (top-right):
 
-*   Edit button to go to the corresponding note of the current slide.
+*   Edit button to go to the corresponding note of the current slide. A [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) presentation doesn't show it.
 *   Press Overview button (or the <kbd>O</kbd> key) to show a birds-eye view of the slides. Press the button again to disable it.
 *   Press the “Start presentation” button to show the presentation in full-screen.
 

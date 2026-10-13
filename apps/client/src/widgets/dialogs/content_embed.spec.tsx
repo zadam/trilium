@@ -14,7 +14,6 @@ const autocomplete = vi.hoisted(() => ({
 }));
 
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
-vi.mock("../../services/note_autocomplete", () => ({ triggerRecentNotes: vi.fn() }));
 vi.mock("../react/NoteAutocomplete", () => ({
     default: ({ onChange }: { onChange: (suggestion: Suggestion | null) => void }) => {
         autocomplete.onChange = onChange;

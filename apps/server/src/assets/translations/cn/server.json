@@ -38,8 +38,6 @@
     "attributes-labels-and-relations": "属性（标签和关系）",
     "add-new-label": "创建新标签",
     "create-new-relation": "创建新关系",
-    "ribbon-tabs": "功能区标签页",
-    "toggle-link-map": "切换链接地图",
     "other": "其他",
     "toggle-right-pane": "切换右侧面板的显示，包括目录和高亮",
     "open-note-externally": "以默认应用打开笔记文件",
@@ -52,8 +50,6 @@
     "copy-without-formatting": "无格式复制选定文本",
     "force-save-revision": "强制创建/保存当前笔记的新修订版本",
     "show-help": "显示帮助",
-    "toggle-book-properties": "切换书籍属性",
-    "toggle-classic-editor-toolbar": "为编辑器切换格式标签页的固定工具栏",
     "show-cheatsheet": "显示快捷键指南",
     "toggle-zen-mode": "启用/禁用禅模式（为专注编辑而精简界面）",
     "quick-search": "激活快速搜索栏",
@@ -77,7 +73,11 @@
     "focus-split-right": "将焦点移动到当前活动窗口右侧的分屏上",
     "split-view": "分屏视图",
     "move-split-left": "将活动分屏与其左侧的分屏交换，这样音符会移动，焦点会跟随它",
-    "move-split-right": "将活动分屏与右侧的分屏交换，这样笔记会移动，焦点也会跟随它"
+    "move-split-right": "将活动分屏与右侧的分屏交换，这样笔记会移动，焦点也会跟随它",
+    "note-panels": "笔记面板",
+    "show-note-map": "在右侧边栏中显示笔记图谱",
+    "focus-collection-properties": "将焦点移到集合的视图类型选择器",
+    "focus-formatting-toolbar": "在固定格式工具栏与编辑器之间移动焦点"
   },
   "login": {
     "title": "登录",
@@ -231,7 +231,9 @@
   },
   "content_renderer": {
     "note-cannot-be-displayed": "此笔记类型无法显示。",
-    "included-note-requires-credentials": "此包含的笔记受密码保护，无法在此显示。"
+    "included-note-requires-credentials": "此包含的笔记受密码保护，无法在此显示。",
+    "broken-block-reference": "引用已损坏",
+    "play-video": "播放视频"
   },
   "pdf": {
     "export_filter": "PDF 文档 (*.pdf)",
@@ -332,18 +334,6 @@
     "edit-read-only-note": "编辑只读笔记",
     "add-new-label": "添加新标签",
     "add-new-relation": "添加新关系",
-    "toggle-ribbon-tab-classic-editor": "切换功能区标签：经典编辑器",
-    "toggle-ribbon-tab-basic-properties": "切换功能区标签：基本属性",
-    "toggle-ribbon-tab-book-properties": "切换功能区标签：书籍属性",
-    "toggle-ribbon-tab-file-properties": "切换功能区标签：文件属性",
-    "toggle-ribbon-tab-image-properties": "切换功能区标签：图片属性",
-    "toggle-ribbon-tab-owned-attributes": "切换功能区标签：自有属性",
-    "toggle-ribbon-tab-inherited-attributes": "切换功能区标签：继承属性",
-    "toggle-ribbon-tab-promoted-attributes": "切换功能区标签：提升属性",
-    "toggle-ribbon-tab-note-map": "切换功能区标签：笔记地图",
-    "toggle-ribbon-tab-note-info": "切换功能区标签：笔记信息",
-    "toggle-ribbon-tab-note-paths": "切换功能区标签：笔记路径",
-    "toggle-ribbon-tab-similar-notes": "切换功能区标签：相似笔记",
     "toggle-right-pane": "切换右侧面板",
     "print-active-note": "打印当前笔记",
     "export-active-note-as-pdf": "导出当前笔记为 PDF",
@@ -368,7 +358,20 @@
     "move-split-left": "向左拆分移动",
     "move-split-right": "向右拆分移动",
     "focus-split-left": "将焦点分割到左侧",
-    "focus-split-right": "将焦点分割到右侧"
+    "focus-split-right": "将焦点分割到右侧",
+    "duplicate-note": "创建笔记副本（不含子笔记）",
+    "focus-formatting-toolbar": "聚焦格式工具栏",
+    "show-basic-properties": "显示基本属性",
+    "focus-collection-properties": "聚焦集合属性",
+    "focus-file-actions": "聚焦文件操作",
+    "toggle-promoted-attributes": "切换提升属性",
+    "toggle-inherited-attributes": "切换继承属性",
+    "focus-image-actions": "聚焦图片操作",
+    "toggle-owned-attributes": "切换自有属性",
+    "show-note-map": "显示笔记图谱",
+    "show-note-info": "显示笔记信息",
+    "show-note-paths": "显示笔记路径",
+    "toggle-similar-notes": "切换相似笔记"
   },
   "share_theme": {
     "site-theme": "网站主题",
@@ -381,7 +384,19 @@
     "toggle-navigation": "切换导航",
     "toggle-toc": "切换目录",
     "logo-alt": "Logo",
-    "login": "登录"
+    "login": "登录",
+    "tab-title": "标签页标题",
+    "appearance": "外观",
+    "theme-light": "浅色",
+    "theme-dark": "深色",
+    "theme-system": "跟随系统",
+    "theme-current": "外观：{{- theme}}",
+    "subpages-of": "{{- title}} 的子页面",
+    "heading-link": "链接到此章节",
+    "previous": "上一页",
+    "next": "下一页",
+    "page-navigation": "上一页和下一页",
+    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面"
   },
   "hidden_subtree_templates": {
     "text-snippet": "文本片段",

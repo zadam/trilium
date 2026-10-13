@@ -1,5 +1,7 @@
 import "./CollectionProperties.css";
 
+import { SearchResultDetails, SearchResultDetailsResponse } from "@triliumnext/commons";
+import clsx from "clsx";
 import { t } from "i18next";
 import { ComponentChildren } from "preact";
 import { useRef, useState } from "preact/hooks";
@@ -7,15 +9,19 @@ import { useRef, useState } from "preact/hooks";
 import appContext from "../../components/app_context";
 import FNote from "../../entities/fnote";
 import dialogService from "../../services/dialog";
+import server from "../../services/server";
 import toast from "../../services/toast";
+import { getErrorMessage, isShare } from "../../services/utils";
 import { ViewTypeOptions } from "../collections/interface";
+import { searchTermsFor } from "../collections/search/SearchResultCard";
 import ActionButton from "../react/ActionButton";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
-import { useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
+import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
+import Modal from "../react/Modal";
 import { CheckBoxProperty, ViewProperty } from "../react/NotePropertyMenu";
-import { bookPropertiesConfig } from "../ribbon/collection-properties-config";
+import { bookPropertiesConfig } from "./collection-properties-config";
 
 export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
     grid: "bx bxs-grid",
@@ -43,18 +49,39 @@ export const VIEW_TYPE_MAPPINGS: Record<ViewTypeOptions, string> = {
 
 const MAX_OPEN_TABS = 50;
 
-export default function CollectionProperties({
-    note,
-    centerChildren,
-    rightChildren,
-    optionsChildren
-}: {
+/** Whether a collection shows its archived notes, which every view offers. */
+export const INCLUDE_ARCHIVED_PROPERTY: CheckBoxProperty = {
+    type: "checkbox",
+    icon: "bx bx-archive",
+    label: t("book_properties.include_archived_notes"),
+    bindToLabel: "includeArchived"
+};
+
+interface CollectionPropertiesProps {
     note: FNote;
     centerChildren?: ComponentChildren;
     rightChildren?: ComponentChildren;
     /** Entries appended below a divider at the end of the settings dropdown. */
     optionsChildren?: ComponentChildren;
-}) {
+}
+
+/**
+ * The bar above a collection that switches its view, sets its options and holds the view's own
+ * controls, such as a calendar's navigation. A shared page keeps only the view's own controls, as a
+ * visitor cannot change the note, and has no bar for a view without any.
+ */
+export default function CollectionProperties(props: CollectionPropertiesProps) {
+    return isShare && !props.centerChildren && !props.rightChildren
+        ? null
+        : <CollectionPropertiesBar {...props} />;
+}
+
+function CollectionPropertiesBar({
+    note,
+    centerChildren,
+    rightChildren,
+    optionsChildren
+}: CollectionPropertiesProps) {
     const [ viewType, setViewType ] = useViewType(note);
     const noteType = useNoteProperty(note, "type");
     const [ isOpening, setIsOpening ] = useState(false);
@@ -62,15 +89,17 @@ export default function CollectionProperties({
     return ([ "book", "search" ].includes(noteType ?? "") &&
         <div className="collection-properties">
             <div className="left-container">
-                <ViewTypeSwitcher viewType={viewType} setViewType={setViewType} />
-                <ViewOptions note={note} viewType={viewType} optionsChildren={optionsChildren} />
+                {!isShare && <>
+                    <ViewTypeSwitcher viewType={viewType} setViewType={setViewType} />
+                    <ViewOptions note={note} viewType={viewType} optionsChildren={optionsChildren} />
+                </>}
             </div>
             <div className="center-container">
                 {centerChildren}
             </div>
             <div className="right-container">
                 {rightChildren}
-                {noteType === "search" && (
+                {noteType === "search" && !isShare && (
                     <OpenAllButton note={note} isOpening={isOpening} setIsOpening={setIsOpening} />
                 )}
             </div>
@@ -101,11 +130,15 @@ function OpenAllButton({ note, isOpening, setIsOpening }: {
 
         setIsOpening(true);
         try {
+            const detailsByNoteId = await getResultDetails(note, noteIds);
+            const highlightedTokens = note.highlightedTokenInfos ?? note.highlightedTokens;
             for (let i = 0; i < noteIds.length; i++) {
                 const noteId = noteIds[i];
                 const isLast = i === noteIds.length - 1;
+                const searchTerms = searchTermsFor(detailsByNoteId.get(noteId), highlightedTokens);
                 await appContext.tabManager.openTabWithNoteWithHoisting(noteId, {
-                    activate: isLast
+                    activate: isLast,
+                    viewScope: searchTerms?.length ? { searchTerms } : null
                 });
             }
         } finally {
@@ -123,6 +156,22 @@ function OpenAllButton({ note, isOpening, setIsOpening }: {
     );
 }
 
+/**
+ * The details of the results being opened, for `searchTermsFor()` to read their matched terms.
+ * Empty if the request fails, so the tabs still open and fall back to the query's tokens.
+ */
+async function getResultDetails(searchNote: FNote, noteIds: string[]) {
+    try {
+        const { results } = await server.post<SearchResultDetailsResponse>(
+            `search-note/${searchNote.noteId}/result-details`, { noteIds }
+        );
+        return new Map(results.map((details) => [ details.noteId, details ]));
+    } catch (e) {
+        logError(`Could not load the matched terms of search note '${searchNote.noteId}': ${getErrorMessage(e)}`);
+        return new Map<string, SearchResultDetails>();
+    }
+}
+
 export function useViewType(note: FNote | null | undefined) {
     const [ viewType, setViewType ] = useNoteLabel(note, "viewType");
     const defaultViewType = (note?.type === "search" ? "list" : "grid");
@@ -133,7 +182,9 @@ export function useViewType(note: FNote | null | undefined) {
 function ViewTypeSwitcher({ viewType, setViewType }: { viewType: ViewTypeOptions, setViewType: (newValue: ViewTypeOptions) => void }) {
     // Keyboard shortcut
     const dropdownContainerRef = useRef<HTMLDivElement>(null);
-    useTriliumEvent("toggleRibbonTabBookProperties", () => {
+    const { ntxId: ownNtxId } = useNoteContext();
+    useTriliumEvent("toggleRibbonTabBookProperties", ({ ntxId }) => {
+        if (!ownNtxId || ntxId !== ownNtxId) return;
         dropdownContainerRef.current?.querySelector("button")?.focus();
     });
 
@@ -184,17 +235,40 @@ function ViewOptions({ note, viewType, optionsChildren }: {
                 bindToLabel: "subtreeHidden"
             } as CheckBoxProperty} />
 
-            <ViewProperty note={note} property={{
-                type: "checkbox",
-                icon: "bx bx-archive",
-                label: t("book_properties.include_archived_notes"),
-                bindToLabel: "includeArchived"
-            } as CheckBoxProperty} />
+            <ViewProperty note={note} property={INCLUDE_ARCHIVED_PROPERTY} />
 
             {optionsChildren && <>
                 <FormDropdownDivider />
                 {optionsChildren}
             </>}
         </Dropdown>
+    );
+}
+
+/**
+ * The dialog holding a collection's settings beyond its bar, such as its templates, as a column of
+ * cards.
+ */
+export function CollectionPropertiesDialog({ className, title, show, stackable, onHidden, children }: {
+    className: string;
+    title: string;
+    show: boolean;
+    /** Opens over a dialog already shown, such as the new-event sheet on a phone. */
+    stackable?: boolean;
+    onHidden: () => void;
+    children: ComponentChildren;
+}) {
+    return (
+        <Modal
+            className={clsx("collection-properties-dialog", className)}
+            title={title}
+            size="lg"
+            scrollable
+            show={show}
+            stackable={stackable}
+            onHidden={onHidden}
+        >
+            {children}
+        </Modal>
     );
 }

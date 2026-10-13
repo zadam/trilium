@@ -85,13 +85,15 @@ class Adapter implements UploadAdapter {
 	 * @private
 	 */
 	_initRequest() {
-		return glob.getHeaders().then(headers => {
+		const domRoot = this.editor.editing.view.getDomRoot();
+		const component = glob.getComponentByEl<EditorComponent>( domRoot );
+
+		// Sent as a change of the host, which then does not redraw the links and embeds it shows.
+		return glob.getHeaders({ "trilium-component-id": component?.componentId }).then(headers => {
 			const xhr = this.xhr = new XMLHttpRequest();
 
 			// The note the editor holds, which is not the active tab's in a split or the quick edit
 			// popup. A host that does not say falls back to the active tab's.
-			const domRoot = this.editor.editing.view.getDomRoot();
-			const component = glob.getComponentByEl<EditorComponent>( domRoot );
 			const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote().noteId;
 			const query = isUploadAsLink(this.loader) ? "?link=true" : "";
 

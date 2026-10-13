@@ -100,16 +100,18 @@ interface NewNoteLinkProps extends Pick<HTMLAttributes<HTMLAnchorElement>, "onCo
     viewScope?: ViewScope;
     noContextMenu?: boolean;
     showNoteIcon?: boolean;
+    /** Shows only the note's icon, with the title as its tooltip and accessible name. */
+    iconOnly?: boolean;
     noPreview?: boolean;
 }
 
-export function NewNoteLink({ notePath, viewScope, noContextMenu, showNoteIcon, noPreview, ...linkProps }: NewNoteLinkProps) {
+export function NewNoteLink({ notePath, viewScope, noContextMenu, showNoteIcon, iconOnly, noPreview, ...linkProps }: NewNoteLinkProps) {
 
     const { noteId, parentNoteId } = tree.getNoteIdAndParentIdFromUrl(notePath);
     const note = useNote(noteId);
 
     const title = useNoteTitle(noteId, parentNoteId);
-    const icon = useNoteIcon(showNoteIcon ? note : null);
+    const icon = useNoteIcon(showNoteIcon || iconOnly ? note : null);
     const colorClass = useNoteColorClass(note);
     const [ archived ] = useNoteLabelBoolean(note, "archived");
 
@@ -121,10 +123,12 @@ export function NewNoteLink({ notePath, viewScope, noContextMenu, showNoteIcon, 
             })}
             href={calculateHash({ notePath, viewScope })}
             data-no-context-menu={noContextMenu}
+            title={iconOnly ? title : undefined}
+            aria-label={iconOnly ? title : undefined}
             {...linkProps}
         >
             {icon && <Icon icon={icon} className="note-link-icon" />}
-            {title}
+            {!iconOnly && title}
         </a>
     );
 }

@@ -11,16 +11,14 @@
 <p>There are multiple types of searches, all using the same search mechanism
   and query language:</p>
 <ul>
-  <li>
-    <p><a class="reference-link" href="#root/_help_Ms1nauBra7gq">Quick search</a>&nbsp;which
-      can be found in the&nbsp;<a class="reference-link" href="#root/_help_xYmIYSP6wE3F">Launch Bar</a>&nbsp;for
-      small one-off searches.</p>
+  <li><a class="reference-link" href="#root/_help_Ms1nauBra7gq">Quick search</a>&nbsp;which
+    can be found in the&nbsp;<a class="reference-link" href="#root/_help_xYmIYSP6wE3F">Launch Bar</a>&nbsp;for
+    small one-off searches.
     <ul>
       <li>The results are shown in a popup and it has an infinite scroll.</li>
     </ul>
   </li>
-  <li>
-    <p><em>Full search</em> is the more advanced search mechanism.</p>
+  <li><em>Full search</em> is the more advanced search mechanism.
     <ul>
       <li>The results are displayed in a separate page and it has multiple advanced
         features (search script, fast search, include archived notes, order by,
@@ -32,9 +30,8 @@
         calendar, table).</li>
     </ul>
   </li>
-  <li>
-    <p>Some&nbsp;<a class="reference-link" href="#root/_help_GTwFsgaA0lCt">Collections</a>&nbsp;such
-      as board view have a dedicated search bar which applies to that collection.</p>
+  <li>Some&nbsp;<a class="reference-link" href="#root/_help_GTwFsgaA0lCt">Collections</a>&nbsp;such
+    as board view have a dedicated search bar which applies to that collection.
     <ul>
       <li>In this case, the results are displayed directly in the collection instead
         of a popup and they are limited to the collection but the query language
@@ -55,7 +52,8 @@
     the&nbsp;<a class="reference-link" href="#root/_help_YtSN43OrfzaA">Note tree contextual menu</a>&nbsp;or
     press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>.</li>
   <li>Go to&nbsp;<a class="reference-link" href="#root/_help_F1r9QtzQLZqm">Jump to &amp; command palette</a>,
-    look for something then press <em>Search in full text</em> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>).</li>
+    look for something then press <em>Show in full search</em> below the results
+    (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>).</li>
 </ul>
 <h2>Interaction</h2>
 <p>To search for notes, click on the magnifying glass icon on the toolbar
@@ -96,36 +94,27 @@
   operators, values, and notes after <code>@</code>. Keywords such as <code>and</code>, <code>or</code>, <code>not</code>, <code>orderBy</code> and <code>limit</code> appear
   only on <kbd>Ctrl</kbd>+<kbd>Space</kbd>, since a plain word is usually
   a search term.</p>
-<p>No suggestion is selected when the list opens, so <kbd>Enter</kbd> runs
+<p>No suggestion is selected when a list opens on its own, so <kbd>Enter</kbd> runs
   the search as typed. To insert a suggestion, select it with <kbd>Down</kbd> and
-  press <kbd>Enter</kbd>.</p>
+  press <kbd>Enter</kbd>. The list opened with <kbd>Ctrl</kbd>+<kbd>Space</kbd> and
+  the notes after <code>@</code> open on the best match instead, so <kbd>Enter</kbd> inserts
+  it.</p>
 <p>The autocomplete offers:</p>
 <ul>
-  <li>
-    <p>Basic operators such as <code>*=</code> and keywords (<code>limit</code>, <code>not</code>).</p>
-  </li>
-  <li>
-    <p>Fields for object-like fields such as <code>note</code> or <code>~relation</code>,
-      triggered by typing <code>.</code>.</p>
-  </li>
-  <li>
-    <p>Contextual enumerations such as <code>note.type = "</code> or <code>note.mime = "</code>.</p>
-  </li>
-  <li>
-    <p><a href="#root/_help_HI6GBBIduIgv">Label</a> names by typing <code>#</code>,
-      with user-defined ones shown first.</p>
+  <li>Basic operators such as <code>*=</code> and keywords (<code>limit</code>, <code>not</code>).</li>
+  <li>Fields for object-like fields such as <code>note</code> or <code>~relation</code>,
+    triggered by typing <code>.</code>.</li>
+  <li>Contextual enumerations such as <code>note.type = "</code> or <code>note.mime = "</code>.</li>
+  <li><a href="#root/_help_HI6GBBIduIgv">Label</a> names by typing <code>#</code>.
     <ul>
-      <li>A gear icon indicates system attributes.</li>
+      <li>A small gear on the name's icon indicates a system attribute.</li>
       <li>After typing the label name, the value is also autocompleted with values
         that are present in the database.</li>
     </ul>
   </li>
-  <li>
-    <p><a href="#root/_help_Cq5X6iKQop6R">Relation</a> names by typing <code>~</code>.</p>
-  </li>
-  <li>
-    <p><a href="#root/_help_m1lbrzyKDaRB">Note ID</a>s can be inserted easily
-      by typing <code>@</code> and looking for a note.</p>
+  <li><a href="#root/_help_Cq5X6iKQop6R">Relation</a> names by typing <code>~</code>.</li>
+  <li><a href="#root/_help_m1lbrzyKDaRB">Note ID</a>s can be inserted easily
+    by typing <code>@</code> and looking for a note.
     <ul>
       <li>If the note ID is under a valid syntax, it will be shown as a chip of
         the note instead of the raw ID.</li>
@@ -149,8 +138,8 @@
 </ul>
 <p>An error the search only runs into while running, such as an operator
   that note content cannot be searched with, is shown in a <em>Search error</em> card
-  instead: below the search string, or at the top of the <a class="reference-link"
-  href="#root/_help_Ms1nauBra7gq">Quick search</a> results.</p>
+  instead: below the search string, or at the top of the&nbsp;<a class="reference-link"
+  href="#root/_help_Ms1nauBra7gq">Quick search</a>&nbsp;results.</p>
 <h3>Multiline</h3>
 <p>Long or complicated searches can be formatted by using newlines, similar
   to SQL queries. Newlines are treated just like spaces.</p>
@@ -249,8 +238,14 @@
     (stored in the <code>searchResultsPageSize</code> option), so you do not
     have to reset it on every device.</li>
   <li><strong>Clicking a result</strong> opens the note and jumps straight to
-    the first match. The in-note find bar opens pre-filled with your search
-    terms, so you can step through the remaining matches with the find controls.</li>
+    the first match. The in-note find bar opens pre-filled with the first word
+    of your search, so you can step through its matches with the find controls.
+    To have the find bar look for a whole phrase instead, put the phrase in
+    quotes in the search, e.g. <code>"The Lord of the Rings"</code>. In read-only
+    notes, the other words of the search are highlighted as well.</li>
+  <li><strong>Open all results in new tabs</strong> (the button above the results)
+    opens every result in a tab of its own, up to 50. Each tab opens on its
+    first match with the find bar pre-filled, as when clicking a result.</li>
   <li>If a match is inside a <strong>collapsed section</strong> (for example a
     folded heading), that section is expanded automatically so the match is
     visible.</li>
@@ -264,7 +259,11 @@
   <li><code>note.content *=* rings OR note.content *=* tolkien</code>: Find
     notes containing "rings" or "tolkien" in their content.</li>
   <li><code>towers #book</code>: Combine full-text and attribute search to find
-    notes containing "towers" and having the "book" label.</li>
+    notes containing "towers" and having the "book" label. Writing <code>towers AND #book</code> does
+    the same; to search for the word "and" itself, put it in quotes.</li>
+  <li><code>c#</code> or <code>towers#book</code>: A <code>#</code> or <code>~</code> inside
+    a word is part of the text, so these find notes containing "c#" or "towers#book".
+    To start a label or relation, put a space before it.</li>
   <li><code>towers #book or #author</code>: Search for notes containing "towers"
     and having either the "book" or "author" label.</li>
   <li><code>towers #!book</code>: Search for notes containing "towers" and not
@@ -317,9 +316,11 @@
     </ul>
   </li>
   <li><code>~author.title *= Tolkien OR (#publicationDate &gt;= 1954 AND #publicationDate &lt;= 1960)</code>:
-    Use boolean expressions and parentheses to group expressions. Note that
-    expressions starting with a parenthesis need an "expression separator sign"
-    (# or ~) prepended.</li>
+    Use boolean expressions and parentheses to group expressions.</li>
+  <li><code>towers (#genre = fantasy OR #genre = scifi)</code>: A group can
+    open the expression part directly, without a <code>#</code> or <code>~</code> before
+    the parenthesis. Here it finds notes containing "towers" whose genre is
+    fantasy or scifi.</li>
   <li><code>note.parents.title = 'Books'</code>: Find notes with a parent named
     "Books".</li>
   <li><code>note.parents.parents.title = 'Books'</code>: Find notes with a grandparent
@@ -328,6 +329,16 @@
     named "Books".</li>
   <li><code>note.children.title = 'sub-note'</code>: Find notes with a child
     named "sub-note".</li>
+  <li><code>note.links.title = 'Tolkien'</code>: Find notes linking to a note
+    named "Tolkien".</li>
+  <li><code>note.backlinks.title = 'Reading list'</code>: Find the notes that
+    "Reading list" links to.</li>
+  <li>A link is a relation you created, such as <code>~author</code>, or one
+    that content creates: an internal link (<code>~internalLink</code>), an
+    image (<code>~imageLink</code>), an included note (<code>~includeNoteLink</code>)
+    or a relation map connection (<code>~relationMapLink</code>). Relations
+    that configure a note, such as <code>~template</code> or a saved search's <code>~ancestor</code>,
+    are not links.</li>
 </ul>
 <p>See also&nbsp;<a class="reference-link" href="#root/_help_Oxyb6jOjjVNL">Under the hood</a>&nbsp;for
   more syntax references.</p>

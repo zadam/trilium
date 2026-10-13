@@ -6,7 +6,8 @@ import "./index.css";
 
 import { Calendar as FullCalendar, DateSelectInfo, EventChangeInfo, EventClickInfo, EventDisplayInfo, EventInput, MountInfo, PluginInput } from "fullcalendar";
 import type { ColSpec, ResourceCellInfo } from "fullcalendar-scheduler";
-import { RefObject } from "preact";
+import { createPortal, RefObject } from "preact";
+import { lazy, Suspense } from "preact/compat";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import FNote from "../../../entities/fnote";
@@ -14,19 +15,21 @@ import attributes from "../../../services/attributes";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
 import note_create from "../../../services/note_create";
+import { type NoteTypeOption } from "../../../services/note_types";
 import note_tooltip from "../../../services/note_tooltip";
 import CollectionProperties from "../../note_bars/CollectionProperties";
 import ActionButton from "../../react/ActionButton";
 import Button, { ButtonGroup } from "../../react/Button";
-import { useNoteLabel, useSpacedUpdate, useTriliumEvent, useTriliumOptionInt } from "../../react/hooks";
+import { useNoteLabel, useNoteTypeOptions, useSpacedUpdate, useTriliumEvent, useTriliumOptionInt } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
+import { offeredTemplateIds, useTemplateChoice } from "../../react/TemplateDropdown";
 import { useLocale, useOnDatesSet } from "../calendar";
-import { changeEvent, newEvent } from "../calendar/api";
+import { type CalendarViewData, changeEvent, DEFAULT_EVENT_TEMPLATES, newEvent } from "../calendar/api";
 import Calendar from "../calendar/calendar";
 import { buildEvents } from "../calendar/event_builder";
 import EventPopover from "../calendar/EventPopover";
 import GhostPopover from "../calendar/GhostPopover";
-import { CalendarSelection } from "../calendar/selection";
+import { CalendarSelection, EventDraft } from "../calendar/selection";
 import { isAttributeChangeAffecting, parseStartEndDateFromEvent, parseStartEndTimeFromEvent } from "../calendar/utils";
 import { ViewModeProps } from "../interface";
 import getAttributeDefinitionInformation from "../table/rows";
@@ -55,12 +58,15 @@ const NEW_ROW_ID = "_timeline_new";
 /** FullCalendar Premium is used under its AGPLv3 license, the same as Trilium's. */
 const SCHEDULER_LICENSE_KEY = "AGPL-My-Frontend-And-Backend-Are-Open-Source";
 
-export default function TimelineView({ note, noteIds }: ViewModeProps<object>) {
+const CalendarProperties = lazy(() => import("../calendar/CalendarProperties"));
+
+export default function TimelineView({ note, noteIds, viewConfig, saveConfig }: ViewModeProps<CalendarViewData>) {
     const parentComponent = useContext(ParentComponent);
     const componentId = parentComponent?.componentId;
     const containerRef = useRef<HTMLDivElement>(null);
     const calendarRef = useRef<FullCalendar>(null);
     const [ selection, setSelection ] = useState<CalendarSelection | null>(null);
+    const [ isEditingProperties, setIsEditingProperties ] = useState(false);
 
     const [ firstDayOfWeek ] = useTriliumOptionInt("firstDayOfWeek");
     const [ timelineView, setTimelineView ] = useNoteLabel(note, "timeline:view");
@@ -141,10 +147,12 @@ export default function TimelineView({ note, noteIds }: ViewModeProps<object>) {
         await changeEvent(rowNote, { startDate, endDate, startTime: null, endTime: null });
     }, []);
 
-    const commitDraft = useCallback(async (title: string) => {
+    const commitDraft = useCallback(async (
+        title: string, draft: EventDraft, template: NoteTypeOption | undefined
+    ) => {
         if (!selection || !("draft" in selection)) return;
 
-        await newEvent(note, { title: title.trim() || undefined, ...selection.draft });
+        await newEvent(note, { title: title.trim() || undefined, ...draft, template });
         calendarRef.current?.unselect();
         setSelection(null);
     }, [ selection, note ]);
@@ -153,6 +161,21 @@ export default function TimelineView({ note, noteIds }: ViewModeProps<object>) {
         calendarRef.current?.unselect();
         setSelection(null);
     }, []);
+
+    const availableTemplates = useNoteTypeOptions(true);
+    const selectTemplate = useCallback((template: NoteTypeOption) => {
+        if (template.id !== viewConfig?.template) {
+            saveConfig({ ...viewConfig, template: template.id });
+        }
+    }, [ viewConfig, saveConfig ]);
+    const editTemplates = useCallback(() => setIsEditingProperties(true), []);
+    const templates = useTemplateChoice({
+        ids: offeredTemplateIds(viewConfig, DEFAULT_EVENT_TEMPLATES),
+        lastUsedId: viewConfig?.template,
+        available: availableTemplates,
+        onSelect: selectTemplate,
+        onMore: editTemplates
+    });
 
     const addNote = useCallback(async (parentNoteId: string, e: MouseEvent) => {
         e.stopPropagation();
@@ -294,10 +317,23 @@ export default function TimelineView({ note, noteIds }: ViewModeProps<object>) {
                     draft={selection.draft}
                     anchor={selection.anchor}
                     container={containerRef.current}
+                    templates={templates}
                     onCommit={commitDraft}
                     onCancel={cancelDraft}
                     onDismiss={() => setSelection(null)}
                 />
+            )}
+            {isEditingProperties && createPortal(
+                <Suspense fallback={null}>
+                    <CalendarProperties
+                        note={note}
+                        viewConfig={viewConfig}
+                        eventNoteIds={noteIds}
+                        saveConfig={saveConfig}
+                        onClose={() => setIsEditingProperties(false)}
+                    />
+                </Suspense>,
+                document.body
             )}
         </div>
     );
@@ -305,7 +341,7 @@ export default function TimelineView({ note, noteIds }: ViewModeProps<object>) {
 
 function TimelineCollectionProperties({ note, calendarRef }: {
     note: FNote;
-    calendarRef: RefObject<FullCalendar>;
+    calendarRef: RefObject<FullCalendar | null>;
 }) {
     const { title, viewType } = useOnDatesSet(calendarRef);
 

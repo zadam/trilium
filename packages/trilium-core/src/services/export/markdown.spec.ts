@@ -777,6 +777,13 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    it("drops the block ids of a text note, which Markdown has no syntax for", () => {
+        const html = `<h2 data-trilium-block-id="h1">Title</h2>`
+            + `<p data-trilium-block-id="p1">Text</p>`;
+
+        expect(markdownExportService.toMarkdown(html)).toBe("## Title\n\nText");
+    });
+
     it("drops data-trilium-collapsed but keeps the collapsed item's children as bullets", () => {
         // Collapsing is editor-only UI state (the nested items live in the content, hidden via
         // CSS), and Markdown has no syntax for it — so the attribute is dropped on export while
@@ -955,4 +962,83 @@ describe("Markdown export", () => {
         });
     });
 
+    describe("tabs blocks", () => {
+        const tab = (title: string, panel: string) =>
+            `<section class="trilium-tab"><p class="trilium-tab-title">${title}</p><div class="trilium-tab-panel">${panel}</div></section>`;
+        const tabs = (...items: string[]) => `<div class="trilium-tabs">${items.join("")}</div>`;
+
+        it("exports each tab as a MkDocs tabbed section with its panel indented four spaces", () => {
+            const html = tabs(
+                tab("Windows", "<p>Run the <strong>installer</strong>.</p><pre><code class=\"language-text-x-sh\">setup.exe</code></pre>"),
+                tab("Say \"hi\"", "<ul><li>One</li><li>Two</li></ul>")
+            );
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Windows"
+
+                    Run the **installer**.
+
+                    \`\`\`sh
+                    setup.exe
+                    \`\`\`
+
+                === "Say "hi""
+
+                    *   One
+                    *   Two`);
+        });
+
+        it("indents nested tabs once more and starts a block that follows another one with ===!", () => {
+            const html = tabs(tab("Outer", tabs(tab("Inner", "<p>x</p>")))) + tabs(tab("Next", "<p>y</p>"));
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Outer"
+
+                    === "Inner"
+
+                        x
+
+                ===! "Next"
+
+                    y`);
+        });
+
+        it("exports the icons and formatting of a tab title as inline Markdown", () => {
+            const html = tabs(
+                tab(`<span class="tn-icon bx bxl-chrome"></span>&nbsp;Chrome`, "<p>a</p>"),
+                tab("<strong>Bold</strong> and <code>code</code>", "<p>b</p>")
+            );
+            const markdown = markdownExportService.toMarkdown(html);
+
+            expect(markdown).not.toContain("");
+            expect(markdown).toBe(trimIndentation`\
+                === "<span class="tn-icon bx bxl-chrome"></span>${"\u00A0"}Chrome"
+
+                    a
+
+                === "**Bold** and \`code\`"
+
+                    b`);
+        });
+    });
+
+    it("exports the columns of a multicolumn layout one after another", () => {
+        const html =
+            "<p>Before</p>" +
+            "<section class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-3\">" +
+                "<section><p>First <strong>column</strong></p><ul><li>One</li></ul></section>" +
+                "<section><h2>Second</h2><p>Text</p></section>" +
+            "</section>" +
+            "<p>After</p>";
+        expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+            Before
+
+            First **column**
+
+            *   One
+
+            ## Second
+
+            Text
+
+            After`);
+    });
 });

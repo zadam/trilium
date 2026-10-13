@@ -112,13 +112,46 @@
 <h3>Web search</h3>
 <p>The AI can optionally search the web to find more information about a
   specific topic.&nbsp;</p>
-<p>This feature is on by default but it can easily be disabled by clicking
-  on the model selector at the bottom of the chat and unchecking <em>Web search</em>.</p>
-<aside
-class="admonition note">
-  <p>Currently only the search native to the LLM provider is supported. External
-    search providers such as Exa, Tavily &amp; SearXNG are not yet supported.</p>
-</aside>
+<p>Where the search comes from is chosen under <em>Web search</em> in the <span
+  class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> menu next to
+  the model selector at the bottom of the chat:</p>
+<ul>
+  <li><em>Disabled</em> turns web search off for this chat.</li>
+  <li><em>Use the model's built-in search</em>, the default, lets the model
+    search with its provider's own search. Anthropic, OpenAI and Google Gemini
+    models have one, as do Claude Code, Google Antigravity and OpenAI Codex.
+    DeepSeek, Ollama, LM Studio and custom endpoints don't, so this choice
+    is disabled for their models.</li>
+  <li>A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG)
+    searches through that service instead, whichever model is answering. Search
+    providers are added in the <em>Search Providers</em> section of the AI settings,
+    which the <span class="tn-icon bx bx-cog"></span> button beside the <em>Web search</em> heading
+    in the menu opens. The browser version can't use Brave Search, Exa or Perplexity,
+    whose services refuse requests made from a web page, so they're shown disabled
+    there.</li>
+</ul>
+<p>To use SearXNG, enable its JSON output by adding <code>json</code> to the
+  search formats in the instance's <code>settings.yml</code>. SearXNG turns
+  JSON off by default, and without it every search fails.</p><pre><code class="language-text-x-yaml">search:
+  formats:
+    - html
+    - json</code></pre>
+<p>SearXNG doesn't use API keys, so leave the API key empty. Fill it in only
+  if your instance sits behind a proxy that requires a token; Trilium sends
+  it as a bearer token in the <code>Authorization</code> header.</p>
+<p>Whether web search is on is kept per chat; the search source is shared
+  by all chats. A choice the current model can't use stays in the menu, disabled;
+  hover the <span class="tn-icon bx bx-info-circle"></span> icon next to it
+  to see why. Claude Code, GitHub Copilot, Google Antigravity and OpenAI
+  Codex run their own tools, so they can't use a search provider.</p>
+<p>In the chat, a search run through a search provider shows that provider's
+  logo at the start of its line instead of the <span class="tn-icon bx bx-search"></span> magnifier;
+  hover the logo to see the provider's name.</p>
+<p>With a search provider, the model can also read the pages it finds, or
+  a link you give it, as text: Trilium fetches the page itself and hands
+  the model up to its first 20,000 characters. Addresses on your own machine
+  or network are refused. In the browser version most sites don't allow being
+  read this way, so reading a page there usually fails.</p>
 <h3>Thinking</h3>
 <p>Some models reason before they answer. While the model is thinking, its
   reasoning is shown in full under a spinner; once it is done, it folds into
@@ -126,7 +159,8 @@ class="admonition note">
 <p>How much a model thinks is set per chat, in one of two ways depending
   on the model:</p>
 <ul>
-  <li>Most models have an <em>Extended thinking</em> switch, next to <em>Web search</em>.</li>
+  <li>Most models have an <span class="tn-icon bx bx-brain"></span>  <em>Extended thinking</em> button,
+    next to the <span class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> button.</li>
   <li>Models that offer several levels of reasoning (DeepSeek V4, OpenAI Codex,
     Antigravity) have a <span class="tn-icon bx bx-brain"></span> reasoning effort
     dropdown next to the model selector instead. <em>None</em>, where offered,
@@ -141,8 +175,10 @@ class="admonition note">
 <h3>Note access (tools)</h3>
 <p>Tools allow the agentic AI to understand and operate on notes directly
   within your Trilium instance.</p>
-<p>This feature is on by default but it can easily be disabled by clicking
-  on the model selector at the bottom of the chat and unchecking <em>Note access</em>.</p>
+<p>This feature is on by default. To turn it off, press the <span class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> button
+  next to the model selector at the bottom of the chat and switch off <em>Note access</em>.
+  The <em>Tools</em> button is highlighted while note access or web search
+  is on.</p>
 <p>Here are a few tools that Trilium provides for the LLM:</p>
 <ul>
   <li>At note level:
@@ -235,8 +271,9 @@ class="admonition note">
     an attribute because there is no attribute history).</p>
 </aside>
 <aside class="admonition note">
-  <p>Gemini has a special case in which <em>Note access</em> and <em>Web search</em> can't
-    be both enabled at the same time.</p>
+  <p>Gemini can't use its built-in search while note access is on. While it
+    is, the built-in search choice in the <em>Tools</em> menu is disabled and
+    says why; a search provider works with note access on.</p>
 </aside>
 <h3>Attachments</h3>
 <p>Since Trilium v0.140.0,&nbsp;<a class="reference-link" href="#root/_help_0vhv7lsOLy82">Attachments</a>&nbsp;allow

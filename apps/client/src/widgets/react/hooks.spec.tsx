@@ -5,12 +5,17 @@ import { useRef } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import appContext from "../../components/app_context";
+import type NoteContext from "../../components/note_context";
+import type TabManager from "../../components/tab_manager";
 import { buildNote } from "../../test/easy-froca";
 import {
     type DelayedVisibilityPhase,
     useDelayedVisibility,
+    useDetachedNoteContext,
     useFocusWithin,
     useImperativeSearchHighlighlighting,
+    useMediaQuery,
     useNoteLabelBoolean,
     useStaticTooltip,
     useTooltip
@@ -124,6 +129,36 @@ describe("useDelayedVisibility", () => {
         await show(false);
         await advance(0);
         expect(currentPhase).toBe("hidden");
+    });
+});
+
+describe("useDetachedNoteContext", () => {
+    it("registers the context while it is in use, and unregisters it once replaced or unmounted", () => {
+        const tabManager = appContext.tabManager;
+        const registerDetachedContext = vi.fn();
+        const unregisterDetachedContext = vi.fn();
+        appContext.tabManager = { registerDetachedContext, unregisterDetachedContext } as unknown as TabManager;
+        try {
+            const first = { ntxId: "_tree-popup" } as NoteContext;
+            const second = { ntxId: "_tree-popup" } as NoteContext;
+            function Host({ noteContext }: { noteContext: NoteContext }) {
+                useDetachedNoteContext(noteContext);
+                return null;
+            }
+            const container = document.createElement("div");
+
+            act(() => render(<Host noteContext={first} />, container));
+            expect(registerDetachedContext).toHaveBeenLastCalledWith(first);
+
+            act(() => render(<Host noteContext={second} />, container));
+            expect(unregisterDetachedContext).toHaveBeenLastCalledWith(first);
+            expect(registerDetachedContext).toHaveBeenLastCalledWith(second);
+
+            act(() => render(null, container));
+            expect(unregisterDetachedContext).toHaveBeenLastCalledWith(second);
+        } finally {
+            appContext.tabManager = tabManager;
+        }
     });
 });
 
@@ -636,5 +671,30 @@ describe("useNoteLabelBoolean", () => {
         });
 
         expect(draws).toEqual([ true ]);
+    });
+});
+
+describe("useMediaQuery", () => {
+    it("follows whether the query matches, and stops listening once unmounted", async () => {
+        const listeners = new Set<() => void>();
+        const query = { matches: false, addEventListener: (_: string, cb: () => void) => listeners.add(cb),
+            removeEventListener: (_: string, cb: () => void) => listeners.delete(cb) };
+        vi.spyOn(window, "matchMedia").mockReturnValue(query as unknown as MediaQueryList);
+
+        function Consumer() {
+            return <span>{String(useMediaQuery("(min-width: 1100px)"))}</span>;
+        }
+        const host = document.body.appendChild(document.createElement("div"));
+        await act(async () => { render(<Consumer />, host); });
+        expect(host.textContent).toBe("false");
+
+        query.matches = true;
+        await act(async () => { for (const listener of listeners) listener(); });
+        expect(host.textContent).toBe("true");
+
+        await act(async () => { render(null, host); });
+        expect(listeners.size).toBe(0);
+        host.remove();
+        vi.restoreAllMocks();
     });
 });

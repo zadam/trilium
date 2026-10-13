@@ -7,12 +7,14 @@ import { LLM_ATTACHMENT_KINDS, type LlmAttachmentKind, type LlmMessage, type Llm
 import { type FilePart, generateText, type ImagePart, type LanguageModel, type ModelMessage, stepCountIs, streamText, type SystemModelMessage, type TextPart, type ToolSet } from "ai";
 
 import { getLog } from "../../log.js";
+import { trimTrailingSlashes } from "../../utils/index.js";
 import { attachmentPlaceholder, resolveAttachmentPart } from "../attachment_content.js";
 import { llmFetch } from "./fetch.js";
 import { buildNoteHint } from "../note_hint.js";
 import { buildSystemPrompt as composeSystemPrompt } from "../system_prompt.js";
 import { allToolRegistries } from "../tools/index.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "../types.js";
+import { createReadWebPageTool, createWebSearchTool } from "../web_search.js";
 import MODEL_PRICES_JSON from "./model_prices.json" with { type: "json" };
 
 const DEFAULT_MAX_TOKENS = 8096;
@@ -212,20 +214,9 @@ export function mergeModelLists(curated: ModelInfo[], remote: RemoteModel[]): Mo
 /**
  * Normalize a custom endpoint override: strip trailing slashes, and treat an
  * empty result as "no override".
- *
- * Written as an index scan rather than `replace(/\/+$/, "")`: that pattern
- * backtracks polynomially on a value ending in many slashes, and the base URL
- * arrives straight from a request body (CodeQL js/polynomial-redos).
  */
 function normalizeBaseUrl(baseURL: string | undefined): string | undefined {
-    if (!baseURL) {
-        return undefined;
-    }
-    let end = baseURL.length;
-    while (end > 0 && baseURL.charAt(end - 1) === "/") {
-        end--;
-    }
-    return baseURL.slice(0, end) || undefined;
+    return baseURL ? trimTrailingSlashes(baseURL) || undefined : undefined;
 }
 
 export abstract class BaseProvider implements LlmProvider {
@@ -406,7 +397,12 @@ export abstract class BaseProvider implements LlmProvider {
         const tools: ToolSet = {};
 
         if (config.enableWebSearch) {
-            this.addWebSearchTool(tools);
+            if (config.webSearch) {
+                tools.web_search = createWebSearchTool(config.webSearch);
+                tools.read_web_page = createReadWebPageTool();
+            } else {
+                this.addWebSearchTool(tools);
+            }
         }
 
         if (config.enableNoteTools) {
@@ -418,7 +414,7 @@ export abstract class BaseProvider implements LlmProvider {
         return tools;
     }
 
-    chat(messages: LlmMessage[], config: LlmProviderConfig): StreamResult {
+    chat(messages: LlmMessage[], config: LlmProviderConfig, signal?: AbortSignal): StreamResult {
         const systemPrompt = this.buildSystemPrompt(messages, config);
         const chatMessages = this.applyNoteHint(messages.filter(m => m.role !== "system"), config);
         const modelId = config.model || this.defaultModel;
@@ -436,7 +432,8 @@ export abstract class BaseProvider implements LlmProvider {
             // `fullStream`, where `streamToChunks` turns it into a detailed message that
             // the chat route logs — so suppress the unstructured stdout dump here.
             onError: () => {},
-            telemetry: TELEMETRY_OFF
+            telemetry: TELEMETRY_OFF,
+            abortSignal: signal
         };
         const providerOptions = this.chatProviderOptions(config);
         if (providerOptions) {

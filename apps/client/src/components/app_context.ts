@@ -15,7 +15,7 @@ import options from "../services/options.js";
 import type { ShortcutHintSection } from "../services/shortcut_hints.js";
 import { reportSplashPhase } from "../services/splash.js";
 import toast from "../services/toast.js";
-import utils from "../services/utils.js";
+import utils, { reuseAcrossHotReloads } from "../services/utils.js";
 import { ReactWrappedWidget } from "../widgets/basic_widget.js";
 import type RootContainer from "../widgets/containers/root_container.js";
 import { AddLinkOpts } from "../widgets/dialogs/add_link.jsx";
@@ -89,6 +89,14 @@ export interface NoteCommandData extends CommandData {
     splits?: HashPane[] | null;
     /** Index into `[main pane, ...splits]` of the pane to focus. Defaults to the main pane. */
     activeSplit?: number;
+}
+
+/** The note a quick-edit popup opens, and how. */
+export interface OpenInPopupData extends CommandData {
+    noteIdOrPath: string;
+    viewScope?: ViewScope;
+    /** Offers the note type switcher while the note is still blank, as the tab layout does. */
+    showNoteTypeSwitcher?: boolean;
 }
 
 export interface ExecuteCommandData<T> extends CommandData {
@@ -167,12 +175,9 @@ export type CommandMappings = {
     openNewNoteSplit: NoteCommandData;
     openInWindow: NoteCommandData;
     /** Opens a note in the quick-edit popup. A `viewScope` carrying an `attachmentId` opens that attachment instead of the note itself. */
-    openInPopup: CommandData & {
-        noteIdOrPath: string;
-        viewScope?: ViewScope;
-        /** Offers the note type switcher while the note is still blank, as the tab layout does. */
-        showNoteTypeSwitcher?: boolean;
-    };
+    openInPopup: OpenInPopupData;
+    /** Opens a note in a second quick-edit popup, over the first one, such as a help page asked for from within it. */
+    openInNestedPopup: OpenInPopupData;
     /** Dismisses the quick-edit popup, for something within it that has sent the reader elsewhere. Does nothing if it isn't open. */
     closePopupEditor: CommandData;
     openInTreePopup: CommandData & { noteIdOrPath: string; hoistedNoteId: string; };
@@ -180,7 +185,6 @@ export type CommandMappings = {
     openNoteInNewSplit: CommandData;
     openNoteInNewWindow: CommandData;
     openAboutDialog: CommandData;
-    hideFloatingButtons: {};
     hideLeftPane: CommandData;
     showCpuArchWarning: CommandData;
     showLeftPane: CommandData;
@@ -215,6 +219,7 @@ export type CommandMappings = {
     editBranchPrefix: ContextMenuCommandData;
     convertNoteToAttachment: ContextMenuCommandData;
     duplicateSubtree: ContextMenuCommandData;
+    duplicateNote: ContextMenuCommandData;
     expandSubtree: ContextMenuCommandData;
     collapseSubtree: ContextMenuCommandData;
     toggleArchivedNotes: CommandData;
@@ -313,7 +318,6 @@ export type CommandMappings = {
         zoomFactor: string;
     };
 
-    reEvaluateRightPaneVisibility: CommandData;
     runActiveNote: CommandData;
     scrollContainerTo: CommandData & {
         position: number;
@@ -521,18 +525,6 @@ type EventMappings = {
     setNoteContext: {
         noteContext: NoteContext;
     };
-    reEvaluateHighlightsListWidgetVisibility: {
-        noteId: string | undefined;
-    };
-    reEvaluateTocWidgetVisibility: {
-        noteId: string | undefined;
-    };
-    showHighlightsListWidget: {
-        noteId: string;
-    };
-    showTocWidget: {
-        noteId: string;
-    };
     showSearchError: {
         error: string;
     };
@@ -575,8 +567,8 @@ type EventMappings = {
     geoMapCreateChildNote: {
         ntxId: string | null | undefined; // TODO: deduplicate ntxId
     };
-    /** Opens the board's properties dialog, which only the board itself can show. */
-    showBoardProperties: { ntxId: string | null | undefined; };
+    /** Opens the properties dialog of a board or calendar, which only the view itself can show. */
+    showCollectionProperties: { ntxId: string | null | undefined; };
     tabReorder: {
         ntxIdsInOrder: string[];
     };
@@ -589,10 +581,6 @@ type EventMappings = {
     };
     noteTypeMimeChanged: { noteId: string };
     zenModeChanged: { isEnabled: boolean };
-    relationMapCreateChildNote: { ntxId: string | null | undefined };
-    relationMapResetPanZoom: { ntxId: string | null | undefined };
-    relationMapResetZoomIn: { ntxId: string | null | undefined };
-    relationMapResetZoomOut: { ntxId: string | null | undefined };
     activeNoteChanged: {ntxId: string | null | undefined};
     showAddLinkDialog: AddLinkOpts;
     showContentEmbedDialog: ContentEmbedOpts;
@@ -603,10 +591,6 @@ type EventMappings = {
         noteIds: string[];
     };
     refreshData: { ntxId: string | null | undefined };
-    contentSafeMarginChanged: {
-        top: number;
-        noteContext: NoteContext;
-    };
 };
 
 export type EventListener<T extends EventNames> = {
@@ -778,45 +762,51 @@ export class AppContext extends Component {
     }
 }
 
-const appContext = new AppContext(window.glob.isMainWindow);
-
-// we should save all outstanding changes before the page/app is closed
-$(window).on("beforeunload", () => {
-    let allSaved = true;
-
-    appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter((wr) => typeof wr === "function" || !!wr.deref());
-
-    for (const listener of appContext.beforeUnloadListeners) {
-        if (typeof listener === "object") {
-            const component = listener.deref();
-
-            if (!component) {
-                continue;
-            }
-
-            if (!component.beforeUnloadEvent()) {
-                console.log(`Component ${component.componentId} is not finished saving its state.`);
-                allSaved = false;
-            }
-        } else if (!listener()) {
-            allSaved = false;
-        }
-    }
-
-    if (!allSaved) {
-        toast.showMessage(t("app_context.please_wait_for_save"), 10000);
-        return "some string";
-    }
-});
-
-$(window).on("hashchange", () => {
-    const { notePath, ntxId, viewScope, searchString } = linkService.parseNavigationStateFromUrl(window.location.href);
-
-    if (notePath || ntxId) {
-        appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
-    } else if (searchString) {
-        appContext.triggerCommand("searchNotes", { searchString });
-    }
+const appContext = reuseAcrossHotReloads(import.meta.hot, () => {
+    const context = new AppContext(window.glob.isMainWindow);
+    registerWindowHandlers(context);
+    return context;
 });
 
 export default appContext;
+
+function registerWindowHandlers(appContext: AppContext) {
+    // we should save all outstanding changes before the page/app is closed
+    $(window).on("beforeunload", () => {
+        let allSaved = true;
+
+        appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter((wr) => typeof wr === "function" || !!wr.deref());
+
+        for (const listener of appContext.beforeUnloadListeners) {
+            if (typeof listener === "object") {
+                const component = listener.deref();
+
+                if (!component) {
+                    continue;
+                }
+
+                if (!component.beforeUnloadEvent()) {
+                    console.log(`Component ${component.componentId} is not finished saving its state.`);
+                    allSaved = false;
+                }
+            } else if (!listener()) {
+                allSaved = false;
+            }
+        }
+
+        if (!allSaved) {
+            toast.showMessage(t("app_context.please_wait_for_save"), 10000);
+            return "some string";
+        }
+    });
+
+    $(window).on("hashchange", () => {
+        const { notePath, ntxId, viewScope, searchString } = linkService.parseNavigationStateFromUrl(window.location.href);
+
+        if (notePath || ntxId) {
+            appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
+        } else if (searchString) {
+            appContext.triggerCommand("searchNotes", { searchString });
+        }
+    });
+}

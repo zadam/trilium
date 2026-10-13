@@ -55,6 +55,7 @@ import renderText, {
     applyInlineMermaid,
     postProcessRichContent,
     renderChildrenList,
+    renderTextContent,
     rewriteMermaidDiagramsInContainer
 } from "./content_renderer_text";
 
@@ -249,6 +250,22 @@ describe("Text content renderer", () => {
         expect(items[1].textContent).toBe("Child note 3");
     });
 
+    it("renders given content in place of the saved one, and the children list when empty", async () => {
+        const note = buildNote({
+            title: "Edited note",
+            content: "<p>Saved</p>",
+            children: [ { title: "Child note" } ]
+        });
+
+        const edited = document.createElement("div");
+        await renderTextContent(note, "<p>Edited</p>", $(edited));
+        expect(edited.querySelector(".ck-content")?.innerHTML).toBe("<p>Edited</p>");
+
+        const emptied = document.createElement("div");
+        await renderTextContent(note, "<p>&nbsp;</p>", $(emptied));
+        expect(emptied.querySelector("a")?.textContent).toBe("Child note");
+    });
+
     it("renders nothing for an empty note with no children when noChildrenList is set", async () => {
         const contentEl = document.createElement("div");
         const note = buildNote({ title: "Empty note" });
@@ -298,6 +315,20 @@ describe("Text content renderer", () => {
         expect(refLink).not.toBeNull();
         // The original "stale" child text was replaced with a span carrying the live title.
         expect(refLink?.textContent).toContain("Referenced Title");
+    });
+
+    it("labels a reference to a block of the rendered note by the text of the block", async () => {
+        const contentEl = document.createElement("div");
+        const note = buildNote({
+            id: "selfRef1",
+            title: "Self",
+            content: "<p data-trilium-block-id=\"b1\">Opening words</p>"
+                + "<p><a class=\"reference-link\" href=\"#root/selfRef1?block=b1\">stale</a></p>"
+        });
+        await renderText(note, $(contentEl));
+        const refLink = contentEl.querySelector("a.reference-link");
+        expect(refLink).not.toBeNull();
+        expect(refLink?.textContent).toBe("Opening words");
     });
 
     it("tolerates reference links without an href", async () => {
@@ -378,6 +409,25 @@ describe("Nested embeds (single-level display vs recursive print)", () => {
         expect(contentEl.textContent).toContain("B body");
         expect(contentEl.textContent).toContain("C body");
         expect(contentEl.querySelector("a.reference-link")).toBeNull();
+    });
+
+    it("on print, links back to a note already expanded on the path instead of looping", async () => {
+        buildNote({
+            id: "cycB",
+            title: "Note B",
+            content: `<p>B body</p><section class="include-note" data-note-id="cycA" data-box-size="medium">&nbsp;</section>`
+        });
+        const noteA = buildNote({
+            id: "cycA",
+            title: "Note A",
+            content: `<p>A body</p><section class="include-note" data-note-id="cycB" data-box-size="medium">&nbsp;</section>`
+        });
+        const contentEl = document.createElement("div");
+        await renderText(noteA, $(contentEl), { expandNestedEmbeds: true });
+
+        expect(contentEl.textContent).toContain("B body");
+        expect(contentEl.querySelector('section.include-note[data-note-id="cycA"]')).toBeNull();
+        expect(contentEl.querySelector("a.reference-link")?.getAttribute("href")).toBe("#root/cycA");
     });
 
     it("on print, expands a note shared across sibling branches in each branch (not a false cycle)", async () => {
@@ -495,6 +545,22 @@ describe("Attachment embeds", () => {
         expect(nestedEl.querySelector("section.include-note")).toBeNull();
         expect(nestedEl.querySelector("a.reference-link")?.getAttribute("href"))
             .toBe(`#root/${owner.noteId}?viewMode=attachments&attachmentId=embedPic`);
+    });
+
+    it("leaves the embed of an attachment that cannot be loaded as it is", async () => {
+        const owner = buildNote({
+            title: "Missing embed owner",
+            content: `<section class="include-note" data-attachment-id="gonePic">&nbsp;</section>`
+        });
+        const getAttachment = vi.spyOn(froca, "getAttachment").mockResolvedValue(null);
+
+        const contentEl = document.createElement("div");
+        await renderText(owner, $(contentEl));
+
+        expect(getAttachment).toHaveBeenCalledWith("gonePic", true);
+        expect(contentEl.querySelector(`section.include-note[data-attachment-id="gonePic"]`)?.innerHTML)
+            .toBe("&nbsp;");
+        getAttachment.mockRestore();
     });
 });
 
@@ -739,5 +805,90 @@ describe("applyInlineMermaid", () => {
         expect(node.classList.contains("mermaid-error")).toBe(false);
         expect(node.innerHTML).toBe("<svg>graph FIXED</svg>");
         error.mockRestore();
+    });
+});
+
+describe("Block embeds", () => {
+    const blockEmbed = (noteId: string, block: string, boxSize = "medium", blockId?: string) =>
+        `<figure class="include-note"${blockId ? ` data-trilium-block-id="${blockId}"` : ""}`
+        + ` data-note-id="${noteId}" data-block="${block}" data-box-size="${boxSize}"></figure>`;
+
+    it("renders only the referenced blocks, or a broken reference for a missing one", async () => {
+        buildNote({
+            id: "blkSource",
+            title: "Source",
+            content: "<p>Intro</p><blockquote><p>Skipped</p>"
+                + "<p data-trilium-block-id=\"b1\">Quoted</p></blockquote>"
+                + "<p data-trilium-block-id=\"b2\">Last</p><p>Outro</p>"
+        });
+        const host = buildNote({
+            title: "Host",
+            content: blockEmbed("blkSource", "b1:b2") + blockEmbed("blkSource", "b1:gone")
+        });
+        const contentEl = document.createElement("div");
+
+        await renderText(host, $(contentEl));
+
+        const [ embed, brokenEmbed ] = contentEl.querySelectorAll(".ck-content > .include-note");
+        expect(embed.querySelector("blockquote")?.textContent).toBe("Quoted");
+        expect(embed.textContent).toContain("Last");
+        expect(embed.textContent).not.toMatch(/Intro|Skipped|Outro/);
+        expect(brokenEmbed.querySelector(".block-reference-broken")?.textContent)
+            .toBe("block_reference.broken");
+    });
+
+    it("renders a broken reference for the blocks of an empty note", async () => {
+        const note = buildNote({ title: "Empty", content: "" });
+        const contentEl = document.createElement("div");
+
+        await renderTextContent(note, "", $(contentEl), { block: "b1" });
+
+        expect(contentEl.querySelector(".block-reference-broken")).not.toBeNull();
+    });
+
+    it("embeds blocks of the note itself, and stops at a block that embeds itself", async () => {
+        const note = buildNote({
+            id: "blkSelf",
+            title: "Self",
+            content: "<p data-trilium-block-id=\"top\">Top</p>"
+                + blockEmbed("blkSelf", "top")
+                + blockEmbed("blkSelf", "loop", "medium", "loop")
+        });
+        const contentEl = document.createElement("div");
+
+        await renderText(note, $(contentEl), { expandNestedEmbeds: true });
+
+        expect(contentEl.textContent?.match(/Top/g)).toHaveLength(2);
+        expect(contentEl.querySelectorAll(".include-note[data-block='loop']")).toHaveLength(1);
+    });
+
+    it("highlights the referenced blocks of the note, not those of its embeds", async () => {
+        buildNote({
+            id: "hlSource",
+            title: "Source",
+            content: "<p data-trilium-block-id=\"b1\">Embedded</p>"
+        });
+        const note = buildNote({
+            title: "Host",
+            content: blockEmbed("hlSource", "b1")
+                + "<p data-trilium-block-id=\"b1\">Own</p><p data-trilium-block-id=\"b2\">Next</p>"
+                + "<p>Outro</p>"
+        });
+        const contentEl = document.createElement("div");
+
+        await renderText(note, $(contentEl), { highlightBlock: "b1:b2" });
+
+        expect([ ...contentEl.querySelectorAll(".block-reference-highlight") ]
+            .map((element) => element.textContent)).toEqual([ "Own", "Next" ]);
+    });
+
+    it("links to the blocks of an embed one level down", async () => {
+        const note = buildNote({ title: "Host", content: blockEmbed("blkSource", "b1:b 2") });
+        const contentEl = document.createElement("div");
+
+        await renderText(note, $(contentEl), { embedsAsReferenceLinks: true });
+
+        expect(contentEl.querySelector("a.reference-link")?.getAttribute("href"))
+            .toBe("#root/blkSource?block=b1:b%202");
     });
 });

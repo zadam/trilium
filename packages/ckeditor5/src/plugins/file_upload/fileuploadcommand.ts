@@ -1,11 +1,46 @@
-import { Command, FileRepository, type Editor, type Model, type ModelWriter } from "ckeditor5";
+import {
+    Command,
+    FileRepository,
+    findOptimalInsertionRange,
+    type Editor,
+    type FileLoader,
+    type Model,
+    type ModelWriter
+} from "ckeditor5";
 
+import type { BoxSizeValue } from "../content_embed/content_embed.js";
 import { uploadAsLink } from "../uploadimage.js";
 
 export interface FileUploadOptions {
     file: File[];
     /** Embeds each file in a block of its own instead of linking it. */
     asEmbed?: boolean;
+    /** The box size of the embeds, instead of the one the host picks for the file type. */
+    boxSize?: BoxSizeValue;
+    /** Hides the title row of the embeds. */
+    hideTitle?: boolean;
+    /** Turns on the Editable toggle of the embeds, for content that has an editable mode. */
+    editable?: boolean;
+    /** Skips the `upload` event, for a file that the editor created itself. */
+    quiet?: boolean;
+    /**
+     * Gives the focus to what the embeds show, once the upload ends. The embeds go beside the
+     * block of the selection, as an image does, and the cursor stays where the selection starts.
+     */
+    focusEmbed?: boolean;
+}
+
+const quietLoaders = new WeakSet<FileLoader>();
+const focusLoaders = new WeakSet<FileLoader>();
+
+/** Whether the upload of `loader` is left out of the `upload` event. */
+export function isQuietUpload(loader: FileLoader) {
+    return quietLoaders.has(loader);
+}
+
+/** Whether the embed of the upload of `loader` takes the focus once the upload ends. */
+export function isFocusUpload(loader: FileLoader) {
+    return focusLoaders.has(loader);
 }
 
 /**
@@ -21,7 +56,8 @@ export default class FileUploadCommand extends Command {
         this.isEnabled = !!position && model.schema.checkChild(position, "reference");
     }
 
-    override execute({ file: files, asEmbed }: FileUploadOptions) {
+    override execute(options: FileUploadOptions) {
+        const { file: files, asEmbed, boxSize, hideTitle, editable, quiet, focusEmbed } = options;
         const model = this.editor.model;
         const fileRepository = this.editor.plugins.get(FileRepository);
 
@@ -34,9 +70,20 @@ export default class FileUploadCommand extends Command {
                 }
 
                 uploadAsLink(loader);
+                if (quiet) {
+                    quietLoaders.add(loader);
+                }
+                if (focusEmbed) {
+                    focusLoaders.add(loader);
+                }
+
                 if (asEmbed) {
-                    const boxSize = getEmbedBoxSize(this.editor, file);
-                    insertEmbedPlaceholder(writer, model, loader.id, file.name, boxSize);
+                    insertEmbedPlaceholder(writer, model, loader.id, file.name, {
+                        boxSize: boxSize ?? getEmbedBoxSize(this.editor, file),
+                        hideTitle,
+                        editable,
+                        isBesideSelection: focusEmbed
+                    });
                 } else {
                     insertPlaceholder(writer, model, loader.id, file.name);
                 }
@@ -65,18 +112,34 @@ function insertEmbedPlaceholder(
     model: Model,
     uploadId: string,
     fileName: string,
-    boxSize: string
+    { boxSize, hideTitle, editable, isBesideSelection }: EmbedPlaceholderOptions
 ) {
     const placeholder = writer.createElement("contentEmbed", {
         boxSize,
+        ...(hideTitle ? { hideTitle: true } : {}),
+        ...(editable ? { editable: true } : {}),
         uploadId,
         uploadFileName: fileName
     });
-    model.insertObject(placeholder, model.document.selection, null, { setSelection: "after" });
+    if (isBesideSelection) {
+        const selection = model.document.selection;
+        model.insertObject(placeholder, findOptimalInsertionRange(selection, model));
+        writer.setSelection(selection.getFirstPosition());
+    } else {
+        model.insertObject(placeholder, model.document.selection, null, { setSelection: "after" });
+    }
+}
+
+interface EmbedPlaceholderOptions {
+    boxSize: string;
+    hideTitle?: boolean;
+    editable?: boolean;
+    /** Places the embed beside the block of the selection, which collapses to its start. */
+    isBesideSelection?: boolean;
 }
 
 /** The box size the host gives an embed of `file`, `medium` when the host does not say. */
 function getEmbedBoxSize(editor: Editor, file: File) {
     const component = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
-    return component.getEmbedBoxSize?.(file.type) ?? "medium";
+    return component.getEmbedBoxSize?.(file.type, file.size) ?? "medium";
 }

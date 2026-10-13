@@ -271,7 +271,7 @@ and exposes a `focus()` method. Add `tabindex: '-1'` and the `ck` class to UI ro
 
 ### Custom DOM inside a balloon needs `ck-reset_all-excluded`
 
-CKEditor wraps every floating UI root — balloons, mention panels, dropdown panels — in
+CKEditor wraps every floating UI root — balloons, dropdown panels — in
 `.ck.ck-reset_all`. Its companion rule
 
 ```css
@@ -288,11 +288,10 @@ The symptom reads as a missing stylesheet rather than a cascade conflict: the el
 classes and keeps every property the reset does **not** name (`display`, `border-radius`, `gap`),
 so only some of its styling disappears.
 
-**Fix:** put `ck-reset_all-excluded` on the outermost custom element — a mention feed
-`itemRenderer` root, a custom `View`'s element, anything wrapped in `MentionDomWrapperView`. The
-`:not()` covers the whole subtree, so one class exempts everything inside it. Do **not**
-out-specify the reset instead: winning a specificity war means restating the borrowed component's
-internals, which then drift from it.
+**Fix:** put `ck-reset_all-excluded` on the outermost custom element — a custom `View`'s element,
+or raw DOM a view wraps. The `:not()` covers the whole subtree, so one class exempts everything
+inside it. Do **not** out-specify the reset instead: winning a specificity war means restating the
+borrowed component's internals, which then drift from it.
 
 Diagnosing this from the sources is a trap — load `ckeditor5.css` *first* in a static test page
 and the client rules win, so the bug does not reproduce. Inspect `getComputedStyle` in the real

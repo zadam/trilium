@@ -1,8 +1,7 @@
 import "./scroll_fade.css";
 
 import clsx from "clsx";
-import { RefObject } from "preact";
-import { CSSProperties } from "preact/compat";
+import { CSSProperties, RefObject } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { useTrackedElement } from "./hooks";
@@ -48,13 +47,13 @@ export interface ScrollFade {
  * @param ref the scroll container.
  * @param options which way it scrolls, how far each fade reaches and how long it takes.
  */
-export function useScrollFade(ref: RefObject<HTMLElement>, options: ScrollFadeOptions = {}): ScrollFade {
+export function useScrollFade(ref: RefObject<HTMLElement | null>, options: ScrollFadeOptions = {}): ScrollFade {
     const {
         direction = "vertical", size, duration, minOverflow = size ?? DEFAULT_FADE_SIZE
     } = options;
     const [ fades, setFades ] = useState({ start: false, end: false });
     const [ overflow, setOverflow ] = useState(0);
-    const frameRef = useRef<number>();
+    const frameRef = useRef<number | undefined>(undefined);
 
     const element = useTrackedElement(ref);
 

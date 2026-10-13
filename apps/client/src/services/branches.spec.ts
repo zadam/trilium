@@ -164,13 +164,15 @@ describe("moveToParentNote", () => {
         expect(server.put).not.toHaveBeenCalled();
     });
 
-    it("skips missing/hoisted/search-parent branches and moves valid ones", async () => {
+    it("skips missing/hoisted/search-parent branches and moves the valid ones in one request", async () => {
         const parentNote = buildNote({ title: "Parent" });
         makeBranch("destParent", parentNote.noteId);
 
         // a regular note under root
         const regular = buildNote({ title: "Regular" });
         makeBranch("regularBranch", regular.noteId, "root");
+        const regular2 = buildNote({ title: "Regular too" });
+        makeBranch("regularBranch2", regular2.noteId, "root");
 
         // a note whose parent is a search note -> skipped
         const searchParent = buildNote({ title: "Search", type: "search" });
@@ -182,10 +184,19 @@ describe("moveToParentNote", () => {
         const hoisted = buildNote({ id: "hoistedId", title: "Hoisted" });
         makeBranch("hoistedBranch", hoisted.noteId, "root");
 
-        await branches.moveToParentNote(["missingBranch", "hoistedBranch", "searchChildBranch", "regularBranch"], "destParent", "comp-1");
+        await branches.moveToParentNote(["missingBranch", "hoistedBranch", "regularBranch", "searchChildBranch", "regularBranch2"], "destParent", "comp-1");
 
         expect(server.put).toHaveBeenCalledTimes(1);
-        expect(server.put).toHaveBeenCalledWith("branches/regularBranch/move-to/destParent", undefined, "comp-1");
+        expect(server.put).toHaveBeenCalledWith("branches/move-to/destParent",
+            { branchIds: [ "regularBranch", "regularBranch2" ] }, "comp-1");
+    });
+
+    it("sends nothing when no branch can be moved", async () => {
+        const parentNote = buildNote({ title: "Parent3" });
+        makeBranch("destParent3", parentNote.noteId);
+
+        await branches.moveToParentNote(["missingBranch"], "destParent3");
+        expect(server.put).not.toHaveBeenCalled();
     });
 
     it("shows error and bails when the move fails", async () => {

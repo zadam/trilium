@@ -60,7 +60,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    render(null, container);
+    act(() => render(null, container));
     container.remove();
 });
 

@@ -2,6 +2,7 @@ import "ckeditor5";
 
 declare global {
     interface Component {
+        componentId: string;
         triggerCommand(command: string): void;
     }
 
@@ -29,6 +30,46 @@ declare global {
         onSelect(iconClass: string): void;
     }
 
+    /** A button that the content of an embed adds to the toolbar of the embed. */
+    interface ContentEmbedTool {
+        id: string;
+        /** The name of what the button does, shown as its tooltip. */
+        label: string;
+        /** The text of a button without an icon. */
+        text?: string;
+        /** The SVG of the icon of the button. */
+        icon?: string;
+        /** Whether a button that toggles is on. A command leaves it out. */
+        isOn?: boolean;
+        /** `true` when left out. */
+        isEnabled?: boolean;
+        /** A separator goes between buttons of different groups. */
+        group?: string;
+        /** The tools of the menu that the button opens. */
+        children?: ContentEmbedTool[];
+        /** A class of the button, for the content to style it. */
+        class?: string;
+    }
+
+    /** An item of the embed toolbar that the content of an embed can hide. */
+    type ContentEmbedToolbarItem =
+        "contentEmbedBoxSizeDropdown" | "toggleContentEmbedTitle" | "convertEmbedToLink";
+
+    /** The buttons that the content of an embed, such as a canvas drawing, adds to its toolbar. */
+    interface ContentEmbedToolProvider {
+        getTools(): ContentEmbedTool[];
+        execute(id: string): void;
+        /** Calls `callback` when `getTools()` changes, until the returned function is called. */
+        subscribe(callback: () => void): () => void;
+        /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
+        hiddenToolbarItems?: readonly ContentEmbedToolbarItem[];
+        /**
+         * Whether the content has an editable mode, which the toolbar and the menu of the embed
+         * then turn on and off. The embed carries `data-editable="true"` while it is on.
+         */
+        hasEditableFlag?: boolean;
+    }
+
     interface EditorComponent extends Component {
         /**
          * Paints the host's icon picker into `container`, and answers with the way to take it down
@@ -41,9 +82,25 @@ declare global {
          * `customDateTimeFormat` when none is given.
          */
         formatDateTime(date: Date, format?: string): string;
-        loadReferenceLinkTitle($el: JQuery<HTMLElement>, href: string): Promise<void>;
-        createNoteForReferenceLink(title: string, intoInbox: boolean): Promise<string | undefined>;
-        loadEmbeddedNote(noteId: string, $el: JQuery<HTMLElement>, boxSize?: string): void;
+        loadReferenceLinkTitle(
+            $el: JQuery<HTMLElement>, href: string, storedTitle?: string
+        ): Promise<void>;
+        /**
+         * Lets the user pick the note a reference link to a missing note should point at instead,
+         * starting from `storedTitle`, and calls `fix()` with the new href.
+         */
+        fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
+        /**
+         * Fills an embed with the note, or with the `block` of it, a `block` link parameter. An
+         * editor of those blocks calls `onBlockChange()` once the blocks at its edges change.
+         */
+        loadEmbeddedNote(
+            noteId: string,
+            $el: JQuery<HTMLElement>,
+            boxSize?: string,
+            block?: string,
+            onBlockChange?: (block: string) => void
+        ): void;
         loadEmbeddedAttachment(
             attachmentId: string,
             $el: JQuery<HTMLElement>,
@@ -57,12 +114,37 @@ declare global {
          * The box size of a new embed of a file being uploaded, from its media type. Hosts without
          * embeds leave it out.
          */
-        getEmbedBoxSize?(mime: string): string;
+        getEmbedBoxSize?(mime: string, size: number): string;
         /**
          * Opens the context menu of what `embed` shows, below `anchor`. Hosts without embeds
          * leave it out.
          */
         openContentEmbedMenu?(embed: HTMLElement, anchor: HTMLElement): void;
+        /**
+         * Opens the menu of the block handle at `event`, for `count` selected blocks. Hosts
+         * without block references leave it out.
+         */
+        openBlockHandleMenu?(event: MouseEvent, count: number): void;
+        /**
+         * Copies a link to the tab that holds the selection. Hosts without block references leave
+         * it out.
+         */
+        copyTabReference?(): void;
+        /**
+         * The buttons that what `embed` shows adds to the toolbar of the embed, or `null`. Hosts
+         * without embeds leave it out.
+         */
+        getContentEmbedTools?(embed: HTMLElement): ContentEmbedToolProvider | null;
+        /**
+         * Gives the focus to what the embed of the attachment shows, once it renders. Hosts
+         * without embeds leave it out.
+         */
+        focusContentEmbed?(attachmentId: string): void;
+        /**
+         * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
+         * attachment, or `null` when that fails. Hosts without drawings leave it out.
+         */
+        convertImageToDrawing?(src: string): Promise<string | null>;
         /**
          * Reads a page's preview metadata through the host. Never rejects: any failure — network
          * error, HTTP error, unparseable page — resolves as `{ unresolved: true }` with
@@ -79,8 +161,9 @@ declare global {
         getActiveContextNote(): {
             noteId: string;
         };
-        getHeaders(): Promise<Record<string, string>>;
+        /** The headers of a request to the server, with `headers` added to them. */
+        getHeaders(headers?: Record<string, string | undefined>): Promise<Record<string, string>>;
         getReferenceLinkTitle(href: string): Promise<string>;
-        getReferenceLinkTitleSync(href: string): string;
+        getReferenceLinkTitleSync(href: string, storedTitle?: string): string;
     };
 }

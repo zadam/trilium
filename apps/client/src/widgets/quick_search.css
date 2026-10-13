@@ -155,10 +155,6 @@
         .show-in-full-search {
             margin-inline-start: auto;
         }
-
-        kbd {
-            padding: .1875rem .375rem;
-        }
     }
 
     .dropdown-item {
@@ -208,9 +204,15 @@
     }
 
     .search-result-attributes {
-        opacity: .5;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
         padding: 0 8px;
-        font-size: .75em;
+
+        .ext-badge {
+            --color: var(--muted-text-color);
+        }
     }
 
     .search-result-content {
