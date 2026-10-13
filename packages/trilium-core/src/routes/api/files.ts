@@ -1,3 +1,7 @@
+import {
+    CANVAS_ATTACHMENT_MIME, getAttachedFileMime, getDrawingPictureTitle, isImageAttachmentRole
+} from "@triliumnext/commons";
+
 import { Request, Response } from "../../http_interface";
 import becca from "../../becca/becca";
 import type BAttachment from "../../becca/entities/battachment";
@@ -84,10 +88,19 @@ function updateAttachment(req: Request<{ attachmentId: string }>) {
         };
     }
 
-    attachment.getNote().saveRevision();
+    const note = attachment.getNote();
+    const wasDrawing = attachment.mime === CANVAS_ATTACHMENT_MIME;
+    note.saveRevision();
 
-    attachment.mime = file.mimetype.toLowerCase();
+    attachment.mime = getAttachedFileMime(file.originalname, file.mimetype.toLowerCase());
     attachment.setContent(file.buffer, { forceSave: true });
+    if (wasDrawing) {
+        // A shared page links the drawing until an edit saves a picture of the new file.
+        const picture = note.getAttachmentByTitle(getDrawingPictureTitle(req.params.attachmentId));
+        if (picture && isImageAttachmentRole(picture.role)) {
+            picture.markAsDeleted();
+        }
+    }
 
     return {
         uploaded: true

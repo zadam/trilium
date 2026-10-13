@@ -1,3 +1,4 @@
+import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { getImageProvider } from "../../services/image_provider";
@@ -174,6 +175,33 @@ describe("Attachments API (core)", () => {
             expect(res.body.uploaded).toBe(true);
             expect(res.body.url).toContain(`#root/${noteId}`);
             expect(res.body.url).toContain("viewMode=attachments");
+        });
+
+        it("saves an Excalidraw file as a canvas drawing, whatever type the browser sends", async () => {
+            const { noteId } = await createTextNote(api, { title: "Drawing upload target" });
+            const drawing = JSON.stringify({ type: "excalidraw", version: 2, elements: [] });
+
+            const res = await api.post<{ uploaded: boolean }>(
+                `/api/notes/${noteId}/attachments/upload`,
+                {
+                    file: {
+                        originalname: "Drawing.excalidraw",
+                        mimetype: "application/octet-stream",
+                        buffer: Buffer.from(drawing)
+                    }
+                }
+            );
+            expect(res.body.uploaded).toBe(true);
+
+            const list = await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`);
+            const [ attachment ] = list.body;
+            expect(attachment).toMatchObject({
+                role: "file", mime: CANVAS_ATTACHMENT_MIME, title: "Drawing.excalidraw"
+            });
+            const blob = await api.get<{ content: string }>(
+                `/api/attachments/${attachment.attachmentId}/blob`
+            );
+            expect(blob.body.content).toBe(drawing);
         });
 
         it("uploads an image file as an image attachment", async () => {

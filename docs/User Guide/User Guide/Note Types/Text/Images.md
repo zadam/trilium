@@ -12,7 +12,7 @@ To add an image to the note:
 *   You can also copy and paste an image from web (see section below).
 
 > [!TIP]
-> To link a picture instead of displaying it, attach it with the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button. See <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Notes/Attachments.md">Attachments</a>.
+> To link a picture instead of displaying it, attach it with _Attach file as a link_, from the arrow beside the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button. See <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Notes/Attachments.md">Attachments</a>.
 
 ## Clipboard & automatic download of images
 

@@ -1,4 +1,5 @@
 import type { FileId } from "@excalidraw/excalidraw/element/types";
+import type { BinaryFileData } from "@excalidraw/excalidraw/types";
 import {
     CANVAS_ATTACHMENT_MIME, CANVAS_ATTACHMENT_TITLE, EMPTY_CANVAS_CONTENT, imageExtensionForMime,
     isAcceptedImageMime
@@ -8,11 +9,13 @@ import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import toast from "../../../services/toast";
 import { randomString } from "../../../services/utils";
+import { blobToDataURL } from "./image_attachments";
 
 /**
  * Attaches to the note a canvas drawing that shows the image at `src`, locked at its natural size,
  * and answers with the ID of the drawing's attachment, or `null` once a toast tells that it failed.
  * The drawing refers to the image by file ID, so the image is attached again, titled with that ID.
+ * The picture of the drawing saves in the background.
  */
 export async function convertImageToDrawing(noteId: string, src: string, componentId?: string) {
     let imageAttachmentId: string | undefined;
@@ -38,7 +41,11 @@ export async function convertImageToDrawing(noteId: string, src: string, compone
         const drawing = new File([ content ], CANVAS_ATTACHMENT_TITLE, {
             type: CANVAS_ATTACHMENT_MIME
         });
-        return await upload(noteId, drawing, componentId);
+        const drawingId = await upload(noteId, drawing, componentId);
+        savePicture({ attachmentId: drawingId, ownerId: noteId }, content, imageFile).catch(
+            (e: unknown) => console.error(`Could not save the picture of '${drawingId}'`, e)
+        );
+        return drawingId;
     } catch (e) {
         console.error(`Could not convert the image '${src}' to a drawing canvas`, e);
         toast.showError(t("image.cannot-convert-to-drawing"));
@@ -48,6 +55,22 @@ export async function convertImageToDrawing(noteId: string, src: string, compone
         }
         return null;
     }
+}
+
+/** Saves the picture of a new drawing, whose only image is `image`, titled with its file ID. */
+async function savePicture(
+    drawing: { attachmentId: string; ownerId: string },
+    content: string,
+    image: File
+) {
+    const { saveDrawingPicture } = await import("./persistence");
+    const file = {
+        id: image.name,
+        mimeType: image.type,
+        dataURL: await blobToDataURL(image),
+        created: Date.now()
+    } as BinaryFileData;
+    await saveDrawingPicture(drawing, content, { [file.id]: file });
 }
 
 async function fetchImage(src: string) {

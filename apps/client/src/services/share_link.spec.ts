@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { buildShareLink } from "./share_link";
+import { buildNote } from "../test/easy-froca";
+import froca from "./froca";
+import options from "./options";
+import { buildShareLink, getNoteShareLink, getShareScope } from "./share_link";
 
 describe("buildShareLink", () => {
     const originalGlob = window.glob;
@@ -80,5 +83,61 @@ describe("buildShareLink", () => {
 
         setGlob({});
         expect(buildShareLink(shareId, null)).toBe(`http://localhost:3000/share/${encoded}`);
+    });
+});
+
+describe("getNoteShareLink", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("links a shared note to its shared page, by its alias or its id", () => {
+        const host = "https://notes.example.com";
+        options.load({ syncServerHost: host });
+        const shareRoot = buildNote({
+            id: "_share",
+            title: "Shared notes",
+            children: [
+                { id: "sharedAlias", title: "Aliased", "#shareAlias": "my-page" },
+                { id: "sharedPlain", title: "Plain" }
+            ]
+        });
+        const unshared = buildNote({ title: "Private" });
+
+        expect(getNoteShareLink(froca.notes.sharedAlias)).toBe(`${host}/share/my-page`);
+        expect(getNoteShareLink(froca.notes.sharedPlain)).toBe(`${host}/share/sharedPlain`);
+        expect(getNoteShareLink(shareRoot)).toBeNull();
+        expect(getNoteShareLink(unshared)).toBeNull();
+    });
+
+    it("gives no link in the mobile app without a sync server", () => {
+        vi.stubGlobal("Capacitor", { isNativePlatform: () => true });
+        const shareRoot = buildNote({
+            id: "_share",
+            title: "Shared notes",
+            children: [ { title: "Shared" } ]
+        });
+        const shared = froca.notes[shareRoot.children[0]];
+
+        options.load({ syncServerHost: "" });
+        expect(getNoteShareLink(shared)).toBeNull();
+
+        options.load({ syncServerHost: "https://notes.example.com" });
+        expect(getNoteShareLink(shared)).toBe(`https://notes.example.com/share/${shared.noteId}`);
+    });
+});
+
+describe("getShareScope", () => {
+    it("tells a public share from a local one, a standalone preview and one only an export publishes", () => {
+        const syncServerHost = "https://sync.example.com";
+        const platform = { isElectron: false, isStandalone: false, isMobileApp: false };
+
+        expect(getShareScope({ ...platform, syncServerHost: "" })).toBe("public");
+        expect(getShareScope({ ...platform, isElectron: true, syncServerHost: "" })).toBe("local");
+        expect(getShareScope({ ...platform, isElectron: true, syncServerHost })).toBe("public");
+        expect(getShareScope({ ...platform, isStandalone: true, syncServerHost: "" })).toBe("preview");
+        expect(getShareScope({ ...platform, isStandalone: true, syncServerHost })).toBe("public");
+        expect(getShareScope({ ...platform, isStandalone: true, isMobileApp: true, syncServerHost: "" })).toBe("export-only");
+        expect(getShareScope({ ...platform, isStandalone: true, isMobileApp: true, syncServerHost })).toBe("public");
     });
 });

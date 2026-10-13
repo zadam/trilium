@@ -87,12 +87,16 @@ describe("MulticolumnEditing", () => {
     });
 
     describe("placeholder", () => {
-        /** Whether the first block of each column shows the placeholder. */
+        /** The placeholder each column shows in its first block, or `null` for none. */
         function placeholders() {
             const root = editor.editing.view.getDomRoot();
             const columns = root?.querySelectorAll(".trilium-multicolumn-column") ?? [];
-            return [...columns].map(column =>
-                column.firstElementChild?.classList.contains("ck-placeholder") ?? false);
+            return [...columns].map(column => {
+                const block = column.firstElementChild;
+                return block?.classList.contains("ck-placeholder")
+                    ? block.getAttribute("data-placeholder")
+                    : null;
+            });
         }
 
         it("shows in each column holding only an empty block, until text is typed there", () => {
@@ -108,15 +112,37 @@ describe("MulticolumnEditing", () => {
                 "</multicolumnLayout>"
             );
 
-            expect(placeholders()).toEqual([false, true, false, true]);
-            const host = editor.editing.view.getDomRoot()?.querySelector(".ck-placeholder");
-            expect(host?.getAttribute("data-placeholder")).toBe("Type content here…");
+            expect(placeholders()).toEqual([
+                null,
+                "Type the content of the second column",
+                null,
+                "Type the content of the fourth column"
+            ]);
 
             editor.model.change(writer => {
                 editor.model.insertContent(writer.createText("Typed"));
             });
 
-            expect(placeholders()).toEqual([false, false, false, true]);
+            expect(placeholders()).toEqual([
+                null, null, null, "Type the content of the fourth column"
+            ]);
+        });
+
+        it("names the position of each column, including one added to the layout", () => {
+            setModelData(editor.model,
+                "<multicolumnLayout columnRatios=\"1-1\">" +
+                    "<multicolumnColumn><paragraph>[]</paragraph></multicolumnColumn>" +
+                    "<multicolumnColumn><paragraph></paragraph></multicolumnColumn>" +
+                "</multicolumnLayout>"
+            );
+
+            editor.execute("columnLayout", { value: "1-1-1" });
+
+            expect(placeholders()).toEqual([
+                "Type the content of the first column",
+                "Type the content of the second column",
+                "Type the content of the third column"
+            ]);
         });
     });
 

@@ -287,17 +287,18 @@ describe("checkImageAttachments", () => {
             }
         });
 
-        it("keeps the images that an embedded canvas drawing shows while it is embedded", () => {
+        it("keeps the images and the picture of a canvas drawing while it is embedded", () => {
             const note = buildNote({
                 title: "Test",
                 attachments: [
                     { id: "drawing1", ...DRAWING },
                     { title: "f1.png", role: "image", mime: "image/png" },
-                    { title: "f2.png", role: "image", mime: "image/png" }
+                    { title: "f2.png", role: "image", mime: "image/png" },
+                    { title: "drawing1.svg", role: "image", mime: "image/svg+xml" }
                 ]
             });
             mockAttachmentSaves(note);
-            const [ drawing, shown, removed ] = note.getAttachments();
+            const [ drawing, shown, removed, picture ] = note.getAttachments();
             setDrawingContent(drawing, "f1.png");
             shown.utcDateScheduledForErasureSince = "2025-01-01 00:00:00.000Z";
 
@@ -305,20 +306,23 @@ describe("checkImageAttachments", () => {
             expect(drawing.utcDateScheduledForErasureSince).toBeFalsy();
             expect(shown.utcDateScheduledForErasureSince).toBeNull();
             expect(removed.utcDateScheduledForErasureSince).toBeTruthy();
+            expect(picture.utcDateScheduledForErasureSince).toBeFalsy();
 
             checkImageAttachments(note, "<p>The drawing is gone.</p>");
             expect(drawing.utcDateScheduledForErasureSince).toBeTruthy();
             expect(shown.utcDateScheduledForErasureSince).toBeTruthy();
+            expect(picture.utcDateScheduledForErasureSince).toBeTruthy();
         });
 
-        it("copies with a foreign drawing the images the note lacks and keeps the rest", () => {
+        it("copies with a foreign drawing its picture and the images the note lacks", () => {
             const source = buildNote({
                 title: "Source",
                 attachments: [
                     { id: "foreignDrawing", ...DRAWING },
                     { title: "f1.png", role: "image", mime: "image/png" },
                     { title: "f2.png", role: "image", mime: "image/png" },
-                    { title: "unrelated.png", role: "image", mime: "image/png" }
+                    { title: "unrelated.png", role: "image", mime: "image/png" },
+                    { title: "foreignDrawing.svg", role: "image", mime: "image/svg+xml" }
                 ]
             });
             const [ foreign, ...images ] = source.getAttachments();
@@ -338,6 +342,8 @@ describe("checkImageAttachments", () => {
             const copies: BAttachment[] = [];
             const setContent = vi.spyOn(BAttachment.prototype, "setContent")
                 .mockImplementation(function (this: BAttachment) {
+                    // A saved attachment has an ID.
+                    this.attachmentId ??= `copy${copies.length + 1}`;
                     copies.push(this);
                 });
             const getAttachments = vi.spyOn(becca, "getAttachments").mockReturnValue([ foreign ]);
@@ -347,7 +353,8 @@ describe("checkImageAttachments", () => {
 
                 expect(copies.map(({ ownerId, title }) => ({ ownerId, title }))).toEqual([
                     { ownerId: target.noteId, title: "Canvas.excalidraw" },
-                    { ownerId: target.noteId, title: "f1.png" }
+                    { ownerId: target.noteId, title: "f1.png" },
+                    { ownerId: target.noteId, title: "copy1.svg" }
                 ]);
                 expect(kept.utcDateScheduledForErasureSince).toBeNull();
             } finally {

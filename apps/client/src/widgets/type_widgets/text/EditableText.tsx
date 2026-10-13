@@ -15,7 +15,8 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../../components/app_context";
 import {
-    consumeBlockReference, copyBlockReference, copyTabReference, openBlockHandleMenu
+    consumeBlockReference, copyBlockReference, copyBlockShareLink, copyTabReference,
+    openBlockHandleMenu
 } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import { getUploadBoxSize } from "../../../services/content_renderer";
@@ -26,6 +27,7 @@ import type LoadResults from "../../../services/load_results";
 import note_create from "../../../services/note_create";
 import options from "../../../services/options";
 import { consumeSearchTerms } from "../../../services/search_jump";
+import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { IconPickerOpts } from "../../dialogs/icon_picker";
@@ -180,13 +182,16 @@ export default function EditableText({
         consumeBlockReference(root, noteContext?.viewScope);
     }
 
-    async function copyReference(copy = copyBlockReference) {
+    async function copyReference(
+        copy: (editor: CKTextEditor, notePath: string, noteTitle: string) => void | Promise<void>
+            = copyBlockReference
+    ) {
         const editor = editorRef.current;
         if (!editor) return;
 
         const notePath = noteContext?.notePath ?? `root/${note.noteId}`;
         await copy(editor, notePath, note.title);
-        // Saved now, so that the link resolves in other notes at once.
+        // Saved now, so that the link resolves at once.
         spacedUpdate.updateNowIfNecessary();
     }
 
@@ -303,7 +308,13 @@ export default function EditableText({
         getEmbedBoxSize: getUploadBoxSize,
         openContentEmbedMenu,
         openBlockHandleMenu(event: MouseEvent, count: number) {
-            openBlockHandleMenu(event, count, () => void copyReference());
+            const shareLink = getNoteShareLink(note);
+            openBlockHandleMenu(event, count, {
+                copyReference: () => void copyReference(),
+                copyShareLink: shareLink
+                    ? () => void copyReference((editor) => copyBlockShareLink(editor, shareLink))
+                    : undefined
+            });
         },
         copyBlockReference: () => copyReference(),
         copyTabReference: () => void copyReference(copyTabReference),

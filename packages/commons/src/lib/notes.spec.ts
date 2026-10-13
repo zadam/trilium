@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE, getContentRendererGroup,
+    CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE,
+    getAttachedFileMime, getContentRendererGroup, getDrawingPictureTitle,
     getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
     MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS,
     parseMindMapNoteLink
@@ -62,6 +63,12 @@ describe("getImageAttachmentTitle", () => {
         expect(getImageAttachmentTitle("text")).toBeUndefined();
         expect(getImageAttachmentTitle(null)).toBeUndefined();
         expect(getImageAttachmentTitle(undefined)).toBeUndefined();
+    });
+});
+
+describe("getDrawingPictureTitle", () => {
+    it("titles the picture of a canvas drawing after the attachment of the drawing", () => {
+        expect(getDrawingPictureTitle("drawing1")).toBe("drawing1.svg");
     });
 });
 
@@ -362,5 +369,25 @@ describe("getNoteContentType", () => {
             [ "mermaid", undefined ]
         ]);
         expect(getContentRendererGroup("constructor")).toBeUndefined();
+    });
+});
+
+describe("getAttachedFileMime", () => {
+    it("saves an Excalidraw file as a canvas drawing and keeps the type of any other", () => {
+        expect([
+            getAttachedFileMime("Drawing.excalidraw", "application/octet-stream"),
+            getAttachedFileMime("Sketch.EXCALIDRAW", ""),
+            getAttachedFileMime("Drawing.excalidraw", "application/json"),
+            getAttachedFileMime("data.json", "application/json"),
+            getAttachedFileMime("excalidraw", "application/octet-stream"),
+            getAttachedFileMime("Drawing.excalidraw.md", "text/markdown")
+        ]).toEqual([
+            CANVAS_ATTACHMENT_MIME,
+            CANVAS_ATTACHMENT_MIME,
+            CANVAS_ATTACHMENT_MIME,
+            "application/json",
+            "application/octet-stream",
+            "text/markdown"
+        ]);
     });
 });

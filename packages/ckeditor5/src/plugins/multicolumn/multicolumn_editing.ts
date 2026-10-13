@@ -1,5 +1,6 @@
 import {
     enableViewPlaceholder,
+    type LocaleTranslate,
     type ModelElement,
     type ModelNode,
     type ModelPosition,
@@ -105,10 +106,10 @@ export default class MulticolumnEditing extends Plugin {
         });
         conversion.for("editingDowncast").elementToElement({
             model: ELEMENTS.column,
-            view: (_model, { writer }) => {
+            view: (model, { writer }) => {
                 const column: ViewEditableElement & PlaceholderableViewElement =
                     writer.createEditableElement("div", { class: COLUMN_CLASS });
-                column.placeholder = t("Type content here…");
+                column.placeholder = getColumnPlaceholder(t, model.index);
                 enableViewPlaceholder({
                     view: editor.editing.view,
                     element: column,
@@ -149,6 +150,19 @@ export default class MulticolumnEditing extends Plugin {
             }
             return changed;
         });
+    }
+}
+
+/**
+ * The placeholder of the column at `index`, which names its position. A layout has at most
+ * `MAX_COLUMNS` (four) columns. A column in a layout always has an index.
+ */
+function getColumnPlaceholder(t: LocaleTranslate, index: number | null) {
+    switch (index) {
+        case 0: return t("Type the content of the first column");
+        case 1: return t("Type the content of the second column");
+        case 2: return t("Type the content of the third column");
+        default: return t("Type the content of the fourth column");
     }
 }
 

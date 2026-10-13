@@ -21,7 +21,9 @@ The system attachments are displayed at the end of the attachments list, in a de
 
 ## Attaching files from a text note
 
-To attach files to a <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> note and link them in its content, press the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button in the <a class="reference-link" href="../../Note%20Types/Text/Formatting%20toolbar.md">Formatting toolbar</a>, next to the <span class="tn-icon cke cke-image-upload"></span>image upload button, and select one or more files. The arrow beside the button lists the same action as _Attach file as a link_, followed by _Attach and embed file_, which embeds the files instead (see below). Both actions are also available as _Attach file as a link_ and _Attach and embed file_ in the <a class="reference-link" href="../../Note%20Types/Text/Slash%20Commands.md">Slash Commands</a>.
+To attach files to a <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> note and embed them in its content, press the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button in the <a class="reference-link" href="../../Note%20Types/Text/Formatting%20toolbar.md">Formatting toolbar</a>, next to the <span class="tn-icon cke cke-image-upload"></span>image upload button, and select one or more files (see _Embedding an attachment_ below). The arrow beside the button lists the same action as _Attach and embed file_, followed by _Attach file as a link_, which links the files instead. Both actions are also available as _Attach file as a link_ and _Attach and embed file_ in the <a class="reference-link" href="../../Note%20Types/Text/Slash%20Commands.md">Slash Commands</a>.
+
+When files are attached as links:
 
 *   Each file becomes an attachment of the note, and a link to it is inserted at the cursor. Several files produce several links, separated by a space.
 *   While a file uploads, its link shows the file name and a toast shows the progress.
@@ -39,9 +41,9 @@ Links follow changes to their attachment: renaming it updates the title they sho
 
 An attachment can be shown in the text instead of linked, the way <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a> shows a note: a picture is displayed, a PDF, a video or a document is previewed, and a code or text file is shown with syntax highlighting. An embedded code file can also be edited in place (see _Editing an include in place_ in <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>).
 
-*   To attach files and embed them straight away, select _Attach and embed file_ from the arrow beside the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button. Each file gets an embed of its own, which shows the file name while the file uploads.
+*   To attach files and embed them straight away, press the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button. Each file gets an embed of its own, which shows the file name while the file uploads.
 *   To embed an attachment that is already linked, right-click a link to it in a text note being edited and select _Convert link to an embed_, at the end of the menu.
-*   A drawing canvas, inserted with <span class="tn-icon bx bx-pen"></span>_Drawing canvas_ in the <span class="tn-icon cke cke-plus"></span>_Insert_ menu, is an embed of a `Canvas.excalidraw` attachment that can be drawn on in place (see _Drawing canvases_ in <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>).
+*   A drawing canvas, inserted with <span class="tn-icon bx bx-pen"></span>_Drawing canvas_ in the <span class="tn-icon cke cke-plus"></span>_Insert_ menu, is an embed of a `Canvas.excalidraw` attachment that can be drawn on in place. An attached Excalidraw file (`.excalidraw`) is embedded as a drawing canvas too (see _Drawing canvases_ in <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>).
 *   An embed gets the box size that suits the attachment, as a new included note does (see _Box sizes_ there). To change its size, select the embed and use the box size menu in its toolbar, or the _Size_ submenu of its <span class="tn-icon bx bx-dots-vertical-rounded"></span>_More actions_ menu. A _Small_, _Medium_ or _Expandable_ embed can also be resized by dragging its handles (see _Resizing_ there).
 *   An embed can have a caption, as an included note can (see _Caption_ there).
 *   To show only the attachment, select the embed and press the <span class="tn-icon bx bx-window-alt"></span> (_Show title)_ button in its toolbar, as for an included note (see _Title_ there).
@@ -50,7 +52,7 @@ An attachment can be shown in the text instead of linked, the way <a class="ref
 *   To show an embed of size _Medium_ or _Full_ on the whole screen, press the <span class="tn-icon bx bx-fullscreen"></span> (_Fullscreen)_ button at the end of its title. To return, press <span class="tn-icon bx bx-exit"></span> (_Exit fullscreen)_ in the top-right corner, or <kbd>Esc</kbd>.
 *   To turn the embed back into a link, select it and press the <span class="tn-icon cke cke-link"></span>_Convert to link_ button in its toolbar. _Convert to link_ also ends the menu that right-clicking the title row of the embed or pressing its <span class="tn-icon bx bx-dots-vertical-rounded"></span>_More actions_ button opens.
 
-An embed follows its attachment like a link does. Converting the attachment into a note turns the embed into an included note. In a [shared note](../../Advanced%20Usage/Sharing.md), an embedded picture is displayed with its caption, and any other attachment, or a picture in a _Tiny_ embed, appears as a link to download it.
+An embed follows its attachment like a link does. Converting the attachment into a note turns the embed into an included note. In a [shared note](../../Advanced%20Usage/Sharing.md), an embedded picture is displayed with its caption, a drawing canvas as a picture of the drawing, and any other attachment, or a picture in a _Tiny_ embed, appears as a link to download it.
 
 ## Converting notes to attachments
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { getBoundedView } from "./drawing_view";
+import { getBoundedView, getCenteredView } from "./drawing_view";
 
 interface Box {
     x: number;
@@ -50,5 +50,17 @@ describe("getBoundedView", () => {
         expect(bound([ rectangle, IMAGE ], 0.25, 0, 0)).toBeNull();
         expect(bound([], 0.25, 0, 0)).toBeNull();
         expect(bound([ IMAGE ], 0.25, 0, 0, 0)).toBeNull();
+    });
+});
+
+describe("getCenteredView", () => {
+    it("centers the shapes of a drawing at the same zoom, and nothing without them", () => {
+        const view = { zoom: { value: 2 }, scrollX: 0, scrollY: 0 } as never;
+        const shape = { x: 100, y: 50, width: 200, height: 100 };
+
+        expect(getCenteredView([ shape ] as never, view, 1000, 500))
+            .toEqual({ zoom: { value: 2 }, scrollX: 50, scrollY: 25 });
+        expect(getCenteredView([ { ...shape, isDeleted: true } ] as never, view, 1000, 500))
+            .toBeNull();
     });
 });

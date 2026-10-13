@@ -1001,6 +1001,15 @@ describe("Markdown export", () => {
                     y`);
         });
 
+        it("drops the tab alignment, which MkDocs content tabs cannot express", () => {
+            const html = "<div class=\"trilium-tabs\" data-trilium-tab-alignment=\"bottom\">" +
+                `${tab("Windows", "<p>a</p>")}</div>`;
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Windows"
+
+                    a`);
+        });
+
         it("exports the icons and formatting of a tab title as inline Markdown", () => {
             const html = tabs(
                 tab(`<span class="tn-icon bx bxl-chrome"></span>&nbsp;Chrome`, "<p>a</p>"),

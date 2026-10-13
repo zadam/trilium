@@ -1,7 +1,9 @@
 import { Command, type Editor, type ModelElement, type ModelWriter } from "ckeditor5";
 
 import { BLOCK_ID, type BlockReferenceTarget, generateBlockId } from "../block_reference/block_reference_editing.js";
-import { ELEMENTS } from "./constants.js";
+import {
+    ALIGNMENT_ATTRIBUTE, DEFAULT_TAB_ALIGNMENT, ELEMENTS, parseTabAlignment, type TabAlignment
+} from "./constants.js";
 
 /**
  * Inserts a tabs block with two numbered tabs at the selection and selects the first tab's title,
@@ -159,6 +161,41 @@ export class AssignTabReferenceCommand extends Command {
         const id = tab.getAttribute(BLOCK_ID) as string;
         return { startId: id, endId: id, count: 1 };
     }
+}
+
+/**
+ * Sets the side of the panels that the titles of the selected tabs block sit on. The default side
+ * removes the attribute, so the saved HTML of a block on the default side does not change.
+ */
+export class TabAlignmentCommand extends Command {
+
+    declare public value: TabAlignment | undefined;
+
+    public override refresh(): void {
+        const tabs = getSelectedTabs(this.editor);
+        this.isEnabled = !!tabs;
+        this.value = tabs ? getTabAlignment(tabs) : undefined;
+    }
+
+    public override execute({ value }: { value: TabAlignment }): void {
+        const tabs = getSelectedTabs(this.editor);
+        if (!tabs || !parseTabAlignment(value)) {
+            return;
+        }
+
+        this.editor.model.change(writer => {
+            if (value === DEFAULT_TAB_ALIGNMENT) {
+                writer.removeAttribute(ALIGNMENT_ATTRIBUTE, tabs);
+            } else {
+                writer.setAttribute(ALIGNMENT_ATTRIBUTE, value, tabs);
+            }
+        });
+    }
+}
+
+/** Returns the side of the panels that the titles of `tabs` sit on. */
+export function getTabAlignment(tabs: ModelElement): TabAlignment {
+    return parseTabAlignment(tabs.getAttribute(ALIGNMENT_ATTRIBUTE)) ?? DEFAULT_TAB_ALIGNMENT;
 }
 
 /** Creates a tab with the given title and a panel holding one empty paragraph. */

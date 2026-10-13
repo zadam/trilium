@@ -70,6 +70,33 @@
                 display: block;
             }
         }
+
+        &[data-trilium-tab-alignment="bottom"] {
+            align-items: flex-start;
+
+            & > .trilium-tab > .trilium-tab-title {
+                order: 1;
+                margin: var(--_tabs-delimiter-width) 0 0;
+                border-radius: 0 0 var(--_tabs-border-radius) var(--_tabs-border-radius);
+            }
+
+            & > .trilium-tab > .trilium-tab-panel {
+                order: 0;
+                border-radius: var(--_tabs-border-radius);
+                border-bottom-left-radius: 0;
+            }
+
+            & > .trilium-tab.trilium-tab--active > .trilium-tab-title {
+                margin-top: 0;
+                padding-top: calc(6px + var(--_tabs-delimiter-width));
+                padding-bottom: 6px;
+            }
+
+            /* The editor's widget UI elements stay at the end of the title row. */
+            & > :not(.trilium-tab) {
+                order: 1;
+            }
+        }
     }
 }
 

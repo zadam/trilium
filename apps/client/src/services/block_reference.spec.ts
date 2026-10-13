@@ -5,19 +5,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CommandNames } from "../components/app_context.js";
 import type { MenuCommandItem, MenuItem } from "../menus/context_menu.js";
 import {
-    buildBlockReferenceMenuItems, consumeBlockReference, copyBlockReference, copyTabReference,
-    getBlockRangeElements, getClipboardBlockReference, highlightBlockReference,
+    buildBlockReferenceMenuItems, consumeBlockReference, copyBlockReference, copyBlockShareLink,
+    copyTabReference, getBlockRangeElements, getClipboardBlockReference, highlightBlockReference,
     openBlockHandleMenu, revealHighlightedBlocks
 } from "./block_reference.js";
 import type { ViewScope } from "./link.js";
 
 const {
-    showError, showMessage, showMenu, copyHtmlWithToast, getTextEditorContaining, getNote
+    showError, showMessage, showMenu, copyHtmlWithToast, copyTextWithToast, getTextEditorContaining,
+    getNote
 } = vi.hoisted(() => ({
     showError: vi.fn(),
     showMessage: vi.fn(),
     showMenu: vi.fn(),
     copyHtmlWithToast: vi.fn(),
+    copyTextWithToast: vi.fn(),
     getTextEditorContaining: vi.fn(),
     getNote: vi.fn()
 }));
@@ -27,7 +29,7 @@ vi.mock("./i18n.js", () => ({
 vi.mock("./toast.js", () => ({ default: { showError, showMessage } }));
 vi.mock("../menus/context_menu.js", () => ({ default: { show: showMenu } }));
 vi.mock("../menus/text_editor_context_menu.js", () => ({ getTextEditorContaining }));
-vi.mock("./clipboard_ext.js", () => ({ copyHtmlWithToast }));
+vi.mock("./clipboard_ext.js", () => ({ copyHtmlWithToast, copyTextWithToast }));
 vi.mock("./froca.js", () => ({ default: { getNote } }));
 vi.mock("./content_renderer.js", () => ({
     EXCERPT_BOX_SIZE: "full",
@@ -285,19 +287,56 @@ describe("copyTabReference", () => {
     });
 });
 
+describe("copyBlockShareLink", () => {
+    it("copies a link to the selected blocks on the shared page and flashes them", () => {
+        const root = buildContainer(
+            "<p data-trilium-block-id=\"s1\">Start</p><p data-trilium-block-id=\"e1\">End</p>"
+        );
+        const editor = buildEditor(root, { startId: "s1", endId: "e1", count: 2 });
+
+        copyBlockShareLink(editor, "https://notes.example.com/share/page");
+
+        expect(editor.execute).toHaveBeenCalledWith("assignBlockReference");
+        expect(copyTextWithToast).toHaveBeenCalledWith(
+            "https://notes.example.com/share/page?block=s1:e1"
+        );
+        expect(getFlashed(root)).toEqual([ "Start", "End" ]);
+    });
+
+    it("copies nothing when no block is referenced", () => {
+        const root = buildContainer("<p>one</p>");
+        const shareLink = "https://notes.example.com/share/page";
+
+        copyBlockShareLink(buildEditor(root, undefined), shareLink);
+        const missingTarget = { startId: "x", endId: "x", count: 1 };
+        copyBlockShareLink(buildEditor(root, missingTarget), shareLink);
+
+        expect(copyTextWithToast).not.toHaveBeenCalled();
+    });
+});
+
 describe("openBlockHandleMenu", () => {
-    it("offers to copy a reference to the selected blocks", () => {
+    it("offers to copy a reference to the selected blocks, and a public link if shared", () => {
         const event = new MouseEvent("contextmenu", { clientX: 10, clientY: 20 });
         const copyReference = vi.fn();
+        const copyShareLink = vi.fn();
+        const copyItem = expect.objectContaining({
+            title: "block_reference.copy:3",
+            handler: copyReference
+        });
 
-        openBlockHandleMenu(event, 3, copyReference);
+        openBlockHandleMenu(event, 3, { copyReference });
+        openBlockHandleMenu(event, 3, { copyReference, copyShareLink });
 
-        expect(showMenu).toHaveBeenCalledWith(expect.objectContaining({
+        expect(showMenu).toHaveBeenNthCalledWith(1, expect.objectContaining({
             x: event.pageX,
             y: event.pageY,
-            items: [ expect.objectContaining({
-                title: "block_reference.copy:3",
-                handler: copyReference
+            items: [ copyItem ]
+        }));
+        expect(showMenu).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            items: [ copyItem, expect.objectContaining({
+                title: "block_reference.copy_share_link:3",
+                handler: copyShareLink
             }) ]
         }));
     });

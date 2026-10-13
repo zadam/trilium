@@ -4433,6 +4433,9 @@
       "move-tab-right": "Move tab right",
       "copy-link-to-tab": "Copy link to tab",
       "tabs-toolbar": "Tabs toolbar",
+      "tab-alignment": "Tab alignment",
+      "align-tabs-at-top": "Align tabs at top",
+      "align-tabs-at-bottom": "Align tabs at bottom",
       "insert-titled-tabs-that-show-one-panel-at-a-time": "Insert titled tabs that show one panel at a time.",
       "multicolumn-layout": "Multicolumn layout",
       "multicolumn-layout-toolbar": "Multicolumn layout toolbar",
@@ -4443,7 +4446,10 @@
       "arrange-content-in-0-equal-columns-side-by-side": "Arrange content in %0 equal columns side by side.",
       "0-columns-1": "%0 columns (%1)",
       "remove-layout": "Remove layout",
-      "type-content-here": "Type content here…"
+      "type-the-content-of-the-first-column": "Type the content of the first column",
+      "type-the-content-of-the-second-column": "Type the content of the second column",
+      "type-the-content-of-the-third-column": "Type the content of the third column",
+      "type-the-content-of-the-fourth-column": "Type the content of the fourth column"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",
@@ -4566,6 +4572,8 @@
   "block_reference": {
     "copy_one": "Copy reference to this block",
     "copy_other": "Copy reference to these {{count}} blocks",
+    "copy_share_link_one": "Copy public link to this block",
+    "copy_share_link_other": "Copy public link to these {{count}} blocks",
     "copy_tab": "Copy link to this tab",
     "paste_as_link": "Paste reference as a link",
     "paste_as_excerpt": "Paste reference as an excerpt",

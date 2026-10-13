@@ -1,9 +1,13 @@
 import { ButtonView, Command, ImageUtils, Plugin, type ModelElement } from "ckeditor5";
 import bxsPen from "boxicons/svg/solid/bxs-pen.svg?raw";
 
+import { MIN_EMBED_SIZE } from "./content_embed/content_embed.js";
+import { SIZE_ATTRIBUTES } from "./resizable_widgets/resizable_widgets.js";
+
 /**
  * Adds the `convertImageToDrawing` button to the image toolbar. The host attaches a drawing canvas
- * that shows the selected block image, which an editable, untitled Medium embed of it replaces.
+ * that shows the selected block image, which an editable, untitled Medium embed of it replaces, at
+ * the size that the image is shown at.
  */
 export default class ImageToDrawing extends Plugin {
 
@@ -58,8 +62,10 @@ export class ConvertImageToDrawingCommand extends Command {
         const editor = this.editor;
         const image = this.getSelectedBlockImage();
         const src = image?.getAttribute("src");
+        /* v8 ignore next -- `refresh()` disables the command without a block image with a src. */
         if (!image || typeof src !== "string") return;
 
+        const size = this.getShownSize(image);
         const host = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
         this.forceDisabled(CONVERTING);
         let attachmentId: string | null | undefined;
@@ -79,7 +85,8 @@ export class ConvertImageToDrawingCommand extends Command {
                 attachmentId,
                 boxSize: "medium",
                 hideTitle: true,
-                editable: true
+                editable: true,
+                ...size
             });
             const caption = getCaption(image);
             if (caption && !caption.isEmpty) {
@@ -94,6 +101,24 @@ export class ConvertImageToDrawingCommand extends Command {
         });
     }
 
+    /** The size that `image` is shown at, as the size attributes of an embed. */
+    private getShownSize(image: ModelElement): Record<string, string> {
+        const editing = this.editor.editing;
+        const viewElement = editing.mapper.toViewElement(image);
+        const figure = viewElement && editing.view.domConverter.mapViewToDom(viewElement);
+        /* v8 ignore next -- the editing view renders the selected image as a `<figure>`. */
+        if (!(figure instanceof HTMLElement)) return {};
+
+        const rect = figure.querySelector("img")?.getBoundingClientRect();
+        if (!rect?.width || !rect.height) return {};
+
+        const em = parseFloat(getComputedStyle(figure).fontSize);
+        return {
+            [SIZE_ATTRIBUTES.width]: toEm(rect.width / em, MIN_EMBED_SIZE.width),
+            [SIZE_ATTRIBUTES.height]: toEm(rect.height / em, MIN_EMBED_SIZE.height)
+        };
+    }
+
     private getSelectedBlockImage() {
         const selection = this.editor.model.document.selection;
         const image = this.editor.plugins.get(ImageUtils).getClosestSelectedImageElement(selection);
@@ -105,10 +130,12 @@ export class ConvertImageToDrawingCommand extends Command {
 const CONVERTING = "converting";
 
 function getCaption(image: ModelElement) {
-    for (const child of image.getChildren()) {
-        if (child.is("element", "caption")) return child;
-    }
-    return null;
+    return [ ...image.getChildren() ].find((child) => child.is("element", "caption"));
+}
+
+/** `value` in `em`, rounded to hundredths and no less than `min`. */
+function toEm(value: number, min: number) {
+    return `${Math.max(Math.round(value * 100) / 100, min)}em`;
 }
 
 /** Whether `element` is still in the document, rather than removed while the host worked. */
