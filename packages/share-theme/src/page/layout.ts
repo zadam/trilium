@@ -35,9 +35,8 @@ const NOTE_SCROLL_KEY = "share-note-scroll";
 const MAX_NOTE_SCROLLS = 50;
 
 /**
- * Keeps the note's place across a reload and a return through the history, as the browser keeps
- * the place of a page that scrolls itself: on a wide screen the note scrolls in
- * `#scrolling-container` instead. The places are kept per page in `sessionStorage`.
+ * Keeps the note's place per page across a reload and a history return, as the browser does for
+ * the window: on a wide screen the note scrolls in `#scrolling-container` instead.
  */
 function keepNoteScroll() {
     const container = document.getElementById("scrolling-container");

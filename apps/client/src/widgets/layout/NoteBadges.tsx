@@ -166,8 +166,7 @@ export function useShareEditState(note: FNote | null | undefined) {
 
 /**
  * Turns guest editing of `note` on or off from the Shared badge's menu. A branch closed below an
- * editable ancestor goes back to the ancestor's editing; any other note asks for a password, or
- * for open editing, in the dialog.
+ * editable ancestor goes back to the ancestor's editing; any other note opens the dialog.
  */
 export async function toggleShareEdit(note: FNote, enabled: boolean, reopensFromParent: boolean) {
     if (!enabled) {

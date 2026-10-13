@@ -251,12 +251,8 @@ export function useSaveBeforeLeaving<T>(
 }
 
 /**
- * Saves the content through the guest API of the shared page editing it, naming the version it was
- * loaded from. A save the server refuses, as stale or because the visitor's access ended, is handed
- * to the page, which lets the visitor reload, keep their version or unlock the note again, and
- * sends the editor's content again with `retry`. Until then the save fails without sending
- * anything, so the spaced update keeps the content unsaved rather than dropping it. Returns whether
- * the content was saved, which it is not off a shared page. Exported for testing.
+ * Saves the content through a shared page's guest API, over the version it was loaded from, and
+ * returns whether it did. A refused save stays unsaved until the page calls `retry`.
  */
 export async function saveOnShare(
     noteId: string,

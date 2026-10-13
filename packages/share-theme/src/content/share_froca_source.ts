@@ -19,8 +19,7 @@ export interface ShareFrocaSource extends FrocaSource {
 /**
  * Reads the notes, attachments and blobs froca lacks from the share's API, relative to the page,
  * and records the share link of each note it loads in `links`. A note no row has linked yet links
- * to `./<noteId>`, which the share redirects to the note's own link. The content of a note in
- * `blobs` comes from there instead.
+ * to `./<noteId>`, which the share redirects to the note's own link.
  */
 export function createShareFrocaSource(
     links: Record<string, string>, blobs: Record<string, FBlobRow> = {}
@@ -36,6 +35,7 @@ export function createShareFrocaSource(
         getSiblingAttachments: (attachmentId) =>
             getJson(`api/attachments/${encodeURIComponent(attachmentId)}/all`),
         getAttachments: (noteId) => getJson(`api/notes/${encodeURIComponent(noteId)}/attachments`),
+        // Content the page already holds, such as the note a guest edits at its version.
         getBlob: async (entityType, entityId) =>
             (entityType === "notes" ? blobs[entityId] : undefined)
                 ?? getJson(`api/${entityType}/${encodeURIComponent(entityId)}/blob`),

@@ -33,9 +33,8 @@ export interface ShareEditGlobals {
 }
 
 /**
- * Whether a shared page is editing its note through the share's guest API, which its edit view
- * marks by setting `glob.shareEdit` once the visitor unlocks the note. A function rather than a
- * constant: the page sets it after the modules have loaded.
+ * Whether a shared page is editing its note, as its edit view sets `glob.shareEdit` on unlocking.
+ * A function, as the page sets it after the modules have loaded.
  */
 export function isShareEditing(): boolean {
     return isShare && !!window.glob?.shareEdit;

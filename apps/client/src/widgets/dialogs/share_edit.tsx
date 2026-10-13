@@ -23,9 +23,8 @@ export interface ShareEditSettings {
 }
 
 /**
- * Lets the host open a shared note's subtree to editing by its visitors: with a password they
- * enter on the page, or to anyone who has the link, behind a warning. The Shared badge's menu
- * opens it, for the first time and to change the password.
+ * Lets the host open a shared note's subtree to editing by its visitors, with a password or to
+ * anyone who has the link. The Shared badge's menu opens it.
  */
 export default function ShareEditDialog() {
     const [ shown, setShown ] = useState(false);

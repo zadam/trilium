@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { parse } from "node-html-parser";
 
 import type BNote from "../becca/entities/bnote.js";
@@ -21,9 +22,8 @@ export function isGuestEditableNote(note: BNote): boolean {
 }
 
 /**
- * Runs the HTML through the sanitizer imported and clipped HTML go through, then drops inline
- * `data:` images and include-note sections, the two ways content can bring in an attachment or
- * another note.
+ * Runs the HTML through the sanitizer imported HTML goes through, then drops inline `data:` images
+ * and include-note sections, through which content could bring in an attachment or another note.
  */
 export function sanitizeGuestContent(html: string): string {
     const document = parse(sanitize.sanitizeHtml(html));
@@ -42,15 +42,13 @@ export function sanitizeGuestContent(html: string): string {
 }
 
 /**
- * Saves `content` as a guest: sanitized, kept as a revision of source `collab` when due, and only
- * over the version `baseBlobId` names, so a save over someone else's change is refused with the
- * version the server holds. Internal links in the content are not turned into relations, which
- * `saveLinks()` does when the host saves the note.
+ * Saves `content` as a guest, sanitized, with a `collab` revision when due, and only over the
+ * version `baseBlobId` names. Unlike the host's saves, it leaves internal links without relations.
  */
 export function updateContentAsGuest(note: BNote, content: string, baseBlobId: string | null): GuestSaveResult {
     assertGuestEditable(note);
     if (content.length > MAX_GUEST_CONTENT_LENGTH) {
-        throw new ValidationError("The content is too large for a guest save.");
+        throw new ValidationError(t("share_edit.content-too-large"));
     }
 
     const blobId = note.blobId ?? "";
@@ -68,7 +66,7 @@ export function updateTitleAsGuest(note: BNote, title: string): { title: string 
     assertGuestEditable(note);
     const cleanTitle = title.trim();
     if (!cleanTitle || cleanTitle.length > MAX_TITLE_LENGTH) {
-        throw new ValidationError(`A title has 1 to ${MAX_TITLE_LENGTH} characters.`);
+        throw new ValidationError(t("share_edit.title-length", { max: MAX_TITLE_LENGTH }));
     }
 
     if (note.title !== cleanTitle) {
@@ -82,6 +80,6 @@ export function updateTitleAsGuest(note: BNote, title: string): { title: string 
 
 function assertGuestEditable(note: BNote) {
     if (!isGuestEditableNote(note)) {
-        throw new ValidationError("Guests can only edit text notes that are not read-only.");
+        throw new ValidationError(t("share_edit.not-editable"));
     }
 }

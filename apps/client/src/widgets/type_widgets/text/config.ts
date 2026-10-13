@@ -452,21 +452,17 @@ function buildHtmlSupportConfig(): EditorConfig["htmlSupport"] {
  */
 const EDITOR_ONLY_DISALLOWED_TAGS = new Set(["div"]);
 
-/**
- * The plugins a guest editing a shared note cannot use: each reaches into the host's other notes,
- * its dialogs or its services, none of which the page has. `TablePasteRows` goes with
- * `CutToNotePlugin`, which it requires.
- */
+/** The plugins a shared page's guest cannot use, as they reach the host's notes or services. */
 export const SHARE_EDIT_DISABLED_PLUGINS = [
+    // `TablePasteRows` requires `CutToNotePlugin`.
     "CutToNotePlugin", "TablePasteRows", "ContentEmbed", "ContentEmbedBoxSizeDropdown",
     "ContentEmbedToolbar", "InternalLinkPlugin", "MarkdownImportPlugin", "TriliumSnippets",
     "TriliumAiAssistant", "BlockReference", "InlineIcon"
 ];
 
 /**
- * The plugins that upload into the note, which the host allows guests with `#shareAttachments`:
- * the upload adapter every upload goes through, and the clipboard handlers that start one. The
- * file upload plugin itself stays, as `EditableText` hooks its progress events.
+ * The plugins that upload into the note, which guests use only with `#shareAttachments`. The file
+ * upload plugin stays, as `EditableText` hooks its progress events.
  */
 export const SHARE_EDIT_UPLOAD_PLUGINS = [
     "UploadimagePlugin", "ClipboardBareImage", "ClipboardImageEmbed"

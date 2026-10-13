@@ -4,9 +4,8 @@ import { t } from "../../../services/i18n.js";
 import { IconAlignCenter } from "@ckeditor/ckeditor5-icons";
 
 /**
- * The toolbar items a guest editing a shared note does without: those of the plugins
- * `SHARE_EDIT_DISABLED_PLUGINS` names, the link preview, which fetches through the app, and the
- * drawing canvas, which the editor saves as an attachment.
+ * The toolbar items a shared page's guest does without: those of `SHARE_EDIT_DISABLED_PLUGINS`,
+ * the link preview, which fetches through the app, and the canvas, saved as an attachment.
  */
 const SHARE_EDIT_HIDDEN_ITEMS = new Set([
     "aiAssistant", "linkEmbed", "internallink", "contentEmbed", "insertIcon", "drawingCanvas",

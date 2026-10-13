@@ -22,10 +22,8 @@ interface EditLogin {
 }
 
 /**
- * Offers to edit a text note the host opened to its visitors: asks the share whether the note is
- * editable, then shows an *Edit* button at the end of the note's header, which unlocks the note
- * with its password where it has one and mounts the app's editor in place of the rendered
- * content. A page of the static export, and one whose share answers nothing, show nothing.
+ * Offers to edit a text note the host opened to its visitors: an *Edit* button in the note's header
+ * unlocks it and mounts the app's editor in place of the rendered content.
  */
 export default async function setupShareEdit() {
     const noteId = document.body.dataset.noteId;
@@ -116,10 +114,8 @@ async function unlock(
     let { csrfToken } = first;
     let canLogOut = !!session.needsPassword;
     controls.showEditing(canLogOut);
-    // A new password, or closing and reopening editing, ends the access: the editor holds what
-    // it could not save, and the note is unlocked again, without a password where none is needed.
-    // Where that fails, or the share does not answer, the form stays up to try again, with the
-    // password optional unless the share asks for one.
+    // Once access ends, unlocks again where no password is needed; otherwise, or when that fails,
+    // the form stays up to try again, the password optional unless the share asks for one.
     const onLocked = async () => {
         const current = await fetchSession(noteId);
         const needsPassword = !!current?.needsPassword;
@@ -171,10 +167,8 @@ async function unlock(
 }
 
 /**
- * Replaces the rendered content with the app's editor, which the edit view mounts once the
- * app's globals and the page's locale are ready, with its toolbar in the sticky top bar. The
- * rendered content comes back with the page, which *Stop editing* reloads once the editor has
- * saved.
+ * Replaces the rendered content with the app's editor, its toolbar in the sticky top bar. The
+ * rendered content comes back with the page, which *Stop editing* reloads.
  */
 async function mountEditor(
     noteId: string,

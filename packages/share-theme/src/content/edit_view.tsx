@@ -72,9 +72,8 @@ export type { ShareEditGlobals };
 const TITLE_SAVE_DELAY = 1000;
 
 /**
- * Mounts the app's text editor on a shared page whose note the visitor unlocked: the editor saves
- * through the share's guest API, under the CSRF token the login issued, and the page's title saves
- * the same way. The editor's state and a save the server refused as stale show above it.
+ * Mounts the app's text editor on a shared page whose note the visitor unlocked; it and the
+ * page's title save through the share's guest API under the login's CSRF token.
  */
 export default async function mountEditView(container: HTMLElement, options: EditViewOptions): Promise<EditView> {
     const status = createStatus();
@@ -131,11 +130,8 @@ export default async function mountEditView(container: HTMLElement, options: Edi
 }
 
 /**
- * Sets what the app's modules read on a page that saves: the share's API as the server, the CSRF
- * token and where to refresh it, the globals the editor's plugins call, and the share-editing
- * state `services/utils.ts` tells the editor by. The editor's plugins reach the widget's handlers
- * through the component at an element; the page has no widget element to find, so they get
- * `component`, which the widget registers its handlers on.
+ * Sets what the app's modules read on a page that saves: the guest API, its CSRF token and the
+ * editor's globals. `component` answers the plugins' lookups, as the page has no widget element.
  */
 function installGlobals(
     options: EditViewOptions,
@@ -233,9 +229,8 @@ interface EditShellProps {
 }
 
 /**
- * The editor's toolbar, state and conflict above the app's editor of the note. The classic
- * editor is decoupled: its toolbar is an element the host places, as the app's formatting
- * toolbar does when the editor reports itself.
+ * The editor's toolbar, state and conflict around the app's editor of the note. The decoupled
+ * toolbar is placed once the editor reports itself, as the app's formatting toolbar does.
  */
 function EditShell(
     { app, Widget, status, component, statusContainer, toolbarContainer }: EditShellProps
@@ -295,10 +290,8 @@ function EditShell(
 }
 
 /**
- * Makes the page's title editable the way the app's title box is: typing saves it once the
- * visitor pauses, Enter moves into the content, and leaving the title saves it at once. Saves run
- * one after another, and a title counts as saved only once the server stored it, so a failed one
- * is sent again. `flush` resolves to whether the title is stored.
+ * Makes the page's title editable as the app's title box is, saving after a pause, on leaving and
+ * on `flush`, one save at a time; a title counts as saved once the server stored it.
  */
 function makeTitleEditable(
     title: HTMLElement, noteId: string, container: HTMLElement, onLocked: () => void

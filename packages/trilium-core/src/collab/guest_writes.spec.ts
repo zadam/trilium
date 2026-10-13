@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type BNote from "../becca/entities/bnote.js";
+import { ValidationError } from "../errors.js";
 import { getContext } from "../services/context.js";
 import noteService from "../services/notes.js";
 import {
@@ -69,7 +70,8 @@ describe("guest writes", () => {
         // Without a base version, the save lands regardless.
         expect(getContext().init(() => updateContentAsGuest(note, "<p>mine</p>", null)).ok).toBe(true);
         expect(() => getContext().init(() =>
-            updateContentAsGuest(note, "x".repeat(MAX_GUEST_CONTENT_LENGTH + 1), null))).toThrow(/too large/);
+            updateContentAsGuest(note, "x".repeat(MAX_GUEST_CONTENT_LENGTH + 1), null)))
+            .toThrow(ValidationError);
     });
 
     it("keeps a revision of source collab before a change to a note that is old enough", () => {

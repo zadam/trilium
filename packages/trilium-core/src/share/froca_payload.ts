@@ -43,7 +43,7 @@ export function buildFrocaPayload(note: SNote, canAccess?: (note: SNote) => bool
  * holds only shared notes, so a relation to a note outside the share is left out, as is every note
  * that is protected or that `canAccess` refuses. A built-in template such as `_template_calendar`
  * is read from becca instead, as it lives in the hidden subtree, so the notes inherit its labels.
- * The secret labels, `#shareCredentials` and `#shareEditPassword`, are always left out.
+ * `#shareCredentials` is always left out, as it holds the password of the notes.
  *
  * The roots are shaca's notes on a shared page and becca's in the static export, whose relations
  * and children are notes of the same cache. `getLink` gives the URL of each note's page, by
@@ -103,6 +103,7 @@ export function buildFrocaRows<T extends PayloadNote>(
             }
         }
         for (const attribute of included.ownedAttributes) {
+            // `#shareCredentials` and `#shareEditPassword`.
             if (attribute.type === "label" && SHARE_SECRET_LABELS.has(attribute.name)) {
                 continue;
             }

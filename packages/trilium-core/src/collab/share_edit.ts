@@ -101,9 +101,8 @@ export const EDIT_OPTION_OVERRIDES = {
 } as const satisfies Partial<Record<OptionNames, string>>;
 
 /**
- * The notes and options the share theme mounts the app's text editor with, for `note`, of the
- * notes `canAccess` lets the visitor read: the shape of the payload core embeds beside a hosted
- * view, which the login route answers instead, as a text page embeds none.
+ * The notes and options the share theme mounts the app's text editor with for `note`, of those
+ * `canAccess` lets the visitor read, in the shape of a hosted view's payload.
  */
 export function buildEditPayload(note: SNote, canAccess: (note: SNote) => boolean) {
     const options = Object.fromEntries(EDIT_OPTIONS.map((name) => [ name, optionService.getOptionOrNull(name) ]));

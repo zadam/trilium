@@ -489,6 +489,23 @@
     "go-back": "Go back",
     "go-forward": "Go forward"
   },
+  "share_edit": {
+    "password-too-short": "The password needs {{min}} characters or more.",
+    "choose-access": "Choose a password, or open editing to anyone with the link.",
+    "content-too-large": "The content is too large for a guest save.",
+    "title-length": "A title has 1 to {{max}} characters.",
+    "not-editable": "Guests can only edit text notes that are not read-only.",
+    "note-not-found": "Note '{{- noteId}}' not found.",
+    "cannot-edit": "Guests cannot edit this note.",
+    "unlock-first": "Unlock editing first.",
+    "content-not-string": "The content must be a string.",
+    "title-not-string": "The title must be a string.",
+    "stale": "The note changed since it was loaded.",
+    "attachments-off": "Guests cannot upload attachments here.",
+    "file-too-large": "The file is too large for a guest upload.",
+    "upload-rejected": "The upload was rejected.",
+    "no-file": "No file was uploaded."
+  },
   "hidden_subtree_templates": {
     "text-snippet": "Text Snippet",
     "markdown-snippet": "Markdown Snippet",

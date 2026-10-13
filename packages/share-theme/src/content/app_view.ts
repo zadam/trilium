@@ -35,10 +35,8 @@ async function mountAppView(container: string, load: () => Promise<AppViewModule
 }
 
 /**
- * Readies the page for an app view: the view brings the app's context along, which expects jQuery
- * as a global, so `app_globals.ts` loads first. `app_context.ts` then loads before the view's
- * module, as in the app's entry: the modules it reaches depend on that order, such as `tree.ts`,
- * which uses `ws.ts` as it loads.
+ * Readies the page for an app view: jQuery as a global first (`app_globals.ts`), then
+ * `app_context.ts` before the view's module, the order of the app's entry its modules rely on.
  */
 export async function prepareAppHost(payload: AppPayload) {
     // The views behave as on desktop, `isMobile()` being false on a shared page, and the app's

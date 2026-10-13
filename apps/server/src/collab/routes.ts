@@ -24,10 +24,8 @@ const PST = "post";
 const PUT = "put";
 
 /**
- * Mounts the routes a shared page edits its note through, beside the share's own: a text page
- * asks whether its note is open to editing, unlocks it, then saves through them with the app's
- * editor. They sit under `/share/api/`, so the page reaches them relative to itself, and never
- * set `session.loggedIn`, so `/api/*` stays closed to guests.
+ * Mounts the routes a shared page edits its note through, under `/share/api/` beside the share's
+ * own. They never set `session.loggedIn`, so `/api/*` stays closed to guests.
  */
 function register(loginRateLimiter: RequestHandler) {
     asyncRoute(GET, "/share/api/edit/session", [], getSession, apiResultHandler);
@@ -51,10 +49,8 @@ export default {
 };
 
 /**
- * Tells the page whether its note is open to editing and whether this session has unlocked it,
- * with the texts of its controls. It changes nothing: a page a crawler follows leaves no session
- * behind. An unlocked session gets a CSRF token, which it refreshes from here as the app does
- * from `/bootstrap`.
+ * Tells the page whether its note is open to editing and unlocked, with its controls' texts, and
+ * stores no session. An unlocked session gets a CSRF token, which it also refreshes from here.
  */
 function getSession(req: Request, res: Response) {
     const resolved = resolveShareEdit(req, req.query.noteId);
@@ -90,10 +86,8 @@ function getSession(req: Request, res: Response) {
 }
 
 /**
- * Unlocks the note's subtree for this session, against its password where it has one, and
- * answers with what the page mounts the editor from: a CSRF token, the version of the note the
- * editor starts from, and the editor's payload. A wrong password answers 401, which the login
- * rate limiter counts.
+ * Unlocks the note's subtree for this session, against its password where it has one, and answers
+ * with what the editor mounts from. A wrong password answers 401, which the rate limiter counts.
  */
 async function login(req: Request, res: Response) {
     const body = (req.body ?? {}) as { noteId?: unknown; password?: unknown };
@@ -104,13 +98,13 @@ async function login(req: Request, res: Response) {
 
     const { note, shared, policy, unlocked } = resolved;
     if (!policy) {
-        return [ 403, { message: "Guests cannot edit this note." } ];
+        return [ 403, { message: t("share_edit.cannot-edit") } ];
     }
 
     if (policy.needsPassword && !unlocked) {
         const stored = shared.getSecretLabelValue(SHARE_EDIT_PASSWORD_LABEL);
         if (typeof body.password !== "string" || !await verifyShareEditPassword(body.password, stored)) {
-            return [ 401, { message: "Wrong password." } ];
+            return [ 401, { message: t("share_theme.edit-wrong-password") } ];
         }
     }
 
@@ -163,16 +157,16 @@ function updateContent(req: Request<{ noteId: string }>, res: Response) {
     const { note } = getShareEditState(res);
     const body = (req.body ?? {}) as { content?: unknown; baseBlobId?: unknown };
     if (typeof body.content !== "string") {
-        return [ 400, { message: "content must be a string." } ];
+        return [ 400, { message: t("share_edit.content-not-string") } ];
     }
     if (body.content.length > MAX_GUEST_CONTENT_LENGTH) {
-        return [ 413, { message: "The content is too large for a guest save." } ];
+        return [ 413, { message: t("share_edit.content-too-large") } ];
     }
 
     const baseBlobId = typeof body.baseBlobId === "string" ? body.baseBlobId : null;
     const result = updateContentAsGuest(note, body.content, baseBlobId);
     if (!result.ok) {
-        return [ 409, { message: "The note changed since it was loaded.", stale: result.current } ];
+        return [ 409, { message: t("share_edit.stale"), stale: result.current } ];
     }
 
     return { blobId: result.blobId };
@@ -182,7 +176,7 @@ function updateTitle(req: Request<{ noteId: string }>, res: Response) {
     const { note } = getShareEditState(res);
     const body = (req.body ?? {}) as { title?: unknown };
     if (typeof body.title !== "string") {
-        return [ 400, { message: "title must be a string." } ];
+        return [ 400, { message: t("share_edit.title-not-string") } ];
     }
 
     return updateTitleAsGuest(note, body.title);
@@ -191,7 +185,7 @@ function updateTitle(req: Request<{ noteId: string }>, res: Response) {
 /** Refuses an upload into a subtree whose host did not allow attachments. */
 function requireAttachments(req: Request, res: Response, next: NextFunction) {
     if (!getShareEditState(res).policy.attachments) {
-        res.status(403).json({ message: "Guests cannot upload attachments here." });
+        res.status(403).json({ message: t("share_edit.attachments-off") });
         return;
     }
 
@@ -204,9 +198,9 @@ function guestUploadMiddleware(req: Request, res: Response, next: NextFunction) 
     guestUpload(req, res, (err?: unknown) => {
         const code = (err as { code?: string } | undefined)?.code;
         if (code === "LIMIT_FILE_SIZE") {
-            res.status(413).json({ message: "The file is too large for a guest upload." });
+            res.status(413).json({ message: t("share_edit.file-too-large") });
         } else if (err) {
-            res.status(400).json({ message: "Upload rejected." });
+            res.status(400).json({ message: t("share_edit.upload-rejected") });
         } else {
             next();
         }
@@ -214,15 +208,14 @@ function guestUploadMiddleware(req: Request, res: Response, next: NextFunction) 
 }
 
 /**
- * Stores the uploaded image or file as an attachment of the note, as the app's upload route does,
- * and answers with the URL the editor puts into the note: one the share serves, which the app
- * resolves the same way from its own root.
+ * Stores the upload as an attachment of the note, as the app's upload route does, and answers with
+ * the URL the editor puts into the note, which the share and the app both serve.
  */
 async function uploadAttachment(req: Request<{ noteId: string }>, res: Response) {
     const { note } = getShareEditState(res);
     const file = req.file;
     if (!file) {
-        return [ 400, { message: "No file was uploaded." } ];
+        return [ 400, { message: t("share_edit.no-file") } ];
     }
 
     if (file.mimetype.startsWith("image/")) {

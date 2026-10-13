@@ -1,12 +1,8 @@
 import "./title_row.css";
 
 /**
- * Keeps the title row in step with the note header, as the app's title row follows its inline
- * title: the row shows the note's icon and title at the top of the scrolling note once the
- * header's title has scrolled under the top bar, and follows the title as a guest edits it. The
- * stylesheet gets the heights of the bar (`--top-bar-height`), of the row while it shows
- * (`--title-row-height`) and of both once the page scrolls past the header
- * (`--top-bar-scrolled-height`), which a heading scrolled into view keeps clear of.
+ * Shows the note's icon and title in the title row once the header's title scrolls under the top
+ * bar, as the app's title row does, and gives the stylesheet the heights the panes keep clear of.
  */
 export default function setupTitleRow() {
     const topBar = document.getElementById("top-bar");

@@ -26,10 +26,8 @@ export interface PageHistory {
 const MAX_HISTORY = 50;
 
 /**
- * The tab bar at the top of the page, as the app's: the notes opened in this browser session,
- * kept in session storage so the next page load shows the same tabs, behind the app's back and
- * forward buttons. ⌘+click (Ctrl+click elsewhere) or a middle click on a note in the tree opens
- * it in a tab behind the open one, and *+* opens the site's start page in a new tab.
+ * The app's tab bar: the notes opened in this browser session, kept in session storage, behind
+ * back and forward buttons. ⌘+click or a middle click on a tree note opens it in a new tab.
  */
 export default function setupNoteTabs() {
     const bar = document.getElementById("note-tabs");
@@ -208,9 +206,8 @@ function readTabs(key: string): TabState {
 }
 
 /**
- * Back and forward through this browser tab's pages of the site, as the app's buttons. The
- * browser tells how the page was reached, which places it in the history kept in session storage;
- * a page restored from the back/forward cache was reached through the history.
+ * Back and forward through this browser tab's pages of the site, placing the page in the history
+ * kept in session storage by how it was reached.
  */
 function setupHistoryButtons(key: string) {
     const back = document.querySelector<HTMLButtonElement>("button#history-back");
@@ -240,9 +237,8 @@ function setupHistoryButtons(key: string) {
 }
 
 /**
- * Where a page load leaves the browser tab's history of the site's pages: a reload stays, the
- * browser's back and forward move to the nearest entry of the page, and any other navigation drops
- * what lay ahead of the current page, as the browser's own history does.
+ * Where a page load leaves the site's history in this browser tab: a reload stays, back and forward
+ * move to the nearest entry, and any other navigation drops what lay ahead, as the browser does.
  */
 export function advanceHistory(
     history: PageHistory, path: string, navigation: string

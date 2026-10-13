@@ -4,8 +4,9 @@ import { getShareEditPolicy, type ShareEditPolicy } from "@triliumnext/core/src/
 import {
     isShareNoteReadable, isShareReady, shaca, shacaLoader
 } from "@triliumnext/core/src/share/index.js";
-import type { NextFunction, Request, Response } from "express";
 import type SNote from "@triliumnext/core/src/share/shaca/entities/snote.js";
+import type { NextFunction, Request, Response } from "express";
+import { t } from "i18next";
 
 /** What the access middleware resolved for a request; handlers read it with {@link getShareEditState}. */
 export interface ShareEditState {
@@ -31,12 +32,13 @@ export type ShareEditResolution =
 const NOTE_ID_PATTERN = /^[A-Za-z0-9_]{1,64}$/;
 
 /**
- * Finds the shared note `noteId` as a guest of the page sees it: it must be one the request can
- * read on the share, and one guests can edit at all. The host's logged-in session is unlocked
- * everywhere, so the host can try the page as a guest would.
+ * Finds the shared note `noteId` as a guest sees it: readable on the share and editable by guests.
+ * The host's own session is unlocked everywhere.
  */
 export function resolveShareEdit(req: Request, noteId: unknown): ShareEditResolution {
-    const notFound = { status: 404 as const, message: `Note '${String(noteId)}' not found.` };
+    const notFound = {
+        status: 404 as const, message: t("share_edit.note-not-found", { noteId: String(noteId) })
+    };
     if (!isNoteIdParam(noteId) || !isShareReady()) {
         return notFound;
     }
@@ -49,7 +51,7 @@ export function resolveShareEdit(req: Request, noteId: unknown): ShareEditResolu
 
     const note = becca.getNote(noteId);
     if (!note || !isGuestEditableNote(note)) {
-        return { status: 403, message: "Guests cannot edit this note." };
+        return { status: 403, message: t("share_edit.cannot-edit") };
     }
 
     const policy = getShareEditPolicy(shared);
@@ -68,12 +70,12 @@ export function shareEditAccess(req: Request, res: Response, next: NextFunction)
 
     const { note, shared, policy, unlocked } = resolved;
     if (!policy) {
-        res.status(403).json({ message: "Guests cannot edit this note." });
+        res.status(403).json({ message: t("share_edit.cannot-edit") });
         return;
     }
     if (!unlocked) {
         // `locked` tells the page to ask for the password again rather than retry.
-        res.status(401).json({ message: "Unlock editing first.", locked: true });
+        res.status(401).json({ message: t("share_edit.unlock-first"), locked: true });
         return;
     }
 

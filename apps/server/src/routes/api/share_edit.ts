@@ -4,6 +4,7 @@ import {
     SHARE_EDIT_LABEL, SHARE_EDIT_PASSWORD_LABEL
 } from "@triliumnext/core/src/collab/share_edit.js";
 import type { Request } from "express";
+import { t } from "i18next";
 
 const SHARE_EDIT_LABELS = [ SHARE_EDIT_LABEL, SHARE_EDIT_PASSWORD_LABEL, SHARE_ATTACHMENTS_LABEL ];
 
@@ -16,14 +17,8 @@ interface ShareEditBody {
 }
 
 /**
- * Opens or closes the note's subtree to editing on its shared page, as the Shared badge's menu
- * asks. Each setting holds for the note and the notes below it: where the note inherits another
- * value from an ancestor, an inheritable label of its own overrides it, such as `#shareEdit=false`
- * closing one branch, and where it inherits the same value, no label of its own is kept. A password
- * or open editing makes the note the root of a branch of its own; without either, opening needs an
- * ancestor whose editing the note goes back to, and a later call keeps the password it does not
- * replace. The route is asynchronous for the hash, so the writes open their own transaction, whose
- * commit sends the changes to the host's clients.
+ * Sets guest editing for the note and the notes below it, as the Shared badge's menu asks, with
+ * labels of its own only where they differ from what it inherits (User Guide: Sharing).
  */
 async function setShareEdit(req: Request<{ noteId: string }>) {
     const note = becca.getNoteOrThrow(req.params.noteId);
@@ -31,6 +26,7 @@ async function setShareEdit(req: Request<{ noteId: string }>) {
     const inherits = (name: string) =>
         note.getParentNotes().some((parent) => parent.isLabelTruthy(name));
     if (body.enabled !== true) {
+        // The route is asynchronous, so it opens the transaction whose commit tells the clients.
         getSql().transactional(() => {
             for (const name of SHARE_EDIT_LABELS) {
                 note.removeLabel(name);
@@ -46,7 +42,7 @@ async function setShareEdit(req: Request<{ noteId: string }>) {
     if (typeof body.password === "string") {
         if (body.password.length < MIN_SHARE_EDIT_PASSWORD_LENGTH) {
             throw new ValidationError(
-                `The password needs ${MIN_SHARE_EDIT_PASSWORD_LENGTH} characters or more.`);
+                t("share_edit.password-too-short", { min: MIN_SHARE_EDIT_PASSWORD_LENGTH }));
         }
         passwordHash = await hashShareEditPassword(body.password);
     }
@@ -54,7 +50,7 @@ async function setShareEdit(req: Request<{ noteId: string }>) {
     const owned = note.getOwnedLabel(SHARE_EDIT_LABEL);
     const ownsEditing = !!owned && owned.value !== "false";
     if (!becomesRoot && !ownsEditing && !inherits(SHARE_EDIT_LABEL)) {
-        throw new ValidationError("Choose a password, or open editing to anyone with the link.");
+        throw new ValidationError(t("share_edit.choose-access"));
     }
 
     getSql().transactional(() => {
