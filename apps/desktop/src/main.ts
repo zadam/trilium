@@ -47,6 +47,7 @@ import { setupRestoreHandlers } from "./services/restore";
 import { getSecuritySettings, registerSecurityIpcHandlers } from "./services/security_settings";
 import { setupShellHandlers } from "./services/shell";
 import { markStartupMetric, setupStartupMetricsIpc } from "./services/startup_metrics";
+import { startTranscription } from "./services/transcription";
 import { setupSystemTray } from "./services/tray";
 import windowService, { setupWindowing } from "./services/window";
 
@@ -366,6 +367,7 @@ async function onReady() {
         // available to summon it from.
         const startHidden = wasLaunchedHidden() && !options.getOptionBool("disableTray");
         await windowService.createMainWindow(startHidden);
+        startTranscription().catch((e) => getLog().error(`Transcription did not start: ${e}`));
 
         // Repair the OS autostart entry so it matches the stored option (it can
         // drift if the user toggled it elsewhere). Options are loaded now that the
