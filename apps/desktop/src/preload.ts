@@ -188,8 +188,8 @@ contextBridge.exposeInMainWorld("electronApi", {
         onPrintProgress(callback: (data: { progress: number; action: string }) => void) {
             ipcRenderer.on("print-progress", (_event, data) => callback(data));
         },
-        onPrintDone(callback: (printReport: unknown) => void) {
-            ipcRenderer.on("print-done", (_event, printReport) => callback(printReport));
+        onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void) {
+            ipcRenderer.on("print-done", (_event, printReport, liveJobId) => callback(printReport, liveJobId));
         },
         removePrintListeners() {
             ipcRenderer.removeAllListeners("print-progress");

@@ -435,7 +435,9 @@ describe("preload script", () => {
             const listeners = ipcRendererListeners.get("print-done")!;
             expect(listeners).toHaveLength(1);
             listeners[0]({}, { success: true });
-            expect(callback).toHaveBeenCalledWith({ success: true });
+            expect(callback).toHaveBeenCalledWith({ success: true }, undefined);
+            listeners[0]({}, { type: "single-note" }, 3);
+            expect(callback).toHaveBeenLastCalledWith({ type: "single-note" }, 3);
         });
 
         it("removePrintListeners clears both print listeners", () => {

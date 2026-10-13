@@ -99,6 +99,7 @@ Not all <a class="reference-link" href="../../Note%20Types.md">Note Types</a> 
 *   For <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes:
     *   Line numbers are not printed.
     *   Syntax highlighting is enabled, however a default theme (Visual Studio) is enforced.
+*   A <a class="reference-link" href="../../Note%20Types/Render%20Note.md">Render Note</a> is printed as it is displayed, without running its script again, once its `~renderNote` relation is set.
 *   For <a class="reference-link" href="../../Collections.md">Collections</a>, the following are supported:
     *   <a class="reference-link" href="../../Collections/List%20View.md">List View</a>, allowing to print multiple notes at once while preserving hierarchy (similar to a book).
     *   <a class="reference-link" href="../../Collections/Presentation.md">Presentation</a>, where each slide/sub-note is displayed.

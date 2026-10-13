@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks"
 import FNote from "../../entities/fnote";
 import { getBuiltinLabelSelectOptions } from "../../services/attributes";
 import { t } from "../../services/i18n";
+import { endLivePrint, startLivePrint } from "../../services/live_print";
 import toast from "../../services/toast";
 import Button, { ButtonGroup } from "../react/Button";
 import Dropdown from "../react/Dropdown";
@@ -82,6 +83,8 @@ function isValidPageRanges(value: string): boolean {
 export interface PrintPreviewData {
     note: FNote;
     notePath: string;
+    /** An element of the app window to print as it is on screen, instead of rendering the note again. */
+    liveTarget?: HTMLElement;
 }
 
 interface PreviewOpts {
@@ -102,7 +105,10 @@ export default function PrintPreviewDialog() {
     const notePathRef = useRef("");
     const pdfUrlRef = useRef<string | undefined>(undefined);
     const requestIdRef = useRef(0);
-
+    /** The live print the dialog started for a live target, which every request names. */
+    const liveJobIdRef = useRef<number | undefined>(undefined);
+    /** A live print sent to the printer keeps the window prepared until `print-done` ends it. */
+    const isLivePrintSentRef = useRef(false);
 
     const [landscape, setLandscape] = useNoteLabelBoolean(note, "printLandscape");
     const [pageSize, setPageSize] = useNoteLabelWithDefault(note, "printPageSize", "Letter");
@@ -145,8 +151,11 @@ export default function PrintPreviewDialog() {
         setLoading(false);
     }, []);
 
-    useTriliumEvent("showPrintPreview", (data: PrintPreviewData) => {
+    useTriliumEvent("showPrintPreview", async (data: PrintPreviewData) => {
         if (shown) return;
+
+        isLivePrintSentRef.current = false;
+        liveJobIdRef.current = data.liveTarget ? await startLivePrint(data.note, data.liveTarget) : undefined;
 
         setNote(data.note);
         notePathRef.current = data.notePath;
@@ -193,6 +202,7 @@ export default function PrintPreviewDialog() {
         api.exportAsPdfPreview({
             requestId: ++requestIdRef.current,
             notePath: notePathRef.current,
+            liveJobId: liveJobIdRef.current,
             pageSize: opts.pageSize,
             landscape: opts.landscape,
             scale: opts.scale,
@@ -216,6 +226,10 @@ export default function PrintPreviewDialog() {
     }, [shown, landscape, pageSize, scale, marginsStr, pageRanges, pageRangesValid, regeneratePreview]);
 
     function handleClose() {
+        if (liveJobIdRef.current !== undefined && !isLivePrintSentRef.current) {
+            endLivePrint(liveJobIdRef.current);
+        }
+        liveJobIdRef.current = undefined;
         requestIdRef.current++;
         setShown(false);
         isFirstGenerationRef.current = true;
@@ -240,8 +254,10 @@ export default function PrintPreviewDialog() {
     }
 
     function handlePrint(silent: boolean, deviceName?: string) {
+        isLivePrintSentRef.current = liveJobIdRef.current !== undefined;
         window.electronApi?.printing.printFromPreview({
             notePath: notePathRef.current,
+            liveJobId: liveJobIdRef.current,
             pageSize,
             landscape,
             scale,
