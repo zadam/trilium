@@ -1,9 +1,13 @@
 import { ButtonView, Command, ImageUtils, Plugin, type ModelElement } from "ckeditor5";
 import bxsPen from "boxicons/svg/solid/bxs-pen.svg?raw";
 
+import { MIN_EMBED_SIZE } from "./content_embed/content_embed.js";
+import { SIZE_ATTRIBUTES } from "./resizable_widgets/resizable_widgets.js";
+
 /**
  * Adds the `convertImageToDrawing` button to the image toolbar. The host attaches a drawing canvas
- * that shows the selected block image, which an editable, untitled Medium embed of it replaces.
+ * that shows the selected block image, which an editable, untitled Medium embed of it replaces, at
+ * the size that the image is shown at.
  */
 export default class ImageToDrawing extends Plugin {
 
@@ -60,6 +64,7 @@ export class ConvertImageToDrawingCommand extends Command {
         const src = image?.getAttribute("src");
         if (!image || typeof src !== "string") return;
 
+        const size = this.getShownSize(image);
         const host = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
         this.forceDisabled(CONVERTING);
         let attachmentId: string | null | undefined;
@@ -79,7 +84,8 @@ export class ConvertImageToDrawingCommand extends Command {
                 attachmentId,
                 boxSize: "medium",
                 hideTitle: true,
-                editable: true
+                editable: true,
+                ...size
             });
             const caption = getCaption(image);
             if (caption && !caption.isEmpty) {
@@ -92,6 +98,24 @@ export class ConvertImageToDrawingCommand extends Command {
             writer.remove(image);
             writer.setSelection(embed, "on");
         });
+    }
+
+    /** The size that `image` is shown at, as the size attributes of an embed. */
+    private getShownSize(image: ModelElement): Record<string, string> {
+        const editing = this.editor.editing;
+        const viewElement = editing.mapper.toViewElement(image);
+        const figure = viewElement && editing.view.domConverter.mapViewToDom(viewElement);
+        if (!(figure instanceof HTMLElement)) return {};
+
+        const { width, height } = figure.querySelector("img")?.getBoundingClientRect()
+            ?? { width: 0, height: 0 };
+        if (!width || !height) return {};
+
+        const em = parseFloat(getComputedStyle(figure).fontSize);
+        return {
+            [SIZE_ATTRIBUTES.width]: toEm(width / em, MIN_EMBED_SIZE.width),
+            [SIZE_ATTRIBUTES.height]: toEm(height / em, MIN_EMBED_SIZE.height)
+        };
     }
 
     private getSelectedBlockImage() {
@@ -109,6 +133,11 @@ function getCaption(image: ModelElement) {
         if (child.is("element", "caption")) return child;
     }
     return null;
+}
+
+/** `value` in `em`, rounded to hundredths and no less than `min`. */
+function toEm(value: number, min: number) {
+    return `${Math.max(Math.round(value * 100) / 100, min)}em`;
 }
 
 /** Whether `element` is still in the document, rather than removed while the host worked. */
