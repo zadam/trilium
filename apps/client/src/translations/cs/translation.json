@@ -941,13 +941,10 @@
   },
   "editable_text": {
     "placeholder": "Zadejte obsah své poznámky zde...",
-    "editor_crashed_title": "Editor textu havaroval",
-    "editor_crashed_content": "Váš obsah byl úspěšně obnoven, ale několik vašich posledních změn nemuselo být uloženo.",
     "editor_crashed_details_button": "Zobrazit více detailů...",
     "editor_crashed_details_intro": "Pokud se tato chyba vyskytne několikrát, zvažte její nahlášení na GitHub vložením informací níže.",
     "editor_crashed_details_title": "Technické informace",
-    "auto-detect-language": "Automaticky detekováno",
-    "keeps-crashing": "Komponenta pro úpravy opakovaně havaruje. Zkuste restartovat Trilium. Pokud problém přetrvává, zvažte vytvoření hlášení o chybě."
+    "auto-detect-language": "Automaticky detekováno"
   },
   "empty": {
     "open_note_instruction": "Otevřete poznámku zadáním názvu poznámky do pole níže nebo vyberte poznámku ve stromu.",

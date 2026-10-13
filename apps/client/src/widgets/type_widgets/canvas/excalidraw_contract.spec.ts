@@ -7,8 +7,9 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@excalidraw/excalidraw", () => ({ MainMenu: {}, useI18n: vi.fn() }));
 
 const {
-    EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, MAX_ZOOM, MIN_ZOOM, ZOOM_STEP, ZOOMS
+    EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, ZOOM_STEP, ZOOMS
 } = await import("./CanvasEmbedTools");
+const { MAX_ZOOM, MIN_ZOOM } = await import("./drawing_view");
 const { LIBRARY_SIDEBAR } = await import("./CanvasDrawingMenu");
 const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
 
@@ -109,12 +110,23 @@ describe("Excalidraw contract of the canvas drawing", () => {
         ].join(""));
     });
 
-    it("takes the layout from `UIOptions.getFormFactor`, which the Trilium patch adds", () => {
-        const unpatched = [ productionDir, developmentDir ].filter((dir) => {
+    it("takes the layout and the view limits from the `UIOptions` of the Trilium patch", () => {
+        const hooks = [
+            "this.props.UIOptions.getFormFactor?.(", "this.props.UIOptions.constrainView"
+        ];
+        const unpatched = [ productionDir, developmentDir ].flatMap((dir) => {
             const source = readBundle(dir, [ ".js" ]).replace(/\s+/g, "");
-            return !source.includes("this.props.UIOptions.getFormFactor?.(");
+            return hooks.filter((hook) => !source.includes(hook)).map((hook) => `${dir}: ${hook}`);
         });
         expect(unpatched).toEqual([]);
+    });
+
+    it("pans and zooms with the wheel through `translateCanvas()`, which the patch limits", () => {
+        const source = readBundle(developmentDir, [ ".js" ]);
+        const handleWheel = source.split("__publicField(this, \"handleWheel\"")[1]
+            ?.split("__publicField(this, ")[0] ?? "";
+        expect(handleWheel.match(/this\.translateCanvas\(/g)).toHaveLength(3);
+        expect(handleWheel).not.toContain("this.setState(");
     });
 });
 

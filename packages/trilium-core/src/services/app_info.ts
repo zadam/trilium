@@ -4,7 +4,7 @@ import { AppInfo } from "@triliumnext/commons";
 import { getMaxMigrationVersion } from "../migrations/migrations.js";
 
 const SYNC_VERSION = 40;
-const CLIPPER_PROTOCOL_VERSION = "1.0";
+const CLIPPER_PROTOCOL_VERSION = "1.1";
 
 const appInfo: AppInfo = {
     appVersion: packageJson.version,

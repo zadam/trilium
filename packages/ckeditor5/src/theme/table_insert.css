@@ -6,8 +6,9 @@
     display: grid;
     grid-template-columns: auto auto;
     align-items: center;
-    gap: var(--ck-spacing-standard) var(--ck-spacing-large);
-    padding: var(--ck-spacing-large);
+    row-gap: var(--ck-spacing-standard, var(--ck-spacing-base));
+    column-gap: var(--ck-spacing-large, var(--ck-spacing-lg));
+    padding: var(--ck-spacing-large, var(--ck-spacing-lg));
 
     &:focus {
         outline: none;
@@ -32,7 +33,7 @@
         min-width: 100%;
         width: 0;
         color: var(--ck-table-insert-form-error-color);
-        font-size: var(--ck-font-size-small);
+        font-size: var(--ck-font-size-small, var(--ck-font-size-sm));
         white-space: normal;
     }
 

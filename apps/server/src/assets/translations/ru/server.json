@@ -345,7 +345,20 @@
     "toggle-toc": "Переключение оглавления",
     "toggle-navigation": "Переключение навигации",
     "login": "Вход",
-    "tab-title": "Название вкладки"
+    "tab-title": "Название вкладки",
+    "appearance": "Оформление",
+    "theme-light": "Светлая",
+    "theme-dark": "Тёмная",
+    "theme-system": "Системная",
+    "theme-current": "Оформление: {{- theme}}",
+    "subpages-of": "Подстраницы {{- title}}",
+    "hidden-subpages_one": "{{count}} подстраница, скрытая в дереве",
+    "hidden-subpages_few": "{{count}} подстраницы, скрытые в дереве",
+    "hidden-subpages_many": "{{count}} подстраниц, скрытых в дереве",
+    "heading-link": "Ссылка на этот раздел",
+    "previous": "Предыдущая",
+    "next": "Следующая",
+    "page-navigation": "Предыдущая и следующая страницы"
   },
   "hidden_subtree_templates": {
     "description": "Описание",
@@ -416,7 +429,8 @@
   "content_renderer": {
     "note-cannot-be-displayed": "Этот тип заметки не может быть отображен.",
     "included-note-requires-credentials": "Это заметка защищена паролем и не может быть отображена здесь.",
-    "broken-block-reference": "Поврежденная ссылка"
+    "broken-block-reference": "Поврежденная ссылка",
+    "play-video": "Воспроизвести видео"
   },
   "sql_init": {
     "db_not_initialized_desktop": "База данных не инициализирована, следуйте инструкциям на экране.",

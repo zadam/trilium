@@ -19,7 +19,7 @@ export default defineConfig({
         coverage: {
             reportsDirectory: join(import.meta.dirname, "test-output/vitest/coverage"),
             provider: "v8" as const,
-            include: [ "entrypoints/**/*.{ts,tsx}", "utils.ts" ],
+            include: [ "entrypoints/**/*.{ts,tsx}", "utils.ts", "screenshot.ts", "floating_elements.ts" ],
             exclude: [ "**/*.{test,spec}.{ts,tsx}", "**/*.d.ts" ],
             // Repo-root-relative `SF:` paths, so Codecov does not match a bare `utils.ts` or
             // `entrypoints/…/index.ts` to another project of the monorepo.

@@ -84,6 +84,8 @@ describe("PromotedAttributesCard", () => {
     let settings: PromotedAttributeSetting[] | undefined;
     let drawnByCollection: string[] | undefined;
     let itemNotes: FNote[] | undefined;
+    let unarrangedHidden: boolean | undefined;
+    let omitDrawn: boolean | undefined;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -91,6 +93,8 @@ describe("PromotedAttributesCard", () => {
         settings = undefined;
         drawnByCollection = undefined;
         itemNotes = undefined;
+        unarrangedHidden = undefined;
+        omitDrawn = undefined;
         defined = [ definition("label:dueDate", { alias: "Due" }), definition("label:owner") ];
         mocks.detail.opts = null;
         mocks.confirm.mockResolvedValue(true);
@@ -123,7 +127,8 @@ describe("PromotedAttributesCard", () => {
         expect(icons()).toEqual([
             "bx bx-calendar", "bx bx-toggle-left", "bx bx-text", "bx bx-transfer"
         ]);
-        // And says which kind it is, in the words the editor lists them under.
+        // Named in the words the editor lists them under, as the icon's tooltip rather than a badge.
+        expect(container.querySelector(".promoted-attribute-type")).toBeNull();
         expect(types()).toEqual([
             "attribute_detail.date", "attribute_detail.boolean", "attribute_detail.text",
             "attribute_detail.relation_type"
@@ -148,6 +153,17 @@ describe("PromotedAttributesCard", () => {
         toggle(0);
         expect(shown()).toEqual([ false, true ]);
         expect(stored).toEqual([]);
+    });
+
+    /** A calendar always draws its dates itself, so a row for them could never be switched on. */
+    it("leaves out what the collection draws itself, for a collection that asks", () => {
+        settings = [ { name: "owner" }, { name: "dueDate" } ];
+        drawnByCollection = [ "owner" ];
+        omitDrawn = true;
+        draw();
+
+        expect(names()).toEqual([ "Due" ]);
+        expect(shown()).toEqual([ true ]);
     });
 
     /**
@@ -402,6 +418,22 @@ describe("PromotedAttributesCard", () => {
             expect(mocks.bulk).not.toHaveBeenCalled();
             expect(mocks.removeOwned).not.toHaveBeenCalled();
         });
+
+        it("targets the full colon-carrying name when the definition name contains multiple colons", async () => {
+            defined = [ definition("label:sometool:parameter") ];
+            draw();
+
+            await act(async () => {
+                segments()[0].querySelector<HTMLElement>(".promoted-attribute-delete")?.click();
+                await flush();
+            });
+
+            expect(mocks.bulk).toHaveBeenCalledWith(
+                [ "board1" ],
+                [ { name: "deleteLabel", labelName: "sometool:parameter" } ],
+                { includeDescendants: true, silent: true });
+            expect(mocks.removeOwned).toHaveBeenCalledWith(NOTE, "label", "label:sometool:parameter");
+        });
     });
 
     describe("creating one", () => {
@@ -457,6 +489,48 @@ describe("PromotedAttributesCard", () => {
         });
     });
 
+    describe("for a collection that hides what nobody has arranged", () => {
+        beforeEach(() => { unarrangedHidden = true; });
+
+        it("lists every definition, switched off until the reader shows it", () => {
+            settings = [ { name: "owner" } ];
+            draw();
+
+            expect(names()).toEqual([ unnamed("owner"), "Due" ]);
+            expect(shown()).toEqual([ true, false ]);
+        });
+
+        it("shows what was created here, and reports it", async () => {
+            draw();
+            act(() => { adder()?.click(); });
+
+            await save({
+                type: "label", name: "label:priority", value: "promoted,single,text",
+                isInheritable: true
+            });
+            defined = [ ...defined, definition("label:priority") ];
+            await reported();
+
+            expect(names()).toEqual([ "Due", unnamed("owner"), unnamed("priority") ]);
+            expect(shown()).toEqual([ false, false, true ]);
+            expect(stored.at(-1)?.map(({ name, hidden }) => ({ name, hidden }))).toEqual([
+                { name: "dueDate", hidden: true },
+                { name: "owner", hidden: true },
+                { name: "priority", hidden: false }
+            ]);
+        });
+
+        it("keeps a definition made elsewhere switched off, writing nothing", async () => {
+            draw();
+
+            defined = [ ...defined, definition("label:priority") ];
+            await reported();
+
+            expect(shown()).toEqual([ false, false, false ]);
+            expect(stored).toEqual([]);
+        });
+    });
+
     // #region The card, and what the test does to it
 
     function draw() {
@@ -470,6 +544,8 @@ describe("PromotedAttributesCard", () => {
                         settings={settings}
                         drawnByCollection={drawnByCollection}
                         itemNotes={itemNotes}
+                        unarrangedHidden={unarrangedHidden}
+                        omitDrawn={omitDrawn}
                         onChange={(attributes) => stored.push(attributes)}
                     />
                 </ParentComponent.Provider>,
@@ -483,7 +559,7 @@ describe("PromotedAttributesCard", () => {
 
     function types() {
         return segments().map((segment) =>
-            segment.querySelector(".promoted-attribute-type .text")?.textContent);
+            segment.querySelector(".tn-icon")?.getAttribute("aria-label"));
     }
 
     function icons() {

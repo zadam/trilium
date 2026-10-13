@@ -1,4 +1,4 @@
-import { BBranch, becca, becca_easy_mocking, BNote, branches, cls } from "@triliumnext/core";
+import { BBranch, becca, becca_easy_mocking, BNote, branches, cls, options } from "@triliumnext/core";
 import type { Request } from "express";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -7,20 +7,18 @@ import clipperRoute, { processContent } from "./clipper";
 const { buildNote } = becca_easy_mocking;
 
 const resolveYouTubePreview = vi.hoisted(() => vi.fn());
+const storeFavicon = vi.hoisted(() => vi.fn());
+const saveImageToAttachment = vi.hoisted(() => vi.fn(() => ({ attachmentId: "foo", title: "encodedTitle" })));
 
 vi.mock("@triliumnext/core", async (importOriginal) => ({
     ...await importOriginal<typeof import("@triliumnext/core")>(),
-    resolveYouTubePreview
+    resolveYouTubePreview,
+    storeFavicon
 }));
 
 vi.mock("../../services/image.js", () => ({
     default: {
-        saveImageToAttachment() {
-            return {
-                attachmentId: "foo",
-                title: "encodedTitle",
-            };
-        },
+        saveImageToAttachment,
         // The clipping is read as soon as this answers, so the picture has to be stored by
         // then; nothing here defers, so there is nothing for the wait to do.
         awaitImageWrite: async () => {}
@@ -53,6 +51,18 @@ describe("processContent", () => {
             note, `<img src="OKZxZA3MonZJkwFcEhId">`
         ));
         expect(processed).toStrictEqual(`<img src="api/attachments/foo/image/encodedTitle" >`);
+    });
+
+    it("shrinks a screenshot by its width alone, and any other image to fit", async () => {
+        const PNG = "data:image/png;base64,iVBORw0KGgo=";
+        saveImageToAttachment.mockClear();
+        await cls.init(() => processContent([
+            { imageId: "screenshotImage00000", src: "inline.png", dataUrl: PNG, screenshot: true },
+            { imageId: "pictureImage00000000", src: "inline.png", dataUrl: PNG, screenshot: "yes" }
+        ], note, `<img src="screenshotImage00000"><img src="pictureImage00000000">`));
+
+        expect(saveImageToAttachment.mock.calls.map((call) => (call as unknown[]).slice(3)))
+            .toEqual([ [ "width" ], [ true ] ]);
     });
 
     it("skips over non-data images", async () => {
@@ -171,6 +181,107 @@ describe("clipper route handlers", () => {
         expect(clipping.getParentNotes().map((p) => p.noteId)).toEqual([ folder.noteId ]);
     });
 
+    describe("saving tabs", () => {
+        const PLAIN_LIST = `<ul><li><a href="https://a.com/">A</a></li></ul>`;
+        const FAVICON = "data:image/png;base64,iVBORw0KGgo=";
+
+        function saveTabs(tabs: unknown) {
+            return cls.init(async () => {
+                const { noteId } = await clipperRoute.createNote({
+                    body: { title: "2 browser tabs", content: PLAIN_LIST, clipType: "tabs", tabs }
+                } as unknown as Request);
+                const note = becca.getNoteOrThrow(noteId);
+                expect(note.hasLabel("pageUrl")).toBe(false);
+                return note.getContent();
+            });
+        }
+
+        it("saves the tabs as link mentions with their favicons", async () => {
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "true"));
+            storeFavicon.mockReset();
+            storeFavicon.mockImplementation(async (_noteId: string, pageUrl: string) =>
+                (pageUrl.startsWith("https://a.com") ? "api/attachments/fav/image/a.com.png" : undefined));
+
+            const content = await saveTabs([
+                { url: "https://a.com/1", title: "Tom & \"Jerry\"", favicon: FAVICON },
+                { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", title: "Video", favicon: "chrome://favicon" },
+                { url: "https://b.com/", favicon: FAVICON },
+                { title: "No URL" },
+                null
+            ]);
+
+            expect(content).toBe("<ul>"
+                + `<li><span class="link-mention" data-url="https://a.com/1" data-embed-type="opengraph"`
+                + ` data-title="Tom &amp; &quot;Jerry&quot;"`
+                + ` data-favicon="api/attachments/fav/image/a.com.png"></span></li>`
+                + `<li><span class="link-mention" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"`
+                + ` data-embed-type="youtube" data-title="Video"></span></li>`
+                + `<li><span class="link-mention" data-url="https://b.com/" data-embed-type="opengraph"></span></li>`
+                + "</ul>");
+            const stored = storeFavicon.mock.calls.map(([ , pageUrl, bytes ]) =>
+                [ pageUrl, Buffer.from(bytes).toString("base64") ]);
+            expect(stored).toEqual([ [ "https://a.com/1", "iVBORw0KGgo=" ], [ "https://b.com/", "iVBORw0KGgo=" ] ]);
+        });
+
+        it("keeps the plain list when previews are off or the extension sent no usable tabs", async () => {
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "true"));
+            expect(await saveTabs(undefined)).toBe(PLAIN_LIST);
+            expect(await saveTabs([ { title: "No URL" } ])).toBe(PLAIN_LIST);
+
+            cls.init(() => options.setOption("textNoteAutoLinkPreviewsEnabled", "false"));
+            expect(await saveTabs([ { url: "https://a.com/", title: "A" } ])).toBe(PLAIN_LIST);
+        });
+    });
+
+    describe("saving files", () => {
+        const PDF = Buffer.from("%PDF-1.7 bytes");
+
+        function createFile(body: object) {
+            return cls.init(() => clipperRoute.createFile({ body } as unknown as Request));
+        }
+
+        it("saves a PDF as a file note, a new one each time", async () => {
+            const body = {
+                title: "  Annual report  ",
+                fileName: "../report.pdf",
+                pageUrl: "https://example.com/report.pdf",
+                dataUrl: `data:application/pdf;base64,${PDF.toString("base64")}`,
+                labels: { pageDescription: "Tom & <b>Jerry</b>" }
+            };
+            const { noteId } = await createFile(body);
+
+            const note = becca.getNoteOrThrow(noteId);
+            expect(note.title).toBe("Annual report");
+            expect(note.type).toBe("file");
+            expect(note.mime).toBe("application/pdf");
+            expect(Buffer.from(note.getContent())).toEqual(PDF);
+            expect(note.getLabelValue("clipType")).toBe("file");
+            expect(note.getLabelValue("pageUrl")).toBe("https://example.com/report.pdf");
+            expect(note.getLabelValue("originalFileName")).toBe("report.pdf");
+            expect(note.getLabelValue("pageDescription")).toBe("Tom & Jerry");
+
+            const second = await createFile(body);
+            expect(second.noteId).not.toBe(noteId);
+        });
+
+        it("titles the note after the file, or the page without one", async () => {
+            const dataUrl = `data:application/pdf;base64,${PDF.toString("base64")}`;
+            const named = await createFile({ title: " ", fileName: "report.pdf", pageUrl: "https://example.com/a", dataUrl });
+            expect(becca.getNoteOrThrow(named.noteId).title).toBe("report.pdf");
+
+            const unnamed = await createFile({ pageUrl: "https://example.com/b", dataUrl });
+            const note = becca.getNoteOrThrow(unnamed.noteId);
+            expect(note.title).toBe("Clipped file from https://example.com/b");
+            expect(note.hasLabel("originalFileName")).toBe(false);
+        });
+
+        it("rejects a file that is not a base64 data URL", async () => {
+            await expect(createFile({ title: "x", dataUrl: "https://example.com/report.pdf" }))
+                .rejects.toThrow("The file must be sent as a base64 data URL.");
+            await expect(createFile({ title: "x" })).rejects.toThrow("The file must be sent as a base64 data URL.");
+        });
+    });
+
     it("creates a standalone note with labels", async () => {
         const result = await cls.init(() => clipperRoute.createNote({
             body: {
@@ -211,6 +322,22 @@ describe("clipper route handlers", () => {
 
         const clipped = becca.getNoteOrThrow(result.noteId);
         expect(clipped.getParentNotes().map((p) => p.noteId)).not.toEqual([ "root" ]);
+    });
+
+    it("creates a new note for each clipping that names no page", async () => {
+        const save = () => cls.init(() => clipperRoute.createNote({
+            body: { title: "Tabs", content: "<p>tabs</p>", clipType: "tabs" }
+        } as unknown as Request));
+
+        const first = await save();
+        const second = await save();
+
+        expect(second.noteId).not.toBe(first.noteId);
+        for (const { noteId } of [ first, second ]) {
+            const note = becca.getNoteOrThrow(noteId);
+            expect(note.hasLabel("pageUrl")).toBe(false);
+            expect(note.getContent()).toBe("<p>tabs</p>");
+        }
     });
 
     it("returns a null noteId when no clipping matches the URL", async () => {

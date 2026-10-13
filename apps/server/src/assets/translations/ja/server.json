@@ -383,7 +383,8 @@
     "heading-link": "このセクションへのリンク",
     "previous": "前へ",
     "next": "次へ",
-    "page-navigation": "前後のページ"
+    "page-navigation": "前後のページ",
+    "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個"
   },
   "hidden_subtree_templates": {
     "text-snippet": "テキストスニペット",

@@ -141,6 +141,11 @@ declare global {
          */
         focusContentEmbed?(attachmentId: string): void;
         /**
+         * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
+         * attachment, or `null` when that fails. Hosts without drawings leave it out.
+         */
+        convertImageToDrawing?(src: string): Promise<string | null>;
+        /**
          * Reads a page's preview metadata through the host. Never rejects: any failure — network
          * error, HTTP error, unparseable page — resolves as `{ unresolved: true }` with
          * hostname-derived placeholders, so callers branch on `unresolved` instead of catching.

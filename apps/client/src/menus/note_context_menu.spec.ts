@@ -19,7 +19,8 @@ vi.mock("../services/i18n.js", () => ({ t: (key: string) => key }));
 vi.mock("../services/options.js", () => ({ default: { get: () => "" } }));
 vi.mock("../services/server.js", () => ({ default: { post: vi.fn() } }));
 vi.mock("../services/utils.js", () => ({
-    default: { escapeHtml: (s: string) => s, isMac: () => false }
+    default: { escapeHtml: (s: string) => s, isMac: () => false },
+    reuseAcrossHotReloads: <T>(_hot: unknown, create: () => T) => create()
 }));
 vi.mock("./context_menu.js", () => ({ default: { show: vi.fn() } }));
 vi.mock("./table_context_menu.js", () => ({

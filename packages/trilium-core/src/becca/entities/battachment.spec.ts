@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { AttachmentRow } from "@triliumnext/commons";
+import { type AttachmentRow, CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
 
 import { getContext } from "../../services/context.js";
 import noteService from "../../services/notes.js";
@@ -319,6 +319,26 @@ describe("BAttachment (real DB)", () => {
             expect(attachmentId ? becca.getAttachment(attachmentId) : null).toBeFalsy();
             // Parent content is unchanged (no image-url rewrite for a 'file' role).
             expect(unwrapStringOrBuffer(note.getContent())).toBe(parentContent);
+        });
+
+        it("puts in a converted canvas drawing the images that it refers to", () => {
+            const note = createNote();
+            const drawing = getContext().init(() => {
+                note.saveAttachment({
+                    role: "image", mime: "image/png", title: "f1.png", content: "abc"
+                });
+                return note.saveAttachment({
+                    role: "file",
+                    mime: CANVAS_ATTACHMENT_MIME,
+                    title: "Canvas.excalidraw",
+                    content: JSON.stringify({ elements: [ { type: "image", fileId: "f1.png" } ] })
+                });
+            });
+
+            const { note: created } = getContext().init(() => drawing.convertToNote());
+
+            const scene = JSON.parse(unwrapStringOrBuffer(created.getContent()));
+            expect(scene.files?.["f1.png"]?.dataURL).toBe("data:image/png;base64,YWJj");
         });
 
         it("turns an embed of the attachment into an include of the new note", () => {

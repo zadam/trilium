@@ -1,6 +1,7 @@
 import "./CollectionProperties.css";
 
 import { SearchResultDetails, SearchResultDetailsResponse } from "@triliumnext/commons";
+import clsx from "clsx";
 import { t } from "i18next";
 import { ComponentChildren } from "preact";
 import { useRef, useState } from "preact/hooks";
@@ -18,6 +19,7 @@ import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
+import Modal from "../react/Modal";
 import { CheckBoxProperty, ViewProperty } from "../react/NotePropertyMenu";
 import { bookPropertiesConfig } from "./collection-properties-config";
 
@@ -44,6 +46,14 @@ export const VIEW_TYPE_MAPPINGS: Record<ViewTypeOptions, string> = {
 };
 
 const MAX_OPEN_TABS = 50;
+
+/** Whether a collection shows its archived notes, which every view offers. */
+export const INCLUDE_ARCHIVED_PROPERTY: CheckBoxProperty = {
+    type: "checkbox",
+    icon: "bx bx-archive",
+    label: t("book_properties.include_archived_notes"),
+    bindToLabel: "includeArchived"
+};
 
 interface CollectionPropertiesProps {
     note: FNote;
@@ -223,17 +233,40 @@ function ViewOptions({ note, viewType, optionsChildren }: {
                 bindToLabel: "subtreeHidden"
             } as CheckBoxProperty} />
 
-            <ViewProperty note={note} property={{
-                type: "checkbox",
-                icon: "bx bx-archive",
-                label: t("book_properties.include_archived_notes"),
-                bindToLabel: "includeArchived"
-            } as CheckBoxProperty} />
+            <ViewProperty note={note} property={INCLUDE_ARCHIVED_PROPERTY} />
 
             {optionsChildren && <>
                 <FormDropdownDivider />
                 {optionsChildren}
             </>}
         </Dropdown>
+    );
+}
+
+/**
+ * The dialog holding a collection's settings beyond its bar, such as its templates, as a column of
+ * cards.
+ */
+export function CollectionPropertiesDialog({ className, title, show, stackable, onHidden, children }: {
+    className: string;
+    title: string;
+    show: boolean;
+    /** Opens over a dialog already shown, such as the new-event sheet on a phone. */
+    stackable?: boolean;
+    onHidden: () => void;
+    children: ComponentChildren;
+}) {
+    return (
+        <Modal
+            className={clsx("collection-properties-dialog", className)}
+            title={title}
+            size="lg"
+            scrollable
+            show={show}
+            stackable={stackable}
+            onHidden={onHidden}
+        >
+            {children}
+        </Modal>
     );
 }

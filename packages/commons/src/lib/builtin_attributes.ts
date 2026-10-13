@@ -195,7 +195,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "clipperInbox", valueType: "boolean" },
     // Stamped by the web clipper on what it saves, recording which of its actions produced the note.
     { type: "label", name: "clipType", valueType: "select", selectOptions: [
-        "clippings", "page", "note", "tabs"
+        "clippings", "page", "note", "tabs", "file"
     ] },
     { type: "label", name: "sentFromSender", valueType: "boolean" },
     { type: "label", name: "hideChildrenOverview", valueType: "boolean" },
@@ -210,6 +210,11 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "language", valueType: "text", hasUserValue: true },
     { type: "label", name: "originalFileName", valueType: "text", hasUserValue: true },
     { type: "label", name: "pageUrl", valueType: "url", hasUserValue: true },
+    // Metadata the web clipper saves with a page; shown in the "Web clip" badge's details.
+    { type: "label", name: "pageDescription", valueType: "text", hasUserValue: true },
+    { type: "label", name: "pageAuthor", valueType: "text", hasUserValue: true },
+    { type: "label", name: "publishedDate", valueType: "date", hasUserValue: true },
+    { type: "label", name: "modifiedDate", valueType: "date", hasUserValue: true },
     { type: "label", name: "command", valueType: "text", hasUserValue: true },
     // Which half of the split editor a code-like note opens on; without it the read-only state decides.
     { type: "label", name: "displayMode", valueType: "select", hasUserValue: true, selectOptions: [
@@ -285,6 +290,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "calendar:slotDuration", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:slotLabelInterval", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:title", valueType: "text", hasUserValue: true },
+    { type: "label", name: "calendar:titleTemplate", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:displayedAttributes", valueType: "text", hasUserValue: true },
     // Each names the label an event reads a given field from, overriding the default listed after it.
     { type: "label", name: "calendar:startDate", valueType: "text", hasUserValue: true },

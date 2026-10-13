@@ -349,7 +349,8 @@
   "content_renderer": {
     "note-cannot-be-displayed": "이 노트 유형은 표시할 수 없습니다.",
     "included-note-requires-credentials": "여기에 포함된 노트는 비밀번호로 보호되어 있어 표시할 수 없습니다.",
-    "broken-block-reference": "끊어진 참조"
+    "broken-block-reference": "끊어진 참조",
+    "play-video": "동영상 재생"
   },
   "onenote_import": {
     "root-title": "OneNote 가져오기",
@@ -443,7 +444,18 @@
     "toggle-toc": "목차 전환",
     "logo-alt": "로고",
     "login": "로그인",
-    "tab-title": "탭 제목"
+    "tab-title": "탭 제목",
+    "appearance": "모양",
+    "theme-light": "라이트",
+    "theme-dark": "다크",
+    "theme-system": "시스템",
+    "theme-current": "모양: {{- theme}}",
+    "subpages-of": "{{- title}}의 하위 페이지",
+    "heading-link": "이 섹션의 링크 복사",
+    "previous": "이전",
+    "next": "다음",
+    "page-navigation": "이전 및 다음 페이지",
+    "hidden-subpages_other": "트리에서 숨겨진 하위 페이지 {{count}}개"
   },
   "hidden_subtree_templates": {
     "text-snippet": "텍스트 스니펫",

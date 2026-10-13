@@ -356,7 +356,7 @@ async function emitShareTheme(
     };
     for (const [ name, importers ] of Object.entries(LAZY_IMPORTERS)) {
         groups.shared[name] = importers.flatMap((importer) => {
-            const info = context.getModuleInfo(importer);
+            const info = context.getModuleInfo(normalizePath(importer));
             if (!info) {
                 throw new Error(`The share theme's '${name}' group names ${importer}, `
                     + "which the build does not include.");

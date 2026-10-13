@@ -1327,12 +1327,9 @@
   "editable_text": {
     "placeholder": "Digite o conteúdo da sua nota aqui…",
     "auto-detect-language": "Detectado automaticamente",
-    "editor_crashed_title": "O editor de texto travou",
-    "editor_crashed_content": "Seu conteúdo foi recuperado com sucesso, mas algumas das suas alterações mais recentes podem não ter sido salvas.",
     "editor_crashed_details_button": "Veja mais detalhes...",
     "editor_crashed_details_intro": "Se você encontrar este erro várias vezes, considere relatá-lo no GitHub colando as informações abaixo.",
-    "editor_crashed_details_title": "Informação técnica",
-    "keeps-crashing": "O componente de edição continua travando. Tente reiniciar o Trilium. Se o problema persistir, considere criar um relatório de bug."
+    "editor_crashed_details_title": "Informação técnica"
   },
   "empty": {
     "search_placeholder": "buscar uma nota pelo nome",
