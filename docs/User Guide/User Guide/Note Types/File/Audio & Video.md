@@ -50,7 +50,7 @@ The bottom bar has the following features:
 
 <a class="reference-link" href="../Text.md">Text</a> and <a class="reference-link" href="../Markdown.md">Markdown</a> notes can embed an interactive media player directly in the note content. To do so, include the audio or video file:
 
-*   **Text notes:** in the formatting toolbar, click “**Insert”** → **“Include”.**
+*   **Text notes:** in the formatting toolbar, click _Insert_ → _Include_.
 *   **Markdown notes:** type `/include` press <kbd>Enter</kbd>.
 
 Then select the audio/video file note to be included.

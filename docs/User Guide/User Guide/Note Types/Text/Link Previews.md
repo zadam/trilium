@@ -48,7 +48,7 @@ If the link is not accessible to the Trilium server (or the network request fail
 
 ### 2\. By using the "Link preview" toolbar button
 
-Click **Link preview** in the formatting toolbar to open the _Link preview_ popup. Paste the URL and choose the type of preview.
+Click _Link preview_ in the formatting toolbar to open the _Link preview_ popup. Paste the URL and choose the type of preview.
 
 ### 3\. By saving browser tabs from the Web Clipper
 
