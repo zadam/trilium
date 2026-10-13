@@ -3785,8 +3785,7 @@
       "arrange-content-in-0-equal-columns-side-by-side": "コンテンツを %0 個の等幅な列に並べて配置します。",
       "0-columns-1": "%0 列 (%1)",
       "remove-layout": "レイアウトを削除",
-      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換",
-      "type-content-here": "ここに内容を入力…"
+      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",

@@ -4193,8 +4193,7 @@
       "arrange-content-in-0-equal-columns-side-by-side": "내용을 같은 너비의 %0개 열로 나란히 배치합니다.",
       "0-columns-1": "%0열 (%1)",
       "remove-layout": "레이아웃 제거",
-      "convert-image-to-a-drawing-canvas": "이미지를 그리기 캔버스로 변환",
-      "type-content-here": "여기에 내용을 입력하세요…"
+      "convert-image-to-a-drawing-canvas": "이미지를 그리기 캔버스로 변환"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",

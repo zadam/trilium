@@ -3875,8 +3875,7 @@
       "arrange-content-in-0-equal-columns-side-by-side": "Расположить содержимое в %0 равных колонках рядом друг с другом.",
       "0-columns-1": "%0 колонки (%1)",
       "remove-layout": "Удалить макет",
-      "convert-image-to-a-drawing-canvas": "Конвертировать изображение в холст для рисования",
-      "type-content-here": "Введите содержимое здесь…"
+      "convert-image-to-a-drawing-canvas": "Конвертировать изображение в холст для рисования"
     },
     "task-state-dropped-title": "Недопустимые состояния задачи",
     "task-state-dropped-configure": "Настроить состояния задач",
