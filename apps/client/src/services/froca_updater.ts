@@ -7,6 +7,7 @@ import FBranch, { type FBranchRow } from "../entities/fbranch.js";
 import type { default as FNote, FNoteRow } from "../entities/fnote.js";
 import type { EntityChange } from "../server_types.js";
 import froca from "./froca.js";
+import { invalidateNoteImages } from "./image_urls.js";
 import LoadResults from "./load_results.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 import options from "./options.js";
@@ -80,6 +81,14 @@ async function processEntityChanges(entityChanges: EntityChange[]) {
         if (loadResults.hasAttributeRelatedChanges()) {
             noteAttributeCache.invalidate();
         }
+
+        // A note's image is its content or one of its attachments, such as `canvas-export.svg`.
+        invalidateNoteImages([
+            ...loadResults.getNoteIds(),
+            // An erased attachment arrives without its row.
+            ...loadResults.getAttachmentRows()
+                .flatMap((row) => (row?.ownerId ? [ row.ownerId ] : []))
+        ]);
 
         await appContext.triggerEvent("entitiesReloaded", { loadResults });
     }

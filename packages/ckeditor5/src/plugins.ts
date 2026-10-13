@@ -42,6 +42,7 @@ import ImageActions from "./plugins/image_actions.js";
 import ImageToDrawing from "./plugins/image_to_drawing.js";
 import ClipboardBareImage from "./plugins/clipboard_bare_image.js";
 import ClipboardImageEmbed from "./plugins/clipboard_image_embed.js";
+import ImageEditingSource from "./plugins/image_editing_source.js";
 import ClipboardPageStyles from "./plugins/clipboard_page_styles.js";
 import ClipboardPlainTextIndent from "./plugins/clipboard_plain_text_indent.js";
 import PasteFromVsCode from "./plugins/paste_from_vscode.js";
@@ -122,6 +123,7 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     ImageActions,
     ImageToDrawing,
     ClipboardImageEmbed,
+    ImageEditingSource,
     ClipboardBareImage,
     ClipboardPageStyles,
     ClipboardPlainTextIndent,

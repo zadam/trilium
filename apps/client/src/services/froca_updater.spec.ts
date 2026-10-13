@@ -7,6 +7,7 @@ import FBranch from "../entities/fbranch.js";
 import type { EntityChange } from "../server_types.js";
 import froca from "./froca.js";
 import frocaUpdater from "./froca_updater.js";
+import { getNoteImageSourceToLoad } from "./image_urls.js";
 import type LoadResults from "./load_results.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 import options from "./options.js";
@@ -797,5 +798,36 @@ describe("froca_updater - missing-note ancestor reload", () => {
             } as any
         })]);
         expect(reloadNotesSpy).toHaveBeenCalledWith(["totally-absent-parent"]);
+    });
+});
+
+describe("froca_updater - note images", () => {
+    it("gives a note's image a new URL once the note or an attachment changes", async () => {
+        const canvas = buildNote({ title: "Canvas", type: "canvas" });
+        const src = `api/images/${canvas.noteId}/Canvas`;
+        const before = getNoteImageSourceToLoad(src);
+
+        await process([ ec({
+            entityName: "attachments",
+            entityId: "canvas-export",
+            entity: {
+                attachmentId: "canvas-export",
+                ownerId: canvas.noteId,
+                role: "image",
+                mime: "image/svg+xml",
+                title: "canvas-export.svg"
+            } as any
+        }) ]);
+        const afterAttachment = getNoteImageSourceToLoad(src);
+        expect(afterAttachment).not.toBe(before);
+
+        await process([ ec({
+            entityName: "notes",
+            entityId: canvas.noteId,
+            entity: {
+                noteId: canvas.noteId, title: "Canvas", type: "canvas", blobId: canvas.blobId
+            } as any
+        }) ]);
+        expect(getNoteImageSourceToLoad(src)).not.toBe(afterAttachment);
     });
 });

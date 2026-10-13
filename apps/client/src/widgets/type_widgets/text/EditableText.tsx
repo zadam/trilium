@@ -400,6 +400,9 @@ export default function EditableText({
                 pendingAttachmentChangesRef
             );
         }
+        if (editor?.plugins.has("ImageEditingSource")) {
+            editor.plugins.get("ImageEditingSource").refresh();
+        }
     });
 
     useTriliumEvent("executeWithTextEditor", async ({ callback, resolve, ntxId: eventNtxId }) => {

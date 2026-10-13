@@ -7,6 +7,7 @@ import "./theme/content_colors.css";
 import "./theme/code_block_toolbar.css";
 import "./theme/link_embed_form.css";
 import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+import type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 import type { PasteTarget } from "./plugins/cuttonote.js";
 import { CLASSIC_EDITOR_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
 import { BalloonEditor, DecoupledEditor, FindAndReplaceEditing, FindCommand } from "ckeditor5";
@@ -14,6 +15,7 @@ export { onTextEditorError } from "./editor_errors.js";
 export { CHAT_INPUT_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
 export type { CKEditorError, EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription } from "ckeditor5";
 export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+export type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
 export type { ContentEmbedState } from "./plugins/content_embed/content_embed.js";
@@ -120,6 +122,7 @@ declare module "ckeditor5" {
             copyHtml?(html: string, plainText: string): void;
         },
         clipboardImageEmbed?: ClipboardImageEmbedConfig,
+        imageEditingSource?: ImageEditingSourceConfig,
         autoSort?: {
             /** More date formats for table sorting to recognize, in Day.js syntax. */
             dateFormats?: string[];
