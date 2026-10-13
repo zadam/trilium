@@ -270,6 +270,60 @@ describe("mountEditView", () => {
         expect(mocks.put).toHaveBeenLastCalledWith("notes/note/title", { title: "Renamed" });
     });
 
+    it("logs out once the note's saves keep failing for over a minute, none stored", async () => {
+        const options = { ...buildOptions(), onSavesFailing: vi.fn() };
+        await act(async () => { await mountEditView(container, options); });
+        const shareEdit = (window.glob as unknown as { shareEdit: ShareEditGlobals }).shareEdit;
+        mocks.beforeUnloadListeners = [ () => false ];
+
+        act(() => shareEdit.onSaveState("error"));
+        vi.advanceTimersByTime(60_000);
+        act(() => shareEdit.onSaveState("saving"));
+        act(() => shareEdit.onSaveState("error"));
+        expect(options.onSavesFailing).not.toHaveBeenCalled();
+
+        // A stored save starts the minute again.
+        act(() => shareEdit.onSaveState("saved"));
+        vi.advanceTimersByTime(1);
+        act(() => shareEdit.onSaveState("error"));
+        vi.advanceTimersByTime(60_000);
+        act(() => shareEdit.onSaveState("error"));
+        expect(options.onSavesFailing).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(1);
+        act(() => shareEdit.onSaveState("error"));
+        expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
+        // The page leaves without asking, as nothing it holds can be saved.
+        expect(mocks.beforeUnloadListeners).toEqual([]);
+        act(() => shareEdit.onSaveState("error"));
+        expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
+    });
+
+    it("counts the title's failing saves apart from the note's", async () => {
+        const options = { ...buildOptions(), onSavesFailing: vi.fn() };
+        await act(async () => { await mountEditView(container, options); });
+        const shareEdit = (window.glob as unknown as { shareEdit: ShareEditGlobals }).shareEdit;
+        const offline = new Error("offline");
+        const rename = async (text: string) => {
+            title.textContent = text;
+            title.dispatchEvent(new Event("blur"));
+            await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        };
+
+        mocks.put.mockRejectedValueOnce(offline);
+        await rename("One");
+        vi.advanceTimersByTime(60_001);
+        // A stored title starts the minute again.
+        await rename("Two");
+        mocks.put.mockRejectedValue(offline);
+        await rename("Three");
+        vi.advanceTimersByTime(60_001);
+        // The note's stored saves leave the title's failures counting.
+        act(() => shareEdit.onSaveState("saved"));
+        expect(options.onSavesFailing).not.toHaveBeenCalled();
+        await rename("Four");
+        expect(options.onSavesFailing).toHaveBeenCalledTimes(1);
+    });
+
     it("holds the page while a title is not stored yet, and sends it", async () => {
         await act(async () => { await mountEditView(container, buildOptions()); });
         const [ [ isSaved ] ] = mocks.addBeforeUnloadListener.mock.calls as [ [ () => boolean ] ];
@@ -384,7 +438,8 @@ describe("mountEditView", () => {
             payload: { notes: [ { noteId: "note" } ], branches: [], attributes: [], links: {}, options: {} } as unknown as AppPayload,
             csrfToken: "csrf",
             version: "blob1",
-            attachments: true
+            attachments: true,
+            onSavesFailing: vi.fn()
         };
     }
 });

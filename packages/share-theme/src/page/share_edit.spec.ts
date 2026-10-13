@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { EditViewOptions } from "../content/edit_view.js";
 import setupShareEdit, { type EditSession } from "./share_edit.js";
 
 const mocks = vi.hoisted(() => ({
@@ -16,9 +17,17 @@ vi.mock("../content/edit_view.js", () => ({ default: mocks.mountEditView }));
 const STRINGS = {
     edit: "Edit", unlock: "Unlock", password: "Password", stop: "Stop", logOut: "Log out",
     wrongPassword: "Wrong password.", failed: "Failed.", unsaved: "Not saved yet.",
-    locked: "Locked.", retry: "Try again."
+    locked: "Locked.", retry: "Try again.", ended: "Editing ended."
 };
 const LOGIN = { csrfToken: "csrf", version: "blob1", payload: { notes: [] } };
+const PAGE = `
+    <div id="title-row"></div>
+    <div id="content">
+        <header id="note-header">
+            <h1 id="title">Title</h1><div id="note-header-actions"></div>
+        </header>
+        <p class="rendered">Rendered</p>
+    </div>`;
 
 describe("setupShareEdit", () => {
     let fetchMock: ReturnType<typeof vi.fn>;
@@ -31,14 +40,7 @@ describe("setupShareEdit", () => {
         vi.spyOn(window, "location", "get").mockReturnValue({ reload } as unknown as Location);
         vi.stubGlobal("glob", { isShare: true, isStatic: false });
         document.body.dataset.noteId = "note";
-        document.body.innerHTML = `
-            <div id="title-row"></div>
-            <div id="content">
-                <header id="note-header">
-                    <h1 id="title">Title</h1><div id="note-header-actions"></div>
-                </header>
-                <p class="rendered">Rendered</p>
-            </div>`;
+        document.body.innerHTML = PAGE;
         mocks.mountEditView.mockResolvedValue({ stop: mocks.stop, resume: mocks.resume });
         mocks.stop.mockResolvedValue(true);
     });
@@ -48,6 +50,7 @@ describe("setupShareEdit", () => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
         delete document.body.dataset.noteId;
+        sessionStorage.clear();
     });
 
     it("asks nothing on a static export's page, nor shows anything for a locked note", async () => {
@@ -106,7 +109,8 @@ describe("setupShareEdit", () => {
             attachments: true,
             statusContainer: undefined,
             toolbarContainer: undefined,
-            onLocked: expect.any(Function)
+            onLocked: expect.any(Function),
+            onSavesFailing: expect.any(Function)
         });
         expect(editButton?.hidden).toBe(true);
         expect(document.querySelector<HTMLButtonElement>(".share-edit-stop")?.hidden).toBe(false);
@@ -224,6 +228,57 @@ describe("setupShareEdit", () => {
             headers: expect.objectContaining({ "x-csrf-token": "csrf" }),
             body: JSON.stringify({ noteId: "note" })
         }));
+    });
+
+    it("logs out once saves keep failing, and says why on the page it comes back to", async () => {
+        const session = { editable: true, needsPassword: false, unlocked: true, strings: STRINGS };
+        answerSession(session);
+        await setupShareEdit();
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalled());
+        const [ [ , options ] ] =
+            mocks.mountEditView.mock.calls as [ [ unknown, EditViewOptions ] ];
+
+        // The share does not answer, and the page leaves the editor regardless.
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        options.onSavesFailing();
+        await vi.waitFor(() => expect(reload).toHaveBeenCalled());
+        expect(fetchMock).toHaveBeenLastCalledWith("api/edit/logout", expect.objectContaining({
+            headers: expect.objectContaining({ "x-csrf-token": "csrf" })
+        }));
+        expect(mocks.stop).not.toHaveBeenCalled();
+
+        const error = () => document.querySelector<HTMLElement>(".share-edit-error");
+        document.body.innerHTML = PAGE;
+        answerSession(session);
+        await setupShareEdit();
+        expect(error()?.hidden).toBe(false);
+        expect(error()?.textContent).toBe("Editing ended.");
+        document.body.innerHTML = PAGE;
+        answerSession(session);
+        await setupShareEdit();
+        expect(error()?.hidden).toBe(true);
+
+        // Without storage, the page comes back without saying why.
+        const blocked = () => {
+            throw new Error("blocked");
+        };
+        vi.stubGlobal("sessionStorage", {
+            getItem: blocked, setItem: blocked, removeItem: blocked
+        });
+        answerJson(LOGIN);
+        document.querySelector<HTMLButtonElement>(".share-edit-start")?.click();
+        await vi.waitFor(() => expect(mocks.mountEditView).toHaveBeenCalledTimes(2));
+        const calls = mocks.mountEditView.mock.calls as [ unknown, [ unknown, EditViewOptions ] ];
+        const [ , [ , again ] ] = calls;
+        fetchMock.mockResolvedValueOnce({ ok: true, status: 204 });
+        again.onSavesFailing();
+        await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(2));
+        document.body.innerHTML = PAGE;
+        answerSession(session);
+        await setupShareEdit();
+        expect(error()?.hidden).toBe(true);
     });
 
     it("asks for the password again once access ends, and resumes the editor with it", async () => {

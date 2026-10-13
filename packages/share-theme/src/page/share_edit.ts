@@ -32,6 +32,7 @@ export default async function setupShareEdit() {
         return;
     }
 
+    const ended = takeEnded(noteId);
     const session = await fetchSession(noteId);
     if (!session?.editable) {
         return;
@@ -44,6 +45,9 @@ export default async function setupShareEdit() {
         actions.append(controls.bar);
     } else {
         (title.closest("#title-row") ?? title).after(controls.bar);
+    }
+    if (ended) {
+        controls.setError("ended");
     }
 
     const editing: Editing = { relock: null };
@@ -63,6 +67,7 @@ export default async function setupShareEdit() {
 }
 
 type Controls = ReturnType<typeof buildControls>;
+type ErrorKey = "wrongPassword" | "failed" | "unsaved" | "locked" | "retry" | "ended";
 
 interface Editing {
     /**
@@ -128,7 +133,19 @@ async function unlock(
         controls.setError(needsPassword ? "locked" : "retry");
         controls.passwordInput.focus();
     };
-    const mounted = mountEditor(noteId, first, session, controls, () => void onLocked());
+    const logOut = () => fetch("api/edit/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        body: JSON.stringify({ noteId })
+    });
+    // Saves that keep failing end the editing, which the page says once it is back.
+    const giveUp = async () => {
+        await logOut().catch(() => undefined);
+        rememberEnded(noteId);
+        window.location.reload();
+    };
+    const mounted = mountEditor(
+        noteId, first, session, controls, () => void onLocked(), () => void giveUp());
     editing.relock = async (again?: string) => {
         const next = await login(controls, noteId, again || undefined, "retry");
         if (!next) {
@@ -151,11 +168,6 @@ async function unlock(
         await beforeReload?.();
         window.location.reload();
     };
-    const logOut = () => fetch("api/edit/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ noteId })
-    });
     controls.stopButton.addEventListener("click", () => void leave());
     controls.logOutButton.addEventListener("click", () => void leave(logOut));
     try {
@@ -175,7 +187,8 @@ async function mountEditor(
     login: EditLogin,
     session: EditSession,
     controls: Controls,
-    onLocked: () => void
+    onLocked: () => void,
+    onSavesFailing: () => void
 ): Promise<EditView> {
     const content = document.getElementById("content");
     const title = document.getElementById("title");
@@ -204,7 +217,8 @@ async function mountEditor(
         attachments: !!session.attachments,
         statusContainer: buildStatusSlot(),
         toolbarContainer: buildToolbarSlot(),
-        onLocked
+        onLocked,
+        onSavesFailing
     });
 }
 
@@ -232,6 +246,28 @@ function buildStatusSlot() {
     slot.className = "share-edit-status-slot";
     updated.prepend(slot);
     return slot;
+}
+
+/** The note whose page logged out as saves kept failing, kept for the page it reloads to. */
+const ENDED_KEY = "shareEditEnded";
+
+function rememberEnded(noteId: string) {
+    try {
+        sessionStorage.setItem(ENDED_KEY, noteId);
+    } catch {
+        // Without storage, the page comes back without saying why.
+    }
+}
+
+/** Whether the page logged out of editing `noteId` as saves kept failing, which it then forgets. */
+function takeEnded(noteId: string) {
+    try {
+        const ended = sessionStorage.getItem(ENDED_KEY);
+        sessionStorage.removeItem(ENDED_KEY);
+        return ended === noteId;
+    } catch {
+        return false;
+    }
 }
 
 async function fetchSession(noteId: string): Promise<EditSession | null> {
@@ -288,7 +324,7 @@ function buildControls(strings: Record<string, string>) {
             stopButton.hidden = false;
             logOutButton.hidden = !canLogOut;
         },
-        setError(key: "wrongPassword" | "failed" | "unsaved" | "locked" | "retry" | null) {
+        setError(key: ErrorKey | null) {
             error.hidden = key === null;
             error.textContent = key === null ? "" : strings[key] ?? key;
         }

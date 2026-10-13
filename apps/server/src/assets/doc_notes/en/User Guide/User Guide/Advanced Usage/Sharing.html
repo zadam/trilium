@@ -295,6 +295,11 @@ class="image">
     typed meanwhile, which it saves once they enter it. Where editing was opened
     to anyone instead, the page unlocks again on its own, and when it cannot
     reach the server it offers <em>Unlock editing</em> to try again.</li>
+  <li>When a guest's changes cannot be saved for over a minute, whatever the
+    reason, the page logs the guest out of editing and brings the rendered
+    page back, saying why. The changes not saved by then are lost. That minute
+    also runs while the page waits for the guest to keep their version or to
+    enter a new password.</li>
 </ul>
 <p>The settings hold for the note they are changed on and for the notes below
   it. On a note that inherits them from an ancestor:</p>

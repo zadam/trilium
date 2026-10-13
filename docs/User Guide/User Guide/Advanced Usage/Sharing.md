@@ -149,6 +149,7 @@ A visitor of the page then sees an _Edit_ button at the right of the note's head
 *   _Allow attachments_, in the same menu, lets guests upload images and files into the notes they edit.
 *   When the note changed on the server while a guest was editing it, the page says so and lets the guest reload or keep their version. Until the guest chooses, their changes stay unsaved, and _Stop editing_ keeps the editor open.
 *   A new password ends the editing of guests who unlocked the page with the old one. The page then asks them for the new password and keeps what they typed meanwhile, which it saves once they enter it. Where editing was opened to anyone instead, the page unlocks again on its own, and when it cannot reach the server it offers _Unlock editing_ to try again.
+*   When a guest's changes cannot be saved for over a minute, whatever the reason, the page logs the guest out of editing and brings the rendered page back, saying why. The changes not saved by then are lost. That minute also runs while the page waits for the guest to keep their version or to enter a new password.
 
 The settings hold for the note they are changed on and for the notes below it. On a note that inherits them from an ancestor:
 

@@ -80,7 +80,8 @@ function getSession(req: Request, res: Response) {
             failed: t("share_theme.edit-failed"),
             unsaved: t("share_theme.edit-unsaved"),
             locked: t("share_theme.edit-locked"),
-            retry: t("share_theme.edit-retry")
+            retry: t("share_theme.edit-retry"),
+            ended: t("share_theme.edit-ended")
         }
     };
 }

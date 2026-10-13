@@ -36,6 +36,11 @@ export interface EditViewOptions {
      * password; the page unlocks the note again and calls {@link EditView.resume}.
      */
     onLocked?: () => void;
+    /**
+     * Called once saves keep failing for over a minute, none of them stored; the view lets go of
+     * what it holds first, so the page can log out of editing without asking to stay.
+     */
+    onSavesFailing: () => void;
 }
 
 export interface EditView {
@@ -70,6 +75,8 @@ export type { ShareEditGlobals };
 
 /** How long after the last keystroke the title is saved. */
 const TITLE_SAVE_DELAY = 1000;
+/** How long saves can keep failing, none of them stored, before the page logs out of editing. */
+const SAVE_FAILURE_LIMIT = 60_000;
 
 /**
  * Mounts the app's text editor on a shared page whose note the visitor unlocked; it and the
@@ -89,7 +96,15 @@ export default async function mountEditView(container: HTMLElement, options: Edi
             options.onLocked?.();
         }
     };
-    installGlobals(options, status, component, onLocked);
+    let ended = false;
+    const giveUp = () => {
+        if (!ended) {
+            ended = true;
+            appContext.beforeUnloadListeners = [];
+            options.onSavesFailing();
+        }
+    };
+    installGlobals(options, status, component, onLocked, createFailureClock(giveUp));
     const view = await TYPE_MAPPINGS.editableText.view();
     const Widget = ("default" in view ? view.default : view) as ComponentType<WidgetProps>;
     render(
@@ -107,7 +122,8 @@ export default async function mountEditView(container: HTMLElement, options: Edi
         </ShareAppHost>,
         container
     );
-    const title = makeTitleEditable(options.title, options.noteId, container, onLocked);
+    const title = makeTitleEditable(
+        options.title, options.noteId, container, onLocked, createFailureClock(giveUp));
 
     return {
         async stop() {
@@ -137,7 +153,8 @@ function installGlobals(
     options: EditViewOptions,
     status: Status,
     component: Component,
-    onLocked: (resume: () => void) => void
+    onLocked: (resume: () => void) => void,
+    clock: FailureClock
 ) {
     // The boot script defines `window.glob` on every shared page.
     const glob = window.glob as unknown as EditGlobals;
@@ -157,10 +174,43 @@ function installGlobals(
     glob.shareEdit = {
         version: options.version,
         attachments: options.attachments,
-        onSaveState: (state) => status.report(state),
+        onSaveState: (state) => {
+            status.report(state);
+            if (state === "error") {
+                clock.failed();
+            } else if (state === "saved") {
+                clock.settled();
+            }
+        },
         onConflict: (stale, retry) =>
             status.set({ ...status.value, state: "error", conflict: { stale, retry } }),
         onLocked
+    };
+}
+
+/**
+ * Counts how long one kind of save keeps failing: the first failure since it was last all saved
+ * starts the count, and a failure past {@link SAVE_FAILURE_LIMIT} calls `onExpired`.
+ */
+interface FailureClock {
+    failed(): void;
+    /** Records that nothing of this kind is left to save. */
+    settled(): void;
+}
+
+function createFailureClock(onExpired: () => void): FailureClock {
+    let since: number | undefined;
+    return {
+        failed() {
+            const now = Date.now();
+            since ??= now;
+            if (now - since > SAVE_FAILURE_LIMIT) {
+                onExpired();
+            }
+        },
+        settled() {
+            since = undefined;
+        }
     };
 }
 
@@ -294,7 +344,8 @@ function EditShell(
  * on `flush`, one save at a time; a title counts as saved once the server stored it.
  */
 function makeTitleEditable(
-    title: HTMLElement, noteId: string, container: HTMLElement, onLocked: () => void
+    title: HTMLElement, noteId: string, container: HTMLElement, onLocked: () => void,
+    clock: FailureClock
 ) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     // An element's `textContent` is a string, whatever the DOM types allow.
@@ -307,16 +358,19 @@ function makeTitleEditable(
         saving = saving.then(async () => {
             const text = readTitle();
             if (!text || text === saved) {
+                clock.settled();
                 return true;
             }
             try {
                 await server.putWithSilentRefusal(`notes/${noteId}/title`, { title: text });
                 saved = text;
+                clock.settled();
                 return true;
             } catch (e) {
                 if (isLockedRefusal(e)) {
                     onLocked();
                 }
+                clock.failed();
                 return false;
             }
         });
