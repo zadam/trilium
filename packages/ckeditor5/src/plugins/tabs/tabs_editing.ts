@@ -10,14 +10,19 @@ import {
     toWidgetEditable,
     type ViewDocumentEnterEvent,
     type ViewEditableElement,
+    type ViewElement,
     uid,
     Widget
 } from "ckeditor5";
 
 import { BLOCK_ID } from "../block_reference/block_reference_editing.js";
-import { CLASSES, ELEMENTS, TABS_WIDGET_PROPERTY } from "./constants.js";
 import {
-    AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand, RemoveTabCommand
+    ALIGNMENT_ATTRIBUTE, ALIGNMENT_DATA_ATTRIBUTE, CLASSES, DEFAULT_TAB_ALIGNMENT, ELEMENTS,
+    parseTabAlignment, TABS_WIDGET_PROPERTY
+} from "./constants.js";
+import {
+    AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand,
+    RemoveTabCommand, TabAlignmentCommand
 } from "./tabs_commands.js";
 
 /**
@@ -48,6 +53,7 @@ export default class TabsEditing extends Plugin {
         editor.commands.add("moveTabLeft", new MoveTabCommand(editor, "left"));
         editor.commands.add("moveTabRight", new MoveTabCommand(editor, "right"));
         editor.commands.add("assignTabReference", new AssignTabReferenceCommand(editor));
+        editor.commands.add("tabAlignment", new TabAlignmentCommand(editor));
 
         this.registerSchema();
         this.registerConversion();
@@ -105,7 +111,8 @@ export default class TabsEditing extends Plugin {
     private registerSchema() {
         const schema = this.editor.model.schema;
         schema.register(ELEMENTS.tabs, {
-            inheritAllFrom: "$blockObject"
+            inheritAllFrom: "$blockObject",
+            allowAttributes: ALIGNMENT_ATTRIBUTE
         });
         schema.register(ELEMENTS.tab, {
             allowIn: ELEMENTS.tabs,
@@ -150,6 +157,23 @@ export default class TabsEditing extends Plugin {
             view: { name: "div", classes: CLASSES.tabPanel },
             model: ELEMENTS.tabPanel,
             converterPriority: "high"
+        });
+
+        // The model holds the alignment only when it differs from the default.
+        conversion.for("upcast").attributeToAttribute({
+            view: { name: "div", key: ALIGNMENT_DATA_ATTRIBUTE },
+            model: {
+                key: ALIGNMENT_ATTRIBUTE,
+                value: (view: ViewElement) => {
+                    const value = view.getAttribute(ALIGNMENT_DATA_ATTRIBUTE);
+                    const alignment = parseTabAlignment(value);
+                    return alignment === DEFAULT_TAB_ALIGNMENT ? null : alignment;
+                }
+            }
+        });
+        conversion.for("downcast").attributeToAttribute({
+            model: { name: ELEMENTS.tabs, key: ALIGNMENT_ATTRIBUTE },
+            view: ALIGNMENT_DATA_ATTRIBUTE
         });
 
         conversion.for("dataDowncast").elementToElement({

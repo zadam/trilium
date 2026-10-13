@@ -2,7 +2,8 @@ import { Plugin } from "ckeditor5";
 
 import "../../theme/tabs.css";
 import type {
-    AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand, RemoveTabCommand
+    AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand,
+    RemoveTabCommand, TabAlignmentCommand
 } from "./tabs_commands.js";
 import TabsEditing from "./tabs_editing.js";
 import TabsUI from "./tabs_ui.js";
@@ -38,5 +39,6 @@ declare module "ckeditor5" {
         moveTabLeft: MoveTabCommand;
         moveTabRight: MoveTabCommand;
         assignTabReference: AssignTabReferenceCommand;
+        tabAlignment: TabAlignmentCommand;
     }
 }

@@ -68,6 +68,25 @@ describe("Tabs", () => {
         expect(editor.getData()).toBe(TWO_TABS);
     });
 
+    it("round-trips the bottom alignment and drops the default or an unknown one", () => {
+        const aligned = (value: string) => TWO_TABS.replace(
+            "<div class=\"trilium-tabs\">",
+            `<div class="trilium-tabs" data-trilium-tab-alignment="${value}">`
+        );
+        editor.setData(aligned("bottom"));
+
+        expect(model()).toMatch(/^<tabs tabAlignment="bottom"><tab>/);
+        expect(editor.getData()).toBe(aligned("bottom"));
+        const widget = editor.editing.view.getDomRoot()?.querySelector(".trilium-tabs");
+        expect(widget?.getAttribute("data-trilium-tab-alignment")).toBe("bottom");
+
+        for (const value of ["top", "left", ""]) {
+            editor.setData(aligned(value));
+            expect(model(), value).toMatch(/^<tabs><tab>/);
+            expect(editor.getData(), value).toBe(TWO_TABS);
+        }
+    });
+
     it("inserts two numbered tabs and selects the first title", () => {
         setModelData(editor.model, "<paragraph>[]</paragraph>");
 
