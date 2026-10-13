@@ -64,7 +64,7 @@ globalThis.ResizeObserver = class {
 
 const {
     default: CanvasDrawing, CanvasDrawingDetail, renderCanvasDrawingPicture, useIsToolbarOverPanel,
-    useSidePanels, useTopLayerContextMenu
+    useNoteScrollingWheel, useSidePanels, useTopLayerContextMenu
 } = await import("./CanvasDrawing");
 const { default: CanvasDrawingMenu } = await import("./CanvasDrawingMenu");
 const { default: CanvasEmbedTools } = await import("./CanvasEmbedTools");
@@ -486,6 +486,79 @@ describe("useTopLayerContextMenu", () => {
     });
 });
 
+describe("useNoteScrollingWheel", () => {
+    const IMAGE = { type: "image", locked: true, isDeleted: false };
+    let container: HTMLElement;
+    let elements: object[];
+    const api = { getSceneElements: () => elements };
+
+    function WheelProbe() {
+        const rootRef = useRef<HTMLDivElement>(null);
+        const apiRef = useRef(api as unknown as ExcalidrawImperativeAPI);
+        useNoteScrollingWheel(rootRef, apiRef);
+        return <div ref={rootRef}><div className="excalidraw-container"><canvas /></div></div>;
+    }
+
+    beforeEach(async () => {
+        elements = [ IMAGE ];
+        container = document.createElement("div");
+        document.body.append(container);
+        await act(async () => render(<WheelProbe />, container));
+    });
+
+    afterEach(() => {
+        render(null, container);
+        container.remove();
+        Reflect.deleteProperty(document, "fullscreenElement");
+    });
+
+    /** Whether Excalidraw's container gets a wheel over the drawing that the page can scroll. */
+    function reachesDrawing(init: WheelEventInit = {}) {
+        const excalidraw = container.querySelector(".excalidraw-container");
+        const canvas = container.querySelector("canvas");
+        if (!excalidraw || !canvas) {
+            throw new Error("Expected the drawing.");
+        }
+        const listener = vi.fn();
+        excalidraw.addEventListener("wheel", listener);
+        const event = new WheelEvent("wheel", {
+            bubbles: true, cancelable: true, deltaY: 100, ...init
+        });
+        // happy-dom's `WheelEvent` extends `UIEvent`, which has no modifier keys.
+        Object.defineProperties(event, {
+            ctrlKey: { value: !!init.ctrlKey },
+            metaKey: { value: !!init.metaKey },
+            shiftKey: { value: !!init.shiftKey }
+        });
+        canvas.dispatchEvent(event);
+        excalidraw.removeEventListener("wheel", listener);
+        expect(event.defaultPrevented).toBe(false);
+        return listener.mock.calls.length > 0;
+    }
+
+    it("scrolls the note with the wheel over a locked image, which zooms with Ctrl or Cmd", () => {
+        expect(reachesDrawing()).toBe(false);
+        expect(reachesDrawing({ shiftKey: true, deltaY: 0, deltaX: 100 })).toBe(false);
+        expect(reachesDrawing({ ctrlKey: true })).toBe(true);
+        expect(reachesDrawing({ metaKey: true })).toBe(true);
+
+        elements = [ { ...IMAGE, isDeleted: true }, { type: "rectangle", locked: false } ];
+        expect(reachesDrawing()).toBe(true);
+    });
+
+    it("leaves the wheel to an unlocked image, and to a drawing in fullscreen", () => {
+        elements = [ { ...IMAGE, locked: false } ];
+        expect(reachesDrawing()).toBe(true);
+
+        elements = [ IMAGE ];
+        Object.defineProperty(document, "fullscreenElement", {
+            value: container.firstElementChild,
+            configurable: true
+        });
+        expect(reachesDrawing()).toBe(true);
+    });
+});
+
 describe("CanvasDrawing", () => {
     const ATTACHMENT = { attachmentId: "a1" } as never;
     let box: HTMLElement;
@@ -569,6 +642,23 @@ describe("CanvasDrawing", () => {
     it("is editable outside an embed, which has no Editable toggle", async () => {
         await mount({ canEdit: () => true, release: vi.fn() } as unknown as ContentEditor);
         expect(getEditingState()).toEqual({ isReadOnly: false, menu: true, tools: true });
+    });
+
+    it("scrolls the note with the wheel over an image canvas", async () => {
+        await mount();
+        const { apiRef } = canvasEditorProps.mock.lastCall?.[0] as MockCanvasEditorProps;
+        const excalidraw = box.querySelector(".excalidraw");
+        if (!apiRef || !excalidraw) {
+            throw new Error("Expected the editor.");
+        }
+        apiRef.current = { getSceneElements: () => [ { type: "image", locked: true } ] };
+        const listener = vi.fn();
+        excalidraw.addEventListener("wheel", listener);
+
+        excalidraw.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 100 }));
+
+        expect(listener).not.toHaveBeenCalled();
+        apiRef.current = null;
     });
 
     it("centers the drawing after a change of fullscreen, hidden until then", async () => {

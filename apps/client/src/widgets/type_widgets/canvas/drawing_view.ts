@@ -32,9 +32,9 @@ export function getBoundedView(
     elements: readonly ExcalidrawElement[],
     appState: AppState
 ): DrawingView | null {
-    const area = elements.find((element) => !element.isDeleted);
+    const area = getBoundingImage(elements);
     const { width, height, zoom, scrollX, scrollY } = appState;
-    if (area?.type !== "image" || !area.locked || !width || !height) return null;
+    if (!area || !width || !height) return null;
 
     const [ minX, minY, maxX, maxY ] = getCommonBounds([ area ]);
     const fitted = fitView([ minX, minY, maxX, maxY ], width, height);
@@ -48,6 +48,12 @@ export function getBoundedView(
     const isInside = Math.abs(view.scrollX - scrollX) < EPSILON
         && Math.abs(view.scrollY - scrollY) < EPSILON;
     return isInside ? null : view;
+}
+
+/** The locked image at the bottom of a drawing, which bounds its view, or `null`. */
+export function getBoundingImage(elements: readonly ExcalidrawElement[]) {
+    const area = elements.find((element) => !element.isDeleted);
+    return area?.type === "image" && area.locked ? area : null;
 }
 
 const EPSILON = 1e-6;

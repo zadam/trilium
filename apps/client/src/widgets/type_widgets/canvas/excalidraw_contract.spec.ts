@@ -128,6 +128,14 @@ describe("Excalidraw contract of the canvas drawing", () => {
         expect(handleWheel.match(/this\.translateCanvas\(/g)).toHaveLength(3);
         expect(handleWheel).not.toContain("this.setState(");
     });
+
+    it("takes the wheel on its container, after `useNoteScrollingWheel()` on the drawing", () => {
+        const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
+
+        expect(source).toContain("addEventListener(this.excalidrawContainerRef.current,"
+            + "\"wheel\"/*WHEEL*/,this.handleWheel,{passive:false})");
+        expect(source).not.toMatch(/addEventListener\((window|document),"wheel"/);
+    });
 });
 
 /** The text of the scripts or stylesheets in `dir`, without its locales and fonts. */
