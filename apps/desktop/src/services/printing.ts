@@ -41,8 +41,11 @@ interface PrintOpts {
 
 interface ExportAsPdfOpts {
     notePath: string;
-    /** Prints the sender's own window, which the renderer prepared for printing, instead of `notePath`. */
-    live?: boolean;
+    /**
+     * Prints the sender's own window, which the renderer prepared for printing as this live print,
+     * instead of `notePath`. `print-done` echoes it so the renderer restores only that live print.
+     */
+    liveJobId?: number;
     title: string;
     landscape: boolean;
     pageSize: "A0" | "A1" | "A2" | "A3" | "A4" | "A5" | "A6" | "Legal" | "Letter" | "Tabloid" | "Ledger";
@@ -334,7 +337,8 @@ export function setupPrintingHandlers() {
         }
     });
 
-    electron.ipcMain.on("export-as-pdf-preview", async (e, { notePath, live, requestId, landscape, pageSize, scale, margins, pageRanges }: PreviewOpts) => {
+    electron.ipcMain.on("export-as-pdf-preview", async (e, { notePath, liveJobId, requestId, landscape, pageSize, scale, margins, pageRanges }: PreviewOpts) => {
+        const live = typeof liveJobId === "number";
         try {
             const { webContents, printReport, dispose } = await getPrintTarget(e, notePath, "exporting_pdf", live);
 
@@ -416,7 +420,8 @@ export function setupPrintingHandlers() {
         }
     });
 
-    electron.ipcMain.on("print-from-preview", async (e, { notePath, live, landscape, pageSize, scale, margins, pageRanges, silent, deviceName }: PrintFromPreviewOpts) => {
+    electron.ipcMain.on("print-from-preview", async (e, { notePath, liveJobId, landscape, pageSize, scale, margins, pageRanges, silent, deviceName }: PrintFromPreviewOpts) => {
+        const live = typeof liveJobId === "number";
         try {
             const { webContents, printReport, dispose } = await getPrintTarget(e, notePath, "printing", live);
 
@@ -441,16 +446,25 @@ export function setupPrintingHandlers() {
                 }
                 e.sender.send("print-from-preview-done");
                 // Also sent for a live print: it is what restores the sender's window.
-                e.sender.send("print-done", printReport ?? { type: "single-note" });
+                sendPrintDone(e, printReport ?? { type: "single-note" }, live ? liveJobId : undefined);
                 dispose();
             });
         } catch (err) {
             e.sender.send("print-from-preview-done");
-            e.sender.send("print-done", {
+            sendPrintDone(e, {
                 type: "error",
                 message: err instanceof Error ? err.message : String(err),
                 stack: err instanceof Error ? err.stack : undefined
-            });
+            }, live ? liveJobId : undefined);
         }
     });
+}
+
+/** Sends `print-done`, naming the live print it ends, if any, so the renderer restores only that one. */
+function sendPrintDone(e: IpcMainEvent, printReport: unknown, liveJobId: number | undefined) {
+    if (liveJobId === undefined) {
+        e.sender.send("print-done", printReport);
+    } else {
+        e.sender.send("print-done", printReport, liveJobId);
+    }
 }

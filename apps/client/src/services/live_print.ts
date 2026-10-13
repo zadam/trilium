@@ -17,6 +17,8 @@ const PRINT_CSS_ATTR = "data-live-print-css";
 const UNSCROLL_CLASS = "print-live-unscroll";
 
 let activeTarget: HTMLElement | undefined;
+/** Identifies the live print {@link activeTarget} belongs to; each {@link startLivePrint} gets a new one. */
+let activeJobId = 0;
 
 /**
  * Returns the element of `noteDetail` that a live print prints when it shows the type widget
@@ -28,9 +30,13 @@ export function getLivePrintTarget(noteDetail: HTMLElement | null, shownType: st
     return noteDetail?.querySelector<HTMLElement>(".note-detail-render-content") ?? undefined;
 }
 
-/** Prepares the window to print `target`, ending any live print still active. */
+/**
+ * Prepares the window to print `target`, ending any live print still active. Returns the ID of the
+ * new live print, which {@link endLivePrint} takes.
+ */
 export async function startLivePrint(note: FNote, target: HTMLElement) {
-    endLivePrint();
+    endLivePrint(activeJobId);
+    const jobId = ++activeJobId;
     activeTarget = target;
     document.body.classList.add(ACTIVE_CLASS);
     target.classList.add(TARGET_CLASS);
@@ -50,11 +56,15 @@ export async function startLivePrint(note: FNote, target: HTMLElement) {
 
     await loadPrintCss(note);
     await document.fonts.ready;
+    return jobId;
 }
 
-/** Restores the window after a live print. Does nothing when none is active. */
-export function endLivePrint() {
-    if (!activeTarget) return;
+/**
+ * Restores the window after the live print `jobId`. Does nothing when that live print is no longer
+ * active, so the late end of a job does not undo the live print that replaced it.
+ */
+export function endLivePrint(jobId: number) {
+    if (!activeTarget || jobId !== activeJobId) return;
 
     activeTarget.classList.remove(TARGET_CLASS);
     for (const el of activeTarget.querySelectorAll(`.${UNSCROLL_CLASS}`)) {
@@ -75,8 +85,8 @@ export function endLivePrint() {
 
 /** Prints `target` through the browser's own print dialog. */
 export async function printLiveInBrowser(note: FNote, target: HTMLElement) {
-    await startLivePrint(note, target);
-    window.addEventListener("afterprint", endLivePrint, { once: true });
+    const jobId = await startLivePrint(note, target);
+    window.addEventListener("afterprint", () => endLivePrint(jobId), { once: true });
     window.print();
 }
 

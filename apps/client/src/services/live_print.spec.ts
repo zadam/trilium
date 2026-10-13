@@ -3,6 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildNote } from "../test/easy-froca";
 import { endLivePrint, getLivePrintTarget, printLiveInBrowser, startLivePrint } from "./live_print";
 
+/** The job of the last live print a test started, ended after each test. */
+let lastJobId: number | undefined;
+async function start(...args: Parameters<typeof startLivePrint>) {
+    lastJobId = await startLivePrint(...args);
+    return lastJobId;
+}
+
 function addThemeLink(href: string, media?: string) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -23,7 +30,8 @@ describe("live print", () => {
     });
 
     afterEach(() => {
-        endLivePrint();
+        if (lastJobId !== undefined) endLivePrint(lastJobId);
+        lastJobId = undefined;
         for (const link of document.head.querySelectorAll("link")) link.remove();
         document.body.replaceChildren();
     });
@@ -38,7 +46,7 @@ describe("live print", () => {
         const target = document.createElement("div");
         document.body.appendChild(target);
 
-        await startLivePrint(note, target);
+        await start(note, target);
 
         expect(document.body.classList.contains("print-live")).toBe(true);
         expect(target.classList.contains("print-live-target")).toBe(true);
@@ -47,7 +55,7 @@ describe("live print", () => {
         const printCss = [ ...document.head.querySelectorAll<HTMLLinkElement>("link[data-live-print-css]") ];
         expect(printCss.map((link) => [ link.getAttribute("href"), link.media ])).toEqual([ [ "api/notes/live-css/download", "print" ] ]);
 
-        endLivePrint();
+        endLivePrint(lastJobId ?? -1);
 
         expect(document.body.classList.contains("print-live")).toBe(false);
         expect(target.classList.contains("print-live-target")).toBe(false);
@@ -64,8 +72,8 @@ describe("live print", () => {
         const second = document.createElement("div");
         document.body.append(first, second);
 
-        await startLivePrint(note, first);
-        await startLivePrint(note, second);
+        await start(note, first);
+        await start(note, second);
 
         expect(first.classList.contains("print-live-target")).toBe(false);
         expect(second.classList.contains("print-live-target")).toBe(true);
@@ -80,14 +88,34 @@ describe("live print", () => {
             <div class="clipped" style="overflow: hidden"></div>`;
         document.body.appendChild(target);
 
-        await startLivePrint(note, target);
+        await start(note, target);
 
         expect(target.querySelector(".scroller")?.classList.contains("print-live-unscroll")).toBe(true);
         expect(target.querySelector(".clipped")?.classList.contains("print-live-unscroll")).toBe(false);
 
-        endLivePrint();
+        endLivePrint(lastJobId ?? -1);
 
         expect(target.querySelector(".print-live-unscroll")).toBeNull();
+    });
+
+    it("ignores the end of a job that a newer live print replaced", async () => {
+        const note = buildNote({ id: "live-jobs", title: "Jobs", type: "render" });
+        const first = document.createElement("div");
+        const second = document.createElement("div");
+        document.body.append(first, second);
+
+        const firstJob = await start(note, first);
+        const secondJob = await start(note, second);
+        expect(secondJob).not.toBe(firstJob);
+
+        // A late `print-done` of the first job leaves the second one prepared.
+        endLivePrint(firstJob);
+        expect(document.body.classList.contains("print-live")).toBe(true);
+        expect(second.classList.contains("print-live-target")).toBe(true);
+
+        endLivePrint(secondJob);
+        expect(document.body.classList.contains("print-live")).toBe(false);
+        expect(second.classList.contains("print-live-target")).toBe(false);
     });
 
     it("prints through the browser dialog and restores the window afterwards", async () => {

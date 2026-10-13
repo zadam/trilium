@@ -402,8 +402,11 @@ export interface ElectronPrintingApi {
      */
     onPrintProgress(callback: (data: { progress: number; action: string }) => void): void;
 
-    /** Subscribes to the "print finished" event, fired once the OS print job is dispatched. */
-    onPrintDone(callback: (printReport: unknown) => void): void;
+    /**
+     * Subscribes to the "print finished" event, fired once the OS print job is dispatched.
+     * `liveJobId` names the live print the job ended, for a job that printed the app window itself.
+     */
+    onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void): void;
 
     /** Removes all listeners registered via {@link onPrintProgress} and {@link onPrintDone}. */
     removePrintListeners(): void;

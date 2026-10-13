@@ -105,7 +105,8 @@ export default function PrintPreviewDialog() {
     const notePathRef = useRef("");
     const pdfUrlRef = useRef<string | undefined>(undefined);
     const requestIdRef = useRef(0);
-    const isLiveRef = useRef(false);
+    /** The live print the dialog started for a live target, which every request names. */
+    const liveJobIdRef = useRef<number | undefined>(undefined);
     /** A live print sent to the printer keeps the window prepared until `print-done` ends it. */
     const isLivePrintSentRef = useRef(false);
 
@@ -153,11 +154,8 @@ export default function PrintPreviewDialog() {
     useTriliumEvent("showPrintPreview", async (data: PrintPreviewData) => {
         if (shown) return;
 
-        isLiveRef.current = !!data.liveTarget;
         isLivePrintSentRef.current = false;
-        if (data.liveTarget) {
-            await startLivePrint(data.note, data.liveTarget);
-        }
+        liveJobIdRef.current = data.liveTarget ? await startLivePrint(data.note, data.liveTarget) : undefined;
 
         setNote(data.note);
         notePathRef.current = data.notePath;
@@ -204,7 +202,7 @@ export default function PrintPreviewDialog() {
         api.exportAsPdfPreview({
             requestId: ++requestIdRef.current,
             notePath: notePathRef.current,
-            live: isLiveRef.current,
+            liveJobId: liveJobIdRef.current,
             pageSize: opts.pageSize,
             landscape: opts.landscape,
             scale: opts.scale,
@@ -228,10 +226,10 @@ export default function PrintPreviewDialog() {
     }, [shown, landscape, pageSize, scale, marginsStr, pageRanges, pageRangesValid, regeneratePreview]);
 
     function handleClose() {
-        if (isLiveRef.current && !isLivePrintSentRef.current) {
-            endLivePrint();
+        if (liveJobIdRef.current !== undefined && !isLivePrintSentRef.current) {
+            endLivePrint(liveJobIdRef.current);
         }
-        isLiveRef.current = false;
+        liveJobIdRef.current = undefined;
         requestIdRef.current++;
         setShown(false);
         isFirstGenerationRef.current = true;
@@ -256,10 +254,10 @@ export default function PrintPreviewDialog() {
     }
 
     function handlePrint(silent: boolean, deviceName?: string) {
-        isLivePrintSentRef.current = isLiveRef.current;
+        isLivePrintSentRef.current = liveJobIdRef.current !== undefined;
         window.electronApi?.printing.printFromPreview({
             notePath: notePathRef.current,
-            live: isLiveRef.current,
+            liveJobId: liveJobIdRef.current,
             pageSize,
             landscape,
             scale,

@@ -49,7 +49,6 @@ describe("PrintPreviewDialog", () => {
     });
 
     afterEach(() => {
-        endLivePrint();
         delete (window as any).electronApi;
     });
 
@@ -118,7 +117,7 @@ describe("PrintPreviewDialog", () => {
         // Closing without printing restores the window.
         const cancelled = await show();
         expect(cancelled.classList.contains("print-live-target")).toBe(true);
-        expect(printing.exportAsPdfPreview).toHaveBeenCalledWith(expect.objectContaining({ live: true }));
+        expect(printing.exportAsPdfPreview).toHaveBeenCalledWith(expect.objectContaining({ liveJobId: expect.any(Number) }));
         close();
         await vi.waitFor(() => expect(cancelled.classList.contains("print-live-target")).toBe(false));
 
@@ -129,8 +128,13 @@ describe("PrintPreviewDialog", () => {
         const systemPrint = document.querySelector<HTMLAnchorElement>(".print-preview-dialog .modal-footer a");
         expect(systemPrint).toBeTruthy();
         act(() => systemPrint?.click());
-        expect(printing.printFromPreview).toHaveBeenCalledWith(expect.objectContaining({ live: true, silent: false }));
+        expect(printing.printFromPreview).toHaveBeenCalledWith(expect.objectContaining({ liveJobId: expect.any(Number), silent: false }));
         await vi.waitFor(() => expect(document.querySelector(".print-preview-dialog.show")).toBeNull());
         expect(printed.classList.contains("print-live-target")).toBe(true);
+
+        // The main process echoes the job with `print-done`, which ends exactly this live print.
+        const { liveJobId } = printing.printFromPreview.mock.calls[0]?.[0] as { liveJobId: number };
+        endLivePrint(liveJobId);
+        expect(printed.classList.contains("print-live-target")).toBe(false);
     });
 });

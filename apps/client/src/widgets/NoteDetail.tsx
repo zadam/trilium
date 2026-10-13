@@ -152,8 +152,8 @@ export default function NoteDetail() {
         const api = window.electronApi?.printing;
         if (!api) return;
         api.onPrintProgress(({ progress, action }) => showToast(action as "printing" | "exporting_pdf", progress));
-        api.onPrintDone((printReport) => {
-            endLivePrint();
+        api.onPrintDone((printReport, liveJobId) => {
+            if (liveJobId !== undefined) endLivePrint(liveJobId);
             toast.closePersistent("printing");
             handlePrintReport(printReport as PrintReport);
         });

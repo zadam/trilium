@@ -477,7 +477,7 @@ describe("setupPrintingHandlers", () => {
                 printToPDF: vi.fn(async () => Buffer.from("live-pdf")),
                 print: vi.fn((_opts: unknown, cb: (success: boolean) => void) => cb(true))
             };
-            await fn({ sender }, { ...payload, live: true });
+            await fn({ sender }, { ...payload, liveJobId: 3 });
             return sender;
         }
 
@@ -498,7 +498,7 @@ describe("setupPrintingHandlers", () => {
             expect(h.loadURL).not.toHaveBeenCalled();
             expect(h.print).not.toHaveBeenCalled();
             expect(sender.print).toHaveBeenCalledWith(expect.objectContaining({ silent: true, deviceName: "HP" }), expect.any(Function));
-            expect(sender.send).toHaveBeenCalledWith("print-done", { type: "single-note" });
+            expect(sender.send).toHaveBeenCalledWith("print-done", { type: "single-note" }, 3);
             expect(h.destroy).not.toHaveBeenCalled();
         });
     });
