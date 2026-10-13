@@ -528,7 +528,8 @@ describe("saveDrawingPicture", () => {
 
     it("saves the picture of a drawing, titled after it, in the colors of its page", async () => {
         const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
-        vi.mocked(exportToSvg).mockResolvedValueOnce(svgOf("picture"));
+        const exported = pictureWithImages();
+        vi.mocked(exportToSvg).mockResolvedValueOnce(exported);
         const files = { f1: IMAGE };
         const content = JSON.stringify({
             elements: [ image, { id: "gone", type: "line", isDeleted: true } ],
@@ -547,13 +548,15 @@ describe("saveDrawingPicture", () => {
         expect(post).toHaveBeenCalledExactlyOnceWith("notes/n1/attachments?matchBy=title", {
             role: "image", mime: "image/svg+xml", title: "d1.svg", content: expect.any(String)
         });
-        // Dark while its page is dark, as Excalidraw's dark export: pictures in it keep their colors.
+        // Dark while its page is dark, as Excalidraw's dark export: bitmaps in it keep their colors.
         const [ picture ] = getSavedPictures(post);
         expect(picture).toMatch(/^<svg id="picture" class="trilium-drawing-picture"><style>/);
         expect(picture).toContain("@media (prefers-color-scheme: dark) { "
             + "svg.trilium-drawing-picture { filter: invert(93%) hue-rotate(180deg); } "
-            + `svg.trilium-drawing-picture image:not([href^="data:image/svg+xml"]) { `
-            + "filter: invert(100%) hue-rotate(180deg) saturate(1.25); } }</style></svg>");
+            + "svg.trilium-drawing-picture use.trilium-drawing-bitmap { "
+            + "filter: invert(100%) hue-rotate(180deg) saturate(1.25); } }</style>");
+        expect([ ...exported.querySelectorAll("use") ].map((use) => use.getAttribute("class")))
+            .toEqual([ "trilium-drawing-bitmap", null, "trilium-drawing-bitmap" ]);
 
         // An empty drawing shows nothing.
         await saveDrawingPicture(drawing, JSON.stringify({ elements: [] }));
@@ -611,5 +614,33 @@ describe("saveDrawingPicture", () => {
 function svgOf(id: string) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.id = id;
+    return svg;
+}
+
+/**
+ * A picture as `exportToSvg()` draws images: each in a `<symbol>`, placed by `<use>`. The first
+ * image is a bitmap, used twice, and the second an SVG image.
+ */
+function pictureWithImages() {
+    const svg = svgOf("picture");
+    const create = (name: string, attributes: Record<string, string>) => {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+        for (const [ key, value ] of Object.entries(attributes)) {
+            element.setAttribute(key, value);
+        }
+        return element;
+    };
+    const symbols = [
+        [ "image-f1", "data:image/png;base64,AA==" ],
+        [ "image-f2", "data:image/svg+xml;base64,AA==" ]
+    ];
+    for (const [ id, href ] of symbols) {
+        const symbol = create("symbol", { id });
+        symbol.append(create("image", { href }));
+        svg.append(symbol);
+    }
+    for (const id of [ "image-f1", "image-f2", "image-f1" ]) {
+        svg.append(create("use", { href: `#${id}` }));
+    }
     return svg;
 }

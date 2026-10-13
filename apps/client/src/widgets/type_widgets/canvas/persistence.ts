@@ -522,17 +522,20 @@ export const IMAGE_DARK_FILTER = "invert(100%) hue-rotate(180deg) saturate(1.25)
 
 /** The class of a saved picture, which scopes its own style. */
 const SAVED_PICTURE_CLASS = "trilium-drawing-picture";
+/** The class of a `<use>` element that places a bitmap in a saved picture. */
+const BITMAP_CLASS = "trilium-drawing-bitmap";
 
 /**
  * Draws a saved picture in the dark colors of Excalidraw while the page that shows it has a dark
- * color scheme, with the filters of Excalidraw's dark export: the root inverted, the pictures in
- * it, except SVG ones, inverted back.
+ * color scheme, with the filters of Excalidraw's dark export: the root inverted, the bitmaps in it
+ * inverted back. The filter of a bitmap is on its `<use>` element, as Excalidraw sets it: a filter
+ * on the `<image>` in the `<symbol>` does not apply.
  */
 const SAVED_PICTURE_STYLE = `@media (prefers-color-scheme: dark) {
     svg.${SAVED_PICTURE_CLASS} {
         filter: ${DRAWING_DARK_FILTER};
     }
-    svg.${SAVED_PICTURE_CLASS} image:not([href^="data:image/svg+xml"]) {
+    svg.${SAVED_PICTURE_CLASS} use.${BITMAP_CLASS} {
         filter: ${IMAGE_DARK_FILTER};
     }
 }`;
@@ -567,6 +570,7 @@ export async function saveDrawingPicture(
             style.textContent = SAVED_PICTURE_STYLE;
             picture.classList.add(SAVED_PICTURE_CLASS);
             picture.prepend(style);
+            markBitmaps(picture);
         }
         await server.post(`notes/${ownerId}/attachments?matchBy=title`, {
             role: IMAGE_ROLE,
@@ -579,6 +583,25 @@ export async function saveDrawingPicture(
     } finally {
         if (drawnPictureContents.get(attachmentId) === content) {
             drawnPictureContents.delete(attachmentId);
+        }
+    }
+}
+
+/**
+ * Adds `BITMAP_CLASS` to the `<use>` elements of `picture` that place a bitmap. Excalidraw puts each
+ * image in a `<symbol>`; an SVG image keeps its colors in the dark export.
+ */
+function markBitmaps(picture: SVGSVGElement) {
+    const bitmapHrefs = new Set<string>();
+    for (const image of picture.querySelectorAll("symbol > image")) {
+        const symbol = image.parentElement;
+        if (symbol && !image.getAttribute("href")?.startsWith("data:image/svg+xml")) {
+            bitmapHrefs.add(`#${symbol.id}`);
+        }
+    }
+    for (const use of picture.querySelectorAll("use")) {
+        if (bitmapHrefs.has(use.getAttribute("href") ?? "")) {
+            use.classList.add(BITMAP_CLASS);
         }
     }
 }

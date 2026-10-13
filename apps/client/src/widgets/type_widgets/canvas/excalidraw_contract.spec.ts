@@ -105,6 +105,12 @@ describe("Excalidraw contract of the canvas drawing", () => {
             if (renderConfig.exportWithDarkMode && fileData.mimeType !== MIME_TYPES.svg) {
                 use.setAttribute("filter", IMAGE_INVERT_FILTER);
             }`));
+        // `saveDrawingPicture()` finds the image that each `<use>` places through its `<symbol>`.
+        expect(source).toContain(compact(`
+            symbol.id = symbolId;
+            const image = svgRoot.ownerDocument.createElementNS(SVG_NS, "image");
+            image.setAttribute("href", fileData.dataURL);`));
+        expect(source).toContain(compact("symbol.appendChild(image);"));
     });
 
     it("opens the library and the search in the sidebar that the menus name", () => {
