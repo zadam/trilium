@@ -1,6 +1,8 @@
 import "./RecordMeetingButton.css";
 
-import { dayjs, type TranscriptionState, type TranscriptionStatus } from "@triliumnext/commons";
+import {
+    dayjs, MEETING_RECORDING_LABEL, type TranscriptionState, type TranscriptionStatus
+} from "@triliumnext/commons";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import dateNoteService from "../../services/date_notes";
@@ -12,9 +14,6 @@ import {
     LauncherNoteProps,
     useLauncherIconAndTitle
 } from "./launch_bar_widgets";
-
-/** The label that identifies a note created by this launcher. */
-export const MEETING_RECORDING_LABEL = "meetingRecording";
 
 /**
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
