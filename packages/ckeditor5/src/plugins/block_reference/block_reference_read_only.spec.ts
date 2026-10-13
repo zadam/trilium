@@ -68,6 +68,23 @@ describe("showBlockReference", () => {
         expect(getOffset(scroller, "from")).toBeCloseTo(100);
     });
 
+    it("opens a collapsed block around the end of a range before measuring the range", () => {
+        // Some browsers give the content of a closed `<details>` no box at all.
+        const scroller = mountScroller(
+            "<style>details:not([open]) > :not(summary) { display: none; }</style>"
+            + SPACER + block("from", 50) + "<details><summary>s</summary>" + block("to", 50)
+            + "</details>" + SPACER
+        );
+        const details = scroller.querySelector("details");
+
+        showBlockReference(scroller, "from:to");
+
+        expect(details?.open).toBe(true);
+        const height = getBlock(scroller, "to").getBoundingClientRect().bottom
+            - getBlock(scroller, "from").getBoundingClientRect().top;
+        expect(getOffset(scroller, "from")).toBeCloseTo((400 - height) / 2);
+    });
+
     it("scrolls the document when no ancestor of the blocks scrolls", () => {
         const page = mount("<div style=\"overflow-x: auto\">"
             + SPACER + SPACER + block("a", 100) + SPACER + SPACER + "</div>");

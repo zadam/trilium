@@ -22,6 +22,8 @@ export function showBlockReference(container: Element, value: string) {
     const first = start ?? end;
     if (first) {
         const last = start && end ? end : first;
+        // `first` is revealed last, so it stays shown when both are in different tabs of a block.
+        reveal(last);
         reveal(first);
         scrollToBlocks(first, last);
         flashBlocks(getBlockRangeElements(first, last));

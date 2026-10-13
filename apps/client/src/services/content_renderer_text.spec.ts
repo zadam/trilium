@@ -642,7 +642,17 @@ describe("rewriteMermaidDiagramsInContainer", () => {
         const div = container.querySelector("div.mermaid-diagram");
         expect(div).not.toBeNull();
         expect(div?.textContent).toContain("graph TD;");
+        expect(div?.hasAttribute("data-trilium-block-id")).toBe(false);
         expect(container.querySelector("pre")).toBeNull();
+    });
+
+    it("keeps the block ID of a code block on its diagram, for links to the block", async () => {
+        const container = document.createElement("div");
+        container.innerHTML = `<pre><code class="language-mermaid" data-trilium-block-id="d1">`
+            + `graph TD;A--&gt;B;</code></pre>`;
+        await rewriteMermaidDiagramsInContainer(container);
+        const diagram = container.querySelector("div.mermaid-diagram");
+        expect(diagram?.getAttribute("data-trilium-block-id")).toBe("d1");
     });
 
     it("uses an empty body when the code element is missing", async () => {

@@ -112,13 +112,20 @@ describe("share theme entry", () => {
         expect(panel.scrollIntoView).toHaveBeenCalledTimes(2);
     });
 
-    it("shows the blocks the address links to once the page is shown, after the tabs", async () => {
+    it("shows the linked blocks once the page is shown, after the tabs and diagrams", async () => {
+        let drawDiagrams = () => {};
+        mocks.setupMermaid.mockReturnValueOnce(new Promise<void>((resolve) => {
+            drawDiagrams = resolve;
+        }));
         document.body.className = "type-text";
         document.body.innerHTML = `<div id="content"></div>`;
         history.replaceState(null, "", "?block=a%201:b");
 
         document.dispatchEvent(new Event("DOMContentLoaded"));
+        await vi.dynamicImportSettled();
+        expect(mocks.showBlockReference).not.toHaveBeenCalled();
 
+        drawDiagrams();
         await vi.waitFor(() => expect(mocks.showBlockReference)
             .toHaveBeenCalledExactlyOnceWith(document.body, "a 1:b"));
         expect(mocks.whenActivated).toHaveBeenCalledOnce();
