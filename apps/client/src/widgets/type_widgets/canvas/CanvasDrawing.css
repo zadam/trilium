@@ -46,7 +46,7 @@
         background: none;
     }
 
-    /* The main menu offers the library and help. */
+    /* The menus offer the library and help. */
     .excalidraw :is(.sidebar-trigger, .help-icon) {
         display: none;
     }
@@ -116,11 +116,12 @@
     width: 100% !important;
 }
 
-/* While `CanvasEmbedTools` sets `data-embed-tools`, the tools, undo and redo, and zoom are buttons
-   of the embed's toolbar, which fullscreen hides. `CanvasTools` clicks the hidden undo and redo
-   buttons. */
+/* While `CanvasEmbedTools` sets `data-embed-tools`, the tools, the main menu, undo and redo, and
+   zoom are buttons of the embed's toolbar, which fullscreen hides. `CanvasTools` clicks the hidden
+   undo and redo buttons. */
 .include-note-content:not(:fullscreen) .canvas-drawing-editor[data-embed-tools] .excalidraw {
     .App-toolbar-container > .App-toolbar,
+    .main-menu-trigger,
     .mobile-misc-tools-container > label:has(
         [data-testid="toolbar-lock"], [data-testid="toolbar-hand"]
     ),

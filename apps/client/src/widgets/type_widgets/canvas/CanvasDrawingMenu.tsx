@@ -3,10 +3,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import type { RefObject } from "preact";
 
 import Icon from "../../react/Icon";
-import { useExcalidrawTranslation } from "./CanvasEmbedTools";
-
-/** The name of Excalidraw's default sidebar, whose first tab is the library. */
-export const LIBRARY_SIDEBAR = "default";
+import { DEFAULT_SIDEBAR, useExcalidrawTranslation } from "./CanvasEmbedTools";
 
 interface CanvasDrawingMenuProps {
     apiRef: RefObject<ExcalidrawImperativeAPI | null>;
@@ -26,7 +23,7 @@ export default function CanvasDrawingMenu({ apiRef, isEditable }: CanvasDrawingM
             {isEditable && (
                 <MainMenu.Item
                     icon={<Icon icon="bx bx-library" />}
-                    onSelect={() => apiRef.current?.toggleSidebar({ name: LIBRARY_SIDEBAR })}
+                    onSelect={() => apiRef.current?.toggleSidebar({ name: DEFAULT_SIDEBAR })}
                 >
                     {t("toolBar.library")}
                 </MainMenu.Item>

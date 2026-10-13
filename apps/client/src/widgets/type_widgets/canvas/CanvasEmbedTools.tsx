@@ -45,6 +45,51 @@ const TOOLS = [ ...MAIN_TOOLS, ...EXTRA_TOOLS ];
 export const LOCK = "lock";
 /** The button that opens the "More tools" menu, named by Excalidraw's `toolBar.extraTools`. */
 export const MORE_TOOLS = "moreTools";
+/** The name of Excalidraw's default sidebar, whose tabs are the library and the search. */
+export const DEFAULT_SIDEBAR = "default";
+export const SEARCH_TAB = "search";
+
+/** A command after the tools in the "More tools" menu. */
+interface MenuCommand {
+    id: string;
+    /** The key of Excalidraw's translation of the label, such as `search.title`. */
+    label: string;
+    /** The keystroke that Excalidraw binds to the command. */
+    keystroke?: string;
+    group: string;
+    run(api: ExcalidrawImperativeAPI): void;
+}
+
+/** The commands after the tools in the "More tools" menu. */
+export const MENU_COMMANDS: readonly MenuCommand[] = [
+    {
+        id: "exportImage",
+        label: "buttons.exportImage",
+        keystroke: "Ctrl+Shift+E",
+        group: "export",
+        run: (api) => api.updateScene({ appState: { openDialog: { name: "imageExport" } } })
+    },
+    {
+        id: "searchMenu",
+        label: "search.title",
+        keystroke: "Ctrl+F",
+        group: "canvas",
+        run: (api) => api.toggleSidebar({ name: DEFAULT_SIDEBAR, tab: SEARCH_TAB, force: true })
+    },
+    {
+        id: "library",
+        label: "toolBar.library",
+        group: "canvas",
+        run: (api) => api.toggleSidebar({ name: DEFAULT_SIDEBAR })
+    },
+    {
+        id: "help",
+        label: "helpDialog.title",
+        keystroke: "?",
+        group: "canvas",
+        run: (api) => api.updateScene({ appState: { openDialog: { name: "help" } } })
+    }
+];
 /** Shows the embed in fullscreen, as the button of its title row does while the title is hidden. */
 const FULLSCREEN = "fullscreen";
 /** The commands that click Excalidraw's own `button-undo` and `button-redo`. */
@@ -247,7 +292,7 @@ export class CanvasTools implements ContentEmbedToolProvider {
         return this.translate?.(key) ?? key;
     }
 
-    /** The lock, the drawing tools, undo and redo. */
+    /** The lock, the drawing tools with the menu commands, undo and redo. */
     private getEditingTools(activeTool: AppState["activeTool"]): ContentEmbedTool[] {
         return [
             {
@@ -270,12 +315,17 @@ export class CanvasTools implements ContentEmbedToolProvider {
                 icon: moreToolsIcon,
                 isOn: EXTRA_TOOLS.some((type) => activeTool.type === type),
                 group: MORE_TOOLS,
-                children: EXTRA_TOOLS.map((type) => ({
-                    id: type,
-                    label: this.t(`toolBar.${type}`),
-                    icon: ICONS[type],
-                    isOn: activeTool.type === type
-                }))
+                children: [
+                    ...EXTRA_TOOLS.map((type) => ({
+                        id: type,
+                        label: this.t(`toolBar.${type}`),
+                        icon: ICONS[type],
+                        isOn: activeTool.type === type
+                    })),
+                    ...MENU_COMMANDS.map(({ id, label, keystroke, group }) => ({
+                        id, label: this.t(label), keystroke, group
+                    }))
+                ]
             },
             this.getHistoryTool("undo", undoIcon),
             this.getHistoryTool("redo", redoIcon)
@@ -325,9 +375,12 @@ export class CanvasTools implements ContentEmbedToolProvider {
         ];
     }
 
-    /** Runs the lock, a drawing tool, undo or redo. */
+    /** Runs the lock, a drawing tool, a menu command, undo or redo. */
     private runEditingTool(api: ExcalidrawImperativeAPI, appState: AppState, id: string) {
-        if (id === "undo" || id === "redo") {
+        const command = MENU_COMMANDS.find((menuCommand) => menuCommand.id === id);
+        if (command) {
+            command.run(api);
+        } else if (id === "undo" || id === "redo") {
             this.getHistoryButton(id)?.click();
         } else if (id === LOCK) {
             const locked = !appState.activeTool.locked;

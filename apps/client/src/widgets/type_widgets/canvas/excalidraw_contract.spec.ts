@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@excalidraw/excalidraw", () => ({ MainMenu: {}, useI18n: vi.fn() }));
 
 const {
-    EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, ZOOM_STEP, ZOOMS
+    DEFAULT_SIDEBAR, EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, MENU_COMMANDS, SEARCH_TAB,
+    ZOOM_STEP, ZOOMS
 } = await import("./CanvasEmbedTools");
 const { MAX_ZOOM, MIN_ZOOM } = await import("./drawing_view");
-const { LIBRARY_SIDEBAR } = await import("./CanvasDrawingMenu");
 const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
 const { DRAWING_DARK_FILTER, IMAGE_DARK_FILTER } = await import("./persistence");
 
@@ -68,7 +68,8 @@ describe("Excalidraw contract of the canvas drawing", () => {
         const source = readBundle(developmentDir, [ ".js" ]);
         const keys = [
             ...[ ...MAIN_TOOLS, ...EXTRA_TOOLS, LOCK, "extraTools" ].map((id) => `toolBar.${id}`),
-            ...[ ...HISTORY_ACTIONS, ...Object.keys(ZOOMS) ].map((id) => `buttons.${id}`)
+            ...[ ...HISTORY_ACTIONS, ...Object.keys(ZOOMS) ].map((id) => `buttons.${id}`),
+            ...MENU_COMMANDS.map((command) => command.label)
         ];
 
         const missing = keys.filter((key) => {
@@ -106,10 +107,26 @@ describe("Excalidraw contract of the canvas drawing", () => {
             }`));
     });
 
-    it("opens the library in the sidebar that the main menu names", () => {
+    it("opens the library and the search in the sidebar that the menus name", () => {
         const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
 
-        expect(source).toContain(`varDEFAULT_SIDEBAR={name:"${LIBRARY_SIDEBAR}"`);
+        expect(source).toContain(`varDEFAULT_SIDEBAR={name:"${DEFAULT_SIDEBAR}"`);
+        expect(source).toContain(`varCANVAS_SEARCH_TAB="${SEARCH_TAB}";`);
+    });
+
+    it("shows the keystrokes that Excalidraw binds to the commands of the menu", () => {
+        const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
+        // Excalidraw's names of the shortcuts, which its own main menu shows.
+        const names: Record<string, string> = {
+            exportImage: "imageExport", searchMenu: "searchMenu", help: "toggleShortcuts"
+        };
+
+        const missing = MENU_COMMANDS
+            .filter((command) => command.keystroke !== undefined)
+            .map(({ id, keystroke }) =>
+                `${names[id]}:[getShortcutKey("${keystroke?.replace("Ctrl", "CtrlOrCmd")}")]`)
+            .filter((shortcut) => !source.includes(shortcut));
+        expect(missing).toEqual([]);
     });
 
     it("fits the context menu in its container with the styles that the top layer replaces", () => {

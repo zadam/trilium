@@ -110,11 +110,27 @@ describe("CanvasEmbedTools", () => {
             icon: ICON,
             isOn: false,
             group: "moreTools",
-            children: EXTRA_TOOL_IDS.map((id) => ({
-                id,
-                label: `t:toolBar.${id}`,
-                isOn: id === "selection"
-            }))
+            children: [
+                ...EXTRA_TOOL_IDS.map((id) => ({
+                    id,
+                    label: `t:toolBar.${id}`,
+                    isOn: id === "selection"
+                })),
+                {
+                    id: "exportImage",
+                    label: "t:buttons.exportImage",
+                    keystroke: "Ctrl+Shift+E",
+                    group: "export"
+                },
+                {
+                    id: "searchMenu",
+                    label: "t:search.title",
+                    keystroke: "Ctrl+F",
+                    group: "canvas"
+                },
+                { id: "library", label: "t:toolBar.library", group: "canvas" },
+                { id: "help", label: "t:helpDialog.title", keystroke: "?", group: "canvas" }
+            ]
         });
         expect(tools.slice(count + 2)).toEqual([
             { id: "undo", label: "t:buttons.undo", icon: ICON, isEnabled: true, group: "history" },
@@ -296,6 +312,31 @@ describe("CanvasEmbedTools", () => {
         expect(api.updateScene).toHaveBeenCalledTimes(3);
     });
 
+    it("opens the export, the search, the library and the help from the menu", async () => {
+        const { provider } = await mount();
+
+        provider.execute("exportImage");
+        expect(api.updateScene).toHaveBeenLastCalledWith({
+            appState: { openDialog: { name: "imageExport" } }
+        });
+        expect(document.activeElement).toBe(container.querySelector(".excalidraw-container"));
+
+        provider.execute("searchMenu");
+        expect(api.toggleSidebar).toHaveBeenLastCalledWith({
+            name: "default", tab: "search", force: true
+        });
+
+        provider.execute("library");
+        expect(api.toggleSidebar).toHaveBeenLastCalledWith({ name: "default" });
+
+        provider.execute("help");
+        expect(api.updateScene).toHaveBeenLastCalledWith({
+            appState: { openDialog: { name: "help" } }
+        });
+        expect(api.updateScene).toHaveBeenCalledTimes(2);
+        expect(api.toggleSidebar).toHaveBeenCalledTimes(2);
+    });
+
     it("keeps a zoom of a drawing over a locked image inside the image", async () => {
         const { provider } = await mount();
         api.setElements([ { type: "image", locked: true, x: 0, y: 0, width: 800, height: 400 } ]);
@@ -314,11 +355,12 @@ describe("CanvasEmbedTools", () => {
         expect(getIds()).toEqual([ "zoomOut", "resetZoom", "zoomIn" ]);
         expect(provider.hasEditableFlag).toBe(true);
 
-        for (const id of [ "rectangle", "frame", "lock", "undo" ]) {
+        for (const id of [ "rectangle", "frame", "lock", "undo", "help", "library" ]) {
             provider.execute(id);
         }
         expect(api.setActiveTool).not.toHaveBeenCalled();
         expect(api.updateScene).not.toHaveBeenCalled();
+        expect(api.toggleSidebar).not.toHaveBeenCalled();
         expect(undo).not.toHaveBeenCalled();
 
         provider.execute("zoomIn");
@@ -368,6 +410,7 @@ function createApi() {
     const unsubscribe = vi.fn();
     const setActiveTool = vi.fn();
     const updateScene = vi.fn();
+    const toggleSidebar = vi.fn();
     const getAppState = () => appState as unknown as AppState;
 
     const api = {
@@ -375,6 +418,7 @@ function createApi() {
         getSceneElements: () => elements,
         setActiveTool,
         updateScene,
+        toggleSidebar,
         onChange: (callback: typeof onChange) => {
             onChange = callback;
             return unsubscribe;
@@ -386,6 +430,7 @@ function createApi() {
         unsubscribe,
         setActiveTool,
         updateScene,
+        toggleSidebar,
         setElements(next: FakeElement[]) {
             elements = next;
         },
