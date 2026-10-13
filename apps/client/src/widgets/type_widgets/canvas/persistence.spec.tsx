@@ -587,6 +587,36 @@ describe("saveDrawingPicture", () => {
         expect(error).toHaveBeenCalledOnce();
     });
 
+    it("writes the pictures of a drawing in order, skipping one replaced as it waits", async () => {
+        let finishFirst: () => void = () => {};
+        const post = vi.spyOn(server, "post")
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                finishFirst = () => resolve(undefined);
+            }))
+            .mockResolvedValue(undefined);
+        vi.mocked(exportToSvg)
+            .mockResolvedValueOnce(svgOf("first"))
+            .mockResolvedValueOnce(svgOf("second"))
+            .mockResolvedValueOnce(svgOf("third"));
+        const save = (count: number) => saveDrawingPicture(drawing, JSON.stringify({
+            elements: Array.from({ length: count }, (_, index) => ({ ...image, id: `i${index}` }))
+        }), { f1: IMAGE } as never);
+
+        const first = save(1);
+        await vi.waitFor(() => expect(post).toHaveBeenCalledOnce());
+        const second = save(2);
+        await vi.waitFor(() => expect(exportToSvg).toHaveBeenCalledTimes(2));
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(post).toHaveBeenCalledOnce();
+
+        const third = save(3);
+        finishFirst();
+        await Promise.all([ first, second, third ]);
+        expect(getSavedPictures(post)).toEqual([
+            expect.stringMatching(/^<svg id="first"/), expect.stringMatching(/^<svg id="third"/)
+        ]);
+    });
+
     it("loads from the note the images that are not loaded yet", async () => {
         const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
         vi.mocked(exportToSvg).mockResolvedValueOnce(svgOf("picture"));

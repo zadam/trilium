@@ -43,12 +43,7 @@ function textTopOf(element: Element) {
     return range.getBoundingClientRect().top;
 }
 
-/**
- * Measures a tabs block whose first tab shows: the distance of each title from the side of the
- * panel it sits on, how far the first title starts from the start of the panel, how far the text
- * of the second title sits below that of the first, and the corners of the panel and of the first
- * two titles.
- */
+/** Where the titles of a tabs block sit around the panel of its first tab, and their corners. */
 function measure(block: Element | null, alignment: TabAlignment) {
     expect(block).not.toBeNull();
     const titles = [...block?.querySelectorAll(":scope > .trilium-tab > .trilium-tab-title") ?? []];

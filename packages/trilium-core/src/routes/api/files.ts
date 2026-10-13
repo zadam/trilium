@@ -1,4 +1,4 @@
-import { getAttachedFileMime } from "@triliumnext/commons";
+import { getAttachedFileMime, getDrawingPictureTitle } from "@triliumnext/commons";
 
 import { Request, Response } from "../../http_interface";
 import becca from "../../becca/becca";
@@ -86,10 +86,13 @@ function updateAttachment(req: Request<{ attachmentId: string }>) {
         };
     }
 
-    attachment.getNote().saveRevision();
+    const note = attachment.getNote();
+    note.saveRevision();
 
     attachment.mime = getAttachedFileMime(file.originalname, file.mimetype.toLowerCase());
     attachment.setContent(file.buffer, { forceSave: true });
+    // A shared page links the drawing until an edit saves a picture of the new file.
+    note.getAttachmentByTitle(getDrawingPictureTitle(req.params.attachmentId))?.markAsDeleted();
 
     return {
         uploaded: true

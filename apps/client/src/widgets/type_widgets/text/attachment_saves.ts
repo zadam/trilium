@@ -23,7 +23,7 @@ interface PendingSave<T> {
     getContent?: () => string;
     /** The content read when the editor went away. */
     content?: string;
-    /** Runs with the content once it saves, unless a newer change waits by then. */
+    /** Runs with the content once it saves, unless the entity changed again by then. */
     onSaved?: (content: string) => void;
     /**
      * Numbers the change, uniquely among all changes, so that a save drops only the change it
@@ -47,6 +47,8 @@ interface SentRevision {
 abstract class PendingSaves<T, I extends object> {
     protected pending = new Map<string, PendingSave<T>>();
     private lastRevision = 0;
+    /** The revision of the last change to each entity, kept when `pending` drops the change. */
+    private latestRevisions = new Map<string, number>();
     private sentRevisions = new WeakMap<I, SentRevision>();
 
     getUnsavedContent(id: string) {
@@ -69,8 +71,9 @@ abstract class PendingSaves<T, I extends object> {
     markSaved(items: I[] | undefined) {
         for (const item of items ?? []) {
             const sent = this.sentRevisions.get(item);
-            if (sent && this.pending.get(sent.id)?.revision === sent.revision) {
+            if (sent && this.latestRevisions.get(sent.id) === sent.revision) {
                 this.pending.delete(sent.id);
+                this.latestRevisions.delete(sent.id);
                 sent.onSaved?.(sent.content);
             }
         }
@@ -82,7 +85,9 @@ abstract class PendingSaves<T, I extends object> {
         getContent: () => string,
         onSaved?: (content: string) => void
     ) {
-        this.pending.set(id, { entity, getContent, onSaved, revision: ++this.lastRevision });
+        const revision = ++this.lastRevision;
+        this.pending.set(id, { entity, getContent, onSaved, revision });
+        this.latestRevisions.set(id, revision);
     }
 
     /** One item for each change, with the content read at the time of the call. */

@@ -101,15 +101,25 @@ describe("AttachmentSaves", () => {
         expect(getContent).toHaveBeenCalledOnce();
     });
 
-    it("drops the changes when it saves another note", () => {
+    it("drops the changes when it saves another note, and reports the last one saved after", () => {
         const { saves } = setUp();
-        saves.scheduleSave(drawing, () => "unsaved");
+        const onSaved = vi.fn();
+        saves.scheduleSave(drawing, () => "first", onSaved);
 
         saves.setNoteId("note1");
-        expect(saves.getUnsavedContent("drawing1")).toBe("unsaved");
+        expect(saves.getUnsavedContent("drawing1")).toBe("first");
 
+        // The previous note saves both changes in the background after the switch.
+        const first = saves.collect();
+        saves.scheduleSave(drawing, () => "second", onSaved);
+        const second = saves.collect();
         saves.setNoteId("note2");
         expect(saves.getUnsavedContent("drawing1")).toBeUndefined();
+
+        saves.markSaved(first);
+        saves.markSaved(second);
+        saves.markSaved(second);
+        expect(onSaved.mock.calls).toStrictEqual([ [ "second" ] ]);
     });
 });
 

@@ -511,6 +511,8 @@ export async function exportDrawingPicture(
 
 /** The saved content that the latest picture of each canvas drawing comes from, by its ID. */
 const drawnPictureContents = new Map<string, string>();
+/** The last picture write of each canvas drawing, which the next write waits for, by its ID. */
+const pictureWrites = new Map<string, Promise<void>>();
 
 /** The picture of an empty canvas drawing. */
 const EMPTY_PICTURE = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>`;
@@ -562,9 +564,6 @@ export async function saveDrawingPicture(
             isLoaded ? files : (await loadDrawingFiles(drawing, scene)).files,
             false
         );
-        // A newer save draws a picture of its own.
-        if (drawnPictureContents.get(attachmentId) !== content) return;
-
         if (picture) {
             const style = picture.ownerDocument.createElementNS(picture.namespaceURI, "style");
             style.textContent = SAVED_PICTURE_STYLE;
@@ -572,17 +571,37 @@ export async function saveDrawingPicture(
             picture.prepend(style);
             markBitmaps(picture);
         }
-        await server.post(`notes/${ownerId}/attachments?matchBy=title`, {
-            role: IMAGE_ROLE,
-            mime: "image/svg+xml",
-            title: getDrawingPictureTitle(attachmentId),
-            content: picture?.outerHTML ?? EMPTY_PICTURE
+
+        await queuePictureWrite(attachmentId, async () => {
+            // A newer save draws a picture of its own.
+            if (drawnPictureContents.get(attachmentId) !== content) return;
+
+            await server.post(`notes/${ownerId}/attachments?matchBy=title`, {
+                role: IMAGE_ROLE,
+                mime: "image/svg+xml",
+                title: getDrawingPictureTitle(attachmentId),
+                content: picture?.outerHTML ?? EMPTY_PICTURE
+            });
         });
     } catch (e) {
         console.error(`Could not save the picture of the canvas drawing '${attachmentId}'`, e);
     } finally {
         if (drawnPictureContents.get(attachmentId) === content) {
             drawnPictureContents.delete(attachmentId);
+        }
+    }
+}
+
+/** Runs `write` once the previous picture write of the drawing `attachmentId` is done. */
+async function queuePictureWrite(attachmentId: string, write: () => Promise<void>) {
+    const queued = (pictureWrites.get(attachmentId) ?? Promise.resolve()).then(write);
+    const settled = queued.catch(() => {});
+    pictureWrites.set(attachmentId, settled);
+    try {
+        await queued;
+    } finally {
+        if (pictureWrites.get(attachmentId) === settled) {
+            pictureWrites.delete(attachmentId);
         }
     }
 }

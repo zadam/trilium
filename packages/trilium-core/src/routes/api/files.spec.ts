@@ -1,4 +1,4 @@
-import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
+import { CANVAS_ATTACHMENT_MIME, getDrawingPictureTitle } from "@triliumnext/commons";
 import ExcelJS from "exceljs";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -289,6 +289,28 @@ describe("Files API (core)", () => {
             const drawing = upload("{}", "application/octet-stream", "Drawing.excalidraw");
             await api.put(`/api/attachments/${attachmentId}/file`, { file: drawing });
             expect(becca.getAttachmentOrThrow(attachmentId).mime).toBe(CANVAS_ATTACHMENT_MIME);
+        });
+
+        it("drops the share picture of a drawing whose file it replaces", async () => {
+            const { noteId } = await createTextNote(api, { title: "Has drawing" });
+            const attach = (role: string, mime: string, title: string) =>
+                api.post(`/api/notes/${noteId}/attachments`, {
+                    body: { role, mime, title, content: "<svg/>" }
+                });
+            const getTitles = async () =>
+                (await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`)).body
+                    .map(({ title }) => title)
+                    .sort();
+            await attach("file", CANVAS_ATTACHMENT_MIME, "Canvas.excalidraw");
+            const list = await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`);
+            const drawingId = list.body[0]?.attachmentId ?? "";
+            await attach("image", "image/svg+xml", getDrawingPictureTitle(drawingId));
+            await attach("image", "image/svg+xml", "other.svg");
+            expect(await getTitles()).toHaveLength(3);
+
+            const file = upload("{}", "application/octet-stream", "Drawing.excalidraw");
+            await api.put(`/api/attachments/${drawingId}/file`, { file });
+            expect(await getTitles()).toEqual([ "Canvas.excalidraw", "other.svg" ]);
         });
 
         it("reports a request that carries no file instead of writing an empty one", async () => {
