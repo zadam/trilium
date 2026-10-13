@@ -956,7 +956,9 @@
     "delete-column-notes_one": "Также удалить {{count}} заметку в этом столбце",
     "delete-column-notes_few": "Также удалить {{count}} заметки в этом столбце",
     "delete-column-notes_many": "Также удалить {{count}} заметок в этом столбце",
-    "select-all-cards": "Выбрать все карточки"
+    "select-all-cards": "Выбрать все карточки",
+    "show-add-column-button": "Показывать кнопку \"Добавить столбец\"",
+    "show-add-column-button-description": "Столбцы по-прежнему можно добавить из контекстного меню доски или столбца."
   },
   "table_context_menu": {
     "delete_row": "Удалить строку",
