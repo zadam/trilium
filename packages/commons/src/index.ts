@@ -56,4 +56,5 @@ export * from "./lib/marked_extensions.js";
 // is imported by virtually every client module. Import it via its subpath instead,
 // e.g. "@triliumnext/commons/src/lib/markdown_renderer".
 export * from "./lib/task_states.js";
+export * from "./lib/transcript.js";
 export * from "./lib/keyboard_shortcut_display.js";

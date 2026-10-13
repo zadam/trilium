@@ -42,8 +42,8 @@ vi.mock("./engine", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./engine")>()),
     loadSherpaEngine: h.loadEngine
 }));
+vi.mock("./attachment_sink", () => ({ AttachmentSink: class {} }));
 vi.mock("./session", () => ({
-    LogSink: class {},
     RecordingSession: class {
         start = h.sessionStart;
         stop = h.sessionStop;

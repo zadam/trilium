@@ -1,8 +1,9 @@
+import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AudioSource, SamplesListener } from "./capture";
+import type { SamplesListener } from "./capture";
 import type { SpeechSegment } from "./engine";
-import { RecordingSession, type TranscriptSink, type Utterance } from "./session";
+import { RecordingSession, type TranscriptSink } from "./session";
 
 const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
 vi.mock("@triliumnext/core", () => ({ getLog: () => log }));
@@ -27,7 +28,7 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
     const capture = {
         start: vi.fn(async (listener: SamplesListener) => {
             onSamples = listener;
-            return [ "microphone", "system" ] as AudioSource[];
+            return [ "microphone", "system" ] as TranscriptSource[];
         }),
         stop: vi.fn()
     };
@@ -45,9 +46,10 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
             };
         })
     };
-    const written: Utterance[] = [];
+    const written: TranscriptUtterance[] = [];
     const sink = {
-        write: vi.fn((utterance: Utterance) => {
+        open: vi.fn(),
+        write: vi.fn((utterance: TranscriptUtterance) => {
             written.push(utterance);
         }),
         close: vi.fn()
@@ -58,7 +60,7 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
     return {
         session, capture, engine, sink, written, flushed,
         /** Delivers `samples` from `source` when the clock reads `at`. */
-        deliver(source: AudioSource, samples: Float32Array, at: number) {
+        deliver(source: TranscriptSource, samples: Float32Array, at: number) {
             clock = at;
             onSamples(source, samples);
         }
@@ -71,8 +73,11 @@ beforeEach(() => {
 
 describe("RecordingSession", () => {
     it("labels each source's utterances with their offset from the recording start", async () => {
-        const { session, engine, deliver, written } = createHarness();
+        const { session, capture, engine, sink, deliver, written } = createHarness();
         await session.start();
+        expect(sink.open).toHaveBeenCalledExactlyOnceWith(1000);
+        expect(sink.open.mock.invocationCallOrder[0])
+            .toBeLessThan(capture.start.mock.invocationCallOrder[0]);
 
         // The microphone's first one-second chunk arrives 2 s in, so it began 1 s in.
         deliver("microphone", utteranceChunk(1, 8000), 3000);
@@ -111,6 +116,16 @@ describe("RecordingSession", () => {
         expect(sink.write.mock.invocationCallOrder[0])
             .toBeLessThan(sink.close.mock.invocationCallOrder[0]);
         expect(log.error).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not start capturing when a sink cannot open", async () => {
+        const { session, capture, sink } = createHarness();
+        sink.open.mockImplementationOnce(() => {
+            throw new Error("note deleted");
+        });
+
+        await expect(session.start()).rejects.toThrow("note deleted");
+        expect(capture.start).not.toHaveBeenCalled();
     });
 
     it("logs a failing source instead of throwing into the IPC listener", async () => {

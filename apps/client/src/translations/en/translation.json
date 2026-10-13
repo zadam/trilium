@@ -2443,7 +2443,8 @@
     "coverImage": "Cover image",
     "viewConfig": "View settings",
     "canvasLibraryItem": "Canvas library",
-    "importSource": "Import source"
+    "importSource": "Import source",
+    "transcript": "Meeting transcript"
   },
   "bookmark_switch": {
     "bookmark": "Bookmark"

@@ -1,3 +1,4 @@
+import type { TranscriptSource } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
 import { app, BrowserWindow, ipcMain, type IpcMainEvent, session } from "electron";
 import fs from "fs";
@@ -5,10 +6,7 @@ import path from "path";
 
 import { SAMPLE_RATE } from "./engine";
 
-/** The microphone carries the local speaker; the system output carries everyone else. */
-export type AudioSource = "microphone" | "system";
-
-export type SamplesListener = (source: AudioSource, samples: Float32Array) => void;
+export type SamplesListener = (source: TranscriptSource, samples: Float32Array) => void;
 
 /** Produces mono {@link SAMPLE_RATE} samples per source until stopped. */
 export interface AudioCapture {
@@ -17,7 +15,7 @@ export interface AudioCapture {
      *
      * @throws when no source could start.
      */
-    start(onSamples: SamplesListener): Promise<AudioSource[]>;
+    start(onSamples: SamplesListener): Promise<TranscriptSource[]>;
     stop(): void;
 }
 
@@ -29,7 +27,8 @@ const SOURCE_STARTERS = [
     [ "system", "captureSystemAudio()" ]
 ] as const;
 
-type SamplesIpcListener = (event: IpcMainEvent, source: AudioSource, samples: Float32Array) => void;
+type SamplesIpcListener =
+    (event: IpcMainEvent, source: TranscriptSource, samples: Float32Array) => void;
 
 /**
  * Captures the default microphone and the system audio output in a hidden window, which streams
@@ -50,7 +49,7 @@ export class ElectronAudioCapture implements AudioCapture {
         };
         ipcMain.on(SAMPLES_CHANNEL, this.listener);
 
-        const sources: AudioSource[] = [];
+        const sources: TranscriptSource[] = [];
         for (const [ source, call ] of SOURCE_STARTERS) {
             try {
                 // getDisplayMedia() requires a user gesture, which the hidden window only gets

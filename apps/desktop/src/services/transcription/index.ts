@@ -3,9 +3,10 @@ import { becca, getLog } from "@triliumnext/core";
 import { BrowserWindow, ipcMain } from "electron";
 import { t } from "i18next";
 
+import { AttachmentSink } from "./attachment_sink";
 import { ElectronAudioCapture } from "./capture";
 import { loadSherpaEngine, ModelMissingError } from "./engine";
-import { LogSink, RecordingSession, type TranscriptSink } from "./session";
+import { RecordingSession, type TranscriptSink } from "./session";
 
 let state: TranscriptionState = { status: "idle", noteId: null };
 let activeSession: RecordingSession | null = null;
@@ -61,6 +62,7 @@ export async function stopRecording() {
     activeSession = null;
     try {
         await session.stop();
+        getLog().info(`Transcription: recording for note ${state.noteId} stopped.`);
     } finally {
         setState({ status: "idle", noteId: null });
     }
@@ -72,7 +74,7 @@ export function getState() {
 
 /** Where the utterances of a recording for `noteId` go. */
 function createSinks(noteId: string): TranscriptSink[] {
-    return [ new LogSink(noteId) ];
+    return [ new AttachmentSink(noteId) ];
 }
 
 function setState(newState: TranscriptionState) {

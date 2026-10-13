@@ -1,19 +1,17 @@
+import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
 
-import type { AudioCapture, AudioSource } from "./capture";
+import type { AudioCapture } from "./capture";
 import { SAMPLE_RATE, type SpeechEngine, type SpeechSegment, type SpeechSegmenter } from "./engine";
-
-/** One transcribed stretch of speech. */
-export interface Utterance {
-    source: AudioSource;
-    /** Milliseconds from the start of the recording to the start of the utterance. */
-    offsetMs: number;
-    text: string;
-}
 
 /** Receives the utterances of a recording in the order they were spoken per source. */
 export interface TranscriptSink {
-    write(utterance: Utterance): void | Promise<void>;
+    /**
+     * Called once before capturing starts, with the start time the offsets count from. A sink that
+     * throws here keeps the recording from starting.
+     */
+    open?(startedAt: number): void | Promise<void>;
+    write(utterance: TranscriptUtterance): void | Promise<void>;
     /** Called once after the last utterance. */
     close?(): void | Promise<void>;
 }
@@ -31,7 +29,7 @@ export interface RecordingSessionOptions {
  * to every sink.
  */
 export class RecordingSession {
-    private readonly pipelines = new Map<AudioSource, SourcePipeline>();
+    private readonly pipelines = new Map<TranscriptSource, SourcePipeline>();
     private queue = Promise.resolve();
     private startedAt = 0;
 
@@ -39,6 +37,9 @@ export class RecordingSession {
 
     async start() {
         this.startedAt = this.now();
+        for (const sink of this.options.sinks) {
+            await sink.open?.(this.startedAt);
+        }
         return await this.options.capture.start((source, samples) => {
             // An exception thrown from an `ipcMain` listener takes down the main process.
             try {
@@ -67,7 +68,7 @@ export class RecordingSession {
     }
 
     /** Creates a source's pipeline on its first chunk, which was captured before it arrived. */
-    private pipelineFor(source: AudioSource, firstChunk: Float32Array) {
+    private pipelineFor(source: TranscriptSource, firstChunk: Float32Array) {
         let pipeline = this.pipelines.get(source);
         if (!pipeline) {
             const chunkMs = firstChunk.length / SAMPLE_RATE * 1000;
@@ -82,7 +83,7 @@ export class RecordingSession {
         return pipeline;
     }
 
-    private enqueue(source: AudioSource, offsetMs: number, samples: Float32Array) {
+    private enqueue(source: TranscriptSource, offsetMs: number, samples: Float32Array) {
         this.queue = this.queue.then(async () => {
             const text = await this.options.engine.recognizer.transcribe(samples);
             if (!text) {
@@ -104,32 +105,13 @@ export class RecordingSession {
     }
 }
 
-/** Logs every utterance, labeled "Me" for the microphone and "Others" for the system audio. */
-export class LogSink implements TranscriptSink {
-    constructor(private readonly noteId: string) {}
-
-    write({ source, offsetMs, text }: Utterance) {
-        const speaker = source === "microphone" ? "Me" : "Others";
-        getLog().info(`Transcription [${formatOffset(offsetMs)}] ${speaker}: ${text}`);
-    }
-
-    close() {
-        getLog().info(`Transcription: recording for note ${this.noteId} stopped.`);
-    }
-}
-
-export function formatOffset(milliseconds: number) {
-    const seconds = Math.max(0, Math.floor(milliseconds / 1000));
-    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 /** Segments one source and logs its peak level every 5 s, to spot a silent source. */
 class SourcePipeline {
     private peak = 0;
     private peakSampleCount = 0;
 
     constructor(
-        private readonly source: AudioSource,
+        private readonly source: TranscriptSource,
         private readonly segmenter: SpeechSegmenter,
         /** Milliseconds from the start of the recording to the source's first sample. */
         private readonly firstSampleOffsetMs: number,

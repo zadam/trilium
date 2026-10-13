@@ -566,6 +566,7 @@
     "already-recording": "A meeting is already being recorded.",
     "note-not-found": "The meeting note no longer exists.",
     "model-missing": "No speech recognition model was found in {{- directory}}.",
-    "start-failed": "The recording could not start: {{- message}}"
+    "start-failed": "The recording could not start: {{- message}}",
+    "attachment-title": "Transcript"
   }
 }
