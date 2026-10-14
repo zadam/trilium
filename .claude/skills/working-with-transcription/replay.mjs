@@ -9,7 +9,8 @@
 //                          --set recognizer.maxActivePaths=8 --set vad.threshold=0.4
 //                          (the value is parsed as JSON when it parses, else kept as a string)
 //   --hotwords <a/b/c>     per-utterance hotwords, separated by "/" (needs modified_beam_search)
-//   --model <dir>          model directory (default: <data dir>/transcription-model)
+//   --model <dir>          model directory (default: <data dir>/transcription-model); takes
+//                          <part>.int8.onnx, else <part>.onnx, for encoder, decoder and joiner
 //   --source <name>        replay only microphone or system
 //   --pad <seconds>        extend each segment by this much audio on both sides before decoding
 //   --force                overwrite an existing transcript.<label>.json
@@ -124,9 +125,9 @@ console.log(`Wrote ${outputPath}`);
 function buildRecognizerConfig(settings, modelDir) {
     const modelConfig = {
         transducer: {
-            encoder: path.join(modelDir, "encoder.int8.onnx"),
-            decoder: path.join(modelDir, "decoder.int8.onnx"),
-            joiner: path.join(modelDir, "joiner.int8.onnx")
+            encoder: modelFile(modelDir, "encoder"),
+            decoder: modelFile(modelDir, "decoder"),
+            joiner: modelFile(modelDir, "joiner")
         },
         tokens: path.join(modelDir, "tokens.txt"),
         numThreads: DEFAULT_THREADS
@@ -136,6 +137,12 @@ function buildRecognizerConfig(settings, modelDir) {
         (MODEL_CONFIG_KEYS.has(key) ? modelConfig : config)[key] = value;
     }
     return config;
+}
+
+/** The int8 file the app ships, or the full-precision `<part>.onnx` of another export. */
+function modelFile(modelDir, part) {
+    const int8 = path.join(modelDir, `${part}.int8.onnx`);
+    return fs.existsSync(int8) ? int8 : path.join(modelDir, `${part}.onnx`);
 }
 
 function applySetting(target, assignment) {

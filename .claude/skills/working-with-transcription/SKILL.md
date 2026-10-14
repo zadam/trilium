@@ -1,6 +1,6 @@
 ---
 name: working-with-transcription
-description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, speaker detection (diarization), or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model. Includes replay.mjs, which transcribes a development recording again with changed settings, compare.mjs, which diffs two transcripts word by word with an error rate, and diarize.mjs, which labels a recording's speakers live and offline and times both. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
+description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, speaker detection (diarization), or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model — or to audio capture (stutters, clicks, the capture worklet). Includes replay.mjs, which transcribes a development recording again with changed settings, compare.mjs, which diffs two transcripts word by word with an error rate, external.mjs, which scores transcripts against another tool's export of the same meeting, hotwords.mjs, which builds the BPE vocabulary hotwords need and checks a glossary, diarize.mjs, which labels a recording's speakers live and offline and times both, capture-check.mjs, which finds capture damage in a recording, and capture-test.mjs, which plays a tone through the real capture code in Electron under load. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
 ---
 
 # Working with transcription
@@ -11,7 +11,7 @@ Desktop transcribes a meeting on the user's machine: no audio leaves it, and out
 
 ```
 capture window (hidden, offscreen)          main process
-  getUserMedia ─ microphone ─┐
+  getUserMedia ─ microphone ─┐  AudioWorklet "chunk-collector" (audio thread)
   getDisplayMedia ─ system ──┴─ IPC "transcription-samples", 4096-sample Float32 chunks
                                    │
                          RecordingSession ── audio taps (dev: WavRecorder → *.wav)
@@ -27,13 +27,14 @@ capture window (hidden, offscreen)          main process
 
 | File | Owns |
 |---|---|
-| `apps/desktop/src/services/transcription/capture.ts` | The hidden capture window and its page; microphone and loopback system audio |
+| `apps/desktop/src/services/transcription/capture.ts` | The hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
 | `…/engine.ts` | `loadSherpaEngine()`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
 | `…/session.ts` | `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
 | `…/attachment_sink.ts` | The `transcript` attachment, rewritten after every utterance |
 | `…/audio_recorder.ts` | Development recordings: `WavRecorder`, `TranscriptFileSink`, `getRecordingDirectory()` |
 | `…/index.ts` | IPC handlers, the state broadcast, which sinks and taps a recording gets |
-| `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()` |
+| `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()`; `cleanUtteranceText()`, the filler and stutter cleanup |
+| Cleanup | The stored transcript stays verbatim. `TranscriptView` shows each utterance through `cleanUtteranceText()` while the synced option `transcriptCleanupEnabled` (default on, the "Hide filler words" switch above the transcript) holds, and leaves out utterances it empties. The rules are English-only for stutters (a function-word list) and keep numbers, comma-separated repeats and "that that"/"it it" |
 | Speaker names | `TranscriptView` reads the stored transcript, applies `setSpeakerName()` and saves it whole through the generic `POST notes/:noteId/attachments?matchBy=attachmentId`. `AttachmentSink` re-reads `speakers` before each rewrite, so a rename during a recording survives, and an utterance a rename overwrote comes back with the next write |
 | `apps/client/src/widgets/type_widgets/transcript/TranscriptView.tsx` | Turns, clock times, the "Speaking…" line, fade-in |
 | `apps/client/src/widgets/launch_bar/RecordMeetingButton.tsx` | The launcher and `useTranscriptionState()` |
@@ -46,6 +47,8 @@ Both files go in `<data dir>/transcription-model`; for `pnpm desktop:start` that
 - `silero_vad.onnx` from the same release.
 
 Without the directory, starting fails with `transcription.model-missing`.
+
+The **full-precision** export is not in the releases: it is `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face (`encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt`; 2.4 GB). Keep it in its own directory (here `apps/desktop/data/transcription-model-fp32`, with `silero_vad.onnx` linked in) and pass `--model` to `replay.mjs`, which takes `<part>.int8.onnx` and falls back to `<part>.onnx`. `engine.ts` still names the int8 files.
 
 ## Development recordings
 
@@ -89,6 +92,14 @@ Per source it counts substitutions, deletions and insertions over the first tran
 
 To measure accuracy rather than difference, make a reference: copy the baseline to `transcript.reference.json` and correct only the `text` fields by listening to the WAVs. `reference` always counts as the ground truth, whichever side it is given on.
 
+When another tool transcribed the same meeting (a Teams or AppFlowy export, one `Name: text` line per turn), `external.mjs` scores every transcript against it, the microphone against the lines of `--me` and the system source against everyone else, and counts glossary terms:
+
+```bash
+node $S/external.mjs <recording> "<export>.txt" --me Elian live fp32 --terms "heap/STM32/Renesas"
+```
+
+The export has errors of its own (it wrote "MicroEdge" and "SortMap", and split words between speakers), so only the difference between labels means something. It writes numbers as digits and drops many fillers, which caps how close any of our transcripts can score.
+
 ## Speaker detection
 
 The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously on Electron's main thread for now, ~100 ms per utterance. `replay.mjs` does not label speakers; use `diarize.mjs`.
@@ -129,7 +140,50 @@ Two distinct voices on a clean recording are the easy case; similar voices, more
 - **One recording is an anecdote.** Check a change on several, with both sources, a non-native speaker, and another language; Parakeet v3 handles 25.
 - **A VAD change moves segment boundaries**, and the recognizer sees different context, so part of any difference is boundaries, not recognition.
 - **Compare RTF only on one machine with nothing else running.** It was 0.125–0.127 for consecutive runs of one recording here; the PoC commit's ~0.03 came from a faster machine.
-- **Check hotwords took effect**: they need `modified_beam_search` (with `greedy_search` sherpa ignores them without a word), and the replay's output must show no `Encode hotwords failed` line. With Parakeet's default settings, a hotword is looked up as a single entry of `tokens.txt`, so an ordinary word fails ("Cannot find ID for token androgynous"), and **one failing term drops the whole list** for that utterance. Encoding words into subword pieces needs `--set recognizer.modelingUnit=bpe --set recognizer.bpeVocab=<file>`, a vocabulary the Parakeet archive does not ship; it has to be exported from the NeMo tokenizer first.
+- **Check hotwords took effect**: they need `modified_beam_search` (with `greedy_search` sherpa ignores them without a word), and the replay's output must show no `Encode hotwords failed` line. See "Hotwords".
+
+## Hotwords
+
+Without a BPE vocabulary, sherpa looks a hotword up as a single entry of `tokens.txt`, so an ordinary word fails ("Cannot find ID for token androgynous") and **one failing term drops the whole list** for that utterance. The Parakeet archives ship no vocabulary; `hotwords.mjs` builds one:
+
+```bash
+node $S/hotwords.mjs vocab                          # <model dir>/bpe.vocab from NVIDIA's tokenizer.json
+node $S/hotwords.mjs vocab apps/desktop/data/transcription-model-fp32
+node $S/hotwords.mjs check "heap/STM32/Iconiq"      # how each term splits, and which are risky
+node $S/replay.mjs <rec> --model <dir> --label hot --hotwords "heap/STM32/Stéphane" \
+    --set recognizer.decodingMethod=modified_beam_search --set recognizer.maxActivePaths=4 \
+    --set recognizer.modelingUnit=bpe --set recognizer.bpeVocab=<dir>/bpe.vocab \
+    --set recognizer.hotwordsScore=1.5
+```
+
+`vocab` scores each piece by the rank of the merge that forms it, so a term splits as the model splits it (`▁J ava ▁he ap`). sherpa's own recipe gives every piece the same score (longest match); on the 44-minute call that missed Stéphane and Renesas, which the ranked vocabulary found.
+
+**sherpa's NeMo beam search keeps the boost of a hotword's first piece** (`offline-transducer-modified-beam-search-nemo-decoder.cc`, 1.13.8): the global `hotwordsScore` is added to the logits before the hypothesis score is read from them, and `Finalize()` takes back only the context-graph score of an unfinished match. Every token that starts a hotword is therefore boosted everywhere, finished or not. A per-phrase score (`term :2`) does not avoid it, since the pre-boost uses the global score; a global score of 0 still left stray words, through pruning. What works is keeping such entries out of the list: `check` flags a term whose first piece is a common word on its own (`Iconiq` → `▁I`, which put 19–25 stray "I" into the call; `heap` → `▁he`).
+
+What a glossary needs, from that call:
+
+- **Score 1.5.** At 3, "SOAR" appeared 161 times.
+- **Only terms spoken as they are written.** MicroEJ is said "micro-edge" and came out as "MicroE", "MicroEs", "MicroEch", worse than without it; IntelliJ became "Intel J". Those need a rewrite after recognition ("micro edge" → MicroEJ), not a hotword.
+- **No names that open like common words or other names**: Claire turned "Clear for me" into "Claire for me"; the Al- names produced "Alan White." and "Albert?".
+- **Drop terms the model already gets** (Iconiq was 10/10 without a hotword).
+- **The full-precision model.** On int8, beam search costs more than hotwords gain (microphone WER 17.0% against 15.3% greedy).
+
+## Capture quality
+
+```bash
+node $S/capture-check.mjs latest            # breaks at chunk boundaries, clipping, digital silence
+node $S/capture-test.mjs                    # the capture worklet vs the old ScriptProcessor, page busy
+node $S/capture-test.mjs --capture worklet --load all --seconds 30
+node $S/capture-test.mjs --stereo           # a left-only tone must arrive at amplitude 0.25
+```
+
+`capture-check.mjs` compares the step between neighbouring samples at each 4096-sample chunk boundary with the steps around it: about 1.0–1.3 is a clean join, about 2 means the capture corrupts the start of chunks, heard as a crackle four times a second. It also counts **dips**, 10 ms windows that fall to near silence between loud stretches and fade back within 40–70 ms, per minute with the worst minute.
+
+Dips are a second, separate defect, of the system loopback alone. In the Romanian Google Meet call they came at 3.4 a minute, up to 18, in a burst from minute 3 to 13 while the machine shared Figma from Chrome and the user typed in another Trilium; the microphone had none, the English Teams call 0.09 a minute. The user heard the call cleanly, so the audio was lost by the capture, and inside chunks (not at their boundaries), so upstream of `CAPTURE_PROCESSOR`: Chromium reading the loopback, or delivering it to the hidden page, late under load. `backgroundThrottling: false` might help on Windows, where Chromium lowers the priority of hidden windows; unverified, and `capture-test.mjs` cannot reproduce it, since its tone never passes through the loopback.
+
+`capture-test.mjs` runs the capture for real: Electron (Nix-aware, as `scripts/electron-start.mts`) opens a hidden offscreen window like `createCaptureWindow()`, plays a 440 Hz tone from a 48 kHz context into a `MediaStream` and captures it at 16 kHz with `CAPTURE_PROCESSOR` read from `capture.ts`, under a chosen load (`jank`: the page busy 300 ms of every 500; `block`: the main process blocked 150 ms a second; `burn`: every core busy). A pure sine is predictable from its two previous samples, so every break shows. The node options in its page mirror `pipe()` in `capture.ts`; change both together.
+
+The capture used a `ScriptProcessorNode` until the recordings showed breaks at every chunk boundary (ratio 1.6–2.35 on both tracks of three meetings). Its callback runs on the page's main thread, and when that thread is late Chromium hands it input whose first 128–640 samples (whole 128-frame render quanta) are corrupt, without changing the length. Under the `jank` load it broke 6–8 times in 20 s and 13 times in 30 s under `all`; the worklet, which runs on the audio thread, broke none. Saturating the CPU alone broke neither.
 
 ## Findings so far
 
@@ -155,11 +209,19 @@ On a 44-minute Teams call (both sources, English, non-native speakers), scored a
 | 20 s / 1.5 s, `blankPenalty` 1 | 15.3% | 26.6% | The penalty fixes the 1.5 s drops too, at more latency |
 | VAD threshold 0.4 / 0.3 | 15.6 / 16.0% | 25.8 / 26.0% | 0.3 recovers one quiet passage; otherwise noise |
 | `--pad` 0.2 / 0.4 s | 17.3 / 24.4% | 24.5 / 25.3% | Parakeet drops whole clauses again |
+| Full precision, greedy, no penalty | 13.3% | 24.9% | RTF 0.021 (int8 0.013); peak memory +1.6 GB; drops no clauses, so needs no `blankPenalty` (0.5 only adds junk on the system track) |
+| Full precision, beam 4 + a 27-term glossary at 1.5 | 13.4% | 24.8% | "heap" 47 times (the other tool: 47; int8: 29), "hip" 0 (8), STM32 3/3, Stéphane 3/3, Renesas 1/1 |
+
+The same 31-minute Romanian meeting (no reference, judged by reading): int8 is often nonsense ("Pă2, așa, să interinteg navigator"), full precision mostly readable ("Să integrăm navigatorul") but 62% of the microphone words differ between the two. Both slip into Spanish and Portuguese ("só", "como"), as Parakeet guesses the language per segment and cannot be told it; full precision drops diacritics on common words twice as often (82 against 36 of să/și/că/adică…). Whisper with a fixed language (sherpa-onnx supports it) is the untested next step.
 
 ## Traps
 
 - **Electron's V8 memory cage** rejects sherpa-onnx's external buffers: in the app, `vad.front(false)` (and `readWave(…, false)`). Plain Node, as in `replay.mjs`, does not need it.
-- **Capture chunks must stay a multiple of 512 samples.** `VadSegmenter.accept()` feeds whole 512-sample windows and drops a remainder; 4096 divides evenly.
+- **Capture chunks must stay a multiple of 512 samples.** `VadSegmenter.accept()` feeds whole 512-sample windows and drops a remainder; `CHUNK_SAMPLES` (4096) divides evenly.
+- **Never capture with a `ScriptProcessorNode`.** Its callback runs on the page's main thread and corrupts chunk starts when that thread is late (see "Capture quality").
+- **The capture worklet needs `channelCount: 1` with `channelCountMode: "explicit"`** to down-mix a stereo loopback to mono; with the default, `inputs[0][0]` is the left channel alone. `numberOfOutputs: 0` is fine: Chromium still runs the node.
+- **`ELECTRON_RUN_AS_NODE=1` is set in a VS Code terminal**, and turns the Electron binary into plain Node (`Cannot find module 'electron'`). `capture-test.mjs` clears it; clear it for any Electron script run from there.
+- **No top-level `await` in an ESM Electron entry**: it holds back `ready`, and the app hangs without output.
 - **`maxSpeechDuration` is not a hard cut**: past it, sherpa lowers the minimum silence to 0.1 s and raises the threshold to 0.9, so a segment ends at the next short gap, typically 1–2 s later.
 - **The capture window must be `offscreen`**: a hidden window renders no frames without it, and the self-capture that yields system audio times out. `getDisplayMedia()` needs a user gesture, which only `executeJavaScript(…, true)` gives a hidden window.
 - **Chromium's audio processing is applied during capture**, so the WAV already holds it and no replay can switch it off. The system track runs with echo cancellation, noise suppression and auto gain all off; the microphone keeps echo cancellation, so the meeting played through speakers is not transcribed twice, and its auto gain. Earlier recordings, including the one under "Findings so far", had noise suppression on both tracks and echo cancellation on the system track, so do not compare transcripts across that change.
@@ -171,6 +233,7 @@ On a 44-minute Teams call (both sources, English, non-native speakers), scored a
 ```bash
 pnpm --filter @triliumnext/desktop test transcription
 pnpm --filter @triliumnext/client test TranscriptView RecordMeetingButton
+pnpm --filter @triliumnext/commons test transcript
 ```
 
-The desktop specs fake the engine and the capture; nothing loads the model. Changes to recognition quality are measured with the scripts above, not with specs.
+The desktop specs fake the engine and the capture; nothing loads the model and nothing runs the capture page. Changes to recognition quality are measured with the scripts above, not with specs, and a change to the capture page with `capture-test.mjs`.
