@@ -848,7 +848,8 @@
     "page_author": "웹 클리핑한 페이지의 작성자입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
     "published_date": "웹 클리핑한 페이지의 게시일입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
     "modified_date": "웹 클리핑한 페이지의 마지막 수정일입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
-    "calendar_title_template": "캘린더에 표시되는 일정의 제목을 지정하며, 반복 일정의 경우 각 발생 날짜에 맞게 값이 채워집니다. <code>${title}</code> 은 제목, <code>${years}</code> 는 시작일로부터 경과한 만 나이(연수)를 나타내며, <code>${date}</code> 와 <code>${startDate}</code> 는 날짜를 나타냅니다. 예를 들어 매년 반복되는 생일 일정에는 <code>${title} (${years})</code> 형식을 사용할 수 있습니다."
+    "calendar_title_template": "캘린더에 표시되는 일정의 제목을 지정하며, 반복 일정의 경우 각 발생 날짜에 맞게 값이 채워집니다. <code>${title}</code> 은 제목, <code>${years}</code> 는 시작일로부터 경과한 만 나이(연수)를 나타내며, <code>${date}</code> 와 <code>${startDate}</code> 는 날짜를 나타냅니다. 예를 들어 매년 반복되는 생일 일정에는 <code>${title} (${years})</code> 형식을 사용할 수 있습니다.",
+    "board_hide_add_column": "보드 컬렉션에서 마지막 열 뒤에 있는 <em>열 추가</em> 버튼을 숨깁니다. 보드 또는 열의 컨텍스트 메뉴에서는 계속 열을 추가할 수 있습니다."
   },
   "attribute_editor": {
     "help_text_body1": "레이블을 추가하려면 예를 들어 <code>#rock</code> 값을 입력합니다. 값도 함께 추가하려면 예를 들어 <code>#year = 2020</code> 값을 입력합니다",
@@ -3427,7 +3428,9 @@
     "expand-column": "열 펼치기",
     "cards-selected_other": "{{count}}개 카드 선택됨",
     "delete-column-notes_other": "이 열의 노트 {{count}}개도 함께 삭제",
-    "select-all-cards": "모든 카드 선택"
+    "select-all-cards": "모든 카드 선택",
+    "show-add-column-button": "\"열 추가\" 버튼 표시",
+    "show-add-column-button-description": "보드 또는 열의 컨텍스트 메뉴에서도 열을 추가할 수 있습니다."
   },
   "dashboard_view": {
     "refresh-widget": "새로 고침",
@@ -4193,7 +4196,14 @@
       "arrange-content-in-0-equal-columns-side-by-side": "내용을 같은 너비의 %0개 열로 나란히 배치합니다.",
       "0-columns-1": "%0열 (%1)",
       "remove-layout": "레이아웃 제거",
-      "convert-image-to-a-drawing-canvas": "이미지를 그리기 캔버스로 변환"
+      "convert-image-to-a-drawing-canvas": "이미지를 그리기 캔버스로 변환",
+      "tab-alignment": "탭 정렬 위치",
+      "align-tabs-at-top": "탭을 위쪽에 배치",
+      "align-tabs-at-bottom": "탭을 아래쪽에 배치",
+      "type-the-content-of-the-first-column": "첫 번째 열의 내용을 입력하세요",
+      "type-the-content-of-the-second-column": "두 번째 열의 내용을 입력하세요",
+      "type-the-content-of-the-third-column": "세 번째 열의 내용을 입력하세요",
+      "type-the-content-of-the-fourth-column": "네 번째 열의 내용을 입력하세요"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
@@ -4496,6 +4506,7 @@
     "excerpt_description": "현재 이 노트의 일부만 보고 있습니다. {{icon}} 버튼을 눌러 전체 노트를 새 탭에서 여세요.",
     "edit_excerpt": "발췌 편집",
     "copy_other": "이 {{count}}개 블록의 참조 복사",
-    "copy_tab": "이 탭의 링크 복사"
+    "copy_tab": "이 탭의 링크 복사",
+    "copy_share_link_other": "이 {{count}}개 블록의 공개 링크 복사"
   }
 }
