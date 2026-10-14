@@ -341,8 +341,8 @@ importers:
         specifier: 17.0.16
         version: 17.0.16(i18next@26.4.2(typescript@6.0.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
       react-window:
-        specifier: 2.3.3
-        version: 2.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 2.3.4
+        version: 2.3.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-zoom-pan-pinch:
         specifier: 4.2.0
         version: 4.2.0(patch_hash=09dfeb6f635c52ef565ca21aec3f70eb129577661f85eb67262092e8cb9f8548)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -964,8 +964,8 @@ importers:
         specifier: 17.0.16
         version: 17.0.16(i18next@26.4.2(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       react-window:
-        specifier: 2.3.3
-        version: 2.3.3(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
+        specifier: 2.3.4
+        version: 2.3.4(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react-zoom-pan-pinch:
         specifier: 4.2.0
         version: 4.2.0(patch_hash=09dfeb6f635c52ef565ca21aec3f70eb129577661f85eb67262092e8cb9f8548)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
@@ -10101,8 +10101,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-window@2.3.3:
-    resolution: {integrity: sha512-uu/dTwysXp+YL+i5GW/cC/3JrqyE7oE6DYXYVlTeMaDSDgCI+UGo+XCKwXfS8uoFPih8TJYTnikqjAnbDvn75Q==}
+  react-window@2.3.4:
+    resolution: {integrity: sha512-CnRWoRg+ZnQkLcULSNdbgKJnfcexy9x+9ELOATmDlDv3ZoADyLJc22vN3JRvMV651A6gFwYBlxllU9X+H9dyhQ==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -20616,7 +20616,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 24.19.1
+      '@types/node': 24.19.2
       merge-stream: 2.0.0
       supports-color: 8.1.1
     optional: true
@@ -22529,12 +22529,12 @@ snapshots:
       react: 19.3.0
       tslib: 2.8.1
 
-  react-window@2.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-window@2.3.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-window@2.3.3(react-dom@18.3.1(react@19.3.0))(react@19.3.0):
+  react-window@2.3.4(react-dom@18.3.1(react@19.3.0))(react@19.3.0):
     dependencies:
       react: 19.3.0
       react-dom: 18.3.1(react@19.3.0)
