@@ -330,7 +330,7 @@
     "inbox-title": "Inbox",
     "tab-switcher-title": "Tab Switcher",
     "sidebar-chat-title": "AI Chat",
-    "record-meeting-title": "Record meeting"
+    "record-meeting-title": "Transcribe meeting"
   },
   "notes": {
     "new-note": "New note",
@@ -563,10 +563,10 @@
     "confirm": "Restart and start over"
   },
   "transcription": {
-    "already-recording": "A meeting is already being recorded.",
+    "already-recording": "A meeting is already being transcribed.",
     "note-not-found": "The meeting note no longer exists.",
     "model-missing": "No speech recognition model was found in {{- directory}}.",
-    "start-failed": "The recording could not start: {{- message}}",
+    "start-failed": "The transcription could not start: {{- message}}",
     "attachment-title": "Transcript"
   }
 }
