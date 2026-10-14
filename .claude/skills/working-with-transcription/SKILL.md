@@ -1,6 +1,6 @@
 ---
 name: working-with-transcription
-description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model. Includes replay.mjs, which transcribes a development recording again with changed settings, and compare.mjs, which diffs two transcripts word by word with an error rate. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
+description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, speaker detection (diarization), or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model. Includes replay.mjs, which transcribes a development recording again with changed settings, compare.mjs, which diffs two transcripts word by word with an error rate, and diarize.mjs, which labels a recording's speakers live and offline and times both. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
 ---
 
 # Working with transcription
@@ -87,6 +87,38 @@ node $S/compare.mjs latest reference beam4    # beam4's word error rate against 
 Per source it counts substitutions, deletions and insertions over the first transcript's words, and lists each difference with its time: `[-removed-] {+added+}`. Casing and punctuation are ignored unless `--strict`.
 
 To measure accuracy rather than difference, make a reference: copy the baseline to `transcript.reference.json` and correct only the `text` fields by listening to the WAVs. `reference` always counts as the ground truth, whichever side it is given on.
+
+## Speaker detection
+
+Not in the app yet. `diarize.mjs` labels one source's utterances by speaker in two ways and times both:
+
+- **live**: one embedding per utterance, in arrival order, joined to the closest speaker heard so far when the cosine similarity reaches `--threshold` (0.5), else a new speaker; utterances shorter than `--min-duration` (1.5 s) never start one. This is what can run during a meeting.
+- **offline**: sherpa-onnx's `OfflineSpeakerDiarization` over the whole source (pyannote segmentation, embeddings, clustering), mapped onto the utterances by overlap; `+Dn` marks an utterance in which a second speaker talks ≥ 1 s.
+
+```bash
+node $S/diarize.mjs latest                                   # both, TitaNet, system source
+node $S/diarize.mjs latest --mode offline --clusters 2       # when the speaker count is known
+node $S/diarize.mjs latest --embedding campplus --threads 2
+```
+
+Models, in `<data dir>/transcription-model/speaker/`, from `k2-fsa/sherpa-onnx` releases:
+
+- `nemo_en_titanet_small.onnx` (40 MB) and `3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` (30 MB) from `speaker-recongition-models` (the tag is misspelled upstream);
+- `segmentation.onnx` (6 MB): `model.onnx` of `sherpa-onnx-pyannote-segmentation-3-0.tar.bz2` from `speaker-segmentation-models`, renamed.
+
+`SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant: in the app they must not run on Electron's main thread (a worker thread, or the capture window).
+
+Results on the first recording (two minutes, interviewer and curator on the system track, one thread):
+
+| Method | Speakers found | Correct | Time for 117 s | CPU |
+|---|---|---|---|---|
+| live, TitaNet | 2 | Every single-speaker utterance; the other speaker scored 0.25 against 0.60–0.90 | 1.2 s (RTF 0.010), ~100 ms per utterance | ≈ wall |
+| live, CAM++ | 4 | Split both speakers | 1.4 s | ≈ wall |
+| offline, TitaNet, threshold 0.5 (default) | 6 | Over-split | 16.8 s (RTF 0.143) | ≈ wall |
+| offline, TitaNet, threshold 1.0 or `--clusters 2` | 2 | As live, and flagged the 4 utterances where the interviewer cuts in | 20.7 s (RTF 0.177); 11.7 s on 2 threads | 20.6 s; 23.3 s on 2 threads |
+| offline, CAM++, `--clusters 2` | 2 | Wrong split | 18.4 s | ≈ wall |
+
+Two distinct voices on a clean recording are the easy case; similar voices, more speakers and call-quality audio are untested.
 
 ## Measuring a change
 

@@ -16,14 +16,13 @@
 // Runs in plain Node (no Electron) with the sherpa-onnx-node the desktop app depends on.
 
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
 import {
     parseArgs, resolveRecording, TRANSCRIPT_VERSION, transcriptPath
 } from "./recordings.mjs";
+import { loadSherpa, SAMPLE_RATE, segmentSource } from "./sherpa.mjs";
 
-const SAMPLE_RATE = 16000;
 const DEFAULT_THREADS = 2;
 /** Recognizer settings that sherpa-onnx reads from `modelConfig`; the rest sit at the top level. */
 const MODEL_CONFIG_KEYS = new Set([
@@ -75,7 +74,7 @@ for (const [ source, { file, firstSampleOffsetMs } ] of Object.entries(recording
 
     let decodeMs = 0;
     let segmentCount = 0;
-    for (const segment of segmentSource(wave.samples, engine.vad ?? {}, modelDirectory)) {
+    for (const segment of segmentSource(sherpa, wave.samples, engine.vad ?? {}, modelDirectory)) {
         const stream = hotwords ? recognizer.createStream(hotwords) : recognizer.createStream();
         stream.acceptWaveform({ samples: segment.samples, sampleRate: SAMPLE_RATE });
         const decodeStarted = performance.now();
@@ -115,32 +114,6 @@ fs.writeFileSync(outputPath, JSON.stringify({
 }, null, 2));
 console.log(`Wrote ${outputPath}`);
 
-/**
- * Cuts one source into utterances with Silero VAD, as the live `VadSegmenter` does: 512-sample
- * windows, then a flush at the end.
- */
-function* segmentSource(samples, vadSettings, modelDir) {
-    const windowSize = vadSettings.windowSize ?? 512;
-    const vad = new sherpa.Vad({
-        sileroVad: { model: path.join(modelDir, "silero_vad.onnx"), ...vadSettings, windowSize },
-        sampleRate: SAMPLE_RATE,
-        numThreads: 1,
-        provider: "cpu"
-    }, 60);
-    const drain = function* () {
-        while (!vad.isEmpty()) {
-            yield vad.front();
-            vad.pop();
-        }
-    };
-    for (let i = 0; i + windowSize <= samples.length; i += windowSize) {
-        vad.acceptWaveform(samples.subarray(i, i + windowSize));
-        yield* drain();
-    }
-    vad.flush();
-    yield* drain();
-}
-
 function buildRecognizerConfig(settings, modelDir) {
     const modelConfig = {
         transducer: {
@@ -177,12 +150,6 @@ function applySetting(target, assignment) {
         node = node[key];
     }
     node[keys.at(-1)] = value;
-}
-
-function loadSherpa() {
-    const repoRoot = path.resolve(import.meta.dirname, "../../..");
-    const require = createRequire(path.join(repoRoot, "apps/desktop/package.json"));
-    return require("sherpa-onnx-node");
 }
 
 function fail(message) {
