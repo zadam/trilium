@@ -1887,6 +1887,11 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     --max-content-width: unset;
 }
 
+body.mobile {
+    /* The full width of a text note table, read by `TriliumTableScroll` and `table_scroll.css`. */
+    --table-reference-width: var(--preferred-max-content-width);
+}
+
 button.close:hover {
     text-shadow: none;
     color: currentColor;
