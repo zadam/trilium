@@ -122,6 +122,7 @@ describe("AttachmentSink", () => {
         const sink = new AttachmentSink("meeting");
         expect(() => sink.write({ source: "system", offsetMs: 0, text: "Hi" }))
             .toThrow("The transcript attachment was not created.");
+        expect(() => sink.save()).toThrow("The transcript attachment was not created.");
         expect(h.setContent).not.toHaveBeenCalled();
     });
 });

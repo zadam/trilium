@@ -7,12 +7,15 @@ import { TranscriptionWorker, type WorkerListeners } from "./worker_client";
 
 const h = vi.hoisted(() => ({
     fork: vi.fn(),
-    hasBundle: false
+    hasBundle: false,
+    hasSources: true
 }));
 
 vi.mock("electron", () => ({ utilityProcess: { fork: h.fork } }));
 vi.mock("fs", () => ({
-    default: { existsSync: (file: string) => !file.endsWith(".cjs") || h.hasBundle }
+    default: {
+        existsSync: (file: string) => file.endsWith(".cjs") ? h.hasBundle : h.hasSources
+    }
 }));
 
 class FakeProcess extends EventEmitter {
@@ -35,6 +38,7 @@ let listeners: {
 beforeEach(() => {
     vi.clearAllMocks();
     h.hasBundle = false;
+    h.hasSources = true;
     child = new FakeProcess();
     h.fork.mockReturnValue(child);
     listeners = {
@@ -56,9 +60,14 @@ describe("TranscriptionWorker", () => {
         new TranscriptionWorker(listeners);
         h.hasBundle = true;
         new TranscriptionWorker(listeners);
+        // Neither: the bundle's path, so the failure names the file a build would have.
+        h.hasBundle = false;
+        h.hasSources = false;
+        new TranscriptionWorker(listeners);
 
-        expect(h.fork.mock.calls.map(([ file ]) => path.basename(file as string)))
-            .toEqual([ "transcription_worker.ts", "transcription_worker.cjs" ]);
+        expect(h.fork.mock.calls.map(([ file ]) => path.basename(file as string))).toEqual([
+            "transcription_worker.ts", "transcription_worker.cjs", "transcription_worker.cjs"
+        ]);
     });
 
     it("resolves once the engine is ready, then relays what the process reports", async () => {

@@ -235,6 +235,35 @@ describe("RecordingSession", () => {
             "Transcription: identifying the speaker on system failed: Error: model crashed");
     });
 
+    it("logs each source's peak level every 5 s, to spot a silent source", async () => {
+        const { session, deliver } = createHarness();
+        await session.start();
+        for (let second = 1; second <= 5; second++) {
+            deliver("system", speechChunk(false), 1000 + second * 1000);
+        }
+        expect(log.info).toHaveBeenCalledExactlyOnceWith("Transcription: system peak 1.0000 over 5 s");
+        await session.stop();
+    });
+
+    it("logs a failed transcription or tap, and still finishes the rest", async () => {
+        const tap = { write: vi.fn(), close: vi.fn(() => {
+            throw new Error("disk full");
+        }) };
+        const { session, engine, deliver, written, onPendingChanged } = createHarness([], [ tap ]);
+        engine.recognizer.transcribe.mockRejectedValueOnce(new Error("decoder crashed"));
+        await session.start();
+
+        deliver("microphone", utteranceChunk(1, 0), 2000);
+        deliver("microphone", utteranceChunk(2, 16000), 3000);
+        await session.stop();
+        expect(written.map((utterance) => utterance.text)).toEqual([ "utterance 2" ]);
+        expect(onPendingChanged).toHaveBeenLastCalledWith([]);
+        expect(log.error.mock.calls).toEqual([
+            [ "Transcription: closing an audio tap failed: Error: disk full" ],
+            [ "Transcription failed: Error: decoder crashed" ]
+        ]);
+    });
+
     it("logs a failing source instead of throwing into the capture", async () => {
         const { session, engine, deliver } = createHarness();
         engine.createSegmenter.mockImplementationOnce(() => {
@@ -271,5 +300,11 @@ describe("PortCapture", () => {
         await capture.ended;
         capture.stop();
         expect(port.close).toHaveBeenCalledOnce();
+
+        const closed = new PortCapture();
+        const closedPort = Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
+        closed.connect(closedPort as never);
+        closedPort.emit("close");
+        await closed.ended;
     });
 });

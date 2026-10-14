@@ -234,6 +234,41 @@ describe("transcription IPC", () => {
         h.sink.write.mockReset();
     });
 
+    it("says why an unprotected transcript cannot be saved, and retries until a save works", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        h.sink.write.mockImplementationOnce(() => {
+            throw new Error("disk full");
+        });
+        h.listeners?.onUtterance({ source: "system", offsetMs: 0, text: "Hi" });
+        expect(h.broadcast.at(-1)?.error)
+            .toBe(`transcription.save-failed {"message":"disk full"}`);
+        await invoke("transcription-stop");
+
+        h.sink.save.mockImplementationOnce(() => {
+            throw new Error("still locked");
+        });
+        h.coreListeners.get("ENTER_PROTECTED_SESSION")?.();
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: saving a transcript still failed: Error: still locked");
+        h.coreListeners.get("ENTER_PROTECTED_SESSION")?.();
+        h.coreListeners.get("ENTER_PROTECTED_SESSION")?.();
+        expect(h.sink.save).toHaveBeenCalledTimes(2);
+    });
+
+    it("ignores a lost capture or a dead process once the recording has stopped", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        await invoke("transcription-stop");
+        const broadcasts = h.broadcast.length;
+
+        h.captureOptions?.onLost("the capture page ended (killed)");
+        h.listeners?.onUnexpectedExit(0);
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(h.broadcast).toHaveLength(broadcasts);
+        expect(h.worker.stop).toHaveBeenCalledOnce();
+    });
+
     it("renames a speaker through the recording that writes the transcript, until it stops", async () => {
         const invoke = await loadService();
         const rename = (noteId: unknown, key: unknown, name: unknown) =>

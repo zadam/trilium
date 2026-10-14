@@ -16,6 +16,12 @@ describe("SpeakerClusterer", () => {
         expect(clusterer.assign(new Float32Array([ 0, 0, 1 ]), 3)).toBe(3);
     });
 
+    it("takes a silent, all-zero embedding as a speaker of its own rather than dividing by zero", () => {
+        const clusterer = new SpeakerClusterer(options);
+        expect(clusterer.assign(new Float32Array([ 0, 0, 0 ]), 3)).toBe(1);
+        expect(clusterer.assign(new Float32Array([ 1, 0, 0 ]), 3)).toBe(2);
+    });
+
     it("lets a short utterance join a speaker but never start one or move a centroid", () => {
         const clusterer = new SpeakerClusterer(options);
         expect(clusterer.assign(new Float32Array([ 0, 1 ]), 1)).toBeNull();

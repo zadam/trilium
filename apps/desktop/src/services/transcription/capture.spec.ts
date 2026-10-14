@@ -1,9 +1,14 @@
 import { EventEmitter } from "events";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+type Handler = (...args: never[]) => unknown;
 
 const h = vi.hoisted(() => ({
     windows: [] as FakeWindow[],
-    log: { info: vi.fn(), error: vi.fn() }
+    log: { info: vi.fn(), error: vi.fn() },
+    sessionHandlers: {} as Record<string, Handler>,
+    /** How the page answers each call; the default starts the source. */
+    pageCalls: {} as Record<string, () => Promise<unknown>>
 }));
 
 /** The parts of a `BrowserWindow` the capture window uses. */
@@ -12,7 +17,7 @@ class FakeWindow {
     webContents = Object.assign(new EventEmitter(), {
         ipc: new EventEmitter(),
         postMessage: vi.fn(),
-        executeJavaScript: vi.fn(async (call: string) => call)
+        executeJavaScript: vi.fn((call: string) => h.pageCalls[call]?.() ?? Promise.resolve(call))
     });
 
     constructor() {
@@ -31,9 +36,15 @@ vi.mock("electron", () => ({
     BrowserWindow: FakeWindow,
     session: {
         fromPartition: () => ({
-            setPermissionRequestHandler: vi.fn(),
-            setPermissionCheckHandler: vi.fn(),
-            setDisplayMediaRequestHandler: vi.fn()
+            setPermissionRequestHandler: (handler: Handler) => {
+                h.sessionHandlers.request = handler;
+            },
+            setPermissionCheckHandler: (handler: Handler) => {
+                h.sessionHandlers.check = handler;
+            },
+            setDisplayMediaRequestHandler: (handler: Handler) => {
+                h.sessionHandlers.displayMedia = handler;
+            }
         })
     }
 }));
@@ -97,6 +108,15 @@ describe("CAPTURE_PROCESSOR", () => {
 });
 
 describe("CaptureWindow", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        h.pageCalls = {};
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     async function startCapture() {
         h.windows.length = 0;
         const onLost = vi.fn();
@@ -132,5 +152,67 @@ describe("CaptureWindow", () => {
 
         window.webContents.emit("render-process-gone", {}, { reason: "killed" });
         expect(onLost).not.toHaveBeenCalled();
+    });
+
+    it("grants its page the microphone and its own audio, and nothing else", async () => {
+        await startCapture();
+        const request = h.sessionHandlers.request as (...args: unknown[]) => void;
+        const check = h.sessionHandlers.check as (...args: unknown[]) => boolean;
+        const answers: boolean[] = [];
+        for (const permission of [ "media", "display-capture", "geolocation" ]) {
+            request({}, permission, (granted: boolean) => answers.push(granted));
+        }
+        expect(answers).toEqual([ true, true, false ]);
+        expect(check({}, "media")).toBe(true);
+        expect(check({}, "notifications")).toBe(false);
+
+        const displayMedia = h.sessionHandlers.displayMedia as (...args: unknown[]) => void;
+        const callback = vi.fn();
+        displayMedia({ frame: "the page" }, callback);
+        displayMedia({}, callback);
+        expect(callback.mock.calls).toEqual([
+            [ { video: "the page", audio: "loopback" } ],
+            [ { video: undefined, audio: "loopback" } ]
+        ]);
+    });
+
+    it("logs what its page logs", async () => {
+        const { window } = await startCapture();
+        window.webContents.emit("console-message", { message: "System track muted=false" });
+        expect(h.log.info).toHaveBeenCalledWith(
+            "Transcription (capture): System track muted=false");
+    });
+
+    it("runs the sources that start, and fails when none does", async () => {
+        h.pageCalls["captureSystemAudio()"] = () => Promise.reject(new Error("NotAllowedError"));
+        h.windows.length = 0;
+        const capture = new CaptureWindow({ onLost: vi.fn() });
+        expect(await capture.start("port" as never)).toEqual([ "microphone" ]);
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: system unavailable: NotAllowedError");
+
+        h.pageCalls["captureMicrophone()"] = () => Promise.reject(new Error("NotFoundError"));
+        await expect(new CaptureWindow({ onLost: vi.fn() }).start("port" as never))
+            .rejects.toThrow("No audio source could be captured.");
+        expect(h.windows[1].destroy).toHaveBeenCalledOnce();
+    });
+
+    it("closes a page that does not finish in time, and one that is already gone", async () => {
+        const { capture, window } = await startCapture();
+        h.pageCalls["finishCapture()"] = () => new Promise(() => {});
+        vi.useFakeTimers();
+        const stopped = capture.stop();
+        await vi.advanceTimersByTimeAsync(1000);
+        await stopped;
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: finishing the capture failed: timed out");
+        expect(window.destroy).toHaveBeenCalledOnce();
+
+        const crashed = await startCapture();
+        crashed.window.destroyed = true;
+        await crashed.capture.stop();
+        await crashed.capture.stop();
+        expect(crashed.window.webContents.executeJavaScript)
+            .not.toHaveBeenCalledWith("finishCapture()");
     });
 });

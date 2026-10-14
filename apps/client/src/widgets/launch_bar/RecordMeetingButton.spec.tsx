@@ -24,7 +24,9 @@ vi.mock("../../services/i18n", () => ({
     t: (key: string, options?: { date?: string }) => `${key} ${options?.date}`
 }));
 vi.mock("./launch_bar_widgets", () => ({
-    LaunchBarActionButton: () => null,
+    LaunchBarActionButton: ({ icon, text, disabled, onClick }: {
+        icon: string; text: string; disabled?: boolean; onClick: () => void;
+    }) => <button className={icon} disabled={disabled} onClick={onClick}>{text}</button>,
     useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" })
 }));
 
@@ -91,6 +93,13 @@ describe("toggleRecording", () => {
         expect(mocks.createNote).not.toHaveBeenCalled();
     });
 
+    it("starts nothing when no meeting note could be created", async () => {
+        mocks.getInboxNote.mockResolvedValue(null);
+        vi.spyOn(console, "warn").mockImplementation(() => {});
+        await toggleRecording("idle");
+        expect(transcription.start).not.toHaveBeenCalled();
+    });
+
     it("does nothing outside the desktop app", async () => {
         window.electronApi = undefined;
         await toggleRecording("idle");
@@ -125,6 +134,46 @@ describe("RecordMeetingButton", () => {
         await report({ status: "recording", noteId: "meeting" });
         await report({ error: "Stopped unexpectedly" });
         expect(mocks.showError).toHaveBeenCalledTimes(2);
+        window.electronApi = undefined;
+    });
+
+    it("shows the shared recording's state, and starts or stops it on a click", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        const report = (status: TranscriptionState["status"]) =>
+            act(() => onStateChanged({ status, noteId: "meeting", pendingSources: [] }));
+        const transcription = {
+            getState: async () => ({ status: "recording", noteId: "meeting", pendingSources: [] }),
+            onStateChanged: (callback: typeof onStateChanged) => {
+                onStateChanged = callback;
+                return () => {};
+            },
+            stop: vi.fn(async () => {}),
+            start: vi.fn(async () => "")
+        };
+        window.electronApi = { transcription } as unknown as typeof window.electronApi;
+        mocks.getInboxNote.mockResolvedValue({ noteId: "inbox", isProtected: false });
+        mocks.createNote.mockResolvedValue({ note: { noteId: "meeting" } });
+        let container: HTMLElement | null = null;
+        act(() => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        const button = () => (container as HTMLElement | null)?.querySelector("button");
+
+        await vi.waitFor(() => expect(button()?.className).toBe("bx bx-stop-circle"));
+        await act(async () => button()?.click());
+        expect(transcription.stop).toHaveBeenCalledOnce();
+
+        for (const status of [ "starting", "stopping" ] as const) {
+            await report(status);
+            expect(button()?.className).toBe("bx bx-loader-alt bx-spin");
+            expect(button()?.disabled).toBe(true);
+            expect(button()?.textContent).toContain(`record_meeting.${status}`);
+        }
+
+        await report("idle");
+        expect(button()?.className).toBe("bx bx-microphone");
+        await act(async () => button()?.click());
+        await vi.waitFor(() => expect(transcription.start).toHaveBeenCalledExactlyOnceWith("meeting"));
         window.electronApi = undefined;
     });
 });
