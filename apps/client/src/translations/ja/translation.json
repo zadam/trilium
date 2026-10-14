@@ -3785,7 +3785,14 @@
       "arrange-content-in-0-equal-columns-side-by-side": "コンテンツを %0 個の等幅な列に並べて配置します。",
       "0-columns-1": "%0 列 (%1)",
       "remove-layout": "レイアウトを削除",
-      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換"
+      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換",
+      "tab-alignment": "タブの配置",
+      "align-tabs-at-top": "タブを上部に配置",
+      "align-tabs-at-bottom": "タブを下部に配置",
+      "type-the-content-of-the-first-column": "1 列目の内容を入力",
+      "type-the-content-of-the-second-column": "2 列目の内容を入力",
+      "type-the-content-of-the-third-column": "3 列目の内容を入力",
+      "type-the-content-of-the-fourth-column": "4 列目の内容を入力"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4499,6 +4506,7 @@
     "excerpt": "抜粋",
     "excerpt_description": "現在、このノートの一部のみが表示されています。{{icon}} ボタンを押すと、新しいタブでノート全体を開くことができます。",
     "edit_excerpt": "抜粋を編集",
-    "copy_tab": "このタブへのリンクをコピー"
+    "copy_tab": "このタブへのリンクをコピー",
+    "copy_share_link_other": "これら {{count}} ブロックへの公開リンクをコピー"
   }
 }
