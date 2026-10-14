@@ -692,7 +692,9 @@
     "map_position": "Suíomh an nóta ar léarscáil íomhá, mar <code>x,y</code> i gcomhordanáidí na léarscáile: picteilíní na híomhá, mura sonraítear a mhalairt le <code>map:imageBounds</code>.",
     "map_shape": "Cruth a tharraingítear don nóta ar léarscáil íomhá, sa bhformáid chéanna le <code>geoShape</code> ach le pointí <code>x,y</code>, m.sh. <code>circle:400,300 50</code>.",
     "map_image_bounds": "Comhordanáidí choirnéil uachtaracha ar chlé agus íochtaracha ar dheis an léarscáile íomhá, i bhfoirm <code>x,y x,y</code>, m.sh. <code>-512,-512 512,512</code>. Léitear agus scríobhtar suíomhanna ar an léarscáil de réir na gcomhordanáidí sin seachas picteilíní na híomhá.",
-    "map_image": "Nóta íomhá chun an léarscáil gheografach a tharraingt ina háit, seachas léarscáil an domhain. Cuirtear marcóirí agus cruthanna ina n-áit ansin ag baint úsáide as <code>mapPosition</code> agus <code>mapShape</code>."
+    "map_image": "Nóta íomhá chun an léarscáil gheografach a tharraingt ina háit, seachas léarscáil an domhain. Cuirtear marcóirí agus cruthanna ina n-áit ansin ag baint úsáide as <code>mapPosition</code> agus <code>mapShape</code>.",
+    "board_hide_add_column": "I gcás bailiúcháin clár, folaítear an cnaipe <em>Cuir colún leis</em> i ndiaidh an cholúin dheireanaigh. Is féidir colúin a chur leis i gcónaí trí roghchlár comhthéacs an chláir nó an cholúin a úsáid.",
+    "calendar_title_template": "An chaoi a n-ainmnítear imeacht ar an bhféilire, agus é curtha i bhfeidhm ar gach uair a tharlaíonn imeacht athfhillteach. Úsáidtear <code>${title}</code>, <code>${years}</code> (blianta iomlána ón dáta tosaigh) agus na dátaí <code>${date}</code> agus <code>${startDate}</code>; mar shampla, <code>${title} (${years})</code> i gcás breithlae a tharlaíonn gach bliain."
   },
   "attribute_editor": {
     "help_text_body1": "Chun lipéad a chur leis, clóscríobh m.sh. <code>#rock</code> nó más mian leat luach a chur leis freisin ansin m.sh. <code>#year = 2020</code>",
@@ -877,7 +879,9 @@
       "end_date": "Dáta deiridh",
       "time": "Am",
       "start_time": "Am tosaithe",
-      "end_time": "Am deiridh"
+      "end_time": "Am deiridh",
+      "add_time": "Cuir am leis",
+      "remove_time": "Bain an t-am"
     },
     "recurrence": {
       "repeats": "Athdhéantar",
@@ -901,7 +905,9 @@
       "count": "Tar éis",
       "times": "amanna",
       "custom_rule": "Riail",
-      "custom_hint": "Riail athfhillteach iCalendar (RRULE) a deir níos mó ná mar is féidir leis na réimsí thuas. Cuirtear stop leis an athrá má ghlanann tú í."
+      "custom_hint": "Riail athfhillteach iCalendar (RRULE) a deir níos mó ná mar is féidir leis na réimsí thuas. Cuirtear stop leis an athrá má ghlanann tú í.",
+      "count_years": "Taispeáin líon na mblianta sa teideal",
+      "count_years_locked": "Tá teimpléad teidil ag an imeacht seo cheana féin, atá socraithe ar an nóta nó faighte aige trí oidhreacht. Athraigh é i saintréithe an nóta."
     },
     "expand_details": "Leathnaigh an t-imeacht chun an fhuinneog a líonadh",
     "restore_details": "Cuir an ócáid ar ais in aice lena háit sa fhéilire"
@@ -2206,7 +2212,8 @@
     "cannot-copy": "Níorbh fhéidir tagairt na híomhá a chóipeáil chuig an ghearrthaisce.",
     "image-copied-to-clipboard": "Tá an íomhá cóipeáilte chuig an ghearrthaisce.",
     "cannot-copy-image": "Níorbh fhéidir an íomhá a chóipeáil chuig an ghearrthaisce.",
-    "cannot-download": "Níorbh fhéidir an íomhá a íoslódáil."
+    "cannot-download": "Níorbh fhéidir an íomhá a íoslódáil.",
+    "cannot-convert-to-drawing": "Níorbh fhéidir an íomhá a thiontú ina chanbhás líníochta."
   },
   "clipboard": {
     "cut": "Gearradh nóta(í) isteach sa ghearrthaisce.",
@@ -2736,7 +2743,9 @@
     "delete-column-notes_few": "Scrios chomh maith na {{count}} nóta sa cholún seo",
     "delete-column-notes_many": "Scrios chomh maith na {{count}} nóta sa cholún seo",
     "delete-column-notes_other": "Scrios chomh maith na {{count}} nóta sa cholún seo",
-    "select-all-cards": "Roghnaigh gach cárta"
+    "select-all-cards": "Roghnaigh gach cárta",
+    "show-add-column-button": "Taispeáin an cnaipe \"Cuir colún leis\"",
+    "show-add-column-button-description": "Is féidir colúin a chur leis i gcónaí ó roghchlár comhthéacs an bhoird nó ó roghchlár colúin."
   },
   "presentation_view": {
     "edit-slide": "Cuir an sleamhnán seo in eagar",
@@ -2763,7 +2772,21 @@
     "remove_from_calendar_confirmation": "An bhfuil tú cinnte gur mian leat an ócáid \"{{title}}\" a bhaint den fhéilire?",
     "new_event": "Imeacht nua",
     "draft_title_placeholder": "Cuir teideal leis",
-    "create_event": "Cruthaigh"
+    "create_event": "Cruthaigh",
+    "duration_minutes": "{{minutes}} nóiméad",
+    "duration_hours": "{{hours}} uair",
+    "duration_hours_minutes": "{{hours}} u {{minutes}} nóim",
+    "properties": "Airíonna an fhéilire",
+    "event_templates": "Teimpléid imeachtaí",
+    "event_templates_hint": "Roghnaigh na cineálacha nótaí agus na teimpléid nótaí ar mhaith leat a úsáid agus imeachtaí féilire nua á gcruthú agat.",
+    "new_template_name": "Teimpléad imeachta nua",
+    "event_template": "Roghnaigh teimpléad imeachta",
+    "more_templates": "Tuilleadh teimpléad…",
+    "template": "Teimpléad",
+    "general": "Ginearálta",
+    "event_attributes": "Tréithe na hócáide",
+    "event_attributes_hint": "Roghnaigh cé na tréithe a thaispeánfar ar na himeachtaí, agus cén t-ord ina dtaispeánfar iad. Bíonn tréithe nua i bhfolach go dtí go gcuireann tú ar siúl iad.",
+    "event_attributes_overridden": "Tá an lipéad `calendar:displayedAttributes` ag an bhféilire seo, agus mar sin taispeánann na himeachtaí na tréithe atá liostaithe ansin seachas na cinn atá roghnaithe anseo."
   },
   "command_palette": {
     "tree-action-name": "Crann: {{name}}",
@@ -3945,7 +3968,15 @@
       "0-columns-layout": "Leagan amach %0 colún",
       "arrange-content-in-0-equal-columns-side-by-side": "Socraigh an t-ábhar i gcolúin chomhionanna taobh le taobh.",
       "0-columns-1": "%0 colún (%1)",
-      "remove-layout": "Bain an leagan amach"
+      "remove-layout": "Bain an leagan amach",
+      "convert-image-to-a-drawing-canvas": "Tiontaigh íomhá go canbhás líníochta",
+      "tab-alignment": "Ailíniú cluaisíní",
+      "align-tabs-at-top": "Ailínigh na cluaisíní ag an mbarr",
+      "align-tabs-at-bottom": "Ailínigh na cluaisíní ag an mbun",
+      "type-the-content-of-the-first-column": "Clóscríobh ábhar na chéad cholúine",
+      "type-the-content-of-the-second-column": "Clóscríobh ábhar an dara colún",
+      "type-the-content-of-the-third-column": "Clóscríobh ábhar an tríú colún",
+      "type-the-content-of-the-fourth-column": "Clóscríobh ábhar na ceathrú colúine"
     },
     "task-state-dropped-title": "Stádas tascanna neamhbhailí",
     "task-state-dropped-message_one": "Tá sainmhíniú stádais tasc saincheaptha neamhbhailí agus níor tugadh aird air.",
@@ -4775,6 +4806,11 @@
     "untitled": "Bloc",
     "excerpt": "Sliocht",
     "excerpt_description": "Níl á fheiceáil agat faoi láthair ach cuid den nóta seo. Brúigh an cnaipe {{icon}} chun an nóta iomlán a oscailt i gcluaisín nua.",
-    "edit_excerpt": "Cuir sliocht in eagar"
+    "edit_excerpt": "Cuir sliocht in eagar",
+    "copy_share_link_one": "Cóipeáil an nasc poiblí chuig an mbloc seo",
+    "copy_share_link_two": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo",
+    "copy_share_link_few": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo",
+    "copy_share_link_many": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo",
+    "copy_share_link_other": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo"
   }
 }
