@@ -724,14 +724,19 @@ describe("preload script", () => {
     describe("transcription", () => {
         const transcription = () => getGroup("transcription");
 
-        it("start, stop and getState invoke their IPC channels", async () => {
+        it("start, stop, getState and renameSpeaker invoke their IPC channels", async () => {
             await transcription().start("meeting");
             await transcription().stop();
             await transcription().getState();
+            await transcription().renameSpeaker("meeting", "system:1", "Alexandra");
             expect(ipcRendererInvoked).toEqual([
                 { channel: "transcription-start", args: [ "meeting" ] },
                 { channel: "transcription-stop", args: [] },
-                { channel: "transcription-get-state", args: [] }
+                { channel: "transcription-get-state", args: [] },
+                {
+                    channel: "transcription-rename-speaker",
+                    args: [ "meeting", "system:1", "Alexandra" ]
+                }
             ]);
         });
 

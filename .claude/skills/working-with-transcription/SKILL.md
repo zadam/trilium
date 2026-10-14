@@ -26,7 +26,11 @@ main process: TranscriptionWorker → AttachmentSink (transcript attachment)
               state broadcast "transcription-state" (status, noteId, pendingSources, error)
 ```
 
-The main process opens the capture window, starts the transcription process and connects the two with a `MessageChannelMain`; per chunk it does nothing, per utterance it writes the attachment. Each recording gets a process of its own, which loads the model (~1.3 s) and exits after `stop`. If it dies mid-recording, the main process closes the capture window, keeps what was written, and broadcasts an `idle` state with an `error`, which the launcher shows as a toast.
+The main process opens the capture window, starts the transcription process and connects the two with a `MessageChannelMain`; per chunk it does nothing, per utterance it writes the attachment. Each recording gets a process of its own, which loads the model (~1.3 s) and exits after `stop`.
+
+- **Stopping** runs in order: `CaptureWindow.stop()` calls the page's `finishCapture()`, which flushes each worklet's partial chunk (padded with silence to whole 512-sample VAD windows) and posts `{ end: true }`; then the process, told to stop, waits for that marker (it travels on another port than the stop request, up to 2 s) before flushing the VADs and the decode queue.
+- **Quitting** during a recording is held back (`before-quit`) until that stop finishes, at most 15 s.
+- **Failures** reach every window as a state with an `error`, which the launcher shows as a toast; `getState()` never returns it. The process dying ends the recording, keeping what was written; the capture page crashing or every source ending (`render-process-gone`, a track's `ended`) stops it normally, transcribing what was captured; a transcript that cannot be saved (a protected note while the protected session is locked) is reported once and kept in memory, and `AttachmentSink.save()` writes it on the next utterance or on `ENTER_PROTECTED_SESSION`.
 
 | File | Owns |
 |---|---|
@@ -43,7 +47,7 @@ The main process opens the capture window, starts the transcription process and 
 Nothing the transcription process imports may reach `@triliumnext/core` or `@triliumnext/server` (the data directory module creates directories when it loads): it gets its paths and a `Logger` from the main process.
 | `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()`; `cleanUtteranceText()`, the filler and stutter cleanup |
 | Cleanup | The stored transcript stays verbatim. `TranscriptView` shows each utterance through `cleanUtteranceText()` while the synced option `transcriptCleanupEnabled` (default on, the "Hide filler words" switch above the transcript) holds, and leaves out utterances it empties. The rules are English-only for stutters (a function-word list) and keep numbers, comma-separated repeats and "that that"/"it it" |
-| Speaker names | `TranscriptView` reads the stored transcript, applies `setSpeakerName()` and saves it whole through the generic `POST notes/:noteId/attachments?matchBy=attachmentId`. `AttachmentSink` re-reads `speakers` before each rewrite, so a rename during a recording survives, and an utterance a rename overwrote comes back with the next write |
+| Speaker names | While its note is being transcribed, `TranscriptView` renames through `electronApi.transcription.renameSpeaker()`: `AttachmentSink`, the only writer then, applies `setSpeakerName()` to the stored names in one transaction, so no utterance is overwritten. Otherwise it saves the stored transcript whole through the generic `POST notes/:noteId/attachments?matchBy=attachmentId`; attachments get no route of their own. `AttachmentSink` re-reads `speakers` before each rewrite, so a rename from another window or device survives the next utterance |
 | `apps/client/src/widgets/type_widgets/transcript/TranscriptView.tsx` | Turns, clock times, the "Speaking…" line, fade-in |
 | `apps/client/src/widgets/launch_bar/RecordMeetingButton.tsx` | The launcher and `useTranscriptionState()` |
 

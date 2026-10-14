@@ -1,22 +1,34 @@
 import type { TranscriptionState } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CaptureWindowOptions } from "./capture";
 import type { WorkerListeners } from "./worker_client";
 
 const h = vi.hoisted(() => ({
     handlers: new Map<string, (...args: unknown[]) => unknown>(),
+    appListeners: new Map<string, (...args: unknown[]) => unknown>(),
+    quit: vi.fn(),
     broadcast: [] as TranscriptionState[],
     notes: new Set<string>([ "meeting" ]),
+    isProtected: false,
+    isProtectedSessionAvailable: false,
+    coreListeners: new Map<string, () => void>(),
     isDev: false,
     isModelInstalled: true,
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
+    captureOptions: null as CaptureWindowOptions | null,
     worker: { start: vi.fn(), connectCapture: vi.fn(), stop: vi.fn(), kill: vi.fn() },
     capture: { start: vi.fn(), stop: vi.fn() },
-    sink: { open: vi.fn(), write: vi.fn() }
+    sink: { open: vi.fn(), write: vi.fn(), save: vi.fn(), renameSpeaker: vi.fn() }
 }));
 
 vi.mock("electron", () => ({
+    app: {
+        on: (event: string, listener: (...args: unknown[]) => unknown) =>
+            h.appListeners.set(event, listener),
+        quit: h.quit
+    },
     ipcMain: {
         handle: (channel: string, handler: (...args: unknown[]) => unknown) =>
             h.handlers.set(channel, handler)
@@ -39,8 +51,16 @@ vi.mock("electron", () => ({
 }));
 vi.mock("fs", () => ({ default: { existsSync: () => h.isModelInstalled } }));
 vi.mock("@triliumnext/core", () => ({
-    becca: { getNote: (noteId: string) => h.notes.has(noteId) ? { noteId } : null },
+    becca: {
+        getNote: (noteId: string) =>
+            h.notes.has(noteId) ? { noteId, isProtected: h.isProtected } : null
+    },
+    events: {
+        ENTER_PROTECTED_SESSION: "ENTER_PROTECTED_SESSION",
+        subscribe: (event: string, listener: () => void) => h.coreListeners.set(event, listener)
+    },
     getLog: () => h.log,
+    protected_session: { isProtectedSessionAvailable: () => h.isProtectedSessionAvailable },
     utils: { isDev: () => h.isDev }
 }));
 vi.mock("i18next", () => ({
@@ -53,12 +73,18 @@ vi.mock("./capture", () => ({
     CaptureWindow: class {
         start = h.capture.start;
         stop = h.capture.stop;
+
+        constructor(options: CaptureWindowOptions) {
+            h.captureOptions = options;
+        }
     }
 }));
 vi.mock("./attachment_sink", () => ({
     AttachmentSink: class {
         open = h.sink.open;
         write = h.sink.write;
+        save = h.sink.save;
+        renameSpeaker = h.sink.renameSpeaker;
 
         constructor(readonly noteId: string) {}
     }
@@ -89,12 +115,18 @@ async function loadService() {
 beforeEach(() => {
     vi.clearAllMocks();
     h.handlers.clear();
+    h.appListeners.clear();
+    h.coreListeners.clear();
+    h.isProtected = false;
+    h.isProtectedSessionAvailable = false;
     h.broadcast.length = 0;
     h.isDev = false;
     h.isModelInstalled = true;
     h.listeners = null;
     h.worker.start.mockResolvedValue({ type: "ready", startedAt: STARTED_AT, settings: {} });
     h.capture.start.mockResolvedValue([ "microphone", "system" ]);
+    h.worker.stop.mockResolvedValue(undefined);
+    h.capture.stop.mockResolvedValue(undefined);
 });
 
 describe("transcription IPC", () => {
@@ -115,6 +147,23 @@ describe("transcription IPC", () => {
             "stopping", "stopping", "idle", "idle"
         ]);
         expect(await invoke("transcription-get-state")).toEqual(IDLE);
+    });
+
+    it("stops the engine only once the capture window has posted what it still held", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        let finishCapture = () => {};
+        h.capture.stop.mockImplementationOnce(() => new Promise<void>((resolve) => {
+            finishCapture = resolve;
+        }));
+
+        const stopped = invoke("transcription-stop");
+        await Promise.resolve();
+        expect(h.capture.stop).toHaveBeenCalledOnce();
+        expect(h.worker.stop).not.toHaveBeenCalled();
+        finishCapture();
+        await stopped;
+        expect(h.worker.stop).toHaveBeenCalledOnce();
     });
 
     it("connects the capture window to the transcription process once that is ready", async () => {
@@ -157,6 +206,56 @@ describe("transcription IPC", () => {
         const stopping = h.broadcast.find((state) => state.status === "stopping");
         expect(stopping?.pendingSources).toEqual([ "system" ]);
         expect(h.broadcast.at(-1)).toEqual(IDLE);
+    });
+
+    it("says once that a locked protected session holds back the transcript, and saves it on unlocking", async () => {
+        h.isProtected = true;
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        h.sink.write.mockImplementation(() => {
+            throw new Error("Cannot update content of blob since protected session is not available.");
+        });
+        const utterance = { source: "system" as const, offsetMs: 0, text: "Hi" };
+
+        h.listeners?.onUtterance(utterance);
+        h.listeners?.onUtterance(utterance);
+        const errors = h.broadcast.filter((state) => state.error);
+        expect(errors).toEqual([ 1, 2 ].map(() => ({
+            status: "recording", noteId: "meeting", pendingSources: [],
+            error: "transcription.save-locked"
+        })));
+        expect(await invoke("transcription-get-state")).not.toHaveProperty("error");
+
+        await invoke("transcription-stop");
+        h.coreListeners.get("ENTER_PROTECTED_SESSION")?.();
+        expect(h.sink.save).toHaveBeenCalledOnce();
+        h.coreListeners.get("ENTER_PROTECTED_SESSION")?.();
+        expect(h.sink.save).toHaveBeenCalledOnce();
+        h.sink.write.mockReset();
+    });
+
+    it("renames a speaker through the recording that writes the transcript, until it stops", async () => {
+        const invoke = await loadService();
+        const rename = (noteId: unknown, key: unknown, name: unknown) =>
+            invoke("transcription-rename-speaker", noteId, key, name);
+        expect(await rename("meeting", "system:1", "Alexandra")).toBe(false);
+
+        await invoke("transcription-start", "meeting");
+        expect(await rename("meeting", "system:1", "Alexandra")).toBe(true);
+        expect(h.sink.renameSpeaker).toHaveBeenCalledExactlyOnceWith("system:1", "Alexandra");
+        expect(await rename("other", "system:1", "Bob")).toBe(false);
+        expect(await rename("meeting", "system:1", 42)).toBe(false);
+
+        let finishStopping = () => {};
+        h.worker.stop.mockImplementationOnce(() => new Promise<void>((resolve) => {
+            finishStopping = resolve;
+        }));
+        const stopped = invoke("transcription-stop");
+        expect(await rename("meeting", "microphone", "Elian")).toBe(true);
+        finishStopping();
+        await stopped;
+        expect(await rename("meeting", "microphone", "Elian")).toBe(false);
+        expect(h.sink.renameSpeaker).toHaveBeenCalledTimes(2);
     });
 
     it("keeps the audio and the transcript as produced only in development builds", async () => {
@@ -206,6 +305,21 @@ describe("transcription IPC", () => {
         expect(h.worker.stop).not.toHaveBeenCalled();
     });
 
+    it("stops a recording whose capture was lost, keeping its queued speech, and says why", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+
+        h.captureOptions?.onLost("every audio source ended");
+        await vi.waitFor(() => expect(h.broadcast.at(-1))
+            .toEqual({ ...IDLE, error: "transcription.capture-lost" }));
+        expect(h.capture.stop).toHaveBeenCalledOnce();
+        expect(h.worker.stop).toHaveBeenCalledOnce();
+        expect(h.worker.kill).not.toHaveBeenCalled();
+        expect(await invoke("transcription-get-state")).toEqual(IDLE);
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: the capture stopped: every audio source ended.");
+    });
+
     it("ends a recording whose transcription process died, and says why once", async () => {
         const invoke = await loadService();
         await invoke("transcription-start", "meeting");
@@ -221,5 +335,42 @@ describe("transcription IPC", () => {
         await invoke("transcription-stop");
         expect(h.worker.stop).not.toHaveBeenCalled();
         expect(await invoke("transcription-start", "meeting")).toBe("");
+    });
+
+    it("finishes the transcription before the application quits", async () => {
+        const invoke = await loadService();
+        const quit = () => {
+            const event = { preventDefault: vi.fn() };
+            h.appListeners.get("before-quit")?.(event);
+            return event;
+        };
+        expect(quit().preventDefault).not.toHaveBeenCalled();
+
+        await invoke("transcription-start", "meeting");
+        let finishStopping = () => {};
+        h.worker.stop.mockImplementationOnce(() => new Promise<void>((resolve) => {
+            finishStopping = resolve;
+        }));
+        expect(quit().preventDefault).toHaveBeenCalledOnce();
+        await vi.waitFor(() => expect(h.worker.stop).toHaveBeenCalledOnce());
+        expect(quit().preventDefault).toHaveBeenCalledOnce();
+        expect(h.quit).not.toHaveBeenCalled();
+
+        finishStopping();
+        await vi.waitFor(() => expect(h.quit).toHaveBeenCalledOnce());
+        expect(await invoke("transcription-get-state")).toEqual(IDLE);
+        expect(quit().preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("quits regardless once the transcription takes too long to finish", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        h.worker.stop.mockImplementationOnce(() => new Promise<void>(() => {}));
+        vi.useFakeTimers();
+
+        h.appListeners.get("before-quit")?.({ preventDefault: vi.fn() });
+        await vi.advanceTimersByTimeAsync(15_000);
+        expect(h.quit).toHaveBeenCalledOnce();
+        vi.useRealTimers();
     });
 });

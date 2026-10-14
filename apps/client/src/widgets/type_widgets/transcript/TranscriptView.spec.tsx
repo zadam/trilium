@@ -86,6 +86,21 @@ describe("transcript helpers", () => {
         ]);
     });
 
+    it("orders turns by when they were spoken, not by when they were transcribed", () => {
+        // The microphone's short reply ends, and is stored, before the long system utterance
+        // that started first.
+        const turns = groupIntoTurns([
+            { source: "microphone", offsetMs: 6000, durationMs: 1000, text: "Yes." },
+            { source: "system", offsetMs: 0, durationMs: 15_000, text: "Can you hear me?" },
+            { source: "system", offsetMs: 16_000, durationMs: 1000, text: "Good." }
+        ]);
+        expect(turns.map(({ source, offsetMs }) => ({ source, offsetMs }))).toEqual([
+            { source: "system", offsetMs: 0 },
+            { source: "microphone", offsetMs: 6000 },
+            { source: "system", offsetMs: 16_000 }
+        ]);
+    });
+
     it("starts a new paragraph within a turn after a long pause", () => {
         const turns = groupIntoTurns([
             { source: "system", offsetMs: 0, durationMs: 8000, text: "First point," },
@@ -282,6 +297,48 @@ describe("TranscriptView", () => {
         press(unchanged, "Enter");
         await new Promise((resolve) => setTimeout(resolve));
         expect(h.post).toHaveBeenCalledTimes(2);
+    });
+
+    it("renames a speaker through the recording that writes the transcript, while it runs", async () => {
+        const renameSpeaker = vi.fn(async () => true);
+        window.electronApi = {
+            transcription: {
+                getState: async () => ({ status: "recording", noteId: "meeting", pendingSources: [] }),
+                onStateChanged: () => () => {},
+                renameSpeaker
+            }
+        } as unknown as typeof window.electronApi;
+        const getBlob = vi.fn(async () => ({
+            content: transcript([ { source: "system", offsetMs: 0, speaker: 1, text: "Hi." } ])
+        }));
+        const attachment = { attachmentId: "transcript1", ownerId: "meeting", getBlob };
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const speaker = () => container.querySelector<HTMLElement>(".transcript-speaker");
+        await vi.waitFor(() => expect(speaker()).not.toBeNull());
+        const posted = h.post.mock.calls.length;
+
+        await act(async () => speaker()?.click());
+        const input = container.querySelector<HTMLInputElement>(".transcript-speaker-editor");
+        expect(input).not.toBeNull();
+        act(() => {
+            if (input) {
+                input.value = "Alexandra";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+        act(() => {
+            input?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        });
+        await vi.waitFor(() => expect(renameSpeaker)
+            .toHaveBeenCalledExactlyOnceWith("meeting", "system:1", "Alexandra"));
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(h.post).toHaveBeenCalledTimes(posted);
+        expect(getBlob).toHaveBeenCalledOnce();
+        window.electronApi = undefined;
     });
 
     it("shows who is speaking in the recorded meeting, before the words arrive", async () => {

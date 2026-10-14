@@ -7,9 +7,25 @@ import path from "path";
 import { SAMPLE_RATE } from "./protocol";
 
 const PORT_CHANNEL = "transcription-capture-port";
+const SOURCE_ENDED_CHANNEL = "transcription-source-ended";
 
-/** Samples per message. `VadSegmenter` drops what does not fill a 512-sample window. */
+export interface CaptureWindowOptions {
+    /**
+     * Called once when capturing stops on its own: the page crashed, or every source ended (a
+     * device was unplugged, the system audio went away). Not called after
+     * {@link CaptureWindow.stop}.
+     */
+    onLost(reason: string): void;
+}
+
+/** Samples per message. A multiple of {@link VAD_WINDOW_SAMPLES}. */
 const CHUNK_SAMPLES = 4096;
+
+/** `VadSegmenter` drops what does not fill a window, so the last chunk is padded to whole ones. */
+const VAD_WINDOW_SAMPLES = 512;
+
+/** How long {@link CaptureWindow.stop} waits for the page to post what it still holds. */
+const FINISH_TIMEOUT_MS = 1000;
 
 /** The page function that starts each source. */
 const SOURCE_STARTERS = [
@@ -24,6 +40,10 @@ const SOURCE_STARTERS = [
  */
 export class CaptureWindow {
     private window: BrowserWindow | null = null;
+    private readonly running = new Set<TranscriptSource>();
+    private isLost = false;
+
+    constructor(private readonly options: CaptureWindowOptions) {}
 
     /**
      * Starts every source it can, posting to `port`, and returns the ones that run.
@@ -33,6 +53,15 @@ export class CaptureWindow {
     async start(port: MessagePortMain) {
         const window = await createCaptureWindow();
         this.window = window;
+        window.webContents.on("render-process-gone", (_event, { reason }) =>
+            this.lose(`the capture page ended (${reason})`));
+        window.webContents.ipc.on(SOURCE_ENDED_CHANNEL, (_event, source: TranscriptSource) => {
+            getLog().error(`Transcription: the ${source} source ended.`);
+            this.running.delete(source);
+            if (!this.running.size) {
+                this.lose("every audio source ended");
+            }
+        });
         window.webContents.postMessage(PORT_CHANNEL, null, [ port ]);
 
         const sources: TranscriptSource[] = [];
@@ -43,6 +72,7 @@ export class CaptureWindow {
                 const tracks = await window.webContents.executeJavaScript(call, true);
                 getLog().info(`Transcription: capturing ${source} from ${tracks}.`);
                 sources.push(source);
+                this.running.add(source);
             } catch (e) {
                 const message = (e as Error)?.message ?? e;
                 getLog().error(`Transcription: ${source} unavailable: ${message}`);
@@ -56,11 +86,38 @@ export class CaptureWindow {
         return sources;
     }
 
-    stop() {
-        if (this.window && !this.window.isDestroyed()) {
-            this.window.destroy();
-        }
+    /**
+     * Posts what the worklets still hold, then an end marker the transcription process waits for,
+     * and closes the window. Gives up on the page after {@link FINISH_TIMEOUT_MS}.
+     */
+    async stop() {
+        const window = this.window;
         this.window = null;
+        this.running.clear();
+        if (!window || window.isDestroyed()) {
+            return;
+        }
+        try {
+            await Promise.race([
+                window.webContents.executeJavaScript("finishCapture()"),
+                new Promise((_resolve, reject) => setTimeout(
+                    () => reject(new Error("timed out")), FINISH_TIMEOUT_MS))
+            ]);
+        } catch (e) {
+            const message = (e as Error)?.message ?? e;
+            getLog().error(`Transcription: finishing the capture failed: ${message}`);
+        } finally {
+            if (!window.isDestroyed()) {
+                window.destroy();
+            }
+        }
+    }
+
+    private lose(reason: string) {
+        if (this.window && !this.isLost) {
+            this.isLost = true;
+            this.options.onLost(reason);
+        }
     }
 }
 
@@ -109,15 +166,29 @@ async function createCaptureWindow() {
 /**
  * The audio worklet that collects a source into chunks of `processorOptions.chunkSamples`. It runs
  * on the audio rendering thread, where a busy page cannot delay it and corrupt the start of a
- * chunk. `.claude/skills/working-with-transcription/capture-test.mjs` reads it from this file.
+ * chunk. A `"flush"` message posts the partial chunk, padded with silence to whole
+ * `processorOptions.windowSamples`, then `"flushed"`.
+ * `.claude/skills/working-with-transcription/capture-test.mjs` reads it from this file.
  */
-const CAPTURE_PROCESSOR = `
+export const CAPTURE_PROCESSOR = `
 class ChunkCollector extends AudioWorkletProcessor {
     constructor({ processorOptions }) {
         super();
         this.chunkSamples = processorOptions.chunkSamples;
+        this.windowSamples = processorOptions.windowSamples;
         this.chunk = new Float32Array(this.chunkSamples);
         this.filled = 0;
+        this.port.onmessage = () => this.flush();
+    }
+
+    flush() {
+        const length = Math.ceil(this.filled / this.windowSamples) * this.windowSamples;
+        if (length) {
+            this.port.postMessage(this.chunk.slice(0, length));
+            this.chunk = new Float32Array(this.chunkSamples);
+            this.filled = 0;
+        }
+        this.port.postMessage("flushed");
     }
 
     process(inputs) {
@@ -149,6 +220,8 @@ const context = new AudioContext({ sampleRate: ${SAMPLE_RATE} });
 const processorLoaded = context.audioWorklet.addModule(URL.createObjectURL(
     new Blob([ ${JSON.stringify(CAPTURE_PROCESSOR)} ], { type: "text/javascript" })));
 
+const flushes = [];
+
 async function pipe(source, media) {
     const [ port ] = await Promise.all([ portReceived, processorLoaded ]);
     const collector = new AudioWorkletNode(context, "chunk-collector", {
@@ -156,22 +229,47 @@ async function pipe(source, media) {
         numberOfOutputs: 0,
         channelCount: 1,
         channelCountMode: "explicit",
-        processorOptions: { chunkSamples: ${CHUNK_SAMPLES} }
+        processorOptions: { chunkSamples: ${CHUNK_SAMPLES}, windowSamples: ${VAD_WINDOW_SAMPLES} }
     });
+    let onFlushed = () => {};
     // Copied, not transferred: a MessagePortMain receives a message with a transferred buffer
     // as null.
-    collector.port.onmessage = (e) => port.postMessage({ source, samples: e.data });
+    collector.port.onmessage = (e) => e.data === "flushed"
+        ? onFlushed()
+        : port.postMessage({ source, samples: e.data });
+    flushes.push(() => new Promise((resolve) => {
+        onFlushed = resolve;
+        collector.port.postMessage("flush");
+    }));
     context.createMediaStreamSource(media).connect(collector);
+}
+
+async function finishCapture() {
+    await Promise.all(flushes.map((flush) => flush()));
+    (await portReceived).postMessage({ end: true });
 }
 
 function describe(tracks) {
     return tracks.map((track) => track.label).join(", ");
 }
 
+function reportEnd(source, tracks) {
+    let isReported = false;
+    for (const track of tracks) {
+        track.addEventListener("ended", () => {
+            if (!isReported) {
+                isReported = true;
+                ipcRenderer.send("${SOURCE_ENDED_CHANNEL}", source);
+            }
+        });
+    }
+}
+
 async function captureMicrophone() {
     const media = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: false }
     });
+    reportEnd("microphone", media.getAudioTracks());
     await pipe("microphone", media);
     return describe(media.getAudioTracks());
 }
@@ -194,6 +292,7 @@ async function captureSystemAudio() {
         console.log("System track muted=" + track.muted + " settings="
             + JSON.stringify(track.getSettings()));
     }
+    reportEnd("system", audioTracks);
     await pipe("system", new MediaStream(audioTracks));
     return describe(audioTracks);
 }

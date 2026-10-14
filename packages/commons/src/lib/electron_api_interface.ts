@@ -725,8 +725,8 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
-     * Why the recording ended without being stopped, sent once with the `idle` state that
-     * follows; `getState()` never returns it.
+     * A problem to tell the user about, sent once with the state it concerns: the recording ended
+     * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
      */
     error?: string;
 }
@@ -747,6 +747,15 @@ export interface ElectronTranscriptionApi {
     stop(): Promise<void>;
 
     getState(): Promise<TranscriptionState>;
+
+    /**
+     * Names a speaker of the transcript the recording of `noteId` writes, or restores the default
+     * name when `name` is blank. The recording applies it, so no utterance it writes meanwhile is
+     * lost.
+     *
+     * @returns `false` when no recording of `noteId` runs; the transcript can then be saved whole.
+     */
+    renameSpeaker(noteId: string, key: string, name: string): Promise<boolean>;
 
     /**
      * Calls `callback` every time the state changes, in any window.

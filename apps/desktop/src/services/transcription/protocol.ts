@@ -38,3 +38,6 @@ export interface CaptureChunk {
     source: TranscriptSource;
     samples: Float32Array;
 }
+
+/** What the capture page posts: chunks, then once stopping, an end marker after the last one. */
+export type CaptureMessage = CaptureChunk | { end: true };

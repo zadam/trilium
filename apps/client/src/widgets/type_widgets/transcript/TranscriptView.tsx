@@ -231,16 +231,19 @@ function SpeakerName({ speakerKey, name, defaultName, onRename }: {
 }
 
 /**
- * Names a speaker in the transcript as it is stored now, rather than as last shown: a running
- * recording can have written utterances since. One written in the moment between this read and
- * the save is restored by the recording's next write, which rewrites every utterance it holds.
+ * Names a speaker. While this note is being transcribed, the recording applies the name, since it
+ * rewrites the transcript after every utterance and a whole-transcript save here could overwrite
+ * one. Otherwise the transcript as stored now is saved with the name.
  */
 async function renameSpeaker(attachment: FAttachment, key: string, name: string) {
+    const { attachmentId, ownerId, role, mime, title } = attachment;
+    if (await window.electronApi?.transcription?.renameSpeaker(ownerId, key, name)) {
+        return;
+    }
     const latest = parseTranscript((await attachment.getBlob())?.content);
     if (!latest) {
         return;
     }
-    const { attachmentId, ownerId, role, mime, title } = attachment;
     await server.post(`notes/${ownerId}/attachments?matchBy=attachmentId`, {
         attachmentId, role, mime, title,
         content: JSON.stringify(setSpeakerName(latest, key, name), null, 2)
@@ -282,6 +285,8 @@ export interface TranscriptTurn {
 /**
  * Joins each run of utterances from one source and speaker into a turn, timed by its first
  * utterance, and starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more.
+ * Utterances are taken in the order they began: a recording stores them as they finish, so a
+ * short reply can precede the longer utterance it answers.
  * Speakers given the same name count as one. An utterance without a speaker continues the turn of
  * its source, and an utterance without a `durationMs` never starts a paragraph, since the pause
  * before the next is unknown.
@@ -295,7 +300,7 @@ export function groupIntoTurns(
     };
     const turns: TranscriptTurn[] = [];
     let previousEndMs: number | null = null;
-    for (const utterance of utterances) {
+    for (const utterance of utterances.toSorted((a, b) => a.offsetMs - b.offsetMs)) {
         const { source, speaker, offsetMs, durationMs } = utterance;
         const last = turns.at(-1);
         const isSameSpeaker = speaker === undefined || last?.speaker === undefined

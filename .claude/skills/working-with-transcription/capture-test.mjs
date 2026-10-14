@@ -178,7 +178,7 @@ function buildPage(config, processor) {
                     numberOfOutputs: 0,
                     channelCount: 1,
                     channelCountMode: "explicit",
-                    processorOptions: { chunkSamples: CHUNK_SAMPLES }
+                    processorOptions: { chunkSamples: CHUNK_SAMPLES, windowSamples: 512 }
                 });
                 node.port.onmessage = (e) => ipcRenderer.send("samples", e.data);
                 source.connect(node);

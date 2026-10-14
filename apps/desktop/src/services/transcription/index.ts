@@ -1,7 +1,7 @@
 import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
-import { becca, getLog, utils as coreUtils } from "@triliumnext/core";
+import { becca, events, getLog, protected_session, utils as coreUtils } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
-import { BrowserWindow, ipcMain, MessageChannelMain } from "electron";
+import { app, BrowserWindow, ipcMain, MessageChannelMain } from "electron";
 import fs from "fs";
 import { t } from "i18next";
 import path from "path";
@@ -18,6 +18,9 @@ export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcriptio
 
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
 
+/** How long quitting waits for a running transcription to finish. */
+const QUIT_TIMEOUT_MS = 15_000;
+
 interface Recording {
     worker: TranscriptionWorker;
     capture: CaptureWindow;
@@ -25,11 +28,26 @@ interface Recording {
 
 let state = IDLE;
 let activeRecording: Recording | null = null;
+/** The transcript the running recording writes, until its stop has written the last utterance. */
+let writer: { noteId: string; sink: AttachmentSink } | null = null;
+/** The running stop, while the speech already captured is still being transcribed. */
+let stopping: Promise<void> | null = null;
+/**
+ * Transcripts whose last utterances could not be saved, kept until a save succeeds: on the next
+ * utterance, or once the protected session is entered.
+ */
+const unsavedSinks = new Set<AttachmentSink>();
+/** `waiting` while a quit waits for the transcription, `done` once it may go ahead. */
+let quitting: "no" | "waiting" | "done" = "no";
 
 export function setupTranscriptionHandlers() {
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
+    ipcMain.handle("transcription-rename-speaker",
+        (_event, noteId: unknown, key: unknown, name: unknown) => renameSpeaker(noteId, key, name));
+    app.on("before-quit", (event) => finishBeforeQuit(event));
+    events.subscribe(events.ENTER_PROTECTED_SESSION, () => saveUnsaved());
 }
 
 /**
@@ -52,9 +70,11 @@ export async function startRecording(noteId: unknown): Promise<string> {
     setState({ status: "starting", noteId, pendingSources: [] });
     const sink = new AttachmentSink(noteId);
     const recording: Recording = {
-        capture: new CaptureWindow(),
+        capture: new CaptureWindow({
+            onLost: (reason) => handleCaptureLost(recording, reason)
+        }),
         worker: new TranscriptionWorker({
-            onUtterance: (utterance) => writeUtterance(sink, utterance),
+            onUtterance: (utterance) => writeUtterance(sink, noteId, utterance),
             onPendingChanged: (pendingSources) => setState({ ...state, pendingSources }),
             onUnexpectedExit: (code) => handleUnexpectedExit(recording, code),
             log: getLog()
@@ -68,6 +88,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
             recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
         });
         sink.open(startedAt);
+        writer = { noteId, sink };
         const { port1, port2 } = new MessageChannelMain();
         recording.worker.connectCapture(port2);
         const sources = await recording.capture.start(port1);
@@ -76,7 +97,8 @@ export async function startRecording(noteId: unknown): Promise<string> {
         return "";
     } catch (e) {
         activeRecording = null;
-        recording.capture.stop();
+        writer = null;
+        void recording.capture.stop();
         recording.worker.kill();
         setState(IDLE);
         getLog().error(`Transcription did not start: ${(e as Error)?.stack ?? e}`);
@@ -84,25 +106,48 @@ export async function startRecording(noteId: unknown): Promise<string> {
     }
 }
 
-export async function stopRecording() {
+/**
+ * Stops the recording, resolving once its speech is transcribed; joins a stop that runs. An
+ * `error` is reported to every window with the idle state that follows.
+ */
+export function stopRecording(error?: string): Promise<void> {
     const recording = activeRecording;
     if (state.status !== "recording" || !recording) {
-        return;
+        return stopping ?? Promise.resolve();
     }
 
     setState({ ...state, status: "stopping" });
     activeRecording = null;
-    recording.capture.stop();
-    try {
-        await recording.worker.stop();
-        getLog().info(`Transcription: recording for note ${state.noteId} stopped.`);
-    } finally {
-        setState(IDLE);
-    }
+    const { noteId } = state;
+    stopping = recording.capture.stop()
+        .then(() => recording.worker.stop())
+        .then(() => getLog().info(`Transcription: recording for note ${noteId} stopped.`))
+        .finally(() => {
+            stopping = null;
+            writer = null;
+            state = IDLE;
+            broadcast(error ? { ...IDLE, error } : IDLE);
+        });
+    return stopping;
 }
 
 export function getState() {
     return state;
+}
+
+/**
+ * Names a speaker of the transcript the recording of `noteId` writes, through the sink, which is
+ * its only writer while it runs.
+ *
+ * @returns `false` when no recording of `noteId` runs, or the arguments are not strings.
+ */
+export function renameSpeaker(noteId: unknown, key: unknown, name: unknown) {
+    const isValid = typeof key === "string" && typeof name === "string";
+    if (!writer || writer.noteId !== noteId || !isValid) {
+        return false;
+    }
+    writer.sink.renameSpeaker(key, name);
+    return true;
 }
 
 /** The directory under {@link RECORDINGS_DIR} for a recording of `noteId` begun at `createdAt`. */
@@ -111,12 +156,77 @@ export function getRecordingDirectory(createdAt: number, noteId: string) {
     return path.join(RECORDINGS_DIR, `${timestamp}_${noteId}`);
 }
 
-function writeUtterance(sink: AttachmentSink, utterance: TranscriptUtterance) {
+/**
+ * Holds back a quit while a transcription runs, until the speech already captured is transcribed
+ * or {@link QUIT_TIMEOUT_MS} passes, then quits again.
+ */
+function finishBeforeQuit(event: Electron.Event) {
+    if (quitting === "done") {
+        return;
+    }
+    if (quitting === "waiting") {
+        event.preventDefault();
+        return;
+    }
+    const finished = state.status === "recording" ? stopRecording() : stopping;
+    if (!finished) {
+        return;
+    }
+
+    event.preventDefault();
+    quitting = "waiting";
+    const timeout = new Promise((resolve) => setTimeout(resolve, QUIT_TIMEOUT_MS));
+    void Promise.race([ finished, timeout ]).finally(() => {
+        quitting = "done";
+        app.quit();
+    });
+}
+
+/**
+ * Saves an utterance. When that fails, the sink keeps it and every window is told once, until a
+ * later save succeeds.
+ */
+function writeUtterance(sink: AttachmentSink, noteId: string, utterance: TranscriptUtterance) {
     try {
         sink.write(utterance);
+        unsavedSinks.delete(sink);
     } catch (e) {
         getLog().error(`Transcription: saving an utterance failed: ${e}`);
+        if (unsavedSinks.has(sink)) {
+            return;
+        }
+        unsavedSinks.add(sink);
+        const isLocked = becca.getNote(noteId)?.isProtected
+            && !protected_session.isProtectedSessionAvailable();
+        broadcast({
+            ...state,
+            error: isLocked
+                ? t("transcription.save-locked")
+                : t("transcription.save-failed", { message: (e as Error)?.message ?? String(e) })
+        });
     }
+}
+
+/** Saves the transcripts that failed to save before, as while the protected session was locked. */
+function saveUnsaved() {
+    for (const sink of unsavedSinks) {
+        try {
+            sink.save();
+            unsavedSinks.delete(sink);
+            getLog().info("Transcription: saved a transcript that could not be saved before.");
+        } catch (e) {
+            getLog().error(`Transcription: saving a transcript still failed: ${e}`);
+        }
+    }
+}
+
+/** Stops a recording whose capture stopped on its own, transcribing what it captured. */
+function handleCaptureLost(recording: Recording, reason: string) {
+    if (activeRecording !== recording || state.status !== "recording") {
+        return;
+    }
+    getLog().error(`Transcription: the capture stopped: ${reason}.`);
+    void stopRecording(t("transcription.capture-lost"));
 }
 
 /**
@@ -128,7 +238,8 @@ function handleUnexpectedExit(recording: Recording, code: number) {
         return;
     }
     activeRecording = null;
-    recording.capture.stop();
+    writer = null;
+    void recording.capture.stop();
     getLog().error(`Transcription: the transcription process exited with code ${code}.`);
     state = IDLE;
     broadcast({ ...IDLE, error: t("transcription.stopped-unexpectedly") });

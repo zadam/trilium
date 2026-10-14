@@ -4,15 +4,11 @@
  * posts its samples here directly; the main process only receives the utterances. Started by
  * `TranscriptionWorker` in `worker_client.ts`, which also ends it.
  */
-import type { TranscriptSource } from "@triliumnext/commons";
-import type { MessagePortMain } from "electron";
 
 import { TranscriptFileSink, WavRecorder } from "./audio_recorder";
 import { loadSherpaEngine } from "./engine";
-import type { CaptureChunk, Logger, WorkerEvent, WorkerRequest } from "./protocol";
-import {
-    type AudioCapture, type AudioTap, RecordingSession, type SamplesListener, type TranscriptSink
-} from "./session";
+import type { Logger, WorkerEvent, WorkerRequest } from "./protocol";
+import { type AudioTap, PortCapture, RecordingSession, type TranscriptSink } from "./session";
 
 const log: Logger = {
     info: (message) => post({ type: "log", level: "info", message }),
@@ -20,6 +16,9 @@ const log: Logger = {
 };
 
 type StartRequest = Extract<WorkerRequest, { type: "start" }>;
+
+/** How long stopping waits for the capture page's end marker. */
+const CAPTURE_END_TIMEOUT_MS = 2000;
 
 let session: RecordingSession | null = null;
 let capture: PortCapture | null = null;
@@ -68,7 +67,15 @@ async function start({ noteId, modelDirectory, recordingDirectory }: StartReques
     post({ type: "ready", startedAt: newSession.startedAt, settings: engine.settings });
 }
 
+/**
+ * Waits for the capture page's last chunks, which travel on another port than the stop request,
+ * then transcribes what the session still holds.
+ */
 async function stop() {
+    if (capture) {
+        const timeout = new Promise((resolve) => setTimeout(resolve, CAPTURE_END_TIMEOUT_MS));
+        await Promise.race([ capture.ended, timeout ]);
+    }
     try {
         await session?.stop();
     } catch (e) {
@@ -79,35 +86,4 @@ async function stop() {
 
 function post(event: WorkerEvent) {
     process.parentPort.postMessage(event);
-}
-
-/** The samples the capture page posts to the port the main process connects. */
-class PortCapture implements AudioCapture {
-    private port: MessagePortMain | null = null;
-    private onSamples: SamplesListener | null = null;
-
-    start(onSamples: SamplesListener) {
-        this.onSamples = onSamples;
-    }
-
-    connect(port: MessagePortMain) {
-        this.port = port;
-        port.on("message", ({ data }) => {
-            const chunk = data as CaptureChunk | null;
-            if (chunk && isSource(chunk.source) && chunk.samples instanceof Float32Array) {
-                this.onSamples?.(chunk.source, chunk.samples);
-            }
-        });
-        port.start();
-    }
-
-    stop() {
-        this.onSamples = null;
-        this.port?.close();
-        this.port = null;
-    }
-}
-
-function isSource(source: unknown): source is TranscriptSource {
-    return source === "microphone" || source === "system";
 }

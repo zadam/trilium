@@ -84,6 +84,40 @@ describe("AttachmentSink", () => {
         expect(written.utterances).toHaveLength(1);
     });
 
+    it("keeps an utterance it could not save, and saves it with the next write or save()", () => {
+        const sink = new AttachmentSink("meeting");
+        sink.open(STARTED_AT);
+        h.setContent.mockImplementationOnce(() => {
+            throw new Error("protected session is not available");
+        });
+        expect(() => sink.write({ source: "system", offsetMs: 0, text: "First." }))
+            .toThrow("protected session is not available");
+        sink.write({ source: "system", offsetMs: 1000, text: "Second." });
+        const saved = JSON.parse(h.setContent.mock.calls[1][0]) as Transcript;
+        expect(saved.utterances.map((utterance) => utterance.text)).toEqual([ "First.", "Second." ]);
+
+        sink.save();
+        expect(h.setContent).toHaveBeenCalledTimes(3);
+        expect(h.setContent.mock.calls[2][0]).toBe(h.setContent.mock.calls[1][0]);
+    });
+
+    it("renames a speaker in the names as stored, keeping every utterance, in one transaction", () => {
+        const sink = new AttachmentSink("meeting");
+        sink.open(STARTED_AT);
+        sink.write({ source: "system", offsetMs: 0, speaker: 1, text: "Hello." });
+        h.getContent.mockReturnValue(JSON.stringify({
+            version: 1, startedAt: "2026-10-13T14:30:00.000Z",
+            speakers: { microphone: "Elian" }, utterances: []
+        }));
+        const transactions = h.transactions;
+
+        sink.renameSpeaker("system:1", " Alexandra ");
+        expect(h.transactions).toBe(transactions + 1);
+        const renamed = JSON.parse(h.setContent.mock.calls.at(-1)?.[0]) as Transcript;
+        expect(renamed.speakers).toEqual({ microphone: "Elian", "system:1": "Alexandra" });
+        expect(renamed.utterances).toHaveLength(1);
+    });
+
     it("refuses to write before it is open", () => {
         const sink = new AttachmentSink("meeting");
         expect(() => sink.write({ source: "system", offsetMs: 0, text: "Hi" }))

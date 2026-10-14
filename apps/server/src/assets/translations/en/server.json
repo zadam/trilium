@@ -568,6 +568,9 @@
     "model-missing": "No speech recognition model was found in {{- directory}}.",
     "start-failed": "The transcription could not start: {{- message}}",
     "stopped-unexpectedly": "The transcription stopped unexpectedly. What was transcribed until then is kept.",
+    "save-locked": "The transcript cannot be saved while the protected session is locked. The transcription keeps it and saves it once you enter the protected session, as long as Trilium stays open.",
+    "save-failed": "The transcript could not be saved: {{- message}} The transcription keeps it and tries again with the next sentence.",
+    "capture-lost": "The transcription stopped because the audio could no longer be captured. What was transcribed until then is kept.",
     "attachment-title": "Transcript"
   }
 }

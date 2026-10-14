@@ -1,7 +1,8 @@
 import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
+import type { MessagePortMain } from "electron";
 
 import type { SpeakerTracker, SpeechEngine, SpeechSegment, SpeechSegmenter } from "./engine";
-import { type Logger, SAMPLE_RATE } from "./protocol";
+import { type CaptureMessage, type Logger, SAMPLE_RATE } from "./protocol";
 
 /** The sources whose speakers are told apart; the microphone carries only the local speaker. */
 const DIARIZED_SOURCES: readonly TranscriptSource[] = [ "system" ];
@@ -253,4 +254,53 @@ class SourcePipeline {
             this.peakSampleCount = 0;
         }
     }
+}
+
+/** The samples the capture page posts to the port the main process connects. */
+export class PortCapture implements AudioCapture {
+    /**
+     * Settles once the page has posted its end marker or the port closed: every sample the page
+     * captured has then been delivered.
+     */
+    readonly ended: Promise<void>;
+    private port: MessagePortMain | null = null;
+    private onSamples: SamplesListener | null = null;
+    private markEnded = () => {};
+
+    constructor() {
+        this.ended = new Promise((resolve) => {
+            this.markEnded = resolve;
+        });
+    }
+
+    start(onSamples: SamplesListener) {
+        this.onSamples = onSamples;
+    }
+
+    connect(port: MessagePortMain) {
+        this.port = port;
+        port.on("message", ({ data }) => {
+            const message = data as CaptureMessage | null;
+            if (!message) {
+                return;
+            }
+            if ("end" in message) {
+                this.markEnded();
+            } else if (isSource(message.source) && message.samples instanceof Float32Array) {
+                this.onSamples?.(message.source, message.samples);
+            }
+        });
+        port.on("close", () => this.markEnded());
+        port.start();
+    }
+
+    stop() {
+        this.onSamples = null;
+        this.port?.close();
+        this.port = null;
+    }
+}
+
+function isSource(source: unknown): source is TranscriptSource {
+    return source === "microphone" || source === "system";
 }

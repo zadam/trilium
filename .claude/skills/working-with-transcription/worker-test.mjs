@@ -135,8 +135,6 @@ async function runInElectron(config) {
     worker.connectCapture(port2);
     window.webContents.postMessage("transcription-capture-port", null, [ port1 ]);
     const chunks = await posted;
-    // Lets the last chunks reach the process before it is told to stop.
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const stopAt = performance.now();
     await worker.stop();
@@ -186,6 +184,7 @@ function buildPage(config) {
                 chunks++;
                 await new Promise((resolve) => setTimeout(resolve, CHUNK_SAMPLES / RATE * 1000 / config.speed));
             }
+            port.postMessage({ end: true });
             console.log(`posted ${chunks}`);
         });
     };

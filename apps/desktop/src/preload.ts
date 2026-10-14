@@ -264,6 +264,9 @@ contextBridge.exposeInMainWorld("electronApi", {
         getState() {
             return ipcRenderer.invoke("transcription-get-state");
         },
+        renameSpeaker(noteId: string, key: string, name: string) {
+            return ipcRenderer.invoke("transcription-rename-speaker", noteId, key, name);
+        },
         onStateChanged(callback: (state: TranscriptionState) => void) {
             const listener = (_event: unknown, state: TranscriptionState) => callback(state);
             ipcRenderer.on("transcription-state", listener);

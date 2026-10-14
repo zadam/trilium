@@ -1,9 +1,10 @@
 import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
+import { EventEmitter } from "events";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SpeakerTracker, SpeechSegment } from "./engine";
 import {
-    type AudioTap, RecordingSession, type SamplesListener, type TranscriptSink
+    type AudioTap, PortCapture, RecordingSession, type SamplesListener, type TranscriptSink
 } from "./session";
 
 const log = { info: vi.fn(), error: vi.fn() };
@@ -243,5 +244,32 @@ describe("RecordingSession", () => {
 
         expect(() => deliver("system", utteranceChunk(1, 0), 2000)).not.toThrow();
         expect(log.error).toHaveBeenCalledWith("Transcription: system failed: VAD model missing");
+    });
+});
+
+describe("PortCapture", () => {
+    it("delivers the page's chunks, and settles once the page has posted its last", async () => {
+        const port = Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
+        const onSamples = vi.fn();
+        const capture = new PortCapture();
+        capture.start(onSamples);
+        capture.connect(port as never);
+        let hasEnded = false;
+        void capture.ended.then(() => {
+            hasEnded = true;
+        });
+
+        const samples = new Float32Array(512);
+        port.emit("message", { data: { source: "system", samples } });
+        port.emit("message", { data: { source: "speakers", samples } });
+        port.emit("message", { data: null });
+        expect(onSamples).toHaveBeenCalledExactlyOnceWith("system", samples);
+        await Promise.resolve();
+        expect(hasEnded).toBe(false);
+
+        port.emit("message", { data: { end: true } });
+        await capture.ended;
+        capture.stop();
+        expect(port.close).toHaveBeenCalledOnce();
     });
 });
