@@ -21,6 +21,9 @@ export interface AudioCapture {
 
 const SAMPLES_CHANNEL = "transcription-samples";
 
+/** Samples per IPC message. `VadSegmenter` drops what does not fill a 512-sample window. */
+const CHUNK_SAMPLES = 4096;
+
 /** The page function that starts each source. */
 const SOURCE_STARTERS = [
     [ "microphone", "captureMicrophone()" ],
@@ -111,6 +114,7 @@ async function createCaptureWindow() {
             contextIsolation: false,
             sandbox: false,
             autoplayPolicy: "no-user-gesture-required",
+            backgroundThrottling: false,
             // Without hardware acceleration, a hidden window renders no frames, so the
             // self-capture in CAPTURE_PAGE times out waiting for its video source.
             offscreen: true
@@ -122,17 +126,58 @@ async function createCaptureWindow() {
     return window;
 }
 
+/**
+ * The audio worklet that collects a source into chunks of `processorOptions.chunkSamples`. It runs
+ * on the audio rendering thread, where a busy page cannot delay it and corrupt the start of a
+ * chunk. `.claude/skills/working-with-transcription/capture-test.mjs` reads it from this file.
+ */
+const CAPTURE_PROCESSOR = `
+class ChunkCollector extends AudioWorkletProcessor {
+    constructor({ processorOptions }) {
+        super();
+        this.chunkSamples = processorOptions.chunkSamples;
+        this.chunk = new Float32Array(this.chunkSamples);
+        this.filled = 0;
+    }
+
+    process(inputs) {
+        const input = inputs[0][0];
+        let offset = 0;
+        while (input && offset < input.length) {
+            const count = Math.min(input.length - offset, this.chunkSamples - this.filled);
+            this.chunk.set(input.subarray(offset, offset + count), this.filled);
+            this.filled += count;
+            offset += count;
+            if (this.filled === this.chunkSamples) {
+                this.port.postMessage(this.chunk, [ this.chunk.buffer ]);
+                this.chunk = new Float32Array(this.chunkSamples);
+                this.filled = 0;
+            }
+        }
+        return true;
+    }
+}
+registerProcessor("chunk-collector", ChunkCollector);
+`;
+
 const CAPTURE_PAGE = `<!DOCTYPE html>
 <script>
 const { ipcRenderer } = require("electron");
 const context = new AudioContext({ sampleRate: ${SAMPLE_RATE} });
+const processorLoaded = context.audioWorklet.addModule(URL.createObjectURL(
+    new Blob([ ${JSON.stringify(CAPTURE_PROCESSOR)} ], { type: "text/javascript" })));
 
-function pipe(source, media) {
-    const processor = context.createScriptProcessor(4096, 1, 1);
-    processor.onaudioprocess = (e) =>
-        ipcRenderer.send("${SAMPLES_CHANNEL}", source, e.inputBuffer.getChannelData(0).slice());
-    context.createMediaStreamSource(media).connect(processor);
-    processor.connect(context.destination);
+async function pipe(source, media) {
+    await processorLoaded;
+    const collector = new AudioWorkletNode(context, "chunk-collector", {
+        numberOfInputs: 1,
+        numberOfOutputs: 0,
+        channelCount: 1,
+        channelCountMode: "explicit",
+        processorOptions: { chunkSamples: ${CHUNK_SAMPLES} }
+    });
+    collector.port.onmessage = (e) => ipcRenderer.send("${SAMPLES_CHANNEL}", source, e.data);
+    context.createMediaStreamSource(media).connect(collector);
 }
 
 function describe(tracks) {
@@ -143,7 +188,7 @@ async function captureMicrophone() {
     const media = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: false }
     });
-    pipe("microphone", media);
+    await pipe("microphone", media);
     return describe(media.getAudioTracks());
 }
 
@@ -165,7 +210,7 @@ async function captureSystemAudio() {
         console.log("System track muted=" + track.muted + " settings="
             + JSON.stringify(track.getSettings()));
     }
-    pipe("system", new MediaStream(audioTracks));
+    await pipe("system", new MediaStream(audioTracks));
     return describe(audioTracks);
 }
 </script>`;
