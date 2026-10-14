@@ -1,6 +1,6 @@
 ---
 name: working-with-transcription
-description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, speaker detection (diarization), or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model — or to audio capture (stutters, clicks, the capture worklet). Includes replay.mjs, which transcribes a development recording again with changed settings, compare.mjs, which diffs two transcripts word by word with an error rate, external.mjs, which scores transcripts against another tool's export of the same meeting, hotwords.mjs, which builds the BPE vocabulary hotwords need and checks a glossary, diarize.mjs, which labels a recording's speakers live and offline and times both, capture-check.mjs, which finds capture damage in a recording, and capture-test.mjs, which plays a tone through the real capture code in Electron under load. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
+description: Use when working on Trilium's meeting transcription — the desktop pipeline in `apps/desktop/src/services/transcription/` (capture window, Silero VAD segmentation, Parakeet via sherpa-onnx-node, sinks and audio taps), the `transcript` attachment and its `TranscriptView`, the "Transcribe meeting" launcher, the standalone WebAssembly prototype, speaker detection (diarization), or any change to recognition quality — decoding method, beam search, hotwords, VAD settings, a different model — or to audio capture (stutters, clicks, the capture worklet). Includes replay.mjs, which transcribes a development recording again with changed settings, compare.mjs, which diffs two transcripts word by word with an error rate, external.mjs, which scores transcripts against another tool's export of the same meeting, hotwords.mjs, which builds the BPE vocabulary hotwords need and checks a glossary, diarize.mjs, which labels a recording's speakers live and offline and times both, capture-check.mjs, which finds capture damage in a recording, capture-test.mjs, which plays a tone through the real capture code in Electron under load, and worker-test.mjs, which runs a recording through the real transcription process and measures the main process's lag. Don't judge an engine change by ear or from one live meeting; replay a recording and compare.
 ---
 
 # Working with transcription
@@ -10,29 +10,37 @@ Desktop transcribes a meeting on the user's machine: no audio leaves it, and out
 ## The pipeline
 
 ```
-capture window (hidden, offscreen)          main process
-  getUserMedia ─ microphone ─┐  AudioWorklet "chunk-collector" (audio thread)
-  getDisplayMedia ─ system ──┴─ IPC "transcription-samples", 4096-sample Float32 chunks
+capture window (hidden, offscreen)              transcription process (Electron utility process)
+  getUserMedia ─ microphone ─┐ AudioWorklet "chunk-collector" (audio thread)
+  getDisplayMedia ─ system ──┴─ MessagePort, { source, samples } of 4096 Float32 samples
                                    │
                          RecordingSession ── audio taps (dev: WavRecorder → *.wav)
                                    │
                   per source: SourcePipeline → VadSegmenter (Silero, 512-sample windows)
                                    │ utterances
                   one queue: recognizer.transcribe() (Parakeet TDT 0.6B v3 int8, libuv pool)
-                                   │
-                  sinks: AttachmentSink (transcript attachment), dev: TranscriptFileSink
-                                   │
-              state broadcast "transcription-state" (status, noteId, pendingSources)
+                                   │ speaker: EmbeddingSpeakerTracker (TitaNet, synchronous)
+                  sinks: posted to the main process, dev: TranscriptFileSink
+                                   │ parentPort: ready / pending / utterance / log / stopped
+main process: TranscriptionWorker → AttachmentSink (transcript attachment)
+              state broadcast "transcription-state" (status, noteId, pendingSources, error)
 ```
+
+The main process opens the capture window, starts the transcription process and connects the two with a `MessageChannelMain`; per chunk it does nothing, per utterance it writes the attachment. Each recording gets a process of its own, which loads the model (~1.3 s) and exits after `stop`. If it dies mid-recording, the main process closes the capture window, keeps what was written, and broadcasts an `idle` state with an `error`, which the launcher shows as a toast.
 
 | File | Owns |
 |---|---|
-| `apps/desktop/src/services/transcription/capture.ts` | The hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
-| `…/engine.ts` | `loadSherpaEngine()`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
-| `…/session.ts` | `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
-| `…/attachment_sink.ts` | The `transcript` attachment, rewritten after every utterance |
-| `…/audio_recorder.ts` | Development recordings: `WavRecorder`, `TranscriptFileSink`, `getRecordingDirectory()` |
-| `…/index.ts` | IPC handlers, the state broadcast, which sinks and taps a recording gets |
+| `apps/desktop/src/services/transcription/capture.ts` | Main process: `CaptureWindow`, the hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
+| `…/index.ts` | Main process: IPC handlers, the state broadcast, `MODEL_DIR`, `getRecordingDirectory()`; starts a recording's process and capture window and connects them |
+| `…/worker_client.ts` | Main process: `TranscriptionWorker`, which forks the transcription process, relays its events and stops or kills it |
+| `…/attachment_sink.ts` | Main process: the `transcript` attachment, rewritten after every utterance |
+| `…/protocol.ts` | Both: the messages between the processes, `SAMPLE_RATE`, `Logger` |
+| `…/transcription_worker.ts` | The transcription process's entry (bundled as `transcription_worker.cjs`): `PortCapture`, the session, the dev sinks and taps |
+| `…/engine.ts` | Transcription process: `loadSherpaEngine(modelDir)`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
+| `…/session.ts` | Transcription process: `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
+| `…/audio_recorder.ts` | Transcription process: development recordings, `WavRecorder` and `TranscriptFileSink` |
+
+Nothing the transcription process imports may reach `@triliumnext/core` or `@triliumnext/server` (the data directory module creates directories when it loads): it gets its paths and a `Logger` from the main process.
 | `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()`; `cleanUtteranceText()`, the filler and stutter cleanup |
 | Cleanup | The stored transcript stays verbatim. `TranscriptView` shows each utterance through `cleanUtteranceText()` while the synced option `transcriptCleanupEnabled` (default on, the "Hide filler words" switch above the transcript) holds, and leaves out utterances it empties. The rules are English-only for stutters (a function-word list) and keep numbers, comma-separated repeats and "that that"/"it it" |
 | Speaker names | `TranscriptView` reads the stored transcript, applies `setSpeakerName()` and saves it whole through the generic `POST notes/:noteId/attachments?matchBy=attachmentId`. `AttachmentSink` re-reads `speakers` before each rewrite, so a rename during a recording survives, and an utterance a rename overwrote comes back with the next write |
@@ -102,7 +110,7 @@ The export has errors of its own (it wrote "MicroEdge" and "SortMap", and split 
 
 ## Speaker detection
 
-The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously on Electron's main thread for now, ~100 ms per utterance. `replay.mjs` does not label speakers; use `diarize.mjs`.
+The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously in the transcription process, ~15–100 ms per utterance, holding back the next chunks but nothing else. `replay.mjs` does not label speakers; use `diarize.mjs`.
 
 `diarize.mjs` labels one source's utterances by speaker in two ways and times both:
 
@@ -120,7 +128,7 @@ Models, in `<data dir>/transcription-model/speaker/`, from `k2-fsa/sherpa-onnx` 
 - `nemo_en_titanet_small.onnx` (40 MB) and `3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` (30 MB) from `speaker-recongition-models` (the tag is misspelled upstream);
 - `segmentation.onnx` (6 MB): `model.onnx` of `sherpa-onnx-pyannote-segmentation-3-0.tar.bz2` from `speaker-segmentation-models`, renamed.
 
-`SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant. Live labelling blocks Electron's main thread, which also serves the backend, for ~100 ms per system utterance; the planned fix is to move the whole pipeline (VAD, speakers, recognizer) into one worker thread. The offline method, ~20 s per two minutes, could never run there.
+`SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant. Live labelling therefore runs in the transcription process, never in the main process, which also serves the backend. The offline method, ~20 s per two minutes, would stall even that process's capture for its duration.
 
 Results on the first recording (two minutes, interviewer and curator on the system track, one thread):
 
@@ -185,6 +193,17 @@ Dips are a second, separate defect, of the system loopback alone. In the Romania
 
 The capture used a `ScriptProcessorNode` until the recordings showed breaks at every chunk boundary (ratio 1.6–2.35 on both tracks of three meetings). Its callback runs on the page's main thread, and when that thread is late Chromium hands it input whose first 128–640 samples (whole 128-frame render quanta) are corrupt, without changing the length. Under the `jank` load it broke 6–8 times in 20 s and 13 times in 30 s under `all`; the worklet, which runs on the audio thread, broke none. Saturating the CPU alone broke neither.
 
+## The transcription process
+
+```bash
+node $S/worker-test.mjs latest                         # 120 s of system.wav at 4× real time
+node $S/worker-test.mjs latest --source microphone --seconds 60 --speed 8
+```
+
+`worker-test.mjs` runs the real `TranscriptionWorker` in Electron: it starts the transcription process on `apps/desktop/data/transcription-model`, and a hidden page posts a recording's WAV through a `MessageChannelMain` port as the capture page does. It prints the engine's load time, the utterances (with speakers), how long `stop` took and whether the process exited, and the main process's event-loop lag throughout. On two minutes of a meeting's system track: ready after 1.3 s, lag p50 0.1 ms, p99 1.1 ms, max 25 ms. Before the split, speaker labelling alone held the main thread 15–100 ms per utterance.
+
+In development the process loads `transcription_worker.ts` through the `NODE_OPTIONS="--import tsx"` it inherits from `scripts/electron-start.mts`; built, `worker_client.ts` finds `transcription_worker.cjs` beside `main.mjs`. Packaged builds do not ship `sherpa-onnx-node` yet (it is external to every bundle, but not copied or unpacked from the asar).
+
 ## Findings so far
 
 On the first recording (two minutes of system audio, English interview), against the `greedy` replay:
@@ -222,6 +241,8 @@ The same 31-minute Romanian meeting (no reference, judged by reading): int8 is o
 - **The capture worklet needs `channelCount: 1` with `channelCountMode: "explicit"`** to down-mix a stereo loopback to mono; with the default, `inputs[0][0]` is the left channel alone. `numberOfOutputs: 0` is fine: Chromium still runs the node.
 - **`ELECTRON_RUN_AS_NODE=1` is set in a VS Code terminal**, and turns the Electron binary into plain Node (`Cannot find module 'electron'`). `capture-test.mjs` clears it; clear it for any Electron script run from there.
 - **No top-level `await` in an ESM Electron entry**: it holds back `ready`, and the app hangs without output.
+- **A `MessagePortMain` receives a message whose buffer was transferred as `null`.** The capture page posts each chunk without a transfer list, so it is copied (16 KB).
+- **The transcription process must not throw from a port listener**: an uncaught exception ends it, and the recording with it. `RecordingSession` catches per chunk.
 - **`maxSpeechDuration` is not a hard cut**: past it, sherpa lowers the minimum silence to 0.1 s and raises the threshold to 0.9, so a segment ends at the next short gap, typically 1–2 s later.
 - **The capture window must be `offscreen`**: a hidden window renders no frames without it, and the self-capture that yields system audio times out. `getDisplayMedia()` needs a user gesture, which only `executeJavaScript(…, true)` gives a hidden window.
 - **Chromium's audio processing is applied during capture**, so the WAV already holds it and no replay can switch it off. The system track runs with echo cancellation, noise suppression and auto gain all off; the microphone keeps echo cancellation, so the meeting played through speakers is not transcribed twice, and its auto gain. Earlier recordings, including the one under "Findings so far", had noise suppression on both tracks and echo cancellation on the system track, so do not compare transcripts across that change.
@@ -236,4 +257,4 @@ pnpm --filter @triliumnext/client test TranscriptView RecordMeetingButton
 pnpm --filter @triliumnext/commons test transcript
 ```
 
-The desktop specs fake the engine and the capture; nothing loads the model and nothing runs the capture page. Changes to recognition quality are measured with the scripts above, not with specs, and a change to the capture page with `capture-test.mjs`.
+The desktop specs fake the engine, the capture and the utility process; nothing loads the model, runs the capture page or forks a process. Changes to recognition quality are measured with the scripts above, not with specs, a change to the capture page with `capture-test.mjs`, and a change to the process split or its protocol with `worker-test.mjs`.
