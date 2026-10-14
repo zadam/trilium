@@ -21,6 +21,21 @@
         font-weight: 600;
     }
 
+    a.transcript-speaker {
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            text-decoration: underline;
+        }
+    }
+
+    .transcript-speaker-editor {
+        width: 16em;
+        padding-block: 0;
+        font-weight: 600;
+    }
+
     .transcript-microphone .transcript-speaker {
         color: var(--main-text-color);
     }

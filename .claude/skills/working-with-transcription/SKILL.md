@@ -33,7 +33,8 @@ capture window (hidden, offscreen)          main process
 | `…/attachment_sink.ts` | The `transcript` attachment, rewritten after every utterance |
 | `…/audio_recorder.ts` | Development recordings: `WavRecorder`, `TranscriptFileSink`, `getRecordingDirectory()` |
 | `…/index.ts` | IPC handlers, the state broadcast, which sinks and taps a recording gets |
-| `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `utterances`) |
+| `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()` |
+| Speaker names | `TranscriptView` reads the stored transcript, applies `setSpeakerName()` and saves it whole through the generic `POST notes/:noteId/attachments?matchBy=attachmentId`. `AttachmentSink` re-reads `speakers` before each rewrite, so a rename during a recording survives, and an utterance a rename overwrote comes back with the next write |
 | `apps/client/src/widgets/type_widgets/transcript/TranscriptView.tsx` | Turns, clock times, the "Speaking…" line, fade-in |
 | `apps/client/src/widgets/launch_bar/RecordMeetingButton.tsx` | The launcher and `useTranscriptionState()` |
 

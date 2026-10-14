@@ -4,14 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const h = vi.hoisted(() => ({
     saveAttachment: vi.fn(),
     setContent: vi.fn(),
+    getContent: vi.fn(),
     transactions: 0
 }));
 
 vi.mock("@triliumnext/core", () => ({
     becca: {
         getNoteOrThrow: (noteId: string) => ({ noteId, saveAttachment: h.saveAttachment }),
-        getAttachmentOrThrow: (attachmentId: string) => ({ attachmentId, setContent: h.setContent })
+        getAttachmentOrThrow: (attachmentId: string) => ({
+            attachmentId, setContent: h.setContent, getContent: h.getContent
+        })
     },
+    binary_utils: { decodeUtf8: (content: string) => content },
     cls: { init: <T>(callback: () => T) => callback() },
     getSql: () => ({
         transactional: <T>(callback: () => T) => {
@@ -30,6 +34,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     h.transactions = 0;
     h.saveAttachment.mockReturnValue({ attachmentId: "transcript1" });
+    h.getContent.mockReturnValue("");
 });
 
 describe("AttachmentSink", () => {
@@ -61,6 +66,22 @@ describe("AttachmentSink", () => {
             { source: "system", offsetMs: 3000, text: "Yes." }
         ]);
         expect(h.transactions).toBe(3);
+    });
+
+    it("keeps the speaker names stored in the attachment, which a rename writes meanwhile", () => {
+        const sink = new AttachmentSink("meeting");
+        sink.open(STARTED_AT);
+        h.getContent.mockReturnValue(JSON.stringify({
+            version: 1,
+            startedAt: "2026-10-13T14:30:00.000Z",
+            speakers: { "system:1": "Alexandra" },
+            utterances: []
+        }));
+        sink.write({ source: "system", offsetMs: 3000, speaker: 1, text: "Yes." });
+
+        const written = JSON.parse(h.setContent.mock.calls[0][0]) as Transcript;
+        expect(written.speakers).toEqual({ "system:1": "Alexandra" });
+        expect(written.utterances).toHaveLength(1);
     });
 
     it("refuses to write before it is open", () => {

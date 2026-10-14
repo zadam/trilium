@@ -11,16 +11,21 @@ import LoadResults from "../../../services/load_results";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import TranscriptView, {
-    formatOffset, groupIntoTurns, parseTranscript, type TranscriptTurn
+    formatOffset, groupIntoTurns, type TranscriptTurn
 } from "./TranscriptView";
 
+const h = vi.hoisted(() => ({ post: vi.fn() }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
+// keyboard_actions asks the server for its shortcuts at import.
+vi.mock("../../../services/server", () => ({ default: { post: h.post, get: async () => [] } }));
 
 /** Local time, so that the clock times the spec expects hold in every time zone. */
 const STARTED_AT = "2026-10-13T14:29:55";
 
-function transcript(utterances: TranscriptUtterance[], startedAt = STARTED_AT) {
-    const content: Transcript = { version: 1, startedAt, utterances };
+function transcript(
+    utterances: TranscriptUtterance[], startedAt = STARTED_AT, speakers?: Record<string, string>
+) {
+    const content: Transcript = { version: 1, startedAt, speakers, utterances };
     return JSON.stringify(content);
 }
 
@@ -29,14 +34,6 @@ function paragraphTexts(turn: TranscriptTurn) {
 }
 
 describe("transcript helpers", () => {
-    it("reads only version 1 transcripts", () => {
-        expect(parseTranscript(transcript([]))?.utterances).toEqual([]);
-        expect(parseTranscript(null)).toBeNull();
-        expect(parseTranscript("not json")).toBeNull();
-        expect(parseTranscript(JSON.stringify({ version: 2, utterances: [] }))).toBeNull();
-        expect(parseTranscript(JSON.stringify({ version: 1 }))).toBeNull();
-    });
-
     it("joins consecutive utterances of one source into a turn timed by its first", () => {
         const turns = groupIntoTurns([
             { source: "microphone", offsetMs: 1000, text: "Hello." },
@@ -68,6 +65,21 @@ describe("transcript helpers", () => {
         ]);
         expect(turns.map(paragraphTexts)).toEqual([
             [ "Hi. Welcome to the show. Yes. Our guest is here." ], [ "Thanks for having me." ]
+        ]);
+    });
+
+    it("treats speakers given the same name as one", () => {
+        const utterances: TranscriptUtterance[] = [
+            { source: "system", offsetMs: 0, speaker: 1, text: "Hello." },
+            { source: "system", offsetMs: 1000, speaker: 3, text: "It is me again." },
+            { source: "system", offsetMs: 2000, speaker: 2, text: "Hi." }
+        ];
+        expect(groupIntoTurns(utterances).map(paragraphTexts)).toEqual([
+            [ "Hello." ], [ "It is me again." ], [ "Hi." ]
+        ]);
+        const named = { "system:1": "Alexandra", "system:3": "Alexandra", "system:2": "Bob" };
+        expect(groupIntoTurns(utterances, named).map(paragraphTexts)).toEqual([
+            [ "Hello. It is me again." ], [ "Hi." ]
         ]);
     });
 
@@ -183,6 +195,90 @@ describe("TranscriptView", () => {
         const offset = await renderTimes("not a date");
         expect(offset?.textContent).toBe("1:05");
         expect(offset && Tooltip.getInstance(offset)).toBeNull();
+    });
+
+    it("renames a speaker in place, and only identified speakers", async () => {
+        const utterances: TranscriptUtterance[] = [
+            { source: "system", offsetMs: 0, speaker: 1, text: "Hi." },
+            { source: "microphone", offsetMs: 2000, text: "Hello." },
+            { source: "system", offsetMs: 4000, text: "Yes." }
+        ];
+        let stored = transcript(utterances, STARTED_AT, { microphone: "Elian" });
+        const attachment = {
+            attachmentId: "transcript1", ownerId: "meeting", role: "transcript",
+            mime: "application/json", title: "Transcript",
+            getBlob: async () => ({ content: stored })
+        };
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const names = () => [ ...container.querySelectorAll(".transcript-speaker") ];
+        await vi.waitFor(() => expect(names()).toHaveLength(3));
+        expect(names().map((name) => [ name.tagName, name.textContent ])).toEqual([
+            [ "A", "transcript.speaker_numbered" ], [ "A", "Elian" ],
+            [ "SPAN", "transcript.speaker_others" ]
+        ]);
+
+        const edit = async (index: number) => {
+            await act(async () => (names()[index] as HTMLElement).click());
+            const input = container.querySelector<HTMLInputElement>(".transcript-speaker-editor");
+            if (!input) {
+                throw new Error("no editor");
+            }
+            return input;
+        };
+        const type = (input: HTMLInputElement, value: string) => act(() => {
+            input.value = value;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        const press = (input: HTMLInputElement, key: string) => act(() => {
+            input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+        });
+
+        const saved = (index: number) => {
+            const [ url, { content, ...rest } ] = h.post.mock.calls[index];
+            return { url, ...rest, ...JSON.parse(content) };
+        };
+
+        // The recording writes another utterance after the transcript was shown.
+        const welcome: TranscriptUtterance = { source: "system", offsetMs: 6000, text: "Welcome." };
+        stored = transcript([ ...utterances, welcome ], STARTED_AT, { microphone: "Elian" });
+        const first = await edit(0);
+        expect(first.value).toBe("transcript.speaker_numbered");
+        type(first, " Alexandra ");
+        // The field can lose focus while Enter takes it down; that must not save a second time.
+        expect(document.activeElement).toBe(first);
+        act(() => {
+            first.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+            first.blur();
+        });
+        expect(container.querySelector(".transcript-speaker-editor")).toBeNull();
+        await vi.waitFor(() => expect(h.post).toHaveBeenCalledOnce());
+        expect(saved(0)).toEqual({
+            url: "notes/meeting/attachments?matchBy=attachmentId",
+            attachmentId: "transcript1", role: "transcript", mime: "application/json",
+            title: "Transcript", version: 1, startedAt: STARTED_AT,
+            speakers: { microphone: "Elian", "system:1": "Alexandra" },
+            utterances: [ ...utterances, welcome ]
+        });
+
+        const me = await edit(1);
+        expect(me.value).toBe("Elian");
+        type(me, "  ");
+        act(() => me.blur());
+        await vi.waitFor(() => expect(h.post).toHaveBeenCalledTimes(2));
+        expect(saved(1).speakers).toEqual({});
+
+        const cancelled = await edit(0);
+        type(cancelled, "Bob");
+        press(cancelled, "Escape");
+        const unchanged = await edit(0);
+        type(unchanged, "transcript.speaker_numbered");
+        press(unchanged, "Enter");
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(h.post).toHaveBeenCalledTimes(2);
     });
 
     it("shows who is speaking in the recorded meeting, before the words arrive", async () => {

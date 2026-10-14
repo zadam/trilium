@@ -1,14 +1,24 @@
 import "./TranscriptView.css";
 
-import type { Transcript, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
+import {
+    getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
+    type TranscriptSource, type TranscriptUtterance
+} from "@triliumnext/commons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
 import { t } from "../../../services/i18n";
+import server from "../../../services/server";
+import { isIMEComposing } from "../../../services/shortcuts";
 import utils from "../../../services/utils";
 import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
+import FormTextBox from "../../react/FormTextBox";
 import { useStaticTooltip, useTriliumEvent } from "../../react/hooks";
+import LinkButton from "../../react/LinkButton";
 import NoItems from "../../react/NoItems";
+
+/** Names given to speakers, by {@link getSpeakerKey}. */
+type SpeakerNames = Record<string, string>;
 
 /** How close to the end, in pixels, still counts as reading the newest turn. */
 const FOLLOW_THRESHOLD = 16;
@@ -76,7 +86,8 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
 
     initialCountRef.current ??= transcript.utterances.length;
     const arrived = new Set(transcript.utterances.slice(initialCountRef.current));
-    const turns = groupIntoTurns(transcript.utterances);
+    const names = transcript.speakers ?? {};
+    const turns = groupIntoTurns(transcript.utterances, names);
     const lastTurn = turns.at(-1);
     const speaking = (
         <p className="transcript-speaking">
@@ -89,7 +100,12 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
-                        <span className="transcript-speaker">{speakerName(turn.source, turn.speaker)}</span>
+                        <SpeakerName
+                            speakerKey={getSpeakerKey(turn.source, turn.speaker)}
+                            name={speakerName(turn.source, turn.speaker, names)}
+                            defaultName={speakerName(turn.source, turn.speaker)}
+                            onRename={(key, name) => renameSpeaker(attachment, key, name)}
+                        />
                         <TurnTime startedAt={transcript.startedAt} offsetMs={turn.offsetMs} />
                     </div>
                     {turn.paragraphs.map((paragraph, index) => (
@@ -110,13 +126,100 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             {pending.filter((source) => source !== lastTurn?.source).map((source) => (
                 <div key={`pending-${source}`} className={`transcript-turn transcript-${source}`}>
                     <div className="transcript-turn-header">
-                        <span className="transcript-speaker">{speakerName(source)}</span>
+                        <span className="transcript-speaker">
+                            {speakerName(source, undefined, names)}
+                        </span>
                     </div>
                     {speaking}
                 </div>
             ))}
         </div>
     );
+}
+
+/**
+ * A speaker's name, which a click turns into a field that renames every turn of the speaker: Enter
+ * or leaving the field saves, Escape cancels, and a blank name or the default restores the default.
+ * Speech no speaker was found for, which has no key, cannot be renamed.
+ */
+function SpeakerName({ speakerKey, name, defaultName, onRename }: {
+    speakerKey: string | null;
+    name: string;
+    defaultName: string;
+    onRename: (key: string, name: string) => void;
+}) {
+    const [ typed, setTyped ] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    /** Set once the field closes, since removing it can fire its blur after Enter or Escape. */
+    const closedRef = useRef(false);
+    const isEditing = typed !== null;
+
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current?.select();
+        }
+    }, [ isEditing ]);
+
+    if (!speakerKey) {
+        return <span className="transcript-speaker">{name}</span>;
+    }
+    if (!isEditing) {
+        const open = () => {
+            closedRef.current = false;
+            setTyped(name);
+        };
+        return <LinkButton className="transcript-speaker" text={name} onClick={open} />;
+    }
+
+    const close = (save: boolean) => {
+        if (closedRef.current) {
+            return;
+        }
+        closedRef.current = true;
+        const trimmed = typed.trim();
+        setTyped(null);
+        if (save && trimmed !== name) {
+            onRename(speakerKey, trimmed === defaultName ? "" : trimmed);
+        }
+    };
+    return (
+        <FormTextBox
+            inputRef={inputRef}
+            className="transcript-speaker-editor"
+            autoFocus
+            maxLength={MAX_SPEAKER_NAME_LENGTH}
+            aria-label={t("transcript.speaker_name")}
+            currentValue={typed}
+            onChange={setTyped}
+            onBlur={() => close(true)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" && !isIMEComposing(e)) {
+                    e.preventDefault();
+                    close(true);
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    close(false);
+                }
+            }}
+        />
+    );
+}
+
+/**
+ * Names a speaker in the transcript as it is stored now, rather than as last shown: a running
+ * recording can have written utterances since. One written in the moment between this read and
+ * the save is restored by the recording's next write, which rewrites every utterance it holds.
+ */
+async function renameSpeaker(attachment: FAttachment, key: string, name: string) {
+    const latest = parseTranscript((await attachment.getBlob())?.content);
+    if (!latest) {
+        return;
+    }
+    const { attachmentId, ownerId, role, mime, title } = attachment;
+    await server.post(`notes/${ownerId}/attachments?matchBy=attachmentId`, {
+        attachmentId, role, mime, title,
+        content: JSON.stringify(setSpeakerName(latest, key, name), null, 2)
+    });
 }
 
 /**
@@ -151,35 +254,27 @@ export interface TranscriptTurn {
     paragraphs: TranscriptUtterance[][];
 }
 
-/** Reads a transcript attachment's content, or returns `null` for content of another shape. */
-export function parseTranscript(content: string | null): Transcript | null {
-    if (!content) {
-        return null;
-    }
-
-    try {
-        const parsed = JSON.parse(content) as Partial<Transcript>;
-        const isTranscript = parsed.version === 1 && Array.isArray(parsed.utterances);
-        return isTranscript ? parsed as Transcript : null;
-    } catch {
-        return null;
-    }
-}
-
 /**
  * Joins each run of utterances from one source and speaker into a turn, timed by its first
- * utterance, and starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more. An
- * utterance without a speaker continues the turn of its source, and an utterance without a
- * `durationMs` never starts a paragraph, since the pause before the next is unknown.
+ * utterance, and starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more.
+ * Speakers given the same name count as one. An utterance without a speaker continues the turn of
+ * its source, and an utterance without a `durationMs` never starts a paragraph, since the pause
+ * before the next is unknown.
  */
-export function groupIntoTurns(utterances: TranscriptUtterance[]): TranscriptTurn[] {
+export function groupIntoTurns(
+    utterances: TranscriptUtterance[], names: SpeakerNames = {}
+): TranscriptTurn[] {
+    const identity = (source: TranscriptSource, speaker?: number) => {
+        const key = getSpeakerKey(source, speaker);
+        return key && names[key] ? `name:${names[key]}` : key;
+    };
     const turns: TranscriptTurn[] = [];
     let previousEndMs: number | null = null;
     for (const utterance of utterances) {
         const { source, speaker, offsetMs, durationMs } = utterance;
         const last = turns.at(-1);
         const isSameSpeaker = speaker === undefined || last?.speaker === undefined
-            || last.speaker === speaker;
+            || identity(last.source, last.speaker) === identity(source, speaker);
         if (last?.source !== source || !isSameSpeaker) {
             turns.push({ source, speaker, offsetMs, paragraphs: [ [ utterance ] ] });
         } else {
@@ -211,7 +306,12 @@ function wasAtEnd(scroller: HTMLElement, scrollHeight: number) {
     return scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD;
 }
 
-function speakerName(source: TranscriptSource, speaker?: number) {
+/** The name of a speaker: the one given in `names`, else the default. */
+function speakerName(source: TranscriptSource, speaker?: number, names: SpeakerNames = {}) {
+    const key = getSpeakerKey(source, speaker);
+    if (key && names[key]) {
+        return names[key];
+    }
     if (source === "microphone") {
         return t("transcript.speaker_me");
     }
