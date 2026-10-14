@@ -111,6 +111,7 @@ On the first recording (two minutes of system audio, English interview), against
 - **Capture chunks must stay a multiple of 512 samples.** `VadSegmenter.accept()` feeds whole 512-sample windows and drops a remainder; 4096 divides evenly.
 - **`maxSpeechDuration` is not a hard cut**: past it, sherpa lowers the minimum silence to 0.1 s and raises the threshold to 0.9, so a segment ends at the next short gap, typically 1–2 s later.
 - **The capture window must be `offscreen`**: a hidden window renders no frames without it, and the self-capture that yields system audio times out. `getDisplayMedia()` needs a user gesture, which only `executeJavaScript(…, true)` gives a hidden window.
+- **Chromium's audio processing is applied during capture**, so the WAV already holds it and no replay can switch it off. The system track runs with echo cancellation, noise suppression and auto gain all off; the microphone keeps echo cancellation, so the meeting played through speakers is not transcribed twice, and its auto gain. Earlier recordings, including the one under "Findings so far", had noise suppression on both tracks and echo cancellation on the system track, so do not compare transcripts across that change.
 - **A silent system source** usually means the sink's monitor volume is near zero (seen at -66 dB); the per-source peak logged every 5 s shows it.
 - **Prebuilds**: `sherpa-onnx-node` has none for win-arm64. `provider: "trt"` exits the process with an offline model.
 

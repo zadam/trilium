@@ -140,7 +140,9 @@ function describe(tracks) {
 }
 
 async function captureMicrophone() {
-    const media = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+    const media = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: false }
+    });
     pipe("microphone", media);
     return describe(media.getAudioTracks());
 }
@@ -148,7 +150,7 @@ async function captureMicrophone() {
 async function captureSystemAudio() {
     const media = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     }).catch((e) => {
         throw new Error(e.name + ": " + e.message);
     });
