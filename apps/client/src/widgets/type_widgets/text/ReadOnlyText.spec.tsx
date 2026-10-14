@@ -435,3 +435,20 @@ describe("ReadOnlyText embedded notes", () => {
         harness.container.remove();
     });
 });
+
+describe("ReadOnlyText tables", () => {
+    it("sizes the tables of its content for scrolling", async () => {
+        const harness = setupHarness({ isVisible: true });
+        harness.note.getBlob = async () => ({
+            content: "<figure class=\"table\" style=\"width:150%;\"><table></table></figure>"
+        }) as never;
+
+        await harness.mount();
+
+        const figure = harness.container.querySelector<HTMLElement>("figure.table");
+        expect(figure?.style.getPropertyValue("--table-width"))
+            .toBe("calc(var(--table-reference-width, 100%) * 150 / 100)");
+        await act(async () => render(null, harness.container));
+        harness.container.remove();
+    });
+});

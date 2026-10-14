@@ -1,3 +1,4 @@
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import {
     BLOCK_ID_ATTRIBUTE, type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey,
     getNestedEmbedOptions, getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed,
@@ -40,6 +41,7 @@ export async function renderTextContent(
     const $content = $('<div class="ck-content">')
         .html(hasContent ? resolveContentImageUrls(sanitizeNoteContentHtml(content)) : "");
     applyNoteImageVersions($content[0]);
+    applyTableScroll($content[0]);
 
     if (options.block !== undefined && !sliceToBlockReference($content[0], options.block)) {
         $renderedContent.append($("<p>")

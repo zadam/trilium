@@ -10,6 +10,7 @@ import {
 } from "ckeditor5";
 import type { Editor, ModelElement } from "ckeditor5";
 
+import TriliumTableScroll from "./table_scroll.js";
 import type { IndexRange } from "./table_move/table_move_groups.js";
 
 /**
@@ -229,7 +230,8 @@ function measureColumnWidths(
 
 /**
  * The rendered width of `table` as a percentage of its container, the value `TableColumnResize`
- * stores as `tableWidth` when a table is resized for the first time.
+ * stores as `tableWidth` when a table is resized for the first time. Where a reference width
+ * applies, the percentage is a share of that width instead.
  */
 function measureTableWidthShare(editor: Editor, table: ModelElement): string | null {
     const viewFigure = editor.editing.mapper.toViewElement(table);
@@ -240,7 +242,10 @@ function measureTableWidthShare(editor: Editor, table: ModelElement): string | n
         return null;
     }
 
-    const parentWidth = getElementWidthInPixels(domParent);
+    const tableScroll = editor.plugins.has(TriliumTableScroll)
+        ? editor.plugins.get(TriliumTableScroll)
+        : null;
+    const parentWidth = tableScroll?.getReferenceWidth(table) ?? getElementWidthInPixels(domParent);
     if (!(parentWidth > 0)) {
         return null;
     }

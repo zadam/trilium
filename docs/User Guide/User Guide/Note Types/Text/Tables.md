@@ -69,6 +69,24 @@ Right-clicking a cell that is not part of the current selection moves the cursor
 *   By default, the row height is not adjustable using the mouse, but it can be configured from the cell settings (see below).
 *   To adjust exactly the width (in pixels or percentages) of a cell, select the <span class="tn-icon cke cke-table-cell-properties"></span> button.
 
+## Wide tables
+
+Since v0.107.0, a table can be wider than the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Content%20width.md">Content width</a>. Such a table scrolls sideways, while the rest of the note keeps its width.
+
+*   A new table is as wide as the content. To make it wider, drag the right border of its last column past the edge of the content. The border snaps to the edge and holds there briefly, so the table is easy to bring back to the width of the content.
+*   To set an exact width, enter a percentage above `100%` or a width in pixels in the <span class="tn-icon cke cke-table-properties"></span> [table properties](#table-properties).
+*   A table whose content needs more room than the note, such as a pasted table with many columns, also scrolls instead of stretching the note.
+*   Wide tables scroll the same way in read-only notes and on shared pages.
+*   When printing or exporting to PDF, a wide table is shrunk to fit the page.
+
+Tables inside other blocks, such as block quotes, admonitions, collapsible blocks, columns or tabs, are limited to the width of their block and do not scroll.
+
+### Mobile support
+
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, a table keeps the width it has on a desktop and scrolls sideways, instead of squeezing its columns into the width of the screen. The full width of a table is the _Max content width_ set in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Appearance_ → _Content Width_ on the mobile device, 1200 pixels by default. For example, a table set to `50%` is 600 pixels wide.
+
+Columns cannot be resized by dragging on mobile.
+
 ## Inserting new rows and new columns
 
 *   To insert a new column, click on a desired location, then press the <span class="tn-icon cke cke-table-column"></span> button from the formatting toolbar and select _Insert column left or right._

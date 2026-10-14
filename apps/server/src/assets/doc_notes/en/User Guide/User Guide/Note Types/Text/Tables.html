@@ -150,6 +150,35 @@ src="3_Tables_image.png" width="384" height="100">
   <li>To adjust exactly the width (in pixels or percentages) of a cell, select
     the&nbsp;<span class="tn-icon cke cke-table-cell-properties"></span> button.</li>
 </ul>
+<h2>Wide tables</h2>
+<p>Since v0.107.0, a table can be wider than the&nbsp;<a class="reference-link"
+  href="#root/_help_t596jLvPrqkS">Content width</a>. Such a table scrolls
+  sideways, while the rest of the note keeps its width.</p>
+<ul>
+  <li>A new table is as wide as the content. To make it wider, drag the right
+    border of its last column past the edge of the content. The border snaps
+    to the edge and holds there briefly, so the table is easy to bring back
+    to the width of the content.</li>
+  <li>To set an exact width, enter a percentage above <code>100%</code> or a width
+    in pixels in the&nbsp;<span class="tn-icon cke cke-table-properties"></span>  <a
+    href="#table-properties">table properties</a>.</li>
+  <li>A table whose content needs more room than the note, such as a pasted
+    table with many columns, also scrolls instead of stretching the note.</li>
+  <li>Wide tables scroll the same way in read-only notes and on shared pages.</li>
+  <li>When printing or exporting to PDF, a wide table is shrunk to fit the page.</li>
+</ul>
+<p>Tables inside other blocks, such as block quotes, admonitions, collapsible
+  blocks, columns or tabs, are limited to the width of their block and do
+  not scroll.</p>
+<h3>Mobile support</h3>
+<p>On the&nbsp;<a class="reference-link" href="#root/_help_RDslemsQ6gCp">Mobile Frontend</a>,
+  a table keeps the width it has on a desktop and scrolls sideways, instead
+  of squeezing its columns into the width of the screen. The full width of
+  a table is the <em>Max content width</em> set in&nbsp;<a class="reference-link"
+  href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Appearance</em> → <em>Content Width</em> on
+  the mobile device, 1200 pixels by default. For example, a table set to <code>50%</code> is
+  600 pixels wide.</p>
+<p>Columns cannot be resized by dragging on mobile.</p>
 <h2>Inserting new rows and new columns</h2>
 <ul>
   <li>To insert a new column, click on a desired location, then press the&nbsp;<span

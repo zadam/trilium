@@ -26,8 +26,10 @@ import "@triliumnext/ckeditor5/src/theme/ck-content.css";
 import "@triliumnext/ckeditor5/src/theme/tabs.css";
 import "@triliumnext/ckeditor5/src/theme/multicolumn.css";
 import "@triliumnext/ckeditor5/src/theme/collapsible_blocks.css";
+import "@triliumnext/ckeditor5/src/theme/table_scroll.css";
 import "@triliumnext/ckeditor5/src/theme/todo_lists.css";
 
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import { applyTabs, revealFragment } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import { enhanceLinkPreviews } from "@triliumnext/commons/src/lib/link_embed_dom.js";
 
@@ -69,6 +71,7 @@ function setupTextNote() {
     const diagrams = $try(setupMermaid);
     $try(setupMath);
     $try(() => enhanceLinkPreviews(document.body));
+    $try(setupTableScroll);
     $try(setupTabs);
     return diagrams;
 }
@@ -87,6 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     whenActivated(() => $try(() => showLinkedBlocks(diagrams)));
 });
+
+function setupTableScroll() {
+    const content = document.getElementById("content");
+    if (content) {
+        applyTableScroll(content);
+    }
+}
 
 function setupTabs() {
     const content = document.getElementById("content");

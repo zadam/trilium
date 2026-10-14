@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
     whenActivated: vi.fn((callback: () => void) => callback()),
     setupMath: vi.fn(),
     setupMermaid: vi.fn(),
+    applyTableScroll: vi.fn(),
     applyTabs: vi.fn(),
     revealFragment: vi.fn(),
     showBlockReference: vi.fn(),
@@ -36,6 +37,9 @@ vi.mock("./content/mermaid.js", () => ({ default: mocks.setupMermaid }));
 vi.mock("./content/app_view.js", () => ({ default: mocks.setupAppView }));
 vi.mock("./content/note_view.js", () => ({ default: "mountNoteView" }));
 vi.mock("./content/collection_view.js", () => ({ default: "mountCollection" }));
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js", () => ({
+    applyTableScroll: mocks.applyTableScroll
+}));
 vi.mock("@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js", () => ({
     applyTabs: mocks.applyTabs,
     revealFragment: mocks.revealFragment
@@ -105,6 +109,7 @@ describe("share theme entry", () => {
         expect(mocks.setupMermaid).toHaveBeenCalledOnce();
         expect(mocks.setupMath).toHaveBeenCalledOnce();
         expect(mocks.enhanceLinkPreviews).toHaveBeenCalledWith(document.body);
+        expect(mocks.applyTableScroll).toHaveBeenCalledWith(content);
         expect(mocks.applyTabs).toHaveBeenCalledWith(content, { placeholder: "Tab" });
         expect(panel.scrollIntoView).toHaveBeenCalledOnce();
 
@@ -156,6 +161,7 @@ describe("share theme entry", () => {
         document.dispatchEvent(new Event("DOMContentLoaded"));
 
         expect(mocks.setupMath).toHaveBeenCalledTimes(2);
+        expect(mocks.applyTableScroll).toHaveBeenCalledOnce();
         expect(mocks.applyTabs).not.toHaveBeenCalled();
     });
 

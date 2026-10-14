@@ -266,6 +266,16 @@ describe("Text content renderer", () => {
         expect(emptied.querySelector("a")?.textContent).toBe("Child note");
     });
 
+    it("sizes the tables of the content for scrolling", async () => {
+        const note = buildNote({ title: "Tables" });
+        const contentEl = document.createElement("div");
+        const table = "<table><tbody><tr><td>a</td></tr></tbody></table>";
+        const html = `<figure class="table" style="width:800px;">${table}</figure>`;
+        await renderTextContent(note, html, $(contentEl));
+        const figure = contentEl.querySelector<HTMLElement>(".ck-content > figure.table");
+        expect(figure?.style.getPropertyValue("--table-width")).toBe("800px");
+    });
+
     it("renders nothing for an empty note with no children when noChildrenList is set", async () => {
         const contentEl = document.createElement("div");
         const note = buildNote({ title: "Empty note" });

@@ -4,6 +4,7 @@ import "./ReadOnlyText.css";
 // (see https://github.com/zadam/trilium/issues/1590 for example of such conflict)
 import "@triliumnext/ckeditor5";
 
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import clsx from "clsx";
 import { Ref } from "preact";
@@ -147,6 +148,7 @@ export function ReadOnlyTextContent({
         ]));
 
         applyNoteImageVersions(container);
+        applyTableScroll(container);
         applyMath(container);
         applyTabs(container, { placeholder: t("text-editor.ck.tab-title") });
         setupImageOpening(container, true);
