@@ -1,6 +1,7 @@
 import type {
     Transcript, TranscriptionState, TranscriptSource, TranscriptUtterance
 } from "@triliumnext/commons";
+import { Tooltip } from "bootstrap";
 import { act } from "preact/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
@@ -13,8 +14,11 @@ import TranscriptView, { formatOffset, groupIntoTurns, parseTranscript } from ".
 
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 
-function transcript(utterances: TranscriptUtterance[]) {
-    const content: Transcript = { version: 1, startedAt: "2026-10-13T14:30:00.000Z", utterances };
+/** Local time, so that the clock times the spec expects hold in every time zone. */
+const STARTED_AT = "2026-10-13T14:29:55";
+
+function transcript(utterances: TranscriptUtterance[], startedAt = STARTED_AT) {
+    const content: Transcript = { version: 1, startedAt, utterances };
     return JSON.stringify(content);
 }
 
@@ -89,13 +93,44 @@ describe("TranscriptView", () => {
             .map((turn) => turn.textContent);
         await vi.waitFor(() => expect(turns()).toHaveLength(2));
         expect(turns()).toEqual([
-            "transcript.speaker_me0:01Can you hear me?Hello?",
-            "transcript.speaker_others0:08Yes."
+            "transcript.speaker_me14:29Can you hear me?Hello?",
+            "transcript.speaker_others14:30Yes."
         ]);
         expect(container.querySelectorAll(".transcript-microphone p")).toHaveLength(2);
     });
 
-    it("shows who is speaking in the meeting its note records, before the words arrive", async () => {
+    it("times turns by the clock, with the offset as a tooltip or alone", async () => {
+        const renderTimes = async (startedAt: string) => {
+            const utterance: TranscriptUtterance =
+                { source: "system", offsetMs: 65_000, text: "Yes." };
+            const content = transcript([ utterance ], startedAt);
+            const attachment = { attachmentId: "transcript1", getBlob: async () => ({ content }) };
+            const container = renderInto(
+                <ParentComponent.Provider value={new Component()}>
+                    <TranscriptView attachment={attachment as unknown as FAttachment} />
+                </ParentComponent.Provider>
+            );
+            await vi.waitFor(() =>
+                expect(container.querySelector(".transcript-time")).not.toBeNull());
+            return container.querySelector<HTMLElement>(".transcript-time");
+        };
+
+        const time = await renderTimes(STARTED_AT);
+        expect(time?.textContent).toBe("14:31");
+        expect(time?.getAttribute("datetime"))
+            .toBe(new Date("2026-10-13T14:31:00").toISOString());
+        const tooltip = time && Tooltip.getInstance(time);
+        expect(tooltip).toBeTruthy();
+        act(() => tooltip?.show());
+        expect(document.querySelector(".tooltip")?.textContent).toBe("transcript.offset");
+        act(() => tooltip?.dispose());
+
+        const offset = await renderTimes("not a date");
+        expect(offset?.textContent).toBe("1:05");
+        expect(offset && Tooltip.getInstance(offset)).toBeNull();
+    });
+
+    it("shows who is speaking in the recorded meeting, before the words arrive", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const recording = (noteId: string, pendingSources: TranscriptSource[]) =>
             act(() => onStateChanged({ status: "recording", noteId, pendingSources }));
@@ -136,12 +171,12 @@ describe("TranscriptView", () => {
         });
         await recording("meeting", [ "microphone", "system" ]);
         await vi.waitFor(() => expect(turns()).toEqual([
-            "transcript.speaker_me0:01Hello?transcript.speaking",
+            "transcript.speaker_me14:29Hello?transcript.speaking",
             "transcript.speaker_otherstranscript.speaking"
         ]));
 
         await recording("other", [ "system" ]);
-        expect(turns()).toEqual([ "transcript.speaker_me0:01Hello?" ]);
+        expect(turns()).toEqual([ "transcript.speaker_me14:29Hello?" ]);
         window.electronApi = undefined;
     });
 

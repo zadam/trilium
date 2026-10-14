@@ -1,12 +1,13 @@
 import "./TranscriptView.css";
 
 import type { Transcript, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
 import { t } from "../../../services/i18n";
+import utils from "../../../services/utils";
 import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
-import { useTriliumEvent } from "../../react/hooks";
+import { useStaticTooltip, useTriliumEvent } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
 
 /** How close to the end, in pixels, still counts as reading the newest turn. */
@@ -85,7 +86,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
                         <span className="transcript-speaker">{speakerName(turn.source)}</span>
-                        <span className="transcript-time">{formatOffset(turn.offsetMs)}</span>
+                        <TurnTime startedAt={transcript.startedAt} offsetMs={turn.offsetMs} />
                     </div>
                     {turn.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
                     {turn === lastTurn && pending.includes(turn.source) && speaking}
@@ -100,6 +101,29 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                 </div>
             ))}
         </div>
+    );
+}
+
+/**
+ * When a turn began, in local clock time, with its offset into the recording as the tooltip. Shows
+ * the offset alone when the transcript's `startedAt` cannot be read.
+ */
+function TurnTime({ startedAt, offsetMs }: { startedAt: string; offsetMs: number }) {
+    const timeRef = useRef<HTMLTimeElement>(null);
+    const offset = formatOffset(offsetMs);
+    const startedAtMs = Date.parse(startedAt);
+    const time = Number.isNaN(startedAtMs) ? null : new Date(startedAtMs + offsetMs);
+    const tooltip = time ? t("transcript.offset", { offset }) : "";
+    const tooltipConfig = useMemo(() => ({ title: tooltip }), [ tooltip ]);
+    useStaticTooltip(timeRef, tooltipConfig);
+
+    if (!time) {
+        return <span className="transcript-time">{offset}</span>;
+    }
+    return (
+        <time ref={timeRef} className="transcript-time" dateTime={time.toISOString()}>
+            {utils.formatTime(time)}
+        </time>
     );
 }
 

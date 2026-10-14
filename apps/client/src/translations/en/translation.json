@@ -4590,6 +4590,7 @@
     "speaker_others": "Others",
     "empty": "Nothing has been transcribed yet.",
     "unreadable": "This transcript cannot be read.",
-    "speaking": "Speaking…"
+    "speaking": "Speaking…",
+    "offset": "{{offset}} into the recording"
   }
 }
