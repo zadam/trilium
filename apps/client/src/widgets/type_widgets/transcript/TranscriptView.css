@@ -3,6 +3,7 @@
     height: 100%;
     overflow-y: auto;
     padding: 0.5rem 1rem 1rem;
+    user-select: text;
 
     .transcript-turn {
         max-width: var(--preferred-max-content-width, 900px);
@@ -44,6 +45,7 @@
     }
 
     .transcript-speaking {
+        user-select: none;
         display: flex;
         align-items: center;
         gap: 0.35rem;
