@@ -50,6 +50,13 @@ The following types are supported:
 > [!NOTE]
 > For label-based attributes, these types are not enforced by the attribute system, meaning that changing the type afterwards does not guarantee that the values in it correspond to the type (e.g. turning a text into a number).
 
+## Multiple values
+
+When the definition allows multiple values, each value is shown as a chip and a new one is added in the box after them. Press the <span class="tn-icon bx bx-x"></span> on a chip to remove that value.
+
+*   For free-form types such as _Text_, _Number_ or _Date_, press <kbd>Enter</kbd> (or leave the field) to add what was typed. The same value can be added more than once, for example two payments of the same amount.
+*   For _Select_, _Checkbox_ and _Relation_ attributes, a value is picked from the list rather than typed, and each one can be picked only once.
+
 ## Creating a new promoted attribute definition
 
 To create a new promoted attribute:
