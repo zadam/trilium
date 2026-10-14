@@ -62,7 +62,12 @@ const RECOGNIZER_SETTINGS = {
     provider: "cpu"
 };
 
-const DECODING_METHOD = "greedy_search";
+const DECODING_SETTINGS = {
+    decodingMethod: "greedy_search",
+    // Makes Parakeet less likely to emit nothing over a stretch of speech, which otherwise drops
+    // whole clauses from segments that contain pauses.
+    blankPenalty: 0.5
+};
 
 const SPEAKER_SETTINGS: SpeakerClustererOptions = {
     threshold: 0.5,
@@ -101,7 +106,7 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
             tokens: path.join(MODEL_DIR, "tokens.txt"),
             ...RECOGNIZER_SETTINGS
         },
-        decodingMethod: DECODING_METHOD
+        ...DECODING_SETTINGS
     });
 
     const speakerExtractor = fs.existsSync(SPEAKER_MODEL)
@@ -132,7 +137,7 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
             : undefined,
         settings: {
             modelDirectory: path.resolve(MODEL_DIR),
-            recognizer: { ...RECOGNIZER_SETTINGS, decodingMethod: DECODING_METHOD },
+            recognizer: { ...RECOGNIZER_SETTINGS, ...DECODING_SETTINGS },
             vad: VAD_SETTINGS,
             speakers: speakerExtractor
                 ? { model: path.basename(SPEAKER_MODEL), ...SPEAKER_SETTINGS }

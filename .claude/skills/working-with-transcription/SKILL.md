@@ -28,7 +28,7 @@ capture window (hidden, offscreen)          main process
 | File | Owns |
 |---|---|
 | `apps/desktop/src/services/transcription/capture.ts` | The hidden capture window and its page; microphone and loopback system audio |
-| `…/engine.ts` | `loadSherpaEngine()`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_METHOD`, `VAD_SETTINGS`), reported as `settings` |
+| `…/engine.ts` | `loadSherpaEngine()`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
 | `…/session.ts` | `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
 | `…/attachment_sink.ts` | The `transcript` attachment, rewritten after every utterance |
 | `…/audio_recorder.ts` | Development recordings: `WavRecorder`, `TranscriptFileSink`, `getRecordingDirectory()` |
@@ -75,7 +75,7 @@ node $S/replay.mjs latest --label vad04 --set vad.threshold=0.4 --set vad.maxSpe
 - `latest` is the newest development recording; any recording directory works too.
 - It starts from `recording.json`'s `engine` and applies each `--set` (JSON-parsed when it parses). Recognizer keys sherpa-onnx reads from `modelConfig` (`modelType`, `numThreads`, `provider`, `modelingUnit`, `bpeVocab`) go there; the rest (`decodingMethod`, `maxActivePaths`, `hotwordsFile`, `hotwordsScore`, `blankPenalty`, `ruleFsts`, `ruleFars`) go top level.
 - It runs in plain Node with the desktop app's `sherpa-onnx-node`, segments with Silero exactly as `VadSegmenter` does, and times each decode: RTF is decode time over audio length.
-- `--source system` replays one source; `--force` replaces a label.
+- `--source system` replays one source; `--pad <seconds>` decodes each segment with that much extra audio on both sides; `--force` replaces a label.
 
 ## Comparing transcripts
 
@@ -140,16 +140,21 @@ On the first recording (two minutes of system audio, English interview), against
 | `modified_beam_search`, 4 paths | 1.6% | 0.099 (greedy 0.127) | Faster, but all five changes were deletions of spoken words |
 | Hotwords as plain words | 0% | — | Not applied: the terms did not encode (above) |
 
-On a 44-minute Teams call (both sources, English, non-native speakers), scored against another tool's transcript of the same call, so only the change between rows counts. The current `VAD_SETTINGS` come from this run:
+On a 44-minute Teams call (both sources, English, non-native speakers), scored against another tool's transcript of the same call, so only the change between rows counts. The current `VAD_SETTINGS` and `blankPenalty` come from this run:
 
 | VAD (max / silence), decoding | Microphone WER | System WER | Notes |
 |---|---|---|---|
 | 8 s / 0.5 s, greedy (previous) | 17.0% | 27.1% | 702 utterances, 187 under 1 s |
 | 20 s or 30 s / 0.5 s, greedy | 16.4% | 26.9% | Identical: no segment reached 20 s; the 0.5 s silence ends them first |
-| 20 s / 0.75 s, greedy (current) | 15.7% | 25.8% | Merged segments recover words; three clauses dropped |
+| 20 s / 0.75 s, greedy | 15.7% | 25.8% | Merged segments recover words; three clauses dropped |
 | 20 s / 1.0 s, greedy | 16.8% | 25.7% | |
 | 20 s / 1.5 s, greedy | 18.6% | 24.1% | Parakeet drops 15–30-word clauses inside long segments with pauses |
 | `modified_beam_search`, 4 paths | 17.8–24.9% | 25.9–27.5% | Worse at every silence setting |
+| 20 s / 0.75 s, `blankPenalty` 0.5 (current) | 15.3% | 26.7% | Recovers every dropped clause; the system score drops only because the speaker’s repetitions ("I I I", "no no") now appear |
+| `blankPenalty` 1 / 2 | 15.7 / 16.3% | 27.8 / 31.4% | Garbled extra words |
+| 20 s / 1.5 s, `blankPenalty` 1 | 15.3% | 26.6% | The penalty fixes the 1.5 s drops too, at more latency |
+| VAD threshold 0.4 / 0.3 | 15.6 / 16.0% | 25.8 / 26.0% | 0.3 recovers one quiet passage; otherwise noise |
+| `--pad` 0.2 / 0.4 s | 17.3 / 24.4% | 24.5 / 25.3% | Parakeet drops whole clauses again |
 
 ## Traps
 
