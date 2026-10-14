@@ -7,6 +7,7 @@ const h = vi.hoisted(() => ({
     handlers: new Map<string, (...args: unknown[]) => unknown>(),
     broadcast: [] as TranscriptionState[],
     notes: new Set<string>([ "meeting" ]),
+    isDev: false,
     loadEngine: vi.fn(),
     sessionOptions: null as RecordingSessionOptions | null,
     sessionStart: vi.fn(),
@@ -33,7 +34,7 @@ vi.mock("electron", () => ({
 vi.mock("@triliumnext/core", () => ({
     becca: { getNote: (noteId: string) => h.notes.has(noteId) ? { noteId } : null },
     getLog: () => ({ info: vi.fn(), error: vi.fn() }),
-    utils: { isDev: () => false }
+    utils: { isDev: () => h.isDev }
 }));
 vi.mock("i18next", () => ({
     t: (key: string, options?: object) => options ? `${key} ${JSON.stringify(options)}` : key
@@ -47,6 +48,17 @@ vi.mock("./engine", async (importOriginal) => ({
     loadSherpaEngine: h.loadEngine
 }));
 vi.mock("./attachment_sink", () => ({ AttachmentSink: class {} }));
+vi.mock("./audio_recorder", () => ({
+    getRecordingDirectory: (createdAt: number, noteId: string) => `/recordings/${noteId}`,
+    TranscriptFileSink: class {
+        constructor(readonly directory: string) {}
+    },
+    WavRecorder: class {
+        constructor(
+            readonly directory: string, readonly noteId: string, readonly settings: object
+        ) {}
+    }
+}));
 vi.mock("./session", () => ({
     RecordingSession: class {
         start = h.sessionStart;
@@ -73,6 +85,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     h.handlers.clear();
     h.broadcast.length = 0;
+    h.isDev = false;
     h.loadEngine.mockResolvedValue({});
     h.sessionStart.mockResolvedValue([ "microphone", "system" ]);
 });
@@ -110,6 +123,24 @@ describe("transcription IPC", () => {
         const stopping = h.broadcast.find((state) => state.status === "stopping");
         expect(stopping?.pendingSources).toEqual([ "system" ]);
         expect(h.broadcast.at(-1)).toEqual(IDLE);
+    });
+
+    it("keeps the audio and the transcript as produced only in development builds", async () => {
+        const settings = { recognizer: { decodingMethod: "greedy_search" } };
+        h.loadEngine.mockResolvedValue({ settings });
+        const invoke = await loadService();
+
+        await invoke("transcription-start", "meeting");
+        expect(h.sessionOptions?.sinks).toHaveLength(1);
+        expect(h.sessionOptions?.taps).toEqual([]);
+        await invoke("transcription-stop");
+
+        h.isDev = true;
+        await invoke("transcription-start", "meeting");
+        expect(h.sessionOptions?.sinks[1]).toEqual({ directory: "/recordings/meeting" });
+        expect(h.sessionOptions?.taps).toEqual([
+            { directory: "/recordings/meeting", noteId: "meeting", settings }
+        ]);
     });
 
     it("refuses a note that does not exist, without changing state", async () => {

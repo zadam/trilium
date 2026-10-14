@@ -4,9 +4,9 @@ import { BrowserWindow, ipcMain } from "electron";
 import { t } from "i18next";
 
 import { AttachmentSink } from "./attachment_sink";
-import { RECORDINGS_DIR, WavRecorder } from "./audio_recorder";
+import { getRecordingDirectory, TranscriptFileSink, WavRecorder } from "./audio_recorder";
 import { ElectronAudioCapture } from "./capture";
-import { loadSherpaEngine, ModelMissingError } from "./engine";
+import { loadSherpaEngine, ModelMissingError, type SpeechEngine } from "./engine";
 import { type AudioTap, RecordingSession, type TranscriptSink } from "./session";
 
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
@@ -35,11 +35,11 @@ export async function startRecording(noteId: unknown): Promise<string> {
 
     setState({ status: "starting", noteId, pendingSources: [] });
     try {
+        const engine = await loadSherpaEngine();
         const session = new RecordingSession({
             capture: new ElectronAudioCapture(),
-            engine: await loadSherpaEngine(),
-            sinks: createSinks(noteId),
-            taps: createTaps(noteId),
+            engine,
+            ...createReceivers(noteId, engine),
             onPendingChanged: (pendingSources) => setState({ ...state, pendingSources })
         });
         const sources = await session.start();
@@ -77,17 +77,19 @@ export function getState() {
     return state;
 }
 
-/** Where the utterances of a recording for `noteId` go. */
-function createSinks(noteId: string): TranscriptSink[] {
-    return [ new AttachmentSink(noteId) ];
-}
-
 /**
- * What else receives the audio of a recording for `noteId`: development builds keep it, to
- * transcribe it again while the engine is tuned.
+ * Where the utterances and the audio of a recording for `noteId` go. Development builds also keep
+ * the audio and the transcript as produced, to transcribe the audio again while the engine is tuned.
  */
-function createTaps(noteId: string): AudioTap[] {
-    return coreUtils.isDev() ? [ new WavRecorder(RECORDINGS_DIR, noteId) ] : [];
+function createReceivers(noteId: string, engine: SpeechEngine) {
+    const sinks: TranscriptSink[] = [ new AttachmentSink(noteId) ];
+    const taps: AudioTap[] = [];
+    if (coreUtils.isDev()) {
+        const directory = getRecordingDirectory(Date.now(), noteId);
+        sinks.push(new TranscriptFileSink(directory));
+        taps.push(new WavRecorder(directory, noteId, engine.settings));
+    }
+    return { sinks, taps };
 }
 
 function setState(newState: TranscriptionState) {

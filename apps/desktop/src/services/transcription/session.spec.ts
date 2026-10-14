@@ -44,6 +44,7 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     };
     const flushed: SpeechSegment[][] = [];
     const engine = {
+        settings: {},
         recognizer: {
             transcribe: vi.fn(async (samples: Float32Array) =>
                 samples[0] ? `utterance ${samples[0]}` : "")

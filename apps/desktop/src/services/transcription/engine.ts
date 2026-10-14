@@ -30,6 +30,8 @@ export interface SpeechSegmenter {
 export interface SpeechEngine {
     recognizer: SpeechRecognizer;
     createSegmenter(): SpeechSegmenter;
+    /** The settings that shape the transcript, kept with a recording to compare engines by. */
+    settings: Record<string, unknown>;
 }
 
 /** Where the models live: Parakeet TDT 0.6B v3 (int8) plus `silero_vad.onnx`. */
@@ -37,6 +39,24 @@ export const MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-mod
 
 /** Silero VAD consumes 512-sample windows at 16 kHz. */
 const VAD_WINDOW_SIZE = 512;
+
+const RECOGNIZER_SETTINGS = {
+    modelType: "nemo_transducer",
+    numThreads: 2,
+    provider: "cpu"
+};
+
+const DECODING_METHOD = "greedy_search";
+
+const VAD_SETTINGS = {
+    threshold: 0.5,
+    minSilenceDuration: 0.5,
+    minSpeechDuration: 0.25,
+    // Past this length, sherpa ends the segment at the next 0.1 s pause, so continuous speech is
+    // committed within about 10 s.
+    maxSpeechDuration: 8,
+    windowSize: VAD_WINDOW_SIZE
+};
 
 /**
  * Loads the local engine: Silero VAD for segmentation and Parakeet for recognition, both through
@@ -58,11 +78,9 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
                 joiner: path.join(MODEL_DIR, "joiner.int8.onnx")
             },
             tokens: path.join(MODEL_DIR, "tokens.txt"),
-            modelType: "nemo_transducer",
-            numThreads: 2,
-            provider: "cpu"
+            ...RECOGNIZER_SETTINGS
         },
-        decodingMethod: "greedy_search"
+        decodingMethod: DECODING_METHOD
     });
 
     return {
@@ -76,18 +94,17 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
         createSegmenter: () => new VadSegmenter(new sherpa.Vad({
             sileroVad: {
                 model: path.join(MODEL_DIR, "silero_vad.onnx"),
-                threshold: 0.5,
-                minSilenceDuration: 0.5,
-                minSpeechDuration: 0.25,
-                // Past this length, sherpa ends the segment at the next 0.1 s pause, so
-                // continuous speech is committed within about 10 s.
-                maxSpeechDuration: 8,
-                windowSize: VAD_WINDOW_SIZE
+                ...VAD_SETTINGS
             },
             sampleRate: SAMPLE_RATE,
             numThreads: 1,
             provider: "cpu"
-        }, 60))
+        }, 60)),
+        settings: {
+            modelDirectory: MODEL_DIR,
+            recognizer: { ...RECOGNIZER_SETTINGS, decodingMethod: DECODING_METHOD },
+            vad: VAD_SETTINGS
+        }
     };
 }
 

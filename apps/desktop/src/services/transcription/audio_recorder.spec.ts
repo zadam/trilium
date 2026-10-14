@@ -3,7 +3,10 @@ import os from "os";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { encodeWavHeader, type RecordingManifest, toPcm16, WavRecorder } from "./audio_recorder";
+import {
+    encodeWavHeader, getRecordingDirectory, type RecordingManifest, toPcm16, TranscriptFileSink,
+    WavRecorder
+} from "./audio_recorder";
 
 const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
 vi.mock("@triliumnext/core", () => ({ getLog: () => log }));
@@ -12,48 +15,53 @@ vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
 }));
 
 const STARTED_AT = Date.parse("2026-10-14T09:30:00.000Z");
+const SETTINGS = { recognizer: { decodingMethod: "greedy_search" } };
 
 let parentDirectory = "";
+/** The recording's own directory, which the recorder creates. */
+let directory = "";
 
 beforeEach(() => {
     vi.clearAllMocks();
     parentDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "trilium-recordings-"));
+    directory = path.join(parentDirectory, "recording");
 });
 
 afterEach(() => {
     fs.rmSync(parentDirectory, { recursive: true, force: true });
 });
 
-function readRecording() {
-    const [ name ] = fs.readdirSync(parentDirectory);
-    const directory = path.join(parentDirectory, name);
-    const manifest = JSON.parse(
-        fs.readFileSync(path.join(directory, "recording.json"), "utf8")
-    ) as RecordingManifest;
-    return { name, directory, manifest };
+function readJson<T>(fileName: string) {
+    return JSON.parse(fs.readFileSync(path.join(directory, fileName), "utf8")) as T;
 }
+
+it("names a recording's directory after when it was created and its note", () => {
+    expect(path.basename(getRecordingDirectory(STARTED_AT, "meeting")))
+        .toBe("2026-10-14T09-30-00-000Z_meeting");
+    expect(path.dirname(getRecordingDirectory(STARTED_AT, "meeting")))
+        .toBe(path.join("/data", "transcription-recordings"));
+});
 
 describe("WavRecorder", () => {
     it("keeps each source in a WAV file, lined up by the manifest", () => {
-        const recorder = new WavRecorder(parentDirectory, "meeting");
+        const recorder = new WavRecorder(directory, "meeting", SETTINGS);
         recorder.open(STARTED_AT);
         recorder.write("microphone", new Float32Array([ 0.5, -0.5 ]), 1500);
         recorder.write("system", new Float32Array([ 1 ]), 3000);
         recorder.write("microphone", new Float32Array([ 2, -2 ]), 1500);
 
         // The header already counts every sample before the recording closes.
-        const { name, directory, manifest } = readRecording();
         const microphone = fs.readFileSync(path.join(directory, "microphone.wav"));
         expect(microphone.subarray(0, 44)).toEqual(encodeWavHeader(8));
         expect(microphone.subarray(44)).toEqual(toPcm16(new Float32Array([ 0.5, -0.5, 1, -1 ])));
         recorder.close();
 
-        expect(name).toBe("2026-10-14T09-30-00-000Z_meeting");
         expect(fs.readFileSync(path.join(directory, "system.wav")).length).toBe(46);
-        expect(manifest).toEqual({
+        expect(readJson<RecordingManifest>("recording.json")).toEqual({
             noteId: "meeting",
             startedAt: "2026-10-14T09:30:00.000Z",
             sampleRate: 16000,
+            engine: SETTINGS,
             sources: {
                 microphone: { file: "microphone.wav", firstSampleOffsetMs: 1500 },
                 system: { file: "system.wav", firstSampleOffsetMs: 3000 }
@@ -62,9 +70,8 @@ describe("WavRecorder", () => {
     });
 
     it("stops keeping the audio after a failed write, logging it once", () => {
-        const recorder = new WavRecorder(parentDirectory, "meeting");
+        const recorder = new WavRecorder(directory, "meeting", SETTINGS);
         recorder.open(STARTED_AT);
-        const { directory } = readRecording();
         fs.rmSync(directory, { recursive: true });
 
         recorder.write("microphone", new Float32Array([ 0.5 ]), 0);
@@ -73,6 +80,25 @@ describe("WavRecorder", () => {
 
         expect(log.error).toHaveBeenCalledOnce();
         expect(fs.existsSync(directory)).toBe(false);
+    });
+});
+
+describe("TranscriptFileSink", () => {
+    it("rewrites the transcript after every utterance, in the attachment's format", () => {
+        const sink = new TranscriptFileSink(directory);
+        expect(() => sink.write({ source: "system", offsetMs: 0, text: "Early." }))
+            .toThrow("The transcript file was not opened.");
+
+        sink.open(STARTED_AT);
+        expect(readJson("transcript.json"))
+            .toEqual({ version: 1, startedAt: "2026-10-14T09:30:00.000Z", utterances: [] });
+
+        const utterance =
+            { source: "microphone", offsetMs: 1500, durationMs: 800, text: "Hi." } as const;
+        sink.write(utterance);
+        expect(readJson("transcript.json")).toEqual({
+            version: 1, startedAt: "2026-10-14T09:30:00.000Z", utterances: [ utterance ]
+        });
     });
 });
 

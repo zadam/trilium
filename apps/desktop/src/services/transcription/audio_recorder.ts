@@ -1,14 +1,23 @@
-import type { TranscriptSource } from "@triliumnext/commons";
+import type { Transcript, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import fs from "fs";
 import path from "path";
 
 import { SAMPLE_RATE } from "./engine";
-import type { AudioTap } from "./session";
+import type { AudioTap, TranscriptSink } from "./session";
 
 /** Where development builds keep the audio of each recording, one directory per recording. */
 export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
+
+/** The transcript the recording produced live, beside the audio it came from. */
+export const TRANSCRIPT_FILE = "transcript.json";
+
+/** The directory under {@link RECORDINGS_DIR} for a recording of `noteId` created at `createdAt`. */
+export function getRecordingDirectory(createdAt: number, noteId: string) {
+    const timestamp = new Date(createdAt).toISOString().replace(/[:.]/g, "-");
+    return path.join(RECORDINGS_DIR, `${timestamp}_${noteId}`);
+}
 
 /** The `recording.json` next to the audio files, which lines the sources up with the transcript. */
 export interface RecordingManifest {
@@ -16,6 +25,8 @@ export interface RecordingManifest {
     /** When the recording started, as an ISO 8601 timestamp, like the transcript's `startedAt`. */
     startedAt: string;
     sampleRate: number;
+    /** The settings of the engine that produced `transcript.json`. */
+    engine: Record<string, unknown>;
     sources: Partial<Record<TranscriptSource, {
         file: string;
         /** Milliseconds from `startedAt` to the file's first sample. */
@@ -24,39 +35,37 @@ export interface RecordingManifest {
 }
 
 /**
- * Keeps a recording's audio as one mono 16-bit WAV file per source, plus a `recording.json`
- * manifest, in a directory of its own under `parentDirectory`. Each write also updates the WAV
- * header, so the files stay playable if the application quits mid-recording.
+ * Keeps a recording's audio in `directory` as one mono 16-bit WAV file per source, plus a
+ * `recording.json` manifest. Each write also updates the WAV header, so the files stay playable if
+ * the application quits mid-recording.
  */
 export class WavRecorder implements AudioTap {
-    private directory: string | null = null;
     private manifest: RecordingManifest | null = null;
     private readonly files = new Map<TranscriptSource, WavFile>();
     private failed = false;
 
-    constructor(private readonly parentDirectory: string, private readonly noteId: string) {}
+    constructor(
+        private readonly directory: string,
+        private readonly noteId: string,
+        private readonly engineSettings: Record<string, unknown>
+    ) {}
 
     open(startedAt: number) {
-        const startedAtIso = new Date(startedAt).toISOString();
-        const directory = path.join(
-            this.parentDirectory,
-            `${startedAtIso.replace(/[:.]/g, "-")}_${this.noteId}`
-        );
-        fs.mkdirSync(directory, { recursive: true });
-        this.directory = directory;
+        fs.mkdirSync(this.directory, { recursive: true });
         this.manifest = {
             noteId: this.noteId,
-            startedAt: startedAtIso,
+            startedAt: new Date(startedAt).toISOString(),
             sampleRate: SAMPLE_RATE,
+            engine: this.engineSettings,
             sources: {}
         };
         this.writeManifest();
-        getLog().info(`Transcription: keeping the audio in ${directory}`);
+        getLog().info(`Transcription: keeping the audio in ${this.directory}`);
     }
 
     write(source: TranscriptSource, samples: Float32Array, firstSampleOffsetMs: number) {
         const { directory, manifest } = this;
-        if (this.failed || !directory || !manifest) {
+        if (this.failed || !manifest) {
             return;
         }
 
@@ -85,10 +94,41 @@ export class WavRecorder implements AudioTap {
     }
 
     private writeManifest() {
-        if (this.directory && this.manifest) {
-            const manifestPath = path.join(this.directory, "recording.json");
-            fs.writeFileSync(manifestPath, JSON.stringify(this.manifest, null, 2));
+        const manifestPath = path.join(this.directory, "recording.json");
+        fs.writeFileSync(manifestPath, JSON.stringify(this.manifest, null, 2));
+    }
+}
+
+/**
+ * Writes the transcript to {@link TRANSCRIPT_FILE} in `directory` after every utterance, in the
+ * format of the `transcript` attachment, so it stays as the recording produced it.
+ */
+export class TranscriptFileSink implements TranscriptSink {
+    private transcript: Transcript | null = null;
+
+    constructor(private readonly directory: string) {}
+
+    open(startedAt: number) {
+        fs.mkdirSync(this.directory, { recursive: true });
+        this.transcript = {
+            version: 1,
+            startedAt: new Date(startedAt).toISOString(),
+            utterances: []
+        };
+        this.save();
+    }
+
+    write(utterance: TranscriptUtterance) {
+        if (!this.transcript) {
+            throw new Error("The transcript file was not opened.");
         }
+        this.transcript.utterances.push(utterance);
+        this.save();
+    }
+
+    private save() {
+        const filePath = path.join(this.directory, TRANSCRIPT_FILE);
+        fs.writeFileSync(filePath, JSON.stringify(this.transcript, null, 2));
     }
 }
 
