@@ -1,12 +1,9 @@
-import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import fs from "fs";
 import path from "path";
 import type { SpeakerEmbeddingExtractor, Vad } from "sherpa-onnx-node";
 
+import { SAMPLE_RATE } from "./protocol";
 import { SpeakerClusterer, type SpeakerClustererOptions } from "./speakers";
-
-/** Every source and engine works on mono 16 kHz samples. */
-export const SAMPLE_RATE = 16000;
 
 /** Turns one utterance into text. */
 export interface SpeechRecognizer {
@@ -47,11 +44,8 @@ export interface SpeechEngine {
     settings: Record<string, unknown>;
 }
 
-/** Where the models live: Parakeet TDT 0.6B v3 (int8) plus `silero_vad.onnx`. */
-export const MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
-
 /** The speaker embedding model, optional: without it, utterances carry no speaker. */
-const SPEAKER_MODEL = path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx");
+const SPEAKER_MODEL = path.join("speaker", "nemo_en_titanet_small.onnx");
 
 /** Silero VAD consumes 512-sample windows at 16 kHz. */
 const VAD_WINDOW_SIZE = 512;
@@ -85,33 +79,31 @@ const VAD_SETTINGS = {
 };
 
 /**
- * Loads the local engine: Silero VAD for segmentation and Parakeet for recognition, both through
- * sherpa-onnx. Recognition runs on the libuv thread pool, so it never blocks the main process.
+ * Loads the local engine from `modelDir`: Silero VAD for segmentation (`silero_vad.onnx`) and
+ * Parakeet TDT 0.6B v3 int8 for recognition, both through sherpa-onnx. Recognition runs on the
+ * libuv thread pool; the VAD and the speaker embeddings run on the calling thread.
  */
-export async function loadSherpaEngine(): Promise<SpeechEngine> {
-    if (!fs.existsSync(MODEL_DIR)) {
-        throw new ModelMissingError(MODEL_DIR);
-    }
-
+export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> {
+    const speakerModel = path.join(modelDir, SPEAKER_MODEL);
     const mod = await import("sherpa-onnx-node");
     const sherpa = mod.default ?? mod;
     const recognizer = await sherpa.OfflineRecognizer.createAsync({
         featConfig: { sampleRate: SAMPLE_RATE, featureDim: 80 },
         modelConfig: {
             transducer: {
-                encoder: path.join(MODEL_DIR, "encoder.int8.onnx"),
-                decoder: path.join(MODEL_DIR, "decoder.int8.onnx"),
-                joiner: path.join(MODEL_DIR, "joiner.int8.onnx")
+                encoder: path.join(modelDir, "encoder.int8.onnx"),
+                decoder: path.join(modelDir, "decoder.int8.onnx"),
+                joiner: path.join(modelDir, "joiner.int8.onnx")
             },
-            tokens: path.join(MODEL_DIR, "tokens.txt"),
+            tokens: path.join(modelDir, "tokens.txt"),
             ...RECOGNIZER_SETTINGS
         },
         ...DECODING_SETTINGS
     });
 
-    const speakerExtractor = fs.existsSync(SPEAKER_MODEL)
+    const speakerExtractor = fs.existsSync(speakerModel)
         ? new sherpa.SpeakerEmbeddingExtractor({
-            model: SPEAKER_MODEL, numThreads: 1, provider: "cpu"
+            model: speakerModel, numThreads: 1, provider: "cpu"
         })
         : null;
 
@@ -125,7 +117,7 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
         },
         createSegmenter: () => new VadSegmenter(new sherpa.Vad({
             sileroVad: {
-                model: path.join(MODEL_DIR, "silero_vad.onnx"),
+                model: path.join(modelDir, "silero_vad.onnx"),
                 ...VAD_SETTINGS
             },
             sampleRate: SAMPLE_RATE,
@@ -136,20 +128,14 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
             ? () => new EmbeddingSpeakerTracker(speakerExtractor, SPEAKER_SETTINGS)
             : undefined,
         settings: {
-            modelDirectory: path.resolve(MODEL_DIR),
+            modelDirectory: path.resolve(modelDir),
             recognizer: { ...RECOGNIZER_SETTINGS, ...DECODING_SETTINGS },
             vad: VAD_SETTINGS,
             speakers: speakerExtractor
-                ? { model: path.basename(SPEAKER_MODEL), ...SPEAKER_SETTINGS }
+                ? { model: path.basename(speakerModel), ...SPEAKER_SETTINGS }
                 : null
         }
     };
-}
-
-export class ModelMissingError extends Error {
-    constructor(readonly directory: string) {
-        super(`No speech model in ${directory}`);
-    }
 }
 
 class VadSegmenter implements SpeechSegmenter {

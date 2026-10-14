@@ -724,6 +724,11 @@ export interface TranscriptionState {
     noteId: string | null;
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
+    /**
+     * Why the recording ended without being stopped, sent once with the `idle` state that
+     * follows; `getState()` never returns it.
+     */
+    error?: string;
 }
 
 /**

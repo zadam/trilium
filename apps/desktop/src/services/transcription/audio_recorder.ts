@@ -1,23 +1,12 @@
 import type { Transcript, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
-import { getLog } from "@triliumnext/core";
-import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import fs from "fs";
 import path from "path";
 
-import { SAMPLE_RATE } from "./engine";
+import { type Logger, SAMPLE_RATE } from "./protocol";
 import type { AudioTap, TranscriptSink } from "./session";
-
-/** Where development builds keep the audio of each recording, one directory per recording. */
-export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
 
 /** The transcript the recording produced live, beside the audio it came from. */
 export const TRANSCRIPT_FILE = "transcript.json";
-
-/** The directory under {@link RECORDINGS_DIR} for a recording of `noteId` created at `createdAt`. */
-export function getRecordingDirectory(createdAt: number, noteId: string) {
-    const timestamp = new Date(createdAt).toISOString().replace(/[:.]/g, "-");
-    return path.join(RECORDINGS_DIR, `${timestamp}_${noteId}`);
-}
 
 /** The `recording.json` next to the audio files, which lines the sources up with the transcript. */
 export interface RecordingManifest {
@@ -47,7 +36,8 @@ export class WavRecorder implements AudioTap {
     constructor(
         private readonly directory: string,
         private readonly noteId: string,
-        private readonly engineSettings: Record<string, unknown>
+        private readonly engineSettings: Record<string, unknown>,
+        private readonly log: Logger
     ) {}
 
     open(startedAt: number) {
@@ -60,7 +50,7 @@ export class WavRecorder implements AudioTap {
             sources: {}
         };
         this.writeManifest();
-        getLog().info(`Transcription: keeping the audio in ${this.directory}`);
+        this.log.info(`Transcription: keeping the audio in ${this.directory}`);
     }
 
     write(source: TranscriptSource, samples: Float32Array, firstSampleOffsetMs: number) {
@@ -82,7 +72,7 @@ export class WavRecorder implements AudioTap {
         } catch (e) {
             // Stops for good, so a full disk logs once rather than on every chunk.
             this.failed = true;
-            getLog().error(`Transcription: stopped keeping the audio: ${e}`);
+            this.log.error(`Transcription: stopped keeping the audio: ${e}`);
         }
     }
 

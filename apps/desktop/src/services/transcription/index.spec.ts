@@ -1,17 +1,19 @@
 import type { TranscriptionState } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RecordingSessionOptions } from "./session";
+import type { WorkerListeners } from "./worker_client";
 
 const h = vi.hoisted(() => ({
     handlers: new Map<string, (...args: unknown[]) => unknown>(),
     broadcast: [] as TranscriptionState[],
     notes: new Set<string>([ "meeting" ]),
     isDev: false,
-    loadEngine: vi.fn(),
-    sessionOptions: null as RecordingSessionOptions | null,
-    sessionStart: vi.fn(),
-    sessionStop: vi.fn()
+    isModelInstalled: true,
+    log: { info: vi.fn(), error: vi.fn() },
+    listeners: null as WorkerListeners | null,
+    worker: { start: vi.fn(), connectCapture: vi.fn(), stop: vi.fn(), kill: vi.fn() },
+    capture: { start: vi.fn(), stop: vi.fn() },
+    sink: { open: vi.fn(), write: vi.fn() }
 }));
 
 vi.mock("electron", () => ({
@@ -29,11 +31,16 @@ vi.mock("electron", () => ({
                 }
             }
         }))
+    },
+    MessageChannelMain: class {
+        port1 = "capture end";
+        port2 = "worker end";
     }
 }));
+vi.mock("fs", () => ({ default: { existsSync: () => h.isModelInstalled } }));
 vi.mock("@triliumnext/core", () => ({
     becca: { getNote: (noteId: string) => h.notes.has(noteId) ? { noteId } : null },
-    getLog: () => ({ info: vi.fn(), error: vi.fn() }),
+    getLog: () => h.log,
     utils: { isDev: () => h.isDev }
 }));
 vi.mock("i18next", () => ({
@@ -42,37 +49,35 @@ vi.mock("i18next", () => ({
 vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
     default: { TRILIUM_DATA_DIR: "/data" }
 }));
-vi.mock("./capture", () => ({ ElectronAudioCapture: class {} }));
-vi.mock("./engine", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("./engine")>()),
-    loadSherpaEngine: h.loadEngine
-}));
-vi.mock("./attachment_sink", () => ({ AttachmentSink: class {} }));
-vi.mock("./audio_recorder", () => ({
-    getRecordingDirectory: (createdAt: number, noteId: string) => `/recordings/${noteId}`,
-    TranscriptFileSink: class {
-        constructor(readonly directory: string) {}
-    },
-    WavRecorder: class {
-        constructor(
-            readonly directory: string, readonly noteId: string, readonly settings: object
-        ) {}
+vi.mock("./capture", () => ({
+    CaptureWindow: class {
+        start = h.capture.start;
+        stop = h.capture.stop;
     }
 }));
-vi.mock("./session", () => ({
-    RecordingSession: class {
-        start = h.sessionStart;
-        stop = h.sessionStop;
+vi.mock("./attachment_sink", () => ({
+    AttachmentSink: class {
+        open = h.sink.open;
+        write = h.sink.write;
 
-        constructor(options: RecordingSessionOptions) {
-            h.sessionOptions = options;
+        constructor(readonly noteId: string) {}
+    }
+}));
+vi.mock("./worker_client", () => ({
+    TranscriptionWorker: class {
+        start = h.worker.start;
+        connectCapture = h.worker.connectCapture;
+        stop = h.worker.stop;
+        kill = h.worker.kill;
+
+        constructor(listeners: WorkerListeners) {
+            h.listeners = listeners;
         }
     }
 }));
 
-const { ModelMissingError } = await import("./engine");
-
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
+const STARTED_AT = Date.parse("2026-10-14T09:30:00.000Z");
 
 async function loadService() {
     vi.resetModules();
@@ -86,8 +91,10 @@ beforeEach(() => {
     h.handlers.clear();
     h.broadcast.length = 0;
     h.isDev = false;
-    h.loadEngine.mockResolvedValue({});
-    h.sessionStart.mockResolvedValue([ "microphone", "system" ]);
+    h.isModelInstalled = true;
+    h.listeners = null;
+    h.worker.start.mockResolvedValue({ type: "ready", startedAt: STARTED_AT, settings: {} });
+    h.capture.start.mockResolvedValue([ "microphone", "system" ]);
 });
 
 describe("transcription IPC", () => {
@@ -101,7 +108,8 @@ describe("transcription IPC", () => {
             .toEqual({ status: "recording", noteId: "meeting", pendingSources: [] });
 
         await invoke("transcription-stop");
-        expect(h.sessionStop).toHaveBeenCalledOnce();
+        expect(h.capture.stop.mock.invocationCallOrder[0])
+            .toBeLessThan(h.worker.stop.mock.invocationCallOrder[0]);
         expect(h.broadcast.map((state) => state.status)).toEqual([
             "starting", "starting", "recording", "recording",
             "stopping", "stopping", "idle", "idle"
@@ -109,11 +117,37 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-get-state")).toEqual(IDLE);
     });
 
-    it("tells every window which sources are pending while it records", async () => {
+    it("connects the capture window to the transcription process once that is ready", async () => {
         const invoke = await loadService();
         await invoke("transcription-start", "meeting");
 
-        h.sessionOptions?.onPendingChanged?.([ "system" ]);
+        expect(h.worker.start).toHaveBeenCalledExactlyOnceWith({
+            noteId: "meeting",
+            modelDirectory: "/data/transcription-model",
+            recordingDirectory: null
+        });
+        expect(h.sink.open).toHaveBeenCalledExactlyOnceWith(STARTED_AT);
+        expect(h.worker.connectCapture).toHaveBeenCalledExactlyOnceWith("worker end");
+        expect(h.capture.start).toHaveBeenCalledExactlyOnceWith("capture end");
+        expect(h.sink.open.mock.invocationCallOrder[0])
+            .toBeLessThan(h.capture.start.mock.invocationCallOrder[0]);
+    });
+
+    it("stores the utterances and tells every window which sources are pending", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+        const utterance = { source: "system" as const, offsetMs: 0, text: "Hi" };
+
+        h.listeners?.onUtterance(utterance);
+        h.sink.write.mockImplementationOnce(() => {
+            throw new Error("note deleted");
+        });
+        h.listeners?.onUtterance(utterance);
+        expect(h.sink.write).toHaveBeenCalledTimes(2);
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: saving an utterance failed: Error: note deleted");
+
+        h.listeners?.onPendingChanged([ "system" ]);
         expect(h.broadcast.at(-1)).toEqual({
             status: "recording", noteId: "meeting", pendingSources: [ "system" ]
         });
@@ -126,46 +160,66 @@ describe("transcription IPC", () => {
     });
 
     it("keeps the audio and the transcript as produced only in development builds", async () => {
-        const settings = { recognizer: { decodingMethod: "greedy_search" } };
-        h.loadEngine.mockResolvedValue({ settings });
+        vi.useFakeTimers({ now: STARTED_AT, toFake: [ "Date" ] });
         const invoke = await loadService();
 
         await invoke("transcription-start", "meeting");
-        expect(h.sessionOptions?.sinks).toHaveLength(1);
-        expect(h.sessionOptions?.taps).toEqual([]);
+        expect(h.worker.start.mock.calls[0][0].recordingDirectory).toBeNull();
         await invoke("transcription-stop");
 
         h.isDev = true;
         await invoke("transcription-start", "meeting");
-        expect(h.sessionOptions?.sinks[1]).toEqual({ directory: "/recordings/meeting" });
-        expect(h.sessionOptions?.taps).toEqual([
-            { directory: "/recordings/meeting", noteId: "meeting", settings }
-        ]);
+        expect(h.worker.start.mock.calls[1][0].recordingDirectory)
+            .toBe("/data/transcription-recordings/2026-10-14T09-30-00-000Z_meeting");
+        vi.useRealTimers();
     });
 
-    it("refuses a note that does not exist, without changing state", async () => {
+    it("refuses a missing note or model, without changing state", async () => {
         const invoke = await loadService();
 
         expect(await invoke("transcription-start", "deleted")).toBe("transcription.note-not-found");
         expect(await invoke("transcription-start", { noteId: "meeting" }))
             .toBe("transcription.note-not-found");
-        expect(h.loadEngine).not.toHaveBeenCalled();
+        h.isModelInstalled = false;
+        expect(await invoke("transcription-start", "meeting"))
+            .toBe(`transcription.model-missing {"directory":"/data/transcription-model"}`);
+        expect(h.listeners).toBeNull();
         expect(h.broadcast).toEqual([]);
     });
 
-    it("explains why it could not start and returns to idle", async () => {
+    it("explains why it could not start, ends the process and returns to idle", async () => {
         const invoke = await loadService();
 
-        h.loadEngine.mockRejectedValueOnce(new ModelMissingError("/data/transcription-model"));
+        h.worker.start.mockRejectedValueOnce(new Error("Protobuf parsing failed"));
         expect(await invoke("transcription-start", "meeting"))
-            .toBe(`transcription.model-missing {"directory":"/data/transcription-model"}`);
+            .toBe(`transcription.start-failed {"message":"Protobuf parsing failed"}`);
+        expect(h.capture.start).not.toHaveBeenCalled();
 
-        h.sessionStart.mockRejectedValueOnce(new Error("No audio source could be captured."));
+        h.capture.start.mockRejectedValueOnce(new Error("No audio source could be captured."));
         expect(await invoke("transcription-start", "meeting"))
             .toBe(`transcription.start-failed {"message":"No audio source could be captured."}`);
 
+        expect(h.worker.kill).toHaveBeenCalledTimes(2);
+        expect(h.capture.stop).toHaveBeenCalledTimes(2);
         expect(await invoke("transcription-get-state")).toEqual(IDLE);
         await invoke("transcription-stop");
-        expect(h.sessionStop).not.toHaveBeenCalled();
+        expect(h.worker.stop).not.toHaveBeenCalled();
+    });
+
+    it("ends a recording whose transcription process died, and says why once", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+
+        h.listeners?.onUnexpectedExit(139);
+        expect(h.capture.stop).toHaveBeenCalledOnce();
+        expect(h.broadcast.at(-1))
+            .toEqual({ ...IDLE, error: "transcription.stopped-unexpectedly" });
+        expect(await invoke("transcription-get-state")).toEqual(IDLE);
+        expect(h.log.error).toHaveBeenCalledWith(
+            "Transcription: the transcription process exited with code 139.");
+
+        await invoke("transcription-stop");
+        expect(h.worker.stop).not.toHaveBeenCalled();
+        expect(await invoke("transcription-start", "meeting")).toBe("");
     });
 });

@@ -21,10 +21,16 @@ import {
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
-    const { status } = useTranscriptionState();
+    const { status, error } = useTranscriptionState();
     const handleClick = useCallback(() => {
         void toggleRecording(status);
     }, [ status ]);
+
+    useEffect(() => {
+        if (error) {
+            toast.showError(error);
+        }
+    }, [ error ]);
 
     return (
         <LaunchBarActionButton

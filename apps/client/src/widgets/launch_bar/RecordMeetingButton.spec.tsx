@@ -1,4 +1,9 @@
+import type { TranscriptionState } from "@triliumnext/commons";
+import { act } from "preact/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type FNote from "../../entities/fnote";
+import { renderInto } from "../../test/render";
 
 const mocks = vi.hoisted(() => ({
     getInboxNote: vi.fn(),
@@ -18,8 +23,12 @@ vi.mock("../../services/toast", () => ({
 vi.mock("../../services/i18n", () => ({
     t: (key: string, options?: { date?: string }) => `${key} ${options?.date}`
 }));
+vi.mock("./launch_bar_widgets", () => ({
+    LaunchBarActionButton: () => null,
+    useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" })
+}));
 
-import { createMeetingNote, toggleRecording } from "./RecordMeetingButton";
+import RecordMeetingButton, { createMeetingNote, toggleRecording } from "./RecordMeetingButton";
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -86,5 +95,36 @@ describe("toggleRecording", () => {
         window.electronApi = undefined;
         await toggleRecording("idle");
         expect(mocks.createNote).not.toHaveBeenCalled();
+    });
+});
+
+describe("RecordMeetingButton", () => {
+    it("says once why a recording stopped by itself", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        const report = (state: Partial<TranscriptionState>) => act(() => onStateChanged({
+            status: "idle", noteId: null, pendingSources: [], ...state
+        }));
+        window.electronApi = {
+            transcription: {
+                getState: async () => ({ status: "idle", noteId: null, pendingSources: [] }),
+                onStateChanged: (callback: typeof onStateChanged) => {
+                    onStateChanged = callback;
+                    return () => {};
+                }
+            }
+        } as unknown as typeof window.electronApi;
+        act(() => {
+            renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+
+        await report({ status: "recording", noteId: "meeting" });
+        await report({ error: "Stopped unexpectedly" });
+        await report({ error: "Stopped unexpectedly", pendingSources: [] });
+        expect(mocks.showError).toHaveBeenCalledExactlyOnceWith("Stopped unexpectedly");
+
+        await report({ status: "recording", noteId: "meeting" });
+        await report({ error: "Stopped unexpectedly" });
+        expect(mocks.showError).toHaveBeenCalledTimes(2);
+        window.electronApi = undefined;
     });
 });

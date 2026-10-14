@@ -567,6 +567,7 @@
     "note-not-found": "The meeting note no longer exists.",
     "model-missing": "No speech recognition model was found in {{- directory}}.",
     "start-failed": "The transcription could not start: {{- message}}",
+    "stopped-unexpectedly": "The transcription stopped unexpectedly. What was transcribed until then is kept.",
     "attachment-title": "Transcript"
   }
 }

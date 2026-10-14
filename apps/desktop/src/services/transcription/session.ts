@@ -1,13 +1,19 @@
 import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
-import { getLog } from "@triliumnext/core";
 
-import type { AudioCapture } from "./capture";
-import {
-    SAMPLE_RATE, type SpeakerTracker, type SpeechEngine, type SpeechSegment, type SpeechSegmenter
-} from "./engine";
+import type { SpeakerTracker, SpeechEngine, SpeechSegment, SpeechSegmenter } from "./engine";
+import { type Logger, SAMPLE_RATE } from "./protocol";
 
 /** The sources whose speakers are told apart; the microphone carries only the local speaker. */
 const DIARIZED_SOURCES: readonly TranscriptSource[] = [ "system" ];
+
+export type SamplesListener = (source: TranscriptSource, samples: Float32Array) => void;
+
+/** Produces mono {@link SAMPLE_RATE} samples per source until stopped. */
+export interface AudioCapture {
+    /** Starts delivering samples to `onSamples`. */
+    start(onSamples: SamplesListener): void;
+    stop(): void;
+}
 
 /** Receives the utterances of a recording in the order they were spoken per source. */
 export interface TranscriptSink {
@@ -39,6 +45,7 @@ export interface RecordingSessionOptions {
     engine: SpeechEngine;
     sinks: TranscriptSink[];
     taps?: AudioTap[];
+    log: Logger;
     /**
      * Called with the sources whose speech has not reached the sinks yet, either because it is
      * still being spoken or because it waits to be transcribed, every time that list changes.
@@ -58,25 +65,30 @@ export class RecordingSession {
     /** How many utterances of each source wait to be transcribed or written. */
     private readonly queued = new Map<TranscriptSource, number>();
     private queue = Promise.resolve();
-    private startedAt = 0;
+    private startedAtMs = 0;
     private pendingSources: TranscriptSource[] = [];
 
     constructor(private readonly options: RecordingSessionOptions) {}
 
+    /** When the recording started, in milliseconds since the epoch; set by {@link start}. */
+    get startedAt() {
+        return this.startedAtMs;
+    }
+
     async start() {
-        this.startedAt = this.now();
+        this.startedAtMs = this.now();
         for (const receiver of [ ...this.options.sinks, ...this.options.taps ?? [] ]) {
-            await receiver.open?.(this.startedAt);
+            await receiver.open?.(this.startedAtMs);
         }
-        return await this.options.capture.start((source, samples) => {
-            // An exception thrown from an `ipcMain` listener takes down the main process.
+        this.options.capture.start((source, samples) => {
+            // An exception thrown from the capture's listener ends the transcription process.
             try {
                 const pipeline = this.pipelineFor(source, samples);
                 this.tap(source, samples, pipeline.firstSampleOffsetMs);
                 pipeline.accept(samples);
                 this.updatePending();
             } catch (e) {
-                getLog().error(`Transcription: ${source} failed: ${(e as Error)?.message ?? e}`);
+                this.log.error(`Transcription: ${source} failed: ${(e as Error)?.message ?? e}`);
             }
         });
     }
@@ -92,7 +104,7 @@ export class RecordingSession {
             try {
                 await tap.close?.();
             } catch (e) {
-                getLog().error(`Transcription: closing an audio tap failed: ${e}`);
+                this.log.error(`Transcription: closing an audio tap failed: ${e}`);
             }
         }
         await this.queue;
@@ -101,7 +113,7 @@ export class RecordingSession {
             try {
                 await sink.close?.();
             } catch (e) {
-                getLog().error(`Transcription: closing a sink failed: ${e}`);
+                this.log.error(`Transcription: closing a sink failed: ${e}`);
             }
         }
     }
@@ -111,7 +123,7 @@ export class RecordingSession {
             try {
                 tap.write(source, samples, firstSampleOffsetMs);
             } catch (e) {
-                getLog().error(`Transcription: an audio tap failed on ${source}: ${e}`);
+                this.log.error(`Transcription: an audio tap failed on ${source}: ${e}`);
             }
         }
     }
@@ -124,8 +136,9 @@ export class RecordingSession {
             pipeline = new SourcePipeline(
                 source,
                 this.options.engine.createSegmenter(),
-                Math.max(0, this.now() - this.startedAt - chunkMs),
-                (offsetMs, samples) => this.enqueue(source, offsetMs, samples)
+                Math.max(0, this.now() - this.startedAtMs - chunkMs),
+                (offsetMs, samples) => this.enqueue(source, offsetMs, samples),
+                this.options.log
             );
             this.pipelines.set(source, pipeline);
             const tracker = DIARIZED_SOURCES.includes(source)
@@ -155,21 +168,21 @@ export class RecordingSession {
                 try {
                     await sink.write(utterance);
                 } catch (e) {
-                    getLog().error(`Transcription: a sink failed: ${e}`);
+                    this.log.error(`Transcription: a sink failed: ${e}`);
                 }
             }
-        }).catch((e) => getLog().error(`Transcription failed: ${e}`)).finally(() => {
+        }).catch((e) => this.log.error(`Transcription failed: ${e}`)).finally(() => {
             this.queued.set(source, (this.queued.get(source) ?? 1) - 1);
             this.updatePending();
         });
     }
 
-    /** Runs on the main thread, synchronously: about 100 ms per utterance. */
+    /** Runs synchronously, about 100 ms per utterance, so the next chunks wait meanwhile. */
     private identifySpeaker(source: TranscriptSource, samples: Float32Array) {
         try {
             return this.speakerTrackers.get(source)?.identify(samples) ?? null;
         } catch (e) {
-            getLog().error(`Transcription: identifying the speaker on ${source} failed: ${e}`);
+            this.log.error(`Transcription: identifying the speaker on ${source} failed: ${e}`);
             return null;
         }
     }
@@ -189,6 +202,10 @@ export class RecordingSession {
     private now() {
         return (this.options.now ?? Date.now)();
     }
+
+    private get log() {
+        return this.options.log;
+    }
 }
 
 /** Segments one source and logs its peak level every 5 s, to spot a silent source. */
@@ -201,7 +218,8 @@ class SourcePipeline {
         private readonly segmenter: SpeechSegmenter,
         /** Milliseconds from the start of the recording to the source's first sample. */
         readonly firstSampleOffsetMs: number,
-        private readonly onSegment: (offsetMs: number, samples: Float32Array) => void
+        private readonly onSegment: (offsetMs: number, samples: Float32Array) => void,
+        private readonly log: Logger
     ) {}
 
     accept(samples: Float32Array) {
@@ -230,7 +248,7 @@ class SourcePipeline {
         }
         this.peakSampleCount += samples.length;
         if (this.peakSampleCount >= 5 * SAMPLE_RATE) {
-            getLog().info(`Transcription: ${this.source} peak ${this.peak.toFixed(4)} over 5 s`);
+            this.log.info(`Transcription: ${this.source} peak ${this.peak.toFixed(4)} over 5 s`);
             this.peak = 0;
             this.peakSampleCount = 0;
         }

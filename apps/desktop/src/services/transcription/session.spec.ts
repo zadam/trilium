@@ -1,15 +1,12 @@
 import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { SamplesListener } from "./capture";
 import type { SpeakerTracker, SpeechSegment } from "./engine";
-import { type AudioTap, RecordingSession, type TranscriptSink } from "./session";
+import {
+    type AudioTap, RecordingSession, type SamplesListener, type TranscriptSink
+} from "./session";
 
-const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
-vi.mock("@triliumnext/core", () => ({ getLog: () => log }));
-vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
-    default: { TRILIUM_DATA_DIR: "/data" }
-}));
+const log = { info: vi.fn(), error: vi.fn() };
 
 /**
  * A chunk the fake segmenter reads as a finished utterance: `id` becomes the transcribed text
@@ -36,9 +33,8 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     let clock = 1000;
     let onSamples: SamplesListener = () => {};
     const capture = {
-        start: vi.fn(async (listener: SamplesListener) => {
+        start: vi.fn((listener: SamplesListener) => {
             onSamples = listener;
-            return [ "microphone", "system" ] as TranscriptSource[];
         }),
         stop: vi.fn()
     };
@@ -77,7 +73,7 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     const sinks = [ ...extraSinks, sink ];
     const onPendingChanged = vi.fn();
     const session = new RecordingSession({
-        capture, engine, sinks, taps, onPendingChanged, now: () => clock
+        capture, engine, sinks, taps, log, onPendingChanged, now: () => clock
     });
 
     return {
@@ -99,6 +95,7 @@ describe("RecordingSession", () => {
         const { session, capture, engine, sink, deliver, written } = createHarness();
         await session.start();
         expect(sink.open).toHaveBeenCalledExactlyOnceWith(1000);
+        expect(session.startedAt).toBe(1000);
         expect(sink.open.mock.invocationCallOrder[0])
             .toBeLessThan(capture.start.mock.invocationCallOrder[0]);
 
@@ -237,7 +234,7 @@ describe("RecordingSession", () => {
             "Transcription: identifying the speaker on system failed: Error: model crashed");
     });
 
-    it("logs a failing source instead of throwing into the IPC listener", async () => {
+    it("logs a failing source instead of throwing into the capture", async () => {
         const { session, engine, deliver } = createHarness();
         engine.createSegmenter.mockImplementationOnce(() => {
             throw new Error("VAD model missing");

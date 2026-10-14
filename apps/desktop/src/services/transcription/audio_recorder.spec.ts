@@ -4,15 +4,10 @@ import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-    encodeWavHeader, getRecordingDirectory, type RecordingManifest, toPcm16, TranscriptFileSink,
-    WavRecorder
+    encodeWavHeader, type RecordingManifest, toPcm16, TranscriptFileSink, WavRecorder
 } from "./audio_recorder";
 
-const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
-vi.mock("@triliumnext/core", () => ({ getLog: () => log }));
-vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
-    default: { TRILIUM_DATA_DIR: "/data" }
-}));
+const log = { info: vi.fn(), error: vi.fn() };
 
 const STARTED_AT = Date.parse("2026-10-14T09:30:00.000Z");
 const SETTINGS = { recognizer: { decodingMethod: "greedy_search" } };
@@ -35,16 +30,9 @@ function readJson<T>(fileName: string) {
     return JSON.parse(fs.readFileSync(path.join(directory, fileName), "utf8")) as T;
 }
 
-it("names a recording's directory after when it was created and its note", () => {
-    expect(path.basename(getRecordingDirectory(STARTED_AT, "meeting")))
-        .toBe("2026-10-14T09-30-00-000Z_meeting");
-    expect(path.dirname(getRecordingDirectory(STARTED_AT, "meeting")))
-        .toBe(path.join("/data", "transcription-recordings"));
-});
-
 describe("WavRecorder", () => {
     it("keeps each source in a WAV file, lined up by the manifest", () => {
-        const recorder = new WavRecorder(directory, "meeting", SETTINGS);
+        const recorder = new WavRecorder(directory, "meeting", SETTINGS, log);
         recorder.open(STARTED_AT);
         recorder.write("microphone", new Float32Array([ 0.5, -0.5 ]), 1500);
         recorder.write("system", new Float32Array([ 1 ]), 3000);
@@ -70,7 +58,7 @@ describe("WavRecorder", () => {
     });
 
     it("stops keeping the audio after a failed write, logging it once", () => {
-        const recorder = new WavRecorder(directory, "meeting", SETTINGS);
+        const recorder = new WavRecorder(directory, "meeting", SETTINGS, log);
         recorder.open(STARTED_AT);
         fs.rmSync(directory, { recursive: true });
 

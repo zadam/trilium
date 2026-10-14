@@ -1,27 +1,14 @@
 import type { TranscriptSource } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
-import { app, BrowserWindow, ipcMain, type IpcMainEvent, session } from "electron";
+import { app, BrowserWindow, type MessagePortMain, session } from "electron";
 import fs from "fs";
 import path from "path";
 
-import { SAMPLE_RATE } from "./engine";
+import { SAMPLE_RATE } from "./protocol";
 
-export type SamplesListener = (source: TranscriptSource, samples: Float32Array) => void;
+const PORT_CHANNEL = "transcription-capture-port";
 
-/** Produces mono {@link SAMPLE_RATE} samples per source until stopped. */
-export interface AudioCapture {
-    /**
-     * Starts every source it can and returns the ones that run.
-     *
-     * @throws when no source could start.
-     */
-    start(onSamples: SamplesListener): Promise<TranscriptSource[]>;
-    stop(): void;
-}
-
-const SAMPLES_CHANNEL = "transcription-samples";
-
-/** Samples per IPC message. `VadSegmenter` drops what does not fill a 512-sample window. */
+/** Samples per message. `VadSegmenter` drops what does not fill a 512-sample window. */
 const CHUNK_SAMPLES = 4096;
 
 /** The page function that starts each source. */
@@ -30,27 +17,23 @@ const SOURCE_STARTERS = [
     [ "system", "captureSystemAudio()" ]
 ] as const;
 
-type SamplesIpcListener =
-    (event: IpcMainEvent, source: TranscriptSource, samples: Float32Array) => void;
-
 /**
- * Captures the default microphone and the system audio output in a hidden window, which streams
- * the samples to the main process over IPC.
+ * Captures the default microphone and the system audio output in a hidden window, which posts
+ * them to a port as `CaptureChunk`s of {@link CHUNK_SAMPLES} mono samples. The samples never
+ * pass through the main process.
  */
-export class ElectronAudioCapture implements AudioCapture {
+export class CaptureWindow {
     private window: BrowserWindow | null = null;
-    private listener: SamplesIpcListener | null = null;
 
-    async start(onSamples: SamplesListener) {
+    /**
+     * Starts every source it can, posting to `port`, and returns the ones that run.
+     *
+     * @throws when no source could start.
+     */
+    async start(port: MessagePortMain) {
         const window = await createCaptureWindow();
         this.window = window;
-        this.listener = (event, source, samples) => {
-            const isSource = source === "microphone" || source === "system";
-            if (event.sender === window.webContents && isSource) {
-                onSamples(source, samples);
-            }
-        };
-        ipcMain.on(SAMPLES_CHANNEL, this.listener);
+        window.webContents.postMessage(PORT_CHANNEL, null, [ port ]);
 
         const sources: TranscriptSource[] = [];
         for (const [ source, call ] of SOURCE_STARTERS) {
@@ -74,10 +57,6 @@ export class ElectronAudioCapture implements AudioCapture {
     }
 
     stop() {
-        if (this.listener) {
-            ipcMain.removeListener(SAMPLES_CHANNEL, this.listener);
-            this.listener = null;
-        }
         if (this.window && !this.window.isDestroyed()) {
             this.window.destroy();
         }
@@ -87,8 +66,9 @@ export class ElectronAudioCapture implements AudioCapture {
 
 /**
  * The window runs only {@link CAPTURE_PAGE}, a local file, so it gets Node integration to reach
- * `ipcRenderer` without a preload. Its in-memory session grants the microphone and screen capture
- * and nothing else; every screen capture request gets the window itself plus the system audio.
+ * `ipcRenderer`, which delivers the port, without a preload. Its in-memory session grants the
+ * microphone and screen capture and nothing else; every screen capture request gets the window
+ * itself plus the system audio.
  */
 async function createCaptureWindow() {
     const captureSession = session.fromPartition("transcription");
@@ -163,12 +143,14 @@ registerProcessor("chunk-collector", ChunkCollector);
 const CAPTURE_PAGE = `<!DOCTYPE html>
 <script>
 const { ipcRenderer } = require("electron");
+const portReceived = new Promise((resolve) =>
+    ipcRenderer.once("${PORT_CHANNEL}", (e) => resolve(e.ports[0])));
 const context = new AudioContext({ sampleRate: ${SAMPLE_RATE} });
 const processorLoaded = context.audioWorklet.addModule(URL.createObjectURL(
     new Blob([ ${JSON.stringify(CAPTURE_PROCESSOR)} ], { type: "text/javascript" })));
 
 async function pipe(source, media) {
-    await processorLoaded;
+    const [ port ] = await Promise.all([ portReceived, processorLoaded ]);
     const collector = new AudioWorkletNode(context, "chunk-collector", {
         numberOfInputs: 1,
         numberOfOutputs: 0,
@@ -176,7 +158,9 @@ async function pipe(source, media) {
         channelCountMode: "explicit",
         processorOptions: { chunkSamples: ${CHUNK_SAMPLES} }
     });
-    collector.port.onmessage = (e) => ipcRenderer.send("${SAMPLES_CHANNEL}", source, e.data);
+    // Copied, not transferred: a MessagePortMain receives a message with a transferred buffer
+    // as null.
+    collector.port.onmessage = (e) => port.postMessage({ source, samples: e.data });
     context.createMediaStreamSource(media).connect(collector);
 }
 
