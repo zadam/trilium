@@ -53,6 +53,11 @@ vi.mock("./math.js", async (importOriginal) => {
     };
 });
 
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn());
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
+    applyStickyTableHeaders
+}));
+
 import renderText, {
     applyInlineMermaid,
     postProcessRichContent,
@@ -268,7 +273,7 @@ describe("Text content renderer", () => {
         expect(emptied.querySelector("a")?.textContent).toBe("Child note");
     });
 
-    it("sizes the tables of the content for scrolling, in an excerpt too", async () => {
+    it("sizes the tables for scrolling and keeps their header rows in view", async () => {
         const note = buildNote({ title: "Tables" });
         const table = `<figure class="table" style="width:800px;" data-trilium-block-id="t1">`
             + "<table><tbody><tr><td>a</td></tr></tbody></table></figure>";
@@ -279,6 +284,7 @@ describe("Text content renderer", () => {
         const full = document.createElement("div");
         await renderTextContent(note, table, $(full));
         expect(tableWidth(full)).toBe("800px");
+        expect(applyStickyTableHeaders).toHaveBeenCalledWith(full.querySelector(".ck-content"));
 
         // The excerpt of a table in one column of a layout has the table at its top level.
         const excerpt = document.createElement("div");

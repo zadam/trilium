@@ -47,6 +47,11 @@ vi.mock("./utils", async (importOriginal) => ({
     loadEmbeddedNote
 }));
 
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn());
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
+    applyStickyTableHeaders
+}));
+
 vi.stubGlobal("logError", vi.fn());
 vi.stubGlobal("logInfo", vi.fn());
 
@@ -437,7 +442,7 @@ describe("ReadOnlyText embedded notes", () => {
 });
 
 describe("ReadOnlyText tables", () => {
-    it("sizes the tables of its content for scrolling", async () => {
+    it("sizes its tables for scrolling and keeps their header rows in view", async () => {
         const harness = setupHarness({ isVisible: true });
         harness.note.getBlob = async () => ({
             content: "<figure class=\"table\" style=\"width:150%;\"><table></table></figure>"
@@ -448,6 +453,7 @@ describe("ReadOnlyText tables", () => {
         const figure = harness.container.querySelector<HTMLElement>("figure.table");
         expect(figure?.style.getPropertyValue("--table-width"))
             .toBe("calc(var(--table-reference-width, 100%) * 150 / 100)");
+        expect(applyStickyTableHeaders).toHaveBeenCalledWith(figure?.parentElement);
         await act(async () => render(null, harness.container));
         harness.container.remove();
     });

@@ -27,9 +27,13 @@ import "@triliumnext/ckeditor5/src/theme/tabs.css";
 import "@triliumnext/ckeditor5/src/theme/multicolumn.css";
 import "@triliumnext/ckeditor5/src/theme/collapsible_blocks.css";
 import "@triliumnext/ckeditor5/src/theme/table_scroll.css";
+import "@triliumnext/ckeditor5/src/theme/table_sticky_header.css";
 import "@triliumnext/ckeditor5/src/theme/todo_lists.css";
 
 import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
+import {
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
 import { applyTabs, revealFragment } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import { enhanceLinkPreviews } from "@triliumnext/commons/src/lib/link_embed_dom.js";
 
@@ -72,6 +76,7 @@ function setupTextNote() {
     $try(setupMath);
     $try(() => enhanceLinkPreviews(document.body));
     $try(setupTableScroll);
+    $try(setupStickyTableHeaders);
     $try(setupTabs);
     return diagrams;
 }
@@ -101,6 +106,13 @@ function setupTableScroll() {
     applyTableScroll(content);
     for (const embed of content.querySelectorAll(".include-note")) {
         applyTableScroll(embed);
+    }
+}
+
+function setupStickyTableHeaders() {
+    const content = document.getElementById("content");
+    if (content) {
+        applyStickyTableHeaders(content);
     }
 }
 

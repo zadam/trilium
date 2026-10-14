@@ -97,6 +97,12 @@ On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%
 
 To resize columns on mobile, use the bar described in [Resizing with touch](#resizing-with-touch).
 
+## Long tables
+
+Since v0.107.0, the header rows of a table stay visible at the top of the note while you scroll through the rest of the table, and leave with the end of the table. This also works in read-only notes, on shared pages and in wide tables.
+
+To turn rows into header rows, use _Set as header_ in the [context menu](#context-menu), or _Header row_ in the <span class="tn-icon cke cke-table-row"></span> button of the formatting toolbar.
+
 ## Inserting new rows and new columns
 
 *   To insert a new column, click on a desired location, then press the <span class="tn-icon cke cke-table-column"></span> button from the formatting toolbar and select _Insert column left or right._

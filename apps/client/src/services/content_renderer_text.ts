@@ -1,5 +1,8 @@
 import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import {
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
+import {
     BLOCK_ID_ATTRIBUTE, type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey,
     getNestedEmbedOptions, getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed,
     sliceToBlockReference
@@ -48,6 +51,7 @@ export async function renderTextContent(
             .text(t("block_reference.broken")));
     } else if (hasContent) {
         applyTableScroll($content[0]);
+        applyStickyTableHeaders($content[0]);
         // Runs before `postProcessRichContent()` renders embeds, so their blocks are not searched.
         if (options.highlightBlock) {
             highlightBlockReference($content[0], options.highlightBlock);

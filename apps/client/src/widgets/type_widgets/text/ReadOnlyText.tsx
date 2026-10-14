@@ -5,6 +5,9 @@ import "./ReadOnlyText.css";
 import "@triliumnext/ckeditor5";
 
 import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
+import {
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
 import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import clsx from "clsx";
 import { Ref } from "preact";
@@ -149,6 +152,7 @@ export function ReadOnlyTextContent({
 
         applyNoteImageVersions(container);
         applyTableScroll(container);
+        applyStickyTableHeaders(container);
         applyMath(container);
         applyTabs(container, { placeholder: t("text-editor.ck.tab-title") });
         setupImageOpening(container, true);
