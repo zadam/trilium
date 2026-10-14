@@ -71,4 +71,14 @@ describe("transcript", () => {
             expect(cleanUtteranceText(meant)).toBe(meant);
         }
     });
+
+    it("matches words through the punctuation around them, in time linear in their length", () => {
+        expect(cleanUtteranceText("So “uh” (um) we’re we're done")).toBe("So we're done");
+        expect(cleanUtteranceText("And (the) the plan")).toBe("And the plan");
+
+        const punctuated = `a${"&".repeat(100_000)}a`;
+        const startedAt = performance.now();
+        expect(cleanUtteranceText(punctuated)).toBe(punctuated);
+        expect(performance.now() - startedAt).toBeLessThan(250);
+    });
 });

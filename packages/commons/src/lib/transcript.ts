@@ -85,6 +85,11 @@ const GRAMMATICAL_DOUBLES = new Set([ "that", "it" ]);
 /** The longest repeated phrase that {@link cleanUtteranceText} collapses, in words. */
 const MAX_RESTART_WORDS = 3;
 
+const LETTER_OR_DIGIT = /^[\p{L}\p{N}]$/u;
+
+/** Characters {@link toKey} keeps at the end of a word, as in "goin'" or "well-". */
+const KEPT_AT_END = "'-";
+
 const NUMBER_WORD = /^(\d|zero$|one$|two$|three$|four$|five$|six$|seven$|eight$|nine$|ten$)/;
 
 interface Word {
@@ -175,6 +180,17 @@ function isRestart(words: Word[], start: number, size: number) {
         && first.every((word, index) => word.key === second[index].key);
 }
 
+/** Lowercases `word` and trims the punctuation around it, keeping a trailing `'` or `-`. */
 function toKey(word: string) {
-    return word.toLowerCase().replace(/’/g, "'").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}'-]+$/gu, "");
+    const chars = [ ...word.toLowerCase().replace(/’/g, "'") ];
+    let start = 0;
+    let end = chars.length;
+    while (start < end && !LETTER_OR_DIGIT.test(chars[start])) {
+        start++;
+    }
+    while (end > start && !LETTER_OR_DIGIT.test(chars[end - 1])
+        && !KEPT_AT_END.includes(chars[end - 1])) {
+        end--;
+    }
+    return chars.slice(start, end).join("");
 }
