@@ -134,6 +134,7 @@ function diffWords(ref, hyp) {
         insertions += added.length - paired;
 
         const before = ops.slice(Math.max(0, start - context), start)
+            .filter((op) => op.type === "equal")
             .map((op) => ref[op.index].display);
         const nextChange = ops.findIndex((op, index) => index >= i && op.type !== "equal");
         const after = ops.slice(i, Math.min(i + context, nextChange === -1 ? ops.length : nextChange))

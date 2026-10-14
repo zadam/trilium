@@ -11,6 +11,7 @@
 //   --hotwords <a/b/c>     per-utterance hotwords, separated by "/" (needs modified_beam_search)
 //   --model <dir>          model directory (default: <data dir>/transcription-model)
 //   --source <name>        replay only microphone or system
+//   --pad <seconds>        extend each segment by this much audio on both sides before decoding
 //   --force                overwrite an existing transcript.<label>.json
 //
 // Runs in plain Node (no Electron) with the sherpa-onnx-node the desktop app depends on.
@@ -49,6 +50,7 @@ for (const assignment of options.set ?? []) {
 const modelDirectory = options.model
     ?? path.join(path.dirname(path.dirname(recording.directory)), "transcription-model");
 const hotwords = options.hotwords;
+const padSamples = Math.round(Number(options.pad ?? 0) * SAMPLE_RATE);
 if (hotwords && engine.recognizer?.decodingMethod !== "modified_beam_search") {
     console.warn("Warning: hotwords apply only with "
         + "--set recognizer.decodingMethod=modified_beam_search; they will be ignored.");
@@ -76,7 +78,11 @@ for (const [ source, { file, firstSampleOffsetMs } ] of Object.entries(recording
     let segmentCount = 0;
     for (const segment of segmentSource(sherpa, wave.samples, engine.vad ?? {}, modelDirectory)) {
         const stream = hotwords ? recognizer.createStream(hotwords) : recognizer.createStream();
-        stream.acceptWaveform({ samples: segment.samples, sampleRate: SAMPLE_RATE });
+        const samples = padSamples
+            ? wave.samples.subarray(Math.max(0, segment.start - padSamples),
+                segment.start + segment.samples.length + padSamples)
+            : segment.samples;
+        stream.acceptWaveform({ samples, sampleRate: SAMPLE_RATE });
         const decodeStarted = performance.now();
         const text = (await recognizer.decodeAsync(stream)).text.trim();
         decodeMs += performance.now() - decodeStarted;
@@ -108,6 +114,7 @@ fs.writeFileSync(outputPath, JSON.stringify({
         createdAt: new Date().toISOString(),
         engine: { ...engine, modelDirectory },
         hotwords: hotwords ?? null,
+        padSeconds: padSamples / SAMPLE_RATE,
         loadMs,
         sources: sourceStats
     }
