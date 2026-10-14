@@ -1,7 +1,9 @@
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import fs from "fs";
 import path from "path";
-import type { Vad } from "sherpa-onnx-node";
+import type { SpeakerEmbeddingExtractor, Vad } from "sherpa-onnx-node";
+
+import { SpeakerClusterer, type SpeakerClustererOptions } from "./speakers";
 
 /** Every source and engine works on mono 16 kHz samples. */
 export const SAMPLE_RATE = 16000;
@@ -27,15 +29,29 @@ export interface SpeechSegmenter {
     isSpeaking(): boolean;
 }
 
+/** Tells the speakers of one source apart. Each source needs its own. */
+export interface SpeakerTracker {
+    /**
+     * Returns the speaker of an utterance, numbered from 1 in the order they were first heard, or
+     * `null` when the utterance is too short to tell.
+     */
+    identify(samples: Float32Array): number | null;
+}
+
 export interface SpeechEngine {
     recognizer: SpeechRecognizer;
     createSegmenter(): SpeechSegmenter;
+    /** Absent when the speaker model is not installed. */
+    createSpeakerTracker?(): SpeakerTracker;
     /** The settings that shape the transcript, kept with a recording to compare engines by. */
     settings: Record<string, unknown>;
 }
 
 /** Where the models live: Parakeet TDT 0.6B v3 (int8) plus `silero_vad.onnx`. */
 export const MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
+
+/** The speaker embedding model, optional: without it, utterances carry no speaker. */
+const SPEAKER_MODEL = path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx");
 
 /** Silero VAD consumes 512-sample windows at 16 kHz. */
 const VAD_WINDOW_SIZE = 512;
@@ -47,6 +63,11 @@ const RECOGNIZER_SETTINGS = {
 };
 
 const DECODING_METHOD = "greedy_search";
+
+const SPEAKER_SETTINGS: SpeakerClustererOptions = {
+    threshold: 0.5,
+    minDurationSeconds: 1.5
+};
 
 const VAD_SETTINGS = {
     threshold: 0.5,
@@ -83,6 +104,12 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
         decodingMethod: DECODING_METHOD
     });
 
+    const speakerExtractor = fs.existsSync(SPEAKER_MODEL)
+        ? new sherpa.SpeakerEmbeddingExtractor({
+            model: SPEAKER_MODEL, numThreads: 1, provider: "cpu"
+        })
+        : null;
+
     return {
         recognizer: {
             async transcribe(samples) {
@@ -100,10 +127,16 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
             numThreads: 1,
             provider: "cpu"
         }, 60)),
+        createSpeakerTracker: speakerExtractor
+            ? () => new EmbeddingSpeakerTracker(speakerExtractor, SPEAKER_SETTINGS)
+            : undefined,
         settings: {
             modelDirectory: path.resolve(MODEL_DIR),
             recognizer: { ...RECOGNIZER_SETTINGS, decodingMethod: DECODING_METHOD },
-            vad: VAD_SETTINGS
+            vad: VAD_SETTINGS,
+            speakers: speakerExtractor
+                ? { model: path.basename(SPEAKER_MODEL), ...SPEAKER_SETTINGS }
+                : null
         }
     };
 }
@@ -141,5 +174,32 @@ class VadSegmenter implements SpeechSegmenter {
             this.vad.pop();
         }
         return segments;
+    }
+}
+
+/**
+ * Identifies speakers by clustering TitaNet embeddings. The embedding is computed synchronously,
+ * about 100 ms per utterance on one thread.
+ */
+class EmbeddingSpeakerTracker implements SpeakerTracker {
+    private readonly clusterer: SpeakerClusterer;
+
+    constructor(
+        private readonly extractor: SpeakerEmbeddingExtractor,
+        options: SpeakerClustererOptions
+    ) {
+        this.clusterer = new SpeakerClusterer(options);
+    }
+
+    identify(samples: Float32Array) {
+        const stream = this.extractor.createStream();
+        stream.acceptWaveform({ samples, sampleRate: SAMPLE_RATE });
+        stream.inputFinished();
+        if (!this.extractor.isReady(stream)) {
+            return null;
+        }
+        // Electron's V8 memory cage rejects the external buffers sherpa-onnx uses by default.
+        const embedding = this.extractor.compute(stream, false);
+        return this.clusterer.assign(embedding, samples.length / SAMPLE_RATE);
     }
 }

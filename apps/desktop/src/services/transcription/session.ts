@@ -2,7 +2,12 @@ import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons
 import { getLog } from "@triliumnext/core";
 
 import type { AudioCapture } from "./capture";
-import { SAMPLE_RATE, type SpeechEngine, type SpeechSegment, type SpeechSegmenter } from "./engine";
+import {
+    SAMPLE_RATE, type SpeakerTracker, type SpeechEngine, type SpeechSegment, type SpeechSegmenter
+} from "./engine";
+
+/** The sources whose speakers are told apart; the microphone carries only the local speaker. */
+const DIARIZED_SOURCES: readonly TranscriptSource[] = [ "system" ];
 
 /** Receives the utterances of a recording in the order they were spoken per source. */
 export interface TranscriptSink {
@@ -49,6 +54,7 @@ export interface RecordingSessionOptions {
  */
 export class RecordingSession {
     private readonly pipelines = new Map<TranscriptSource, SourcePipeline>();
+    private readonly speakerTrackers = new Map<TranscriptSource, SpeakerTracker>();
     /** How many utterances of each source wait to be transcribed or written. */
     private readonly queued = new Map<TranscriptSource, number>();
     private queue = Promise.resolve();
@@ -122,6 +128,12 @@ export class RecordingSession {
                 (offsetMs, samples) => this.enqueue(source, offsetMs, samples)
             );
             this.pipelines.set(source, pipeline);
+            const tracker = DIARIZED_SOURCES.includes(source)
+                ? this.options.engine.createSpeakerTracker?.()
+                : undefined;
+            if (tracker) {
+                this.speakerTrackers.set(source, tracker);
+            }
         }
         return pipeline;
     }
@@ -135,9 +147,13 @@ export class RecordingSession {
             }
 
             const durationMs = samples.length / SAMPLE_RATE * 1000;
+            const speaker = this.identifySpeaker(source, samples);
+            const utterance = {
+                source, offsetMs, durationMs, text, ...(speaker === null ? {} : { speaker })
+            };
             for (const sink of this.options.sinks) {
                 try {
-                    await sink.write({ source, offsetMs, durationMs, text });
+                    await sink.write(utterance);
                 } catch (e) {
                     getLog().error(`Transcription: a sink failed: ${e}`);
                 }
@@ -146,6 +162,16 @@ export class RecordingSession {
             this.queued.set(source, (this.queued.get(source) ?? 1) - 1);
             this.updatePending();
         });
+    }
+
+    /** Runs on the main thread, synchronously: about 100 ms per utterance. */
+    private identifySpeaker(source: TranscriptSource, samples: Float32Array) {
+        try {
+            return this.speakerTrackers.get(source)?.identify(samples) ?? null;
+        } catch (e) {
+            getLog().error(`Transcription: identifying the speaker on ${source} failed: ${e}`);
+            return null;
+        }
     }
 
     /** Reports the sources with speech not yet written, when they differ from the last report. */

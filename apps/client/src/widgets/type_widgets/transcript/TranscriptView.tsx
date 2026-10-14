@@ -89,7 +89,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
-                        <span className="transcript-speaker">{speakerName(turn.source)}</span>
+                        <span className="transcript-speaker">{speakerName(turn.source, turn.speaker)}</span>
                         <TurnTime startedAt={transcript.startedAt} offsetMs={turn.offsetMs} />
                     </div>
                     {turn.paragraphs.map((paragraph, index) => (
@@ -142,9 +142,11 @@ function TurnTime({ startedAt, offsetMs }: { startedAt: string; offsetMs: number
     );
 }
 
-/** Consecutive utterances from one source, split into paragraphs at long pauses. */
+/** Consecutive utterances of one speaker, split into paragraphs at long pauses. */
 export interface TranscriptTurn {
     source: TranscriptSource;
+    /** The first speaker identified in the turn, if any. */
+    speaker?: number;
     offsetMs: number;
     paragraphs: TranscriptUtterance[][];
 }
@@ -165,22 +167,28 @@ export function parseTranscript(content: string | null): Transcript | null {
 }
 
 /**
- * Joins each run of utterances from one source into a turn, timed by its first utterance, and
- * starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more. An utterance without
- * a `durationMs` never starts one, since the pause before the next is unknown.
+ * Joins each run of utterances from one source and speaker into a turn, timed by its first
+ * utterance, and starts a new paragraph after a pause of {@link PARAGRAPH_PAUSE_MS} or more. An
+ * utterance without a speaker continues the turn of its source, and an utterance without a
+ * `durationMs` never starts a paragraph, since the pause before the next is unknown.
  */
 export function groupIntoTurns(utterances: TranscriptUtterance[]): TranscriptTurn[] {
     const turns: TranscriptTurn[] = [];
     let previousEndMs: number | null = null;
     for (const utterance of utterances) {
-        const { source, offsetMs, durationMs } = utterance;
+        const { source, speaker, offsetMs, durationMs } = utterance;
         const last = turns.at(-1);
-        if (last?.source !== source) {
-            turns.push({ source, offsetMs, paragraphs: [ [ utterance ] ] });
-        } else if (previousEndMs !== null && offsetMs - previousEndMs >= PARAGRAPH_PAUSE_MS) {
-            last.paragraphs.push([ utterance ]);
+        const isSameSpeaker = speaker === undefined || last?.speaker === undefined
+            || last.speaker === speaker;
+        if (last?.source !== source || !isSameSpeaker) {
+            turns.push({ source, speaker, offsetMs, paragraphs: [ [ utterance ] ] });
         } else {
-            last.paragraphs.at(-1)?.push(utterance);
+            last.speaker ??= speaker;
+            if (previousEndMs !== null && offsetMs - previousEndMs >= PARAGRAPH_PAUSE_MS) {
+                last.paragraphs.push([ utterance ]);
+            } else {
+                last.paragraphs.at(-1)?.push(utterance);
+            }
         }
         previousEndMs = durationMs === undefined ? null : offsetMs + durationMs;
     }
@@ -203,6 +211,11 @@ function wasAtEnd(scroller: HTMLElement, scrollHeight: number) {
     return scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD;
 }
 
-function speakerName(source: TranscriptSource) {
-    return source === "microphone" ? t("transcript.speaker_me") : t("transcript.speaker_others");
+function speakerName(source: TranscriptSource, speaker?: number) {
+    if (source === "microphone") {
+        return t("transcript.speaker_me");
+    }
+    return speaker === undefined
+        ? t("transcript.speaker_others")
+        : t("transcript.speaker_numbered", { number: speaker });
 }

@@ -54,6 +54,23 @@ describe("transcript helpers", () => {
         ]);
     });
 
+    it("starts a turn when the speaker of a source changes, not for an unidentified one", () => {
+        const turns = groupIntoTurns([
+            { source: "system", offsetMs: 0, text: "Hi." },
+            { source: "system", offsetMs: 1000, speaker: 1, text: "Welcome to the show." },
+            { source: "system", offsetMs: 4000, text: "Yes." },
+            { source: "system", offsetMs: 5000, speaker: 1, text: "Our guest is here." },
+            { source: "system", offsetMs: 8000, speaker: 2, text: "Thanks for having me." }
+        ]);
+        expect(turns.map(({ speaker, offsetMs }) => ({ speaker, offsetMs }))).toEqual([
+            { speaker: 1, offsetMs: 0 },
+            { speaker: 2, offsetMs: 8000 }
+        ]);
+        expect(turns.map(paragraphTexts)).toEqual([
+            [ "Hi. Welcome to the show. Yes. Our guest is here." ], [ "Thanks for having me." ]
+        ]);
+    });
+
     it("starts a new paragraph within a turn after a long pause", () => {
         const turns = groupIntoTurns([
             { source: "system", offsetMs: 0, durationMs: 8000, text: "First point," },
@@ -81,7 +98,7 @@ describe("TranscriptView", () => {
             .mockResolvedValueOnce({ content: transcript([
                 { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "Can you hear me?" },
                 { source: "microphone", offsetMs: 6000, durationMs: 1000, text: "Hello?" },
-                { source: "system", offsetMs: 8000, text: "Yes." }
+                { source: "system", offsetMs: 8000, speaker: 2, text: "Yes." }
             ]) });
         const attachment = { attachmentId: "transcript1", getBlob } as unknown as FAttachment;
         const component = new Component();
@@ -104,7 +121,7 @@ describe("TranscriptView", () => {
         await vi.waitFor(() => expect(turns()).toHaveLength(2));
         expect(turns()).toEqual([
             "transcript.speaker_me14:29Can you hear me?Hello?",
-            "transcript.speaker_others14:30Yes."
+            "transcript.speaker_numbered14:30Yes."
         ]);
         expect(container.querySelectorAll(".transcript-microphone p")).toHaveLength(2);
     });

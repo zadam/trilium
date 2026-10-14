@@ -2,7 +2,7 @@ import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SamplesListener } from "./capture";
-import type { SpeechSegment } from "./engine";
+import type { SpeakerTracker, SpeechSegment } from "./engine";
 import { type AudioTap, RecordingSession, type TranscriptSink } from "./session";
 
 const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
@@ -49,6 +49,7 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
             transcribe: vi.fn(async (samples: Float32Array) =>
                 samples[0] ? `utterance ${samples[0]}` : "")
         },
+        createSpeakerTracker: undefined as (() => SpeakerTracker) | undefined,
         createSegmenter: vi.fn(() => {
             const pending = flushed.shift() ?? [];
             let speaking = false;
@@ -204,6 +205,36 @@ describe("RecordingSession", () => {
 
         await expect(session.start()).rejects.toThrow("note deleted");
         expect(capture.start).not.toHaveBeenCalled();
+    });
+
+    it("labels the system source's utterances by speaker, never the microphone's", async () => {
+        const { session, engine, deliver, written } = createHarness();
+        const identify = vi.fn()
+            .mockReturnValueOnce(2)
+            .mockImplementationOnce(() => {
+                throw new Error("model crashed");
+            });
+        const createSpeakerTracker = vi.fn(() => ({ identify }));
+        engine.createSpeakerTracker = createSpeakerTracker;
+        await session.start();
+
+        deliver("system", utteranceChunk(1, 0), 2000);
+        deliver("microphone", utteranceChunk(2, 0), 2000);
+        deliver("system", utteranceChunk(3, 16000), 3000);
+        // Transcribes to nothing, so its speaker is never asked for.
+        deliver("system", utteranceChunk(0, 32000), 4000);
+        await session.stop();
+
+        expect(createSpeakerTracker).toHaveBeenCalledOnce();
+        expect(identify).toHaveBeenCalledTimes(2);
+        expect(written.map(({ source, speaker, text }) => ({ source, speaker, text }))).toEqual([
+            { source: "system", speaker: 2, text: "utterance 1" },
+            { source: "microphone", speaker: undefined, text: "utterance 2" },
+            { source: "system", speaker: undefined, text: "utterance 3" }
+        ]);
+        expect(written[1]).not.toHaveProperty("speaker");
+        expect(log.error).toHaveBeenCalledWith(
+            "Transcription: identifying the speaker on system failed: Error: model crashed");
     });
 
     it("logs a failing source instead of throwing into the IPC listener", async () => {

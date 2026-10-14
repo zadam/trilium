@@ -11,6 +11,11 @@ export interface TranscriptUtterance {
     offsetMs: number;
     /** Length of the utterance in milliseconds. Absent from transcripts recorded before it was kept. */
     durationMs?: number;
+    /**
+     * Who spoke, numbered from 1 within the source in the order the speakers were first heard.
+     * Absent when the speaker could not be told, and on the microphone.
+     */
+    speaker?: number;
     text: string;
 }
 

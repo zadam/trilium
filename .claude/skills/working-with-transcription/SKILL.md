@@ -90,7 +90,9 @@ To measure accuracy rather than difference, make a reference: copy the baseline 
 
 ## Speaker detection
 
-Not in the app yet. `diarize.mjs` labels one source's utterances by speaker in two ways and times both:
+The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously on Electron's main thread for now, ~100 ms per utterance. `replay.mjs` does not label speakers; use `diarize.mjs`.
+
+`diarize.mjs` labels one source's utterances by speaker in two ways and times both:
 
 - **live**: one embedding per utterance, in arrival order, joined to the closest speaker heard so far when the cosine similarity reaches `--threshold` (0.5), else a new speaker; utterances shorter than `--min-duration` (1.5 s) never start one. This is what can run during a meeting.
 - **offline**: sherpa-onnx's `OfflineSpeakerDiarization` over the whole source (pyannote segmentation, embeddings, clustering), mapped onto the utterances by overlap; `+Dn` marks an utterance in which a second speaker talks ≥ 1 s.
@@ -106,7 +108,7 @@ Models, in `<data dir>/transcription-model/speaker/`, from `k2-fsa/sherpa-onnx` 
 - `nemo_en_titanet_small.onnx` (40 MB) and `3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` (30 MB) from `speaker-recongition-models` (the tag is misspelled upstream);
 - `segmentation.onnx` (6 MB): `model.onnx` of `sherpa-onnx-pyannote-segmentation-3-0.tar.bz2` from `speaker-segmentation-models`, renamed.
 
-`SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant: in the app they must not run on Electron's main thread (a worker thread, or the capture window).
+`SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant. Live labelling blocks Electron's main thread, which also serves the backend, for ~100 ms per system utterance; the planned fix is to move the whole pipeline (VAD, speakers, recognizer) into one worker thread. The offline method, ~20 s per two minutes, could never run there.
 
 Results on the first recording (two minutes, interviewer and curator on the system track, one thread):
 

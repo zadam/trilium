@@ -4588,6 +4588,7 @@
   "transcript": {
     "speaker_me": "Me",
     "speaker_others": "Others",
+    "speaker_numbered": "Speaker {{number}}",
     "empty": "Nothing has been transcribed yet.",
     "unreadable": "This transcript cannot be read.",
     "speaking": "Speaking…",
