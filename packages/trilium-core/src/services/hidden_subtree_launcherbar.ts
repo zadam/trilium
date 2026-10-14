@@ -114,6 +114,13 @@ export default function buildLaunchBarConfig() {
             ...sharedLaunchers.newNote
         },
         {
+            id: "_lbRecordMeeting",
+            title: t("hidden-subtree.record-meeting-title"),
+            type: "launcher",
+            builtinWidget: "recordMeeting",
+            icon: "bx bx-microphone"
+        },
+        {
             id: "_lbSearch",
             ...sharedLaunchers.searchNotes
         },

@@ -15,17 +15,20 @@ import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent, useTril
 import { NewNoteLink } from "../react/NoteLink";
 import SearchDefinition from "../search/SearchDefinition";
 import NoteTypeSwitcher from "./NoteTypeSwitcher";
+import PinnedAttachments from "./PinnedAttachments";
 
 export default function NoteTitleActions() {
     const { note, ntxId, componentId, noteContext, viewScope } = useNoteContext();
     const noteType = useNoteProperty(note, "type");
+    const isDefaultView = !viewScope?.viewMode || viewScope.viewMode === "default";
 
     return (
         <div className="title-actions">
             <PromotedAttributes note={note} componentId={componentId} noteContext={noteContext} />
             {noteType === "search" && <SearchProperties note={note} ntxId={ntxId} />}
+            {isDefaultView && note && <PinnedAttachments note={note} />}
             <EditedNotes />
-            {(!viewScope?.viewMode || viewScope.viewMode === "default") && <NoteTypeSwitcher note={note} />}
+            {isDefaultView && <NoteTypeSwitcher note={note} />}
         </div>
     );
 }

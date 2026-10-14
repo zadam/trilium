@@ -44,6 +44,7 @@ import { ParentComponent, refToJQuerySelector } from "../react/react_utils";
 import SiblingNavigator from "../react/SiblingNavigator";
 import { TextPreview } from "./File";
 import MediaPreview from "./file/MediaPreview";
+import TranscriptView from "./transcript/TranscriptView";
 import { TypeWidgetProps } from "./type_widget";
 
 const CanvasDrawingDetail = lazy(() =>
@@ -236,7 +237,8 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
     const isEditableDrawing = !!isFullDetail && !!ownerNote && isFileLike
         && attachment.mime === CANVAS_ATTACHMENT_MIME
         && (!attachment.isProtected || protected_session_holder.isProtectedSessionAvailable());
-    const rendersItself = isZoomableImage || isPlayableMedia || isEditableDrawing;
+    const isTranscript = attachment.role === "transcript";
+    const rendersItself = isZoomableImage || isPlayableMedia || isEditableDrawing || isTranscript;
     const imageSrc = getAttachmentImageUrl(attachment.attachmentId, attachment.title, modified);
 
     /** Unmounts whatever the content renderer previously mounted here (a media player), so that replacing
@@ -364,6 +366,10 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
                                 noteContext={noteContext}
                             />
                         </Suspense>
+                    </div>
+                ) : isTranscript ? (
+                    <div key="transcript" className="attachment-content-wrapper attachment-transcript">
+                        <TranscriptView attachment={attachment} />
                     </div>
                 ) : (
                     <div key="rendered" ref={contentWrapper} className="attachment-content-wrapper" />

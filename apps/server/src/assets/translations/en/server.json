@@ -329,7 +329,8 @@
     "localization": "Language & Region",
     "inbox-title": "Inbox",
     "tab-switcher-title": "Tab Switcher",
-    "sidebar-chat-title": "AI Chat"
+    "sidebar-chat-title": "AI Chat",
+    "record-meeting-title": "Transcribe meeting"
   },
   "notes": {
     "new-note": "New note",
@@ -560,5 +561,16 @@
     "detail": "You will be offered a backup of your current knowledge base first. Nothing is deleted until you choose to create a new knowledge base, restore a backup or sync from another device.\n\nDo not continue if a script or an unfamiliar note prompted you to.",
     "cancel": "Cancel",
     "confirm": "Restart and start over"
+  },
+  "transcription": {
+    "already-recording": "A meeting is already being transcribed.",
+    "note-not-found": "The meeting note no longer exists.",
+    "model-missing": "No speech recognition model was found in {{- directory}}.",
+    "start-failed": "The transcription could not start: {{- message}}",
+    "stopped-unexpectedly": "The transcription stopped unexpectedly. What was transcribed until then is kept.",
+    "save-locked": "The transcript cannot be saved while the protected session is locked. The transcription keeps it and saves it once you enter the protected session, as long as Trilium stays open.",
+    "save-failed": "The transcript could not be saved: {{- message}} The transcription keeps it and tries again with the next sentence.",
+    "capture-lost": "The transcription stopped because the audio could no longer be captured. What was transcribed until then is kept.",
+    "attachment-title": "Transcript"
   }
 }

@@ -1,12 +1,22 @@
 import { render } from "preact";
 import { act } from "preact/test-utils";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../components/component.js";
 import type FNote from "../../entities/fnote.js";
 import { buildNote } from "../../test/easy-froca.js";
 import { ParentComponent } from "../react/react_utils.js";
-import { useLauncherChildNotes } from "./LauncherContainer.js";
+import LauncherContainer, { useLauncherChildNotes } from "./LauncherContainer.js";
+
+const h = vi.hoisted(() => ({ isElectron: false }));
+
+vi.mock("../../services/utils", async (importOriginal) => ({
+    ...await importOriginal<typeof import("../../services/utils")>(),
+    isElectron: () => h.isElectron
+}));
+vi.mock("./RecordMeetingButton", () => ({
+    default: () => <span className="record-meeting-button" />
+}));
 
 let container: HTMLDivElement;
 
@@ -69,5 +79,40 @@ describe("useLauncherChildNotes", () => {
         const freshNote = getChildNotes()?.[0];
         expect(freshNote?.title).toBe("My secret launcher");
         expect(freshNote).not.toBe(staleNote);
+    });
+});
+
+describe("LauncherContainer", () => {
+    it("shows the meeting transcription launcher only in the desktop app", async () => {
+        buildNote({
+            id: "_lbVisibleLaunchers",
+            title: "Visible Launchers",
+            children: [ {
+                title: "Transcribe meeting",
+                type: "launcher",
+                "#launcherType": "builtinWidget",
+                "#builtinWidget": "recordMeeting"
+            } ]
+        });
+        const mount = () => {
+            container = document.createElement("div");
+            document.body.appendChild(container);
+            act(() => render(
+                <ParentComponent.Provider value={new Component()}>
+                    <LauncherContainer isHorizontalLayout={false} />
+                </ParentComponent.Provider>, container));
+        };
+
+        mount();
+        await flush();
+        expect(container.querySelector("#launcher-container")).not.toBeNull();
+        expect(container.querySelector(".record-meeting-button")).toBeNull();
+        act(() => render(null, container));
+        container.remove();
+
+        h.isElectron = true;
+        mount();
+        await flush();
+        expect(container.querySelector(".record-meeting-button")).not.toBeNull();
     });
 });

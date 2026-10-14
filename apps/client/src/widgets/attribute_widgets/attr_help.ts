@@ -42,6 +42,7 @@ export const ATTR_HELP: AttrHelpMap = {
         searchHome: t("attribute_detail.search_home"),
         workspaceSearchHome: t("attribute_detail.workspace_search_home"),
         inbox: t("attribute_detail.inbox"),
+        meetingRecording: t("attribute_detail.meeting_recording"),
         workspaceInbox: t("attribute_detail.workspace_inbox"),
         sqlConsoleHome: t("attribute_detail.sql_console_home"),
         bookmarkFolder: t("attribute_detail.bookmark_folder"),

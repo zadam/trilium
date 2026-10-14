@@ -47,6 +47,7 @@ import { setupRestoreHandlers } from "./services/restore";
 import { getSecuritySettings, registerSecurityIpcHandlers } from "./services/security_settings";
 import { setupShellHandlers } from "./services/shell";
 import { markStartupMetric, setupStartupMetricsIpc } from "./services/startup_metrics";
+import { setupTranscriptionHandlers } from "./services/transcription";
 import { setupSystemTray } from "./services/tray";
 import windowService, { setupWindowing } from "./services/window";
 
@@ -145,6 +146,7 @@ export async function main() {
     registerSecurityIpcHandlers();
     registerBackupPassphraseIpcHandlers();
     setupStartupMetricsIpc();
+    setupTranscriptionHandlers();
 
     app.on("will-quit", () => {
         globalShortcut.unregisterAll();

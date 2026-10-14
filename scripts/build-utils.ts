@@ -92,7 +92,9 @@ export default class BuildHelper {
                 // The Codex ACP adapter is copied to RESOURCE_DIR/codex-acp.mjs by the
                 // build; codex_binary.ts only require.resolve()s the package when running
                 // from source.
-                "@agentclientprotocol/codex-acp"
+                "@agentclientprotocol/codex-acp",
+                // Loads its native addon from its own platform package at runtime.
+                "sherpa-onnx-node"
             ],
             metafile: true,
             loader: {

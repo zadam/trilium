@@ -162,6 +162,12 @@ export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
 /** The icon of a calendar event, a text note with a start date (see {@link getEventStartDate}). */
 export const CALENDAR_EVENT_ICON = "bx bx-calendar-event";
 
+/** The label on a note created by the "Record meeting" launcher. It has no value. */
+export const MEETING_RECORDING_LABEL = "meetingRecording";
+
+/** The icon of a note carrying {@link MEETING_RECORDING_LABEL}. */
+export const MEETING_RECORDING_ICON = "bx bx-conversation";
+
 /**
  * The icon a note is drawn under: its own `#iconClass` where it has one, and a default read off
  * what the note is otherwise.
@@ -172,7 +178,8 @@ export const CALENDAR_EVENT_ICON = "bx bx-calendar-event";
  * hands down through
  * `#child:iconClass` or a template still applies, and redrawing a shape as another kind changes the
  * icon with it. A note the web clipper made is drawn by its `#clipType` ({@link CLIP_TYPE_ICONS}),
- * and a calendar event by {@link CALENDAR_EVENT_ICON}.
+ * a recorded meeting by {@link MEETING_RECORDING_ICON}, and a calendar event by
+ * {@link CALENDAR_EVENT_ICON}.
  * `iconClass` stays an argument rather than being read here because the share tree
  * narrows it to the prefixes an icon pack supplies.
  */
@@ -210,6 +217,9 @@ export function getNoteIcon({
         const clipIcon = CLIP_TYPE_ICONS.get(getLabelValue("clipType") ?? "");
         if (clipIcon) {
             return clipIcon;
+        }
+        if (getLabelValue(MEETING_RECORDING_LABEL) !== null) {
+            return MEETING_RECORDING_ICON;
         }
         if (getEventStartDate(getLabelValue)) {
             return CALENDAR_EVENT_ICON;

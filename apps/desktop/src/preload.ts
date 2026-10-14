@@ -5,7 +5,8 @@ import type {
     ElectronContextMenuParams,
     NativeImportOptions,
     OneNoteLoginResult,
-    RendererStartupMetric
+    RendererStartupMetric,
+    TranscriptionState
 } from "@triliumnext/commons";
 import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 
@@ -250,6 +251,26 @@ contextBridge.exposeInMainWorld("electronApi", {
     restore: {
         pickBackup() {
             return ipcRenderer.invoke("restore-pick-backup");
+        }
+    },
+
+    transcription: {
+        start(noteId: string) {
+            return ipcRenderer.invoke("transcription-start", noteId);
+        },
+        stop() {
+            return ipcRenderer.invoke("transcription-stop");
+        },
+        getState() {
+            return ipcRenderer.invoke("transcription-get-state");
+        },
+        renameSpeaker(attachmentId: string, key: string, name: string) {
+            return ipcRenderer.invoke("transcription-rename-speaker", attachmentId, key, name);
+        },
+        onStateChanged(callback: (state: TranscriptionState) => void) {
+            const listener = (_event: unknown, state: TranscriptionState) => callback(state);
+            ipcRenderer.on("transcription-state", listener);
+            return () => ipcRenderer.removeListener("transcription-state", listener);
         }
     },
 

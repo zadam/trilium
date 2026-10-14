@@ -255,6 +255,7 @@ vi.mock("./services/startup_metrics", () => ({
     markStartupMetric: vi.fn(),
     setupStartupMetricsIpc: vi.fn()
 }));
+vi.mock("./services/transcription", () => ({ setupTranscriptionHandlers: vi.fn() }));
 
 const realPlatform = process.platform;
 function setPlatform(platform: NodeJS.Platform) {

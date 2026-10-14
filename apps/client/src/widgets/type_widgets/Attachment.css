@@ -356,6 +356,10 @@ body[dir=rtl] .attachment-icon-marker {
     overflow: hidden;
 }
 
+.attachment-content-wrapper.attachment-transcript {
+    overflow: hidden;
+}
+
 .attachment-content-wrapper.attachment-canvas-drawing {
     overflow: hidden;
 

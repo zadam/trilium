@@ -720,4 +720,37 @@ describe("preload script", () => {
             expect(ipcRendererInvoked).toContainEqual({ channel: "restore-pick-backup", args: [] });
         });
     });
+
+    describe("transcription", () => {
+        const transcription = () => getGroup("transcription");
+
+        it("start, stop, getState and renameSpeaker invoke their IPC channels", async () => {
+            await transcription().start("meeting");
+            await transcription().stop();
+            await transcription().getState();
+            await transcription().renameSpeaker("transcript1", "system:1", "Alexandra");
+            expect(ipcRendererInvoked).toEqual([
+                { channel: "transcription-start", args: [ "meeting" ] },
+                { channel: "transcription-stop", args: [] },
+                { channel: "transcription-get-state", args: [] },
+                {
+                    channel: "transcription-rename-speaker",
+                    args: [ "transcript1", "system:1", "Alexandra" ]
+                }
+            ]);
+        });
+
+        it("onStateChanged relays each state until unsubscribed", () => {
+            const callback = vi.fn();
+            const unsubscribe = transcription().onStateChanged(callback);
+
+            const listeners = ipcRendererListeners.get("transcription-state") ?? [];
+            expect(listeners).toHaveLength(1);
+            listeners[0]({}, { status: "recording", noteId: "meeting" });
+            expect(callback).toHaveBeenCalledExactlyOnceWith({ status: "recording", noteId: "meeting" });
+
+            unsubscribe();
+            expect(ipcRendererListeners.has("transcription-state")).toBe(false);
+        });
+    });
 });
