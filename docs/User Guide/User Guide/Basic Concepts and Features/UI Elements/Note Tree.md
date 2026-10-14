@@ -36,9 +36,9 @@ See <a class="reference-link" href="Note%20Tree/Note%20tree%20contextual%20menu
 
 Click the tree icon in the tree toolbar to open the tree settings popup. It contains the following options:
 
-*   **Hide archived notes**: When enabled, archived notes are not shown in the tree.
-*   **Automatically collapse notes**: When enabled, notes are collapsed after a period of inactivity to keep the tree tidy.
-*   **Follow active note**: When enabled (default), the tree automatically scrolls and expands parent nodes to keep the currently active note visible. When disabled, the tree is fully detached from navigation — only the background highlight of the active note is updated, but the tree viewport and its expanded/collapsed state are never changed by navigation. Use the crosshair button to manually jump the tree to the active note at any time.
+*   _Hide archived notes_: When enabled, archived notes are not shown in the tree.
+*   _Automatically collapse notes_: When enabled, notes are collapsed after a period of inactivity to keep the tree tidy.
+*   _Follow active note_: When enabled (default), the tree automatically scrolls and expands parent nodes to keep the currently active note visible. When disabled, the tree is fully detached from navigation — only the background highlight of the active note is updated, but the tree viewport and its expanded/collapsed state are never changed by navigation. Use the crosshair button to manually jump the tree to the active note at any time.
 
 ## Keyboard shortcuts
 

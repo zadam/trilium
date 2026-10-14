@@ -1,4 +1,6 @@
-import { safeLinkPreviewHref, type TaskStateDef } from "@triliumnext/commons";
+import {
+    MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS, safeLinkPreviewHref, type TaskStateDef
+} from "@triliumnext/commons";
 import { ADMONITION_TYPE_MAPPINGS } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import { HIGHLIGHT_BACKGROUND } from "@triliumnext/commons/src/lib/marked_extensions.js";
 import { gfm, serializeStructuralHtml } from "@triliumnext/turndown-plugin-gfm";
@@ -77,6 +79,10 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
                     return blankTabs;
                 }
 
+                if (isMulticolumnLayout(node) || isMulticolumnColumn(node)) {
+                    return blankMulticolumnReplacement(node);
+                }
+
                 // Original implementation as per https://github.com/mixmark-io/turndown/blob/master/src/turndown.js.
                 return ("isBlock" in node && node.isBlock) ? '\n\n' : '';
             },
@@ -88,6 +94,7 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
         instance.addRule("details", buildDetailsFilter());
         instance.addRule("tabTitle", buildTabTitleFilter());
         instance.addRule("tabPanel", buildTabPanelFilter());
+        instance.addRule("multicolumn", buildMulticolumnFilter());
         instance.addRule("inlineLink", buildInlineLinkFilter());
         instance.addRule("figure", buildFigureFilter());
         instance.addRule("linkPreview", buildLinkPreviewFilter());
@@ -424,6 +431,55 @@ function buildDetailsFilter(): Rule {
             return `\n\n${serializeStructuralHtml(details, DETAILS_CONTAINER_TAGS)}\n\n`;
         }
     };
+}
+
+/**
+ * Exports a multicolumn layout and each of its columns as `<div>` tags on lines of their own, with
+ * the Markdown of each column between them. A blank line ends a CommonMark HTML block, so the blank
+ * lines inside each column make renderers, the importer included, parse the column as Markdown.
+ */
+function buildMulticolumnFilter(): Rule {
+    return {
+        filter(node) {
+            return isMulticolumnLayout(node) || isMulticolumnColumn(node);
+        },
+        replacement(content, node) {
+            return multicolumnReplacement(node, content);
+        }
+    };
+}
+
+function multicolumnReplacement(node: Element, content: string): string {
+    if (isMulticolumnColumn(node)) {
+        const body = content.trim();
+        const opening = multicolumnOpeningTag(node);
+        return `\n${opening}\n${body ? `\n${body}\n\n` : ""}</div>\n`;
+    }
+    const opening = multicolumnOpeningTag(node);
+    return `\n\n${opening}\n${content.trim()}\n</div>\n\n`;
+}
+
+/** Turndown skips the children of a blank element, so this writes the columns of a blank layout. */
+function blankMulticolumnReplacement(node: Element): string {
+    const columns = isMulticolumnLayout(node)
+        ? Array.from(node.children).filter(isMulticolumnColumn)
+            .map((column) => multicolumnReplacement(column, "").trim())
+        : [];
+    return multicolumnReplacement(node, columns.join("\n"));
+}
+
+function multicolumnOpeningTag(node: Element): string {
+    const attributes = Array.from(node.attributes)
+        .map(({ name, value }) => ` ${name}="${escapeHtml(value)}"`);
+    return `<div${attributes.join("")}>`;
+}
+
+function isMulticolumnLayout(node: Node): boolean {
+    return isElement(node) && node.classList.contains(MULTICOLUMN_LAYOUT_CLASS);
+}
+
+function isMulticolumnColumn(node: Node): boolean {
+    return isElement(node) && node.classList.contains(MULTICOLUMN_COLUMN_CLASS);
 }
 
 /** Exports a tab title as the `=== "Title"` line of MkDocs content tabs (`pymdownx.tabbed`). */

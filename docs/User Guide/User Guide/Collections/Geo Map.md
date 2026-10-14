@@ -129,8 +129,8 @@ Once you select a result, a counter appears under the search bar, with a previou
 
 ### The keyboard
 
-*   **Enter** runs the online search when its row is the one selected, and otherwise moves to the highlighted result. Pressed after a result has been taken, it brings the list back.
-*   **Escape** closes the result list, and closes the place panel.
+*   <kbd>Enter</kbd> runs the online search when its row is the one selected, and otherwise moves to the highlighted result. Pressed after a result has been taken, it brings the list back.
+*   <kbd>Escape</kbd> closes the result list, and closes the place panel.
 *   Returning to the search bar reopens the list it was showing.
 *   The **X** at the end of the bar empties it, which also takes a searched place, its pin and its panel off the map.
 

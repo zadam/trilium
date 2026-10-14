@@ -71,6 +71,26 @@ describe("ImageToDrawing", () => {
             .toBe(`<paragraph>a</paragraph>${CAPTIONED_IMAGE}`);
     });
 
+    it("gives the embed the size that the image is shown at, from the least size up", async () => {
+        const root = editor.editing.view.getDomRoot();
+        if (root) root.style.fontSize = "10px";
+        const imageOf = (width: number, height: number) =>
+            `[<imageBlock src="${SRC}" width="${width}" height="${height}"></imageBlock>]`;
+        const embedOf = (width: string, height: string) => "<contentEmbed attachmentId=\"d1\""
+            + ` boxSize="medium" customHeight="${height}" customWidth="${width}" editable="true"`
+            + " hideTitle=\"true\"></contentEmbed>";
+
+        setModelData(editor.model, imageOf(300, 150));
+        await editor.execute("convertImageToDrawing");
+        expect(getModelData(editor.model, { withoutSelection: true }))
+            .toBe(embedOf("30em", "15em"));
+
+        setModelData(editor.model, imageOf(40, 20));
+        await editor.execute("convertImageToDrawing");
+        expect(getModelData(editor.model, { withoutSelection: true }))
+            .toBe(embedOf("10em", "3em"));
+    });
+
     it("leaves an empty caption behind", async () => {
         setModelData(editor.model, `[<imageBlock src="${SRC}"><caption></caption></imageBlock>]`);
 

@@ -91,15 +91,17 @@ describe("NestedLimitSelection", () => {
 
     it("keeps a page selection inside its column, so a cut keeps the layout", async () => {
         editor.setData(
-            "<section class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-1\">" +
-                "<section><p>Text</p><figure class=\"table\"><table><tbody><tr><td>Cell</td></tr>" +
-                    "</tbody></table></figure></section>" +
-                "<section><p>Other</p></section>" +
-            "</section>"
+            "<div class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-1\">" +
+                "<div class=\"trilium-multicolumn-column\">" +
+                    "<p>Text</p><figure class=\"table\"><table><tbody><tr><td>Cell</td></tr>" +
+                    "</tbody></table></figure>" +
+                "</div>" +
+                "<div class=\"trilium-multicolumn-column\"><p>Other</p></div>" +
+            "</div>"
         );
         editor.editing.view.focus();
         const root = editor.editing.view.getDomRoot();
-        const text = root?.querySelector(".trilium-multicolumn-layout > section > p")?.firstChild;
+        const text = root?.querySelector(".trilium-multicolumn-column > p")?.firstChild;
         const cellText = findTextNode(root?.querySelector(".trilium-multicolumn-layout td"));
         expect(text && cellText).toBeTruthy();
 

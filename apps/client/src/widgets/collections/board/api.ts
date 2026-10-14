@@ -729,6 +729,11 @@ export default class BoardApi {
         await this.setInboxEnabled(false);
     }
 
+    /** Whether the board draws the button after its last column that adds a column. */
+    async setAddColumnShown(shown: boolean) {
+        await attributes.setBooleanWithInheritance(this.parentNote, "board:hideAddColumn", !shown);
+    }
+
     /** Whether the board draws the notes filed as archived, cards and columns alike. */
     async setArchivedShown(shown: boolean) {
         await attributes.setBooleanWithInheritance(this.parentNote, "includeArchived", shown);

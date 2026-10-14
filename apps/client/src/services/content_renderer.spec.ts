@@ -432,12 +432,13 @@ describe("getRenderedContent editable code", () => {
         expect(props.preview.textContent).toBe("unsaved");
 
         const getContent = () => "edited";
-        props.editor.scheduleSave(getContent);
+        const onSaved = () => {};
+        props.editor.scheduleSave(getContent, onSaved);
         props.editor.release();
         expect(props.editor.canEdit()).toBe(true);
         expect(noteEditor.canEdit).toHaveBeenCalledWith(note);
         expect(noteEditor.getUnsavedContent).toHaveBeenCalledWith(note.noteId);
-        expect(noteEditor.scheduleSave).toHaveBeenCalledWith(note, getContent);
+        expect(noteEditor.scheduleSave).toHaveBeenCalledWith(note, getContent, onSaved);
         expect(noteEditor.release).toHaveBeenCalledWith(note.noteId);
         const listener = () => {};
         expect(props.editor.getSaveState()).toBe("saving");
@@ -457,10 +458,12 @@ describe("getRenderedContent editable code", () => {
         expect(props.entity).toBe(att);
         expect(props.content).toBe("{}");
         expect(props.mime).toBe("application/json");
-        props.editor.scheduleSave(() => "[]");
+        const onSaved = () => {};
+        props.editor.scheduleSave(() => "[]", onSaved);
         props.editor.release();
         expect(attachmentEditor.getUnsavedContent).toHaveBeenCalledWith(att.attachmentId);
-        expect(attachmentEditor.scheduleSave).toHaveBeenCalledWith(att, expect.any(Function));
+        expect(attachmentEditor.scheduleSave)
+            .toHaveBeenCalledWith(att, expect.any(Function), onSaved);
         expect(attachmentEditor.release).toHaveBeenCalledWith(att.attachmentId);
     });
 

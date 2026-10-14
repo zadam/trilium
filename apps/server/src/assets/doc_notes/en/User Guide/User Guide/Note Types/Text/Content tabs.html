@@ -4,10 +4,11 @@
   in several programming languages).</p>
 <p>A tabs block consists of:</p>
 <ul>
-  <li><strong>A row of tab titles.</strong> The title of the panel that is showing
+  <li><strong>A row of tab titles</strong>, above the panel or, when the tabs
+    are aligned at the bottom, below it. The title of the panel that is showing
     is highlighted.</li>
-  <li><strong>The panel of the active tab</strong>, below the titles. A panel
-    can hold any kind of content (including nested tabs blocks).</li>
+  <li><strong>The panel of the active tab.</strong> A panel can hold any kind
+    of content (including nested tabs blocks).</li>
 </ul>
 <h2>Inserting a tabs block</h2>
 <ul>
@@ -27,15 +28,18 @@
 <p>While the cursor is inside a tabs block, a toolbar appears above it with
   the following buttons:</p>
 <ul>
-  <li><span class="tn-icon cke cke-plus"></span><em>&nbsp;(Add tab)</em> inserts
+  <li><span class="tn-icon cke cke-plus"></span>&nbsp;<em>(Add tab)</em> inserts
     a tab after the current one and selects its title.</li>
-  <li><span class="tn-icon cke cke-remove"></span><em>&nbsp;(Remove tab)</em> removes
+  <li><span class="tn-icon cke cke-remove"></span>&nbsp;<em>(Remove tab)</em> removes
     the current tab. Removing the last tab removes the whole block.</li>
-  <li><span class="tn-icon cke cke-chevron-right bx-flip-horizontal"></span><em>&nbsp;(Move tab left)</em> and&nbsp;<span
+  <li><span class="tn-icon cke cke-chevron-right bx-flip-horizontal"></span>&nbsp;<em>(Move tab left)</em> and&nbsp;<span
     class="tn-icon cke cke-chevron-right"></span> (<em>Move tab right)</em> change
     the order of the tabs.</li>
-  <li><span class="tn-icon cke cke-link"></span><em>&nbsp;(Copy link to tab)</em> copies
+  <li><span class="tn-icon cke cke-link"></span>&nbsp;<em>(Copy link to tab)</em> copies
     a link to the current tab, as described below.</li>
+  <li><span class="tn-icon cke cke-trilium-tabs"></span>&nbsp;<em>(Tab alignment)</em> places
+    the tab titles above the panel (<em>Align tabs at top</em>, the default)
+    or below it (<em>Align tabs at bottom</em>).</li>
 </ul>
 <p>The tab that is showing is not saved with the note: every tabs block opens
   on its first tab.</p>
@@ -86,12 +90,13 @@
 <ul>
   <li>When printing or <a href="#root/_help_NRnIZmSMc5sj">exporting to PDF</a>,
     every tab is printed, one after another, each with its title above its
-    panel.</li>
+    panel, whatever the tab alignment.</li>
   <li>Markdown export and import write tabs blocks in the content tabs syntax
     of Material for MkDocs, described in&nbsp;<a class="reference-link" href="#root/_help_rJ9grSgoExl9">Supported syntax</a>.&nbsp;<a
     class="reference-link" href="#root/_help_6RM1Q7ppFVoj">Markdown</a>&nbsp;notes
     use the same syntax, show the blocks as tabs in their preview and insert
-    them with <code>/tabs</code>.</li>
+    them with <code>/tabs</code>. That syntax has no tab alignment, so tabs
+    aligned at the bottom are exported as regular tabs.</li>
   <li>Anywhere the tabs cannot work as tabs (such as an HTML export opened elsewhere),
     a tabs block reads as a sequence of titled sections.</li>
 </ul>

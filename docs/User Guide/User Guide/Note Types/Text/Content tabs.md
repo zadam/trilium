@@ -3,8 +3,8 @@ Content tabs group several titled panels of content into one block that shows a 
 
 A tabs block consists of:
 
-*   **A row of tab titles.** The title of the panel that is showing is highlighted.
-*   **The panel of the active tab**, below the titles. A panel can hold any kind of content (including nested tabs blocks).
+*   **A row of tab titles**, above the panel or, when the tabs are aligned at the bottom, below it. The title of the panel that is showing is highlighted.
+*   **The panel of the active tab.** A panel can hold any kind of content (including nested tabs blocks).
 
 ## Inserting a tabs block
 
@@ -25,6 +25,7 @@ While the cursor is inside a tabs block, a toolbar appears above it with the fol
 *   <span class="tn-icon cke cke-remove"></span> _(Remove tab)_ removes the current tab. Removing the last tab removes the whole block.
 *   <span class="tn-icon cke cke-chevron-right bx-flip-horizontal"></span> _(Move tab left)_ and <span class="tn-icon cke cke-chevron-right"></span> (_Move tab right)_ change the order of the tabs.
 *   <span class="tn-icon cke cke-link"></span> _(Copy link to tab)_ copies a link to the current tab, as described below.
+*   <span class="tn-icon cke cke-trilium-tabs"></span> _(Tab alignment)_ places the tab titles above the panel (_Align tabs at top_, the default) or below it (_Align tabs at bottom_).
 
 The tab that is showing is not saved with the note: every tabs block opens on its first tab.
 
@@ -62,6 +63,6 @@ Tab titles are not headings, so they do not appear in the table of contents; hea
 
 ## Printing and exporting
 
-*   When printing or [exporting to PDF](../../Basic%20Concepts%20and%20Features/Notes/Printing%20%26%20Exporting%20as%20PDF.md), every tab is printed, one after another, each with its title above its panel.
-*   Markdown export and import write tabs blocks in the content tabs syntax of Material for MkDocs, described in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Import%20%26%20Export/Markdown/Supported%20syntax.md">Supported syntax</a>. <a class="reference-link" href="../Markdown.md">Markdown</a> notes use the same syntax, show the blocks as tabs in their preview and insert them with `/tabs`.
+*   When printing or [exporting to PDF](../../Basic%20Concepts%20and%20Features/Notes/Printing%20%26%20Exporting%20as%20PDF.md), every tab is printed, one after another, each with its title above its panel, whatever the tab alignment.
+*   Markdown export and import write tabs blocks in the content tabs syntax of Material for MkDocs, described in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Import%20%26%20Export/Markdown/Supported%20syntax.md">Supported syntax</a>. <a class="reference-link" href="../Markdown.md">Markdown</a> notes use the same syntax, show the blocks as tabs in their preview and insert them with `/tabs`. That syntax has no tab alignment, so tabs aligned at the bottom are exported as regular tabs.
 *   Anywhere the tabs cannot work as tabs (such as an HTML export opened elsewhere), a tabs block reads as a sequence of titled sections.

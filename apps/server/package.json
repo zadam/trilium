@@ -28,7 +28,7 @@
     "proxy-nginx-subdir": "docker run --name trilium-nginx-subdir --rm -p 8095:8095 --add-host=host.docker.internal:host-gateway -v ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro nginx:latest"
   },
   "dependencies": {
-    "@agentclientprotocol/codex-acp": "2.1.1",
+    "@agentclientprotocol/codex-acp": "2.2.2",
     "@ai-sdk/anthropic": "4.0.78",
     "@ai-sdk/deepseek": "3.0.63",
     "@ai-sdk/google": "4.0.93",
@@ -36,9 +36,9 @@
     "@anthropic-ai/claude-agent-sdk": "^0.3.207",
     "@hyzyla/pdfium": "2.1.13",
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "ai": "7.0.136",
+    "ai": "7.0.137",
     "better-sqlite3": "13.0.3",
-    "i18next": "26.4.2",
+    "i18next": "26.4.3",
     "ipaddr.js": "^2.4.0",
     "js-yaml": "5.4.3",
     "unpdf": "1.8.1"
@@ -70,7 +70,7 @@
     "cookie-parser": "1.4.7",
     "csrf-csrf": "4.0.3",
     "ejs": "7.0.1",
-    "express": "5.2.1",
+    "express": "5.3.0",
     "express-openid-connect": "3.4.0",
     "express-rate-limit": "8.7.1",
     "express-session": "1.19.0",

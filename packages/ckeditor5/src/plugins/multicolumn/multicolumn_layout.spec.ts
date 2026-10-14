@@ -14,9 +14,11 @@ function savedGapOf(layout: Element) {
 }
 
 function layoutHtml(ratios: string, columns: string[]) {
-    const content = columns.map(column => `<section>${column}</section>`).join("");
-    return `<section class="trilium-multicolumn-layout" data-trilium-column-ratios="${ratios}">` +
-        `${content}</section>`;
+    const content = columns
+        .map(column => `<div class="trilium-multicolumn-column">${column}</div>`)
+        .join("");
+    return `<div class="trilium-multicolumn-layout" data-trilium-column-ratios="${ratios}">` +
+        `${content}</div>`;
 }
 
 /** Renders saved HTML the way the read-only view and shared pages do. */
@@ -31,7 +33,9 @@ function renderContent(html: string, width: number) {
 }
 
 function columnsOf(layout: Element | null | undefined) {
-    return [...layout?.querySelectorAll<HTMLElement>(":scope > section") ?? []];
+    return [
+        ...layout?.querySelectorAll<HTMLElement>(":scope > .trilium-multicolumn-column") ?? []
+    ];
 }
 
 /** The radii of the top-left, top-right, bottom-right and bottom-left corners. */

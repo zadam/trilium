@@ -282,6 +282,9 @@ const NO_COLUMNS: ReadonlySet<string> = new Set();
 /** Shared empty map for a filter under which no column has been opened or closed by hand. */
 const NO_FILTER_COLLAPSE: ReadonlyMap<string, boolean> = new Map();
 
+/** Scripts set upright in vertical text, which a collapsed column's title has to read top-down for. */
+const UPRIGHT_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
 const NAVIGATION_HINTS: ShortcutHint[] = [
     { keys: [ "Up", "Down" ], labelKey: "board_view.hints.navigate_items" },
     { keys: [ "Left", "Right" ], labelKey: "board_view.hints.navigate_columns" },
@@ -402,6 +405,7 @@ function Board({
     let viewConfig = adoptedConfig ?? storedConfig;
     const [ includeArchived ] = useNoteLabelBoolean(parentNote, "includeArchived");
     const [ inboxEnabled ] = useNoteLabelBoolean(parentNote, "board:showInbox");
+    const [ addColumnHidden ] = useNoteLabelBoolean(parentNote, "board:hideAddColumn");
     // Read undefaulted: a board naming no width wears no class, so `--board-column-width` keeps
     // whatever it inherits.
     const [ storedColumnWidth ] = useNoteLabel(parentNote, COLUMN_WIDTH_LABEL);
@@ -801,6 +805,7 @@ function Board({
         }
     }), [ api, shownColumns, byColumn, storedColumns, isInRelationMode ]);
     useSetContextData(noteContext, "boardColumns", outline);
+    const hasCjkTitles = outline.columns.some(({ title }) => UPRIGHT_SCRIPT.test(title));
 
     // Reveals the column or card a `?column=` or `?card=` link names. Takes `shownColumns` rather
     // than every column, so that a column hidden because it is archived is reported instead of
@@ -1461,7 +1466,8 @@ function Board({
                         className={clsx("board-view-container", {
                             pannable: isPannable,
                             panning: isPanning,
-                            selecting: isSelecting
+                            selecting: isSelecting,
+                            "cjk-titles": hasCjkTitles
                         })}
                         onKeyDown={handleKeyDown}
                         onClick={clearSelectionOutsideCards}
@@ -1534,7 +1540,9 @@ function Board({
 
                         </div>
 
-                        {editing && <editing.AddNewColumn
+                        {/* The board's menu opens its column editor in this slot, so the slot is
+                            drawn while that editor is open even with the button hidden. */}
+                        {editing && (!addColumnHidden || isCreatingColumn) && <editing.AddNewColumn
                             api={api}
                             isInRelationMode={isInRelationMode}
                             columnCount={shownColumns.length}

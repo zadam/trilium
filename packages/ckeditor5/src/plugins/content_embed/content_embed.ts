@@ -46,6 +46,9 @@ export type BoxSizeValue = typeof BOX_SIZES[number];
 /** The box sizes that can be resized. Tiny and Full fit their content. */
 const RESIZABLE_BOX_SIZES: unknown[] = [ 'small', 'medium', 'expandable' ];
 
+/** The least size that an embed can be resized to, in `em`. */
+export const MIN_EMBED_SIZE = { width: 10, height: 3 };
+
 /** The flags of an embed, each saved as `"true"` in a `data-*` attribute while it is on. */
 const FLAG_ATTRIBUTES = [
 	[ 'hideTitle', 'data-hide-title' ],
@@ -357,8 +360,8 @@ class ContentEmbedEditing extends Plugin {
 			isHeightResizable: true,
 			isCentered: true,
 			heightTarget: '.include-note-content',
-			minWidth: 10,
-			minHeight: 3,
+			minWidth: MIN_EMBED_SIZE.width,
+			minHeight: MIN_EMBED_SIZE.height,
 			isResizable: embed => RESIZABLE_BOX_SIZES.includes( embed.getAttribute( 'boxSize' ) )
 		} );
 

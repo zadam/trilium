@@ -1,6 +1,11 @@
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import {
-    type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey, getNestedEmbedOptions,
-    getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed, sliceToBlockReference
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
+import {
+    BLOCK_ID_ATTRIBUTE, type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey,
+    getNestedEmbedOptions, getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed,
+    sliceToBlockReference
 } from "@triliumnext/commons";
 
 import FAttachment from "../entities/fattachment.js";
@@ -9,7 +14,7 @@ import { highlightBlockReference } from "./block_reference.js";
 import { default as content_renderer, type RenderOptions } from "./content_renderer.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
-import { resolveContentImageUrls } from "./image_urls.js";
+import { applyNoteImageVersions, resolveContentImageUrls } from "./image_urls.js";
 import link from "./link.js";
 import { applyLinkEmbeds } from "./link_embed.js";
 import { getMermaidConfig, postprocessMermaidSvg } from "./mermaid.js";
@@ -38,12 +43,15 @@ export async function renderTextContent(
     const hasContent = content !== undefined && !isHtmlEmpty(content);
     const $content = $('<div class="ck-content">')
         .html(hasContent ? resolveContentImageUrls(sanitizeNoteContentHtml(content)) : "");
+    applyNoteImageVersions($content[0]);
 
     if (options.block !== undefined && !sliceToBlockReference($content[0], options.block)) {
         $renderedContent.append($("<p>")
             .addClass("block-reference-broken")
             .text(t("block_reference.broken")));
     } else if (hasContent) {
+        applyTableScroll($content[0]);
+        applyStickyTableHeaders($content[0]);
         // Runs before `postProcessRichContent()` renders embeds, so their blocks are not searched.
         if (options.highlightBlock) {
             highlightBlockReference($content[0], options.highlightBlock);
@@ -193,6 +201,10 @@ export async function rewriteMermaidDiagramsInContainer(container: HTMLDivElemen
         const div = document.createElement("div");
         div.classList.add("mermaid-diagram");
         div.textContent = code.textContent;
+        const blockId = code.getAttribute(BLOCK_ID_ATTRIBUTE);
+        if (blockId) {
+            div.setAttribute(BLOCK_ID_ATTRIBUTE, blockId);
+        }
         mermaidBlock.replaceWith(div);
     }
 }

@@ -13,6 +13,7 @@ import attributes from "../services/attributes";
 import dialog from "../services/dialog";
 import froca from "../services/froca";
 import { t } from "../services/i18n";
+import { endLivePrint, getLivePrintTarget, printLiveInBrowser } from "../services/live_print";
 import { stopBackgroundMedia } from "../services/media_playback";
 import protected_session_holder from "../services/protected_session_holder";
 import toast from "../services/toast.js";
@@ -151,7 +152,8 @@ export default function NoteDetail() {
         const api = window.electronApi?.printing;
         if (!api) return;
         api.onPrintProgress(({ progress, action }) => showToast(action as "printing" | "exporting_pdf", progress));
-        api.onPrintDone((printReport) => {
+        api.onPrintDone((printReport, liveJobId) => {
+            if (liveJobId !== undefined) endLivePrint(liveJobId);
             toast.closePersistent("printing");
             handlePrintReport(printReport as PrintReport);
         });
@@ -182,8 +184,16 @@ export default function NoteDetail() {
         // PDF printing is handled by the PDF viewer's own print mechanism.
         if (note.type === "file" && note.mime === "application/pdf") return;
 
+        // A render note prints from the screen, keeping its script's state.
+        const liveTarget = getLivePrintTarget(containerRef.current, type);
+
         if (isElectron() && noteContext.notePath) {
-            appContext.triggerCommand("showPrintPreview", { note, notePath: noteContext.notePath });
+            appContext.triggerCommand("showPrintPreview", { note, notePath: noteContext.notePath, liveTarget });
+            return;
+        }
+
+        if (liveTarget) {
+            void printLiveInBrowser(note, liveTarget);
             return;
         }
 

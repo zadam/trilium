@@ -7,6 +7,7 @@ import {
 } from "ckeditor5";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { TabAlignment } from "./constants.js";
 import Tabs from "./tabs.js";
 
 function tab(title: string, body = "") {
@@ -81,6 +82,36 @@ describe("tabs commands", () => {
         editor.execute("removeTab");
         expect(titles(outer)).toEqual(["A", "B", "C"]);
         expect(titles(inner)).toEqual(["B1", "B2"]);
+    });
+
+    it("aligns the block holding the selection and saves no attribute for the top", () => {
+        const html = `<div class="trilium-tabs">${tab("A", "a")}${tab("B", "b")}</div>` +
+            "<p>Outside</p>";
+        editor.setData(html);
+        const root = editor.model.document.getRoot();
+        const tabs = root?.getChild(0) as ModelElement;
+        const command = editor.commands.get("tabAlignment");
+        expect(command).toBeDefined();
+
+        editor.model.change(writer => writer.setSelection(root?.getChild(1) as ModelElement, 0));
+        expect([command?.isEnabled, command?.value]).toEqual([false, undefined]);
+
+        const panel = (tabs.getChild(1) as ModelElement).getChild(1) as ModelElement;
+        editor.model.change(writer => writer.setSelection(panel, 0));
+        expect([command?.isEnabled, command?.value]).toEqual([true, "top"]);
+
+        editor.execute("tabAlignment", { value: "bottom" });
+        expect([tabs.getAttribute("tabAlignment"), command?.value]).toEqual(["bottom", "bottom"]);
+        expect(editor.getData())
+            .toContain("<div class=\"trilium-tabs\" data-trilium-tab-alignment=\"bottom\">");
+
+        const unknownAlignment: string = "left";
+        editor.execute("tabAlignment", { value: unknownAlignment as TabAlignment });
+        expect(command?.value).toBe("bottom");
+
+        editor.execute("tabAlignment", { value: "top" });
+        expect(tabs.hasAttribute("tabAlignment")).toBe(false);
+        expect(editor.getData()).toBe(html);
     });
 
     it("moves a tab left and disables the move at either end", () => {

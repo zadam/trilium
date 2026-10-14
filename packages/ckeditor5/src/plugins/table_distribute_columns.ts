@@ -10,6 +10,7 @@ import {
 } from "ckeditor5";
 import type { Editor, ModelElement } from "ckeditor5";
 
+import TriliumTableScroll from "./table_scroll.js";
 import type { IndexRange } from "./table_move/table_move_groups.js";
 
 /**
@@ -29,24 +30,12 @@ export class DistributeTableColumnsCommand extends Command {
 
     override execute() {
         const target = this.findTarget();
-        const resize = this.editor.commands.get("resizeColumnWidths");
-        /* v8 ignore next 3 -- defensive: disabled without a target; requires TableColumnResize */
-        if (!target || !(resize instanceof TableWidthsCommand)) {
+        /* v8 ignore next 3 -- defensive: disabled without a target */
+        if (!target) {
             return;
         }
 
-        const { table, columns } = target;
-        const current = readColumnWidths(this.editor, table);
-        if (!current) {
-            return;
-        }
-
-        const widths = equalizeWidths(current.values, columns);
-        resize.execute({
-            table,
-            tableWidth: current.tableWidth,
-            columnWidths: widths.map((width) => `${width}${current.unit}`)
-        });
+        distributeColumns(this.editor, target.table, target.columns);
     }
 
     private findTarget(): { table: ModelElement; columns: IndexRange } | null {
@@ -62,6 +51,27 @@ export class DistributeTableColumnsCommand extends Command {
         return columns.last > columns.first ? { table, columns } : null;
     }
 
+}
+
+/** Gives `columns` of `table` an equal share of their combined width, in one undo step. */
+export function distributeColumns(editor: Editor, table: ModelElement, columns: IndexRange) {
+    const resize = editor.commands.get("resizeColumnWidths");
+    /* v8 ignore next 3 -- defensive: requires TableColumnResize */
+    if (!(resize instanceof TableWidthsCommand)) {
+        return;
+    }
+
+    const current = readColumnWidths(editor, table);
+    if (!current) {
+        return;
+    }
+
+    const widths = equalizeWidths(current.values, columns);
+    resize.execute({
+        table,
+        tableWidth: current.tableWidth,
+        columnWidths: widths.map((width) => `${width}${current.unit}`)
+    });
 }
 
 /**
@@ -170,12 +180,34 @@ function parseUniformWidths(widths: string[]): { values: number[]; unit: WidthUn
 }
 
 /**
- * Measures the rendered width of every column in pixels from the edges of the cells that start or
- * end at each column boundary. A boundary that no cell starts or ends at, because merged cells
- * cross it in every row, is placed proportionally between its nearest measured neighbors.
- * Returns `null` when the table is not rendered with a width, e.g. inside a hidden element.
+ * Measures the rendered width of every column in pixels. Returns `null` when the table is not
+ * rendered with a width, e.g. inside a hidden element.
  */
 function measureColumnWidths(
+    editor: Editor,
+    table: ModelElement,
+    columnCount: number
+): number[] | null {
+    const edges = measureColumnEdges(editor, table, columnCount);
+    /* v8 ignore next 3 -- defensive: the first and the last boundary always have a cell edge */
+    if (!edges) {
+        return null;
+    }
+
+    const widths: number[] = [];
+    for (let column = 0; column < columnCount; column++) {
+        widths.push(Math.max(0, edges[column + 1] - edges[column]));
+    }
+    return widths.some((width) => width > 0) ? widths : null;
+}
+
+/**
+ * Measures the `columnCount + 1` column boundaries of `table` from the edges of the cells that
+ * start or end at each one. A boundary that no cell starts or ends at, because merged cells cross
+ * it in every row, is placed proportionally between its nearest measured neighbors. The positions
+ * are client x coordinates, negated in right-to-left content so that they grow along the row.
+ */
+export function measureColumnEdges(
     editor: Editor,
     table: ModelElement,
     columnCount: number
@@ -219,33 +251,46 @@ function measureColumnWidths(
         edges[boundary] = edge;
         previous = boundary;
     }
-
-    const widths: number[] = [];
-    for (let column = 0; column < columnCount; column++) {
-        widths.push(Math.max(0, edges[column + 1] - edges[column]));
-    }
-    return widths.some((width) => width > 0) ? widths : null;
+    return edges;
 }
 
 /**
  * The rendered width of `table` as a percentage of its container, the value `TableColumnResize`
- * stores as `tableWidth` when a table is resized for the first time.
+ * stores as `tableWidth` when a table is resized for the first time. Where a reference width
+ * applies, the percentage is a share of that width instead.
  */
 function measureTableWidthShare(editor: Editor, table: ModelElement): string | null {
     const viewFigure = editor.editing.mapper.toViewElement(table);
     const domFigure = viewFigure && editor.editing.view.domConverter.mapViewToDom(viewFigure);
-    const domParent = domFigure?.parentElement;
     /* v8 ignore next 3 -- defensive: a measured table is rendered inside the editable */
-    if (!(domFigure instanceof HTMLElement) || !domParent) {
+    if (!(domFigure instanceof HTMLElement)) {
         return null;
     }
 
-    const parentWidth = getElementWidthInPixels(domParent);
-    if (!(parentWidth > 0)) {
+    const parentWidth = getTableWidthBasis(editor, table, domFigure);
+    if (!parentWidth) {
         return null;
     }
 
     const tableWidth = getTableWidthInPixels(table, editor);
     const width = Math.max(tableWidth, getElementWidthInPixels(domFigure));
     return `${toPrecision(width / parentWidth * 100)}%`;
+}
+
+/**
+ * The width in pixels that a percentage width of `table` is a share of: the reference width where
+ * one applies, otherwise the content width of the parent of `domFigure`. `null` when it is zero.
+ */
+export function getTableWidthBasis(editor: Editor, table: ModelElement, domFigure: HTMLElement) {
+    const domParent = domFigure.parentElement;
+    /* v8 ignore next 3 -- defensive: a rendered table is inside the editable */
+    if (!domParent) {
+        return null;
+    }
+
+    const tableScroll = editor.plugins.has(TriliumTableScroll)
+        ? editor.plugins.get(TriliumTableScroll)
+        : null;
+    const width = tableScroll?.getReferenceWidth(table) ?? getElementWidthInPixels(domParent);
+    return width > 0 ? width : null;
 }

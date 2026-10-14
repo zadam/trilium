@@ -6,6 +6,7 @@ import type FNote from "../entities/fnote.js";
 import { renderReactWidgetAtElement } from "../widgets/react/react_utils.jsx";
 import { type Bundle, executeBundleWithoutErrorHandling } from "./bundle.js";
 import froca from "./froca.js";
+import { trackPendingRender } from "./pending_renders.js";
 import { keepStylesScoped, RENDER_SCOPE_CLASS } from "./render_css_scope.js";
 
 /**
@@ -39,15 +40,16 @@ export async function render(note: FNote, $el: JQuery<HTMLElement>, onError?: Er
             $scriptContainer.append(bundle.html);
             keepStylesScoped($scriptContainer[0]);
 
-            // async so that scripts cannot block trilium execution
-            executeBundleWithoutErrorHandling(bundle, note, $scriptContainer)
+            // Not awaited, so that a script cannot block Trilium. `trackPendingRender` lets printing
+            // wait for the script and its JSX mount before it captures the page.
+            const work = executeBundleWithoutErrorHandling(bundle, note, $scriptContainer)
                 .catch((e) => onError?.(e, renderNoteId))
-                .then(result => {
-                    // Render JSX
+                .then(async (result) => {
                     if (bundle.html === "") {
-                        renderIfJsx(bundle, result, $el, onError, parentComponent).catch((e) => onError?.(e, bundle.noteId));
+                        await renderIfJsx(bundle, result, $el, onError, parentComponent).catch((e) => onError?.(e, bundle.noteId));
                     }
                 });
+            trackPendingRender($el[0], work);
         }
 
         return renderNoteIds.length > 0;

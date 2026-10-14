@@ -231,6 +231,7 @@ vi.mock("./services/window", () => ({
 vi.mock("./ipc_messaging_provider", () => ({ default: class { init = vi.fn(); } }));
 vi.mock("./platform_provider", () => ({ default: class {} }));
 vi.mock("./protocol", () => ({ registerTriliumAppScheme: vi.fn(), setupTriliumAppProtocol: vi.fn() }));
+vi.mock("./services/asar_read_stream", () => ({ setupAsarReadStreams: vi.fn() }));
 vi.mock("./services/custom_dictionary", () => ({ setupCustomDictionary: vi.fn() }));
 vi.mock("./services/printing", () => ({ setupPrintingHandlers: vi.fn() }));
 vi.mock("./services/tray", () => ({ setupSystemTray: vi.fn() }));
@@ -254,6 +255,7 @@ vi.mock("./services/startup_metrics", () => ({
     markStartupMetric: vi.fn(),
     setupStartupMetricsIpc: vi.fn()
 }));
+vi.mock("./services/transcription", () => ({ setupTranscriptionHandlers: vi.fn() }));
 
 const realPlatform = process.platform;
 function setPlatform(platform: NodeJS.Platform) {

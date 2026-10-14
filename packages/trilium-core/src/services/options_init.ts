@@ -183,6 +183,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "autoFixConsistencyIssues", value: "true", isSynced: false },
     { name: "vimKeymapEnabled", value: "false", isSynced: false },
     { name: "codeLineWrapEnabled", value: "true", isSynced: false },
+    { name: "transcriptCleanupEnabled", value: "true", isSynced: true },
     { name: "codeNoteTabWidth", value: "4", isSynced: true },
     { name: "codeNoteIndentWithTabs", value: "false", isSynced: true },
     {

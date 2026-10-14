@@ -1,4 +1,4 @@
-import { trimIndentation } from "@triliumnext/commons";
+import { CANVAS_ATTACHMENT_MIME, trimIndentation } from "@triliumnext/commons";
 import {
     getChildLinks, getChildLinksLayout, getContentClasses, getHtmlSnippets, getPageHead, getPrevNextLinks, getSiteLogo
 } from "@triliumnext/share-theme/model/page";
@@ -706,14 +706,24 @@ describe("content_renderer", () => {
             expect(code?.innerHTML).not.toContain("hljs-tag");
         });
 
-        it("renders an embedded picture as an image, any other attachment as a download", () => {
+        it("renders a picture or drawing embed as an image, any other embed as a download", () => {
             const embed = (id: string) =>
                 `<section class="include-note" data-attachment-id="${id}">&nbsp;</section>`;
+            const drawing = {
+                role: "file", mime: CANVAS_ATTACHMENT_MIME, title: "Canvas.excalidraw"
+            };
             const note = buildShareNote({
-                content: embed("embedPic1") + embed("embedPdf1") + embed("embedGone"),
+                content: embed("embedPic1") + embed("embedPdf1") + embed("embedGone")
+                    + embed("embedDraw1") + embed("embedDraw2"),
                 attachments: [
                     { id: "embedPic1", role: "image", mime: "image/png", title: "my photo.png" },
-                    { id: "embedPdf1", role: "file", mime: "application/pdf", title: "report.pdf" }
+                    { id: "embedPdf1", role: "file", mime: "application/pdf", title: "report.pdf" },
+                    { id: "embedDraw1", ...drawing },
+                    {
+                        id: "drawPicture", role: "image", mime: "image/svg+xml",
+                        title: "embedDraw1.svg"
+                    },
+                    { id: "embedDraw2", ...drawing }
                 ]
             });
 
@@ -722,6 +732,14 @@ describe("content_renderer", () => {
             const src = "api/attachments/embedPic1/image/my%20photo.png";
             expect(content).toContain(`<section class="include-note" data-attachment-id="embedPic1">`
                 + `<img src="${src}" alt="my photo.png"></section>`);
+            expect(content).toContain(
+                `<section class="include-note" data-attachment-id="embedDraw1">`
+                + `<img src="api/attachments/drawPicture/image/embedDraw1.svg" `
+                + `alt="Canvas.excalidraw"></section>`);
+            expect(content).toContain(
+                `<section class="include-note" data-attachment-id="embedDraw2">`
+                + `<a class="reference-link attachment-link role-file" `
+                + `href="api/attachments/embedDraw2/download">`);
             expect(content).toContain(`<section class="include-note" data-attachment-id="embedPdf1">`
                 + `<a class="reference-link attachment-link role-file"`);
             expect(content).toContain(`href="api/attachments/embedPdf1/download"`);

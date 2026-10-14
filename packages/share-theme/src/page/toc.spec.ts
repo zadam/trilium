@@ -10,6 +10,7 @@ describe("setupToC", () => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
         vi.useRealTimers();
+        history.replaceState(null, "", location.pathname);
     });
 
     it("marks the entry of the last heading scrolled past, whatever the heading levels", () => {
@@ -136,6 +137,19 @@ describe("setupToC", () => {
         expect(location.hash).toBe("#intro");
         expect(history.length).toBe(historyLength);
         expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it("leaves the block of a block link out of the section's address", async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        vi.stubGlobal("navigator", { clipboard: { writeText } });
+        renderPage([ [ 2, "intro", 100 ] ]);
+        const expected = new URL(`${location.pathname}?lang=en#intro`, location.href).href;
+        history.replaceState(null, "", "?block=a:b&lang=en");
+
+        headingLink("intro").click();
+
+        expect(location.href).toBe(expected);
+        await vi.waitFor(() => expect(writeText).toHaveBeenCalledExactlyOnceWith(expected));
     });
 
     it("leaves a click with a modifier key or another button to the browser", () => {

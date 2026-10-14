@@ -42,6 +42,7 @@ import ImageActions from "./plugins/image_actions.js";
 import ImageToDrawing from "./plugins/image_to_drawing.js";
 import ClipboardBareImage from "./plugins/clipboard_bare_image.js";
 import ClipboardImageEmbed from "./plugins/clipboard_image_embed.js";
+import ImageEditingSource from "./plugins/image_editing_source.js";
 import ClipboardPageStyles from "./plugins/clipboard_page_styles.js";
 import ClipboardPlainTextIndent from "./plugins/clipboard_plain_text_indent.js";
 import PasteFromVsCode from "./plugins/paste_from_vscode.js";
@@ -72,6 +73,9 @@ import TablePasteRows from "./plugins/table_paste_rows.js";
 import TableSort from "./plugins/table_sort.js";
 import TableInsertUI from "./plugins/table_insert/table_insert_ui.js";
 import TableToolbarDropdowns from "./plugins/table_toolbar_dropdowns.js";
+import TriliumTableScroll from "./plugins/table_scroll.js";
+import TableStickyHeader from "./plugins/table_sticky_header.js";
+import TableColumnBar from "./plugins/table_column_bar/table_column_bar.js";
 import ToolbarGroupMenu from "./plugins/toolbar_group_menu.js";
 import BlockDragHandle from "./plugins/block_drag_handle.js";
 
@@ -116,12 +120,16 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     TableSort,
     TableInsertUI,
     TableToolbarDropdowns,
+    TriliumTableScroll,
+    TableStickyHeader,
+    TableColumnBar,
     ToolbarGroupMenu,
     CopyAnchorLinkButton,
     CopyLinkUrlButton,
     ImageActions,
     ImageToDrawing,
     ClipboardImageEmbed,
+    ImageEditingSource,
     ClipboardBareImage,
     ClipboardPageStyles,
     ClipboardPlainTextIndent,

@@ -30,6 +30,7 @@ interface Tool {
     isOn?: boolean;
     isEnabled?: boolean;
     group?: string;
+    keystroke?: string;
     children?: Tool[];
     class?: string;
 }
@@ -189,6 +190,49 @@ describe("ContentEmbedTools", () => {
         }
         menu.panelView.element?.querySelector<HTMLElement>(".ck-button")?.click();
         expect(provider.execute).toHaveBeenCalledWith("eraser");
+    });
+
+    it("separates the groups of a menu, and shows the keystrokes of its commands", () => {
+        const tools = createView();
+        selectEmbed();
+        const children: Tool[] = [
+            { id: "frame", label: "Frame", isOn: false },
+            { id: "export", label: "Export", group: "export", keystroke: "Ctrl+Shift+E" },
+            { id: "find", label: "Find", group: "canvas", keystroke: "Ctrl+F" },
+            { id: "library", label: "Library", group: "canvas" },
+            { id: "help", label: "Help", group: "canvas", keystroke: "?" }
+        ];
+        provider.change([ { ...MORE_TOOLS, children } ]);
+        const menu = tools.views[0];
+        if (!(menu instanceof DropdownView)) {
+            throw new Error("Expected a menu.");
+        }
+
+        menu.isOpen = true;
+        const items = [ ...menu.listView?.element?.children ?? [] ].map((item) => {
+            const button = item.querySelector(".ck-button");
+            if (!button) {
+                return "|";
+            }
+            const label = button.querySelector(".ck-button__label")?.textContent;
+            const keystroke = button.querySelector(".ck-button__keystroke")?.textContent;
+            return [ label, keystroke, button.getAttribute("role") ].filter(Boolean).join(" ");
+        });
+        expect(items).toEqual([
+            "Frame menuitemradio",
+            "|",
+            "Export Ctrl+Shift+E menuitem",
+            "|",
+            "Find Ctrl+F menuitem",
+            "Library menuitem",
+            "Help ? menuitem"
+        ]);
+
+        menu.isOpen = false;
+        menu.isOpen = true;
+        expect(menu.listView?.element?.querySelectorAll(".ck-button__keystroke")).toHaveLength(3);
+        menu.listView?.element?.querySelectorAll<HTMLElement>(".ck-button")[4]?.click();
+        expect(provider.execute).toHaveBeenCalledWith("help");
     });
 
     it("shows no tools for content without any, or for a host that offers none", () => {

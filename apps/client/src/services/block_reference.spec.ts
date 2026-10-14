@@ -1,23 +1,24 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CommandNames } from "../components/app_context.js";
 import type { MenuCommandItem, MenuItem } from "../menus/context_menu.js";
 import {
-    buildBlockReferenceMenuItems, consumeBlockReference, copyBlockReference, copyTabReference,
-    getBlockRangeElements, getClipboardBlockReference, highlightBlockReference,
-    openBlockHandleMenu, revealHighlightedBlocks
+    buildBlockReferenceMenuItems, consumeBlockReference, copyBlockReference, copyBlockShareLink,
+    copyTabReference, getClipboardBlockReference, highlightBlockReference, openBlockHandleMenu,
+    revealHighlightedBlocks
 } from "./block_reference.js";
 import type { ViewScope } from "./link.js";
 
 const {
-    showError, showMessage, showMenu, copyHtmlWithToast, getTextEditorContaining, getNote
+    showError, showMessage, showMenu, copyHtmlWithToast, copyTextWithToast, getTextEditorContaining,
+    getNote
 } = vi.hoisted(() => ({
     showError: vi.fn(),
     showMessage: vi.fn(),
     showMenu: vi.fn(),
     copyHtmlWithToast: vi.fn(),
+    copyTextWithToast: vi.fn(),
     getTextEditorContaining: vi.fn(),
     getNote: vi.fn()
 }));
@@ -27,20 +28,20 @@ vi.mock("./i18n.js", () => ({
 vi.mock("./toast.js", () => ({ default: { showError, showMessage } }));
 vi.mock("../menus/context_menu.js", () => ({ default: { show: showMenu } }));
 vi.mock("../menus/text_editor_context_menu.js", () => ({ getTextEditorContaining }));
-vi.mock("./clipboard_ext.js", () => ({ copyHtmlWithToast }));
+vi.mock("./clipboard_ext.js", () => ({ copyHtmlWithToast, copyTextWithToast }));
 vi.mock("./froca.js", () => ({ default: { getNote } }));
 vi.mock("./content_renderer.js", () => ({
     EXCERPT_BOX_SIZE: "full",
     getEmbedBoxSize: () => "medium"
 }));
 
-const scrollIntoView = vi.fn();
+const scrollBy = vi.fn();
 const getComponentByEl = vi.fn();
 
 beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    Element.prototype.scrollIntoView = scrollIntoView;
+    Element.prototype.scrollBy = scrollBy;
     glob.getComponentByEl = getComponentByEl;
 });
 
@@ -49,85 +50,28 @@ afterEach(() => {
 });
 
 describe("consumeBlockReference", () => {
-    it("reveals a block, flashes it for a moment and consumes the reference", () => {
-        const container = buildContainer(
-            "<details><summary>s</summary><p data-trilium-block-id=\"a\">A</p></details>"
-        );
-        const block = container.querySelector("p");
+    it("shows the blocks and consumes the reference", () => {
+        const container = buildContainer("<p data-trilium-block-id=\"a\">A</p>");
         const viewScope: ViewScope = { block: "a" };
 
         consumeBlockReference(container, viewScope);
 
-        expect(container.querySelector("details")?.open).toBe(true);
-        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
-        expect(scrollIntoView.mock.contexts[0]).toBe(block);
-        expect(block?.classList.contains("block-reference-flash")).toBe(true);
+        expect(scrollBy).toHaveBeenCalledOnce();
+        expect(getFlashed(container)).toEqual([ "A" ]);
         expect(viewScope.block).toBeUndefined();
         expect(showError).not.toHaveBeenCalled();
-
-        vi.advanceTimersByTime(1500);
-        expect(block?.classList.contains("block-reference-flash")).toBe(false);
     });
 
-    it("shows the tab that holds the block", () => {
-        const container = buildContainer(
-            `<div class="trilium-tabs">` +
-                `<section class="trilium-tab"><p class="trilium-tab-title">A</p><div class="trilium-tab-panel"></div></section>` +
-                `<section class="trilium-tab"><p class="trilium-tab-title">B</p><div class="trilium-tab-panel"><p data-trilium-block-id="a">A</p></div></section>` +
-            `</div>`
-        );
-        applyTabs(container, { placeholder: "" });
-
-        consumeBlockReference(container, { block: "a" });
-
-        expect(container.querySelector(".trilium-tab--active > .trilium-tab-title")?.textContent).toBe("B");
-    });
-
-    it("scrolls to the title of a linked tab, which has no box of its own", () => {
-        const container = buildContainer(
-            `<div class="trilium-tabs"><section class="trilium-tab" data-trilium-block-id="t">` +
-                `<p class="trilium-tab-title">A</p><div class="trilium-tab-panel"><p>a</p></div>` +
-            `</section></div>`
-        );
-        const title = container.querySelector(".trilium-tab-title");
-        expect(title).not.toBeNull();
-
-        consumeBlockReference(container, { block: "t" });
-
-        expect(scrollIntoView).toHaveBeenCalledTimes(1);
-        expect(scrollIntoView.mock.contexts[0]).toBe(title);
-    });
-
-    it("flashes the outermost elements of a range", () => {
-        const container = buildContainer(
-            "<p>before</p><p data-trilium-block-id=\"a\">A</p><blockquote><p>quote</p></blockquote>"
-            + "<ul><li><p data-trilium-block-id=\"b\">B</p><p>rest of item</p></li>"
-            + "<li>after</li></ul>"
-        );
-
-        consumeBlockReference(container, { block: "b:a" });
-
-        expect(getFlashed(container)).toEqual([ "A", "quote", "B" ]);
-    });
-
-    it("shows the block still found of a broken range, and says that it is broken", () => {
+    it("says so when a block is missing or the reference is malformed", () => {
         const container = buildContainer("<p data-trilium-block-id=\"b\">B</p>");
 
         consumeBlockReference(container, { block: "gone:b" });
-
-        expect(getFlashed(container)).toEqual([ "B" ]);
-        expect(scrollIntoView).toHaveBeenCalledTimes(1);
-        expect(showError).toHaveBeenCalledWith("block_reference.not_found");
-    });
-
-    it("only says so when no block is found, or the reference is malformed", () => {
-        const container = buildContainer("<p data-trilium-block-id=\"a\">A</p>");
-
         consumeBlockReference(container, { block: "gone" });
         consumeBlockReference(container, { block: "a:b:c" });
 
-        expect(scrollIntoView).not.toHaveBeenCalled();
-        expect(showError).toHaveBeenCalledTimes(2);
+        expect(getFlashed(container)).toEqual([ "B" ]);
+        expect(showError).toHaveBeenCalledTimes(3);
+        expect(showError).toHaveBeenCalledWith("block_reference.not_found");
     });
 
     it("waits for the content, and does nothing without a reference", () => {
@@ -139,20 +83,6 @@ describe("consumeBlockReference", () => {
 
         expect(viewScope.block).toBe("a");
         expect(showError).not.toHaveBeenCalled();
-    });
-});
-
-describe("getBlockRangeElements", () => {
-    it("returns a single block, or the blocks between two in a list", () => {
-        const container = buildContainer(
-            "<ol><li data-trilium-block-id=\"a\">A</li><li>B</li>"
-            + "<li data-trilium-block-id=\"c\">C</li><li>D</li></ol>"
-        );
-        const [ first, , third ] = container.querySelectorAll("li");
-
-        expect(getBlockRangeElements(first, first)).toEqual([ first ]);
-        expect(getBlockRangeElements(first, third).map((element) => element.textContent))
-            .toEqual([ "A", "B", "C" ]);
     });
 });
 
@@ -285,19 +215,56 @@ describe("copyTabReference", () => {
     });
 });
 
+describe("copyBlockShareLink", () => {
+    it("copies a link to the selected blocks on the shared page and flashes them", () => {
+        const root = buildContainer(
+            "<p data-trilium-block-id=\"s1\">Start</p><p data-trilium-block-id=\"e1\">End</p>"
+        );
+        const editor = buildEditor(root, { startId: "s1", endId: "e1", count: 2 });
+
+        copyBlockShareLink(editor, "https://notes.example.com/share/page");
+
+        expect(editor.execute).toHaveBeenCalledWith("assignBlockReference");
+        expect(copyTextWithToast).toHaveBeenCalledWith(
+            "https://notes.example.com/share/page?block=s1:e1"
+        );
+        expect(getFlashed(root)).toEqual([ "Start", "End" ]);
+    });
+
+    it("copies nothing when no block is referenced", () => {
+        const root = buildContainer("<p>one</p>");
+        const shareLink = "https://notes.example.com/share/page";
+
+        copyBlockShareLink(buildEditor(root, undefined), shareLink);
+        const missingTarget = { startId: "x", endId: "x", count: 1 };
+        copyBlockShareLink(buildEditor(root, missingTarget), shareLink);
+
+        expect(copyTextWithToast).not.toHaveBeenCalled();
+    });
+});
+
 describe("openBlockHandleMenu", () => {
-    it("offers to copy a reference to the selected blocks", () => {
+    it("offers to copy a reference to the selected blocks, and a public link if shared", () => {
         const event = new MouseEvent("contextmenu", { clientX: 10, clientY: 20 });
         const copyReference = vi.fn();
+        const copyShareLink = vi.fn();
+        const copyItem = expect.objectContaining({
+            title: "block_reference.copy:3",
+            handler: copyReference
+        });
 
-        openBlockHandleMenu(event, 3, copyReference);
+        openBlockHandleMenu(event, 3, { copyReference });
+        openBlockHandleMenu(event, 3, { copyReference, copyShareLink });
 
-        expect(showMenu).toHaveBeenCalledWith(expect.objectContaining({
+        expect(showMenu).toHaveBeenNthCalledWith(1, expect.objectContaining({
             x: event.pageX,
             y: event.pageY,
-            items: [ expect.objectContaining({
-                title: "block_reference.copy:3",
-                handler: copyReference
+            items: [ copyItem ]
+        }));
+        expect(showMenu).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            items: [ copyItem, expect.objectContaining({
+                title: "block_reference.copy_share_link:3",
+                handler: copyShareLink
             }) ]
         }));
     });

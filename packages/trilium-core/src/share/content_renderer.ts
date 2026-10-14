@@ -1,8 +1,9 @@
 import {
-    getAttachmentEmbedHref, getEmbedKey, getNestedEmbedOptions, getNoteEmbedHref, isHttpUrl,
-    isImageAttachmentRole, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor, readLinkPreviewData,
-    renderLinkEmbedHtml, renderLinkMentionHtml, resolveContentEmbed, resolveEnabledMimeTypes,
-    SHARE_HOSTED_NOTE_TYPES, SHARE_HOSTED_VIEW_TYPES, shouldSyntaxHighlight, sliceToBlockReference
+    CANVAS_ATTACHMENT_MIME, getAttachmentEmbedHref, getDrawingPictureTitle, getEmbedKey,
+    getNestedEmbedOptions, getNoteEmbedHref, isHttpUrl, isImageAttachmentRole, MIME_TYPE_AUTO,
+    normalizeMimeTypeForCKEditor, readLinkPreviewData, renderLinkEmbedHtml, renderLinkMentionHtml,
+    resolveContentEmbed, resolveEnabledMimeTypes, SHARE_HOSTED_NOTE_TYPES, SHARE_HOSTED_VIEW_TYPES,
+    shouldSyntaxHighlight, sliceToBlockReference
 } from "@triliumnext/commons";
 import { renderToHtml as renderMarkdownToHtml } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import { renderSpreadsheetToHtml } from "@triliumnext/commons/src/lib/spreadsheet/render_to_html.js";
@@ -626,7 +627,7 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
                 const link = renderAttachmentLink(embed.attachmentId, attachment);
                 embedEl.replaceWith(...parse(link, parseOpts).childNodes);
             } else {
-                const html = renderAttachmentEmbed(embed.attachmentId, attachment);
+                const html = renderAttachmentEmbed(embed.attachmentId, attachment, getNote);
                 replaceEmbedContent(embedEl, parse(html, parseOpts).childNodes);
             }
             continue;
@@ -708,15 +709,23 @@ function replaceEmbedContent(embedEl: HTMLElement, content: ParsedNode[]) {
 }
 
 /**
- * What an embedded attachment shows: a picture as an image, anything else as the attachment link
- * that `handleAttachmentLink` then resolves.
+ * What an embedded attachment shows: a picture as an image, a canvas drawing as the picture that
+ * its note keeps of it, at the size of the picture, and anything else, or a drawing without a
+ * picture, as the attachment link that `handleAttachmentLink` then resolves.
  */
-function renderAttachmentEmbed(attachmentId: string, attachment: BAttachment | SAttachment) {
-    if (!isImageAttachmentRole(attachment.role)) {
+function renderAttachmentEmbed(
+    attachmentId: string,
+    attachment: BAttachment | SAttachment,
+    getNote: GetNoteFunction
+) {
+    const image = attachment.mime === CANVAS_ATTACHMENT_MIME
+        ? getNote(attachment.ownerId)?.getAttachmentByTitle(getDrawingPictureTitle(attachmentId))
+        : attachment;
+    if (!image?.attachmentId || !isImageAttachmentRole(image.role)) {
         return renderAttachmentLink(attachmentId, attachment);
     }
 
-    const src = `api/attachments/${attachmentId}/image/${encodeURIComponent(attachment.title)}`;
+    const src = `api/attachments/${image.attachmentId}/image/${encodeURIComponent(image.title)}`;
     return `<img src="${src}" alt="${escapeHtml(attachment.title)}">`;
 }
 

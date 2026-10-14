@@ -1467,6 +1467,27 @@ body.mobile .column-drop-placeholder {
   transform: rotate(-90deg);
 }
 
+/* Top-down, the only direction in which CJK characters stay upright. Applied to the whole board so
+   its collapsed columns all read the same way. */
+.board-view-container.cjk-titles .board-column.collapsed h3 > .title,
+.board-view-container.cjk-titles .board-column.collapsed h3 > .counter-badge {
+  transform: none;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-sort {
+  transform: rotate(90deg);
+}
+
+/* Read top-down, the header leads with the icon as it does when expanded. Sorted last and then
+   reversed, the menu stays on top, where it is on every other board. */
+.board-view-container.cjk-titles .board-column.collapsed h3 {
+  flex-direction: column-reverse;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-menu {
+  order: 1;
+}
+
 /* Swapped: `padding` is physical, so it does not turn with the count. */
 .board-view-container .board-column.collapsed h3 > .counter-badge {
   padding: 0.6em 0.1em;

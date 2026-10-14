@@ -23,7 +23,7 @@ import { showImageCompressionDialog } from "../dialogs/image_compression/image_c
 import { isAlwaysFullWidthByType } from "../note_wrapper";
 import Dropdown, { type DropdownHandle } from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem } from "../react/FormList";
-import { useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
+import { useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useNoteRelation, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
 import { ParentComponent, POPUP_EDITOR_NTX_ID, useCommandTrigger } from "../react/react_utils";
 import NoteActionsCustom from "./NoteActionsCustom";
 import { useShareState } from "./NoteBadges";
@@ -61,6 +61,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const parentComponent = useContext(ParentComponent);
     const noteType = useNoteProperty(note, "type") ?? "";
     const [viewType] = useNoteLabel(note, "viewType");
+    const [renderNote] = useNoteRelation(note, "renderNote");
     const canBeConvertedToAttachment = note?.isEligibleForConversionToAttachment();
     const isSourceView = noteContext?.viewScope?.viewMode === "source";
     const isSearchable = isSourceView
@@ -73,6 +74,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const isContentAvailable = note.isContentAvailable();
     const isPrintable = isContentAvailable && (
         ["text", "code", "spreadsheet", "llmChat"].includes(noteType) ||
+        (noteType === "render" && !!renderNote) ||
         (noteType === "book" && ["presentation", "list", "table"].includes(viewType ?? "")) ||
         (noteType === "file" && note.mime === "application/pdf")
     );

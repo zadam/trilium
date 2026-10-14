@@ -1,0 +1,7 @@
+.pinned-attachment {
+    .transcript {
+        height: auto;
+        max-height: 40vh;
+        padding-inline: 0;
+    }
+}

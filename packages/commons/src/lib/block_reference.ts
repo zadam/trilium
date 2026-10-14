@@ -1,8 +1,11 @@
 /** The HTML attribute with the id of a block in a text note. */
 export const BLOCK_ID_ATTRIBUTE = "data-trilium-block-id";
 
-/** The class of a multicolumn layout, a `<section>` whose child sections are its columns. */
+/** The class of a multicolumn layout, a `<div>` whose child elements are its columns. */
 export const MULTICOLUMN_LAYOUT_CLASS = "trilium-multicolumn-layout";
+
+/** The class of a column of a multicolumn layout. */
+export const MULTICOLUMN_COLUMN_CLASS = "trilium-multicolumn-column";
 
 /** The blocks that a block reference points at. `startId` equals `endId` for a single block. */
 export interface BlockRange {

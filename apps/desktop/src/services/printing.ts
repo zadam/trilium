@@ -41,6 +41,11 @@ interface PrintOpts {
 
 interface ExportAsPdfOpts {
     notePath: string;
+    /**
+     * Prints the sender's own window, which the renderer prepared for printing as this live print,
+     * instead of `notePath`. `print-done` echoes it so the renderer restores only that live print.
+     */
+    liveJobId?: number;
     title: string;
     landscape: boolean;
     pageSize: "A0" | "A1" | "A2" | "A3" | "A4" | "A5" | "A6" | "Legal" | "Letter" | "Tabloid" | "Ledger";
@@ -174,6 +179,19 @@ async function getBrowserWindowForPrinting(e: IpcMainEvent, notePath: string, ac
         clearTimeout(stallTimer);
         ipcMain.off("print-progress", progressCallback);
     }
+}
+
+/**
+ * Returns the page a print job prints: the sender's own window for a live print, otherwise a new
+ * window rendering `notePath`. `dispose` releases it once the job is done.
+ */
+async function getPrintTarget(e: IpcMainEvent, notePath: string, action: "printing" | "exporting_pdf", live?: boolean) {
+    if (live) {
+        return { webContents: e.sender, printReport: undefined, dispose: () => {} };
+    }
+
+    const { browserWindow, printReport } = await getBrowserWindowForPrinting(e, notePath, action);
+    return { webContents: browserWindow.webContents, printReport, dispose: () => browserWindow.destroy() };
 }
 
 /** Loads the print page into `browserWindow` and resolves with its report once the note is ready. */
@@ -319,12 +337,13 @@ export function setupPrintingHandlers() {
         }
     });
 
-    electron.ipcMain.on("export-as-pdf-preview", async (e, { notePath, requestId, landscape, pageSize, scale, margins, pageRanges }: PreviewOpts) => {
+    electron.ipcMain.on("export-as-pdf-preview", async (e, { notePath, liveJobId, requestId, landscape, pageSize, scale, margins, pageRanges }: PreviewOpts) => {
+        const live = typeof liveJobId === "number";
         try {
-            const { browserWindow, printReport } = await getBrowserWindowForPrinting(e, notePath, "exporting_pdf");
+            const { webContents, printReport, dispose } = await getPrintTarget(e, notePath, "exporting_pdf", live);
 
             try {
-                const buffer = await browserWindow.webContents.printToPDF({
+                const buffer = await webContents.printToPDF({
                     landscape,
                     pageSize,
                     scale,
@@ -347,8 +366,9 @@ export function setupPrintingHandlers() {
                 const message = err instanceof Error ? err.message : String(err);
                 e.sender.send("export-as-pdf-preview-result", { notePath, requestId, error: message });
             } finally {
-                e.sender.send("print-done", printReport);
-                browserWindow.destroy();
+                // A live print stays prepared until the print itself is done.
+                if (!live) e.sender.send("print-done", printReport);
+                dispose();
             }
         } catch (err) {
             // The preview dialog reports the error itself, so no `print-done` goes out.
@@ -400,9 +420,10 @@ export function setupPrintingHandlers() {
         }
     });
 
-    electron.ipcMain.on("print-from-preview", async (e, { notePath, landscape, pageSize, scale, margins, pageRanges, silent, deviceName }: PrintFromPreviewOpts) => {
+    electron.ipcMain.on("print-from-preview", async (e, { notePath, liveJobId, landscape, pageSize, scale, margins, pageRanges, silent, deviceName }: PrintFromPreviewOpts) => {
+        const live = typeof liveJobId === "number";
         try {
-            const { browserWindow, printReport } = await getBrowserWindowForPrinting(e, notePath, "printing");
+            const { webContents, printReport, dispose } = await getPrintTarget(e, notePath, "printing", live);
 
             // print() accepts most of the same options as printToPDF, but typing differs
             // slightly (e.g. no "Ledger" pageSize). Cast to keep this concise.
@@ -419,21 +440,31 @@ export function setupPrintingHandlers() {
                 printBackground: true
             };
 
-            browserWindow.webContents.print(printOpts, (success, failureReason) => {
+            webContents.print(printOpts, (success, failureReason) => {
                 if (!success && failureReason !== "Print job canceled") {
                     electron.dialog.showErrorBox(t("pdf.unable-to-print"), failureReason);
                 }
                 e.sender.send("print-from-preview-done");
-                e.sender.send("print-done", printReport);
-                browserWindow.destroy();
+                // Also sent for a live print: it is what restores the sender's window.
+                sendPrintDone(e, printReport ?? { type: "single-note" }, live ? liveJobId : undefined);
+                dispose();
             });
         } catch (err) {
             e.sender.send("print-from-preview-done");
-            e.sender.send("print-done", {
+            sendPrintDone(e, {
                 type: "error",
                 message: err instanceof Error ? err.message : String(err),
                 stack: err instanceof Error ? err.stack : undefined
-            });
+            }, live ? liveJobId : undefined);
         }
     });
+}
+
+/** Sends `print-done`, naming the live print it ends, if any, so the renderer restores only that one. */
+function sendPrintDone(e: IpcMainEvent, printReport: unknown, liveJobId: number | undefined) {
+    if (liveJobId === undefined) {
+        e.sender.send("print-done", printReport);
+    } else {
+        e.sender.send("print-done", printReport, liveJobId);
+    }
 }

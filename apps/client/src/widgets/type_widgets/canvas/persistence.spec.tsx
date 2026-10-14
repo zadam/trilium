@@ -10,6 +10,7 @@
  * still-empty initializing scene as a change worth saving. Only subsequent loads (note
  * switches on an already-initialized instance) may use `updateScene`.
  */
+import { exportToSvg } from "@excalidraw/excalidraw";
 import { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from "@excalidraw/excalidraw/types";
 import { type RefObject, render } from "preact";
 import { act } from "preact/test-utils";
@@ -20,7 +21,9 @@ import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import server from "../../../services/server";
 import { buildNote } from "../../../test/easy-froca";
-import useCanvasPersistence, { useCanvasDrawingPersistence } from "./persistence";
+import useCanvasPersistence, {
+    saveDrawingPicture, useCanvasDrawingPersistence
+} from "./persistence";
 
 interface FakeElement {
     id: string;
@@ -231,12 +234,13 @@ describe("useCanvasDrawingPersistence", () => {
     let appState: Record<string, unknown>;
     let updateScene: ReturnType<typeof vi.fn>;
 
-    function DrawingProbe({ attachment, editor, apiRef }: {
+    function DrawingProbe({ attachment, editor, apiRef, options }: {
         attachment: FAttachment;
         editor: ContentEditor | undefined;
         apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+        options?: Parameters<typeof useCanvasDrawingPersistence>[4];
     }) {
-        drawingProps = useCanvasDrawingPersistence(attachment, editor, apiRef, "light");
+        drawingProps = useCanvasDrawingPersistence(attachment, editor, apiRef, "light", options);
         return null;
     }
 
@@ -273,7 +277,11 @@ describe("useCanvasDrawingPersistence", () => {
         } satisfies ContentEditor;
     }
 
-    async function mount(attachment: FAttachment, editor: ContentEditor | undefined) {
+    async function mount(
+        attachment: FAttachment,
+        editor: ContentEditor | undefined,
+        options?: Parameters<typeof useCanvasDrawingPersistence>[4]
+    ) {
         const api = {
             getSceneElements: () => sceneElements,
             getAppState: () => appState,
@@ -283,7 +291,12 @@ describe("useCanvasDrawingPersistence", () => {
         const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
         await act(async () => {
             render(
-                <DrawingProbe attachment={attachment} editor={editor} apiRef={apiRef} />,
+                <DrawingProbe
+                    attachment={attachment}
+                    editor={editor}
+                    apiRef={apiRef}
+                    options={options}
+                />,
                 container
             );
         });
@@ -336,7 +349,7 @@ describe("useCanvasDrawingPersistence", () => {
         sceneElements = [ { ...loaded[0], version: 4 }, loaded[1] ];
         change();
         expect(editor.scheduleSave).toHaveBeenCalledTimes(1);
-        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        const [ getContent, onSaved ] = editor.scheduleSave.mock.calls[0];
         expect(JSON.parse(getContent())).toEqual({
             type: "excalidraw",
             version: 2,
@@ -347,6 +360,17 @@ describe("useCanvasDrawingPersistence", () => {
                 viewBackgroundColor: "transparent"
             }
         });
+
+        // Once saved, the drawing saves its picture, drawn with the images Excalidraw holds.
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        vi.mocked(exportToSvg).mockClear().mockResolvedValueOnce(svgOf("picture"));
+        await act(async () => onSaved(getContent()));
+        expect(vi.mocked(exportToSvg).mock.calls[0]?.[0].files).toBe(sceneFiles);
+        expect(post).toHaveBeenCalledExactlyOnceWith(
+            "notes/undefined/attachments?matchBy=title",
+            expect.objectContaining({ title: "a1.svg" })
+        );
+        post.mockRestore();
 
         appState = { ...appState, viewBackgroundColor: "#ffc9c9" };
         change();
@@ -442,6 +466,38 @@ describe("useCanvasDrawingPersistence", () => {
         });
     });
 
+    it("opens at the view it is given, which needs no fit, and tells once it shows", async () => {
+        const loaded = [ { id: "r1", type: "rectangle", version: 3 } ];
+        const placed = [ { ...loaded[0], x: 0, y: 0, width: 100, height: 100 } ];
+        const view = { zoom: { value: 2 }, scrollX: 5, scrollY: 6 };
+        const onSceneShown = vi.fn();
+        const { attachment } = buildAttachment({ elements: placed, appState: { zoom: 1 } });
+
+        const initialData = await mount(attachment, buildEditor(), {
+            initialView: view as never,
+            onSceneShown
+        });
+        expect(initialData.appState).toEqual(expect.objectContaining(view));
+
+        // Excalidraw reports its empty scene, then the loaded one, twice.
+        change();
+        expect(onSceneShown).not.toHaveBeenCalled();
+        sceneElements = loaded;
+        const sized = { ...appState, width: 1000, height: 500 };
+        drawingProps?.onChange?.(placed as never, sized as never, {});
+        change();
+        expect(onSceneShown).toHaveBeenCalledOnce();
+        expect(updateScene).not.toHaveBeenCalled();
+
+        act(() => render(null, container));
+        sceneElements = [];
+        const empty = vi.fn();
+        const { attachment: emptyDrawing } = buildAttachment({ elements: [] });
+        await mount(emptyDrawing, undefined, { onSceneShown: empty });
+        change();
+        expect(empty).toHaveBeenCalledOnce();
+    });
+
     it("saves nothing without an editor", async () => {
         const loaded = [ { id: "r1", type: "rectangle", version: 3 } ];
         const { attachment } = buildAttachment({ elements: loaded });
@@ -452,3 +508,169 @@ describe("useCanvasDrawingPersistence", () => {
         expect(() => change()).not.toThrow();
     });
 });
+
+describe("saveDrawingPicture", () => {
+    const drawing = { attachmentId: "d1", ownerId: "n1" };
+    const IMAGE = { id: "f1", dataURL: "data:image/png;base64,AA==", mimeType: "image/png" };
+    const image = { id: "i1", type: "image", fileId: "f1" };
+
+    /** The saved pictures that `post` sent, with their whitespace collapsed. */
+    function getSavedPictures(post: { mock: { calls: unknown[][] } }) {
+        return post.mock.calls.map(([ , data ]) =>
+            (data as { content: string }).content.replace(/\s+/g, " "));
+    }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+        vi.mocked(exportToSvg).mockReset();
+    });
+
+    it("saves the picture of a drawing, titled after it, in the colors of its page", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        const exported = pictureWithImages();
+        vi.mocked(exportToSvg).mockResolvedValueOnce(exported);
+        const files = { f1: IMAGE };
+        const content = JSON.stringify({
+            elements: [ image, { id: "gone", type: "line", isDeleted: true } ],
+            appState: { viewBackgroundColor: "#ffc9c9" }
+        });
+
+        await saveDrawingPicture(drawing, content, files as never);
+        expect(exportToSvg).toHaveBeenCalledExactlyOnceWith({
+            elements: [ image ],
+            appState: {
+                viewBackgroundColor: "#ffc9c9", exportBackground: true, exportWithDarkMode: false
+            },
+            files,
+            exportPadding: 5
+        });
+        expect(post).toHaveBeenCalledExactlyOnceWith("notes/n1/attachments?matchBy=title", {
+            role: "image", mime: "image/svg+xml", title: "d1.svg", content: expect.any(String)
+        });
+        // Dark while its page is dark, as Excalidraw's dark export: bitmaps in it keep their colors.
+        const [ picture ] = getSavedPictures(post);
+        expect(picture).toMatch(/^<svg id="picture" class="trilium-drawing-picture"><style>/);
+        expect(picture).toContain("@media (prefers-color-scheme: dark) { "
+            + "svg.trilium-drawing-picture { filter: invert(93%) hue-rotate(180deg); } "
+            + "svg.trilium-drawing-picture use.trilium-drawing-bitmap { "
+            + "filter: invert(100%) hue-rotate(180deg) saturate(1.25); } }</style>");
+        expect([ ...exported.querySelectorAll("use") ].map((use) => use.getAttribute("class")))
+            .toEqual([ "trilium-drawing-bitmap", null, "trilium-drawing-bitmap" ]);
+
+        // An empty drawing shows nothing.
+        await saveDrawingPicture(drawing, JSON.stringify({ elements: [] }));
+        expect(post.mock.calls[1]?.[1]).toEqual(expect.objectContaining({
+            content: `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>`
+        }));
+    });
+
+    it("saves only the picture of the latest content, and none of a malformed one", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        let drawFirst: (svg: SVGSVGElement) => void = () => {};
+        vi.mocked(exportToSvg)
+            .mockImplementationOnce(() => new Promise((resolve) => { drawFirst = resolve; }))
+            .mockResolvedValueOnce(svgOf("second"));
+
+        const first = saveDrawingPicture(drawing, JSON.stringify({ elements: [ image ] }), {
+            f1: IMAGE
+        } as never);
+        const second = JSON.stringify({ elements: [ image, { ...image, id: "i2" } ] });
+        await saveDrawingPicture(drawing, second, { f1: IMAGE } as never);
+        drawFirst(svgOf("first"));
+        await first;
+        expect(getSavedPictures(post)).toEqual([ expect.stringMatching(/^<svg id="second"/) ]);
+
+        await saveDrawingPicture(drawing, "{");
+        expect(post).toHaveBeenCalledOnce();
+        expect(error).toHaveBeenCalledOnce();
+    });
+
+    it("writes the pictures of a drawing in order, skipping one replaced as it waits", async () => {
+        let finishFirst: () => void = () => {};
+        const post = vi.spyOn(server, "post")
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                finishFirst = () => resolve(undefined);
+            }))
+            .mockResolvedValue(undefined);
+        vi.mocked(exportToSvg)
+            .mockResolvedValueOnce(svgOf("first"))
+            .mockResolvedValueOnce(svgOf("second"))
+            .mockResolvedValueOnce(svgOf("third"));
+        const save = (count: number) => saveDrawingPicture(drawing, JSON.stringify({
+            elements: Array.from({ length: count }, (_, index) => ({ ...image, id: `i${index}` }))
+        }), { f1: IMAGE } as never);
+
+        const first = save(1);
+        await vi.waitFor(() => expect(post).toHaveBeenCalledOnce());
+        const second = save(2);
+        await vi.waitFor(() => expect(exportToSvg).toHaveBeenCalledTimes(2));
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(post).toHaveBeenCalledOnce();
+
+        const third = save(3);
+        finishFirst();
+        await Promise.all([ first, second, third ]);
+        expect(getSavedPictures(post)).toEqual([
+            expect.stringMatching(/^<svg id="first"/), expect.stringMatching(/^<svg id="third"/)
+        ]);
+    });
+
+    it("loads from the note the images that are not loaded yet", async () => {
+        const post = vi.spyOn(server, "post").mockResolvedValue(undefined);
+        vi.mocked(exportToSvg).mockResolvedValueOnce(svgOf("picture"));
+        const owner = buildNote({ title: "Owner" });
+        owner.getAttachmentsByRole = (async () => [
+            { attachmentId: "img1", title: "f1" }
+        ]) as never;
+        vi.stubGlobal("fetch", vi.fn(async () => ({
+            ok: true,
+            blob: async () => new Blob([ "ABC" ], { type: "image/png" })
+        })));
+
+        await saveDrawingPicture(
+            { attachmentId: "d1", ownerId: owner.noteId },
+            JSON.stringify({ elements: [ image ] })
+        );
+        expect(vi.mocked(exportToSvg).mock.calls[0]?.[0].files).toEqual({
+            f1: expect.objectContaining({ dataURL: "data:image/png;base64,QUJD" })
+        });
+        expect(post).toHaveBeenCalledOnce();
+    });
+});
+
+/** An empty SVG element for `exportToSvg()` to draw. */
+function svgOf(id: string) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.id = id;
+    return svg;
+}
+
+/**
+ * A picture as `exportToSvg()` draws images: each in a `<symbol>`, placed by `<use>`. The first
+ * image is a bitmap, used twice, and the second an SVG image.
+ */
+function pictureWithImages() {
+    const svg = svgOf("picture");
+    const create = (name: string, attributes: Record<string, string>) => {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+        for (const [ key, value ] of Object.entries(attributes)) {
+            element.setAttribute(key, value);
+        }
+        return element;
+    };
+    const symbols = [
+        [ "image-f1", "data:image/png;base64,AA==" ],
+        [ "image-f2", "data:image/svg+xml;base64,AA==" ]
+    ];
+    for (const [ id, href ] of symbols) {
+        const symbol = create("symbol", { id });
+        symbol.append(create("image", { href }));
+        svg.append(symbol);
+    }
+    for (const id of [ "image-f1", "image-f2", "image-f1" ]) {
+        svg.append(create("use", { href: `#${id}` }));
+    }
+    return svg;
+}

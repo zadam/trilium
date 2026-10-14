@@ -2,7 +2,9 @@
 // DOMPurify relies on browser-faithful DOM traversal (NodeIterator); happy-dom
 // mishandles it and strips valid markup (surfaced by dompurify 3.4.8). Run the
 // sanitization-dependent specs under jsdom, which matches real-browser behavior.
-import { KATEX_MACROS, trimIndentation } from "@triliumnext/commons";
+import {
+    KATEX_MACROS, MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS, trimIndentation
+} from "@triliumnext/commons";
 import DOMPurify from "dompurify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -50,6 +52,11 @@ vi.mock("./math.js", async (importOriginal) => {
         renderMathInElement: renderMathInElementSpy
     };
 });
+
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn());
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
+    applyStickyTableHeaders
+}));
 
 import renderText, {
     applyInlineMermaid,
@@ -264,6 +271,28 @@ describe("Text content renderer", () => {
         const emptied = document.createElement("div");
         await renderTextContent(note, "<p>&nbsp;</p>", $(emptied));
         expect(emptied.querySelector("a")?.textContent).toBe("Child note");
+    });
+
+    it("sizes the tables for scrolling and keeps their header rows in view", async () => {
+        const note = buildNote({ title: "Tables" });
+        const table = `<figure class="table" style="width:800px;" data-trilium-block-id="t1">`
+            + "<table><tbody><tr><td>a</td></tr></tbody></table></figure>";
+        const tableWidth = (contentEl: HTMLElement) => contentEl
+            .querySelector<HTMLElement>(".ck-content > figure.table")
+            ?.style.getPropertyValue("--table-width");
+
+        const full = document.createElement("div");
+        await renderTextContent(note, table, $(full));
+        expect(tableWidth(full)).toBe("800px");
+        expect(applyStickyTableHeaders).toHaveBeenCalledWith(full.querySelector(".ck-content"));
+
+        // The excerpt of a table in one column of a layout has the table at its top level.
+        const excerpt = document.createElement("div");
+        const layout = `<div class="${MULTICOLUMN_LAYOUT_CLASS}">`
+            + `<div class="${MULTICOLUMN_COLUMN_CLASS}">${table}</div>`
+            + `<div class="${MULTICOLUMN_COLUMN_CLASS}"><p>Other</p></div></div>`;
+        await renderTextContent(note, layout, $(excerpt), { block: "t1" });
+        expect(tableWidth(excerpt)).toBe("800px");
     });
 
     it("renders nothing for an empty note with no children when noChildrenList is set", async () => {
@@ -642,7 +671,17 @@ describe("rewriteMermaidDiagramsInContainer", () => {
         const div = container.querySelector("div.mermaid-diagram");
         expect(div).not.toBeNull();
         expect(div?.textContent).toContain("graph TD;");
+        expect(div?.hasAttribute("data-trilium-block-id")).toBe(false);
         expect(container.querySelector("pre")).toBeNull();
+    });
+
+    it("keeps the block ID of a code block on its diagram, for links to the block", async () => {
+        const container = document.createElement("div");
+        container.innerHTML = `<pre><code class="language-mermaid" data-trilium-block-id="d1">`
+            + `graph TD;A--&gt;B;</code></pre>`;
+        await rewriteMermaidDiagramsInContainer(container);
+        const diagram = container.querySelector("div.mermaid-diagram");
+        expect(diagram?.getAttribute("data-trilium-block-id")).toBe("d1");
     });
 
     it("uses an empty body when the code element is missing", async () => {

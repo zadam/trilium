@@ -14,7 +14,9 @@ import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { goToLinkExt } from "../../services/link";
 import server from "../../services/server";
-import { buildShareLink } from "../../services/share_link";
+import {
+    buildShareLink, getShareId, getShareScope, type ShareScope
+} from "../../services/share_link";
 import sync from "../../services/sync";
 import { isElectron, isMobileApp, isStandalone } from "../../services/utils";
 import { Badge, BadgeWithDropdown } from "../react/Badge";
@@ -415,43 +417,4 @@ function useShareInfo(note: FNote | null | undefined) {
             syncServerHost
         })
     };
-}
-
-/**
- * Where a shared note can be opened from. `local` is the desktop app without a sync server, which
- * serves the page on the loopback address. `preview` is the standalone build without a sync server,
- * which renders the page in its own service worker, so only this browser can open it. `export-only`
- * is the mobile app without a sync server: its link opens nowhere, so the static export is the only
- * way to publish the note. A server cannot tell whether it is reachable from outside, so it always
- * reports `public`.
- */
-export function getShareScope({ isElectron, isStandalone, isMobileApp, syncServerHost }: {
-    isElectron: boolean;
-    isStandalone: boolean;
-    isMobileApp: boolean;
-    syncServerHost: string | null | undefined;
-}): ShareScope {
-    if (syncServerHost) {
-        return "public";
-    }
-
-    if (isMobileApp) {
-        return "export-only";
-    }
-
-    if (isStandalone) {
-        return "preview";
-    }
-
-    return isElectron ? "local" : "public";
-}
-
-type ShareScope = "public" | "local" | "preview" | "export-only";
-
-function getShareId(note: FNote) {
-    if (note.hasOwnedLabel("shareRoot")) {
-        return "";
-    }
-
-    return note.getOwnedLabelValue("shareAlias") || note.noteId;
 }

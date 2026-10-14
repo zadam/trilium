@@ -66,6 +66,7 @@ const COPIED_DURATION = 1500;
 /**
  * Makes a click on the link of a heading put the address of its section in the location bar, in
  * place of the current one and without scrolling, and copy it, showing a check mark for a moment.
+ * The address leaves out the `block` parameter of a block link, which would scroll to the block.
  * A click with a modifier key or another button than the main one is left to the browser.
  */
 function setupHeadingLinks() {
@@ -84,8 +85,10 @@ function setupHeadingLinks() {
             }
 
             e.preventDefault();
-            history.replaceState(history.state, "", link.href);
-            navigator.clipboard?.writeText(link.href).then(() => {
+            const url = new URL(link.href);
+            url.searchParams.delete("block");
+            history.replaceState(history.state, "", url);
+            navigator.clipboard?.writeText(url.href).then(() => {
                 setCopied(true);
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => setCopied(false), COPIED_DURATION);

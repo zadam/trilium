@@ -1,7 +1,10 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { CLASSES as TAB_CLASSES } from "@triliumnext/ckeditor5/src/plugins/tabs/constants.js";
 import {
-    type BlockRange, formatBlockRange, parseBlockRange, resolveBlockRange, resolveBlockReference
+    flashBlocks, getBlockBoxes, getBlockRangeElements, showBlockReference
+} from "@triliumnext/ckeditor5/src/plugins/block_reference/block_reference_read_only.js";
+import {
+    type BlockRange, encodeBlockParameter, formatBlockRange, parseBlockRange, resolveBlockRange,
+    resolveBlockReference
 } from "@triliumnext/commons";
 
 import type { CommandNames } from "../components/app_context.js";
@@ -9,16 +12,13 @@ import contextMenu, { type MenuItem } from "../menus/context_menu.js";
 import type { ClipboardAccess } from "../menus/table_context_menu.js";
 import { getTextEditorContaining } from "../menus/text_editor_context_menu.js";
 import { getBlockExcerpt } from "./block_excerpts.js";
-import { copyHtmlWithToast } from "./clipboard_ext.js";
+import { copyHtmlWithToast, copyTextWithToast } from "./clipboard_ext.js";
 import { revealElement } from "./collapsible.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
 import { calculateHash, parseNavigationStateFromUrl, type ViewScope } from "./link.js";
 import toast from "./toast.js";
 
-const FLASH_CLASS = "block-reference-flash";
-/** The duration of the `block-reference-flash` animation in `block_reference.css`. */
-const FLASH_DURATION_MS = 1500;
 const HIGHLIGHT_CLASS = "block-reference-highlight";
 
 /** A reference to blocks of a note, read from the clipboard. */
@@ -40,18 +40,39 @@ export interface BlockReferenceMenuItems {
     paste: MenuItem<CommandNames>[];
 }
 
+/** The actions of the block handle menu. */
+export interface BlockHandleMenuActions {
+    /** Copies a reference to the selected blocks. */
+    copyReference: () => void;
+    /** Copies a link to the selected blocks on the shared page of the note, if it is shared. */
+    copyShareLink?: () => void;
+}
+
 /** The component of a text editor that copies references to the blocks of its note. */
 interface BlockReferenceHost {
     copyBlockReference?(): Promise<void>;
     copyTabReference?(): void;
 }
 
-/** Opens the menu of the block handle at `event`, which copies a reference to `count` blocks. */
-export function openBlockHandleMenu(event: MouseEvent, count: number, copyReference: () => void) {
+/** Opens the menu of the block handle at `event`, for `count` selected blocks. */
+export function openBlockHandleMenu(
+    event: MouseEvent,
+    count: number,
+    { copyReference, copyShareLink }: BlockHandleMenuActions
+) {
+    const items = [ getCopyItem(count, copyReference) ];
+    if (copyShareLink) {
+        items.push({
+            title: t("block_reference.copy_share_link", { count }),
+            uiIcon: "bx bx-world",
+            handler: copyShareLink
+        });
+    }
+
     void contextMenu.show({
         x: event.pageX,
         y: event.pageY,
-        items: [ getCopyItem(count, copyReference) ],
+        items,
         selectMenuItemHandler: () => {}
     });
 }
@@ -122,6 +143,19 @@ export async function copyTabReference(
     await copyReference(editor, editor.execute("assignTabReference"), notePath, noteTitle);
 }
 
+/**
+ * Gives ids to the selected blocks of `editor`, flashes the blocks and copies a link to them on
+ * the shared page of the note, whose URL is `shareLink`.
+ */
+export function copyBlockShareLink(editor: CKTextEditor, shareLink: string) {
+    const target = editor.execute("assignBlockReference");
+    if (!target || !flashBlockRange(editor, target)) {
+        return;
+    }
+
+    copyTextWithToast(`${shareLink}?block=${encodeBlockParameter(formatBlockRange(target))}`);
+}
+
 /** Flashes the blocks of `target` and copies a reference link to them. */
 async function copyReference(
     editor: CKTextEditor,
@@ -129,21 +163,34 @@ async function copyReference(
     notePath: string,
     noteTitle: string
 ) {
-    const root = editor.editing.view.getDomRoot();
-    const { start, end } = target && root
-        ? resolveBlockRange<HTMLElement>(root, target)
-        : { start: null, end: null };
-    if (!target || !start || !end) {
+    const blocks = target && flashBlockRange(editor, target);
+    if (!target || !blocks) {
         return;
     }
 
-    flashBlocks(getBlockRangeElements(start, end));
     const href = calculateHash({ notePath, viewScope: { block: formatBlockRange(target) } });
     const $link = $("<a>")
         .addClass("reference-link")
         .attr("href", href)
-        .text(`${noteTitle} - ${getBlockExcerpt(start, end)}`);
+        .text(`${noteTitle} - ${getBlockExcerpt(blocks.start, blocks.end)}`);
     await copyHtmlWithToast($link[0].outerHTML, href);
+}
+
+/**
+ * Flashes the blocks of `target` in `editor`. Returns the first and the last block, or `null` when
+ * one of them is not found.
+ */
+function flashBlockRange(editor: CKTextEditor, target: BlockRange) {
+    const root = editor.editing.view.getDomRoot();
+    const { start, end } = root
+        ? resolveBlockRange<HTMLElement>(root, target)
+        : { start: null, end: null };
+    if (!start || !end) {
+        return null;
+    }
+
+    flashBlocks(getBlockRangeElements(start, end));
+    return { start, end };
 }
 
 /**
@@ -158,16 +205,9 @@ export function consumeBlockReference(
         return;
     }
 
-    const { start, end } = resolveBlockReference<HTMLElement>(container, viewScope.block);
+    const isFound = showBlockReference(container, viewScope.block);
     viewScope.block = undefined;
-
-    const first = start ?? end;
-    if (first) {
-        revealElement(first);
-        getBlockBoxes(first).top.scrollIntoView({ behavior: "smooth", block: "center" });
-        flashBlocks(start && end ? getBlockRangeElements(start, end) : [ first ]);
-    }
-    if (!start || !end) {
+    if (!isFound) {
         toast.showError(t("block_reference.not_found"));
     }
 }
@@ -209,53 +249,6 @@ export function revealHighlightedBlocks(container: HTMLElement) {
     const viewportTop = container.getBoundingClientRect().top + container.clientTop;
     const margin = Math.max(0, (container.clientHeight - height) / 2);
     container.scrollTop += top - viewportTop - margin;
-}
-
-/**
- * Returns the elements that render the top and bottom of `block`. A tab is `display: contents`, so
- * its title and panel render it.
- */
-function getBlockBoxes(block: Element): { top: Element; bottom: Element } {
-    if (block.classList.contains(TAB_CLASSES.tab)) {
-        const title = block.querySelector(`:scope > .${TAB_CLASSES.tabTitle}`);
-        const panel = block.querySelector(`:scope > .${TAB_CLASSES.tabPanel}`);
-        if (title && panel) {
-            return { top: title, bottom: panel };
-        }
-    }
-    return { top: block, bottom: block };
-}
-
-/** The outermost elements inside the range from `start` to `end`, both included. */
-export function getBlockRangeElements(start: Element, end: Element) {
-    const range = start.ownerDocument.createRange();
-    range.setStartBefore(start);
-    range.setEndAfter(end);
-    return getElementsInRange(range, range.commonAncestorContainer);
-}
-
-function getElementsInRange(range: Range, parent: Node): Element[] {
-    const elements: Element[] = [];
-    for (const child of Array.from(parent.childNodes)) {
-        if (!(child instanceof Element) || !range.intersectsNode(child)) {
-            continue;
-        }
-
-        if (isInRange(range, child)) {
-            elements.push(child);
-        } else {
-            elements.push(...getElementsInRange(range, child));
-        }
-    }
-
-    return elements;
-}
-
-function isInRange(range: Range, node: Node) {
-    const nodeRange = range.cloneRange();
-    nodeRange.selectNode(node);
-    return range.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-        && range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0;
 }
 
 function getCopyItem(count: number, copyReference: () => void): MenuItem<CommandNames> {
@@ -383,11 +376,4 @@ function parseBlockReferenceHref(href: string): ClipboardBlockReference | null {
     }
 
     return { noteId, block, href: calculateHash({ notePath, viewScope: { block } }) };
-}
-
-function flashBlocks(elements: Element[]) {
-    for (const element of elements) {
-        element.classList.add(FLASH_CLASS);
-        setTimeout(() => element.classList.remove(FLASH_CLASS), FLASH_DURATION_MS);
-    }
 }

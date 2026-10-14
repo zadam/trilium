@@ -774,6 +774,7 @@
     "include_archived": "Includes archived notes in this collection, which are otherwise left out.",
     "board_column_width": "For board collections, how wide the columns are drawn: <code>narrow</code>, <code>medium</code> or <code>wide</code>. Ignored on mobile, which draws them at a width of its own.",
     "board_show_inbox": "For board collections, shows the inbox column, which lists all child notes that are not assigned to a board column.",
+    "board_hide_add_column": "For board collections, hides the <em>Add column</em> button after the last column. Columns can still be added from the context menu of the board or of a column.",
     "board_card_redirect_to": "On a board card, opening the card jumps to the note this points at instead of opening the card itself.",
     "board_sort_columns": "For board collections, the order the columns sort their cards in, which a column follows unless it is given an order of its own. Holds <code>title</code>, <code>creationDate</code> or <code>attr:</code> followed by a promoted attribute's name.",
     "board_sort_columns_descending": "For board collections, runs the order in <code>#board:sortColumns</code> backwards.",
@@ -833,7 +834,8 @@
     "share_html": "An HTML note injected into the shared page, where <code>#shareHtmlLocation</code> on that note says. It has to sit inside the shared subtree.",
     "share_edit": "Visitors of the shared page can edit this note and the notes below it; \"false\" closes a branch below an editable note. Set from the Shared badge's menu.",
     "share_edit_password": "The hashed password that unlocks editing on the shared page, empty to open a branch below a password-protected note. Set from the Shared badge's menu, not by hand.",
-    "share_attachments": "Guests who edit the shared page can upload images and files into the notes."
+    "share_attachments": "Guests who edit the shared page can upload images and files into the notes.",
+    "meeting_recording": "Marks a note created by the \"Transcribe meeting\" button in the launch bar, which holds the transcript of a meeting."
   },
   "attribute_editor": {
     "help_text_body1": "To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code>",
@@ -2446,7 +2448,8 @@
     "coverImage": "Cover image",
     "viewConfig": "View settings",
     "canvasLibraryItem": "Canvas library",
-    "importSource": "Import source"
+    "importSource": "Import source",
+    "transcript": "Meeting transcript"
   },
   "bookmark_switch": {
     "bookmark": "Bookmark"
@@ -3585,6 +3588,8 @@
     "show-archived-notes": "Show archived cards/columns",
     "general": "General",
     "show-archived": "Show archived cards and columns",
+    "show-add-column-button": "Show the \"Add column\" button",
+    "show-add-column-button-description": "Columns can still be added from the context menu of the board or of a column.",
     "copy-reference": "Copy reference",
     "reference-column-missing": "That column is no longer on this board.",
     "reference-archived": "That card is archived, so the board is not showing it.",
@@ -4442,6 +4447,9 @@
       "move-tab-right": "Move tab right",
       "copy-link-to-tab": "Copy link to tab",
       "tabs-toolbar": "Tabs toolbar",
+      "tab-alignment": "Tab alignment",
+      "align-tabs-at-top": "Align tabs at top",
+      "align-tabs-at-bottom": "Align tabs at bottom",
       "insert-titled-tabs-that-show-one-panel-at-a-time": "Insert titled tabs that show one panel at a time.",
       "multicolumn-layout": "Multicolumn layout",
       "multicolumn-layout-toolbar": "Multicolumn layout toolbar",
@@ -4452,7 +4460,12 @@
       "arrange-content-in-0-equal-columns-side-by-side": "Arrange content in %0 equal columns side by side.",
       "0-columns-1": "%0 columns (%1)",
       "remove-layout": "Remove layout",
-      "type-content-here": "Type content here…"
+      "type-the-content-of-the-first-column": "Type the content of the first column",
+      "type-the-content-of-the-second-column": "Type the content of the second column",
+      "type-the-content-of-the-third-column": "Type the content of the third column",
+      "type-the-content-of-the-fourth-column": "Type the content of the fourth column",
+      "table-columns": "Table columns",
+      "column-0-width-1": "Column %0 width: %1%"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",
@@ -4575,6 +4588,8 @@
   "block_reference": {
     "copy_one": "Copy reference to this block",
     "copy_other": "Copy reference to these {{count}} blocks",
+    "copy_share_link_one": "Copy public link to this block",
+    "copy_share_link_other": "Copy public link to these {{count}} blocks",
     "copy_tab": "Copy link to this tab",
     "paste_as_link": "Paste reference as a link",
     "paste_as_excerpt": "Paste reference as an excerpt",
@@ -4604,5 +4619,23 @@
     "conflict": "This note changed on the server while you were editing it.",
     "conflict_reload": "Reload the page",
     "conflict_keep": "Keep my version"
+  },
+  "record_meeting": {
+    "note_title": "Meeting {{date}}",
+    "starting": "Starting the transcription…",
+    "stop": "Stop transcribing",
+    "stopping": "Finishing the transcript…"
+  },
+  "transcript": {
+    "speaker_me": "Me",
+    "speaker_others": "Others",
+    "speaker_numbered": "Speaker {{number}}",
+    "speaker_name": "Speaker name",
+    "empty": "Nothing has been transcribed yet.",
+    "unreadable": "This transcript cannot be read.",
+    "speaking": "Speaking…",
+    "offset": "{{offset}} into the transcription",
+    "cleanup": "Hide filler words",
+    "cleanup_tooltip": "Hides “uh”, “um” and stuttered words. The transcript itself is not changed."
   }
 }

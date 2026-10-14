@@ -593,6 +593,20 @@ $$`;
                 .toStrictEqual(`<details class="trilium-collapsible">Just some <em>text</em> here</details>`);
         });
 
+        it("round-trips a code block with blank lines inside a collapsible block or a table kept as HTML", () => {
+            const code = `<pre><code class="language-text-x-trilium-auto">a {\n}\n\n  \n:root {\n    --x: 1;\n}</code></pre>`;
+
+            for (const html of [
+                `<details class="trilium-collapsible"><summary>S</summary>${code}<p>After</p></details><p>Outside</p>`,
+                `<figure class="table"><table><tbody><tr><td>${code}</td><td>B</td></tr></tbody></table></figure><p>Outside</p>`
+            ]) {
+                const markdown = markdownExportService.toMarkdown(html);
+
+                expect(markdown).toContain("<pre>");
+                expect(markdownService.renderToHtml(markdown, "Title")).toStrictEqual(html);
+            }
+        });
+
         it("leaves a <details> shown inside a fenced code block as escaped sample text", () => {
             const input = trimIndentation`\
                 \`\`\`html
@@ -709,6 +723,52 @@ $$`;
                 tabs(tab("Next", "<p>y</p>"));
             expect(markdownService.renderToHtml(markdownExportService.toMarkdown(original), "Title"))
                 .toStrictEqual(original);
+        });
+    });
+
+    describe("multicolumn layouts", () => {
+        const column = (content: string) =>
+            `<div class="trilium-multicolumn-column">${content}</div>`;
+        const layout = (ratios: string, ...columns: string[]) =>
+            `<div class="trilium-multicolumn-layout" data-trilium-column-ratios="${ratios}">` +
+            `${columns.map(column).join("")}</div>`;
+        const roundTrip = (html: string) =>
+            markdownService.renderToHtml(markdownExportService.toMarkdown(html), "Title");
+
+        it("round-trips layouts through the Markdown exporter unchanged", () => {
+            const table = "<figure class=\"table\"><table><tbody>" +
+                "<tr><td>a</td><td>b</td></tr>" +
+                "</tbody></table></figure>";
+            const collapsible = "<details class=\"trilium-collapsible\">" +
+                "<summary>S</summary><p>Hidden</p>" +
+                "</details>";
+            const code = "<pre><code class=\"language-text-x-yaml\">a:\n\n  b: 1</code></pre>";
+            const original =
+                "<p>Before</p>" +
+                layout("1-3",
+                    "<p>First <strong>column</strong></p><ul><li>One</li><li>Two</li></ul>",
+                    `<h2>Second</h2>${code}`
+                ) +
+                layout("1-1",
+                    layout("1-2-1", "<p>Inner</p>", "<p>&nbsp;</p>", table),
+                    collapsible
+                ) +
+                layout("3-1", "<p>&nbsp;</p>", "<p>&nbsp;</p>") +
+                "<p>After</p>";
+            const markdown = markdownExportService.toMarkdown(original);
+
+            expect(roundTrip(original)).toStrictEqual(original);
+            expect(markdownExportService.toMarkdown(roundTrip(original))).toStrictEqual(markdown);
+        });
+
+        it("round-trips a layout inside a tab panel", () => {
+            const twoColumns = layout("1-1", "<p>A</p>", "<p>B</p>");
+            const panel = `<div class="trilium-tab-panel">${twoColumns}</div>`;
+            const original =
+                "<div class=\"trilium-tabs\"><section class=\"trilium-tab\">" +
+                `<p class="trilium-tab-title">T</p>${panel}` +
+                "</section></div>";
+            expect(roundTrip(original)).toStrictEqual(original);
         });
     });
 });

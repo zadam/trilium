@@ -18,6 +18,8 @@ For notes with large elements such as <a class="reference-link" href="../../Not
 *   Go to <a class="reference-link" href="Note%20menu.md">Note menu</a> and toggle _Full width_.
 *   Or manually apply the `fullContentWidth` [label](../../Advanced%20Usage/Attributes/Labels.md) to the note.
 
+Since v0.107.0, a single table can also be made wider than the content width, in which case it scrolls sideways. See <a class="reference-link" href="../../Note%20Types/Text/Tables.md">Tables</a>.
+
 > [!NOTE]
 > Some [note types](../../Note%20Types.md) are full width by default, such as the <a class="reference-link" href="../../Note%20Types/Canvas.md">Canvas</a>. In that case the _Full width_ toggle will not be displayed and the label will have no effect.
 
