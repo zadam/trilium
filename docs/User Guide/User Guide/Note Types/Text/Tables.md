@@ -69,6 +69,16 @@ Right-clicking a cell that is not part of the current selection moves the cursor
 *   By default, the row height is not adjustable using the mouse, but it can be configured from the cell settings (see below).
 *   To adjust exactly the width (in pixels or percentages) of a cell, select the <span class="tn-icon cke cke-table-cell-properties"></span> button.
 
+### Resizing with touch
+
+Since v0.107.0, touching a table shows a bar at the bottom of the note, above the formatting toolbar on mobile. The bar has a segment for each column of the table, with a divider at the end of each column.
+
+*   To resize a column, drag its divider. The table grows or shrinks with the column, and scrolls when the divider reaches the edge of the screen. The column snaps to its starting width and to the widths of the columns beside it.
+*   To cancel a resize, drag the divider back to where it started, or touch the screen with a second finger.
+*   To give two neighboring columns the same width, double-tap the divider between them.
+*   To select a column, tap its segment. To open the column menu, touch and hold the segment.
+*   To scroll a wide table sideways, swipe along the bar.
+
 ## Wide tables
 
 Since v0.107.0, a table can be wider than the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Content%20width.md">Content width</a>. Such a table scrolls sideways, while the rest of the note keeps its width.
@@ -85,7 +95,7 @@ Tables inside other blocks, such as block quotes, admonitions, collapsible block
 
 On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, a table keeps the width it has on a desktop and scrolls sideways, instead of squeezing its columns into the width of the screen. The full width of a table is the _Max content width_ set in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Appearance_ → _Content Width_ on the mobile device, 1200 pixels by default. For example, a table set to `50%` is 600 pixels wide.
 
-Columns cannot be resized by dragging on mobile.
+To resize columns on mobile, use the bar described in [Resizing with touch](#resizing-with-touch).
 
 ## Inserting new rows and new columns
 

@@ -4449,7 +4449,9 @@
       "type-the-content-of-the-first-column": "Type the content of the first column",
       "type-the-content-of-the-second-column": "Type the content of the second column",
       "type-the-content-of-the-third-column": "Type the content of the third column",
-      "type-the-content-of-the-fourth-column": "Type the content of the fourth column"
+      "type-the-content-of-the-fourth-column": "Type the content of the fourth column",
+      "table-columns": "Table columns",
+      "column-0-width-1": "Column %0 width: %1%"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",
