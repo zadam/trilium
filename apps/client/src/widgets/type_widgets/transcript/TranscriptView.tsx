@@ -45,15 +45,18 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     /** How many utterances the first transcript read held; only later ones fade in. */
     const initialCountRef = useRef<number | null>(null);
 
+    /** Counts loads, so only the latest one's answer is shown, whichever arrives last. */
+    const loadCountRef = useRef(0);
+
     const load = useCallback(() => {
-        let current = true;
+        const count = ++loadCountRef.current;
         void attachment.getBlob().then((blob) => {
-            if (current) {
+            if (loadCountRef.current === count) {
                 setContent(blob?.content ?? null);
             }
         });
         return () => {
-            current = false;
+            loadCountRef.current++;
         };
     }, [ attachment ]);
     useEffect(load, [ load ]);

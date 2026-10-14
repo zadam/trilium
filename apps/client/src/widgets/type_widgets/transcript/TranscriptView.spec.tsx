@@ -341,6 +341,80 @@ describe("TranscriptView", () => {
         window.electronApi = undefined;
     });
 
+    it("says content it cannot read is no transcript, and follows only its own attachment", async () => {
+        let resolveFirst = (_blob: { content: string }) => {};
+        const getBlob = vi.fn()
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                resolveFirst = resolve;
+            }))
+            .mockResolvedValue({ content: "{ \"not\": \"a transcript\" }" });
+        const attachment = {
+            attachmentId: "transcript1", ownerId: "meeting", getBlob
+        } as unknown as FAttachment;
+        const component = new Component();
+        const container = renderInto(
+            <ParentComponent.Provider value={component}>
+                <TranscriptView attachment={attachment} />
+            </ParentComponent.Provider>
+        );
+
+        // A newer load replaces the first, whose late answer is dropped.
+        const reload = async (attachmentId: string) => {
+            const loadResults = new LoadResults([]);
+            loadResults.addAttachmentRow({ attachmentId, ownerId: "meeting" } as never);
+            await act(async () => {
+                await component.handleEvent("entitiesReloaded", { loadResults });
+            });
+        };
+        await reload("transcript1");
+        await vi.waitFor(() => expect(container.textContent).toContain("transcript.unreadable"));
+        await act(async () => resolveFirst({ content: transcript([
+            { source: "system", offsetMs: 0, text: "Stale." }
+        ]) }));
+        expect(container.textContent).toContain("transcript.unreadable");
+
+        await reload("another");
+        expect(getBlob).toHaveBeenCalledTimes(2);
+    });
+
+    it("renames nothing when the stored transcript cannot be read", async () => {
+        const getBlob = vi.fn()
+            .mockResolvedValueOnce({ content: transcript([
+                { source: "microphone", offsetMs: 0, text: "Hello." }
+            ]) })
+            .mockResolvedValue({ content: "" });
+        const attachment = {
+            attachmentId: "transcript1", ownerId: "meeting", getBlob
+        } as unknown as FAttachment;
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment} />
+            </ParentComponent.Provider>
+        );
+        const speaker = () => container.querySelector<HTMLElement>(".transcript-speaker");
+        await vi.waitFor(() => expect(speaker()).not.toBeNull());
+        const posted = h.post.mock.calls.length;
+
+        await act(async () => speaker()?.click());
+        const input = container.querySelector<HTMLInputElement>(".transcript-speaker-editor");
+        act(() => {
+            if (input) {
+                input.value = "Elian";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+        act(() => {
+            input?.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+        });
+        expect(container.querySelector(".transcript-speaker-editor")).not.toBeNull();
+        act(() => {
+            input?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        });
+        await vi.waitFor(() => expect(getBlob).toHaveBeenCalledTimes(2));
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(h.post).toHaveBeenCalledTimes(posted);
+    });
+
     it("shows who is speaking in the recorded meeting, before the words arrive", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const recording = (noteId: string, pendingSources: TranscriptSource[]) =>
