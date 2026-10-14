@@ -10,7 +10,9 @@ import type FAttachment from "../../../entities/fattachment";
 import LoadResults from "../../../services/load_results";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
-import TranscriptView, { formatOffset, groupIntoTurns, parseTranscript } from "./TranscriptView";
+import TranscriptView, {
+    formatOffset, groupIntoTurns, parseTranscript, type TranscriptTurn
+} from "./TranscriptView";
 
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 
@@ -20,6 +22,10 @@ const STARTED_AT = "2026-10-13T14:29:55";
 function transcript(utterances: TranscriptUtterance[], startedAt = STARTED_AT) {
     const content: Transcript = { version: 1, startedAt, utterances };
     return JSON.stringify(content);
+}
+
+function paragraphTexts(turn: TranscriptTurn) {
+    return turn.paragraphs.map((paragraph) => paragraph.map(({ text }) => text).join(" "));
 }
 
 describe("transcript helpers", () => {
@@ -32,15 +38,19 @@ describe("transcript helpers", () => {
     });
 
     it("joins consecutive utterances of one source into a turn timed by its first", () => {
-        expect(groupIntoTurns([
+        const turns = groupIntoTurns([
             { source: "microphone", offsetMs: 1000, text: "Hello." },
             { source: "microphone", offsetMs: 3000, text: "Can you hear me?" },
             { source: "system", offsetMs: 5000, text: "Yes." },
             { source: "microphone", offsetMs: 7000, text: "Good." }
-        ])).toEqual([
-            { source: "microphone", offsetMs: 1000, paragraphs: [ "Hello. Can you hear me?" ] },
-            { source: "system", offsetMs: 5000, paragraphs: [ "Yes." ] },
-            { source: "microphone", offsetMs: 7000, paragraphs: [ "Good." ] }
+        ]);
+        expect(turns.map(({ source, offsetMs }) => ({ source, offsetMs }))).toEqual([
+            { source: "microphone", offsetMs: 1000 },
+            { source: "system", offsetMs: 5000 },
+            { source: "microphone", offsetMs: 7000 }
+        ]);
+        expect(turns.map(paragraphTexts)).toEqual([
+            [ "Hello. Can you hear me?" ], [ "Yes." ], [ "Good." ]
         ]);
     });
 
@@ -51,7 +61,7 @@ describe("transcript helpers", () => {
             { source: "system", offsetMs: 12_600, durationMs: 2000, text: "Short pause." },
             { source: "system", offsetMs: 17_000, durationMs: 2000, text: "Second point." }
         ]);
-        expect(turns.map((turn) => turn.paragraphs)).toEqual([
+        expect(turns.map(paragraphTexts)).toEqual([
             [ "First point, continued. Short pause.", "Second point." ]
         ]);
     });
@@ -97,6 +107,34 @@ describe("TranscriptView", () => {
             "transcript.speaker_others14:30Yes."
         ]);
         expect(container.querySelectorAll(".transcript-microphone p")).toHaveLength(2);
+    });
+
+    it("fades in only the utterances that arrive after the transcript opens", async () => {
+        const first: TranscriptUtterance = { source: "system", offsetMs: 0, text: "Hi." };
+        const getBlob = vi.fn()
+            .mockResolvedValueOnce({ content: transcript([ first ]) })
+            .mockResolvedValueOnce({ content: transcript([
+                first, { source: "system", offsetMs: 2000, text: "Anyone?" }
+            ]) });
+        const attachment = { attachmentId: "transcript1", getBlob } as unknown as FAttachment;
+        const component = new Component();
+        const container = renderInto(
+            <ParentComponent.Provider value={component}>
+                <TranscriptView attachment={attachment} />
+            </ParentComponent.Provider>
+        );
+        await vi.waitFor(() => expect(container.textContent).toContain("Hi."));
+
+        const loadResults = new LoadResults([]);
+        loadResults.addAttachmentRow({ attachmentId: "transcript1", ownerId: "meeting" } as never);
+        await act(async () => {
+            await component.handleEvent("entitiesReloaded", { loadResults });
+        });
+        await vi.waitFor(() => expect(container.textContent).toContain("Anyone?"));
+
+        const spans = [ ...container.querySelectorAll(".transcript-turn p span") ]
+            .map((span) => [ span.textContent, span.classList.contains("transcript-new") ]);
+        expect(spans).toEqual([ [ "Hi.", false ], [ " Anyone?", true ] ]);
     });
 
     it("times turns by the clock, with the offset as a tooltip or alone", async () => {

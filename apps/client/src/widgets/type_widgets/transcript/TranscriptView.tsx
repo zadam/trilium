@@ -29,6 +29,8 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     const scrollerRef = useRef<HTMLDivElement>(null);
     /** The scroll height at the previous render, or `null` before the transcript first shows. */
     const scrollHeightRef = useRef<number | null>(null);
+    /** How many utterances the first transcript read held; only later ones fade in. */
+    const initialCountRef = useRef<number | null>(null);
 
     const load = useCallback(() => {
         let current = true;
@@ -72,6 +74,8 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
         return <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
     }
 
+    initialCountRef.current ??= transcript.utterances.length;
+    const arrived = new Set(transcript.utterances.slice(initialCountRef.current));
     const turns = groupIntoTurns(transcript.utterances);
     const lastTurn = turns.at(-1);
     const speaking = (
@@ -88,7 +92,18 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                         <span className="transcript-speaker">{speakerName(turn.source)}</span>
                         <TurnTime startedAt={transcript.startedAt} offsetMs={turn.offsetMs} />
                     </div>
-                    {turn.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                    {turn.paragraphs.map((paragraph, index) => (
+                        <p key={index}>
+                            {paragraph.map((utterance, position) => (
+                                <span
+                                    key={utterance.offsetMs}
+                                    className={arrived.has(utterance) ? "transcript-new" : undefined}
+                                >
+                                    {position ? ` ${utterance.text}` : utterance.text}
+                                </span>
+                            ))}
+                        </p>
+                    ))}
                     {turn === lastTurn && pending.includes(turn.source) && speaking}
                 </div>
             ))}
@@ -131,7 +146,7 @@ function TurnTime({ startedAt, offsetMs }: { startedAt: string; offsetMs: number
 export interface TranscriptTurn {
     source: TranscriptSource;
     offsetMs: number;
-    paragraphs: string[];
+    paragraphs: TranscriptUtterance[][];
 }
 
 /** Reads a transcript attachment's content, or returns `null` for content of another shape. */
@@ -157,14 +172,15 @@ export function parseTranscript(content: string | null): Transcript | null {
 export function groupIntoTurns(utterances: TranscriptUtterance[]): TranscriptTurn[] {
     const turns: TranscriptTurn[] = [];
     let previousEndMs: number | null = null;
-    for (const { source, offsetMs, durationMs, text } of utterances) {
+    for (const utterance of utterances) {
+        const { source, offsetMs, durationMs } = utterance;
         const last = turns.at(-1);
         if (last?.source !== source) {
-            turns.push({ source, offsetMs, paragraphs: [ text ] });
+            turns.push({ source, offsetMs, paragraphs: [ [ utterance ] ] });
         } else if (previousEndMs !== null && offsetMs - previousEndMs >= PARAGRAPH_PAUSE_MS) {
-            last.paragraphs.push(text);
+            last.paragraphs.push([ utterance ]);
         } else {
-            last.paragraphs[last.paragraphs.length - 1] += ` ${text}`;
+            last.paragraphs.at(-1)?.push(utterance);
         }
         previousEndMs = durationMs === undefined ? null : offsetMs + durationMs;
     }

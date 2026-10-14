@@ -63,8 +63,19 @@
     }
 }
 
+.transcript .transcript-new {
+    animation: transcript-new-appear 250ms ease-out;
+}
+
+@keyframes transcript-new-appear {
+    from {
+        opacity: 0;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .transcript .transcript-speaking .bx {
+    .transcript .transcript-speaking .bx,
+    .transcript .transcript-new {
         animation: none;
     }
 }
