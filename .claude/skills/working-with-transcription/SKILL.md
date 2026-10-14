@@ -140,6 +140,17 @@ On the first recording (two minutes of system audio, English interview), against
 | `modified_beam_search`, 4 paths | 1.6% | 0.099 (greedy 0.127) | Faster, but all five changes were deletions of spoken words |
 | Hotwords as plain words | 0% | — | Not applied: the terms did not encode (above) |
 
+On a 44-minute Teams call (both sources, English, non-native speakers), scored against another tool's transcript of the same call, so only the change between rows counts. The current `VAD_SETTINGS` come from this run:
+
+| VAD (max / silence), decoding | Microphone WER | System WER | Notes |
+|---|---|---|---|
+| 8 s / 0.5 s, greedy (previous) | 17.0% | 27.1% | 702 utterances, 187 under 1 s |
+| 20 s or 30 s / 0.5 s, greedy | 16.4% | 26.9% | Identical: no segment reached 20 s; the 0.5 s silence ends them first |
+| 20 s / 0.75 s, greedy (current) | 15.7% | 25.8% | Merged segments recover words; three clauses dropped |
+| 20 s / 1.0 s, greedy | 16.8% | 25.7% | |
+| 20 s / 1.5 s, greedy | 18.6% | 24.1% | Parakeet drops 15–30-word clauses inside long segments with pauses |
+| `modified_beam_search`, 4 paths | 17.8–24.9% | 25.9–27.5% | Worse at every silence setting |
+
 ## Traps
 
 - **Electron's V8 memory cage** rejects sherpa-onnx's external buffers: in the app, `vad.front(false)` (and `readWave(…, false)`). Plain Node, as in `replay.mjs`, does not need it.

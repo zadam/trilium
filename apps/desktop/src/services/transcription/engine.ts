@@ -71,11 +71,11 @@ const SPEAKER_SETTINGS: SpeakerClustererOptions = {
 
 const VAD_SETTINGS = {
     threshold: 0.5,
-    minSilenceDuration: 0.5,
+    minSilenceDuration: 0.75,
     minSpeechDuration: 0.25,
     // Past this length, sherpa ends the segment at the next 0.1 s pause, so continuous speech is
-    // committed within about 10 s.
-    maxSpeechDuration: 8,
+    // committed within about 22 s.
+    maxSpeechDuration: 20,
     windowSize: VAD_WINDOW_SIZE
 };
 
