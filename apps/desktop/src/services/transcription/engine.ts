@@ -101,7 +101,7 @@ export async function loadSherpaEngine(): Promise<SpeechEngine> {
             provider: "cpu"
         }, 60)),
         settings: {
-            modelDirectory: MODEL_DIR,
+            modelDirectory: path.resolve(MODEL_DIR),
             recognizer: { ...RECOGNIZER_SETTINGS, decodingMethod: DECODING_METHOD },
             vad: VAD_SETTINGS
         }
