@@ -32,7 +32,8 @@ vi.mock("electron", () => ({
 }));
 vi.mock("@triliumnext/core", () => ({
     becca: { getNote: (noteId: string) => h.notes.has(noteId) ? { noteId } : null },
-    getLog: () => ({ info: vi.fn(), error: vi.fn() })
+    getLog: () => ({ info: vi.fn(), error: vi.fn() }),
+    utils: { isDev: () => false }
 }));
 vi.mock("i18next", () => ({
     t: (key: string, options?: object) => options ? `${key} ${JSON.stringify(options)}` : key

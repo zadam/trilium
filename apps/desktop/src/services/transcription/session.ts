@@ -16,10 +16,24 @@ export interface TranscriptSink {
     close?(): void | Promise<void>;
 }
 
+/** Receives every source's samples as they are captured, before any segmentation. */
+export interface AudioTap {
+    /** Called once before capturing starts, as {@link TranscriptSink.open} is. */
+    open?(startedAt: number): void | Promise<void>;
+    /**
+     * @param firstSampleOffsetMs Milliseconds from the start of the recording to the first sample
+     * of `source`; the same for every call of one source.
+     */
+    write(source: TranscriptSource, samples: Float32Array, firstSampleOffsetMs: number): void;
+    /** Called once after the last samples. */
+    close?(): void | Promise<void>;
+}
+
 export interface RecordingSessionOptions {
     capture: AudioCapture;
     engine: SpeechEngine;
     sinks: TranscriptSink[];
+    taps?: AudioTap[];
     /**
      * Called with the sources whose speech has not reached the sinks yet, either because it is
      * still being spoken or because it waits to be transcribed, every time that list changes.
@@ -45,13 +59,15 @@ export class RecordingSession {
 
     async start() {
         this.startedAt = this.now();
-        for (const sink of this.options.sinks) {
-            await sink.open?.(this.startedAt);
+        for (const receiver of [ ...this.options.sinks, ...this.options.taps ?? [] ]) {
+            await receiver.open?.(this.startedAt);
         }
         return await this.options.capture.start((source, samples) => {
             // An exception thrown from an `ipcMain` listener takes down the main process.
             try {
-                this.pipelineFor(source, samples).accept(samples);
+                const pipeline = this.pipelineFor(source, samples);
+                this.tap(source, samples, pipeline.firstSampleOffsetMs);
+                pipeline.accept(samples);
                 this.updatePending();
             } catch (e) {
                 getLog().error(`Transcription: ${source} failed: ${(e as Error)?.message ?? e}`);
@@ -66,6 +82,13 @@ export class RecordingSession {
             pipeline.flush();
         }
         this.updatePending();
+        for (const tap of this.options.taps ?? []) {
+            try {
+                await tap.close?.();
+            } catch (e) {
+                getLog().error(`Transcription: closing an audio tap failed: ${e}`);
+            }
+        }
         await this.queue;
 
         for (const sink of this.options.sinks) {
@@ -73,6 +96,16 @@ export class RecordingSession {
                 await sink.close?.();
             } catch (e) {
                 getLog().error(`Transcription: closing a sink failed: ${e}`);
+            }
+        }
+    }
+
+    private tap(source: TranscriptSource, samples: Float32Array, firstSampleOffsetMs: number) {
+        for (const tap of this.options.taps ?? []) {
+            try {
+                tap.write(source, samples, firstSampleOffsetMs);
+            } catch (e) {
+                getLog().error(`Transcription: an audio tap failed on ${source}: ${e}`);
             }
         }
     }
@@ -141,7 +174,7 @@ class SourcePipeline {
         private readonly source: TranscriptSource,
         private readonly segmenter: SpeechSegmenter,
         /** Milliseconds from the start of the recording to the source's first sample. */
-        private readonly firstSampleOffsetMs: number,
+        readonly firstSampleOffsetMs: number,
         private readonly onSegment: (offsetMs: number, samples: Float32Array) => void
     ) {}
 

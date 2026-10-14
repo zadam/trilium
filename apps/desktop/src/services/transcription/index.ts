@@ -1,12 +1,13 @@
 import type { TranscriptionState } from "@triliumnext/commons";
-import { becca, getLog } from "@triliumnext/core";
+import { becca, getLog, utils as coreUtils } from "@triliumnext/core";
 import { BrowserWindow, ipcMain } from "electron";
 import { t } from "i18next";
 
 import { AttachmentSink } from "./attachment_sink";
+import { RECORDINGS_DIR, WavRecorder } from "./audio_recorder";
 import { ElectronAudioCapture } from "./capture";
 import { loadSherpaEngine, ModelMissingError } from "./engine";
-import { RecordingSession, type TranscriptSink } from "./session";
+import { type AudioTap, RecordingSession, type TranscriptSink } from "./session";
 
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
 
@@ -38,6 +39,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
             capture: new ElectronAudioCapture(),
             engine: await loadSherpaEngine(),
             sinks: createSinks(noteId),
+            taps: createTaps(noteId),
             onPendingChanged: (pendingSources) => setState({ ...state, pendingSources })
         });
         const sources = await session.start();
@@ -78,6 +80,14 @@ export function getState() {
 /** Where the utterances of a recording for `noteId` go. */
 function createSinks(noteId: string): TranscriptSink[] {
     return [ new AttachmentSink(noteId) ];
+}
+
+/**
+ * What else receives the audio of a recording for `noteId`: development builds keep it, to
+ * transcribe it again while the engine is tuned.
+ */
+function createTaps(noteId: string): AudioTap[] {
+    return coreUtils.isDev() ? [ new WavRecorder(RECORDINGS_DIR, noteId) ] : [];
 }
 
 function setState(newState: TranscriptionState) {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SamplesListener } from "./capture";
 import type { SpeechSegment } from "./engine";
-import { RecordingSession, type TranscriptSink } from "./session";
+import { type AudioTap, RecordingSession, type TranscriptSink } from "./session";
 
 const log = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
 vi.mock("@triliumnext/core", () => ({ getLog: () => log }));
@@ -32,7 +32,7 @@ function speechChunk(speaking: boolean) {
     return samples;
 }
 
-function createHarness(extraSinks: TranscriptSink[] = []) {
+function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = []) {
     let clock = 1000;
     let onSamples: SamplesListener = () => {};
     const capture = {
@@ -75,7 +75,7 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
     const sinks = [ ...extraSinks, sink ];
     const onPendingChanged = vi.fn();
     const session = new RecordingSession({
-        capture, engine, sinks, onPendingChanged, now: () => clock
+        capture, engine, sinks, taps, onPendingChanged, now: () => clock
     });
 
     return {
@@ -111,6 +111,33 @@ describe("RecordingSession", () => {
             { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "utterance 1" },
             { source: "system", offsetMs: 3000, durationMs: 1000, text: "utterance 2" }
         ]);
+    });
+
+    it("hands every captured chunk to the taps, timed like the transcript", async () => {
+        const failingTap: AudioTap = {
+            write: () => {
+                throw new Error("disk full");
+            }
+        };
+        const tap = { open: vi.fn(), write: vi.fn(), close: vi.fn() };
+        const { session, deliver, written } = createHarness([], [ failingTap, tap ]);
+        await session.start();
+        expect(tap.open).toHaveBeenCalledExactlyOnceWith(1000);
+
+        const first = speechChunk(true);
+        const second = utteranceChunk(1, 0);
+        deliver("microphone", first, 3000);
+        deliver("microphone", second, 4000);
+        await session.stop();
+
+        expect(tap.write.mock.calls).toEqual([
+            [ "microphone", first, 1000 ],
+            [ "microphone", second, 1000 ]
+        ]);
+        expect(tap.close).toHaveBeenCalledOnce();
+        expect(written.map((utterance) => utterance.text)).toEqual([ "utterance 1" ]);
+        expect(log.error).toHaveBeenCalledWith(
+            "Transcription: an audio tap failed on microphone: Error: disk full");
     });
 
     it("transcribes what the segmenters still hold before it closes the sinks", async () => {
