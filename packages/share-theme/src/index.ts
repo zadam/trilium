@@ -91,10 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
     whenActivated(() => $try(() => showLinkedBlocks(diagrams)));
 });
 
+/** Sizes the tables of the content, and those of each note it includes, as the app does. */
 function setupTableScroll() {
     const content = document.getElementById("content");
-    if (content) {
-        applyTableScroll(content);
+    if (!content) {
+        return;
+    }
+
+    applyTableScroll(content);
+    for (const embed of content.querySelectorAll(".include-note")) {
+        applyTableScroll(embed);
     }
 }
 

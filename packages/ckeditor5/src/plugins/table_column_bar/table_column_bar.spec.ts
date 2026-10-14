@@ -491,28 +491,61 @@ describe("TableColumnBar", () => {
             const widths = ["100px", "200px", "100px"];
             await showBar(editor, resizedTable([["a[]", "b", "c"]], widths, 'tableWidth="400px"'));
             const table = firstTable(editor);
-            const tap = (column: number) => {
-                press(dividers(editor)[column]);
-                release();
-            };
 
-            tap(0);
-            tap(1);
-            tap(2);
-            tap(2);
+            tapDivider(editor, 0);
+            tapDivider(editor, 1);
+            tapDivider(editor, 2);
+            tapDivider(editor, 2);
             expect(getTableColumnsWidths(table)).toEqual(widths);
 
             const now = vi.spyOn(performance, "now");
             onTestFinished(() => now.mockRestore());
             now.mockReturnValue(1000);
-            tap(0);
+            tapDivider(editor, 0);
             now.mockReturnValue(2000);
-            tap(0);
+            tapDivider(editor, 0);
             expect(getTableColumnsWidths(table)).toEqual(widths);
 
             now.mockReturnValue(2100);
-            tap(0);
+            tapDivider(editor, 0);
             expect(getTableColumnsWidths(table)).toEqual(["150px", "150px", "100px"]);
+        });
+
+        it("takes a tap after a drag, a press or on another table as a first tap", async () => {
+            const widths = ["100px", "200px", "100px"];
+            const tables = [["a[]", "b", "c"], ["d", "e", "f"]]
+                .map((row) => resizedTable([row], widths, 'tableWidth="400px"'));
+            await showBar(editor, tables.join(""));
+            const first = firstTable(editor);
+            const second = editor.model.document.getRoot()?.getChild(1);
+            if (!second?.is("element", "table")) {
+                throw new Error("The second root child is not a table.");
+            }
+            const now = vi.spyOn(performance, "now").mockReturnValue(1000);
+            onTestFinished(() => now.mockRestore());
+
+            tapDivider(editor, 0);
+            const { x, y } = press(dividers(editor)[0]);
+            moveTo(x + 30, y);
+            release();
+            const dragged = getTableColumnsWidths(first);
+            tapDivider(editor, 0);
+            const afterDrag = getTableColumnsWidths(first);
+
+            tapDivider(editor, 1);
+            press(segments(editor)[0]);
+            release();
+            tapDivider(editor, 1);
+            const afterPress = getTableColumnsWidths(first);
+
+            tapDivider(editor, 0);
+            editor.model.change((writer) => writer.setSelection(second.getNodeByPath([0, 0]), 0));
+            await frames();
+            tapDivider(editor, 0);
+
+            const afterSwitch = [getTableColumnsWidths(first), getTableColumnsWidths(second)];
+            expect([afterDrag, afterPress, ...afterSwitch])
+                .toEqual([dragged, dragged, dragged, widths]);
         });
 
         it("resizes towards the left in right-to-left content", async () => {
@@ -588,6 +621,11 @@ function moveTo(clientX: number, clientY: number) {
 
 function release(pointerId = 1) {
     window.dispatchEvent(new PointerEvent("pointerup", { pointerId }));
+}
+
+function tapDivider(editor: Editor, column: number) {
+    press(dividers(editor)[column]);
+    release();
 }
 
 function barView(editor: Editor) {

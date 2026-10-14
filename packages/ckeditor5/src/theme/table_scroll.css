@@ -27,7 +27,6 @@
     }
 }
 
-/* The widget controls of a scrolling table stay in view as sticky flex items that take no space. */
 .ck.ck-editor__editable.ck-content figure.table.ck-widget.ck-table-overflowing {
     > figcaption {
         position: sticky;

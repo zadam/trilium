@@ -41,13 +41,13 @@ export async function renderTextContent(
     const $content = $('<div class="ck-content">')
         .html(hasContent ? resolveContentImageUrls(sanitizeNoteContentHtml(content)) : "");
     applyNoteImageVersions($content[0]);
-    applyTableScroll($content[0]);
 
     if (options.block !== undefined && !sliceToBlockReference($content[0], options.block)) {
         $renderedContent.append($("<p>")
             .addClass("block-reference-broken")
             .text(t("block_reference.broken")));
     } else if (hasContent) {
+        applyTableScroll($content[0]);
         // Runs before `postProcessRichContent()` renders embeds, so their blocks are not searched.
         if (options.highlightBlock) {
             highlightBlockReference($content[0], options.highlightBlock);

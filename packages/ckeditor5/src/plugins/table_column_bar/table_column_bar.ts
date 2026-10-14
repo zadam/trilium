@@ -56,7 +56,7 @@ export default class TableColumnBar extends Plugin {
     private resizedColumn: number | null = null;
     private cancelGesture: (() => void) | null = null;
     private menu: DropdownView | null = null;
-    private lastTap: { column: number; time: number } | null = null;
+    private lastTap: Tap | null = null;
     private readonly domEmitter = new (DomEmitterMixin())();
     private readonly resizeObserver = new ResizeObserver(() => this.scheduleUpdate(true));
 
@@ -289,9 +289,12 @@ export default class TableColumnBar extends Plugin {
             this.menu.isOpen = false;
         }
 
+        // A double tap is two taps on a divider with no other gesture on the bar between them.
+        const previousTap = this.lastTap;
+        this.lastTap = null;
         const column = Number(handle.dataset.column);
         if (handle.classList.contains("ck-table-column-bar__divider")) {
-            this.startResize(event, column, target);
+            this.startResize(event, column, target, previousTap);
         } else {
             this.startPress(event, column, target);
         }
@@ -333,9 +336,15 @@ export default class TableColumnBar extends Plugin {
 
     /**
      * Resizes `column` while the divider at its end is dragged. The table shows each width without
-     * a change to the model, which takes the width at which the divider is released.
+     * a change to the model, which takes the width at which the divider is released. A tap that
+     * follows `previousTap` on the same divider evens out the two columns beside it.
      */
-    private startResize(event: PointerEvent, column: number, target: BarTarget) {
+    private startResize(
+        event: PointerEvent,
+        column: number,
+        target: BarTarget,
+        previousTap: Tap | null
+    ) {
         const editor = this.editor;
         const { table, domContainer, domTable } = target;
         const direction = editor.locale.contentLanguageDirection === "rtl" ? -1 : 1;
@@ -410,8 +419,14 @@ export default class TableColumnBar extends Plugin {
                     this.commit(target, replaceAt(widths, column, width));
                 }
                 finish();
-                const isPair = column + 1 < widths.length;
-                if (!isMoved && this.isDoubleTap(column) && isPair) {
+                if (isMoved) {
+                    return;
+                }
+
+                const tap = { table, column, time: performance.now() };
+                if (!isDoubleTap(previousTap, tap)) {
+                    this.lastTap = tap;
+                } else if (column + 1 < widths.length) {
                     distributeColumns(editor, table, { first: column, last: column + 1 });
                 }
             },
@@ -520,15 +535,6 @@ export default class TableColumnBar extends Plugin {
         this.view.placeMenu(column);
         this.menu.isOpen = true;
     }
-
-    /** Whether a tap on the divider of `column` follows another one on it closely enough. */
-    private isDoubleTap(column: number) {
-        const now = performance.now();
-        const lastTap = this.lastTap;
-        const isDoubleTap = lastTap?.column === column && now - lastTap.time < DOUBLE_TAP_MS;
-        this.lastTap = isDoubleTap ? null : { column, time: now };
-        return isDoubleTap;
-    }
 }
 
 interface BarTarget {
@@ -546,6 +552,13 @@ interface ResizePreview {
     colgroup: ViewElement;
     isColgroupAdded: boolean;
     isClassAdded: boolean;
+}
+
+/** A tap on the divider at the end of `column`, at `time` from `performance.now()`. */
+interface Tap {
+    table: ModelElement;
+    column: number;
+    time: number;
 }
 
 interface ClientBox {
@@ -645,6 +658,12 @@ export function findSnapPoint(width: number, points: readonly number[]): number 
         }
     }
     return closest;
+}
+
+/** Whether `tap` follows `previousTap` on the same divider closely enough. */
+function isDoubleTap(previousTap: Tap | null, tap: Tap) {
+    return previousTap?.table === tap.table && previousTap.column === tap.column
+        && tap.time - previousTap.time < DOUBLE_TAP_MS;
 }
 
 function findColgroup(viewTable: ViewElement) {

@@ -99,7 +99,8 @@ describe("share theme entry", () => {
 
     it("enhances a text note's content and reveals the tab panel the address points to", () => {
         document.body.className = "type-text";
-        document.body.innerHTML = `<div id="content" data-tab-title-placeholder="Tab"></div>`;
+        document.body.innerHTML = `<div id="content" data-tab-title-placeholder="Tab">`
+            + `<blockquote><figure class="include-note"></figure></blockquote></div>`;
         const panel = { scrollIntoView: vi.fn() };
         mocks.revealFragment.mockReturnValue(panel);
 
@@ -109,7 +110,8 @@ describe("share theme entry", () => {
         expect(mocks.setupMermaid).toHaveBeenCalledOnce();
         expect(mocks.setupMath).toHaveBeenCalledOnce();
         expect(mocks.enhanceLinkPreviews).toHaveBeenCalledWith(document.body);
-        expect(mocks.applyTableScroll).toHaveBeenCalledWith(content);
+        expect(mocks.applyTableScroll.mock.calls)
+            .toEqual([ [ content ], [ content?.querySelector(".include-note") ] ]);
         expect(mocks.applyTabs).toHaveBeenCalledWith(content, { placeholder: "Tab" });
         expect(panel.scrollIntoView).toHaveBeenCalledOnce();
 
