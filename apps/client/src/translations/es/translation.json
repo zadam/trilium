@@ -65,7 +65,9 @@
     "anchor": "Ancla (opcional)",
     "anchor_none": "Ninguna (enlace a la nota)",
     "edit_link": "Editar enlace",
-    "button_edit_link": "Guardar enlace"
+    "button_edit_link": "Guardar enlace",
+    "fix_link": "Corregir enlace",
+    "button_fix_link": "Corregir enlace"
   },
   "branch_prefix": {
     "edit_branch_prefix": "Editar prefijo de rama",
@@ -608,7 +610,7 @@
     "geolocation": "La latitud y la longitud en las que se sitúa la nota en un mapa geográfico.",
     "map_type": "Qué mapa de notas se dibuja: <code>link</code> para las relaciones entre notas, o <code>tree</code> para la jerarquía.",
     "map_style": "En qué estilo se dibuja un mapa geográfico, elegido entre los estilos ráster y vectoriales ofrecidos en las propiedades de la colección.",
-    "map_scale": "Muestra una barra de escala en el mapa geográfico.",
+    "map_scale": "Muestra una barra de escala en el mapa geográfico, o reglas de coordenadas a lo largo de los bordes de un mapa de imagen.",
     "map_hide_labels": "Oculta los títulos de las notas junto a los marcadores en un mapa geográfico.",
     "presentation_theme": "Con qué tema se muestra una presentación.",
     "slide_background": "El fondo de una diapositiva, como color o como degradado CSS.",
@@ -643,7 +645,17 @@
     "board_column_width": "En las colecciones de tipo tablero, indica el ancho de las columnas: <code>narrow</code>, <code>medium</code> o <code>wide</code>. Se ignora en dispositivos móviles, que utilizan un ancho propio.",
     "board_show_inbox": "En las colecciones de tipo tablero, muestra la columna de entrada, que enumera todas las notas hijas que no están asignadas a una columna del tablero.",
     "board_sort_columns": "En las colecciones de tipo tablero, indica el orden en el que las columnas ordenan sus tarjetas, que es el que sigue una columna salvo que tenga su propio orden. Contiene <code>title</code>, <code>creationDate</code> o <code>attr:</code> seguido del nombre de un atributo promocionado.",
-    "board_sort_columns_descending": "En las colecciones de tipo tablero, invierte el orden indicado en <code>#board:sortColumns</code>."
+    "board_sort_columns_descending": "En las colecciones de tipo tablero, invierte el orden indicado en <code>#board:sortColumns</code>.",
+    "map_position": "La posición de la nota en un mapa de imagen, expresada como <code>x,y</code> en las coordenadas del mapa: los píxeles de la imagen, salvo que <code>map:imageBounds</code> defina otras.",
+    "map_shape": "Forma con la que se dibuja la nota en un mapa de imagen, con el mismo formato que <code>geoShape</code>, pero con puntos <code>x,y</code>; p. ej., <code>circle:400,300 50</code>.",
+    "map_image_bounds": "Coordenadas de las esquinas superior izquierda e inferior derecha de un mapa de imagen, como <code>x,y x,y</code>; p. ej., <code>-512,-512 512,512</code>. Las posiciones del mapa se leen y se escriben en estas coordenadas, en lugar de en los píxeles de la imagen.",
+    "map_image": "Nota de imagen sobre la que dibujar el mapa geográfico, en lugar de un mapa del mundo. Los marcadores y las formas se colocan entonces con <code>mapPosition</code> y <code>mapShape</code>.",
+    "page_description": "La descripción de una página capturada, que se muestra en los detalles del distintivo «Clip web» de la nota.",
+    "page_author": "El autor de una página capturada, que se muestra en los detalles del distintivo «Clip web» de la nota.",
+    "published_date": "La fecha en la que se publicó una página capturada, que se muestra en los detalles del distintivo «Clip web» de la nota.",
+    "modified_date": "La fecha en la que se actualizó por última vez una página capturada, que se muestra en los detalles del distintivo «Clip web» de la nota.",
+    "calendar_title_template": "Cómo se titula un evento en el calendario. En un evento que se repite, se rellena en cada aparición. Utiliza <code>${title}</code>, <code>${years}</code> (años enteros desde la fecha de inicio) y las fechas <code>${date}</code> y <code>${startDate}</code>; p. ej., <code>${title} (${years})</code> en un cumpleaños anual.",
+    "board_hide_add_column": "En las colecciones de tipo tablero, oculta el botón <em>Añadir columna</em> situado después de la última columna. Las columnas pueden añadirse igualmente desde el menú contextual del tablero o de una columna."
   },
   "attribute_editor": {
     "help_text_body1": "Para añadir una etiqueta, solo tiene que escribir, por ejemplo, <code>#rock</code> o, si también desea añadir un valor, por ejemplo, <code>#year = 2020</code>",
@@ -830,7 +842,9 @@
       "end_date": "Fecha de fin",
       "time": "Hora",
       "start_time": "Hora de inicio",
-      "end_time": "Hora de fin"
+      "end_time": "Hora de fin",
+      "add_time": "Añadir hora",
+      "remove_time": "Quitar hora"
     },
     "recurrence": {
       "repeats": "Se repite",
@@ -854,7 +868,9 @@
       "count": "Después de",
       "times": "veces",
       "custom_rule": "Regla",
-      "custom_hint": "Una regla de recurrencia iCalendar (RRULE) que expresa más de lo que permiten los campos anteriores. Al borrarla se detiene la repetición."
+      "custom_hint": "Una regla de recurrencia iCalendar (RRULE) que expresa más de lo que permiten los campos anteriores. Al borrarla se detiene la repetición.",
+      "count_years": "Mostrar el número de años en el título",
+      "count_years_locked": "Este evento ya tiene una plantilla de título, definida en la nota o heredada por ella. Cámbiela en los atributos de la nota."
     }
   },
   "close_pane_button": {
@@ -1086,7 +1102,8 @@
     "too-many-notes_many": "Aquí hay {{count}} notas. Mostrarlas todas puede ralentizar el sistema.",
     "too-many-notes_other": "Aquí hay {{count}} notas. Mostrarlas todas puede ralentizar el sistema.",
     "show-anyway": "Mostrar mapa",
-    "expand": "Expandir mapa"
+    "expand": "Expandir mapa",
+    "fit-to-view": "Ajustar a la vista"
   },
   "note_paths": {
     "title": "Rutas de nota",
@@ -1266,7 +1283,10 @@
     "editor_crashed_details_intro": "Si experimenta este error varias veces, considere informarlo en GitHub adjuntando la siguiente información.",
     "editor_crashed_details_title": "Información técnica",
     "nothing_selected_to_cut": "Seleccione primero algo de texto para cortarlo en una subnota.",
-    "uploading_attachment": "Subiendo archivo adjunto"
+    "uploading_attachment": "Subiendo archivo adjunto",
+    "editor_error_title": "El editor de texto ha encontrado un error",
+    "editor_error_content": "Es posible que el editor no muestre correctamente sus últimos cambios. Recargue el editor para continuar: primero se guardan sus cambios.",
+    "editor_error_reload_button": "Recargar el editor"
   },
   "empty": {
     "open_note_instruction": "Abra una nota escribiendo el título de la nota en la entrada a continuación o elija una nota en el árbol.",
@@ -2143,7 +2163,8 @@
     "cannot-copy": "No se pudo copiar la referencia de imagen al portapapeles.",
     "image-copied-to-clipboard": "La imagen se ha copiado al portapapeles.",
     "cannot-copy-image": "No se pudo copiar la imagen al portapapeles.",
-    "cannot-download": "No se pudo descargar la imagen."
+    "cannot-download": "No se pudo descargar la imagen.",
+    "cannot-convert-to-drawing": "No se pudo convertir la imagen en un lienzo de dibujo."
   },
   "clipboard": {
     "cut": "La(s) notas(s) han sido cortadas al portapapeles.",
@@ -2354,7 +2375,9 @@
     "locate-error": "No se pudo encontrar su ubicación. Pulse de nuevo para dejar de buscar.",
     "locate-unavailable": "Su ubicación no está disponible",
     "location-denied": "Se denegó el acceso a la ubicación. Permítalo para Trilium en la configuración del navegador o del sistema para mostrar su ubicación en el mapa.",
-    "location-unavailable": "No se pudo determinar su ubicación en este momento."
+    "location-unavailable": "No se pudo determinar su ubicación en este momento.",
+    "image-unavailable": "No se ha podido cargar la imagen de este mapa. Compruebe que la nota a la que apunta su relación map:image sea una imagen.",
+    "image-svg-unsupported": "Las imágenes SVG no se pueden utilizar como mapa. Convierta la imagen a PNG, JPEG o WebP."
   },
   "geo-map-context": {
     "open-location": "Abrir ubicación",
@@ -2626,7 +2649,9 @@
     "select-column-cards": "Seleccionar todas las tarjetas de la columna",
     "reset-selection": "Restablecer la selección",
     "expand-column": "Expandir columna",
-    "select-all-cards": "Seleccionar todas las tarjetas"
+    "select-all-cards": "Seleccionar todas las tarjetas",
+    "show-add-column-button": "Mostrar el botón «Añadir columna»",
+    "show-add-column-button-description": "Las columnas pueden añadirse igualmente desde el menú contextual del tablero o de una columna."
   },
   "content_renderer": {
     "open_externally": "Abrir externamente",
@@ -2665,7 +2690,7 @@
     "content_hints_enabled": "Sugerencias de contenido",
     "content_hints_description": "Mostrar sugerencias breves en la esquina inferior del editor que explican cómo interactuar con el elemento bajo el cursor o el puntero.",
     "auto_link_previews_enabled": "Generar vistas previas de enlaces automáticamente",
-    "auto_link_previews_description": "Convertir automáticamente un enlace detectado en una vista previa que muestra el título, la descripción y la imagen de la página web. Insertar una vista previa desde la barra de herramientas siempre funciona, independientemente de este ajuste.",
+    "auto_link_previews_description": "Convertir automáticamente un enlace detectado en una vista previa que muestra el título, la descripción y la imagen de la página web, y guardar las pestañas enviadas por el Web Clipper como vistas previas integradas. Insertar una vista previa desde la barra de herramientas siempre funciona, independientemente de este ajuste.",
     "html_support_enabled": "Conservar etiquetas HTML no admitidas",
     "html_support_description": "Conserva las etiquetas HTML para las que el editor no tiene función propia, según la lista de Opciones → Otros → Etiquetas de importación HTML. Aparecen como bloques que no se pueden editar directamente, y una etiqueta no reconocida puede no ser visible al editar. Si está desactivado, esas etiquetas se eliminan de una nota la primera vez que se edita y se guarda; la importación no se ve afectada en ningún caso.",
     "mathlive_enabled": "Editor visual de MathLive",
@@ -2764,7 +2789,21 @@
     "remove_from_calendar_confirmation": "¿Está seguro de que desea quitar el evento «{{title}}» del calendario?",
     "new_event": "Nuevo evento",
     "draft_title_placeholder": "Añadir un título",
-    "create_event": "Crear"
+    "create_event": "Crear",
+    "duration_minutes": "{{minutes}} min",
+    "duration_hours": "{{hours}} h",
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min",
+    "properties": "Propiedades del calendario",
+    "event_templates": "Plantillas de eventos",
+    "event_templates_hint": "Elija qué tipos de nota y qué plantillas de nota desea utilizar al crear eventos nuevos del calendario.",
+    "new_template_name": "Nueva plantilla de evento",
+    "event_template": "Seleccionar una plantilla de evento",
+    "more_templates": "Más plantillas…",
+    "template": "Plantilla",
+    "general": "General",
+    "event_attributes": "Atributos del evento",
+    "event_attributes_hint": "Elija qué atributos aparecen en los eventos y en qué orden. Los atributos nuevos permanecen ocultos hasta que los active.",
+    "event_attributes_overridden": "Este calendario tiene la etiqueta calendar:displayedAttributes, de modo que los eventos muestran los atributos indicados allí en lugar de los elegidos aquí."
   },
   "note-color": {
     "clear-color": "Borrar color de nota",
@@ -2891,7 +2930,11 @@
     "shared_preview": "Vista previa de compartido",
     "shared_preview_description": "Solo este navegador puede abrir la página compartida, y solo mientras Trilium esté abierto en él. Para publicarla, exporte el subárbol como \"{{- format}}\" y aloje los archivos en cualquier servidor web, o utilice un servidor Trilium.",
     "shared_export_only": "No publicado",
-    "shared_export_only_description": "La aplicación móvil no puede abrir páginas compartidas. Para publicar esta nota, exporte el subárbol como \"{{- format}}\" y aloje los archivos en cualquier servidor web, o utilice un servidor Trilium."
+    "shared_export_only_description": "La aplicación móvil no puede abrir páginas compartidas. Para publicar esta nota, exporte el subárbol como \"{{- format}}\" y aloje los archivos en cualquier servidor web, o utilice un servidor Trilium.",
+    "clipped_note_details": "Esta nota fue tomada de una página web. Haga clic para ver la descripción, el autor y las fechas de la página.",
+    "clipped_note_author": "Autor",
+    "clipped_note_published": "Publicado",
+    "clipped_note_modified": "Actualizado"
   },
   "attributes_panel": {
     "title": "Atributos de nota",
@@ -2943,7 +2986,9 @@
     "disabled_button_enable": "Habilitar nota de renderización",
     "error_title": "La nota de script no se pudo ejecutar",
     "error_show_details": "Mostrar detalles",
-    "error_note_label": "Nota de script:"
+    "error_note_label": "Nota de script:",
+    "disabled_read_only": "Esta nota de renderización proviene de una fuente externa, por lo que no está habilitada.",
+    "nothing_to_display": "Esta nota no tiene nada que mostrar."
   },
   "active_content_badges": {
     "type_icon_pack": "Paquete de iconos",
@@ -4115,7 +4160,24 @@
       "move-tab-right": "Mover la pestaña a la derecha",
       "copy-link-to-tab": "Copiar el enlace a la pestaña",
       "tabs-toolbar": "Barra de herramientas de pestañas",
-      "insert-titled-tabs-that-show-one-panel-at-a-time": "Inserte pestañas con título que muestren un solo panel cada vez."
+      "insert-titled-tabs-that-show-one-panel-at-a-time": "Inserte pestañas con título que muestren un solo panel cada vez.",
+      "multicolumn-layout": "Disposición multicolumna",
+      "multicolumn-layout-toolbar": "Barra de herramientas de disposición multicolumna",
+      "multiple-column-layout": "Disposición de varias columnas",
+      "0-columns": "%0 columnas",
+      "column-layout": "Disposición en columnas",
+      "0-columns-layout": "Disposición de %0 columnas",
+      "arrange-content-in-0-equal-columns-side-by-side": "Organizar el contenido en %0 columnas iguales, una al lado de la otra.",
+      "0-columns-1": "%0 columnas (%1)",
+      "remove-layout": "Quitar disposición",
+      "convert-image-to-a-drawing-canvas": "Convertir la imagen en un lienzo de dibujo",
+      "tab-alignment": "Alineación de las pestañas",
+      "align-tabs-at-top": "Alinear las pestañas arriba",
+      "align-tabs-at-bottom": "Alinear las pestañas abajo",
+      "type-the-content-of-the-first-column": "Escriba el contenido de la primera columna",
+      "type-the-content-of-the-second-column": "Escriba el contenido de la segunda columna",
+      "type-the-content-of-the-third-column": "Escriba el contenido de la tercera columna",
+      "type-the-content-of-the-fourth-column": "Escriba el contenido de la cuarta columna"
     },
     "toolbar-groups": {
       "text-formatting": "Formato de texto",
@@ -4591,7 +4653,10 @@
     "excerpt": "Extracto",
     "excerpt_description": "Actualmente solo está viendo un fragmento de esta nota. Pulse el botón {{icon}} para abrir la nota completa en una pestaña nueva.",
     "edit_excerpt": "Editar extracto",
-    "copy_tab": "Copiar el enlace a esta pestaña"
+    "copy_tab": "Copiar el enlace a esta pestaña",
+    "copy_share_link_one": "Copiar el enlace público a este bloque",
+    "copy_share_link_many": "Copiar el enlace público a estos {{count}} bloques",
+    "copy_share_link_other": "Copiar el enlace público a estos {{count}} bloques"
   },
   "split_button": {
     "more_actions": "Más acciones"
