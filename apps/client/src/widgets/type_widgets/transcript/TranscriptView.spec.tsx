@@ -8,16 +8,19 @@ import { describe, expect, it, vi } from "vitest";
 import Component from "../../../components/component";
 import type FAttachment from "../../../entities/fattachment";
 import LoadResults from "../../../services/load_results";
+import options from "../../../services/options";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import TranscriptView, {
     formatOffset, groupIntoTurns, type TranscriptTurn
 } from "./TranscriptView";
 
-const h = vi.hoisted(() => ({ post: vi.fn() }));
+const h = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn() }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 // keyboard_actions asks the server for its shortcuts at import.
-vi.mock("../../../services/server", () => ({ default: { post: h.post, get: async () => [] } }));
+vi.mock("../../../services/server", () => ({
+    default: { post: h.post, put: h.put, get: async () => [] }
+}));
 
 /** Local time, so that the clock times the spec expects hold in every time zone. */
 const STARTED_AT = "2026-10-13T14:29:55";
@@ -378,5 +381,32 @@ describe("TranscriptView", () => {
         scroller.scrollTop = 0;
         await addTurn();
         expect(scroller.scrollTop).toBe(0);
+    });
+
+    it("hides filler words and stutters while the option is on, and saves the switch", async () => {
+        options.set("transcriptCleanupEnabled", "true");
+        const content = transcript([
+            { source: "system", offsetMs: 0, text: "Uh the the data is old." },
+            { source: "system", offsetMs: 1000, text: "Uh." },
+            { source: "system", offsetMs: 2000, text: "I know, I know." }
+        ]);
+        const attachment = { attachmentId: "transcript1", getBlob: async () => ({ content }) };
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const spans = () => [ ...container.querySelectorAll(".transcript-turn p span") ]
+            .map((span) => span.textContent);
+        await vi.waitFor(() => expect(spans()).toHaveLength(2));
+        expect(spans()).toEqual([ "The data is old.", " I know, I know." ]);
+
+        const toggle = container.querySelector<HTMLInputElement>(".transcript-options .switch-toggle");
+        expect(toggle?.checked).toBe(true);
+        await act(async () => {
+            toggle?.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(h.put).toHaveBeenCalledWith("options", { transcriptCleanupEnabled: "false" });
+        expect(spans()).toEqual([ "Uh the the data is old.", " Uh.", " I know, I know." ]);
     });
 });

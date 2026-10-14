@@ -1,7 +1,7 @@
 import "./TranscriptView.css";
 
 import {
-    getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
+    cleanUtteranceText, getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
     type TranscriptSource, type TranscriptUtterance
 } from "@triliumnext/commons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
@@ -13,7 +13,8 @@ import { isIMEComposing } from "../../../services/shortcuts";
 import utils from "../../../services/utils";
 import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
 import FormTextBox from "../../react/FormTextBox";
-import { useStaticTooltip, useTriliumEvent } from "../../react/hooks";
+import FormToggle from "../../react/FormToggle";
+import { useStaticTooltip, useTriliumEvent, useTriliumOptionBool } from "../../react/hooks";
 import LinkButton from "../../react/LinkButton";
 import NoItems from "../../react/NoItems";
 
@@ -30,10 +31,12 @@ const PARAGRAPH_PAUSE_MS = 2000;
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
  * hears before their words are transcribed, and keeps a reader who is at the end there as new
- * turns arrive.
+ * turns arrive. With `transcriptCleanupEnabled`, shows each utterance through
+ * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
+    const [ isCleanedUp, setCleanedUp ] = useTriliumOptionBool("transcriptCleanupEnabled");
     const recording = useTranscriptionState();
     const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
     const scrollerRef = useRef<HTMLDivElement>(null);
@@ -87,7 +90,14 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     initialCountRef.current ??= transcript.utterances.length;
     const arrived = new Set(transcript.utterances.slice(initialCountRef.current));
     const names = transcript.speakers ?? {};
-    const turns = groupIntoTurns(transcript.utterances, names);
+    const shownTexts = new Map<TranscriptUtterance, string>();
+    for (const utterance of transcript.utterances) {
+        const text = isCleanedUp ? cleanUtteranceText(utterance.text) : utterance.text;
+        if (text) {
+            shownTexts.set(utterance, text);
+        }
+    }
+    const turns = groupIntoTurns([ ...shownTexts.keys() ], names);
     const lastTurn = turns.at(-1);
     const speaking = (
         <p className="transcript-speaking">
@@ -97,6 +107,18 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     );
     return (
         <div ref={scrollerRef} className="transcript">
+            {transcript.utterances.length > 0 && (
+                <div className="transcript-options">
+                    <FormToggle
+                        switchOnName={t("transcript.cleanup")}
+                        switchOffName={t("transcript.cleanup")}
+                        switchOnTooltip={t("transcript.cleanup_tooltip")}
+                        switchOffTooltip={t("transcript.cleanup_tooltip")}
+                        currentValue={isCleanedUp}
+                        onChange={setCleanedUp}
+                    />
+                </div>
+            )}
             {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
@@ -110,14 +132,17 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                     </div>
                     {turn.paragraphs.map((paragraph, index) => (
                         <p key={index}>
-                            {paragraph.map((utterance, position) => (
-                                <span
-                                    key={utterance.offsetMs}
-                                    className={arrived.has(utterance) ? "transcript-new" : undefined}
-                                >
-                                    {position ? ` ${utterance.text}` : utterance.text}
-                                </span>
-                            ))}
+                            {paragraph.map((utterance, position) => {
+                                const text = shownTexts.get(utterance) ?? utterance.text;
+                                return (
+                                    <span
+                                        key={utterance.offsetMs}
+                                        className={arrived.has(utterance) ? "transcript-new" : undefined}
+                                    >
+                                        {position ? ` ${text}` : text}
+                                    </span>
+                                );
+                            })}
                         </p>
                     ))}
                     {turn === lastTurn && pending.includes(turn.source) && speaking}

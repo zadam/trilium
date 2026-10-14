@@ -5,6 +5,15 @@
     padding: 0.5rem 1rem 1rem;
     user-select: text;
 
+    .transcript-options {
+        display: flex;
+        justify-content: flex-end;
+        max-width: var(--preferred-max-content-width, 900px);
+        margin-bottom: 0.5rem;
+        color: var(--muted-text-color);
+        font-size: 0.9em;
+    }
+
     .transcript-turn {
         max-width: var(--preferred-max-content-width, 900px);
         margin-bottom: 1rem;

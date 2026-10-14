@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName, type Transcript
+    cleanUtteranceText, getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
+    type Transcript
 } from "./transcript.js";
 
 const TRANSCRIPT: Transcript = {
@@ -38,5 +39,36 @@ describe("transcript", () => {
         expect(setSpeakerName(both, "system:2", " ").speakers).toEqual({
             microphone: "x".repeat(MAX_SPEAKER_NAME_LENGTH)
         });
+    });
+
+    it("removes filler words, keeping the sentence ends and capitals they carried", () => {
+        expect(cleanUtteranceText("Uh the data is a bit old.")).toBe("The data is a bit old.");
+        expect(cleanUtteranceText("a good point, uh, because uh.")).toBe("a good point, because.");
+        expect(cleanUtteranceText("So okay. um so we can go")).toBe("So okay. So we can go");
+        expect(cleanUtteranceText("Oh, okay. Hmm, sure.")).toBe("Oh, okay. Hmm, sure.");
+        expect(cleanUtteranceText("Uh.")).toBe("");
+    });
+
+    it("collapses stutters and restarts, an abandoned word's first letter included", () => {
+        expect(cleanUtteranceText("So the the that's a point")).toBe("So the that's a point");
+        expect(cleanUtteranceText("we have the uh the memory")).toBe("we have the memory");
+        expect(cleanUtteranceText("that was on the on the board")).toBe("that was on the board");
+        expect(cleanUtteranceText("I wanted to to to share")).toBe("I wanted to share");
+        expect(cleanUtteranceText("Because it's d as you can see")).toBe("Because it's as you can see");
+        expect(cleanUtteranceText("probably compare it")).toBe("probably compare it");
+    });
+
+    it("keeps meant repeats: numbers, emphasis, commas, grammatical doubles, acronyms", () => {
+        for (const meant of [
+            "Two two forty, five five fifty.",
+            "Okay, okay, okay. Yes yes.",
+            "I know, I know.",
+            "to check this, this, this, this.",
+            "something like that that has a lot",
+            "You do it it doesn't grow",
+            "the S D K and a PV2"
+        ]) {
+            expect(cleanUtteranceText(meant)).toBe(meant);
+        }
     });
 });

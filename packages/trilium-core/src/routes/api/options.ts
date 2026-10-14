@@ -63,6 +63,7 @@ const ALLOWED_OPTIONS = new Set<OptionNames>([
     "openNoteContexts",
     "vimKeymapEnabled",
     "codeLineWrapEnabled",
+    "transcriptCleanupEnabled",
     "codeNotesMimeTypes",
     "contentManagerSortOrder",
     "contentManagerViewMode",
