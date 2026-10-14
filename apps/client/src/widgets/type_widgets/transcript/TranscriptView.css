@@ -31,9 +31,17 @@
     }
 
     .transcript-speaker-editor {
-        width: 16em;
-        padding-block: 0;
+        field-sizing: content;
+        min-width: 8em;
+        max-width: 100%;
+        padding: 0.1em 0.3em;
+        font: inherit;
         font-weight: 600;
+        line-height: inherit;
+
+        &:focus {
+            outline-offset: -3px;
+        }
     }
 
     .transcript-microphone .transcript-speaker {
