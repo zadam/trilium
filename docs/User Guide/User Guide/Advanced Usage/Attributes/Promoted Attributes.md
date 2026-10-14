@@ -52,9 +52,10 @@ The following types are supported:
 
 ## Multiple values
 
-When the definition allows multiple values, each value is shown as a chip and a new one is entered in the box after them. Press <kbd>Enter</kbd> (or leave the field) to add what was typed, and press the <span class="tn-icon bx bx-x"></span> on a chip to remove that value.
+When the definition allows multiple values, each value is shown as a chip and a new one is added in the box after them. Press the <span class="tn-icon bx bx-x"></span> on a chip to remove that value.
 
-The same value can be added more than once, for example two payments of the same amount. _Select_ and _Checkbox_ attributes are the exception: an option that is already picked is not offered again.
+*   For free-form types such as _Text_, _Number_ or _Date_, press <kbd>Enter</kbd> (or leave the field) to add what was typed. The same value can be added more than once, for example two payments of the same amount.
+*   For _Select_, _Checkbox_ and _Relation_ attributes, a value is picked from the list rather than typed, and each one can be picked only once.
 
 ## Creating a new promoted attribute definition
 
