@@ -4589,6 +4589,7 @@
     "speaker_me": "Me",
     "speaker_others": "Others",
     "empty": "Nothing has been transcribed yet.",
-    "unreadable": "This transcript cannot be read."
+    "unreadable": "This transcript cannot be read.",
+    "speaking": "Speaking…"
   }
 }

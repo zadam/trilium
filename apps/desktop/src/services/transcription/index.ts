@@ -8,7 +8,9 @@ import { ElectronAudioCapture } from "./capture";
 import { loadSherpaEngine, ModelMissingError } from "./engine";
 import { RecordingSession, type TranscriptSink } from "./session";
 
-let state: TranscriptionState = { status: "idle", noteId: null };
+const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
+
+let state = IDLE;
 let activeSession: RecordingSession | null = null;
 
 export function setupTranscriptionHandlers() {
@@ -30,20 +32,21 @@ export async function startRecording(noteId: unknown): Promise<string> {
         return t("transcription.note-not-found");
     }
 
-    setState({ status: "starting", noteId });
+    setState({ status: "starting", noteId, pendingSources: [] });
     try {
         const session = new RecordingSession({
             capture: new ElectronAudioCapture(),
             engine: await loadSherpaEngine(),
-            sinks: createSinks(noteId)
+            sinks: createSinks(noteId),
+            onPendingChanged: (pendingSources) => setState({ ...state, pendingSources })
         });
         const sources = await session.start();
         activeSession = session;
         getLog().info(`Transcription: recording ${sources.join(" and ")} for note ${noteId}.`);
-        setState({ status: "recording", noteId });
+        setState({ ...state, status: "recording" });
         return "";
     } catch (e) {
-        setState({ status: "idle", noteId: null });
+        setState(IDLE);
         if (e instanceof ModelMissingError) {
             return t("transcription.model-missing", { directory: e.directory });
         }
@@ -58,13 +61,13 @@ export async function stopRecording() {
         return;
     }
 
-    setState({ status: "stopping", noteId: state.noteId });
+    setState({ ...state, status: "stopping" });
     activeSession = null;
     try {
         await session.stop();
         getLog().info(`Transcription: recording for note ${state.noteId} stopped.`);
     } finally {
-        setState({ status: "idle", noteId: null });
+        setState(IDLE);
     }
 }
 

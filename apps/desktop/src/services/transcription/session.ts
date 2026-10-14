@@ -20,6 +20,11 @@ export interface RecordingSessionOptions {
     capture: AudioCapture;
     engine: SpeechEngine;
     sinks: TranscriptSink[];
+    /**
+     * Called with the sources whose speech has not reached the sinks yet, either because it is
+     * still being spoken or because it waits to be transcribed, every time that list changes.
+     */
+    onPendingChanged?: (sources: TranscriptSource[]) => void;
     now?: () => number;
 }
 
@@ -30,8 +35,11 @@ export interface RecordingSessionOptions {
  */
 export class RecordingSession {
     private readonly pipelines = new Map<TranscriptSource, SourcePipeline>();
+    /** How many utterances of each source wait to be transcribed or written. */
+    private readonly queued = new Map<TranscriptSource, number>();
     private queue = Promise.resolve();
     private startedAt = 0;
+    private pendingSources: TranscriptSource[] = [];
 
     constructor(private readonly options: RecordingSessionOptions) {}
 
@@ -44,6 +52,7 @@ export class RecordingSession {
             // An exception thrown from an `ipcMain` listener takes down the main process.
             try {
                 this.pipelineFor(source, samples).accept(samples);
+                this.updatePending();
             } catch (e) {
                 getLog().error(`Transcription: ${source} failed: ${(e as Error)?.message ?? e}`);
             }
@@ -56,6 +65,7 @@ export class RecordingSession {
         for (const pipeline of this.pipelines.values()) {
             pipeline.flush();
         }
+        this.updatePending();
         await this.queue;
 
         for (const sink of this.options.sinks) {
@@ -84,6 +94,7 @@ export class RecordingSession {
     }
 
     private enqueue(source: TranscriptSource, offsetMs: number, samples: Float32Array) {
+        this.queued.set(source, (this.queued.get(source) ?? 0) + 1);
         this.queue = this.queue.then(async () => {
             const text = await this.options.engine.recognizer.transcribe(samples);
             if (!text) {
@@ -98,7 +109,22 @@ export class RecordingSession {
                     getLog().error(`Transcription: a sink failed: ${e}`);
                 }
             }
-        }).catch((e) => getLog().error(`Transcription failed: ${e}`));
+        }).catch((e) => getLog().error(`Transcription failed: ${e}`)).finally(() => {
+            this.queued.set(source, (this.queued.get(source) ?? 1) - 1);
+            this.updatePending();
+        });
+    }
+
+    /** Reports the sources with speech not yet written, when they differ from the last report. */
+    private updatePending() {
+        const pending = [ ...this.pipelines ]
+            .filter(([ source, pipeline ]) => pipeline.isSpeaking() || this.queued.get(source))
+            .map(([ source ]) => source)
+            .sort();
+        if (pending.join() !== this.pendingSources.join()) {
+            this.pendingSources = pending;
+            this.options.onPendingChanged?.(pending);
+        }
     }
 
     private now() {
@@ -126,6 +152,10 @@ class SourcePipeline {
 
     flush() {
         this.emit(this.segmenter.flush());
+    }
+
+    isSpeaking() {
+        return this.segmenter.isSpeaking();
     }
 
     private emit(segments: SpeechSegment[]) {

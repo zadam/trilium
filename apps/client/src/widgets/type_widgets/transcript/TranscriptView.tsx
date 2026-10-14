@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preac
 
 import type FAttachment from "../../../entities/fattachment";
 import { t } from "../../../services/i18n";
+import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
 import { useTriliumEvent } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
 
@@ -16,19 +17,22 @@ const PARAGRAPH_PAUSE_MS = 2000;
 
 /**
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
- * Follows the attachment as a running recording rewrites it, and keeps a reader who is at the end
- * there as new turns arrive.
+ * Follows the attachment as a running recording rewrites it, shows which speakers the recording
+ * hears before their words are transcribed, and keeps a reader who is at the end there as new
+ * turns arrive.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
+    const recording = useTranscriptionState();
+    const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
     const scrollerRef = useRef<HTMLDivElement>(null);
-    const followRef = useRef(false);
+    /** The scroll height at the previous render, or `null` before the transcript first shows. */
+    const scrollHeightRef = useRef<number | null>(null);
 
     const load = useCallback(() => {
         let current = true;
         void attachment.getBlob().then((blob) => {
             if (current) {
-                followRef.current = isScrolledToEnd(scrollerRef.current);
                 setContent(blob?.content ?? null);
             }
         });
@@ -39,10 +43,15 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     useEffect(load, [ load ]);
     useLayoutEffect(() => {
         const scroller = scrollerRef.current;
-        if (followRef.current && scroller) {
+        if (!scroller) {
+            return;
+        }
+        const previousHeight = scrollHeightRef.current;
+        if (previousHeight !== null && wasAtEnd(scroller, previousHeight)) {
             scroller.scrollTop = scroller.scrollHeight;
         }
-    }, [ content ]);
+        scrollHeightRef.current = scroller.scrollHeight;
+    });
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const { attachmentId } = attachment;
         if (loadResults.getAttachmentRows().some((row) => row.attachmentId === attachmentId)) {
@@ -58,19 +67,36 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     if (!transcript) {
         return <NoItems icon="bx bx-error" text={t("transcript.unreadable")} />;
     }
-    if (!transcript.utterances.length) {
+    if (!transcript.utterances.length && !pending.length) {
         return <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
     }
 
+    const turns = groupIntoTurns(transcript.utterances);
+    const lastTurn = turns.at(-1);
+    const speaking = (
+        <p className="transcript-speaking">
+            <span className="bx bx-user-voice" aria-hidden="true" />
+            {t("transcript.speaking")}
+        </p>
+    );
     return (
         <div ref={scrollerRef} className="transcript">
-            {groupIntoTurns(transcript.utterances).map((turn) => (
+            {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
                         <span className="transcript-speaker">{speakerName(turn.source)}</span>
                         <span className="transcript-time">{formatOffset(turn.offsetMs)}</span>
                     </div>
                     {turn.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                    {turn === lastTurn && pending.includes(turn.source) && speaking}
+                </div>
+            ))}
+            {pending.filter((source) => source !== lastTurn?.source).map((source) => (
+                <div key={`pending-${source}`} className={`transcript-turn transcript-${source}`}>
+                    <div className="transcript-turn-header">
+                        <span className="transcript-speaker">{speakerName(source)}</span>
+                    </div>
+                    {speaking}
                 </div>
             ))}
         </div>
@@ -132,11 +158,9 @@ export function formatOffset(milliseconds: number) {
         : `${minutes}:${seconds}`;
 }
 
-function isScrolledToEnd(scroller: HTMLElement | null) {
-    if (!scroller) {
-        return false;
-    }
-    return scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD;
+/** Whether `scroller` showed the end of its content when that content was `scrollHeight` tall. */
+function wasAtEnd(scroller: HTMLElement, scrollHeight: number) {
+    return scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD;
 }
 
 function speakerName(source: TranscriptSource) {

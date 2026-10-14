@@ -23,6 +23,8 @@ export interface SpeechSegmenter {
     accept(samples: Float32Array): SpeechSegment[];
     /** Ends the source and returns the utterance still in progress, if any. */
     flush(): SpeechSegment[];
+    /** Whether the samples accepted so far end inside an utterance. */
+    isSpeaking(): boolean;
 }
 
 export interface SpeechEngine {
@@ -108,6 +110,10 @@ class VadSegmenter implements SpeechSegmenter {
     flush() {
         this.vad.flush();
         return this.drain();
+    }
+
+    isSpeaking() {
+        return this.vad.isDetected();
     }
 
     private drain() {

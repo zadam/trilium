@@ -56,7 +56,9 @@ function getAppearance(status: TranscriptionStatus, idleIcon: string, idleTitle:
 
 /** Follows the main process's recording, which every window shares. */
 export function useTranscriptionState() {
-    const [ state, setState ] = useState<TranscriptionState>({ status: "idle", noteId: null });
+    const [ state, setState ] = useState<TranscriptionState>({
+        status: "idle", noteId: null, pendingSources: []
+    });
 
     useEffect(() => {
         const api = window.electronApi?.transcription;

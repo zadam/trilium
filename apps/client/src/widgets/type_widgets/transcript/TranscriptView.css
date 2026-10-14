@@ -42,4 +42,29 @@
     p + p {
         margin-top: 0.5rem;
     }
+
+    .transcript-speaking {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-style: italic;
+        color: var(--muted-text-color);
+
+        .bx {
+            font-size: 1.1em;
+            animation: transcript-speaking-pulse 1.2s ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes transcript-speaking-pulse {
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .transcript .transcript-speaking .bx {
+        animation: none;
+    }
 }

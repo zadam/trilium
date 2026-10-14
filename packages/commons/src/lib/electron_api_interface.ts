@@ -1,4 +1,5 @@
 import type { SecurityToggleApi } from "./security_settings.js";
+import type { TranscriptSource } from "./transcript.js";
 
 /**
  * Parameters delivered by the main process to the renderer when the user opens
@@ -721,6 +722,8 @@ export interface TranscriptionState {
     status: TranscriptionStatus;
     /** The meeting note the recording belongs to, or `null` when idle. */
     noteId: string | null;
+    /** The sources heard speaking, or whose speech is still being transcribed. */
+    pendingSources: TranscriptSource[];
 }
 
 /**

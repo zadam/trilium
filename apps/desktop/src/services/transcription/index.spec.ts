@@ -1,11 +1,14 @@
 import type { TranscriptionState } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { RecordingSessionOptions } from "./session";
+
 const h = vi.hoisted(() => ({
     handlers: new Map<string, (...args: unknown[]) => unknown>(),
     broadcast: [] as TranscriptionState[],
     notes: new Set<string>([ "meeting" ]),
     loadEngine: vi.fn(),
+    sessionOptions: null as RecordingSessionOptions | null,
     sessionStart: vi.fn(),
     sessionStop: vi.fn()
 }));
@@ -47,10 +50,16 @@ vi.mock("./session", () => ({
     RecordingSession: class {
         start = h.sessionStart;
         stop = h.sessionStop;
+
+        constructor(options: RecordingSessionOptions) {
+            h.sessionOptions = options;
+        }
     }
 }));
 
 const { ModelMissingError } = await import("./engine");
+
+const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
 
 async function loadService() {
     vi.resetModules();
@@ -75,7 +84,7 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "meeting"))
             .toBe("transcription.already-recording");
         expect(await invoke("transcription-get-state"))
-            .toEqual({ status: "recording", noteId: "meeting" });
+            .toEqual({ status: "recording", noteId: "meeting", pendingSources: [] });
 
         await invoke("transcription-stop");
         expect(h.sessionStop).toHaveBeenCalledOnce();
@@ -83,7 +92,23 @@ describe("transcription IPC", () => {
             "starting", "starting", "recording", "recording",
             "stopping", "stopping", "idle", "idle"
         ]);
-        expect(await invoke("transcription-get-state")).toEqual({ status: "idle", noteId: null });
+        expect(await invoke("transcription-get-state")).toEqual(IDLE);
+    });
+
+    it("tells every window which sources are pending while it records", async () => {
+        const invoke = await loadService();
+        await invoke("transcription-start", "meeting");
+
+        h.sessionOptions?.onPendingChanged?.([ "system" ]);
+        expect(h.broadcast.at(-1)).toEqual({
+            status: "recording", noteId: "meeting", pendingSources: [ "system" ]
+        });
+        expect(await invoke("transcription-get-state")).toEqual(h.broadcast.at(-1));
+
+        await invoke("transcription-stop");
+        const stopping = h.broadcast.find((state) => state.status === "stopping");
+        expect(stopping?.pendingSources).toEqual([ "system" ]);
+        expect(h.broadcast.at(-1)).toEqual(IDLE);
     });
 
     it("refuses a note that does not exist, without changing state", async () => {
@@ -107,7 +132,7 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "meeting"))
             .toBe(`transcription.start-failed {"message":"No audio source could be captured."}`);
 
-        expect(await invoke("transcription-get-state")).toEqual({ status: "idle", noteId: null });
+        expect(await invoke("transcription-get-state")).toEqual(IDLE);
         await invoke("transcription-stop");
         expect(h.sessionStop).not.toHaveBeenCalled();
     });

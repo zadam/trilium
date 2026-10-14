@@ -13,6 +13,7 @@ declare module "sherpa-onnx-node" {
         constructor(config: object, bufferSizeInSeconds: number);
         acceptWaveform(samples: Float32Array): void;
         isEmpty(): boolean;
+        isDetected(): boolean;
         front(enableExternalBuffer: boolean): { start: number; samples: Float32Array };
         pop(): void;
         flush(): void;

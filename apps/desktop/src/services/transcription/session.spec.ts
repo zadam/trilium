@@ -22,6 +22,16 @@ function utteranceChunk(id: number, start: number) {
     return samples;
 }
 
+/** The `id` of a chunk that completes no utterance. */
+const NO_SEGMENT = -1;
+
+/** A chunk that completes no utterance and leaves the fake segmenter speaking or not. */
+function speechChunk(speaking: boolean) {
+    const samples = utteranceChunk(NO_SEGMENT, 0);
+    samples[2] = speaking ? 1 : 0;
+    return samples;
+}
+
 function createHarness(extraSinks: TranscriptSink[] = []) {
     let clock = 1000;
     let onSamples: SamplesListener = () => {};
@@ -40,9 +50,17 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
         },
         createSegmenter: vi.fn(() => {
             const pending = flushed.shift() ?? [];
+            let speaking = false;
             return {
-                accept: (samples: Float32Array) => [ { start: samples[1], samples } ],
-                flush: () => pending
+                accept: (samples: Float32Array) => {
+                    speaking = samples[2] === 1;
+                    return samples[0] === NO_SEGMENT ? [] : [ { start: samples[1], samples } ];
+                },
+                flush: () => {
+                    speaking = false;
+                    return pending;
+                },
+                isSpeaking: () => speaking
             };
         })
     };
@@ -55,10 +73,13 @@ function createHarness(extraSinks: TranscriptSink[] = []) {
         close: vi.fn()
     };
     const sinks = [ ...extraSinks, sink ];
-    const session = new RecordingSession({ capture, engine, sinks, now: () => clock });
+    const onPendingChanged = vi.fn();
+    const session = new RecordingSession({
+        capture, engine, sinks, onPendingChanged, now: () => clock
+    });
 
     return {
-        session, capture, engine, sink, written, flushed,
+        session, capture, engine, sink, written, flushed, onPendingChanged,
         /** Delivers `samples` from `source` when the clock reads `at`. */
         deliver(source: TranscriptSource, samples: Float32Array, at: number) {
             clock = at;
@@ -116,6 +137,35 @@ describe("RecordingSession", () => {
         expect(sink.write.mock.invocationCallOrder[0])
             .toBeLessThan(sink.close.mock.invocationCallOrder[0]);
         expect(log.error).toHaveBeenCalledTimes(2);
+    });
+
+    it("reports a source as pending from its first speech until its utterance is written", async () => {
+        const { session, engine, sink, deliver, onPendingChanged } = createHarness();
+        let finishTranscribing = () => {};
+        engine.recognizer.transcribe.mockImplementationOnce(() => new Promise((resolve) => {
+            finishTranscribing = () => resolve("utterance 1");
+        }));
+        await session.start();
+
+        deliver("microphone", speechChunk(true), 2000);
+        deliver("system", speechChunk(true), 2000);
+        deliver("microphone", speechChunk(true), 3000);
+        // The utterance ends: the microphone stays pending while it is transcribed.
+        deliver("microphone", utteranceChunk(1, 0), 4000);
+        deliver("system", speechChunk(false), 4000);
+        expect(onPendingChanged.mock.calls).toEqual([
+            [ [ "microphone" ] ],
+            [ [ "microphone", "system" ] ],
+            [ [ "microphone" ] ]
+        ]);
+
+        await vi.waitFor(() => expect(engine.recognizer.transcribe).toHaveBeenCalledOnce());
+        finishTranscribing();
+        await vi.waitFor(() => expect(onPendingChanged).toHaveBeenLastCalledWith([]));
+        expect(sink.write.mock.invocationCallOrder[0])
+            .toBeLessThan(onPendingChanged.mock.invocationCallOrder[3]);
+        await session.stop();
+        expect(onPendingChanged).toHaveBeenCalledTimes(4);
     });
 
     it("does not start capturing when a sink cannot open", async () => {

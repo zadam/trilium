@@ -1,4 +1,6 @@
-import type { Transcript, TranscriptUtterance } from "@triliumnext/commons";
+import type {
+    Transcript, TranscriptionState, TranscriptSource, TranscriptUtterance
+} from "@triliumnext/commons";
 import { act } from "preact/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
@@ -91,6 +93,56 @@ describe("TranscriptView", () => {
             "transcript.speaker_others0:08Yes."
         ]);
         expect(container.querySelectorAll(".transcript-microphone p")).toHaveLength(2);
+    });
+
+    it("shows who is speaking in the meeting its note records, before the words arrive", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        const recording = (noteId: string, pendingSources: TranscriptSource[]) =>
+            act(() => onStateChanged({ status: "recording", noteId, pendingSources }));
+        window.electronApi = {
+            transcription: {
+                getState: async () => ({
+                    status: "recording", noteId: "meeting", pendingSources: []
+                }),
+                onStateChanged: (callback: typeof onStateChanged) => {
+                    onStateChanged = callback;
+                    return () => {};
+                }
+            }
+        } as unknown as typeof window.electronApi;
+        const getBlob = vi.fn()
+            .mockResolvedValueOnce({ content: transcript([]) })
+            .mockResolvedValueOnce({ content: transcript([
+                { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "Hello?" }
+            ]) });
+        const attachment = { attachmentId: "transcript1", ownerId: "meeting", getBlob };
+        const component = new Component();
+        const container = renderInto(
+            <ParentComponent.Provider value={component}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const turns = () => [ ...container.querySelectorAll(".transcript-turn") ]
+            .map((turn) => turn.textContent);
+        await vi.waitFor(() => expect(container.textContent).toContain("transcript.empty"));
+
+        await recording("meeting", [ "system" ]);
+        expect(turns()).toEqual([ "transcript.speaker_otherstranscript.speaking" ]);
+
+        const loadResults = new LoadResults([]);
+        loadResults.addAttachmentRow({ attachmentId: "transcript1", ownerId: "meeting" } as never);
+        await act(async () => {
+            await component.handleEvent("entitiesReloaded", { loadResults });
+        });
+        await recording("meeting", [ "microphone", "system" ]);
+        await vi.waitFor(() => expect(turns()).toEqual([
+            "transcript.speaker_me0:01Hello?transcript.speaking",
+            "transcript.speaker_otherstranscript.speaking"
+        ]));
+
+        await recording("other", [ "system" ]);
+        expect(turns()).toEqual([ "transcript.speaker_me0:01Hello?" ]);
+        window.electronApi = undefined;
     });
 
     it("follows new turns for a reader at the end, not for one who scrolled up", async () => {
