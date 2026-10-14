@@ -15,7 +15,8 @@ import type { TranscriptSink } from "./session";
  */
 export class AttachmentSink implements TranscriptSink {
     private transcript: Transcript | null = null;
-    private attachmentId: string | null = null;
+    /** The transcript attachment, once {@link open} has created it. */
+    attachmentId: string | null = null;
 
     constructor(private readonly noteId: string) {}
 

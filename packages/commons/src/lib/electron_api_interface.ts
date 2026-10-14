@@ -749,13 +749,13 @@ export interface ElectronTranscriptionApi {
     getState(): Promise<TranscriptionState>;
 
     /**
-     * Names a speaker of the transcript the recording of `noteId` writes, or restores the default
-     * name when `name` is blank. The recording applies it, so no utterance it writes meanwhile is
-     * lost.
+     * Names a speaker of the transcript attachment `attachmentId`, or restores the default name
+     * when `name` is blank, if a running recording writes that transcript. The recording applies
+     * it, so no utterance it writes meanwhile is lost.
      *
-     * @returns `false` when no recording of `noteId` runs; the transcript can then be saved whole.
+     * @returns `false` when no recording writes `attachmentId`; it can then be saved whole.
      */
-    renameSpeaker(noteId: string, key: string, name: string): Promise<boolean>;
+    renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
 
     /**
      * Calls `callback` every time the state changes, in any window.

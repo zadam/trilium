@@ -334,7 +334,7 @@ describe("TranscriptView", () => {
             input?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
         });
         await vi.waitFor(() => expect(renameSpeaker)
-            .toHaveBeenCalledExactlyOnceWith("meeting", "system:1", "Alexandra"));
+            .toHaveBeenCalledExactlyOnceWith("transcript1", "system:1", "Alexandra"));
         await new Promise((resolve) => setTimeout(resolve));
         expect(h.post).toHaveBeenCalledTimes(posted);
         expect(getBlob).toHaveBeenCalledOnce();

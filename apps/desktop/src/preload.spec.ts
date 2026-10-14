@@ -728,14 +728,14 @@ describe("preload script", () => {
             await transcription().start("meeting");
             await transcription().stop();
             await transcription().getState();
-            await transcription().renameSpeaker("meeting", "system:1", "Alexandra");
+            await transcription().renameSpeaker("transcript1", "system:1", "Alexandra");
             expect(ipcRendererInvoked).toEqual([
                 { channel: "transcription-start", args: [ "meeting" ] },
                 { channel: "transcription-stop", args: [] },
                 { channel: "transcription-get-state", args: [] },
                 {
                     channel: "transcription-rename-speaker",
-                    args: [ "meeting", "system:1", "Alexandra" ]
+                    args: [ "transcript1", "system:1", "Alexandra" ]
                 }
             ]);
         });

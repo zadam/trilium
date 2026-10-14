@@ -29,7 +29,7 @@ interface Recording {
 let state = IDLE;
 let activeRecording: Recording | null = null;
 /** The transcript the running recording writes, until its stop has written the last utterance. */
-let writer: { noteId: string; sink: AttachmentSink } | null = null;
+let writer: AttachmentSink | null = null;
 /** The running stop, while the speech already captured is still being transcribed. */
 let stopping: Promise<void> | null = null;
 /**
@@ -44,8 +44,8 @@ export function setupTranscriptionHandlers() {
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
-    ipcMain.handle("transcription-rename-speaker",
-        (_event, noteId: unknown, key: unknown, name: unknown) => renameSpeaker(noteId, key, name));
+    ipcMain.handle("transcription-rename-speaker", (_event, attachmentId: unknown, key: unknown,
+        name: unknown) => renameSpeaker(attachmentId, key, name));
     app.on("before-quit", (event) => finishBeforeQuit(event));
     events.subscribe(events.ENTER_PROTECTED_SESSION, () => saveUnsaved());
 }
@@ -88,7 +88,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
             recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
         });
         sink.open(startedAt);
-        writer = { noteId, sink };
+        writer = sink;
         const { port1, port2 } = new MessageChannelMain();
         recording.worker.connectCapture(port2);
         const sources = await recording.capture.start(port1);
@@ -136,17 +136,17 @@ export function getState() {
 }
 
 /**
- * Names a speaker of the transcript the recording of `noteId` writes, through the sink, which is
- * its only writer while it runs.
+ * Names a speaker of the transcript attachment `attachmentId` through the running recording's
+ * sink, when that is the transcript it writes: the sink is then its only writer.
  *
- * @returns `false` when no recording of `noteId` runs, or the arguments are not strings.
+ * @returns `false` when no recording writes `attachmentId`, or the arguments are not strings.
  */
-export function renameSpeaker(noteId: unknown, key: unknown, name: unknown) {
+export function renameSpeaker(attachmentId: unknown, key: unknown, name: unknown) {
     const isValid = typeof key === "string" && typeof name === "string";
-    if (!writer || writer.noteId !== noteId || !isValid) {
+    if (!writer || writer.attachmentId !== attachmentId || !isValid) {
         return false;
     }
-    writer.sink.renameSpeaker(key, name);
+    writer.renameSpeaker(key, name);
     return true;
 }
 

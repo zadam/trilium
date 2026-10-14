@@ -234,13 +234,13 @@ function SpeakerName({ speakerKey, name, defaultName, onRename }: {
 }
 
 /**
- * Names a speaker. While this note is being transcribed, the recording applies the name, since it
- * rewrites the transcript after every utterance and a whole-transcript save here could overwrite
- * one. Otherwise the transcript as stored now is saved with the name.
+ * Names a speaker. While a recording writes this transcript, the recording applies the name,
+ * since it rewrites the transcript after every utterance and a whole-transcript save here could
+ * overwrite one. Otherwise the transcript as stored now is saved with the name.
  */
 async function renameSpeaker(attachment: FAttachment, key: string, name: string) {
     const { attachmentId, ownerId, role, mime, title } = attachment;
-    if (await window.electronApi?.transcription?.renameSpeaker(ownerId, key, name)) {
+    if (await window.electronApi?.transcription?.renameSpeaker(attachmentId, key, name)) {
         return;
     }
     const latest = parseTranscript((await attachment.getBlob())?.content);

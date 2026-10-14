@@ -85,6 +85,7 @@ vi.mock("./attachment_sink", () => ({
         write = h.sink.write;
         save = h.sink.save;
         renameSpeaker = h.sink.renameSpeaker;
+        attachmentId = "transcript1";
 
         constructor(readonly noteId: string) {}
     }
@@ -271,25 +272,26 @@ describe("transcription IPC", () => {
 
     it("renames a speaker through the recording that writes the transcript, until it stops", async () => {
         const invoke = await loadService();
-        const rename = (noteId: unknown, key: unknown, name: unknown) =>
-            invoke("transcription-rename-speaker", noteId, key, name);
-        expect(await rename("meeting", "system:1", "Alexandra")).toBe(false);
+        const rename = (attachmentId: unknown, key: unknown, name: unknown) =>
+            invoke("transcription-rename-speaker", attachmentId, key, name);
+        expect(await rename("transcript1", "system:1", "Alexandra")).toBe(false);
 
         await invoke("transcription-start", "meeting");
-        expect(await rename("meeting", "system:1", "Alexandra")).toBe(true);
+        expect(await rename("transcript1", "system:1", "Alexandra")).toBe(true);
         expect(h.sink.renameSpeaker).toHaveBeenCalledExactlyOnceWith("system:1", "Alexandra");
-        expect(await rename("other", "system:1", "Bob")).toBe(false);
-        expect(await rename("meeting", "system:1", 42)).toBe(false);
+        // An older transcript of the same note is not the one the recording writes.
+        expect(await rename("olderTranscript", "system:1", "Bob")).toBe(false);
+        expect(await rename("transcript1", "system:1", 42)).toBe(false);
 
         let finishStopping = () => {};
         h.worker.stop.mockImplementationOnce(() => new Promise<void>((resolve) => {
             finishStopping = resolve;
         }));
         const stopped = invoke("transcription-stop");
-        expect(await rename("meeting", "microphone", "Elian")).toBe(true);
+        expect(await rename("transcript1", "microphone", "Elian")).toBe(true);
         finishStopping();
         await stopped;
-        expect(await rename("meeting", "microphone", "Elian")).toBe(false);
+        expect(await rename("transcript1", "microphone", "Elian")).toBe(false);
         expect(h.sink.renameSpeaker).toHaveBeenCalledTimes(2);
     });
 
