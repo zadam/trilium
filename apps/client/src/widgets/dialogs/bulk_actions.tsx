@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "preact/hooks";
+import { useEffect, useState, useCallback, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
 import Modal from "../react/Modal";
 import "./bulk_actions.css";
@@ -27,23 +27,31 @@ export default function BulkActionsDialog() {
     const [ selectedOrActiveNoteIds, setSelectedOrActiveNoteIds ] = useState<string[]>();
     const [ bulkActionNote, setBulkActionNote ] = useState<FNote | null>();
     const [ includeDescendants, setIncludeDescendants ] = useState(false);
-    const [ affectedNoteCount, setAffectedNoteCount ] = useState(0);
+    const [ affectedNoteCount, setAffectedNoteCount ] = useState<number>();
     const [ existingActions, setExistingActions ] = useState<AbstractBulkAction[]>([]);
+    const [ executing, setExecuting ] = useState(false);
+    // Read by `onSubmit`, which a second submit reaches before the re-render that `executing` needs.
+    const executingRef = useRef(false);
     const [ shown, setShown ] = useState(false);
 
     useTriliumEvent("openBulkActionsDialog", async ({ selectedOrActiveNoteIds }) => {
         setSelectedOrActiveNoteIds(selectedOrActiveNoteIds);
+        setAffectedNoteCount(undefined);
         setBulkActionNote(await froca.getNote("_bulkAction"));
         setShown(true);
     });
 
     useEffect(() => {
         if (!selectedOrActiveNoteIds || !bulkActionNote) return;
-        
+
+        let stale = false;
         server.post<BulkActionAffectedNotes>("bulk-action/affected-notes", {
             noteIds: selectedOrActiveNoteIds,
             includeDescendants
-        }).then(({ affectedNoteCount }) => setAffectedNoteCount(affectedNoteCount));
+        }).then(({ affectedNoteCount }) => {
+            if (!stale) setAffectedNoteCount(affectedNoteCount);
+        });
+        return () => { stale = true; };
     }, [ selectedOrActiveNoteIds, includeDescendants, bulkActionNote ]);
 
     const refreshExistingActions = useCallback(() => {
@@ -62,6 +70,11 @@ export default function BulkActionsDialog() {
         }
     });
 
+    const disabledReason = !existingActions.length
+        ? t("bulk_actions.no_actions_to_execute")
+        : affectedNoteCount === 0 ? t("bulk_actions.no_notes_to_execute_on") : undefined;
+    const canExecute = !disabledReason && affectedNoteCount !== undefined && !executing;
+
     return (
         <Modal
             className="bulk-actions-dialog"
@@ -69,34 +82,52 @@ export default function BulkActionsDialog() {
             title={t("bulk_actions.bulk_actions")}
             footer={<>
                 <Button text={t("modal.cancel")} onClick={() => setShown(false)} />
-                <Button text={t("bulk_actions.execute_bulk_actions")} kind="primary" />
+                <Button
+                    name="execute-bulk-actions"
+                    kind="primary"
+                    // Until the server has counted, the selection is the best estimate: it is exact
+                    // unless descendants are included.
+                    text={t("bulk_actions.execute_bulk_actions", {
+                        count: affectedNoteCount ?? selectedOrActiveNoteIds?.length ?? 0
+                    })}
+                    disabled={!canExecute}
+                    disabledTooltip={disabledReason}
+                />
             </>}
             show={shown}
             onSubmit={async () => {
-                // Let actions surface a confirmation prompt (e.g. lossy conversions) before executing.
-                const confirmMessages = existingActions
-                    .map((action) => action.getConfirmationMessage())
-                    .filter((message): message is string => !!message);
-                if (confirmMessages.length && !await dialog.confirm(confirmMessages.join("\n\n"))) {
-                    return;
+                if (!canExecute || executingRef.current) return;
+                executingRef.current = true;
+                setExecuting(true);
+                try {
+                    // Let actions surface a confirmation prompt (e.g. lossy conversions) before executing.
+                    const confirmMessages = existingActions
+                        .map((action) => action.getConfirmationMessage())
+                        .filter((message): message is string => !!message);
+                    if (confirmMessages.length && !await dialog.confirm(confirmMessages.join("\n\n"))) {
+                        return;
+                    }
+
+                    // Submit the in-memory action definitions rather than letting the server re-read the
+                    // stored labels, so a still-in-flight action save can't make the batch run against a
+                    // stale/empty choice.
+                    const actions = existingActions.map((action) => ({
+                        ...action.actionDef,
+                        name: (action.constructor as typeof AbstractBulkAction).actionName
+                    }));
+
+                    await server.post("bulk-action/execute", {
+                        noteIds: selectedOrActiveNoteIds,
+                        includeDescendants,
+                        actions
+                    });
+
+                    toast.showMessage(t("bulk_actions.bulk_actions_executed"), 3000);
+                    setShown(false);
+                } finally {
+                    executingRef.current = false;
+                    setExecuting(false);
                 }
-
-                // Submit the in-memory action definitions rather than letting the server re-read the
-                // stored labels, so a still-in-flight action save can't make the batch run against a
-                // stale/empty choice.
-                const actions = existingActions.map((action) => ({
-                    ...action.actionDef,
-                    name: (action.constructor as typeof AbstractBulkAction).actionName
-                }));
-
-                await server.post("bulk-action/execute", {
-                    noteIds: selectedOrActiveNoteIds,
-                    includeDescendants,
-                    actions
-                });
-
-                toast.showMessage(t("bulk_actions.bulk_actions_executed"), 3000);
-                setShown(false);
             }}
             onHidden={() => setShown(false)}
         >
@@ -110,7 +141,7 @@ export default function BulkActionsDialog() {
                     <OptionsRowWithToggle
                         name="include-descendants"
                         label={t("bulk_actions.include_descendants")}
-                        description={t("bulk_actions.affected_note_count", { count: affectedNoteCount })}
+                        description={t("bulk_actions.affected_note_count", { count: affectedNoteCount ?? 0 })}
                         currentValue={includeDescendants} onChange={setIncludeDescendants}
                     />
                 </CardSection>

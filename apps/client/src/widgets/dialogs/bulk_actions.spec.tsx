@@ -132,6 +132,49 @@ describe("BulkActionsDialog", () => {
         }
     });
 
+    it("names the note count on the execute button and enables it only with actions and notes to run on", async () => {
+        function executeButton() {
+            const button = container.querySelector<HTMLButtonElement>(".modal-footer button[name='execute-bulk-actions']");
+            if (!button) throw new Error("No execute button.");
+            return button;
+        }
+
+        server.post.mockResolvedValue({ affectedNoteCount: 3 });
+        await open([ "n1", "n2" ]);
+        expect(executeButton().textContent).toContain("bulk_actions.execute_bulk_actions:3");
+        expect(executeButton().disabled).toBe(true);
+
+        buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRevisions" }) });
+        await open([ "n1", "n2" ]);
+        expect(executeButton().disabled).toBe(false);
+
+        server.post.mockResolvedValue({ affectedNoteCount: 0 });
+        await open([ "gone" ]);
+        expect(executeButton().textContent).toContain("bulk_actions.execute_bulk_actions:0");
+        expect(executeButton().disabled).toBe(true);
+    });
+
+    it("runs the actions once, however often the execute button is pressed", async () => {
+        buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRevisions" }) });
+        server.post.mockResolvedValue({ affectedNoteCount: 1 });
+        await open([ "n1" ]);
+
+        let finish = () => {};
+        server.post.mockImplementation((url: string) => (url === "bulk-action/execute"
+            ? new Promise<void>((resolve) => { finish = resolve; })
+            : Promise.resolve({ affectedNoteCount: 1 })));
+        const form = container.querySelector("form");
+        if (!form) throw new Error("The dialog has no form.");
+        await act(async () => {
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        });
+
+        expect(server.post.mock.calls.filter(([ url ]) => url === "bulk-action/execute")).toHaveLength(1);
+        expect(container.querySelector<HTMLButtonElement>("button[name='execute-bulk-actions']")?.disabled).toBe(true);
+        await act(async () => finish());
+    });
+
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {
         await open([ "n1", "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1", "n2" ], includeDescendants: false });

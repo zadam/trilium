@@ -16,7 +16,7 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
     *   Each chosen action appears as an entry in the _Chosen actions_ section, with its own configuration.
     *   To remove an action, simply press the X button to the right of it.
     *   It is possible to apply multiple actions of the same type, such as adding multiple types.
-*   When all the actions are defined, press _Execute bulk actions_ to trigger all of them at once.
+*   When all the actions are defined, press the _Apply to N notes_ button to trigger all of them at once. The button names the number of notes that will be affected, and stays disabled until at least one action is added.
 *   For convenience, the last bulk action configuration is saved for further use and will be restored when entering the dialog again.
 
 ## Actions
