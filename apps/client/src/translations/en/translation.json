@@ -4635,7 +4635,7 @@
     "model_standard": "Standard",
     "model_high_accuracy": "High accuracy",
     "identify_speakers": "Identify speakers",
-    "identify_speakers_description": "Tells the other participants apart and labels each of their utterances with its speaker; what you say into your microphone is always yours. Turn it off if it mixes up voices, or to save the processing it takes during a recording. It applies from the next recording.",
+    "identify_speakers_description": "Tells the other participants apart and labels what each of them says; what you say into your microphone is always yours. Voices are compared only during the recording: nothing about a voice is stored, and no one is recognized from one meeting to the next. Turn it off if it mixes up voices. It applies from the next recording.",
     "troubleshooting_title": "Troubleshooting",
     "keep_recordings": "Keep recordings for troubleshooting",
     "keep_recordings_description": "Keeps the audio of everyone in the meeting, with the settings used and the transcript as it was produced, so that a problem with a recording can be reported and reproduced. It takes about 230 MB per hour of meeting and is never deleted automatically.",
