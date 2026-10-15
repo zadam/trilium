@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
     requests: 0,
     confirmed: true,
     removed: [] as string[],
+    electron: true,
+    opened: [] as string[],
     handlers: [] as ((message: WebSocketMessage) => void)[]
 }));
 
@@ -46,8 +48,17 @@ vi.mock("../../../services/i18n", () => ({
     t: (key: string, args?: Record<string, string>) => args ? `${key} ${JSON.stringify(args)}` : key
 }));
 
-vi.mock("../../react/DirectoryLink", () => ({
-    default: ({ directory }: { directory: string }) => <a className="directory-stub">{directory}</a>
+vi.mock("../../../services/utils", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../../services/utils")>()),
+    isElectron: () => mocks.electron
+}));
+
+vi.mock("../../../services/open", () => ({
+    default: {
+        openDirectory: async (directory: string) => {
+            mocks.opened.push(directory);
+        }
+    }
 }));
 
 vi.mock("./components/OptionsPageHeader", () => ({ default: () => <div className="header-stub" /> }));
@@ -69,6 +80,8 @@ beforeEach(() => {
     mocks.requests = 0;
     mocks.confirmed = true;
     mocks.removed = [];
+    mocks.electron = true;
+    mocks.opened = [];
     mocks.handlers = [];
     host = document.body.appendChild(document.createElement("div"));
 });
@@ -85,7 +98,7 @@ async function open() {
 }
 
 describe("ResourcesSettings", () => {
-    it("lists the resources installed or partly downloaded, with their status, folder and size", async () => {
+    it("lists the resources installed or partly downloaded, with their status and size", async () => {
         await open();
 
         const rows = [ ...host.querySelectorAll(".resources-item") ];
@@ -95,10 +108,24 @@ describe("ResourcesSettings", () => {
             "resources_options.installed",
             `resources_options.partially_downloaded {"downloaded":"4.00 MiB","size":"10 MiB"}`
         ]);
-        expect(rows.map((row) => row.querySelector(".directory-stub")?.textContent ?? null))
-            .toEqual([ "/data/resources/test.installed-abc", null ]);
         expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
             .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
+    });
+
+    it("opens the folder of an installed resource, on desktop only", async () => {
+        await open();
+        const buttons = () => [ ...host.querySelectorAll(".resources-item") ]
+            .map((row) => row.querySelector<HTMLElement>(".bx-folder-open"));
+        const [ installed, partial ] = buttons();
+        expect(installed).not.toBeNull();
+        expect(partial).toBeNull();
+        await act(async () => installed?.click());
+        expect(mocks.opened).toEqual([ "/data/resources/test.installed-abc" ]);
+
+        act(() => render(null, host));
+        mocks.electron = false;
+        await open();
+        expect(buttons()).toEqual([ null, null ]);
     });
 
     it("deletes a resource once confirmed, then reads the list again", async () => {

@@ -4646,6 +4646,7 @@
     "space_used": "Space used",
     "no_resources": "Nothing has been downloaded yet.",
     "delete": "Delete",
-    "delete_confirmation": "Delete {{title}}? It is downloaded again the next time a feature needs it."
+    "delete_confirmation": "Delete {{title}}? It is downloaded again the next time a feature needs it.",
+    "open_folder": "Open folder"
   }
 }

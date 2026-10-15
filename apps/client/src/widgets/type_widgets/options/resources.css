@@ -1,5 +1,6 @@
 .resources-list {
-    .resources-item {
+    .resources-item,
+    .resources-total {
         gap: 12px;
     }
 
@@ -9,16 +10,22 @@
         color: var(--muted-text-color);
     }
 
-    .resources-directory {
-        word-break: break-all;
-    }
-
     .resources-status {
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
         align-items: flex-end;
         text-align: end;
+    }
+
+    .resources-actions {
+        --resources-actions-gap: 12px;
+
+        display: flex;
+        flex-shrink: 0;
+        justify-content: flex-end;
+        gap: var(--resources-actions-gap);
+        width: calc(2 * var(--icon-button-size, 37px) + var(--resources-actions-gap));
     }
 
     .resources-size {

@@ -5,12 +5,12 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 
 import dialogService from "../../../services/dialog";
 import { t } from "../../../services/i18n";
+import openService from "../../../services/open";
 import server from "../../../services/server";
-import { formatSize } from "../../../services/utils";
+import { formatSize, isElectron } from "../../../services/utils";
 import { subscribeToMessages, unsubscribeToMessage } from "../../../services/ws";
 import ActionButton from "../../react/ActionButton";
 import { Card, CardSection } from "../../react/Card";
-import DirectoryLink from "../../react/DirectoryLink";
 import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
@@ -78,6 +78,7 @@ function ResourceRows({ resources, onDeleted }: { resources: ResourceInfo[]; onD
                     <span className="tn-card-option-title">{t("resources_options.space_used")}</span>
                 </div>
                 <span className="tn-card-option-value resources-size">{formatSize(used, 2, unitOf)}</span>
+                <div className="resources-actions" />
             </CardSection>
         </>
     );
@@ -90,6 +91,7 @@ interface ResourceRowProps {
 }
 
 function ResourceRow({ resource, unitOf, onDeleted }: ResourceRowProps) {
+    const { directory } = resource;
     async function remove() {
         if (!await dialogService.confirm(t("resources_options.delete_confirmation", { title: resource.title }))) {
             return;
@@ -109,22 +111,26 @@ function ResourceRow({ resource, unitOf, onDeleted }: ResourceRowProps) {
                     {" · "}
                     {t("resource_download.license", { license: resource.license })}
                 </small>
-                {resource.directory && (
-                    <small className="tn-card-option-description resources-directory">
-                        <DirectoryLink directory={resource.directory} />
-                    </small>
-                )}
             </div>
             <div className="tn-card-option-value resources-status">
                 <span className="resources-size">{formatSize(resource.size, 2, unitOf)}</span>
                 <small className="tn-card-option-description">{getStatusText(resource)}</small>
             </div>
-            <ActionButton
-                className="destructive-action-icon"
-                icon="bx bx-trash"
-                text={t("resources_options.delete")}
-                onClick={() => void remove()}
-            />
+            <div className="resources-actions">
+                {directory && isElectron() && (
+                    <ActionButton
+                        icon="bx bx-folder-open"
+                        text={t("resources_options.open_folder")}
+                        onClick={() => void openService.openDirectory(directory)}
+                    />
+                )}
+                <ActionButton
+                    className="destructive-action-icon"
+                    icon="bx bx-trash"
+                    text={t("resources_options.delete")}
+                    onClick={() => void remove()}
+                />
+            </div>
         </CardSection>
     );
 }
