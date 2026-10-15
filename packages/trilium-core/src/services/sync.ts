@@ -67,6 +67,7 @@ interface CheckResponse {
 }
 
 interface SyncResponse {
+    syncToken?: string;
     instanceId: string;
     maxEntityChangeId: number;
 }
@@ -282,6 +283,7 @@ async function doLogin(): Promise<SyncContext> {
         );
     }
 
+    syncContext.cookieJar.syncToken = resp.syncToken;
     syncContext.instanceId = resp.instanceId;
 
     const lastSyncedPull = getLastSyncedPull();
@@ -623,6 +625,7 @@ async function syncRequest<T extends {}>(syncContext: SyncContext, method: strin
     for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
         const opts: ExecOpts = {
             method,
+            auth: { setupToken: syncOptions.getSyncServerSetupToken() },
             url: syncOptions.getSyncServerHost() + requestPath,
             cookieJar: syncContext.cookieJar,
             timeout,

@@ -61,6 +61,7 @@ This is a list of labels that Trilium natively supports.
 | `pageSize` | Specifies the number of items per page in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Notes/Note%20List.md">Note List</a>. |
 | `customRequestHandler` | See <a class="reference-link" href="../Custom%20Request%20Handler.md">Custom Request Handler</a>. |
 | `customResourceProvider` | See <a class="reference-link" href="../Custom%20Resource%20Providers.md">Custom Resource Providers</a>. |
+| `customPublic` | Explicitly allows anonymous access to a custom request handler or resource provider on this note. Not inherited; `false` keeps authentication required. |
 | `widget` | Marks this note as a custom widget which will be added to the Trilium component tree. See <a class="reference-link" href="../../Scripting/Frontend%20Basics/Custom%20Widgets.md">Custom Widgets</a> for more information. |
 | `searchHome` | New search notes will be created as children of this note (see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>). |
 | `workspace` and related attributes | See <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Navigation/Workspaces.md">Workspaces</a>. |

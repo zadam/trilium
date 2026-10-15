@@ -228,11 +228,11 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PST, "/api/sync/force-full-sync", syncApiRoute.forceFullSync);
     route(GET, "/api/sync/check", [checkApiAuth], syncApiRoute.checkSync, apiResultHandler);
     route(GET, "/api/sync/changed", [checkApiAuth], syncApiRoute.getChanged, apiResultHandler);
-    route(PUT, "/api/sync/update", [checkApiAuth], syncApiRoute.update, apiResultHandler);
-    route(PST, "/api/sync/finished", [checkApiAuth], syncApiRoute.syncFinished, apiResultHandler);
-    route(PST, "/api/sync/check-entity-changes", [checkApiAuth], syncApiRoute.checkEntityChanges, apiResultHandler);
-    route(PST, "/api/sync/queue-sector/:entityName/:sector", [checkApiAuth], syncApiRoute.queueSector, apiResultHandler);
-    route(GET, "/api/sync/stats", [], syncApiRoute.getStats, apiResultHandler);
+    route(PUT, "/api/sync/update", [checkApiAuth, csrfMiddleware], syncApiRoute.update, apiResultHandler);
+    route(PST, "/api/sync/finished", [checkApiAuth, csrfMiddleware], syncApiRoute.syncFinished, apiResultHandler);
+    route(PST, "/api/sync/check-entity-changes", [checkApiAuth, csrfMiddleware], syncApiRoute.checkEntityChanges, apiResultHandler);
+    route(PST, "/api/sync/queue-sector/:entityName/:sector", [checkApiAuth, csrfMiddleware], syncApiRoute.queueSector, apiResultHandler);
+    route(GET, "/api/sync/stats", [checkApiAuth], syncApiRoute.getStats, apiResultHandler);
 
     //#region Import/export
     asyncRoute(PST, "/api/notes/:parentNoteId/notes-import", [checkApiAuthOrElectron, importMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importNotesToBranch, apiResultHandler);

@@ -1,5 +1,12 @@
 import "./setup_unlock.css";
 
+import { useState } from "preact/hooks";
+import Button from "./widgets/react/Button";
+import { Card, CardSection } from "./widgets/react/Card";
+import FormTextBox from "./widgets/react/FormTextBox";
+import SetupPage from "./widgets/react/SetupPage";
+import OptionsRow from "./widgets/type_widgets/options/components/OptionsRow";
+
 import logo from "./assets/icon-color.svg?url";
 import { t } from "./services/i18n";
 import { setSetupAuthToken } from "./services/setup_auth";
@@ -75,4 +82,43 @@ export default function SetupUnlock({ onUnlocked }: { onUnlocked: () => void }) 
             onSubmit={submit}
         />
     );
+}
+
+/** Proof from the startup console, before a fresh server accepts a setup choice. */
+export function FirstRunUnlock({ onUnlocked }: { onUnlocked: () => void }) {
+    const [ token, setToken ] = useState("");
+    const [ error, setError ] = useState<string | null>(null);
+    const [ submitting, setSubmitting ] = useState(false);
+    async function submit(event: Event) {
+        event.preventDefault();
+        if (submitting) return;
+        setSubmitting(true);
+        try {
+            const response = await fetch(`${window.glob.baseApiUrl}setup/first-run-auth`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ setupToken: token })
+            });
+            if (!response.ok) {
+                setError(t("setup.unlock-refused"));
+                return;
+            }
+            setSetupAuthToken(token);
+            onUnlocked();
+        } catch {
+            setError(t("login.connection-error"));
+        } finally {
+            setSubmitting(false);
+        }
+    }
+    return <form onSubmit={(event) => void submit(event)}>
+        <SetupPage title={t("set_password.setup-token")} description={t("set_password.setup-token-description")}
+            error={error} footer={<Button text={t("login.button")} kind="primary" disabled={submitting || !token} />}>
+            <Card><CardSection>
+                <OptionsRow name="setupToken" label={t("set_password.setup-token")} stacked>
+                    <FormTextBox type="password" name="setupToken" currentValue={token} onChange={setToken}
+                        autocomplete="off" required autoFocus />
+                </OptionsRow>
+            </CardSection></Card>
+        </SetupPage>
+    </form>;
 }

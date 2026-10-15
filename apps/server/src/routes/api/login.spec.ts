@@ -54,9 +54,10 @@ describe("Login (sync) API", () => {
         regenerateCalled = false;
         const result = await loginApiRoute.loginSync(req) as { instanceId: string; maxEntityChangeId: number };
         expect(result.instanceId).toBeTruthy();
-        // session must be regenerated (fixation protection) before being marked as logged in
+        // Regenerate before issuing a sync-scoped proof (fixation protection).
         expect(regenerateCalled).toBe(true);
-        expect(req.session.loggedIn).toBe(true);
+        expect(req.session.loggedIn).not.toBe(true);
+        expect(req.session.syncAuth?.token).toBeTruthy();
     });
 });
 

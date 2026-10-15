@@ -1,11 +1,15 @@
 <p>A custom resource provider allows any file imported into Trilium (images,
-  fonts, stylesheets) to be publicly accessible via a URL.</p>
+  fonts, stylesheets) to be accessible via a URL. By default the URL requires
+  a logged-in session or an ETAPI token.</p>
 <p>A potential use case for this is to add embed a custom font alongside
   a theme.</p>
 <h2>Steps for creating a custom resource provider</h2>
 <ol>
   <li>Import a file such as an image or a font into Trilium by drag &amp; drop.</li>
   <li>Set the <a href="#root/_help_HI6GBBIduIgv">label</a>  <code>#customResourceProvider</code> to <code>hello</code>.</li>
+  <li>If the file should be readable without authentication, add <code>#customPublic</code> directly
+    to the same note. This grant is not inherited; <code>#customPublic=false</code> keeps
+    it private.</li>
   <li>To test if it is working, use a browser to navigate to <code>&lt;protocol&gt;://&lt;host&gt;/custom/hello</code> (where <code>&lt;protocol&gt;</code> is
     either <code>http</code> or <code>https</code> based on your setup, and <code>&lt;host&gt;</code> is
     the host or IP to your Trilium server instance). If you are running the
@@ -33,3 +37,7 @@
 div {
 	font-family: customFont;
 }</code></pre>
+<p>Adding a resource-provider label alone no longer publishes a file anonymously.
+  Existing public resources need an explicit <code>#customPublic</code> grant.
+  Cookie-authenticated requests that change state also require a CSRF token;
+  external integrations can use an ETAPI token in the <code>Authorization</code> header.</p>

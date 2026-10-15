@@ -95,6 +95,8 @@ To set custom shortcuts, follow the directions for your browser.
 
 The extension needs to connect to a running Trilium instance. By default, it looks for the desktop application on port 37840 of the local computer. If the desktop application runs on a different port (for example because it was started with the `TRILIUM_PORT` environment variable), enter that port in the extension's options. The extension checks for Trilium again every minute, or right away when pressing the refresh button at the bottom of its popup.
 
+The desktop clipper requires an ETAPI token, including on localhost. In the desktop application, create a token under Options → ETAPI. Paste it into **Desktop ETAPI token** in the extension's desktop settings and press **Save**. The token stays in this browser's local extension storage. Enabling LAN access does not remove the token requirement. Update the extension together with the desktop application.
+
 It's also possible to configure the [server](Server%20Installation.md) address if you don't run the desktop application, or want it to work without the desktop application running.
 
 To connect to a server, enter its address and your password in the extension's options and press _Login to the server instance_. If the server uses [multi-factor authentication](Server%20Installation/Multi-factor%20authentication%20with%20TOTP.md), also fill in _Authentication code_ with the current code from your authenticator app (or one of your recovery codes); otherwise leave it empty. The password and the code are used only once, to obtain a token for the extension, and are not stored.
@@ -103,7 +105,7 @@ To connect to a server, enter its address and your password in the extension's o
 
 After each clipping made with a keyboard shortcut or the context menu, a notification in the corner of the page confirms that it was saved, with a link to open the new note in Trilium. A clipping made from the popup reports in the popup instead, unless the popup was closed before it was saved. If the clipping could not be saved, the message says why instead:
 
-*   Trilium was not found: start the desktop application, or check the server address and token in the extension's options.
+*   Trilium was not found: start the desktop application and check its token, or check the server address and token in the extension's options.
 *   The versions of Trilium and the extension are not compatible: update the one the message names.
 *   Trilium rejected the request: the message includes the reason Trilium gave.
 *   The popup could not reach the extension's background script, or it gave no answer: close the popup and open it again. If the extension was just updated or reloaded, reload the page as well.

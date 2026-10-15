@@ -1,7 +1,8 @@
-import { attributes, isSetupAuthorized, isSetupAuthRequired, options, password as passwordService, password_encryption as passwordEncryptionService } from "@triliumnext/core";
+import { cls, attributes, isSetupAuthorized, isSetupAuthRequired, options, password as passwordService, password_encryption as passwordEncryptionService } from "@triliumnext/core";
 import type { NextFunction, Request, Response } from "express";
 
 import config from "./config.js";
+import { isFirstRunAuthorized, isFirstRunTokenRequired } from "./first_run_auth.js";
 import { isInternalElectronRequest } from "./electron_request.js";
 import recoveryCodeService from "./encryption/recovery_codes.js";
 import etapiTokenService from "./etapi_tokens.js";
@@ -9,7 +10,7 @@ import { getLog } from "@triliumnext/core";
 import openID from "./open_id.js";
 import sqlInit from "./sql_init.js";
 import totp from "./totp.js";
-import { isElectron } from "./utils.js";
+import { constantTimeCompare, isElectron } from "./utils.js";
 
 let noAuthentication = false;
 refreshAuth();
@@ -109,20 +110,17 @@ export function refreshAuth() {
 }
 
 /**
- * Whether an uninitialized instance may let this request through unauthenticated.
- *
- * The bypass below exists because an instance with no database has nobody to authenticate and
- * nothing worth protecting. An instance sitting in the setup wizard with a knowledge base behind it
- * has both: the database is attached, and every route that reaches it through SQL rather than
- * through becca works exactly as it would on a running instance. Taking a backup of it and
- * downloading that backup are two such routes.
- *
- * So for the length of that window the bypass is conditional on the wizard's own token instead of
- * being granted outright. The exemptions are the ones `checkSetupAuth` makes, for the same reasons.
+ * Setup cannot rely on database-backed browser sessions. A fresh instance instead requires the
+ * console proof; a wizard opened over an existing knowledge base requires its setup-unlock token.
+ * The trusted renderer and explicit no-auth mode keep their usual exemptions. Sync peers carry
+ * their scoped header proof while the initial database is still being transferred.
  */
 function mayPassAsUninitialized(req: Request): boolean {
     if (sqlInit.isDbInitialized()) {
         return false;
+    }
+    if (isFirstRunTokenRequired(req)) {
+        return isFirstRunAuthorized(req) || isAuthenticatedSyncRequest(req);
     }
     if (!isSetupAuthRequired() || isInternalElectronRequest(req) || noAuthentication) {
         return true;
@@ -164,6 +162,10 @@ function checkApiAuth(req: Request, res: Response, next: NextFunction) {
     // rebound browser, co-resident process) do NOT carry the marker and go
     // through the normal session check.
     if (isInternalElectronRequest(req) || noAuthentication) {
+        return next();
+    }
+
+    if (isAuthenticatedSyncRequest(req)) {
         return next();
     }
 
@@ -267,12 +269,24 @@ async function checkCredentials(req: Request, res: Response, next: NextFunction)
     const password = colonIndex === -1 ? "" : auth.substr(colonIndex + 1);
     // username is ignored
 
-    if (!(await passwordEncryptionService.verifyPassword(password))) {
-        res.setHeader("Content-Type", "text/plain").status(401).send("Incorrect password");
+    // Middleware runs before route_api creates its CLS context. TOTP/recovery verification
+    // records consumption, so it needs its own context just like password login handlers.
+    const failedFactor = await cls.init(() => verifyLoginCredentials(password, req.headers["trilium-totp"]));
+    if (failedFactor) {
+        res.setHeader("Content-Type", "text/plain").status(401).send("Incorrect password or second factor");
         getLog().info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
     } else {
         next();
     }
+}
+
+/** A sync proof authorizes only the peer protocol, never browser APIs or setup. */
+export function isAuthenticatedSyncRequest(req: Request): boolean {
+    const proof = req.headers["trilium-sync-auth"];
+    const grant = req.session?.syncAuth;
+    return !!grant && grant.expires > Date.now()
+        && typeof proof === "string" && constantTimeCompare(grant.token, proof)
+        && /^\/api\/sync\/(check|changed|update|finished|check-entity-changes|queue-sector\/[^/]+\/[^/]+|stats)\/?$/.test(req.path);
 }
 
 export type LoginFactor = "password" | "totp";

@@ -24,6 +24,18 @@ describe("syncOptions.getSyncTimeout", () => {
         vi.clearAllMocks();
     });
 
+    it("binds a temporary first-run token to one server and forgets it when cleared", async () => {
+        const syncOptions = (await import("./sync_options.js")).default;
+        getOptionMock.mockReturnValue("https://sync.example.com/");
+        syncOptions.setSyncServerSetupToken("https://sync.example.com/", "console-proof");
+        expect(syncOptions.getSyncServerSetupToken()).toBe("console-proof");
+        getOptionMock.mockReturnValue("https://other.example.com");
+        expect(syncOptions.getSyncServerSetupToken()).toBeUndefined();
+        getOptionMock.mockReturnValue("https://sync.example.com/");
+        syncOptions.setSyncServerSetupToken("https://sync.example.com/", "");
+        expect(syncOptions.getSyncServerSetupToken()).toBeUndefined();
+    });
+
     it("converts database value from seconds to milliseconds", () => {
         // TimeSelector stores value in seconds (displayed value × scale)
         // Scale is UI-only, not used in backend calculation

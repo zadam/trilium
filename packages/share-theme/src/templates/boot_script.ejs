@@ -1,4 +1,4 @@
-<script>
+<script<% if (typeof cspNonce === "string" && cspNonce) { %> nonce="<%= cspNonce %>"<% } %>>
     // Applies the theme before the first paint, to avoid color flashes, and marks the page as
     // running scripts, which hides what an app view replaces until it mounts. The function keeps
     // its names out of the global scope, which `~shareHtml` snippets share.

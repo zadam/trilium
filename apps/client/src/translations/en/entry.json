@@ -22,7 +22,9 @@
     "password-confirmation": "Password confirmation",
     "button": "Set password",
     "password-too-short": "Password must be at least {{length}} characters long.",
-    "passwords-dont-match": "The entered passwords don't match."
+    "passwords-dont-match": "The entered passwords don't match.",
+    "setup-token": "First-run setup token",
+    "setup-token-description": "Enter the token printed in the server startup log. It expires after one hour; a new attempt prints a replacement if needed."
   },
   "setup": {
     "heading": "Get started with Trilium",

@@ -218,6 +218,12 @@
   enter that port in the extension's options. The extension checks for Trilium
   again every minute, or right away when pressing the refresh button at the
   bottom of its popup.</p>
+<p>The desktop clipper requires an ETAPI token, including on localhost. In
+  the desktop application, create a token under Options → ETAPI. Paste it
+  into <strong>Desktop ETAPI token</strong> in the extension's desktop settings
+  and press <strong>Save</strong>. The token stays in this browser's local
+  extension storage. Enabling LAN access does not remove the token requirement.
+  Update the extension together with the desktop application.</p>
 <p>It's also possible to configure the <a href="#root/_help_WOcw2SLH6tbX">server</a> address
   if you don't run the desktop application, or want it to work without the
   desktop application running.</p>
@@ -235,8 +241,8 @@
   reports in the popup instead, unless the popup was closed before it was
   saved. If the clipping could not be saved, the message says why instead:</p>
 <ul>
-  <li>Trilium was not found: start the desktop application, or check the server
-    address and token in the extension's options.</li>
+  <li>Trilium was not found: start the desktop application and check its token,
+    or check the server address and token in the extension's options.</li>
   <li>The versions of Trilium and the extension are not compatible: update the
     one the message names.</li>
   <li>Trilium rejected the request: the message includes the reason Trilium

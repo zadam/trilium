@@ -54,6 +54,26 @@ describe("set-password App", () => {
         expect(button.disabled).toBe(false);
     });
 
+    it("requires the console token when the server asks for one", async () => {
+        window.glob.firstRunTokenRequired = true;
+        try {
+            const c = renderInto(<App />);
+            const input = (name: string) => c.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+            const first = input("password1"), second = input("password2"), token = input("setupToken");
+            if (!first || !second || !token) throw new Error("Expected password and console-token fields");
+            typeInto(first, "owner-password");
+            typeInto(second, "owner-password");
+            await flush();
+            expect(c.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
+            typeInto(token, "console-proof");
+            await flush();
+            expect(c.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(false);
+            expect(token.name).toBe("setupToken");
+        } finally {
+            window.glob.firstRunTokenRequired = undefined;
+        }
+    });
+
     it("submits to the set-password route via a native POST form, but only once valid", async () => {
         const c = renderInto(<App />);
         const form = c.querySelector("form");

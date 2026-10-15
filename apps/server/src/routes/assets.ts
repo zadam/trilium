@@ -1,6 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { existsSync } from "fs";
+import { readFile } from "fs/promises";
 import path from "path";
 import type serveStatic from "serve-static";
 
@@ -53,6 +54,7 @@ async function register(app: express.Application) {
                 }
             },
             appType: "spa",
+            html: { cspNonce: "__TRILIUM_CSP_NONCE__" },
             configFile: path.join(clientDir, "vite.config.mts"),
             base: `/${assetUrlFragment}/`,
             // One dep-optimizer cache per dev instance. The client config points
@@ -73,9 +75,14 @@ async function register(app: express.Application) {
 
             vite.middlewares(req, res, next);
         });
-        app.get(`/`, [ rootLimiter, auth.checkAuth, csrfMiddleware ], (req, res, next) => {
-            req.url = `/${assetUrlFragment}/index.html`;
-            vite.middlewares(req, res, next);
+        app.get(`/`, [ rootLimiter, auth.checkAuth, csrfMiddleware ], async (req, res, next) => {
+            try {
+                const source = await readFile(path.join(clientDir, "index.html"), "utf8");
+                const html = await vite.transformIndexHtml(req.originalUrl, source);
+                res.type("html").send(html.replaceAll("__TRILIUM_CSP_NONCE__", res.locals.cspNonce));
+            } catch (error) {
+                next(error);
+            }
         });
         app.get(`/src/index.ts`, [ rootLimiter ], (req, res, next) => {
             req.url = `/${assetUrlFragment}/src/index.ts`;

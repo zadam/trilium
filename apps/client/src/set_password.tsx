@@ -31,11 +31,13 @@ export function App() {
     const password1Ref = useRef<HTMLInputElement>(null);
     const [ password1, setPassword1 ] = useState("");
     const [ password2, setPassword2 ] = useState("");
+    const [ setupToken, setSetupToken ] = useState("");
 
     // Mirror the server-side validation so the form can't be submitted into an error.
     const tooShort = password1 !== "" && password1.length < MIN_PASSWORD_LENGTH;
     const mismatch = password2 !== "" && password1 !== password2;
-    const isValid = password1.length >= MIN_PASSWORD_LENGTH && password1 === password2;
+    const isValid = password1.length >= MIN_PASSWORD_LENGTH && password1 === password2
+        && (!window.glob?.firstRunTokenRequired || setupToken.trim() !== "");
 
     return (
         <div class="setup-container set-password-container">
@@ -50,6 +52,13 @@ export function App() {
                 >
                     <Card>
                         <CardSection>
+                            {window.glob?.firstRunTokenRequired && (
+                                <OptionsRow name="setupToken" label={t("set_password.setup-token")}
+                                    description={t("set_password.setup-token-description")} stacked>
+                                    <FormTextBox type="password" name="setupToken" currentValue={setupToken}
+                                        onChange={setSetupToken} autocomplete="off" required />
+                                </OptionsRow>
+                            )}
                             <OptionsRow
                                 name="password1" label={t("set_password.password")}
                                 description={tooShort ? <span className="text-danger">{t("set_password.password-too-short", { length: MIN_PASSWORD_LENGTH })}</span> : undefined}

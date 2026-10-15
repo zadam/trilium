@@ -1,6 +1,6 @@
 "use strict";
 
-import { type CookieJar, type ExecOpts, type FetchApiOpts, type FetchedResource, type FetchResourceOpts, getLog, type RequestProvider, sync_options as syncOptions } from "@triliumnext/core";
+import { type CookieJar, type ExecOpts, type FetchApiOpts, type FetchedResource, type FetchResourceOpts, getLog, type RequestProvider } from "@triliumnext/core";
 import { readCappedResponse } from "@triliumnext/core/src/services/request.js";
 import url from "url";
 
@@ -116,7 +116,16 @@ export default class NodeRequestProvider implements RequestProvider {
                     requestId: paging.requestId
                 };
 
-                if (opts.auth) {
+                if (opts.cookieJar?.syncToken) {
+                    headers["trilium-sync-auth"] = opts.cookieJar.syncToken;
+                }
+                if (opts.auth?.totpToken) {
+                    headers["trilium-totp"] = opts.auth.totpToken;
+                }
+                if (opts.auth?.setupToken) {
+                    headers["trilium-setup-auth"] = opts.auth.setupToken;
+                }
+                if (opts.auth?.password !== undefined) {
                     headers["trilium-cred"] = Buffer.from(`dummy:${opts.auth.password}`).toString("base64");
                 }
 
@@ -241,23 +250,23 @@ export default class NodeRequestProvider implements RequestProvider {
      * content gets to reach, and what comes back is stored as an attachment the author can read.
      *
      * Vetting an address and then connecting to a name would leave the two free to disagree, so the
-     * connection is pinned to the addresses that were actually checked. The pin is honoured by the
-     * node clients; `electron.net` and a proxy each resolve the host themselves, and there it is
-     * the check above that stands alone.
+     * connection is pinned to the addresses that were actually checked. Images use a direct Node
+     * transport on desktop too: Electron and proxies resolve independently and cannot enforce the pin.
+     * Redirect responses are refused, so they cannot move a download onto an unvalidated address.
      */
     async getImage(imageUrl: string): Promise<ArrayBuffer> {
         const parsedTargetUrl = validateUrl(imageUrl);
         const validatedAddresses = await validateHostResolution(parsedTargetUrl.hostname);
 
-        const proxyConf = syncOptions.getSyncProxy();
         const opts: ClientOpts = {
             method: "GET",
             url: imageUrl,
-            proxy: proxyConf !== "noproxy" ? proxyConf : null
+            lookup: createPinnedLookup(validatedAddresses),
+            timeout: 30000
         };
 
         const client = await this.getClient(opts);
-        const proxyAgent = await getProxyAgent(opts);
+        // Proxies resolve the name themselves, so cannot enforce the pinned-address policy.
 
         return new Promise<ArrayBuffer>((resolve, reject) => {
             try {
@@ -272,8 +281,7 @@ export default class NodeRequestProvider implements RequestProvider {
                     path: `${parsedTargetUrl.pathname}${parsedTargetUrl.search}`,
                     timeout: opts.timeout, // works only for the node client
                     headers: {},
-                    agent: proxyAgent,
-                    lookup: createPinnedLookup(validatedAddresses)
+                    lookup: opts.lookup
                 });
 
                 request.on("error", (err) => reject(generateError(opts, err)));

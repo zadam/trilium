@@ -195,7 +195,7 @@ describe("NodeRequestProvider.exec", () => {
     });
 
     it("sends paging headers (text/plain) when pageCount > 1 and stores response cookies", async () => {
-        const cookieJar = { header: "sid=1" };
+        const cookieJar = { header: "sid=1", syncToken: "peer" };
         state.onEnd = (req) => {
             const res = makeResponse(201, "Created", { "set-cookie": "sid=2" });
             req.triggerResponse(res);
@@ -208,7 +208,7 @@ describe("NodeRequestProvider.exec", () => {
                 method: "POST",
                 body: { a: 1 },
                 cookieJar,
-                auth: { password: "secret" },
+                auth: { password: "secret", totpToken: "123456", setupToken: "claim" },
                 paging: { pageCount: 3, pageIndex: 1, requestId: "req-1" }
             })
         );
@@ -219,6 +219,9 @@ describe("NodeRequestProvider.exec", () => {
         expect(sent.headers["Cookie"]).toBe("sid=1");
         // auth header is base64 of dummy:secret
         expect(sent.headers["trilium-cred"]).toBe(Buffer.from("dummy:secret").toString("base64"));
+        expect(sent.headers["trilium-totp"]).toBe("123456");
+        expect(sent.headers["trilium-sync-auth"]).toBe("peer");
+        expect(sent.headers["trilium-setup-auth"]).toBe("claim");
         // body object serialized
         expect(state.requests[0].endPayload).toBe(JSON.stringify({ a: 1 }));
         // response set-cookie stored back into the jar
@@ -560,7 +563,7 @@ describe("NodeRequestProvider.getImage", () => {
         expect(Buffer.from(result)).toEqual(bytes);
     });
 
-    it("uses the configured sync proxy", async () => {
+    it("does not let a sync proxy bypass image DNS pinning", async () => {
         getSyncProxyMock.mockReturnValue("http://proxy:3128");
         state.onEnd = (req) => {
             const res = makeResponse(200, "OK");
@@ -569,7 +572,8 @@ describe("NodeRequestProvider.getImage", () => {
             res.emitEnd();
         };
         await provider.getImage("http://img.example.com/pic.png");
-        expect(HttpProxyAgent).toHaveBeenCalledWith("http://proxy:3128");
+        expect(HttpProxyAgent).not.toHaveBeenCalled();
+        expect(typeof state.requests[0].opts.lookup).toBe("function");
     });
 
     it("treats the 'noproxy' sync proxy value as no proxy", async () => {
@@ -581,7 +585,7 @@ describe("NodeRequestProvider.getImage", () => {
             res.emitEnd();
         };
         await provider.getImage("http://img.example.com/pic.png");
-        expect(state.requests[0].opts.agent).toBeNull();
+        expect(state.requests[0].opts.agent).toBeUndefined();
     });
 
     it("rejects non-2xx image responses, and a late body does not override the rejection", async () => {

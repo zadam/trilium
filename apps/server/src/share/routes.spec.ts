@@ -47,6 +47,16 @@ describe("Share API test", () => {
         }
     });
 
+    it("SEC-TRI-008: share HTML binds its trusted boot script to the response nonce", async () => {
+        const response = await supertest(app).get("/share/").expect(200);
+        const nonce = response.text.match(/<script nonce="([^"]+)"/u)?.[1];
+        expect(nonce).toBeTruthy();
+        expect(response.headers["content-security-policy"]).toContain(`'nonce-${nonce}'`);
+        const shell = await supertest(app).get("/").expect(200);
+        expect(shell.headers["content-security-policy"]).toContain("script-src-attr 'none'");
+        expect(shell.text).not.toContain("__TRILIUM_CSP_NONCE__");
+    });
+
     it("requests password for password-protected share", async () => {
         await supertest(app)
             .get("/share/YjlPRj2E9fOV")

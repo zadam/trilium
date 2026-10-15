@@ -182,12 +182,12 @@ async function setupNewDocument(req: Request) {
  * step is the one that cannot be taken back.
  */
 function setupSyncFromServer(req: Request): Promise<SetupSyncFromServerResponse> {
-    const { syncServerHost, syncProxy, password, syncMaxBlobContentSize } = req.body;
+    const { syncServerHost, syncProxy, password, syncMaxBlobContentSize, totpToken } = req.body;
 
     const maxBlobContentSize = Number.isFinite(syncMaxBlobContentSize) && syncMaxBlobContentSize > 0 ? syncMaxBlobContentSize : 0;
 
     return withSetupLock("sync-from-server", () =>
-        setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password, maxBlobContentSize));
+        setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password, maxBlobContentSize, typeof totpToken === "string" ? totpToken : ""));
 }
 
 /**

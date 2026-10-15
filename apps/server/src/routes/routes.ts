@@ -13,8 +13,8 @@ import etapiRevisionsRoutes from "../etapi/revisions.js";
 import etapiSpecRoute from "../etapi/spec.js";
 import etapiSpecialNoteRoutes from "../etapi/special_notes.js";
 import auth from "../services/auth.js";
+import { checkFirstRunAuth } from "../services/first_run_auth.js";
 import openID from '../services/open_id.js';
-import { isElectron } from "../services/utils.js";
 import shareRoutes from "../share/routes.js";
 import clipperRoute from "./api/clipper.js";
 import databaseRoute from "./api/database.js";
@@ -49,10 +49,13 @@ function register(app: express.Application) {
 
     const loginRateLimiter = createLoginRateLimiter();
 
+    asyncRoute(PST, "/api/setup/first-run-auth", [loginRateLimiter, checkFirstRunAuth],
+        (req) => ({ authenticated: true, token: req.body.setupToken }), apiResultHandler);
+
     route(GET, "/bootstrap", [ auth.checkAuth ], indexRoute.bootstrap);
     asyncRoute(PST, "/login", [loginRateLimiter], loginRoute.login, null);
     route(PST, "/logout", [csrfMiddleware, auth.checkAuth], loginRoute.logout);
-    asyncRoute(PST, "/set-password", [auth.checkAppInitialized, auth.checkPasswordNotSet], loginRoute.setPassword, null);
+    asyncRoute(PST, "/set-password", [loginRateLimiter, auth.checkAppInitialized, auth.checkPasswordNotSet, checkFirstRunAuth], loginRoute.setPassword, null);
     route(GET, "/setup", [], setupRoute.setupPage);
 
     // Restoring a backup, which only the setup screen offers: `checkAppNotInitialized` is what keeps
@@ -129,8 +132,8 @@ function register(app: express.Application) {
     apiRoute(PATCH, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.patchToken);
     apiRoute(DEL, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.deleteToken);
 
-    // in case of local electron, local calls are allowed unauthenticated, for server they need auth
-    const clipperMiddleware = isElectron ? [] : [auth.checkEtapiToken];
+    // Loopback and LAN access are transports, not credentials.
+    const clipperMiddleware = [auth.checkEtapiToken];
 
     route(GET, "/api/clipper/handshake", clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     asyncRoute(PST, "/api/clipper/clippings", clipperMiddleware, clipperRoute.addClipping, apiResultHandler);

@@ -1,5 +1,5 @@
 # Custom Request Handler
-Trilium provides a mechanism for [scripts](../Scripting.md) to open a public REST endpoint. This opens a way for various integrations with other services - a simple example would be creating new note from Slack by issuing a slash command (e.g. `/trilium buy milk`).
+Trilium provides a mechanism for [scripts](../Scripting.md) to open an authenticated REST endpoint, with an explicit grant for public integrations. This opens a way for various integrations with other services - a simple example would be creating new note from Slack by issuing a slash command (e.g. `/trilium buy milk`).
 
 ## Create note from outside Trilium
 
@@ -30,6 +30,7 @@ else {
 This script note has also following two attributes:
 
 *   label `#customRequestHandler` with value `create-note`
+*   label `#customPublic` for this public integration example, after configuring its integration secret
 *   relation `~targetNote` pointing to a note where new notes should be saved
 
 ### Explanation
@@ -51,7 +52,7 @@ Notice the `/custom` part in the request path - Trilium considers any request wi
 
 Trilium will then find our code note created above and execute it. `api.req`, `api.res` are set to [request](https://expressjs.com/en/api.html#req) and [response](https://expressjs.com/en/api.html#res)objects from which we can get details of the request and also respond.
 
-In the code note we check the request method and then use trivial authentication - keep in mind that these endpoints are by default totally unauthenticated, and you need to take care of this yourself.
+By default these endpoints require a logged-in session or an ETAPI token in the `Authorization` header. Cookie-authenticated writes also need the normal CSRF token. For a deliberately public integration, add `#customPublic` directly to the handler note; it is not inherited, and `#customPublic=false` keeps authentication required. A public handler must validate its own integration credential, as the example does. Backend scripting must still be enabled before any handler can execute.
 
 Once we pass these checks we will just create the desired note using [Script API](../Scripting/Script%20API.md).
 

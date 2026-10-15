@@ -30,6 +30,9 @@ async function setPassword(req: Request, res: Response) {
     }
 
     let { password1, password2 } = req.body;
+    if (typeof password1 !== "string" || typeof password2 !== "string") {
+        throw new ValidationError("Two passwords are required.");
+    }
     password1 = password1.trim();
     password2 = password2.trim();
 

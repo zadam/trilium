@@ -106,7 +106,7 @@ describe("the sync settings", () => {
             [ "syncServerHost", "https://sync.example.com:8080" ],
             [ "syncProxy", "https://proxy.example.com:3128" ]
         ]);
-        expect(mocks.post).toHaveBeenCalledWith("sync/test");
+        expect(mocks.post).toHaveBeenCalledWith("sync/test", { setupToken: "" });
     });
 
     it("reports what the server said on a successful handshake", async () => {
@@ -132,7 +132,7 @@ describe("the sync settings", () => {
         // The card is there and holds the test alone, rather than the row having gone missing.
         const testCard = testButton()?.closest(".tn-card");
         expect(testCard).not.toBeNull();
-        expect(testCard?.querySelectorAll(".tn-card-option")).toHaveLength(1);
+        expect(testCard?.querySelectorAll(".tn-card-option")).toHaveLength(2);
         expect(effectiveServerRow()).toBeUndefined();
     });
 

@@ -13,7 +13,9 @@ import electron from "electron";
  */
 export default class ElectronRequestProvider extends NodeRequestProvider {
     protected async getClient(opts: ClientOpts): Promise<Client> {
-        if (!opts.proxy) {
+        // Content downloads require Node's pinned DNS lookup and no automatic redirects.
+        // electron.net ignores lookup and follows redirects before the caller can vet them.
+        if (!opts.proxy && !opts.lookup) {
             // `electron.net` can only be used after `app.ready` has fired.
             // The sync timer is scheduled inside `buildApp()` and could in
             // principle fire before the renderer's `ready` event, so wait

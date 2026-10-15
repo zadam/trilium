@@ -1,7 +1,8 @@
 <p>Trilium provides a mechanism for <a href="#root/_help_CdNpE2pqjmI6">scripts</a> to
-  open a public REST endpoint. This opens a way for various integrations
-  with other services - a simple example would be creating new note from
-  Slack by issuing a slash command (e.g. <code>/trilium buy milk</code>).</p>
+  open an authenticated REST endpoint, with an explicit grant for public
+  integrations. This opens a way for various integrations with other services
+  - a simple example would be creating new note from Slack by issuing a slash
+  command (e.g. <code>/trilium buy milk</code>).</p>
 <h2>Create note from outside Trilium</h2>
 <p>Let's take a look at an example. The goal is to provide a REST endpoint
   to which we can send title and content and Trilium will create a note.</p>
@@ -26,6 +27,8 @@ else {
 <ul>
   <li>label <code>#customRequestHandler</code> with value <code>create-note</code>
   </li>
+  <li>label <code>#customPublic</code> for this public integration example, after
+    configuring its integration secret</li>
   <li>relation <code>~targetNote</code> pointing to a note where new notes should
     be saved</li>
 </ul>
@@ -47,9 +50,13 @@ Content-Type: application/json
   set to <a href="https://expressjs.com/en/api.html#req">request</a> and <a
   href="https://expressjs.com/en/api.html#res">response</a>objects from which
   we can get details of the request and also respond.</p>
-<p>In the code note we check the request method and then use trivial authentication
-  - keep in mind that these endpoints are by default totally unauthenticated,
-  and you need to take care of this yourself.</p>
+<p>By default these endpoints require a logged-in session or an ETAPI token
+  in the <code>Authorization</code> header. Cookie-authenticated writes also
+  need the normal CSRF token. For a deliberately public integration, add <code>#customPublic</code> directly
+  to the handler note; it is not inherited, and <code>#customPublic=false</code> keeps
+  authentication required. A public handler must validate its own integration
+  credential, as the example does. Backend scripting must still be enabled
+  before any handler can execute.</p>
 <p>Once we pass these checks we will just create the desired note using <a
   href="#root/_help_GLks18SNjxmC">Script API</a>.</p>
 <h2>Custom resource provider</h2>

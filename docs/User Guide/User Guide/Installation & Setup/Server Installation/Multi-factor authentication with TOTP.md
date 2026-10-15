@@ -26,3 +26,5 @@ Recovery codes can be used in place of the TOTP if you lose access to your authe
 To use a recovery code, simply login with your password and use the recovery code as the security token.
 
 The initial set of recovery codes is generated when setting up your TOTP for the first time. They can be regenerated at any time by going to  <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Password & Auth_ and pressing the _Regenerate recovery codes_ button. This will generate a new set of recovery codes while at the same time disabling the previous ones.
+
+Pairing a new sync device also requires your second factor. Enter it alongside the server password during setup. Once paired, the device uses its document secret for sync only; signing into the web application still requires your login credentials.

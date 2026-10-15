@@ -58,6 +58,7 @@ async function requestToSyncServer<T>(method: string, path: string, body?: strin
     return (await timeLimit(
         request.exec({
             method,
+            auth: { setupToken: syncOptions.getSyncServerSetupToken() },
             url: syncOptions.getSyncServerHost() + path,
             body,
             proxy: syncOptions.getSyncProxy(),
@@ -67,7 +68,7 @@ async function requestToSyncServer<T>(method: string, path: string, body?: strin
     )) as T;
 }
 
-async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string, password: string, syncMaxBlobContentSize = 0): Promise<SetupSyncFromServerResponse> {
+async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string, password: string, syncMaxBlobContentSize = 0, totpToken = ""): Promise<SetupSyncFromServerResponse> {
     if (sqlInit.isDbInitialized()) {
         return {
             result: "failure",
@@ -83,7 +84,7 @@ async function setupSyncFromSyncServer(syncServerHost: string, syncProxy: string
         const resp = await request.exec<SetupSyncSeedResponse>({
             method: "get",
             url: `${syncServerHost}/api/setup/sync-seed`,
-            auth: { password },
+            auth: { password, totpToken },
             proxy: syncProxy,
             timeout: 30000 // seed request should not take long
         });

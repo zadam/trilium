@@ -43,6 +43,17 @@ describe("TriliumServerFacade", () => {
             expect(searchStatuses()).toEqual([ FOUND_DESKTOP ]);
         });
 
+        it("authenticates the desktop handshake and all subsequent calls with its local token", async () => {
+            await fakeBrowser.storage.local.set({ desktopAuthToken: "desktop-secret" });
+            fetchMock.mockImplementation(async () => handshake("1.0"));
+            const facade = await createFacade();
+            expect(fetchMock).toHaveBeenCalledWith(DESKTOP_HANDSHAKE, expect.objectContaining({ headers: { Authorization: "desktop-secret" } }));
+            fetchMock.mockResolvedValueOnce(Response.json({ noteId: "clipped" }));
+            await facade.callService("POST", "notes", { title: "clip" });
+            expect(fetchMock).toHaveBeenLastCalledWith("http://127.0.0.1:37743/api/clipper/notes",
+                expect.objectContaining({ headers: expect.objectContaining({ Authorization: "desktop-secret" }) }));
+        });
+
         it("looks for a production desktop app on its own port", async () => {
             vi.stubEnv("DEV", false);
             fetchMock.mockImplementation(async () => handshake("1.0"));

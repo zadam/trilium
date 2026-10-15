@@ -17,6 +17,9 @@ import error_handlers from "./routes/error_handlers.js";
 import mcpRoutes from "./routes/mcp.js";
 import routes from "./routes/routes.js";
 import config from "./services/config.js";
+import { contentSecurityPolicy } from "./services/content_security_policy.js";
+import { isAuthenticatedSyncRequest } from "./services/auth.js";
+import { checkFirstRunAuth, initializeFirstRunAuth, isFirstRunTokenRequired } from "./services/first_run_auth.js";
 import { getLog } from "@triliumnext/core";
 import { desktopNetworkAccessGate } from "./services/desktop_network_gate.js";
 import { createReactiveOidcMiddleware } from "./services/open_id.js";
@@ -29,6 +32,7 @@ const STATIC_OPTIONS: serveStatic.ServeStaticOptions = { dotfiles: "allow" };
 
 export default async function buildApp() {
     const app = express();
+    if (isFirstRunTokenRequired({} as express.Request)) initializeFirstRunAuth();
 
     const publicDir = isDev ? path.join(getResourceDir(), "../dist/public") : path.join(getResourceDir(), "public");
     const publicAssetsDir = path.join(publicDir, "assets");
@@ -81,10 +85,11 @@ export default async function buildApp() {
         resourcePolicy = 'same-origin';
     }
 
+    app.use(contentSecurityPolicy);
     app.use(
         helmet({
             hidePoweredBy: false, // errors out in electron
-            contentSecurityPolicy: false,
+            contentSecurityPolicy: false, // Explicit application/share policy is installed above.
             crossOriginResourcePolicy: {
                 policy: resourcePolicy
             },
@@ -126,6 +131,17 @@ export default async function buildApp() {
     // effect without a server restart; the underlying express-openid-connect handler is built lazily on
     // first use, so it costs nothing while OAuth is unselected. See createReactiveOidcMiddleware.
     app.use(createReactiveOidcMiddleware());
+
+    // Initial setup can install an entire database (including its password), or a sync seed.
+    // Guard those paths as well as set-password so they cannot become another first-claim race.
+    app.use((req, res, next) => {
+        // Express routes are case-insensitive and accept a trailing slash by default.
+        const requestPath = req.path.toLowerCase().replace(/\/$/, "");
+        const mutatesSetup = !["GET", "HEAD", "OPTIONS"].includes(req.method)
+            && (requestPath.startsWith("/api/setup/") || requestPath === "/api/login/sync");
+        if (mutatesSetup && !isAuthenticatedSyncRequest(req)) checkFirstRunAuth(req, res, next);
+        else next();
+    });
 
     await assets.register(app);
     routes.register(app);

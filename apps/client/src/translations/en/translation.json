@@ -2425,7 +2425,9 @@
     "handshake_failed": "Sync server handshake failed, error: {{message}}",
     "effective_server": "Server in use",
     "effective_server_description": "Set through config.ini or environment variables, which take priority over the server address above.",
-    "effective_server_disabled": "Synchronization is turned off."
+    "effective_server_disabled": "Synchronization is turned off.",
+    "setup_token": "First-run setup token",
+    "setup_token_description": "For a new server only: enter the token from its startup log, then test sync. The token is kept in memory until this app restarts."
   },
   "api_log": {
     "close": "Close"

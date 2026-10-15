@@ -51,6 +51,11 @@ export default class BridgedRequestProvider implements RequestProvider {
             headers["Cookie"] = opts.cookieJar.header;
         }
 
+        if (opts.cookieJar?.syncToken) headers["trilium-sync-auth"] = opts.cookieJar.syncToken;
+        if (opts.auth?.totpToken) headers["trilium-totp"] = opts.auth.totpToken;
+        if (opts.auth?.setupToken) {
+            headers["trilium-setup-auth"] = opts.auth.setupToken;
+        }
         if (opts.auth?.password) {
             headers["trilium-cred"] = btoa(`dummy:${opts.auth.password}`);
         }

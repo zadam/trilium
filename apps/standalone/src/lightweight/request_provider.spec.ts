@@ -65,9 +65,12 @@ describe("FetchRequestProvider.exec", () => {
 
     it("adds a trilium-cred header when auth is provided", async () => {
         const spy = mockFetch({ status: 200, text: async () => "{}" });
-        await provider.exec({ method: "GET", url: `${location.origin}/x`, auth: { password: "pw" } } as ExecOpts);
+        await provider.exec({ method: "GET", url: `${location.origin}/x`, auth: { password: "pw", totpToken: "123456", setupToken: "claim" }, cookieJar: { syncToken: "peer" } } as ExecOpts);
         const headers = lastInit(spy).headers as Record<string, string>;
         expect(headers["trilium-cred"]).toBe(btoa("dummy:pw"));
+        expect(headers["trilium-totp"]).toBe("123456");
+        expect(headers["trilium-sync-auth"]).toBe("peer");
+        expect(headers["trilium-setup-auth"]).toBe("claim");
     });
 
     it("serializes object bodies as JSON and passes string bodies through", async () => {

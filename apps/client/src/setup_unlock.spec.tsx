@@ -15,7 +15,7 @@ vi.mock("./services/server", () => ({ default: serverMock }));
 const setSetupAuthToken = vi.hoisted(() => vi.fn());
 vi.mock("./services/setup_auth", () => ({ setSetupAuthToken }));
 
-import SetupUnlock from "./setup_unlock";
+import SetupUnlock, { FirstRunUnlock } from "./setup_unlock";
 
 let container: HTMLDivElement;
 const onUnlocked = vi.fn();
@@ -241,5 +241,28 @@ describe("unlocking a wizard that is standing over a knowledge base", () => {
         await settle();
 
         expect(sentBody(fetchFn)).toEqual({ password: "filled-in-by-the-browser", totpToken: "" });
+    });
+});
+
+describe("first-run console proof", () => {
+    it("keeps the wizard locked on refusal and passes the entered proof to the request layer on success", async () => {
+        renderScreen();
+        render(<FirstRunUnlock onUnlocked={onUnlocked} />, container);
+        await settle();
+        const token = container.querySelector<HTMLInputElement>('input[name="setupToken"]');
+        if (!token) throw new Error("Expected console token input");
+        token.value = "console-proof";
+        token.dispatchEvent(new Event("input", { bubbles: true }));
+        await settle();
+        const rejected = answerWith({ status: 401 });
+        submit();
+        await settle();
+        expect(sentBody(rejected)).toEqual({ setupToken: "console-proof" });
+        expect(onUnlocked).not.toHaveBeenCalled();
+        answerWith(UNLOCKED);
+        submit();
+        await settle();
+        expect(setSetupAuthToken).toHaveBeenCalledWith("console-proof");
+        expect(onUnlocked).toHaveBeenCalledOnce();
     });
 });

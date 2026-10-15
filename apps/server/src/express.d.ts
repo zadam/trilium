@@ -30,6 +30,8 @@ export declare module "express-serve-static-core" {
 export declare module "express-session" {
     interface SessionData {
         loggedIn: boolean;
+        /** Fixed one-hour lifetime; requires the matching trilium-sync-auth header. */
+        syncAuth?: { token: string; expires: number };
         lastAuthState: {
             totpEnabled: boolean;
             ssoEnabled: boolean;

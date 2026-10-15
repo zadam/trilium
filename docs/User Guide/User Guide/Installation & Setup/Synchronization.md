@@ -9,6 +9,8 @@ In this setup, a central server (referred to as the _sync server_) and multiple 
 
 ### Security Considerations
 
+Upgrade both sync peers together: protocol version 41 uses a sync-only session with a separate header proof. Sync credentials do not create a browser login. Browser requests that change sync state require the normal CSRF token; sync statistics require authentication.
+
 Setting up the server securely is critical and can be complex. It is crucial to use a valid [TLS certificate](Server%20Installation/HTTPS%20\(TLS\).md) (HTTPS) rather than an unencrypted HTTP connection to ensure security and avoid potential vulnerabilities.
 
 ### Synchronizing a Desktop Instance with a Sync Server
@@ -18,7 +20,8 @@ This method is used when you already have a desktop instance of Trilium and want
 1.  **Server Deployment**: Ensure your server instance is deployed but uninitialized.
 2.  **Desktop Configuration**: Open your desktop instance, navigate to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Sync_ → _Sync server_, and set the _Server address_ to your sync server's address.
     *   Note that the sync server can also be overridden through <a class="reference-link" href="../Advanced%20Usage/Configuration%20(config.ini%20or%20environment%20variables).md">Configuration (config.ini or environment variables)</a>, case in which that value takes precedence. If that's the case, a field called _Server in use_ indicates it.
-3.  **Testing Sync**: Click the _Test sync_ button to verify the connection to the sync server.
+3.  **First-run token**: Read the token from the new server's startup log and enter it in _First-run setup token_ beside the sync test. It is kept in memory, tied to that server address, and must be entered again after restarting the desktop if initial setup is unfinished.
+4.  **Testing Sync**: Click the _Test sync_ button to verify the connection to the sync server.
     *   If successful, the client will start pushing all data to the server instance.
     *   This process may take some time, but you can continue using Trilium. Periodically check the server instance to confirm when the sync is complete. Once finished, you should see the login screen on the server.
 
@@ -31,7 +34,7 @@ This method is used when you already have a sync server and want to configure a 
 
 ![screenshot of the sync from server setup page](Synchronization_sync-init.png)
 
-1.  **Server Details**: Configure the Trilium server address and enter the correct username and password for authentication.
+1.  **Server Details**: Configure the Trilium server address and password. If the server has TOTP enabled, also enter a current one-time password or unused recovery code in the authentication-code field.
 2.  **Finish Setup**: Click the "Finish setup" button. If successful, you will see the following screen:
 
 ![screenshot of the sync page](Synchronization_sync-in-progress.png)
@@ -46,6 +49,8 @@ This method allows two desktop instances to synchronize between each other witho
 > Since v0.104.0, LAN access needs to be enabled to allow this sync to function. See <a class="reference-link" href="Desktop%20Installation/Network%20Access.md">Network Access</a> for information on how to do so.
 
 ## Proxy Configuration
+
+Sync supports the two proxy setups below. Automatic image downloads use a direct connection with a pinned, validated public address instead; they do not use the sync proxy or follow redirects. Private, loopback and link-local image addresses are refused.
 
 Two proxy setups are supported:
 

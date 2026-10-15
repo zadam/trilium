@@ -2,6 +2,7 @@ import { ValidationError } from "../errors.js";
 
 export interface CookieJar {
     header?: string;
+    syncToken?: string;
 }
 
 export interface ExecOpts {
@@ -16,6 +17,8 @@ export interface ExecOpts {
     cookieJar?: CookieJar;
     auth?: {
         password?: string;
+        totpToken?: string;
+        setupToken?: string;
     };
     timeout: number;
     body?: string | {};

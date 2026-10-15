@@ -3,16 +3,34 @@ import type { Request, Response, Router } from "express";
 
 import { bindEmitter } from "../cls_provider.js";
 import { isScriptingEnabled } from "../services/scripting_guard.js";
+import auth from "../services/auth.js";
+import etapiTokens from "../services/etapi_tokens.js";
+import { doubleCsrfProtection } from "./csrf_protection.js";
 
 function register(router: Router) {
-    // explicitly no CSRF middleware since it's meant to allow integration from external services
+    // Public grants and ETAPI tokens support external integrations; cookie writes require CSRF.
 
     router.all("/custom/*path", (req: Request, res: Response, _next) => {
         bindEmitter(req);
         bindEmitter(res);
 
         cls.init(() => routes.handleCustomRequest(
-            joinWildcardPath(req), req as unknown as CoreRequest, res, isScriptingEnabled
+            joinWildcardPath(req), req as unknown as CoreRequest, res, isScriptingEnabled,
+            (note) => {
+                // Publication is a separate, non-inherited grant on the matched note.
+                const publicGrant = note.getOwnedLabel("customPublic");
+                if ((publicGrant && publicGrant.value !== "false")
+                    || etapiTokens.isValidAuthHeader(req.headers.authorization)) return true;
+
+                let allowed = false;
+                auth.checkApiAuth(req, res, () => {
+                    doubleCsrfProtection(req, res, (error) => {
+                        if (error) res.status(403).send("Invalid CSRF token");
+                        else allowed = true;
+                    });
+                });
+                return allowed;
+            }
         ));
     });
 }

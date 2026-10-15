@@ -16,7 +16,10 @@ import * as utils from "../../services/utils/index.js";
 import ws from "../../services/ws.js";
 import { ValidationError } from "../../errors.js";
 
-async function testSync(): Promise<SyncTestResponse> {
+async function testSync(req?: Request): Promise<SyncTestResponse> {
+    if (typeof req?.body?.setupToken === "string") {
+        syncOptions.setSyncServerSetupToken(syncOptions.getSyncServerHost(), req.body.setupToken);
+    }
     try {
         if (!syncOptions.isSyncSetup()) {
             return { success: false, message: t("test_sync.not-configured") };
@@ -50,8 +53,8 @@ function getStats() {
         outstandingPullCount: syncService.getOutstandingPullCount(),
         totalPullCount: syncService.getTotalPullCount(),
         // Lets the setup wizard's progress screen detect a failed initial sync (#10548).
-        // Only exposed pre-initialization: this endpoint is unauthenticated, so once the
-        // instance is up and running, sync errors must not leak to anonymous visitors.
+        // Only useful during initial sync. The endpoint requires browser, setup or sync
+        // authentication; ordinary running-instance stats omit setup diagnostics.
         ...(initialized ? {} : { lastSyncError: syncService.getLastSyncError() })
     };
 

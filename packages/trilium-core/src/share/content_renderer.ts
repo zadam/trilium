@@ -141,7 +141,7 @@ export function renderNoteForExport(
     });
 }
 
-export function renderNoteContent(note: SNote, canAccessEmbed?: CanAccessEmbed) {
+export function renderNoteContent(note: SNote, canAccessEmbed?: CanAccessEmbed, cspNonce?: string) {
     const subRoot = getSharedSubTreeRoot(note);
 
     const ancestors = getSiteAncestorIds(note, subRoot.note);
@@ -179,6 +179,7 @@ export function renderNoteContent(note: SNote, canAccessEmbed?: CanAccessEmbed) 
         logoImageUrl,
         ancestors,
         isStatic: false,
+        cspNonce,
         canAccessEmbed,
         faviconUrl: note.hasRelation("shareFavicon") ? `api/notes/${note.getRelationValue("shareFavicon")}/download` : `../favicon.ico`,
         ...getIconPackArgs(iconPacks, (p) => p.builtin
@@ -231,6 +232,7 @@ function getNavigationIcons(items: NavigationItem[]): string[] {
 }
 
 interface RenderArgs {
+    cspNonce?: string;
     subRoot: Subroot;
     rootNoteId: string;
     cssToLoad: string[];
@@ -286,6 +288,7 @@ function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) 
     });
     const titleIcon = isFullHeight ? note.getIcon(renderArgs.iconPackSupportedPrefixes) : null;
     const opts = {
+        cspNonce: renderArgs.cspNonce,
         note,
         header,
         content,

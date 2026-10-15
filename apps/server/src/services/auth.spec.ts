@@ -313,20 +313,22 @@ describe("Auth", () => {
             expect(next).toHaveBeenCalled();
         });
 
-        it("checkApiAuthOrElectron passes through when DB not initialized", () => {
+        it("checkApiAuthOrElectron requires proof when DB is not initialized", () => {
             const spy = vi.spyOn(sqlInit, "isDbInitialized").mockReturnValue(false);
             const next = vi.fn();
-            auth.checkApiAuthOrElectron(makeReq(), makeRes() as never, next);
-            expect(next).toHaveBeenCalled();
+            const res = makeRes();
+            auth.checkApiAuthOrElectron(makeReq(), res as never, next);
+            expect(next).not.toHaveBeenCalled();
+            expect(res.statusCode).toBe(401);
             spy.mockRestore();
         });
 
         it("checkApiAuth handles electron, unauthenticated, and authenticated paths", () => {
-            // DB not initialized -> next
+            // DB not initialized -> still needs first-run or setup proof
             const dbSpy = vi.spyOn(sqlInit, "isDbInitialized").mockReturnValue(false);
             const next1 = vi.fn();
             auth.checkApiAuth(makeReq(), makeRes() as never, next1);
-            expect(next1).toHaveBeenCalled();
+            expect(next1).not.toHaveBeenCalled();
             dbSpy.mockRestore();
 
             // internal electron -> next
@@ -668,13 +670,13 @@ describe("the setup wizard's gate", () => {
                 vi.restoreAllMocks();
             });
 
-            it(`lets ${middleware} through on a first run, which has nothing to protect`, () => {
+            it(`requires console proof for ${middleware} on a first run`, () => {
                 // No marker, so nothing behind the wizard, and no database open either: the state
-                // the bypass was written for, and the one it has to go on allowing.
+                // the old bypass allowed, now requiring the console proof before API access.
                 leaveSetupMode();
                 vi.spyOn(sqlInit, "isDbInitialized").mockReturnValue(false);
 
-                expect(callGate({ middleware })).toMatchObject({ passed: true });
+                expect(callGate({ middleware })).toEqual({ passed: false, status: 401 });
 
                 vi.restoreAllMocks();
             });

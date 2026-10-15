@@ -119,7 +119,7 @@ describe("Setup API (core)", () => {
         expect(res.status).toBe(200);
         expect(res.body.result).toBe("success");
         // No blob limit supplied → 0 (unlimited).
-        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 0);
+        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 0, "");
     });
 
     it("threads a positive syncMaxBlobContentSize through to setupSyncFromSyncServer", async () => {
@@ -127,10 +127,10 @@ describe("Setup API (core)", () => {
             .spyOn(setupService, "setupSyncFromSyncServer")
             .mockResolvedValue({ result: "success" });
         const res = await api.post<{ result: string }>("/api/setup/sync-from-server", {
-            body: { syncServerHost: "http://host", syncProxy: "", password: "pw", syncMaxBlobContentSize: 20971520 }
+            body: { syncServerHost: "http://host", syncProxy: "", password: "pw", syncMaxBlobContentSize: 20971520, totpToken: "123456" }
         });
         expect(res.status).toBe(200);
-        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 20971520);
+        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 20971520, "123456");
     });
 
     it("normalizes an invalid syncMaxBlobContentSize to 0", async () => {
@@ -141,7 +141,7 @@ describe("Setup API (core)", () => {
             body: { syncServerHost: "http://host", syncProxy: "", password: "pw", syncMaxBlobContentSize: -5 }
         });
         expect(res.status).toBe(200);
-        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 0);
+        expect(setupSync).toHaveBeenCalledWith("http://host", "", "pw", 0, "");
     });
 });
 

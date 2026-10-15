@@ -1032,6 +1032,8 @@ export type BootstrapDefinition = {
      * knowledge base behind the wizard and a password that guarded it. See `setup_auth` in core.
      */
     setupAuthRequired?: boolean;
+    /** Server-console proof needed to set the first password. */
+    firstRunTokenRequired?: boolean;
     /**
      * Whether that unlock asks for a second factor as well as the password.
      *

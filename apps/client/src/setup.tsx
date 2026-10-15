@@ -18,7 +18,8 @@ import ExistingData, {
     refreshExistingData
 } from "./setup_existing";
 import RestoreFromBackup from "./setup_restore";
-import SetupUnlock from "./setup_unlock";
+import SetupUnlock, { FirstRunUnlock } from "./setup_unlock";
+import { getSetupAuthToken } from "./services/setup_auth";
 import Admonition, { ExtendedAdmonition } from "./widgets/react/Admonition";
 import Button from "./widgets/react/Button";
 import { Card, CardFrame, CardSection } from "./widgets/react/Card";
@@ -92,11 +93,12 @@ export function renderState(state: State, setState: (state: State) => void) {
 function App() {
     // A sync that already created the schema but was interrupted before finishing
     // resumes straight on the progress screen instead of restarting the wizard.
+    const [ firstRunUnlocked, setFirstRunUnlocked ] = useState(!window.glob.firstRunTokenRequired || !!getSetupAuthToken());
     const resuming = window.glob.syncInProgress === true;
     const [state, setState] = useState<State>(initialState(window.glob));
 
     useEffect(() => {
-        if (!resuming) {
+        if (!resuming || !firstRunUnlocked) {
             return;
         }
         // The background sync timer stays gated behind DB initialization, so nothing
@@ -105,7 +107,11 @@ function App() {
         server.post("sync/now").catch(() => {
             // Ignore — the progress screen keeps polling sync/stats regardless.
         });
-    }, [resuming]);
+    }, [resuming, firstRunUnlocked]);
+
+    if (!firstRunUnlocked) return (
+        <div class="setup-container"><FirstRunUnlock onUnlocked={() => setFirstRunUnlocked(true)} /></div>
+    );
 
     return (
         <div class="setup-container">
@@ -634,6 +640,7 @@ function messageOf(e: unknown): string {
 export function SyncFromServer({ setState }: { setState: (state: State) => void }) {
     const [ syncServerHost, setSyncServerHost ] = useState("");
     const [ password, setPassword ] = useState("");
+    const [ totpToken, setTotpToken ] = useState("");
     const [ syncProxy, setSyncProxy ] = useState("");
     const [ error, setError ] = useState<string | null>(null);
     const [ errorId, setErrorId ] = useState(0);
@@ -668,6 +675,7 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
                 syncServerHost: syncServerHost.trim().replace(/\/+$/, ""),
                 syncProxy: syncProxy.trim(),
                 password,
+                totpToken,
                 // On mobile (Capacitor), don't pull blobs above the default limit — they blow the
                 // WASM/native heap during sync. The server sends stubs instead; other platforms
                 // send 0 (no limit).
@@ -731,6 +739,9 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
                                 autocomplete="trilium-sync-server-password"
                                 required
                             />
+                        </FormGroup>
+                        <FormGroup label={t("login.totp-token")} name="serverTotpToken">
+                            <FormTextBox currentValue={totpToken} onChange={setTotpToken} autocomplete="one-time-code" />
                         </FormGroup>
                     </CardSection>
                 </Card>

@@ -23,11 +23,13 @@ export type CustomRequestResponse = Response & ScriptResponse;
  * @param path the path below `/custom/`, without a leading slash.
  * @param isScriptingEnabled reads the host's backend-scripting toggle. A request handler executes a
  *     script and is gated by it; a resource provider only serves a note's content and is not.
+ * @param authorize the HTTP host checks access to the matched note before any output or execution.
+ *     Hosts with no network authentication boundary (standalone) own all local notes by default.
  * @returns what the handler script returned. A caller that cannot hold the response open past this
  *     call — standalone — awaits it to let an asynchronous handler finish writing.
  */
 export function handleCustomRequest(
-    path: string, req: Request, res: CustomRequestResponse, isScriptingEnabled: () => boolean
+    path: string, req: Request, res: CustomRequestResponse, isScriptingEnabled: () => boolean, authorize: (note: BNote) => boolean = () => true
 ): unknown {
     const attributeIds = getSql().getColumn<string>(
         "SELECT attributeId FROM attributes WHERE isDeleted = 0 AND type = 'label' "
@@ -46,6 +48,9 @@ export function handleCustomRequest(
         if (!match) {
             continue;
         }
+
+        // Authorize the selected note before either streaming bytes or executing code.
+        if (!authorize(attr.getNote())) return;
 
         // Only the first matching handler runs.
         if (attr.name === "customRequestHandler") {

@@ -104,6 +104,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "runAtHour", valueType: "number", isDangerous: false },
     { type: "label", name: "customRequestHandler", valueType: "text", isDangerous: true },
     { type: "label", name: "customResourceProvider", valueType: "text", isDangerous: true },
+    { type: "label", name: "customPublic", valueType: "boolean", isDangerous: true },
     { type: "label", name: "widget", valueType: "boolean", isDangerous: true },
     { type: "label", name: "workspace", valueType: "boolean" },
     { type: "label", name: "workspaceIconClass", valueType: "text" },

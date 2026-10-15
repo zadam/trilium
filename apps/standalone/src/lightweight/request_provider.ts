@@ -26,6 +26,15 @@ export default class FetchRequestProvider implements RequestProvider {
         // Note: the Cookie header is a forbidden header in fetch —
         // the browser manages cookies automatically via credentials: 'include'.
 
+        if (opts.cookieJar?.syncToken) {
+            headers["trilium-sync-auth"] = opts.cookieJar.syncToken;
+        }
+        if (opts.auth?.totpToken) {
+            headers["trilium-totp"] = opts.auth.totpToken;
+        }
+        if (opts.auth?.setupToken) {
+            headers["trilium-setup-auth"] = opts.auth.setupToken;
+        }
         if (opts.auth?.password) {
             headers["trilium-cred"] = btoa(`dummy:${opts.auth.password}`);
         }

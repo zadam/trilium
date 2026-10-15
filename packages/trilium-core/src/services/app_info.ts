@@ -3,7 +3,8 @@ import packageJson from "../../package.json" with { type: "json" };
 import { AppInfo } from "@triliumnext/commons";
 import { getMaxMigrationVersion } from "../migrations/migrations.js";
 
-const SYNC_VERSION = 40;
+// v41 requires a header-bound, sync-scoped session proof. Upgrade both peers together.
+const SYNC_VERSION = 41;
 const CLIPPER_PROTOCOL_VERSION = "1.1";
 
 const appInfo: AppInfo = {

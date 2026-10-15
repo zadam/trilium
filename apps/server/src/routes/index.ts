@@ -13,6 +13,7 @@ import openID from "../services/open_id.js";
 import { isDev, isMac, supportsBackgroundMaterial } from "../services/utils.js";
 import totp from "../services/totp.js";
 import { generateCsrfToken } from "./csrf_protection.js";
+import { isFirstRunTokenRequired } from "../services/first_run_auth.js";
 
 type View = "desktop" | "mobile" | "print";
 
@@ -43,6 +44,7 @@ export function bootstrap(req: Request, res: Response) {
     const sharedItems = getSharedBootstrapItems(assetPath, isDbInitialized);
     const commonItems = {
         ...sharedItems,
+        firstRunTokenRequired: isFirstRunTokenRequired(req),
         // The setup wizard's password gate is exempted for exactly what `checkSetupAuth` exempts:
         // the trusted renderer, which is the application itself, and an instance already configured
         // to trust whoever can reach it. Asked for anywhere else, the screen would be holding out

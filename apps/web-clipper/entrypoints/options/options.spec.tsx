@@ -43,6 +43,14 @@ describe("options page", () => {
         expect(await stored("triliumDesktopPort")).toBe("");
     });
 
+    it("stores the desktop integration token locally, separately from server credentials", async () => {
+        await renderOptions();
+        await type("#trilium-desktop-token", " desktop-token ");
+        await submit(0);
+        expect((await browser.storage.local.get("desktopAuthToken")).desktopAuthToken).toBe("desktop-token");
+        expect(await stored("authToken")).toBeUndefined();
+    });
+
     it("logs in to a server, asking for the code when it requires one", async () => {
         await renderOptions();
         await submit(1);
@@ -50,7 +58,7 @@ describe("options page", () => {
         expect(fetchMock).not.toHaveBeenCalled();
 
         await type("input[type=text]:not(#trilium-desktop-port)", " https://trilium.example/// ");
-        await type("input[type=password]", "secret");
+        await type("input[type=password]:not(#trilium-desktop-token)", "secret");
         fetchMock.mockResolvedValueOnce(Response.json({ message: "Incorrect credential", factor: "totp" }, { status: 401 }));
         await submit(1);
         expect(fetchMock).toHaveBeenCalledWith("https://trilium.example/api/login/token", expect.objectContaining({
@@ -85,13 +93,13 @@ describe("options page", () => {
         await flush();
         expect(await stored("authToken")).toBe("");
         expect(message()).toBeNull();
-        expect(container.querySelector("input[type=password]")).not.toBeNull();
+        expect(container.querySelector("input[type=password]:not(#trilium-desktop-token)")).not.toBeNull();
     });
 
     it("explains why the login failed", async () => {
         await renderOptions();
         await type("input[type=text]:not(#trilium-desktop-port)", "https://trilium.example");
-        await type("input[type=password]", "wrong");
+        await type("input[type=password]:not(#trilium-desktop-token)", "wrong");
 
         fetchMock.mockResolvedValueOnce(Response.json({ message: "Incorrect credential", factor: "password" }, { status: 401 }));
         await submit(1);
@@ -123,14 +131,14 @@ describe("options page", () => {
         await browser.storage.sync.set({ triliumServerUrl: "https://trilium.example", authToken: "" });
         await renderOptions();
         expect(container.querySelector("strong")).toBeNull();
-        expect(container.querySelector("input[type=password]")).not.toBeNull();
+        expect(container.querySelector("input[type=password]:not(#trilium-desktop-token)")).not.toBeNull();
         await act(() => render(null, container));
 
         await browser.storage.sync.set({ authToken: "t" });
         await renderOptions();
         expect(container.querySelector("strong")?.textContent)
             .toBe("Trilium server instance has been already configured to https://trilium.example.");
-        expect(container.querySelector("input[type=password]")).toBeNull();
+        expect(container.querySelector("input[type=password]:not(#trilium-desktop-token)")).toBeNull();
     });
 });
 

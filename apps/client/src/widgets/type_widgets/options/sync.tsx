@@ -32,6 +32,7 @@ export function SyncConfiguration() {
     const [syncProxy, setSyncProxy] = useTriliumOption("syncProxy");
     const [localHost, setLocalHost] = useState(syncServerHost);
     const [localProxy, setLocalProxy] = useState(syncProxy);
+    const [setupToken, setSetupToken] = useState("");
 
     useEffect(() => setLocalHost(syncServerHost), [syncServerHost]);
     useEffect(() => setLocalProxy(syncProxy), [syncProxy]);
@@ -41,7 +42,7 @@ export function SyncConfiguration() {
             setSyncServerHost(localHost),
             setSyncProxy(localProxy)
         ]);
-        const result = await server.post<SyncTestResponse>("sync/test");
+        const result = await server.post<SyncTestResponse>("sync/test", { setupToken });
 
         if (result.success && result.message) {
             toast.showMessage(result.message);
@@ -98,6 +99,10 @@ export function SyncConfiguration() {
             <Card>
                 <EffectiveSyncServer />
 
+                <OptionCardSection name="sync-setup-token" label={t("sync_2.setup_token")}
+                    description={t("sync_2.setup_token_description")} stacked>
+                    <FormTextBox type="password" currentValue={setupToken} onChange={setSetupToken} autocomplete="off" />
+                </OptionCardSection>
                 <OptionCardSection
                     label={t("sync_2.test_title")}
                     description={t("sync_2.test_description")}

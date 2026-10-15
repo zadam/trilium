@@ -1,5 +1,5 @@
 # Custom Resource Providers
-A custom resource provider allows any file imported into Trilium (images, fonts, stylesheets) to be publicly accessible via a URL.
+A custom resource provider allows any file imported into Trilium (images, fonts, stylesheets) to be accessible via a URL. By default the URL requires a logged-in session or an ETAPI token.
 
 A potential use case for this is to add embed a custom font alongside a theme.
 
@@ -7,8 +7,9 @@ A potential use case for this is to add embed a custom font alongside a theme.
 
 1.  Import a file such as an image or a font into Trilium by drag & drop.
 2.  Set the [label](Attributes/Labels.md) `#customResourceProvider` to `hello`.
-3.  To test if it is working, use a browser to navigate to `<protocol>://<host>/custom/hello` (where `<protocol>` is either `http` or `https` based on your setup, and `<host>` is the host or IP to your Trilium server instance). If you are running the TriliumNext application without a server, use `http://localhost:37840` as the base URL.
-4.  If everything went well, at the previous step the browser should have downloaded the file uploaded in the first step.
+3.  If the file should be readable without authentication, add `#customPublic` directly to the same note. This grant is not inherited; `#customPublic=false` keeps it private.
+4.  To test if it is working, use a browser to navigate to `<protocol>://<host>/custom/hello` (where `<protocol>` is either `http` or `https` based on your setup, and `<host>` is the host or IP to your Trilium server instance). If you are running the TriliumNext application without a server, use `http://localhost:37840` as the base URL.
+5.  If everything went well, at the previous step the browser should have downloaded the file uploaded in the first step.
 
 Instead of `hello`, the name can be:
 
@@ -31,3 +32,5 @@ div {
 	font-family: customFont;
 }
 ```
+
+Adding a resource-provider label alone no longer publishes a file anonymously. Existing public resources need an explicit `#customPublic` grant. Cookie-authenticated requests that change state also require a CSRF token; external integrations can use an ETAPI token in the `Authorization` header.

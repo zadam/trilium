@@ -15,14 +15,15 @@ function register(router: Router) {
             if (SHARE_PAGE_PATHS.has(route.path)) {
                 await ensureShareHighlighting();
             }
-            send(res, handleShareRequest(route, toShareRequest(req)));
+            send(res, handleShareRequest(route, toShareRequest(req, res.locals.cspNonce)));
         });
     }
 }
 
-function toShareRequest(req: Request): ShareRequest {
+function toShareRequest(req: Request, cspNonce?: string): ShareRequest {
     return {
         path: req.path,
+        cspNonce,
         // Express types a repeated path parameter as an array; the share patterns declare each of
         // theirs once, so every match here is a single segment.
         params: req.params as Record<string, string | undefined>,

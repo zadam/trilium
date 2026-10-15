@@ -1,4 +1,5 @@
 import { doubleCsrf } from "csrf-csrf";
+import { isAuthenticatedSyncRequest } from "../services/auth.js";
 import type { NextFunction, Request, Response } from "express";
 
 import { isInternalElectronRequest } from "../services/electron_request.js";
@@ -46,14 +47,14 @@ export const { generateCsrfToken } = doubleCsrfUtilities;
 // listener still get the full CSRF check. Auth is similarly gated in
 // `services/auth.ts`.
 export function doubleCsrfProtection(req: Request, res: Response, next: NextFunction) {
-    if (isInternalElectronRequest(req)) {
+    if (isInternalElectronRequest(req) || isAuthenticatedSyncRequest(req)) {
         return next();
     }
     // Before the DB is initialized, sessions are never persisted (SQLiteSessionStore
     // no-ops), so every request carries a fresh session id and the session-bound CSRF
     // token can never validate — protected endpoints the setup wizard needs (sync/now
-    // for resume/retry of the initial sync) would always 403. CSRF also has nothing to
-    // protect at this stage: there is no authenticated session to ride. See #10548.
+    // for resume/retry of the initial sync) would always 403. Auth requires the console/setup
+    // header proof at this stage instead of a durable browser session. See #10548.
     if (!sqlInit.isDbInitialized()) {
         return next();
     }

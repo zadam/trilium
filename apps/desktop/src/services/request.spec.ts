@@ -45,6 +45,12 @@ describe("ElectronRequestProvider", () => {
         expect(whenReady).toHaveBeenCalledOnce();
     });
 
+    it("uses Node for a pinned image request, without Electron redirect following", async () => {
+        const client = await provider.getClientPublic({ method: "GET", url: "https://example.com", lookup: () => {} });
+        expect(client).not.toBe(netSentinel);
+        expect(typeof client.request).toBe("function");
+    });
+
     it("falls through to Node http(s) when an explicit proxy is configured", async () => {
         const client = await provider.getClientPublic({
             method: "GET",

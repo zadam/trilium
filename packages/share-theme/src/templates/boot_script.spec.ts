@@ -24,6 +24,12 @@ describe("boot_script.ejs", () => {
             .toStrictEqual([ "theme-dark", "theme-preference-system", "has-scripts" ]);
     });
 
+    it("uses the HTTP host's nonce when supplied and remains usable for static exports", () => {
+        const source = readFileSync(new URL("boot_script.ejs", import.meta.url), "utf8");
+        expect(ejs.render(source, { isStatic: false, cspNonce: "trusted-nonce" })).toContain('nonce="trusted-nonce"');
+        expect(ejs.render(source, { isStatic: true })).not.toContain("nonce=");
+    });
+
     it("leaves no inline script in the page template besides the boot script", () => {
         const page = readFileSync(new URL("page.ejs", import.meta.url), "utf8");
         expect(page.match(/<script>/g)).toBeNull();

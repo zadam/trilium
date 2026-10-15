@@ -15,7 +15,17 @@ function get(name: keyof typeof config.Sync) {
     return (config["Sync"] && config["Sync"][name]) || optionService.getOption(name);
 }
 
+let firstRunProof: { host: string; token: string } | undefined;
+
 export default {
+    // Temporary proof is tied to the operator's chosen host and never written to the document.
+    setSyncServerSetupToken: (host: string | null | undefined, token: string) => {
+        firstRunProof = host && token ? { host: normalizeUrl(host) ?? "", token } : undefined;
+    },
+    getSyncServerSetupToken: () => {
+        if (!firstRunProof) return undefined;
+        return firstRunProof.host === normalizeUrl(get("syncServerHost")) ? firstRunProof.token : undefined;
+    },
     // env variable is the easiest way to guarantee we won't overwrite prod data during development
     // after copying prod document/data directory
     getSyncServerHost: () => {

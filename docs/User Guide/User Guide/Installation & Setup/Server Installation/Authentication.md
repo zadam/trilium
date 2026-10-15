@@ -1,4 +1,16 @@
 # Authentication
+## First-run setup
+
+A new server prints a **First-run setup token** in its startup log. Copy that token into the setup screen and, when asked, the first-password form. The token is valid for one hour and is never included in the page or its URL. If it expires, submitting again prints a replacement in the server log; restarting also creates a new token. For Docker, read it with `docker logs <container-name>`.
+
+The token also protects database installation, backup restore and incoming sync seeds before the instance is claimed. When seeding from a desktop, enter the server's token in Options → Sync → First-run setup token before testing sync. The desktop's own trusted window does not need a console token.
+
+Keep the server behind HTTPS when reaching it over a network. The setup token does not encrypt passwords, sync secrets or session cookies.
+
+## Content Security Policy
+
+The server sends a Content Security Policy on the application shell and shared pages. It allows the trusted boot scripts and scripts served by Trilium, and blocks arbitrary inline scripts, event-handler attributes and embedded objects. Frontend script notes still work through Trilium's scripting runtime. Put shared-page JavaScript in a script note referenced with `~shareJs`, rather than an inline script in HTML. Raw shared HTML is subject to the same policy.
+
 ## Disabling authentication
 
 If you are running Trilium on `localhost` only or if authentication is handled by another component, you can disable Trilium’s authentication by adding the following to `config.ini`:

@@ -46,8 +46,11 @@ export function Options() {
 
 function DesktopPortForm({ showMessage }: { showMessage: ShowMessage }) {
     const [ port, setPort ] = useState("");
+    const [ token, setToken ] = useState("");
 
     useEffect(() => {
+        void browser.storage.local.get<{ desktopAuthToken?: string }>("desktopAuthToken")
+            .then(({ desktopAuthToken }) => setToken(desktopAuthToken ?? ""));
         void browser.storage.sync.get<{ triliumDesktopPort?: string }>("triliumDesktopPort")
             .then(({ triliumDesktopPort }) => setPort(triliumDesktopPort ?? ""));
     }, []);
@@ -63,6 +66,7 @@ function DesktopPortForm({ showMessage }: { showMessage: ShowMessage }) {
         }
 
         await browser.storage.sync.set({ triliumDesktopPort: trimmedPort });
+        await browser.storage.local.set({ desktopAuthToken: token.trim() });
         showMessage({ kind: "success", text: "Port number has been saved." });
     }
 
@@ -81,6 +85,12 @@ function DesktopPortForm({ showMessage }: { showMessage: ShowMessage }) {
                 {" "}(normally keep this empty)
             </p>
 
+            <p>
+                <label for="trilium-desktop-token">Desktop ETAPI token: </label>
+                <input type="password" id="trilium-desktop-token" value={token}
+                    onInput={(event) => setToken(event.currentTarget.value)} autoComplete="off" />
+            </p>
+            <p>Create a token in the desktop app under Options → ETAPI and paste it here. It stays in this browser.</p>
             <button type="submit" className="btn btn-primary">Save</button>
         </form>
     );

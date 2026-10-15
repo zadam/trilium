@@ -28,6 +28,8 @@ import shacaLoader from "./shaca/shaca_loader.js";
 export interface ShareRequest {
     /** The full request path, such as `/share/my-alias`. */
     path: string;
+    /** Set only by a trusted HTTP host, never read from request input. */
+    cspNonce?: string;
     params: Record<string, string | undefined>;
     query: Record<string, string | string[] | undefined>;
     /** Returns the named request header, or `undefined` when the caller did not send it. */
@@ -186,7 +188,7 @@ function renderNote(note: SNote | undefined, req: ShareRequest): ShareReply {
     return {
         status: 200,
         headers,
-        body: renderNoteContent(note, (embeddedNote) => hasCredentialAccess(embeddedNote, req))
+        body: renderNoteContent(note, (embeddedNote) => hasCredentialAccess(embeddedNote, req), req.cspNonce)
     };
 }
 

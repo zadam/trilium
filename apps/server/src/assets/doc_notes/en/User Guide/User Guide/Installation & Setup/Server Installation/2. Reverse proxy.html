@@ -60,8 +60,10 @@ error: Unexpected token '&lt;', "&lt;!doctype "... is not valid JSON
 <aside class="admonition note">
   <p>This is safe: Trilium authenticates these endpoints itself. Sync uses
     a challenge-free HMAC handshake based on a shared secret, and the one-time
-    setup seed request is password-protected — so exempting them at the proxy
-    does not expose unauthenticated access to your data.</p>
+    setup seed request requires the password and, when enabled, TOTP or a recovery
+    code; an incoming seed on a fresh server requires its console setup token
+    — so exempting them at the proxy does not expose unauthenticated access
+    to your data.</p>
 </aside>
 <p>An example for Nginx, where <code>/auth</code> is your forward-auth endpoint:</p><pre><code class="language-text-x-trilium-auto">server {
     # ... TLS, server_name, etc. ...

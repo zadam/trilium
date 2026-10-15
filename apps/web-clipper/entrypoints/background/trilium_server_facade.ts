@@ -8,6 +8,7 @@ export type TriliumSearchStatus = {
     status: "not-found"
 } | {
     status: "found-desktop",
+    token?: string;
     port: number;
     url: string;
     protocolMinor: number;
@@ -142,10 +143,13 @@ export default class TriliumServerFacade {
                 })))
             : Promise.resolve(null);
 
-        const desktop = await handshake(desktopUrl, DESKTOP_TIMEOUT_MS);
+        const { desktopAuthToken } = await browser.storage.local.get<{ desktopAuthToken?: string }>("desktopAuthToken");
+        const desktop = await handshake(desktopUrl, DESKTOP_TIMEOUT_MS,
+            desktopAuthToken ? { Authorization: desktopAuthToken } : undefined);
         if (desktop) {
             return checkVersion(desktop, (protocolMinor) => ({
-                status: "found-desktop", port, url: desktopUrl, protocolMinor
+                status: "found-desktop", port, url: desktopUrl, protocolMinor,
+                ...(desktopAuthToken ? { token: desktopAuthToken } : {})
             }));
         }
 
@@ -226,7 +230,7 @@ export default class TriliumServerFacade {
             const fetchOptions: RequestInit = {
                 method,
                 headers: {
-                    Authorization: search.status === "found-server" ? search.token : "",
+                    Authorization: search.token ?? "",
                     'Content-Type': 'application/json',
                     'trilium-local-now-datetime': this.localNowDateTime()
                 },

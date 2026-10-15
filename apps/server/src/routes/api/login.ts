@@ -87,7 +87,7 @@ async function loginSync(req: Request) {
     const now = new Date();
 
     // login token is valid for 5 minutes
-    if (Math.abs(timestamp.getTime() - now.getTime()) > 5 * 60 * 1000) {
+    if (!Number.isFinite(timestamp.getTime()) || Math.abs(timestamp.getTime() - now.getTime()) > 5 * 60 * 1000) {
         return [401, { message: "Auth request time is out of sync, please check that both client and server have correct time. The difference between clocks has to be smaller than 5 minutes." }];
     }
 
@@ -120,9 +120,13 @@ async function loginSync(req: Request) {
         });
     });
 
-    req.session.loggedIn = true;
+    // A document-secret proof is a peer credential, not a browser login. A header-bound
+    // proof also prevents the cookie alone from authorizing a forged sync mutation.
+    const syncToken = utils.randomSecureToken(32);
+    req.session.syncAuth = { token: syncToken, expires: Date.now() + 60 * 60 * 1000 };
 
     return {
+        syncToken,
         instanceId: getInstanceId(),
         maxEntityChangeId: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1")
     };

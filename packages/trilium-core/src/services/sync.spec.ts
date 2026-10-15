@@ -30,7 +30,7 @@ interface CheckResponse {
 }
 
 interface FakeConfig {
-    login?: { instanceId: string; maxEntityChangeId: number } | null;
+    login?: { instanceId: string; maxEntityChangeId: number; syncToken?: string } | null;
     loginThrows?: Error;
     changed?: ChangesResponse[];
     check?: CheckResponse[];
@@ -41,7 +41,7 @@ interface FakeConfig {
 let config: FakeConfig = {};
 let changedIdx = 0;
 let checkIdx = 0;
-const requestLog: Array<{ method: string; url: string; body?: ExecOpts["body"] }> = [];
+const requestLog: Array<Pick<ExecOpts, "method" | "url" | "body" | "cookieJar">> = [];
 
 /** The entity IDs actually sent to the sync server, across every push of the run. */
 const pushedEntityIds = () => requestLog
@@ -52,14 +52,14 @@ const pushedEntityIds = () => requestLog
 
 const fakeRequest: RequestProvider = fakeRequestProvider({
     exec: (<T,>(opts: ExecOpts): Promise<T> => {
-        requestLog.push({ method: opts.method, url: opts.url, body: opts.body });
+        requestLog.push({ method: opts.method, url: opts.url, body: opts.body, cookieJar: opts.cookieJar && { ...opts.cookieJar } });
         const url = opts.url;
         const reply = (value: unknown) => Promise.resolve(value as T);
 
         if (url.includes("/api/login/sync")) {
             if (config.loginThrows) return Promise.reject(config.loginThrows);
             if (config.login === null) return reply(undefined);
-            return reply(config.login ?? { instanceId: "REMOTE_INSTANCE", maxEntityChangeId: 0 });
+            return reply(config.login ?? { instanceId: "REMOTE_INSTANCE", maxEntityChangeId: 0, syncToken: "peer-proof" });
         }
         if (url.includes("/api/sync/changed")) {
             config.onChanged?.(changedIdx);
@@ -116,6 +116,9 @@ describe("sync service", () => {
         const result = await runSync();
 
         expect(result).toEqual({ success: true });
+        const peerRequests = requestLog.filter(request => request.url.includes("/api/sync/"));
+        expect(peerRequests.length).toBeGreaterThan(0);
+        expect(peerRequests.every(request => request.cookieJar?.syncToken === "peer-proof")).toBe(true);
         // The incomplete marker is cleared on convergence.
         expect(options.getOption("syncIncomplete")).toBe("false");
         // The expected endpoints were exercised.

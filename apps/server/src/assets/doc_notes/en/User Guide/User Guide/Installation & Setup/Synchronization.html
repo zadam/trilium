@@ -11,6 +11,10 @@
   requiring no manual intervention.</p>
 <h2>Setting Up Synchronization</h2>
 <h3>Security Considerations</h3>
+<p>Upgrade both sync peers together: protocol version 41 uses a sync-only
+  session with a separate header proof. Sync credentials do not create a
+  browser login. Browser requests that change sync state require the normal
+  CSRF token; sync statistics require authentication.</p>
 <p>Setting up the server securely is critical and can be complex. It is crucial
   to use a valid <a href="#root/_help_l2VkvOwUNfZj">TLS certificate</a> (HTTPS)
   rather than an unencrypted HTTP connection to ensure security and avoid
@@ -31,6 +35,10 @@
         called <em>Server in use</em> indicates it.</li>
     </ul>
   </li>
+  <li><strong>First-run token</strong>: Read the token from the new server's
+    startup log and enter it in <em>First-run setup token</em> beside the sync
+    test. It is kept in memory, tied to that server address, and must be entered
+    again after restarting the desktop if initial setup is unfinished.</li>
   <li><strong>Testing Sync</strong>: Click the <em>Test sync</em> button to verify
     the connection to the sync server.
     <ul>
@@ -54,7 +62,8 @@
 </p>
 <ol>
   <li><strong>Server Details</strong>: Configure the Trilium server address
-    and enter the correct username and password for authentication.</li>
+    and password. If the server has TOTP enabled, also enter a current one-time
+    password or unused recovery code in the authentication-code field.</li>
   <li><strong>Finish Setup</strong>: Click the "Finish setup" button. If successful,
     you will see the following screen:</li>
 </ol>
@@ -73,6 +82,10 @@ class="admonition warning">
     information on how to do so.</p>
 </aside>
 <h2>Proxy Configuration</h2>
+<p>Sync supports the two proxy setups below. Automatic image downloads use
+  a direct connection with a pinned, validated public address instead; they
+  do not use the sync proxy or follow redirects. Private, loopback and link-local
+  image addresses are refused.</p>
 <p>Two proxy setups are supported:</p>
 <ul>
   <li><strong>Explicit Proxy Configuration</strong>: Set the proxy server in
