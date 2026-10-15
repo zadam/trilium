@@ -8,6 +8,9 @@
 
     .ext-badge {
         --badge-radius: 4px;
+        background:
+            linear-gradient(var(--color), var(--color)),
+            var(--launcher-pane-background-color, var(--main-background-color));
         position: absolute;
         inset-inline-end: var(--launcher-pane-button-margin, 0);
         bottom: var(--launcher-pane-button-gap, 0);
@@ -19,14 +22,12 @@
     }
 
     .record-meeting-beta-badge {
-        --color: var(--link-color, var(--main-text-color));
+        --color: var(--badge-background-color, var(--accented-background-color));
+        color: var(--badge-text-color, var(--muted-text-color));
     }
 
     .record-meeting-time-badge {
         --color: var(--left-pane-item-selected-background, var(--main-background-color));
-        background:
-            linear-gradient(var(--color), var(--color)),
-            var(--launcher-pane-background-color, var(--main-background-color));
         color: var(--left-pane-item-selected-color, var(--main-text-color));
         box-shadow: var(--left-pane-item-selected-shadow);
         font-variant-numeric: tabular-nums;
