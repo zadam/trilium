@@ -73,7 +73,9 @@
     "focus-split-right": "Di chuyển trọng tâm sang vùng chia bên phải vùng đang hoạt động",
     "split-view": "Xem tách đôi",
     "move-split-left": "Hoán đổi vùng chia đang hoạt động với vùng chia bên trái, ghi chú sẽ di chuyển và trọng tâm theo sau",
-    "move-split-right": "Hoán đổi vùng chia đang hoạt động với vùng chia bên phải, ghi chú sẽ di chuyển và trọng tâm theo sau"
+    "move-split-right": "Hoán đổi vùng chia đang hoạt động với vùng chia bên phải, ghi chú sẽ di chuyển và trọng tâm theo sau",
+    "note-panels": "Bảng ghi chú",
+    "show-note-map": "Hiển thị bản đồ ghi chú ở khung bên phải"
   },
   "login": {
     "password": "Mật khẩu",
