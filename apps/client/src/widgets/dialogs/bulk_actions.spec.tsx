@@ -65,6 +65,12 @@ describe("BulkActionsDialog", () => {
         expect(container.querySelector(".bulk-actions-more-notes")).toBeNull();
     });
 
+    it("says so when no action is chosen yet", async () => {
+        await open([ "n1" ]);
+        expect(container.querySelector(".bulk-actions-chosen-actions .no-items")?.textContent)
+            .toBe("bulk_actions.none_yet");
+    });
+
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {
         await open([ "n1", "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1", "n2" ], includeDescendants: false });

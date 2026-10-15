@@ -1,49 +1,71 @@
-.bulk-actions-dialog .modal-body h4:not(:first-child) {
-    margin-top: 20px;
-}
-
-.bulk-actions-dialog .bulk-actions-selected-notes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    max-height: 30vh;
-    overflow-y: auto;
-
-    .tn-chip {
-        max-width: 100%;
-        min-width: 0;
+.bulk-actions-dialog {
+    .tn-card {
+        margin-bottom: 16px;
     }
 
-    .bulk-actions-more-notes {
-        padding-inline: 4px;
+    .tn-card:last-child {
+        margin-bottom: 0;
     }
-}
 
-.bulk-actions-dialog .bulk-available-action-list button {
-    padding: 2px 7px;
-    margin-inline-end: 10px;
-    margin-bottom: 5px;
-}
+    .bulk-actions-selected-notes {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        max-height: 30vh;
+        overflow-y: auto;
 
-.bulk-actions-dialog .bulk-existing-action-list {
-    width: 100%;
-}
+        .tn-chip {
+            max-width: 100%;
+            min-width: 0;
+        }
 
-.bulk-actions-dialog .bulk-existing-action-list td {
-    padding: 7px;
-}
+        .bulk-actions-more-notes {
+            padding-inline: 4px;
+        }
+    }
 
-.bulk-actions-dialog .bulk-existing-action-list .button-column {
-    width: 50px;
-    white-space: nowrap;
-    text-align: end;
-}
+    .bulk-available-action-group {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+    }
 
-.bulk-actions-dialog .bulk-existing-action-list .button-column > * {
-    vertical-align: middle;
-}
+    .bulk-available-action-group-title {
+        flex-shrink: 0;
+        width: 6rem;
+        color: var(--muted-text-color);
+    }
 
-.bulk-actions-dialog .bulk-existing-action-list .button-column .help-dropdown {
-    display: inline-block !important;
+    .bulk-available-action-group-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .bulk-existing-action-list {
+        width: 100%;
+
+        tr:not(:last-child) {
+            border-bottom: 1px solid var(--main-border-color);
+        }
+
+        td {
+            padding: 8px 12px;
+        }
+
+        .button-column {
+            width: 50px;
+            white-space: nowrap;
+            text-align: end;
+
+            > * {
+                vertical-align: middle;
+            }
+
+            .help-dropdown {
+                display: inline-block !important;
+            }
+        }
+    }
 }
