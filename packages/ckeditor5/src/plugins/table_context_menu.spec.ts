@@ -431,6 +431,37 @@ describe("TableContextMenu", () => {
             expect(paragraph && mouseDown(paragraph, 2).defaultPrevented).toBe(false);
         });
     });
+
+    describe("mouse cell selection", () => {
+        it("selects cells only for gestures started with the primary button", () => {
+            const tableSelection = editor.plugins.get(TableSelection);
+            const placeCaret = () =>
+                setModelData(editor.model, modelTable([["1[]1", "12"], ["21", "22"]]));
+            const hasCellSelection = () => tableSelection.getSelectedTableCells() !== null;
+
+            // Middle and right drags.
+            for (const [button, buttons] of [[1, 4], [2, 2]]) {
+                placeCaret();
+                mouseDown(domCell(editor, 0, 0), button, { buttons });
+                mouseMove(domCell(editor, 1, 1), buttons);
+                expect(hasCellSelection(), `button ${button}`).toBe(false);
+                mouseUp(domCell(editor, 1, 1), button);
+            }
+
+            // Shift with the middle button.
+            placeCaret();
+            mouseDown(domCell(editor, 1, 1), 1, { buttons: 4, shiftKey: true });
+            expect(hasCellSelection(), "shift").toBe(false);
+            mouseUp(domCell(editor, 1, 1), 1);
+
+            // Primary drag.
+            placeCaret();
+            mouseDown(domCell(editor, 0, 0), 0, { buttons: 1 });
+            mouseMove(domCell(editor, 1, 1), 1);
+            expect(selectionCells(editor)).toHaveLength(4);
+            mouseUp(domCell(editor, 1, 1), 0);
+        });
+    });
 });
 
 function modelTable(rows: string[][], attributes = ""): string {
@@ -494,8 +525,16 @@ function RawTableWidget(editor: Editor) {
     });
 }
 
-function mouseDown(target: HTMLElement, button: number): MouseEvent {
-    const event = new MouseEvent("mousedown", { button, bubbles: true, cancelable: true });
+function mouseDown(target: HTMLElement, button: number, init: MouseEventInit = {}): MouseEvent {
+    const event = new MouseEvent("mousedown", { ...init, button, bubbles: true, cancelable: true });
     target.dispatchEvent(event);
     return event;
+}
+
+function mouseMove(target: HTMLElement, buttons: number) {
+    target.dispatchEvent(new MouseEvent("mousemove", { buttons, bubbles: true }));
+}
+
+function mouseUp(target: HTMLElement, button: number) {
+    target.dispatchEvent(new MouseEvent("mouseup", { button, bubbles: true }));
 }
