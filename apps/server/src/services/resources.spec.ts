@@ -15,6 +15,10 @@ const TOKENS = Buffer.from("a\nb\nc\n");
 let server: http.Server;
 let baseUrl = "";
 const requested: string[] = [];
+/** The `Range` header of each request, in order. */
+const ranges: (string | undefined)[] = [];
+/** Makes the next whole-file request for `/model.bin` drop the connection after this many bytes. */
+let dropModelAfter: number | null = null;
 /** Requests to `/stall`, answered with headers and no body until the test ends. */
 let stalled: http.ServerResponse[] = [];
 
@@ -27,7 +31,13 @@ let manager: ResourceManager;
 beforeAll(async () => {
     server = http.createServer((req, res) => {
         requested.push(req.url ?? "");
+        ranges.push(req.headers.range);
         if (req.url === "/model.bin") {
+            serveModel(req, res);
+        } else if (req.url === "/model-no-range.bin") {
+            res.end(MODEL);
+        } else if (req.url === "/model-wrong-range.bin") {
+            res.writeHead(206, { "Content-Range": `bytes 0-${MODEL.length - 1}/${MODEL.length}` });
             res.end(MODEL);
         } else if (req.url === "/tokens.txt") {
             res.end(TOKENS);
@@ -49,6 +59,8 @@ beforeEach(() => {
     baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "trilium-resources-"));
     broadcasts = [];
     requested.length = 0;
+    ranges.length = 0;
+    dropModelAfter = null;
     manager = new ResourceManager(baseDir, (progress) => broadcasts.push(progress));
 });
 
@@ -133,7 +145,7 @@ describe("ResourceManager", () => {
         expect(manager.getPath("test.short")).toBeNull();
     });
 
-    it("joins a running download, and cancels it without leaving a partial file", async () => {
+    it("joins a running download, and cancels it without leaving an empty partial file", async () => {
         manager.register(defineModel({ tokensUrl: "/stall" }));
 
         const first = manager.startDownload([ "test.model" ]);
@@ -191,6 +203,79 @@ describe("ResourceManager", () => {
         expect(manager.getPath("test.model")).toBe(resourceDirectory());
     });
 
+    it("resumes a file after the connection drops, asking only for the bytes it is missing", async () => {
+        manager.register(defineModel());
+        dropModelAfter = 120_000;
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("failed");
+
+        const partial = path.join(resourceDirectory(), "nested", "model.bin.partial");
+        const kept = fs.statSync(partial).size;
+        expect(kept).toBeGreaterThan(0);
+        expect(kept).toBeLessThanOrEqual(120_000);
+        expect((await manager.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(kept);
+
+        ranges.length = 0;
+        manager.startDownload([ "test.model" ]);
+        expect(await waitForEnd()).toMatchObject({
+            status: "succeeded", receivedBytes: MODEL.length + TOKENS.length
+        });
+        expect(ranges[0]).toBe(`bytes=${kept}-`);
+        expect(fs.readFileSync(path.join(resourceDirectory(), "nested", "model.bin")).equals(MODEL))
+            .toBe(true);
+    });
+
+    it("starts over when the server sends the whole file instead of the rest", async () => {
+        manager.register(defineModel());
+        dropModelAfter = 120_000;
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+
+        const resumed = new ResourceManager(baseDir, (progress) => broadcasts.push(progress));
+        resumed.register(defineModel({ modelUrl: "/model-no-range.bin" }));
+        ranges.length = 0;
+        resumed.startDownload([ "test.model" ]);
+        expect(await waitForEnd()).toMatchObject({
+            status: "succeeded", receivedBytes: MODEL.length + TOKENS.length
+        });
+        expect(ranges[0]?.startsWith("bytes=")).toBe(true);
+        expect(fs.readFileSync(path.join(resourceDirectory(), "nested", "model.bin")).equals(MODEL))
+            .toBe(true);
+    });
+
+    it("discards the kept bytes when the server answers with another range than asked", async () => {
+        manager.register(defineModel());
+        dropModelAfter = 120_000;
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        const partial = path.join(resourceDirectory(), "nested", "model.bin.partial");
+        expect(fs.existsSync(partial)).toBe(true);
+
+        const resumed = new ResourceManager(baseDir, (progress) => broadcasts.push(progress));
+        resumed.register(defineModel({ modelUrl: "/model-wrong-range.bin" }));
+        resumed.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("failed");
+        expect(fs.existsSync(partial)).toBe(false);
+    });
+
+    it("discards kept bytes that turn out wrong, and downloads the whole file on the next try", async () => {
+        manager.register(defineModel());
+        dropModelAfter = 120_000;
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        const partial = path.join(resourceDirectory(), "nested", "model.bin.partial");
+        fs.writeFileSync(partial, Buffer.alloc(fs.statSync(partial).size, "x"));
+
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("failed");
+        expect(fs.existsSync(partial)).toBe(false);
+
+        ranges.length = 0;
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        expect(ranges[0]).toBeUndefined();
+    });
+
     it("prefers a local copy, and refuses invalid or unknown resources", () => {
         manager.register({ ...defineModel(), findLocalCopy: () => "/hand/installed" });
         expect(manager.getPath("test.model")).toBe("/hand/installed");
@@ -204,8 +289,8 @@ describe("ResourceManager", () => {
     });
 });
 
-function defineModel({ id = "test.model", tokensUrl = "/tokens.txt", tokensHash = sha256(TOKENS),
-    tokensSize = TOKENS.length } = {}): ResourceDefinition {
+function defineModel({ id = "test.model", modelUrl = "/model.bin", tokensUrl = "/tokens.txt",
+    tokensHash = sha256(TOKENS), tokensSize = TOKENS.length } = {}): ResourceDefinition {
     return {
         id,
         title: () => "Test model",
@@ -213,10 +298,30 @@ function defineModel({ id = "test.model", tokensUrl = "/tokens.txt", tokensHash 
         icon: "bx bx-test-tube",
         license: "MIT",
         files: [
-            file("nested/model.bin", MODEL),
+            { ...file("nested/model.bin", MODEL), url: `${baseUrl}${modelUrl}` },
             { path: "tokens.txt", url: `${baseUrl}${tokensUrl}`, size: tokensSize, sha256: tokensHash }
         ]
     };
+}
+
+/**
+ * Serves the model, from the offset a `Range: bytes=<n>-` header asks for when there is one, or
+ * drops the connection after {@link dropModelAfter} bytes once when that is set.
+ */
+function serveModel(req: http.IncomingMessage, res: http.ServerResponse) {
+    const range = req.headers.range;
+    if (range?.startsWith("bytes=")) {
+        const start = Number(range.slice("bytes=".length, range.indexOf("-")));
+        res.writeHead(206, { "Content-Range": `bytes ${start}-${MODEL.length - 1}/${MODEL.length}` });
+        res.end(MODEL.subarray(start));
+    } else if (dropModelAfter !== null) {
+        const length = dropModelAfter;
+        dropModelAfter = null;
+        res.writeHead(200, { "Content-Length": MODEL.length });
+        res.write(MODEL.subarray(0, length), () => setTimeout(() => res.destroy(), 20));
+    } else {
+        res.end(MODEL);
+    }
 }
 
 /** The directory the resource `id` was downloaded into: the only one named after it. */

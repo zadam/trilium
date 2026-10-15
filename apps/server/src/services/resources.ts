@@ -1,7 +1,7 @@
 import type { ResourceDownloadProgress, ResourceInfo, ResourcesStatusResponse } from "@triliumnext/commons";
 import { getLog, utils, ValidationError, ws } from "@triliumnext/core";
 import { t } from "i18next";
-import { createHash } from "node:crypto";
+import { createHash, type Hash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { Readable, Transform } from "node:stream";
@@ -58,7 +58,8 @@ const VERIFIED_FILE = ".verified.json";
  * downloads into a new directory. A file is written under a `.partial` name and renamed once its
  * size and SHA-256 match, then recorded in `.verified.json` with its size and modification time.
  * A file counts as installed only while it still matches that record, so one changed after its
- * download is downloaded again, and an interrupted download keeps the files it finished.
+ * download is downloaded again. An interrupted download keeps the files it finished and the
+ * `.partial` of the one it was on, which the next download continues.
  */
 export class ResourceManager {
     private readonly definitions = new Map<string, ResourceDefinition>();
@@ -212,8 +213,12 @@ export class ResourceManager {
     private getInfo(definition: ResourceDefinition): ResourceInfo {
         const directory = this.getDirectory(definition);
         const verified = readVerifiedFiles(directory);
-        const downloaded = definition.files
-            .filter((file) => isVerified(verified, path.join(directory, file.path), file));
+        const downloadedSize = definition.files.reduce((total, file) => {
+            const destination = path.join(directory, file.path);
+            return total + (isVerified(verified, destination, file)
+                ? file.size
+                : getPartialSize(destination, file));
+        }, 0);
         return {
             id: definition.id,
             title: definition.title(),
@@ -221,7 +226,7 @@ export class ResourceManager {
             icon: definition.icon,
             license: definition.license,
             size: sumSizes(definition.files),
-            downloadedSize: sumSizes(downloaded),
+            downloadedSize,
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],
             installed: this.getPath(definition.id) !== null
         };
@@ -249,20 +254,40 @@ export class ResourceManager {
 
 /**
  * Downloads `file` to `destination` through `<destination>.partial`, renaming it once its size and
- * SHA-256 match. A failed or aborted download leaves no file behind.
+ * SHA-256 match. A `.partial` left by an interrupted download is continued: its bytes are hashed
+ * and the rest is asked for with a `Range` header, or the file starts over when the server sends
+ * all of it. A failed download keeps its `.partial` while it is shorter than the file, so that the
+ * next one continues it; a complete one that fails its hash is deleted.
  */
 export async function downloadFile(file: ResourceFile, destination: string, signal: AbortSignal,
     onProgress: (bytes: number) => void) {
     const partial = `${destination}.partial`;
     const name = path.basename(file.path);
     try {
-        const response = await fetch(file.url, { signal });
+        let hash = createHash("sha256");
+        let received = getPartialSize(destination, file);
+        if (received) {
+            await hashFileInto(partial, hash);
+        }
+        const response = await fetch(file.url, {
+            signal,
+            headers: received ? { Range: `bytes=${received}-` } : undefined
+        });
         if (!response.ok || !response.body) {
             throw new Error(t("resources.http-error", { name, status: response.status }));
         }
+        if (received && response.status === 206) {
+            const contentRange = response.headers.get("Content-Range") ?? "";
+            if (!contentRange.startsWith(`bytes ${received}-`)) {
+                await fs.promises.rm(partial, { force: true });
+                throw new Error(t("resources.size-mismatch", { name }));
+            }
+            onProgress(received);
+        } else {
+            hash = createHash("sha256");
+            received = 0;
+        }
 
-        const hash = createHash("sha256");
-        let received = 0;
         const meter = new Transform({
             transform(chunk: Buffer, _encoding, callback) {
                 received += chunk.length;
@@ -276,7 +301,8 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
             }
         });
         const body = Readable.fromWeb(response.body as NodeReadableStream<Uint8Array>);
-        await pipeline(body, meter, fs.createWriteStream(partial), { signal });
+        const output = fs.createWriteStream(partial, { flags: received ? "a" : "w" });
+        await pipeline(body, meter, output, { signal });
 
         if (received !== file.size) {
             throw new Error(t("resources.size-mismatch", { name }));
@@ -286,7 +312,9 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
         }
         await fs.promises.rename(partial, destination);
     } catch (e) {
-        await fs.promises.rm(partial, { force: true });
+        if (getPartialSize(destination, file) === 0) {
+            await fs.promises.rm(partial, { force: true });
+        }
         throw e;
     }
 }
@@ -311,6 +339,25 @@ function getContentHash(files: ResourceFile[]) {
         hash.update(`${file.path}\0${file.sha256}\n`);
     }
     return hash.digest("hex").slice(0, CONTENT_HASH_LENGTH);
+}
+
+/**
+ * The bytes of `file` an interrupted download kept in `<destination>.partial`, or 0 when there is
+ * none or it is already longer than the file can be.
+ */
+function getPartialSize(destination: string, file: ResourceFile) {
+    try {
+        const { size } = fs.statSync(`${destination}.partial`);
+        return size < file.size ? size : 0;
+    } catch {
+        return 0;
+    }
+}
+
+async function hashFileInto(filePath: string, hash: Hash) {
+    for await (const chunk of fs.createReadStream(filePath)) {
+        hash.update(chunk);
+    }
 }
 
 function readVerifiedFiles(directory: string): VerifiedFiles {
@@ -352,7 +399,7 @@ async function hasContent(destination: string, file: ResourceFile) {
         return false;
     }
     const hash = createHash("sha256");
-    await pipeline(fs.createReadStream(destination), hash);
+    await hashFileInto(destination, hash);
     return hash.digest("hex") === file.sha256;
 }
 
