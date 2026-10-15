@@ -62,7 +62,10 @@ export async function startRecording(noteId: unknown): Promise<string> {
     if (typeof noteId !== "string" || !becca.getNote(noteId)) {
         return t("transcription.note-not-found");
     }
-    const models = getModelPaths(options.getOptionOrNull("transcriptionModel"));
+    const models = getModelPaths(
+        options.getOptionOrNull("transcriptionModel"),
+        options.getOptionBool("transcriptionSpeakersEnabled")
+    );
     if (!models) {
         return t("transcription.model-not-downloaded");
     }

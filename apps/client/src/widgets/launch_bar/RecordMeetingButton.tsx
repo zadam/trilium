@@ -105,7 +105,9 @@ export async function toggleRecording(status: TranscriptionStatus) {
     if (status !== "idle") {
         return;
     }
-    if (!await requireResources(getTranscriptionResources(options.get("transcriptionModel")))) {
+    const resources = getTranscriptionResources(
+        options.get("transcriptionModel"), options.is("transcriptionSpeakersEnabled"));
+    if (!await requireResources(resources)) {
         return;
     }
 

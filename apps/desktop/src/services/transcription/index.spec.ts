@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
     isDev: false,
     installedResources: [] as string[],
     transcriptionModel: null as string | null,
+    speakersEnabled: true,
     registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
@@ -63,7 +64,8 @@ vi.mock("@triliumnext/core", () => ({
     },
     getLog: () => h.log,
     options: {
-        getOptionOrNull: (name: string) => name === "transcriptionModel" ? h.transcriptionModel : null
+        getOptionOrNull: (name: string) => name === "transcriptionModel" ? h.transcriptionModel : null,
+        getOptionBool: (name: string) => name === "transcriptionSpeakersEnabled" && h.speakersEnabled
     },
     protected_session: { isProtectedSessionAvailable: () => h.isProtectedSessionAvailable },
     utils: { isDev: () => h.isDev }
@@ -134,6 +136,7 @@ beforeEach(() => {
     h.broadcast.length = 0;
     h.isDev = false;
     h.transcriptionModel = null;
+    h.speakersEnabled = true;
     h.installedResources = [
         "transcription.parakeet", "transcription.silero-vad", "transcription.titanet"
     ];
@@ -349,6 +352,13 @@ describe("transcription IPC", () => {
         ]);
 
         h.installedResources = [ "transcription.parakeet", "transcription.silero-vad" ];
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
+    });
+
+    it("records without the speaker model while speaker identification is off", async () => {
+        const invoke = await loadService();
+        h.speakersEnabled = false;
         expect(await invoke("transcription-start", "meeting")).toBe("");
         expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
     });

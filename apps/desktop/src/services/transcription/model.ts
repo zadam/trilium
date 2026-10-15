@@ -131,13 +131,14 @@ export const TRANSCRIPTION_MODELS = [ ...RECOGNIZER_MODELS, VAD_MODEL, SPEAKER_M
 /**
  * Returns where the installed models are for a recording with the model `modelId` (a key of
  * `TRANSCRIPTION_MODELS` in commons), or `null` while its recognizer or the VAD is missing.
- * Without the speaker model, the transcript labels no speakers.
+ * The speaker model is left out unless `identifySpeakers` holds and it is installed; without it,
+ * the transcript labels no speakers.
  */
-export function getModelPaths(modelId: string | null): ModelPaths | null {
+export function getModelPaths(modelId: string | null, identifySpeakers: boolean): ModelPaths | null {
     const model = getTranscriptionModel(modelId);
     const recognizer = resources.getPath(model.resourceId);
     const vad = resources.getPath(VAD_MODEL.id);
-    const speaker = resources.getPath(SPEAKER_MODEL.id);
+    const speaker = identifySpeakers ? resources.getPath(SPEAKER_MODEL.id) : null;
     if (!recognizer || !vad) {
         return null;
     }

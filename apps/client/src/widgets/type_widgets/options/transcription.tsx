@@ -4,7 +4,8 @@ import { t } from "../../../services/i18n";
 import { isElectron } from "../../../services/utils";
 import { Card, OptionCardSection } from "../../react/Card";
 import FormSelect from "../../react/FormSelect";
-import { useTriliumOption } from "../../react/hooks";
+import FormToggle from "../../react/FormToggle";
+import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 
@@ -28,6 +29,7 @@ export default function TranscriptionSettings() {
 
 function RecognitionSettings() {
     const [ model, setModel ] = useTriliumOption("transcriptionModel");
+    const [ speakersEnabled, setSpeakersEnabled ] = useTriliumOptionBool("transcriptionSpeakersEnabled");
     const labels: Record<TranscriptionModelId, string> = {
         "parakeet-int8": t("transcription_options.model_standard"),
         "parakeet-fp32": t("transcription_options.model_high_accuracy")
@@ -48,6 +50,14 @@ function RecognitionSettings() {
                     titleProperty="label"
                     values={Object.values(TRANSCRIPTION_MODELS).map(({ id }) => ({ id, label: labels[id] }))}
                 />
+            </OptionCardSection>
+
+            <OptionCardSection
+                name="identify-speakers"
+                label={t("transcription_options.identify_speakers")}
+                description={t("transcription_options.identify_speakers_description")}
+            >
+                <FormToggle currentValue={speakersEnabled} onChange={setSpeakersEnabled} />
             </OptionCardSection>
         </Card>
     );

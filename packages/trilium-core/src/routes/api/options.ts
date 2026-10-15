@@ -65,6 +65,7 @@ const ALLOWED_OPTIONS = new Set<OptionNames>([
     "codeLineWrapEnabled",
     "transcriptCleanupEnabled",
     "transcriptionModel",
+    "transcriptionSpeakersEnabled",
     "codeNotesMimeTypes",
     "contentManagerSortOrder",
     "contentManagerViewMode",

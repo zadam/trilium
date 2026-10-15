@@ -95,10 +95,12 @@ describe("transcription models", () => {
         expect(getTranscriptionModel("toString").id).toBe("parakeet-int8");
     });
 
-    it("needs the selected recognizer, the VAD and the speaker model to record", () => {
-        expect(getTranscriptionResources("parakeet-fp32"))
+    it("needs the selected recognizer, the VAD and, to identify speakers, the speaker model", () => {
+        expect(getTranscriptionResources("parakeet-fp32", true))
             .toEqual([ "transcription.parakeet-fp32", "transcription.silero-vad", "transcription.titanet" ]);
-        expect(getTranscriptionResources(undefined))
+        expect(getTranscriptionResources(undefined, true))
             .toEqual([ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
+        expect(getTranscriptionResources("parakeet-int8", false))
+            .toEqual([ "transcription.parakeet", "transcription.silero-vad" ]);
     });
 });

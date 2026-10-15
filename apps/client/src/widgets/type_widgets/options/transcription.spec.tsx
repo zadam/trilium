@@ -5,7 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
     electron: true,
     stored: "" as string,
-    saved: [] as string[]
+    saved: [] as string[],
+    speakersEnabled: true,
+    savedSpeakers: [] as boolean[]
 }));
 
 vi.mock("../../../services/utils", async (importOriginal) => ({
@@ -20,6 +22,10 @@ vi.mock("../../react/hooks", async (importOriginal) => ({
     useTriliumOption: (name: string) => [
         name === "transcriptionModel" ? mocks.stored : "",
         (value: string) => void mocks.saved.push(value)
+    ],
+    useTriliumOptionBool: (name: string) => [
+        name === "transcriptionSpeakersEnabled" && mocks.speakersEnabled,
+        (value: boolean) => void mocks.savedSpeakers.push(value)
     ]
 }));
 
@@ -33,6 +39,8 @@ beforeEach(() => {
     mocks.electron = true;
     mocks.stored = "parakeet-fp32";
     mocks.saved = [];
+    mocks.speakersEnabled = true;
+    mocks.savedSpeakers = [];
     host = document.body.appendChild(document.createElement("div"));
 });
 
@@ -65,6 +73,21 @@ describe("TranscriptionSettings", () => {
             select.dispatchEvent(new Event("change", { bubbles: true }));
         });
         expect(mocks.saved).toEqual([ "parakeet-int8" ]);
+    });
+
+    it("turns speaker identification off", () => {
+        open();
+        const toggle = host.querySelector<HTMLInputElement>("input.switch-toggle[id^='identify-speakers-']");
+        if (!toggle) {
+            throw new Error("The speaker switch is missing.");
+        }
+        expect(toggle.checked).toBe(true);
+
+        act(() => {
+            toggle.checked = false;
+            toggle.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(mocks.savedSpeakers).toEqual([ false ]);
     });
 
     it("shows the default model for a value it does not know", () => {

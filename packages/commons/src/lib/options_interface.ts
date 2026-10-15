@@ -209,6 +209,8 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
      * each device downloads and runs its own.
      */
     transcriptionModel: string;
+    /** Whether a recording tells the other participants apart, labeling each utterance with its speaker. */
+    transcriptionSpeakersEnabled: boolean;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;

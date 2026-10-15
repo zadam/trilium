@@ -74,9 +74,16 @@ export function getTranscriptionModel(id: string | null | undefined): Transcript
         : TRANSCRIPTION_MODELS[DEFAULT_TRANSCRIPTION_MODEL];
 }
 
-/** Returns the resources a recording with the model `modelId` needs. */
-export function getTranscriptionResources(modelId: string | null | undefined) {
-    return [ getTranscriptionModel(modelId).resourceId, ...Object.values(TRANSCRIPTION_RESOURCES) ];
+/**
+ * Returns the resources a recording with the model `modelId` needs: the speaker model only when it
+ * identifies speakers.
+ */
+export function getTranscriptionResources(modelId: string | null | undefined, identifySpeakers: boolean) {
+    return [
+        getTranscriptionModel(modelId).resourceId,
+        TRANSCRIPTION_RESOURCES.vad,
+        ...(identifySpeakers ? [ TRANSCRIPTION_RESOURCES.speaker ] : [])
+    ];
 }
 
 /** Reads a transcript attachment's content, or returns `null` for content of another shape. */

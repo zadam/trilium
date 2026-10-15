@@ -10,7 +10,8 @@ const mocks = vi.hoisted(() => ({
     createNote: vi.fn(),
     showError: vi.fn(),
     requireResources: vi.fn(),
-    transcriptionModel: null as string | null
+    transcriptionModel: null as string | null,
+    speakersEnabled: true
 }));
 
 vi.mock("../../services/date_notes", () => ({
@@ -23,7 +24,10 @@ vi.mock("../../services/dialog", () => ({
     requireResources: mocks.requireResources
 }));
 vi.mock("../../services/options", () => ({
-    default: { get: (name: string) => name === "transcriptionModel" ? mocks.transcriptionModel : null }
+    default: {
+        get: (name: string) => name === "transcriptionModel" ? mocks.transcriptionModel : null,
+        is: (name: string) => name === "transcriptionSpeakersEnabled" && mocks.speakersEnabled
+    }
 }));
 vi.mock("../../services/toast", () => ({
     default: { showError: mocks.showError }
@@ -43,6 +47,7 @@ import RecordMeetingButton, { createMeetingNote, toggleRecording } from "./Recor
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.transcriptionModel = null;
+    mocks.speakersEnabled = true;
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -120,6 +125,13 @@ describe("toggleRecording", () => {
         await toggleRecording("idle");
         expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
             [ "transcription.parakeet-fp32", "transcription.silero-vad", "transcription.titanet" ]);
+    });
+
+    it("leaves the speaker model out while speaker identification is off", async () => {
+        mocks.speakersEnabled = false;
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet", "transcription.silero-vad" ]);
     });
 
     it("starts nothing when no meeting note could be created", async () => {
