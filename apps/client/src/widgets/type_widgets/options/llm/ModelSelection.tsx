@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import { t } from "../../../../services/i18n";
 import { fetchProviderModels, type ProviderModelsQuery } from "../../../../services/llm_chat";
 import { formatModelCost } from "../../../../services/llm_model_cost";
+import GoslingInventory from "./GoslingInventory.js";
 import FormCheckbox from "../../../react/FormCheckbox";
 import NoItems from "../../../react/NoItems";
 
@@ -36,7 +37,15 @@ interface ModelSelectionProps {
  * keep. The picked set (with full metadata) is what the chat picker later shows,
  * so no live fetch is needed during normal chatting.
  */
-export default function ModelSelection({ query, timeoutMs, selected, onChange, autoSelectDefaults, troubleshooting }: ModelSelectionProps) {
+export default function ModelSelection(props: ModelSelectionProps) {
+    const [generation, setGeneration] = useState(0);
+    return <>
+        {props.query.provider === "gosling" && <GoslingInventory onRefresh={() => setGeneration(value => value + 1)} />}
+        <ModelSelectionList key={generation} {...props} />
+    </>;
+}
+
+function ModelSelectionList({ query, timeoutMs, selected, onChange, autoSelectDefaults, troubleshooting }: ModelSelectionProps) {
     const [models, setModels] = useState<LlmModelInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | undefined>();
@@ -117,7 +126,7 @@ export default function ModelSelection({ query, timeoutMs, selected, onChange, a
                         name={`model-${model.id}`}
                         currentValue={isSelected(model)}
                         onChange={checked => toggle(model, checked)}
-                        label={<ModelLabel model={model} />}
+                        label={<><ModelLabel model={model} />{model.gosling?.unavailableReason && <span> — {model.gosling.unavailableReason}</span>}</>}
                     />
                 ))}
             </div>

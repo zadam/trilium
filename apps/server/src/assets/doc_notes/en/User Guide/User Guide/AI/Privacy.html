@@ -148,3 +148,15 @@
   to your notes as the REST API; treat one like a password. On desktop it
   is reachable only from <code>localhost</code> unless you turn on&nbsp;<a
   class="reference-link" href="#root/_help_swSFivWk6KkA">Network Access</a>.</p>
+<h2>Gosling</h2>
+<p>For <a class="reference-link" href="#root/_help_oaqx1g4eOvBy">Gosling chat notes</a>,
+  Trilium stores no provider API keys or subscription tokens. The local stdio
+  connection does not determine inference locality: the selected Gosling
+  provider can use a local, external or unknown endpoint, as shown in the
+  chat. With note access off, this integration sends no current-note hint
+  and exposes no Trilium note tools. Read-only access and approved writes
+  are separate. Revoking access removes the active tool capability and cancels
+  the turn; already transmitted content and visible chat history are not
+  erased. Session identifiers remain in a host-local mapping outside synced
+  settings and notes. Automatic title generation through another provider
+  is disabled for these chats.</p>

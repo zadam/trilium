@@ -41,6 +41,8 @@ export class AcpError extends Error {
 
 export interface AcpClientOptions {
     cwd: string;
+    /** Suppress subprocess diagnostics when the runtime may print credentials. */
+    suppressStderr?: boolean;
     /**
      * CLI arguments, passed as-is. Each agent names its ACP mode differently
      * (`copilot --acp`; Google's `agy_acp_server` speaks nothing else).
@@ -99,7 +101,7 @@ export class AcpClient {
 
         proc.stderr.on("data", (data: Buffer) => {
             const text = data.toString().trim();
-            if (text) {
+            if (text && !options.suppressStderr) {
                 getLog().info(`ACP agent stderr: ${text}`);
             }
         });

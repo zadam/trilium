@@ -89,7 +89,9 @@ export async function* runChat(
             yield chunk;
         }
 
-        await generateTitleForFirstTurn(messages, config);
+        if (provider.name !== "gosling") {
+            await generateTitleForFirstTurn(messages, config);
+        }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         getLog().error(`LLM chat stream failed: ${safeExtractMessageAndStackFromError(error)}`);

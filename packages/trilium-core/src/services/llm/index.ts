@@ -30,7 +30,7 @@ export interface LlmProviderSetup {
 }
 
 /** Provider type identifiers that can be instantiated, for error messages. */
-const PROVIDER_TYPES = ["anthropic", "openai", "google", "deepseek", "claude-agent", "copilot-agent", "antigravity-agent", "codex-agent", "ollama", "lmstudio", "openai-compatible"];
+const PROVIDER_TYPES = ["gosling", "anthropic", "openai", "google", "deepseek", "claude-agent", "copilot-agent", "antigravity-agent", "codex-agent", "ollama", "lmstudio", "openai-compatible"];
 
 /**
  * Instantiate a provider from its type identifier.
@@ -71,6 +71,8 @@ async function createProviderInstance(provider: string, apiKey: string, baseURL?
             return await createHostProvider("copilot-agent");
         case "antigravity-agent":
             return await createHostProvider("antigravity-agent");
+        case "gosling":
+            return createHostProvider("gosling");
         case "codex-agent":
             return await createHostProvider("codex-agent");
         // Self-hosted endpoints. The three cards differ only in the URL and setup

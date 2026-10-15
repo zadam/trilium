@@ -127,6 +127,7 @@ const SEARCH_PROVIDER_GROUPS = [
 type ProviderGroupId = (typeof PROVIDER_GROUPS)[number]["id"] | (typeof SEARCH_PROVIDER_GROUPS)[number]["id"];
 
 export const PROVIDER_TYPES: ProviderType[] = [
+    { id: "gosling", name: "Gosling", group: "custom", defaultBaseUrl: "", iconUrl: PROVIDER_ICONS.gosling, connectionDescription: t("llm.gosling_description"), apiKey: "none", baseUrl: "none", needsHostProcess: true },
     { id: "anthropic", name: "Anthropic", group: "cloud", defaultBaseUrl: "https://api.anthropic.com/v1", iconUrl: PROVIDER_ICONS.anthropic },
     { id: "openai", name: "OpenAI", group: "cloud", defaultBaseUrl: "https://api.openai.com/v1", iconUrl: PROVIDER_ICONS.openai },
     { id: "google", name: "Google Gemini", group: "cloud", defaultBaseUrl: "https://generativelanguage.googleapis.com/v1beta", iconUrl: PROVIDER_ICONS.google },
@@ -441,7 +442,7 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
                             timeoutMs={providerType?.modelListTimeoutMs}
                             selected={selectedModels}
                             onChange={setSelectedModels}
-                            autoSelectDefaults={seedDefaultModels}
+                            autoSelectDefaults={seedDefaultModels && selectedProvider !== "gosling"}
                             troubleshooting={troubleshootingFor(providerType)}
                         />
                     </CardSection>

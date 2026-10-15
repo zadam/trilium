@@ -1,0 +1,26 @@
+.gosling-controls {
+    padding: 8px 12px;
+    border-top: 1px solid var(--main-border-color);
+    font-size: 0.9em;
+}
+
+.gosling-controls .gosling-guidance {
+    opacity: 0.8;
+}
+
+.gosling-controls .gosling-approval {
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--main-border-color);
+}
+
+.gosling-controls pre {
+    max-height: 180px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+.gosling-controls .gosling-approval-actions {
+    display: flex;
+    gap: 8px;
+}

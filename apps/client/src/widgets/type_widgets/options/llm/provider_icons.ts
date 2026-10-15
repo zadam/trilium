@@ -39,6 +39,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
     deepseek: deepseekIcon,
     exa: exaIcon,
     google: geminiIcon,
+    gosling: openAiCompatibleIcon,
     lmstudio: lmStudioIcon,
     ollama: ollamaIcon,
     openai: openaiIcon,

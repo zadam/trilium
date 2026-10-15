@@ -77,7 +77,7 @@ export interface LlmCitation {
  * How much a model reasons before it answers, weakest first. The names are the
  * AI SDK's `reasoning` call option, plus Anthropic's `max`.
  */
-export const LLM_REASONING_EFFORTS = [ "none", "minimal", "low", "medium", "high", "xhigh", "max" ] as const;
+export const LLM_REASONING_EFFORTS = [ "none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra" ] as const;
 
 export type LlmReasoningEffort = (typeof LLM_REASONING_EFFORTS)[number];
 
@@ -104,6 +104,13 @@ export interface LlmChatConfig {
     webSearchProviderId?: string;
     /** Enable note tools (search and read notes) */
     enableNoteTools?: boolean;
+    /** Gosling note writes require a separate opt-in; every tool still requests approval. */
+    goslingAllowWrites?: boolean;
+    goslingExtensions?: string[];
+    /** Explicitly start a new Gosling session using this chat's visible history. */
+    goslingHandoff?: boolean;
+    /** Locality shown when this model was selected; a changed endpoint requires review. */
+    goslingExpectedEndpointLocation?: "local" | "external" | "unknown";
     /** Enable extended thinking for deeper reasoning */
     enableExtendedThinking?: boolean;
     /** Token budget for extended thinking (default: 10000) */
@@ -179,6 +186,7 @@ export interface LlmModelInfo {
      * are inlined as text for every model and never listed.
      */
     attachmentKinds?: LlmAttachmentKind[];
+    gosling?: GoslingModelState;
 }
 
 /** An attachment a model reads natively: an image, or a file such as a PDF. */
@@ -253,7 +261,33 @@ export function isToolErrorResult(result: unknown): boolean {
  * Stream chunk types for real-time SSE updates.
  * Defines the protocol between server and client.
  */
+export interface GoslingModelState {
+    providerId: string;
+    modelId: string;
+    configured: boolean;
+    stale: boolean;
+    refreshing: boolean;
+    unavailableReason?: string;
+    /** Cached expiry does not establish whether Gosling can refresh the credential. */
+    authenticationExpired?: boolean;
+    authenticationRequired?: boolean;
+    endpointLocation: "local" | "external" | "unknown";
+    contextOwnership: string;
+    nativeResume: string;
+    inPlaceModelChange: string;
+}
+
+export interface LlmPermissionRequest {
+    requestId: string;
+    chatNoteId: string;
+    title: string;
+    input: string;
+    options: { optionId: string; name: string; kind: string }[];
+}
+
 export type LlmStreamChunk =
+    | { type: "permission"; permission: LlmPermissionRequest }
+    | { type: "session_info"; message: string }
     | { type: "status"; status: LlmStreamStatus }
     | { type: "text"; content: string }
     | { type: "thinking"; content: string }

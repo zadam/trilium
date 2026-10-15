@@ -249,7 +249,10 @@ describe("streamChatCompletion", () => {
         vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
 
         const cb = makeCallbacks();
-        await streamChatCompletion(messages, config, cb);
+        for (const chunk of chunks) {
+            vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse([chunk])));
+            await streamChatCompletion(messages, config, cb);
+        }
         expect(cb.onError.mock.calls).toEqual([
             ["model failed", undefined],
             ["api failed", errorDetails]
@@ -264,7 +267,8 @@ describe("streamChatCompletion", () => {
             { type: "tool_use", toolCallId: "c1", toolName: "search", toolInput: { q: "x" } },
             { type: "tool_result", toolCallId: "c1", toolName: "search", result: "res" },
             { type: "citation", citation: { id: "cit1" } },
-            { type: "usage", usage: { totalTokens: 1 } }
+            { type: "usage", usage: { totalTokens: 1 } },
+            { type: "done" }
         ];
         const chunks = events.map((e) => `data: ${JSON.stringify(e)}\n`);
         vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
@@ -328,5 +332,31 @@ describe("streamChatCompletion", () => {
         await streamChatCompletion(messages, config, cb, controller.signal);
         const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
         expect(init.signal).toBe(controller.signal);
+    });
+});
+
+describe("Gosling stream events", () => {
+    it("delivers permission requests and session identity without saving them as text", async () => {
+        const permission = { requestId: "one", chatNoteId: "synthetic", title: "Read note", input: "{}", options: [] };
+        vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse([
+            `data: ${JSON.stringify({ type: "permission", permission })}\n\n`,
+            'data: {"type":"session_info","message":"Local provider / model"}\n\n',
+            'data: {"type":"done"}\n\n'
+        ])));
+        const callbacks = { ...makeCallbacks(), onPermission: vi.fn(), onSessionInfo: vi.fn() };
+        await streamChatCompletion(messages, config, callbacks);
+        expect(callbacks.onPermission).toHaveBeenCalledWith(permission);
+        expect(callbacks.onSessionInfo).toHaveBeenCalledWith("Local provider / model");
+        expect(callbacks.onChunk).not.toHaveBeenCalled();
+        expect(callbacks.onDone).toHaveBeenCalledOnce();
+        vi.unstubAllGlobals();
+    });
+    it("reports an unexpectedly closed stream as interrupted, without a successful completion", async () => {
+        vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(['data: {"type":"text","content":"partial"}\n\n'])));
+        const callbacks = makeCallbacks();
+        await streamChatCompletion(messages, config, callbacks);
+        expect(callbacks.onError).toHaveBeenCalledOnce();
+        expect(callbacks.onDone).not.toHaveBeenCalled();
+        vi.unstubAllGlobals();
     });
 });

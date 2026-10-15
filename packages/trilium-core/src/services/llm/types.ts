@@ -69,6 +69,7 @@ export interface ModelInfo {
     defaultReasoningEffort?: LlmReasoningEffort;
     /** The attachment kinds the model reads natively; see `LlmModelInfo`. */
     attachmentKinds?: LlmAttachmentKind[];
+    gosling?: import("@triliumnext/commons").GoslingModelState;
 }
 
 export interface LlmProvider {

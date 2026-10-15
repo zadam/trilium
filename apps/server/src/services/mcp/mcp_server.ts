@@ -22,11 +22,14 @@ import sql from "../sql.js";
  * Write operations are wrapped in CLS + transaction context so that
  * Becca entity tracking works correctly.
  */
-function registerTool(server: McpServer, name: string, def: ToolDefinition) {
+function registerTool(server: McpServer, name: string, def: ToolDefinition, allowed?: McpToolPolicy) {
     server.registerTool(name, {
         description: def.description,
         inputSchema: def.inputSchema
     }, (args: any): CallToolResult => {
+        if (allowed && !allowed(name, def)) {
+            return { content: [{ type: "text", text: "Note access has been revoked or this operation is read-only." }], isError: true };
+        }
         const result = cls.init(() => {
             cls.set("componentId", "mcp");
 
@@ -41,7 +44,9 @@ function registerTool(server: McpServer, name: string, def: ToolDefinition) {
     });
 }
 
-export async function createMcpServer(): Promise<McpServer> {
+export type McpToolPolicy = (name: string, definition: ToolDefinition) => boolean;
+
+export async function createMcpServer(allowed?: McpToolPolicy): Promise<McpServer> {
     // Host-registered registries (the User Guide tools) load lazily; the array
     // is complete only after this resolves.
     await resolveToolRegistries();
@@ -53,7 +58,9 @@ export async function createMcpServer(): Promise<McpServer> {
 
     for (const registry of allToolRegistries) {
         for (const [name, def] of registry) {
-            registerTool(server, name, def);
+            if (!allowed || allowed(name, def)) {
+                registerTool(server, name, def, allowed);
+            }
         }
     }
 

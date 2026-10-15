@@ -1,7 +1,8 @@
-import { LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmReasoningEffort, type LlmStreamStatus, type LlmUsage } from "@triliumnext/commons";
+import { LLM_REASONING_EFFORTS, type LlmCitation, type LlmPermissionRequest, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmReasoningEffort, type LlmStreamStatus, type LlmUsage } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
+import server from "../../../services/server.js";
 import { streamChatCompletion } from "../../../services/llm_chat.js";
 import { type ModelOption, type ModelProviderGroup, readSearchProviders, readSelectedModels, resolveSelectedModel, resolveWebSearch, unreadableAttachments } from "../../../services/llm_providers.js";
 import optionService from "../../../services/options.js";
@@ -89,6 +90,17 @@ export interface LlmChatOptions {
 }
 
 export interface UseLlmChatReturn {
+    goslingAllowWrites: boolean;
+    setGoslingAllowWrites: (value: boolean) => void;
+    goslingExtensions: string[];
+    setGoslingExtensions: (value: string[]) => void;
+    goslingHandoff: boolean;
+    setGoslingHandoff: (value: boolean) => void;
+    goslingPermissions: LlmPermissionRequest[];
+    answerGoslingPermission: (requestId: string, optionId: string) => Promise<void>;
+    revokeGoslingAccess: () => Promise<void>;
+    goslingSessionInfo: string;
+
     // State
     messages: StoredMessage[];
     /** Whether the reply-input draft has non-whitespace text. The draft itself is kept out of
@@ -216,6 +228,12 @@ export function useLlmChat(
     const [selectedProviderId, setSelectedProviderId] = useState<string | undefined>(undefined);
     const [enableWebSearch, setEnableWebSearch] = useState(true);
     const [enableNoteTools, setEnableNoteTools] = useState(defaultEnableNoteTools);
+    const [goslingAllowWrites, setGoslingAllowWrites] = useState(false);
+    const [goslingExtensions, setGoslingExtensions] = useState<string[]>([]);
+    const [goslingHandoff, setGoslingHandoff] = useState(false);
+    const [goslingPermissions, setGoslingPermissions] = useState<LlmPermissionRequest[]>([]);
+    const [goslingSessionInfo, setGoslingSessionInfo] = useState("");
+    useEffect(() => { if (!isStreaming) setGoslingPermissions([]); }, [isStreaming]);
     const [enableExtendedThinking, setEnableExtendedThinking] = useState(false);
     const [reasoningEffort, setReasoningEffort] = useState<LlmReasoningEffort | undefined>(undefined);
     const [contextNoteId, setContextNoteId] = useState<string | undefined>(initialContextNoteId);
@@ -264,6 +282,20 @@ export function useLlmChat(
     const chatNoteIdRef = useRef(chatNoteId);
     chatNoteIdRef.current = chatNoteId;
     const setChatNoteId = useCallback((noteId: string | undefined) => {
+        if (chatNoteIdRef.current !== noteId) {
+            // A reused note widget must not carry execution authority into another chat.
+            if (selectedProviderRef.current === "gosling") {
+                abortControllerRef.current?.abort();
+                abortControllerRef.current = null;
+                setIsStreaming(false);
+                setTargetBlocks([]);
+            }
+            setGoslingAllowWrites(false);
+            setGoslingExtensions([]);
+            setGoslingHandoff(false);
+            setGoslingPermissions([]);
+            setGoslingSessionInfo("");
+        }
         chatNoteIdRef.current = noteId;
         setChatNoteIdState(noteId);
     }, []);
@@ -309,6 +341,8 @@ export function useLlmChat(
     const onMessagesChangeRef = useRef(onMessagesChange);
     onMessagesChangeRef.current = onMessagesChange;
     const setMessages = useCallback((newMessages: StoredMessage[]) => {
+        // Saves can snapshot immediately, before the next render updates refs.
+        messagesRef.current = newMessages;
         setMessagesInternal(newMessages);
         onMessagesChangeRef.current?.(newMessages);
     }, []);
@@ -318,9 +352,13 @@ export function useLlmChat(
     // same model ID (e.g. an Anthropic API key and a Claude subscription both
     // offering "claude-sonnet-5", or two OpenAI-compatible endpoints).
     const selectModel = useCallback((model: string, provider?: string, providerId?: string) => {
+        selectedModelRef.current = model;
+        selectedProviderRef.current = provider;
+        selectedProviderIdRef.current = providerId;
         setSelectedModel(model);
         setSelectedProvider(provider);
         setSelectedProviderId(providerId);
+        setGoslingSessionInfo("");
     }, []);
 
     // Read the user's selected models straight from the synced `llmProviders`
@@ -620,10 +658,14 @@ export function useLlmChat(
             enableWebSearch: webSearch.enableWebSearch,
             webSearchProviderId: webSearch.webSearchProviderId,
             enableNoteTools,
+            goslingAllowWrites,
+            goslingExtensions,
+            goslingHandoff,
+            goslingExpectedEndpointLocation: matchedModel?.gosling?.endpointLocation,
             contextNoteId,
             chatNoteId: chatNoteIdRef.current
         };
-        if (supportsExtendedThinking) {
+        if (supportsExtendedThinking && selectedModelProvider !== "gosling") {
             streamOptions.enableExtendedThinking = enableExtendedThinking;
         }
         if (reasoningEffort && matchedModel?.reasoningEfforts?.length) {
@@ -632,9 +674,20 @@ export function useLlmChat(
 
         const abortController = new AbortController();
         abortControllerRef.current = abortController;
+        const isCurrentTurn = () => selectedModelProvider !== "gosling"
+            || abortControllerRef.current === abortController;
+        const incompleteGoslingActivity = (): StoredMessage[] => {
+            if (selectedModelProvider !== "gosling" || !contentBlocks.length) return [];
+            const activity: ContentBlock[] = contentBlocks.map(block => block.type === "tool_call"
+                ? { ...block, toolCall: { ...block.toolCall, stopped: !block.toolCall.result, inputStreaming: undefined } }
+                : block);
+            return [{ id: randomString(), role: "assistant", createdAt: new Date().toISOString(),
+                content: [{ type: "text", content: "Incomplete Gosling turn. Partial output and tool activity follow; only successful tool results establish applied changes.\n\n" }, ...activity] }];
+        };
 
         /** Shared cleanup: finalize collected content and reset streaming state. */
         function finalizeStream() {
+            if (!isCurrentTurn()) return;
             // Reveal any remaining smoothed text instantly so the trailing chars
             // don't get clipped when the streaming placeholder is swapped for
             // the finalized message.
@@ -678,8 +731,15 @@ export function useLlmChat(
             apiMessages,
             streamOptions,
             {
-                onStatus: setStreamingStatus,
+                onPermission: permission => {
+                    if (permission.chatNoteId === chatNoteIdRef.current) {
+                        setGoslingPermissions(current => [...current, permission]);
+                    }
+                },
+                onSessionInfo: message => { if (isCurrentTurn()) { setGoslingSessionInfo(message); setGoslingHandoff(false); } },
+                onStatus: status => { if (isCurrentTurn()) setStreamingStatus(status); },
                 onChunk: (text) => {
+                    if (!isCurrentTurn()) return;
                     // A new text block begins whenever the previous tail is
                     // anything other than text (or there's nothing yet). In
                     // that case the smoother needs to start fresh so it doesn't
@@ -694,6 +754,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onThinking: (text) => {
+                    if (!isCurrentTurn()) return;
                     const last = contentBlocks[contentBlocks.length - 1];
                     if (last?.type === "thinking") {
                         contentBlocks[contentBlocks.length - 1] = { type: "thinking", content: last.content + text };
@@ -706,6 +767,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onToolInputStart: (toolCallId, toolName) => {
+                    if (!isCurrentTurn()) return;
                     // Snap any pending smoothed text to its full value before
                     // the tool_call block appears — otherwise the trailing
                     // chars of the previous text block would be left hanging.
@@ -722,6 +784,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onToolInputDelta: (toolCallId, delta) => {
+                    if (!isCurrentTurn()) return;
                     for (let i = contentBlocks.length - 1; i >= 0; i--) {
                         const block = contentBlocks[i];
                         if (block.type === "tool_call" && block.toolCall.id === toolCallId) {
@@ -738,6 +801,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onToolUse: (toolCallId, toolName, toolInput) => {
+                    if (!isCurrentTurn()) return;
                     // Some providers skip tool-input-start/delta entirely and only emit
                     // the final tool-call. In that case there's no pending block to update,
                     // so push a fresh one.
@@ -767,6 +831,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onToolResult: (toolCallId, _toolName, result, isError) => {
+                    if (!isCurrentTurn()) return;
                     // Replace the matching block with a new object so Preact sees the change.
                     for (let i = contentBlocks.length - 1; i >= 0; i--) {
                         const block = contentBlocks[i];
@@ -781,6 +846,7 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onCitation: (citation) => {
+                    if (!isCurrentTurn()) return;
                     // Deduplicate by URL
                     if (!citation.url || !citations.some(c => c.url === citation.url)) {
                         citations.push(citation);
@@ -788,11 +854,13 @@ export function useLlmChat(
                     }
                 },
                 onUsage: (u) => {
+                    if (!isCurrentTurn()) return;
                     usage = u;
                     setLastPromptTokens(u.promptTokens ?? 0);
                     setLastCompletionTokens(u.completionTokens ?? 0);
                 },
                 onError: (errorMsg, errorDetails) => {
+                    if (!isCurrentTurn()) return;
                     console.error("Chat error:", errorMsg, errorDetails);
                     const errorMessage: StoredMessage = {
                         id: randomString(),
@@ -802,7 +870,7 @@ export function useLlmChat(
                         type: "error",
                         ...(errorDetails ? { errorDetails } : {})
                     };
-                    const finalMessages = [...conversation, errorMessage];
+                    const finalMessages = [...conversation, ...incompleteGoslingActivity(), errorMessage];
                     setMessages(finalMessages);
                     smoothReset();
                     setTargetBlocks([]);
@@ -815,9 +883,19 @@ export function useLlmChat(
             },
             abortController.signal
         ).catch((e) => {
+            if (!isCurrentTurn()) return;
             // AbortError is expected when user stops generation
             if (e instanceof DOMException && e.name === "AbortError") {
-                finalizeStream();
+                if (selectedModelProvider === "gosling") {
+                    setMessages([...conversation, ...incompleteGoslingActivity(), {
+                        id: randomString(), role: "assistant", content: "Gosling turn interrupted. Partial output was not completed. Start a new session before retrying.",
+                        createdAt: new Date().toISOString(), type: "error"
+                    }]);
+                    setTargetBlocks([]);
+                    setIsStreaming(false);
+                    setStreamingStatus(null);
+                    abortControllerRef.current = null;
+                } else { finalizeStream(); }
                 return;
             }
             // Unexpected error — streamChatCompletion normally routes failures
@@ -838,7 +916,7 @@ export function useLlmChat(
             setIsStreaming(false);
             abortControllerRef.current = null;
         });
-    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
+    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, goslingAllowWrites, goslingExtensions, goslingHandoff, enableExtendedThinking, reasoningEffort, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
 
     const handleSubmit = useCallback(async (e: Event) => {
         e.preventDefault();
@@ -937,6 +1015,22 @@ export function useLlmChat(
     }, [targetBlocks, smoothedTailText]);
 
     return {
+        goslingAllowWrites, setGoslingAllowWrites,
+        goslingExtensions, setGoslingExtensions,
+        goslingHandoff, setGoslingHandoff,
+        goslingPermissions, goslingSessionInfo,
+        answerGoslingPermission: async (requestId, optionId) => {
+            await server.post("gosling/permission", { chatNoteId: chatNoteIdRef.current, requestId, optionId });
+            setGoslingPermissions(current => current.filter(request => request.requestId !== requestId));
+        },
+        revokeGoslingAccess: async () => {
+            enableNoteToolsRef.current = false;
+            setEnableNoteTools(false);
+            setGoslingAllowWrites(false);
+            setGoslingExtensions([]);
+            abortControllerRef.current?.abort();
+            await server.post("gosling/revoke", { chatNoteId: chatNoteIdRef.current });
+        },
         // State
         messages,
         hasInputText,
@@ -977,9 +1071,18 @@ export function useLlmChat(
         setMessages,
         setSelectedModel: selectModel,
         setEnableWebSearch,
-        setEnableNoteTools,
+        setEnableNoteTools: value => {
+            if (!value && selectedProvider === "gosling" && chatNoteIdRef.current) {
+                void server.post("gosling/revoke", { chatNoteId: chatNoteIdRef.current });
+            }
+            enableNoteToolsRef.current = value;
+            setEnableNoteTools(value);
+        },
         setEnableExtendedThinking,
-        setReasoningEffort,
+        setReasoningEffort: value => {
+            reasoningEffortRef.current = value;
+            setReasoningEffort(value);
+        },
         setContextNoteId,
         setChatNoteId,
         addPendingAttachment,

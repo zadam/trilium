@@ -68,7 +68,7 @@ export function readSearchProviders(): SearchProviderOption[] {
 const BUILT_IN_WEB_SEARCH = new Set([ "anthropic", "openai", "google", "claude-agent", "antigravity-agent", "codex-agent" ]);
 
 /** Provider types that run their own agent loop, which takes no tool from Trilium's chat. */
-const OWN_AGENT_LOOP = new Set([ "claude-agent", "copilot-agent", "antigravity-agent", "codex-agent" ]);
+const OWN_AGENT_LOOP = new Set([ "gosling", "claude-agent", "copilot-agent", "antigravity-agent", "codex-agent" ]);
 
 /** The web search of a chat turn, as the Tools menu shows it and as the turn is sent. */
 export interface WebSearchState {

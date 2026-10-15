@@ -56,3 +56,7 @@ This allows you to set the base URL to an OpenAI-compatible API, with an optiona
 Enter the base URL exactly as the service documents it, including its version path, such as `https://api.groq.com/openai/v1` or `https://open.bigmodel.cn/api/paas/v4`. Only a bare host such as `http://localhost:8080` is completed with `/v1`.
 
 For custom endpoints, the pricing of the models is not known so the cost of a conversation will not be displayed; this is especially relevant for hosted providers.
+
+## Gosling gateway
+
+The <a class="reference-link" href="Providers/Gosling.md">Gosling</a> integration routes chat notes through one local ACP gateway to providers configured in Gosling. Credentials and execution stay in Gosling; endpoint locality and enforceable tool capabilities are shown separately. It requires the companion bounded-client-policy build.

@@ -20,7 +20,8 @@ export default function ReasoningEffortDropdown({ model, value, onChange, disabl
     disabled?: boolean;
 }) {
     const effective = effectiveReasoningEffort(model, value);
-    const label = t(`llm_chat.reasoning_effort_levels.${effective}`);
+    const goslingDefault = model.provider === "gosling" && value === undefined && !model.defaultReasoningEffort;
+    const label = goslingDefault ? t("llm.gosling_reasoning_default") : t(`llm_chat.reasoning_effort_levels.${effective}`);
 
     return (
         <Dropdown
@@ -35,7 +36,7 @@ export default function ReasoningEffortDropdown({ model, value, onChange, disabl
             disabled={disabled}
         >
             {(model.reasoningEfforts ?? []).map(level => (
-                <FormListItem key={level} checked={level === effective} onClick={() => onChange(level)}>
+                <FormListItem key={level} checked={!goslingDefault && level === effective} onClick={() => onChange(level)}>
                     {t(`llm_chat.reasoning_effort_levels.${level}`)}
                 </FormListItem>
             ))}

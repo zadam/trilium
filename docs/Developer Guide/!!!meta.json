@@ -2967,6 +2967,40 @@
                             "format": "markdown",
                             "dataFileName": "Trilium Backup Container (.tnbackup) file format.md",
                             "attachments": []
+                        },
+                        {
+                            "isClone": false,
+                            "noteId": "ndzCgJdb2cax",
+                            "notePath": [
+                                "jdjRLhLV3TtI",
+                                "HMrVxa1lJBKv",
+                                "ndzCgJdb2cax"
+                            ],
+                            "title": "Gosling ACP integration",
+                            "notePosition": 30,
+                            "prefix": null,
+                            "isExpanded": false,
+                            "type": "text",
+                            "mime": "text/html",
+                            "attributes": [
+                                {
+                                    "type": "label",
+                                    "name": "shareAlias",
+                                    "value": "gosling-acp-integration",
+                                    "isInheritable": false,
+                                    "position": 10
+                                },
+                                {
+                                    "type": "label",
+                                    "name": "iconClass",
+                                    "value": "bx bx-bot",
+                                    "isInheritable": false,
+                                    "position": 20
+                                }
+                            ],
+                            "format": "markdown",
+                            "dataFileName": "Gosling ACP integration.md",
+                            "attachments": []
                         }
                     ]
                 }

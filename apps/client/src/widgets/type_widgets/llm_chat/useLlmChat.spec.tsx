@@ -52,11 +52,12 @@ const PROVIDERS = [
 ];
 
 describe("useLlmChat", () => {
+    let onMessagesSnapshot: (() => void) | undefined;
     let captured: LlmChatApi | undefined;
     let host: HTMLDivElement | undefined;
 
     function Harness(props: { options?: LlmChatOptions }) {
-        captured = useLlmChat(undefined, props.options);
+        captured = useLlmChat(onMessagesSnapshot, props.options);
         return null;
     }
 
@@ -95,8 +96,21 @@ describe("useLlmChat", () => {
             host = undefined;
         }
         captured = undefined;
+        onMessagesSnapshot = undefined;
         optionsGetJsonMock.mockReset();
         streamChatCompletionMock.mockReset();
+    });
+
+    it("provides the latest messages and note access to a synchronous save snapshot", async () => {
+        let snapshot: ReturnType<LlmChatApi["getContent"]> | undefined;
+        onMessagesSnapshot = () => { snapshot = api().getContent(); };
+        await mountChat();
+        await act(async () => {
+            api().setEnableNoteTools(true);
+            api().setMessages([{ id: "synthetic", role: "assistant", content: "Fast reply", createdAt: "2026-10-15T00:00:00Z" }]);
+        });
+        expect(snapshot?.messages[0].content).toBe("Fast reply");
+        expect(snapshot?.enableNoteTools).toBe(true);
     });
 
     it("focuses the input at once when it is ready, or as soon as it registers", async () => {
@@ -417,6 +431,19 @@ describe("useLlmChat", () => {
         const sent = (call: number) => (streamChatCompletionMock.mock.calls[call][0] as { content: unknown }[]).map(m => m.content);
         expect(sent(0)).toEqual(["hi", "hello", "name?"]);
         expect(sent(1)).toEqual(["hi", "hello", "name?", "Your PC is pc.", "thanks"]);
+    });
+
+    it("resets Gosling execution authority when the chat note changes", async () => {
+        await mountChat({ chatNoteId: "synthetic-a" });
+        await act(async () => {
+            api().setGoslingAllowWrites(true);
+            api().setGoslingExtensions(["math_mcp"]);
+            api().setGoslingHandoff(true);
+        });
+        await act(async () => { api().setChatNoteId("synthetic-b"); });
+        expect(api().goslingAllowWrites).toBe(false);
+        expect(api().goslingExtensions).toEqual([]);
+        expect(api().goslingHandoff).toBe(false);
     });
 
     it("keeps what a turn waits on until the turn ends", async () => {

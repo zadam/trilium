@@ -117,3 +117,17 @@ describe("createMcpServer", () => {
         });
     });
 });
+
+describe("revocable MCP policy", () => {
+    it("advertises only permitted tools and checks authority again at execution", async () => {
+        let enabled = true;
+        await createMcpServer((_name, definition) => enabled && !definition.mutates);
+        expect(registered.map(tool => tool.name)).toEqual(["read_tool", "fail_tool"]);
+        const callback = registered.find(tool => tool.name === "read_tool")?.callback;
+        expect(callback).toBeDefined();
+        enabled = false;
+        expect(callback?.({})).toMatchObject({ isError: true });
+        expect(readExecute).not.toHaveBeenCalled();
+        expect(mockSql.transactional).not.toHaveBeenCalled();
+    });
+});

@@ -105,6 +105,13 @@ describe("AcpClient", () => {
         expect(infoLogMock).toHaveBeenCalledWith("ACP agent stderr: warning: model is busy");
     });
 
+    it("can suppress runtime stderr so credential diagnostics stay out of Trilium logs", () => {
+        const client = AcpClient.start("/bin/gosling", { cwd: "/tmp", suppressStderr: true });
+        proc.stderr.emit("data", Buffer.from("synthetic-token-not-for-logs"));
+        expect(infoLogMock).not.toHaveBeenCalled();
+        client.dispose();
+    });
+
     it("correlates a response to its request by id", async () => {
         const client = AcpClient.start("/bin/copilot", { cwd: "/tmp" });
         const promise = client.request<{ ok: boolean }>("initialize", { v: 1 });

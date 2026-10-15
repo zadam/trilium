@@ -21,6 +21,7 @@ import databaseRoute from "./api/database.js";
 import etapiTokensApiRoutes from "./api/etapi_tokens.js";
 import filesRoute from "./api/files.js";
 // API routes
+import * as goslingRoute from "./api/gosling.js";
 import llmChatRoute from "./api/llm_chat.js";
 import loginApiRoute from "./api/login.js";
 import metricsRoute from "./api/metrics.js";
@@ -159,6 +160,12 @@ function register(app: express.Application) {
     asyncRoute(PST, "/api/database/find-and-fix-consistency-issues", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.findAndFixConsistencyIssues, apiResultHandler);
 
     apiRoute(GET, "/api/database/check-integrity", databaseRoute.checkIntegrity);
+
+    // Gosling uses host processes and is unavailable in the standalone browser build.
+    asyncApiRoute(PST, "/api/gosling/inventory", goslingRoute.inventory);
+    asyncApiRoute(GET, "/api/gosling/extensions", goslingRoute.extensions);
+    asyncApiRoute(PST, "/api/gosling/revoke", goslingRoute.revoke);
+    asyncApiRoute(PST, "/api/gosling/permission", goslingRoute.permission);
 
     // LLM chat endpoints
     asyncRoute(PST, "/api/llm-chat/stream", [auth.checkApiAuthOrElectron, csrfMiddleware], llmChatRoute.streamChat, null);

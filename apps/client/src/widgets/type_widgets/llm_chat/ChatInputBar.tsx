@@ -1,4 +1,5 @@
 import "./ChatInputBar.css";
+import GoslingControls from "./GoslingControls.js";
 
 import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
 import type { DISPLAYABLE_LOCALE_IDS, LlmReasoningEffort } from "@triliumnext/commons";
@@ -272,6 +273,7 @@ export default function ChatInputBar({
 
     return (
         <>
+            <GoslingControls chat={chat} onAccessChange={onNoteToolsChange} />
             <form
                 className="llm-chat-input-form"
                 onSubmit={handleSubmit}
@@ -466,7 +468,7 @@ export default function ChatInputBar({
                             onWebSearchChoose={chooseWebSearch}
                             disabled={chat.isStreaming}
                         />
-                        {!currentModel?.reasoningEfforts?.length && (
+                        {!currentModel?.reasoningEfforts?.length && currentModel?.provider !== "gosling" && (
                             <CapabilityToggle
                                 icon="bx bx-brain"
                                 label={t("llm_chat.extended_thinking")}

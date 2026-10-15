@@ -29,7 +29,7 @@ Once enabled, the assistant is available as:
 
 ## LLM Providers
 
-Trilium supports four different types of providers:
+Trilium supports direct providers and a <a class="reference-link" href="AI/Providers/Gosling.md">Gosling gateway</a> for providers configured in Gosling. Direct providers include:
 
 *   **Cloud providers**  
     Pay-per use with an API key which is billed separately from any subscription you might already have

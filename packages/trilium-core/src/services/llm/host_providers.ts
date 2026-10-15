@@ -32,7 +32,8 @@ export const HOST_PROVIDED_TYPES = {
     /** A Google account's Gemini quota through Google's Antigravity ACP server, signed in from the provider screen. */
     "antigravity-agent": "Google Antigravity",
     /** A ChatGPT plan's Codex usage through the Codex ACP adapter, signed in from the provider screen. */
-    "codex-agent": "OpenAI Codex"
+    "codex-agent": "OpenAI Codex",
+    gosling: "Gosling"
 } as const;
 
 /** A provider type from {@link HOST_PROVIDED_TYPES}. */

@@ -38,7 +38,7 @@ describe("registerServerLlmExtensions", () => {
         // types core knows them by. Registered as async factories that import their
         // module on first use, so neither the provider nor its agent SDK loads until
         // a chat asks for it.
-        expect(registrations.hostProviders.map(p => p.type)).toEqual(["claude-agent", "copilot-agent", "antigravity-agent", "codex-agent"]);
+        expect(registrations.hostProviders.map(p => p.type)).toEqual(["claude-agent", "copilot-agent", "antigravity-agent", "codex-agent", "gosling"]);
         expect(await registrations.hostProviders[0].factory()).toBeInstanceOf(ClaudeAgentProvider);
         expect(await registrations.hostProviders[1].factory()).toBeInstanceOf(CopilotAgentProvider);
         expect(await registrations.hostProviders[2].factory()).toBeInstanceOf(AntigravityAgentProvider);

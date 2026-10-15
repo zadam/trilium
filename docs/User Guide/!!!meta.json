@@ -10732,6 +10732,41 @@
                                     "format": "markdown",
                                     "dataFileName": "Subscription-based providers.md",
                                     "attachments": []
+                                },
+                                {
+                                    "isClone": false,
+                                    "noteId": "oaqx1g4eOvBy",
+                                    "notePath": [
+                                        "pOsGYCXsbNQG",
+                                        "GBBMSlVSOIGP",
+                                        "bkPZAMT7d2sR",
+                                        "oaqx1g4eOvBy"
+                                    ],
+                                    "title": "Gosling",
+                                    "notePosition": 20,
+                                    "prefix": null,
+                                    "isExpanded": false,
+                                    "type": "text",
+                                    "mime": "text/html",
+                                    "attributes": [
+                                        {
+                                            "type": "label",
+                                            "name": "shareAlias",
+                                            "value": "gosling",
+                                            "isInheritable": false,
+                                            "position": 10
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-bot",
+                                            "isInheritable": false,
+                                            "position": 20
+                                        }
+                                    ],
+                                    "format": "markdown",
+                                    "dataFileName": "Gosling.md",
+                                    "attachments": []
                                 }
                             ]
                         },

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
     configured: true,
+    providerName: "fake",
     chunks: [] as unknown[],
     availableModels: [{ id: "m1", name: "Model One", isDefault: true }] as { id: string; name: string; isDefault?: boolean }[],
     chatThrows: undefined as unknown,
@@ -20,7 +21,7 @@ const state = vi.hoisted(() => ({
 
 vi.mock("./index.js", () => {
     const makeProvider = () => ({
-        name: "fake",
+        name: state.providerName,
         chat: (_messages: unknown, config: unknown, signal?: AbortSignal) => {
             state.chatConfig = config;
             state.chatSignal = signal;
@@ -85,9 +86,18 @@ describe("runChat", () => {
         expect((state.chatConfig as { webSearch?: unknown }).webSearch).toBeUndefined();
     });
 
+    it("never uses another provider to name a Gosling chat", async () => {
+        state.providerName = "gosling";
+        state.chunkNative = true;
+        state.chunks = [{ type: "done" }];
+        await collect(HELLO, { chatNoteId: "synthetic-chat" });
+        expect(generateChatTitle).not.toHaveBeenCalled();
+    });
+
     afterEach(() => {
         Object.assign(state, {
             configured: true,
+            providerName: "fake",
             chunks: [],
             availableModels: [{ id: "m1", name: "Model One", isDefault: true }],
             chatThrows: undefined,

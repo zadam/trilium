@@ -1,4 +1,4 @@
-import type { LlmChatConfig, LlmCitation, LlmErrorDetails, LlmMessage, LlmModelInfo, LlmStreamChunk, LlmStreamStatus, LlmUsage, WebSocketMessage } from "@triliumnext/commons";
+import type { LlmPermissionRequest, LlmChatConfig, LlmCitation, LlmErrorDetails, LlmMessage, LlmModelInfo, LlmStreamChunk, LlmStreamStatus, LlmUsage, WebSocketMessage } from "@triliumnext/commons";
 
 import server from "./server.js";
 import { isStandalone, randomString } from "./utils.js";
@@ -50,6 +50,8 @@ function serverErrorMessage(error: unknown): string {
 }
 
 export interface StreamCallbacks {
+    onPermission?: (request: LlmPermissionRequest) => void;
+    onSessionInfo?: (message: string) => void;
     onChunk: (text: string) => void;
     onThinking?: (text: string) => void;
     onToolInputStart?: (toolCallId: string, toolName: string) => void;
@@ -135,6 +137,7 @@ async function streamChatOverSse(
 
     const decoder = new TextDecoder();
     let buffer = "";
+    let terminal = false;
 
     try {
         while (true) {
@@ -148,12 +151,18 @@ async function streamChatOverSse(
             for (const line of lines) {
                 if (line.startsWith("data: ")) {
                     try {
-                        await handleChunk(JSON.parse(line.slice(6)), callbacks);
+                        const chunk = JSON.parse(line.slice(6)) as LlmStreamChunk;
+                        if (terminal) continue;
+                        if (chunk.type === "done" || chunk.type === "error") terminal = true;
+                        await handleChunk(chunk, callbacks);
                     } catch (e) {
                         console.error("Failed to parse SSE data line:", line, e);
                     }
                 }
             }
+        }
+        if (!terminal && !abortSignal?.aborted) {
+            callbacks.onError("The chat stream ended before the turn completed.");
         }
     } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") {
@@ -252,6 +261,12 @@ function rejectWhenAborted(signal?: AbortSignal): Promise<never> {
  */
 async function handleChunk(chunk: LlmStreamChunk, callbacks: StreamCallbacks): Promise<void> {
     switch (chunk.type) {
+        case "permission":
+            callbacks.onPermission?.(chunk.permission);
+            break;
+        case "session_info":
+            callbacks.onSessionInfo?.(chunk.message);
+            break;
         case "status":
             callbacks.onStatus?.(chunk.status);
             break;

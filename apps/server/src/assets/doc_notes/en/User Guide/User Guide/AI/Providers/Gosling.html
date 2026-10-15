@@ -1,0 +1,119 @@
+<p>Gosling is a generic provider gateway for Trilium chat notes: <strong>Trilium chat → local Gosling ACP process → selected Gosling provider/model</strong>.
+  Gosling owns provider authentication, agent execution, permissions and
+  tools. Trilium owns the chat, selected note context and note operations.</p>
+<h2>Setup</h2>
+<ol>
+  <li>Build the companion Gosling revision with bounded client tool policy v1
+    (<code>cargo build -p gosling-cli</code> from the Gosling checkout, after <code>source bin/activate-hermit</code>).
+    Use a build that includes the features your providers require.</li>
+  <li>Configure and authenticate providers using Gosling's existing <code>gosling configure</code> flow.
+    Keep subscription authentication in Gosling. This integration never substitutes
+    a separately billed API route.</li>
+  <li>Start Trilium with <code>TRILIUM_GOSLING_BINARY</code> pointing to that
+    build's absolute executable path. Without it, Trilium looks for <code>gosling</code> on
+    the server's PATH. The executable runs on the machine hosting Trilium,
+    including for a browser client.</li>
+  <li>In <strong>Options → AI / LLM</strong>, add <strong>Gosling</strong> under <strong>Custom endpoint</strong>.
+    No API key or URL is required. Choose models from Gosling's inventory and
+    save.</li>
+  <li>Create a chat note and select the desired Gosling provider/model in its
+    model picker. The in-editor assistant requires a different provider; Gosling
+    currently requires a persistent chat note.</li>
+</ol>
+<p>Gosling starts as <code>gosling acp</code> over local stdio. No Gosling
+  HTTP server, LAN access, cloud synchronization or analytics is enabled.
+  Provider inference can still use an external endpoint: check the endpoint
+  label and Gosling's configuration before sending sensitive content. <strong>Unknown</strong> means
+  Gosling could not establish locality from non-secret endpoint metadata;
+  it is not a claim of local inference.</p>
+<h2>Inventory and capabilities</h2>
+<p>The model picker uses exact provider/model identifiers from Gosling. Display
+  names do not determine routing. Reopen the provider's model selection and
+  choose <strong>Refresh Gosling inventory</strong> after changing Gosling
+  configuration. Background refresh completion updates the list without rebuilding
+  Trilium; select newly available models and save.</p>
+<p>Configured, not configured, stale, refreshing, failed-refresh and expired-credential
+  states are shown separately. Configuration or a model listing does not
+  demonstrate subscription entitlement, live authentication or successful
+  inference. These authentication states are shown only when Gosling explicitly
+  reports them; otherwise authentication remains unverified. An expiry is
+  a warning: Gosling may refresh the credential on use. Authentication failures
+  should be resolved in Gosling; Trilium does not open a replacement API
+  account or copy provider secrets.</p>
+<p>Only configured providers supply selectable models. Providers with no
+  reported models need configuration or inventory refresh in Gosling. Applicable
+  reasoning values come from the inventory. Native images and binary file
+  attachments are disabled because inventory does not establish their support.
+  Text attachments remain available. Pricing and subscription coverage are
+  not guessed.</p>
+<p>Providers that execute tools inside their own CLI/runtime cannot enforce
+  this bounded tool policy. They remain visible with an explanation, but
+  chat execution is blocked. Changing a client toggle cannot sandbox those
+  runtimes. This restriction applies to the reported capability, without
+  a vendor allowlist.</p>
+<h2>Notes and additional tools</h2>
+<p><strong>Note access</strong> controls note tools and the current-note context
+  hint. The bounded initial workflow exposes the existing note search, metadata,
+  content, create, rename, edit, append and delete tools. It does not grant
+  database-file access. Note access is off by default for a new chat note.</p>
+<p>With access on, notes are read-only until <strong>Gosling session permissions → Allow proposed note writes</strong> is
+  enabled. A proposed edit is text describing a change. Applying it requires
+  a separate tool invocation and approval; the tool result shows success
+  or failure. Rejecting an approval does not apply the edit.</p>
+<p>Every tool invocation requires an explicit once-only decision in the chat.
+  Remembered global tool allows and autonomous mode do not bypass this boundary.
+  The integration offers no “always allow” decision. A denial, expired request
+  or failed tool is not a completed change.</p>
+<p>Select additional enabled Gosling MCP extensions explicitly under <strong>Gosling session permissions</strong>.
+  None are inherited automatically. This can include authorized Muninn, cephalopod-ai,
+  Alexandria and math_mcp configurations; their logic and credentials stay
+  in their existing systems. The extension's configured tool allowlist remains
+  effective. Configure a narrower allowlist in Gosling when only some tools
+  should be exposed. Each invocation still requires approval. Extensions
+  can make external connections independently of the model's endpoint label.
+  The name <code>trilium</code> is reserved for this chat's note endpoint.</p>
+<p><strong>Revoke access and cancel this turn</strong> immediately removes
+  the active note endpoint and cancels the chat's turn and pending approvals.
+  The next session starts with access off and no additional extensions selected.
+  Revocation removes capabilities, not note content already sent to a model
+  or present in visible history. The public Trilium MCP setting is independent
+  and need not be enabled.</p>
+<h2>Sessions, switching and interruption</h2>
+<p>Each chat note maps to a separate Gosling session. Mappings live in <code>gosling-local/sessions.json</code> under
+  this host's Trilium data directory, outside synchronized notes and options.
+  Gosling owns execution history. Processes are shared across chats and stopped
+  after an idle period; each turn has a separate revocable note capability.</p>
+<p>Provider/model changes, changed access, edited history, a missing mapping
+  or an interrupted turn require an explicit handoff. Select <strong>Start a new Gosling session with the visible conversation on the next turn</strong> to
+  continue. This creates a new session from the visible transcript; it does
+  not claim native continuation of provider-owned state. The previous mapping
+  is preserved if creation or selection fails. No global Gosling default
+  is changed.</p>
+<p>After a process or application restart, an unchanged completed chat uses
+  Gosling's session-load contract. A failed resume is reported; it never
+  silently replays a prompt. Cancellation and incomplete streams are errors,
+  and an uncertain turn requires a handoff before retry. Concurrent chats
+  and cancellation are isolated.</p>
+<h2>Isolated preview and returning to your installation</h2>
+<p>Build Trilium with <code>pnpm --filter server build</code>. To preview
+  without opening your knowledge base, copy <code>packages/trilium-core/src/test/fixtures/document.db</code> into
+  a new directory and create a <code>config.ini</code> there with <code>[General] noAuthentication=false</code> and <code>[Network] host=127.0.0.1</code> plus
+  an unused port. For example:</p><pre><code class="language-text-x-toml">[General]
+noAuthentication=false
+noBackup=true
+[Network]
+host=127.0.0.1
+port=39162
+https=false
+[Sync]</code></pre>
+<p>Keep the port unused and synchronization unconfigured.</p>
+<p>From the Trilium repository root, launch the build with these environment
+  variables (replace the example paths):</p><pre><code class="language-text-x-sh">TRILIUM_DATA_DIR=/absolute/path/to/isolated-profile \
+TRILIUM_GOSLING_BINARY=/absolute/path/to/gosling/target/debug/gosling \
+TRILIUM_ENV=production node apps/server/dist/main.mjs</code></pre>
+<p>Log in to the synthetic fixture with <code>demo1234</code>. On macOS, the
+  rebuilt Gosling executable may need you to complete an existing-credential
+  Keychain prompt on the desktop before inventory can load. Use synthetic
+  prompts and notes for validation. Stop this preview process to return to
+  your existing installation; launch that installation as usual without these
+  environment overrides. No installation, notes migration or sync is required.</p>

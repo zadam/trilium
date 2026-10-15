@@ -36,6 +36,7 @@ export function registerServerLlmExtensions() {
     registerHostProvider("copilot-agent", async () => new (await import("./providers/copilot_agent.js")).CopilotAgentProvider());
     registerHostProvider("antigravity-agent", async () => new (await import("./providers/antigravity_agent.js")).AntigravityAgentProvider());
     registerHostProvider("codex-agent", async () => new (await import("./providers/codex_agent.js")).CodexAgentProvider());
+    registerHostProvider("gosling", async () => (await import("./providers/gosling.js")).goslingProvider);
     registerDocNoteHtmlReader(getDocNoteHtml);
     registerSkillReader(loadSkillSheet);
     registerToolRegistryLoader(async () => (await import("./tools/help_tools.js")).helpTools);
