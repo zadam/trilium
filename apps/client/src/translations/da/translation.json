@@ -19,7 +19,8 @@
     "github_tooltip": "Indberet fejl, foreslå funktioner, eller bidrag på GitHub.",
     "license_tooltip": "Se licens",
     "donate": "Donation",
-    "donate_tooltip": "Donér for at støtte dette projekt"
+    "donate_tooltip": "Donér for at støtte dette projekt",
+    "version": "{{appVersion}} (database: {{dbVersion}}, synk protokol: {{syncVersion}})"
   },
   "toast": {
     "critical-error": {
@@ -28,7 +29,8 @@
     },
     "widget-error": {
       "title": "Kunne ikke initialisere en widget",
-      "message-unknown": "En ukendt widget kunne ikke initialiseres på grund af:\n\n{{message}}"
+      "message-unknown": "En ukendt widget kunne ikke initialiseres på grund af:\n\n{{message}}",
+      "message-custom": "Den brugerdefinerede widget fra noten med ID \"{{id}}\" og titlen \"{{title}}\" kunne ikke initialiseres på grund af:\n\n{{message}}"
     },
     "bundle-error": {
       "title": "Kunne ikke indlæse et brugerdefineret script",
@@ -46,7 +48,59 @@
     "unhandled-error": {
       "title": "En baggrundsopgave mislykkedes",
       "details-button": "Vis flere detaljer…",
-      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor."
+      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor.",
+      "details-title": "Teknisk information"
     }
+  },
+  "add_link": {
+    "add_link": "Tilføj link",
+    "edit_link": "Ændre link",
+    "fix_link": "Fix linket",
+    "help_on_links": "Hjælp til links",
+    "note": "Note",
+    "search_note": "Søg efter en note ud fra dens navn",
+    "link_title_mirrors": "Linkets titel afspejler notens aktuelle titel",
+    "link_title_arbitrary": "Linkets titel kan ændres frit",
+    "link_title": "Link titel",
+    "anchor": "Anker (valgfrit)",
+    "anchor_none": "Ingen (link til note)",
+    "button_add_link": "Tilføj link",
+    "button_edit_link": "Gem link",
+    "button_fix_link": "Ret link"
+  },
+  "branch_prefix": {
+    "edit_branch_prefix": "Rediger grenpræfiks",
+    "edit_branch_prefix_multiple": "Rediger grenpræfikset for {{count}} grene",
+    "help_on_tree_prefix": "Hjælp til træpræfikset",
+    "prefix": "Præfiks",
+    "save": "Gem",
+    "branch_prefix_saved": "Grenpræfikset er blevet gemt.",
+    "branch_prefix_saved_multiple": "Grenpræfikset er blevet gemt for {{count}} grene.",
+    "affected_branches": "Berørte grene ({{count}}):",
+    "preview_in_tree": "Forhåndsvis i træet",
+    "description": "Tilføjes foran notens titel kun i denne gren. Andre grene beholder den oprindelige titel.",
+    "cancel": "Annuller"
+  },
+  "bulk_actions": {
+    "bulk_actions": "Massehandlinger",
+    "affected_notes": "Berørte noter",
+    "include_descendants": "Inkluder efterkommere af de valgte noter",
+    "available_actions": "Tilgængelige handlinger",
+    "chosen_actions": "Valgte handlinger",
+    "execute_bulk_actions": "Udfør massehandlinger",
+    "bulk_actions_executed": "Massehandlingerne er blevet udført.",
+    "none_yet": "Ingen endnu… tilføj en handling ved at klikke på en af de tilgængelige ovenfor.",
+    "labels": "Etiketter",
+    "relations": "Relationer",
+    "notes": "Noter",
+    "other": "Andre"
+  },
+  "clone_to": {
+    "clone_notes_to": "Klon noter til...",
+    "help_on_links": "Hjælp til links",
+    "notes_to_clone": "Noter, der skal klones",
+    "target_parent_note": "Målnote for overordnet niveau",
+    "search_for_note_by_its_name": "Søg efter en note ud fra dens navn",
+    "cloned_note_prefix_title": "Den klonede note vises i notetræet med det angivne præfiks"
   }
 }

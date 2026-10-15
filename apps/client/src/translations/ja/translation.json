@@ -199,7 +199,9 @@
       "end_date": "終了日",
       "time": "時間",
       "start_time": "開始時刻",
-      "end_time": "終了時刻"
+      "end_time": "終了時刻",
+      "add_time": "時刻を追加",
+      "remove_time": "時刻を削除"
     },
     "recurrence": {
       "repeats": "繰り返し",
@@ -223,7 +225,9 @@
       "count": "回数",
       "times": "回",
       "custom_rule": "ルール",
-      "custom_hint": "上記のフィールドでは指定できない追加条件を含む iCalendar の繰り返しルール（RRULE）です。これをクリアすると、繰り返し設定が解除されます。"
+      "custom_hint": "上記のフィールドでは指定できない追加条件を含む iCalendar の繰り返しルール（RRULE）です。これをクリアすると、繰り返し設定が解除されます。",
+      "count_years": "タイトルに経過年数を表示",
+      "count_years_locked": "このイベントには、すでにタイトルテンプレートが設定されています。ノートで設定されているか、ノートから継承されています。変更する場合は、ノートの属性で行ってください。"
     },
     "expand_details": "イベントを最大化してウィンドウ全体に表示",
     "restore_details": "イベントをカレンダー上の元の位置の横に戻す"
@@ -794,7 +798,9 @@
     "reset-selection": "選択を解除",
     "expand-column": "列を展開",
     "delete-column-notes_other": "この列にある {{count}} 件のノートも削除",
-    "select-all-cards": "すべてのカードを選択"
+    "select-all-cards": "すべてのカードを選択",
+    "show-add-column-button": "\"列を追加\" ボタンを表示",
+    "show-add-column-button-description": "ボードや列のコンテキストメニューから列を追加することは引き続き可能です。"
   },
   "code_buttons": {
     "execute_button_title": "スクリプトを実行",
@@ -1646,7 +1652,10 @@
     "page_description": "クリップしたページの説明。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "page_author": "クリップしたページの作成者。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "published_date": "クリップしたページの公開日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
-    "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。"
+    "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
+    "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。",
+    "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。",
+    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -2393,7 +2402,8 @@
     "cannot-copy": "画像参照をクリップボードにコピーできませんでした。",
     "image-copied-to-clipboard": "画像がクリップボードにコピーされました。",
     "cannot-copy-image": "画像をクリップボードにコピーできませんでした。",
-    "cannot-download": "画像をダウンロードできませんでした。"
+    "cannot-download": "画像をダウンロードできませんでした。",
+    "cannot-convert-to-drawing": "画像を描画キャンバスに変換できませんでした。"
   },
   "entrypoints": {
     "note-revision-created": "ノートの改訂版が作成されました。",
@@ -2733,7 +2743,21 @@
     "remove_from_calendar_confirmation": "イベント \"{{title}}\" をカレンダーから削除してもよろしいですか？",
     "new_event": "新しいイベント",
     "draft_title_placeholder": "タイトルを追加",
-    "create_event": "作成"
+    "create_event": "作成",
+    "duration_minutes": "{{minutes}} 分",
+    "duration_hours": "{{hours}} 時間",
+    "duration_hours_minutes": "{{hours}} 時間 {{minutes}} 分",
+    "properties": "カレンダーのプロパティ",
+    "event_templates": "イベントテンプレート",
+    "event_templates_hint": "新しいカレンダーイベントを作成する際に使用するノートのタイプとノートテンプレートを選択します。",
+    "new_template_name": "新しいイベントテンプレート",
+    "event_template": "イベントテンプレートを選択",
+    "more_templates": "その他のテンプレート…",
+    "template": "テンプレート",
+    "general": "一般",
+    "event_attributes": "イベントの属性",
+    "event_attributes_hint": "イベントに表示する属性と、その表示順序を選択します。新しい属性は、有効にするまで非表示になっています。",
+    "event_attributes_overridden": "このカレンダーには calendar:displayedAttributes ラベルが設定されているため、ここで選択した属性ではなく、そのラベルにリストされている属性がイベントに表示されます。"
   },
   "read-only-info": {
     "edit-note": "ノートを編集"
@@ -3761,7 +3785,17 @@
       "0-columns-layout": "%0 列レイアウト",
       "arrange-content-in-0-equal-columns-side-by-side": "コンテンツを %0 個の等幅な列に並べて配置します。",
       "0-columns-1": "%0 列 (%1)",
-      "remove-layout": "レイアウトを削除"
+      "remove-layout": "レイアウトを削除",
+      "convert-image-to-a-drawing-canvas": "画像を描画キャンバスに変換",
+      "tab-alignment": "タブの配置",
+      "align-tabs-at-top": "タブを上部に配置",
+      "align-tabs-at-bottom": "タブを下部に配置",
+      "type-the-content-of-the-first-column": "1 列目の内容を入力",
+      "type-the-content-of-the-second-column": "2 列目の内容を入力",
+      "type-the-content-of-the-third-column": "3 列目の内容を入力",
+      "type-the-content-of-the-fourth-column": "4 列目の内容を入力",
+      "table-columns": "表の列",
+      "column-0-width-1": "列 %0 幅: %1%"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4210,7 +4244,8 @@
     "coverImage": "カバー画像",
     "viewConfig": "表示設定",
     "canvasLibraryItem": "キャンバスライブラリ",
-    "importSource": "インポート元"
+    "importSource": "インポート元",
+    "transcript": "ミーティングの文字起こし"
   },
   "color-picker": {
     "clear-color": "色を消去",
@@ -4475,6 +4510,25 @@
     "excerpt": "抜粋",
     "excerpt_description": "現在、このノートの一部のみが表示されています。{{icon}} ボタンを押すと、新しいタブでノート全体を開くことができます。",
     "edit_excerpt": "抜粋を編集",
-    "copy_tab": "このタブへのリンクをコピー"
+    "copy_tab": "このタブへのリンクをコピー",
+    "copy_share_link_other": "これら {{count}} ブロックへの公開リンクをコピー"
+  },
+  "record_meeting": {
+    "note_title": "ミーティング {{date}}",
+    "starting": "文字起こしを開始しています…",
+    "stop": "文字起こしを停止",
+    "stopping": "文字起こしを終了しています…"
+  },
+  "transcript": {
+    "speaker_me": "自分",
+    "speaker_others": "その他",
+    "speaker_numbered": "話者 {{number}}",
+    "speaker_name": "話者名",
+    "empty": "まだ文字起こしは行われていません。",
+    "unreadable": "この文字起こしは読み取ることができません。",
+    "speaking": "発言中…",
+    "offset": "文字起こし開始から {{offset}}",
+    "cleanup": "フィラーワードを非表示",
+    "cleanup_tooltip": "“えー”、 “あのー” などの言葉や、言い淀み（どもり）を非表示にします。文字起こし自体は変更されません。"
   }
 }
