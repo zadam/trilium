@@ -10834,6 +10834,39 @@
                 },
                 {
                     "isClone": false,
+                    "noteId": "Y84QCbArmK3z",
+                    "notePath": [
+                        "pOsGYCXsbNQG",
+                        "Y84QCbArmK3z"
+                    ],
+                    "title": "Meeting transcription",
+                    "notePosition": 350,
+                    "prefix": null,
+                    "isExpanded": false,
+                    "type": "text",
+                    "mime": "text/html",
+                    "attributes": [
+                        {
+                            "type": "label",
+                            "name": "shareAlias",
+                            "value": "transcription",
+                            "isInheritable": false,
+                            "position": 10
+                        },
+                        {
+                            "type": "label",
+                            "name": "iconClass",
+                            "value": "bx bx-microphone",
+                            "isInheritable": false,
+                            "position": 20
+                        }
+                    ],
+                    "format": "markdown",
+                    "dataFileName": "Meeting transcription.md",
+                    "attachments": []
+                },
+                {
+                    "isClone": false,
                     "noteId": "CdNpE2pqjmI6",
                     "notePath": [
                         "pOsGYCXsbNQG",

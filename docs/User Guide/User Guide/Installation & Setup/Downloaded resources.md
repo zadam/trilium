@@ -1,7 +1,7 @@
 # Downloaded resources
 Downloaded resources are large files that some features need but that do not ship with Trilium, such as the speech recognition models used to transcribe meetings. Trilium downloads them the first time a feature needs them, and keeps them on the device for later use.
 
-Currently, only meeting transcription on the desktop application uses downloaded resources:
+Currently, only <a class="reference-link" href="../Meeting%20transcription.md">Meeting transcription</a> on the desktop application uses downloaded resources:
 
 | Resource | Size | License | Used for |
 | --- | --- | --- | --- |
