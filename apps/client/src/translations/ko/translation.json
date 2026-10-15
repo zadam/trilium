@@ -3164,7 +3164,12 @@
     "status_attachments": "첨부 파일",
     "status_deleted_items": "삭제된 항목",
     "selection_hint": "항목을 탭하여 세부 정보 보기",
-    "show_selection_details": "선택 항목 세부 정보 표시"
+    "show_selection_details": "선택 항목 세부 정보 표시",
+    "compress_jpeg_keep_description": "현재 화질을 유지합니다.",
+    "compress_jpeg_compress_description": "이미지를 더 낮은 화질로 다시 저장하여 파일 크기를 줄입니다. 이 작업은 되돌릴 수 없습니다.",
+    "compress_png_keep_description": "이미지를 원본 그대로 유지합니다.",
+    "compress_png_optimize_description": "색상 수를 줄입니다. 스크린샷과 다이어그램에서는 일반적으로 차이를 알아차리기 어렵습니다.",
+    "compress_png_jpeg_description": "저장 공간을 가장 많이 절약합니다. 투명도가 있는 이미지는 대신 최적화합니다."
   },
   "note_language": {
     "not_set": "설정된 언어 없음",
@@ -3968,7 +3973,8 @@
     "fullscreen": "전체 화면",
     "exit_fullscreen": "전체 화면 종료",
     "open_in_new_tab": "새 탭에서 열기",
-    "more_actions": "추가 작업"
+    "more_actions": "추가 작업",
+    "beta": "베타"
   },
   "spreadsheet": {
     "read-only": "이 노트는 읽기 전용입니다.",
@@ -4515,7 +4521,8 @@
     "note_title": "회의 {{date}}",
     "starting": "전사를 시작하는 중…",
     "stop": "전사 중지",
-    "stopping": "전사 내용을 마무리하는 중…"
+    "stopping": "전사 내용을 마무리하는 중…",
+    "title_keeping_recordings": "{{title}} (문제 해결용 오디오 보관)"
   },
   "transcript": {
     "speaker_me": "나",
@@ -4528,5 +4535,65 @@
     "offset": "전사 시작 후 {{offset}} 경과",
     "cleanup": "군더더기 말 숨기기",
     "cleanup_tooltip": "‘어’, ‘음’ 같은 군더더기 말과 더듬은 단어를 숨깁니다. 전사 내용 자체는 변경되지 않습니다."
+  },
+  "resource_download": {
+    "title": "다운로드 필요",
+    "intro": "Trilium을 계속 사용하려면 다음 파일을 다운로드해야 합니다. 파일은 이 기기에 저장되며 동기화되지 않으므로 기기마다 별도로 다운로드해야 합니다.",
+    "partially_downloaded": "이미 다운로드됨",
+    "total": "다운로드 크기",
+    "free_space": "디스크 여유 공간: {{size}}",
+    "not_enough_space": "다운로드에 {{size}}의 공간이 필요하지만 이 기기의 여유 공간은 {{free}}뿐입니다. 공간을 확보한 다음 이 창을 닫고 다시 시도하세요.",
+    "progress": "{{total}} 중 {{received}}",
+    "current_file": "{{file}} 다운로드 중…",
+    "download": "다운로드",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "not_enough_space_title": "저장 공간 부족",
+    "failed_title": "다운로드 실패",
+    "license": "{{license}} 라이선스",
+    "verify": "검증",
+    "unverified": "이 기기에 이미 있는 {{size}}의 파일을 다운로드 대신 검사했습니다",
+    "credits": "작성자: <Author>{{author}}</Author>, 출처: {{sources}}"
+  },
+  "transcription_options": {
+    "recognition_title": "음성 인식",
+    "european_languages": "유럽 언어",
+    "european_languages_description": "25개 유럽 언어를 인식하고 사용된 언어를 자동으로 판별합니다. 해당 모델로 처음 녹음할 때 모델이 다운로드됩니다.",
+    "model_standard": "표준",
+    "model_high_accuracy": "고정밀",
+    "identify_speakers": "화자 구분",
+    "identify_speakers_description": "다른 참석자들의 목소리를 구별하여 각자의 발언에 화자 표시를 붙입니다. 마이크로 입력한 자신의 발언은 항상 본인으로 표시됩니다. 목소리는 녹음 중에만 비교하며, 목소리 정보는 저장되지 않고 회의 사이에 동일 인물을 식별하지도 않습니다. 목소리를 잘못 구별한다면 이 기능을 끄세요. 변경 사항은 다음 녹음부터 적용됩니다.",
+    "troubleshooting_title": "문제 해결",
+    "keep_recordings": "문제 해결을 위해 녹음 파일 보관",
+    "keep_recordings_description": "녹음 문제를 신고하고 재현할 수 있도록 회의 참석자 전원의 오디오, 사용한 설정, 생성 당시의 전사 내용을 보관합니다. 회의 1시간당 약 230MB의 공간을 사용하며 자동으로 삭제되지 않습니다.",
+    "saved_in": "저장 위치",
+    "enabled": "회의 전사",
+    "enabled_description": "실행 표시줄에 ‘회의 내용 전사’ 버튼을 추가합니다. 이 기능은 마이크를 통한 자신의 발언과 스피커로 들리는 다른 참석자의 발언을 전사합니다. 음성 인식은 전적으로 이 기기에서 실행되므로 오디오는 외부로 전송되지 않습니다.",
+    "related_resources": "다운로드된 리소스",
+    "related_resources_description": "이 기기에 다운로드된 음성 인식 모델을 확인하고 더 이상 필요하지 않은 모델을 삭제할 수 있습니다.",
+    "model_standard_description": "대부분의 컴퓨터에서 원활하게 실행되도록 양자화한 NVIDIA의 Parakeet TDT 0.6B v3 모델입니다.",
+    "model_high_accuracy_description": "NVIDIA의 Parakeet TDT 0.6B v3 모델을 전체 정밀도로 실행합니다. 오류가 더 적지만 녹음 중 약 1.6GB의 추가 메모리가 필요합니다.",
+    "model_size": "{{size}} 다운로드",
+    "keep_recordings_warning": "이 기능을 켜기 전에 회의 참석자 전원에게 녹음 동의를 받으세요. 독일, 프랑스 및 미국의 일부 주에서는 모든 참석자의 동의 없이 대화를 녹음하면 형사처벌을 받을 수 있으며, 참석자들이 서로 다른 지역에서 참여하는 경우 가장 엄격한 법률이 적용됩니다. 보호된 노트의 녹음이라도 오디오는 암호화되지 않은 상태로 저장됩니다.",
+    "unsupported": "이 컴퓨터에서는 회의 전사를 사용할 수 없습니다. 음성 인식 엔진을 불러오지 못했습니다."
+  },
+  "resources_options": {
+    "list_title": "리소스",
+    "list_description": "음성 인식 모델처럼 기능을 처음 사용할 때 다운로드하는 대용량 파일입니다. 이 기기에 저장되고 동기화되지 않으므로 기기마다 별도의 사본을 다운로드합니다.",
+    "installed": "설치됨",
+    "partially_downloaded": "{{size}} 중 {{downloaded}} 다운로드됨",
+    "space_used": "사용 공간",
+    "no_resources": "아직 다운로드된 항목이 없습니다.",
+    "delete": "삭제",
+    "delete_confirmation": "{{title}} 항목을 삭제하시겠습니까? 이 리소스가 필요한 기능을 다음에 사용할 때 다시 다운로드됩니다.",
+    "open_folder": "폴더 열기",
+    "outdated": "이전 버전",
+    "outdated_description": "현재 버전에서 사용하지 않는 이 리소스의 이전 버전 파일입니다.",
+    "unregistered": "사용하지 않음",
+    "unregistered_description": "이 앱의 어떤 기능에서도 사용하지 않는 다운로드된 리소스입니다.",
+    "unknown": "알 수 없음",
+    "unknown_description": "Trilium에서 다운로드한 파일이 아닙니다.",
+    "delete_foreign_confirmation": "{{name}} 항목을 삭제하시겠습니까? 이 앱의 어떤 기능에서도 사용하지 않습니다.",
+    "unverified": "아직 검사하지 않음"
   }
 }
