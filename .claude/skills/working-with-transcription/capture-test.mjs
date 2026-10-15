@@ -16,15 +16,18 @@
 //   --seconds <n>                    capture length, default 20
 //   --stereo                         play the tone on the left channel only
 //   --keep <dir>                     also write each capture as <dir>/<capture>-<load>.wav
+//   --fused                          run a copy of Electron with the fuses of packaged builds
+//                                    (flip-fuses.ts), which the npm binary lacks
 //
 // Runs Electron the way scripts/electron-start.mts does (Nix-aware) and clears
 // ELECTRON_RUN_AS_NODE, which a VS Code terminal sets and which turns Electron into plain Node.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { parseArgs } from "./recordings.mjs";
 
@@ -46,18 +49,24 @@ run.catch((e) => {
 });
 
 async function launch() {
-    const { options } = parseArgs(process.argv.slice(2), { flags: [ "stereo" ] });
+    const { options } = parseArgs(process.argv.slice(2), { flags: [ "stereo", "fused" ] });
     const captures = (options.capture ?? "both") === "both" ? [ "worklet", "script" ] : [ options.capture ];
     const load = options.load ?? "jank";
     const seconds = Number(options.seconds ?? 20);
-    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(path.join(REPO, "scripts/utils.mts"));
+    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(pathToFileURL(path.join(REPO, "scripts/utils.mts")).href);
     const env = { ...process.env, LD_LIBRARY_PATH: isNixOS() ? getNixLdLibraryPath() : process.env.LD_LIBRARY_PATH };
     delete env.ELECTRON_RUN_AS_NODE;
+    // The npm package exports its binary's path; `getElectronPath()` names the command on PATH,
+    // which only `pnpm run` provides.
+    const electron = isNixOS()
+        ? getElectronPath()
+        : createRequire(path.join(REPO, "apps/desktop/package.json"))("electron");
+    const binary = options.fused ? await getFusedElectron(electron) : electron;
 
     console.log(`${seconds} s of a ${TONE_HZ} Hz tone${options.stereo ? " (left channel only)" : ""}, load: ${load}\n`);
     for (const capture of captures) {
         const config = { capture, load, seconds, stereo: !!options.stereo, keep: options.keep ?? null };
-        const output = execFileSync(getElectronPath(), [ SELF, "--no-sandbox" ], {
+        const output = execFileSync(binary, [ SELF, "--no-sandbox" ], {
             env: { ...env, CAPTURE_TEST_CONFIG: JSON.stringify(config) },
             encoding: "utf8",
             stdio: [ "ignore", "pipe", "pipe" ],
@@ -69,11 +78,34 @@ async function launch() {
             process.exit(1);
         }
         const result = JSON.parse(line.slice("RESULT ".length));
+        if (!result.chunks) {
+            console.error(`${capture.padEnd(8)} captured nothing\n${output}`);
+            process.exit(1);
+        }
         const verdict = result.breaks === 0 ? "clean" : `${result.breaks} break(s)`;
         console.log(`${capture.padEnd(8)} ${verdict.padEnd(12)} ${result.breaksAtChunkStart} at a chunk start; `
             + `captured ${result.capturedSeconds} s in ${result.chunks} chunks; amplitude ${result.amplitude}`
             + (result.firstBreaks.length ? `\n         first: ${result.firstBreaks.join(", ")}` : ""));
     }
+}
+
+/**
+ * Copies Electron's distribution to the temp directory and flips the fuses packaged builds carry
+ * on the copy, the way the Flathub build does. Packaged builds differ from development in them:
+ * `GrantFileProtocolExtraPrivileges` off, for one, changes what a `file://` page can load.
+ */
+async function getFusedElectron(electron) {
+    const distDir = path.join(path.dirname(createRequire(import.meta.url).resolve("electron/package.json")), "dist");
+    const copyDir = path.join(os.tmpdir(), "trilium-fused-electron");
+    fs.rmSync(copyDir, { recursive: true, force: true });
+    fs.cpSync(distDir, copyDir, { recursive: true, verbatimSymlinks: true });
+    const binary = path.join(copyDir, path.relative(distDir, electron));
+
+    const flipFusesScript = path.join(REPO, "apps/desktop/electron-forge/flip-fuses.ts");
+    const { FUSES } = await import(pathToFileURL(flipFusesScript).href);
+    const { flipFuses } = await import("@electron/fuses");
+    await flipFuses(binary, { ...FUSES, resetAdHocDarwinSignature: process.platform === "darwin" });
+    return binary;
 }
 
 async function runInElectron(config) {
@@ -171,8 +203,8 @@ function buildPage(config, processor) {
                 source.connect(node);
                 node.connect(context.destination);
             } else {
-                await context.audioWorklet.addModule(URL.createObjectURL(
-                    new Blob([ PROCESSOR ], { type: "text/javascript" })));
+                await context.audioWorklet.addModule(
+                    "data:text/javascript;charset=utf-8," + encodeURIComponent(PROCESSOR));
                 const node = new AudioWorkletNode(context, "chunk-collector", {
                     numberOfInputs: 1,
                     numberOfOutputs: 0,

@@ -227,8 +227,10 @@ const { ipcRenderer } = require("electron");
 const portReceived = new Promise((resolve) =>
     ipcRenderer.once("${PORT_CHANNEL}", (e) => resolve(e.ports[0])));
 const context = new AudioContext({ sampleRate: ${SAMPLE_RATE} });
-const processorLoaded = context.audioWorklet.addModule(URL.createObjectURL(
-    new Blob([ ${JSON.stringify(CAPTURE_PROCESSOR)} ], { type: "text/javascript" })));
+// A data: URL, since packaged builds turn off GrantFileProtocolExtraPrivileges, which leaves this
+// file:// page an opaque origin that cannot load a blob: worklet.
+const processorLoaded = context.audioWorklet.addModule(${JSON.stringify(
+    `data:text/javascript;charset=utf-8,${encodeURIComponent(CAPTURE_PROCESSOR)}`)});
 
 const flushes = [];
 
