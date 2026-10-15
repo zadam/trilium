@@ -1,4 +1,7 @@
-import { type EditorConfig, getCkLocale, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import {
+    type EditorConfig, getCkLocale, LinkEmbedEditing, SnippetDefinition,
+    type TextTransformationConfig
+} from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
@@ -230,6 +233,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         },
         htmlSupport: buildHtmlSupportConfig(),
         removePlugins: getDisabledPlugins(),
+        extraPlugins: getExtraPlugins(),
         // The locale's CKEditor translations, plus the dictionary of Trilium-authored editor
         // strings resolved through the app's i18n (see `messages.ts` in the ckeditor5 package).
         ...await getCkLocale(opts.uiLanguage, { englishMessages: getEnglishEditorMessages(), translate: (key) => t(key) })
@@ -482,6 +486,15 @@ export const SHARE_EDIT_DISABLED_PLUGINS = [
 export const SHARE_EDIT_UPLOAD_PLUGINS = [
     "UploadimagePlugin", "ClipboardBareImage", "ClipboardImageEmbed"
 ];
+
+/**
+ * The plugins a shared page's guest gets beyond the editor's own; none elsewhere. `LinkEmbed` is
+ * removed for guests, which would drop its editing part: the schema and converters that carry the
+ * note's existing link previews through a save.
+ */
+export function getExtraPlugins() {
+    return isShareEditing() ? [ LinkEmbedEditing ] : undefined;
+}
 
 export function getDisabledPlugins() {
     const disabledPlugins: string[] = [];
