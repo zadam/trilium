@@ -13,6 +13,7 @@ import noteCreateService from "../../services/note_create";
 import options from "../../services/options";
 import toast from "../../services/toast";
 import { Badge } from "../react/Badge";
+import { useTriliumOptionBool } from "../react/hooks";
 import {
     LaunchBarActionButton,
     LauncherNoteProps,
@@ -21,11 +22,13 @@ import {
 
 /**
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
- * recording, the second stops it. Desktop only, since the main process does the recording.
+ * recording, the second stops it. Desktop only, since the main process does the recording, and
+ * shown only while `transcriptionEnabled` is on.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
     const { status, error } = useTranscriptionState();
+    const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
     const handleClick = useCallback(() => {
         void toggleRecording(status);
     }, [ status ]);
@@ -35,6 +38,10 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             toast.showError(error);
         }
     }, [ error ]);
+
+    if (!isEnabled) {
+        return null;
+    }
 
     return (
         <div className="record-meeting-launcher">

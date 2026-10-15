@@ -5,7 +5,7 @@ description: Use when working on Trilium's meeting transcription — the desktop
 
 # Working with transcription
 
-Desktop transcribes a meeting on the user's machine: no audio leaves it, and none is kept unless the user turns on "Keep recordings for troubleshooting". Standalone has only a prototype (`apps/standalone/transcription-poc/`, see its README).
+Desktop transcribes a meeting on the user's machine, once the synced option `transcriptionEnabled` ("Meeting transcription" in the header of Options → Transcription, off by default while the feature is in beta) is on; until then the launcher renders nothing and the page shows only that switch: no audio leaves it, and none is kept unless the user turns on "Keep recordings for troubleshooting". Standalone has only a prototype (`apps/standalone/transcription-poc/`, see its README).
 
 ## The pipeline
 

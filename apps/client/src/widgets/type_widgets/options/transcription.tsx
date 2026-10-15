@@ -15,6 +15,8 @@ import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 
 export default function TranscriptionSettings() {
+    const [ isEnabled, setIsEnabled ] = useTriliumOptionBool("transcriptionEnabled");
+
     if (!isElectron()) {
         return (
             <>
@@ -28,9 +30,24 @@ export default function TranscriptionSettings() {
         <>
             <OptionsPageHeader
                 badge={<Badge text={t("common.beta")} className="transcription-beta-badge" outline />}
+                below={
+                    <OptionCardSection
+                        className="options-header-switch"
+                        name="transcription-enabled"
+                        label={t("transcription_options.enabled")}
+                        description={t("transcription_options.enabled_description")}
+                    >
+                        <FormToggle currentValue={isEnabled} onChange={setIsEnabled} />
+                    </OptionCardSection>
+                }
             />
-            <RecognitionSettings />
-            <TroubleshootingSettings />
+
+            {isEnabled && (
+                <>
+                    <RecognitionSettings />
+                    <TroubleshootingSettings />
+                </>
+            )}
         </>
     );
 }

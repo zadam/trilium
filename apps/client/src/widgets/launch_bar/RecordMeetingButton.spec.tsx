@@ -11,7 +11,16 @@ const mocks = vi.hoisted(() => ({
     showError: vi.fn(),
     requireResources: vi.fn(),
     transcriptionModel: null as string | null,
-    speakersEnabled: true
+    speakersEnabled: true,
+    transcriptionEnabled: true
+}));
+
+vi.mock("../react/hooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../react/hooks")>()),
+    useTriliumOptionBool: (name: string) => [
+        name === "transcriptionEnabled" && mocks.transcriptionEnabled,
+        vi.fn()
+    ]
 }));
 
 vi.mock("../../services/date_notes", () => ({
@@ -48,6 +57,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     mocks.transcriptionModel = null;
     mocks.speakersEnabled = true;
+    mocks.transcriptionEnabled = true;
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -149,6 +159,13 @@ describe("toggleRecording", () => {
 });
 
 describe("RecordMeetingButton", () => {
+    it("shows nothing while transcription is turned off in the settings", () => {
+        mocks.transcriptionEnabled = false;
+        const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        expect(container.querySelector(".record-meeting-launcher")).toBeNull();
+        expect(container.querySelector("button")).toBeNull();
+    });
+
     it("marks the launcher as beta", () => {
         const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
         expect(container.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)

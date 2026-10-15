@@ -32,7 +32,8 @@ vi.mock("../../react/hooks", async (importOriginal) => ({
 
 
 vi.mock("./components/OptionsPageHeader", () => ({
-    default: ({ badge }: { badge?: ComponentChildren }) => <div className="header-stub">{badge}</div>
+    default: ({ badge, below }: { badge?: ComponentChildren; below?: ComponentChildren }) =>
+        <div className="header-stub">{badge}{below}</div>
 }));
 
 import TranscriptionSettings from "./transcription";
@@ -43,7 +44,9 @@ beforeEach(() => {
     mocks.electron = true;
     mocks.stored = "parakeet-fp32";
     mocks.saved = [];
-    mocks.bools = { transcriptionSpeakersEnabled: true, transcriptionKeepRecordings: false };
+    mocks.bools = {
+        transcriptionEnabled: true, transcriptionSpeakersEnabled: true, transcriptionKeepRecordings: false
+    };
     mocks.savedBools = [];
     mocks.getRecordingsDirectory.mockReset().mockResolvedValue("/data/transcription-recordings");
     window.electronApi = {
@@ -123,9 +126,27 @@ describe("TranscriptionSettings", () => {
         expect(host.querySelector(".directory-location-path")?.textContent).toBe("/data/transcription-recordings");
     });
 
-    it("marks the page as beta", () => {
+    it("marks the page as beta, and introduces it only through the switch below the title", () => {
         open();
-        expect(host.querySelector(".header-stub .ext-badge")?.textContent).toBe("common.beta");
+        const header = host.querySelector(".header-stub");
+        expect(header?.querySelector(".ext-badge")?.textContent).toBe("common.beta");
+        expect(header?.querySelector("p")).toBeNull();
+        expect(header?.textContent).toContain("transcription_options.enabled_description");
+    });
+
+    it("offers only the switch that turns transcription on while it is off", () => {
+        mocks.bools.transcriptionEnabled = false;
+        open();
+        expect(host.querySelector("select")).toBeNull();
+        expect(host.querySelector("input.switch-toggle[id^='keep-recordings-']")).toBeNull();
+
+        const toggle = findToggle("transcription-enabled");
+        expect(toggle.checked).toBe(false);
+        act(() => {
+            toggle.checked = true;
+            toggle.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(mocks.savedBools).toEqual([ [ "transcriptionEnabled", true ] ]);
     });
 
     it("shows the default model for a value it does not know", () => {

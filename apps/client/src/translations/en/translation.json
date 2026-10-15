@@ -4636,7 +4636,9 @@
     "troubleshooting_title": "Troubleshooting",
     "keep_recordings": "Keep recordings for troubleshooting",
     "keep_recordings_description": "Keeps the audio of everyone in the meeting, with the settings used and the transcript as it was produced, so that a problem with a recording can be reported and reproduced. It takes about 230 MB per hour of meeting, is never deleted automatically and is not encrypted, even for protected notes. Recording other participants can require their consent where you or they are.",
-    "saved_in": "Saved in"
+    "saved_in": "Saved in",
+    "enabled": "Meeting transcription",
+    "enabled_description": "Adds the Transcribe meeting button to the launch bar, which transcribes what you say into your microphone and what the other participants say through your speakers. Recognition runs entirely on this device, so no audio leaves it."
   },
   "resources_options": {
     "list_title": "Resources",
