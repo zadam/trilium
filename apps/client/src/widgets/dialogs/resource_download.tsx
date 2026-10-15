@@ -27,7 +27,9 @@ export interface ResourceDownloadDialogOptions {
 
 /**
  * Asks to download the resources a feature needs, then shows the download until it finishes.
- * Closing the dialog cancels a running download.
+ * Closing the dialog cancels a running download. A download the dialog joined can end without
+ * every resource it asks for, so each success is checked against the server before the dialog
+ * closes, and what is still missing is downloaded next.
  */
 export default function ResourceDownloadDialog() {
     const [ opts, setOpts ] = useState<ResourceDownloadDialogOptions>();
@@ -35,8 +37,10 @@ export default function ResourceDownloadDialog() {
     const [ download, setDownload ] = useState<ResourceDownloadProgress | null>(null);
     const downloadRef = useRef(download);
     downloadRef.current = download;
+    const installedRef = useRef(false);
 
     useTriliumEvent("showResourceDownloadDialog", (newOpts) => {
+        installedRef.current = false;
         setOpts(newOpts);
         setDownload(newOpts.status.download);
         setShown(true);
@@ -58,18 +62,26 @@ export default function ResourceDownloadDialog() {
         return () => unsubscribeToMessage(handler);
     }, [ shown, opts ]);
 
+    const succeededId = download?.status === "succeeded" ? download.downloadId : null;
     useEffect(() => {
-        if (download?.status === "succeeded") {
-            setShown(false);
-        }
-    }, [ download ]);
-
-    async function startDownload() {
-        if (!opts) {
+        if (!succeededId || !opts) {
             return;
         }
+        void server.get<ResourcesStatusResponse>(`resources?ids=${opts.ids.map(encodeURIComponent).join(",")}`)
+            .then((status) => {
+                if (status.resources.every(({ installed }) => installed)) {
+                    installedRef.current = true;
+                    setShown(false);
+                } else {
+                    setOpts({ ...opts, status });
+                    void startDownload(opts.ids);
+                }
+            });
+    }, [ succeededId ]);
+
+    async function startDownload(ids: string[]) {
         setDownload(null);
-        const started = await server.post<ResourceDownloadProgress>("resources/download", { ids: opts.ids });
+        const started = await server.post<ResourceDownloadProgress>("resources/download", { ids });
         setDownload((current) => current?.downloadId === started.downloadId ? current : started);
     }
 
@@ -94,7 +106,7 @@ export default function ResourceDownloadDialog() {
             show={shown}
             onHidden={() => {
                 cancelDownload();
-                opts?.callback(downloadRef.current?.status === "succeeded");
+                opts?.callback(installedRef.current);
                 setShown(false);
             }}
             footer={<>
@@ -106,7 +118,7 @@ export default function ResourceDownloadDialog() {
                         kind="primary"
                         disabled={lacksSpace}
                         disabledTooltip={t("resource_download.not_enough_space_title")}
-                        onClick={startDownload}
+                        onClick={() => opts && startDownload(opts.ids)}
                     />
                 )}
             </>}

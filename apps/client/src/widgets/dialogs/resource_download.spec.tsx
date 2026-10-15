@@ -9,6 +9,7 @@ import ResourceDownloadDialog from "./resource_download";
 
 const mocks = vi.hoisted(() => ({
     post: vi.fn(),
+    get: vi.fn(async (): Promise<unknown> => []),
     handlers: new Set<(message: WebSocketMessage) => void>()
 }));
 
@@ -16,7 +17,7 @@ vi.mock("../../services/i18n", () => ({
     t: (key: string, values?: object) => (values ? `${key}:${JSON.stringify(values)}` : key)
 }));
 vi.mock("../../services/server", () => ({
-    default: { get: vi.fn(async () => []), post: mocks.post }
+    default: { get: mocks.get, post: mocks.post }
 }));
 vi.mock("../../services/ws", () => {
     const ws = {
@@ -50,6 +51,7 @@ describe("ResourceDownloadDialog", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.get.mockResolvedValue(installed(STATUS));
         mocks.handlers.clear();
         results = [];
         host = new Component();
@@ -92,6 +94,37 @@ describe("ResourceDownloadDialog", () => {
         await send(progress({ status: "succeeded", receivedBytes: 700 }));
         await hidden();
         expect(results).toEqual([ true ]);
+    });
+
+    it("downloads the rest when the download it joined ends without every resource it needs", async () => {
+        const vad = { ...STATUS.resources[0], id: "transcription.vad", title: "VAD", downloadedSize: 0 };
+        const status = { ...STATUS, resources: [ ...STATUS.resources, vad ] };
+        const ids = [ "transcription.model", "transcription.vad" ];
+        mocks.post.mockResolvedValue(progress({ downloadId: "joined" }));
+        await open(status, ids);
+        await click("resource_download.download");
+
+        mocks.get.mockResolvedValue({ ...status, resources: [ installed(STATUS).resources[0], vad ] });
+        mocks.post.mockResolvedValue(progress({ downloadId: "rest", resourceIds: ids }));
+        await send(progress({ downloadId: "joined", status: "succeeded" }));
+        expect(mocks.get).toHaveBeenLastCalledWith("resources?ids=transcription.model,transcription.vad");
+        expect(mocks.post).toHaveBeenLastCalledWith("resources/download", { ids });
+
+        mocks.get.mockResolvedValue(installed(status));
+        await send(progress({ downloadId: "rest", resourceIds: ids, status: "succeeded" }));
+        await hidden();
+        expect(results).toEqual([ true ]);
+    });
+
+    it("resolves false when closed after a download ends without every resource it needs", async () => {
+        mocks.post.mockResolvedValue(progress());
+        mocks.get.mockResolvedValue(STATUS);
+        await open();
+        await click("resource_download.download");
+
+        await send(progress({ status: "succeeded" }));
+        await hidden();
+        expect(results).toEqual([ false ]);
     });
 
     it("marks each resource done as the download moves on, the one downloading with its bar", async () => {
@@ -150,10 +183,10 @@ describe("ResourceDownloadDialog", () => {
         expect(results).toEqual([ false ]);
     });
 
-    async function open(status = STATUS) {
+    async function open(status = STATUS, ids = [ "transcription.model" ]) {
         await act(async () => {
             await host.handleEvent("showResourceDownloadDialog", {
-                ids: [ "transcription.model" ],
+                ids,
                 status,
                 callback: (installed: boolean) => results.push(installed)
             });
@@ -192,6 +225,15 @@ describe("ResourceDownloadDialog", () => {
             .find((candidate) => candidate.textContent?.includes(label));
     }
 });
+
+function installed(status: ResourcesStatusResponse): ResourcesStatusResponse {
+    return {
+        ...status,
+        resources: status.resources.map((resource) => ({
+            ...resource, installed: true, downloadedSize: resource.size, directory: `/resources/${resource.id}`
+        }))
+    };
+}
 
 function progress(overrides: Partial<ResourceDownloadProgress> = {}): ResourceDownloadProgress {
     const receivedBytes = overrides.receivedBytes ?? 0;
