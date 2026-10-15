@@ -4614,12 +4614,13 @@
     "sources": "From {{sources}}",
     "total": "Download size",
     "free_space": "Free space: {{size}}",
-    "not_enough_space": "There is not enough free space for this download.",
+    "not_enough_space": "The download needs {{size}}, but only {{free}} is free on this device. Free up some space, then close this and try again.",
     "progress": "{{received}} of {{total}}",
     "current_file": "Downloading {{file}}…",
-    "failed": "The download failed: {{error}}",
     "download": "Download",
     "retry": "Retry",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "not_enough_space_title": "Not enough free space",
+    "failed_title": "Download failed"
   }
 }

@@ -9,7 +9,7 @@ import { t } from "../../services/i18n";
 import server from "../../services/server";
 import { formatSize } from "../../services/utils";
 import { subscribeToMessages, unsubscribeToMessage } from "../../services/ws";
-import Alert from "../react/Alert";
+import { ExtendedAdmonition } from "../react/Admonition";
 import Button from "../react/Button";
 import { Card, CardSection } from "../react/Card";
 import { useTriliumEvent } from "../react/hooks";
@@ -80,6 +80,9 @@ export default function ResourceDownloadDialog() {
 
     const isDownloading = download?.status === "downloading";
     const isFailed = download?.status === "failed";
+    const remaining = opts ? getRemainingSize(opts.status) : 0;
+    const freeBytes = opts?.status.freeBytes ?? null;
+    const lacksSpace = freeBytes !== null && freeBytes < remaining;
 
     return (
         <Modal
@@ -99,23 +102,42 @@ export default function ResourceDownloadDialog() {
                         text={isFailed ? t("resource_download.retry") : t("resource_download.download")}
                         icon="bx bx-download"
                         kind="primary"
+                        disabled={lacksSpace}
+                        disabledTooltip={t("resource_download.not_enough_space_title")}
                         onClick={startDownload}
                     />
                 )}
             </>}
         >
-            {opts && <ResourceList status={opts.status} />}
+            {opts && <ResourceList status={opts.status} remaining={remaining} />}
             {isDownloading && <DownloadProgress download={download} />}
+            {lacksSpace && (
+                <ExtendedAdmonition
+                    type="caution"
+                    icon="bx bx-error-circle"
+                    title={t("resource_download.not_enough_space_title")}
+                >
+                    {t("resource_download.not_enough_space", {
+                        size: formatSize(remaining),
+                        free: formatSize(freeBytes)
+                    })}
+                </ExtendedAdmonition>
+            )}
             {isFailed && (
-                <Alert type="danger">{t("resource_download.failed", { error: download.error })}</Alert>
+                <ExtendedAdmonition
+                    type="caution"
+                    icon="bx bx-error-circle"
+                    title={t("resource_download.failed_title")}
+                >
+                    {download.error}
+                </ExtendedAdmonition>
             )}
         </Modal>
     );
 }
 
-function ResourceList({ status }: { status: ResourcesStatusResponse }) {
+function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; remaining: number }) {
     const missing = status.resources.filter(({ installed }) => !installed);
-    const remaining = missing.reduce((total, { size, downloadedSize }) => total + size - downloadedSize, 0);
 
     return (
         <>
@@ -138,9 +160,6 @@ function ResourceList({ status }: { status: ResourcesStatusResponse }) {
                     </span>
                 </CardSection>
             </Card>
-            {status.freeBytes !== null && status.freeBytes < remaining && (
-                <Alert type="warning">{t("resource_download.not_enough_space")}</Alert>
-            )}
         </>
     );
 }
@@ -185,4 +204,11 @@ function DownloadProgress({ download }: { download: ResourceDownloadProgress }) 
             </div>
         </div>
     );
+}
+
+/** The bytes still to download for the resources not installed. */
+function getRemainingSize(status: ResourcesStatusResponse) {
+    return status.resources
+        .filter(({ installed }) => !installed)
+        .reduce((total, { size, downloadedSize }) => total + size - downloadedSize, 0);
 }

@@ -37,7 +37,7 @@ const STATUS: ResourcesStatusResponse = {
         sources: [ "huggingface.co", "github.com" ],
         installed: false
     } ],
-    freeBytes: 100,
+    freeBytes: 10_000,
     download: null
 };
 
@@ -69,8 +69,8 @@ describe("ResourceDownloadDialog", () => {
         expect(text(".resource-download-meta")).toContain(`"size":"200 B"`);
         expect(text(".resource-download-item .resource-download-size")).toBe("700 B");
         expect(text(".resource-download-total .resource-download-size")).toBe("500 B");
-        expect(text(".resource-download-total")).toContain(`free_space:{"size":"100 B"}`);
-        expect(container.querySelector(".alert-warning")).not.toBeNull();
+        expect(text(".resource-download-total")).toContain(`free_space:{"size":"9.77 KiB"}`);
+        expect(container.querySelector(".admonition")).toBeNull();
 
         await click("resource_download.download");
         expect(mocks.post).toHaveBeenCalledExactlyOnceWith("resources/download",
@@ -95,8 +95,15 @@ describe("ResourceDownloadDialog", () => {
         await send(progress({ status: "failed", error: "checksum" }));
         await act(async () => respond(progress()));
 
-        expect(text(".alert-danger")).toContain("checksum");
+        expect(text(".admonition.caution")).toContain("checksum");
         expect(findButton("resource_download.retry")).toBeDefined();
+    });
+
+    it("refuses to start a download that cannot fit in the free space", async () => {
+        await open({ ...STATUS, freeBytes: 100 });
+
+        expect(text(".admonition.caution")).toContain(`"size":"500 B","free":"100 B"`);
+        expect(findButton("resource_download.download")?.disabled).toBe(true);
     });
 
     it("cancels the running download when closed, and resolves false", async () => {
@@ -111,11 +118,11 @@ describe("ResourceDownloadDialog", () => {
         expect(results).toEqual([ false ]);
     });
 
-    async function open() {
+    async function open(status = STATUS) {
         await act(async () => {
             await host.handleEvent("showResourceDownloadDialog", {
                 ids: [ "transcription.model" ],
-                status: STATUS,
+                status,
                 callback: (installed: boolean) => results.push(installed)
             });
         });
