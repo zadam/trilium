@@ -149,6 +149,16 @@ describe("TranscriptionSettings", () => {
         expect(mocks.savedBools).toEqual([ [ "transcriptionEnabled", true ] ]);
     });
 
+    it("points to the downloaded resources, whether transcription is on or off", () => {
+        for (const isEnabled of [ true, false ]) {
+            mocks.bools.transcriptionEnabled = isEnabled;
+            open();
+            const link = host.querySelector("a[href='#root/_hidden/_options/_optionsResources']");
+            expect(link?.textContent).toContain("transcription_options.related_resources");
+            act(() => render(null, host));
+        }
+    });
+
     it("shows the default model for a value it does not know", () => {
         mocks.stored = "whisper";
         expect(open()?.value).toBe("parakeet-int8");

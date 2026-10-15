@@ -13,6 +13,7 @@ import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
+import RelatedSettings from "./components/RelatedSettings";
 
 export default function TranscriptionSettings() {
     const [ isEnabled, setIsEnabled ] = useTriliumOptionBool("transcriptionEnabled");
@@ -48,6 +49,14 @@ export default function TranscriptionSettings() {
                     <TroubleshootingSettings />
                 </>
             )}
+
+            <RelatedSettings items={[
+                {
+                    title: t("transcription_options.related_resources"),
+                    description: t("transcription_options.related_resources_description"),
+                    targetPage: "_optionsResources"
+                }
+            ]} />
         </>
     );
 }
