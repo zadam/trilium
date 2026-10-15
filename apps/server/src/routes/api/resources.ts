@@ -22,6 +22,11 @@ function cancelDownload(req: Request<{ downloadId: string }>) {
     resources.cancelDownload(req.params.downloadId);
 }
 
+/** `DELETE /api/resources/:id`: deletes the files of the resource. */
+async function deleteResource(req: Request<{ id: string }>) {
+    await resources.delete(req.params.id);
+}
+
 function parseIds(ids: unknown) {
     const list = typeof ids === "string" ? ids.split(",") : ids;
     if (!Array.isArray(list) || !list.length || !list.every((id) => typeof id === "string")) {
@@ -33,5 +38,6 @@ function parseIds(ids: unknown) {
 export default {
     getStatus,
     startDownload,
-    cancelDownload
+    cancelDownload,
+    deleteResource
 };

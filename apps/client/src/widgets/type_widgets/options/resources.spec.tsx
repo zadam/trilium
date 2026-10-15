@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
     resources: [] as ResourceInfo[],
     requests: 0,
+    confirmed: true,
+    removed: [] as string[],
     handlers: [] as ((message: WebSocketMessage) => void)[]
 }));
 
@@ -17,8 +19,15 @@ vi.mock("../../../services/server", () => ({
             }
             mocks.requests++;
             return { resources: mocks.resources, freeBytes: null, download: null };
+        },
+        remove: async (url: string) => {
+            mocks.removed.push(url);
         }
     }
+}));
+
+vi.mock("../../../services/dialog", () => ({
+    default: { confirm: async () => mocks.confirmed }
 }));
 
 vi.mock("../../../services/ws", () => {
@@ -58,6 +67,8 @@ beforeEach(() => {
         resource({ id: "test.missing" })
     ];
     mocks.requests = 0;
+    mocks.confirmed = true;
+    mocks.removed = [];
     mocks.handlers = [];
     host = document.body.appendChild(document.createElement("div"));
 });
@@ -88,6 +99,25 @@ describe("ResourcesSettings", () => {
             .toEqual([ "/data/resources/test.installed-abc", null ]);
         expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
             .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
+    });
+
+    it("deletes a resource once confirmed, then reads the list again", async () => {
+        await open();
+        const click = async () => {
+            const button = host.querySelector<HTMLElement>(".resources-item .destructive-action-icon");
+            expect(button).not.toBeNull();
+            await act(async () => button?.click());
+        };
+
+        mocks.confirmed = false;
+        await click();
+        expect(mocks.removed).toEqual([]);
+        expect(mocks.requests).toBe(1);
+
+        mocks.confirmed = true;
+        await click();
+        expect(mocks.removed).toEqual([ "resources/test.installed" ]);
+        expect(mocks.requests).toBe(2);
     });
 
     it("shows an empty state when nothing is downloaded", async () => {

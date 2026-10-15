@@ -300,6 +300,27 @@ describe("ResourceManager", () => {
         ]);
     });
 
+    it("deletes a resource's directory, but not while a download fetches it", async () => {
+        manager.register(defineModel(), defineModel({ id: "test.stalled", tokensUrl: "/stall" }));
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        const directory = manager.getPath("test.model") ?? "";
+
+        await manager.delete("test.model");
+        expect(fs.existsSync(directory)).toBe(false);
+        expect(manager.getPath("test.model")).toBeNull();
+        expect((await manager.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(0);
+
+        const running = manager.startDownload([ "test.stalled" ]);
+        await waitFor(() => stalled.length > 0);
+        await expect(manager.delete("test.stalled")).rejects.toThrow();
+        manager.cancelDownload(running.downloadId);
+        expect((await waitForEnd()).status).toBe("canceled");
+        expect((await manager.getStatus([ "test.stalled" ])).resources[0].downloadedSize).toBeGreaterThan(0);
+        await manager.delete("test.stalled");
+        expect((await manager.getStatus([ "test.stalled" ])).resources[0].downloadedSize).toBe(0);
+    });
+
     it("refuses invalid or unknown resources", () => {
         manager.register(defineModel());
         expect(() => manager.register(defineModel())).toThrow(/already registered/);

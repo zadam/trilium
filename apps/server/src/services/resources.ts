@@ -138,6 +138,19 @@ export class ResourceManager {
         this.downloads.get(downloadId)?.controller.abort();
     }
 
+    /**
+     * Deletes the directory of the resource `id`, with the files an interrupted download kept.
+     * Refuses while a download fetches the resource.
+     */
+    async delete(id: string) {
+        const definition = this.getDefinition(id);
+        if (this.findDownload([ id ])) {
+            throw new ValidationError(t("resources.delete-while-downloading", { title: definition.title() }));
+        }
+        await fs.promises.rm(this.getDirectory(definition), { recursive: true, force: true });
+        getLog().info(`Resources: deleted ${id}.`);
+    }
+
     private async runDownload(download: Download, definitions: ResourceDefinition[]) {
         const { progress, controller } = download;
         let lastReported = 0;

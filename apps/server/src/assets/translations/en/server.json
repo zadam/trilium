@@ -586,6 +586,7 @@
     "unknown": "There is no resource named {{id}}.",
     "http-error": "Downloading {{name}} failed with HTTP status {{status}}.",
     "size-mismatch": "{{name}} does not have the expected size.",
-    "hash-mismatch": "{{name}} does not match its expected checksum, so it was discarded."
+    "hash-mismatch": "{{name}} does not match its expected checksum, so it was discarded.",
+    "delete-while-downloading": "{{- title}} is being downloaded. Cancel the download before deleting it."
   }
 }
