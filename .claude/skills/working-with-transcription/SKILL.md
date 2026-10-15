@@ -129,7 +129,7 @@ The app labels the system source's utterances live when `speaker/nemo_en_titanet
 
 `diarize.mjs` labels one source's utterances by speaker in two ways and times both:
 
-- **live**: one embedding per utterance, in arrival order, joined to the closest speaker heard so far when the cosine similarity reaches `--threshold` (0.5), else a new speaker; utterances shorter than `--min-duration` (1.5 s) never start one. This is what can run during a meeting.
+- **live**: one embedding per utterance, in arrival order, joined to the closest speaker heard so far when the cosine similarity reaches `--threshold` (0.5). Below it, an utterance of at least `--new-min` (5 s) starts a new speaker; a shorter one joins the closest speaker, from `--short-threshold` (0.3) on when it is shorter than `--min-duration` (1.5 s), and only utterances of `--min-duration` or more move a centroid. This is what runs during a meeting (`SPEAKER_SETTINGS`).
 - **offline**: sherpa-onnx's `OfflineSpeakerDiarization` over the whole source (pyannote segmentation, embeddings, clustering), mapped onto the utterances by overlap; `+Dn` marks an utterance in which a second speaker talks ≥ 1 s.
 
 ```bash

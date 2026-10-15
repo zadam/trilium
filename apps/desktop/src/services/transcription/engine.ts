@@ -68,7 +68,9 @@ const DECODING_SETTINGS: Record<ModelPrecision, Record<string, unknown>> = {
 
 const SPEAKER_SETTINGS: SpeakerClustererOptions = {
     threshold: 0.5,
-    minDurationSeconds: 1.5
+    minDurationSeconds: 1.5,
+    newSpeakerMinDurationSeconds: 5,
+    shortThreshold: 0.3
 };
 
 const VAD_SETTINGS = {

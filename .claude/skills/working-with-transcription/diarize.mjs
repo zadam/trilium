@@ -13,7 +13,10 @@
 //   --embedding <name|file>  titanet (default), campplus, or a model file
 //   --mode <live|offline|both>                     (default both)
 //   --threshold <n>          live: cosine similarity that joins a known speaker (default 0.5)
-//   --min-duration <s>       live: shorter utterances never start a speaker (default 1.5)
+//   --min-duration <s>       live: shorter utterances never move a centroid (default 1.5)
+//   --new-min <s>            live: only utterances this long start a speaker (default 5)
+//   --short-threshold <n>    live: similarity from which a short utterance joins the nearest
+//                            speaker (default 0.3)
 //   --clusters <n>           offline: the number of speakers, when known
 //   --cluster-threshold <n>  offline: clustering threshold otherwise (default 0.5)
 //   --threads <n>            threads per model (default 1)
@@ -105,6 +108,8 @@ if (live && offline) {
 function labelLive() {
     const threshold = Number(options.threshold ?? 0.5);
     const minDuration = Number(options["min-duration"] ?? 1.5);
+    const newMin = Number(options["new-min"] ?? 5);
+    const shortThreshold = Number(options["short-threshold"] ?? 0.3);
     const loadStarted = performance.now();
     const extractor = new sherpa.SpeakerEmbeddingExtractor({
         model: embeddingModel, numThreads: threads, provider: "cpu"
@@ -136,9 +141,11 @@ function labelLive() {
                 addInto(centroids[best], embedding);
             }
             labels.push({ speaker: `S${best + 1}`, similarity: bestSimilarity });
-        } else if (isLongEnough) {
+        } else if (utterance.durationMs / 1000 >= newMin) {
             centroids.push(Float32Array.from(embedding));
             labels.push({ speaker: `S${centroids.length}`, similarity: best >= 0 ? bestSimilarity : null });
+        } else if (best >= 0 && (isLongEnough || bestSimilarity >= shortThreshold)) {
+            labels.push({ speaker: `S${best + 1}`, similarity: bestSimilarity });
         } else {
             labels.push({ speaker: "?", similarity: best >= 0 ? bestSimilarity : null });
         }

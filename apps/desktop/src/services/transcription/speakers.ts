@@ -1,14 +1,22 @@
 export interface SpeakerClustererOptions {
     /** The cosine similarity to a speaker's centroid from which an utterance joins that speaker. */
     threshold: number;
-    /** Utterances shorter than this, in seconds, never start a speaker nor move a centroid. */
+    /** Utterances shorter than this, in seconds, never move a centroid. */
     minDurationSeconds: number;
+    /** Only an utterance at least this long, in seconds, starts a speaker. */
+    newSpeakerMinDurationSeconds: number;
+    /**
+     * The similarity from which an utterance shorter than `minDurationSeconds` joins the nearest
+     * speaker when it is under `threshold`.
+     */
+    shortThreshold: number;
 }
 
 /**
  * Assigns embeddings to speakers as they arrive: an embedding joins the speaker whose centroid it
- * is most similar to, when that similarity reaches the threshold, and starts a new speaker
- * otherwise.
+ * is most similar to, when that similarity reaches the threshold. Below it, an utterance of at
+ * least `newSpeakerMinDurationSeconds` starts a new speaker, and a shorter one joins the nearest
+ * speaker without moving its centroid, so a short or noisy utterance never adds a speaker.
  */
 export class SpeakerClusterer {
     /** The sum of each speaker's normalized embeddings; its direction is the centroid. */
@@ -35,11 +43,14 @@ export class SpeakerClusterer {
             }
             return best + 1;
         }
-        if (!isLongEnough) {
-            return null;
+        if (durationSeconds >= this.options.newSpeakerMinDurationSeconds) {
+            this.centroids.push(normalized);
+            return this.centroids.length;
         }
-        this.centroids.push(normalized);
-        return this.centroids.length;
+        if (best >= 0 && (isLongEnough || bestSimilarity >= this.options.shortThreshold)) {
+            return best + 1;
+        }
+        return null;
     }
 }
 

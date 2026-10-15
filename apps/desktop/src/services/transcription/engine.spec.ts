@@ -184,11 +184,12 @@ describe("loadSherpaEngine", () => {
         const engine = await loadSherpaEngine(MODELS);
         expect(h.extractorConfig?.model).toBe(MODELS.speaker);
         expect(engine.settings.speakers).toMatchObject({
-            model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5
+            model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5,
+            newSpeakerMinDurationSeconds: 5, shortThreshold: 0.3
         });
 
         const tracker = engine.createSpeakerTracker?.();
-        const long = new Float32Array(16000 * 2);
+        const long = new Float32Array(16000 * 6);
         h.embeddings.push([ 1, 0 ], [ 0, 1 ], [ 0.9, 0.1 ]);
         expect([ 1, 2, 3 ].map(() => tracker?.identify(long))).toEqual([ 1, 2, 1 ]);
 
