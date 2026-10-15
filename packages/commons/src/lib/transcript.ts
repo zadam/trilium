@@ -40,6 +40,9 @@ export const TRANSCRIPT_MIME = "application/json";
 /** The longest speaker name a transcript accepts. */
 export const MAX_SPEAKER_NAME_LENGTH = 100;
 
+/** The resource holding the models transcription runs on, `TRANSCRIPTION_MODEL` on desktop. */
+export const TRANSCRIPTION_MODEL_RESOURCE_ID = "transcription.model";
+
 /** Reads a transcript attachment's content, or returns `null` for content of another shape. */
 export function parseTranscript(content: string | null | undefined): Transcript | null {
     if (!content) {

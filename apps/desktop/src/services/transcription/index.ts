@@ -1,17 +1,15 @@
 import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
 import { becca, events, getLog, protected_session, utils as coreUtils } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
+import resources from "@triliumnext/server/src/services/resources.js";
 import { app, BrowserWindow, ipcMain, MessageChannelMain } from "electron";
-import fs from "fs";
 import { t } from "i18next";
 import path from "path";
 
 import { AttachmentSink } from "./attachment_sink";
 import { CaptureWindow } from "./capture";
+import { TRANSCRIPTION_MODEL } from "./model";
 import { TranscriptionWorker } from "./worker_client";
-
-/** Where the models live: Parakeet TDT 0.6B v3 (int8) plus `silero_vad.onnx`. */
-export const MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
 
 /** Where development builds keep the audio of each recording, one directory per recording. */
 export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
@@ -41,6 +39,7 @@ const unsavedSinks = new Set<AttachmentSink>();
 let quitting: "no" | "waiting" | "done" = "no";
 
 export function setupTranscriptionHandlers() {
+    resources.register(TRANSCRIPTION_MODEL);
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
@@ -63,8 +62,9 @@ export async function startRecording(noteId: unknown): Promise<string> {
     if (typeof noteId !== "string" || !becca.getNote(noteId)) {
         return t("transcription.note-not-found");
     }
-    if (!fs.existsSync(MODEL_DIR)) {
-        return t("transcription.model-missing", { directory: MODEL_DIR });
+    const modelDirectory = resources.getPath(TRANSCRIPTION_MODEL.id);
+    if (!modelDirectory) {
+        return t("transcription.model-not-downloaded");
     }
 
     setState({ status: "starting", noteId, pendingSources: [] });
@@ -84,7 +84,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
     try {
         const { startedAt } = await recording.worker.start({
             noteId,
-            modelDirectory: MODEL_DIR,
+            modelDirectory,
             recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
         });
         sink.open(startedAt);

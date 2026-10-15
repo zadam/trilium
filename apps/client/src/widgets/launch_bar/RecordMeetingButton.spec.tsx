@@ -8,7 +8,8 @@ import { renderInto } from "../../test/render";
 const mocks = vi.hoisted(() => ({
     getInboxNote: vi.fn(),
     createNote: vi.fn(),
-    showError: vi.fn()
+    showError: vi.fn(),
+    requireResources: vi.fn()
 }));
 
 vi.mock("../../services/date_notes", () => ({
@@ -16,6 +17,9 @@ vi.mock("../../services/date_notes", () => ({
 }));
 vi.mock("../../services/note_create", () => ({
     default: { createNote: mocks.createNote }
+}));
+vi.mock("../../services/dialog", () => ({
+    requireResources: mocks.requireResources
 }));
 vi.mock("../../services/toast", () => ({
     default: { showError: mocks.showError }
@@ -69,6 +73,7 @@ describe("toggleRecording", () => {
         window.electronApi = { transcription } as unknown as typeof window.electronApi;
         mocks.getInboxNote.mockResolvedValue({ noteId: "inbox", isProtected: false });
         mocks.createNote.mockResolvedValue({ note: { noteId: "meeting" } });
+        mocks.requireResources.mockResolvedValue(true);
     });
 
     it("starts recording into a new meeting note, and shows why it could not", async () => {
@@ -91,6 +96,17 @@ describe("toggleRecording", () => {
         expect(transcription.stop).toHaveBeenCalledOnce();
         expect(transcription.start).not.toHaveBeenCalled();
         expect(mocks.createNote).not.toHaveBeenCalled();
+    });
+
+    it("asks for the model first, and creates no note when it is not downloaded", async () => {
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith([ "transcription.model" ]);
+        expect(transcription.start).toHaveBeenCalledOnce();
+
+        mocks.requireResources.mockResolvedValueOnce(false);
+        await toggleRecording("idle");
+        expect(mocks.createNote).toHaveBeenCalledOnce();
+        expect(transcription.start).toHaveBeenCalledOnce();
     });
 
     it("starts nothing when no meeting note could be created", async () => {

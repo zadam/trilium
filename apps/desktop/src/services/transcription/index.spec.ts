@@ -15,6 +15,7 @@ const h = vi.hoisted(() => ({
     coreListeners: new Map<string, () => void>(),
     isDev: false,
     isModelInstalled: true,
+    registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
     captureOptions: null as CaptureWindowOptions | null,
@@ -49,7 +50,6 @@ vi.mock("electron", () => ({
         port2 = "worker end";
     }
 }));
-vi.mock("fs", () => ({ default: { existsSync: () => h.isModelInstalled } }));
 vi.mock("@triliumnext/core", () => ({
     becca: {
         getNote: (noteId: string) =>
@@ -68,6 +68,12 @@ vi.mock("i18next", () => ({
 }));
 vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
     default: { TRILIUM_DATA_DIR: "/data" }
+}));
+vi.mock("@triliumnext/server/src/services/resources.js", () => ({
+    default: {
+        register: h.registerResource,
+        getPath: (id: string) => h.isModelInstalled ? `/data/resources/${id}` : null
+    }
 }));
 vi.mock("./capture", () => ({
     CaptureWindow: class {
@@ -173,7 +179,7 @@ describe("transcription IPC", () => {
 
         expect(h.worker.start).toHaveBeenCalledExactlyOnceWith({
             noteId: "meeting",
-            modelDirectory: "/data/transcription-model",
+            modelDirectory: "/data/resources/transcription.model",
             recordingDirectory: null
         });
         expect(h.sink.open).toHaveBeenCalledExactlyOnceWith(STARTED_AT);
@@ -318,7 +324,7 @@ describe("transcription IPC", () => {
             .toBe("transcription.note-not-found");
         h.isModelInstalled = false;
         expect(await invoke("transcription-start", "meeting"))
-            .toBe(`transcription.model-missing {"directory":"/data/transcription-model"}`);
+            .toBe("transcription.model-not-downloaded");
         expect(h.listeners).toBeNull();
         expect(h.broadcast).toEqual([]);
     });

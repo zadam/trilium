@@ -35,7 +35,8 @@ The main process opens the capture window, starts the transcription process and 
 | File | Owns |
 |---|---|
 | `apps/desktop/src/services/transcription/capture.ts` | Main process: `CaptureWindow`, the hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
-| `…/index.ts` | Main process: IPC handlers, the state broadcast, `MODEL_DIR`, `getRecordingDirectory()`; starts a recording's process and capture window and connects them |
+| `…/index.ts` | Main process: IPC handlers, the state broadcast, `getRecordingDirectory()`; registers the model resource, starts a recording's process and capture window and connects them |
+| `…/model.ts` | `TRANSCRIPTION_MODEL`, the model as a downloadable resource (URLs pinned to a revision, sizes, SHA-256), and `LOCAL_MODEL_DIR` |
 | `…/worker_client.ts` | Main process: `TranscriptionWorker`, which forks the transcription process, relays its events and stops or kills it |
 | `…/attachment_sink.ts` | Main process: the `transcript` attachment, rewritten after every utterance |
 | `…/protocol.ts` | Both: the messages between the processes, `SAMPLE_RATE`, `Logger` |
@@ -53,7 +54,9 @@ Nothing the transcription process imports may reach `@triliumnext/core` or `@tri
 
 ## The model
 
-The files go in `<data dir>/transcription-model`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`. Parakeet comes in two precisions, and `loadSherpaEngine()` takes the full-precision one when `encoder.onnx` is present, else the int8 one; it records which as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
+Users download the model from the app: the launcher calls `requireResources([TRANSCRIPTION_MODEL_RESOURCE_ID])` before it creates the meeting note, which shows the download dialog when the model is missing. The resource manager (`apps/server/src/services/resources.ts`) puts the int8 model, Silero VAD and TitaNet (~711 MB) in `<data dir>/resources/transcription.model/<version>/`, each file checked against the SHA-256 in `model.ts`. Changing a file there means a new `version`, so the new files download beside the old ones.
+
+A directory installed by hand, `<data dir>/transcription-model` (`LOCAL_MODEL_DIR`), takes precedence over the download; for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`, which the scripts below read. Parakeet comes in two precisions, and `loadSherpaEngine()` takes the full-precision one when `encoder.onnx` is present, else the int8 one; it records which as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
 
 - **Full precision** (recommended): `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face, not in the sherpa releases — `encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt` (2.4 GB). Loads in ~2 s to ~2.3 GB RSS.
 - **int8**: the `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` archive from the `asr-models` release of `k2-fsa/sherpa-onnx` — `encoder.int8.onnx`, `decoder.int8.onnx`, `joiner.int8.onnx`, `tokens.txt` (641 MB).
@@ -68,7 +71,7 @@ curl -fL -o silero_vad.onnx "$R/asr-models/silero_vad.onnx"
 curl -fL -o speaker/nemo_en_titanet_small.onnx "$R/speaker-recongition-models/nemo_en_titanet_small.onnx"
 ```
 
-Without the directory, starting fails with `transcription.model-missing`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
+Without either directory, starting fails with `transcription.model-not-downloaded`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
 
 ## Development recordings
 

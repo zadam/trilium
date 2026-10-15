@@ -1,11 +1,13 @@
 import "./RecordMeetingButton.css";
 
 import {
-    dayjs, MEETING_RECORDING_LABEL, type TranscriptionState, type TranscriptionStatus
+    dayjs, MEETING_RECORDING_LABEL, TRANSCRIPTION_MODEL_RESOURCE_ID, type TranscriptionState,
+    type TranscriptionStatus
 } from "@triliumnext/commons";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import dateNoteService from "../../services/date_notes";
+import { requireResources } from "../../services/dialog";
 import { t } from "../../services/i18n";
 import noteCreateService from "../../services/note_create";
 import toast from "../../services/toast";
@@ -100,6 +102,9 @@ export async function toggleRecording(status: TranscriptionStatus) {
         return;
     }
     if (status !== "idle") {
+        return;
+    }
+    if (!await requireResources([ TRANSCRIPTION_MODEL_RESOURCE_ID ])) {
         return;
     }
 
