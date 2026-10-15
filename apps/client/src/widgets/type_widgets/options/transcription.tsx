@@ -35,6 +35,7 @@ export default function TranscriptionSettings() {
     return (
         <>
             <OptionsPageHeader
+                helpUrl="Y84QCbArmK3z"
                 badge={<Badge text={t("common.beta")} className="transcription-beta-badge" outline />}
                 below={
                     <OptionCardSection
