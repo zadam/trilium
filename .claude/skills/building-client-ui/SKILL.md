@@ -95,9 +95,9 @@ Display and layout:
 
 - `NoItems` — empty state placeholder with icon and message ("no results", "too many items", error states).
 - `Badge` — colored pill/label with optional icon, tooltip and `onClick` (counts, status flags). Set its color through the `--color` CSS variable on a wrapper class, not inline styles; pass `outline` for a colored-border/transparent-fill variant. `BadgeWithDropdown` pairs a badge with a dropdown menu. Don't hand-roll pill/badge markup.
-- `Chip` — one entry of a set, with a remove button.
+- `Chip` — one entry of a set, with a remove button. `NoteChips` — a set of notes as chips (icon and title, linking to the note), the first five then "+N more" revealing a page of 100 at a time; read-only unless given `onRemove`. Use it wherever a dialog shows "these notes" (the bulk actions and delete dialogs do) rather than a list of `NoteLink`s.
 - `Alert`, `InfoBar`, `Admonition`, `ContentErrorMessage`, `RenderErrorCard` — inline notices and error surfaces of increasing weight.
-- `Card` — a titled group of sections (filter-aware under `FilterProvider`). `Collapsible` — animated, theme-styled expandable section with self-managed `initiallyExpanded`; `ExternallyControlledCollapsible` is the controlled variant (caller owns `expanded`/`setExpanded`).
+- `Card` — a titled group of sections (filter-aware under `FilterProvider`). **Anything that scrolls inside a card** (a list, a set of chips, a log, a table with a `max-height`) goes in a `CardSection noPadding`, with the card's padding moved onto the scrolling element itself: `padding: var(--card-padding-block) var(--card-padding-inline)`. In a padded section the scroller stops short of the card's border, so scrolled content is cut off along an inset edge with an empty strip of padding between the cut and the border. `NoteChips` (`.tn-card-section.tn-no-padding > .note-chips`) is the worked example. `Collapsible` — animated, theme-styled expandable section with self-managed `initiallyExpanded`; `ExternallyControlledCollapsible` is the controlled variant (caller owns `expanded`/`setExpanded`).
 - `TabStrip` — a row of icon-only tabs named by tooltips, heading a panel divided into groups.
 - `Modal`, `WizardModal` — dialogs; `Popover` — a card anchored beside something, with an arrow pointing at it, as the calendar's event card (portaled to the body and placed by `placeFloating()`, so no scroll container clips it).
 - `LoadingSpinner`, `LazyComponent`, `Icon`, `MaskedIcon`, `NoteList`, `SiblingNavigator`, `ImageViewer`, `CodeBlock`, `charts/DonutChart`, `charts/Treemap`.
@@ -246,6 +246,7 @@ use parameter defaults.
 - **Dialog registered but not wired** — no `<LazyDialog triggerEvents={…}>` in `applyModals()`, so the summon event has no listener and nothing happens.
 - **Modal can't reopen** — a missing/empty `onHidden`, or a dynamic `className` fighting Bootstrap's `fade`/`show`.
 - **Bootstrap utility classes or inline static styles on `Form*` components** — use the sibling per-component `.css` scoped under a root class.
+- **A scroller inside a padded `CardSection`** — scrolled content is clipped short of the card's border. Use `noPadding` on the section and put `--card-padding-block`/`--card-padding-inline` on the scrolling element (see `Card` in the catalogue).
 - **Hand-rolled overlay buttons** — `tn-overlay-*` classes at a call site instead of `OverlayControlGroup` / `OverlayControlButton`.
 - **Copying the jQuery lifecycle** (`doRenderBody` / `refreshWithNote` / `this.$widget`) into new `.tsx` — use `useLegacyWidget` only to embed an existing widget.
 - **A `useEffect` cleanup that must run during the unmount** — it runs after paint; reporting to a host or reading a child instance belongs in a `useLayoutEffect` cleanup (see "Preact 11 conventions").
