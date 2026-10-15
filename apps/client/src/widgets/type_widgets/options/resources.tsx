@@ -13,7 +13,7 @@ import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 
-/** Lists the resources the features of this device can download, and which of them are installed. */
+/** Lists the resources installed on this device, and the ones an interrupted download left partly fetched. */
 export default function ResourcesSettings() {
     const resources = useResources();
 
@@ -39,14 +39,18 @@ export default function ResourcesSettings() {
     );
 }
 
-/** The registered resources, fetched again whenever a download of any of them ends. */
+/**
+ * The resources installed or partly downloaded, including copies installed by hand, which have no
+ * downloaded bytes. Fetched again whenever a download ends.
+ */
 function useResources() {
     const [ resources, setResources ] = useState<ResourceInfo[]>();
 
     useEffect(() => {
         const refresh = () => {
             void server.get<ResourcesStatusResponse>("resources")
-                .then((status) => setResources(status.resources));
+                .then((status) => setResources(status.resources.filter(
+                    ({ installed, downloadedSize }) => installed || downloadedSize > 0)));
         };
         const handler = (message: WebSocketMessage) => {
             if (message.type === "resource-download" && message.download.status !== "downloading") {
@@ -108,11 +112,8 @@ function getStatusText({ installed, size, downloadedSize }: ResourceInfo) {
     if (installed) {
         return t("resources_options.installed");
     }
-    if (downloadedSize > 0) {
-        return t("resources_options.partially_downloaded", {
-            downloaded: formatSize(downloadedSize, 2, size),
-            size: formatSize(size)
-        });
-    }
-    return t("resources_options.not_downloaded");
+    return t("resources_options.partially_downloaded", {
+        downloaded: formatSize(downloadedSize, 2, size),
+        size: formatSize(size)
+    });
 }

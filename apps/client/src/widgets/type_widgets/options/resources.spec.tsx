@@ -52,7 +52,8 @@ beforeEach(() => {
     mocks.resources = [
         resource({ id: "test.installed", installed: true, downloadedSize: 10 * MIB, directory: "/data/resources/test.installed-abc" }),
         resource({ id: "test.partial", downloadedSize: 4 * MIB }),
-        resource({ id: "test.missing" })
+        resource({ id: "test.missing" }),
+        resource({ id: "test.by-hand", installed: true, directory: "/data/transcription-model" })
     ];
     mocks.requests = 0;
     mocks.handlers = [];
@@ -71,24 +72,24 @@ async function open() {
 }
 
 describe("ResourcesSettings", () => {
-    it("lists each resource with its status, the folder of an installed one, and the space used", async () => {
+    it("lists the resources installed or partly downloaded, with their status and folder", async () => {
         await open();
 
         const rows = [ ...host.querySelectorAll(".resources-item") ];
         expect(rows.map((row) => row.querySelector(".tn-card-option-title")?.textContent))
-            .toEqual([ "test.installed", "test.partial", "test.missing" ]);
+            .toEqual([ "test.installed", "test.partial", "test.by-hand" ]);
         expect(rows.map((row) => row.querySelector(".resources-status small")?.textContent)).toEqual([
             "resources_options.installed",
             `resources_options.partially_downloaded {"downloaded":"4.00 MiB","size":"10 MiB"}`,
-            "resources_options.not_downloaded"
+            "resources_options.installed"
         ]);
         expect(rows.map((row) => row.querySelector(".directory-stub")?.textContent ?? null))
-            .toEqual([ "/data/resources/test.installed-abc", null, null ]);
+            .toEqual([ "/data/resources/test.installed-abc", null, "/data/transcription-model" ]);
         expect(host.querySelector(".resources-total .resources-size")?.textContent).toBe("14 MiB");
     });
 
-    it("shows an empty state when no feature registers a resource", async () => {
-        mocks.resources = [];
+    it("shows an empty state when nothing is downloaded", async () => {
+        mocks.resources = [ resource({ id: "test.missing" }) ];
         await open();
 
         expect(host.querySelector(".resources-item")).toBeNull();

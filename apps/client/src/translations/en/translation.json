@@ -4641,9 +4641,8 @@
     "list_title": "Resources",
     "list_description": "Large files that features download when they are first needed, such as the speech recognition models. They are stored on this device and are not synced, so each device downloads its own copy.",
     "installed": "Installed",
-    "not_downloaded": "Not downloaded",
     "partially_downloaded": "{{downloaded}} of {{size}} downloaded",
     "space_used": "Space used",
-    "no_resources": "No feature on this device uses downloadable resources."
+    "no_resources": "Nothing has been downloaded yet."
   }
 }
