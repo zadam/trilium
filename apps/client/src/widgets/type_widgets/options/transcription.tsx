@@ -1,8 +1,12 @@
+import "./transcription.css";
+
 import { getTranscriptionModel, TRANSCRIPTION_MODELS, type TranscriptionModelId } from "@triliumnext/commons";
+import { useEffect, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
 import { isElectron } from "../../../services/utils";
 import { Card, OptionCardSection } from "../../react/Card";
+import { DirectoryLocation } from "../../react/DirectoryLink";
 import FormSelect from "../../react/FormSelect";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
@@ -23,6 +27,7 @@ export default function TranscriptionSettings() {
         <>
             <OptionsPageHeader />
             <RecognitionSettings />
+            <TroubleshootingSettings />
         </>
     );
 }
@@ -59,6 +64,40 @@ function RecognitionSettings() {
             >
                 <FormToggle currentValue={speakersEnabled} onChange={setSpeakersEnabled} />
             </OptionCardSection>
+        </Card>
+    );
+}
+
+function TroubleshootingSettings() {
+    const [ keepRecordings, setKeepRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
+    const [ directory, setDirectory ] = useState<string>();
+
+    useEffect(() => {
+        let isCurrent = true;
+        void window.electronApi?.transcription.getRecordingsDirectory().then((result) => {
+            if (isCurrent) {
+                setDirectory(result);
+            }
+        });
+        return () => {
+            isCurrent = false;
+        };
+    }, []);
+
+    return (
+        <Card heading={t("transcription_options.troubleshooting_title")}>
+            <OptionCardSection
+                name="keep-recordings"
+                className="transcription-keep-recordings"
+                label={t("transcription_options.keep_recordings")}
+                description={t("transcription_options.keep_recordings_description")}
+            >
+                <FormToggle currentValue={keepRecordings} onChange={setKeepRecordings} />
+            </OptionCardSection>
+
+            {directory && (
+                <DirectoryLocation label={t("transcription_options.saved_in")} directory={directory} />
+            )}
         </Card>
     );
 }

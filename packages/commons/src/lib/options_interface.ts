@@ -211,6 +211,11 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     transcriptionModel: string;
     /** Whether a recording tells the other participants apart, labeling each utterance with its speaker. */
     transcriptionSpeakersEnabled: boolean;
+    /**
+     * Whether a recording keeps its audio and the transcript as produced in the data directory, for
+     * troubleshooting. Not synced: the files stay on the device that recorded.
+     */
+    transcriptionKeepRecordings: boolean;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;

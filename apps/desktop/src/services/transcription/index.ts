@@ -1,8 +1,9 @@
 import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
-import { becca, events, getLog, options, protected_session, utils as coreUtils } from "@triliumnext/core";
+import { becca, events, getLog, options, protected_session } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import resources from "@triliumnext/server/src/services/resources.js";
 import { app, BrowserWindow, ipcMain, MessageChannelMain } from "electron";
+import fs from "fs";
 import { t } from "i18next";
 import path from "path";
 
@@ -11,8 +12,11 @@ import { CaptureWindow } from "./capture";
 import { getModelPaths, TRANSCRIPTION_MODELS } from "./model";
 import { TranscriptionWorker } from "./worker_client";
 
-/** Where development builds keep the audio of each recording, one directory per recording. */
-export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
+/**
+ * Where the audio and the transcript as produced of each recording are kept, one directory per
+ * recording, while `transcriptionKeepRecordings` is on.
+ */
+export const RECORDINGS_DIR = path.resolve(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
 
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
 
@@ -43,6 +47,7 @@ export function setupTranscriptionHandlers() {
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
+    ipcMain.handle("transcription-get-recordings-directory", () => getRecordingsDirectory());
     ipcMain.handle("transcription-rename-speaker", (_event, attachmentId: unknown, key: unknown,
         name: unknown) => renameSpeaker(attachmentId, key, name));
     app.on("before-quit", (event) => finishBeforeQuit(event));
@@ -88,7 +93,9 @@ export async function startRecording(noteId: unknown): Promise<string> {
         const { startedAt } = await recording.worker.start({
             noteId,
             models,
-            recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
+            recordingDirectory: options.getOptionBool("transcriptionKeepRecordings")
+                ? getRecordingDirectory(Date.now(), noteId)
+                : null
         });
         sink.open(startedAt);
         writer = sink;
@@ -151,6 +158,12 @@ export function renameSpeaker(attachmentId: unknown, key: unknown, name: unknown
     }
     writer.renameSpeaker(key, name);
     return true;
+}
+
+/** Returns {@link RECORDINGS_DIR}, creating it so that the settings can open it before any recording. */
+function getRecordingsDirectory() {
+    fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
+    return RECORDINGS_DIR;
 }
 
 /** The directory under {@link RECORDINGS_DIR} for a recording of `noteId` begun at `createdAt`. */

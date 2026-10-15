@@ -25,7 +25,7 @@ export type WorkerRequest =
         type: "start";
         noteId: string;
         models: ModelPaths;
-        /** Where development builds keep the audio and the transcript as produced, else `null`. */
+        /** Where to keep the audio and the transcript as produced, or `null` to keep neither. */
         recordingDirectory: string | null;
     }
     /** Sent once the recording runs, with the port the capture page posts its samples to. */

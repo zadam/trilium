@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
     electron: true,
     stored: "" as string,
     saved: [] as string[],
-    speakersEnabled: true,
-    savedSpeakers: [] as boolean[]
+    bools: {} as Record<string, boolean>,
+    savedBools: [] as [ string, boolean ][]
 }));
 
 vi.mock("../../../services/utils", async (importOriginal) => ({
@@ -24,10 +24,11 @@ vi.mock("../../react/hooks", async (importOriginal) => ({
         (value: string) => void mocks.saved.push(value)
     ],
     useTriliumOptionBool: (name: string) => [
-        name === "transcriptionSpeakersEnabled" && mocks.speakersEnabled,
-        (value: boolean) => void mocks.savedSpeakers.push(value)
+        mocks.bools[name] ?? false,
+        (value: boolean) => void mocks.savedBools.push([ name, value ])
     ]
 }));
+
 
 vi.mock("./components/OptionsPageHeader", () => ({ default: () => <div className="header-stub" /> }));
 
@@ -39,13 +40,17 @@ beforeEach(() => {
     mocks.electron = true;
     mocks.stored = "parakeet-fp32";
     mocks.saved = [];
-    mocks.speakersEnabled = true;
-    mocks.savedSpeakers = [];
+    mocks.bools = { transcriptionSpeakersEnabled: true, transcriptionKeepRecordings: false };
+    mocks.savedBools = [];
+    window.electronApi = {
+        transcription: { getRecordingsDirectory: async () => "/data/transcription-recordings" }
+    } as unknown as typeof window.electronApi;
     host = document.body.appendChild(document.createElement("div"));
 });
 
 afterEach(() => {
     render(null, host);
+    window.electronApi = undefined;
     document.body.innerHTML = "";
 });
 
@@ -77,17 +82,30 @@ describe("TranscriptionSettings", () => {
 
     it("turns speaker identification off", () => {
         open();
-        const toggle = host.querySelector<HTMLInputElement>("input.switch-toggle[id^='identify-speakers-']");
-        if (!toggle) {
-            throw new Error("The speaker switch is missing.");
-        }
+        const toggle = findToggle("identify-speakers");
         expect(toggle.checked).toBe(true);
 
         act(() => {
             toggle.checked = false;
             toggle.dispatchEvent(new Event("input", { bubbles: true }));
         });
-        expect(mocks.savedSpeakers).toEqual([ false ]);
+        expect(mocks.savedBools).toEqual([ [ "transcriptionSpeakersEnabled", false ] ]);
+    });
+
+    it("keeps recordings for troubleshooting on request, on a switch tinted as a warning", async () => {
+        open();
+        const toggle = findToggle("keep-recordings");
+        expect(toggle.checked).toBe(false);
+        expect(toggle.closest(".transcription-keep-recordings")).not.toBeNull();
+
+        await act(async () => {});
+        expect(host.querySelector(".directory-location-path")?.textContent).toBe("/data/transcription-recordings");
+
+        act(() => {
+            toggle.checked = true;
+            toggle.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(mocks.savedBools).toEqual([ [ "transcriptionKeepRecordings", true ] ]);
     });
 
     it("shows the default model for a value it does not know", () => {
@@ -101,3 +119,12 @@ describe("TranscriptionSettings", () => {
         expect(host.textContent).toContain("desktop.web_placeholder");
     });
 });
+
+/** The switch of the section `name`, whose id is `<name>-<random>`. */
+function findToggle(name: string) {
+    const toggle = host.querySelector<HTMLInputElement>(`input.switch-toggle[id^='${name}-']`);
+    if (!toggle) {
+        throw new Error(`The ${name} switch is missing.`);
+    }
+    return toggle;
+}

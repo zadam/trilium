@@ -14,7 +14,8 @@ const h = vi.hoisted(() => ({
     isProtected: false,
     isProtectedSessionAvailable: false,
     coreListeners: new Map<string, () => void>(),
-    isDev: false,
+    keepRecordings: false,
+    mkdirSync: vi.fn(),
     installedResources: [] as string[],
     transcriptionModel: null as string | null,
     speakersEnabled: true,
@@ -65,16 +66,21 @@ vi.mock("@triliumnext/core", () => ({
     getLog: () => h.log,
     options: {
         getOptionOrNull: (name: string) => name === "transcriptionModel" ? h.transcriptionModel : null,
-        getOptionBool: (name: string) => name === "transcriptionSpeakersEnabled" && h.speakersEnabled
+        getOptionBool: (name: string) =>
+            (name === "transcriptionSpeakersEnabled" && h.speakersEnabled)
+            || (name === "transcriptionKeepRecordings" && h.keepRecordings)
     },
     protected_session: { isProtectedSessionAvailable: () => h.isProtectedSessionAvailable },
-    utils: { isDev: () => h.isDev }
 }));
+vi.mock("fs", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("fs")>();
+    return { default: { ...actual, mkdirSync: h.mkdirSync } };
+});
 vi.mock("i18next", () => ({
     t: (key: string, options?: object) => options ? `${key} ${JSON.stringify(options)}` : key
 }));
 vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
-    default: { TRILIUM_DATA_DIR: "/data" }
+    default: { TRILIUM_DATA_DIR: "data" }
 }));
 vi.mock("@triliumnext/server/src/services/resources.js", () => ({
     default: {
@@ -134,7 +140,7 @@ beforeEach(() => {
     h.isProtected = false;
     h.isProtectedSessionAvailable = false;
     h.broadcast.length = 0;
-    h.isDev = false;
+    h.keepRecordings = false;
     h.transcriptionModel = null;
     h.speakersEnabled = true;
     h.installedResources = [
@@ -316,7 +322,7 @@ describe("transcription IPC", () => {
         expect(h.sink.renameSpeaker).toHaveBeenCalledTimes(2);
     });
 
-    it("keeps the audio and the transcript as produced only in development builds", async () => {
+    it("keeps the audio and the transcript as produced only while the option is on", async () => {
         vi.useFakeTimers({ now: STARTED_AT, toFake: [ "Date" ] });
         const invoke = await loadService();
 
@@ -324,11 +330,19 @@ describe("transcription IPC", () => {
         expect(h.worker.start.mock.calls[0][0].recordingDirectory).toBeNull();
         await invoke("transcription-stop");
 
-        h.isDev = true;
+        h.keepRecordings = true;
         await invoke("transcription-start", "meeting");
         expect(h.worker.start.mock.calls[1][0].recordingDirectory)
-            .toBe("/data/transcription-recordings/2026-10-14T09-30-00-000Z_meeting");
+            .toBe(path.resolve("data", "transcription-recordings", "2026-10-14T09-30-00-000Z_meeting"));
         vi.useRealTimers();
+    });
+
+    it("tells where the recordings are kept, as an absolute path, creating the directory", async () => {
+        const invoke = await loadService();
+        const directory = path.resolve("data", "transcription-recordings");
+        expect(await invoke("transcription-get-recordings-directory")).toBe(directory);
+        expect(path.isAbsolute(directory)).toBe(true);
+        expect(h.mkdirSync).toHaveBeenCalledExactlyOnceWith(directory, { recursive: true });
     });
 
     it("refuses a missing note or model, without changing state", async () => {

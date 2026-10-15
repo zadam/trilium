@@ -758,6 +758,12 @@ export interface ElectronTranscriptionApi {
     renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
 
     /**
+     * Returns the directory that keeps the audio and the transcript as produced of each recording
+     * while `transcriptionKeepRecordings` is on, creating it if needed.
+     */
+    getRecordingsDirectory(): Promise<string>;
+
+    /**
      * Calls `callback` every time the state changes, in any window.
      *
      * @returns A function that removes the listener.

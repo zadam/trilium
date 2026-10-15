@@ -5,7 +5,7 @@ description: Use when working on Trilium's meeting transcription — the desktop
 
 # Working with transcription
 
-Desktop transcribes a meeting on the user's machine: no audio leaves it, and outside development builds none is kept. Standalone has only a prototype (`apps/standalone/transcription-poc/`, see its README).
+Desktop transcribes a meeting on the user's machine: no audio leaves it, and none is kept unless the user turns on "Keep recordings for troubleshooting". Standalone has only a prototype (`apps/standalone/transcription-poc/`, see its README).
 
 ## The pipeline
 
@@ -44,7 +44,7 @@ The main process opens the capture window, starts the transcription process and 
 | `…/transcription_worker.ts` | The transcription process's entry (bundled as `transcription_worker.cjs`): `PortCapture`, the session, the dev sinks and taps |
 | `…/engine.ts` | Transcription process: `loadSherpaEngine(models)`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
 | `…/session.ts` | Transcription process: `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
-| `…/audio_recorder.ts` | Transcription process: development recordings, `WavRecorder` and `TranscriptFileSink` |
+| `…/audio_recorder.ts` | Transcription process: recordings for troubleshooting, `WavRecorder` and `TranscriptFileSink` |
 
 Nothing the transcription process imports may reach `@triliumnext/core` or `@triliumnext/server` (the data directory module creates directories when it loads): it gets its paths and a `Logger` from the main process.
 | `packages/commons/src/lib/transcript.ts` | The `Transcript` format (`version: 1`, `startedAt`, `speakers`, `utterances`), `parseTranscript()`, speaker keys and `setSpeakerName()`; `cleanUtteranceText()`, the filler and stutter cleanup |
@@ -74,9 +74,9 @@ curl -fL -o speaker/nemo_en_titanet_small.onnx "$R/speaker-recongition-models/ne
 
 Without either directory, starting fails with `transcription.model-not-downloaded`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
 
-## Development recordings
+## Recordings for troubleshooting
 
-`pnpm desktop:start` (where `isDev()` holds) keeps every transcription in `apps/desktop/data/transcription-recordings/<created>_<noteId>/`:
+While the non-synced option `transcriptionKeepRecordings` is on (Options → Transcription → "Keep recordings for troubleshooting", off by default, its switch tinted red), every transcription is kept in `<data dir>/transcription-recordings/<created>_<noteId>/`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-recordings/`, so turn the switch on there once to get recordings for the scripts below. Development builds follow the switch like any other. The settings link to the folder through `electronApi.transcription.getRecordingsDirectory()`, which creates it.
 
 | File | Holds |
 |---|---|

@@ -66,6 +66,7 @@ const ALLOWED_OPTIONS = new Set<OptionNames>([
     "transcriptCleanupEnabled",
     "transcriptionModel",
     "transcriptionSpeakersEnabled",
+    "transcriptionKeepRecordings",
     "codeNotesMimeTypes",
     "contentManagerSortOrder",
     "contentManagerViewMode",

@@ -1,0 +1,3 @@
+.transcription-keep-recordings .switch-widget {
+    --switch-on-track-background: var(--dropdown-item-icon-destructive-color);
+}

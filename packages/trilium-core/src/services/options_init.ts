@@ -186,6 +186,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "transcriptCleanupEnabled", value: "true", isSynced: true },
     { name: "transcriptionModel", value: DEFAULT_TRANSCRIPTION_MODEL, isSynced: false },
     { name: "transcriptionSpeakersEnabled", value: "true", isSynced: true },
+    { name: "transcriptionKeepRecordings", value: "false", isSynced: false },
     { name: "codeNoteTabWidth", value: "4", isSynced: true },
     { name: "codeNoteIndentWithTabs", value: "false", isSynced: true },
     {
