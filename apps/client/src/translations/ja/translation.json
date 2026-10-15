@@ -1654,7 +1654,8 @@
     "published_date": "クリップしたページの公開日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。",
-    "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。"
+    "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。",
+    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -3792,7 +3793,9 @@
       "type-the-content-of-the-first-column": "1 列目の内容を入力",
       "type-the-content-of-the-second-column": "2 列目の内容を入力",
       "type-the-content-of-the-third-column": "3 列目の内容を入力",
-      "type-the-content-of-the-fourth-column": "4 列目の内容を入力"
+      "type-the-content-of-the-fourth-column": "4 列目の内容を入力",
+      "table-columns": "表の列",
+      "column-0-width-1": "列 %0 幅: %1%"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4241,7 +4244,8 @@
     "coverImage": "カバー画像",
     "viewConfig": "表示設定",
     "canvasLibraryItem": "キャンバスライブラリ",
-    "importSource": "インポート元"
+    "importSource": "インポート元",
+    "transcript": "ミーティングの文字起こし"
   },
   "color-picker": {
     "clear-color": "色を消去",
@@ -4508,5 +4512,23 @@
     "edit_excerpt": "抜粋を編集",
     "copy_tab": "このタブへのリンクをコピー",
     "copy_share_link_other": "これら {{count}} ブロックへの公開リンクをコピー"
+  },
+  "record_meeting": {
+    "note_title": "ミーティング {{date}}",
+    "starting": "文字起こしを開始しています…",
+    "stop": "文字起こしを停止",
+    "stopping": "文字起こしを終了しています…"
+  },
+  "transcript": {
+    "speaker_me": "自分",
+    "speaker_others": "その他",
+    "speaker_numbered": "話者 {{number}}",
+    "speaker_name": "話者名",
+    "empty": "まだ文字起こしは行われていません。",
+    "unreadable": "この文字起こしは読み取ることができません。",
+    "speaking": "発言中…",
+    "offset": "文字起こし開始から {{offset}}",
+    "cleanup": "フィラーワードを非表示",
+    "cleanup_tooltip": "“えー”、 “あのー” などの言葉や、言い淀み（どもり）を非表示にします。文字起こし自体は変更されません。"
   }
 }
