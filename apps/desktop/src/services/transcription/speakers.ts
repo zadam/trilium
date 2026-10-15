@@ -115,13 +115,13 @@ export function snapToWordBoundary(cutSeconds: number, words: TimedWord[], reach
         .filter(({ seconds }) => Math.abs(seconds - cutSeconds) <= reachSeconds);
     const sentenceStarts = boundaries.filter(({ followsSentence }) => followsSentence);
     const candidates = sentenceStarts.length ? sentenceStarts : boundaries;
-    let best = cutSeconds;
+    let best: number | undefined;
     for (const { seconds } of candidates) {
-        if (best === cutSeconds || Math.abs(seconds - cutSeconds) < Math.abs(best - cutSeconds)) {
+        if (best === undefined || Math.abs(seconds - cutSeconds) < Math.abs(best - cutSeconds)) {
             best = seconds;
         }
     }
-    return best;
+    return best ?? cutSeconds;
 }
 
 function normalize(vector: Float32Array) {

@@ -112,6 +112,15 @@ describe("snapToWordBoundary", () => {
         expect(snapToWordBoundary(3.7, words)).toBe(2.8);
     });
 
+    it("keeps a word start that falls exactly on the cut over a farther one", () => {
+        const exact = [
+            { text: "so", startSeconds: 0 },
+            { text: "we", startSeconds: 2 },
+            { text: "go", startSeconds: 2.5 }
+        ];
+        expect(snapToWordBoundary(2, exact)).toBe(2);
+    });
+
     it("keeps the cut where no word starts within reach", () => {
         expect(snapToWordBoundary(10, words)).toBe(10);
         // The first word's start is no boundary: nothing precedes it.
