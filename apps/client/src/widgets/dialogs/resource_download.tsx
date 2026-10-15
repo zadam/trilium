@@ -138,12 +138,13 @@ export default function ResourceDownloadDialog() {
 
 function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; remaining: number }) {
     const missing = status.resources.filter(({ installed }) => !installed);
+    const unitOf = Math.max(remaining, ...missing.map(({ size }) => size));
 
     return (
         <>
             <p>{t("resource_download.intro")}</p>
             <Card className="resource-download-list">
-                {missing.map((resource) => <ResourceItem key={resource.id} resource={resource} />)}
+                {missing.map((resource) => <ResourceItem key={resource.id} resource={resource} unitOf={unitOf} />)}
                 <CardSection className="tn-card-option resource-download-total">
                     <div className="tn-card-option-label">
                         <span className="tn-card-option-title">{t("resource_download.total")}</span>
@@ -156,7 +157,7 @@ function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; 
                         )}
                     </div>
                     <span className="tn-card-option-value resource-download-size">
-                        {formatSize(remaining)}
+                        {formatSize(remaining, 2, unitOf)}
                     </span>
                 </CardSection>
             </Card>
@@ -165,7 +166,7 @@ function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; 
 }
 
 /** One resource as a settings row: its icon, what it is and where it comes from, and its size. */
-function ResourceItem({ resource }: { resource: ResourceInfo }) {
+function ResourceItem({ resource, unitOf }: { resource: ResourceInfo; unitOf: number }) {
     return (
         <CardSection className="tn-card-option resource-download-item">
             <Icon icon={resource.icon} className="resource-download-icon" />
@@ -183,7 +184,7 @@ function ResourceItem({ resource }: { resource: ResourceInfo }) {
                 </small>
             </div>
             <span className="tn-card-option-value resource-download-size">
-                {formatSize(resource.size)}
+                {formatSize(resource.size, 2, unitOf)}
             </span>
         </CardSection>
     );

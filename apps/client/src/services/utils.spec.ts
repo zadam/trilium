@@ -120,6 +120,13 @@ describe("formatSize", () => {
         expect(formatSize(5 * 1024 ** 5)).toBe("5120 TiB");
     });
 
+    it("shows a size in another size's unit, for figures read down a column", () => {
+        const total = 711_000_000;
+        expect(formatSize(643_854, 2, total)).toBe("0.61 MiB");
+        expect(formatSize(40_257_283, 2, total)).toBe("38.39 MiB");
+        expect(formatSize(0, 2, total)).toBe("0.00 MiB");
+    });
+
     it("keeps the places it is given, trailing zeros and all", () => {
         // For a counter that is still climbing: dropping the zero shortens the text on every other
         // update, and the line shifts about while it is being read.
