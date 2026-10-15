@@ -176,7 +176,7 @@ describe("loadSherpaEngine", () => {
         const segmenter = engine.createSegmenter();
         const vad = vads[0];
         expect(h.vadConfig).toMatchObject({
-            sileroVad: { model: MODELS.vad, threshold: 0.5 },
+            sileroVad: { model: MODELS.vad, threshold: 0.3, minSpeechDuration: 0.1 },
             sampleRate: 16000
         });
 

@@ -233,7 +233,7 @@ On the first recording (two minutes of system audio, English interview), against
 | `modified_beam_search`, 4 paths | 1.6% | 0.099 (greedy 0.127) | Faster, but all five changes were deletions of spoken words |
 | Hotwords as plain words | 0% | — | Not applied: the terms did not encode (above) |
 
-On a 44-minute Teams call (both sources, English, non-native speakers), scored against another tool's transcript of the same call, so only the change between rows counts. The current `VAD_SETTINGS` and `blankPenalty` come from this run:
+On a 44-minute Teams call (both sources, English, non-native speakers), scored against another tool's transcript of the same call, so only the change between rows counts. The current `blankPenalty`, `maxSpeechDuration` and `minSilenceDuration` come from this run:
 
 | VAD (max / silence), decoding | Microphone WER | System WER | Notes |
 |---|---|---|---|
@@ -250,6 +250,18 @@ On a 44-minute Teams call (both sources, English, non-native speakers), scored a
 | `--pad` 0.2 / 0.4 s | 17.3 / 24.4% | 24.5 / 25.3% | Parakeet drops whole clauses again |
 | Full precision, greedy, no penalty | 13.3% | 24.9% | RTF 0.021 (int8 0.013); peak memory +1.6 GB; drops no clauses, so needs no `blankPenalty` (0.5 only adds junk on the system track) |
 | Full precision, beam 4 + a 27-term glossary at 1.5 | 13.4% | 24.8% | "heap" 47 times (the other tool: 47; int8: 29), "hip" 0 (8), STM32 3/3, Stéphane 3/3, Renesas 1/1 |
+
+On a 67-minute meeting (2026-10-15, three people, English, non-native speakers, full precision), scored with `align.mjs`-style alignment against an AppFlowy export that covers only its first 23 minutes and has no speaker names, both sources merged by time. The current VAD `threshold` and `minSpeechDuration` come from this run:
+
+| VAD threshold / min speech | WER | Sub / del / ins | Notes |
+|---|---|---|---|
+| 0.5 / 0.25 s (previous) | 12.1% | 116 / 69 / 141 | ~18 short replies missing ("okay" ×8, "yes", "nope", "sounds good"); only 3 of ~670 segments decode empty, so the VAD is the cause |
+| 0.4 / 0.25 s | 12.1% | 109 / 64 / 153 | |
+| 0.3 / 0.25 s | 12.0% | 109 / 58 / 155 | |
+| 0.5 / 0.1 s | 11.7% | 103 / 58 / 153 | |
+| 0.3 / 0.1 s (current) | 11.3% | 97 / 51 / 156 | 53 more segments over the meeting, 51 with text (mostly "Yeah", "Okay", "Mm"); segments start earlier, so clipped first syllables return: "Peace." → "For this.", "I don't see what to go through." → "For us, you want to vote or not?" |
+
+The export leaves out many "yeah"s, so each one recovered counts as an insertion and the gain is understated. Against this, the Teams call (int8, above) had the microphone 0.7 points worse at threshold 0.3.
 
 The same 31-minute Romanian meeting (no reference, judged by reading): int8 is often nonsense ("Pă2, așa, să interinteg navigator"), full precision mostly readable ("Să integrăm navigatorul") but 62% of the microphone words differ between the two. Both slip into Spanish and Portuguese ("só", "como"), as Parakeet guesses the language per segment and cannot be told it; full precision drops diacritics on common words twice as often (82 against 36 of să/și/că/adică…). Whisper with a fixed language (sherpa-onnx supports it) is the untested next step.
 

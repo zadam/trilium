@@ -94,9 +94,10 @@ const TURN_SETTINGS = {
 };
 
 const VAD_SETTINGS = {
-    threshold: 0.5,
+    // At 0.5, Silero starts a segment late enough to clip the first syllable of a short reply.
+    threshold: 0.3,
     minSilenceDuration: 0.75,
-    minSpeechDuration: 0.25,
+    minSpeechDuration: 0.1,
     // Past this length, sherpa ends the segment at the next 0.1 s pause, so continuous speech is
     // committed within about 22 s.
     maxSpeechDuration: 20,
