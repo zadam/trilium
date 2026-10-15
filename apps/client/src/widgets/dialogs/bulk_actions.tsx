@@ -130,7 +130,7 @@ export default function BulkActionsDialog() {
         >
             <Card heading={t("bulk_actions.selected_notes")}>
                 {selectedOrActiveNoteIds && (
-                    <CardSection>
+                    <CardSection noPadding>
                         <NoteChips
                             noteIds={selectedOrActiveNoteIds}
                             removeButtonText={t("bulk_actions.remove_from_selection")}

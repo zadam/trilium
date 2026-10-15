@@ -15,3 +15,7 @@
         padding-inline: 4px;
     }
 }
+
+.tn-card-section.tn-no-padding > .note-chips {
+    padding: var(--card-padding-block) var(--card-padding-inline);
+}

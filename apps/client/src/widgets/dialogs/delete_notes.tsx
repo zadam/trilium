@@ -189,7 +189,7 @@ function DeleteAllClonesOption({ cloneInfo, deleteAllClones, setDeleteAllClones 
 function DeletedNotes({ noteIdsToBeDeleted }: { noteIdsToBeDeleted: DeleteNotesPreview["noteIdsToBeDeleted"] }) {
     return (
         <Card heading={t("delete_notes.notes_to_be_deleted", { notesCount: noteIdsToBeDeleted.length })}>
-            <CardSection>
+            <CardSection noPadding={noteIdsToBeDeleted.length > 0}>
                 {noteIdsToBeDeleted.length ? (
                     <NoteChips noteIds={noteIdsToBeDeleted} />
                 ) : (
