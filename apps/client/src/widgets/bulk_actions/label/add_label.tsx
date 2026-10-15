@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { t } from "../../../services/i18n";
 import FormTextBox from "../../react/FormTextBox";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action";
-import BulkAction, { BulkActionText } from "../BulkAction";
+import BulkAction, { BulkActionArrow } from "../BulkAction";
 import { useSpacedUpdate } from "../../react/hooks";
 
 function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
@@ -14,7 +14,6 @@ function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: Ab
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("add_label.add_label")}
         >
             <FormTextBox
                 placeholder={t("add_label.label_name_placeholder")}
@@ -22,7 +21,7 @@ function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: Ab
                 title={t("add_label.label_name_title")}
                 currentValue={labelName} onChange={setLabelName}
             />
-            <BulkActionText text={t("add_label.to_value")} />
+            <BulkActionArrow />
             <FormTextBox
                 placeholder={t("add_label.new_value_placeholder")}
                 currentValue={labelValue} onChange={setLabelValue}

@@ -43,6 +43,11 @@ export default abstract class AbstractBulkAction {
         return "";
     }
 
+    /** The action's name, shown in the add menu and as the label of its row. */
+    static get actionTitle() {
+        return "";
+    }
+
     /**
      * The action's icon, shown in the add menu and on its row: a boxicons class for what it acts on,
      * plus a `bulk-action-marker-*` class for the corner glyph saying what it does.

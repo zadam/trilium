@@ -13,7 +13,6 @@ function RenameNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction: 
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("rename_note.rename_note_title_to")}
         >
             <FormTextBox
                 placeholder={t("rename_note.new_note_title")}

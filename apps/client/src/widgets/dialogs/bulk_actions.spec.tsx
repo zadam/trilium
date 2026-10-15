@@ -2,6 +2,8 @@ import { act } from "preact/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../components/component";
+import bulk_action from "../../services/bulk_action";
+import noteAttributeCache from "../../services/note_attribute_cache";
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
 import { ParentComponent } from "../react/react_utils";
@@ -28,6 +30,7 @@ describe("BulkActionsDialog", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         server.post.mockResolvedValue({ affectedNoteCount: 0 });
+        delete noteAttributeCache.attributes._bulkAction;
         buildNote({ id: "_bulkAction", title: "Bulk action" });
         host = new Component();
         container = renderInto(
@@ -104,6 +107,29 @@ describe("BulkActionsDialog", () => {
         expect(container.querySelector(".bulk-existing-action-list .tn-chip-remove, .bulk-existing-action-list .search-option-del"))
             .not.toBeNull();
         expect(container.querySelector(".bulk-existing-action-list .help-dropdown")).toBeNull();
+    });
+
+    it("names each chosen action by its menu title alone, with an arrow only between two fields", async () => {
+        buildNote({
+            id: "_bulkAction",
+            title: "Bulk action",
+            "#action": bulk_action.ACTION_CLASSES.map(({ actionName }) => JSON.stringify({ name: actionName }))
+        });
+        await open([ "n1" ]);
+        const rows = [ ...container.querySelectorAll<HTMLTableRowElement>(".bulk-existing-action-list tr") ];
+        expect(rows).toHaveLength(bulk_action.ACTION_CLASSES.length);
+
+        for (const [ index, ActionClass ] of bulk_action.ACTION_CLASSES.entries()) {
+            const row = rows[index];
+            const content = row.cells[0].cloneNode(true) as HTMLElement;
+            for (const select of content.querySelectorAll("select")) select.remove();
+            expect(content.textContent?.trim(), ActionClass.actionName).toBe(ActionClass.actionTitle);
+            expect(row.querySelectorAll(".tn-icon:not(.bulk-action-arrow)"), ActionClass.actionName).toHaveLength(1);
+
+            const arrow = row.querySelector(".bulk-action-arrow");
+            const fieldCount = row.querySelectorAll("input:not([type=hidden]), select").length;
+            expect(!!arrow, ActionClass.actionName).toBe(fieldCount === 2);
+        }
     });
 
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {

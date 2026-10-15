@@ -8,25 +8,19 @@ import HelpRemoveButtons from "../react/HelpRemoveButtons";
 import Icon from "../react/Icon";
 
 interface BulkActionProps {
-    label: string | ComponentChildren;
     children?: ComponentChildren;
     bulkAction: AbstractBulkAction;
 }
 
-// Define styles as constants to prevent recreation
-const flexContainerStyle = { display: "flex", alignItems: "center" } as const;
-const labelStyle = { marginInlineEnd: "10px" } as const;
-const textStyle = { marginInlineEnd: "10px", marginInlineStart: "10px" } as const;
-
-const BulkAction = memo(({ label, children, bulkAction }: BulkActionProps) => {
-    const { actionIcon } = bulkAction.constructor as typeof AbstractBulkAction;
+const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
+    const { actionIcon, actionTitle } = bulkAction.constructor as typeof AbstractBulkAction;
 
     return (
         <tr>
             <td colSpan={2}>
-                <div style={flexContainerStyle}>
-                    <div style={labelStyle} className="text-nowrap">
-                        {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{" "}{label}
+                <div className="bulk-action-row">
+                    <div className="bulk-action-label">
+                        {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{" "}{actionTitle}
                     </div>
 
                     {children}
@@ -42,12 +36,7 @@ const BulkAction = memo(({ label, children, bulkAction }: BulkActionProps) => {
 
 export default BulkAction;
 
-export const BulkActionText = memo(({ text }: { text: string }) => {
-    return (
-        <div
-            style={textStyle}
-            className="text-nowrap">
-                {text}
-            </div>
-    );
-});
+/** Separates a row's source field from its target field, in place of a word such as "to". */
+export function BulkActionArrow() {
+    return <Icon icon="bx bx-right-arrow-alt" className="bulk-action-arrow" />;
+}

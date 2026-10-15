@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
 import FormTextBox from "../../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import BulkAction, { BulkActionText } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
 
 function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
@@ -14,7 +14,6 @@ function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("rename_label.rename_label_from")}
         >
             <FormTextBox
                 placeholder={t("rename_label.old_name_placeholder")}
@@ -23,7 +22,7 @@ function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
                 currentValue={oldLabelName} onChange={setOldLabelName}
             />
 
-            <BulkActionText text={t("rename_label.to")} />
+            <BulkActionArrow />
 
             <FormTextBox
                 placeholder={t("rename_label.new_name_placeholder")}

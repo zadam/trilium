@@ -13,7 +13,6 @@ function DeleteRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("delete_relation.delete_relation")}
         >
             <FormTextBox
                 pattern="[\\p{L}\\p{N}_:]+"

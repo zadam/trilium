@@ -2,7 +2,6 @@ import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
 import FormTextBox from "../../react/FormTextBox.jsx";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
-import Icon from "../../react/Icon.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import BulkAction from "../BulkAction.jsx";
 
@@ -21,7 +20,6 @@ function SaveRevisionBulkActionComponent({ bulkAction, actionDef }: { bulkAction
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={<><Icon icon="bx bx-save" /> {t("save_revision.save_revision")}</>}
         >
             <FormTextBox
                 placeholder={t("save_revision.revision_name_placeholder")}

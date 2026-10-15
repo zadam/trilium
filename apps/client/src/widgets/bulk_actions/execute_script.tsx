@@ -13,7 +13,6 @@ function ExecuteScriptBulkActionComponent({ bulkAction, actionDef }: { bulkActio
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("execute_script.execute_script")}
         >
             <FormTextBox
                 placeholder="note.title = note.title + '- suffix';"

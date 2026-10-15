@@ -892,7 +892,6 @@
     "add_label": "Add label",
     "label_name_placeholder": "label name",
     "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
-    "to_value": "to value",
     "new_value_placeholder": "new value",
     "description": "Adds the label to each note, with the given value or none. It is added even if the note already has the label, so the note ends up with it twice."
   },
@@ -904,9 +903,7 @@
   },
   "rename_label": {
     "rename_label": "Rename label",
-    "rename_label_from": "Rename label from",
     "old_name_placeholder": "old name",
-    "to": "To",
     "new_name_placeholder": "new name",
     "name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
     "description": "Renames the label on each note that has it directly, keeping its value."
@@ -915,13 +912,11 @@
     "update_label_value": "Update label value",
     "label_name_placeholder": "label name",
     "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
-    "to_value": "to value",
     "new_value_placeholder": "new value",
     "description": "Sets the value of the label on each note that has it directly. Inherited labels are not changed."
   },
   "delete_note": {
     "delete_note": "Delete note",
-    "delete_matched_notes": "Delete matched notes",
     "description": "Deletes each note, including its clones and any child notes that are not cloned elsewhere. Deleted notes can be restored from Recent changes until they are erased."
   },
   "save_revision": {
@@ -935,13 +930,11 @@
   },
   "move_note": {
     "move_note": "Move note",
-    "to": "to",
     "target_parent_note": "target parent note",
     "description": "Moves each note under the target note. A note with several parents is cloned there instead, and one that cannot go there, such as a parent of the target, stays where it is."
   },
   "convert_note": {
     "convert_note": "Convert",
-    "convert_note_to": "Convert note",
     "choose_conversion": "(choose a conversion)",
     "conversion_htmlToMarkdown": "Text Notes → Markdown Notes (lossy)",
     "conversion_markdownToHtml": "Markdown Notes → Text Notes",
@@ -951,7 +944,6 @@
   },
   "rename_note": {
     "rename_note": "Rename note",
-    "rename_note_title_to": "Rename note title to",
     "new_note_title": "new note title",
     "description": "Sets the title of each note. The title is a JavaScript template string, so ${note.title} stands for the current title."
   },
@@ -959,7 +951,6 @@
     "add_relation": "Add relation",
     "relation_name": "relation name",
     "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
-    "to": "to",
     "target_note": "target note",
     "description": "Adds a relation from each note to the target note. It is added even if the note already has a relation of that name."
   },
@@ -971,18 +962,14 @@
   },
   "rename_relation": {
     "rename_relation": "Rename relation",
-    "rename_relation_from": "Rename relation from",
     "old_name": "old name",
-    "to": "To",
     "new_name": "new name",
     "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
     "description": "Renames the relation on each note that has it directly, keeping its target."
   },
   "update_relation_target": {
-    "update_relation": "Update relation",
     "relation_name": "relation name",
     "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
-    "to": "to",
     "target_note": "target note",
     "update_relation_target": "Update relation target",
     "description": "Points the relation on each note that has it directly to the target note."

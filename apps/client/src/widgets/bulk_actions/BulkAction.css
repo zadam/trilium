@@ -51,3 +51,23 @@
 .bulk-action-marker-convert::after {
     content: "\ec0e"; /* bx-shuffle */
 }
+
+.bulk-action-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bulk-action-label {
+    white-space: nowrap;
+}
+
+.bulk-action-arrow {
+    flex-shrink: 0;
+    font-size: 1.2em;
+    color: var(--muted-text-color);
+}
+
+body[dir=rtl] .bulk-action-arrow {
+    transform: scaleX(-1);
+}

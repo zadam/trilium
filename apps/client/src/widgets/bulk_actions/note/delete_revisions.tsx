@@ -1,5 +1,4 @@
 import { t } from "../../../services/i18n.js";
-import Icon from "../../react/Icon.jsx";
 import AbstractBulkAction from "../abstract_bulk_action.js";
 import BulkAction from "../BulkAction.jsx";
 
@@ -7,7 +6,6 @@ function DeleteRevisionsBulkActionComponent({ bulkAction }: { bulkAction: Abstra
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={<><Icon icon="bx bx-trash" /> {t("delete_revisions.delete_note_revisions")}</>}
         />
     )
 }

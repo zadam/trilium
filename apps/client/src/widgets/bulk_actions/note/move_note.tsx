@@ -1,6 +1,6 @@
 import { t } from "../../../services/i18n.js";
 import AbstractBulkAction from "../abstract_bulk_action.js";
-import BulkAction, { BulkActionText } from "../BulkAction.jsx";
+import BulkAction from "../BulkAction.jsx";
 import NoteAutocomplete from "../../react/NoteAutocomplete.jsx";
 import { useEffect, useState } from "preact/hooks";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
@@ -15,9 +15,7 @@ function MoveNoteBulkActionComponent({ bulkAction }: { bulkAction: AbstractBulkA
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("move_note.move_note")}
         >
-            <BulkActionText text={t("move_note.to")} />
 
             <NoteAutocomplete
                 placeholder={t("move_note.target_parent_note")}

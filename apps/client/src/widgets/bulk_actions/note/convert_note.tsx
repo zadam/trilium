@@ -27,7 +27,6 @@ function ConvertNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("convert_note.convert_note_to")}
         >
             <FormSelect
                 values={conversionOptions}

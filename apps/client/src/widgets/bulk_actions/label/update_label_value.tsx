@@ -1,7 +1,7 @@
 import { t } from "../../../services/i18n.js";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import FormTextBox from "../../react/FormTextBox.jsx";
-import BulkAction, { BulkActionText } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
 import { useEffect, useState } from "preact/hooks";
 
@@ -14,7 +14,6 @@ function UpdateLabelValueComponent({ bulkAction, actionDef }: { bulkAction: Abst
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("update_label_value.update_label_value")}
         >
             <FormTextBox
                 placeholder={t("update_label_value.label_name_placeholder")}
@@ -22,7 +21,7 @@ function UpdateLabelValueComponent({ bulkAction, actionDef }: { bulkAction: Abst
                 title={t("update_label_value.label_name_title")}
                 currentValue={labelName} onChange={setLabelName}
             />
-            <BulkActionText text={t("update_label_value.to_value")} />
+            <BulkActionArrow />
             <FormTextBox
                 placeholder={t("update_label_value.new_value_placeholder")}
                 currentValue={labelValue} onChange={setLabelValue}

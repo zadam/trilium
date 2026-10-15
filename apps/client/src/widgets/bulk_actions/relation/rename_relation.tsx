@@ -1,6 +1,6 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { BulkActionText } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
 import FormTextBox from "../../react/FormTextBox.jsx";
 import { useEffect, useState } from "preact/hooks";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
@@ -14,7 +14,6 @@ function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={t("rename_relation.rename_relation_from")}
         >
             <FormTextBox
                 placeholder={t("rename_relation.old_name")}
@@ -23,7 +22,7 @@ function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
                 currentValue={oldRelationName} onChange={setOldRelationName}
             />
 
-            <BulkActionText text={t("rename_relation.to")} />
+            <BulkActionArrow />
 
             <FormTextBox
                 placeholder={t("rename_relation.new_name")}

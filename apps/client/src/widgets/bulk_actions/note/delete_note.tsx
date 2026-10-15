@@ -1,13 +1,11 @@
 import { t } from "../../../services/i18n.js";
 import AbstractBulkAction from "../abstract_bulk_action.js";
 import BulkAction from "../BulkAction.jsx";
-import Icon from "../../react/Icon.jsx";
 
 function DeleteNoteBulkActionComponent({ bulkAction }: { bulkAction: AbstractBulkAction }) {
     return (
         <BulkAction
             bulkAction={bulkAction}
-            label={<><Icon icon="bx bx-trash" /> {t("delete_note.delete_matched_notes")}</>}
         />
     );
 }
