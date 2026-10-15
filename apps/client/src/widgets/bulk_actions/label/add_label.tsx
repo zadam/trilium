@@ -19,6 +19,7 @@ function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: Ab
                 placeholder={t("add_label.label_name_placeholder")}
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("add_label.label_name_title")}
+                className="bulk-action-name" required
                 currentValue={labelName} onChange={setLabelName}
             />
             <BulkActionArrow />

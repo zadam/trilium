@@ -16,11 +16,11 @@ function AddRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox 
+            <FormTextBox
                 placeholder={t("add_relation.relation_name")}
                 pattern="[\\p{L}\\p{N}_:]+"
-                style={{ flexShrink: 3 }}
                 title={t("add_relation.allowed_characters")}
+                className="bulk-action-name" required
                 currentValue={relationName} onChange={setRelationName}
             />
 
@@ -28,6 +28,7 @@ function AddRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
 
             <NoteAutocomplete
                 placeholder={t("add_relation.target_note")}
+                required
                 noteId={targetNoteId} noteIdChanged={setTargetNoteId}
             />
         </BulkAction>

@@ -32,6 +32,7 @@ function ConvertNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
                 values={conversionOptions}
                 keyProperty="value"
                 titleProperty="title"
+                required
                 currentValue={conversion}
                 onChange={onChange}
             />

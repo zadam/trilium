@@ -132,6 +132,54 @@ describe("BulkActionsDialog", () => {
         }
     });
 
+    it("lays each row out as title, fields and remove button, with the fields it needs marked required", async () => {
+        // For each action, its fields in order: whether each is required, and whether it holds a name.
+        const expected: Record<string, { required: boolean[]; names: boolean[] }> = {
+            addLabel: { required: [ true, false ], names: [ true, false ] },
+            updateLabelValue: { required: [ true, false ], names: [ true, false ] },
+            renameLabel: { required: [ true, true ], names: [ true, true ] },
+            deleteLabel: { required: [ true ], names: [ true ] },
+            addRelation: { required: [ true, true ], names: [ true, false ] },
+            updateRelationTarget: { required: [ true, true ], names: [ true, false ] },
+            renameRelation: { required: [ true, true ], names: [ true, true ] },
+            deleteRelation: { required: [ true ], names: [ true ] },
+            renameNote: { required: [], names: [] },
+            moveNote: { required: [ true ], names: [ false ] },
+            convertNote: { required: [ true ], names: [ false ] },
+            deleteNote: { required: [], names: [] },
+            saveRevision: { required: [ false ], names: [ false ] },
+            deleteRevisions: { required: [], names: [] },
+            executeScript: { required: [ true ], names: [ false ] }
+        };
+        buildNote({
+            id: "_bulkAction",
+            title: "Bulk action",
+            "#action": bulk_action.ACTION_CLASSES.map(({ actionName }) => JSON.stringify({ name: actionName }))
+        });
+        await open([ "n1" ]);
+        const rows = [ ...container.querySelectorAll<HTMLTableRowElement>(".bulk-existing-action-list tr") ];
+        expect(rows).toHaveLength(bulk_action.ACTION_CLASSES.length);
+
+        for (const [ index, ActionClass ] of bulk_action.ACTION_CLASSES.entries()) {
+            const { actionName, actionDescription } = ActionClass;
+            const row = rows[index];
+            expect([ ...row.cells ].map((cell) => cell.className), actionName)
+                .toStrictEqual([ "title-column", "bulk-action-fields-column", "button-column" ]);
+
+            const fields = [ ...row.cells[1].querySelectorAll<HTMLInputElement>("input:not([type=hidden]), select") ];
+            expect(fields.map((field) => field.required), actionName).toStrictEqual(expected[actionName].required);
+            expect(fields.map((field) => field.classList.contains("bulk-action-name")), actionName)
+                .toStrictEqual(expected[actionName].names);
+            expect(row.querySelector("[style*='flex-shrink']"), actionName).toBeNull();
+
+            const hasFields = row.cells[1].querySelector(".bulk-action-fields > *:not(.bulk-action-description)");
+            expect(row.querySelector(".bulk-action-description")?.textContent, actionName)
+                .toBe(hasFields ? undefined : actionDescription);
+        }
+
+        expect(container.querySelector("form")?.checkValidity()).toBe(false);
+    });
+
     it("names the note count on the execute button and enables it only with actions and notes to run on", async () => {
         function executeButton() {
             const button = container.querySelector<HTMLButtonElement>(".modal-footer button[name='execute-bulk-actions']");

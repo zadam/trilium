@@ -18,6 +18,7 @@ function DeleteLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("delete_label.label_name_title")}
                 placeholder={t("delete_label.label_name_placeholder")}
+                className="bulk-action-name" required
                 currentValue={labelName} onChange={setLabelName}
             />
         </BulkAction>

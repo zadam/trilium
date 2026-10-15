@@ -19,6 +19,7 @@ function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
                 placeholder={t("rename_relation.old_name")}
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_relation.allowed_characters")}
+                className="bulk-action-name" required
                 currentValue={oldRelationName} onChange={setOldRelationName}
             />
 
@@ -28,6 +29,7 @@ function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
                 placeholder={t("rename_relation.new_name")}
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_relation.allowed_characters")}
+                className="bulk-action-name" required
                 currentValue={newRelationName} onChange={setNewRelationName}
             />
         </BulkAction>

@@ -18,6 +18,7 @@ function DeleteRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
                 pattern="[\\p{L}\\p{N}_:]+"
                 placeholder={t("delete_relation.relation_name")}
                 title={t("delete_relation.allowed_characters")}
+                className="bulk-action-name" required
                 currentValue={relationName} onChange={setRelationName}
             />
         </BulkAction>

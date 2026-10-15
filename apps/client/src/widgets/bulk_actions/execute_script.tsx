@@ -16,6 +16,7 @@ function ExecuteScriptBulkActionComponent({ bulkAction, actionDef }: { bulkActio
         >
             <FormTextBox
                 placeholder="note.title = note.title + '- suffix';"
+                required
                 currentValue={script} onChange={setScript}
             />
         </BulkAction>

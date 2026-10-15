@@ -13,17 +13,16 @@ interface BulkActionProps {
 }
 
 const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
-    const { actionIcon, actionTitle } = bulkAction.constructor as typeof AbstractBulkAction;
+    const { actionIcon, actionTitle, actionDescription } = bulkAction.constructor as typeof AbstractBulkAction;
 
     return (
         <tr>
-            <td colSpan={2}>
-                <div className="bulk-action-row">
-                    <div className="bulk-action-label">
-                        {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{" "}{actionTitle}
-                    </div>
-
-                    {children}
+            <td className="title-column">
+                {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{actionTitle}
+            </td>
+            <td className="bulk-action-fields-column">
+                <div className="bulk-action-fields">
+                    {children ?? <span className="bulk-action-description">{actionDescription}</span>}
                 </div>
             </td>
             <HelpRemoveButtons

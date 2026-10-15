@@ -19,6 +19,7 @@ function MoveNoteBulkActionComponent({ bulkAction }: { bulkAction: AbstractBulkA
 
             <NoteAutocomplete
                 placeholder={t("move_note.target_parent_note")}
+                required
                 noteId={targetParentNoteId} noteIdChanged={setTargetParentNoteId}
             />
         </BulkAction>

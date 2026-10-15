@@ -47,7 +47,7 @@
     margin-bottom: 0;
 }
 
-.search-definition-widget input:invalid {
+.search-definition-widget input:user-invalid {
     border: 3px solid red;
 }
 

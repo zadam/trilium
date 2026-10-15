@@ -19,6 +19,7 @@ function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
                 placeholder={t("rename_label.old_name_placeholder")}
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_label.name_title")}
+                className="bulk-action-name" required
                 currentValue={oldLabelName} onChange={setOldLabelName}
             />
 
@@ -28,6 +29,7 @@ function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
                 placeholder={t("rename_label.new_name_placeholder")}
                 pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_label.name_title")}
+                className="bulk-action-name" required
                 currentValue={newLabelName} onChange={setNewLabelName}
             />
         </BulkAction>

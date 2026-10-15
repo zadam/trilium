@@ -52,18 +52,42 @@
     content: "\ec0e"; /* bx-shuffle */
 }
 
-.bulk-action-row {
+.bulk-action-fields {
     display: flex;
     align-items: center;
     gap: 10px;
+
+    > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    > .bulk-action-name {
+        flex: 0 1 16ch;
+    }
+
+    > .bulk-action-arrow {
+        flex: none;
+    }
+
+    :is(input, select):user-invalid {
+        border-color: var(--dropdown-item-icon-destructive-color);
+    }
 }
 
-.bulk-action-label {
-    white-space: nowrap;
+.bulk-action-description {
+    color: var(--muted-text-color);
+}
+
+.bulk-action-icon {
+    margin-inline-end: 8px;
+}
+
+.bulk-action-icon.destructive-action-icon {
+    color: var(--dropdown-item-icon-destructive-color);
 }
 
 .bulk-action-arrow {
-    flex-shrink: 0;
     font-size: 1.2em;
     color: var(--muted-text-color);
 }
