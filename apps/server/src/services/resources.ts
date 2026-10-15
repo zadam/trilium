@@ -30,11 +30,6 @@ export interface ResourceDefinition {
     /** The SPDX identifier of the license the files are under, such as `CC-BY-4.0`. */
     license: string;
     files: ResourceFile[];
-    /**
-     * Returns a directory that holds the files outside the manager, such as a model installed by
-     * hand. While it returns one, the resource counts as installed there.
-     */
-    findLocalCopy?(): string | null;
 }
 
 interface Download {
@@ -86,10 +81,6 @@ export class ResourceManager {
     /** Returns the directory holding the resource `id`, or `null` while it is not installed. */
     getPath(id: string) {
         const definition = this.getDefinition(id);
-        const localCopy = definition.findLocalCopy?.();
-        if (localCopy) {
-            return localCopy;
-        }
         const directory = this.getDirectory(definition);
         const verified = readVerifiedFiles(directory);
         const isInstalled = definition.files

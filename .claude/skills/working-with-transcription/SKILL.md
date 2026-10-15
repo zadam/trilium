@@ -37,7 +37,7 @@ The main process opens the capture window, starts the transcription process and 
 |---|---|
 | `apps/desktop/src/services/transcription/capture.ts` | Main process: `CaptureWindow`, the hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
 | `…/index.ts` | Main process: IPC handlers, the state broadcast, `getRecordingDirectory()`; registers the model resource, starts a recording's process and capture window and connects them |
-| `…/model.ts` | Main process: the three models as downloadable resources (`RECOGNIZER_MODEL`, `VAD_MODEL`, `SPEAKER_MODEL`: URLs pinned to a revision, sizes, SHA-256), `LOCAL_MODEL_DIR`, and `getModelPaths()`, which resolves the `ModelPaths` a recording starts with |
+| `…/model.ts` | Main process: the three models as downloadable resources (`RECOGNIZER_MODELS`, one per precision, `VAD_MODEL`, `SPEAKER_MODEL`: URLs pinned to a revision, sizes, SHA-256) and `getModelPaths()`, which resolves the `ModelPaths` a recording starts with |
 | `…/worker_client.ts` | Main process: `TranscriptionWorker`, which forks the transcription process, relays its events and stops or kills it |
 | `…/attachment_sink.ts` | Main process: the `transcript` attachment, rewritten after every utterance |
 | `…/protocol.ts` | Both: the messages between the processes, `SAMPLE_RATE`, `Logger` |
@@ -57,22 +57,11 @@ Nothing the transcription process imports may reach `@triliumnext/core` or `@tri
 
 Users choose the recognizer under Options → Transcription: the non-synced option `transcriptionModel` holds a key of `TRANSCRIPTION_MODELS` (commons `transcript.ts`), `parakeet-int8` (the default, "Standard") or `parakeet-fp32` ("High accuracy"), each naming its resource and precision; an unknown value reads as the default (`getTranscriptionModel()`). The synced option `transcriptionSpeakersEnabled` (the "Identify speakers" switch, default on) decides whether a recording labels speakers. The launcher calls `requireResources(getTranscriptionResources(<model>, <speakers>))` before it creates the meeting note, which shows the download dialog for those missing (TitaNet only while the switch is on), and `startRecording()` resolves the same two options through `getModelPaths()`, which passes `speaker: null` while the switch is off. The models are resources of the resource manager (`apps/server/src/services/resources.ts`), each in `<data dir>/resources/<id>-<hash>/` and checked against the SHA-256 in `model.ts`: `transcription.parakeet` (int8, 670 MB), `transcription.parakeet-fp32` (2.5 GB, pinned to a Hugging Face revision), `transcription.silero-vad` (0.6 MB) and `transcription.titanet` (40 MB). The hash in the directory name covers every file's path and SHA-256, so changing a file of one model downloads that model alone again, into a new directory. A recording needs Parakeet and Silero; without TitaNet it labels no speakers.
 
-A directory installed by hand, `<data dir>/transcription-model` (`LOCAL_MODEL_DIR`), takes precedence over the downloads, each model for itself, when it holds that model's files (each Parakeet precision when every one of its files is there, Silero when `silero_vad.onnx` is, TitaNet when `speaker/nemo_en_titanet_small.onnx` is); for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`, which the scripts below read. `ModelPaths.recognizer` carries the precision with the directory, and `loadSherpaEngine()` loads that precision's files; it records it as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
+`ModelPaths.recognizer` carries the precision with the directory, and `loadSherpaEngine()` loads that precision's files; it records it as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far"). Full precision loads in ~2 s to ~2.3 GB RSS.
 
-- **Full precision** (recommended): `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face, not in the sherpa releases — `encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt` (2.4 GB). Loads in ~2 s to ~2.3 GB RSS.
-- **int8**: the `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` archive from the `asr-models` release of `k2-fsa/sherpa-onnx` — `encoder.int8.onnx`, `decoder.int8.onnx`, `joiner.int8.onnx`, `tokens.txt` (641 MB).
-- `silero_vad.onnx` from the `asr-models` release.
+The scripts below read the downloads of `pnpm desktop:start`, in `apps/desktop/data/resources` (`findResource()` in `recordings.mjs`, which takes the most recently installed directory of a resource); download a model by starting a recording there with it selected, or point `--model` at another Parakeet directory. Files copied into a resource's directory by hand are adopted on the next download once their SHA-256 matches, so a copy from another machine needs no new download.
 
-```bash
-cd apps/desktop/data && mkdir -p transcription-model/speaker && cd transcription-model
-H=https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3/resolve/main
-R=https://github.com/k2-fsa/sherpa-onnx/releases/download
-for f in tokens.txt decoder.onnx joiner.onnx encoder.onnx encoder.weights; do curl -fL -o $f "$H/$f"; done
-curl -fL -o silero_vad.onnx "$R/asr-models/silero_vad.onnx"
-curl -fL -o speaker/nemo_en_titanet_small.onnx "$R/speaker-recongition-models/nemo_en_titanet_small.onnx"
-```
-
-Without either directory, starting fails with `transcription.model-not-downloaded`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
+A recording started without its models fails with `transcription.model-not-downloaded`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
 
 ## Recordings for troubleshooting
 
@@ -126,7 +115,7 @@ The export has errors of its own (it wrote "MicroEdge" and "SortMap", and split 
 
 ## Speaker detection
 
-The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously in the transcription process, holding back the next chunks but nothing else. `replay.mjs` does not label speakers; use `diarize.mjs`.
+The app labels the system source's utterances live while TitaNet (`transcription.titanet`) is installed and "Identify speakers" is on: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously in the transcription process, holding back the next chunks but nothing else. `replay.mjs` does not label speakers; use `diarize.mjs`.
 
 **Turns within an utterance** (`TURN_SETTINGS`): a VAD segment holds both sides of a quick exchange, since a reply needs no 0.75 s pause. Once a speaker is known, an utterance of 4 s or more is embedded again in 2 s windows 1 s apart, each matched against the known speakers (`SpeakerClusterer.match()`, which moves no centroid); where another label holds for two windows (`findSpeakerChanges()`), the utterance is cut half a second into the new run, moved to the nearest word start within 1 s, preferring one after a sentence end (`snapToWordBoundary()`, on the token times Parakeet returns with `transcribe()`). `RecordingSession` writes each turn as an utterance of its own, its text the words starting in it. That costs one embedding per second of a long utterance, ~0.1–0.3 s for a 20 s one.
 
@@ -143,9 +132,9 @@ node $S/diarize.mjs latest --mode offline --clusters 2       # when the speaker 
 node $S/diarize.mjs latest --embedding campplus --threads 2
 ```
 
-Models, in `<data dir>/transcription-model/speaker/`, from `k2-fsa/sherpa-onnx` releases:
+TitaNet is the app's download (`transcription.titanet`). The models only `diarize.mjs` uses go in `apps/desktop/data/diarization-models/` (or `--models <dir>`), from `k2-fsa/sherpa-onnx` releases:
 
-- `nemo_en_titanet_small.onnx` (40 MB) and `3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` (30 MB) from `speaker-recongition-models` (the tag is misspelled upstream);
+- `3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` (30 MB) from `speaker-recongition-models` (the tag is misspelled upstream);
 - `segmentation.onnx` (6 MB): `model.onnx` of `sherpa-onnx-pyannote-segmentation-3-0.tar.bz2` from `speaker-segmentation-models`, renamed.
 
 `SpeakerEmbeddingExtractor.compute()` and `OfflineSpeakerDiarization.process()` are **synchronous**, with no async variant. Live labelling therefore runs in the transcription process, never in the main process, which also serves the backend. The offline method, ~20 s per two minutes, would stall even that process's capture for its duration.
@@ -175,8 +164,8 @@ Two distinct voices on a clean recording are the easy case; similar voices, more
 Without a BPE vocabulary, sherpa looks a hotword up as a single entry of `tokens.txt`, so an ordinary word fails ("Cannot find ID for token androgynous") and **one failing term drops the whole list** for that utterance. The Parakeet archives ship no vocabulary; `hotwords.mjs` builds one:
 
 ```bash
-node $S/hotwords.mjs vocab                          # <model dir>/bpe.vocab from NVIDIA's tokenizer.json
-node $S/hotwords.mjs vocab apps/desktop/data/transcription-model-fp32
+node $S/hotwords.mjs vocab                          # bpe.vocab beside the downloaded Parakeet
+node $S/hotwords.mjs vocab <model dir>              # or beside another one
 node $S/hotwords.mjs check "heap/STM32/Iconiq"      # how each term splits, and which are risky
 node $S/replay.mjs <rec> --model <dir> --label hot --hotwords "heap/STM32/Stéphane" \
     --set recognizer.decodingMethod=modified_beam_search --set recognizer.maxActivePaths=4 \
@@ -220,7 +209,7 @@ node $S/worker-test.mjs latest                         # 120 s of system.wav at 
 node $S/worker-test.mjs latest --source microphone --seconds 60 --speed 8
 ```
 
-`worker-test.mjs` runs the real `TranscriptionWorker` in Electron: it starts the transcription process on `apps/desktop/data/transcription-model` (or `--model`, writing the utterances to `--out`), and a hidden page posts a recording's WAV through a `MessageChannelMain` port as the capture page does. It prints the engine's load time, the utterances (with speakers), how long `stop` took and whether the process exited, and the main process's event-loop lag throughout. On two minutes of a meeting's system track: ready after 1.3 s, lag p50 0.1 ms, p99 1.1 ms, max 25 ms. Before the split, speaker labelling alone held the main thread 15–100 ms per utterance. On Windows, Electron launched by it prints nothing and runs into the timeout (unresolved); there, `RecordingSession` and `loadSherpaEngine()` can be driven in plain Node with `node --import tsx` instead, feeding the WAV in 4096-sample chunks, which tests everything but the process boundary.
+`worker-test.mjs` runs the real `TranscriptionWorker` in Electron: it starts the transcription process on the app's downloads in `apps/desktop/data/resources` (or the Parakeet of `--model`; `--out` writes the utterances), and a hidden page posts a recording's WAV through a `MessageChannelMain` port as the capture page does. It prints the engine's load time, the utterances (with speakers), how long `stop` took and whether the process exited, and the main process's event-loop lag throughout. On two minutes of a meeting's system track: ready after 1.3 s, lag p50 0.1 ms, p99 1.1 ms, max 25 ms. Before the split, speaker labelling alone held the main thread 15–100 ms per utterance. On Windows, Electron launched by it prints nothing and runs into the timeout (unresolved); there, `RecordingSession` and `loadSherpaEngine()` can be driven in plain Node with `node --import tsx` instead, feeding the WAV in 4096-sample chunks, which tests everything but the process boundary.
 
 In development the process loads `transcription_worker.ts` through the `NODE_OPTIONS="--import tsx"` it inherits from `scripts/electron-start.mts`; built, `worker_client.ts` finds `transcription_worker.cjs` beside `main.mjs`. Packaged builds do not ship `sherpa-onnx-node` yet (it is external to every bundle, but not copied or unpacked from the asar).
 

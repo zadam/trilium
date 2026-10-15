@@ -39,10 +39,7 @@ export default function ResourcesSettings() {
     );
 }
 
-/**
- * The resources installed or partly downloaded, including copies installed by hand, which have no
- * downloaded bytes. Fetched again whenever a download ends.
- */
+/** The resources installed or partly downloaded, fetched again whenever a download ends. */
 function useResources() {
     const [ resources, setResources ] = useState<ResourceInfo[]>();
 
@@ -50,7 +47,7 @@ function useResources() {
         const refresh = () => {
             void server.get<ResourcesStatusResponse>("resources")
                 .then((status) => setResources(status.resources.filter(
-                    ({ installed, downloadedSize }) => installed || downloadedSize > 0)));
+                    ({ downloadedSize }) => downloadedSize > 0)));
         };
         const handler = (message: WebSocketMessage) => {
             if (message.type === "resource-download" && message.download.status !== "downloading") {

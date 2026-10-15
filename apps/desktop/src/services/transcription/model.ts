@@ -1,21 +1,13 @@
 import {
     getTranscriptionModel, TRANSCRIPTION_MODELS as MODEL_CHOICES, TRANSCRIPTION_RESOURCES
 } from "@triliumnext/commons";
-import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import resources, {
     type ResourceDefinition, type ResourceFile
 } from "@triliumnext/server/src/services/resources.js";
-import fs from "fs";
 import { t } from "i18next";
 import path from "path";
 
 import type { ModelPaths } from "./protocol";
-
-/**
- * A model directory installed by hand. It counts as each resource whose files it holds, in place of
- * that resource's download.
- */
-export const LOCAL_MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
 
 const VAD_FILE = "silero_vad.onnx";
 const SPEAKER_FILE = "nemo_en_titanet_small.onnx";
@@ -99,7 +91,6 @@ export const VAD_MODEL: ResourceDefinition = {
     description: () => t("transcription.vad-description"),
     icon: "bx bx-pulse",
     license: "MIT",
-    findLocalCopy: () => fs.existsSync(path.join(LOCAL_MODEL_DIR, VAD_FILE)) ? LOCAL_MODEL_DIR : null,
     files: [ {
         path: VAD_FILE,
         url: `${SHERPA_RELEASES}/asr-models/${VAD_FILE}`,
@@ -114,10 +105,6 @@ export const SPEAKER_MODEL: ResourceDefinition = {
     description: () => t("transcription.speaker-description"),
     icon: "bx bx-user-voice",
     license: "Apache-2.0",
-    findLocalCopy: () => {
-        const directory = path.join(LOCAL_MODEL_DIR, "speaker");
-        return fs.existsSync(path.join(directory, SPEAKER_FILE)) ? directory : null;
-    },
     files: [ {
         path: SPEAKER_FILE,
         url: `${SHERPA_RELEASES}/speaker-recongition-models/${SPEAKER_FILE}`,
@@ -156,9 +143,6 @@ function parakeet(id: string, files: ResourceFile[], title: () => string): Resou
         description: () => t("transcription.recognizer-description"),
         icon: "bx bx-captions",
         license: "CC-BY-4.0",
-        findLocalCopy: () => files.every((file) => fs.existsSync(path.join(LOCAL_MODEL_DIR, file.path)))
-            ? LOCAL_MODEL_DIR
-            : null,
         files
     };
 }

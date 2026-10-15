@@ -300,10 +300,8 @@ describe("ResourceManager", () => {
         ]);
     });
 
-    it("prefers a local copy, and refuses invalid or unknown resources", () => {
-        manager.register({ ...defineModel(), findLocalCopy: () => "/hand/installed" });
-        expect(manager.getPath("test.model")).toBe("/hand/installed");
-
+    it("refuses invalid or unknown resources", () => {
+        manager.register(defineModel());
         expect(() => manager.register(defineModel())).toThrow(/already registered/);
         expect(() => manager.register(defineModel({ id: "Test Model" }))).toThrow(/invalid ID/);
         expect(() => manager.register({ ...defineModel({ id: "test.escape" }), files: [ file("../outside", MODEL) ] }))

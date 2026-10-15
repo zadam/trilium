@@ -20,20 +20,23 @@
 //   --clusters <n>           offline: the number of speakers, when known
 //   --cluster-threshold <n>  offline: clustering threshold otherwise (default 0.5)
 //   --threads <n>            threads per model (default 1)
+//   --models <dir>           where CAM++ and segmentation.onnx are
+//                            (default apps/desktop/data/diarization-models)
 //
-// Models: <data dir>/transcription-model/speaker/ holds the embedding models and
-// segmentation.onnx; see SKILL.md, "Speaker detection".
+// Models: TitaNet is the app's download, in apps/desktop/data/resources; CAM++ and
+// segmentation.onnx, which only this script uses, go in --models. See SKILL.md, "Speaker
+// detection".
 
 import fs from "node:fs";
 import path from "node:path";
 
-import { listTranscripts, parseArgs, readTranscript, resolveRecording } from "./recordings.mjs";
+import {
+    listTranscripts, MODEL_RESOURCES, parseArgs, readTranscript, requireResource, resolveRecording
+} from "./recordings.mjs";
 import { loadSherpa, SAMPLE_RATE } from "./sherpa.mjs";
 
-const EMBEDDING_MODELS = {
-    titanet: "nemo_en_titanet_small.onnx",
-    campplus: "3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx"
-};
+const DIARIZATION_MODELS_DIR = path.resolve(
+    import.meta.dirname, "../../../apps/desktop/data/diarization-models");
 /** An utterance whose second speaker talks this long within it counts as a speaker change. */
 const CHANGE_SECONDS = 1;
 
@@ -48,11 +51,8 @@ const transcriptLabel = options.transcript
     ?? (listTranscripts(recording.directory).has("greedy") ? "greedy" : "live");
 const mode = options.mode ?? "both";
 const threads = Number(options.threads ?? 1);
-const speakerDir = path.join(
-    path.dirname(path.dirname(recording.directory)), "transcription-model", "speaker");
-const embeddingModel = EMBEDDING_MODELS[options.embedding ?? "titanet"]
-    ? path.join(speakerDir, EMBEDDING_MODELS[options.embedding ?? "titanet"])
-    : options.embedding;
+const modelsDir = options.models ?? DIARIZATION_MODELS_DIR;
+const embeddingModel = getEmbeddingModel(options.embedding ?? "titanet");
 if (!fs.existsSync(embeddingModel)) {
     fail(`No embedding model at ${embeddingModel}.`);
 }
@@ -170,7 +170,7 @@ function labelOffline() {
     const loadStarted = performance.now();
     const diarization = new sherpa.OfflineSpeakerDiarization({
         segmentation: {
-            pyannote: { model: path.join(speakerDir, "segmentation.onnx") },
+            pyannote: { model: path.join(modelsDir, "segmentation.onnx") },
             numThreads: threads
         },
         embedding: { model: embeddingModel, numThreads: threads },
@@ -285,4 +285,15 @@ function formatSeconds(seconds) {
 function fail(message) {
     console.error(message);
     process.exit(1);
+}
+
+/** The embedding model file `name` stands for: titanet, campplus, or a path. */
+function getEmbeddingModel(name) {
+    if (name === "titanet") {
+        return path.join(requireResource(MODEL_RESOURCES.speaker), "nemo_en_titanet_small.onnx");
+    }
+    if (name === "campplus") {
+        return path.join(modelsDir, "3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx");
+    }
+    return name;
 }

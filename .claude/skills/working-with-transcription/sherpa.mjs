@@ -16,10 +16,10 @@ export function loadSherpa() {
  * Cuts one source into utterances with Silero VAD, as the live `VadSegmenter` does: 512-sample
  * windows, then a flush at the end.
  */
-export function* segmentSource(sherpa, samples, vadSettings, modelDir) {
+export function* segmentSource(sherpa, samples, vadSettings, vadModel) {
     const windowSize = vadSettings.windowSize ?? 512;
     const vad = new sherpa.Vad({
-        sileroVad: { model: path.join(modelDir, "silero_vad.onnx"), ...vadSettings, windowSize },
+        sileroVad: { model: vadModel, ...vadSettings, windowSize },
         sampleRate: SAMPLE_RATE,
         numThreads: 1,
         provider: "cpu"

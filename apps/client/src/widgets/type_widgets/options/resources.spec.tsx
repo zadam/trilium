@@ -52,8 +52,7 @@ beforeEach(() => {
     mocks.resources = [
         resource({ id: "test.installed", installed: true, downloadedSize: 10 * MIB, directory: "/data/resources/test.installed-abc" }),
         resource({ id: "test.partial", downloadedSize: 4 * MIB }),
-        resource({ id: "test.missing" }),
-        resource({ id: "test.by-hand", installed: true, directory: "/data/transcription-model" })
+        resource({ id: "test.missing" })
     ];
     mocks.requests = 0;
     mocks.handlers = [];
@@ -77,14 +76,13 @@ describe("ResourcesSettings", () => {
 
         const rows = [ ...host.querySelectorAll(".resources-item") ];
         expect(rows.map((row) => row.querySelector(".tn-card-option-title")?.textContent))
-            .toEqual([ "test.installed", "test.partial", "test.by-hand" ]);
+            .toEqual([ "test.installed", "test.partial" ]);
         expect(rows.map((row) => row.querySelector(".resources-status small")?.textContent)).toEqual([
             "resources_options.installed",
-            `resources_options.partially_downloaded {"downloaded":"4.00 MiB","size":"10 MiB"}`,
-            "resources_options.installed"
+            `resources_options.partially_downloaded {"downloaded":"4.00 MiB","size":"10 MiB"}`
         ]);
         expect(rows.map((row) => row.querySelector(".directory-stub")?.textContent ?? null))
-            .toEqual([ "/data/resources/test.installed-abc", null, "/data/transcription-model" ]);
+            .toEqual([ "/data/resources/test.installed-abc", null ]);
         expect(host.querySelector(".resources-total .resources-size")?.textContent).toBe("14 MiB");
     });
 
