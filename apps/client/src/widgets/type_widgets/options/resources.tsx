@@ -17,19 +17,23 @@ import OptionsPageHeader from "./components/OptionsPageHeader";
 
 /** Lists the resources installed on this device, and the ones an interrupted download left partly fetched. */
 export default function ResourcesSettings() {
-    const [ resources, refresh ] = useResources();
+    const [ status, refresh ] = useResources();
 
     return (
         <>
             <OptionsPageHeader />
-            {resources && (
+            {status && (
                 <Card
                     className="resources-list"
                     heading={t("resources_options.list_title")}
                     description={t("resources_options.list_description")}
                 >
-                    {resources.length > 0 ? (
-                        <ResourceRows resources={resources} onDeleted={refresh} />
+                    {status.resources.length > 0 ? (
+                        <ResourceRows
+                            resources={status.resources}
+                            freeBytes={status.freeBytes}
+                            onDeleted={refresh}
+                        />
                     ) : (
                         <CardSection>
                             <NoItems icon="bx bx-download" text={t("resources_options.no_resources")} size="small" />
@@ -41,13 +45,17 @@ export default function ResourcesSettings() {
     );
 }
 
-/** The resources installed or partly downloaded, fetched again whenever a download ends. */
+/**
+ * The resources installed or partly downloaded and the free space where they are stored, fetched
+ * again whenever a download ends.
+ */
 function useResources() {
-    const [ resources, setResources ] = useState<ResourceInfo[]>();
+    const [ status, setStatus ] = useState<Pick<ResourcesStatusResponse, "resources" | "freeBytes">>();
     const refresh = useCallback(() => {
-        void server.get<ResourcesStatusResponse>("resources")
-            .then((status) => setResources(status.resources.filter(
-                ({ downloadedSize }) => downloadedSize > 0)));
+        void server.get<ResourcesStatusResponse>("resources").then(({ resources, freeBytes }) => setStatus({
+            resources: resources.filter(({ downloadedSize }) => downloadedSize > 0),
+            freeBytes
+        }));
     }, []);
 
     useEffect(() => {
@@ -61,11 +69,17 @@ function useResources() {
         return () => unsubscribeToMessage(handler);
     }, [ refresh ]);
 
-    return [ resources, refresh ] as const;
+    return [ status, refresh ] as const;
 }
 
 /** The resources and the space they use, every size in one unit so that the column adds up. */
-function ResourceRows({ resources, onDeleted }: { resources: ResourceInfo[]; onDeleted: () => void }) {
+interface ResourceRowsProps {
+    resources: ResourceInfo[];
+    freeBytes: number | null;
+    onDeleted: () => void;
+}
+
+function ResourceRows({ resources, freeBytes, onDeleted }: ResourceRowsProps) {
     const used = resources.reduce((total, { downloadedSize }) => total + downloadedSize, 0);
     const unitOf = Math.max(used, ...resources.map(({ size }) => size));
     return (
@@ -76,6 +90,11 @@ function ResourceRows({ resources, onDeleted }: { resources: ResourceInfo[]; onD
             <CardSection className="tn-card-option resources-total">
                 <div className="tn-card-option-label">
                     <span className="tn-card-option-title">{t("resources_options.space_used")}</span>
+                    {freeBytes !== null && (
+                        <small className="tn-card-option-description">
+                            {t("resource_download.free_space", { size: formatSize(freeBytes) })}
+                        </small>
+                    )}
                 </div>
                 <span className="tn-card-option-value resources-size">{formatSize(used, 2, unitOf)}</span>
                 <div className="resources-actions" />

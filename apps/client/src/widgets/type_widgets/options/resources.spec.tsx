@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
     resources: [] as ResourceInfo[],
+    freeBytes: null as number | null,
     requests: 0,
     confirmed: true,
     removed: [] as string[],
@@ -20,7 +21,7 @@ vi.mock("../../../services/server", () => ({
                 return [];
             }
             mocks.requests++;
-            return { resources: mocks.resources, freeBytes: null, download: null };
+            return { resources: mocks.resources, freeBytes: mocks.freeBytes, download: null };
         },
         remove: async (url: string) => {
             mocks.removed.push(url);
@@ -78,6 +79,7 @@ beforeEach(() => {
         resource({ id: "test.missing" })
     ];
     mocks.requests = 0;
+    mocks.freeBytes = null;
     mocks.confirmed = true;
     mocks.removed = [];
     mocks.electron = true;
@@ -145,6 +147,18 @@ describe("ResourcesSettings", () => {
         await click();
         expect(mocks.removed).toEqual([ "resources/test.installed" ]);
         expect(mocks.requests).toBe(2);
+    });
+
+    it("states the free space below the space used, when it can be read", async () => {
+        const description = () => host.querySelector(".resources-total .tn-card-option-description");
+        mocks.freeBytes = 38 * 1024 * MIB;
+        await open();
+        expect(description()?.textContent).toBe(`resource_download.free_space {"size":"38 GiB"}`);
+
+        act(() => render(null, host));
+        mocks.freeBytes = null;
+        await open();
+        expect(description()).toBeNull();
     });
 
     it("shows an empty state when nothing is downloaded", async () => {
