@@ -136,7 +136,7 @@ function ResourceRow({ resource, unitOf, onDeleted }: ResourceRowProps) {
         <EntryRow
             icon={resource.icon}
             title={resource.title}
-            size={formatSize(resource.size, 2, unitOf)}
+            size={formatSize(getSizeOnDisk(resource), 2, unitOf)}
             status={getStatusText(resource)}
             onOpen={directory ? () => void openService.openDirectory(directory) : undefined}
             onDelete={() => void remove()}

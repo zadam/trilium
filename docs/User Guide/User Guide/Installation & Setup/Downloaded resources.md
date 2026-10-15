@@ -25,7 +25,7 @@ Every file is checked against a checksum built into Trilium before it is used, s
 
 ## Managing downloaded resources
 
-To see the downloaded resources, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Downloaded resources_. Each resource that was downloaded, or partly downloaded by an interrupted download, is listed with its size and its status. Below the list, _Space used_ shows the space they take in total, and how much free space is left on the disk.
+To see the downloaded resources, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Downloaded resources_. Each resource that was downloaded, or partly downloaded by an interrupted download, is listed with the space it takes on the disk and its status. Below the list, _Space used_ shows the space they take in total, and how much free space is left on the disk.
 
 *   To open the folder of a resource, press the <span class="tn-icon bx bx-folder-open"></span> button (desktop only).
 *   To delete a resource, press the <span class="tn-icon bx bx-trash"></span> button. If a feature needs it again, it is downloaded again.

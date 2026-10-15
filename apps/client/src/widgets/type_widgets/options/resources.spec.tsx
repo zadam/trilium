@@ -130,7 +130,7 @@ describe("ResourcesSettings", () => {
             `resources_options.partially_downloaded {"downloaded":"4.00 MiB","size":"10 MiB"}`
         ]);
         expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
-            .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
+            .toEqual([ "2.00 GiB", "<0.01 GiB", "2.00 GiB" ]);
         expect(rows[0].querySelector(".resource-download-author")?.getAttribute("href"))
             .toBe("https://example.com/model");
         expect(rows[0].querySelector(".resource-download-license")?.getAttribute("href"))
@@ -140,6 +140,8 @@ describe("ResourcesSettings", () => {
     it("lists files copied in but not yet checked, and counts them in the space used", async () => {
         mocks.resources = [ resource({ id: "test.copied", unverifiedSize: 6 * MIB }) ];
         await open();
+        expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
+            .toEqual([ "6.00 MiB", "6.00 MiB" ]);
 
         const rows = [ ...host.querySelectorAll(".resources-item") ];
         expect(rows.map((row) => row.querySelector(".tn-card-option-title")?.textContent))
