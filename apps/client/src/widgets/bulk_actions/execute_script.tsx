@@ -14,17 +14,6 @@ function ExecuteScriptBulkActionComponent({ bulkAction, actionDef }: { bulkActio
         <BulkAction
             bulkAction={bulkAction}
             label={t("execute_script.execute_script")}
-            helpText={<>
-                {t("execute_script.help_text")}
-
-                {t("execute_script.example_1")}
-
-                <pre>note.title = note.title + ' - suffix';</pre>
-
-                {t("execute_script.example_2")}
-
-                <pre>{"for (const attr of note.getOwnedAttributes) { attr.markAsDeleted(); }"}</pre>
-            </>}
         >
             <FormTextBox
                 placeholder="note.title = note.title + '- suffix';"
@@ -44,6 +33,9 @@ export default class ExecuteScriptBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-play";
+    }
+    static get actionDescription() {
+        return t("execute_script.description");
     }
 
     doRender() {

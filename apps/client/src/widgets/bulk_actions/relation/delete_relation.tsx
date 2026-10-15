@@ -37,6 +37,9 @@ export default class DeleteRelationBulkAction extends AbstractBulkAction {
     static get actionIcon() {
         return "bx bx-transfer bulk-action-marker-delete";
     }
+    static get actionDescription() {
+        return t("delete_relation.description");
+    }
 
     doRender() {
         return <DeleteRelationBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

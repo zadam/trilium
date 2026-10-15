@@ -22,7 +22,6 @@ function SaveRevisionBulkActionComponent({ bulkAction, actionDef }: { bulkAction
         <BulkAction
             bulkAction={bulkAction}
             label={<><Icon icon="bx bx-save" /> {t("save_revision.save_revision")}</>}
-            helpText={t("save_revision.help")}
         >
             <FormTextBox
                 placeholder={t("save_revision.revision_name_placeholder")}
@@ -42,6 +41,9 @@ export default class SaveRevisionBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-history bulk-action-marker-add";
+    }
+    static get actionDescription() {
+        return t("save_revision.description");
     }
 
     doRender() {

@@ -51,6 +51,11 @@ export default abstract class AbstractBulkAction {
         return "";
     }
 
+    /** What the action does, shown as the tooltip of its entry in the add menu. */
+    static get actionDescription() {
+        return "";
+    }
+
     async saveAction(data: {}) {
         const actionObject = Object.assign({ name: (this.constructor as typeof AbstractBulkAction).actionName }, data);
 

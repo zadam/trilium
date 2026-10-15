@@ -16,13 +16,6 @@ function UpdateRelationTargetComponent({ bulkAction, actionDef }: { bulkAction: 
         <BulkAction
             bulkAction={bulkAction}
             label={t("update_relation_target.update_relation")}
-            helpText={<>
-                <p>{t("update_relation_target.on_all_matched_notes")}:</p>
-
-                <ul style="margin-bottom: 0;">
-                    <li>{t("update_relation_target.change_target_note")}</li>
-                </ul>
-            </>}
         >
             <FormTextBox
                 placeholder={t("update_relation_target.relation_name")}
@@ -54,6 +47,9 @@ export default class UpdateRelationTargetBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-transfer bulk-action-marker-update";
+    }
+    static get actionDescription() {
+        return t("update_relation_target.description");
     }
 
     doRender() {

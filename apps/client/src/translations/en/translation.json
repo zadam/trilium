@@ -92,6 +92,7 @@
     "include_descendants": "Include descendants of the selected notes",
     "add_action": "Add action",
     "chosen_actions": "Chosen actions",
+    "remove_action": "Remove this action",
     "execute_bulk_actions": "Execute bulk actions",
     "bulk_actions_executed": "Bulk actions have been executed successfully.",
     "none_yet": "No actions yet. Use Add action below to choose one.",
@@ -885,9 +886,7 @@
   },
   "execute_script": {
     "execute_script": "Execute script",
-    "help_text": "You can execute simple scripts on the matched notes.",
-    "example_1": "For example to append a string to a note's title, use this small script:",
-    "example_2": "More complex example would be deleting all matched note's attributes:"
+    "description": "Runs a backend script on each note, which reads and changes it through the note variable. The note is saved afterwards."
   },
   "add_label": {
     "add_label": "Add label",
@@ -895,15 +894,13 @@
     "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
     "to_value": "to value",
     "new_value_placeholder": "new value",
-    "help_text": "On all matched notes:",
-    "help_text_item1": "create given label if note doesn't have one yet",
-    "help_text_item2": "or change value of the existing label",
-    "help_text_note": "You can also call this method without value, in such case label will be assigned to the note without value."
+    "description": "Adds the label to each note, with the given value or none. It is added even if the note already has the label, so the note ends up with it twice."
   },
   "delete_label": {
     "delete_label": "Delete label",
     "label_name_placeholder": "label name",
-    "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters."
+    "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
+    "description": "Removes the label from each note that has it directly."
   },
   "rename_label": {
     "rename_label": "Rename label",
@@ -911,7 +908,8 @@
     "old_name_placeholder": "old name",
     "to": "To",
     "new_name_placeholder": "new name",
-    "name_title": "Alphanumeric characters, underscore and colon are allowed characters."
+    "name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
+    "description": "Renames the label on each note that has it directly, keeping its value."
   },
   "update_label_value": {
     "update_label_value": "Update label value",
@@ -919,33 +917,27 @@
     "label_name_title": "Alphanumeric characters, underscore and colon are allowed characters.",
     "to_value": "to value",
     "new_value_placeholder": "new value",
-    "help_text": "On all matched notes, change value of the existing label.",
-    "help_text_note": "You can also call this method without value, in such case label will be assigned to the note without value."
+    "description": "Sets the value of the label on each note that has it directly. Inherited labels are not changed."
   },
   "delete_note": {
     "delete_note": "Delete note",
     "delete_matched_notes": "Delete matched notes",
-    "delete_matched_notes_description": "This will delete matched notes.",
-    "undelete_notes_instruction": "After the deletion, it's possible to undelete them from Recent Changes dialog.",
-    "erase_notes_instruction": "To erase notes permanently, you can go after the deletion to the Option -> Other and click the \"Erase deleted notes now\" button."
+    "description": "Deletes each note, including its clones and any child notes that are not cloned elsewhere. Deleted notes can be restored from Recent changes until they are erased."
   },
   "save_revision": {
     "save_revision": "Save revision",
     "revision_name_placeholder": "Revision name (optional)",
-    "help": "A named revision will be saved for each matched note, capturing its current content and title."
+    "description": "Saves a revision of each note, with an optional name. Protected notes are skipped unless a protected session is active."
   },
   "delete_revisions": {
     "delete_note_revisions": "Delete note revisions",
-    "all_past_note_revisions": "All past note revisions of matched notes will be deleted. Note itself will be fully preserved. In other terms, note's history will be removed."
+    "description": "Permanently erases all revisions of each note. The notes themselves are kept."
   },
   "move_note": {
     "move_note": "Move note",
     "to": "to",
     "target_parent_note": "target parent note",
-    "on_all_matched_notes": "On all matched notes",
-    "move_note_new_parent": "move note to the new parent if note has only one parent (i.e. the old branch is removed and new branch into the new parent is created)",
-    "clone_note_new_parent": "clone note to the new parent if note has multiple clones/branches (it's not clear which branch should be removed)",
-    "nothing_will_happen": "nothing will happen if note cannot be moved to the target note (i.e. this would create a tree cycle)"
+    "description": "Moves each note under the target note. A note with several parents is cloned there instead, and one that cannot go there, such as a parent of the target, stays where it is."
   },
   "convert_note": {
     "convert_note": "Convert",
@@ -953,20 +945,15 @@
     "choose_conversion": "(choose a conversion)",
     "conversion_htmlToMarkdown": "Text Notes → Markdown Notes (lossy)",
     "conversion_markdownToHtml": "Markdown Notes → Text Notes",
-    "help_text": "The conversion is applied only to notes matching the source type; other notes are left untouched. A revision of each converted note is saved beforehand.",
     "warning": "Some formatting may be lost when converting notes and you may need to fix a few things afterwards. A revision of each converted note will be saved beforehand so you can restore it. Do you want to continue?",
-    "warning_risky": "You are converting between two formats that don't have identical capabilities, so some formatting may be lost and some unsupported elements may be dropped.<br><br>Do you fully assume this risk and want to proceed with the conversion?<br><br>A revision of each converted note will be saved beforehand, so you can revert to the original format."
+    "warning_risky": "You are converting between two formats that don't have identical capabilities, so some formatting may be lost and some unsupported elements may be dropped.<br><br>Do you fully assume this risk and want to proceed with the conversion?<br><br>A revision of each converted note will be saved beforehand, so you can revert to the original format.",
+    "description": "Converts text notes to Markdown, or Markdown notes to text, saving a revision of each first. Notes of other types are left alone."
   },
   "rename_note": {
     "rename_note": "Rename note",
     "rename_note_title_to": "Rename note title to",
     "new_note_title": "new note title",
-    "click_help_icon": "Click help icon on the right to see all the options",
-    "evaluated_as_js_string": "The given value is evaluated as JavaScript string and thus can be enriched with dynamic content via the injected <code>note</code> variable (note being renamed). Examples:",
-    "example_note": "<code>Note</code> - all matched notes are renamed to 'Note'",
-    "example_new_title": "<code>NEW: ${note.title}</code> - matched notes titles are prefixed with 'NEW: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - matched notes are prefixed with note's creation month-date",
-    "api_docs": "See API docs for <a href='https://zadam.github.io/trilium/backend_api/Note.html'>note</a> and its <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj properties</a> for details."
+    "description": "Sets the title of each note. The title is a JavaScript template string, so ${note.title} stands for the current title."
   },
   "add_relation": {
     "add_relation": "Add relation",
@@ -974,12 +961,13 @@
     "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
     "to": "to",
     "target_note": "target note",
-    "create_relation_on_all_matched_notes": "On all matched notes create given relation."
+    "description": "Adds a relation from each note to the target note. It is added even if the note already has a relation of that name."
   },
   "delete_relation": {
     "delete_relation": "Delete relation",
     "relation_name": "relation name",
-    "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters."
+    "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
+    "description": "Removes the relation from each note that has it directly."
   },
   "rename_relation": {
     "rename_relation": "Rename relation",
@@ -987,7 +975,8 @@
     "old_name": "old name",
     "to": "To",
     "new_name": "new name",
-    "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters."
+    "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
+    "description": "Renames the relation on each note that has it directly, keeping its target."
   },
   "update_relation_target": {
     "update_relation": "Update relation",
@@ -995,9 +984,8 @@
     "allowed_characters": "Alphanumeric characters, underscore and colon are allowed characters.",
     "to": "to",
     "target_note": "target note",
-    "on_all_matched_notes": "On all matched notes",
-    "change_target_note": "change target note of the existing relation",
-    "update_relation_target": "Update relation target"
+    "update_relation_target": "Update relation target",
+    "description": "Points the relation on each note that has it directly to the target note."
   },
   "attachments_actions": {
     "open_externally": "Open externally",

@@ -15,11 +15,6 @@ function UpdateLabelValueComponent({ bulkAction, actionDef }: { bulkAction: Abst
         <BulkAction
             bulkAction={bulkAction}
             label={t("update_label_value.update_label_value")}
-            helpText={<>
-                <p>{t("update_label_value.help_text")}</p>
-
-                {t("update_label_value.help_text_note")}
-            </>}
         >
             <FormTextBox
                 placeholder={t("update_label_value.label_name_placeholder")}
@@ -45,6 +40,9 @@ export default class UpdateLabelValueBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-hash bulk-action-marker-update";
+    }
+    static get actionDescription() {
+        return t("update_label_value.description");
     }
 
     doRender() {

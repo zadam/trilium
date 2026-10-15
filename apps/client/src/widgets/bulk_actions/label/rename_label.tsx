@@ -45,6 +45,9 @@ export default class RenameLabelBulkAction extends AbstractBulkAction {
     static get actionIcon() {
         return "bx bx-hash bulk-action-marker-rename";
     }
+    static get actionDescription() {
+        return t("rename_label.description");
+    }
 
     doRender() {
         return <RenameLabelBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

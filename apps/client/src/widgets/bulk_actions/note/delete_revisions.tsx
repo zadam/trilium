@@ -8,7 +8,6 @@ function DeleteRevisionsBulkActionComponent({ bulkAction }: { bulkAction: Abstra
         <BulkAction
             bulkAction={bulkAction}
             label={<><Icon icon="bx bx-trash" /> {t("delete_revisions.delete_note_revisions")}</>}
-            helpText={t("delete_revisions.all_past_note_revisions")}
         />
     )
 }
@@ -23,6 +22,9 @@ export default class DeleteRevisionsBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-history bulk-action-marker-delete destructive-action-icon";
+    }
+    static get actionDescription() {
+        return t("delete_revisions.description");
     }
 
     doRender() {

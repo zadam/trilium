@@ -12,7 +12,7 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
 *   The _Selected notes_ section at the top of the dialog lists the notes the actions apply to. When many notes are selected, only the first few are shown; click _+N more_ to show the rest.
     *   To leave a note out without changing the selection in the note tree, press the X button on its entry. The last remaining note cannot be removed.
 *   By default, only the selected notes will be affected. To also include all the descendants of the notes, turn on _Include descendants of the selected notes_. The number of affected notes, shown below that option, updates to reflect the change.
-*   To add an action, click _Add action_ at the bottom of the _Chosen actions_ section and pick one from the menu. A detailed description of each is available in the next section.
+*   To add an action, click _Add action_ at the bottom of the _Chosen actions_ section and pick one from the menu. Hovering over an entry shows a short description of what it does; a detailed description of each is available in the next section.
     *   Each chosen action appears as an entry in the _Chosen actions_ section, with its own configuration.
     *   To remove an action, simply press the X button to the right of it.
     *   It is possible to apply multiple actions of the same type, such as adding multiple types.
@@ -23,11 +23,11 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
 
 ### Labels
 
-These actions operate the <a class="reference-link" href="Attributes/Labels.md">Labels</a> of a note:
+These actions operate the <a class="reference-link" href="Attributes/Labels.md">Labels</a> of a note. Except for _Add label_, they only affect labels set directly on the note; inherited labels are left unchanged.
 
 *   **Add label**
-    *   For each note, if it doesn't already have a [label](Attributes/Labels.md) of the given name, it will create it. Keep the _New value_ field empty to create a label without a value, or complete it to assign a value.
-    *   If a note already has this label, its value will be updated.
+    *   For each note, it creates a [label](Attributes/Labels.md) of the given name. Keep the _New value_ field empty to create a label without a value, or complete it to assign a value.
+    *   The label is added even if the note already has one of the same name, so the note ends up with both. To change the value of an existing label instead, use _Update label value_.
 *   **Update label value**
     *   For each note, if it has a [label](Attributes/Labels.md) of the given name, it will change its value to the specified one. Leave _New value_ field empty to create a label without a value.
     *   Notes without the label will not be affected.
@@ -40,11 +40,11 @@ These actions operate the <a class="reference-link" href="Attributes/Labels.md"
 
 ### Relations
 
-These actions operate the <a class="reference-link" href="Attributes/Relations.md">Relations</a> of a note:
+These actions operate the <a class="reference-link" href="Attributes/Relations.md">Relations</a> of a note. Except for _Add relation_, they only affect relations set directly on the note; inherited relations are left unchanged.
 
 *   **Add relation**
     *   For each note, it will create a relation pointing to the given note.
-    *   Notes without this relation will not be affected.
+    *   The relation is added even if the note already has one of the same name.
 *   **Update relation target**
     *   For each note, it will modify a relation to point to the newly given note.
     *   Notes without this relation will not be affected.
@@ -64,6 +64,8 @@ These actions operate the <a class="reference-link" href="Attributes/Relations.
         *   `${note.dateCreatedObj.format('MM-DD:')}: ${note.title}` will prefix the note titles with each note's creation date (in month-day format).
 *   **Move note**
     *   For each note, it will be moved to the specified parent note.
+    *   A note with several parents is cloned to the new parent instead, since it is not clear which of its places to remove.
+    *   A note that cannot be placed there, such as a parent of the target note, stays where it is.
     *   As an alternative for less complex situations, the notes can be moved directly from within the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> via cut → paste or via the contextual menu.
 *   **Convert note**
     *   This allows a note to be converted from one type to another:
@@ -73,10 +75,11 @@ These actions operate the <a class="reference-link" href="Attributes/Relations.
 *   **Save revision**
     *   Automatically creates a revision of each note. Optionally, a name can be assigned to this revision. See <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a>.
 *   **Delete note**
-    *   For each note, it will be deleted.
+    *   For each note, it will be deleted, including all of its clones and any child notes that are not cloned elsewhere.
+    *   Deleted notes can be restored from _Recent changes_ until they are erased.
     *   As an alternative for less complex situations, the notes can be removed directly from within the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> by selecting them and pressing <kbd>Delete</kbd>.
 *   **Delete note revisions**
-    *   This will delete all the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> of the notes.
+    *   This will permanently erase all the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Revisions.md">Note Revisions</a> of the notes. Unlike deleted notes, erased revisions cannot be restored.
 
 ### Others
 

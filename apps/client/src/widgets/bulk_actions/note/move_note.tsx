@@ -16,15 +16,6 @@ function MoveNoteBulkActionComponent({ bulkAction }: { bulkAction: AbstractBulkA
         <BulkAction
             bulkAction={bulkAction}
             label={t("move_note.move_note")}
-            helpText={<>
-                <p>{t("move_note.on_all_matched_notes")}:</p>
-
-                <ul style="margin-bottom: 0;">
-                    <li>{t("move_note.move_note_new_parent")}</li>
-                    <li>{t("move_note.clone_note_new_parent")}</li>
-                    <li>{t("move_note.nothing_will_happen")}</li>
-                </ul>
-            </>}
         >
             <BulkActionText text={t("move_note.to")} />
 
@@ -45,6 +36,9 @@ export default class MoveNoteBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-note bulk-action-marker-move";
+    }
+    static get actionDescription() {
+        return t("move_note.description");
     }
 
     doRender() {

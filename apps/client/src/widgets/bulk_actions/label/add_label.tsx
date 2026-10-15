@@ -15,16 +15,6 @@ function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: Ab
         <BulkAction
             bulkAction={bulkAction}
             label={t("add_label.add_label")}
-            helpText={<>
-                <p>{t("add_label.help_text")}</p>
-
-                <ul>
-                    <li>{t("add_label.help_text_item1")}</li>
-                    <li>{t("add_label.help_text_item2")}</li>
-                </ul>
-
-                {t("add_label.help_text_note")}
-            </>}
         >
             <FormTextBox
                 placeholder={t("add_label.label_name_placeholder")}
@@ -56,5 +46,8 @@ export default class AddLabelBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-hash bulk-action-marker-add";
+    }
+    static get actionDescription() {
+        return t("add_label.description");
     }
 }

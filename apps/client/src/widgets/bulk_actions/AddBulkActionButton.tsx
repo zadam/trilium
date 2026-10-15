@@ -30,8 +30,13 @@ export default function AddBulkActionButton({ noteId, text, buttonClassName }: A
                     <FormListHeader text={title} />
 
                     <div>
-                        {actions.map(({ actionName, actionTitle, actionIcon }) => (
-                            <FormListItem key={actionName} icon={actionIcon} onClick={() => bulk_action.addAction(noteId, actionName)}>{actionTitle}</FormListItem>
+                        {actions.map(({ actionName, actionTitle, actionIcon, actionDescription }) => (
+                            <FormListItem
+                                key={actionName}
+                                icon={actionIcon}
+                                title={actionDescription}
+                                onClick={() => bulk_action.addAction(noteId, actionName)}
+                            >{actionTitle}</FormListItem>
                         ))}
                     </div>
                 </Fragment>

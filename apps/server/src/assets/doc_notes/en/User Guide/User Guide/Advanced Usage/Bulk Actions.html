@@ -32,8 +32,9 @@
     The number of affected notes, shown below that option, updates to reflect
     the change.</li>
   <li>To add an action, click <em>Add action</em> at the bottom of the <em>Chosen actions</em> section
-    and pick one from the menu. A detailed description of each is available
-    in the next section.
+    and pick one from the menu. Hovering over an entry shows a short description
+    of what it does; a detailed description of each is available in the next
+    section.
     <ul>
       <li>Each chosen action appears as an entry in the <em>Chosen actions</em> section,
         with its own configuration.</li>
@@ -50,14 +51,17 @@
 <h2>Actions</h2>
 <h3>Labels</h3>
 <p>These actions operate the&nbsp;<a class="reference-link" href="#root/_help_HI6GBBIduIgv">Labels</a>&nbsp;of
-  a note:</p>
+  a note. Except for <em>Add label</em>, they only affect labels set directly
+  on the note; inherited labels are left unchanged.</p>
 <ul>
   <li><strong>Add label</strong>
     <ul>
-      <li>For each note, if it doesn't already have a <a href="#root/_help_HI6GBBIduIgv">label</a> of
-        the given name, it will create it. Keep the <em>New value</em> field empty
-        to create a label without a value, or complete it to assign a value.</li>
-      <li>If a note already has this label, its value will be updated.</li>
+      <li>For each note, it creates a <a href="#root/_help_HI6GBBIduIgv">label</a> of
+        the given name. Keep the <em>New value</em> field empty to create a label
+        without a value, or complete it to assign a value.</li>
+      <li>The label is added even if the note already has one of the same name,
+        so the note ends up with both. To change the value of an existing label
+        instead, use <em>Update label value</em>.</li>
     </ul>
   </li>
   <li><strong>Update label value</strong>
@@ -86,12 +90,13 @@
 </ul>
 <h3>Relations</h3>
 <p>These actions operate the&nbsp;<a class="reference-link" href="#root/_help_Cq5X6iKQop6R">Relations</a>&nbsp;of
-  a note:</p>
+  a note. Except for <em>Add relation</em>, they only affect relations set
+  directly on the note; inherited relations are left unchanged.</p>
 <ul>
   <li><strong>Add relation</strong>
     <ul>
       <li>For each note, it will create a relation pointing to the given note.</li>
-      <li>Notes without this relation will not be affected.</li>
+      <li>The relation is added even if the note already has one of the same name.</li>
     </ul>
   </li>
   <li><strong>Update relation target</strong>
@@ -134,6 +139,10 @@
   <li><strong>Move note</strong>
     <ul>
       <li>For each note, it will be moved to the specified parent note.</li>
+      <li>A note with several parents is cloned to the new parent instead, since
+        it is not clear which of its places to remove.</li>
+      <li>A note that cannot be placed there, such as a parent of the target note,
+        stays where it is.</li>
       <li>As an alternative for less complex situations, the notes can be moved
         directly from within the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>&nbsp;via
         cut → paste or via the contextual menu.</li>
@@ -166,7 +175,10 @@
   </li>
   <li><strong>Delete note</strong>
     <ul>
-      <li>For each note, it will be deleted.</li>
+      <li>For each note, it will be deleted, including all of its clones and any
+        child notes that are not cloned elsewhere.</li>
+      <li>Deleted notes can be restored from <em>Recent changes</em> until they are
+        erased.</li>
       <li>As an alternative for less complex situations, the notes can be removed
         directly from within the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>&nbsp;by
         selecting them and pressing <kbd>Delete</kbd>.</li>
@@ -174,8 +186,8 @@
   </li>
   <li><strong>Delete note revisions</strong>
     <ul>
-      <li>This will delete all the&nbsp;<a class="reference-link" href="#root/_help_vZWERwf8U3nx">Note Revisions</a>&nbsp;of
-        the notes.</li>
+      <li>This will permanently erase all the&nbsp;<a class="reference-link" href="#root/_help_vZWERwf8U3nx">Note Revisions</a>&nbsp;of
+        the notes. Unlike deleted notes, erased revisions cannot be restored.</li>
     </ul>
   </li>
 </ul>

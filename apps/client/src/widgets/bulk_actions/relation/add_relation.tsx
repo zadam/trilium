@@ -16,7 +16,6 @@ function AddRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
         <BulkAction
             bulkAction={bulkAction}
             label={t("add_relation.add_relation")}
-            helpText={t("add_relation.create_relation_on_all_matched_notes")}
         >
             <FormTextBox 
                 placeholder={t("add_relation.relation_name")}
@@ -46,6 +45,9 @@ export default class AddRelationBulkAction extends AbstractBulkAction {
     }
     static get actionIcon() {
         return "bx bx-transfer bulk-action-marker-add";
+    }
+    static get actionDescription() {
+        return t("add_relation.description");
     }
 
     doRender() {

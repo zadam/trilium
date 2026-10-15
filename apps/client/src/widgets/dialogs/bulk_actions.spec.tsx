@@ -81,6 +81,8 @@ describe("BulkActionsDialog", () => {
             .find((el) => el.textContent?.includes("move_note.move_note"));
         expect(item).toBeDefined();
         expect(item?.querySelector(".bx-note.bulk-action-marker-move")).not.toBeNull();
+        expect(item?.getAttribute("title") ?? item?.getAttribute("data-bs-original-title"))
+            .toBe("move_note.description");
         await act(async () => item?.click());
 
         expect(server.post).toHaveBeenCalledWith("notes/_bulkAction/attributes", {
@@ -99,6 +101,9 @@ describe("BulkActionsDialog", () => {
         expect(icon?.classList.contains("bx-note")).toBe(true);
         expect(icon?.classList.contains("bulk-action-marker-delete")).toBe(true);
         expect(icon?.classList.contains("destructive-action-icon")).toBe(true);
+        expect(container.querySelector(".bulk-existing-action-list .tn-chip-remove, .bulk-existing-action-list .search-option-del"))
+            .not.toBeNull();
+        expect(container.querySelector(".bulk-existing-action-list .help-dropdown")).toBeNull();
     });
 
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {
