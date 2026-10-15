@@ -216,7 +216,8 @@
     "color-scheme-switcher-title": "配色方案切换",
     "content-manager-title": "扩展管理",
     "database-title": "数据库",
-    "space-usage-title": "空间占用"
+    "space-usage-title": "空间占用",
+    "record-meeting-title": "转录会议"
   },
   "notes": {
     "new-note": "新建笔记",
@@ -557,5 +558,16 @@
     "detail": "系统会先提供当前知识库的备份。只有当你选择创建新知识库、恢复备份或从其他设备同步时，才会删除任何内容。\n\n如果是脚本或陌生笔记提示你执行此操作，请不要继续。",
     "cancel": "取消",
     "confirm": "重启并从头开始"
+  },
+  "transcription": {
+    "already-recording": "已有会议正在转录。",
+    "note-not-found": "会议笔记已不存在。",
+    "model-missing": "在 {{- directory}} 中未找到语音识别模型。",
+    "start-failed": "无法开始转录：{{- message}}",
+    "stopped-unexpectedly": "转录意外停止了。此前已转录的内容会保留。",
+    "save-locked": "受保护会话锁定期间无法保存转录文本。转录功能会将其保留，只要你进入受保护会话，且 Trilium 保持打开，就会保存它。",
+    "save-failed": "无法保存转录文本：{{- message}} 转录功能会将其保留，并在下一句时重试。",
+    "capture-lost": "由于无法再采集音频，转录已停止。此前已转录的内容会保留。",
+    "attachment-title": "转录文本"
   }
 }
