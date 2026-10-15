@@ -47,8 +47,8 @@
         }
 
         .button-column {
-            width: 50px;
-            text-align: end;
+            width: 1%;
+            padding-inline-start: 0;
         }
     }
 
