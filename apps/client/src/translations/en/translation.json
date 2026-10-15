@@ -947,8 +947,31 @@
   },
   "rename_note": {
     "rename_note": "Rename note",
-    "new_note_title": "new note title",
-    "description": "Sets the title of each note. The title is a JavaScript template string, so ${note.title} stands for the current title."
+    "description": "Sets the title of each note. Expressions between ${ and } are filled in for each note, such as ${note.title} for its current title.",
+    "placeholder": "e.g. NEW: ${note.title}"
+  },
+  "template_field": {
+    "preview": "Preview: {{result}}",
+    "error_unclosed": "This ${ is never closed, so it stays in the title as text.",
+    "error_unsupported": "Only a property such as note.title, or a method such as note.getLabelValue('name'), can go between ${ and }.",
+    "error_unknown_variable": "There is no variable named “{{name}}”.",
+    "error_property_not_allowed": "The property “{{name}}” cannot be used in a template.",
+    "error_method_not_allowed": "The method “{{name}}” cannot be used in a template.",
+    "variable_note": "The note being renamed",
+    "member_title": "The note's title",
+    "member_note_id": "The note's ID",
+    "member_type": "The note's type, such as text or code",
+    "member_mime": "The note's MIME type",
+    "member_date_created_obj": "The creation date, to use with format('…')",
+    "member_utc_date_created_obj": "The creation date in UTC, to use with format('…')",
+    "member_date_created": "When the note was created, in local time",
+    "member_date_modified": "When the note was last modified, in local time",
+    "member_utc_date_created": "When the note was created, in UTC",
+    "member_utc_date_modified": "When the note was last modified, in UTC",
+    "member_is_protected": "Whether the note is protected",
+    "member_get_label_value": "The value of the label with the given name",
+    "member_get_relation_value": "The ID of the note the relation with the given name points to",
+    "member_format": "The date in the given format, such as YYYY-MM-DD"
   },
   "add_relation": {
     "add_relation": "Add relation",

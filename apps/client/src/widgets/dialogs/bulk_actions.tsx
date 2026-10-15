@@ -10,6 +10,7 @@ import NoItems from "../react/NoItems";
 import { OptionsRowWithToggle } from "../type_widgets/options/components/OptionsRow";
 import bulk_action from "../../services/bulk_action";
 import AddBulkActionButton from "../bulk_actions/AddBulkActionButton";
+import { TemplatePreviewNoteContext } from "../bulk_actions/TemplateField";
 import Icon from "../react/Icon";
 import dialog from "../../services/dialog";
 import toast from "../../services/toast";
@@ -148,7 +149,9 @@ export default function BulkActionsDialog() {
             </Card>
 
             <Card className="bulk-actions-chosen-actions" heading={t("bulk_actions.chosen_actions")}>
-                <ExistingActionsList existingActions={existingActions} />
+                <TemplatePreviewNoteContext.Provider value={selectedOrActiveNoteIds?.[0]}>
+                    <ExistingActionsList existingActions={existingActions} />
+                </TemplatePreviewNoteContext.Provider>
                 <CardSection className="bulk-actions-add-action">
                     <AddBulkActionButton
                         noteId="_bulkAction"

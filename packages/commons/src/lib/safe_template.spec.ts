@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateTemplate } from "./safe_template.js";
+import { evaluateTemplate, findTemplateIssues } from "./safe_template.js";
 
 /**
  * A stand-in for the note-like objects passed into template evaluation. Only the
@@ -187,5 +187,51 @@ describe("safe_template - rejected expressions", () => {
                 note: fakeNote()
             })
         ).toThrow(/is not a supported expression/);
+    });
+});
+
+describe("safe_template - findTemplateIssues", () => {
+    const variables = [ "note" ];
+
+    it("accepts what evaluateTemplate accepts", () => {
+        expect(findTemplateIssues("NEW: ${note.title}", variables)).toStrictEqual([]);
+        expect(findTemplateIssues("${note.dateCreatedObj.format('MM-DD')} ${note.getLabelValue(\"x\")}", variables))
+            .toStrictEqual([]);
+        expect(findTemplateIssues("plain text, no expression", variables)).toStrictEqual([]);
+    });
+
+    it("reports each refused expression with its offsets", () => {
+        const template = "a ${missing.title} b ${note.constructor} c ${note.toString()} d ${1 + 1}";
+        const issues = findTemplateIssues(template, variables);
+
+        expect(issues.map(({ kind, name }) => ({ kind, name }))).toStrictEqual([
+            { kind: "unknownVariable", name: "missing" },
+            { kind: "propertyNotAllowed", name: "constructor" },
+            { kind: "methodNotAllowed", name: "toString" },
+            { kind: "unsupported", name: undefined }
+        ]);
+        for (const issue of issues) {
+            expect(template.slice(issue.from, issue.to)).toMatch(/^\$\{.*\}$/);
+        }
+    });
+
+    it("reports a ${ that is never closed, which evaluateTemplate leaves as text", () => {
+        const issues = findTemplateIssues("NEW: ${note.title", variables);
+        expect(issues).toStrictEqual([ { kind: "unclosed", from: 5, to: 17, name: undefined } ]);
+    });
+
+    it("agrees with evaluateTemplate on every case", () => {
+        const note = fakeNote();
+        for (const template of [ "${note.title}", "${note.nope}", "${note.eval('x')}", "${note['title']}", "${other}" ]) {
+            const throws = (() => {
+                try {
+                    evaluateTemplate(template, { note });
+                    return false;
+                } catch {
+                    return true;
+                }
+            })();
+            expect(findTemplateIssues(template, variables).length > 0).toBe(throws);
+        }
     });
 });

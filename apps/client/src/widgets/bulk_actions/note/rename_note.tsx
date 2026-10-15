@@ -1,9 +1,12 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
 import BulkAction from "../BulkAction.jsx";
-import FormTextBox from "../../react/FormTextBox.jsx";
 import { useEffect, useState } from "preact/hooks";
 import { useSpacedUpdate } from "../../react/hooks.jsx";
+import TemplateField from "../TemplateField.jsx";
+
+/** What the server's `renameNote` handler passes to `evaluateTemplate()`. */
+const RENAME_TEMPLATE_VARIABLES = { note: "note" } as const;
 
 function RenameNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ newTitle, setNewTitle ] = useState<string>(actionDef.newTitle ?? "");
@@ -14,9 +17,10 @@ function RenameNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction: 
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
-                placeholder={t("rename_note.new_note_title")}
-                title={t("rename_note.description")}
+            <TemplateField
+                variables={RENAME_TEMPLATE_VARIABLES}
+                placeholder={t("rename_note.placeholder")}
+                ariaLabel={t("rename_note.rename_note")}
                 currentValue={newTitle} onChange={setNewTitle}
             />
         </BulkAction>

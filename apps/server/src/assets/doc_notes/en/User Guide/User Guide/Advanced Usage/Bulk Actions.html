@@ -126,15 +126,21 @@
   <li><strong>Rename note</strong>
     <ul>
       <li>For each note, it will change the title of the note to the given one.</li>
-      <li>As a more advanced use case, the note can be a “template string” which
-        allows for dynamic values with access to the note information via&nbsp;<a
-        class="reference-link" href="#root/_help_habiZ3HU8Kw8">FNote</a>, for example:
+      <li>The title can contain expressions between <code>${</code> and <code>}</code>,
+        which are filled in for each note. They can read the note's properties,
+        such as <code>${note.title}</code>, <code>${note.noteId}</code> or <code>${note.type}</code>,
+        and call <code>getLabelValue('name')</code>, <code>getRelationValue('name')</code> or,
+        on a date such as <code>dateCreatedObj</code>, <code>format('…')</code>.
+        For example:
         <ul>
           <li><code>NEW: ${note.title}</code> will prefix all notes with <code>NEW:</code> .</li>
           <li><code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> will
             prefix the note titles with each note's creation date (in month-day format).</li>
         </ul>
       </li>
+      <li>Only property access and those methods are allowed, not arbitrary JavaScript.
+        While typing, the field completes the expressions, underlines one that
+        is not allowed and shows the resulting title for the first selected note.</li>
     </ul>
   </li>
   <li><strong>Move note</strong>

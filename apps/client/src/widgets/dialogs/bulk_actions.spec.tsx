@@ -122,12 +122,12 @@ describe("BulkActionsDialog", () => {
         for (const [ index, ActionClass ] of bulk_action.ACTION_CLASSES.entries()) {
             const row = rows[index];
             const content = row.cells[0].cloneNode(true) as HTMLElement;
-            for (const select of content.querySelectorAll("select")) select.remove();
+            for (const field of content.querySelectorAll("select, .template-field")) field.remove();
             expect(content.textContent?.trim(), ActionClass.actionName).toBe(ActionClass.actionTitle);
             expect(row.querySelectorAll(".tn-icon:not(.bulk-action-arrow)"), ActionClass.actionName).toHaveLength(1);
 
             const arrow = row.querySelector(".bulk-action-arrow");
-            const fieldCount = row.querySelectorAll("input:not([type=hidden]), select").length;
+            const fieldCount = row.querySelectorAll("input:not([type=hidden]), select, .template-field").length;
             expect(!!arrow, ActionClass.actionName).toBe(fieldCount === 2);
         }
     });

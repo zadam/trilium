@@ -59,9 +59,10 @@ These actions operate the <a class="reference-link" href="Attributes/Relations.
 
 *   **Rename note**
     *   For each note, it will change the title of the note to the given one.
-    *   As a more advanced use case, the note can be a “template string” which allows for dynamic values with access to the note information via <a class="reference-link" href="../Scripting/Script%20API/Frontend%20API/FNote.dat">FNote</a>, for example:
+    *   The title can contain expressions between `${` and `}`, which are filled in for each note. They can read the note's properties, such as `${note.title}`, `${note.noteId}` or `${note.type}`, and call `getLabelValue('name')`, `getRelationValue('name')` or, on a date such as `dateCreatedObj`, `format('…')`. For example:
         *   `NEW: ${note.title}` will prefix all notes with `NEW:` .
         *   `${note.dateCreatedObj.format('MM-DD:')}: ${note.title}` will prefix the note titles with each note's creation date (in month-day format).
+    *   Only property access and those methods are allowed, not arbitrary JavaScript. While typing, the field completes the expressions, underlines one that is not allowed and shows the resulting title for the first selected note.
 *   **Move note**
     *   For each note, it will be moved to the specified parent note.
     *   A note with several parents is cloned to the new parent instead, since it is not clear which of its places to remove.
