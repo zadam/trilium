@@ -75,7 +75,9 @@
     "move-split-left": "Hoán đổi vùng chia đang hoạt động với vùng chia bên trái, ghi chú sẽ di chuyển và trọng tâm theo sau",
     "move-split-right": "Hoán đổi vùng chia đang hoạt động với vùng chia bên phải, ghi chú sẽ di chuyển và trọng tâm theo sau",
     "note-panels": "Bảng ghi chú",
-    "show-note-map": "Hiển thị bản đồ ghi chú ở khung bên phải"
+    "show-note-map": "Hiển thị bản đồ ghi chú ở khung bên phải",
+    "focus-collection-properties": "Chuyển trọng tâm sang bộ chọn kiểu xem của bộ sưu tập",
+    "focus-formatting-toolbar": "Chuyển trọng tâm giữa thanh công cụ định dạng cố định và trình soạn thảo"
   },
   "login": {
     "password": "Mật khẩu",
@@ -193,7 +195,19 @@
     "move-split-left": "Di chuyển phân chia sang trái",
     "focus-split-right": "Tập trung vào vùng chia bên phải",
     "move-split-right": "Di chuyển vùng chia sang phải",
-    "focus-split-left": "Chuyển tiêu điểm sang vùng chia bên trái"
+    "focus-split-left": "Chuyển tiêu điểm sang vùng chia bên trái",
+    "focus-formatting-toolbar": "Trọng tâm thanh công cụ định dạng",
+    "show-basic-properties": "Hiển thị thuộc tính cơ bản",
+    "focus-collection-properties": "Trọng tâm thuộc tính bộ sưu tập",
+    "focus-file-actions": "Trọng tâm thao tác tệp",
+    "focus-image-actions": "Trọng tâm thao tác hình ảnh",
+    "toggle-owned-attributes": "Bật/tắt thuộc tính của ghi chú",
+    "toggle-inherited-attributes": "Bật/tắt thuộc tính kế thừa",
+    "toggle-promoted-attributes": "Bật/tắt thuộc tính nổi bật",
+    "show-note-map": "Hiển thị sơ đồ ghi chú",
+    "show-note-info": "Hiển thị thông tin ghi chú",
+    "show-note-paths": "Hiển thị đường dẫn ghi chú",
+    "toggle-similar-notes": "Bật/tắt các ghi chú tương tự"
   },
   "password": {
     "incorrect": "Mật khẩu bạn nhập không chính xác."
@@ -315,7 +329,8 @@
     "localization": "Ngôn ngữ & Khu vực",
     "inbox-title": "Hộp thư đến",
     "tab-switcher-title": "Chuyển đổi tab",
-    "sidebar-chat-title": "Trò chuyện AI"
+    "sidebar-chat-title": "Trò chuyện AI",
+    "record-meeting-title": "Chuyển văn bản cuộc họp"
   },
   "notes": {
     "new-note": "Ghi chú mới",
@@ -334,7 +349,9 @@
   },
   "content_renderer": {
     "note-cannot-be-displayed": "Không thể hiển thị loại ghi chú này.",
-    "included-note-requires-credentials": "Ghi chú được bao gồm này được bảo vệ bằng mật khẩu và không thể hiển thị ở đây."
+    "included-note-requires-credentials": "Ghi chú được bao gồm này được bảo vệ bằng mật khẩu và không thể hiển thị ở đây.",
+    "broken-block-reference": "Tham chiếu bị hỏng",
+    "play-video": "Phát video"
   },
   "onenote_import": {
     "root-title": "Nhập từ OneNote",
@@ -425,7 +442,19 @@
     "on-this-page": "Trên trang này",
     "toggle-navigation": "Bật/tắt điều hướng",
     "toggle-toc": "Bật/tắt mục lục",
-    "logo-alt": "Logo"
+    "logo-alt": "Logo",
+    "appearance": "Giao diện",
+    "theme-light": "Sáng",
+    "theme-dark": "Tối",
+    "theme-system": "Hệ thống",
+    "theme-current": "Giao diện: {{- theme}}",
+    "subpages-of": "Trang con của {{- title}}",
+    "hidden-subpages_other": "Các trang con của {{count}} bị ẩn khỏi cây ghi chú",
+    "tab-title": "Tiêu đề tab",
+    "heading-link": "Liên kết đến phần này",
+    "previous": "Trước",
+    "next": "Tiếp theo",
+    "page-navigation": "Trang trước và trang sau"
   },
   "hidden_subtree_templates": {
     "calendar": "Lịch",
@@ -529,5 +558,16 @@
   },
   "script": {
     "wrong-environment": "Không thể thực thi ghi chú \"{{- noteTitle}}\" ({{- noteId}}). Đây là một script {{- actualEnv}}, nhưng việc thực thi đã được thử trong {{- expectedEnv}}."
+  },
+  "transcription": {
+    "already-recording": "Một cuộc họp đang được chuyển thành văn bản.",
+    "note-not-found": "Ghi chú cuộc họp không còn tồn tại.",
+    "model-missing": "Không tìm thấy mô hình nhận dạng giọng nói trong {{- directory}}.",
+    "start-failed": "Không thể bắt đầu chuyển thành văn bản: {{- message}}",
+    "stopped-unexpectedly": "Việc chuyển thành văn bản đã dừng lại một cách bất ngờ. Nội dung đã được chuyển trước đó sẽ được giữ lại.",
+    "save-locked": "Không thể lưu bản ghi khi phiên được bảo vệ đang bị khóa. Việc chuyển thành văn bản sẽ giữ lại nội dung và lưu nó khi bạn nhập vào phiên được bảo vệ, miễn là Trilium vẫn đang mở.",
+    "save-failed": "Không thể lưu bản ghi: {{- message}} Việc chuyển thành văn bản sẽ giữ lại nội dung và thử lại với câu tiếp theo.",
+    "capture-lost": "Việc chuyển thành văn bản đã dừng lại vì không thể thu âm thanh nữa. Nội dung đã được chuyển trước đó sẽ được giữ lại.",
+    "attachment-title": "Bản ghi"
   }
 }
