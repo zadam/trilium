@@ -118,4 +118,47 @@ describe("tabs layout styles", () => {
             expect(measure(block, alignment), alignment).toEqual(EXPECTED[alignment]);
         }
     });
+
+    it("outlines the innermost block holding the caret and rings only a title", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, Tabs]);
+        const editable = editor.ui.view.editable.element as HTMLElement;
+        editor.editing.view.document.isFocused = true;
+        const rootStyle = document.documentElement.style;
+        rootStyle.setProperty("--ck-color-focus-border", "rgb(12, 34, 56)");
+        rootStyle.setProperty("--link-color", "rgb(65, 43, 21)");
+        onTestFinished(() => {
+            rootStyle.removeProperty("--ck-color-focus-border");
+            rootStyle.removeProperty("--link-color");
+        });
+        const inner = `<div class="trilium-tabs">${tab("B1", "<p>b1</p>")}${tab("B2", "")}</div>`;
+        editor.setData(
+            `<p>Before</p><div class="trilium-tabs">${tab("A", inner)}${tab("C", "")}</div>`
+        );
+        const blocks = [...editable.querySelectorAll<HTMLElement>(".trilium-tabs.ck-widget")];
+        const outlines = () => blocks.map(block => getComputedStyle(block).outlineColor);
+        const ring = (element: Element | null) => {
+            expect(element).not.toBeNull();
+            const style = getComputedStyle(element as Element);
+            return [style.borderTopColor, style.boxShadow, style.transitionDuration];
+        };
+        const select = (path: number[]) => editor.model.change(writer => {
+            const root = editor.model.document.getRoot();
+            if (root) {
+                writer.setSelection(writer.createPositionFromPath(root, path));
+            }
+        });
+        expect(blocks).toHaveLength(2);
+        expect(outlines()).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"]);
+
+        select([1, 0, 1, 0, 0, 1, 0, 0]);
+        const innerPanel = blocks[1].querySelector(".trilium-tab-panel");
+        expect(ring(innerPanel)).toEqual(["rgba(0, 0, 0, 0)", "none", "0s"]);
+        await expect.poll(outlines).toEqual(["rgba(0, 0, 0, 0)", "rgb(65, 43, 21)"]);
+
+        select([1, 0, 0, 0]);
+        const outerTitle = blocks[0].querySelector(".trilium-tab-title");
+        expect(ring(outerTitle).filter((_, index) => index !== 1))
+            .toEqual(["rgb(12, 34, 56)", "0s"]);
+        await expect.poll(outlines).toEqual(["rgb(65, 43, 21)", "rgba(0, 0, 0, 0)"]);
+    });
 });
