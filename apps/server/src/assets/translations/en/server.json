@@ -588,6 +588,7 @@
     "size-mismatch": "{{name}} does not have the expected size.",
     "hash-mismatch": "{{name}} does not match its expected checksum, so it was discarded.",
     "delete-while-downloading": "{{- title}} is being downloaded. Cancel the download before deleting it.",
-    "not-foreign": "{{- name}} is not an unused entry of the resources folder."
+    "not-foreign": "{{- name}} is not an unused entry of the resources folder.",
+    "stalled": "Downloading {{name}} stopped: nothing arrived for {{seconds}} seconds. Check your connection, then try again."
   }
 }

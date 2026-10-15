@@ -11,6 +11,8 @@ import { type ResourceDefinition, type ResourceFile, ResourceManager } from "./r
 
 const MODEL = Buffer.alloc(300_000, "m");
 const TOKENS = Buffer.from("a\nb\nc\n");
+/** How many bytes of the model `/model-stall.bin` sends before it stops sending anything. */
+const STALL_AFTER = 1000;
 
 let server: http.Server;
 let baseUrl = "";
@@ -41,6 +43,9 @@ beforeAll(async () => {
             res.end(MODEL);
         } else if (req.url === "/tokens.txt") {
             res.end(TOKENS);
+        } else if (req.url === "/model-stall.bin") {
+            res.write(MODEL.subarray(0, STALL_AFTER));
+            stalled.push(res);
         } else if (req.url === "/stall") {
             res.flushHeaders();
             stalled.push(res);
@@ -155,6 +160,18 @@ describe("ResourceManager", () => {
         expect((await waitForEnd()).status).toBe("failed");
         expect(manager.getPath("test.missing")).toBeNull();
         expect(manager.getPath("test.short")).toBeNull();
+    });
+
+    it("fails a download that receives nothing for too long, keeping its bytes for the next try", async () => {
+        const impatient = new ResourceManager(baseDir, (progress) => broadcasts.push(progress),
+            { stallTimeoutMs: 200 });
+        impatient.register(defineModel({ modelUrl: "/model-stall.bin" }));
+
+        impatient.startDownload([ "test.model" ]);
+        const failed = await waitForEnd();
+        expect(failed.status).toBe("failed");
+        expect(failed.error).toMatch(/model\.bin/);
+        expect((await impatient.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(STALL_AFTER);
     });
 
     it("joins a running download, and cancels it without leaving an empty partial file", async () => {

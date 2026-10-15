@@ -45,6 +45,8 @@ type VerifiedFiles = Record<string, { size: number; mtimeMs: number }>;
 const ID_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/;
 const CONTENT_HASH_PATTERN = /^[0-9a-f]{12}$/;
 const PROGRESS_INTERVAL_MS = 250;
+/** How long a download waits for the next bytes before it gives up on the connection. */
+const STALL_TIMEOUT_MS = 30_000;
 /** How many hex digits of the files' combined hash a resource's directory name carries. */
 const CONTENT_HASH_LENGTH = 12;
 /** Holds the {@link VerifiedFiles} of a resource, in its directory. */
@@ -66,7 +68,8 @@ export class ResourceManager {
 
     constructor(
         private readonly baseDir: string,
-        private readonly broadcast: (progress: ResourceDownloadProgress) => void
+        private readonly broadcast: (progress: ResourceDownloadProgress) => void,
+        private readonly options: { stallTimeoutMs?: number } = {}
     ) {}
 
     register(...definitions: ResourceDefinition[]) {
@@ -192,7 +195,7 @@ export class ResourceManager {
                         await downloadFile(file, destination, controller.signal, (bytes) => {
                             receive(bytes);
                             report(false);
-                        });
+                        }, this.options.stallTimeoutMs);
                     }
                     const { size, mtimeMs } = await fs.promises.stat(destination);
                     verified[file.path] = { size, mtimeMs };
@@ -330,20 +333,29 @@ export class ResourceManager {
  * SHA-256 match. A `.partial` left by an interrupted download is continued: its bytes are hashed
  * and the rest is asked for with a `Range` header, or the file starts over when the server sends
  * all of it. A failed download keeps its `.partial` while it is shorter than the file, so that the
- * next one continues it; a complete one that fails its hash is deleted.
+ * next one continues it; a complete one that fails its hash is deleted. A connection that sends
+ * nothing for `stallTimeoutMs`, before the response or within it, fails the download.
  */
 export async function downloadFile(file: ResourceFile, destination: string, signal: AbortSignal,
-    onProgress: (bytes: number) => void) {
+    onProgress: (bytes: number) => void, stallTimeoutMs = STALL_TIMEOUT_MS) {
     const partial = `${destination}.partial`;
     const name = path.basename(file.path);
+    const stall = new AbortController();
+    let stallTimer: ReturnType<typeof setTimeout> | undefined;
+    const waitForBytes = () => {
+        clearTimeout(stallTimer);
+        stallTimer = setTimeout(() => stall.abort(), stallTimeoutMs);
+    };
+    const requestSignal = AbortSignal.any([ signal, stall.signal ]);
     try {
         let hash = createHash("sha256");
         let received = getPartialSize(destination, file);
         if (received) {
             await hashFileInto(partial, hash);
         }
+        waitForBytes();
         const response = await fetch(file.url, {
-            signal,
+            signal: requestSignal,
             headers: received ? { Range: `bytes=${received}-` } : undefined
         });
         if (!response.ok || !response.body) {
@@ -363,6 +375,7 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
 
         const meter = new Transform({
             transform(chunk: Buffer, _encoding, callback) {
+                waitForBytes();
                 received += chunk.length;
                 if (received > file.size) {
                     callback(new Error(t("resources.size-mismatch", { name })));
@@ -375,7 +388,7 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
         });
         const body = Readable.fromWeb(response.body as NodeReadableStream<Uint8Array>);
         const output = fs.createWriteStream(partial, { flags: received ? "a" : "w" });
-        await pipeline(body, meter, output, { signal });
+        await pipeline(body, meter, output, { signal: requestSignal });
 
         if (received !== file.size) {
             throw new Error(t("resources.size-mismatch", { name }));
@@ -388,7 +401,12 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
         if (getPartialSize(destination, file) === 0) {
             await fs.promises.rm(partial, { force: true });
         }
+        if (stall.signal.aborted && !signal.aborted) {
+            throw new Error(t("resources.stalled", { name, seconds: Math.round(stallTimeoutMs / 1000) }));
+        }
         throw e;
+    } finally {
+        clearTimeout(stallTimer);
     }
 }
 
