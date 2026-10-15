@@ -13,6 +13,11 @@ import AbstractBulkAction from "../bulk_actions/abstract_bulk_action";
 import FNote from "../../entities/fnote";
 import froca from "../../services/froca";
 import { useTriliumEvent } from "../react/hooks";
+import Chip from "../react/Chip";
+import NoteLink from "../react/NoteLink";
+import LinkButton from "../react/LinkButton";
+
+const COLLAPSED_NOTE_CHIP_COUNT = 5;
 
 export default function BulkActionsDialog() {
     const [ selectedOrActiveNoteIds, setSelectedOrActiveNoteIds ] = useState<string[]>();
@@ -91,6 +96,11 @@ export default function BulkActionsDialog() {
             }}
             onHidden={() => setShown(false)}
         >
+            <h4>{t("bulk_actions.selected_notes")}</h4>
+            {selectedOrActiveNoteIds && (
+                <SelectedNotes noteIds={selectedOrActiveNoteIds} onChange={setSelectedOrActiveNoteIds} />
+            )}
+
             <h4>{t("bulk_actions.affected_notes")}: <span>{affectedNoteCount}</span></h4>
             <FormCheckbox 
                 name="include-descendants" label={t("bulk_actions.include_descendants")}
@@ -104,6 +114,34 @@ export default function BulkActionsDialog() {
             <ExistingActionsList existingActions={existingActions} />
         </Modal>
     )
+}
+
+function SelectedNotes({ noteIds, onChange }: { noteIds: string[]; onChange(noteIds: string[]): void }) {
+    const [ expanded, setExpanded ] = useState(false);
+    const shownNoteIds = expanded ? noteIds : noteIds.slice(0, COLLAPSED_NOTE_CHIP_COUNT);
+    const hiddenCount = noteIds.length - shownNoteIds.length;
+
+    return (
+        <div className="bulk-actions-selected-notes">
+            {shownNoteIds.map((noteId) => (
+                <Chip
+                    key={noteId}
+                    removeButtonText={t("bulk_actions.remove_from_selection")}
+                    disabled={noteIds.length === 1}
+                    onRemove={() => onChange(noteIds.filter((id) => id !== noteId))}
+                >
+                    <NoteLink notePath={noteId} showNoteIcon />
+                </Chip>
+            ))}
+            {hiddenCount > 0 && (
+                <LinkButton
+                    className="bulk-actions-more-notes"
+                    text={t("bulk_actions.more_notes", { count: hiddenCount })}
+                    onClick={() => setExpanded(true)}
+                />
+            )}
+        </div>
+    );
 }
 
 function AvailableActionsList() {

@@ -2,6 +2,24 @@
     margin-top: 20px;
 }
 
+.bulk-actions-dialog .bulk-actions-selected-notes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-height: 30vh;
+    overflow-y: auto;
+
+    .tn-chip {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .bulk-actions-more-notes {
+        padding-inline: 4px;
+    }
+}
+
 .bulk-actions-dialog .bulk-available-action-list button {
     padding: 2px 7px;
     margin-inline-end: 10px;
