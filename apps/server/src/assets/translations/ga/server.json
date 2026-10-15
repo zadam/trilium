@@ -326,7 +326,8 @@
     "color-scheme-switcher-title": "Athraitheoir Scéim Dathanna",
     "content-manager-title": "Bainisteoir Ábhair",
     "database-title": "Bunachar Sonraí",
-    "space-usage-title": "Úsáid Spáis"
+    "space-usage-title": "Úsáid Spáis",
+    "record-meeting-title": "Trasscríobh cruinniú"
   },
   "notes": {
     "new-note": "Nóta nua",
@@ -569,5 +570,16 @@
     "detail": "Tairgfear cúltaca de do bhunachar eolais reatha duit ar dtús. Ní scriostar aon rud go dtí go roghnaíonn tú bunachar eolais nua a chruthú, cúltaca a athbhunú nó sioncrónú ó ghléas eile.\n\nNá lean ar aghaidh má spreag script nó nóta nach bhfuil tú eolach air thú.",
     "cancel": "Cealaigh",
     "confirm": "Atosaigh agus tosaigh arís"
+  },
+  "transcription": {
+    "already-recording": "Tá cruinniú á thras-scríobh cheana féin.",
+    "note-not-found": "Níl an nóta cruinnithe ann a thuilleadh.",
+    "model-missing": "Níor aimsíodh aon mhúnla aitheantais cainte i {{- directory}}.",
+    "start-failed": "Níorbh fhéidir an tras-scríobh a thosú: {{- message}}",
+    "stopped-unexpectedly": "Chuir an tras-scríobh stad go tobann. Coinnítear an méid a bhí tras-scríofa go dtí sin.",
+    "save-locked": "Ní féidir an tras-scríbhinn a shábháil fad is atá an seisiún cosanta faoi ghlas. Coinníonn an córas tras-scríofa í agus sábhálann sé í a luaithe a théann tú isteach sa seisiún cosanta, ar choinníoll go bhfanann Trilium ar oscailt.",
+    "save-failed": "Níorbh fhéidir an tras-scríbhinn a shábháil: {{- message}} Coinníonn an próiseas tras-scríofa í agus déanann sé iarracht arís leis an gcéad abairt eile.",
+    "capture-lost": "Chuir an tras-scríobh stad toisc nach raibh sé indéanta an fhuaim a ghabháil a thuilleadh. Coinnítear an méid a bhí tras-scríofa go dtí sin.",
+    "attachment-title": "Tras-scríbhinn"
   }
 }
