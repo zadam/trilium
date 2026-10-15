@@ -1,4 +1,4 @@
-import { utils as coreUtils } from "@triliumnext/core";
+import { getSql, utils as coreUtils } from "@triliumnext/core";
 import {
     MAX_GUEST_CONTENT_LENGTH, updateContentAsGuest, updateTitleAsGuest
 } from "@triliumnext/core/src/collab/guest_writes.js";
@@ -231,8 +231,11 @@ async function uploadAttachment(req: Request<{ noteId: string }>) {
     }
     const { note } = access;
 
+    // Each write runs in a transaction, whose commit sends the attachment to open clients.
+    const sql = getSql();
     if (file.mimetype.startsWith("image/")) {
-        const attachment = imageService.saveImageToAttachment(note.noteId, file.buffer, file.originalname, true, true);
+        const attachment = sql.transactional(() => imageService.saveImageToAttachment(
+            note.noteId, file.buffer, file.originalname, true, true));
         // The editor fetches the URL as soon as this answers, so the bytes are stored first.
         await imageService.awaitImageWrite(attachment.attachmentId);
         return {
@@ -241,12 +244,12 @@ async function uploadAttachment(req: Request<{ noteId: string }>) {
         };
     }
 
-    const attachment = note.saveAttachment({
+    const attachment = sql.transactional(() => note.saveAttachment({
         role: "file",
         mime: file.mimetype,
         title: file.originalname,
         content: file.buffer
-    });
+    }));
     return {
         uploaded: true,
         url: `#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}`

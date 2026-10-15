@@ -1,6 +1,7 @@
 import http from "node:http";
 
 import { becca, cls, getSql } from "@triliumnext/core";
+import imageService from "@triliumnext/core/src/services/image.js";
 import { initShare, shaca } from "@triliumnext/core/src/share/index.js";
 import { getShareProvider } from "@triliumnext/core/src/share/share_provider.js";
 import supertest from "supertest";
@@ -195,6 +196,53 @@ describe("share edit API", () => {
         await guest.get(SESSION).expect(200, { editable: false });
         await guest.put(DATA).set("x-csrf-token", csrfToken).send({ content: "<p>x</p>" }).expect(403);
         expect(becca.getNoteOrThrow(ROOT).getOwnedAttributes().map((attr) => attr.name)).not.toContain("shareEdit");
+    });
+
+    it("writes each upload inside a transaction, whose commit reaches open clients", async () => {
+        await setShareEdit({ enabled: true, open: true, attachments: true }).expect(200);
+        const guest = supertest.agent(host.app);
+        const login = await guest.post("/share/api/edit/login").send({ noteId: NOTE }).expect(200);
+        const { csrfToken } = login.body;
+        const sql = getSql();
+        const transactional = sql.transactional.bind(sql);
+        let depth = 0;
+        vi.spyOn(sql, "transactional").mockImplementation((func) => {
+            depth++;
+            try {
+                return transactional(func);
+            } finally {
+                depth--;
+            }
+        });
+        const depths: number[] = [];
+        const note = becca.getNoteOrThrow(NOTE);
+        const saveAttachment = note.saveAttachment.bind(note);
+        vi.spyOn(note, "saveAttachment").mockImplementation((...args) => {
+            depths.push(depth);
+            return saveAttachment(...args);
+        });
+        const saveImage = imageService.saveImageToAttachment.bind(imageService);
+        vi.spyOn(imageService, "saveImageToAttachment").mockImplementation((...args) => {
+            depths.push(depth);
+            return saveImage(...args);
+        });
+        const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQ"
+            + "DwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+
+        const upload = () => guest.post(`/share/api/notes/${NOTE}/attachments/upload`)
+            .set("x-csrf-token", csrfToken);
+
+        try {
+            await upload().attach("upload", Buffer.from("notes"), "inside.txt").expect(200);
+            await upload()
+                .attach("upload", png, { filename: "inside.png", contentType: "image/png" })
+                .expect(200);
+            expect(depths.length).toBeGreaterThanOrEqual(2);
+            expect(depths).not.toContain(0);
+        } finally {
+            vi.restoreAllMocks();
+            await setShareEdit({ enabled: false }).expect(200);
+        }
     });
 
     it("refuses an upload whose permission ended while its file was still arriving", async () => {
