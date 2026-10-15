@@ -1191,9 +1191,25 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     text-decoration: none;
 }
 
-/* Expandable include note styles */
-.include-note[data-box-size="expandable"] .include-note-title-row {
+.include-note[data-box-size="expandable"] > .include-note-wrapper > .include-note-title-row {
+    border-start-start-radius: var(--_include-note-top-border-radius, 8px);
+    border-start-end-radius: var(--_include-note-top-border-radius, 8px);
+
+    &:hover {
+        background: var(--card-background-hover-color);
+    }
+}
+
+.include-note[data-box-size="expandable"]:not(.ck-widget)
+    > .include-note-wrapper > .include-note-title-row {
     cursor: pointer;
+}
+
+.include-note[data-box-size="expandable"]:not(:has(> figcaption))
+    > .include-note-wrapper:has(> .include-note-body > .include-note-content[hidden])
+    > .include-note-title-row {
+    border-end-start-radius: var(--_include-note-bottom-border-radius, 8px);
+    border-end-end-radius: var(--_include-note-bottom-border-radius, 8px);
 }
 
 /* The title inside the expandable row defers its header styling to the row. */
@@ -1203,9 +1219,12 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     margin: 0;
     padding: 0;
     border-bottom: none;
+    width: max-content;
     font-weight: inherit;
     font-size: inherit;
-    min-width: 0;
+}
+
+.include-note-title-row > .include-note-title-label {
     flex-grow: 1;
 }
 
@@ -1213,11 +1232,22 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     flex-shrink: 0;
 }
 
+/* Browsers drop a click on a disabled button, which then toggles no expandable embed. */
+.include-note-title-row > .icon-action.disabled {
+    pointer-events: auto;
+}
+
 .include-note-title-row > .include-note-badges:empty {
     display: none;
 }
 
+.include-note-badges > .excerpt-badge {
+    order: 1;
+}
+
 .include-note-toggle {
+    --icon-button-hover-background: transparent;
+
     transition: transform 0.2s ease;
 }
 

@@ -206,14 +206,14 @@ function click(target: HTMLElement) {
 
 describe("ContentEmbed", () => {
     it("lays out the title row for each box size", () => {
-        const plain = [ "title", "badges", "open", "menu" ];
-        const withFullscreen = [ "title", "badges", "open", "fullscreen", "menu" ];
+        const plain = [ "title-label", "badges", "open", "menu" ];
+        const withFullscreen = [ "title-label", "badges", "open", "fullscreen", "menu" ];
         const layouts: [ string | undefined, string[] ][] = [
             [ undefined, plain ],
             [ "small", plain ],
             [ "medium", withFullscreen ],
             [ "full", withFullscreen ],
-            [ "expandable", [ "toggle", "title", "badges", "open", "menu" ] ]
+            [ "expandable", [ "toggle", "title-label", "badges", "open", "menu" ] ]
         ];
 
         for (const [ boxSize, expected ] of layouts) {
@@ -224,7 +224,7 @@ describe("ContentEmbed", () => {
     });
 
     it("lays out an excerpt with an edit button in place of fullscreen", () => {
-        const excerpt = [ "title", "badges", "open", "edit", "menu" ];
+        const excerpt = [ "title-label", "badges", "open", "edit", "menu" ];
         const layouts: [ string, string[] ][] = [
             [ "small", excerpt ],
             [ "medium", excerpt ],
@@ -240,9 +240,11 @@ describe("ContentEmbed", () => {
         }
     });
 
-    it("shows its title and content, and swaps them on a new render", () => {
+    it("shows its scrollable title and its content, and swaps them on a new render", () => {
         const titleChildren = () => [
-            ...container.querySelector("h4.include-note-title")?.childNodes ?? []
+            ...container.querySelector(
+                ".include-note-title-label.scrollable-label > h4.include-note-title"
+            )?.childNodes ?? []
         ];
         const first = renderBox({ contentType: "pdf" });
         const box = contentBox();
@@ -289,6 +291,39 @@ describe("ContentEmbed", () => {
         act(() => render(null, container));
         renderBox({ boxSize: "full" });
         expect(contentBox().hidden).toBe(false);
+    });
+
+    it("toggles an expandable box on a click on its title row, but its buttons and link", () => {
+        const titleRow = () => {
+            const row = container.querySelector<HTMLElement>(".include-note-title-row");
+            const label = row?.querySelector<HTMLElement>(".include-note-title-label");
+            const link = label?.querySelector<HTMLElement>("a");
+            if (!row || !label || !link) {
+                throw new Error("Expected the title row, its label and its link.");
+            }
+            link.addEventListener("click", (e) => e.preventDefault());
+            return { row, label, link };
+        };
+        renderBox({ boxSize: "expandable" });
+        const { row, label, link } = titleRow();
+
+        click(row);
+        expect(contentBox().hidden).toBe(false);
+        click(label);
+        expect(contentBox().hidden).toBe(true);
+        for (const target of [ link, button("include-note-open"), button("include-note-menu") ]) {
+            click(target);
+            expect(contentBox().hidden).toBe(true);
+        }
+        click(button("include-note-toggle"));
+        expect(contentBox().hidden).toBe(false);
+
+        // In an editor, a click on the row selects the embed instead.
+        act(() => render(null, container));
+        placeInHostEditor();
+        renderBox({ boxSize: "expandable" });
+        click(titleRow().row);
+        expect(contentBox().hidden).toBe(true);
     });
 
     it("opens the note in a new tab, and its context menu, from the title row", () => {
@@ -664,8 +699,11 @@ describe("TinyContentEmbed", () => {
         ]);
         expect(container.querySelector(".include-note-content")).toBeNull();
         expect(container.querySelector(".include-note-icon")?.className).toContain("bx-file");
-        expect([ ...container.querySelector("h4.include-note-title")?.childNodes ?? [] ])
-            .toEqual([ title ]);
+        expect([
+            ...container.querySelector(
+                ".include-note-heading > .scrollable-label > h4.include-note-title"
+            )?.childNodes ?? []
+        ]).toEqual([ title ]);
         expect(container.querySelector(".include-note-heading > small.include-note-description")
             ?.textContent).toBe("2 KiB");
 

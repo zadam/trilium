@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { type ComponentChildren, render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -18,7 +18,9 @@ afterEach(() => {
  * happy-dom lays nothing out, so the metrics the component reads are given directly. `scrollLeft` is
  * writable already; the two widths are not, and stand for a line of the given length in a 100px box.
  */
-function renderLabel(text: string, scrollWidth: number, clientWidth = 100, autoScroll = false) {
+function renderLabel(
+    text: ComponentChildren, scrollWidth: number, clientWidth = 100, autoScroll = false
+) {
     const mountPoint = document.body.appendChild(document.createElement("div"));
     container = mountPoint;
     // Flushed here: the fade attaches its listeners from an effect, which Preact defers past the
@@ -48,6 +50,20 @@ async function scrollTo(label: HTMLDivElement, scrollLeft: number) {
     label.dispatchEvent(new Event("scroll"));
 
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+}
+
+/** Dispatches a pointer event of the primary mouse button at `clientX`. */
+function pointer(target: Element, type: string, clientX: number, init: PointerEventInit = {}) {
+    target.dispatchEvent(new PointerEvent(type, {
+        bubbles: true, pointerId: 1, pointerType: "mouse", button: 0, clientX, ...init
+    }));
+}
+
+/** Dispatches a cancelable `type` event on `target` and tells whether the label canceled it. */
+function isPrevented(target: Element, type: string) {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+    target.dispatchEvent(event);
+    return event.defaultPrevented;
 }
 
 describe("ScrollableLabel", () => {
@@ -159,6 +175,78 @@ describe("ScrollableLabel", () => {
         } finally {
             vi.useRealTimers();
             reduced.mockRestore();
+        }
+    });
+
+    it("scrolls with a mouse dragged along it, in place of a native drag or selection", () => {
+        const label = renderLabel(<span className="text">a name longer than its box</span>, 300);
+        const text = label.querySelector(".text");
+        expect(text).not.toBeNull();
+        if (!text) return;
+        const click = vi.fn();
+        label.parentElement?.addEventListener("click", click);
+
+        pointer(text, "pointerdown", 100);
+        expect(isPrevented(text, "dragstart")).toBe(true);
+        expect(isPrevented(text, "selectstart")).toBe(true);
+        pointer(text, "pointermove", 98);
+        expect(label.scrollLeft).toBe(0);
+        expect(label.hasPointerCapture(1)).toBe(false);
+
+        pointer(text, "pointermove", 40);
+        expect(label.scrollLeft).toBe(60);
+        expect(label.hasPointerCapture(1)).toBe(true);
+        pointer(label, "pointermove", 70);
+        expect(label.scrollLeft).toBe(30);
+        pointer(label, "pointerup", 70);
+        expect(isPrevented(label, "click")).toBe(true);
+        expect(click).not.toHaveBeenCalled();
+
+        // A canceled drag stops there.
+        pointer(text, "pointerdown", 70);
+        pointer(text, "pointermove", 20);
+        pointer(text, "pointercancel", 20);
+        pointer(text, "pointermove", 0);
+        expect(label.scrollLeft).toBe(80);
+        expect(isPrevented(text, "click")).toBe(false);
+
+        // A press that stays put is a click.
+        pointer(text, "pointerdown", 0);
+        pointer(text, "pointerup", 0);
+        expect(isPrevented(text, "click")).toBe(false);
+
+        // So is a tap after a drag whose click never came.
+        pointer(text, "pointerdown", 20);
+        pointer(text, "pointermove", 0);
+        pointer(text, "pointerup", 0);
+        pointer(text, "pointerdown", 0, { pointerType: "touch" });
+        pointer(text, "pointerup", 0, { pointerType: "touch" });
+        expect(isPrevented(text, "click")).toBe(false);
+        expect(click).toHaveBeenCalledTimes(3);
+        expect(label.scrollLeft).toBe(100);
+    });
+
+    it("leaves the presses of a touch, another button, or on a label that fits alone", () => {
+        const presses: [ number, PointerEventInit ][] = [
+            [ 300, { pointerType: "touch" } ],
+            [ 300, { button: 1 } ],
+            [ 100, {} ]
+        ];
+
+        for (const [ scrollWidth, init ] of presses) {
+            const label = renderLabel("a name", scrollWidth);
+            pointer(label, "pointerdown", 100, init);
+            expect(isPrevented(label, "dragstart")).toBe(false);
+            pointer(label, "pointermove", 40, init);
+            expect(label.scrollLeft).toBe(0);
+            pointer(label, "pointerup", 40, init);
+            expect(isPrevented(label, "click")).toBe(false);
+
+            const mountPoint = label.parentElement;
+            if (mountPoint) {
+                act(() => render(null, mountPoint));
+                mountPoint.remove();
+            }
         }
     });
 
