@@ -147,7 +147,6 @@ interface ResourceListProps {
 
 function ResourceList({ status, remaining, download }: ResourceListProps) {
     const missing = status.resources.filter(({ installed }) => !installed);
-    const unitOf = Math.max(remaining, ...missing.map(({ size }) => size));
     const activeId = download?.status === "downloading"
         ? download.resources.find(({ done }) => !done)?.id
         : undefined;
@@ -160,7 +159,7 @@ function ResourceList({ status, remaining, download }: ResourceListProps) {
                     <ResourceItem
                         key={resource.id}
                         resource={resource}
-                        unitOf={unitOf}
+                        unitOf={remaining}
                         state={download?.resources.find(({ id }) => id === resource.id)}
                         file={resource.id === activeId ? download?.file ?? null : undefined}
                     />
@@ -177,7 +176,7 @@ function ResourceList({ status, remaining, download }: ResourceListProps) {
                         )}
                     </div>
                     <span className="tn-card-option-value resource-download-size">
-                        {formatSize(remaining, 2, unitOf)}
+                        {formatSize(remaining, 2, remaining)}
                     </span>
                 </CardSection>
             </Card>
@@ -195,12 +194,15 @@ interface ResourceItemProps {
 }
 
 /**
- * One resource as a settings row: its icon, what it is and where it comes from, and its size.
- * Once a download starts, the icon shows whether the resource is done, downloading or waiting, as
- * the setup's sync steps do, and the resource downloading carries its own progress bar.
+ * One resource as a settings row: its icon, what it is and where it comes from, and what is left
+ * to download of it, so that the rows add up to the download size. Once a download starts, the
+ * icon shows whether the resource is done, downloading or waiting, as the setup's sync steps do.
+ * The resource downloading carries a progress bar, and so does one an earlier download left
+ * partly fetched, filled as far as it got.
  */
 function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
     const isActive = file !== undefined;
+    const isPartial = !state?.done && resource.downloadedSize > 0;
     return (
         <CardSection className="tn-card-option resource-download-item">
             <Icon icon={getRowIcon(resource, state, isActive)} className="resource-download-icon" />
@@ -213,32 +215,46 @@ function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
                     <span className="resource-download-license">
                         {t("resource_download.license", { license: resource.license })}
                     </span>
-                    {resource.downloadedSize > 0 && <>
-                        {" · "}
-                        {t("resource_download.partially_downloaded", {
-                            size: formatSize(resource.downloadedSize)
-                        })}
-                    </>}
                 </small>
-                {isActive && state && <RowProgress state={state} file={file ?? null} />}
+                {isActive && state && (
+                    <RowProgress
+                        received={state.receivedBytes}
+                        total={state.totalBytes}
+                        label={file && t("resource_download.current_file", { file })}
+                    />
+                )}
+                {!isActive && isPartial && (
+                    <RowProgress
+                        received={resource.downloadedSize}
+                        total={resource.size}
+                        label={t("resource_download.partially_downloaded")}
+                    />
+                )}
             </div>
             <span className="tn-card-option-value resource-download-size">
-                {formatSize(resource.size, 2, unitOf)}
+                {formatSize(resource.size - resource.downloadedSize, 2, unitOf)}
             </span>
         </CardSection>
     );
 }
 
-function RowProgress({ state, file }: { state: ResourceDownloadState; file: string | null }) {
+interface RowProgressProps {
+    received: number;
+    total: number;
+    /** What the bar shows, on its leading edge below it. */
+    label: string | null;
+}
+
+function RowProgress({ received, total, label }: RowProgressProps) {
     return (
         <div className="resource-download-progress">
-            <ProgressBar value={state.receivedBytes} max={state.totalBytes} />
+            <ProgressBar value={received} max={total} />
             <small className="tn-card-option-description resource-download-progress-detail">
-                <span>{file && t("resource_download.current_file", { file })}</span>
+                <span>{label}</span>
                 <span>
                     {t("resource_download.progress", {
-                        received: formatSize(state.receivedBytes, 2, state.totalBytes),
-                        total: formatSize(state.totalBytes)
+                        received: formatSize(received, 2, total),
+                        total: formatSize(total)
                     })}
                 </span>
             </small>

@@ -4610,7 +4610,7 @@
   "resource_download": {
     "title": "Download required",
     "intro": "Trilium needs to download the following files before it can continue. They are saved on this device and are not synced, so each of your devices downloads them separately.",
-    "partially_downloaded": "{{size}} already downloaded",
+    "partially_downloaded": "Already downloaded",
     "sources": "From {{sources}}",
     "total": "Download size",
     "free_space": "Free space: {{size}}",

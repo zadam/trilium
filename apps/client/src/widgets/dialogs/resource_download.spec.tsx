@@ -69,8 +69,10 @@ describe("ResourceDownloadDialog", () => {
         expect(text(".resource-download-meta")).toContain("huggingface.co, github.com");
         expect(text(".resource-download-license"))
             .toBe(`resource_download.license:{"license":"CC-BY-4.0"}`);
-        expect(text(".resource-download-meta")).toContain(`"size":"200 B"`);
-        expect(text(".resource-download-item .resource-download-size")).toBe("700 B");
+        expect(row?.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")).toBe("200");
+        expect(row?.querySelector(".resource-download-progress")?.textContent)
+            .toContain(`"received":"200 B","total":"700 B"`);
+        expect(text(".resource-download-item .resource-download-size")).toBe("500 B");
         expect(text(".resource-download-total .resource-download-size")).toBe("500 B");
         expect(text(".resource-download-total")).toContain(`free_space:{"size":"9.77 KiB"}`);
         expect(container.querySelector(".admonition")).toBeNull();
