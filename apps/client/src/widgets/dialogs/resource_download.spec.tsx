@@ -31,6 +31,7 @@ const STATUS: ResourcesStatusResponse = {
         id: "transcription.model",
         title: "Speech recognition model",
         description: "Transcribes meetings",
+        icon: "bx bx-captions",
         size: 700,
         downloadedSize: 200,
         sources: [ "huggingface.co", "github.com" ],
@@ -61,9 +62,14 @@ describe("ResourceDownloadDialog", () => {
         mocks.post.mockResolvedValue(progress({ receivedBytes: 200 }));
         await open();
 
-        expect(text(".resource-download-list")).toContain("Speech recognition model");
+        const row = container.querySelector(".resource-download-item");
+        expect(row?.querySelector(".resource-download-icon")?.classList).toContain("bx-captions");
+        expect(row?.textContent).toContain("Speech recognition model");
         expect(text(".resource-download-meta")).toContain("huggingface.co, github.com");
-        expect(text(".resource-download-totals")).toContain(`"size":"500 B"`);
+        expect(text(".resource-download-meta")).toContain(`"size":"200 B"`);
+        expect(text(".resource-download-item .resource-download-size")).toBe("700 B");
+        expect(text(".resource-download-total .resource-download-size")).toBe("500 B");
+        expect(text(".resource-download-total")).toContain(`free_space:{"size":"100 B"}`);
         expect(container.querySelector(".alert-warning")).not.toBeNull();
 
         await click("resource_download.download");

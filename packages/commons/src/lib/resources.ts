@@ -9,6 +9,8 @@ export interface ResourceInfo {
     id: string;
     title: string;
     description: string;
+    /** Boxicons classes, `bx bx-…`. */
+    icon: string;
     /** The size of all its files, in bytes. */
     size: number;
     /** The bytes of its files already downloaded and verified, kept from an interrupted download. */

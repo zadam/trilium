@@ -27,6 +27,8 @@ export interface ResourceDefinition {
     version: string;
     title(): string;
     description(): string;
+    /** Boxicons classes, `bx bx-…`, for the download dialog. */
+    icon: string;
     files: ResourceFile[];
     /**
      * Returns a directory that holds the files outside the manager, such as a model installed by
@@ -192,6 +194,7 @@ export class ResourceManager {
             id: definition.id,
             title: definition.title(),
             description: definition.description(),
+            icon: definition.icon,
             size: sumSizes(definition.files),
             downloadedSize: sumSizes(downloaded),
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],

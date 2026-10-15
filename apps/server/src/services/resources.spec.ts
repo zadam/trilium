@@ -88,6 +88,7 @@ describe("ResourceManager", () => {
             id: "test.model",
             title: "Test model",
             description: "For tests",
+            icon: "bx bx-test-tube",
             size: MODEL.length + TOKENS.length,
             downloadedSize: MODEL.length + TOKENS.length,
             sources: [ "127.0.0.1" ],
@@ -166,6 +167,7 @@ function defineModel({ id = "test.model", tokensUrl = "/tokens.txt", tokensHash 
         version: "1",
         title: () => "Test model",
         description: () => "For tests",
+        icon: "bx bx-test-tube",
         files: [
             file("nested/model.bin", MODEL),
             { path: "tokens.txt", url: `${baseUrl}${tokensUrl}`, size: tokensSize, sha256: tokensHash }

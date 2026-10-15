@@ -11,7 +11,9 @@ import { formatSize } from "../../services/utils";
 import { subscribeToMessages, unsubscribeToMessage } from "../../services/ws";
 import Alert from "../react/Alert";
 import Button from "../react/Button";
+import { Card, CardSection } from "../react/Card";
 import { useTriliumEvent } from "../react/hooks";
+import Icon from "../react/Icon";
 import Modal from "../react/Modal";
 
 export interface ResourceDownloadDialogOptions {
@@ -82,7 +84,7 @@ export default function ResourceDownloadDialog() {
     return (
         <Modal
             className="resource-download-dialog"
-            size="md"
+            size="lg"
             title={t("resource_download.title")}
             show={shown}
             onHidden={() => {
@@ -118,15 +120,24 @@ function ResourceList({ status }: { status: ResourcesStatusResponse }) {
     return (
         <>
             <p>{t("resource_download.intro")}</p>
-            <ul className="resource-download-list">
+            <Card className="resource-download-list">
                 {missing.map((resource) => <ResourceItem key={resource.id} resource={resource} />)}
-            </ul>
-            <p className="resource-download-totals">
-                <span>{t("resource_download.total", { size: formatSize(remaining) })}</span>
-                {status.freeBytes !== null && (
-                    <span>{t("resource_download.free_space", { size: formatSize(status.freeBytes) })}</span>
-                )}
-            </p>
+                <CardSection className="tn-card-option resource-download-total">
+                    <div className="tn-card-option-label">
+                        <span className="tn-card-option-title">{t("resource_download.total")}</span>
+                        {status.freeBytes !== null && (
+                            <small className="tn-card-option-description">
+                                {t("resource_download.free_space", {
+                                    size: formatSize(status.freeBytes)
+                                })}
+                            </small>
+                        )}
+                    </div>
+                    <span className="tn-card-option-value resource-download-size">
+                        {formatSize(remaining)}
+                    </span>
+                </CardSection>
+            </Card>
             {status.freeBytes !== null && status.freeBytes < remaining && (
                 <Alert type="warning">{t("resource_download.not_enough_space")}</Alert>
             )}
@@ -134,22 +145,28 @@ function ResourceList({ status }: { status: ResourcesStatusResponse }) {
     );
 }
 
+/** One resource as a settings row: its icon, what it is and where it comes from, and its size. */
 function ResourceItem({ resource }: { resource: ResourceInfo }) {
-    const size = formatSize(resource.size);
     return (
-        <li>
-            <strong>{resource.title}</strong>
-            <p>{resource.description}</p>
-            <p className="resource-download-meta">
-                {resource.downloadedSize
-                    ? t("resource_download.partially_downloaded", {
-                        size, downloaded: formatSize(resource.downloadedSize)
-                    })
-                    : size}
-                {" · "}
-                {t("resource_download.sources", { sources: resource.sources.join(", ") })}
-            </p>
-        </li>
+        <CardSection className="tn-card-option resource-download-item">
+            <Icon icon={resource.icon} className="resource-download-icon" />
+            <div className="tn-card-option-label">
+                <span className="tn-card-option-title">{resource.title}</span>
+                <small className="tn-card-option-description">{resource.description}</small>
+                <small className="tn-card-option-description resource-download-meta">
+                    {t("resource_download.sources", { sources: resource.sources.join(", ") })}
+                    {resource.downloadedSize > 0 && <>
+                        {" · "}
+                        {t("resource_download.partially_downloaded", {
+                            size: formatSize(resource.downloadedSize)
+                        })}
+                    </>}
+                </small>
+            </div>
+            <span className="tn-card-option-value resource-download-size">
+                {formatSize(resource.size)}
+            </span>
+        </CardSection>
     );
 }
 
