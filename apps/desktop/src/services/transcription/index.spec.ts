@@ -16,6 +16,7 @@ const h = vi.hoisted(() => ({
     coreListeners: new Map<string, () => void>(),
     isDev: false,
     installedResources: [] as string[],
+    transcriptionModel: null as string | null,
     registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
@@ -61,6 +62,9 @@ vi.mock("@triliumnext/core", () => ({
         subscribe: (event: string, listener: () => void) => h.coreListeners.set(event, listener)
     },
     getLog: () => h.log,
+    options: {
+        getOptionOrNull: (name: string) => name === "transcriptionModel" ? h.transcriptionModel : null
+    },
     protected_session: { isProtectedSessionAvailable: () => h.isProtectedSessionAvailable },
     utils: { isDev: () => h.isDev }
 }));
@@ -129,6 +133,7 @@ beforeEach(() => {
     h.isProtectedSessionAvailable = false;
     h.broadcast.length = 0;
     h.isDev = false;
+    h.transcriptionModel = null;
     h.installedResources = [
         "transcription.parakeet", "transcription.silero-vad", "transcription.titanet"
     ];
@@ -183,7 +188,7 @@ describe("transcription IPC", () => {
         expect(h.worker.start).toHaveBeenCalledExactlyOnceWith({
             noteId: "meeting",
             models: {
-                recognizer: "/data/resources/transcription.parakeet",
+                recognizer: { directory: "/data/resources/transcription.parakeet", precision: "int8" },
                 vad: path.join("/data/resources/transcription.silero-vad", "silero_vad.onnx"),
                 speaker: path.join("/data/resources/transcription.titanet", "nemo_en_titanet_small.onnx")
             },
@@ -336,14 +341,29 @@ describe("transcription IPC", () => {
         expect(h.broadcast).toEqual([]);
     });
 
-    it("registers the three models, and records without the speaker model", async () => {
+    it("registers every model, and records without the speaker model", async () => {
         const invoke = await loadService();
-        expect(h.registerResource.mock.calls[0].map(({ id }: { id: string }) => id))
-            .toEqual([ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
+        expect(h.registerResource.mock.calls[0].map(({ id }: { id: string }) => id)).toEqual([
+            "transcription.parakeet", "transcription.parakeet-fp32", "transcription.silero-vad",
+            "transcription.titanet"
+        ]);
 
         h.installedResources = [ "transcription.parakeet", "transcription.silero-vad" ];
         expect(await invoke("transcription-start", "meeting")).toBe("");
         expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
+    });
+
+    it("records with the model the option selects, refusing while it is not downloaded", async () => {
+        const invoke = await loadService();
+        h.transcriptionModel = "parakeet-fp32";
+        expect(await invoke("transcription-start", "meeting"))
+            .toBe("transcription.model-not-downloaded");
+
+        h.installedResources.push("transcription.parakeet-fp32");
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.recognizer).toEqual({
+            directory: "/data/resources/transcription.parakeet-fp32", precision: "fp32"
+        });
     });
 
     it("explains why it could not start, ends the process and returns to idle", async () => {

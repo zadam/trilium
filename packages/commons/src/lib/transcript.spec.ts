@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    cleanUtteranceText, getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
+    cleanUtteranceText, getSpeakerKey, getTranscriptionModel, getTranscriptionResources,
+    MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
     type Transcript
 } from "./transcript.js";
 
@@ -80,5 +81,24 @@ describe("transcript", () => {
         const startedAt = performance.now();
         expect(cleanUtteranceText(punctuated)).toBe(punctuated);
         expect(performance.now() - startedAt).toBeLessThan(250);
+    });
+});
+
+describe("transcription models", () => {
+    it("resolves the selected model, and an unknown or missing one to the int8 model", () => {
+        expect(getTranscriptionModel("parakeet-fp32"))
+            .toEqual({ id: "parakeet-fp32", resourceId: "transcription.parakeet-fp32", precision: "fp32" });
+        expect(getTranscriptionModel("parakeet-int8"))
+            .toEqual({ id: "parakeet-int8", resourceId: "transcription.parakeet", precision: "int8" });
+        expect(getTranscriptionModel("whisper").id).toBe("parakeet-int8");
+        expect(getTranscriptionModel(null).id).toBe("parakeet-int8");
+        expect(getTranscriptionModel("toString").id).toBe("parakeet-int8");
+    });
+
+    it("needs the selected recognizer, the VAD and the speaker model to record", () => {
+        expect(getTranscriptionResources("parakeet-fp32"))
+            .toEqual([ "transcription.parakeet-fp32", "transcription.silero-vad", "transcription.titanet" ]);
+        expect(getTranscriptionResources(undefined))
+            .toEqual([ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
     });
 });

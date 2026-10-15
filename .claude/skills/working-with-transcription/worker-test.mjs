@@ -10,7 +10,8 @@
 //   --source <name>   which WAV of the recording to play, default system
 //   --seconds <n>     how much of it, default 120
 //   --speed <n>       how much faster than real time to post it, default 4
-//   --model <dir>     the model directory, default apps/desktop/data/transcription-model
+//   --model <dir>     the model directory, default apps/desktop/data/transcription-model; its
+//                     full-precision Parakeet when it holds encoder.weights, else the int8 one
 //   --out <file>      writes the utterances there, in the transcript format
 //
 // Like `pnpm desktop:start`, it loads the TypeScript through NODE_OPTIONS="--import tsx", which
@@ -125,7 +126,10 @@ async function runInElectron(config) {
     });
     const startedAt = performance.now();
     const models = {
-        recognizer: config.model,
+        recognizer: {
+            directory: config.model,
+            precision: fs.existsSync(path.join(config.model, "encoder.weights")) ? "fp32" : "int8"
+        },
         vad: path.join(config.model, "silero_vad.onnx"),
         speaker: path.join(config.model, "speaker", "nemo_en_titanet_small.onnx")
     };

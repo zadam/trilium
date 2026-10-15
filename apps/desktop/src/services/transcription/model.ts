@@ -1,6 +1,10 @@
-import { TRANSCRIPTION_RESOURCES } from "@triliumnext/commons";
+import {
+    getTranscriptionModel, TRANSCRIPTION_MODELS as MODEL_CHOICES, TRANSCRIPTION_RESOURCES
+} from "@triliumnext/commons";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
-import resources, { type ResourceDefinition } from "@triliumnext/server/src/services/resources.js";
+import resources, {
+    type ResourceDefinition, type ResourceFile
+} from "@triliumnext/server/src/services/resources.js";
 import fs from "fs";
 import { t } from "i18next";
 import path from "path";
@@ -8,8 +12,8 @@ import path from "path";
 import type { ModelPaths } from "./protocol";
 
 /**
- * A model directory installed by hand, which takes precedence over the downloaded models: it can
- * hold the full-precision Parakeet model, which `loadSherpaEngine()` prefers.
+ * A model directory installed by hand. It counts as each resource whose files it holds, in place of
+ * that resource's download.
  */
 export const LOCAL_MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
 
@@ -17,43 +21,77 @@ const VAD_FILE = "silero_vad.onnx";
 const SPEAKER_FILE = "nemo_en_titanet_small.onnx";
 
 const PARAKEET = "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/2bda32ec70b097a55adaa07d9a7173915b43cc78";
+const PARAKEET_FP32 = "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3/resolve/1a468a35cbba69418f126de829e75261dea4a4e4";
 const SHERPA_RELEASES = "https://github.com/k2-fsa/sherpa-onnx/releases/download";
 
-/** Parakeet TDT 0.6B v3, int8: the files `loadSherpaEngine()` reads from its recognizer directory. */
-export const RECOGNIZER_MODEL: ResourceDefinition = {
-    id: TRANSCRIPTION_RESOURCES.recognizer,
-    title: () => t("transcription.recognizer-title"),
-    description: () => t("transcription.recognizer-description"),
-    icon: "bx bx-captions",
-    license: "CC-BY-4.0",
-    findLocalCopy: () => fs.existsSync(LOCAL_MODEL_DIR) ? LOCAL_MODEL_DIR : null,
-    files: [
-        {
-            path: "encoder.int8.onnx",
-            url: `${PARAKEET}/encoder.int8.onnx`,
-            size: 652184281,
-            sha256: "acfc2b4456377e15d04f0243af540b7fe7c992f8d898d751cf134c3a55fd2247"
-        },
-        {
-            path: "decoder.int8.onnx",
-            url: `${PARAKEET}/decoder.int8.onnx`,
-            size: 11845275,
-            sha256: "179e50c43d1a9de79c8a24149a2f9bac6eb5981823f2a2ed88d655b24248db4e"
-        },
-        {
-            path: "joiner.int8.onnx",
-            url: `${PARAKEET}/joiner.int8.onnx`,
-            size: 6355277,
-            sha256: "3164c13fc2821009440d20fcb5fdc78bff28b4db2f8d0f0b329101719c0948b3"
-        },
-        {
-            path: "tokens.txt",
-            url: `${PARAKEET}/tokens.txt`,
-            size: 93939,
-            sha256: "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d"
-        }
-    ]
-};
+const PARAKEET_INT8_FILES: ResourceFile[] = [
+    {
+        path: "encoder.int8.onnx",
+        url: `${PARAKEET}/encoder.int8.onnx`,
+        size: 652184281,
+        sha256: "acfc2b4456377e15d04f0243af540b7fe7c992f8d898d751cf134c3a55fd2247"
+    },
+    {
+        path: "decoder.int8.onnx",
+        url: `${PARAKEET}/decoder.int8.onnx`,
+        size: 11845275,
+        sha256: "179e50c43d1a9de79c8a24149a2f9bac6eb5981823f2a2ed88d655b24248db4e"
+    },
+    {
+        path: "joiner.int8.onnx",
+        url: `${PARAKEET}/joiner.int8.onnx`,
+        size: 6355277,
+        sha256: "3164c13fc2821009440d20fcb5fdc78bff28b4db2f8d0f0b329101719c0948b3"
+    },
+    {
+        path: "tokens.txt",
+        url: `${PARAKEET}/tokens.txt`,
+        size: 93939,
+        sha256: "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d"
+    }
+];
+
+/** The full-precision export: `encoder.onnx` keeps its weights in `encoder.weights`. */
+const PARAKEET_FP32_FILES: ResourceFile[] = [
+    {
+        path: "encoder.onnx",
+        url: `${PARAKEET_FP32}/encoder.onnx`,
+        size: 41766257,
+        sha256: "3eed7ce424bf8339ad09233533c687e2dbd07e74ccf5027b5e7344019ea373b0"
+    },
+    {
+        path: "encoder.weights",
+        url: `${PARAKEET_FP32}/encoder.weights`,
+        size: 2435420160,
+        sha256: "3af3f51af5f2d01dbbf5af47d42c7962a2c205f11004254bb4f2b979862f39a8"
+    },
+    {
+        path: "decoder.onnx",
+        url: `${PARAKEET_FP32}/decoder.onnx`,
+        size: 47233743,
+        sha256: "d593cdb0e571f5a457ec2219af9968cbf6b0e8198e8f7839b40a8754593bf68c"
+    },
+    {
+        path: "joiner.onnx",
+        url: `${PARAKEET_FP32}/joiner.onnx`,
+        size: 25286330,
+        sha256: "b9b0bcf88ac571902e69a6536223ed2d94885e981b85045410f1403d53121a63"
+    },
+    {
+        path: "tokens.txt",
+        url: `${PARAKEET_FP32}/tokens.txt`,
+        size: 93939,
+        sha256: "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d"
+    }
+];
+
+/** Parakeet TDT 0.6B v3 at each precision: the files `loadSherpaEngine()` reads as its recognizer. */
+export const RECOGNIZER_MODELS: ResourceDefinition[] = [
+    parakeet(MODEL_CHOICES["parakeet-int8"].resourceId, PARAKEET_INT8_FILES,
+        () => t("transcription.recognizer-int8-title")),
+    parakeet(MODEL_CHOICES["parakeet-fp32"].resourceId, PARAKEET_FP32_FILES,
+        () => t("transcription.recognizer-fp32-title"))
+];
 
 export const VAD_MODEL: ResourceDefinition = {
     id: TRANSCRIPTION_RESOURCES.vad,
@@ -88,22 +126,38 @@ export const SPEAKER_MODEL: ResourceDefinition = {
     } ]
 };
 
-export const TRANSCRIPTION_MODELS = [ RECOGNIZER_MODEL, VAD_MODEL, SPEAKER_MODEL ];
+export const TRANSCRIPTION_MODELS = [ ...RECOGNIZER_MODELS, VAD_MODEL, SPEAKER_MODEL ];
 
 /**
- * Returns where the installed models are, or `null` while the recognizer or the VAD is missing.
+ * Returns where the installed models are for a recording with the model `modelId` (a key of
+ * `TRANSCRIPTION_MODELS` in commons), or `null` while its recognizer or the VAD is missing.
  * Without the speaker model, the transcript labels no speakers.
  */
-export function getModelPaths(): ModelPaths | null {
-    const recognizer = resources.getPath(RECOGNIZER_MODEL.id);
+export function getModelPaths(modelId: string | null): ModelPaths | null {
+    const model = getTranscriptionModel(modelId);
+    const recognizer = resources.getPath(model.resourceId);
     const vad = resources.getPath(VAD_MODEL.id);
     const speaker = resources.getPath(SPEAKER_MODEL.id);
     if (!recognizer || !vad) {
         return null;
     }
     return {
-        recognizer,
+        recognizer: { directory: recognizer, precision: model.precision },
         vad: path.join(vad, VAD_FILE),
         speaker: speaker ? path.join(speaker, SPEAKER_FILE) : null
+    };
+}
+
+function parakeet(id: string, files: ResourceFile[], title: () => string): ResourceDefinition {
+    return {
+        id,
+        title,
+        description: () => t("transcription.recognizer-description"),
+        icon: "bx bx-captions",
+        license: "CC-BY-4.0",
+        findLocalCopy: () => files.every((file) => fs.existsSync(path.join(LOCAL_MODEL_DIR, file.path)))
+            ? LOCAL_MODEL_DIR
+            : null,
+        files
     };
 }

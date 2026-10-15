@@ -9,7 +9,8 @@ const mocks = vi.hoisted(() => ({
     getInboxNote: vi.fn(),
     createNote: vi.fn(),
     showError: vi.fn(),
-    requireResources: vi.fn()
+    requireResources: vi.fn(),
+    transcriptionModel: null as string | null
 }));
 
 vi.mock("../../services/date_notes", () => ({
@@ -20,6 +21,9 @@ vi.mock("../../services/note_create", () => ({
 }));
 vi.mock("../../services/dialog", () => ({
     requireResources: mocks.requireResources
+}));
+vi.mock("../../services/options", () => ({
+    default: { get: (name: string) => name === "transcriptionModel" ? mocks.transcriptionModel : null }
 }));
 vi.mock("../../services/toast", () => ({
     default: { showError: mocks.showError }
@@ -38,6 +42,7 @@ import RecordMeetingButton, { createMeetingNote, toggleRecording } from "./Recor
 
 beforeEach(() => {
     vi.clearAllMocks();
+    mocks.transcriptionModel = null;
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -108,6 +113,13 @@ describe("toggleRecording", () => {
         await toggleRecording("idle");
         expect(mocks.createNote).toHaveBeenCalledOnce();
         expect(transcription.start).toHaveBeenCalledOnce();
+    });
+
+    it("asks for the model the settings select", async () => {
+        mocks.transcriptionModel = "parakeet-fp32";
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet-fp32", "transcription.silero-vad", "transcription.titanet" ]);
     });
 
     it("starts nothing when no meeting note could be created", async () => {

@@ -204,6 +204,11 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     codeLineWrapEnabled: boolean;
     /** Whether a meeting transcript is shown without filler words and stutters. */
     transcriptCleanupEnabled: boolean;
+    /**
+     * The speech recognition model a recording runs on, a key of `TRANSCRIPTION_MODELS`. Not synced:
+     * each device downloads and runs its own.
+     */
+    transcriptionModel: string;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;

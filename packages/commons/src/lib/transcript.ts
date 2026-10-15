@@ -40,12 +40,44 @@ export const TRANSCRIPT_MIME = "application/json";
 /** The longest speaker name a transcript accepts. */
 export const MAX_SPEAKER_NAME_LENGTH = 100;
 
-/** The resources holding the models transcription runs on, defined in the desktop app. */
+/** The resources every recording needs besides its recognizer, defined in the desktop app. */
 export const TRANSCRIPTION_RESOURCES = {
-    recognizer: "transcription.parakeet",
     vad: "transcription.silero-vad",
     speaker: "transcription.titanet"
 } as const;
+
+/** `fp32` is a full-precision model, `int8` a quantized one: smaller, faster and less accurate. */
+export type TranscriptionPrecision = "fp32" | "int8";
+
+/** A speech recognition model the `transcriptionModel` option can select. */
+export interface TranscriptionModel {
+    id: string;
+    /** The resource holding the model's files. */
+    resourceId: string;
+    precision: TranscriptionPrecision;
+}
+
+/** The selectable models, by ID: both are Parakeet TDT 0.6B v3, for 25 European languages. */
+export const TRANSCRIPTION_MODELS = {
+    "parakeet-int8": { id: "parakeet-int8", resourceId: "transcription.parakeet", precision: "int8" },
+    "parakeet-fp32": { id: "parakeet-fp32", resourceId: "transcription.parakeet-fp32", precision: "fp32" }
+} as const satisfies Record<string, TranscriptionModel>;
+
+export type TranscriptionModelId = keyof typeof TRANSCRIPTION_MODELS;
+
+export const DEFAULT_TRANSCRIPTION_MODEL: TranscriptionModelId = "parakeet-int8";
+
+/** Returns the model `id` names, or the default model when `id` names none. */
+export function getTranscriptionModel(id: string | null | undefined): TranscriptionModel {
+    return Object.hasOwn(TRANSCRIPTION_MODELS, id ?? "")
+        ? TRANSCRIPTION_MODELS[id as TranscriptionModelId]
+        : TRANSCRIPTION_MODELS[DEFAULT_TRANSCRIPTION_MODEL];
+}
+
+/** Returns the resources a recording with the model `modelId` needs. */
+export function getTranscriptionResources(modelId: string | null | undefined) {
+    return [ getTranscriptionModel(modelId).resourceId, ...Object.values(TRANSCRIPTION_RESOURCES) ];
+}
 
 /** Reads a transcript attachment's content, or returns `null` for content of another shape. */
 export function parseTranscript(content: string | null | undefined): Transcript | null {

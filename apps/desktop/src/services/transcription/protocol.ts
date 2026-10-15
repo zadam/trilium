@@ -1,4 +1,4 @@
-import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
+import type { TranscriptionPrecision, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 
 /** Every source and engine works on mono 16 kHz samples. */
 export const SAMPLE_RATE = 16000;
@@ -11,8 +11,8 @@ export interface Logger {
 
 /** Where the engine's models are. */
 export interface ModelPaths {
-    /** The directory holding Parakeet: `tokens.txt` and the encoder, decoder and joiner. */
-    recognizer: string;
+    /** Parakeet: the directory holding `tokens.txt` and the encoder, decoder and joiner. */
+    recognizer: { directory: string; precision: TranscriptionPrecision };
     /** Silero VAD's `.onnx` file. */
     vad: string;
     /** The speaker embedding model's `.onnx` file, or `null` to label no speakers. */

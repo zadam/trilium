@@ -55,7 +55,11 @@ afterEach(() => {
 
 const REQUEST = {
     noteId: "meeting",
-    models: { recognizer: "/models", vad: "/models/silero_vad.onnx", speaker: null },
+    models: {
+        recognizer: { directory: "/models", precision: "int8" as const },
+        vad: "/models/silero_vad.onnx",
+        speaker: null
+    },
     recordingDirectory: null
 };
 

@@ -71,7 +71,11 @@ function capturePort() {
     return Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
 }
 
-const MODELS = { recognizer: "/models", vad: "/models/silero_vad.onnx", speaker: null };
+const MODELS = {
+    recognizer: { directory: "/models", precision: "int8" as const },
+    vad: "/models/silero_vad.onnx",
+    speaker: null
+};
 
 const START: WorkerRequest = {
     type: "start", noteId: "meeting", models: MODELS, recordingDirectory: null

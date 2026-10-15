@@ -1,5 +1,5 @@
 import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
-import { becca, events, getLog, protected_session, utils as coreUtils } from "@triliumnext/core";
+import { becca, events, getLog, options, protected_session, utils as coreUtils } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import resources from "@triliumnext/server/src/services/resources.js";
 import { app, BrowserWindow, ipcMain, MessageChannelMain } from "electron";
@@ -62,7 +62,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
     if (typeof noteId !== "string" || !becca.getNote(noteId)) {
         return t("transcription.note-not-found");
     }
-    const models = getModelPaths();
+    const models = getModelPaths(options.getOptionOrNull("transcriptionModel"));
     if (!models) {
         return t("transcription.model-not-downloaded");
     }

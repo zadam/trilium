@@ -1,3 +1,4 @@
+import type { TranscriptionPrecision } from "@triliumnext/commons";
 import fs from "fs";
 import path from "path";
 import type { SpeakerEmbeddingExtractor, Vad } from "sherpa-onnx-node";
@@ -62,15 +63,12 @@ const RECOGNIZER_SETTINGS = {
     provider: "cpu"
 };
 
-/** `fp32` is the full-precision export (2.4 GB), `int8` the quantized one (641 MB). */
-type ModelPrecision = "fp32" | "int8";
-
 /**
  * The int8 model emits nothing over some stretches of speech and drops whole clauses from segments
  * with pauses; `blankPenalty` counters that. The full-precision model drops none, and the penalty
  * only adds stray words to its transcript.
  */
-const DECODING_SETTINGS: Record<ModelPrecision, Record<string, unknown>> = {
+const DECODING_SETTINGS: Record<TranscriptionPrecision, Record<string, unknown>> = {
     fp32: { decodingMethod: "greedy_search" },
     int8: { decodingMethod: "greedy_search", blankPenalty: 0.5 }
 };
@@ -107,16 +105,13 @@ const VAD_SETTINGS = {
 /**
  * Loads the local engine from `models`: Silero VAD for segmentation and Parakeet TDT 0.6B v3 for
  * recognition, both through sherpa-onnx, and the speaker model when it is given and installed.
- * Recognition uses the full-precision model (`encoder.onnx` with `encoder.weights`) when the
- * recognizer directory holds it, else the int8 one (`encoder.int8.onnx`). Recognition runs on the
- * libuv thread pool; the VAD and the speaker embeddings run on the calling thread.
+ * The recognizer's precision picks its files: `encoder.onnx` (with `encoder.weights`) for `fp32`,
+ * `encoder.int8.onnx` for `int8`. Recognition runs on the libuv thread pool; the VAD and the
+ * speaker embeddings run on the calling thread.
  */
 export async function loadSherpaEngine(models: ModelPaths): Promise<SpeechEngine> {
-    const modelDir = models.recognizer;
+    const { directory: modelDir, precision } = models.recognizer;
     const speakerModel = models.speaker && fs.existsSync(models.speaker) ? models.speaker : null;
-    const precision: ModelPrecision = fs.existsSync(path.join(modelDir, "encoder.onnx"))
-        ? "fp32"
-        : "int8";
     const suffix = precision === "fp32" ? ".onnx" : ".int8.onnx";
     const decodingSettings = DECODING_SETTINGS[precision];
     const mod = await import("sherpa-onnx-node");

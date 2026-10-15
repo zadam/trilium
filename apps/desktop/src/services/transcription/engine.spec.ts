@@ -103,7 +103,7 @@ vi.mock("fs", () => ({
 
 const MODEL_DIR = "/models/parakeet";
 const MODELS = {
-    recognizer: MODEL_DIR,
+    recognizer: { directory: MODEL_DIR, precision: "int8" as const },
     vad: "/models/silero/silero_vad.onnx",
     speaker: "/models/titanet/nemo_en_titanet_small.onnx"
 };
@@ -119,6 +119,8 @@ beforeEach(() => {
 
 describe("loadSherpaEngine", () => {
     it("loads Parakeet and Silero from their paths and reports their settings", async () => {
+        // The precision comes from the paths, whatever else the directory holds.
+        h.installed = [ "encoder.onnx" ];
         const engine = await loadSherpaEngine(MODELS);
 
         expect(h.recognizerConfig).toMatchObject({
@@ -152,9 +154,10 @@ describe("loadSherpaEngine", () => {
         expect(h.decoded).toEqual([ samples ]);
     });
 
-    it("prefers the full-precision model, decoding it without a blank penalty", async () => {
-        h.installed = [ "encoder.onnx" ];
-        const engine = await loadSherpaEngine(MODELS);
+    it("loads the full-precision model when given, decoding it without a blank penalty", async () => {
+        const engine = await loadSherpaEngine({
+            ...MODELS, recognizer: { directory: MODEL_DIR, precision: "fp32" }
+        });
 
         expect(h.recognizerConfig).toMatchObject({
             modelConfig: {
