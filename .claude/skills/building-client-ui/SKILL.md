@@ -129,6 +129,13 @@ Rules for both:
 - **A bottom sheet is only ever `mobileBottomSheet`.** Never put `mobile-bottom-menu` in `dropdownContainerClassName`: the stylesheet then pins the popup to the bottom while Floating UI still places it beside its toggle, and Floating UI's inline `max-height` caps the sheet to the room the toggle had. `mobileBottomSheet` also dims the page, so it needs no `mobileBackdrop`.
 - **`dropdownRef` holds a `DropdownHandle`** (`show`, `hide`, `toggle`), exported from `Dropdown.tsx`. Type the ref with it, never with Bootstrap's `Dropdown`, which compiles but promises methods the handle doesn't have.
 - **Submenus**: `FormDropdownSubmenu` opens a submenu only inside a `Dropdown` menu (elsewhere, its title is rendered as a header above its rows). Which side a submenu opens on, and which way its row's arrow points, is detected from the room around the menu; there is no prop for it.
+- **A menu item that needs more input before it completes ends in "..."**. This follows the Windows convention, where a confirmation counts as more input. The rule covers `FormListItem`, `CommandItem` and `contextMenu.show()` items alike. Add the "..." when the item opens:
+  - a dialog with options (Export..., Board properties...)
+  - a prompt or popover that asks for a value (Rename attachment..., Edit column...)
+  - a file or app chooser (Upload new revision..., Open custom...)
+  - a confirm (Delete note..., Reset..., Convert to attachment...)
+
+  An item that acts at once, toggles, navigates, opens a note or tab, opens a submenu, or opens a dialog that only displays information (Recent changes, Note Info, About) has no "...". Write three periods, which most catalogue keys use. The "..." belongs in the English string, before any `<kbd>` in it (`"Delete... <kbd data-command=\"deleteNotes\"></kbd>"`). When the dialog's title or a heading shows the same words, give that use its own key without the "..." (`board_view.properties` / `board_view.properties-title`).
 - **Style a popup by its own classes.** It lives in `<body>`, inside a `.tn-dropdown-portal` wrapper that carries the dropdown's `className`, so a rule scoped under the toggle's ancestors (`.status-bar .dropdown-menu`) never matches it. Use `dropdownContainerClassName` with top-level rules. Its z-index (1200, over dialogs) is set in `Popup.css`; `--bs-dropdown-zindex` doesn't reach it.
 
 Other floating surfaces:

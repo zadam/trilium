@@ -84,6 +84,8 @@ node $S add client dialog.my_thing "Save changes"
 
 `add` refuses to overwrite an existing key (`--force` to override) and refuses to nest under one that is already a string.
 
+A menu label ends in "..." when its item opens a dialog, prompt, chooser or confirm (see "Dropdowns: menus and panels" in the `building-client-ui` skill). For that reason, don't reuse a menu label's key as the title of the dialog it opens. Add a second key without the "..." instead, for example `board_view.properties` and `board_view.properties-title`.
+
 Then use it: `t("dialog.my_thing")`. Only `en/` changes — Weblate carries the string to the other locales, and you should **not** hand-edit the other ~38 locale files.
 
 ### Write US English, and mirror the difference into `en-GB`
