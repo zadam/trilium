@@ -1355,6 +1355,40 @@
                                     "dataFileName": "Data directory_image.png"
                                 }
                             ]
+                        },
+                        {
+                            "isClone": false,
+                            "noteId": "ebyr7ES2SwOW",
+                            "notePath": [
+                                "pOsGYCXsbNQG",
+                                "Otzi9La2YAUX",
+                                "ebyr7ES2SwOW"
+                            ],
+                            "title": "Downloaded resources",
+                            "notePosition": 90,
+                            "prefix": null,
+                            "isExpanded": false,
+                            "type": "text",
+                            "mime": "text/html",
+                            "attributes": [
+                                {
+                                    "type": "label",
+                                    "name": "shareAlias",
+                                    "value": "downloaded-resources",
+                                    "isInheritable": false,
+                                    "position": 10
+                                },
+                                {
+                                    "type": "label",
+                                    "name": "iconClass",
+                                    "value": "bx bx-download",
+                                    "isInheritable": false,
+                                    "position": 20
+                                }
+                            ],
+                            "format": "markdown",
+                            "dataFileName": "Downloaded resources.md",
+                            "attachments": []
                         }
                     ]
                 },

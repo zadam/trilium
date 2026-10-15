@@ -28,7 +28,7 @@ export default function ResourcesSettings() {
 
     return (
         <>
-            <OptionsPageHeader />
+            <OptionsPageHeader helpUrl="ebyr7ES2SwOW" />
             {status && (
                 <Card
                     className="resources-list"
