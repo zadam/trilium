@@ -1,0 +1,41 @@
+.modal.resource-download-dialog {
+    .resource-download-list {
+        padding-inline-start: 1.25em;
+
+        li + li {
+            margin-top: 0.75em;
+        }
+
+        p {
+            margin-bottom: 0.25em;
+        }
+    }
+
+    .resource-download-meta {
+        color: var(--muted-text-color);
+        font-size: 0.9em;
+    }
+
+    .resource-download-totals {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.5em;
+        font-weight: 600;
+    }
+
+    .resource-download-progress {
+        progress {
+            width: 100%;
+        }
+
+        .resource-download-progress-detail {
+            display: flex;
+            justify-content: space-between;
+            gap: 1em;
+            color: var(--muted-text-color);
+            font-size: 0.9em;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+}

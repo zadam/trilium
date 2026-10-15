@@ -572,5 +572,11 @@
     "save-failed": "The transcript could not be saved: {{- message}} The transcription keeps it and tries again with the next sentence.",
     "capture-lost": "The transcription stopped because the audio could no longer be captured. What was transcribed until then is kept.",
     "attachment-title": "Transcript"
+  },
+  "resources": {
+    "unknown": "There is no resource named {{id}}.",
+    "http-error": "Downloading {{name}} failed with HTTP status {{status}}.",
+    "size-mismatch": "{{name}} does not have the expected size.",
+    "hash-mismatch": "{{name}} does not match its expected checksum, so it was discarded."
   }
 }

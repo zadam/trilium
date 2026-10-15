@@ -27,6 +27,7 @@ import metricsRoute from "./api/metrics.js";
 import ocrRoute from "./api/ocr.js";
 import onenoteImportRoute from "./api/onenote_import.js";
 import recoveryCodes from './api/recovery_codes.js';
+import resourcesRoute from "./api/resources.js";
 import senderRoute from "./api/sender.js";
 import setupRestoreRoute from "./api/setup_restore.js";
 import systemInfoRoute from "./api/system_info.js";
@@ -196,6 +197,10 @@ function register(app: express.Application) {
     asyncApiRoute(PST, "/api/ocr/process-attachment/:attachmentId", ocrRoute.processAttachmentOCR);
     asyncApiRoute(PST, "/api/ocr/batch-process", ocrRoute.batchProcessOCR);
     asyncApiRoute(GET, "/api/ocr/batch-progress", ocrRoute.getBatchProgress);
+
+    asyncApiRoute(GET, "/api/resources", resourcesRoute.getStatus);
+    apiRoute(PST, "/api/resources/download", resourcesRoute.startDownload);
+    apiRoute(PST, "/api/resources/download/:downloadId/cancel", resourcesRoute.cancelDownload);
 
     app.use("", router);
 }

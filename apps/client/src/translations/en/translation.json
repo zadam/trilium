@@ -4606,5 +4606,20 @@
     "offset": "{{offset}} into the transcription",
     "cleanup": "Hide filler words",
     "cleanup_tooltip": "Hides “uh”, “um” and stuttered words. The transcript itself is not changed."
+  },
+  "resource_download": {
+    "title": "Download required",
+    "intro": "This needs the files below, which do not come with Trilium. They are downloaded once and kept on this device.",
+    "partially_downloaded": "{{size}}, of which {{downloaded}} is already downloaded",
+    "sources": "From {{sources}}",
+    "total": "Download size: {{size}}",
+    "free_space": "Free space: {{size}}",
+    "not_enough_space": "There is not enough free space for this download.",
+    "progress": "{{received}} of {{total}}",
+    "current_file": "Downloading {{file}}…",
+    "failed": "The download failed: {{error}}",
+    "download": "Download",
+    "retry": "Retry",
+    "cancel": "Cancel"
   }
 }

@@ -48,7 +48,8 @@ export function getDataDirs(TRILIUM_DATA_DIR: string) {
         TMP_DIR: process.env.TRILIUM_TMP_DIR || pathJoin(TRILIUM_DATA_DIR, "tmp"),
         ANONYMIZED_DB_DIR: process.env.TRILIUM_ANONYMIZED_DB_DIR || pathJoin(TRILIUM_DATA_DIR, "anonymized-db"),
         CONFIG_INI_PATH: process.env.TRILIUM_CONFIG_INI_PATH || pathJoin(TRILIUM_DATA_DIR, "config.ini"),
-        OCR_CACHE_DIR: process.env.TRILIUM_OCR_CACHE_DIR || pathJoin(TRILIUM_DATA_DIR, "ocr-cache")
+        OCR_CACHE_DIR: process.env.TRILIUM_OCR_CACHE_DIR || pathJoin(TRILIUM_DATA_DIR, "ocr-cache"),
+        RESOURCES_DIR: process.env.TRILIUM_RESOURCES_DIR || pathJoin(TRILIUM_DATA_DIR, "resources")
     } as const;
 
     createDirIfNotExisting(dataDirs.TMP_DIR, TRILIUM_DATA_DIR);
@@ -75,6 +76,7 @@ function checkExistingEntries(dataDirs: ReturnType<typeof getDataDirs>) {
         [ dataDirs.BACKUP_DIR, R_OK | W_OK | X_OK ],
         [ dataDirs.ANONYMIZED_DB_DIR, R_OK | W_OK | X_OK ],
         [ dataDirs.OCR_CACHE_DIR, R_OK | W_OK | X_OK ],
+        [ dataDirs.RESOURCES_DIR, R_OK | W_OK | X_OK ],
         [ dataDirs.CONFIG_INI_PATH, R_OK ],
         [ inDataDir("session_secret.txt"), R_OK ]
     ];
