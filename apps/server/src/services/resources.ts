@@ -1,4 +1,6 @@
-import type { ResourceDownloadProgress, ResourceInfo, ResourcesStatusResponse } from "@triliumnext/commons";
+import type {
+    ForeignResourceEntry, ResourceDownloadProgress, ResourceInfo, ResourcesStatusResponse
+} from "@triliumnext/commons";
 import { getLog, utils, ValidationError, ws } from "@triliumnext/core";
 import { t } from "i18next";
 import { createHash, type Hash } from "node:crypto";
@@ -41,6 +43,7 @@ interface Download {
 type VerifiedFiles = Record<string, { size: number; mtimeMs: number }>;
 
 const ID_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/;
+const CONTENT_HASH_PATTERN = /^[0-9a-f]{12}$/;
 const PROGRESS_INTERVAL_MS = 250;
 /** How many hex digits of the files' combined hash a resource's directory name carries. */
 const CONTENT_HASH_LENGTH = 12;
@@ -88,13 +91,17 @@ export class ResourceManager {
         return isInstalled ? directory : null;
     }
 
-    /** Reports the resources `ids`, or every registered one when `ids` is left out. */
+    /**
+     * Reports the resources `ids`, or every registered one when `ids` is left out, together with
+     * the entries of the resources directory that are none of them.
+     */
     async getStatus(ids?: string[]): Promise<ResourcesStatusResponse> {
         const definitions = ids
             ? ids.map((id) => this.getDefinition(id))
             : [ ...this.definitions.values() ];
         return {
             resources: definitions.map((definition) => this.getInfo(definition)),
+            ...(ids ? {} : { foreign: await this.getForeignEntries() }),
             freeBytes: await this.getFreeBytes(),
             download: this.findDownload(definitions.map(({ id }) => id))?.progress ?? null
         };
@@ -209,6 +216,53 @@ export class ResourceManager {
             this.downloads.delete(progress.downloadId);
             report(true);
         }
+    }
+
+    /** Deletes `name` from the resources directory, which must be one of its foreign entries. */
+    async deleteForeign(name: string) {
+        const entries = await this.getForeignEntries();
+        const entry = entries.find((foreign) => foreign.name === name);
+        if (!entry) {
+            throw new ValidationError(t("resources.not-foreign", { name }));
+        }
+        await fs.promises.rm(entry.path, { recursive: true, force: true });
+        getLog().info(`Resources: deleted ${entry.path}.`);
+    }
+
+    /**
+     * The entries of the resources directory that are not the directory of a registered resource,
+     * sorted by name. A directory named `<id>-<hash>` is `outdated` when `id` is registered and
+     * `unregistered` otherwise.
+     */
+    private async getForeignEntries(): Promise<ForeignResourceEntry[]> {
+        let dirents: fs.Dirent[];
+        try {
+            dirents = await fs.promises.readdir(this.baseDir, { withFileTypes: true });
+        } catch {
+            return [];
+        }
+        const current = new Set([ ...this.directories.values() ].map((directory) => path.basename(directory)));
+        const entries: ForeignResourceEntry[] = [];
+        for (const dirent of dirents) {
+            if (current.has(dirent.name)) {
+                continue;
+            }
+            const entryPath = path.join(this.baseDir, dirent.name);
+            const isDirectory = dirent.isDirectory();
+            const resourceId = isDirectory ? parseDirectoryName(dirent.name) : null;
+            const definition = resourceId ? this.definitions.get(resourceId) : undefined;
+            entries.push({
+                name: dirent.name,
+                path: entryPath,
+                kind: definition ? "outdated" : resourceId ? "unregistered" : "unknown",
+                resourceId,
+                title: definition?.title() ?? null,
+                icon: definition?.icon ?? null,
+                size: await getEntrySize(entryPath),
+                isDirectory
+            });
+        }
+        return entries.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     private getDefinition(id: string) {
@@ -348,6 +402,27 @@ function validateDefinition({ id, files }: ResourceDefinition) {
             throw new Error(`The resource ${id} has a file outside its directory: ${file.path}.`);
         }
     }
+}
+
+/** The resource ID a directory named `<id>-<hash>` carries, or `null` for any other name. */
+function parseDirectoryName(name: string) {
+    const separator = name.lastIndexOf("-");
+    const id = name.slice(0, separator);
+    const hash = name.slice(separator + 1);
+    return separator > 0 && ID_PATTERN.test(id) && CONTENT_HASH_PATTERN.test(hash) ? id : null;
+}
+
+/** The size of a file, or of every file under a directory, without following symbolic links. */
+async function getEntrySize(entryPath: string): Promise<number> {
+    const stats = await fs.promises.lstat(entryPath);
+    if (!stats.isDirectory()) {
+        return stats.isFile() ? stats.size : 0;
+    }
+    let total = 0;
+    for (const name of await fs.promises.readdir(entryPath)) {
+        total += await getEntrySize(path.join(entryPath, name));
+    }
+    return total;
 }
 
 /** The start of a SHA-256 over every file's path and hash, which names a resource's directory. */

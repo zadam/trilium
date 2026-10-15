@@ -1,16 +1,18 @@
-import type { ResourceInfo, WebSocketMessage } from "@triliumnext/commons";
+import type { ForeignResourceEntry, ResourceInfo, WebSocketMessage } from "@triliumnext/commons";
 import { render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
     resources: [] as ResourceInfo[],
+    foreign: [] as ForeignResourceEntry[],
     freeBytes: null as number | null,
     requests: 0,
     confirmed: true,
     removed: [] as string[],
     electron: true,
     opened: [] as string[],
+    revealed: [] as string[],
     handlers: [] as ((message: WebSocketMessage) => void)[]
 }));
 
@@ -21,7 +23,9 @@ vi.mock("../../../services/server", () => ({
                 return [];
             }
             mocks.requests++;
-            return { resources: mocks.resources, freeBytes: mocks.freeBytes, download: null };
+            return {
+                resources: mocks.resources, foreign: mocks.foreign, freeBytes: mocks.freeBytes, download: null
+            };
         },
         remove: async (url: string) => {
             mocks.removed.push(url);
@@ -58,6 +62,9 @@ vi.mock("../../../services/open", () => ({
     default: {
         openDirectory: async (directory: string) => {
             mocks.opened.push(directory);
+        },
+        revealFile: async (filePath: string) => {
+            mocks.revealed.push(filePath);
         }
     }
 }));
@@ -78,6 +85,8 @@ beforeEach(() => {
         resource({ id: "test.partial", downloadedSize: 4 * MIB }),
         resource({ id: "test.missing" })
     ];
+    mocks.foreign = [];
+    mocks.revealed = [];
     mocks.requests = 0;
     mocks.freeBytes = null;
     mocks.confirmed = true;
@@ -161,6 +170,46 @@ describe("ResourcesSettings", () => {
         expect(description()).toBeNull();
     });
 
+    it("lists the foreign entries after the resources, counting them in the space used", async () => {
+        mocks.foreign = [
+            foreign({ name: "notes.txt", kind: "unknown", size: 1 * MIB, isDirectory: false }),
+            foreign({
+                name: "test.installed-000000000000", kind: "outdated", resourceId: "test.installed",
+                title: "Old model", icon: "bx bx-captions", size: 1024 * MIB
+            })
+        ];
+        await open();
+
+        const rows = [ ...host.querySelectorAll(".resources-item") ];
+        expect(rows.map((row) => row.querySelector(".tn-card-option-title")?.textContent))
+            .toEqual([ "test.installed", "test.partial", "notes.txt", "Old model" ]);
+        expect(rows.slice(2).map((row) => row.querySelector(".resources-status small")?.textContent))
+            .toEqual([ "resources_options.unknown", "resources_options.outdated" ]);
+        expect(rows.map((row) => row.classList.contains("resources-foreign")))
+            .toEqual([ false, false, true, true ]);
+        expect(rows[2].querySelector(".resources-icon")?.className).toContain("bx-file");
+        expect(rows[3].querySelector(".resources-icon")?.className).toContain("bx-captions");
+        expect(host.querySelector(".resources-total .resources-size")?.textContent).toBe("3.00 GiB");
+    });
+
+    it("opens and deletes a foreign entry by its name", async () => {
+        mocks.resources = [];
+        mocks.foreign = [
+            foreign({ name: "notes.txt", kind: "unknown", isDirectory: false }),
+            foreign({ name: "stray" })
+        ];
+        await open();
+        const [ file, directory ] = [ ...host.querySelectorAll(".resources-item") ];
+
+        await act(async () => file.querySelector<HTMLElement>(".bx-folder-open")?.click());
+        await act(async () => directory.querySelector<HTMLElement>(".bx-folder-open")?.click());
+        expect(mocks.revealed).toEqual([ "/data/resources/notes.txt" ]);
+        expect(mocks.opened).toEqual([ "/data/resources/stray" ]);
+
+        await act(async () => directory.querySelector<HTMLElement>(".destructive-action-icon")?.click());
+        expect(mocks.removed).toEqual([ "resources/foreign/stray" ]);
+    });
+
     it("shows an empty state when nothing is downloaded", async () => {
         mocks.resources = [ resource({ id: "test.missing" }) ];
         await open();
@@ -186,6 +235,19 @@ describe("ResourcesSettings", () => {
         expect(mocks.requests).toBe(2);
     });
 });
+
+function foreign(overrides: Partial<ForeignResourceEntry> & { name: string }): ForeignResourceEntry {
+    return {
+        path: `/data/resources/${overrides.name}`,
+        kind: "unknown",
+        resourceId: null,
+        title: null,
+        icon: null,
+        size: MIB,
+        isDirectory: true,
+        ...overrides
+    };
+}
 
 function resource(overrides: Partial<ResourceInfo> & { id: string }): ResourceInfo {
     return {

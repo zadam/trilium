@@ -18,6 +18,14 @@
         text-align: end;
     }
 
+    .resources-foreign {
+        .resources-icon,
+        .tn-card-option-label,
+        .resources-status {
+            opacity: 0.6;
+        }
+    }
+
     .resources-actions {
         --resources-actions-gap: 12px;
 

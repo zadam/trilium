@@ -4651,6 +4651,13 @@
     "no_resources": "Nothing has been downloaded yet.",
     "delete": "Delete",
     "delete_confirmation": "Delete {{title}}? It is downloaded again the next time a feature needs it.",
-    "open_folder": "Open folder"
+    "open_folder": "Open folder",
+    "outdated": "Older version",
+    "outdated_description": "Files of an earlier version of this resource, which its current version does not use.",
+    "unregistered": "Not used",
+    "unregistered_description": "A downloaded resource that no feature of this app uses.",
+    "unknown": "Unknown",
+    "unknown_description": "Not downloaded by Trilium.",
+    "delete_foreign_confirmation": "Delete {{name}}? No feature of this app uses it."
   }
 }

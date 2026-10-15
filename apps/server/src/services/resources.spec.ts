@@ -321,6 +321,44 @@ describe("ResourceManager", () => {
         expect((await manager.getStatus([ "test.stalled" ])).resources[0].downloadedSize).toBe(0);
     });
 
+    it("lists the entries of its directory that are no registered resource, and deletes them", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        const write = (name: string, size: number) => {
+            fs.mkdirSync(path.join(baseDir, path.dirname(name)), { recursive: true });
+            fs.writeFileSync(path.join(baseDir, name), Buffer.alloc(size));
+        };
+        write("test.model-000000000000/nested/model.bin", 300);
+        write("test.removed-123456789abc/model.bin", 200);
+        write("stray/a.bin", 50);
+        write("stray/b.bin", 25);
+        write("notes.txt", 10);
+
+        const { foreign } = await manager.getStatus();
+        expect(foreign?.map(({ name, kind, resourceId, size, isDirectory }) => ({
+            name, kind, resourceId, size, isDirectory
+        }))).toEqual([
+            { name: "notes.txt", kind: "unknown", resourceId: null, size: 10, isDirectory: false },
+            { name: "stray", kind: "unknown", resourceId: null, size: 75, isDirectory: true },
+            { name: "test.model-000000000000", kind: "outdated", resourceId: "test.model", size: 300, isDirectory: true },
+            { name: "test.removed-123456789abc", kind: "unregistered", resourceId: "test.removed", size: 200, isDirectory: true }
+        ]);
+        expect(foreign?.[1].path).toBe(path.join(baseDir, "stray"));
+        expect((await manager.getStatus([ "test.model" ])).foreign).toBeUndefined();
+
+        await manager.deleteForeign("stray");
+        await manager.deleteForeign("notes.txt");
+        expect(fs.existsSync(path.join(baseDir, "stray"))).toBe(false);
+        expect(fs.existsSync(path.join(baseDir, "notes.txt"))).toBe(false);
+
+        const installed = path.basename(manager.getPath("test.model") ?? "");
+        for (const name of [ installed, "..", "missing", "stray/../notes.txt", "" ]) {
+            await expect(manager.deleteForeign(name)).rejects.toThrow();
+        }
+        expect(manager.getPath("test.model")).not.toBeNull();
+    });
+
     it("refuses invalid or unknown resources", () => {
         manager.register(defineModel());
         expect(() => manager.register(defineModel())).toThrow(/already registered/);

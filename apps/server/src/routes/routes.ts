@@ -201,6 +201,7 @@ function register(app: express.Application) {
     asyncApiRoute(GET, "/api/resources", resourcesRoute.getStatus);
     apiRoute(PST, "/api/resources/download", resourcesRoute.startDownload);
     apiRoute(PST, "/api/resources/download/:downloadId/cancel", resourcesRoute.cancelDownload);
+    asyncApiRoute(DEL, "/api/resources/foreign/:name", resourcesRoute.deleteForeign);
     asyncApiRoute(DEL, "/api/resources/:id", resourcesRoute.deleteResource);
 
     app.use("", router);

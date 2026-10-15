@@ -27,6 +27,11 @@ async function deleteResource(req: Request<{ id: string }>) {
     await resources.delete(req.params.id);
 }
 
+/** `DELETE /api/resources/foreign/:name`: deletes an entry of the resources directory that is no resource. */
+async function deleteForeign(req: Request<{ name: string }>) {
+    await resources.deleteForeign(req.params.name);
+}
+
 function parseIds(ids: unknown) {
     const list = typeof ids === "string" ? ids.split(",") : ids;
     if (!Array.isArray(list) || !list.length || !list.every((id) => typeof id === "string")) {
@@ -39,5 +44,6 @@ export default {
     getStatus,
     startDownload,
     cancelDownload,
-    deleteResource
+    deleteResource,
+    deleteForeign
 };

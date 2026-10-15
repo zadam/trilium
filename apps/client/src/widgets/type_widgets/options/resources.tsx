@@ -1,6 +1,10 @@
 import "./resources.css";
 
-import type { ResourceInfo, ResourcesStatusResponse, WebSocketMessage } from "@triliumnext/commons";
+import type {
+    ForeignResourceEntry, ResourceInfo, ResourcesStatusResponse, WebSocketMessage
+} from "@triliumnext/commons";
+import clsx from "clsx";
+import type { ComponentChildren } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import dialogService from "../../../services/dialog";
@@ -15,7 +19,10 @@ import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 
-/** Lists the resources installed on this device, and the ones an interrupted download left partly fetched. */
+/**
+ * Lists the resources installed on this device, the ones an interrupted download left partly
+ * fetched, and whatever else is in the resources directory.
+ */
 export default function ResourcesSettings() {
     const [ status, refresh ] = useResources();
 
@@ -28,12 +35,8 @@ export default function ResourcesSettings() {
                     heading={t("resources_options.list_title")}
                     description={t("resources_options.list_description")}
                 >
-                    {status.resources.length > 0 ? (
-                        <ResourceRows
-                            resources={status.resources}
-                            freeBytes={status.freeBytes}
-                            onDeleted={refresh}
-                        />
+                    {status.resources.length > 0 || status.foreign.length > 0 ? (
+                        <ResourceRows {...status} onDeleted={refresh} />
                     ) : (
                         <CardSection>
                             <NoItems icon="bx bx-download" text={t("resources_options.no_resources")} size="small" />
@@ -45,15 +48,22 @@ export default function ResourcesSettings() {
     );
 }
 
+interface ResourcesStatus {
+    resources: ResourceInfo[];
+    foreign: ForeignResourceEntry[];
+    freeBytes: number | null;
+}
+
 /**
- * The resources installed or partly downloaded and the free space where they are stored, fetched
- * again whenever a download ends.
+ * The resources installed or partly downloaded, the foreign entries and the free space where they
+ * are stored, fetched again whenever a download ends.
  */
 function useResources() {
-    const [ status, setStatus ] = useState<Pick<ResourcesStatusResponse, "resources" | "freeBytes">>();
+    const [ status, setStatus ] = useState<ResourcesStatus>();
     const refresh = useCallback(() => {
-        void server.get<ResourcesStatusResponse>("resources").then(({ resources, freeBytes }) => setStatus({
+        void server.get<ResourcesStatusResponse>("resources").then(({ resources, foreign, freeBytes }) => setStatus({
             resources: resources.filter(({ downloadedSize }) => downloadedSize > 0),
+            foreign: foreign ?? [],
             freeBytes
         }));
     }, []);
@@ -72,20 +82,22 @@ function useResources() {
     return [ status, refresh ] as const;
 }
 
-/** The resources and the space they use, every size in one unit so that the column adds up. */
-interface ResourceRowsProps {
-    resources: ResourceInfo[];
-    freeBytes: number | null;
+interface ResourceRowsProps extends ResourcesStatus {
     onDeleted: () => void;
 }
 
-function ResourceRows({ resources, freeBytes, onDeleted }: ResourceRowsProps) {
-    const used = resources.reduce((total, { downloadedSize }) => total + downloadedSize, 0);
+/** The entries and the space they use, every size in one unit so that the column adds up. */
+function ResourceRows({ resources, foreign, freeBytes, onDeleted }: ResourceRowsProps) {
+    const used = resources.reduce((total, { downloadedSize }) => total + downloadedSize, 0)
+        + foreign.reduce((total, { size }) => total + size, 0);
     const unitOf = Math.max(used, ...resources.map(({ size }) => size));
     return (
         <>
             {resources.map((resource) => (
                 <ResourceRow key={resource.id} resource={resource} unitOf={unitOf} onDeleted={onDeleted} />
+            ))}
+            {foreign.map((entry) => (
+                <ForeignRow key={entry.name} entry={entry} unitOf={unitOf} onDeleted={onDeleted} />
             ))}
             <CardSection className="tn-card-option resources-total">
                 <div className="tn-card-option-label">
@@ -120,34 +132,101 @@ function ResourceRow({ resource, unitOf, onDeleted }: ResourceRowProps) {
     }
 
     return (
-        <CardSection className="tn-card-option resources-item">
-            <Icon icon={resource.icon} className="resources-icon" />
+        <EntryRow
+            icon={resource.icon}
+            title={resource.title}
+            size={formatSize(resource.size, 2, unitOf)}
+            status={getStatusText(resource)}
+            onOpen={directory ? () => void openService.openDirectory(directory) : undefined}
+            onDelete={() => void remove()}
+        >
+            <small className="tn-card-option-description">{resource.description}</small>
+            <small className="tn-card-option-description">
+                {t("resource_download.sources", { sources: resource.sources.join(", ") })}
+                {" · "}
+                {t("resource_download.license", { license: resource.license })}
+            </small>
+        </EntryRow>
+    );
+}
+
+interface ForeignRowProps {
+    entry: ForeignResourceEntry;
+    unitOf: number;
+    onDeleted: () => void;
+}
+
+/** An entry of the resources directory that no registered resource accounts for. */
+function ForeignRow({ entry, unitOf, onDeleted }: ForeignRowProps) {
+    async function remove() {
+        if (!await dialogService.confirm(t("resources_options.delete_foreign_confirmation", { name: entry.name }))) {
+            return;
+        }
+        await server.remove(`resources/foreign/${encodeURIComponent(entry.name)}`);
+        onDeleted();
+    }
+
+    function open() {
+        void (entry.isDirectory ? openService.openDirectory(entry.path) : openService.revealFile(entry.path));
+    }
+
+    return (
+        <EntryRow
+            className="resources-foreign"
+            icon={entry.icon ?? (entry.isDirectory ? "bx bx-folder" : "bx bx-file")}
+            title={entry.title ?? entry.name}
+            size={formatSize(entry.size, 2, unitOf)}
+            status={t(`resources_options.${entry.kind}`)}
+            onOpen={open}
+            onDelete={() => void remove()}
+        >
+            <small className="tn-card-option-description">
+                {t(`resources_options.${entry.kind}_description`)}
+            </small>
+            {entry.title && <small className="tn-card-option-description">{entry.name}</small>}
+        </EntryRow>
+    );
+}
+
+interface EntryRowProps {
+    className?: string;
+    icon: string;
+    title: string;
+    /** The lines below the title. */
+    children: ComponentChildren;
+    size: string;
+    status: string;
+    /** Opens the entry in the file manager, which only the desktop app can do. */
+    onOpen?: () => void;
+    onDelete: () => void;
+}
+
+/** One row of the list: icon, title and description, size and status, then its actions. */
+function EntryRow({ className, icon, title, children, size, status, onOpen, onDelete }: EntryRowProps) {
+    return (
+        <CardSection className={clsx("tn-card-option resources-item", className)}>
+            <Icon icon={icon} className="resources-icon" />
             <div className="tn-card-option-label">
-                <span className="tn-card-option-title">{resource.title}</span>
-                <small className="tn-card-option-description">{resource.description}</small>
-                <small className="tn-card-option-description">
-                    {t("resource_download.sources", { sources: resource.sources.join(", ") })}
-                    {" · "}
-                    {t("resource_download.license", { license: resource.license })}
-                </small>
+                <span className="tn-card-option-title">{title}</span>
+                {children}
             </div>
             <div className="tn-card-option-value resources-status">
-                <span className="resources-size">{formatSize(resource.size, 2, unitOf)}</span>
-                <small className="tn-card-option-description">{getStatusText(resource)}</small>
+                <span className="resources-size">{size}</span>
+                <small className="tn-card-option-description">{status}</small>
             </div>
             <div className="resources-actions">
-                {directory && isElectron() && (
+                {onOpen && isElectron() && (
                     <ActionButton
                         icon="bx bx-folder-open"
                         text={t("resources_options.open_folder")}
-                        onClick={() => void openService.openDirectory(directory)}
+                        onClick={onOpen}
                     />
                 )}
                 <ActionButton
                     className="destructive-action-icon"
                     icon="bx bx-trash"
                     text={t("resources_options.delete")}
-                    onClick={() => void remove()}
+                    onClick={onDelete}
                 />
             </div>
         </CardSection>

@@ -47,8 +47,32 @@ export interface ResourceDownloadProgress {
     resources: ResourceDownloadState[];
 }
 
+/**
+ * A file or directory in the resources directory that is not the directory of a registered
+ * resource as it is now:
+ * - `outdated`: a registered resource's directory for files it no longer has;
+ * - `unregistered`: the directory of a resource that no feature registers;
+ * - `unknown`: anything else, such as a file put there by hand.
+ */
+export interface ForeignResourceEntry {
+    /** Its name in the resources directory. */
+    name: string;
+    path: string;
+    kind: "outdated" | "unregistered" | "unknown";
+    /** The ID its name carries, for `outdated` and `unregistered`. */
+    resourceId: string | null;
+    /** The title and icon of the registered resource, for `outdated`. */
+    title: string | null;
+    icon: string | null;
+    /** The size of its files, in bytes. */
+    size: number;
+    isDirectory: boolean;
+}
+
 export interface ResourcesStatusResponse {
     resources: ResourceInfo[];
+    /** The entries of the resources directory that are no registered resource, when listing all. */
+    foreign?: ForeignResourceEntry[];
     /** The free space where resources are stored, in bytes, or `null` when it cannot be read. */
     freeBytes: number | null;
     /** The download that already fetches some of the resources, if one runs. */
