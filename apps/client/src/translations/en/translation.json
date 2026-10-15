@@ -4650,7 +4650,8 @@
     "model_standard_description": "Parakeet TDT 0.6B v3 by NVIDIA, quantized so that it runs well on most computers.",
     "model_high_accuracy_description": "Parakeet TDT 0.6B v3 by NVIDIA at full precision. It makes fewer mistakes, but needs about 1.6 GB more memory while recording.",
     "model_size": "{{size}} download",
-    "keep_recordings_warning": "Before turning this on, ask everyone in the meeting to agree to being recorded. Germany, France and several US states make recording a conversation without everyone's consent a criminal offense, and when people join from different places, the strictest of their laws applies. The audio is stored unencrypted, even for protected notes."
+    "keep_recordings_warning": "Before turning this on, ask everyone in the meeting to agree to being recorded. Germany, France and several US states make recording a conversation without everyone's consent a criminal offense, and when people join from different places, the strictest of their laws applies. The audio is stored unencrypted, even for protected notes.",
+    "unsupported": "Meeting transcription is not available on this computer: its speech recognition engine could not be loaded."
   },
   "resources_options": {
     "list_title": "Resources",

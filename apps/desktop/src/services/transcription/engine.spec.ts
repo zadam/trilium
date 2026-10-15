@@ -1,7 +1,7 @@
 import path from "path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadSherpaEngine } from "./engine";
+import { loadSherpaEngine, probeSherpa } from "./engine";
 
 const h = vi.hoisted(() => ({
     /** Base names of the optional model files the model directory holds. */
@@ -53,6 +53,7 @@ const vads: FakeVad[] = [];
 
 vi.mock("sherpa-onnx-node", () => ({
     default: {
+        version: "1.13.8",
         OfflineRecognizer: {
             createAsync: async (config: Record<string, unknown>) => {
                 h.recognizerConfig = config;
@@ -110,11 +111,19 @@ const MODELS = {
 
 beforeEach(() => {
     h.installed = [];
+    h.recognizerConfig = null;
     h.isEmbeddingReady = true;
     h.decoded.length = 0;
     h.embeddings.length = 0;
     h.embedded.length = 0;
     vads.length = 0;
+});
+
+describe("probeSherpa", () => {
+    it("loads sherpa-onnx without any model and reports its version", async () => {
+        expect(await probeSherpa()).toBe("1.13.8");
+        expect(h.recognizerConfig).toBeNull();
+    });
 });
 
 describe("loadSherpaEngine", () => {

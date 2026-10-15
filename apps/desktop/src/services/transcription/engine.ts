@@ -103,6 +103,25 @@ const VAD_SETTINGS = {
 };
 
 /**
+ * Loads sherpa-onnx's native addon, with onnxruntime, without any model.
+ *
+ * @returns The sherpa-onnx version of the addon.
+ */
+export async function probeSherpa() {
+    try {
+        const mod = await import("sherpa-onnx-node");
+        const sherpa = mod.default ?? mod;
+        return sherpa.version;
+    } catch (e) {
+        // `sherpa-onnx-node` reports only that no addon loaded; loading the platform package's
+        // addon directly throws the reason, such as a missing shared library.
+        const platform = process.platform === "win32" ? "win" : process.platform;
+        require(`sherpa-onnx-${platform}-${process.arch}/sherpa-onnx.node`);
+        throw e;
+    }
+}
+
+/**
  * Loads the local engine from `models`: Silero VAD for segmentation and Parakeet TDT 0.6B v3 for
  * recognition, both through sherpa-onnx, and the speaker model when it is given and installed.
  * The recognizer's precision picks its files: `encoder.onnx` (with `encoder.weights`) for `fp32`,

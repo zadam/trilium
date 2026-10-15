@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     saved: [] as string[],
     bools: {} as Record<string, boolean>,
     getRecordingsDirectory: vi.fn(),
+    isSupported: vi.fn(),
     savedBools: [] as [ string, boolean ][],
     getResources: vi.fn()
 }));
@@ -86,8 +87,12 @@ beforeEach(() => {
         freeBytes: null,
         download: null
     });
+    mocks.isSupported.mockReset().mockResolvedValue(true);
     window.electronApi = {
-        transcription: { getRecordingsDirectory: mocks.getRecordingsDirectory }
+        transcription: {
+            getRecordingsDirectory: mocks.getRecordingsDirectory,
+            isSupported: mocks.isSupported
+        }
     } as unknown as typeof window.electronApi;
     host = document.body.appendChild(document.createElement("div"));
 });
@@ -234,6 +239,15 @@ describe("TranscriptionSettings", () => {
         mocks.stored = "whisper";
         expect(open()?.querySelector("button")?.textContent)
             .toContain("transcription_options.model_standard");
+    });
+
+    it("explains that this computer cannot transcribe, in place of the settings", async () => {
+        mocks.isSupported.mockResolvedValue(false);
+        expect(open()).not.toBeNull();
+        await act(async () => {});
+        expect(host.querySelector(".transcription-model-picker")).toBeNull();
+        expect(host.querySelector("input.switch-toggle[id^='transcription-enabled-']")).toBeNull();
+        expect(host.textContent).toContain("transcription_options.unsupported");
     });
 
     it("explains that the page applies to desktop builds only, elsewhere", () => {

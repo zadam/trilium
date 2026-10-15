@@ -53,7 +53,7 @@ The settings are in <a class="reference-link" href="Basic%20Concepts%20and%20Fe
 
 ## Limitations
 
-*   Meeting transcription is not available on every processor. Where it is not, the _Transcribe meeting_ button does not appear, and the _Transcription_ options say so.
+*   Meeting transcription needs a speech recognition engine that does not load on every computer, for example on Linux distributions older than Ubuntu 22.04 or Debian 12. Where it does not load, the _Transcribe meeting_ button does not appear, the _Transcription_ options say so, and the log records why.
 *   The transcript is made from the audio played by your device. A participant whose voice does not come out of your speakers or headphones, for example someone in the same room, is transcribed only as far as your microphone picks them up, and is labeled _Me_.
 *   Speaker identification works best with a few clearly distinct voices. Similar voices, many participants or poor call quality can lead to speakers being merged or split.
 *   Accuracy is lower for languages other than English, and the model can switch to the wrong language for short passages.

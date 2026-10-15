@@ -9,6 +9,7 @@ import { useEffect, useState } from "preact/hooks";
 import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import { formatSize, isElectron } from "../../../services/utils";
+import { useTranscriptionSupported } from "../../launch_bar/RecordMeetingButton";
 import { Badge } from "../../react/Badge";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import { DirectoryLocation } from "../../react/DirectoryLink";
@@ -22,12 +23,22 @@ import RelatedSettings from "./components/RelatedSettings";
 
 export default function TranscriptionSettings() {
     const [ isEnabled, setIsEnabled ] = useTriliumOptionBool("transcriptionEnabled");
+    const isSupported = useTranscriptionSupported(true);
 
     if (!isElectron()) {
         return (
             <>
                 <OptionsPageHeader />
                 <NoItems icon="bx bx-microphone" text={t("desktop.web_placeholder")} />
+            </>
+        );
+    }
+
+    if (isSupported === false) {
+        return (
+            <>
+                <OptionsPageHeader helpUrl="Y84QCbArmK3z" />
+                <NoItems icon="bx bx-microphone-off" text={t("transcription_options.unsupported")} />
             </>
         );
     }

@@ -30,7 +30,9 @@ export type WorkerRequest =
     }
     /** Sent once the recording runs, with the port the capture page posts its samples to. */
     | { type: "capture" }
-    | { type: "stop" };
+    | { type: "stop" }
+    /** Sent instead of `start`: loads sherpa-onnx without any model, then reports `probed`. */
+    | { type: "probe" };
 
 /** What the transcription process reports to the main process. */
 export type WorkerEvent =
@@ -41,7 +43,9 @@ export type WorkerEvent =
     | { type: "utterance"; utterance: TranscriptUtterance }
     | { type: "log"; level: keyof Logger; message: string }
     /** Every utterance captured before `stop` has been sent. */
-    | { type: "stopped" };
+    | { type: "stopped" }
+    /** Answers `probe`: the version of sherpa-onnx that loaded, or why it did not load. */
+    | { type: "probed"; version: string } | { type: "probed"; error: string };
 
 /** One chunk of samples, posted by the capture page straight to the transcription process. */
 export interface CaptureChunk {

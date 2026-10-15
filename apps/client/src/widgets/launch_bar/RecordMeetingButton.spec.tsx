@@ -13,7 +13,8 @@ const mocks = vi.hoisted(() => ({
     transcriptionModel: null as string | null,
     speakersEnabled: true,
     transcriptionEnabled: true,
-    keepRecordings: false
+    keepRecordings: false,
+    isSupported: vi.fn()
 }));
 
 vi.mock("../react/hooks", async (importOriginal) => ({
@@ -63,6 +64,7 @@ beforeEach(() => {
     mocks.speakersEnabled = true;
     mocks.transcriptionEnabled = true;
     mocks.keepRecordings = false;
+    mocks.isSupported.mockResolvedValue(true);
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -178,6 +180,7 @@ describe("RecordMeetingButton", () => {
     async function renderWithState(state: Partial<TranscriptionState>) {
         window.electronApi = {
             transcription: {
+                isSupported: mocks.isSupported,
                 getState: async () => ({
                     status: "idle", noteId: null, pendingSources: [], ...state
                 }),
@@ -226,11 +229,22 @@ describe("RecordMeetingButton", () => {
         window.electronApi = undefined;
     });
 
-    it("shows nothing while transcription is turned off in the settings", () => {
+    it("shows nothing while transcription is turned off or the computer cannot transcribe", async () => {
+        expect((await renderWithState({ status: "idle" }))?.querySelector("button")).not.toBeNull();
+        expect(mocks.isSupported).toHaveBeenCalledOnce();
+
         mocks.transcriptionEnabled = false;
-        const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
-        expect(container.querySelector(".record-meeting-launcher")).toBeNull();
-        expect(container.querySelector("button")).toBeNull();
+        const turnedOff = await renderWithState({ status: "idle" });
+        expect(turnedOff?.querySelector(".record-meeting-launcher")).toBeNull();
+        expect(turnedOff?.querySelector("button")).toBeNull();
+        expect(mocks.isSupported).toHaveBeenCalledOnce();
+
+        mocks.transcriptionEnabled = true;
+        mocks.isSupported.mockResolvedValue(false);
+        expect((await renderWithState({ status: "idle" }))?.querySelector("button")).toBeNull();
+        window.electronApi = undefined;
+        expect(renderInto(<RecordMeetingButton launcherNote={{} as FNote} />).querySelector("button"))
+            .toBeNull();
     });
 
     it("keeps the stop button while a recording outlasts turning transcription off", async () => {
@@ -243,10 +257,11 @@ describe("RecordMeetingButton", () => {
         window.electronApi = undefined;
     });
 
-    it("marks the launcher as beta", () => {
-        const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
-        expect(container.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)
+    it("marks the launcher as beta", async () => {
+        const container = await renderWithState({ status: "idle" });
+        expect(container?.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)
             .toContain("common.beta");
+        window.electronApi = undefined;
     });
 
     it("says once why a recording stopped by itself", async () => {
@@ -256,6 +271,7 @@ describe("RecordMeetingButton", () => {
         }));
         window.electronApi = {
             transcription: {
+                isSupported: async () => true,
                 getState: async () => ({ status: "idle", noteId: null, pendingSources: [] }),
                 onStateChanged: (callback: typeof onStateChanged) => {
                     onStateChanged = callback;
@@ -283,6 +299,7 @@ describe("RecordMeetingButton", () => {
         const report = (status: TranscriptionState["status"]) =>
             act(() => onStateChanged({ status, noteId: "meeting", pendingSources: [] }));
         const transcription = {
+            isSupported: async () => true,
             getState: async () => ({ status: "recording", noteId: "meeting", pendingSources: [] }),
             onStateChanged: (callback: typeof onStateChanged) => {
                 onStateChanged = callback;

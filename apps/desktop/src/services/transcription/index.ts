@@ -10,7 +10,7 @@ import path from "path";
 import { AttachmentSink } from "./attachment_sink";
 import { CaptureWindow } from "./capture";
 import { getModelPaths, TRANSCRIPTION_MODELS } from "./model";
-import { TranscriptionWorker } from "./worker_client";
+import { probeEngine, TranscriptionWorker } from "./worker_client";
 
 /**
  * Where the audio and the transcript as produced of each recording are kept, one directory per
@@ -41,9 +41,12 @@ let stopping: Promise<void> | null = null;
 const unsavedSinks = new Set<AttachmentSink>();
 /** `waiting` while a quit waits for the transcription, `done` once it may go ahead. */
 let quitting: "no" | "waiting" | "done" = "no";
+/** {@link isSupported}'s answer, once asked. */
+let isSupportedHere: Promise<boolean> | null = null;
 
 export function setupTranscriptionHandlers() {
     resources.register(...TRANSCRIPTION_MODELS);
+    ipcMain.handle("transcription-is-supported", () => isSupported());
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
@@ -143,6 +146,21 @@ export function stopRecording(error?: string): Promise<void> {
 
 export function getState() {
     return state;
+}
+
+/**
+ * Whether sherpa-onnx's native addon loads on this computer, which a transcription process tries
+ * once per run, without any model. A build without the addon for this platform and processor, or
+ * a system missing a library it needs, cannot transcribe.
+ */
+export function isSupported() {
+    isSupportedHere ??= probeEngine().then((error) => {
+        if (error) {
+            getLog().error(`Transcription is unavailable on this computer: ${error}`);
+        }
+        return !error;
+    });
+    return isSupportedHere;
 }
 
 /**

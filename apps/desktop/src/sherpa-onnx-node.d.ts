@@ -1,4 +1,7 @@
 declare module "sherpa-onnx-node" {
+    /** The sherpa-onnx version of the native addon. */
+    export const version: string;
+
     export interface OfflineStream {
         acceptWaveform(wave: { samples: Float32Array; sampleRate: number }): void;
     }

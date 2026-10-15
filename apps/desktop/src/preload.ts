@@ -255,6 +255,9 @@ contextBridge.exposeInMainWorld("electronApi", {
     },
 
     transcription: {
+        isSupported() {
+            return ipcRenderer.invoke("transcription-is-supported");
+        },
         start(noteId: string) {
             return ipcRenderer.invoke("transcription-start", noteId);
         },

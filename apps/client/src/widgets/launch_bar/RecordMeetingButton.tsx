@@ -23,13 +23,14 @@ import {
 /**
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
  * recording, the second stops it. Desktop only, since the main process does the recording, and
- * shown only while `transcriptionEnabled` is on. Its corner badge reads "Beta" while idle and the
+ * shown only while `transcriptionEnabled` is on and the computer can transcribe. Its corner badge reads "Beta" while idle and the
  * time elapsed while recording.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
     const { status, error, startedAt } = useTranscriptionState();
     const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
+    const isSupported = useTranscriptionSupported(isEnabled);
     const [ keepsRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
     const [ now, setNow ] = useState(Date.now);
     const handleClick = useCallback(() => {
@@ -52,7 +53,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
     }, [ status ]);
 
     // A recording outlives the switch turning off, so its stop button stays until it ends.
-    if (!isEnabled && status === "idle") {
+    if ((!isEnabled || !isSupported) && status === "idle") {
         return null;
     }
 
@@ -132,6 +133,35 @@ export function useTranscriptionState() {
     }, []);
 
     return state;
+}
+
+/**
+ * Whether this computer can transcribe, from `electronApi.transcription.isSupported()`, which
+ * starts a process to find out: asked only once `shouldAsk` holds. `false` outside the desktop
+ * app, `undefined` until the main process answers.
+ */
+export function useTranscriptionSupported(shouldAsk: boolean) {
+    const [ isSupported, setIsSupported ] = useState<boolean | undefined>(
+        window.electronApi?.transcription ? undefined : false);
+
+    useEffect(() => {
+        const api = window.electronApi?.transcription;
+        if (!api || !shouldAsk) {
+            return;
+        }
+
+        let mounted = true;
+        void api.isSupported().then((value) => {
+            if (mounted) {
+                setIsSupported(value);
+            }
+        });
+        return () => {
+            mounted = false;
+        };
+    }, [ shouldAsk ]);
+
+    return isSupported;
 }
 
 /** Starts a recording into a new meeting note when idle, stops the running one when recording. */

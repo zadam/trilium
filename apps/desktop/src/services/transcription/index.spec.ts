@@ -21,6 +21,7 @@ const h = vi.hoisted(() => ({
     speakersEnabled: true,
     registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
+    probe: vi.fn(),
     listeners: null as WorkerListeners | null,
     captureOptions: null as CaptureWindowOptions | null,
     worker: { start: vi.fn(), connectCapture: vi.fn(), stop: vi.fn(), kill: vi.fn() },
@@ -110,6 +111,7 @@ vi.mock("./attachment_sink", () => ({
     }
 }));
 vi.mock("./worker_client", () => ({
+    probeEngine: h.probe,
     TranscriptionWorker: class {
         start = h.worker.start;
         connectCapture = h.worker.connectCapture;
@@ -336,6 +338,21 @@ describe("transcription IPC", () => {
         expect(h.worker.start.mock.calls[1][0].recordingDirectory)
             .toBe(path.resolve("data", "transcription-recordings", "2026-10-14T09-30-00-000Z_meeting"));
         vi.useRealTimers();
+    });
+
+    it("is supported where the engine loads, probing once per run and logging why it did not", async () => {
+        h.probe.mockResolvedValue(null);
+        let invoke = await loadService();
+        expect(await invoke("transcription-is-supported")).toBe(true);
+        expect(await invoke("transcription-is-supported")).toBe(true);
+        expect(h.probe).toHaveBeenCalledOnce();
+        expect(h.log.error).not.toHaveBeenCalled();
+
+        h.probe.mockResolvedValue("libstdc++.so.6: version `GLIBCXX_3.4.29' not found");
+        invoke = await loadService();
+        expect(await invoke("transcription-is-supported")).toBe(false);
+        expect(h.log.error).toHaveBeenCalledExactlyOnceWith("Transcription is unavailable on "
+            + "this computer: libstdc++.so.6: version `GLIBCXX_3.4.29' not found");
     });
 
     it("tells where the recordings are kept, as an absolute path, creating the directory", async () => {

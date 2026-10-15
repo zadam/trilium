@@ -742,6 +742,12 @@ export interface TranscriptionState {
  */
 export interface ElectronTranscriptionApi {
     /**
+     * Whether this build can transcribe on this computer: `false` when it carries no speech
+     * recognition engine for the platform and processor it runs on.
+     */
+    isSupported(): Promise<boolean>;
+
+    /**
      * Starts recording the microphone and the system audio for the meeting note `noteId`.
      *
      * @returns An empty string once recording runs, or an error message when it cannot start.
