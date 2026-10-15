@@ -50,7 +50,7 @@ export default function CalendarProperties({
     return (
         <CollectionPropertiesDialog
             className="calendar-properties-dialog"
-            title={t("calendar_view.properties")}
+            title={t("calendar_view.properties-title")}
             show
             stackable
             onHidden={onClose}

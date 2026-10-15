@@ -17,7 +17,7 @@ If there are too many items in the launch bar to fit the screen, it will become 
 
 There are two ways to configure the launch bar:
 
-*   Right click in the empty space between launchers on the launch bar and select _Configure Launchbar._
+*   Right click in the empty space between launchers on the launch bar and select _Configure Launchbar…_
 *   Click on the <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure Launchbar_.
 
 This will open a new tab with the <a class="reference-link" href="Note%20Tree.md">Note Tree</a> listing the launchers.
