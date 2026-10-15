@@ -27,14 +27,17 @@
 
         & > .trilium-tab > .trilium-tab-title {
             order: 0;
+            box-sizing: border-box;
             min-width: 4em;
-            max-width: 100%;
+            max-width: 30%;
             margin: 0 0 var(--_tabs-delimiter-width);
             padding: 6px 1rem;
             border-radius: var(--_tabs-border-radius) var(--_tabs-border-radius) 0 0;
             background: var(--_tabs-inactive-background);
+            overflow: hidden;
             color: var(--_tabs-title-color);
             font-weight: 500;
+            white-space: nowrap;
             cursor: pointer;
 
             &:hover {

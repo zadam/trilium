@@ -43,6 +43,13 @@ function textTopOf(element: Element) {
     return range.getBoundingClientRect().top;
 }
 
+/** The height of the text of `element`, which grows with each line it wraps onto. */
+function textHeightOf(element: Element) {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getBoundingClientRect().height;
+}
+
 /** Where the titles of a tabs block sit around the panel of its first tab, and their corners. */
 function measure(block: Element | null, alignment: TabAlignment) {
     expect(block).not.toBeNull();
@@ -117,6 +124,53 @@ describe("tabs layout styles", () => {
             const block = editable.querySelector(".trilium-tabs.ck-widget");
             expect(measure(block, alignment), alignment).toEqual(EXPECTED[alignment]);
         }
+    });
+
+    it("clips a long title at 30% of the block and scrolls it back after editing", async () => {
+        const long = tab("A title far too long for a third of the block", "<p>Body</p>");
+        const html = `<div class="trilium-tabs">${long}${tab("B", "")}</div>`;
+        const container = document.createElement("div");
+        container.className = "ck-content";
+        container.style.width = "600px";
+        container.innerHTML = html;
+        document.body.appendChild(container);
+        onTestFinished(() => container.remove());
+        applyTabs(container, { placeholder: "Tab title" });
+
+        const editor = await createTestEditor([Essentials, Paragraph, Tabs]);
+        const editable = editor.ui.view.editable.element as HTMLElement;
+        editable.style.width = "600px";
+        editor.setData(html);
+
+        const blocks = [container, editable].map(root => root.querySelector(".trilium-tabs"));
+        for (const block of blocks) {
+            const [long, short] = [...block?.querySelectorAll(".trilium-tab-title") ?? []];
+            expect(long).toBeDefined();
+            expect(short).toBeDefined();
+            const width = block?.getBoundingClientRect().width ?? NaN;
+            expect(long.getBoundingClientRect().width / width).toBeCloseTo(0.3, 2);
+            expect(long.scrollWidth).toBeGreaterThan(long.clientWidth);
+            expect(textHeightOf(long)).toBe(textHeightOf(short));
+        }
+
+        const title = editable.querySelector(".trilium-tab-title") as HTMLElement;
+        editor.editing.view.document.isFocused = true;
+        editor.model.change(writer => {
+            const root = editor.model.document.getRoot();
+            if (root) {
+                writer.setSelection(writer.createPositionFromPath(root, [0, 0, 0, 0]));
+            }
+        });
+        title.scrollLeft = 40;
+        expect(title.scrollLeft).toBe(40);
+
+        editor.model.change(writer => {
+            const root = editor.model.document.getRoot();
+            if (root) {
+                writer.setSelection(writer.createPositionFromPath(root, [0, 0, 1, 0, 0]));
+            }
+        });
+        expect(title.scrollLeft).toBe(0);
     });
 
     it("outlines the innermost block holding the caret and rings only a title", async () => {
