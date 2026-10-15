@@ -4594,7 +4594,8 @@
     "note_title": "Meeting {{date}}",
     "starting": "Starting the transcription…",
     "stop": "Stop transcribing",
-    "stopping": "Finishing the transcript…"
+    "stopping": "Finishing the transcript…",
+    "title_keeping_recordings": "{{title}} (keeps the audio for troubleshooting)"
   },
   "transcript": {
     "speaker_me": "Me",

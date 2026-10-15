@@ -12,13 +12,15 @@ const mocks = vi.hoisted(() => ({
     requireResources: vi.fn(),
     transcriptionModel: null as string | null,
     speakersEnabled: true,
-    transcriptionEnabled: true
+    transcriptionEnabled: true,
+    keepRecordings: false
 }));
 
 vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useTriliumOptionBool: (name: string) => [
-        name === "transcriptionEnabled" && mocks.transcriptionEnabled,
+        (name === "transcriptionEnabled" && mocks.transcriptionEnabled)
+            || (name === "transcriptionKeepRecordings" && mocks.keepRecordings),
         vi.fn()
     ]
 }));
@@ -60,6 +62,7 @@ beforeEach(() => {
     mocks.transcriptionModel = null;
     mocks.speakersEnabled = true;
     mocks.transcriptionEnabled = true;
+    mocks.keepRecordings = false;
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -205,6 +208,15 @@ describe("RecordMeetingButton", () => {
             await vi.advanceTimersByTimeAsync(1000);
         });
         expect(badge()?.textContent).toBe("1:06");
+        window.electronApi = undefined;
+    });
+
+    it("says before a recording that its audio will be kept, while recordings are kept", async () => {
+        const button = async () => (await renderWithState({ status: "idle" }))?.querySelector("button");
+
+        expect((await button())?.textContent).toBe("Record meeting");
+        mocks.keepRecordings = true;
+        expect((await button())?.textContent).toContain("record_meeting.title_keeping_recordings");
         window.electronApi = undefined;
     });
 

@@ -30,6 +30,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
     const { status, error, startedAt } = useTranscriptionState();
     const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
+    const [ keepsRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
     const [ now, setNow ] = useState(Date.now);
     const handleClick = useCallback(() => {
         void toggleRecording(status);
@@ -59,7 +60,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             <LaunchBarActionButton
                 launcherNote={launcherNote}
                 onClick={handleClick}
-                {...getAppearance(status, icon, title)}
+                {...getAppearance(status, icon, title, keepsRecordings)}
             />
             {status === "idle" && (
                 <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
@@ -76,10 +77,21 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
 
 const BUSY_ICON = "bx bx-loader-alt bx-spin";
 
-function getAppearance(status: TranscriptionStatus, idleIcon: string, idleTitle: string) {
+/**
+ * The icon and tooltip for each state. While recordings are kept, the idle tooltip says so, since
+ * starting is when the people in the meeting would need to agree to it.
+ */
+function getAppearance(
+    status: TranscriptionStatus, idleIcon: string, idleTitle: string, keepsRecordings: boolean
+) {
     switch (status) {
         case "idle":
-            return { icon: idleIcon, text: idleTitle };
+            return {
+                icon: idleIcon,
+                text: keepsRecordings
+                    ? t("record_meeting.title_keeping_recordings", { title: idleTitle })
+                    : idleTitle
+            };
         case "starting":
             return { icon: BUSY_ICON, text: t("record_meeting.starting"), disabled: true };
         case "recording":
