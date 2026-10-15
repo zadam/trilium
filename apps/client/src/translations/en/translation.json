@@ -4631,7 +4631,7 @@
   "transcription_options": {
     "recognition_title": "Speech recognition",
     "european_languages": "European languages",
-    "european_languages_description": "Parakeet TDT 0.6B v3 by NVIDIA recognizes 25 European languages and works out which one is spoken. High accuracy makes fewer mistakes, but it is a 2.4 GB download instead of 0.6 GB and needs about 1.6 GB more memory while recording. A model that is not downloaded yet is downloaded when you start a recording.",
+    "european_languages_description": "Recognizes 25 European languages, working out which one is spoken. A model is downloaded the first time you record with it.",
     "model_standard": "Standard",
     "model_high_accuracy": "High accuracy",
     "identify_speakers": "Identify speakers",
@@ -4643,7 +4643,10 @@
     "enabled": "Meeting transcription",
     "enabled_description": "Adds the Transcribe meeting button to the launch bar, which transcribes what you say into your microphone and what the other participants say through your speakers. Recognition runs entirely on this device, so no audio leaves it.",
     "related_resources": "Downloaded resources",
-    "related_resources_description": "See the speech recognition models downloaded to this device, and delete those you no longer need."
+    "related_resources_description": "See the speech recognition models downloaded to this device, and delete those you no longer need.",
+    "model_standard_description": "Parakeet TDT 0.6B v3 by NVIDIA, quantized so that it runs well on most computers.",
+    "model_high_accuracy_description": "Parakeet TDT 0.6B v3 by NVIDIA at full precision. It makes fewer mistakes, but needs about 1.6 GB more memory while recording.",
+    "model_size": "{{size}} download"
   },
   "resources_options": {
     "list_title": "Resources",

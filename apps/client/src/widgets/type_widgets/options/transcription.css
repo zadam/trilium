@@ -5,3 +5,7 @@
 .transcription-beta-badge {
     --color: var(--link-color, var(--main-text-color));
 }
+
+.transcription-model-picker .description {
+    white-space: pre-line;
+}

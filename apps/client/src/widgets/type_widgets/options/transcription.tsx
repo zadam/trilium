@@ -1,14 +1,18 @@
 import "./transcription.css";
 
-import { getTranscriptionModel, TRANSCRIPTION_MODELS, type TranscriptionModelId } from "@triliumnext/commons";
+import {
+    getTranscriptionModel, type ResourcesStatusResponse, TRANSCRIPTION_MODELS,
+    type TranscriptionModelId
+} from "@triliumnext/commons";
 import { useEffect, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
-import { isElectron } from "../../../services/utils";
+import server from "../../../services/server";
+import { formatSize, isElectron } from "../../../services/utils";
 import { Badge } from "../../react/Badge";
 import { Card, OptionCardSection } from "../../react/Card";
 import { DirectoryLocation } from "../../react/DirectoryLink";
-import FormSelect from "../../react/FormSelect";
+import FormDropdownList from "../../react/FormDropdownList";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import NoItems from "../../react/NoItems";
@@ -64,10 +68,25 @@ export default function TranscriptionSettings() {
 function RecognitionSettings() {
     const [ model, setModel ] = useTriliumOption("transcriptionModel");
     const [ speakersEnabled, setSpeakersEnabled ] = useTriliumOptionBool("transcriptionSpeakersEnabled");
-    const labels: Record<TranscriptionModelId, string> = {
-        "parakeet-int8": t("transcription_options.model_standard"),
-        "parakeet-fp32": t("transcription_options.model_high_accuracy")
+    const sizes = useModelSizes();
+    const texts: Record<TranscriptionModelId, { label: string; description: string }> = {
+        "parakeet-int8": {
+            label: t("transcription_options.model_standard"),
+            description: t("transcription_options.model_standard_description")
+        },
+        "parakeet-fp32": {
+            label: t("transcription_options.model_high_accuracy"),
+            description: t("transcription_options.model_high_accuracy_description")
+        }
     };
+    const models = Object.values(TRANSCRIPTION_MODELS).map(({ id, resourceId }) => {
+        const size = sizes[resourceId];
+        const { label, description } = texts[id];
+        const sizeLine = size === undefined
+            ? undefined
+            : t("transcription_options.model_size", { size: formatSize(size, 1) });
+        return { id, label, description: sizeLine ? `${description}\n${sizeLine}` : description };
+    });
 
     return (
         <Card heading={t("transcription_options.recognition_title")}>
@@ -76,13 +95,14 @@ function RecognitionSettings() {
                 label={t("transcription_options.european_languages")}
                 description={t("transcription_options.european_languages_description")}
             >
-                <FormSelect
-                    name="transcription-model"
-                    currentValue={getTranscriptionModel(model).id}
-                    onChange={setModel}
+                <FormDropdownList
+                    className="transcription-model-picker"
+                    values={models}
                     keyProperty="id"
                     titleProperty="label"
-                    values={Object.values(TRANSCRIPTION_MODELS).map(({ id }) => ({ id, label: labels[id] }))}
+                    descriptionProperty="description"
+                    currentValue={getTranscriptionModel(model).id}
+                    onChange={setModel}
                 />
             </OptionCardSection>
 
@@ -95,6 +115,31 @@ function RecognitionSettings() {
             </OptionCardSection>
         </Card>
     );
+}
+
+/**
+ * The download size of each model's resource, by resource ID. Empty until it arrives, and if it
+ * cannot be read, in which case the models are listed without their size.
+ */
+function useModelSizes() {
+    const [ sizes, setSizes ] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        const ids = Object.values(TRANSCRIPTION_MODELS).map(({ resourceId }) => resourceId);
+        let isCurrent = true;
+        server.get<ResourcesStatusResponse>(`resources?ids=${ids.join(",")}`)
+            .then(({ resources }) => {
+                if (isCurrent) {
+                    setSizes(Object.fromEntries(resources.map(({ id, size }) => [ id, size ])));
+                }
+            })
+            .catch(() => {});
+        return () => {
+            isCurrent = false;
+        };
+    }, []);
+
+    return sizes;
 }
 
 function TroubleshootingSettings() {
