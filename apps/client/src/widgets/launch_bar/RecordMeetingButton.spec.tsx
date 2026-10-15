@@ -233,6 +233,16 @@ describe("RecordMeetingButton", () => {
         expect(container.querySelector("button")).toBeNull();
     });
 
+    it("keeps the stop button while a recording outlasts turning transcription off", async () => {
+        mocks.transcriptionEnabled = false;
+        for (const status of [ "starting", "recording", "stopping" ] as const) {
+            const container = await renderWithState({ status, noteId: "meeting" });
+            expect(container?.querySelector(".record-meeting-launcher button"), status)
+                .not.toBeNull();
+        }
+        window.electronApi = undefined;
+    });
+
     it("marks the launcher as beta", () => {
         const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
         expect(container.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)

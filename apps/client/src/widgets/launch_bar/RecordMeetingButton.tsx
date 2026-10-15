@@ -51,7 +51,8 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
         return () => clearInterval(interval);
     }, [ status ]);
 
-    if (!isEnabled) {
+    // A recording outlives the switch turning off, so its stop button stays until it ends.
+    if (!isEnabled && status === "idle") {
         return null;
     }
 
