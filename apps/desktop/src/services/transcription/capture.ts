@@ -27,10 +27,10 @@ const VAD_WINDOW_SAMPLES = 512;
 /** How long {@link CaptureWindow.stop} waits for the page to post what it still holds. */
 const FINISH_TIMEOUT_MS = 1000;
 
-/** The page function that starts each source. */
+/** The page call that starts each source. */
 const SOURCE_STARTERS = [
-    [ "microphone", "captureMicrophone()" ],
-    [ "system", "captureSystemAudio()" ]
+    [ "microphone", "run(captureMicrophone)" ],
+    [ "system", "run(captureSystemAudio)" ]
 ] as const;
 
 /**
@@ -69,8 +69,12 @@ export class CaptureWindow {
             try {
                 // getDisplayMedia() requires a user gesture, which the hidden window only gets
                 // this way.
-                const tracks = await window.webContents.executeJavaScript(call, true);
-                getLog().info(`Transcription: capturing ${source} from ${tracks}.`);
+                const result: StarterResult =
+                    await window.webContents.executeJavaScript(call, true);
+                if ("error" in result) {
+                    throw new Error(result.error);
+                }
+                getLog().info(`Transcription: capturing ${source} from ${result.tracks}.`);
                 sources.push(source);
                 this.running.add(source);
             } catch (e) {
@@ -120,6 +124,12 @@ export class CaptureWindow {
         }
     }
 }
+
+/**
+ * What `run()` in {@link CAPTURE_PAGE} resolves to. The page reports a failure as text because
+ * `executeJavaScript()` rejects with an object that has lost the `DOMException`'s message.
+ */
+type StarterResult = { tracks: string } | { error: string };
 
 /**
  * The window runs only {@link CAPTURE_PAGE}, a local file, so it gets Node integration to reach
@@ -249,6 +259,14 @@ async function finishCapture() {
     (await portReceived).postMessage({ end: true });
 }
 
+async function run(starter) {
+    try {
+        return { tracks: await starter() };
+    } catch (e) {
+        return { error: e instanceof Error ? e.name + ": " + e.message : String(e) };
+    }
+}
+
 function describe(tracks) {
     return tracks.map((track) => track.label).join(", ");
 }
@@ -278,8 +296,6 @@ async function captureSystemAudio() {
     const media = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
-    }).catch((e) => {
-        throw new Error(e.name + ": " + e.message);
     });
     for (const track of media.getVideoTracks()) {
         track.stop();
