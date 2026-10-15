@@ -1,7 +1,7 @@
-import { writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
-import BuildHelper from "../../../scripts/build-utils";
+import BuildHelper, { targetArch } from "../../../scripts/build-utils";
 import originalPackageJson from "../package.json" with { type: "json" };
 
 const build = new BuildHelper("apps/desktop");
@@ -41,6 +41,7 @@ async function main() {
     build.copyNodeModules([ "better-sqlite3" ]);
     // No musl build: Electron itself ships glibc-only Linux binaries.
     build.trimBetterSqlite3({ includeMusl: false });
+    copySherpaOnnx();
 
     build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
     build.copy("/packages/ckeditor5/src/theme/content_colors.css", "ckeditor5-content-colors.css");
@@ -49,6 +50,29 @@ async function main() {
     build.buildFrontend();
 
     generatePackageJson();
+}
+
+/**
+ * Copies `sherpa-onnx-node`, which the meeting transcription worker loads, together with the
+ * package holding its native addon for the target platform. That package is only an optional
+ * dependency, so pnpm installs it just for the host's platform; CI installs the others it
+ * packages for with `--cpu`. A target with no such package (Windows on arm64) ships neither.
+ */
+function copySherpaOnnx() {
+    const sherpaDir = join(build.rootDir, "node_modules", "sherpa-onnx-node");
+    const sherpaPackageJson = readFileSync(join(sherpaDir, "package.json"), "utf-8");
+    const { optionalDependencies } = JSON.parse(sherpaPackageJson);
+    const platform = process.platform === "win32" ? "win" : process.platform;
+    const platformPackage = `sherpa-onnx-${platform}-${targetArch()}`;
+    if (!(platformPackage in optionalDependencies)) {
+        console.warn(`sherpa-onnx has no ${platformPackage}; transcription is unavailable there.`);
+        return;
+    }
+    if (!existsSync(join(build.rootDir, "node_modules", platformPackage))) {
+        throw new Error(`${platformPackage} is not installed. Install the target architecture's `
+            + `optional dependencies too: pnpm install --cpu=${process.arch},${targetArch()}`);
+    }
+    build.copyNodeModules([ "sherpa-onnx-node", platformPackage ]);
 }
 
 function generatePackageJson() {

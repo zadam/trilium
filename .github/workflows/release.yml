@@ -83,7 +83,9 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # The arm64 macOS runner also packages darwin-x64, which needs that architecture's native
+        # optional dependencies (sherpa-onnx-darwin-x64) beside the host's.
+        run: pnpm install --frozen-lockfile ${{ matrix.os.name == 'macos' && '--cpu=x64,arm64' || '' }}
       - name: Run the build
         uses: ./.github/actions/build-electron
         with:

@@ -97,7 +97,9 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # The arm64 macOS runner also packages darwin-x64, which needs that architecture's native
+        # optional dependencies (sherpa-onnx-darwin-x64) beside the host's.
+        run: pnpm install --frozen-lockfile ${{ matrix.os.name == 'macos' && '--cpu=x64,arm64' || '' }}
       - name: Update nightly version
         run: pnpm run chore:ci-update-nightly-version
       - name: Run the build

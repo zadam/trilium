@@ -277,7 +277,8 @@ export default class BuildHelper {
  * The architecture currently being built for. The release workflows set these when
  * a job's target differs from the runner it happens to be executing on.
  */
-function targetArch() {
+/** The architecture being built for, which CI can set apart from the host's. */
+export function targetArch() {
     return process.env.TARGET_ARCH || process.env.MATRIX_ARCH || process.arch;
 }
 
