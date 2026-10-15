@@ -153,7 +153,8 @@
     "tab-switcher-title": "탭 스위처",
     "sidebar-chat-title": "AI 채팅",
     "database-title": "데이터베이스",
-    "space-usage-title": "공간 사용량"
+    "space-usage-title": "공간 사용량",
+    "record-meeting-title": "회의 내용 전사"
   },
   "keyboard_action_names": {
     "back-in-note-history": "노트 기록에서 뒤로 이동",
@@ -557,5 +558,15 @@
     "detail": "먼저 현재 지식 베이스의 백업이 제공됩니다. 새 지식 베이스를 만들거나, 백업을 복원하거나, 다른 기기에서 동기화하도록 선택하기 전까지는 아무것도 삭제되지 않습니다.\n\n스크립트나 익숙하지 않은 노트에서 이 작업을 하도록 안내했다면 계속하지 마세요.",
     "cancel": "취소",
     "confirm": "재시작 후 처음부터 시작"
+  },
+  "transcription": {
+    "already-recording": "이미 회의 내용을 전사하고 있습니다.",
+    "note-not-found": "회의 노트가 더 이상 존재하지 않습니다.",
+    "start-failed": "전사를 시작할 수 없습니다: {{- message}}",
+    "stopped-unexpectedly": "전사가 예기치 않게 중단되었습니다. 중단 전까지 전사된 내용은 유지됩니다.",
+    "save-locked": "보호된 세션이 잠겨 있어 전사 내용을 저장할 수 없습니다. Trilium이 열려 있는 동안 전사 내용을 보관하며, 보호된 세션에 들어가면 저장합니다.",
+    "save-failed": "전사 내용을 저장할 수 없습니다: {{- message}} 전사 내용은 유지되며 다음 문장에서 다시 저장을 시도합니다.",
+    "capture-lost": "오디오를 더 이상 캡처할 수 없어 전사가 중단되었습니다. 중단 전까지 전사된 내용은 유지됩니다.",
+    "attachment-title": "전사 내용"
   }
 }

@@ -17,7 +17,8 @@ class FakeWindow {
     webContents = Object.assign(new EventEmitter(), {
         ipc: new EventEmitter(),
         postMessage: vi.fn(),
-        executeJavaScript: vi.fn((call: string) => h.pageCalls[call]?.() ?? Promise.resolve(call))
+        executeJavaScript: vi.fn((call: string) =>
+            h.pageCalls[call]?.() ?? Promise.resolve({ tracks: call }))
     });
 
     constructor() {
@@ -184,14 +185,16 @@ describe("CaptureWindow", () => {
     });
 
     it("runs the sources that start, and fails when none does", async () => {
-        h.pageCalls["captureSystemAudio()"] = () => Promise.reject(new Error("NotAllowedError"));
+        h.pageCalls["run(captureSystemAudio)"] = () =>
+            Promise.resolve({ error: "NotAllowedError: Permission denied" });
         h.windows.length = 0;
         const capture = new CaptureWindow({ onLost: vi.fn() });
         expect(await capture.start("port" as never)).toEqual([ "microphone" ]);
         expect(h.log.error).toHaveBeenCalledWith(
-            "Transcription: system unavailable: NotAllowedError");
+            "Transcription: system unavailable: NotAllowedError: Permission denied");
 
-        h.pageCalls["captureMicrophone()"] = () => Promise.reject(new Error("NotFoundError"));
+        h.pageCalls["run(captureMicrophone)"] = () =>
+            Promise.reject(new Error("render frame was disposed"));
         await expect(new CaptureWindow({ onLost: vi.fn() }).start("port" as never))
             .rejects.toThrow("No audio source could be captured.");
         expect(h.windows[1].destroy).toHaveBeenCalledOnce();

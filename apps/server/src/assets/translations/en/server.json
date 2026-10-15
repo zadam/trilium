@@ -330,7 +330,9 @@
     "inbox-title": "Inbox",
     "tab-switcher-title": "Tab Switcher",
     "sidebar-chat-title": "AI Chat",
-    "record-meeting-title": "Transcribe meeting"
+    "record-meeting-title": "Transcribe meeting",
+    "transcription-title": "Transcription",
+    "resources-title": "Downloaded resources"
   },
   "notes": {
     "new-note": "New note",
@@ -600,12 +602,28 @@
   "transcription": {
     "already-recording": "A meeting is already being transcribed.",
     "note-not-found": "The meeting note no longer exists.",
-    "model-missing": "No speech recognition model was found in {{- directory}}.",
     "start-failed": "The transcription could not start: {{- message}}",
     "stopped-unexpectedly": "The transcription stopped unexpectedly. What was transcribed until then is kept.",
     "save-locked": "The transcript cannot be saved while the protected session is locked. The transcription keeps it and saves it once you enter the protected session, as long as Trilium stays open.",
     "save-failed": "The transcript could not be saved: {{- message}} The transcription keeps it and tries again with the next sentence.",
     "capture-lost": "The transcription stopped because the audio could no longer be captured. What was transcribed until then is kept.",
-    "attachment-title": "Transcript"
+    "attachment-title": "Transcript",
+    "model-not-downloaded": "The speech recognition model is not downloaded yet. Start a recording from the launcher to download it.",
+    "recognizer-int8-title": "Parakeet TDT 0.6B v3",
+    "recognizer-fp32-title": "Parakeet TDT 0.6B v3, high accuracy",
+    "recognizer-description": "A speech recognition model by NVIDIA that supports 25 European languages. Recognition runs entirely on this device, so your recordings never leave it.",
+    "vad-title": "Silero VAD",
+    "vad-description": "Used to detect speech in the audio, so that only the parts with speech are transcribed.",
+    "speaker-title": "TitaNet small",
+    "speaker-description": "Used to distinguish speakers, so that you can see who said what in the transcript."
+  },
+  "resources": {
+    "unknown": "There is no resource named {{id}}.",
+    "http-error": "Downloading {{name}} failed with HTTP status {{status}}.",
+    "size-mismatch": "{{name}} does not have the expected size.",
+    "hash-mismatch": "{{name}} does not match its expected checksum, so it was discarded.",
+    "delete-while-downloading": "{{- title}} is being downloaded. Cancel the download before deleting it.",
+    "not-foreign": "{{- name}} is not an unused entry of the resources folder.",
+    "stalled": "Downloading {{name}} stopped: nothing arrived for {{seconds}} seconds. Check your connection, then try again."
   }
 }

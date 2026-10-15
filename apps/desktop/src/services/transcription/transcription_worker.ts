@@ -6,7 +6,7 @@
  */
 
 import { TranscriptFileSink, WavRecorder } from "./audio_recorder";
-import { loadSherpaEngine } from "./engine";
+import { loadSherpaEngine, probeSherpa } from "./engine";
 import type { Logger, WorkerEvent, WorkerRequest } from "./protocol";
 import { type AudioTap, PortCapture, RecordingSession, type TranscriptSink } from "./session";
 
@@ -39,11 +39,16 @@ process.parentPort.on("message", ({ data, ports }) => {
         case "stop":
             void stop();
             break;
+        case "probe":
+            probeSherpa().then(
+                (version) => post({ type: "probed", version }),
+                (e) => post({ type: "probed", error: (e as Error)?.message ?? String(e) }));
+            break;
     }
 });
 
-async function start({ noteId, modelDirectory, recordingDirectory }: StartRequest) {
-    const engine = await loadSherpaEngine(modelDirectory);
+async function start({ noteId, models, recordingDirectory }: StartRequest) {
+    const engine = await loadSherpaEngine(models);
     const sinks: TranscriptSink[] = [
         { write: (utterance) => post({ type: "utterance", utterance }) }
     ];

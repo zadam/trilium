@@ -8,7 +8,22 @@ import { renderInto } from "../../test/render";
 const mocks = vi.hoisted(() => ({
     getInboxNote: vi.fn(),
     createNote: vi.fn(),
-    showError: vi.fn()
+    showError: vi.fn(),
+    requireResources: vi.fn(),
+    transcriptionModel: null as string | null,
+    speakersEnabled: true,
+    transcriptionEnabled: true,
+    keepRecordings: false,
+    isSupported: vi.fn()
+}));
+
+vi.mock("../react/hooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../react/hooks")>()),
+    useTriliumOptionBool: (name: string) => [
+        (name === "transcriptionEnabled" && mocks.transcriptionEnabled)
+            || (name === "transcriptionKeepRecordings" && mocks.keepRecordings),
+        vi.fn()
+    ]
 }));
 
 vi.mock("../../services/date_notes", () => ({
@@ -16,6 +31,15 @@ vi.mock("../../services/date_notes", () => ({
 }));
 vi.mock("../../services/note_create", () => ({
     default: { createNote: mocks.createNote }
+}));
+vi.mock("../../services/dialog", () => ({
+    requireResources: mocks.requireResources
+}));
+vi.mock("../../services/options", () => ({
+    default: {
+        get: (name: string) => name === "transcriptionModel" ? mocks.transcriptionModel : null,
+        is: (name: string) => name === "transcriptionSpeakersEnabled" && mocks.speakersEnabled
+    }
 }));
 vi.mock("../../services/toast", () => ({
     default: { showError: mocks.showError }
@@ -30,10 +54,17 @@ vi.mock("./launch_bar_widgets", () => ({
     useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" })
 }));
 
-import RecordMeetingButton, { createMeetingNote, toggleRecording } from "./RecordMeetingButton";
+import RecordMeetingButton, {
+    createMeetingNote, formatElapsed, toggleRecording
+} from "./RecordMeetingButton";
 
 beforeEach(() => {
     vi.clearAllMocks();
+    mocks.transcriptionModel = null;
+    mocks.speakersEnabled = true;
+    mocks.transcriptionEnabled = true;
+    mocks.keepRecordings = false;
+    mocks.isSupported.mockResolvedValue(true);
     vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30), toFake: [ "Date" ] });
 });
 
@@ -69,6 +100,7 @@ describe("toggleRecording", () => {
         window.electronApi = { transcription } as unknown as typeof window.electronApi;
         mocks.getInboxNote.mockResolvedValue({ noteId: "inbox", isProtected: false });
         mocks.createNote.mockResolvedValue({ note: { noteId: "meeting" } });
+        mocks.requireResources.mockResolvedValue(true);
     });
 
     it("starts recording into a new meeting note, and shows why it could not", async () => {
@@ -93,6 +125,32 @@ describe("toggleRecording", () => {
         expect(mocks.createNote).not.toHaveBeenCalled();
     });
 
+    it("asks for the model first, and creates no note when it is not downloaded", async () => {
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
+        expect(transcription.start).toHaveBeenCalledOnce();
+
+        mocks.requireResources.mockResolvedValueOnce(false);
+        await toggleRecording("idle");
+        expect(mocks.createNote).toHaveBeenCalledOnce();
+        expect(transcription.start).toHaveBeenCalledOnce();
+    });
+
+    it("asks for the model the settings select", async () => {
+        mocks.transcriptionModel = "parakeet-fp32";
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet-fp32", "transcription.silero-vad", "transcription.titanet" ]);
+    });
+
+    it("leaves the speaker model out while speaker identification is off", async () => {
+        mocks.speakersEnabled = false;
+        await toggleRecording("idle");
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet", "transcription.silero-vad" ]);
+    });
+
     it("starts nothing when no meeting note could be created", async () => {
         mocks.getInboxNote.mockResolvedValue(null);
         vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -107,7 +165,105 @@ describe("toggleRecording", () => {
     });
 });
 
+describe("formatElapsed", () => {
+    it("counts minutes and seconds within the first hour, then hours and minutes", () => {
+        expect(formatElapsed(0)).toBe("0:00");
+        expect(formatElapsed(65_000)).toBe("1:05");
+        expect(formatElapsed(3_599_999)).toBe("59:59");
+        expect(formatElapsed(3_600_000)).toBe("1:00");
+        expect(formatElapsed(3_727_000)).toBe("1:02");
+        expect(formatElapsed(-5_000)).toBe("0:00");
+    });
+});
+
 describe("RecordMeetingButton", () => {
+    async function renderWithState(state: Partial<TranscriptionState>) {
+        window.electronApi = {
+            transcription: {
+                isSupported: mocks.isSupported,
+                getState: async () => ({
+                    status: "idle", noteId: null, pendingSources: [], ...state
+                }),
+                onStateChanged: () => () => {}
+            }
+        } as unknown as typeof window.electronApi;
+        let container: HTMLElement | undefined;
+        await act(async () => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        return container;
+    }
+
+    it("shows how long it has been recording in place of the beta badge", async () => {
+        vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30) });
+        const container = await renderWithState({
+            status: "recording", noteId: "meeting", startedAt: Date.now() - 65_000
+        });
+        const badge = () => container?.querySelector(".record-meeting-launcher .ext-badge");
+        // Preact runs effects after paint, which the fake clock schedules.
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(50);
+        });
+
+        expect(badge()?.className).toContain("record-meeting-time-badge");
+        expect(badge()?.textContent).toBe("1:05");
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(badge()?.textContent).toBe("1:06");
+        window.electronApi = undefined;
+    });
+
+    it("says before a recording that its audio will be kept, while recordings are kept", async () => {
+        const button = async () => (await renderWithState({ status: "idle" }))?.querySelector("button");
+
+        expect((await button())?.textContent).toBe("Record meeting");
+        mocks.keepRecordings = true;
+        expect((await button())?.textContent).toContain("record_meeting.title_keeping_recordings");
+        window.electronApi = undefined;
+    });
+
+    it("shows no badge while the recording starts", async () => {
+        const container = await renderWithState({ status: "starting", noteId: "meeting" });
+        expect(container?.querySelector(".record-meeting-launcher .ext-badge")).toBeNull();
+        window.electronApi = undefined;
+    });
+
+    it("shows nothing while transcription is turned off or the computer cannot transcribe", async () => {
+        expect((await renderWithState({ status: "idle" }))?.querySelector("button")).not.toBeNull();
+        expect(mocks.isSupported).toHaveBeenCalledOnce();
+
+        mocks.transcriptionEnabled = false;
+        const turnedOff = await renderWithState({ status: "idle" });
+        expect(turnedOff?.querySelector(".record-meeting-launcher")).toBeNull();
+        expect(turnedOff?.querySelector("button")).toBeNull();
+        expect(mocks.isSupported).toHaveBeenCalledOnce();
+
+        mocks.transcriptionEnabled = true;
+        mocks.isSupported.mockResolvedValue(false);
+        expect((await renderWithState({ status: "idle" }))?.querySelector("button")).toBeNull();
+        window.electronApi = undefined;
+        expect(renderInto(<RecordMeetingButton launcherNote={{} as FNote} />).querySelector("button"))
+            .toBeNull();
+    });
+
+    it("keeps the stop button while a recording outlasts turning transcription off", async () => {
+        mocks.transcriptionEnabled = false;
+        for (const status of [ "starting", "recording", "stopping" ] as const) {
+            const container = await renderWithState({ status, noteId: "meeting" });
+            expect(container?.querySelector(".record-meeting-launcher button"), status)
+                .not.toBeNull();
+        }
+        window.electronApi = undefined;
+    });
+
+    it("marks the launcher as beta", async () => {
+        const container = await renderWithState({ status: "idle" });
+        expect(container?.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)
+            .toContain("common.beta");
+        window.electronApi = undefined;
+    });
+
     it("says once why a recording stopped by itself", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const report = (state: Partial<TranscriptionState>) => act(() => onStateChanged({
@@ -115,6 +271,7 @@ describe("RecordMeetingButton", () => {
         }));
         window.electronApi = {
             transcription: {
+                isSupported: async () => true,
                 getState: async () => ({ status: "idle", noteId: null, pendingSources: [] }),
                 onStateChanged: (callback: typeof onStateChanged) => {
                     onStateChanged = callback;
@@ -142,6 +299,7 @@ describe("RecordMeetingButton", () => {
         const report = (status: TranscriptionState["status"]) =>
             act(() => onStateChanged({ status, noteId: "meeting", pendingSources: [] }));
         const transcription = {
+            isSupported: async () => true,
             getState: async () => ({ status: "recording", noteId: "meeting", pendingSources: [] }),
             onStateChanged: (callback: typeof onStateChanged) => {
                 onStateChanged = callback;

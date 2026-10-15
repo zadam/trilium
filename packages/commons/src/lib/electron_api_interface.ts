@@ -725,6 +725,11 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
+     * When the recording started, in milliseconds since the epoch: set once it records, kept while
+     * it stops, absent otherwise.
+     */
+    startedAt?: number;
+    /**
      * A problem to tell the user about, sent once with the state it concerns: the recording ended
      * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
      */
@@ -736,6 +741,12 @@ export interface TranscriptionState {
  * renderer only starts and stops it; the audio never passes through the renderer.
  */
 export interface ElectronTranscriptionApi {
+    /**
+     * Whether this build can transcribe on this computer: `false` when it carries no speech
+     * recognition engine for the platform and processor it runs on.
+     */
+    isSupported(): Promise<boolean>;
+
     /**
      * Starts recording the microphone and the system audio for the meeting note `noteId`.
      *
@@ -756,6 +767,12 @@ export interface ElectronTranscriptionApi {
      * @returns `false` when no recording writes `attachmentId`; it can then be saved whole.
      */
     renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
+
+    /**
+     * Returns the directory that keeps the audio and the transcript as produced of each recording
+     * while `transcriptionKeepRecordings` is on, creating it if needed.
+     */
+    getRecordingsDirectory(): Promise<string>;
 
     /**
      * Calls `callback` every time the state changes, in any window.

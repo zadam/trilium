@@ -1,6 +1,7 @@
 import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
-import { becca, events, getLog, protected_session, utils as coreUtils } from "@triliumnext/core";
+import { becca, events, getLog, options, protected_session } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
+import resources from "@triliumnext/server/src/services/resources.js";
 import { app, BrowserWindow, ipcMain, MessageChannelMain } from "electron";
 import fs from "fs";
 import { t } from "i18next";
@@ -8,13 +9,14 @@ import path from "path";
 
 import { AttachmentSink } from "./attachment_sink";
 import { CaptureWindow } from "./capture";
-import { TranscriptionWorker } from "./worker_client";
+import { getModelPaths, TRANSCRIPTION_MODELS } from "./model";
+import { probeEngine, TranscriptionWorker } from "./worker_client";
 
-/** Where the models live: Parakeet TDT 0.6B v3 (int8) plus `silero_vad.onnx`. */
-export const MODEL_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-model");
-
-/** Where development builds keep the audio of each recording, one directory per recording. */
-export const RECORDINGS_DIR = path.join(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
+/**
+ * Where the audio and the transcript as produced of each recording are kept, one directory per
+ * recording, while `transcriptionKeepRecordings` is on.
+ */
+export const RECORDINGS_DIR = path.resolve(dataDirs.TRILIUM_DATA_DIR, "transcription-recordings");
 
 const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources: [] };
 
@@ -39,11 +41,16 @@ let stopping: Promise<void> | null = null;
 const unsavedSinks = new Set<AttachmentSink>();
 /** `waiting` while a quit waits for the transcription, `done` once it may go ahead. */
 let quitting: "no" | "waiting" | "done" = "no";
+/** {@link isSupported}'s answer, once asked. */
+let isSupportedHere: Promise<boolean> | null = null;
 
 export function setupTranscriptionHandlers() {
+    resources.register(...TRANSCRIPTION_MODELS);
+    ipcMain.handle("transcription-is-supported", () => isSupported());
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
+    ipcMain.handle("transcription-get-recordings-directory", () => getRecordingsDirectory());
     ipcMain.handle("transcription-rename-speaker", (_event, attachmentId: unknown, key: unknown,
         name: unknown) => renameSpeaker(attachmentId, key, name));
     app.on("before-quit", (event) => finishBeforeQuit(event));
@@ -63,8 +70,12 @@ export async function startRecording(noteId: unknown): Promise<string> {
     if (typeof noteId !== "string" || !becca.getNote(noteId)) {
         return t("transcription.note-not-found");
     }
-    if (!fs.existsSync(MODEL_DIR)) {
-        return t("transcription.model-missing", { directory: MODEL_DIR });
+    const models = getModelPaths(
+        options.getOptionOrNull("transcriptionModel"),
+        options.getOptionBool("transcriptionSpeakersEnabled")
+    );
+    if (!models) {
+        return t("transcription.model-not-downloaded");
     }
 
     setState({ status: "starting", noteId, pendingSources: [] });
@@ -84,8 +95,10 @@ export async function startRecording(noteId: unknown): Promise<string> {
     try {
         const { startedAt } = await recording.worker.start({
             noteId,
-            modelDirectory: MODEL_DIR,
-            recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
+            models,
+            recordingDirectory: options.getOptionBool("transcriptionKeepRecordings")
+                ? getRecordingDirectory(Date.now(), noteId)
+                : null
         });
         sink.open(startedAt);
         writer = sink;
@@ -93,7 +106,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
         recording.worker.connectCapture(port2);
         const sources = await recording.capture.start(port1);
         getLog().info(`Transcription: recording ${sources.join(" and ")} for note ${noteId}.`);
-        setState({ ...state, status: "recording" });
+        setState({ ...state, status: "recording", startedAt });
         return "";
     } catch (e) {
         activeRecording = null;
@@ -136,6 +149,21 @@ export function getState() {
 }
 
 /**
+ * Whether sherpa-onnx's native addon loads on this computer, which a transcription process tries
+ * once per run, without any model. A build without the addon for this platform and processor, or
+ * a system missing a library it needs, cannot transcribe.
+ */
+export function isSupported() {
+    isSupportedHere ??= probeEngine().then((error) => {
+        if (error) {
+            getLog().error(`Transcription is unavailable on this computer: ${error}`);
+        }
+        return !error;
+    });
+    return isSupportedHere;
+}
+
+/**
  * Names a speaker of the transcript attachment `attachmentId` through the running recording's
  * sink, when that is the transcript it writes: the sink is then its only writer.
  *
@@ -148,6 +176,12 @@ export function renameSpeaker(attachmentId: unknown, key: unknown, name: unknown
     }
     writer.renameSpeaker(key, name);
     return true;
+}
+
+/** Returns {@link RECORDINGS_DIR}, creating it so that the settings can open it before any recording. */
+function getRecordingsDirectory() {
+    fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
+    return RECORDINGS_DIR;
 }
 
 /** The directory under {@link RECORDINGS_DIR} for a recording of `noteId` begun at `createdAt`. */

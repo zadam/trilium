@@ -432,13 +432,6 @@ body[dir=rtl] .attachment-icon-marker {
 
 /* #region Attachment actions */
 
-.attachment-actions .dropdown-item .tn-icon {
-    position: relative;
-    top: 3px;
-    font-size: 120%;
-    margin-inline-end: 5px;
-}
-
 .attachment-actions .dropdown-item[disabled], .attachment-actions .dropdown-item[disabled]:hover {
     color: var(--muted-text-color) !important;
     background-color: transparent !important;

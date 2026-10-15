@@ -3,7 +3,7 @@ import path from "path";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import type { Logger, WorkerEvent } from "./protocol";
-import { TranscriptionWorker, type WorkerListeners } from "./worker_client";
+import { probeEngine, TranscriptionWorker, type WorkerListeners } from "./worker_client";
 
 const h = vi.hoisted(() => ({
     fork: vi.fn(),
@@ -53,7 +53,15 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-const REQUEST = { noteId: "meeting", modelDirectory: "/models", recordingDirectory: null };
+const REQUEST = {
+    noteId: "meeting",
+    models: {
+        recognizer: { directory: "/models", precision: "int8" as const },
+        vad: "/models/silero_vad.onnx",
+        speaker: null
+    },
+    recordingDirectory: null
+};
 
 describe("TranscriptionWorker", () => {
     it("starts the bundled worker, or the sources when there is no bundle", () => {
@@ -145,5 +153,37 @@ describe("TranscriptionWorker", () => {
         h.fork.mockReturnValue(child);
         new TranscriptionWorker(listeners).kill();
         expect(listeners.onUnexpectedExit).toHaveBeenCalledOnce();
+    });
+});
+
+describe("probeEngine", () => {
+    it("asks a process of its own to load the engine, and ends it with the answer", async () => {
+        const loaded = probeEngine();
+        expect(child.postMessage).toHaveBeenCalledExactlyOnceWith({ type: "probe" });
+        child.report({ type: "probed", version: "1.13.8" });
+        expect(await loaded).toBeNull();
+        expect(child.kill).toHaveBeenCalledOnce();
+
+        child = new FakeProcess();
+        h.fork.mockReturnValue(child);
+        const failed = probeEngine();
+        child.report({ type: "log", level: "info", message: "loading" });
+        child.report({ type: "probed", error: "Could not find sherpa-onnx-node." });
+        expect(await failed).toBe("Could not find sherpa-onnx-node.");
+        expect(child.kill).toHaveBeenCalledOnce();
+    });
+
+    it("says so when the process dies or does not answer", async () => {
+        const crashed = probeEngine();
+        child.emit("exit", 133);
+        expect(await crashed).toBe("The transcription process exited with code 133.");
+
+        vi.useFakeTimers();
+        child = new FakeProcess();
+        h.fork.mockReturnValue(child);
+        const silent = probeEngine();
+        await vi.advanceTimersByTimeAsync(30_000);
+        expect(await silent).toBe("The transcription process did not answer in time.");
+        expect(child.kill).toHaveBeenCalledOnce();
     });
 });

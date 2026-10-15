@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { build as esbuild } from "esbuild";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
-import { delimiter, join } from "path";
+import { basename, delimiter, extname, join } from "path";
 
 export default class BuildHelper {
 
@@ -144,7 +144,12 @@ export default class BuildHelper {
             }),
             minify: true
         });
-        writeFileSync(join(this.outDir, "meta.json"), JSON.stringify(result.metafile));
+        // One metafile per entry, named after it, so a later build call cannot overwrite an
+        // earlier one's.
+        const metaDir = join(this.outDir, "meta");
+        mkdirSync(metaDir, { recursive: true });
+        const entryName = basename(entryPoints[0], extname(entryPoints[0]));
+        writeFileSync(join(metaDir, `${entryName}.json`), JSON.stringify(result.metafile));
     }
 
     /**
@@ -272,7 +277,8 @@ export default class BuildHelper {
  * The architecture currently being built for. The release workflows set these when
  * a job's target differs from the runner it happens to be executing on.
  */
-function targetArch() {
+/** The architecture being built for, which CI can set apart from the host's. */
+export function targetArch() {
     return process.env.TARGET_ARCH || process.env.MATRIX_ARCH || process.arch;
 }
 

@@ -7,8 +7,9 @@
 // sherpa-onnx encodes a hotword into tokens with a BPE vocabulary (`modelingUnit: "bpe"`,
 // `bpeVocab`), which the Parakeet archives do not ship. `vocab` builds one from NVIDIA's
 // tokenizer.json, scoring each piece by the rank of the merge that forms it, so that hotwords are
-// split as the model itself splits words. The model directory defaults to
-// <data dir>/transcription-model; tokens.txt there must match the tokenizer.
+// split as the model itself splits words. The model directory defaults to the app's download of
+// Parakeet, full precision first; tokens.txt there must match the tokenizer. The app ignores
+// files it did not download, so bpe.vocab can stay beside them.
 //
 // `check` prints how each hotword is split and flags the ones whose first piece is a common word
 // on its own: sherpa's NeMo beam search keeps the bonus of a hotword's first piece even when the
@@ -18,9 +19,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { findResource, MODEL_RESOURCES, requireResource } from "./recordings.mjs";
+
 const TOKENIZER_URL = "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3/resolve/main/tokenizer.json";
-const REPO = path.resolve(import.meta.dirname, "../../..");
-const DEFAULT_MODEL_DIR = path.join(REPO, "apps/desktop/data/transcription-model");
 const UNMERGED_SCORE = -100000;
 /** Words a first piece is risky as: frequent enough that boosting them changes ordinary speech. */
 const COMMON_WORDS = new Set([
@@ -31,9 +32,9 @@ const COMMON_WORDS = new Set([
 
 const [ command, ...args ] = process.argv.slice(2);
 if (command === "vocab") {
-    await writeVocab(args[0] ?? DEFAULT_MODEL_DIR);
+    await writeVocab(args[0] ?? getDefaultModelDir());
 } else if (command === "check" && args[0]) {
-    check(args[0], args[1] ?? DEFAULT_MODEL_DIR);
+    check(args[0], args[1] ?? getDefaultModelDir());
 } else {
     console.error("Usage: node hotwords.mjs vocab [model dir] | check \"a/b/c\" [model dir]");
     process.exit(1);
@@ -111,4 +112,9 @@ function readTokens(modelDir) {
         const separator = line.lastIndexOf(" ");
         return { piece: line.slice(0, separator), id: Number(line.slice(separator + 1)) };
     });
+}
+
+/** The app's download of Parakeet, full precision when it is there. */
+function getDefaultModelDir() {
+    return findResource(MODEL_RESOURCES.fp32) ?? requireResource(MODEL_RESOURCES.int8);
 }

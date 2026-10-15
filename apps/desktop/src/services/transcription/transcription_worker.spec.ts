@@ -5,11 +5,12 @@ import type { WorkerEvent, WorkerRequest } from "./protocol";
 
 const h = vi.hoisted(() => ({
     loadEngine: vi.fn(),
+    probe: vi.fn(),
     fileSinks: [] as string[],
     recorders: [] as unknown[][]
 }));
 
-vi.mock("./engine", () => ({ loadSherpaEngine: h.loadEngine }));
+vi.mock("./engine", () => ({ loadSherpaEngine: h.loadEngine, probeSherpa: h.probe }));
 vi.mock("./audio_recorder", () => ({
     TranscriptFileSink: class {
         constructor(directory: string) {
@@ -47,7 +48,9 @@ class FakeParentPort extends EventEmitter {
 /** An engine whose segmenter completes an utterance per chunk, transcribed as "Chunk <n>". */
 const engine = {
     settings: { recognizer: { decodingMethod: "greedy_search" } },
-    recognizer: { transcribe: async (samples: Float32Array) => `Chunk ${samples[0]}` },
+    recognizer: {
+        transcribe: async (samples: Float32Array) => ({ text: `Chunk ${samples[0]}`, words: [] })
+    },
     createSegmenter: () => ({
         accept: (samples: Float32Array) => [ { start: 0, samples } ],
         flush: () => [],
@@ -69,8 +72,14 @@ function capturePort() {
     return Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
 }
 
+const MODELS = {
+    recognizer: { directory: "/models", precision: "int8" as const },
+    vad: "/models/silero_vad.onnx",
+    speaker: null
+};
+
 const START: WorkerRequest = {
-    type: "start", noteId: "meeting", modelDirectory: "/models", recordingDirectory: null
+    type: "start", noteId: "meeting", models: MODELS, recordingDirectory: null
 };
 
 beforeEach(() => {
@@ -91,7 +100,7 @@ describe("transcription process", () => {
         parent.send(START);
         const ready = await parent.next("ready");
         expect(ready).toMatchObject({ type: "ready", settings: engine.settings });
-        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith("/models");
+        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith(MODELS);
         expect(h.fileSinks).toEqual([]);
 
         const port = capturePort();
@@ -160,6 +169,20 @@ describe("transcription process", () => {
         parent.send(START);
         expect(await parent.next("failed"))
             .toEqual({ type: "failed", message: "Protobuf parsing failed" });
+    });
+
+    it("answers a probe with the engine's version, or why it did not load", async () => {
+        h.probe.mockResolvedValueOnce("1.13.8");
+        const parent = await startWorker();
+        parent.send({ type: "probe" });
+        expect(await parent.next("probed")).toEqual({ type: "probed", version: "1.13.8" });
+        expect(h.loadEngine).not.toHaveBeenCalled();
+
+        h.probe.mockRejectedValueOnce(new Error("Could not find sherpa-onnx-node."));
+        const failing = await startWorker();
+        failing.send({ type: "probe" });
+        expect(await failing.next("probed"))
+            .toEqual({ type: "probed", error: "Could not find sherpa-onnx-node." });
     });
 
     it("stops regardless when the capture page never posts its end", async () => {

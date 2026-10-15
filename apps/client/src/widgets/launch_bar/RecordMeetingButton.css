@@ -1,3 +1,35 @@
-.launcher-button.record-meeting-active {
+#launcher-pane .launcher-button.record-meeting-active,
+#launcher-pane .launcher-button.record-meeting-active:hover {
     color: var(--danger-color, #dc3545);
+}
+
+.record-meeting-launcher {
+    position: relative;
+
+    .ext-badge {
+        --badge-radius: 4px;
+        background:
+            linear-gradient(var(--color), var(--color)),
+            var(--launcher-pane-background-color, var(--main-background-color));
+        position: absolute;
+        inset-inline-end: var(--launcher-pane-button-margin, 0);
+        bottom: var(--launcher-pane-button-gap, 0);
+        height: auto;
+        padding-inline: 3px;
+        font-size: 0.55rem;
+        line-height: 1.4;
+        pointer-events: none;
+    }
+
+    .record-meeting-beta-badge {
+        --color: var(--badge-background-color, var(--accented-background-color));
+        color: var(--badge-text-color, var(--muted-text-color));
+    }
+
+    .record-meeting-time-badge {
+        --color: var(--left-pane-item-selected-background, var(--main-background-color));
+        color: var(--left-pane-item-selected-color, var(--main-text-color));
+        box-shadow: var(--left-pane-item-selected-shadow);
+        font-variant-numeric: tabular-nums;
+    }
 }

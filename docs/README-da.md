@@ -113,47 +113,49 @@ Vores dokumentation findes i flere formater:
   automation
 * Fungerer godt med hensyn til både brugervenlighed og ydeevne, selv med over
   100.000 noter
-* Touch optimized [mobile
-  frontend](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend) for
-  smartphones and tablets
-* Built-in [dark
-  theme](https://docs.triliumnotes.org/user-guide/concepts/themes), support for
-  user themes
+* Berøringsoptimeret
+  [mobilgrænseflade](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend)
+  til smartphones og tablets
+* Indbygget [mørkt
+  tema](https://docs.triliumnotes.org/user-guide/concepts/themes) med
+  understøttelse af brugertemaer
 * [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
-  and [Markdown import &
-  export](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
-* [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) for
-  easy saving of web content
-* Customizable UI (sidebar buttons, user-defined widgets, ...)
-* [Metrics](https://docs.triliumnotes.org/user-guide/advanced-usage/metrics),
-  along with a Grafana Dashboard.
+  og [import og eksport af
+  Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
+* [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) til
+  nem lagring af webindhold
+* Brugerdefinerbar brugergrænseflade (sidebjælksknapper, brugerdefinerede
+  widgets osv.)
+* [Målinger](https://docs.triliumnotes.org/user-guide/advanced-usage/metrics)
+  samt et Grafana-dashboard.
 
-✨ Check out the following third-party resources/communities for more TriliumNext
-related goodies:
+✨ Se de følgende tredjepartsressourcer og fællesskaber for mere indhold om
+TriliumNext:
 
-- [awesome-trilium](https://github.com/Nriver/awesome-trilium) for 3rd party
-  themes, scripts, plugins and more.
-- [TriliumRocks!](https://trilium.rocks/) for tutorials, guides, and much more.
+- [awesome-trilium](https://github.com/Nriver/awesome-trilium) for
+  tredjepartstemaer, scripts, plugins og meget mere.
+- [TriliumRocks!](https://trilium.rocks/) for vejledninger, guides og meget
+  mere.
 
-## ❓Why TriliumNext?
+## ❓Hvorfor TriliumNext?
 
-The original Trilium developer ([Zadam](https://github.com/zadam)) has
-graciously given the Trilium repository to the community project which resides
-at https://github.com/TriliumNext
+Den oprindelige Trilium-udvikler ([Zadam](https://github.com/zadam)) har
+generøst overdraget Trilium-repositoriet til fællesskabsprojektet, som findes på
+https://github.com/TriliumNext
 
-### ⬆️Migrating from Zadam/Trilium?
+### ⬆️Migrerer du fra Zadam/Trilium?
 
-There are no special migration steps to migrate from a zadam/Trilium instance to
-a TriliumNext/Trilium instance. Simply [install
-TriliumNext/Trilium](#-installation) as usual and it will use your existing
-database.
+Der er ingen særlige trin for at migrere fra en zadam/Trilium-instans til en
+TriliumNext/Trilium-instans. Du skal blot [installere
+TriliumNext/Trilium](#-installation) som normalt, så bruger programmet din
+eksisterende database.
 
-Versions up to and including
-[v0.90.4](https://github.com/TriliumNext/Trilium/releases/tag/v0.90.4) are
-compatible with the latest zadam/trilium version of
-[v0.63.7](https://github.com/zadam/trilium/releases/tag/v0.63.7). Any later
-versions of TriliumNext/Trilium have their sync versions incremented which
-prevents direct migration.
+Versioner til og med
+[v0.90.4](https://github.com/TriliumNext/Trilium/releases/tag/v0.90.4) er
+kompatible med den nyeste version af zadam/trilium,
+[v0.63.7](https://github.com/zadam/trilium/releases/tag/v0.63.7). I alle nyere
+versioner af TriliumNext/Trilium er synkroniseringsversionen blevet forhøjet,
+hvilket forhindrer direkte migrering.
 
 ## 💬 Discuss with us
 

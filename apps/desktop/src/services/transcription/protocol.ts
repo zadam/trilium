@@ -1,4 +1,4 @@
-import type { TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
+import type { TranscriptionPrecision, TranscriptSource, TranscriptUtterance } from "@triliumnext/commons";
 
 /** Every source and engine works on mono 16 kHz samples. */
 export const SAMPLE_RATE = 16000;
@@ -9,18 +9,30 @@ export interface Logger {
     error(message: string): void;
 }
 
+/** Where the engine's models are. */
+export interface ModelPaths {
+    /** Parakeet: the directory holding `tokens.txt` and the encoder, decoder and joiner. */
+    recognizer: { directory: string; precision: TranscriptionPrecision };
+    /** Silero VAD's `.onnx` file. */
+    vad: string;
+    /** The speaker embedding model's `.onnx` file, or `null` to label no speakers. */
+    speaker: string | null;
+}
+
 /** What the main process sends the transcription process, in this order. */
 export type WorkerRequest =
     | {
         type: "start";
         noteId: string;
-        modelDirectory: string;
-        /** Where development builds keep the audio and the transcript as produced, else `null`. */
+        models: ModelPaths;
+        /** Where to keep the audio and the transcript as produced, or `null` to keep neither. */
         recordingDirectory: string | null;
     }
     /** Sent once the recording runs, with the port the capture page posts its samples to. */
     | { type: "capture" }
-    | { type: "stop" };
+    | { type: "stop" }
+    /** Sent instead of `start`: loads sherpa-onnx without any model, then reports `probed`. */
+    | { type: "probe" };
 
 /** What the transcription process reports to the main process. */
 export type WorkerEvent =
@@ -31,7 +43,9 @@ export type WorkerEvent =
     | { type: "utterance"; utterance: TranscriptUtterance }
     | { type: "log"; level: keyof Logger; message: string }
     /** Every utterance captured before `stop` has been sent. */
-    | { type: "stopped" };
+    | { type: "stopped" }
+    /** Answers `probe`: the version of sherpa-onnx that loaded, or why it did not load. */
+    | { type: "probed"; version: string } | { type: "probed"; error: string };
 
 /** One chunk of samples, posted by the capture page straight to the transcription process. */
 export interface CaptureChunk {

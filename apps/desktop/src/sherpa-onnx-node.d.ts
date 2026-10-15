@@ -1,4 +1,7 @@
 declare module "sherpa-onnx-node" {
+    /** The sherpa-onnx version of the native addon. */
+    export const version: string;
+
     export interface OfflineStream {
         acceptWaveform(wave: { samples: Float32Array; sampleRate: number }): void;
     }
@@ -6,7 +9,12 @@ declare module "sherpa-onnx-node" {
     export class OfflineRecognizer {
         static createAsync(config: object): Promise<OfflineRecognizer>;
         createStream(): OfflineStream;
-        decodeAsync(stream: OfflineStream): Promise<{ text: string }>;
+        /** `timestamps` holds each token's start in seconds from the start of the stream. */
+        decodeAsync(stream: OfflineStream): Promise<{
+            text: string;
+            tokens: string[];
+            timestamps: number[];
+        }>;
     }
 
     export interface SpeakerEmbeddingStream {

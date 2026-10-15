@@ -18,6 +18,8 @@ type StartRequest = Extract<WorkerRequest, { type: "start" }>;
 
 /** How long {@link TranscriptionWorker.stop} waits for the speech still queued. */
 const STOP_TIMEOUT_MS = 2 * 60 * 1000;
+/** How long {@link probeEngine} waits for the transcription process to load sherpa-onnx. */
+const PROBE_TIMEOUT_MS = 30 * 1000;
 
 /**
  * The transcription process (`transcription_worker.ts`), from the main process: starts it,
@@ -32,9 +34,7 @@ export class TranscriptionWorker {
     private hasExited = false;
 
     constructor(private readonly listeners: WorkerListeners) {
-        this.child = utilityProcess.fork(getWorkerEntry(), [], {
-            serviceName: "Trilium transcription"
-        });
+        this.child = forkWorker();
         this.child.on("message", (event: WorkerEvent) => this.handle(event));
         this.child.on("exit", (code) => this.handleExit(code));
     }
@@ -113,6 +113,38 @@ export class TranscriptionWorker {
             this.listeners.onUnexpectedExit(code);
         }
     }
+}
+
+/**
+ * Starts a transcription process that only loads sherpa-onnx's native addon, without any model,
+ * and ends it.
+ *
+ * @returns `null` once the addon loaded, or why it did not.
+ */
+export function probeEngine() {
+    return new Promise<string | null>((resolve) => {
+        const child = forkWorker();
+        const timeout = setTimeout(
+            () => finish("The transcription process did not answer in time."), PROBE_TIMEOUT_MS);
+        function finish(error: string | null) {
+            clearTimeout(timeout);
+            child.removeAllListeners();
+            child.kill();
+            resolve(error);
+        }
+
+        child.on("message", (event: WorkerEvent) => {
+            if (event.type === "probed") {
+                finish("error" in event ? event.error : null);
+            }
+        });
+        child.on("exit", (code) => finish(`The transcription process exited with code ${code}.`));
+        child.postMessage({ type: "probe" } satisfies WorkerRequest);
+    });
+}
+
+function forkWorker() {
+    return utilityProcess.fork(getWorkerEntry(), [], { serviceName: "Trilium transcription" });
 }
 
 /**

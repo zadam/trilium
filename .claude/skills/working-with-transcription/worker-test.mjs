@@ -10,21 +10,28 @@
 //   --source <name>   which WAV of the recording to play, default system
 //   --seconds <n>     how much of it, default 120
 //   --speed <n>       how much faster than real time to post it, default 4
+//   --model <dir>     the Parakeet directory, default the app's download of the full-precision
+//                     model, else of the int8 one; full precision when it holds encoder.weights
 //
-// The model directory is apps/desktop/data/transcription-model. Like `pnpm desktop:start`, it
-// loads the TypeScript through NODE_OPTIONS="--import tsx", which the utility process inherits.
+// Silero VAD and TitaNet are read from the app's downloads, in apps/desktop/data/resources.
+//   --out <file>      writes the utterances there, in the transcript format
+//
+// Like `pnpm desktop:start`, it loads the TypeScript through NODE_OPTIONS="--import tsx", which
+// the utility process inherits.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { parseArgs, resolveRecording } from "./recordings.mjs";
+import {
+    findResource, MODEL_RESOURCES, parseArgs, requireResource, resolveRecording
+} from "./recordings.mjs";
 
 const REPO = path.resolve(import.meta.dirname, "../../..");
 const DESKTOP = path.join(REPO, "apps/desktop");
-const MODEL_DIR = path.join(DESKTOP, "data/transcription-model");
 const CHUNK_SAMPLES = 4096;
 const RATE = 16000;
 const SELF = fileURLToPath(import.meta.url);
@@ -50,9 +57,14 @@ async function launch() {
         wav: path.join(recording.directory, file),
         source,
         seconds: Number(options.seconds ?? 120),
-        speed: Number(options.speed ?? 4)
+        speed: Number(options.speed ?? 4),
+        model: path.resolve(options.model
+            ?? findResource(MODEL_RESOURCES.fp32) ?? requireResource(MODEL_RESOURCES.int8)),
+        vad: path.join(requireResource(MODEL_RESOURCES.vad), "silero_vad.onnx"),
+        speaker: findResource(MODEL_RESOURCES.speaker),
+        out: options.out ? path.resolve(options.out) : null
     };
-    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(path.join(REPO, "scripts/utils.mts"));
+    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(pathToFileURL(path.join(REPO, "scripts/utils.mts")).href);
     const env = {
         ...process.env,
         LD_LIBRARY_PATH: isNixOS() ? getNixLdLibraryPath() : process.env.LD_LIBRARY_PATH,
@@ -62,7 +74,12 @@ async function launch() {
     delete env.ELECTRON_RUN_AS_NODE;
 
     console.log(`${config.seconds} s of ${config.wav}, ${config.speed}× real time\n`);
-    const output = execFileSync(getElectronPath(), [ SELF, "--no-sandbox" ], {
+    // Off NixOS, getElectronPath() returns the bare `electron` command, which only a shell
+    // resolves; the package itself exports the binary's path.
+    const electron = isNixOS()
+        ? getElectronPath()
+        : createRequire(path.join(DESKTOP, "package.json"))("electron");
+    const output = execFileSync(electron, [ SELF, "--no-sandbox" ], {
         cwd: DESKTOP,
         env,
         encoding: "utf8",
@@ -92,7 +109,7 @@ async function launch() {
 async function runInElectron(config) {
     const { app, BrowserWindow, MessageChannelMain } = await import("electron");
     const { TranscriptionWorker } = await import(
-        path.join(DESKTOP, "src/services/transcription/worker_client.ts"));
+        pathToFileURL(path.join(DESKTOP, "src/services/transcription/worker_client.ts")).href);
     await app.whenReady();
 
     const utterances = [];
@@ -114,7 +131,15 @@ async function runInElectron(config) {
         log: { info: () => logLines++, error: (message) => console.log(`worker error: ${message}`) }
     });
     const startedAt = performance.now();
-    await worker.start({ noteId: "worker-test", modelDirectory: MODEL_DIR, recordingDirectory: null });
+    const models = {
+        recognizer: {
+            directory: config.model,
+            precision: fs.existsSync(path.join(config.model, "encoder.weights")) ? "fp32" : "int8"
+        },
+        vad: config.vad,
+        speaker: config.speaker && path.join(config.speaker, "nemo_en_titanet_small.onnx")
+    };
+    await worker.start({ noteId: "worker-test", models, recordingDirectory: null });
     const readyMs = Math.round(performance.now() - startedAt);
 
     const pagePath = path.join(os.tmpdir(), `trilium-worker-test-${process.pid}.html`);
@@ -141,6 +166,9 @@ async function runInElectron(config) {
     const stopMs = Math.round(performance.now() - stopAt);
     exited = true;
     fs.rmSync(pagePath, { force: true });
+    if (config.out) {
+        fs.writeFileSync(config.out, JSON.stringify({ version: 1, startedAt: Date.now(), utterances }));
+    }
     finish({
         readyMs,
         chunks,

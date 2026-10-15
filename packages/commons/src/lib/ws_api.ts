@@ -1,4 +1,5 @@
 import type { LlmStreamChunk } from "./llm_api.js";
+import type { ResourceDownloadProgress } from "./resources.js";
 
 export interface EntityChange {
     id?: number | null;
@@ -225,4 +226,7 @@ export type WebSocketMessage = AllTaskDefinitions | {
      */
     type: "llm-stream-end";
     streamId: string;
+} | {
+    type: "resource-download";
+    download: ResourceDownloadProgress;
 }
