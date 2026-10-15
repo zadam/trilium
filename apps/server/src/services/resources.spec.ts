@@ -272,6 +272,40 @@ describe("ResourceManager", () => {
         });
     });
 
+    it("stops verifying files put in place by hand once the download is canceled", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        fs.rmSync(path.join(resourceDirectory(), ".verified.json"));
+
+        requested.length = 0;
+        const { downloadId } = manager.startDownload([ "test.model" ]);
+        manager.cancelDownload(downloadId);
+        expect((await waitForEnd()).status).toBe("canceled");
+        expect(requested).toEqual([]);
+        expect(manager.getPath("test.model")).toBeNull();
+    });
+
+    it("deletes a file put in place by hand that fails its hash before downloading it again", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        const tokens = path.join(resourceDirectory(), "tokens.txt");
+        fs.writeFileSync(tokens, "x\ny\nz\n");
+        fs.utimesSync(tokens, new Date(2020, 0, 1), new Date(2020, 0, 1));
+
+        // The URL is not part of the directory's hash, so this manager finds the same files.
+        const stalling = new ResourceManager(baseDir, (progress) => broadcasts.push(progress));
+        stalling.register(defineModel({ tokensUrl: "/stall" }));
+        expect((await stalling.getStatus([ "test.model" ])).resources[0].unverifiedSize)
+            .toBe(TOKENS.length);
+        const { downloadId } = stalling.startDownload([ "test.model" ]);
+        await waitFor(() => stalled.length > 0);
+        expect(fs.existsSync(tokens)).toBe(false);
+        stalling.cancelDownload(downloadId);
+        expect((await waitForEnd()).status).toBe("canceled");
+    });
+
     it("resumes a file after the connection drops, asking only for the bytes it is missing", async () => {
         manager.register(defineModel());
         dropModelAfter = 120_000;

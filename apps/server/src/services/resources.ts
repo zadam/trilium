@@ -251,6 +251,7 @@ export class ResourceManager {
                 const directory = this.getDirectory(definition);
                 const verified = readVerifiedFiles(directory);
                 for (const file of definition.files) {
+                    controller.signal.throwIfAborted();
                     const destination = path.join(directory, file.path);
                     if (isVerified(verified, destination, file)) {
                         receive(file.size);
@@ -259,7 +260,7 @@ export class ResourceManager {
                     progress.file = path.basename(file.path);
                     report(true);
                     await fs.promises.mkdir(path.dirname(destination), { recursive: true });
-                    if (await hasContent(destination, file)) {
+                    if (await hasContent(destination, file, controller.signal)) {
                         receive(file.size);
                     } else {
                         await downloadFile(file, destination, controller.signal, (bytes) => {
@@ -433,7 +434,7 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
         let hash = createHash("sha256");
         let received = getPartialSize(destination, file);
         if (received) {
-            await hashFileInto(partial, hash);
+            await hashFileInto(partial, hash, signal);
         }
         waitForBytes();
         const response = await fetch(file.url, {
@@ -551,8 +552,8 @@ function getPartialSize(destination: string, file: ResourceFile) {
     }
 }
 
-async function hashFileInto(filePath: string, hash: Hash) {
-    for await (const chunk of fs.createReadStream(filePath)) {
+async function hashFileInto(filePath: string, hash: Hash, signal: AbortSignal) {
+    for await (const chunk of fs.createReadStream(filePath, { signal })) {
         hash.update(chunk);
     }
 }
@@ -596,7 +597,11 @@ function hasSize(destination: string, file: ResourceFile) {
     }
 }
 
-async function hasContent(destination: string, file: ResourceFile) {
+/**
+ * Whether `destination` holds `file`. A file of the right size with other content is deleted, so
+ * that downloading it again does not need room for two copies.
+ */
+async function hasContent(destination: string, file: ResourceFile, signal: AbortSignal) {
     try {
         if ((await fs.promises.stat(destination)).size !== file.size) {
             return false;
@@ -605,8 +610,12 @@ async function hasContent(destination: string, file: ResourceFile) {
         return false;
     }
     const hash = createHash("sha256");
-    await hashFileInto(destination, hash);
-    return hash.digest("hex") === file.sha256;
+    await hashFileInto(destination, hash, signal);
+    if (hash.digest("hex") === file.sha256) {
+        return true;
+    }
+    await fs.promises.rm(destination, { force: true });
+    return false;
 }
 
 /** A snapshot of `progress`, which the running download goes on changing. */
