@@ -5,7 +5,7 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type ResourceDefinition, type ResourceFile, ResourceManager } from "./resources.js";
 
@@ -172,6 +172,17 @@ describe("ResourceManager", () => {
         expect(failed.status).toBe("failed");
         expect(failed.error).toMatch(/model\.bin/);
         expect((await impatient.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(STALL_AFTER);
+    });
+
+    it("downloads through the fetch it is given, such as one that follows the system proxy", async () => {
+        const proxied = vi.fn((url: string, init: RequestInit) => fetch(url, init));
+        manager.setFetch(proxied);
+        manager.register(defineModel());
+
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        expect(proxied.mock.calls.map(([ url ]) => new URL(url).pathname))
+            .toEqual([ "/model.bin", "/tokens.txt" ]);
     });
 
     it("joins a running download, and cancels it without leaving an empty partial file", async () => {

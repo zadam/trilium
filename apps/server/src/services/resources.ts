@@ -34,6 +34,15 @@ export interface ResourceDefinition {
     files: ResourceFile[];
 }
 
+/** The part of `fetch()` a download uses. */
+export type ResourceFetch = (url: string, init: RequestInit) => Promise<Response>;
+
+interface DownloadOptions {
+    /** Node's `fetch()` by default, which ignores the system proxy and the `HTTP(S)_PROXY` variables. */
+    fetch?: ResourceFetch;
+    stallTimeoutMs?: number;
+}
+
 interface Download {
     progress: ResourceDownloadProgress;
     controller: AbortController;
@@ -69,8 +78,13 @@ export class ResourceManager {
     constructor(
         private readonly baseDir: string,
         private readonly broadcast: (progress: ResourceDownloadProgress) => void,
-        private readonly options: { stallTimeoutMs?: number } = {}
+        private readonly options: DownloadOptions = {}
     ) {}
+
+    /** Downloads through `fetch` from now on, as desktop does with Electron's, which follows the system proxy. */
+    setFetch(fetch: ResourceFetch) {
+        this.options.fetch = fetch;
+    }
 
     register(...definitions: ResourceDefinition[]) {
         for (const definition of definitions) {
@@ -195,7 +209,7 @@ export class ResourceManager {
                         await downloadFile(file, destination, controller.signal, (bytes) => {
                             receive(bytes);
                             report(false);
-                        }, this.options.stallTimeoutMs);
+                        }, this.options);
                     }
                     const { size, mtimeMs } = await fs.promises.stat(destination);
                     verified[file.path] = { size, mtimeMs };
@@ -337,7 +351,8 @@ export class ResourceManager {
  * nothing for `stallTimeoutMs`, before the response or within it, fails the download.
  */
 export async function downloadFile(file: ResourceFile, destination: string, signal: AbortSignal,
-    onProgress: (bytes: number) => void, stallTimeoutMs = STALL_TIMEOUT_MS) {
+    onProgress: (bytes: number) => void,
+    { fetch = globalThis.fetch, stallTimeoutMs = STALL_TIMEOUT_MS }: DownloadOptions = {}) {
     const partial = `${destination}.partial`;
     const name = path.basename(file.path);
     const stall = new AbortController();
