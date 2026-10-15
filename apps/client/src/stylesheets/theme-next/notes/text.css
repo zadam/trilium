@@ -449,13 +449,16 @@ div.ck.ck-collapsible {
 
     overflow: hidden;
     max-height: var(--_panel-height);
+    padding: 0;
 }
 
 .ck-tn-dropdown .ck-dropdown__panel .ck-list,
 .ck-code-block-dropdown .ck-dropdown__panel .ck-list,
 .ck.ck-toolbar-container.codeblock-language-list .ck.ck-dropdown__panel .ck-list {
+    box-sizing: border-box;
     overflow: auto;
-    max-height: calc(var(--_panel-height) - var(--ck-editor-popup-padding) * 2 - 2px);
+    max-height: calc(var(--_panel-height) - 2px);
+    padding: var(--ck-editor-popup-padding);
 }
 
 /* Text snippet dropdown */
