@@ -12,8 +12,8 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
 *   The _Selected notes_ section at the top of the dialog lists the notes the actions apply to. When many notes are selected, only the first few are shown; click _+N more_ to show the rest.
     *   To leave a note out without changing the selection in the note tree, press the X button on its entry. The last remaining note cannot be removed.
 *   By default, only the selected notes will be affected. To also include all the descendants of the notes, turn on _Include descendants of the selected notes_. The number of affected notes, shown below that option, updates to reflect the change.
-*   Click on which action to apply from the _Available actions_ section. A detailed description of each is available in the next section.
-    *   For each action selected, the _Chosen actions_ section will update to reveal the entry. Each action will have its own configuration.
+*   To add an action, click _Add action_ at the bottom of the _Chosen actions_ section and pick one from the menu. A detailed description of each is available in the next section.
+    *   Each chosen action appears as an entry in the _Chosen actions_ section, with its own configuration.
     *   To remove an action, simply press the X button to the right of it.
     *   It is possible to apply multiple actions of the same type, such as adding multiple types.
 *   When all the actions are defined, press _Execute bulk actions_ to trigger all of them at once.

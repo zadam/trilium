@@ -9,6 +9,8 @@ import { Card, CardSection } from "../react/Card";
 import NoItems from "../react/NoItems";
 import { OptionsRowWithToggle } from "../type_widgets/options/components/OptionsRow";
 import bulk_action from "../../services/bulk_action";
+import AddBulkActionButton from "../bulk_actions/AddBulkActionButton";
+import Icon from "../react/Icon";
 import dialog from "../../services/dialog";
 import toast from "../../services/toast";
 import AbstractBulkAction from "../bulk_actions/abstract_bulk_action";
@@ -114,12 +116,15 @@ export default function BulkActionsDialog() {
                 </CardSection>
             </Card>
 
-            <Card heading={t("bulk_actions.available_actions")}>
-                <AvailableActionsList />
-            </Card>
-
             <Card className="bulk-actions-chosen-actions" heading={t("bulk_actions.chosen_actions")}>
                 <ExistingActionsList existingActions={existingActions} />
+                <CardSection className="bulk-actions-add-action">
+                    <AddBulkActionButton
+                        noteId="_bulkAction"
+                        buttonClassName="btn-secondary btn-micro"
+                        text={<><Icon icon="bx bx-plus" />{" "}{t("bulk_actions.add_action")}</>}
+                    />
+                </CardSection>
             </Card>
         </Modal>
     );
@@ -151,26 +156,6 @@ function SelectedNotes({ noteIds, onChange }: { noteIds: string[]; onChange(note
             )}
         </div>
     );
-}
-
-function AvailableActionsList() {
-    return <>
-        {bulk_action.ACTION_GROUPS.map((actionGroup) => (
-            <CardSection key={actionGroup.title} className="bulk-available-action-group">
-                <span className="bulk-available-action-group-title">{actionGroup.title}</span>
-                <div className="bulk-available-action-group-actions">
-                    {actionGroup.actions.map(({ actionName, actionTitle }) => (
-                        <Button
-                            key={actionName}
-                            size="small"
-                            text={actionTitle}
-                            onClick={() => bulk_action.addAction("_bulkAction", actionName)}
-                        />
-                    ))}
-                </div>
-            </CardSection>
-        ))}
-    </>;
 }
 
 function ExistingActionsList({ existingActions }: { existingActions: AbstractBulkAction[] }) {

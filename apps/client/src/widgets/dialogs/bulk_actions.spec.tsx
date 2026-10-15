@@ -71,6 +71,24 @@ describe("BulkActionsDialog", () => {
             .toBe("bulk_actions.none_yet");
     });
 
+    it("adds the action picked from the add menu at the foot of the actions card", async () => {
+        await open([ "n1" ]);
+        const toggle = container.querySelector<HTMLButtonElement>(".bulk-actions-chosen-actions .tn-card-section:last-child .dropdown button");
+        expect(toggle?.textContent).toContain("bulk_actions.add_action");
+        await act(async () => toggle?.click());
+
+        const item = [ ...document.querySelectorAll<HTMLElement>(".action-add-menu .dropdown-item") ]
+            .find((el) => el.textContent?.includes("move_note.move_note"));
+        expect(item).toBeDefined();
+        await act(async () => item?.click());
+
+        expect(server.post).toHaveBeenCalledWith("notes/_bulkAction/attributes", {
+            type: "label",
+            name: "action",
+            value: JSON.stringify({ name: "moveNote" })
+        });
+    });
+
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {
         await open([ "n1", "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1", "n2" ], includeDescendants: false });

@@ -55,10 +55,6 @@
     margin: 3px;
 }
 
-.action-add-menu .dropdown-header {
-    background-color: var(--accented-background-color);
-}
-
 .search-actions-container {
     display: flex;
     justify-content: space-evenly;

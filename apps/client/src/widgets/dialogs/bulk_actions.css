@@ -25,22 +25,9 @@
         }
     }
 
-    .bulk-available-action-group {
+    .bulk-actions-add-action {
         display: flex;
-        align-items: baseline;
-        gap: 12px;
-    }
-
-    .bulk-available-action-group-title {
-        flex-shrink: 0;
-        width: 6rem;
-        color: var(--muted-text-color);
-    }
-
-    .bulk-available-action-group-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
+        justify-content: flex-end;
     }
 
     .bulk-existing-action-list {
