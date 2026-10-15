@@ -47,7 +47,8 @@ vi.mock("./utils", async (importOriginal) => ({
     loadEmbeddedNote
 }));
 
-const applyStickyTableHeaders = vi.hoisted(() => vi.fn());
+const disposeStickyTableHeaders = vi.hoisted(() => vi.fn());
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn(() => disposeStickyTableHeaders));
 vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
     applyStickyTableHeaders
 }));
@@ -454,7 +455,10 @@ describe("ReadOnlyText tables", () => {
         expect(figure?.style.getPropertyValue("--table-width"))
             .toBe("calc(var(--table-reference-width, 100%) * 150 / 100)");
         expect(applyStickyTableHeaders).toHaveBeenCalledWith(figure?.parentElement);
+
+        disposeStickyTableHeaders.mockClear();
         await act(async () => render(null, harness.container));
+        expect(disposeStickyTableHeaders).toHaveBeenCalledTimes(1);
         harness.container.remove();
     });
 });

@@ -891,13 +891,37 @@ export async function mountInteractiveWidget(vnode: JSX.Element, container: HTML
  * into the given content, running their cleanup — `useTriliumEvent` unsubscribe, Bootstrap dropdown
  * disposal, map teardown. A caller embedding interactive content must call this when it replaces or
  * discards that content, otherwise the standalone Preact roots leak. Safe (no-op) for content with no
- * interactive widgets.
+ * interactive widgets. It also runs the disposers that {@link addContentDisposer} registered in the
+ * content.
  */
 export function disposeInteractiveContent($renderedContent: JQuery<HTMLElement>) {
     for (const el of $renderedContent.find(`[${INTERACTIVE_MOUNT_ATTR}]`).toArray()) {
         render(null, el);
     }
+
+    const disposable = `[${DISPOSER_ATTR}]`;
+    for (const el of $renderedContent.find(disposable).addBack(disposable).toArray()) {
+        for (const dispose of contentDisposers.get(el) ?? []) {
+            dispose();
+        }
+        contentDisposers.delete(el);
+        el.removeAttribute(DISPOSER_ATTR);
+    }
 }
+
+/**
+ * Registers `dispose` to run when {@link disposeInteractiveContent} discards the rendered content
+ * that holds `element`, such as a pass that keeps observing the content.
+ */
+export function addContentDisposer(element: HTMLElement, dispose: () => void) {
+    element.setAttribute(DISPOSER_ATTR, "");
+    contentDisposers.set(element, [ ...(contentDisposers.get(element) ?? []), dispose ]);
+}
+
+/** Marks an element that holds disposers from {@link addContentDisposer}. */
+const DISPOSER_ATTR = "data-content-disposer";
+
+const contentDisposers = new WeakMap<Element, (() => void)[]>();
 
 /**
  * Mounts a collection — a book or a saved search — as the live {@link EmbeddedNoteList}, the same

@@ -11,9 +11,14 @@ export const START_PROPERTY = "--table-header-start";
 /** The distance from the bottom of the header rows to the bottom of the table. */
 export const TRAVEL_PROPERTY = "--table-header-travel";
 
-/** Keeps the header rows of the tables in `container` in view while it scrolls. */
+/**
+ * Keeps the header rows of the tables in `container` in view while it scrolls. Returns a function
+ * that stops measuring them.
+ */
 export function applyStickyTableHeaders(container: Element) {
-    new StickyTableHeaders().observe(container);
+    const headers = new StickyTableHeaders();
+    headers.observe(container);
+    return () => headers.disconnect();
 }
 
 /** Measures header rows again whenever their figure or the rows themselves change size. */

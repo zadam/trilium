@@ -93,6 +93,20 @@ describe("applyStickyTableHeaders", () => {
         expect(topIn(scroller, thead)).toBeCloseTo(0, 0);
     });
 
+    it("stops measuring the header rows once disposed", async () => {
+        const { content } = renderContent(tableFigure(1, 20));
+        const dispose = applyStickyTableHeaders(content);
+        await settle();
+
+        const { table, thead } = parts(content);
+        const travel = lengthOf(thead, TRAVEL_PROPERTY);
+        dispose();
+        const row = table.tBodies[0].rows[0];
+        row.after(row.cloneNode(true));
+        await settle();
+        expect(lengthOf(thead, TRAVEL_PROPERTY)).toBe(travel);
+    });
+
     it("sticks below the scroll padding of the scrolled area", async () => {
         const { scroller, content } = renderContent(tableFigure(1, 20));
         scroller.style.scrollPaddingTop = "30px";

@@ -151,11 +151,16 @@ export function ReadOnlyTextContent({
         ]));
 
         applyNoteImageVersions(container);
-        applyTableScroll(container);
-        applyStickyTableHeaders(container);
+        const disposeTableScroll = applyTableScroll(container);
+        const disposeStickyTableHeaders = applyStickyTableHeaders(container);
         applyMath(container);
         applyTabs(container, { placeholder: t("text-editor.ck.tab-title") });
         setupImageOpening(container, true);
+
+        return () => {
+            disposeTableScroll();
+            disposeStickyTableHeaders();
+        };
     }, [ html, noteId, ntxId, contentRef ]);
 
     useEffect(() => {

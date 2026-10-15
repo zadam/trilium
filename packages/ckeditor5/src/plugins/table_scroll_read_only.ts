@@ -1,5 +1,6 @@
 import {
-    getScrollFadeClasses, SCROLL_FADE_CLASSES, type ScrollFadeState, watchScrollFade
+    getScrollFadeClasses, SCROLL_FADE_CLASSES, type ScrollFadeState, type ScrollFadeWatch,
+    watchScrollFade
 } from "@triliumnext/commons/src/lib/scroll_fade.js";
 
 /**
@@ -10,7 +11,8 @@ import {
  * on the figure, so a copied table keeps it. `scroll_fade.css` fades the edges that a scrolling
  * table continues past.
  *
- * The module imports nothing from CKEditor, so pages that only display content can load it.
+ * Returns a function that stops watching the tables for their fades. The module imports nothing
+ * from CKEditor, so pages that only display content can load it.
  */
 export function applyTableScroll(container: Element) {
     const selector = "figure.table:not(.layout-table)";
@@ -19,10 +21,23 @@ export function applyTableScroll(container: Element) {
     for (const figure of figures) {
         figure.style.setProperty("--table-width", toReferenceWidth(figure.style.width));
     }
+
     // After every width is set, so that only the first measurement lays out the page.
+    const started: [HTMLElement, ScrollFadeWatch][] = [];
     for (const figure of figures) {
-        fadeEdges(figure);
+        if (!fades.has(figure)) {
+            const fade = fadeEdges(figure);
+            fades.set(figure, fade);
+            started.push([ figure, fade ]);
+        }
     }
+
+    return () => {
+        for (const [ figure, fade ] of started.splice(0)) {
+            fade.disconnect();
+            fades.delete(figure);
+        }
+    };
 }
 
 /** The `scroll_fade.css` classes of a table in `state`, none while it fits. */
@@ -30,15 +45,11 @@ export function getTableFadeClasses(state: ScrollFadeState) {
     return state.overflow > 0 ? getScrollFadeClasses("horizontal", state) : [];
 }
 
-/** The figures whose edges fade, so that a second pass over the same content adds no watcher. */
-const fadedFigures = new WeakSet<HTMLElement>();
+/** The fade of each figure, so that a second pass over the same content adds no watcher. */
+const fades = new WeakMap<HTMLElement, ScrollFadeWatch>();
 
 function fadeEdges(figure: HTMLElement) {
-    if (fadedFigures.has(figure)) {
-        return;
-    }
-    fadedFigures.add(figure);
-    watchScrollFade(figure, (state) => {
+    return watchScrollFade(figure, (state) => {
         figure.classList.remove(...SCROLL_FADE_CLASSES);
         figure.classList.add(...getTableFadeClasses(state));
     }, { direction: "horizontal" });

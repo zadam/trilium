@@ -149,6 +149,22 @@ describe("applyTableScroll", () => {
             .toBe("to left");
     });
 
+    it("stops fading once disposed, and fades again on a later pass", async () => {
+        const container = renderContent("", 600);
+        container.innerHTML = tableFigure("width:150%;");
+        const dispose = applyTableScroll(container);
+        const figure = firstFigure(container);
+        expect(fadeClasses(figure)).toContain("scroll-fade-end");
+
+        dispose();
+        dispose();
+        await scrollFigure(figure, 300);
+        expect(fadeClasses(figure)).not.toContain("scroll-fade-start");
+
+        applyTableScroll(container);
+        expect(fadeClasses(figure)).toContain("scroll-fade-start");
+    });
+
     it("starts fading once detached content is attached", async () => {
         const container = document.createElement("div");
         container.className = "ck-content";
