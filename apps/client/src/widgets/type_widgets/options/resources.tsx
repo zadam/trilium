@@ -62,7 +62,7 @@ function useResources() {
     const [ status, setStatus ] = useState<ResourcesStatus>();
     const refresh = useCallback(() => {
         void server.get<ResourcesStatusResponse>("resources").then(({ resources, foreign, freeBytes }) => setStatus({
-            resources: resources.filter(({ downloadedSize }) => downloadedSize > 0),
+            resources: resources.filter((resource) => getSizeOnDisk(resource) > 0),
             foreign: foreign ?? [],
             freeBytes
         }));
@@ -88,7 +88,7 @@ interface ResourceRowsProps extends ResourcesStatus {
 
 /** The entries and the space they use, every size in one unit so that the column adds up. */
 function ResourceRows({ resources, foreign, freeBytes, onDeleted }: ResourceRowsProps) {
-    const used = resources.reduce((total, { downloadedSize }) => total + downloadedSize, 0)
+    const used = resources.reduce((total, resource) => total + getSizeOnDisk(resource), 0)
         + foreign.reduce((total, { size }) => total + size, 0);
     const unitOf = Math.max(used, ...resources.map(({ size }) => size));
     return (
@@ -233,12 +233,20 @@ function EntryRow({ className, icon, title, children, size, status, onOpen, onDe
     );
 }
 
-function getStatusText({ installed, size, downloadedSize }: ResourceInfo) {
+function getStatusText({ installed, size, downloadedSize, unverifiedSize }: ResourceInfo) {
     if (installed) {
         return t("resources_options.installed");
+    }
+    if (unverifiedSize > 0) {
+        return t("resources_options.unverified");
     }
     return t("resources_options.partially_downloaded", {
         downloaded: formatSize(downloadedSize, 2, size),
         size: formatSize(size)
     });
+}
+
+/** The bytes of `resource` on disk: downloaded, kept from an interrupted download, or copied in. */
+function getSizeOnDisk({ downloadedSize, unverifiedSize }: ResourceInfo) {
+    return downloadedSize + unverifiedSize;
 }

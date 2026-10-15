@@ -121,6 +121,7 @@ describe("ResourceManager", () => {
             license: "MIT",
             size: MODEL.length + TOKENS.length,
             downloadedSize: MODEL.length + TOKENS.length,
+            unverifiedSize: 0,
             sources: [ "127.0.0.1" ],
             installed: true,
             directory
@@ -234,13 +235,19 @@ describe("ResourceManager", () => {
         manager.startDownload([ "test.model" ]);
         await waitForEnd();
         fs.rmSync(path.join(resourceDirectory(), ".verified.json"));
+        fs.writeFileSync(path.join(resourceDirectory(), "tokens.txt"), "short");
         expect(manager.getPath("test.model")).toBeNull();
+        expect((await manager.getStatus([ "test.model" ])).resources[0])
+            .toMatchObject({ installed: false, downloadedSize: 0, unverifiedSize: MODEL.length });
 
         requested.length = 0;
         manager.startDownload([ "test.model" ]);
         expect((await waitForEnd()).status).toBe("succeeded");
-        expect(requested).toEqual([]);
+        expect(requested).toEqual([ "/tokens.txt" ]);
         expect(manager.getPath("test.model")).toBe(resourceDirectory());
+        expect((await manager.getStatus([ "test.model" ])).resources[0]).toMatchObject({
+            installed: true, downloadedSize: MODEL.length + TOKENS.length, unverifiedSize: 0
+        });
     });
 
     it("resumes a file after the connection drops, asking only for the bytes it is missing", async () => {

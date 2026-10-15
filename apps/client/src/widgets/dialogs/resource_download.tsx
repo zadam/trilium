@@ -97,6 +97,9 @@ export default function ResourceDownloadDialog() {
     const remaining = opts ? getRemainingSize(opts.status) : 0;
     const freeBytes = opts?.status.freeBytes ?? null;
     const lacksSpace = freeBytes !== null && freeBytes < remaining;
+    const startText = isFailed
+        ? t("resource_download.retry")
+        : remaining === 0 ? t("resource_download.verify") : t("resource_download.download");
 
     return (
         <Modal
@@ -113,8 +116,8 @@ export default function ResourceDownloadDialog() {
                 <Button text={t("resource_download.cancel")} onClick={() => setShown(false)} />
                 {!isDownloading && (
                     <Button
-                        text={isFailed ? t("resource_download.retry") : t("resource_download.download")}
-                        icon="bx bx-download"
+                        text={startText}
+                        icon={remaining === 0 ? "bx bx-check-shield" : "bx bx-download"}
                         kind="primary"
                         disabled={lacksSpace}
                         disabledTooltip={t("resource_download.not_enough_space_title")}
@@ -210,7 +213,8 @@ interface ResourceItemProps {
  * to download of it, so that the rows add up to the download size. Once a download starts, the
  * icon shows whether the resource is done, downloading or waiting, as the setup's sync steps do.
  * The resource downloading carries a progress bar, and so does one an earlier download left
- * partly fetched, filled as far as it got.
+ * partly fetched, filled as far as it got. Files already in place but not yet checked, such as
+ * ones copied from another device, are named in the source line and left out of the size.
  */
 function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
     const isActive = file !== undefined;
@@ -227,6 +231,10 @@ function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
                     <span className="resource-download-license">
                         {t("resource_download.license", { license: resource.license })}
                     </span>
+                    {resource.unverifiedSize > 0 && <>
+                        {" · "}
+                        {t("resource_download.unverified", { size: formatSize(resource.unverifiedSize) })}
+                    </>}
                 </small>
                 {isActive && state && (
                     <RowProgress
@@ -244,7 +252,7 @@ function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
                 )}
             </div>
             <span className="tn-card-option-value resource-download-size">
-                {formatSize(resource.size - resource.downloadedSize, 2, unitOf)}
+                {formatSize(getMissingSize(resource), 2, unitOf)}
             </span>
         </CardSection>
     );
@@ -289,5 +297,10 @@ function getRowIcon(resource: ResourceInfo, state: ResourceDownloadState | undef
 function getRemainingSize(status: ResourcesStatusResponse) {
     return status.resources
         .filter(({ installed }) => !installed)
-        .reduce((total, { size, downloadedSize }) => total + size - downloadedSize, 0);
+        .reduce((total, resource) => total + getMissingSize(resource), 0);
+}
+
+/** The bytes of `resource` neither downloaded nor already in place waiting to be checked. */
+function getMissingSize({ size, downloadedSize, unverifiedSize }: ResourceInfo) {
+    return size - downloadedSize - unverifiedSize;
 }

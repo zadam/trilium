@@ -301,12 +301,18 @@ export class ResourceManager {
     private getInfo(definition: ResourceDefinition): ResourceInfo {
         const directory = this.getDirectory(definition);
         const verified = readVerifiedFiles(directory);
-        const downloadedSize = definition.files.reduce((total, file) => {
+        let downloadedSize = 0;
+        let unverifiedSize = 0;
+        for (const file of definition.files) {
             const destination = path.join(directory, file.path);
-            return total + (isVerified(verified, destination, file)
-                ? file.size
-                : getPartialSize(destination, file));
-        }, 0);
+            if (isVerified(verified, destination, file)) {
+                downloadedSize += file.size;
+            } else if (hasSize(destination, file)) {
+                unverifiedSize += file.size;
+            } else {
+                downloadedSize += getPartialSize(destination, file);
+            }
+        }
         const installedDirectory = this.getPath(definition.id);
         return {
             id: definition.id,
@@ -316,6 +322,7 @@ export class ResourceManager {
             license: definition.license,
             size: sumSizes(definition.files),
             downloadedSize,
+            unverifiedSize,
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],
             installed: installedDirectory !== null,
             directory: installedDirectory
@@ -517,6 +524,15 @@ function isVerified(verified: VerifiedFiles, destination: string, file: Resource
 }
 
 /** Whether `destination` already holds `file`, as one put there by hand: checked by its hash. */
+/** Whether `destination` is there with the size of `file`, whatever its content. */
+function hasSize(destination: string, file: ResourceFile) {
+    try {
+        return fs.statSync(destination).size === file.size;
+    } catch {
+        return false;
+    }
+}
+
 async function hasContent(destination: string, file: ResourceFile) {
     try {
         if ((await fs.promises.stat(destination)).size !== file.size) {

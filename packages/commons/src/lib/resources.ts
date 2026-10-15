@@ -17,6 +17,12 @@ export interface ResourceInfo {
     size: number;
     /** The bytes of its files already downloaded and verified, kept from an interrupted download. */
     downloadedSize: number;
+    /**
+     * The bytes of its files already in place with the right size but not yet checked against
+     * their SHA-256, such as files copied from another device. The next download checks them
+     * instead of downloading them.
+     */
+    unverifiedSize: number;
     /** The host names its files are downloaded from. */
     sources: string[];
     installed: boolean;

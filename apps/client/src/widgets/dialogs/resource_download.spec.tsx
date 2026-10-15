@@ -36,6 +36,7 @@ const STATUS: ResourcesStatusResponse = {
         license: "CC-BY-4.0",
         size: 700,
         downloadedSize: 200,
+        unverifiedSize: 0,
         sources: [ "huggingface.co", "github.com" ],
         installed: false,
         directory: null
@@ -164,6 +165,18 @@ describe("ResourceDownloadDialog", () => {
         expect(findButton("resource_download.retry")).toBeDefined();
     });
 
+    it("offers to check files already on the device instead of downloading them", async () => {
+        const copied = { ...STATUS.resources[0], downloadedSize: 0, unverifiedSize: 700 };
+        await open({ ...STATUS, resources: [ copied ], freeBytes: 100 });
+
+        expect(text(".resource-download-meta")).toContain(`resource_download.unverified:{"size":"700 B"}`);
+        expect(text(".resource-download-item .resource-download-size")).toBe("0 B");
+        expect(text(".resource-download-total .resource-download-size")).toBe("0 B");
+        expect(container.querySelector(".admonition")).toBeNull();
+        expect(findButton("resource_download.download")).toBeUndefined();
+        expect(findButton("resource_download.verify")?.disabled).toBe(false);
+    });
+
     it("refuses to start a download that cannot fit in the free space", async () => {
         await open({ ...STATUS, freeBytes: 100 });
 
@@ -230,7 +243,7 @@ function installed(status: ResourcesStatusResponse): ResourcesStatusResponse {
     return {
         ...status,
         resources: status.resources.map((resource) => ({
-            ...resource, installed: true, downloadedSize: resource.size, directory: `/resources/${resource.id}`
+            ...resource, installed: true, downloadedSize: resource.size, unverifiedSize: 0, directory: `/resources/${resource.id}`
         }))
     };
 }

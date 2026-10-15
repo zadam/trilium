@@ -123,6 +123,18 @@ describe("ResourcesSettings", () => {
             .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
     });
 
+    it("lists files copied in but not yet checked, and counts them in the space used", async () => {
+        mocks.resources = [ resource({ id: "test.copied", unverifiedSize: 6 * MIB }) ];
+        await open();
+
+        const rows = [ ...host.querySelectorAll(".resources-item") ];
+        expect(rows.map((row) => row.querySelector(".tn-card-option-title")?.textContent))
+            .toEqual([ "test.copied" ]);
+        expect(rows[0].querySelector(".resources-status small")?.textContent)
+            .toBe("resources_options.unverified");
+        expect(host.querySelector(".resources-total .resources-size")?.textContent).toBe("6.00 MiB");
+    });
+
     it("opens the folder of an installed resource, on desktop only", async () => {
         await open();
         const buttons = () => [ ...host.querySelectorAll(".resources-item") ]
@@ -257,6 +269,7 @@ function resource(overrides: Partial<ResourceInfo> & { id: string }): ResourceIn
         license: "MIT",
         size: 10 * MIB,
         downloadedSize: 0,
+        unverifiedSize: 0,
         sources: [ "example.com" ],
         installed: false,
         directory: null,

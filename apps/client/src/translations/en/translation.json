@@ -4623,7 +4623,9 @@
     "cancel": "Cancel",
     "not_enough_space_title": "Not enough free space",
     "failed_title": "Download failed",
-    "license": "{{license}} license"
+    "license": "{{license}} license",
+    "verify": "Verify",
+    "unverified": "{{size}} already on this device, checked instead of downloaded"
   },
   "transcription_options": {
     "recognition_title": "Speech recognition",
@@ -4658,6 +4660,7 @@
     "unregistered_description": "A downloaded resource that no feature of this app uses.",
     "unknown": "Unknown",
     "unknown_description": "Not downloaded by Trilium.",
-    "delete_foreign_confirmation": "Delete {{name}}? No feature of this app uses it."
+    "delete_foreign_confirmation": "Delete {{name}}? No feature of this app uses it.",
+    "unverified": "Not checked yet"
   }
 }
