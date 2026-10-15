@@ -23,12 +23,14 @@ import {
 /**
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
  * recording, the second stops it. Desktop only, since the main process does the recording, and
- * shown only while `transcriptionEnabled` is on.
+ * shown only while `transcriptionEnabled` is on. Its corner badge reads "Beta" while idle and the
+ * time elapsed while recording.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
-    const { status, error } = useTranscriptionState();
+    const { status, error, startedAt } = useTranscriptionState();
     const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
+    const [ now, setNow ] = useState(Date.now);
     const handleClick = useCallback(() => {
         void toggleRecording(status);
     }, [ status ]);
@@ -38,6 +40,15 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             toast.showError(error);
         }
     }, [ error ]);
+
+    useEffect(() => {
+        if (status !== "recording") {
+            return;
+        }
+        setNow(Date.now());
+        const interval = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, [ status ]);
 
     if (!isEnabled) {
         return null;
@@ -50,7 +61,15 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
                 onClick={handleClick}
                 {...getAppearance(status, icon, title)}
             />
-            <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
+            {status === "idle" && (
+                <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
+            )}
+            {status === "recording" && startedAt !== undefined && (
+                <Badge
+                    text={formatElapsed(now - startedAt)}
+                    className="record-meeting-time-badge"
+                />
+            )}
         </div>
     );
 }
@@ -147,4 +166,15 @@ export async function createMeetingNote() {
         focus: "content",
         attributes: [ { type: "label", name: MEETING_RECORDING_LABEL, value: "" } ]
     });
+}
+
+/** Formats a recording's length as `m:ss` within its first hour and as `h:mm` from then on. */
+export function formatElapsed(elapsedMs: number) {
+    const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    if (hours) {
+        return `${hours}:${String(minutes).padStart(2, "0")}`;
+    }
+    return `${minutes}:${String(totalSeconds % 60).padStart(2, "0")}`;
 }

@@ -725,6 +725,11 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
+     * When the recording started, in milliseconds since the epoch: set once it records, kept while
+     * it stops, absent otherwise.
+     */
+    startedAt?: number;
+    /**
      * A problem to tell the user about, sent once with the state it concerns: the recording ended
      * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
      */

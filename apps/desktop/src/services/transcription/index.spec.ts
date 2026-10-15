@@ -160,8 +160,9 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "meeting")).toBe("");
         expect(await invoke("transcription-start", "meeting"))
             .toBe("transcription.already-recording");
-        expect(await invoke("transcription-get-state"))
-            .toEqual({ status: "recording", noteId: "meeting", pendingSources: [] });
+        expect(await invoke("transcription-get-state")).toEqual({
+            status: "recording", noteId: "meeting", pendingSources: [], startedAt: STARTED_AT
+        });
 
         await invoke("transcription-stop");
         expect(h.capture.stop.mock.invocationCallOrder[0])
@@ -226,7 +227,7 @@ describe("transcription IPC", () => {
 
         h.listeners?.onPendingChanged([ "system" ]);
         expect(h.broadcast.at(-1)).toEqual({
-            status: "recording", noteId: "meeting", pendingSources: [ "system" ]
+            status: "recording", noteId: "meeting", pendingSources: [ "system" ], startedAt: STARTED_AT
         });
         expect(await invoke("transcription-get-state")).toEqual(h.broadcast.at(-1));
 
@@ -249,7 +250,7 @@ describe("transcription IPC", () => {
         h.listeners?.onUtterance(utterance);
         const errors = h.broadcast.filter((state) => state.error);
         expect(errors).toEqual([ 1, 2 ].map(() => ({
-            status: "recording", noteId: "meeting", pendingSources: [],
+            status: "recording", noteId: "meeting", pendingSources: [], startedAt: STARTED_AT,
             error: "transcription.save-locked"
         })));
         expect(await invoke("transcription-get-state")).not.toHaveProperty("error");

@@ -51,7 +51,9 @@ vi.mock("./launch_bar_widgets", () => ({
     useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" })
 }));
 
-import RecordMeetingButton, { createMeetingNote, toggleRecording } from "./RecordMeetingButton";
+import RecordMeetingButton, {
+    createMeetingNote, formatElapsed, toggleRecording
+} from "./RecordMeetingButton";
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -158,7 +160,60 @@ describe("toggleRecording", () => {
     });
 });
 
+describe("formatElapsed", () => {
+    it("counts minutes and seconds within the first hour, then hours and minutes", () => {
+        expect(formatElapsed(0)).toBe("0:00");
+        expect(formatElapsed(65_000)).toBe("1:05");
+        expect(formatElapsed(3_599_999)).toBe("59:59");
+        expect(formatElapsed(3_600_000)).toBe("1:00");
+        expect(formatElapsed(3_727_000)).toBe("1:02");
+        expect(formatElapsed(-5_000)).toBe("0:00");
+    });
+});
+
 describe("RecordMeetingButton", () => {
+    async function renderWithState(state: Partial<TranscriptionState>) {
+        window.electronApi = {
+            transcription: {
+                getState: async () => ({
+                    status: "idle", noteId: null, pendingSources: [], ...state
+                }),
+                onStateChanged: () => () => {}
+            }
+        } as unknown as typeof window.electronApi;
+        let container: HTMLElement | undefined;
+        await act(async () => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        return container;
+    }
+
+    it("shows how long it has been recording in place of the beta badge", async () => {
+        vi.useFakeTimers({ now: new Date(2026, 9, 13, 14, 30) });
+        const container = await renderWithState({
+            status: "recording", noteId: "meeting", startedAt: Date.now() - 65_000
+        });
+        const badge = () => container?.querySelector(".record-meeting-launcher .ext-badge");
+        // Preact runs effects after paint, which the fake clock schedules.
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(50);
+        });
+
+        expect(badge()?.className).toContain("record-meeting-time-badge");
+        expect(badge()?.textContent).toBe("1:05");
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(badge()?.textContent).toBe("1:06");
+        window.electronApi = undefined;
+    });
+
+    it("shows no badge while the recording starts", async () => {
+        const container = await renderWithState({ status: "starting", noteId: "meeting" });
+        expect(container?.querySelector(".record-meeting-launcher .ext-badge")).toBeNull();
+        window.electronApi = undefined;
+    });
+
     it("shows nothing while transcription is turned off in the settings", () => {
         mocks.transcriptionEnabled = false;
         const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);

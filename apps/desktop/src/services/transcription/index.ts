@@ -103,7 +103,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
         recording.worker.connectCapture(port2);
         const sources = await recording.capture.start(port1);
         getLog().info(`Transcription: recording ${sources.join(" and ")} for note ${noteId}.`);
-        setState({ ...state, status: "recording" });
+        setState({ ...state, status: "recording", startedAt });
         return "";
     } catch (e) {
         activeRecording = null;
