@@ -1,0 +1,17 @@
+.note-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-height: 30vh;
+    overflow-y: auto;
+
+    .tn-chip {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .note-chips-more {
+        padding-inline: 4px;
+    }
+}

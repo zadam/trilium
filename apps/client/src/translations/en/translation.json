@@ -85,7 +85,6 @@
   "bulk_actions": {
     "bulk_actions": "Bulk actions",
     "selected_notes": "Selected notes",
-    "more_notes": "+{{count}} more",
     "remove_from_selection": "Remove from the selection",
     "affected_note_count_one": "The actions apply to {{count}} note.",
     "affected_note_count_other": "The actions apply to {{count}} notes.",
@@ -103,6 +102,9 @@
     "relations": "Relations",
     "notes": "Notes",
     "other": "Other"
+  },
+  "note_chips": {
+    "more": "+{{count}} more"
   },
   "clone_to": {
     "clone_notes_to": "Clone notes to...",

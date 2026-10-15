@@ -7,24 +7,6 @@
         margin-bottom: 0;
     }
 
-    .bulk-actions-selected-notes {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
-        max-height: 30vh;
-        overflow-y: auto;
-
-        .tn-chip {
-            max-width: 100%;
-            min-width: 0;
-        }
-
-        .bulk-actions-more-notes {
-            padding-inline: 4px;
-        }
-    }
-
     .bulk-actions-add-action {
         display: flex;
         justify-content: flex-end;

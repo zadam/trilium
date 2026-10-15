@@ -47,7 +47,7 @@ describe("BulkActionsDialog", () => {
     }
 
     function chipNoteIds() {
-        return [ ...container.querySelectorAll(".bulk-actions-selected-notes .tn-chip .note-link") ]
+        return [ ...container.querySelectorAll(".note-chips .tn-chip .note-link") ]
             .map((el) => el.textContent);
     }
 
@@ -60,12 +60,12 @@ describe("BulkActionsDialog", () => {
         await open(noteIds);
         expect(chipNoteIds()).toStrictEqual([ "n1", "n2", "n3", "n4", "n5" ]);
 
-        const more = container.querySelector<HTMLElement>(".bulk-actions-selected-notes .bulk-actions-more-notes");
-        expect(more?.textContent).toBe("bulk_actions.more_notes:2");
+        const more = container.querySelector<HTMLElement>(".note-chips .note-chips-more");
+        expect(more?.textContent).toBe("note_chips.more:2");
         await act(async () => more?.click());
 
         expect(chipNoteIds()).toStrictEqual(noteIds);
-        expect(container.querySelector(".bulk-actions-more-notes")).toBeNull();
+        expect(container.querySelector(".note-chips-more")).toBeNull();
     });
 
     it("says so when no action is chosen yet", async () => {
@@ -227,7 +227,7 @@ describe("BulkActionsDialog", () => {
         await open([ "n1", "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1", "n2" ], includeDescendants: false });
 
-        const removeButtons = container.querySelectorAll<HTMLButtonElement>(".bulk-actions-selected-notes .tn-chip-remove");
+        const removeButtons = container.querySelectorAll<HTMLButtonElement>(".note-chips .tn-chip-remove");
         expect(removeButtons).toHaveLength(2);
         await act(async () => removeButtons[0].click());
 

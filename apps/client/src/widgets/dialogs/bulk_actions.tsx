@@ -18,11 +18,7 @@ import AbstractBulkAction from "../bulk_actions/abstract_bulk_action";
 import FNote from "../../entities/fnote";
 import froca from "../../services/froca";
 import { useTriliumEvent } from "../react/hooks";
-import Chip from "../react/Chip";
-import NoteLink from "../react/NoteLink";
-import LinkButton from "../react/LinkButton";
-
-const COLLAPSED_NOTE_CHIP_COUNT = 5;
+import NoteChips from "../react/NoteChips";
 
 export default function BulkActionsDialog() {
     const [ selectedOrActiveNoteIds, setSelectedOrActiveNoteIds ] = useState<string[]>();
@@ -135,7 +131,13 @@ export default function BulkActionsDialog() {
             <Card heading={t("bulk_actions.selected_notes")}>
                 {selectedOrActiveNoteIds && (
                     <CardSection>
-                        <SelectedNotes noteIds={selectedOrActiveNoteIds} onChange={setSelectedOrActiveNoteIds} />
+                        <NoteChips
+                            noteIds={selectedOrActiveNoteIds}
+                            removeButtonText={t("bulk_actions.remove_from_selection")}
+                            onRemove={selectedOrActiveNoteIds.length > 1
+                                ? (noteId) => setSelectedOrActiveNoteIds(selectedOrActiveNoteIds.filter((id) => id !== noteId))
+                                : undefined}
+                        />
                     </CardSection>
                 )}
                 <CardSection>
@@ -161,34 +163,6 @@ export default function BulkActionsDialog() {
                 </CardSection>
             </Card>
         </Modal>
-    );
-}
-
-function SelectedNotes({ noteIds, onChange }: { noteIds: string[]; onChange(noteIds: string[]): void }) {
-    const [ expanded, setExpanded ] = useState(false);
-    const shownNoteIds = expanded ? noteIds : noteIds.slice(0, COLLAPSED_NOTE_CHIP_COUNT);
-    const hiddenCount = noteIds.length - shownNoteIds.length;
-
-    return (
-        <div className="bulk-actions-selected-notes">
-            {shownNoteIds.map((noteId) => (
-                <Chip
-                    key={noteId}
-                    removeButtonText={t("bulk_actions.remove_from_selection")}
-                    disabled={noteIds.length === 1}
-                    onRemove={() => onChange(noteIds.filter((id) => id !== noteId))}
-                >
-                    <NoteLink notePath={noteId} showNoteIcon />
-                </Chip>
-            ))}
-            {hiddenCount > 0 && (
-                <LinkButton
-                    className="bulk-actions-more-notes"
-                    text={t("bulk_actions.more_notes", { count: hiddenCount })}
-                    onClick={() => setExpanded(true)}
-                />
-            )}
-        </div>
     );
 }
 
