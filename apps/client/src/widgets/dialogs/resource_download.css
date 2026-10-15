@@ -27,16 +27,13 @@
     }
 
     .resource-download-progress {
-        progress {
-            width: 100%;
-        }
+        margin-top: 0.5em;
 
         .resource-download-progress-detail {
             display: flex;
             justify-content: space-between;
             gap: 1em;
-            color: var(--muted-text-color);
-            font-size: 0.9em;
+            margin-top: 0.35em;
             font-variant-numeric: tabular-nums;
         }
     }

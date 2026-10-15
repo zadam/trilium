@@ -1,7 +1,8 @@
 import "./resource_download.css";
 
 import type {
-    ResourceDownloadProgress, ResourceInfo, ResourcesStatusResponse, WebSocketMessage
+    ResourceDownloadProgress, ResourceDownloadState, ResourceInfo, ResourcesStatusResponse,
+    WebSocketMessage
 } from "@triliumnext/commons";
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -15,6 +16,7 @@ import { Card, CardSection } from "../react/Card";
 import { useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import Modal from "../react/Modal";
+import ProgressBar from "../react/ProgressBar";
 
 export interface ResourceDownloadDialogOptions {
     ids: string[];
@@ -109,8 +111,9 @@ export default function ResourceDownloadDialog() {
                 )}
             </>}
         >
-            {opts && <ResourceList status={opts.status} remaining={remaining} />}
-            {isDownloading && <DownloadProgress download={download} />}
+            {opts && (
+                <ResourceList status={opts.status} remaining={remaining} download={download} />
+            )}
             {lacksSpace && (
                 <ExtendedAdmonition
                     type="caution"
@@ -136,15 +139,32 @@ export default function ResourceDownloadDialog() {
     );
 }
 
-function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; remaining: number }) {
+interface ResourceListProps {
+    status: ResourcesStatusResponse;
+    remaining: number;
+    download: ResourceDownloadProgress | null;
+}
+
+function ResourceList({ status, remaining, download }: ResourceListProps) {
     const missing = status.resources.filter(({ installed }) => !installed);
     const unitOf = Math.max(remaining, ...missing.map(({ size }) => size));
+    const activeId = download?.status === "downloading"
+        ? download.resources.find(({ done }) => !done)?.id
+        : undefined;
 
     return (
         <>
             <p>{t("resource_download.intro")}</p>
             <Card className="resource-download-list">
-                {missing.map((resource) => <ResourceItem key={resource.id} resource={resource} unitOf={unitOf} />)}
+                {missing.map((resource) => (
+                    <ResourceItem
+                        key={resource.id}
+                        resource={resource}
+                        unitOf={unitOf}
+                        state={download?.resources.find(({ id }) => id === resource.id)}
+                        file={resource.id === activeId ? download?.file ?? null : undefined}
+                    />
+                ))}
                 <CardSection className="tn-card-option resource-download-total">
                     <div className="tn-card-option-label">
                         <span className="tn-card-option-title">{t("resource_download.total")}</span>
@@ -165,11 +185,25 @@ function ResourceList({ status, remaining }: { status: ResourcesStatusResponse; 
     );
 }
 
-/** One resource as a settings row: its icon, what it is and where it comes from, and its size. */
-function ResourceItem({ resource, unitOf }: { resource: ResourceInfo; unitOf: number }) {
+interface ResourceItemProps {
+    resource: ResourceInfo;
+    unitOf: number;
+    /** How far a download has got with the resource, once one has started. */
+    state?: ResourceDownloadState;
+    /** The file being downloaded, `null` before the first one, while this resource downloads. */
+    file?: string | null;
+}
+
+/**
+ * One resource as a settings row: its icon, what it is and where it comes from, and its size.
+ * Once a download starts, the icon shows whether the resource is done, downloading or waiting, as
+ * the setup's sync steps do, and the resource downloading carries its own progress bar.
+ */
+function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
+    const isActive = file !== undefined;
     return (
         <CardSection className="tn-card-option resource-download-item">
-            <Icon icon={resource.icon} className="resource-download-icon" />
+            <Icon icon={getRowIcon(resource, state, isActive)} className="resource-download-icon" />
             <div className="tn-card-option-label">
                 <span className="tn-card-option-title">{resource.title}</span>
                 <small className="tn-card-option-description">{resource.description}</small>
@@ -186,6 +220,7 @@ function ResourceItem({ resource, unitOf }: { resource: ResourceInfo; unitOf: nu
                         })}
                     </>}
                 </small>
+                {isActive && state && <RowProgress state={state} file={file ?? null} />}
             </div>
             <span className="tn-card-option-value resource-download-size">
                 {formatSize(resource.size, 2, unitOf)}
@@ -194,21 +229,32 @@ function ResourceItem({ resource, unitOf }: { resource: ResourceInfo; unitOf: nu
     );
 }
 
-function DownloadProgress({ download }: { download: ResourceDownloadProgress }) {
+function RowProgress({ state, file }: { state: ResourceDownloadState; file: string | null }) {
     return (
         <div className="resource-download-progress">
-            <progress value={download.receivedBytes} max={download.totalBytes} />
-            <div className="resource-download-progress-detail">
-                <span>{download.file && t("resource_download.current_file", { file: download.file })}</span>
+            <ProgressBar value={state.receivedBytes} max={state.totalBytes} />
+            <small className="tn-card-option-description resource-download-progress-detail">
+                <span>{file && t("resource_download.current_file", { file })}</span>
                 <span>
                     {t("resource_download.progress", {
-                        received: formatSize(download.receivedBytes, 1),
-                        total: formatSize(download.totalBytes)
+                        received: formatSize(state.receivedBytes, 2, state.totalBytes),
+                        total: formatSize(state.totalBytes)
                     })}
                 </span>
-            </div>
+            </small>
         </div>
     );
+}
+
+function getRowIcon(resource: ResourceInfo, state: ResourceDownloadState | undefined,
+    isActive: boolean) {
+    if (!state) {
+        return resource.icon;
+    }
+    if (state.done) {
+        return "bx bx-check-circle";
+    }
+    return isActive ? "bx bx-loader-circle bx-spin" : "bx bx-circle";
 }
 
 /** The bytes still to download for the resources not installed. */

@@ -78,15 +78,41 @@ describe("ResourceDownloadDialog", () => {
         await click("resource_download.download");
         expect(mocks.post).toHaveBeenCalledExactlyOnceWith("resources/download",
             { ids: [ "transcription.model" ] });
-        expect(container.querySelector("progress")?.value).toBe(200);
+        expect(row?.querySelector(".resource-download-icon")?.classList).toContain("bx-loader-circle");
+        expect(row?.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")).toBe("200");
 
         await send(progress({ receivedBytes: 600, file: "encoder.int8.onnx" }));
-        expect(container.querySelector("progress")?.value).toBe(600);
-        expect(text(".resource-download-progress")).toContain("encoder.int8.onnx");
+        expect(row?.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")).toBe("600");
+        expect(row?.querySelector(".resource-download-progress")?.textContent)
+            .toContain("encoder.int8.onnx");
 
         await send(progress({ status: "succeeded", receivedBytes: 700 }));
         await hidden();
         expect(results).toEqual([ true ]);
+    });
+
+    it("marks each resource done as the download moves on, the one downloading with its bar", async () => {
+        const vad = { ...STATUS.resources[0], id: "transcription.vad", title: "VAD", downloadedSize: 0 };
+        mocks.post.mockResolvedValue(progress());
+        await open({ ...STATUS, resources: [ ...STATUS.resources, vad ] });
+        await click("resource_download.download");
+
+        await send(progress({ resources: [
+            { id: "transcription.model", receivedBytes: 700, totalBytes: 700, done: true },
+            { id: "transcription.vad", receivedBytes: 100, totalBytes: 700, done: false }
+        ] }));
+        const [ first, second ] = container.querySelectorAll(".resource-download-item");
+        expect(first.querySelector(".resource-download-icon")?.classList).toContain("bx-check-circle");
+        expect(first.querySelector("[role=progressbar]")).toBeNull();
+        expect(second.querySelector(".resource-download-icon")?.classList).toContain("bx-loader-circle");
+        expect(second.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")).toBe("100");
+
+        await send(progress({ status: "failed", error: "offline", resources: [
+            { id: "transcription.model", receivedBytes: 700, totalBytes: 700, done: true },
+            { id: "transcription.vad", receivedBytes: 100, totalBytes: 700, done: false }
+        ] }));
+        expect(second.querySelector(".resource-download-icon")?.classList).toContain("bx-circle");
+        expect(container.querySelector("[role=progressbar]")).toBeNull();
     });
 
     it("keeps an end reported before the request that started the download returns", async () => {
@@ -165,13 +191,20 @@ describe("ResourceDownloadDialog", () => {
 });
 
 function progress(overrides: Partial<ResourceDownloadProgress> = {}): ResourceDownloadProgress {
+    const receivedBytes = overrides.receivedBytes ?? 0;
     return {
         downloadId: "d1",
         resourceIds: [ "transcription.model" ],
         status: "downloading",
-        receivedBytes: 0,
+        receivedBytes,
         totalBytes: 700,
         file: null,
+        resources: [ {
+            id: "transcription.model",
+            receivedBytes,
+            totalBytes: 700,
+            done: overrides.status === "succeeded"
+        } ],
         ...overrides
     };
 }

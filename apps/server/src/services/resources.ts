@@ -116,7 +116,7 @@ export class ResourceManager {
         const missing = ids.map((id) => this.getDefinition(id)).filter(({ id }) => !this.getPath(id));
         const running = this.findDownload(ids);
         if (running) {
-            return running.progress;
+            return copyProgress(running.progress);
         }
 
         const download: Download = {
@@ -126,7 +126,10 @@ export class ResourceManager {
                 status: missing.length ? "downloading" : "succeeded",
                 receivedBytes: 0,
                 totalBytes: sumSizes(missing.flatMap(({ files }) => files)),
-                file: null
+                file: null,
+                resources: missing.map(({ id, files }) => ({
+                    id, receivedBytes: 0, totalBytes: sumSizes(files), done: false
+                }))
             },
             controller: new AbortController()
         };
@@ -134,7 +137,7 @@ export class ResourceManager {
             this.downloads.set(download.progress.downloadId, download);
             void this.runDownload(download, missing);
         }
-        return { ...download.progress };
+        return copyProgress(download.progress);
     }
 
     cancelDownload(downloadId: string) {
@@ -147,28 +150,33 @@ export class ResourceManager {
         const report = (force: boolean) => {
             if (force || Date.now() - lastReported >= PROGRESS_INTERVAL_MS) {
                 lastReported = Date.now();
-                this.broadcast({ ...progress });
+                this.broadcast(copyProgress(progress));
             }
         };
 
         try {
-            for (const definition of definitions) {
+            for (const [ index, definition ] of definitions.entries()) {
+                const state = progress.resources[index];
+                const receive = (bytes: number) => {
+                    progress.receivedBytes += bytes;
+                    state.receivedBytes += bytes;
+                };
                 const directory = this.getDirectory(definition);
                 const verified = readVerifiedFiles(directory);
                 for (const file of definition.files) {
                     const destination = path.join(directory, file.path);
                     if (isVerified(verified, destination, file)) {
-                        progress.receivedBytes += file.size;
+                        receive(file.size);
                         continue;
                     }
                     progress.file = path.basename(file.path);
                     report(true);
                     await fs.promises.mkdir(path.dirname(destination), { recursive: true });
                     if (await hasContent(destination, file)) {
-                        progress.receivedBytes += file.size;
+                        receive(file.size);
                     } else {
                         await downloadFile(file, destination, controller.signal, (bytes) => {
-                            progress.receivedBytes += bytes;
+                            receive(bytes);
                             report(false);
                         });
                     }
@@ -176,6 +184,8 @@ export class ResourceManager {
                     verified[file.path] = { size, mtimeMs };
                     await writeVerifiedFiles(directory, verified);
                 }
+                state.done = true;
+                report(true);
                 getLog().info(`Resources: installed ${definition.id} in ${directory}.`);
             }
             progress.status = "succeeded";
@@ -401,6 +411,11 @@ async function hasContent(destination: string, file: ResourceFile) {
     const hash = createHash("sha256");
     await hashFileInto(destination, hash);
     return hash.digest("hex") === file.sha256;
+}
+
+/** A snapshot of `progress`, which the running download goes on changing. */
+function copyProgress(progress: ResourceDownloadProgress): ResourceDownloadProgress {
+    return { ...progress, resources: progress.resources.map((state) => ({ ...state })) };
 }
 
 function sumSizes(files: ResourceFile[]) {

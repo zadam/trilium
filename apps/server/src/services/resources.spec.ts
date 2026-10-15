@@ -90,6 +90,17 @@ describe("ResourceManager", () => {
             file: null
         });
         expect(reports.some(({ file }) => file === "model.bin")).toBe(true);
+        expect(started.resources).toEqual([
+            { id: "test.model", receivedBytes: 0, totalBytes: MODEL.length + TOKENS.length, done: false }
+        ]);
+        expect(reports.some(({ resources }) => !resources[0].done && resources[0].receivedBytes > 0))
+            .toBe(true);
+        expect(finished.resources).toEqual([ {
+            id: "test.model",
+            receivedBytes: MODEL.length + TOKENS.length,
+            totalBytes: MODEL.length + TOKENS.length,
+            done: true
+        } ]);
         const directory = resourceDirectory();
         expect(path.basename(directory)).toMatch(/^test\.model-[0-9a-f]{12}$/);
         expect(manager.getPath("test.model")).toBe(directory);

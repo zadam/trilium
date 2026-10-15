@@ -22,6 +22,14 @@ export interface ResourceInfo {
     installed: boolean;
 }
 
+/** How far a download has got with one of the resources it fetches. */
+export interface ResourceDownloadState {
+    id: string;
+    receivedBytes: number;
+    totalBytes: number;
+    done: boolean;
+}
+
 /** A download as it runs, and as the `resource-download` WebSocket message reports it. */
 export interface ResourceDownloadProgress {
     downloadId: string;
@@ -33,6 +41,8 @@ export interface ResourceDownloadProgress {
     file: string | null;
     /** Why the download failed, when `status` is `failed`. */
     error?: string;
+    /** Each resource the download fetches, in the order it fetches them. */
+    resources: ResourceDownloadState[];
 }
 
 export interface ResourcesStatusResponse {
