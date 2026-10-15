@@ -694,7 +694,8 @@
     "map_image_bounds": "Comhordanáidí choirnéil uachtaracha ar chlé agus íochtaracha ar dheis an léarscáile íomhá, i bhfoirm <code>x,y x,y</code>, m.sh. <code>-512,-512 512,512</code>. Léitear agus scríobhtar suíomhanna ar an léarscáil de réir na gcomhordanáidí sin seachas picteilíní na híomhá.",
     "map_image": "Nóta íomhá chun an léarscáil gheografach a tharraingt ina háit, seachas léarscáil an domhain. Cuirtear marcóirí agus cruthanna ina n-áit ansin ag baint úsáide as <code>mapPosition</code> agus <code>mapShape</code>.",
     "board_hide_add_column": "I gcás bailiúcháin clár, folaítear an cnaipe <em>Cuir colún leis</em> i ndiaidh an cholúin dheireanaigh. Is féidir colúin a chur leis i gcónaí trí roghchlár comhthéacs an chláir nó an cholúin a úsáid.",
-    "calendar_title_template": "An chaoi a n-ainmnítear imeacht ar an bhféilire, agus é curtha i bhfeidhm ar gach uair a tharlaíonn imeacht athfhillteach. Úsáidtear <code>${title}</code>, <code>${years}</code> (blianta iomlána ón dáta tosaigh) agus na dátaí <code>${date}</code> agus <code>${startDate}</code>; mar shampla, <code>${title} (${years})</code> i gcás breithlae a tharlaíonn gach bliain."
+    "calendar_title_template": "An chaoi a n-ainmnítear imeacht ar an bhféilire, agus é curtha i bhfeidhm ar gach uair a tharlaíonn imeacht athfhillteach. Úsáidtear <code>${title}</code>, <code>${years}</code> (blianta iomlána ón dáta tosaigh) agus na dátaí <code>${date}</code> agus <code>${startDate}</code>; mar shampla, <code>${title} (${years})</code> i gcás breithlae a tharlaíonn gach bliain.",
+    "meeting_recording": "Comharthaíonn sé nóta a chruthaítear leis an gcnaipe \"Tras-scríobh cruinniú\" sa bharra seolta, ina bhfuil tras-scríbhinn cruinnithe."
   },
   "attribute_editor": {
     "help_text_body1": "Chun lipéad a chur leis, clóscríobh m.sh. <code>#rock</code> nó más mian leat luach a chur leis freisin ansin m.sh. <code>#year = 2020</code>",
@@ -3976,7 +3977,9 @@
       "type-the-content-of-the-first-column": "Clóscríobh ábhar na chéad cholúine",
       "type-the-content-of-the-second-column": "Clóscríobh ábhar an dara colún",
       "type-the-content-of-the-third-column": "Clóscríobh ábhar an tríú colún",
-      "type-the-content-of-the-fourth-column": "Clóscríobh ábhar na ceathrú colúine"
+      "type-the-content-of-the-fourth-column": "Clóscríobh ábhar na ceathrú colúine",
+      "table-columns": "Colúin tábla",
+      "column-0-width-1": "Leithead an cholúin %0: %1%"
     },
     "task-state-dropped-title": "Stádas tascanna neamhbhailí",
     "task-state-dropped-message_one": "Tá sainmhíniú stádais tasc saincheaptha neamhbhailí agus níor tugadh aird air.",
@@ -4333,7 +4336,8 @@
     "coverImage": "Íomhá chlúdaigh",
     "viewConfig": "Féach ar shocruithe",
     "canvasLibraryItem": "Leabharlann Canbhás",
-    "importSource": "Foinse allmhairithe"
+    "importSource": "Foinse allmhairithe",
+    "transcript": "Tras-scríbhinn cruinnithe"
   },
   "show-help": "Taispeáin cabhair",
   "compress-images": "Comhbhrúigh íomhánna",
@@ -4812,5 +4816,23 @@
     "copy_share_link_few": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo",
     "copy_share_link_many": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo",
     "copy_share_link_other": "Cóipeáil an nasc poiblí chuig na {{count}} bhloc seo"
+  },
+  "record_meeting": {
+    "note_title": "Cruinniú {{date}}",
+    "starting": "Ag tosú ar an tras-scríobh…",
+    "stop": "Stop den tras-scríobh",
+    "stopping": "Ag críochnú an tras-scríbhinn…"
+  },
+  "transcript": {
+    "speaker_me": "Mise",
+    "speaker_others": "Daoine eile",
+    "speaker_numbered": "Cainteoir {{number}}",
+    "speaker_name": "Ainm an chainteora",
+    "empty": "Níl aon rud tras-scríofa go fóill.",
+    "unreadable": "Ní féidir an tras-scríbhinn seo a léamh.",
+    "speaking": "Ag labhairt…",
+    "offset": "{{offset}} isteach sa tras-scríobh",
+    "cleanup": "Folaigh focail líonta",
+    "cleanup_tooltip": "Folaíonn sé “uh”, “um” agus focail a dúradh le stammeráil. Ní dhéantar aon athrú ar an tras-scríbhinn féin."
   }
 }
