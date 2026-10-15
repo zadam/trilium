@@ -78,7 +78,8 @@ describe("ResourceManager", () => {
             file: null
         });
         expect(reports.some(({ file }) => file === "model.bin")).toBe(true);
-        const directory = path.join(baseDir, "test.model", "1");
+        const directory = resourceDirectory();
+        expect(path.basename(directory)).toMatch(/^test\.model-[0-9a-f]{12}$/);
         expect(manager.getPath("test.model")).toBe(directory);
         expect(fs.readFileSync(path.join(directory, "nested", "model.bin")).equals(MODEL)).toBe(true);
         expect(fs.readdirSync(path.join(directory, "nested"))).toEqual([ "model.bin" ]);
@@ -108,8 +109,7 @@ describe("ResourceManager", () => {
         expect(failed.status).toBe("failed");
         expect(failed.error).toBeTruthy();
         expect(manager.getPath("test.model")).toBeNull();
-        const directory = path.join(baseDir, "test.model", "1");
-        expect(fs.readdirSync(directory)).toEqual([ "nested" ]);
+        expect(fs.readdirSync(resourceDirectory())).toEqual([ ".verified.json", "nested" ]);
         const [ info ] = (await manager.getStatus([ "test.model" ])).resources;
         expect(info).toMatchObject({ installed: false, downloadedSize: MODEL.length });
 
@@ -143,9 +143,52 @@ describe("ResourceManager", () => {
 
         manager.cancelDownload(first.downloadId);
         expect((await waitForEnd()).status).toBe("canceled");
-        const directory = path.join(baseDir, "test.model", "1");
-        expect(fs.readdirSync(directory)).toEqual([ "nested" ]);
+        expect(fs.readdirSync(resourceDirectory())).toEqual([ ".verified.json", "nested" ]);
         expect((await manager.getStatus([ "test.model" ])).download).toBeNull();
+    });
+
+    it("downloads into a new directory once a file of the resource changes", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+
+        const updated = new ResourceManager(baseDir, (progress) => broadcasts.push(progress));
+        updated.register(defineModel({ tokensHash: sha256(Buffer.from("a\nb\nd\n")) }));
+        expect(updated.getPath("test.model")).toBeNull();
+        expect((await updated.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(0);
+    });
+
+    it("notices a file changed after it was installed, and downloads only that one again", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        const tokens = path.join(resourceDirectory(), "tokens.txt");
+
+        fs.writeFileSync(tokens, "x\ny\nz\n");
+        fs.utimesSync(tokens, new Date(2020, 0, 1), new Date(2020, 0, 1));
+        expect(manager.getPath("test.model")).toBeNull();
+        expect((await manager.getStatus([ "test.model" ])).resources[0].downloadedSize)
+            .toBe(MODEL.length);
+
+        requested.length = 0;
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        expect(requested).toEqual([ "/tokens.txt" ]);
+        expect(fs.readFileSync(tokens).equals(TOKENS)).toBe(true);
+    });
+
+    it("adopts files put in place by hand once their hash matches, without downloading them", async () => {
+        manager.register(defineModel());
+        manager.startDownload([ "test.model" ]);
+        await waitForEnd();
+        fs.rmSync(path.join(resourceDirectory(), ".verified.json"));
+        expect(manager.getPath("test.model")).toBeNull();
+
+        requested.length = 0;
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+        expect(requested).toEqual([]);
+        expect(manager.getPath("test.model")).toBe(resourceDirectory());
     });
 
     it("prefers a local copy, and refuses invalid or unknown resources", () => {
@@ -165,7 +208,6 @@ function defineModel({ id = "test.model", tokensUrl = "/tokens.txt", tokensHash 
     tokensSize = TOKENS.length } = {}): ResourceDefinition {
     return {
         id,
-        version: "1",
         title: () => "Test model",
         description: () => "For tests",
         icon: "bx bx-test-tube",
@@ -175,6 +217,13 @@ function defineModel({ id = "test.model", tokensUrl = "/tokens.txt", tokensHash 
             { path: "tokens.txt", url: `${baseUrl}${tokensUrl}`, size: tokensSize, sha256: tokensHash }
         ]
     };
+}
+
+/** The directory the resource `id` was downloaded into: the only one named after it. */
+function resourceDirectory(id = "test.model") {
+    const directories = fs.readdirSync(baseDir).filter((name) => name.startsWith(`${id}-`));
+    expect(directories).toHaveLength(1);
+    return path.join(baseDir, directories[0]);
 }
 
 function file(filePath: string, content: Buffer): ResourceFile {

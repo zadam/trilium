@@ -22,7 +22,6 @@ const SHERPA_RELEASES = "https://github.com/k2-fsa/sherpa-onnx/releases/download
 /** Parakeet TDT 0.6B v3, int8: the files `loadSherpaEngine()` reads from its recognizer directory. */
 export const RECOGNIZER_MODEL: ResourceDefinition = {
     id: TRANSCRIPTION_RESOURCES.recognizer,
-    version: "v3-int8-2bda32ec",
     title: () => t("transcription.recognizer-title"),
     description: () => t("transcription.recognizer-description"),
     icon: "bx bx-captions",
@@ -58,7 +57,6 @@ export const RECOGNIZER_MODEL: ResourceDefinition = {
 
 export const VAD_MODEL: ResourceDefinition = {
     id: TRANSCRIPTION_RESOURCES.vad,
-    version: "1",
     title: () => t("transcription.vad-title"),
     description: () => t("transcription.vad-description"),
     icon: "bx bx-pulse",
@@ -74,7 +72,6 @@ export const VAD_MODEL: ResourceDefinition = {
 
 export const SPEAKER_MODEL: ResourceDefinition = {
     id: TRANSCRIPTION_RESOURCES.speaker,
-    version: "1",
     title: () => t("transcription.speaker-title"),
     description: () => t("transcription.speaker-description"),
     icon: "bx bx-user-voice",

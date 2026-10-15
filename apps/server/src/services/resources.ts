@@ -23,8 +23,6 @@ export interface ResourceFile {
 export interface ResourceDefinition {
     /** Lowercase words separated by dots, the feature first: `transcription.model`. */
     id: string;
-    /** Part of the resource's directory, so a new version downloads next to the old one. */
-    version: string;
     title(): string;
     description(): string;
     /** Boxicons classes, `bx bx-…`, for the download dialog. */
@@ -44,20 +42,27 @@ interface Download {
     controller: AbortController;
 }
 
+/** The size and modification time of each verified file of a resource, by its path. */
+type VerifiedFiles = Record<string, { size: number; mtimeMs: number }>;
+
 const ID_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/;
-const VERSION_PATTERN = /^[\w.-]+$/;
 const PROGRESS_INTERVAL_MS = 250;
-/** Written into a resource's directory once every file in it is verified. */
-const COMPLETE_MARKER = ".complete";
+/** How many hex digits of the files' combined hash a resource's directory name carries. */
+const CONTENT_HASH_LENGTH = 12;
+/** Holds the {@link VerifiedFiles} of a resource, in its directory. */
+const VERIFIED_FILE = ".verified.json";
 
 /**
- * Downloads the resources features register into `baseDir`, one directory per resource and
- * version. A file is written under a `.partial` name and renamed once its size and SHA-256 match,
- * so a file under its own name is always verified, and an interrupted download keeps the files it
- * finished.
+ * Downloads the resources features register into `baseDir`, one directory per resource named
+ * `<id>-<hash>`, the hash covering every file's path and SHA-256: a resource whose files change
+ * downloads into a new directory. A file is written under a `.partial` name and renamed once its
+ * size and SHA-256 match, then recorded in `.verified.json` with its size and modification time.
+ * A file counts as installed only while it still matches that record, so one changed after its
+ * download is downloaded again, and an interrupted download keeps the files it finished.
  */
 export class ResourceManager {
     private readonly definitions = new Map<string, ResourceDefinition>();
+    private readonly directories = new Map<string, string>();
     private readonly downloads = new Map<string, Download>();
 
     constructor(
@@ -72,6 +77,8 @@ export class ResourceManager {
                 throw new Error(`The resource ${definition.id} is already registered.`);
             }
             this.definitions.set(definition.id, definition);
+            this.directories.set(definition.id, path.join(this.baseDir,
+                `${definition.id}-${getContentHash(definition.files)}`));
         }
     }
 
@@ -83,7 +90,10 @@ export class ResourceManager {
             return localCopy;
         }
         const directory = this.getDirectory(definition);
-        return fs.existsSync(path.join(directory, COMPLETE_MARKER)) ? directory : null;
+        const verified = readVerifiedFiles(directory);
+        const isInstalled = definition.files
+            .every((file) => isVerified(verified, path.join(directory, file.path), file));
+        return isInstalled ? directory : null;
     }
 
     async getStatus(ids: string[]): Promise<ResourcesStatusResponse> {
@@ -143,21 +153,28 @@ export class ResourceManager {
         try {
             for (const definition of definitions) {
                 const directory = this.getDirectory(definition);
+                const verified = readVerifiedFiles(directory);
                 for (const file of definition.files) {
                     const destination = path.join(directory, file.path);
-                    if (isDownloaded(destination, file)) {
+                    if (isVerified(verified, destination, file)) {
                         progress.receivedBytes += file.size;
                         continue;
                     }
                     progress.file = path.basename(file.path);
                     report(true);
                     await fs.promises.mkdir(path.dirname(destination), { recursive: true });
-                    await downloadFile(file, destination, controller.signal, (bytes) => {
-                        progress.receivedBytes += bytes;
-                        report(false);
-                    });
+                    if (await hasContent(destination, file)) {
+                        progress.receivedBytes += file.size;
+                    } else {
+                        await downloadFile(file, destination, controller.signal, (bytes) => {
+                            progress.receivedBytes += bytes;
+                            report(false);
+                        });
+                    }
+                    const { size, mtimeMs } = await fs.promises.stat(destination);
+                    verified[file.path] = { size, mtimeMs };
+                    await writeVerifiedFiles(directory, verified);
                 }
-                await fs.promises.writeFile(path.join(directory, COMPLETE_MARKER), "");
                 getLog().info(`Resources: installed ${definition.id} in ${directory}.`);
             }
             progress.status = "succeeded";
@@ -185,13 +202,18 @@ export class ResourceManager {
     }
 
     private getDirectory(definition: ResourceDefinition) {
-        return path.join(this.baseDir, definition.id, definition.version);
+        const directory = this.directories.get(definition.id);
+        if (!directory) {
+            throw new Error(`The resource ${definition.id} is not registered.`);
+        }
+        return directory;
     }
 
     private getInfo(definition: ResourceDefinition): ResourceInfo {
         const directory = this.getDirectory(definition);
+        const verified = readVerifiedFiles(directory);
         const downloaded = definition.files
-            .filter((file) => isDownloaded(path.join(directory, file.path), file));
+            .filter((file) => isVerified(verified, path.join(directory, file.path), file));
         return {
             id: definition.id,
             title: definition.title(),
@@ -269,9 +291,9 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
     }
 }
 
-function validateDefinition({ id, version, files }: ResourceDefinition) {
-    if (!ID_PATTERN.test(id) || !VERSION_PATTERN.test(version)) {
-        throw new Error(`The resource ${id} has an invalid ID or version.`);
+function validateDefinition({ id, files }: ResourceDefinition) {
+    if (!ID_PATTERN.test(id)) {
+        throw new Error(`The resource ${id} has an invalid ID.`);
     }
     for (const file of files) {
         const segments = file.path.split("/");
@@ -281,13 +303,57 @@ function validateDefinition({ id, version, files }: ResourceDefinition) {
     }
 }
 
-/** Whether `destination` is a finished download of `file`: only a verified file gets its name. */
-function isDownloaded(destination: string, file: ResourceFile) {
+/** The start of a SHA-256 over every file's path and hash, which names a resource's directory. */
+function getContentHash(files: ResourceFile[]) {
+    const hash = createHash("sha256");
+    const sorted = [ ...files ].sort((a, b) => a.path.localeCompare(b.path));
+    for (const file of sorted) {
+        hash.update(`${file.path}\0${file.sha256}\n`);
+    }
+    return hash.digest("hex").slice(0, CONTENT_HASH_LENGTH);
+}
+
+function readVerifiedFiles(directory: string): VerifiedFiles {
     try {
-        return fs.statSync(destination).size === file.size;
+        return JSON.parse(fs.readFileSync(path.join(directory, VERIFIED_FILE), "utf8"));
+    } catch {
+        return {};
+    }
+}
+
+/** Writes `verified` through a temporary file, so an interruption never leaves a torn record. */
+async function writeVerifiedFiles(directory: string, verified: VerifiedFiles) {
+    const destination = path.join(directory, VERIFIED_FILE);
+    await fs.promises.writeFile(`${destination}.partial`, JSON.stringify(verified));
+    await fs.promises.rename(`${destination}.partial`, destination);
+}
+
+/** Whether `destination` is `file` as it was verified: same size and modification time. */
+function isVerified(verified: VerifiedFiles, destination: string, file: ResourceFile) {
+    const record = verified[file.path];
+    if (!record || record.size !== file.size) {
+        return false;
+    }
+    try {
+        const { size, mtimeMs } = fs.statSync(destination);
+        return size === record.size && mtimeMs === record.mtimeMs;
     } catch {
         return false;
     }
+}
+
+/** Whether `destination` already holds `file`, as one put there by hand: checked by its hash. */
+async function hasContent(destination: string, file: ResourceFile) {
+    try {
+        if ((await fs.promises.stat(destination)).size !== file.size) {
+            return false;
+        }
+    } catch {
+        return false;
+    }
+    const hash = createHash("sha256");
+    await pipeline(fs.createReadStream(destination), hash);
+    return hash.digest("hex") === file.sha256;
 }
 
 function sumSizes(files: ResourceFile[]) {
