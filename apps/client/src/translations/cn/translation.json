@@ -649,7 +649,8 @@
     "published_date": "剪藏页面的发布日期，显示在笔记的「网页剪藏」徽章详情中。",
     "modified_date": "剪藏页面的最后更新日期，显示在笔记的「网页剪藏」徽章详情中。",
     "calendar_title_template": "事件在日历上的标题格式，会为重复事件的每次出现填写。可读取 <code>${title}</code>, <code>${years}</code> （自开始日期起的整年数）以及日期 <code>${date}</code> and <code>${startDate}</code>, 例如在每年的生日上使用 <code>${title} (${years})</code> 。",
-    "board_hide_add_column": "对于看板集合，在最后一列之后隐藏 <em>添加列</em> 按钮。仍可从看板或列的上下文菜单中添加列。"
+    "board_hide_add_column": "对于看板集合，在最后一列之后隐藏 <em>添加列</em> 按钮。仍可从看板或列的上下文菜单中添加列。",
+    "meeting_recording": "标记由启动栏中「转录会议」按钮创建的笔记，其中保存着会议的转录文本。"
   },
   "attribute_editor": {
     "help_text_body1": "要添加标签，只需输入例如 <code>#rock</code> ；或者如果你还想同时添加数值，则可输入例如 <code>#year = 2020</code>",
@@ -3792,7 +3793,9 @@
       "type-the-content-of-the-first-column": "输入第一栏的内容",
       "type-the-content-of-the-second-column": "输入第二栏的内容",
       "type-the-content-of-the-third-column": "输入第三栏的内容",
-      "type-the-content-of-the-fourth-column": "输入第四栏的内容"
+      "type-the-content-of-the-fourth-column": "输入第四栏的内容",
+      "table-columns": "表格列",
+      "column-0-width-1": "第 %0 列宽度：%1%"
     },
     "toolbar-groups": {
       "text-formatting": "文本格式",
@@ -4241,7 +4244,8 @@
     "coverImage": "封面图片",
     "viewConfig": "视图设置",
     "canvasLibraryItem": "画布库",
-    "importSource": "导入来源"
+    "importSource": "导入来源",
+    "transcript": "会议转录文本"
   },
   "color-picker": {
     "clear-color": "清除颜色",
@@ -4508,5 +4512,23 @@
     "edit_excerpt": "编辑摘录",
     "copy_tab": "复制此标签页的链接",
     "copy_share_link_other": "复制指向这 {{count}} 个块的公开链接"
+  },
+  "record_meeting": {
+    "note_title": "会议 {{date}}",
+    "starting": "正在开始转录…",
+    "stop": "停止转录",
+    "stopping": "正在完成转录文本…"
+  },
+  "transcript": {
+    "speaker_me": "我",
+    "speaker_others": "其他人",
+    "speaker_numbered": "说话人 {{number}}",
+    "speaker_name": "说话人姓名",
+    "empty": "尚未转录任何内容。",
+    "unreadable": "无法读取该转录文本。",
+    "speaking": "正在说话…",
+    "offset": "转录开始后 {{offset}}",
+    "cleanup": "隐藏填充词",
+    "cleanup_tooltip": "隐藏「呃」「嗯」等填充词和结巴的词。转录文本本身不会改变。"
   }
 }
