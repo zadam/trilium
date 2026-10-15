@@ -52,10 +52,10 @@ async function scrollTo(label: HTMLDivElement, scrollLeft: number) {
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
 }
 
-/** Dispatches a pointer event of the primary mouse button at `clientX`. */
+/** Dispatches a pointer event of the primary mouse button, held down, at `clientX`. */
 function pointer(target: Element, type: string, clientX: number, init: PointerEventInit = {}) {
     target.dispatchEvent(new PointerEvent(type, {
-        bubbles: true, pointerId: 1, pointerType: "mouse", button: 0, clientX, ...init
+        bubbles: true, pointerId: 1, pointerType: "mouse", button: 0, buttons: 1, clientX, ...init
     }));
 }
 
@@ -224,6 +224,15 @@ describe("ScrollableLabel", () => {
         expect(isPrevented(text, "click")).toBe(false);
         expect(click).toHaveBeenCalledTimes(3);
         expect(label.scrollLeft).toBe(100);
+    });
+
+    it("forgets a press released away from it before it dragged", () => {
+        const label = renderLabel("a name longer than its box", 300);
+
+        pointer(label, "pointerdown", 100);
+        pointer(label, "pointermove", 40, { buttons: 0 });
+        expect(label.scrollLeft).toBe(0);
+        expect(isPrevented(label, "dragstart")).toBe(false);
     });
 
     it("leaves the presses of a touch, another button, or on a label that fits alone", () => {

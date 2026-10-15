@@ -149,6 +149,11 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
         };
         const onPointerMove = (event: PointerEvent) => {
             if (event.pointerId !== press?.pointerId) return;
+            // Released away from the label before the drag captured the pointer.
+            if (!(event.buttons & 1)) {
+                press = undefined;
+                return;
+            }
 
             const distance = event.clientX - press.x;
             if (!press.isDragging && Math.abs(distance) >= DRAG_THRESHOLD) {
