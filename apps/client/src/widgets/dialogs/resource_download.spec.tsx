@@ -32,6 +32,7 @@ const STATUS: ResourcesStatusResponse = {
         title: "Speech recognition model",
         description: "Transcribes meetings",
         icon: "bx bx-captions",
+        license: "CC-BY-4.0",
         size: 700,
         downloadedSize: 200,
         sources: [ "huggingface.co", "github.com" ],
@@ -66,6 +67,8 @@ describe("ResourceDownloadDialog", () => {
         expect(row?.querySelector(".resource-download-icon")?.classList).toContain("bx-captions");
         expect(row?.textContent).toContain("Speech recognition model");
         expect(text(".resource-download-meta")).toContain("huggingface.co, github.com");
+        expect(text(".resource-download-license"))
+            .toBe(`resource_download.license:{"license":"CC-BY-4.0"}`);
         expect(text(".resource-download-meta")).toContain(`"size":"200 B"`);
         expect(text(".resource-download-item .resource-download-size")).toBe("700 B");
         expect(text(".resource-download-total .resource-download-size")).toBe("500 B");

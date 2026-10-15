@@ -11,6 +11,8 @@ export interface ResourceInfo {
     description: string;
     /** Boxicons classes, `bx bx-…`. */
     icon: string;
+    /** The SPDX identifier of the license the resource is under, such as `CC-BY-4.0`. */
+    license: string;
     /** The size of all its files, in bytes. */
     size: number;
     /** The bytes of its files already downloaded and verified, kept from an interrupted download. */

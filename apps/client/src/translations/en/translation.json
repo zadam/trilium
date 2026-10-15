@@ -4621,6 +4621,7 @@
     "retry": "Retry",
     "cancel": "Cancel",
     "not_enough_space_title": "Not enough free space",
-    "failed_title": "Download failed"
+    "failed_title": "Download failed",
+    "license": "{{license}} license"
   }
 }

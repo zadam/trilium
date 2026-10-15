@@ -26,6 +26,7 @@ export const RECOGNIZER_MODEL: ResourceDefinition = {
     title: () => t("transcription.recognizer-title"),
     description: () => t("transcription.recognizer-description"),
     icon: "bx bx-captions",
+    license: "CC-BY-4.0",
     findLocalCopy: () => fs.existsSync(LOCAL_MODEL_DIR) ? LOCAL_MODEL_DIR : null,
     files: [
         {
@@ -61,6 +62,7 @@ export const VAD_MODEL: ResourceDefinition = {
     title: () => t("transcription.vad-title"),
     description: () => t("transcription.vad-description"),
     icon: "bx bx-pulse",
+    license: "MIT",
     findLocalCopy: () => fs.existsSync(path.join(LOCAL_MODEL_DIR, VAD_FILE)) ? LOCAL_MODEL_DIR : null,
     files: [ {
         path: VAD_FILE,
@@ -76,6 +78,7 @@ export const SPEAKER_MODEL: ResourceDefinition = {
     title: () => t("transcription.speaker-title"),
     description: () => t("transcription.speaker-description"),
     icon: "bx bx-user-voice",
+    license: "Apache-2.0",
     findLocalCopy: () => {
         const directory = path.join(LOCAL_MODEL_DIR, "speaker");
         return fs.existsSync(path.join(directory, SPEAKER_FILE)) ? directory : null;

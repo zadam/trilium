@@ -29,6 +29,8 @@ export interface ResourceDefinition {
     description(): string;
     /** Boxicons classes, `bx bx-…`, for the download dialog. */
     icon: string;
+    /** The SPDX identifier of the license the files are under, such as `CC-BY-4.0`. */
+    license: string;
     files: ResourceFile[];
     /**
      * Returns a directory that holds the files outside the manager, such as a model installed by
@@ -195,6 +197,7 @@ export class ResourceManager {
             title: definition.title(),
             description: definition.description(),
             icon: definition.icon,
+            license: definition.license,
             size: sumSizes(definition.files),
             downloadedSize: sumSizes(downloaded),
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],

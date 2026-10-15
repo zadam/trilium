@@ -175,6 +175,10 @@ function ResourceItem({ resource, unitOf }: { resource: ResourceInfo; unitOf: nu
                 <small className="tn-card-option-description">{resource.description}</small>
                 <small className="tn-card-option-description resource-download-meta">
                     {t("resource_download.sources", { sources: resource.sources.join(", ") })}
+                    {" · "}
+                    <span className="resource-download-license">
+                        {t("resource_download.license", { license: resource.license })}
+                    </span>
                     {resource.downloadedSize > 0 && <>
                         {" · "}
                         {t("resource_download.partially_downloaded", {
