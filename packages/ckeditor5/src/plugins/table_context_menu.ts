@@ -19,8 +19,8 @@ import { DistributeTableColumnsCommand } from "./table_distribute_columns.js";
  * Registers insert commands that honor the size of the current selection (the upstream
  * `insertTableRow*` / `insertTableColumn*` commands always insert one row or column) and
  * `triliumDistributeTableColumns`, keeps a multi-cell selection alive under a right-click, limits
- * mouse cell selection to the primary button, and moves the selection to the cell a context menu
- * is opened on. Merge, split and delete need no counterparts here: the upstream
+ * mouse cell selection and column resizing to the primary button, and moves the selection to the
+ * cell a context menu is opened on. Merge, split and delete need no counterparts here: the upstream
  * `mergeTableCells`, `splitTableCell*` and `removeTableRow` / `removeTableColumn` commands already
  * act on the whole selection.
  */
@@ -74,7 +74,13 @@ export default class TableContextMenu extends Plugin {
             if (button === RIGHT_MOUSE_BUTTON && this.isInsideCellSelection(data.domTarget)) {
                 data.preventDefault();
             }
-        }, { priority: "high" });
+
+            // Keeps `TableColumnResizeEditing` from starting a resize. The default action, such as
+            // the autoscroll of the middle button, still runs.
+            if (button !== PRIMARY_MOUSE_BUTTON && data.target.hasClass(COLUMN_RESIZER_CLASS)) {
+                evt.stop();
+            }
+        }, { priority: "highest" });
     }
 
     /**
@@ -116,6 +122,7 @@ export default class TableContextMenu extends Plugin {
 
 const PRIMARY_MOUSE_BUTTON = 0;
 const RIGHT_MOUSE_BUTTON = 2;
+const COLUMN_RESIZER_CLASS = "ck-table-column-resizer";
 
 /** Where {@link TableMultiInsertCommand} inserts, relative to the rows or columns it spans. */
 export type TableMultiInsertDirection = "above" | "below" | "left" | "right";

@@ -462,6 +462,24 @@ describe("TableContextMenu", () => {
             mouseUp(domCell(editor, 1, 1), 0);
         });
     });
+
+    describe("column resizing", () => {
+        it("starts only for the primary button", async () => {
+            setModelData(editor.model, modelTable([ [ "11", "12" ], [ "21", "22" ] ]));
+            const unresized = tableData(editor);
+
+            // Middle and right drags.
+            for (const [ button, buttons ] of [ [ 1, 4 ], [ 2, 2 ] ]) {
+                const mousedown = dragColumnResizer(editor, button, buttons);
+                expect(mousedown.defaultPrevented).toBe(false);
+                expect(tableData(editor)).toBe(unresized);
+                await waitForResizeThrottle();
+            }
+
+            dragColumnResizer(editor, 0, 1);
+            expect(tableData(editor)).not.toBe(unresized);
+        });
+    });
 });
 
 function modelTable(rows: string[][], attributes = ""): string {
@@ -529,6 +547,30 @@ function mouseDown(target: HTMLElement, button: number, init: MouseEventInit = {
     const event = new MouseEvent("mousedown", { ...init, button, bubbles: true, cancelable: true });
     target.dispatchEvent(event);
     return event;
+}
+
+/**
+ * Drags the column resizer of the first cell 60px to the right with `button` and returns the
+ * `mousedown` event.
+ */
+function dragColumnResizer(editor: ClassicEditor, button: number, buttons: number) {
+    const resizer = domCell(editor, 0, 0).querySelector<HTMLElement>(".ck-table-column-resizer");
+    if (!resizer) {
+        throw new Error("The cell has no column resizer.");
+    }
+
+    const { left, top } = resizer.getBoundingClientRect();
+    const init = { button, buttons, clientY: top, bubbles: true, cancelable: true };
+    const mousedown = new MouseEvent("mousedown", { ...init, clientX: left });
+    resizer.dispatchEvent(mousedown);
+    resizer.dispatchEvent(new MouseEvent("mousemove", { ...init, clientX: left + 60 }));
+    resizer.dispatchEvent(new MouseEvent("mouseup", { ...init, clientX: left + 60 }));
+    return mousedown;
+}
+
+/** Waits out the 50ms throttle of the `mousemove` handler of `TableColumnResizeEditing`. */
+function waitForResizeThrottle() {
+    return new Promise((resolve) => setTimeout(resolve, 60));
 }
 
 function mouseMove(target: HTMLElement, buttons: number) {
