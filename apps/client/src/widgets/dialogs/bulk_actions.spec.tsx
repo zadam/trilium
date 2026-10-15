@@ -80,6 +80,7 @@ describe("BulkActionsDialog", () => {
         const item = [ ...document.querySelectorAll<HTMLElement>(".action-add-menu .dropdown-item") ]
             .find((el) => el.textContent?.includes("move_note.move_note"));
         expect(item).toBeDefined();
+        expect(item?.querySelector(".bx-note.bulk-action-marker-move")).not.toBeNull();
         await act(async () => item?.click());
 
         expect(server.post).toHaveBeenCalledWith("notes/_bulkAction/attributes", {
@@ -87,6 +88,17 @@ describe("BulkActionsDialog", () => {
             name: "action",
             value: JSON.stringify({ name: "moveNote" })
         });
+    });
+
+    it("marks each chosen action with its icon", async () => {
+        buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteNote" }) });
+        await open([ "n1" ]);
+        expect(container.querySelectorAll(".bulk-existing-action-list tr")).toHaveLength(1);
+
+        const icon = container.querySelector(".bulk-existing-action-list .bulk-action-icon");
+        expect(icon?.classList.contains("bx-note")).toBe(true);
+        expect(icon?.classList.contains("bulk-action-marker-delete")).toBe(true);
+        expect(icon?.classList.contains("destructive-action-icon")).toBe(true);
     });
 
     it("drops a removed chip from the notes the actions apply to, keeping the last one", async () => {

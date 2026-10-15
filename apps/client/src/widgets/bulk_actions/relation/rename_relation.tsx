@@ -42,6 +42,9 @@ export default class RenameRelationBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("rename_relation.rename_relation");
     }
+    static get actionIcon() {
+        return "bx bx-transfer bulk-action-marker-rename";
+    }
 
     doRender() {
         return <RenameRelationBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

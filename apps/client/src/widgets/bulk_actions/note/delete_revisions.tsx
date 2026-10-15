@@ -21,6 +21,9 @@ export default class DeleteRevisionsBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("delete_revisions.delete_note_revisions");
     }
+    static get actionIcon() {
+        return "bx bx-history bulk-action-marker-delete destructive-action-icon";
+    }
 
     doRender() {
         return <DeleteRevisionsBulkActionComponent bulkAction={this} />

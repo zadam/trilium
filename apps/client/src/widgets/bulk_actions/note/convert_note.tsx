@@ -65,4 +65,7 @@ export default class ConvertNoteBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("convert_note.convert_note");
     }
+    static get actionIcon() {
+        return "bx bx-note bulk-action-marker-convert";
+    }
 }

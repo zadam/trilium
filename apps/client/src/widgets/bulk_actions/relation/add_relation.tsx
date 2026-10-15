@@ -44,6 +44,9 @@ export default class AddRelationBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("add_relation.add_relation");
     }
+    static get actionIcon() {
+        return "bx bx-transfer bulk-action-marker-add";
+    }
 
     doRender() {
         return <AddRelationBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

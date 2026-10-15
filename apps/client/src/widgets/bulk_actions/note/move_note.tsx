@@ -43,6 +43,9 @@ export default class MoveNoteBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("move_note.move_note");
     }
+    static get actionIcon() {
+        return "bx bx-note bulk-action-marker-move";
+    }
 
     doRender() {
         return <MoveNoteBulkActionComponent bulkAction={this} />

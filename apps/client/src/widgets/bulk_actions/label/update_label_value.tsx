@@ -43,6 +43,9 @@ export default class UpdateLabelValueBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("update_label_value.update_label_value");
     }
+    static get actionIcon() {
+        return "bx bx-hash bulk-action-marker-update";
+    }
 
     doRender() {
         return <UpdateLabelValueComponent bulkAction={this} actionDef={this.actionDef} />;

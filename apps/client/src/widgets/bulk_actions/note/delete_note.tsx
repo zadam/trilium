@@ -26,6 +26,9 @@ export default class DeleteNoteBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("delete_note.delete_note");
     }
+    static get actionIcon() {
+        return "bx bx-note bulk-action-marker-delete destructive-action-icon";
+    }
 
     doRender() {
         return <DeleteNoteBulkActionComponent bulkAction={this} />

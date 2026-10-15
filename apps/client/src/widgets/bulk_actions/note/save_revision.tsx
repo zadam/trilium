@@ -40,6 +40,9 @@ export default class SaveRevisionBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("save_revision.save_revision");
     }
+    static get actionIcon() {
+        return "bx bx-history bulk-action-marker-add";
+    }
 
     doRender() {
         return <SaveRevisionBulkActionComponent bulkAction={this} actionDef={this.actionDef} />;

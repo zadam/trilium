@@ -1,0 +1,53 @@
+.tn-icon:is(
+    .bulk-action-marker-add,
+    .bulk-action-marker-update,
+    .bulk-action-marker-rename,
+    .bulk-action-marker-delete,
+    .bulk-action-marker-move,
+    .bulk-action-marker-convert
+) {
+    --bulk-action-marker-cutout: var(--card-background-color, var(--main-background-color));
+    position: relative;
+
+    &::after {
+        position: absolute;
+        inset-inline-end: -4px;
+        bottom: -3px;
+        font-family: boxicons;
+        font-size: 0.62em;
+        font-weight: normal;
+        line-height: 1;
+        text-shadow:
+            0 0 2px var(--bulk-action-marker-cutout),
+            0 0 2px var(--bulk-action-marker-cutout);
+    }
+}
+
+.action-add-menu .tn-icon {
+    --bulk-action-marker-cutout: var(--menu-background-color);
+}
+
+/* Codepoints from boxicons.css. */
+.bulk-action-marker-add::after {
+    content: "\ebc0"; /* bx-plus */
+}
+
+.bulk-action-marker-update::after {
+    content: "\ebb1"; /* bx-pencil */
+}
+
+.bulk-action-marker-rename::after {
+    content: "\ebdb"; /* bx-rename */
+}
+
+.bulk-action-marker-delete::after {
+    content: "\ec8d"; /* bx-x */
+}
+
+.bulk-action-marker-move::after {
+    content: "\ebe6"; /* bx-right-arrow-alt */
+}
+
+.bulk-action-marker-convert::after {
+    content: "\ec0e"; /* bx-shuffle */
+}

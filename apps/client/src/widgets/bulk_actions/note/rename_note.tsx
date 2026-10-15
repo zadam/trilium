@@ -44,6 +44,9 @@ export default class RenameNoteBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("rename_note.rename_note");
     }
+    static get actionIcon() {
+        return "bx bx-note bulk-action-marker-rename";
+    }
 
     doRender() {
         return <RenameNoteBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

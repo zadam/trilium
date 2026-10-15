@@ -54,4 +54,7 @@ export default class AddLabelBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("add_label.add_label");
     }
+    static get actionIcon() {
+        return "bx bx-hash bulk-action-marker-add";
+    }
 }

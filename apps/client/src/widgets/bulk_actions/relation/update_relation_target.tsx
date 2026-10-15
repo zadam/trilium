@@ -52,6 +52,9 @@ export default class UpdateRelationTargetBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("update_relation_target.update_relation_target");
     }
+    static get actionIcon() {
+        return "bx bx-transfer bulk-action-marker-update";
+    }
 
     doRender() {
         return <UpdateRelationTargetComponent bulkAction={this} actionDef={this.actionDef} />

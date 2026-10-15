@@ -42,6 +42,9 @@ export default class ExecuteScriptBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("execute_script.execute_script");
     }
+    static get actionIcon() {
+        return "bx bx-play";
+    }
 
     doRender() {
         return <ExecuteScriptBulkActionComponent bulkAction={this} actionDef={this.actionDef} />

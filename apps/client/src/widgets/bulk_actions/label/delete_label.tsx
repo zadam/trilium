@@ -32,6 +32,9 @@ export default class DeleteLabelBulkAction extends AbstractBulkAction {
     static get actionTitle() {
         return t("delete_label.delete_label");
     }
+    static get actionIcon() {
+        return "bx bx-hash bulk-action-marker-delete";
+    }
 
     doRender() {
         return <DeleteLabelBulkActionComponent bulkAction={this} actionDef={this.actionDef} />
