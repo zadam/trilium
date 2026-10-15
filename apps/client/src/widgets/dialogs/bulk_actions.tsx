@@ -79,7 +79,7 @@ export default function BulkActionsDialog() {
     return (
         <Modal
             className="bulk-actions-dialog"
-            size="xl"
+            size="lg"
             title={t("bulk_actions.bulk_actions")}
             footer={<>
                 <Button text={t("modal.cancel")} onClick={() => setShown(false)} />
