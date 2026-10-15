@@ -562,7 +562,6 @@
   "transcription": {
     "already-recording": "已有会议正在转录。",
     "note-not-found": "会议笔记已不存在。",
-    "model-missing": "在 {{- directory}} 中未找到语音识别模型。",
     "start-failed": "无法开始转录：{{- message}}",
     "stopped-unexpectedly": "转录意外停止了。此前已转录的内容会保留。",
     "save-locked": "受保护会话锁定期间无法保存转录文本。转录功能会将其保留，只要你进入受保护会话，且 Trilium 保持打开，就会保存它。",

@@ -562,7 +562,6 @@
   "transcription": {
     "already-recording": "すでにミーティングの文字起こしが実行中です。",
     "note-not-found": "ミーティングノートは存在しません。",
-    "model-missing": "{{- directory}} に音声認識モデルが見つかりませんでした。",
     "start-failed": "文字起こしを開始できませんでした: {{- message}}",
     "stopped-unexpectedly": "文字起こしが予期せず停止しました。それまでに文字起こしされた内容は保存されます。",
     "save-locked": "保護されたセッションがロックされている間は、文字起こしを保存できません。Trilium が開いている限りデータは保持され、保護されたセッションに入ると保存されます。",

@@ -574,7 +574,6 @@
   "transcription": {
     "already-recording": "Tá cruinniú á thras-scríobh cheana féin.",
     "note-not-found": "Níl an nóta cruinnithe ann a thuilleadh.",
-    "model-missing": "Níor aimsíodh aon mhúnla aitheantais cainte i {{- directory}}.",
     "start-failed": "Níorbh fhéidir an tras-scríobh a thosú: {{- message}}",
     "stopped-unexpectedly": "Chuir an tras-scríobh stad go tobann. Coinnítear an méid a bhí tras-scríofa go dtí sin.",
     "save-locked": "Ní féidir an tras-scríbhinn a shábháil fad is atá an seisiún cosanta faoi ghlas. Coinníonn an córas tras-scríofa í agus sábhálann sé í a luaithe a théann tú isteach sa seisiún cosanta, ar choinníoll go bhfanann Trilium ar oscailt.",

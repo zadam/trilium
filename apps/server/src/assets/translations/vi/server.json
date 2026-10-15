@@ -562,7 +562,6 @@
   "transcription": {
     "already-recording": "Một cuộc họp đang được chuyển thành văn bản.",
     "note-not-found": "Ghi chú cuộc họp không còn tồn tại.",
-    "model-missing": "Không tìm thấy mô hình nhận dạng giọng nói trong {{- directory}}.",
     "start-failed": "Không thể bắt đầu chuyển thành văn bản: {{- message}}",
     "stopped-unexpectedly": "Việc chuyển thành văn bản đã dừng lại một cách bất ngờ. Nội dung đã được chuyển trước đó sẽ được giữ lại.",
     "save-locked": "Không thể lưu bản ghi khi phiên được bảo vệ đang bị khóa. Việc chuyển thành văn bản sẽ giữ lại nội dung và lưu nó khi bạn nhập vào phiên được bảo vệ, miễn là Trilium vẫn đang mở.",

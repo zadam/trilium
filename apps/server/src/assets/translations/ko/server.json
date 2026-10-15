@@ -562,7 +562,6 @@
   "transcription": {
     "already-recording": "이미 회의 내용을 전사하고 있습니다.",
     "note-not-found": "회의 노트가 더 이상 존재하지 않습니다.",
-    "model-missing": "{{- directory}} 경로에서 음성 인식 모델을 찾을 수 없습니다.",
     "start-failed": "전사를 시작할 수 없습니다: {{- message}}",
     "stopped-unexpectedly": "전사가 예기치 않게 중단되었습니다. 중단 전까지 전사된 내용은 유지됩니다.",
     "save-locked": "보호된 세션이 잠겨 있어 전사 내용을 저장할 수 없습니다. Trilium이 열려 있는 동안 전사 내용을 보관하며, 보호된 세션에 들어가면 저장합니다.",
