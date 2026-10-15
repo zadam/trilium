@@ -3,6 +3,7 @@ import type { MessagePortMain } from "electron";
 
 import type { SpeakerTracker, SpeechEngine, SpeechSegment, SpeechSegmenter } from "./engine";
 import { type CaptureMessage, type Logger, SAMPLE_RATE } from "./protocol";
+import type { TimedWord } from "./speakers";
 
 /** The sources whose speakers are told apart; the microphone carries only the local speaker. */
 const DIARIZED_SOURCES: readonly TranscriptSource[] = [ "system" ];
@@ -155,21 +156,36 @@ export class RecordingSession {
     private enqueue(source: TranscriptSource, offsetMs: number, samples: Float32Array) {
         this.queued.set(source, (this.queued.get(source) ?? 0) + 1);
         this.queue = this.queue.then(async () => {
-            const text = await this.options.engine.recognizer.transcribe(samples);
+            const { text, words } = await this.options.engine.recognizer.transcribe(samples);
             if (!text) {
                 return;
             }
 
             const durationMs = samples.length / SAMPLE_RATE * 1000;
-            const speaker = this.identifySpeaker(source, samples);
-            const utterance = {
-                source, offsetMs, durationMs, text, ...(speaker === null ? {} : { speaker })
-            };
-            for (const sink of this.options.sinks) {
-                try {
-                    await sink.write(utterance);
-                } catch (e) {
-                    this.log.error(`Transcription: a sink failed: ${e}`);
+            const turns = this.identifySpeakers(source, samples, words);
+            const utterances: TranscriptUtterance[] = turns && turns.length > 1
+                ? turns.map((turn) => ({
+                    source,
+                    offsetMs: offsetMs + Math.round(turn.startSeconds * 1000),
+                    durationMs: Math.round((turn.endSeconds - turn.startSeconds) * 1000),
+                    text: words
+                        .filter(({ startSeconds }) =>
+                            startSeconds >= turn.startSeconds && startSeconds < turn.endSeconds)
+                        .map((word) => word.text)
+                        .join(" "),
+                    ...(turn.speaker === null ? {} : { speaker: turn.speaker })
+                })).filter((utterance) => utterance.text)
+                : [ {
+                    source, offsetMs, durationMs, text,
+                    ...(turns?.[0]?.speaker == null ? {} : { speaker: turns[0].speaker })
+                } ];
+            for (const utterance of utterances) {
+                for (const sink of this.options.sinks) {
+                    try {
+                        await sink.write(utterance);
+                    } catch (e) {
+                        this.log.error(`Transcription: a sink failed: ${e}`);
+                    }
                 }
             }
         }).catch((e) => this.log.error(`Transcription failed: ${e}`)).finally(() => {
@@ -178,10 +194,13 @@ export class RecordingSession {
         });
     }
 
-    /** Runs synchronously, about 100 ms per utterance, so the next chunks wait meanwhile. */
-    private identifySpeaker(source: TranscriptSource, samples: Float32Array) {
+    /**
+     * Returns the speakers' turns of an utterance, or `null` for a source without speakers. Runs
+     * synchronously, 0.1–0.3 s per utterance, so the next chunks wait meanwhile.
+     */
+    private identifySpeakers(source: TranscriptSource, samples: Float32Array, words: TimedWord[]) {
         try {
-            return this.speakerTrackers.get(source)?.identify(samples) ?? null;
+            return this.speakerTrackers.get(source)?.identify(samples, words) ?? null;
         } catch (e) {
             this.log.error(`Transcription: identifying the speaker on ${source} failed: ${e}`);
             return null;

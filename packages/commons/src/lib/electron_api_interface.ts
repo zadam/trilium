@@ -725,6 +725,11 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
+     * When the recording started, in milliseconds since the epoch: set once it records, kept while
+     * it stops, absent otherwise.
+     */
+    startedAt?: number;
+    /**
      * A problem to tell the user about, sent once with the state it concerns: the recording ended
      * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
      */
@@ -756,6 +761,12 @@ export interface ElectronTranscriptionApi {
      * @returns `false` when no recording writes `attachmentId`; it can then be saved whole.
      */
     renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
+
+    /**
+     * Returns the directory that keeps the audio and the transcript as produced of each recording
+     * while `transcriptionKeepRecordings` is on, creating it if needed.
+     */
+    getRecordingsDirectory(): Promise<string>;
 
     /**
      * Calls `callback` every time the state changes, in any window.

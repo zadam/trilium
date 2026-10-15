@@ -47,7 +47,9 @@ class FakeParentPort extends EventEmitter {
 /** An engine whose segmenter completes an utterance per chunk, transcribed as "Chunk <n>". */
 const engine = {
     settings: { recognizer: { decodingMethod: "greedy_search" } },
-    recognizer: { transcribe: async (samples: Float32Array) => `Chunk ${samples[0]}` },
+    recognizer: {
+        transcribe: async (samples: Float32Array) => ({ text: `Chunk ${samples[0]}`, words: [] })
+    },
     createSegmenter: () => ({
         accept: (samples: Float32Array) => [ { start: 0, samples } ],
         flush: () => [],
@@ -69,8 +71,14 @@ function capturePort() {
     return Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
 }
 
+const MODELS = {
+    recognizer: { directory: "/models", precision: "int8" as const },
+    vad: "/models/silero_vad.onnx",
+    speaker: null
+};
+
 const START: WorkerRequest = {
-    type: "start", noteId: "meeting", modelDirectory: "/models", recordingDirectory: null
+    type: "start", noteId: "meeting", models: MODELS, recordingDirectory: null
 };
 
 beforeEach(() => {
@@ -91,7 +99,7 @@ describe("transcription process", () => {
         parent.send(START);
         const ready = await parent.next("ready");
         expect(ready).toMatchObject({ type: "ready", settings: engine.settings });
-        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith("/models");
+        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith(MODELS);
         expect(h.fileSinks).toEqual([]);
 
         const port = capturePort();

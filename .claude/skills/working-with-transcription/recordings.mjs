@@ -1,4 +1,4 @@
-// Shared by replay.mjs and compare.mjs: finding a development recording and its transcripts.
+// Shared by the scripts: finding a development recording, its transcripts, and the models.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -8,6 +8,42 @@ export const TRANSCRIPT_VERSION = 1;
 /** Where `pnpm desktop:start` keeps recordings (its TRILIUM_DATA_DIR is apps/desktop/data). */
 const DEV_RECORDINGS_DIR = path.resolve(
     import.meta.dirname, "../../../apps/desktop/data/transcription-recordings");
+/** Where `pnpm desktop:start` downloads resources, one `<id>-<hash>` directory each. */
+const DEV_RESOURCES_DIR = path.resolve(import.meta.dirname, "../../../apps/desktop/data/resources");
+
+/** The resource IDs of the models, as `apps/desktop/src/services/transcription/model.ts` registers them. */
+export const MODEL_RESOURCES = {
+    int8: "transcription.parakeet",
+    fp32: "transcription.parakeet-fp32",
+    vad: "transcription.silero-vad",
+    speaker: "transcription.titanet"
+};
+
+/**
+ * Returns the directory the app downloaded the resource `id` into, the most recently installed
+ * when several versions are there, or `null` when none finished downloading.
+ */
+export function findResource(id) {
+    if (!fs.existsSync(DEV_RESOURCES_DIR)) {
+        return null;
+    }
+    const installed = fs.readdirSync(DEV_RESOURCES_DIR)
+        .filter((name) => name.slice(0, name.lastIndexOf("-")) === id)
+        .map((name) => path.join(DEV_RESOURCES_DIR, name, ".verified.json"))
+        .filter((record) => fs.existsSync(record))
+        .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    return installed.length ? path.dirname(installed[0]) : null;
+}
+
+/** Like {@link findResource}, but fails with a hint to download the resource from the app. */
+export function requireResource(id) {
+    const directory = findResource(id);
+    if (!directory) {
+        throw new Error(`${id} is not downloaded to ${DEV_RESOURCES_DIR}. `
+            + "Start a recording in `pnpm desktop:start` to download it.");
+    }
+    return directory;
+}
 
 /**
  * Splits argv into positional arguments and `--name value` options. Names in `multiple` collect

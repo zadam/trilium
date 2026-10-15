@@ -4,13 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadSherpaEngine } from "./engine";
 
 const h = vi.hoisted(() => ({
-    hasSpeakerModel: false,
+    /** Base names of the optional model files the model directory holds. */
+    installed: [] as string[],
     recognizerConfig: null as Record<string, unknown> | null,
     vadConfig: null as Record<string, unknown> | null,
     extractorConfig: null as Record<string, unknown> | null,
     decoded: [] as Float32Array[],
     isEmbeddingReady: true,
-    embeddings: [] as number[][]
+    embeddings: [] as number[][],
+    /** The length of each stretch of samples a speaker embedding was computed from. */
+    embedded: [] as number[]
 }));
 
 /** Silero as the segmenter sees it: windows in, then whatever segments the spec queues. */
@@ -62,7 +65,11 @@ vi.mock("sherpa-onnx-node", () => ({
                     }),
                     decodeAsync: async (stream: { samples: Float32Array }) => {
                         h.decoded.push(stream.samples);
-                        return { text: "  Hello there.  " };
+                        return {
+                            text: "  Hello there.  ",
+                            tokens: [ " Hel", "lo", " there", "." ],
+                            timestamps: [ 0, 0.16, 0.4, 0.72 ]
+                        };
                     }
                 };
             }
@@ -73,7 +80,12 @@ vi.mock("sherpa-onnx-node", () => ({
                 h.extractorConfig = config;
             }
             createStream() {
-                return { acceptWaveform: vi.fn(), inputFinished: vi.fn() };
+                return {
+                    acceptWaveform: ({ samples }: { samples: Float32Array }) => {
+                        h.embedded.push(samples.length);
+                    },
+                    inputFinished: vi.fn()
+                };
             }
             isReady() {
                 return h.isEmbeddingReady;
@@ -86,22 +98,30 @@ vi.mock("sherpa-onnx-node", () => ({
     }
 }));
 vi.mock("fs", () => ({
-    default: { existsSync: (file: string) => h.hasSpeakerModel && file.endsWith(".onnx") }
+    default: { existsSync: (file: string) => h.installed.includes(path.basename(file)) }
 }));
 
 const MODEL_DIR = "/models/parakeet";
+const MODELS = {
+    recognizer: { directory: MODEL_DIR, precision: "int8" as const },
+    vad: "/models/silero/silero_vad.onnx",
+    speaker: "/models/titanet/nemo_en_titanet_small.onnx"
+};
 
 beforeEach(() => {
-    h.hasSpeakerModel = false;
+    h.installed = [];
     h.isEmbeddingReady = true;
     h.decoded.length = 0;
     h.embeddings.length = 0;
+    h.embedded.length = 0;
     vads.length = 0;
 });
 
 describe("loadSherpaEngine", () => {
-    it("loads Parakeet and Silero from the model directory and reports their settings", async () => {
-        const engine = await loadSherpaEngine(MODEL_DIR);
+    it("loads Parakeet and Silero from their paths and reports their settings", async () => {
+        // The precision comes from the paths, whatever else the directory holds.
+        h.installed = [ "encoder.onnx" ];
+        const engine = await loadSherpaEngine(MODELS);
 
         expect(h.recognizerConfig).toMatchObject({
             featConfig: { sampleRate: 16000, featureDim: 80 },
@@ -120,22 +140,46 @@ describe("loadSherpaEngine", () => {
         expect(engine.createSpeakerTracker).toBeUndefined();
         expect(engine.settings).toMatchObject({
             modelDirectory: path.resolve(MODEL_DIR),
+            precision: "int8",
             recognizer: { modelType: "nemo_transducer", blankPenalty: 0.5 },
             vad: { minSilenceDuration: 0.75, maxSpeechDuration: 20, windowSize: 512 },
             speakers: null
         });
 
         const samples = new Float32Array(1600);
-        expect(await engine.recognizer.transcribe(samples)).toBe("Hello there.");
+        expect(await engine.recognizer.transcribe(samples)).toEqual({
+            text: "Hello there.",
+            words: [ { text: "Hello", startSeconds: 0 }, { text: "there.", startSeconds: 0.4 } ]
+        });
         expect(h.decoded).toEqual([ samples ]);
     });
 
+    it("loads the full-precision model when given, decoding it without a blank penalty", async () => {
+        const engine = await loadSherpaEngine({
+            ...MODELS, recognizer: { directory: MODEL_DIR, precision: "fp32" }
+        });
+
+        expect(h.recognizerConfig).toMatchObject({
+            modelConfig: {
+                transducer: {
+                    encoder: path.join(MODEL_DIR, "encoder.onnx"),
+                    decoder: path.join(MODEL_DIR, "decoder.onnx"),
+                    joiner: path.join(MODEL_DIR, "joiner.onnx")
+                }
+            },
+            decodingMethod: "greedy_search"
+        });
+        expect(h.recognizerConfig).not.toHaveProperty("blankPenalty");
+        expect(engine.settings).toMatchObject({ precision: "fp32" });
+        expect(engine.settings.recognizer).not.toHaveProperty("blankPenalty");
+    });
+
     it("segments a source in whole 512-sample windows, handing out what the VAD completes", async () => {
-        const engine = await loadSherpaEngine(MODEL_DIR);
+        const engine = await loadSherpaEngine(MODELS);
         const segmenter = engine.createSegmenter();
         const vad = vads[0];
         expect(h.vadConfig).toMatchObject({
-            sileroVad: { model: path.join(MODEL_DIR, "silero_vad.onnx"), threshold: 0.5 },
+            sileroVad: { model: MODELS.vad, threshold: 0.3, minSpeechDuration: 0.1 },
             sampleRate: 16000
         });
 
@@ -154,20 +198,49 @@ describe("loadSherpaEngine", () => {
     });
 
     it("tells speakers apart with the speaker model, when it is installed", async () => {
-        h.hasSpeakerModel = true;
-        const engine = await loadSherpaEngine(MODEL_DIR);
-        expect(h.extractorConfig?.model)
-            .toBe(path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx"));
+        h.installed = [ "nemo_en_titanet_small.onnx" ];
+        const engine = await loadSherpaEngine(MODELS);
+        expect(h.extractorConfig?.model).toBe(MODELS.speaker);
         expect(engine.settings.speakers).toMatchObject({
-            model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5
+            model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5,
+            newSpeakerMinDurationSeconds: 5, shortThreshold: 0.3,
+            turns: { windowSeconds: 2, hopSeconds: 1, minSegmentSeconds: 4, minTurnSeconds: 1 }
         });
 
         const tracker = engine.createSpeakerTracker?.();
-        const long = new Float32Array(16000 * 2);
-        h.embeddings.push([ 1, 0 ], [ 0, 1 ], [ 0.9, 0.1 ]);
-        expect([ 1, 2, 3 ].map(() => tracker?.identify(long))).toEqual([ 1, 2, 1 ]);
+        // No speaker is known yet, so the utterance is not searched for a change.
+        h.embeddings.push([ 1, 0 ]);
+        expect(tracker?.identify(new Float32Array(16000 * 6), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 6, speaker: 1 } ]);
+        expect(h.embedded).toEqual([ 16000 * 6 ]);
+
+        // Nine 2 s windows: speaker 1 for two, then an unknown voice; the cut at 2.5 s moves to
+        // the sentence starting at 2.2 s, and each turn is identified on its own.
+        h.embedded.length = 0;
+        h.embeddings.push([ 1, 0 ], [ 1, 0 ], ...Array(7).fill([ 0, 1 ]), [ 1, 0 ], [ 0, 1 ]);
+        const words = [
+            { text: "Is it?", startSeconds: 0 },
+            { text: "Yes", startSeconds: 2.2 },
+            { text: "indeed.", startSeconds: 2.9 }
+        ];
+        expect(tracker?.identify(new Float32Array(16000 * 10), words)).toEqual([
+            { startSeconds: 0, endSeconds: 2.2, speaker: 1 },
+            { startSeconds: 2.2, endSeconds: 10, speaker: 2 }
+        ]);
+        expect(h.embedded).toEqual([ ...Array(9).fill(32000), 35200, 124800 ]);
+
+        // Shorter than 4 s: one turn, without windows.
+        h.embeddings.push([ 0.9, 0.1 ]);
+        expect(tracker?.identify(new Float32Array(16000 * 3), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 3, speaker: 1 } ]);
+        expect(h.embeddings).toEqual([]);
 
         h.isEmbeddingReady = false;
-        expect(tracker?.identify(new Float32Array(100))).toBeNull();
+        expect(tracker?.identify(new Float32Array(1600), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 0.1, speaker: null } ]);
+
+        const withoutSpeakers = await loadSherpaEngine({ ...MODELS, speaker: null });
+        expect(withoutSpeakers.createSpeakerTracker).toBeUndefined();
+        expect(withoutSpeakers.settings.speakers).toBeNull();
     });
 });

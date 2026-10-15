@@ -42,8 +42,8 @@ process.parentPort.on("message", ({ data, ports }) => {
     }
 });
 
-async function start({ noteId, modelDirectory, recordingDirectory }: StartRequest) {
-    const engine = await loadSherpaEngine(modelDirectory);
+async function start({ noteId, models, recordingDirectory }: StartRequest) {
+    const engine = await loadSherpaEngine(models);
     const sinks: TranscriptSink[] = [
         { write: (utterance) => post({ type: "utterance", utterance }) }
     ];

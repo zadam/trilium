@@ -1,4 +1,5 @@
 import type { TranscriptionState } from "@triliumnext/commons";
+import path from "path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CaptureWindowOptions } from "./capture";
@@ -13,8 +14,12 @@ const h = vi.hoisted(() => ({
     isProtected: false,
     isProtectedSessionAvailable: false,
     coreListeners: new Map<string, () => void>(),
-    isDev: false,
-    isModelInstalled: true,
+    keepRecordings: false,
+    mkdirSync: vi.fn(),
+    installedResources: [] as string[],
+    transcriptionModel: null as string | null,
+    speakersEnabled: true,
+    registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
     captureOptions: null as CaptureWindowOptions | null,
@@ -49,7 +54,6 @@ vi.mock("electron", () => ({
         port2 = "worker end";
     }
 }));
-vi.mock("fs", () => ({ default: { existsSync: () => h.isModelInstalled } }));
 vi.mock("@triliumnext/core", () => ({
     becca: {
         getNote: (noteId: string) =>
@@ -60,14 +64,29 @@ vi.mock("@triliumnext/core", () => ({
         subscribe: (event: string, listener: () => void) => h.coreListeners.set(event, listener)
     },
     getLog: () => h.log,
+    options: {
+        getOptionOrNull: (name: string) => name === "transcriptionModel" ? h.transcriptionModel : null,
+        getOptionBool: (name: string) =>
+            (name === "transcriptionSpeakersEnabled" && h.speakersEnabled)
+            || (name === "transcriptionKeepRecordings" && h.keepRecordings)
+    },
     protected_session: { isProtectedSessionAvailable: () => h.isProtectedSessionAvailable },
-    utils: { isDev: () => h.isDev }
 }));
+vi.mock("fs", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("fs")>();
+    return { default: { ...actual, mkdirSync: h.mkdirSync } };
+});
 vi.mock("i18next", () => ({
     t: (key: string, options?: object) => options ? `${key} ${JSON.stringify(options)}` : key
 }));
 vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
-    default: { TRILIUM_DATA_DIR: "/data" }
+    default: { TRILIUM_DATA_DIR: "data" }
+}));
+vi.mock("@triliumnext/server/src/services/resources.js", () => ({
+    default: {
+        register: h.registerResource,
+        getPath: (id: string) => h.installedResources.includes(id) ? `/data/resources/${id}` : null
+    }
 }));
 vi.mock("./capture", () => ({
     CaptureWindow: class {
@@ -121,8 +140,12 @@ beforeEach(() => {
     h.isProtected = false;
     h.isProtectedSessionAvailable = false;
     h.broadcast.length = 0;
-    h.isDev = false;
-    h.isModelInstalled = true;
+    h.keepRecordings = false;
+    h.transcriptionModel = null;
+    h.speakersEnabled = true;
+    h.installedResources = [
+        "transcription.parakeet", "transcription.silero-vad", "transcription.titanet"
+    ];
     h.listeners = null;
     h.worker.start.mockResolvedValue({ type: "ready", startedAt: STARTED_AT, settings: {} });
     h.capture.start.mockResolvedValue([ "microphone", "system" ]);
@@ -137,8 +160,9 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "meeting")).toBe("");
         expect(await invoke("transcription-start", "meeting"))
             .toBe("transcription.already-recording");
-        expect(await invoke("transcription-get-state"))
-            .toEqual({ status: "recording", noteId: "meeting", pendingSources: [] });
+        expect(await invoke("transcription-get-state")).toEqual({
+            status: "recording", noteId: "meeting", pendingSources: [], startedAt: STARTED_AT
+        });
 
         await invoke("transcription-stop");
         expect(h.capture.stop.mock.invocationCallOrder[0])
@@ -173,7 +197,11 @@ describe("transcription IPC", () => {
 
         expect(h.worker.start).toHaveBeenCalledExactlyOnceWith({
             noteId: "meeting",
-            modelDirectory: "/data/transcription-model",
+            models: {
+                recognizer: { directory: "/data/resources/transcription.parakeet", precision: "int8" },
+                vad: path.join("/data/resources/transcription.silero-vad", "silero_vad.onnx"),
+                speaker: path.join("/data/resources/transcription.titanet", "nemo_en_titanet_small.onnx")
+            },
             recordingDirectory: null
         });
         expect(h.sink.open).toHaveBeenCalledExactlyOnceWith(STARTED_AT);
@@ -199,7 +227,7 @@ describe("transcription IPC", () => {
 
         h.listeners?.onPendingChanged([ "system" ]);
         expect(h.broadcast.at(-1)).toEqual({
-            status: "recording", noteId: "meeting", pendingSources: [ "system" ]
+            status: "recording", noteId: "meeting", pendingSources: [ "system" ], startedAt: STARTED_AT
         });
         expect(await invoke("transcription-get-state")).toEqual(h.broadcast.at(-1));
 
@@ -222,7 +250,7 @@ describe("transcription IPC", () => {
         h.listeners?.onUtterance(utterance);
         const errors = h.broadcast.filter((state) => state.error);
         expect(errors).toEqual([ 1, 2 ].map(() => ({
-            status: "recording", noteId: "meeting", pendingSources: [],
+            status: "recording", noteId: "meeting", pendingSources: [], startedAt: STARTED_AT,
             error: "transcription.save-locked"
         })));
         expect(await invoke("transcription-get-state")).not.toHaveProperty("error");
@@ -295,7 +323,7 @@ describe("transcription IPC", () => {
         expect(h.sink.renameSpeaker).toHaveBeenCalledTimes(2);
     });
 
-    it("keeps the audio and the transcript as produced only in development builds", async () => {
+    it("keeps the audio and the transcript as produced only while the option is on", async () => {
         vi.useFakeTimers({ now: STARTED_AT, toFake: [ "Date" ] });
         const invoke = await loadService();
 
@@ -303,11 +331,19 @@ describe("transcription IPC", () => {
         expect(h.worker.start.mock.calls[0][0].recordingDirectory).toBeNull();
         await invoke("transcription-stop");
 
-        h.isDev = true;
+        h.keepRecordings = true;
         await invoke("transcription-start", "meeting");
         expect(h.worker.start.mock.calls[1][0].recordingDirectory)
-            .toBe("/data/transcription-recordings/2026-10-14T09-30-00-000Z_meeting");
+            .toBe(path.resolve("data", "transcription-recordings", "2026-10-14T09-30-00-000Z_meeting"));
         vi.useRealTimers();
+    });
+
+    it("tells where the recordings are kept, as an absolute path, creating the directory", async () => {
+        const invoke = await loadService();
+        const directory = path.resolve("data", "transcription-recordings");
+        expect(await invoke("transcription-get-recordings-directory")).toBe(directory);
+        expect(path.isAbsolute(directory)).toBe(true);
+        expect(h.mkdirSync).toHaveBeenCalledExactlyOnceWith(directory, { recursive: true });
     });
 
     it("refuses a missing note or model, without changing state", async () => {
@@ -316,11 +352,43 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "deleted")).toBe("transcription.note-not-found");
         expect(await invoke("transcription-start", { noteId: "meeting" }))
             .toBe("transcription.note-not-found");
-        h.isModelInstalled = false;
+        h.installedResources = [ "transcription.parakeet", "transcription.titanet" ];
         expect(await invoke("transcription-start", "meeting"))
-            .toBe(`transcription.model-missing {"directory":"/data/transcription-model"}`);
+            .toBe("transcription.model-not-downloaded");
         expect(h.listeners).toBeNull();
         expect(h.broadcast).toEqual([]);
+    });
+
+    it("registers every model, and records without the speaker model", async () => {
+        const invoke = await loadService();
+        expect(h.registerResource.mock.calls[0].map(({ id }: { id: string }) => id)).toEqual([
+            "transcription.parakeet", "transcription.parakeet-fp32", "transcription.silero-vad",
+            "transcription.titanet"
+        ]);
+
+        h.installedResources = [ "transcription.parakeet", "transcription.silero-vad" ];
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
+    });
+
+    it("records without the speaker model while speaker identification is off", async () => {
+        const invoke = await loadService();
+        h.speakersEnabled = false;
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
+    });
+
+    it("records with the model the option selects, refusing while it is not downloaded", async () => {
+        const invoke = await loadService();
+        h.transcriptionModel = "parakeet-fp32";
+        expect(await invoke("transcription-start", "meeting"))
+            .toBe("transcription.model-not-downloaded");
+
+        h.installedResources.push("transcription.parakeet-fp32");
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.recognizer).toEqual({
+            directory: "/data/resources/transcription.parakeet-fp32", precision: "fp32"
+        });
     });
 
     it("explains why it could not start, ends the process and returns to idle", async () => {

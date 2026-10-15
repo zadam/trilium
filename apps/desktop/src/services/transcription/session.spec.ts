@@ -43,8 +43,15 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     const engine = {
         settings: {},
         recognizer: {
-            transcribe: vi.fn(async (samples: Float32Array) =>
-                samples[0] ? `utterance ${samples[0]}` : "")
+            transcribe: vi.fn(async (samples: Float32Array) => samples[0]
+                ? {
+                    text: `utterance ${samples[0]}`,
+                    words: [
+                        { text: "utterance", startSeconds: 0 },
+                        { text: String(samples[0]), startSeconds: 0.6 }
+                    ]
+                }
+                : { text: "", words: [] })
         },
         createSpeakerTracker: undefined as (() => SpeakerTracker) | undefined,
         createSegmenter: vi.fn(() => {
@@ -170,7 +177,7 @@ describe("RecordingSession", () => {
         const { session, engine, sink, deliver, onPendingChanged } = createHarness();
         let finishTranscribing = () => {};
         engine.recognizer.transcribe.mockImplementationOnce(() => new Promise((resolve) => {
-            finishTranscribing = () => resolve("utterance 1");
+            finishTranscribing = () => resolve({ text: "utterance 1", words: [] });
         }));
         await session.start();
 
@@ -208,7 +215,7 @@ describe("RecordingSession", () => {
     it("labels the system source's utterances by speaker, never the microphone's", async () => {
         const { session, engine, deliver, written } = createHarness();
         const identify = vi.fn()
-            .mockReturnValueOnce(2)
+            .mockReturnValueOnce([ { startSeconds: 0, endSeconds: 1, speaker: 2 } ])
             .mockImplementationOnce(() => {
                 throw new Error("model crashed");
             });
@@ -233,6 +240,30 @@ describe("RecordingSession", () => {
         expect(written[1]).not.toHaveProperty("speaker");
         expect(log.error).toHaveBeenCalledWith(
             "Transcription: identifying the speaker on system failed: Error: model crashed");
+    });
+
+    it("writes each speaker's turn within an utterance as an utterance of its own", async () => {
+        const { session, engine, deliver, written } = createHarness();
+        const identify = vi.fn(() => [
+            { startSeconds: 0, endSeconds: 0.5, speaker: 1 },
+            { startSeconds: 0.5, endSeconds: 0.55, speaker: null },
+            { startSeconds: 0.55, endSeconds: 1, speaker: 2 }
+        ]);
+        engine.createSpeakerTracker = () => ({ identify });
+        await session.start();
+
+        deliver("system", utteranceChunk(7, 16000), 3000);
+        await session.stop();
+
+        expect(identify).toHaveBeenCalledExactlyOnceWith(expect.any(Float32Array), [
+            { text: "utterance", startSeconds: 0 },
+            { text: "7", startSeconds: 0.6 }
+        ]);
+        // The middle turn holds no word, so it is left out.
+        expect(written).toEqual([
+            { source: "system", offsetMs: 2000, durationMs: 500, text: "utterance", speaker: 1 },
+            { source: "system", offsetMs: 2550, durationMs: 450, text: "7", speaker: 2 }
+        ]);
     });
 
     it("logs each source's peak level every 5 s, to spot a silent source", async () => {

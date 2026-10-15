@@ -202,8 +202,22 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoFixConsistencyIssues: boolean;
     vimKeymapEnabled: boolean;
     codeLineWrapEnabled: boolean;
+    /** Whether meetings can be transcribed: shows the launcher and the transcription settings. */
+    transcriptionEnabled: boolean;
     /** Whether a meeting transcript is shown without filler words and stutters. */
     transcriptCleanupEnabled: boolean;
+    /**
+     * The speech recognition model a recording runs on, a key of `TRANSCRIPTION_MODELS`. Not synced:
+     * each device downloads and runs its own.
+     */
+    transcriptionModel: string;
+    /** Whether a recording tells the other participants apart, labeling each utterance with its speaker. */
+    transcriptionSpeakersEnabled: boolean;
+    /**
+     * Whether a recording keeps its audio and the transcript as produced in the data directory, for
+     * troubleshooting. Not synced: the files stay on the device that recorded.
+     */
+    transcriptionKeepRecordings: boolean;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;

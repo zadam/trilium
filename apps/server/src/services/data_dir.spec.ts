@@ -325,7 +325,7 @@ describe("data_dir.ts unit tests", () => {
     });
 
     describe("#getDataDirs()", () => {
-        const envKeys: Omit<keyof ReturnType<typeof getDataDirs>, "TRILIUM_DATA_DIR">[] = [ "DOCUMENT_PATH", "BACKUP_DIR", "LOG_DIR", "ANONYMIZED_DB_DIR", "CONFIG_INI_PATH", "TMP_DIR", "OCR_CACHE_DIR" ];
+        const envKeys: Omit<keyof ReturnType<typeof getDataDirs>, "TRILIUM_DATA_DIR">[] = [ "DOCUMENT_PATH", "BACKUP_DIR", "LOG_DIR", "ANONYMIZED_DB_DIR", "CONFIG_INI_PATH", "TMP_DIR", "OCR_CACHE_DIR", "RESOURCES_DIR" ];
 
         const setMockedEnv = (prefix: string | null) => {
             envKeys.forEach((key) => {

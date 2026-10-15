@@ -9,8 +9,12 @@
 //                          --set recognizer.maxActivePaths=8 --set vad.threshold=0.4
 //                          (the value is parsed as JSON when it parses, else kept as a string)
 //   --hotwords <a/b/c>     per-utterance hotwords, separated by "/" (needs modified_beam_search)
-//   --model <dir>          model directory (default: <data dir>/transcription-model); takes
-//                          <part>.int8.onnx, else <part>.onnx, for encoder, decoder and joiner
+//   --model <dir>          Parakeet directory (default: the app's download of the precision the
+//                          recording used, else of the other); takes <part>.onnx for a
+//                          full-precision recording, else <part>.int8.onnx, falling back to the
+//                          other, for encoder, decoder and joiner
+//
+// Silero VAD is read from the app's download, in apps/desktop/data/resources.
 //   --source <name>        replay only microphone or system
 //   --pad <seconds>        extend each segment by this much audio on both sides before decoding
 //   --force                overwrite an existing transcript.<label>.json
@@ -21,7 +25,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
-    parseArgs, resolveRecording, TRANSCRIPT_VERSION, transcriptPath
+    findResource, MODEL_RESOURCES, parseArgs, requireResource, resolveRecording,
+    TRANSCRIPT_VERSION, transcriptPath
 } from "./recordings.mjs";
 import { loadSherpa, SAMPLE_RATE, segmentSource } from "./sherpa.mjs";
 
@@ -48,8 +53,8 @@ const engine = structuredClone(recording.manifest.engine ?? {});
 for (const assignment of options.set ?? []) {
     applySetting(engine, assignment);
 }
-const modelDirectory = options.model
-    ?? path.join(path.dirname(path.dirname(recording.directory)), "transcription-model");
+const modelDirectory = options.model ?? findRecognizer(recording.manifest.engine?.precision);
+const vadModel = path.join(requireResource(MODEL_RESOURCES.vad), "silero_vad.onnx");
 const hotwords = options.hotwords;
 const padSamples = Math.round(Number(options.pad ?? 0) * SAMPLE_RATE);
 if (hotwords && engine.recognizer?.decodingMethod !== "modified_beam_search") {
@@ -77,7 +82,7 @@ for (const [ source, { file, firstSampleOffsetMs } ] of Object.entries(recording
 
     let decodeMs = 0;
     let segmentCount = 0;
-    for (const segment of segmentSource(sherpa, wave.samples, engine.vad ?? {}, modelDirectory)) {
+    for (const segment of segmentSource(sherpa, wave.samples, engine.vad ?? {}, vadModel)) {
         const stream = hotwords ? recognizer.createStream(hotwords) : recognizer.createStream();
         const samples = padSamples
             ? wave.samples.subarray(Math.max(0, segment.start - padSamples),
@@ -139,10 +144,23 @@ function buildRecognizerConfig(settings, modelDir) {
     return config;
 }
 
-/** The int8 file the app ships, or the full-precision `<part>.onnx` of another export. */
+/** The app's download of Parakeet at `precision` (int8 when unknown), else at the other. */
+function findRecognizer(precision) {
+    const [ preferred, fallback ] = precision === "fp32"
+        ? [ MODEL_RESOURCES.fp32, MODEL_RESOURCES.int8 ]
+        : [ MODEL_RESOURCES.int8, MODEL_RESOURCES.fp32 ];
+    return findResource(preferred) ?? requireResource(fallback);
+}
+
+/**
+ * The file of the precision the recording used (`engine.precision`, int8 for recordings made before
+ * the app recorded it), else the other one.
+ */
 function modelFile(modelDir, part) {
     const int8 = path.join(modelDir, `${part}.int8.onnx`);
-    return fs.existsSync(int8) ? int8 : path.join(modelDir, `${part}.onnx`);
+    const fp32 = path.join(modelDir, `${part}.onnx`);
+    const [ preferred, fallback ] = engine.precision === "fp32" ? [ fp32, int8 ] : [ int8, fp32 ];
+    return fs.existsSync(preferred) ? preferred : fallback;
 }
 
 function applySetting(target, assignment) {

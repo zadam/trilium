@@ -24,6 +24,7 @@ import { ContentEmbedOpts } from "../widgets/dialogs/content_embed.jsx";
 import type { ResolveOptions } from "../widgets/dialogs/delete_notes.js";
 import { IconPickerOpts } from "../widgets/dialogs/icon_picker.jsx";
 import type { InfoProps } from "../widgets/dialogs/info.jsx";
+import type { ResourceDownloadDialogOptions } from "../widgets/dialogs/resource_download.jsx";
 import type { LightboxOptions } from "../widgets/dialogs/lightbox.jsx";
 import type { MarkdownImportOpts } from "../widgets/dialogs/markdown_import.jsx";
 import { ChooseNoteTypeCallback } from "../widgets/dialogs/note_type_chooser.jsx";
@@ -169,6 +170,7 @@ export type CommandMappings = {
     showLightbox: LightboxOptions;
     showToolCallDetails: { toolCall: ToolCall };
     showConfirmDialog: ConfirmWithMessageOptions;
+    showResourceDownloadDialog: ResourceDownloadDialogOptions;
     showRecentChanges: CommandData & { ancestorNoteId: string };
     showDeletedNotes: CommandData & { ancestorNoteId?: string };
     showImportDialog: CommandData & { noteId: string };
