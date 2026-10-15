@@ -117,7 +117,8 @@ describe("ResourceManager", () => {
             size: MODEL.length + TOKENS.length,
             downloadedSize: MODEL.length + TOKENS.length,
             sources: [ "127.0.0.1" ],
-            installed: true
+            installed: true,
+            directory
         } ]);
         expect(download).toBeNull();
         expect(manager.startDownload([ "test.model" ]).status).toBe("succeeded");
@@ -285,6 +286,18 @@ describe("ResourceManager", () => {
         manager.startDownload([ "test.model" ]);
         expect((await waitForEnd()).status).toBe("succeeded");
         expect(ranges[0]).toBeUndefined();
+    });
+
+    it("lists every registered resource, with the directory of the installed ones", async () => {
+        manager.register(defineModel(), defineModel({ id: "test.other" }));
+        manager.startDownload([ "test.model" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+
+        const { resources } = await manager.getStatus();
+        expect(resources.map(({ id, directory }) => ({ id, directory }))).toEqual([
+            { id: "test.model", directory: manager.getPath("test.model") },
+            { id: "test.other", directory: null }
+        ]);
     });
 
     it("prefers a local copy, and refuses invalid or unknown resources", () => {

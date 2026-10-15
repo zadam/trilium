@@ -36,7 +36,8 @@ const STATUS: ResourcesStatusResponse = {
         size: 700,
         downloadedSize: 200,
         sources: [ "huggingface.co", "github.com" ],
-        installed: false
+        installed: false,
+        directory: null
     } ],
     freeBytes: 10_000,
     download: null

@@ -20,6 +20,8 @@ export interface ResourceInfo {
     /** The host names its files are downloaded from. */
     sources: string[];
     installed: boolean;
+    /** The directory holding its files while it is installed, else `null`. */
+    directory: string | null;
 }
 
 /** How far a download has got with one of the resources it fetches. */

@@ -4,9 +4,12 @@ import type { Request } from "express";
 
 import resources from "../../services/resources.js";
 
-/** `GET /api/resources?ids=a,b`: whether each resource is installed, and the download that runs. */
+/**
+ * `GET /api/resources?ids=a,b`: whether each resource is installed, and the download that runs.
+ * Without `ids`, reports every registered resource.
+ */
 function getStatus(req: Request): Promise<ResourcesStatusResponse> {
-    return resources.getStatus(parseIds(req.query.ids));
+    return resources.getStatus(req.query.ids === undefined ? undefined : parseIds(req.query.ids));
 }
 
 /** `POST /api/resources/download` with `{ ids }`: starts downloading the resources not installed. */

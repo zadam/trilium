@@ -97,12 +97,15 @@ export class ResourceManager {
         return isInstalled ? directory : null;
     }
 
-    async getStatus(ids: string[]): Promise<ResourcesStatusResponse> {
-        const definitions = ids.map((id) => this.getDefinition(id));
+    /** Reports the resources `ids`, or every registered one when `ids` is left out. */
+    async getStatus(ids?: string[]): Promise<ResourcesStatusResponse> {
+        const definitions = ids
+            ? ids.map((id) => this.getDefinition(id))
+            : [ ...this.definitions.values() ];
         return {
             resources: definitions.map((definition) => this.getInfo(definition)),
             freeBytes: await this.getFreeBytes(),
-            download: this.findDownload(ids)?.progress ?? null
+            download: this.findDownload(definitions.map(({ id }) => id))?.progress ?? null
         };
     }
 
@@ -229,6 +232,7 @@ export class ResourceManager {
                 ? file.size
                 : getPartialSize(destination, file));
         }, 0);
+        const installedDirectory = this.getPath(definition.id);
         return {
             id: definition.id,
             title: definition.title(),
@@ -238,7 +242,8 @@ export class ResourceManager {
             size: sumSizes(definition.files),
             downloadedSize,
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],
-            installed: this.getPath(definition.id) !== null
+            installed: installedDirectory !== null,
+            directory: installedDirectory
         };
     }
 

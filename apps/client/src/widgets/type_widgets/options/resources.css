@@ -1,0 +1,35 @@
+.resources-list {
+    .resources-item {
+        gap: 12px;
+    }
+
+    .resources-icon {
+        align-self: flex-start;
+        font-size: 1.6em;
+        color: var(--muted-text-color);
+    }
+
+    .resources-directory {
+        word-break: break-all;
+    }
+
+    .resources-status {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        align-items: flex-end;
+        text-align: end;
+    }
+
+    .resources-size {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .resources-total {
+        .tn-card-option-title,
+        .resources-size {
+            font-weight: 600;
+        }
+    }
+}
