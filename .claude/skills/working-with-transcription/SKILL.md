@@ -36,12 +36,12 @@ The main process opens the capture window, starts the transcription process and 
 |---|---|
 | `apps/desktop/src/services/transcription/capture.ts` | Main process: `CaptureWindow`, the hidden capture window and its page; microphone and loopback system audio; `CAPTURE_PROCESSOR`, the worklet that cuts each source into chunks (`capture-test.mjs` reads it from this file) |
 | `…/index.ts` | Main process: IPC handlers, the state broadcast, `getRecordingDirectory()`; registers the model resource, starts a recording's process and capture window and connects them |
-| `…/model.ts` | `TRANSCRIPTION_MODEL`, the model as a downloadable resource (URLs pinned to a revision, sizes, SHA-256), and `LOCAL_MODEL_DIR` |
+| `…/model.ts` | Main process: the three models as downloadable resources (`RECOGNIZER_MODEL`, `VAD_MODEL`, `SPEAKER_MODEL`: URLs pinned to a revision, sizes, SHA-256), `LOCAL_MODEL_DIR`, and `getModelPaths()`, which resolves the `ModelPaths` a recording starts with |
 | `…/worker_client.ts` | Main process: `TranscriptionWorker`, which forks the transcription process, relays its events and stops or kills it |
 | `…/attachment_sink.ts` | Main process: the `transcript` attachment, rewritten after every utterance |
 | `…/protocol.ts` | Both: the messages between the processes, `SAMPLE_RATE`, `Logger` |
 | `…/transcription_worker.ts` | The transcription process's entry (bundled as `transcription_worker.cjs`): `PortCapture`, the session, the dev sinks and taps |
-| `…/engine.ts` | Transcription process: `loadSherpaEngine(modelDir)`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
+| `…/engine.ts` | Transcription process: `loadSherpaEngine(models)`: recognizer and VAD settings (`RECOGNIZER_SETTINGS`, `DECODING_SETTINGS`, `VAD_SETTINGS`), reported as `settings` |
 | `…/session.ts` | Transcription process: `RecordingSession`: per-source segmentation, the decode queue, sinks, taps, pending sources |
 | `…/audio_recorder.ts` | Transcription process: development recordings, `WavRecorder` and `TranscriptFileSink` |
 
@@ -54,9 +54,9 @@ Nothing the transcription process imports may reach `@triliumnext/core` or `@tri
 
 ## The model
 
-Users download the model from the app: the launcher calls `requireResources([TRANSCRIPTION_MODEL_RESOURCE_ID])` before it creates the meeting note, which shows the download dialog when the model is missing. The resource manager (`apps/server/src/services/resources.ts`) puts the int8 model, Silero VAD and TitaNet (~711 MB) in `<data dir>/resources/transcription.model/<version>/`, each file checked against the SHA-256 in `model.ts`. Changing a file there means a new `version`, so the new files download beside the old ones.
+Users download the models from the app: the launcher calls `requireResources(Object.values(TRANSCRIPTION_RESOURCES))` before it creates the meeting note, which shows the download dialog for those missing. They are three resources of the resource manager (`apps/server/src/services/resources.ts`), each in `<data dir>/resources/<id>/<version>/` and checked against the SHA-256 in `model.ts`: `transcription.parakeet` (int8, 670 MB), `transcription.silero-vad` (0.6 MB) and `transcription.titanet` (40 MB). Changing a file of one means a new `version` for it alone, so only that one downloads again. A recording needs Parakeet and Silero; without TitaNet it labels no speakers.
 
-A directory installed by hand, `<data dir>/transcription-model` (`LOCAL_MODEL_DIR`), takes precedence over the download; for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`, which the scripts below read. Parakeet comes in two precisions, and `loadSherpaEngine()` takes the full-precision one when `encoder.onnx` is present, else the int8 one; it records which as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
+A directory installed by hand, `<data dir>/transcription-model` (`LOCAL_MODEL_DIR`), takes precedence over the downloads, each model for itself (Silero when `silero_vad.onnx` is there, TitaNet when `speaker/nemo_en_titanet_small.onnx` is); for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`, which the scripts below read. Parakeet comes in two precisions, and `loadSherpaEngine()` takes the full-precision one when `encoder.onnx` is present, else the int8 one; it records which as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
 
 - **Full precision** (recommended): `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face, not in the sherpa releases — `encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt` (2.4 GB). Loads in ~2 s to ~2.3 GB RSS.
 - **int8**: the `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` archive from the `asr-models` release of `k2-fsa/sherpa-onnx` — `encoder.int8.onnx`, `decoder.int8.onnx`, `joiner.int8.onnx`, `tokens.txt` (641 MB).

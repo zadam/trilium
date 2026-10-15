@@ -69,8 +69,10 @@ function capturePort() {
     return Object.assign(new EventEmitter(), { start: vi.fn(), close: vi.fn() });
 }
 
+const MODELS = { recognizer: "/models", vad: "/models/silero_vad.onnx", speaker: null };
+
 const START: WorkerRequest = {
-    type: "start", noteId: "meeting", modelDirectory: "/models", recordingDirectory: null
+    type: "start", noteId: "meeting", models: MODELS, recordingDirectory: null
 };
 
 beforeEach(() => {
@@ -91,7 +93,7 @@ describe("transcription process", () => {
         parent.send(START);
         const ready = await parent.next("ready");
         expect(ready).toMatchObject({ type: "ready", settings: engine.settings });
-        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith("/models");
+        expect(h.loadEngine).toHaveBeenCalledExactlyOnceWith(MODELS);
         expect(h.fileSinks).toEqual([]);
 
         const port = capturePort();

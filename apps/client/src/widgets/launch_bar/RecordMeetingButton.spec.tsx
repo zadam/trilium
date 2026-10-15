@@ -100,7 +100,8 @@ describe("toggleRecording", () => {
 
     it("asks for the model first, and creates no note when it is not downloaded", async () => {
         await toggleRecording("idle");
-        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith([ "transcription.model" ]);
+        expect(mocks.requireResources).toHaveBeenCalledExactlyOnceWith(
+            [ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
         expect(transcription.start).toHaveBeenCalledOnce();
 
         mocks.requireResources.mockResolvedValueOnce(false);

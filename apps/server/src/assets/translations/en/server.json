@@ -571,9 +571,13 @@
     "save-failed": "The transcript could not be saved: {{- message}} The transcription keeps it and tries again with the next sentence.",
     "capture-lost": "The transcription stopped because the audio could no longer be captured. What was transcribed until then is kept.",
     "attachment-title": "Transcript",
-    "model-title": "Speech recognition model",
-    "model-description": "Transcribes meetings on this device: Parakeet TDT 0.6B v3 for speech recognition, Silero VAD to find speech and TitaNet to tell speakers apart. Nothing you record leaves your computer.",
-    "model-not-downloaded": "The speech recognition model is not downloaded yet. Start a recording from the launcher to download it."
+    "model-not-downloaded": "The speech recognition model is not downloaded yet. Start a recording from the launcher to download it.",
+    "recognizer-title": "Parakeet TDT 0.6B v3",
+    "recognizer-description": "NVIDIA's speech recognition model, which turns what is said into text in 25 European languages. It runs on this device: nothing you record leaves your computer.",
+    "vad-title": "Silero VAD",
+    "vad-description": "Finds the stretches of speech in the audio, so that only those are transcribed.",
+    "speaker-title": "TitaNet small",
+    "speaker-description": "Tells apart the other people in the meeting, so that the transcript shows who said what."
   },
   "resources": {
     "unknown": "There is no resource named {{id}}.",

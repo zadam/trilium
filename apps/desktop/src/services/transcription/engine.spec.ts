@@ -91,6 +91,11 @@ vi.mock("fs", () => ({
 }));
 
 const MODEL_DIR = "/models/parakeet";
+const MODELS = {
+    recognizer: MODEL_DIR,
+    vad: "/models/silero/silero_vad.onnx",
+    speaker: "/models/titanet/nemo_en_titanet_small.onnx"
+};
 
 beforeEach(() => {
     h.installed = [];
@@ -101,8 +106,8 @@ beforeEach(() => {
 });
 
 describe("loadSherpaEngine", () => {
-    it("loads Parakeet and Silero from the model directory and reports their settings", async () => {
-        const engine = await loadSherpaEngine(MODEL_DIR);
+    it("loads Parakeet and Silero from their paths and reports their settings", async () => {
+        const engine = await loadSherpaEngine(MODELS);
 
         expect(h.recognizerConfig).toMatchObject({
             featConfig: { sampleRate: 16000, featureDim: 80 },
@@ -134,7 +139,7 @@ describe("loadSherpaEngine", () => {
 
     it("prefers the full-precision model, decoding it without a blank penalty", async () => {
         h.installed = [ "encoder.onnx" ];
-        const engine = await loadSherpaEngine(MODEL_DIR);
+        const engine = await loadSherpaEngine(MODELS);
 
         expect(h.recognizerConfig).toMatchObject({
             modelConfig: {
@@ -152,11 +157,11 @@ describe("loadSherpaEngine", () => {
     });
 
     it("segments a source in whole 512-sample windows, handing out what the VAD completes", async () => {
-        const engine = await loadSherpaEngine(MODEL_DIR);
+        const engine = await loadSherpaEngine(MODELS);
         const segmenter = engine.createSegmenter();
         const vad = vads[0];
         expect(h.vadConfig).toMatchObject({
-            sileroVad: { model: path.join(MODEL_DIR, "silero_vad.onnx"), threshold: 0.5 },
+            sileroVad: { model: MODELS.vad, threshold: 0.5 },
             sampleRate: 16000
         });
 
@@ -176,9 +181,8 @@ describe("loadSherpaEngine", () => {
 
     it("tells speakers apart with the speaker model, when it is installed", async () => {
         h.installed = [ "nemo_en_titanet_small.onnx" ];
-        const engine = await loadSherpaEngine(MODEL_DIR);
-        expect(h.extractorConfig?.model)
-            .toBe(path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx"));
+        const engine = await loadSherpaEngine(MODELS);
+        expect(h.extractorConfig?.model).toBe(MODELS.speaker);
         expect(engine.settings.speakers).toMatchObject({
             model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5
         });
@@ -190,5 +194,9 @@ describe("loadSherpaEngine", () => {
 
         h.isEmbeddingReady = false;
         expect(tracker?.identify(new Float32Array(100))).toBeNull();
+
+        const withoutSpeakers = await loadSherpaEngine({ ...MODELS, speaker: null });
+        expect(withoutSpeakers.createSpeakerTracker).toBeUndefined();
+        expect(withoutSpeakers.settings.speakers).toBeNull();
     });
 });

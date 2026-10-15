@@ -1,4 +1,5 @@
 import type { TranscriptionState } from "@triliumnext/commons";
+import path from "path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CaptureWindowOptions } from "./capture";
@@ -14,7 +15,7 @@ const h = vi.hoisted(() => ({
     isProtectedSessionAvailable: false,
     coreListeners: new Map<string, () => void>(),
     isDev: false,
-    isModelInstalled: true,
+    installedResources: [] as string[],
     registerResource: vi.fn(),
     log: { info: vi.fn(), error: vi.fn() },
     listeners: null as WorkerListeners | null,
@@ -72,7 +73,7 @@ vi.mock("@triliumnext/server/src/services/data_dir.js", () => ({
 vi.mock("@triliumnext/server/src/services/resources.js", () => ({
     default: {
         register: h.registerResource,
-        getPath: (id: string) => h.isModelInstalled ? `/data/resources/${id}` : null
+        getPath: (id: string) => h.installedResources.includes(id) ? `/data/resources/${id}` : null
     }
 }));
 vi.mock("./capture", () => ({
@@ -128,7 +129,9 @@ beforeEach(() => {
     h.isProtectedSessionAvailable = false;
     h.broadcast.length = 0;
     h.isDev = false;
-    h.isModelInstalled = true;
+    h.installedResources = [
+        "transcription.parakeet", "transcription.silero-vad", "transcription.titanet"
+    ];
     h.listeners = null;
     h.worker.start.mockResolvedValue({ type: "ready", startedAt: STARTED_AT, settings: {} });
     h.capture.start.mockResolvedValue([ "microphone", "system" ]);
@@ -179,7 +182,11 @@ describe("transcription IPC", () => {
 
         expect(h.worker.start).toHaveBeenCalledExactlyOnceWith({
             noteId: "meeting",
-            modelDirectory: "/data/resources/transcription.model",
+            models: {
+                recognizer: "/data/resources/transcription.parakeet",
+                vad: path.join("/data/resources/transcription.silero-vad", "silero_vad.onnx"),
+                speaker: path.join("/data/resources/transcription.titanet", "nemo_en_titanet_small.onnx")
+            },
             recordingDirectory: null
         });
         expect(h.sink.open).toHaveBeenCalledExactlyOnceWith(STARTED_AT);
@@ -322,11 +329,21 @@ describe("transcription IPC", () => {
         expect(await invoke("transcription-start", "deleted")).toBe("transcription.note-not-found");
         expect(await invoke("transcription-start", { noteId: "meeting" }))
             .toBe("transcription.note-not-found");
-        h.isModelInstalled = false;
+        h.installedResources = [ "transcription.parakeet", "transcription.titanet" ];
         expect(await invoke("transcription-start", "meeting"))
             .toBe("transcription.model-not-downloaded");
         expect(h.listeners).toBeNull();
         expect(h.broadcast).toEqual([]);
+    });
+
+    it("registers the three models, and records without the speaker model", async () => {
+        const invoke = await loadService();
+        expect(h.registerResource.mock.calls[0].map(({ id }: { id: string }) => id))
+            .toEqual([ "transcription.parakeet", "transcription.silero-vad", "transcription.titanet" ]);
+
+        h.installedResources = [ "transcription.parakeet", "transcription.silero-vad" ];
+        expect(await invoke("transcription-start", "meeting")).toBe("");
+        expect(h.worker.start.mock.calls[0][0].models.speaker).toBeNull();
     });
 
     it("explains why it could not start, ends the process and returns to idle", async () => {

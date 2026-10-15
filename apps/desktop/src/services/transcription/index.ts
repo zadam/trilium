@@ -8,7 +8,7 @@ import path from "path";
 
 import { AttachmentSink } from "./attachment_sink";
 import { CaptureWindow } from "./capture";
-import { TRANSCRIPTION_MODEL } from "./model";
+import { getModelPaths, TRANSCRIPTION_MODELS } from "./model";
 import { TranscriptionWorker } from "./worker_client";
 
 /** Where development builds keep the audio of each recording, one directory per recording. */
@@ -39,7 +39,7 @@ const unsavedSinks = new Set<AttachmentSink>();
 let quitting: "no" | "waiting" | "done" = "no";
 
 export function setupTranscriptionHandlers() {
-    resources.register(TRANSCRIPTION_MODEL);
+    resources.register(...TRANSCRIPTION_MODELS);
     ipcMain.handle("transcription-start", (_event, noteId: unknown) => startRecording(noteId));
     ipcMain.handle("transcription-stop", () => stopRecording());
     ipcMain.handle("transcription-get-state", () => getState());
@@ -62,8 +62,8 @@ export async function startRecording(noteId: unknown): Promise<string> {
     if (typeof noteId !== "string" || !becca.getNote(noteId)) {
         return t("transcription.note-not-found");
     }
-    const modelDirectory = resources.getPath(TRANSCRIPTION_MODEL.id);
-    if (!modelDirectory) {
+    const models = getModelPaths();
+    if (!models) {
         return t("transcription.model-not-downloaded");
     }
 
@@ -84,7 +84,7 @@ export async function startRecording(noteId: unknown): Promise<string> {
     try {
         const { startedAt } = await recording.worker.start({
             noteId,
-            modelDirectory,
+            models,
             recordingDirectory: coreUtils.isDev() ? getRecordingDirectory(Date.now(), noteId) : null
         });
         sink.open(startedAt);

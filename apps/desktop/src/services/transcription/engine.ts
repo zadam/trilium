@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { SpeakerEmbeddingExtractor, Vad } from "sherpa-onnx-node";
 
-import { SAMPLE_RATE } from "./protocol";
+import { type ModelPaths, SAMPLE_RATE } from "./protocol";
 import { SpeakerClusterer, type SpeakerClustererOptions } from "./speakers";
 
 /** Turns one utterance into text. */
@@ -44,9 +44,6 @@ export interface SpeechEngine {
     settings: Record<string, unknown>;
 }
 
-/** The speaker embedding model, optional: without it, utterances carry no speaker. */
-const SPEAKER_MODEL = path.join("speaker", "nemo_en_titanet_small.onnx");
-
 /** Silero VAD consumes 512-sample windows at 16 kHz. */
 const VAD_WINDOW_SIZE = 512;
 
@@ -85,14 +82,15 @@ const VAD_SETTINGS = {
 };
 
 /**
- * Loads the local engine from `modelDir`: Silero VAD for segmentation (`silero_vad.onnx`) and
- * Parakeet TDT 0.6B v3 for recognition, both through sherpa-onnx. Recognition uses the
- * full-precision model (`encoder.onnx` with `encoder.weights`) when the directory holds it, else
- * the int8 one (`encoder.int8.onnx`). Recognition runs on the libuv thread pool; the VAD and the
- * speaker embeddings run on the calling thread.
+ * Loads the local engine from `models`: Silero VAD for segmentation and Parakeet TDT 0.6B v3 for
+ * recognition, both through sherpa-onnx, and the speaker model when it is given and installed.
+ * Recognition uses the full-precision model (`encoder.onnx` with `encoder.weights`) when the
+ * recognizer directory holds it, else the int8 one (`encoder.int8.onnx`). Recognition runs on the
+ * libuv thread pool; the VAD and the speaker embeddings run on the calling thread.
  */
-export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> {
-    const speakerModel = path.join(modelDir, SPEAKER_MODEL);
+export async function loadSherpaEngine(models: ModelPaths): Promise<SpeechEngine> {
+    const modelDir = models.recognizer;
+    const speakerModel = models.speaker && fs.existsSync(models.speaker) ? models.speaker : null;
     const precision: ModelPrecision = fs.existsSync(path.join(modelDir, "encoder.onnx"))
         ? "fp32"
         : "int8";
@@ -114,7 +112,7 @@ export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> 
         ...decodingSettings
     });
 
-    const speakerExtractor = fs.existsSync(speakerModel)
+    const speakerExtractor = speakerModel
         ? new sherpa.SpeakerEmbeddingExtractor({
             model: speakerModel, numThreads: 1, provider: "cpu"
         })
@@ -130,7 +128,7 @@ export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> 
         },
         createSegmenter: () => new VadSegmenter(new sherpa.Vad({
             sileroVad: {
-                model: path.join(modelDir, "silero_vad.onnx"),
+                model: models.vad,
                 ...VAD_SETTINGS
             },
             sampleRate: SAMPLE_RATE,
@@ -145,7 +143,7 @@ export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> 
             precision,
             recognizer: { ...RECOGNIZER_SETTINGS, ...decodingSettings },
             vad: VAD_SETTINGS,
-            speakers: speakerExtractor
+            speakers: speakerModel
                 ? { model: path.basename(speakerModel), ...SPEAKER_SETTINGS }
                 : null
         }

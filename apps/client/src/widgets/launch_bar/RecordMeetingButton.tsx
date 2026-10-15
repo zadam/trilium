@@ -1,7 +1,7 @@
 import "./RecordMeetingButton.css";
 
 import {
-    dayjs, MEETING_RECORDING_LABEL, TRANSCRIPTION_MODEL_RESOURCE_ID, type TranscriptionState,
+    dayjs, MEETING_RECORDING_LABEL, TRANSCRIPTION_RESOURCES, type TranscriptionState,
     type TranscriptionStatus
 } from "@triliumnext/commons";
 import { useCallback, useEffect, useState } from "preact/hooks";
@@ -104,7 +104,7 @@ export async function toggleRecording(status: TranscriptionStatus) {
     if (status !== "idle") {
         return;
     }
-    if (!await requireResources([ TRANSCRIPTION_MODEL_RESOURCE_ID ])) {
+    if (!await requireResources(Object.values(TRANSCRIPTION_RESOURCES))) {
         return;
     }
 

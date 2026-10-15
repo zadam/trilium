@@ -53,7 +53,11 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-const REQUEST = { noteId: "meeting", modelDirectory: "/models", recordingDirectory: null };
+const REQUEST = {
+    noteId: "meeting",
+    models: { recognizer: "/models", vad: "/models/silero_vad.onnx", speaker: null },
+    recordingDirectory: null
+};
 
 describe("TranscriptionWorker", () => {
     it("starts the bundled worker, or the sources when there is no bundle", () => {

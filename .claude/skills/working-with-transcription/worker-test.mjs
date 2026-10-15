@@ -114,7 +114,12 @@ async function runInElectron(config) {
         log: { info: () => logLines++, error: (message) => console.log(`worker error: ${message}`) }
     });
     const startedAt = performance.now();
-    await worker.start({ noteId: "worker-test", modelDirectory: MODEL_DIR, recordingDirectory: null });
+    const models = {
+        recognizer: MODEL_DIR,
+        vad: path.join(MODEL_DIR, "silero_vad.onnx"),
+        speaker: path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx")
+    };
+    await worker.start({ noteId: "worker-test", models, recordingDirectory: null });
     const readyMs = Math.round(performance.now() - startedAt);
 
     const pagePath = path.join(os.tmpdir(), `trilium-worker-test-${process.pid}.html`);

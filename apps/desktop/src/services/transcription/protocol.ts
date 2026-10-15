@@ -9,12 +9,22 @@ export interface Logger {
     error(message: string): void;
 }
 
+/** Where the engine's models are. */
+export interface ModelPaths {
+    /** The directory holding Parakeet: `tokens.txt` and the encoder, decoder and joiner. */
+    recognizer: string;
+    /** Silero VAD's `.onnx` file. */
+    vad: string;
+    /** The speaker embedding model's `.onnx` file, or `null` to label no speakers. */
+    speaker: string | null;
+}
+
 /** What the main process sends the transcription process, in this order. */
 export type WorkerRequest =
     | {
         type: "start";
         noteId: string;
-        modelDirectory: string;
+        models: ModelPaths;
         /** Where development builds keep the audio and the transcript as produced, else `null`. */
         recordingDirectory: string | null;
     }
