@@ -48,12 +48,7 @@
 
         .button-column {
             width: 50px;
-            white-space: nowrap;
             text-align: end;
-
-            > * {
-                vertical-align: middle;
-            }
         }
     }
 
