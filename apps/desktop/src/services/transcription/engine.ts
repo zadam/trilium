@@ -56,11 +56,17 @@ const RECOGNIZER_SETTINGS = {
     provider: "cpu"
 };
 
-const DECODING_SETTINGS = {
-    decodingMethod: "greedy_search",
-    // Makes Parakeet less likely to emit nothing over a stretch of speech, which otherwise drops
-    // whole clauses from segments that contain pauses.
-    blankPenalty: 0.5
+/** `fp32` is the full-precision export (2.4 GB), `int8` the quantized one (641 MB). */
+type ModelPrecision = "fp32" | "int8";
+
+/**
+ * The int8 model emits nothing over some stretches of speech and drops whole clauses from segments
+ * with pauses; `blankPenalty` counters that. The full-precision model drops none, and the penalty
+ * only adds stray words to its transcript.
+ */
+const DECODING_SETTINGS: Record<ModelPrecision, Record<string, unknown>> = {
+    fp32: { decodingMethod: "greedy_search" },
+    int8: { decodingMethod: "greedy_search", blankPenalty: 0.5 }
 };
 
 const SPEAKER_SETTINGS: SpeakerClustererOptions = {
@@ -80,25 +86,32 @@ const VAD_SETTINGS = {
 
 /**
  * Loads the local engine from `modelDir`: Silero VAD for segmentation (`silero_vad.onnx`) and
- * Parakeet TDT 0.6B v3 int8 for recognition, both through sherpa-onnx. Recognition runs on the
- * libuv thread pool; the VAD and the speaker embeddings run on the calling thread.
+ * Parakeet TDT 0.6B v3 for recognition, both through sherpa-onnx. Recognition uses the
+ * full-precision model (`encoder.onnx` with `encoder.weights`) when the directory holds it, else
+ * the int8 one (`encoder.int8.onnx`). Recognition runs on the libuv thread pool; the VAD and the
+ * speaker embeddings run on the calling thread.
  */
 export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> {
     const speakerModel = path.join(modelDir, SPEAKER_MODEL);
+    const precision: ModelPrecision = fs.existsSync(path.join(modelDir, "encoder.onnx"))
+        ? "fp32"
+        : "int8";
+    const suffix = precision === "fp32" ? ".onnx" : ".int8.onnx";
+    const decodingSettings = DECODING_SETTINGS[precision];
     const mod = await import("sherpa-onnx-node");
     const sherpa = mod.default ?? mod;
     const recognizer = await sherpa.OfflineRecognizer.createAsync({
         featConfig: { sampleRate: SAMPLE_RATE, featureDim: 80 },
         modelConfig: {
             transducer: {
-                encoder: path.join(modelDir, "encoder.int8.onnx"),
-                decoder: path.join(modelDir, "decoder.int8.onnx"),
-                joiner: path.join(modelDir, "joiner.int8.onnx")
+                encoder: path.join(modelDir, `encoder${suffix}`),
+                decoder: path.join(modelDir, `decoder${suffix}`),
+                joiner: path.join(modelDir, `joiner${suffix}`)
             },
             tokens: path.join(modelDir, "tokens.txt"),
             ...RECOGNIZER_SETTINGS
         },
-        ...DECODING_SETTINGS
+        ...decodingSettings
     });
 
     const speakerExtractor = fs.existsSync(speakerModel)
@@ -129,7 +142,8 @@ export async function loadSherpaEngine(modelDir: string): Promise<SpeechEngine> 
             : undefined,
         settings: {
             modelDirectory: path.resolve(modelDir),
-            recognizer: { ...RECOGNIZER_SETTINGS, ...DECODING_SETTINGS },
+            precision,
+            recognizer: { ...RECOGNIZER_SETTINGS, ...decodingSettings },
             vad: VAD_SETTINGS,
             speakers: speakerExtractor
                 ? { model: path.basename(speakerModel), ...SPEAKER_SETTINGS }

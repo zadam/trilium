@@ -10,7 +10,8 @@
 //                          (the value is parsed as JSON when it parses, else kept as a string)
 //   --hotwords <a/b/c>     per-utterance hotwords, separated by "/" (needs modified_beam_search)
 //   --model <dir>          model directory (default: <data dir>/transcription-model); takes
-//                          <part>.int8.onnx, else <part>.onnx, for encoder, decoder and joiner
+//                          <part>.onnx for a full-precision recording, else <part>.int8.onnx,
+//                          falling back to the other, for encoder, decoder and joiner
 //   --source <name>        replay only microphone or system
 //   --pad <seconds>        extend each segment by this much audio on both sides before decoding
 //   --force                overwrite an existing transcript.<label>.json
@@ -139,10 +140,15 @@ function buildRecognizerConfig(settings, modelDir) {
     return config;
 }
 
-/** The int8 file the app ships, or the full-precision `<part>.onnx` of another export. */
+/**
+ * The file of the precision the recording used (`engine.precision`, int8 for recordings made before
+ * the app recorded it), else the other one.
+ */
 function modelFile(modelDir, part) {
     const int8 = path.join(modelDir, `${part}.int8.onnx`);
-    return fs.existsSync(int8) ? int8 : path.join(modelDir, `${part}.onnx`);
+    const fp32 = path.join(modelDir, `${part}.onnx`);
+    const [ preferred, fallback ] = engine.precision === "fp32" ? [ fp32, int8 ] : [ int8, fp32 ];
+    return fs.existsSync(preferred) ? preferred : fallback;
 }
 
 function applySetting(target, assignment) {

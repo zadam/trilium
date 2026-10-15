@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadSherpaEngine } from "./engine";
 
 const h = vi.hoisted(() => ({
-    hasSpeakerModel: false,
+    /** Base names of the optional model files the model directory holds. */
+    installed: [] as string[],
     recognizerConfig: null as Record<string, unknown> | null,
     vadConfig: null as Record<string, unknown> | null,
     extractorConfig: null as Record<string, unknown> | null,
@@ -86,13 +87,13 @@ vi.mock("sherpa-onnx-node", () => ({
     }
 }));
 vi.mock("fs", () => ({
-    default: { existsSync: (file: string) => h.hasSpeakerModel && file.endsWith(".onnx") }
+    default: { existsSync: (file: string) => h.installed.includes(path.basename(file)) }
 }));
 
 const MODEL_DIR = "/models/parakeet";
 
 beforeEach(() => {
-    h.hasSpeakerModel = false;
+    h.installed = [];
     h.isEmbeddingReady = true;
     h.decoded.length = 0;
     h.embeddings.length = 0;
@@ -120,6 +121,7 @@ describe("loadSherpaEngine", () => {
         expect(engine.createSpeakerTracker).toBeUndefined();
         expect(engine.settings).toMatchObject({
             modelDirectory: path.resolve(MODEL_DIR),
+            precision: "int8",
             recognizer: { modelType: "nemo_transducer", blankPenalty: 0.5 },
             vad: { minSilenceDuration: 0.75, maxSpeechDuration: 20, windowSize: 512 },
             speakers: null
@@ -128,6 +130,25 @@ describe("loadSherpaEngine", () => {
         const samples = new Float32Array(1600);
         expect(await engine.recognizer.transcribe(samples)).toBe("Hello there.");
         expect(h.decoded).toEqual([ samples ]);
+    });
+
+    it("prefers the full-precision model, decoding it without a blank penalty", async () => {
+        h.installed = [ "encoder.onnx" ];
+        const engine = await loadSherpaEngine(MODEL_DIR);
+
+        expect(h.recognizerConfig).toMatchObject({
+            modelConfig: {
+                transducer: {
+                    encoder: path.join(MODEL_DIR, "encoder.onnx"),
+                    decoder: path.join(MODEL_DIR, "decoder.onnx"),
+                    joiner: path.join(MODEL_DIR, "joiner.onnx")
+                }
+            },
+            decodingMethod: "greedy_search"
+        });
+        expect(h.recognizerConfig).not.toHaveProperty("blankPenalty");
+        expect(engine.settings).toMatchObject({ precision: "fp32" });
+        expect(engine.settings.recognizer).not.toHaveProperty("blankPenalty");
     });
 
     it("segments a source in whole 512-sample windows, handing out what the VAD completes", async () => {
@@ -154,7 +175,7 @@ describe("loadSherpaEngine", () => {
     });
 
     it("tells speakers apart with the speaker model, when it is installed", async () => {
-        h.hasSpeakerModel = true;
+        h.installed = [ "nemo_en_titanet_small.onnx" ];
         const engine = await loadSherpaEngine(MODEL_DIR);
         expect(h.extractorConfig?.model)
             .toBe(path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx"));

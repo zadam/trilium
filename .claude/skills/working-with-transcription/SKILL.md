@@ -18,7 +18,7 @@ capture window (hidden, offscreen)              transcription process (Electron 
                                    │
                   per source: SourcePipeline → VadSegmenter (Silero, 512-sample windows)
                                    │ utterances
-                  one queue: recognizer.transcribe() (Parakeet TDT 0.6B v3 int8, libuv pool)
+                  one queue: recognizer.transcribe() (Parakeet TDT 0.6B v3, fp32 or int8, libuv pool)
                                    │ speaker: EmbeddingSpeakerTracker (TitaNet, synchronous)
                   sinks: posted to the main process, dev: TranscriptFileSink
                                    │ parentPort: ready / pending / utterance / log / stopped
@@ -53,14 +53,22 @@ Nothing the transcription process imports may reach `@triliumnext/core` or `@tri
 
 ## The model
 
-Both files go in `<data dir>/transcription-model`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`.
+The files go in `<data dir>/transcription-model`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-model`. Parakeet comes in two precisions, and `loadSherpaEngine()` takes the full-precision one when `encoder.onnx` is present, else the int8 one; it records which as `precision` in the engine settings and applies `blankPenalty` to int8 only (see "Findings so far").
 
-- Parakeet: the `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` archive from the `asr-models` release of `k2-fsa/sherpa-onnx` — `encoder.int8.onnx`, `decoder.int8.onnx`, `joiner.int8.onnx`, `tokens.txt` (641 MB).
-- `silero_vad.onnx` from the same release.
+- **Full precision** (recommended): `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face, not in the sherpa releases — `encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt` (2.4 GB). Loads in ~2 s to ~2.3 GB RSS.
+- **int8**: the `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` archive from the `asr-models` release of `k2-fsa/sherpa-onnx` — `encoder.int8.onnx`, `decoder.int8.onnx`, `joiner.int8.onnx`, `tokens.txt` (641 MB).
+- `silero_vad.onnx` from the `asr-models` release.
 
-Without the directory, starting fails with `transcription.model-missing`.
+```bash
+cd apps/desktop/data && mkdir -p transcription-model/speaker && cd transcription-model
+H=https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3/resolve/main
+R=https://github.com/k2-fsa/sherpa-onnx/releases/download
+for f in tokens.txt decoder.onnx joiner.onnx encoder.onnx encoder.weights; do curl -fL -o $f "$H/$f"; done
+curl -fL -o silero_vad.onnx "$R/asr-models/silero_vad.onnx"
+curl -fL -o speaker/nemo_en_titanet_small.onnx "$R/speaker-recongition-models/nemo_en_titanet_small.onnx"
+```
 
-The **full-precision** export is not in the releases: it is `csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3` on Hugging Face (`encoder.onnx` + `encoder.weights`, `decoder.onnx`, `joiner.onnx`, `tokens.txt`; 2.4 GB). Keep it in its own directory (here `apps/desktop/data/transcription-model-fp32`, with `silero_vad.onnx` linked in) and pass `--model` to `replay.mjs`, which takes `<part>.int8.onnx` and falls back to `<part>.onnx`. `engine.ts` still names the int8 files.
+Without the directory, starting fails with `transcription.model-missing`. `replay.mjs` takes the precision `recording.json` names (int8 for recordings made before it was recorded) and falls back to the other.
 
 ## Development recordings
 
