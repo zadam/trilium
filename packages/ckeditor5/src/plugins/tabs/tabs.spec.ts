@@ -100,6 +100,36 @@ describe("Tabs", () => {
         );
     });
 
+    it("moves selected content into the first tab and selects its title", () => {
+        const secondTab = "<tab><tabTitle>Tab 2</tabTitle>" +
+            "<tabPanel><paragraph></paragraph></tabPanel></tab>";
+        setModelData(editor.model, "<paragraph>Keep [moved] text</paragraph>");
+
+        editor.execute("tabs");
+
+        expect(getModelData(editor.model)).toBe(
+            "<paragraph>Keep </paragraph>" +
+            "<tabs>" +
+                "<tab><tabTitle>[Tab 1]</tabTitle>" +
+                    "<tabPanel><paragraph>moved</paragraph></tabPanel></tab>" +
+                secondTab +
+            "</tabs>" +
+            "<paragraph> text</paragraph>"
+        );
+
+        setModelData(editor.model, "[<paragraph>One</paragraph><paragraph>Two</paragraph>]");
+
+        editor.execute("tabs");
+
+        expect(getModelData(editor.model)).toBe(
+            "<tabs>" +
+                "<tab><tabTitle>[Tab 1]</tabTitle>" +
+                    "<tabPanel><paragraph>One</paragraph><paragraph>Two</paragraph></tabPanel></tab>" +
+                secondTab +
+            "</tabs>"
+        );
+    });
+
     it("repairs tabs that lack a title or a panel and drops a block without tabs", () => {
         editor.setData(
             "<div class=\"trilium-tabs\">" +

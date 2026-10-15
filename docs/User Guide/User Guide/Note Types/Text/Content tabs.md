@@ -11,7 +11,7 @@ A tabs block consists of:
 *   In the formatting bar, go to _Insert_ → _Tabs_.
 *   Alternatively, type `/tabs` and press <kbd>Enter</kbd>, as described in <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>.
 
-A new block contains two tabs, named “Tab 1” and “Tab 2”. The title of the first tab is selected, so typing replaces it.
+A new block contains two tabs, named “Tab 1” and “Tab 2”. Any content that was selected prior to inserting the tabs will be moved into the first tab. The title of the first tab is selected, so typing replaces it.
 
 ## Editing tabs
 
