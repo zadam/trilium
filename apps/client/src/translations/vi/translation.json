@@ -35,7 +35,9 @@
     "link_title_arbitrary": "Tiêu đề liên kết có thể thay đổi tùy ý",
     "anchor": "Neo (tùy chọn)",
     "anchor_none": "Không (liên kết đến ghi chú)",
-    "button_edit_link": "Lưu liên kết"
+    "button_edit_link": "Lưu liên kết",
+    "fix_link": "Sửa link",
+    "button_fix_link": "Sửa link"
   },
   "bulk_actions": {
     "other": "Khác",
@@ -551,7 +553,11 @@
     "hoisted_note": "Ghi chú cần đặt làm gốc khi một mục khởi chạy mở mục tiêu của nó.",
     "share_logo": "Một ghi chú hình ảnh được sử dụng làm logo của trang chia sẻ. Nó phải nằm bên trong cây con được chia sẻ.",
     "share_open_graph_image_relation": "Một ghi chú hình ảnh được cung cấp dưới dạng <code>og:image</code> của trang chia sẻ. Thay vào đó, hãy thiết lập nhãn cùng tên để trỏ đến một địa chỉ.",
-    "share_html": "Một ghi chú HTML được chèn vào trang chia sẻ, tại vị trí mà <code>#shareHtmlLocation</code> trên ghi chú đó chỉ định. Nó phải nằm bên trong cây con được chia sẻ."
+    "share_html": "Một ghi chú HTML được chèn vào trang chia sẻ, tại vị trí mà <code>#shareHtmlLocation</code> trên ghi chú đó chỉ định. Nó phải nằm bên trong cây con được chia sẻ.",
+    "page_description": "Phần mô tả của trang web được đính kèm, xuất hiện trong thông tin chi tiết của thẻ \"Web clip\" trên ghi chú.",
+    "page_author": "Tác giả của trang đã lưu, hiển thị trong chi tiết huy hiệu \"Web clip\" của ghi chú.",
+    "published_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
+    "modified_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú."
   },
   "rename_note": {
     "rename_note": "Đổi tên ghi chú",
@@ -773,14 +779,18 @@
       "important": "Quan trọng",
       "caution": "Thận trọng",
       "warning": "Cảnh báo",
-      "todo": "Công việc: {{title}}"
+      "todo": "Công việc: {{title}}",
+      "tabs": "Các Tab"
     },
     "placeholders": {
       "math": "Phương trình",
       "collapsible_summary": "Tóm tắt",
       "collapsible_details": "Chi tiết",
-      "table_column": "Cột {{number}}"
-    }
+      "table_column": "Cột {{number}}",
+      "tab_title": "Thẻ {{number}}",
+      "tab_content": "Nội Dung"
+    },
+    "tabs": "Thêm các tab có tiêu đề (hiển thị từng khung nội dung)"
   },
   "note_type_chooser": {
     "change_path_prompt": "Thay đổi nơi tạo ghi chú mới:",
