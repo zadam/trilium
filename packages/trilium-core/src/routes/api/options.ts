@@ -141,6 +141,7 @@ const ALLOWED_OPTIONS = new Set<OptionNames>([
     "mathFieldEnabled",
     "textNoteContentHintsEnabled",
     "textNoteAutoLinkPreviewsEnabled",
+    "textNoteStickyTableHeadersEnabled",
     "textNoteHtmlSupportEnabled",
     "clipboardImageEmbedEnabled",
     "layoutOrientation",

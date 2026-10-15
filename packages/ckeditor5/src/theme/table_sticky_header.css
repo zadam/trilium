@@ -1,7 +1,7 @@
 /* Without a scroll timeline, an `animation` runs on time and ends at once. Longhands only: Lightning
    CSS expands the `animation` shorthand with a `0s` duration, which ends a scroll-driven one too. */
 @supports (view-timeline-name: --table-header) {
-    .ck-content figure.table:not(.layout-table) {
+    .ck-content figure.table:not(.layout-table, .sticky-table-headers-disabled *) {
         view-timeline: --table-header block;
         view-timeline-inset: auto;
 

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import LoadResults from "../../services/load_results";
+import options from "../../services/options";
 import RootContainer from "./root_container";
 
 /**
@@ -23,6 +25,7 @@ describe("RootContainer", () => {
     afterEach(() => {
         Object.defineProperty(window, "visualViewport", { value: undefined, configurable: true });
         window.glob = { ...window.glob, device: "desktop" };
+        document.body.classList.remove("sticky-table-headers-disabled");
     });
 
     /** Applies a new window/viewport geometry and lets the container react to it. */
@@ -66,5 +69,19 @@ describe("RootContainer", () => {
         resizeTo({ width: 800, height: 400 });
         resizeTo({ width: 800, height: 400, viewportHeight: 200 });
         expect($widget.hasClass("virtual-keyboard-opened")).toBe(true);
+    });
+
+    it("marks the body while sticky table headers are off, and follows a change", () => {
+        const isMarked = () => document.body.classList.contains("sticky-table-headers-disabled");
+        options.set("textNoteStickyTableHeadersEnabled", "true");
+        const rootContainer = new RootContainer(false);
+        rootContainer.render();
+        expect(isMarked()).toBe(false);
+
+        options.set("textNoteStickyTableHeadersEnabled", "false");
+        const loadResults = new LoadResults([]);
+        loadResults.addOption("textNoteStickyTableHeadersEnabled");
+        rootContainer.entitiesReloadedEvent({ loadResults });
+        expect(isMarked()).toBe(true);
     });
 });

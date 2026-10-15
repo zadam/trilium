@@ -293,6 +293,11 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     /** Whether a URL typed or pasted into a text note is automatically turned into a link preview. The "Link preview" dialog is unaffected and always inserts one on request. */
     textNoteAutoLinkPreviewsEnabled: boolean;
     /**
+     * Whether the header rows of a table stay at the top of the note while the rest of the table
+     * scrolls past.
+     */
+    textNoteStickyTableHeadersEnabled: boolean;
+    /**
      * Whether the editor preserves the HTML tags it has no editing feature of its own for — the
      * ones named by `allowedHtmlTags`, carried through CKEditor's General HTML Support.
      *

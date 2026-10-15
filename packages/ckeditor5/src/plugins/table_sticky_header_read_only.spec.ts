@@ -56,6 +56,24 @@ describe("applyStickyTableHeaders", () => {
         expect(bordersOf(thead)).toBe("none");
     });
 
+    it("leaves the header rows in place while `sticky-table-headers-disabled` is set", async () => {
+        document.body.classList.add("sticky-table-headers-disabled");
+        onTestFinished(() => document.body.classList.remove("sticky-table-headers-disabled"));
+        const { scroller, content } = renderContent(tableFigure(1, 20));
+        applyStickyTableHeaders(content);
+        await settle();
+
+        const { thead } = parts(content);
+        await scrollTo(scroller, offsetIn(scroller, thead) + 150);
+        expect(topIn(scroller, thead)).toBeCloseTo(-150, 0);
+        expect(getComputedStyle(thead).translate).toBe("none");
+
+        // Content already on screen follows the class.
+        document.body.classList.remove("sticky-table-headers-disabled");
+        await settle();
+        expect(topIn(scroller, thead)).toBeCloseTo(0, 0);
+    });
+
     it("measures the header rows again when the table grows while they stick", async () => {
         const { scroller, content } = renderContent(tableFigure(1, 20));
         applyStickyTableHeaders(content);

@@ -103,6 +103,8 @@ Since v0.107.0, the header rows of a table stay visible at the top of the note w
 
 To turn rows into header rows, use _Set as header_ in the [context menu](#context-menu), or _Header row_ in the <span class="tn-icon cke cke-table-row"></span> button of the formatting toolbar.
 
+To let header rows scroll away with the rest of the table, turn off <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Text Notes_ → _Features_ → _Use sticky header rows for tables_. The setting applies to the current device only, and shared pages keep their sticky header rows.
+
 ## Inserting new rows and new columns
 
 *   To insert a new column, click on a desired location, then press the <span class="tn-icon cke cke-table-column"></span> button from the formatting toolbar and select _Insert column left or right._
