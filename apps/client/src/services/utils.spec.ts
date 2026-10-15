@@ -127,6 +127,13 @@ describe("formatSize", () => {
         expect(formatSize(0, 2, total)).toBe("0.00 MiB");
     });
 
+    it("shows a size too small for the places of its unit as below the smallest step", () => {
+        const total = 2.5 * 1024 ** 3;
+        expect(formatSize(643_854, 2, total)).toBe("<0.01 GiB");
+        expect(formatSize(643_854, 0, total)).toBe("<1 GiB");
+        expect(formatSize(0, 2, total)).toBe("0.00 GiB");
+    });
+
     it("keeps the places it is given, trailing zeros and all", () => {
         // For a counter that is still climbing: dropping the zero shortens the text on every other
         // update, and the line shifts about while it is being read.

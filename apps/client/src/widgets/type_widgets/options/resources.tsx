@@ -62,24 +62,26 @@ function useResources() {
     return resources;
 }
 
+/** The resources and the space they use, every size in one unit so that the column adds up. */
 function ResourceRows({ resources }: { resources: ResourceInfo[] }) {
     const used = resources.reduce((total, { downloadedSize }) => total + downloadedSize, 0);
+    const unitOf = Math.max(used, ...resources.map(({ size }) => size));
     return (
         <>
             {resources.map((resource) => (
-                <ResourceRow key={resource.id} resource={resource} />
+                <ResourceRow key={resource.id} resource={resource} unitOf={unitOf} />
             ))}
             <CardSection className="tn-card-option resources-total">
                 <div className="tn-card-option-label">
                     <span className="tn-card-option-title">{t("resources_options.space_used")}</span>
                 </div>
-                <span className="tn-card-option-value resources-size">{formatSize(used)}</span>
+                <span className="tn-card-option-value resources-size">{formatSize(used, 2, unitOf)}</span>
             </CardSection>
         </>
     );
 }
 
-function ResourceRow({ resource }: { resource: ResourceInfo }) {
+function ResourceRow({ resource, unitOf }: { resource: ResourceInfo; unitOf: number }) {
     return (
         <CardSection className="tn-card-option resources-item">
             <Icon icon={resource.icon} className="resources-icon" />
@@ -98,7 +100,7 @@ function ResourceRow({ resource }: { resource: ResourceInfo }) {
                 )}
             </div>
             <div className="tn-card-option-value resources-status">
-                <span className="resources-size">{formatSize(resource.size)}</span>
+                <span className="resources-size">{formatSize(resource.size, 2, unitOf)}</span>
                 <small className="tn-card-option-description">{getStatusText(resource)}</small>
             </div>
         </CardSection>

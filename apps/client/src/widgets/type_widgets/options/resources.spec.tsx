@@ -50,7 +50,10 @@ let host: HTMLElement;
 
 beforeEach(() => {
     mocks.resources = [
-        resource({ id: "test.installed", installed: true, downloadedSize: 10 * MIB, directory: "/data/resources/test.installed-abc" }),
+        resource({
+            id: "test.installed", installed: true, size: 2048 * MIB, downloadedSize: 2048 * MIB,
+            directory: "/data/resources/test.installed-abc"
+        }),
         resource({ id: "test.partial", downloadedSize: 4 * MIB }),
         resource({ id: "test.missing" })
     ];
@@ -71,7 +74,7 @@ async function open() {
 }
 
 describe("ResourcesSettings", () => {
-    it("lists the resources installed or partly downloaded, with their status and folder", async () => {
+    it("lists the resources installed or partly downloaded, with their status, folder and size", async () => {
         await open();
 
         const rows = [ ...host.querySelectorAll(".resources-item") ];
@@ -83,7 +86,8 @@ describe("ResourcesSettings", () => {
         ]);
         expect(rows.map((row) => row.querySelector(".directory-stub")?.textContent ?? null))
             .toEqual([ "/data/resources/test.installed-abc", null ]);
-        expect(host.querySelector(".resources-total .resources-size")?.textContent).toBe("14 MiB");
+        expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
+            .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
     });
 
     it("shows an empty state when nothing is downloaded", async () => {

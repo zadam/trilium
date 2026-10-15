@@ -278,6 +278,10 @@ export function formatSize(size: number | null | undefined, decimals?: number, u
     const value = size / Math.pow(1024, unit);
     // Nothing below a byte to show, however many places were asked for.
     const places = decimals !== undefined && unit === 0 ? 0 : decimals;
+    const step = Math.pow(10, -(places ?? 2));
+    if (size > 0 && value < step / 2) {
+        return `<${step.toFixed(places ?? 2)} ${SIZE_UNITS[unit]}`;
+    }
 
     return `${places === undefined ? Math.round(value * 100) / 100 : value.toFixed(places)} ${SIZE_UNITS[unit]}`;
 }
