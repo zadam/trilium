@@ -634,6 +634,10 @@ describe("CK config - disabled plugins", () => {
             expect(locked.removePlugins).toEqual(expect.arrayContaining([
                 ...SHARE_EDIT_DISABLED_PLUGINS, ...SHARE_EDIT_UPLOAD_PLUGINS
             ]));
+            // Link previews fetch their metadata through the host's server.
+            expect(locked.removePlugins)
+                .toEqual(expect.arrayContaining([ "LinkEmbed", "LinkEmbedToolbar" ]));
+            expect(locked.link?.toolbar).not.toContain("linkEmbedDisplayDropdown");
 
             glob.shareEdit = { version: "blob1", attachments: true };
             const uploading = await buildConfig(baseOpts());
@@ -643,7 +647,9 @@ describe("CK config - disabled plugins", () => {
 
             shareState.editing = false;
             delete glob.shareEdit;
-            expect((await buildConfig(baseOpts())).removePlugins).not.toContain("CutToNotePlugin");
+            const plain = await buildConfig(baseOpts());
+            expect(plain.removePlugins).not.toContain("CutToNotePlugin");
+            expect(plain.link?.toolbar).toContain("linkEmbedDisplayDropdown");
         } finally {
             shareState.editing = false;
             delete glob.shareEdit;

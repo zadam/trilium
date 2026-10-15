@@ -172,9 +172,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         link: {
             defaultProtocol: "https://",
             allowedProtocols: ALLOWED_PROTOCOLS,
-            // linkEmbedDisplayDropdown is the same Display dropdown the link-preview widget toolbar
-            // shows: on a native link it reads "Plain link" and converts to a preview shape.
-            toolbar: ["linkPreview", "copyLinkUrl", "|", "editLink", "linkProperties", "unlink", "|", "linkEmbedDisplayDropdown"]
+            toolbar: buildLinkToolbar()
         },
         bookmark: {
             toolbar: [
@@ -459,12 +457,22 @@ function buildHtmlSupportConfig(): EditorConfig["htmlSupport"] {
  */
 const EDITOR_ONLY_DISALLOWED_TAGS = new Set(["div"]);
 
+/**
+ * The link balloon's items. `linkEmbedDisplayDropdown` is the Display dropdown of the link preview
+ * widget's toolbar: on a plain link it reads "Plain link" and converts the link to a preview, which
+ * fetches its metadata through the host's server, so a guest's editor goes without it.
+ */
+function buildLinkToolbar() {
+    const items = [ "linkPreview", "copyLinkUrl", "|", "editLink", "linkProperties", "unlink" ];
+    return isShareEditing() ? items : [ ...items, "|", "linkEmbedDisplayDropdown" ];
+}
+
 /** The plugins a shared page's guest cannot use, as they reach the host's notes or services. */
 export const SHARE_EDIT_DISABLED_PLUGINS = [
-    // `TablePasteRows` requires `CutToNotePlugin`.
+    // `TablePasteRows` requires `CutToNotePlugin`, and `LinkEmbedToolbar` requires `LinkEmbed`.
     "CutToNotePlugin", "TablePasteRows", "ContentEmbed", "ContentEmbedBoxSizeDropdown",
     "ContentEmbedToolbar", "InternalLinkPlugin", "MarkdownImportPlugin", "TriliumSnippets",
-    "TriliumAiAssistant", "BlockReference", "InlineIcon"
+    "TriliumAiAssistant", "BlockReference", "InlineIcon", "LinkEmbed", "LinkEmbedToolbar"
 ];
 
 /**

@@ -37,7 +37,7 @@ class ReferenceSchema extends Plugin {
             allowWhere: "$text",
             isInline: true,
             isObject: true,
-            allowAttributes: ["href", "uploadId", "uploadStatus", "uploadFileName"]
+            allowAttributes: ["href", "storedTitle", "uploadId", "uploadStatus", "uploadFileName"]
         });
 
         // Editing downcast: the mapper needs a real view element for every model element.
@@ -140,8 +140,8 @@ describe("FileUploadCommand", () => {
 
         expect(getModelData(editor.model)).toMatch(new RegExp(
             "^<paragraph>foo" +
-            "<reference href=\"\" uploadFileName=\"a.txt\" uploadId=\"\\w+\"></reference> " +
-            "<reference href=\"\" uploadFileName=\"b.png\" uploadId=\"\\w+\"></reference> " +
+            "<reference href=\"\" storedTitle=\"a.txt\" uploadFileName=\"a.txt\" uploadId=\"\\w+\"></reference> " +
+            "<reference href=\"\" storedTitle=\"b.png\" uploadFileName=\"b.png\" uploadId=\"\\w+\"></reference> " +
             "\\[\\]</paragraph>$"
         ));
     });

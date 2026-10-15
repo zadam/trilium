@@ -14,7 +14,9 @@ import { t } from "i18next";
 
 import { doubleCsrfProtection as csrfMiddleware, generateCsrfToken } from "../routes/csrf_protection.js";
 import { apiResultHandler, asyncRoute, createUploadMiddleware, route } from "../routes/route_api.js";
-import { getShareEditState, resolveShareEdit, shareEditAccess } from "./auth.js";
+import {
+    checkShareEditAccess, getShareEditState, resolveShareEdit, shareEditAccess
+} from "./auth.js";
 
 /** The largest image or file a guest uploads into a note. */
 export const MAX_GUEST_UPLOAD_BYTES = 20 * 1024 * 1024;
@@ -210,14 +212,24 @@ function guestUploadMiddleware(req: Request, res: Response, next: NextFunction) 
 
 /**
  * Stores the upload as an attachment of the note, as the app's upload route does, and answers with
- * the URL the editor puts into the note, which the share and the app both serve.
+ * what the editor puts into the note: an image's URL, which the share and the app both serve, or
+ * the app's link to a file, which the share renders as its own download.
  */
-async function uploadAttachment(req: Request<{ noteId: string }>, res: Response) {
-    const { note } = getShareEditState(res);
+async function uploadAttachment(req: Request<{ noteId: string }>) {
     const file = req.file;
     if (!file) {
         return [ 400, { message: t("share_edit.no-file") } ];
     }
+
+    // The access check ran before the file arrived, and what it allowed can have ended meanwhile.
+    const access = checkShareEditAccess(req, req.params.noteId);
+    if ("status" in access) {
+        return [ access.status, access.body ];
+    }
+    if (!access.policy.attachments) {
+        return [ 403, { message: t("share_edit.attachments-off") } ];
+    }
+    const { note } = access;
 
     if (file.mimetype.startsWith("image/")) {
         const attachment = imageService.saveImageToAttachment(note.noteId, file.buffer, file.originalname, true, true);
@@ -235,7 +247,10 @@ async function uploadAttachment(req: Request<{ noteId: string }>, res: Response)
         title: file.originalname,
         content: file.buffer
     });
-    return { uploaded: true, url: `api/attachments/${attachment.attachmentId}/download` };
+    return {
+        uploaded: true,
+        url: `#root/${note.noteId}?viewMode=attachments&attachmentId=${attachment.attachmentId}`
+    };
 }
 
 function issueCsrfToken(req: Request, res: Response) {

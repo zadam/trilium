@@ -1,3 +1,5 @@
+import http from "node:http";
+
 import { becca, cls, getSql } from "@triliumnext/core";
 import { initShare, shaca } from "@triliumnext/core/src/share/index.js";
 import { getShareProvider } from "@triliumnext/core/src/share/share_provider.js";
@@ -171,9 +173,16 @@ describe("share edit API", () => {
         const { csrfToken } = (await guest.post("/share/api/edit/login").send({ noteId: NOTE }).expect(200)).body;
         const upload = await guest.post(`/share/api/notes/${NOTE}/attachments/upload`)
             .set("x-csrf-token", csrfToken).attach("upload", Buffer.from("notes"), "notes.txt").expect(200);
-        const attachment = becca.getNoteOrThrow(NOTE).getAttachments().find((candidate) => candidate.title === "notes.txt");
-        expect(upload.body).toEqual({ uploaded: true, url: `api/attachments/${attachment?.attachmentId}/download` });
-        await guest.get(`/share/${upload.body.url}`).expect(200);
+        const attachmentId = becca.getNoteOrThrow(NOTE).getAttachments()
+            .find((candidate) => candidate.title === "notes.txt")?.attachmentId;
+        // The link the app's own upload answers; the share renders it as its download.
+        const url = `#root/${NOTE}?viewMode=attachments&attachmentId=${attachmentId}`;
+        expect(upload.body).toEqual({ uploaded: true, url });
+        const link = `<p><a class="reference-link" href="${url}">notes.txt</a></p>`;
+        await guest.put(DATA).set("x-csrf-token", csrfToken).send({ content: link }).expect(200);
+        const page = await guest.get(`/share/${NOTE}`).expect(200);
+        expect(page.text).toContain(`href="api/attachments/${attachmentId}/download"`);
+        await guest.get(`/share/api/attachments/${attachmentId}/download`).expect(200);
         await guest.post(`/share/api/notes/${NOTE}/attachments/upload`).set("x-csrf-token", csrfToken).expect(400);
 
         // A read-only note stays as it is, and closing the subtree ends the grant's use.
@@ -186,6 +195,58 @@ describe("share edit API", () => {
         await guest.get(SESSION).expect(200, { editable: false });
         await guest.put(DATA).set("x-csrf-token", csrfToken).send({ content: "<p>x</p>" }).expect(403);
         expect(becca.getNoteOrThrow(ROOT).getOwnedAttributes().map((attr) => attr.name)).not.toContain("shareEdit");
+    });
+
+    it("refuses an upload whose permission ended while its file was still arriving", async () => {
+        await setShareEdit({ enabled: true, open: true, attachments: true }).expect(200);
+        const server = host.app.listen(0);
+        try {
+            const address = server.address();
+            const port = typeof address === "object" && address ? address.port : 0;
+            const login = await fetch(`http://127.0.0.1:${port}/share/api/edit/login`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ noteId: NOTE })
+            });
+            const cookie = login.headers.getSetCookie()
+                .map((header) => header.split(";")[0]).join("; ");
+            const { csrfToken } = await login.json() as { csrfToken: string };
+
+            const boundary = "guest-upload";
+            const head = `--${boundary}\r\n`
+                + "Content-Disposition: form-data; name=\"upload\"; filename=\"late.txt\"\r\n"
+                + "Content-Type: text/plain\r\n\r\n";
+            const tail = `late\r\n--${boundary}--\r\n`;
+            const status = await new Promise<number>((resolve, reject) => {
+                const request = http.request({
+                    host: "127.0.0.1",
+                    port,
+                    method: "POST",
+                    path: `/share/api/notes/${NOTE}/attachments/upload`,
+                    headers: {
+                        cookie,
+                        "x-csrf-token": csrfToken,
+                        "content-type": `multipart/form-data; boundary=${boundary}`
+                    }
+                }, (response) => {
+                    response.resume();
+                    response.on("end", () => resolve(response.statusCode ?? 0));
+                });
+                request.on("error", reject);
+                request.write(head);
+                // The access check ran on the headers; attachments close before the file ends.
+                setTimeout(() => {
+                    setShareEdit({ enabled: true, open: true, attachments: false })
+                        .then(() => request.end(tail), reject);
+                }, 100);
+            });
+            expect(status).toBe(403);
+            expect(becca.getNoteOrThrow(NOTE).getAttachments().map((candidate) => candidate.title))
+                .not.toContain("late.txt");
+        } finally {
+            await new Promise((resolve) => server.close(resolve));
+            await setShareEdit({ enabled: false }).expect(200);
+        }
     });
 
     it("overrides what a note inherits for its branch, and hands the branch back", async () => {

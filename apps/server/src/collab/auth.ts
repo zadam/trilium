@@ -60,26 +60,45 @@ export function resolveShareEdit(req: Request, noteId: unknown): ShareEditResolu
     return { note, shared, policy, unlocked };
 }
 
-/** Refuses the request unless the session may edit the note `:noteId` on its shared page. */
-export function shareEditAccess(req: Request, res: Response, next: NextFunction) {
-    const resolved = resolveShareEdit(req, req.params.noteId);
+/** The answer to a request that may not edit the note. */
+export interface ShareEditRefusal {
+    status: 401 | 403 | 404;
+    /** `locked` tells the page to ask for the password again rather than retry. */
+    body: { message: string; locked?: true };
+}
+
+/**
+ * Resolves whether the session may edit the note `noteId` on its shared page now: the state a
+ * handler writes with, or the refusal to answer.
+ */
+export function checkShareEditAccess(
+    req: Request, noteId: unknown
+): ShareEditState | ShareEditRefusal {
+    const resolved = resolveShareEdit(req, noteId);
     if ("status" in resolved) {
-        res.status(resolved.status).json({ message: resolved.message });
-        return;
+        return { status: resolved.status, body: { message: resolved.message } };
     }
 
     const { note, shared, policy, unlocked } = resolved;
     if (!policy) {
-        res.status(403).json({ message: t("share_edit.cannot-edit") });
-        return;
+        return { status: 403, body: { message: t("share_edit.cannot-edit") } };
     }
     if (!unlocked) {
-        // `locked` tells the page to ask for the password again rather than retry.
-        res.status(401).json({ message: t("share_edit.unlock-first"), locked: true });
+        return { status: 401, body: { message: t("share_edit.unlock-first"), locked: true } };
+    }
+
+    return { note, shared, policy };
+}
+
+/** Refuses the request unless the session may edit the note `:noteId` on its shared page. */
+export function shareEditAccess(req: Request, res: Response, next: NextFunction) {
+    const access = checkShareEditAccess(req, req.params.noteId);
+    if ("status" in access) {
+        res.status(access.status).json(access.body);
         return;
     }
 
-    res.locals.shareEdit = { note, shared, policy } satisfies ShareEditState;
+    res.locals.shareEdit = access;
     next();
 }
 
