@@ -213,6 +213,34 @@ describe("ResourceDownloadDialog", () => {
         expect(results).toEqual([ false ]);
     });
 
+    it("cancels a download whose start returns after the dialog closed", async () => {
+        let respond = (_value: ResourceDownloadProgress) => {};
+        mocks.post.mockReturnValueOnce(new Promise((resolve) => respond = resolve));
+        await open();
+        await click("resource_download.download");
+
+        await hidden();
+        await act(async () => respond(progress()));
+
+        expect(mocks.post).toHaveBeenLastCalledWith("resources/download/d1/cancel");
+        expect(results).toEqual([ false ]);
+    });
+
+    it("downloads nothing more once closed while it checks a finished download", async () => {
+        let respond = (_value: ResourcesStatusResponse) => {};
+        mocks.post.mockResolvedValue(progress());
+        mocks.get.mockReturnValueOnce(new Promise((resolve) => respond = resolve));
+        await open();
+        await click("resource_download.download");
+        await send(progress({ status: "succeeded" }));
+
+        await hidden();
+        await act(async () => respond(STATUS));
+
+        expect(mocks.post).toHaveBeenCalledOnce();
+        expect(results).toEqual([ false ]);
+    });
+
     async function open(status = STATUS, ids = [ "transcription.model" ]) {
         await act(async () => {
             await host.handleEvent("showResourceDownloadDialog", {

@@ -31,7 +31,8 @@ export interface ResourceDownloadDialogOptions {
  * Asks to download the resources a feature needs, then shows the download until it finishes.
  * Closing the dialog cancels a running download. A download the dialog joined can end without
  * every resource it asks for, so each success is checked against the server before the dialog
- * closes, and what is still missing is downloaded next.
+ * closes, and what is still missing is downloaded next. A response that returns after the dialog
+ * closed is dropped, and a download it started is canceled.
  */
 export default function ResourceDownloadDialog() {
     const [ opts, setOpts ] = useState<ResourceDownloadDialogOptions>();
@@ -40,8 +41,11 @@ export default function ResourceDownloadDialog() {
     const downloadRef = useRef(download);
     downloadRef.current = download;
     const installedRef = useRef(false);
+    /** Counts openings and closings, so a response can tell whether its dialog is still open. */
+    const sessionRef = useRef(0);
 
     useTriliumEvent("showResourceDownloadDialog", (newOpts) => {
+        sessionRef.current++;
         installedRef.current = false;
         setOpts(newOpts);
         setDownload(newOpts.status.download);
@@ -69,8 +73,12 @@ export default function ResourceDownloadDialog() {
         if (!succeededId || !opts) {
             return;
         }
+        const session = sessionRef.current;
         void server.get<ResourcesStatusResponse>(`resources?ids=${opts.ids.map(encodeURIComponent).join(",")}`)
             .then((status) => {
+                if (session !== sessionRef.current) {
+                    return;
+                }
                 if (status.resources.every(({ installed }) => installed)) {
                     installedRef.current = true;
                     setShown(false);
@@ -82,8 +90,15 @@ export default function ResourceDownloadDialog() {
     }, [ succeededId ]);
 
     async function startDownload(ids: string[]) {
+        const session = sessionRef.current;
         setDownload(null);
         const started = await server.post<ResourceDownloadProgress>("resources/download", { ids });
+        if (session !== sessionRef.current) {
+            if (started.status === "downloading") {
+                void server.post(`resources/download/${started.downloadId}/cancel`);
+            }
+            return;
+        }
         setDownload((current) => current?.downloadId === started.downloadId ? current : started);
     }
 
@@ -110,6 +125,7 @@ export default function ResourceDownloadDialog() {
             title={t("resource_download.title")}
             show={shown}
             onHidden={() => {
+                sessionRef.current++;
                 cancelDownload();
                 opts?.callback(installedRef.current);
                 setShown(false);
