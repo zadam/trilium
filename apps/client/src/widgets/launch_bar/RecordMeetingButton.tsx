@@ -12,6 +12,7 @@ import { t } from "../../services/i18n";
 import noteCreateService from "../../services/note_create";
 import options from "../../services/options";
 import toast from "../../services/toast";
+import { Badge } from "../react/Badge";
 import {
     LaunchBarActionButton,
     LauncherNoteProps,
@@ -36,11 +37,14 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
     }, [ error ]);
 
     return (
-        <LaunchBarActionButton
-            launcherNote={launcherNote}
-            onClick={handleClick}
-            {...getAppearance(status, icon, title)}
-        />
+        <div className="record-meeting-launcher">
+            <LaunchBarActionButton
+                launcherNote={launcherNote}
+                onClick={handleClick}
+                {...getAppearance(status, icon, title)}
+            />
+            <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
+        </div>
     );
 }
 

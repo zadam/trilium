@@ -149,6 +149,12 @@ describe("toggleRecording", () => {
 });
 
 describe("RecordMeetingButton", () => {
+    it("marks the launcher as beta", () => {
+        const container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        expect(container.querySelector(".record-meeting-launcher .record-meeting-beta-badge")?.textContent)
+            .toContain("common.beta");
+    });
+
     it("says once why a recording stopped by itself", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const report = (state: Partial<TranscriptionState>) => act(() => onStateChanged({

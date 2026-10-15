@@ -5,6 +5,7 @@ import { useEffect, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
 import { isElectron } from "../../../services/utils";
+import { Badge } from "../../react/Badge";
 import { Card, OptionCardSection } from "../../react/Card";
 import { DirectoryLocation } from "../../react/DirectoryLink";
 import FormSelect from "../../react/FormSelect";
@@ -25,7 +26,9 @@ export default function TranscriptionSettings() {
 
     return (
         <>
-            <OptionsPageHeader />
+            <OptionsPageHeader
+                badge={<Badge text={t("common.beta")} className="transcription-beta-badge" outline />}
+            />
             <RecognitionSettings />
             <TroubleshootingSettings />
         </>

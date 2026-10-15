@@ -1,3 +1,20 @@
 .launcher-button.record-meeting-active {
     color: var(--danger-color, #dc3545);
 }
+
+.record-meeting-launcher {
+    position: relative;
+
+    .record-meeting-beta-badge {
+        --color: var(--link-color, var(--main-text-color));
+        --badge-radius: 4px;
+        position: absolute;
+        inset-inline-end: var(--launcher-pane-button-margin, 0);
+        bottom: var(--launcher-pane-button-gap, 0);
+        height: auto;
+        padding-inline: 3px;
+        font-size: 0.55rem;
+        line-height: 1.4;
+        pointer-events: none;
+    }
+}

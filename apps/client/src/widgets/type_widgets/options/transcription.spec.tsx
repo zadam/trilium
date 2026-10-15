@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { type ComponentChildren, render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -31,7 +31,9 @@ vi.mock("../../react/hooks", async (importOriginal) => ({
 }));
 
 
-vi.mock("./components/OptionsPageHeader", () => ({ default: () => <div className="header-stub" /> }));
+vi.mock("./components/OptionsPageHeader", () => ({
+    default: ({ badge }: { badge?: ComponentChildren }) => <div className="header-stub">{badge}</div>
+}));
 
 import TranscriptionSettings from "./transcription";
 
@@ -119,6 +121,11 @@ describe("TranscriptionSettings", () => {
         await act(async () => {});
         expect(mocks.getRecordingsDirectory).toHaveBeenCalledOnce();
         expect(host.querySelector(".directory-location-path")?.textContent).toBe("/data/transcription-recordings");
+    });
+
+    it("marks the page as beta", () => {
+        open();
+        expect(host.querySelector(".header-stub .ext-badge")?.textContent).toBe("common.beta");
     });
 
     it("shows the default model for a value it does not know", () => {

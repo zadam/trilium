@@ -325,7 +325,7 @@ function buildHiddenSubtreeDefinition(helpSubtree: HiddenSubtreeItem[]): HiddenS
                     { id: "_optionsMedia", title: t("hidden-subtree.images-title"), type: "contentWidget", icon: "bx-image" },
                     { id: "_optionsContentManager", title: t("hidden-subtree.content-manager-title"), type: "contentWidget", icon: "bx-package" },
                     { id: "_optionsSpellcheck", title: t("hidden-subtree.spellcheck-title"), type: "contentWidget", icon: "bx-check-double", attributes: [{ type: "label", name: "electronOnly" }] },
-                    { id: "_optionsTranscription", title: t("hidden-subtree.transcription-title"), type: "contentWidget", icon: "bx-microphone", attributes: [{ type: "label", name: "electronOnly" }] },
+                    { id: "_optionsTranscription", title: t("hidden-subtree.transcription-title"), type: "contentWidget", icon: "bx-microphone", attributes: [{ type: "label", name: "electronOnly" }, { type: "label", name: "beta" }] },
                     
                     // Integrations
                     { id: "_optionsAi", title: "AI Chat", type: "contentWidget", enforceDeleted: true },

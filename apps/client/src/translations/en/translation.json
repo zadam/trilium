@@ -4230,7 +4230,8 @@
     "fullscreen": "Fullscreen",
     "exit_fullscreen": "Exit fullscreen",
     "open_in_new_tab": "Open in new tab",
-    "more_actions": "More actions"
+    "more_actions": "More actions",
+    "beta": "Beta"
   },
   "spreadsheet": {
     "read-only": "This note is read-only.",

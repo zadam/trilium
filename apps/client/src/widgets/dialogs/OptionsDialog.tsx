@@ -284,6 +284,7 @@ function MobileSettingsList({ onSelect }: { onSelect: (noteId: string) => void }
                     icon={page.getIcon()}
                     value={page.noteId}
                     active={page.noteId === activeNoteId}
+                    badges={page.hasLabel("beta") ? [ { text: t("common.beta") } ] : undefined}
                 >
                     {page.title}
                 </FormListItem>

@@ -1,3 +1,7 @@
 .transcription-keep-recordings .switch-widget {
     --switch-on-track-background: var(--dropdown-item-icon-destructive-color);
 }
+
+.transcription-beta-badge {
+    --color: var(--link-color, var(--main-text-color));
+}
