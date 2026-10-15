@@ -330,7 +330,8 @@
     "inbox-title": "Inbox",
     "tab-switcher-title": "Tab Switcher",
     "sidebar-chat-title": "AI Chat",
-    "record-meeting-title": "Transcribe meeting"
+    "record-meeting-title": "Transcribe meeting",
+    "transcription-title": "Transcription"
   },
   "notes": {
     "new-note": "New note",

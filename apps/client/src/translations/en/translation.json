@@ -4623,5 +4623,8 @@
     "not_enough_space_title": "Not enough free space",
     "failed_title": "Download failed",
     "license": "{{license}} license"
+  },
+  "transcription_options": {
+    "placeholder": "Settings for transcribing meetings will appear here."
   }
 }
