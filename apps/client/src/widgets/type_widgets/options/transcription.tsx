@@ -72,7 +72,11 @@ function TroubleshootingSettings() {
     const [ keepRecordings, setKeepRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
     const [ directory, setDirectory ] = useState<string>();
 
+    // Asking for the folder creates it, so it is asked for only once recordings are to be kept.
     useEffect(() => {
+        if (!keepRecordings) {
+            return;
+        }
         let isCurrent = true;
         void window.electronApi?.transcription.getRecordingsDirectory().then((result) => {
             if (isCurrent) {
@@ -82,7 +86,7 @@ function TroubleshootingSettings() {
         return () => {
             isCurrent = false;
         };
-    }, []);
+    }, [ keepRecordings ]);
 
     return (
         <Card heading={t("transcription_options.troubleshooting_title")}>
@@ -95,7 +99,7 @@ function TroubleshootingSettings() {
                 <FormToggle currentValue={keepRecordings} onChange={setKeepRecordings} />
             </OptionCardSection>
 
-            {directory && (
+            {keepRecordings && directory && (
                 <DirectoryLocation label={t("transcription_options.saved_in")} directory={directory} />
             )}
         </Card>

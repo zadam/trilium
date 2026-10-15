@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
     stored: "" as string,
     saved: [] as string[],
     bools: {} as Record<string, boolean>,
+    getRecordingsDirectory: vi.fn(),
     savedBools: [] as [ string, boolean ][]
 }));
 
@@ -42,8 +43,9 @@ beforeEach(() => {
     mocks.saved = [];
     mocks.bools = { transcriptionSpeakersEnabled: true, transcriptionKeepRecordings: false };
     mocks.savedBools = [];
+    mocks.getRecordingsDirectory.mockReset().mockResolvedValue("/data/transcription-recordings");
     window.electronApi = {
-        transcription: { getRecordingsDirectory: async () => "/data/transcription-recordings" }
+        transcription: { getRecordingsDirectory: mocks.getRecordingsDirectory }
     } as unknown as typeof window.electronApi;
     host = document.body.appendChild(document.createElement("div"));
 });
@@ -98,14 +100,25 @@ describe("TranscriptionSettings", () => {
         expect(toggle.checked).toBe(false);
         expect(toggle.closest(".transcription-keep-recordings")).not.toBeNull();
 
-        await act(async () => {});
-        expect(host.querySelector(".directory-location-path")?.textContent).toBe("/data/transcription-recordings");
-
         act(() => {
             toggle.checked = true;
             toggle.dispatchEvent(new Event("input", { bubbles: true }));
         });
         expect(mocks.savedBools).toEqual([ [ "transcriptionKeepRecordings", true ] ]);
+    });
+
+    it("asks for the recordings folder, which creates it, only while recordings are kept", async () => {
+        open();
+        await act(async () => {});
+        expect(mocks.getRecordingsDirectory).not.toHaveBeenCalled();
+        expect(host.querySelector(".directory-location")).toBeNull();
+
+        act(() => render(null, host));
+        mocks.bools.transcriptionKeepRecordings = true;
+        open();
+        await act(async () => {});
+        expect(mocks.getRecordingsDirectory).toHaveBeenCalledOnce();
+        expect(host.querySelector(".directory-location-path")?.textContent).toBe("/data/transcription-recordings");
     });
 
     it("shows the default model for a value it does not know", () => {

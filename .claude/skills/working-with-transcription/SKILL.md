@@ -76,7 +76,7 @@ Without either directory, starting fails with `transcription.model-not-downloade
 
 ## Recordings for troubleshooting
 
-While the non-synced option `transcriptionKeepRecordings` is on (Options → Transcription → "Keep recordings for troubleshooting", off by default, its switch tinted red), every transcription is kept in `<data dir>/transcription-recordings/<created>_<noteId>/`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-recordings/`, so turn the switch on there once to get recordings for the scripts below. Development builds follow the switch like any other. The settings link to the folder through `electronApi.transcription.getRecordingsDirectory()`, which creates it.
+While the non-synced option `transcriptionKeepRecordings` is on (Options → Transcription → "Keep recordings for troubleshooting", off by default, its switch tinted red), every transcription is kept in `<data dir>/transcription-recordings/<created>_<noteId>/`; for `pnpm desktop:start` that is `apps/desktop/data/transcription-recordings/`, so turn the switch on there once to get recordings for the scripts below. Development builds follow the switch like any other. While the switch is on, the settings link to the folder through `electronApi.transcription.getRecordingsDirectory()`, which creates it; with the switch off, they never ask, so nothing creates the folder.
 
 | File | Holds |
 |---|---|
