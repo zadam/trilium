@@ -528,7 +528,7 @@
     "map_type": "Sơ đồ ghi chú nào được vẽ: <code>link</code> cho các quan hệ giữa các ghi chú, hoặc <code>tree</code> cho cấu trúc phân cấp.",
     "map_style": "Kiểu bản đồ địa lý nào được vẽ, được chọn từ các kiểu raster và vector được cung cấp trong các thuộc tính bộ sưu tập.",
     "map_dark_style": "Báo cho bản đồ địa lý biết rằng kiểu tùy chỉnh được cung cấp trong <code>map:style</code> là kiểu tối, để các tiêu đề đánh dấu được vẽ sáng màu trên đó. Các kiểu được cung cấp trong thuộc tính bộ sưu tập đã tự khai báo điều này và không cần nhãn như vậy.",
-    "map_scale": "Hiển thị thanh tỷ lệ trên bản đồ địa lý.",
+    "map_scale": "Hiển thị thanh tỷ lệ trên bản đồ địa lý hoặc thước đo tọa độ dọc theo các cạnh của bản đồ hình ảnh.",
     "map_hide_labels": "Ẩn tiêu đề ghi chú bên cạnh các điểm đánh dấu trên bản đồ địa lý.",
     "map_cluster": "Gom các điểm đánh dấu được vẽ gần nhau thành một bong bóng số duy nhất, bong bóng này sẽ mở ra khi được nhấp vào.",
     "presentation_theme": "Giao diện nào mà một bài thuyết trình được hiển thị.",
@@ -557,7 +557,14 @@
     "page_description": "Phần mô tả của trang web được đính kèm, xuất hiện trong thông tin chi tiết của thẻ \"Web clip\" trên ghi chú.",
     "page_author": "Tác giả của trang đã lưu, hiển thị trong chi tiết huy hiệu \"Web clip\" của ghi chú.",
     "published_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
-    "modified_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú."
+    "modified_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
+    "board_hide_add_column": "Đối với các bộ sưu tập bảng, ẩn nút <em>Thêm cột</em> sau cột cuối cùng. Bạn vẫn có thể thêm cột từ menu ngữ cảnh của bảng hoặc của một cột.",
+    "calendar_title_template": "Cách đặt tiêu đề cho sự kiện trên lịch, được điền cho mọi lần xuất hiện của sự kiện lặp lại. Đọc <code>${title}</code>, <code>${years}</code> (số năm kể từ ngày bắt đầu) và các ngày <code>${date}</code> và <code>${startDate}</code>, ví dụ <code>${title} (${years})</code> cho sinh nhật hàng năm.",
+    "map_position": "Vị trí của ghi chú trên bản đồ hình ảnh, dưới dạng <code>x,y</code> trong hệ tọa độ của bản đồ: các pixel của hình ảnh, trừ khi <code>map:imageBounds</code> chỉ định các giá trị khác.",
+    "map_shape": "Hình dạng mà ghi chú được vẽ trên bản đồ hình ảnh, cùng định dạng với <code>geoShape</code> nhưng có các điểm <code>x,y</code>, ví dụ <code>circle:400,300 50</code>.",
+    "map_image_bounds": "Tọa độ của góc trên bên trái và góc dưới bên phải của bản đồ hình ảnh, dưới dạng <code>x,y x,y</code>, ví dụ <code>-512,-512 512,512</code>. Vị trí trên bản đồ được đọc và ghi bằng các tọa độ này thay vì pixel của hình ảnh.",
+    "map_image": "Ghi chú hình ảnh để vẽ bản đồ địa lý lên thay vì bản đồ thế giới. Các điểm đánh dấu và hình dạng sau đó được đặt bằng <code>mapPosition</code> và <code>mapShape</code>.",
+    "meeting_recording": "Đánh dấu ghi chú được tạo bởi nút \"Transcribe meeting\" trong thanh khởi chạy, chứa bản ghi chú của cuộc họp."
   },
   "rename_note": {
     "rename_note": "Đổi tên ghi chú",
@@ -1090,7 +1097,9 @@
       "end_date": "Ngày kết thúc",
       "time": "Giờ",
       "start_time": "Giờ bắt đầu",
-      "end_time": "Giờ kết thúc"
+      "end_time": "Giờ kết thúc",
+      "add_time": "Thêm thời gian",
+      "remove_time": "Xóa thời gian"
     },
     "recurrence": {
       "repeats": "Lặp lại",
@@ -1114,7 +1123,9 @@
       "count": "Sau",
       "times": "Lần",
       "custom_rule": "Quy tắc",
-      "custom_hint": "Một quy tắc lặp lại iCalendar (RRULE) có thể biểu thị nhiều hơn các trường ở trên. Xóa nó sẽ dừng việc lặp lại."
+      "custom_hint": "Một quy tắc lặp lại iCalendar (RRULE) có thể biểu thị nhiều hơn các trường ở trên. Xóa nó sẽ dừng việc lặp lại.",
+      "count_years": "Hiển thị số năm trong tiêu đề",
+      "count_years_locked": "Sự kiện này đã có mẫu tiêu đề, được đặt trên ghi chú hoặc kế thừa. Thay đổi nó trong các thuộc tính của ghi chú."
     }
   },
   "close_pane_button": {
@@ -1248,7 +1259,9 @@
   },
   "relation_map_buttons": {
     "create_child_note_title": "Tạo ghi chú con và thêm vào sơ đồ",
-    "create_child_note_text": "Thêm ghi chú"
+    "create_child_note_text": "Thêm ghi chú",
+    "create_child_note_cancel_title": "Hủy thêm ghi chú",
+    "create_child_note_cancel_text": "Huỷ"
   },
   "image_navigation": {
     "previous": "Hình ảnh trước: {{- title}}",
@@ -1369,7 +1382,8 @@
     "fix-nodes": "Sửa các nút",
     "link-distance": "Khoảng cách liên kết",
     "too-many-notes_other": "Có {{count}} ghi chú ở đây. Hiển thị tất cả có thể làm chậm hệ thống.",
-    "show-anyway": "Hiển thị sơ đồ"
+    "show-anyway": "Hiển thị sơ đồ",
+    "fit-to-view": "Vừa với khung nhìn"
   },
   "note_picker": {
     "title": "Chọn một ghi chú",
@@ -1576,7 +1590,10 @@
     "editor_crashed_details_title": "Thông tin kỹ thuật",
     "auto-detect-language": "Tự động phát hiện",
     "nothing_selected_to_cut": "Hãy chọn một số văn bản trước để cắt nó thành một ghi chú con.",
-    "uploading_attachment": "Đang tải lên tệp đính kèm"
+    "uploading_attachment": "Đang tải lên tệp đính kèm",
+    "editor_error_title": "Trình soạn thảo văn bản đã gặp lỗi",
+    "editor_error_content": "Trình soạn thảo có thể không hiển thị chính xác các thay đổi mới nhất của bạn. Nạp lại trình soạn thảo để tiếp tục: các thay đổi của bạn sẽ được lưu trước.",
+    "editor_error_reload_button": "Nạp lại trình soạn thảo"
   },
   "empty": {
     "open_note_instruction": "Mở một ghi chú bằng cách nhập tiêu đề của ghi chú vào ô nhập liệu bên dưới hoặc chọn một ghi chú trong cây.",
@@ -1694,7 +1711,21 @@
     "start_dragging_relations": "Bắt đầu kéo các quan hệ từ đây và thả chúng lên một ghi chú khác.",
     "note_not_found": "Không tìm thấy ghi chú {{noteId}}!",
     "note_already_in_diagram": "Ghi chú \"{{title}}\" đã có trong sơ đồ.",
-    "default_new_note_title": "Ghi chú mới"
+    "default_new_note_title": "Ghi chú mới",
+    "add_note_toast_title": "Ghi chú mới",
+    "add_note_instruction": "Nhấp vào sơ đồ để đặt một ghi chú mới tại đó hoặc nhấn Escape để hủy.",
+    "close_note_pane": "Đóng",
+    "expand_note_pane": "Mở rộng ghi chú để lấp đầy sơ đồ",
+    "restore_note_pane": "Đặt lại ghi chú cạnh sơ đồ",
+    "note_color": "Màu ghi chú",
+    "remove_from_map": "Xóa khỏi map",
+    "fit_to_view": "Vừa với khung nhìn",
+    "hints": {
+      "title": "Sơ đồ quan hệ",
+      "paste_notes": "Dán các ghi chú đã sao chép hoặc cắt",
+      "cancel_adding_note": "Hủy thêm ghi chú",
+      "close_note_pane": "Đóng bảng ghi chú"
+    }
   },
   "render": {
     "setup_title": "Hiển thị HTML tùy chỉnh hoặc Preact JSX bên trong ghi chú này",
@@ -1705,7 +1736,9 @@
     "disabled_button_enable": "Bật ghi chú render",
     "error_title": "Chạy ghi chú script thất bại",
     "error_show_details": "Hiển thị chi tiết",
-    "error_note_label": "Ghi chú script:"
+    "error_note_label": "Ghi chú script:",
+    "disabled_read_only": "Ghi chú render này đến từ nguồn bên ngoài, vì vậy nó không được kích hoạt.",
+    "nothing_to_display": "Ghi chú này không có nội dung để hiển thị."
   },
   "web_view_setup": {
     "title": "Tạo một chế độ xem trực tiếp của trang web ngay trong Trilium",
@@ -1894,7 +1927,8 @@
     "layout-vertical-title": "Dọc",
     "layout-horizontal-title": "Ngang",
     "layout-vertical-description": "Thanh khởi chạy ở bên trái (mặc định)",
-    "layout-horizontal-description": "Thanh khởi chạy nằm dưới thanh tab, thanh tab bây giờ có chiều rộng đầy đủ."
+    "layout-horizontal-description": "Thanh khởi chạy nằm dưới thanh tab, thanh tab bây giờ có chiều rộng đầy đủ.",
+    "edited_notes_expanded": "Mở rộng \"Ghi chú đã chỉnh sửa trong ngày này\" trên các ghi chú ngày"
   },
   "ui-performance": {
     "title": "Hiệu năng",
@@ -2623,7 +2657,8 @@
     "coverImage": "Hình ảnh bìa",
     "viewConfig": "Xem cài đặt",
     "canvasLibraryItem": "Thư viện Canvas",
-    "importSource": "Nguồn nhập"
+    "importSource": "Nguồn nhập",
+    "transcript": "Bản ghi cuộc họp"
   },
   "bookmark_switch": {
     "bookmark": "Dấu trang"
@@ -2829,14 +2864,16 @@
     "cannot-copy": "Không thể sao chép liên kết hình ảnh vào bộ nhớ tạm.",
     "image-copied-to-clipboard": "Đã sao chép hình ảnh vào bộ nhớ tạm.",
     "cannot-copy-image": "Không thể sao chép hình ảnh vào bộ nhớ tạm.",
-    "cannot-download": "Không thể tải xuống hình ảnh."
+    "cannot-download": "Không thể tải xuống hình ảnh.",
+    "cannot-convert-to-drawing": "Không thể chuyển đổi hình ảnh sang canvas vẽ."
   },
   "clipboard": {
     "cut": "Đã cắt các ghi chú vào bộ nhớ tạm.",
     "copied": "Đã sao chép các ghi chú vào bộ nhớ tạm.",
     "copied_without_links": "Đã sao chép các ghi chú vào bộ nhớ tạm, nhưng không thể đặt liên kết ghi chú vào bộ nhớ tạm của hệ thống.",
     "copy_failed": "Không thể sao chép vào bộ nhớ tạm do vấn đề quyền hạn.",
-    "copy_success": "Đã sao chép vào bộ nhớ tạm."
+    "copy_success": "Đã sao chép vào bộ nhớ tạm.",
+    "paste_notes": "Dán ghi chú"
   },
   "entrypoints": {
     "note-revision-created": "Đã tạo phiên bản lịch sử ghi chú.",
@@ -2954,7 +2991,8 @@
     "convert_link_to_included_note": "Chuyển liên kết thành ghi chú được bao gồm",
     "convert_embed_to_link": "Chuyển thành liên kết",
     "show_title": "Hiển thị tiêu đề",
-    "show_caption": "Hiển thị chú thích"
+    "show_caption": "Hiển thị chú thích",
+    "convert_link_to_note_excerpt": "Chuyển đổi liên kết thành trích dẫn ghi chú"
   },
   "note_autocomplete": {
     "recent": {
@@ -3038,7 +3076,9 @@
     "locate-error": "Không tìm thấy vị trí của bạn. Nhấn lại để dừng tìm kiếm.",
     "locate-unavailable": "Vị trí của bạn không khả dụng",
     "location-denied": "Quyền truy cập vị trí bị từ chối. Cho phép trong trình duyệt hoặc cài đặt hệ thống của bạn để hiển thị vị trí trên map.",
-    "location-unavailable": "Không thể xác định vị trí của bạn ngay lúc này."
+    "location-unavailable": "Không thể xác định vị trí của bạn ngay lúc này.",
+    "image-unavailable": "Không thể tải hình ảnh của sơ đồ này. Hãy kiểm tra xem ghi chú mà quan hệ map:image trỏ đến có phải là hình ảnh hay không.",
+    "image-svg-unsupported": "Hình ảnh SVG không thể được sử dụng làm sơ đồ. Hãy chuyển đổi hình ảnh sang PNG, JPEG hoặc WebP."
   },
   "geo-map-context": {
     "delete-note": "Xóa ghi chú",
@@ -3425,7 +3465,9 @@
     "select-column-cards": "Chọn mọi thẻ trong cột",
     "reset-selection": "Đặt lại lựa chọn",
     "expand-column": "Mở rộng cột",
-    "select-all-cards": "Chọn tất cả thẻ"
+    "select-all-cards": "Chọn tất cả thẻ",
+    "show-add-column-button": "Hiển thị nút \"Thêm cột\"",
+    "show-add-column-button-description": "Vẫn có thể thêm cột từ menu ngữ cảnh của bảng hoặc của một cột."
   },
   "dashboard_view": {
     "refresh-widget": "Làm mới",
@@ -3444,7 +3486,21 @@
     "time_slots": "Các khung giờ",
     "slot_label_interval": "Khoảng thời gian của nhãn",
     "minutes_other": "{{count}} Phút",
-    "hours_other": "{{count}} Giờ"
+    "hours_other": "{{count}} Giờ",
+    "duration_minutes": "{{minutes}} Phút",
+    "duration_hours": "{{hours}} h",
+    "duration_hours_minutes": "{{hours}} Giờ {{minutes}} phút",
+    "properties": "Thuộc tính lịch",
+    "event_templates": "Mẫu sự kiện",
+    "event_templates_hint": "Chọn loại ghi chú và mẫu ghi chú bạn muốn sử dụng khi tạo sự kiện lịch mới.",
+    "new_template_name": "Mẫu sự kiện mới",
+    "event_template": "Chọn mẫu sự kiện",
+    "more_templates": "Thêm mẫu khác…",
+    "template": "Mẫu",
+    "general": "Chung",
+    "event_attributes": "Thuộc tính sự kiện",
+    "event_attributes_hint": "Chọn các thuộc tính hiển thị trên sự kiện và thứ tự của chúng. Các thuộc tính mới sẽ bị ẩn cho đến khi bạn bật chúng.",
+    "event_attributes_overridden": "Lịch này có nhãn calendar:displayedAttributes, do đó các sự kiện sẽ hiển thị các thuộc tính được liệt kê ở đó thay vì các thuộc tính được chọn ở đây."
   },
   "content_renderer": {
     "open_externally": "Mở bằng ứng dụng ngoài",
@@ -3514,7 +3570,11 @@
     "shared_preview": "Chia sẻ bản xem trước",
     "shared_preview_description": "Chỉ trình duyệt này mới có thể mở trang được chia sẻ và chỉ khi Trilium đang mở trong đó. Để xuất bản, hãy xuất cây con dưới dạng \"{{- format}}\" và lưu trữ các tệp trên bất kỳ máy chủ web nào, hoặc sử dụng một server Trilium.",
     "shared_export_only": "Chưa xuất bản",
-    "shared_export_only_description": "Ứng dụng di động không thể mở các trang được chia sẻ. Để xuất bản ghi chú này, hãy xuất cây con dưới dạng \"{{- format}}\" và lưu trữ các tệp trên bất kỳ máy chủ web nào, hoặc sử dụng một server Trilium."
+    "shared_export_only_description": "Ứng dụng di động không thể mở các trang được chia sẻ. Để xuất bản ghi chú này, hãy xuất cây con dưới dạng \"{{- format}}\" và lưu trữ các tệp trên bất kỳ máy chủ web nào, hoặc sử dụng một server Trilium.",
+    "clipped_note_details": "Ghi chú này được lấy từ một trang web. Nhấp để xem mô tả, tác giả và ngày tháng của trang.",
+    "clipped_note_author": "Tác giả",
+    "clipped_note_published": "Ngày xuất bản",
+    "clipped_note_modified": "Ngày cập nhật"
   },
   "status_bar": {
     "attachments_other": "{{count}} Tệp đính kèm",
@@ -4011,7 +4071,37 @@
       "flip-horizontally": "Lật ngang",
       "flip-vertically": "Lật dọc",
       "move-row-up": "Di chuyển hàng lên",
-      "move-row-down": "Di chuyển hàng xuống"
+      "move-row-down": "Di chuyển hàng xuống",
+      "convert-image-to-a-drawing-canvas": "Chuyển đổi hình ảnh thành khung vẽ",
+      "tabs": "Tab",
+      "tab-title": "Tiêu đề tab",
+      "tab-0": "Tab %0",
+      "tab-content": "Nội dung tab",
+      "add-tab": "Thêm tab",
+      "remove-tab": "Xóa tab",
+      "move-tab-left": "Di chuyển tab sang trái",
+      "move-tab-right": "Di chuyển tab sang phải",
+      "copy-link-to-tab": "Sao chép liên kết đến tab",
+      "tabs-toolbar": "Thanh công cụ tab",
+      "tab-alignment": "Căn chỉnh tab",
+      "align-tabs-at-top": "Căn chỉnh tab ở trên cùng",
+      "align-tabs-at-bottom": "Căn chỉnh tab ở dưới cùng",
+      "insert-titled-tabs-that-show-one-panel-at-a-time": "Chèn các tab có tiêu đề, mỗi tab hiển thị một bảng.",
+      "multicolumn-layout": "Bố cục nhiều cột",
+      "multicolumn-layout-toolbar": "Thanh công cụ bố cục nhiều cột",
+      "multiple-column-layout": "Bố cục nhiều cột",
+      "0-columns": "%0 Cột",
+      "column-layout": "Bố cục cột",
+      "0-columns-layout": "Bố cục %0 cột",
+      "arrange-content-in-0-equal-columns-side-by-side": "Sắp xếp nội dung thành %0 cột bằng nhau đặt cạnh nhau.",
+      "0-columns-1": "%0 Cột (%1)",
+      "remove-layout": "Xóa bố cục",
+      "type-the-content-of-the-first-column": "Nhập nội dung của cột đầu tiên",
+      "type-the-content-of-the-second-column": "Nhập nội dung của cột thứ hai",
+      "type-the-content-of-the-third-column": "Nhập nội dung của cột thứ ba",
+      "type-the-content-of-the-fourth-column": "Nhập nội dung của cột thứ tư",
+      "table-columns": "Cột bảng",
+      "column-0-width-1": "Chiều rộng cột %0: %1%"
     },
     "toolbar-groups": {
       "insert": "Insert",
@@ -4408,5 +4498,30 @@
     "label_marker_negated": "Loại trừ một nhãn. Nhấn Enter để xem danh sách các nhãn",
     "relation_marker": "Tham chiếu đến một quan hệ. Nhấn Enter để xem danh sách các quan hệ",
     "relation_marker_negated": "Loại trừ một quan hệ. Nhấn Enter để xem danh sách các quan hệ"
+  },
+  "block_reference": {
+    "copy_other": "Sao chép tham chiếu đến các khối {{count}} này",
+    "copy_share_link_other": "Sao chép liên kết công khai đến các khối {{count}} này",
+    "copy_tab": "Sao chép liên kết đến tab này",
+    "paste_as_link": "Dán tham chiếu dưới dạng liên kết",
+    "paste_as_excerpt": "Dán tham chiếu dưới dạng trích đoạn",
+    "no_reference_on_clipboard": "Bộ nhớ tạm không chứa tham chiếu khối.",
+    "broken": "Tham chiếu bị hỏng",
+    "not_found": "Không tìm thấy khối được tham chiếu. Nó có thể đã bị xóa.",
+    "untitled": "Khối",
+    "excerpt": "Trích đoạn",
+    "excerpt_description": "Bạn đang xem một phần của ghi chú này. Nhấn nút {{icon}} để mở toàn bộ ghi chú trong tab mới.",
+    "edit_excerpt": "Chỉnh sửa trích đoạn"
+  },
+  "record_meeting": {
+    "note_title": "Họp {{date}}",
+    "starting": "Đang bắt đầu phiên âm…",
+    "stop": "Dừng phiên âm",
+    "stopping": "Đang hoàn tất bản ghi chép…"
+  },
+  "transcript": {
+    "speaker_me": "Tôi",
+    "speaker_others": "Khác",
+    "speaker_name": "Tên người nói"
   }
 }
