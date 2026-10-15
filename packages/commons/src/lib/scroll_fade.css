@@ -1,16 +1,17 @@
 /*
- * A custom property only animates once it is registered with a type, so both ends are declared as
- * lengths for the transition below to interpolate. Where `@property` is unsupported the fades snap,
- * and the `var()` fallbacks in the mask stand in for the initial values.
+ * A custom property animates only once it is registered with a type, so both ends are registered
+ * for the transition below. A percentage size is a share of the length of the gradient. Where
+ * `@property` is unsupported the fades snap, and the `var()` fallbacks in the mask stand in for the
+ * initial values.
  */
 @property --scroll-fade-start {
-    syntax: "<length>";
+    syntax: "<length-percentage>";
     inherits: false;
     initial-value: 0px;
 }
 
 @property --scroll-fade-end {
-    syntax: "<length>";
+    syntax: "<length-percentage>";
     inherits: false;
     initial-value: 0px;
 }
@@ -35,12 +36,12 @@
         --scroll-fade-end var(--scroll-fade-duration, 300ms) ease;
 }
 
-/* A gradient can only be given a physical direction, and the ends swap in a right-to-left page. */
+/* A gradient takes a physical direction, so the ends swap in a right-to-left container. */
 .scroll-fade-horizontal {
     --scroll-fade-direction: to right;
 }
 
-body[dir=rtl] .scroll-fade-horizontal {
+.scroll-fade-horizontal.scroll-fade-rtl {
     --scroll-fade-direction: to left;
 }
 

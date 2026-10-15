@@ -58,6 +58,13 @@ vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", (
     applyStickyTableHeaders
 }));
 
+// jsdom has no `ResizeObserver`.
+const watchScrollFade = vi.hoisted(() => vi.fn());
+vi.mock("@triliumnext/commons/src/lib/scroll_fade.js", async (importOriginal) => ({
+    ...await importOriginal<object>(),
+    watchScrollFade
+}));
+
 import renderText, {
     applyInlineMermaid,
     postProcessRichContent,
@@ -285,6 +292,8 @@ describe("Text content renderer", () => {
         await renderTextContent(note, table, $(full));
         expect(tableWidth(full)).toBe("800px");
         expect(applyStickyTableHeaders).toHaveBeenCalledWith(full.querySelector(".ck-content"));
+        expect(watchScrollFade).toHaveBeenCalledWith(full.querySelector("figure.table"),
+            expect.any(Function), { direction: "horizontal" });
 
         // The excerpt of a table in one column of a layout has the table at its top level.
         const excerpt = document.createElement("div");
