@@ -3,11 +3,20 @@ import path from "path";
 import type { SpeakerEmbeddingExtractor, Vad } from "sherpa-onnx-node";
 
 import { type ModelPaths, SAMPLE_RATE } from "./protocol";
-import { SpeakerClusterer, type SpeakerClustererOptions } from "./speakers";
+import {
+    findSpeakerChanges, SpeakerClusterer, type SpeakerClustererOptions, type SpeakerTurn,
+    snapToWordBoundary, type TimedWord
+} from "./speakers";
+
+/** The text of an utterance and when each of its words starts. */
+export interface Recognition {
+    text: string;
+    words: TimedWord[];
+}
 
 /** Turns one utterance into text. */
 export interface SpeechRecognizer {
-    transcribe(samples: Float32Array): Promise<string>;
+    transcribe(samples: Float32Array): Promise<Recognition>;
 }
 
 /** A stretch of speech found in a source, `start` counted in samples from the source's start. */
@@ -29,10 +38,10 @@ export interface SpeechSegmenter {
 /** Tells the speakers of one source apart. Each source needs its own. */
 export interface SpeakerTracker {
     /**
-     * Returns the speaker of an utterance, numbered from 1 in the order they were first heard, or
-     * `null` when the utterance is too short to tell.
+     * Returns the turns of an utterance in order, covering it whole, each with its speaker
+     * numbered from 1 in the order they were first heard. `words` places the cuts between turns.
      */
-    identify(samples: Float32Array): number | null;
+    identify(samples: Float32Array, words: TimedWord[]): SpeakerTurn[];
 }
 
 export interface SpeechEngine {
@@ -71,6 +80,17 @@ const SPEAKER_SETTINGS: SpeakerClustererOptions = {
     minDurationSeconds: 1.5,
     newSpeakerMinDurationSeconds: 5,
     shortThreshold: 0.3
+};
+
+/**
+ * An utterance of `minSegmentSeconds` or more is searched for a change of speaker in windows of
+ * `windowSeconds`, `hopSeconds` apart; a turn shorter than `minTurnSeconds` is not split off.
+ */
+const TURN_SETTINGS = {
+    windowSeconds: 2,
+    hopSeconds: 1,
+    minSegmentSeconds: 4,
+    minTurnSeconds: 1
 };
 
 const VAD_SETTINGS = {
@@ -125,7 +145,8 @@ export async function loadSherpaEngine(models: ModelPaths): Promise<SpeechEngine
             async transcribe(samples) {
                 const stream = recognizer.createStream();
                 stream.acceptWaveform({ samples, sampleRate: SAMPLE_RATE });
-                return (await recognizer.decodeAsync(stream)).text.trim();
+                const result = await recognizer.decodeAsync(stream);
+                return { text: result.text.trim(), words: toWords(result.tokens, result.timestamps) };
             }
         },
         createSegmenter: () => new VadSegmenter(new sherpa.Vad({
@@ -146,7 +167,7 @@ export async function loadSherpaEngine(models: ModelPaths): Promise<SpeechEngine
             recognizer: { ...RECOGNIZER_SETTINGS, ...decodingSettings },
             vad: VAD_SETTINGS,
             speakers: speakerModel
-                ? { model: path.basename(speakerModel), ...SPEAKER_SETTINGS }
+                ? { model: path.basename(speakerModel), ...SPEAKER_SETTINGS, turns: TURN_SETTINGS }
                 : null
         }
     };
@@ -183,8 +204,9 @@ class VadSegmenter implements SpeechSegmenter {
 }
 
 /**
- * Identifies speakers by clustering TitaNet embeddings. The embedding is computed synchronously,
- * about 100 ms per utterance on one thread.
+ * Identifies speakers by clustering TitaNet embeddings, and splits an utterance where the speaker
+ * changes within it. Embeddings are computed synchronously, about 10–100 ms each on one thread:
+ * one per turn, plus one per window of an utterance searched for a change.
  */
 class EmbeddingSpeakerTracker implements SpeakerTracker {
     private readonly clusterer: SpeakerClusterer;
@@ -196,15 +218,70 @@ class EmbeddingSpeakerTracker implements SpeakerTracker {
         this.clusterer = new SpeakerClusterer(options);
     }
 
-    identify(samples: Float32Array) {
+    identify(samples: Float32Array, words: TimedWord[]) {
+        const durationSeconds = samples.length / SAMPLE_RATE;
+        const bounds = [ 0, ...this.findTurnChanges(samples, words), durationSeconds ];
+        return bounds.slice(1).map((endSeconds, index) => {
+            const startSeconds = bounds[index];
+            const embedding = this.embed(samples, startSeconds, endSeconds);
+            const speaker = embedding
+                ? this.clusterer.assign(embedding, endSeconds - startSeconds)
+                : null;
+            return { startSeconds, endSeconds, speaker };
+        });
+    }
+
+    /** Returns the times, in seconds, at which another known or unknown speaker takes over. */
+    private findTurnChanges(samples: Float32Array, words: TimedWord[]) {
+        const { windowSeconds, hopSeconds, minSegmentSeconds, minTurnSeconds } = TURN_SETTINGS;
+        const durationSeconds = samples.length / SAMPLE_RATE;
+        if (durationSeconds < minSegmentSeconds || !this.clusterer.hasSpeakers) {
+            return [];
+        }
+
+        const labels: (number | null)[] = [];
+        for (let start = 0; start + windowSeconds <= durationSeconds; start += hopSeconds) {
+            const embedding = this.embed(samples, start, start + windowSeconds);
+            labels.push(embedding ? this.clusterer.match(embedding) : null);
+        }
+        const cuts: number[] = [];
+        for (const window of findSpeakerChanges(labels)) {
+            // The first window of the new run is mostly the new speaker, the one before it mostly
+            // the previous one, so the change falls in the first hop of the new run's window.
+            const cut = snapToWordBoundary(window * hopSeconds + hopSeconds / 2, words);
+            if (cut - (cuts.at(-1) ?? 0) >= minTurnSeconds && durationSeconds - cut >= minTurnSeconds) {
+                cuts.push(cut);
+            }
+        }
+        return cuts;
+    }
+
+    private embed(samples: Float32Array, startSeconds: number, endSeconds: number) {
         const stream = this.extractor.createStream();
-        stream.acceptWaveform({ samples, sampleRate: SAMPLE_RATE });
+        stream.acceptWaveform({
+            samples: samples.subarray(
+                Math.round(startSeconds * SAMPLE_RATE), Math.round(endSeconds * SAMPLE_RATE)),
+            sampleRate: SAMPLE_RATE
+        });
         stream.inputFinished();
         if (!this.extractor.isReady(stream)) {
             return null;
         }
         // Electron's V8 memory cage rejects the external buffers sherpa-onnx uses by default.
-        const embedding = this.extractor.compute(stream, false);
-        return this.clusterer.assign(embedding, samples.length / SAMPLE_RATE);
+        return this.extractor.compute(stream, false);
     }
+}
+
+/** Joins Parakeet's tokens into words; a token that starts with a space starts a word. */
+function toWords(tokens: string[], timestamps: number[]): TimedWord[] {
+    const words: TimedWord[] = [];
+    for (const [ index, token ] of tokens.entries()) {
+        const last = words.at(-1);
+        if (token.startsWith(" ") || !last) {
+            words.push({ text: token.trim(), startSeconds: timestamps[index] });
+        } else {
+            last.text += token;
+        }
+    }
+    return words.filter(({ text }) => text);
 }

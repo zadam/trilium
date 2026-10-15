@@ -24,17 +24,19 @@ export class SpeakerClusterer {
 
     constructor(private readonly options: SpeakerClustererOptions) {}
 
+    get hasSpeakers() {
+        return this.centroids.length > 0;
+    }
+
+    /** Returns the speaker an embedding reaches the threshold with, changing no speaker. */
+    match(embedding: Float32Array): number | null {
+        const { best, bestSimilarity } = this.nearest(normalize(embedding));
+        return best >= 0 && bestSimilarity >= this.options.threshold ? best + 1 : null;
+    }
+
     assign(embedding: Float32Array, durationSeconds: number): number | null {
         const normalized = normalize(embedding);
-        let best = -1;
-        let bestSimilarity = -Infinity;
-        for (const [ index, centroid ] of this.centroids.entries()) {
-            const similarity = dot(normalize(centroid), normalized);
-            if (similarity > bestSimilarity) {
-                best = index;
-                bestSimilarity = similarity;
-            }
-        }
+        const { best, bestSimilarity } = this.nearest(normalized);
 
         const isLongEnough = durationSeconds >= this.options.minDurationSeconds;
         if (best >= 0 && bestSimilarity >= this.options.threshold) {
@@ -52,6 +54,74 @@ export class SpeakerClusterer {
         }
         return null;
     }
+
+    private nearest(normalized: Float32Array) {
+        let best = -1;
+        let bestSimilarity = -Infinity;
+        for (const [ index, centroid ] of this.centroids.entries()) {
+            const similarity = dot(normalize(centroid), normalized);
+            if (similarity > bestSimilarity) {
+                best = index;
+                bestSimilarity = similarity;
+            }
+        }
+        return { best, bestSimilarity };
+    }
+}
+
+/** A word of a transcribed utterance, `startSeconds` counted from the utterance's start. */
+export interface TimedWord {
+    text: string;
+    startSeconds: number;
+}
+
+/** A stretch of an utterance spoken by one speaker, `null` when it is too short to tell. */
+export interface SpeakerTurn {
+    startSeconds: number;
+    endSeconds: number;
+    speaker: number | null;
+}
+
+/**
+ * Returns the indexes of the windows at which another label starts a run of `minRun` windows or
+ * more. `null` labels a window that matches no known speaker and counts as a label of its own.
+ */
+export function findSpeakerChanges(labels: (number | null)[], minRun = 2) {
+    const changes: number[] = [];
+    let current = labels[0];
+    let runStart = 0;
+    for (const [ index, label ] of labels.entries()) {
+        if (label !== labels[runStart]) {
+            runStart = index;
+        }
+        if (index - runStart + 1 === minRun && label !== current) {
+            changes.push(runStart);
+            current = label;
+        }
+    }
+    return changes;
+}
+
+/**
+ * Moves a cut to the start of a word within `reachSeconds`: the nearest one that follows a
+ * sentence end, else the nearest one. Keeps the cut where no word starts within reach.
+ */
+export function snapToWordBoundary(cutSeconds: number, words: TimedWord[], reachSeconds = 1) {
+    const boundaries = words.slice(1)
+        .map((word, index) => ({
+            seconds: word.startSeconds,
+            followsSentence: /[.?!]$/.test(words[index].text)
+        }))
+        .filter(({ seconds }) => Math.abs(seconds - cutSeconds) <= reachSeconds);
+    const sentenceStarts = boundaries.filter(({ followsSentence }) => followsSentence);
+    const candidates = sentenceStarts.length ? sentenceStarts : boundaries;
+    let best = cutSeconds;
+    for (const { seconds } of candidates) {
+        if (best === cutSeconds || Math.abs(seconds - cutSeconds) < Math.abs(best - cutSeconds)) {
+            best = seconds;
+        }
+    }
+    return best;
 }
 
 function normalize(vector: Float32Array) {

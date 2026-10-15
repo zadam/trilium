@@ -11,7 +11,9 @@ const h = vi.hoisted(() => ({
     extractorConfig: null as Record<string, unknown> | null,
     decoded: [] as Float32Array[],
     isEmbeddingReady: true,
-    embeddings: [] as number[][]
+    embeddings: [] as number[][],
+    /** The length of each stretch of samples a speaker embedding was computed from. */
+    embedded: [] as number[]
 }));
 
 /** Silero as the segmenter sees it: windows in, then whatever segments the spec queues. */
@@ -63,7 +65,11 @@ vi.mock("sherpa-onnx-node", () => ({
                     }),
                     decodeAsync: async (stream: { samples: Float32Array }) => {
                         h.decoded.push(stream.samples);
-                        return { text: "  Hello there.  " };
+                        return {
+                            text: "  Hello there.  ",
+                            tokens: [ " Hel", "lo", " there", "." ],
+                            timestamps: [ 0, 0.16, 0.4, 0.72 ]
+                        };
                     }
                 };
             }
@@ -74,7 +80,12 @@ vi.mock("sherpa-onnx-node", () => ({
                 h.extractorConfig = config;
             }
             createStream() {
-                return { acceptWaveform: vi.fn(), inputFinished: vi.fn() };
+                return {
+                    acceptWaveform: ({ samples }: { samples: Float32Array }) => {
+                        h.embedded.push(samples.length);
+                    },
+                    inputFinished: vi.fn()
+                };
             }
             isReady() {
                 return h.isEmbeddingReady;
@@ -102,6 +113,7 @@ beforeEach(() => {
     h.isEmbeddingReady = true;
     h.decoded.length = 0;
     h.embeddings.length = 0;
+    h.embedded.length = 0;
     vads.length = 0;
 });
 
@@ -133,7 +145,10 @@ describe("loadSherpaEngine", () => {
         });
 
         const samples = new Float32Array(1600);
-        expect(await engine.recognizer.transcribe(samples)).toBe("Hello there.");
+        expect(await engine.recognizer.transcribe(samples)).toEqual({
+            text: "Hello there.",
+            words: [ { text: "Hello", startSeconds: 0 }, { text: "there.", startSeconds: 0.4 } ]
+        });
         expect(h.decoded).toEqual([ samples ]);
     });
 
@@ -185,16 +200,41 @@ describe("loadSherpaEngine", () => {
         expect(h.extractorConfig?.model).toBe(MODELS.speaker);
         expect(engine.settings.speakers).toMatchObject({
             model: "nemo_en_titanet_small.onnx", threshold: 0.5, minDurationSeconds: 1.5,
-            newSpeakerMinDurationSeconds: 5, shortThreshold: 0.3
+            newSpeakerMinDurationSeconds: 5, shortThreshold: 0.3,
+            turns: { windowSeconds: 2, hopSeconds: 1, minSegmentSeconds: 4, minTurnSeconds: 1 }
         });
 
         const tracker = engine.createSpeakerTracker?.();
-        const long = new Float32Array(16000 * 6);
-        h.embeddings.push([ 1, 0 ], [ 0, 1 ], [ 0.9, 0.1 ]);
-        expect([ 1, 2, 3 ].map(() => tracker?.identify(long))).toEqual([ 1, 2, 1 ]);
+        // No speaker is known yet, so the utterance is not searched for a change.
+        h.embeddings.push([ 1, 0 ]);
+        expect(tracker?.identify(new Float32Array(16000 * 6), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 6, speaker: 1 } ]);
+        expect(h.embedded).toEqual([ 16000 * 6 ]);
+
+        // Nine 2 s windows: speaker 1 for two, then an unknown voice; the cut at 2.5 s moves to
+        // the sentence starting at 2.2 s, and each turn is identified on its own.
+        h.embedded.length = 0;
+        h.embeddings.push([ 1, 0 ], [ 1, 0 ], ...Array(7).fill([ 0, 1 ]), [ 1, 0 ], [ 0, 1 ]);
+        const words = [
+            { text: "Is it?", startSeconds: 0 },
+            { text: "Yes", startSeconds: 2.2 },
+            { text: "indeed.", startSeconds: 2.9 }
+        ];
+        expect(tracker?.identify(new Float32Array(16000 * 10), words)).toEqual([
+            { startSeconds: 0, endSeconds: 2.2, speaker: 1 },
+            { startSeconds: 2.2, endSeconds: 10, speaker: 2 }
+        ]);
+        expect(h.embedded).toEqual([ ...Array(9).fill(32000), 35200, 124800 ]);
+
+        // Shorter than 4 s: one turn, without windows.
+        h.embeddings.push([ 0.9, 0.1 ]);
+        expect(tracker?.identify(new Float32Array(16000 * 3), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 3, speaker: 1 } ]);
+        expect(h.embeddings).toEqual([]);
 
         h.isEmbeddingReady = false;
-        expect(tracker?.identify(new Float32Array(100))).toBeNull();
+        expect(tracker?.identify(new Float32Array(1600), []))
+            .toEqual([ { startSeconds: 0, endSeconds: 0.1, speaker: null } ]);
 
         const withoutSpeakers = await loadSherpaEngine({ ...MODELS, speaker: null });
         expect(withoutSpeakers.createSpeakerTracker).toBeUndefined();

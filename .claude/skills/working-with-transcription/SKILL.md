@@ -19,7 +19,8 @@ capture window (hidden, offscreen)              transcription process (Electron 
                   per source: SourcePipeline → VadSegmenter (Silero, 512-sample windows)
                                    │ utterances
                   one queue: recognizer.transcribe() (Parakeet TDT 0.6B v3, fp32 or int8, libuv pool)
-                                   │ speaker: EmbeddingSpeakerTracker (TitaNet, synchronous)
+                                   │ speakers: EmbeddingSpeakerTracker (TitaNet, synchronous),
+                                   │   splits an utterance at a change of speaker
                   sinks: posted to the main process, dev: TranscriptFileSink
                                    │ parentPort: ready / pending / utterance / log / stopped
 main process: TranscriptionWorker → AttachmentSink (transcript attachment)
@@ -125,7 +126,11 @@ The export has errors of its own (it wrote "MicroEdge" and "SortMap", and split 
 
 ## Speaker detection
 
-The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously in the transcription process, ~15–100 ms per utterance, holding back the next chunks but nothing else. `replay.mjs` does not label speakers; use `diarize.mjs`.
+The app labels the system source's utterances live when `speaker/nemo_en_titanet_small.onnx` is installed: `EmbeddingSpeakerTracker` in `engine.ts` embeds each transcribed utterance and `SpeakerClusterer` (`speakers.ts`, settings `SPEAKER_SETTINGS`) assigns it, giving the utterance a `speaker` number that `TranscriptView` shows as "Speaker n". The microphone is never labelled. It runs synchronously in the transcription process, holding back the next chunks but nothing else. `replay.mjs` does not label speakers; use `diarize.mjs`.
+
+**Turns within an utterance** (`TURN_SETTINGS`): a VAD segment holds both sides of a quick exchange, since a reply needs no 0.75 s pause. Once a speaker is known, an utterance of 4 s or more is embedded again in 2 s windows 1 s apart, each matched against the known speakers (`SpeakerClusterer.match()`, which moves no centroid); where another label holds for two windows (`findSpeakerChanges()`), the utterance is cut half a second into the new run, moved to the nearest word start within 1 s, preferring one after a sentence end (`snapToWordBoundary()`, on the token times Parakeet returns with `transcribe()`). `RecordingSession` writes each turn as an utterance of its own, its text the words starting in it. That costs one embedding per second of a long utterance, ~0.1–0.3 s for a 20 s one.
+
+On the 67-minute meeting of 2026-10-15 (two people on the system track), scored per second against voice prints of the two named speakers: 7.3% of the speech had the wrong or no speaker before turns, 2.7% after (two speakers, 502 → 560 utterances). The reference was built with the same model and similar windows, so the gain is likely overstated; the cuts read right in the text ("…for us? | Yes, but…", "Have a nice day. | Thank you. Have a nice day. Bye.").
 
 `diarize.mjs` labels one source's utterances by speaker in two ways and times both:
 
@@ -215,7 +220,7 @@ node $S/worker-test.mjs latest                         # 120 s of system.wav at 
 node $S/worker-test.mjs latest --source microphone --seconds 60 --speed 8
 ```
 
-`worker-test.mjs` runs the real `TranscriptionWorker` in Electron: it starts the transcription process on `apps/desktop/data/transcription-model`, and a hidden page posts a recording's WAV through a `MessageChannelMain` port as the capture page does. It prints the engine's load time, the utterances (with speakers), how long `stop` took and whether the process exited, and the main process's event-loop lag throughout. On two minutes of a meeting's system track: ready after 1.3 s, lag p50 0.1 ms, p99 1.1 ms, max 25 ms. Before the split, speaker labelling alone held the main thread 15–100 ms per utterance.
+`worker-test.mjs` runs the real `TranscriptionWorker` in Electron: it starts the transcription process on `apps/desktop/data/transcription-model` (or `--model`, writing the utterances to `--out`), and a hidden page posts a recording's WAV through a `MessageChannelMain` port as the capture page does. It prints the engine's load time, the utterances (with speakers), how long `stop` took and whether the process exited, and the main process's event-loop lag throughout. On two minutes of a meeting's system track: ready after 1.3 s, lag p50 0.1 ms, p99 1.1 ms, max 25 ms. Before the split, speaker labelling alone held the main thread 15–100 ms per utterance. On Windows, Electron launched by it prints nothing and runs into the timeout (unresolved); there, `RecordingSession` and `loadSherpaEngine()` can be driven in plain Node with `node --import tsx` instead, feeding the WAV in 4096-sample chunks, which tests everything but the process boundary.
 
 In development the process loads `transcription_worker.ts` through the `NODE_OPTIONS="--import tsx"` it inherits from `scripts/electron-start.mts`; built, `worker_client.ts` finds `transcription_worker.cjs` beside `main.mjs`. Packaged builds do not ship `sherpa-onnx-node` yet (it is external to every bundle, but not copied or unpacked from the asar).
 

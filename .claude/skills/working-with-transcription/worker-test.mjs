@@ -10,15 +10,18 @@
 //   --source <name>   which WAV of the recording to play, default system
 //   --seconds <n>     how much of it, default 120
 //   --speed <n>       how much faster than real time to post it, default 4
+//   --model <dir>     the model directory, default apps/desktop/data/transcription-model
+//   --out <file>      writes the utterances there, in the transcript format
 //
-// The model directory is apps/desktop/data/transcription-model. Like `pnpm desktop:start`, it
-// loads the TypeScript through NODE_OPTIONS="--import tsx", which the utility process inherits.
+// Like `pnpm desktop:start`, it loads the TypeScript through NODE_OPTIONS="--import tsx", which
+// the utility process inherits.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { parseArgs, resolveRecording } from "./recordings.mjs";
 
@@ -50,9 +53,11 @@ async function launch() {
         wav: path.join(recording.directory, file),
         source,
         seconds: Number(options.seconds ?? 120),
-        speed: Number(options.speed ?? 4)
+        speed: Number(options.speed ?? 4),
+        model: path.resolve(options.model ?? MODEL_DIR),
+        out: options.out ? path.resolve(options.out) : null
     };
-    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(path.join(REPO, "scripts/utils.mts"));
+    const { getElectronPath, getNixLdLibraryPath, isNixOS } = await import(pathToFileURL(path.join(REPO, "scripts/utils.mts")).href);
     const env = {
         ...process.env,
         LD_LIBRARY_PATH: isNixOS() ? getNixLdLibraryPath() : process.env.LD_LIBRARY_PATH,
@@ -62,7 +67,12 @@ async function launch() {
     delete env.ELECTRON_RUN_AS_NODE;
 
     console.log(`${config.seconds} s of ${config.wav}, ${config.speed}× real time\n`);
-    const output = execFileSync(getElectronPath(), [ SELF, "--no-sandbox" ], {
+    // Off NixOS, getElectronPath() returns the bare `electron` command, which only a shell
+    // resolves; the package itself exports the binary's path.
+    const electron = isNixOS()
+        ? getElectronPath()
+        : createRequire(path.join(DESKTOP, "package.json"))("electron");
+    const output = execFileSync(electron, [ SELF, "--no-sandbox" ], {
         cwd: DESKTOP,
         env,
         encoding: "utf8",
@@ -92,7 +102,7 @@ async function launch() {
 async function runInElectron(config) {
     const { app, BrowserWindow, MessageChannelMain } = await import("electron");
     const { TranscriptionWorker } = await import(
-        path.join(DESKTOP, "src/services/transcription/worker_client.ts"));
+        pathToFileURL(path.join(DESKTOP, "src/services/transcription/worker_client.ts")).href);
     await app.whenReady();
 
     const utterances = [];
@@ -115,9 +125,9 @@ async function runInElectron(config) {
     });
     const startedAt = performance.now();
     const models = {
-        recognizer: MODEL_DIR,
-        vad: path.join(MODEL_DIR, "silero_vad.onnx"),
-        speaker: path.join(MODEL_DIR, "speaker", "nemo_en_titanet_small.onnx")
+        recognizer: config.model,
+        vad: path.join(config.model, "silero_vad.onnx"),
+        speaker: path.join(config.model, "speaker", "nemo_en_titanet_small.onnx")
     };
     await worker.start({ noteId: "worker-test", models, recordingDirectory: null });
     const readyMs = Math.round(performance.now() - startedAt);
@@ -146,6 +156,9 @@ async function runInElectron(config) {
     const stopMs = Math.round(performance.now() - stopAt);
     exited = true;
     fs.rmSync(pagePath, { force: true });
+    if (config.out) {
+        fs.writeFileSync(config.out, JSON.stringify({ version: 1, startedAt: Date.now(), utterances }));
+    }
     finish({
         readyMs,
         chunks,

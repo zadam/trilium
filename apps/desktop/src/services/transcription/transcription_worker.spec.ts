@@ -47,7 +47,9 @@ class FakeParentPort extends EventEmitter {
 /** An engine whose segmenter completes an utterance per chunk, transcribed as "Chunk <n>". */
 const engine = {
     settings: { recognizer: { decodingMethod: "greedy_search" } },
-    recognizer: { transcribe: async (samples: Float32Array) => `Chunk ${samples[0]}` },
+    recognizer: {
+        transcribe: async (samples: Float32Array) => ({ text: `Chunk ${samples[0]}`, words: [] })
+    },
     createSegmenter: () => ({
         accept: (samples: Float32Array) => [ { start: 0, samples } ],
         flush: () => [],
