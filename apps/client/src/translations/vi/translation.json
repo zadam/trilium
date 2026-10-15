@@ -557,7 +557,7 @@
     "page_description": "Phần mô tả của trang web được đính kèm, xuất hiện trong thông tin chi tiết của thẻ \"Web clip\" trên ghi chú.",
     "page_author": "Tác giả của trang đã lưu, hiển thị trong chi tiết huy hiệu \"Web clip\" của ghi chú.",
     "published_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
-    "modified_date": "Ngày xuất bản của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
+    "modified_date": "Ngày cập nhật lần cuối của trang đã lưu, hiển thị trong chi tiết huy hiệu 'Web clip' của ghi chú.",
     "board_hide_add_column": "Đối với các bộ sưu tập bảng, ẩn nút <em>Thêm cột</em> sau cột cuối cùng. Bạn vẫn có thể thêm cột từ menu ngữ cảnh của bảng hoặc của một cột.",
     "calendar_title_template": "Cách đặt tiêu đề cho sự kiện trên lịch, được điền cho mọi lần xuất hiện của sự kiện lặp lại. Đọc <code>${title}</code>, <code>${years}</code> (số năm kể từ ngày bắt đầu) và các ngày <code>${date}</code> và <code>${startDate}</code>, ví dụ <code>${title} (${years})</code> cho sinh nhật hàng năm.",
     "map_position": "Vị trí của ghi chú trên bản đồ hình ảnh, dưới dạng <code>x,y</code> trong hệ tọa độ của bản đồ: các pixel của hình ảnh, trừ khi <code>map:imageBounds</code> chỉ định các giá trị khác.",

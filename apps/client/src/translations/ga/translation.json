@@ -3967,7 +3967,7 @@
       "0-columns": "%0 colún",
       "column-layout": "Leagan amach na gcolún",
       "0-columns-layout": "Leagan amach %0 colún",
-      "arrange-content-in-0-equal-columns-side-by-side": "Socraigh an t-ábhar i gcolúin chomhionanna taobh le taobh.",
+      "arrange-content-in-0-equal-columns-side-by-side": "Socraigh an t-ábhar taobh le taobh i gcolúin chomhionanna: %0.",
       "0-columns-1": "%0 colún (%1)",
       "remove-layout": "Bain an leagan amach",
       "convert-image-to-a-drawing-canvas": "Tiontaigh íomhá go canbhás líníochta",
