@@ -934,7 +934,7 @@
     "description": "Moves each note under the target note. A note with several parents is cloned there instead, and one that cannot go there, such as a parent of the target, stays where it is."
   },
   "convert_note": {
-    "convert_note": "Convert",
+    "convert_note": "Convert note",
     "choose_conversion": "(choose a conversion)",
     "conversion_htmlToMarkdown": "Text Notes → Markdown Notes (lossy)",
     "conversion_markdownToHtml": "Markdown Notes → Text Notes",
