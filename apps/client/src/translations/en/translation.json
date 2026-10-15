@@ -4638,7 +4638,7 @@
     "identify_speakers_description": "Tells the other participants apart and labels each of their utterances with its speaker; what you say into your microphone is always yours. Turn it off if it mixes up voices, or to save the processing it takes during a recording. It applies from the next recording.",
     "troubleshooting_title": "Troubleshooting",
     "keep_recordings": "Keep recordings for troubleshooting",
-    "keep_recordings_description": "Keeps the audio of everyone in the meeting, with the settings used and the transcript as it was produced, so that a problem with a recording can be reported and reproduced. It takes about 230 MB per hour of meeting, is never deleted automatically and is not encrypted, even for protected notes. Recording other participants can require their consent where you or they are.",
+    "keep_recordings_description": "Keeps the audio of everyone in the meeting, with the settings used and the transcript as it was produced, so that a problem with a recording can be reported and reproduced. It takes about 230 MB per hour of meeting and is never deleted automatically.",
     "saved_in": "Saved in",
     "enabled": "Meeting transcription",
     "enabled_description": "Adds the Transcribe meeting button to the launch bar, which transcribes what you say into your microphone and what the other participants say through your speakers. Recognition runs entirely on this device, so no audio leaves it.",
@@ -4646,7 +4646,8 @@
     "related_resources_description": "See the speech recognition models downloaded to this device, and delete those you no longer need.",
     "model_standard_description": "Parakeet TDT 0.6B v3 by NVIDIA, quantized so that it runs well on most computers.",
     "model_high_accuracy_description": "Parakeet TDT 0.6B v3 by NVIDIA at full precision. It makes fewer mistakes, but needs about 1.6 GB more memory while recording.",
-    "model_size": "{{size}} download"
+    "model_size": "{{size}} download",
+    "keep_recordings_warning": "Before turning this on, ask everyone in the meeting to agree to being recorded. Germany, France and several US states make recording a conversation without everyone's consent a criminal offense, and when people join from different places, the strictest of their laws applies. The audio is stored unencrypted, even for protected notes."
   },
   "resources_options": {
     "list_title": "Resources",

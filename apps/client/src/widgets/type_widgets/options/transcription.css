@@ -9,3 +9,19 @@
 .transcription-model-picker .description {
     white-space: pre-line;
 }
+
+.transcription-keep-recordings-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.9em;
+
+    .tn-icon {
+        color: var(--dropdown-item-icon-destructive-color);
+        font-size: 1.2em;
+    }
+
+    p {
+        margin: 0;
+    }
+}

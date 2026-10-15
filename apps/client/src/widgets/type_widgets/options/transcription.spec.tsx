@@ -173,6 +173,16 @@ describe("TranscriptionSettings", () => {
         expect(mocks.savedBools).toEqual([ [ "transcriptionKeepRecordings", true ] ]);
     });
 
+    it("warns about consent beside the switch that keeps recordings, before it is turned on", () => {
+        open();
+        const warning = host.querySelector(".transcription-keep-recordings-warning");
+        expect(warning?.querySelector(".admonition")).toBeNull();
+        expect(warning?.querySelector(".tn-icon.bx-error")).not.toBeNull();
+        expect(warning?.textContent).toBe("transcription_options.keep_recordings_warning");
+        // Outside the label, so that pressing the warning does not operate the switch.
+        expect(warning?.closest("label")).toBeNull();
+    });
+
     it("asks for the recordings folder, which creates it, only while recordings are kept", async () => {
         open();
         await act(async () => {});

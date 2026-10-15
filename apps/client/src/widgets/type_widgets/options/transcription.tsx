@@ -10,11 +10,12 @@ import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import { formatSize, isElectron } from "../../../services/utils";
 import { Badge } from "../../react/Badge";
-import { Card, OptionCardSection } from "../../react/Card";
+import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import { DirectoryLocation } from "../../react/DirectoryLink";
 import FormDropdownList from "../../react/FormDropdownList";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
+import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 import RelatedSettings from "./components/RelatedSettings";
@@ -169,6 +170,13 @@ function TroubleshootingSettings() {
                 className="transcription-keep-recordings"
                 label={t("transcription_options.keep_recordings")}
                 description={t("transcription_options.keep_recordings_description")}
+                subSections={
+                    <CardSection className="transcription-keep-recordings-warning">
+                        <Icon icon="bx bx-error" />
+                        <p>{t("transcription_options.keep_recordings_warning")}</p>
+                    </CardSection>
+                }
+                subSectionsVisible
             >
                 <FormToggle currentValue={keepRecordings} onChange={setKeepRecordings} />
             </OptionCardSection>
