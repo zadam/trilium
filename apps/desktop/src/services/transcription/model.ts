@@ -80,9 +80,13 @@ const PARAKEET_FP32_FILES: ResourceFile[] = [
 /** Parakeet TDT 0.6B v3 at each precision: the files `loadSherpaEngine()` reads as its recognizer. */
 export const RECOGNIZER_MODELS: ResourceDefinition[] = [
     parakeet(MODEL_CHOICES["parakeet-int8"].resourceId, PARAKEET_INT8_FILES,
-        () => t("transcription.recognizer-int8-title")),
+        () => t("transcription.recognizer-int8-title"),
+        "Exported to ONNX and quantized to int8 by the k2-fsa sherpa-onnx project, "
+            + "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8."),
     parakeet(MODEL_CHOICES["parakeet-fp32"].resourceId, PARAKEET_FP32_FILES,
-        () => t("transcription.recognizer-fp32-title"))
+        () => t("transcription.recognizer-fp32-title"),
+        "Exported to ONNX by the k2-fsa sherpa-onnx project, "
+            + "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3.")
 ];
 
 export const VAD_MODEL: ResourceDefinition = {
@@ -91,6 +95,13 @@ export const VAD_MODEL: ResourceDefinition = {
     description: () => t("transcription.vad-description"),
     icon: "bx bx-pulse",
     license: "MIT",
+    attribution: {
+        work: "Silero VAD",
+        author: "Silero Team",
+        homepage: "https://github.com/snakers4/silero-vad",
+        copyright: "Copyright (c) 2020-present Silero Team",
+        changes: "Redistributed in the releases of the k2-fsa sherpa-onnx project."
+    },
     files: [ {
         path: VAD_FILE,
         url: `${SHERPA_RELEASES}/asr-models/${VAD_FILE}`,
@@ -104,7 +115,14 @@ export const SPEAKER_MODEL: ResourceDefinition = {
     title: () => t("transcription.speaker-title"),
     description: () => t("transcription.speaker-description"),
     icon: "bx bx-user-voice",
+    // NGC states TitaNet is under the license of the NeMo toolkit, which is Apache-2.0.
     license: "Apache-2.0",
+    attribution: {
+        work: "TitaNet-S",
+        author: "NVIDIA",
+        homepage: "https://catalog.ngc.nvidia.com/orgs/nvidia/teams/nemo/models/titanet_small",
+        changes: "Exported to ONNX by the k2-fsa sherpa-onnx project."
+    },
     files: [ {
         path: SPEAKER_FILE,
         url: `${SHERPA_RELEASES}/speaker-recongition-models/${SPEAKER_FILE}`,
@@ -136,13 +154,20 @@ export function getModelPaths(modelId: string | null, identifySpeakers: boolean)
     };
 }
 
-function parakeet(id: string, files: ResourceFile[], title: () => string): ResourceDefinition {
+function parakeet(id: string, files: ResourceFile[], title: () => string,
+    changes: string): ResourceDefinition {
     return {
         id,
         title,
         description: () => t("transcription.recognizer-description"),
         icon: "bx bx-captions",
         license: "CC-BY-4.0",
+        attribution: {
+            work: "Parakeet TDT 0.6B v3",
+            author: "NVIDIA",
+            homepage: "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3",
+            changes
+        },
         files
     };
 }

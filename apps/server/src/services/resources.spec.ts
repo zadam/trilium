@@ -123,6 +123,9 @@ describe("ResourceManager", () => {
             downloadedSize: MODEL.length + TOKENS.length,
             unverifiedSize: 0,
             sources: [ "127.0.0.1" ],
+            author: "Test Lab",
+            homepage: "https://example.com/test-model",
+            licenseUrl: "https://opensource.org/license/mit",
             installed: true,
             directory
         } ]);
@@ -173,6 +176,25 @@ describe("ResourceManager", () => {
         expect(failed.status).toBe("failed");
         expect(failed.error).toMatch(/model\.bin/);
         expect((await impatient.getStatus([ "test.model" ])).resources[0].downloadedSize).toBe(STALL_AFTER);
+    });
+
+    it("writes a notice with the attribution and license beside the files it installs", async () => {
+        manager.register(defineModel(), {
+            ...defineModel({ id: "test.apache" }),
+            license: "Apache-2.0",
+            attribution: { work: "Apache model", author: "Foundation", homepage: "https://example.com/apache" }
+        });
+        manager.startDownload([ "test.model", "test.apache" ]);
+        expect((await waitForEnd()).status).toBe("succeeded");
+
+        const mit = fs.readFileSync(path.join(resourceDirectory(), "NOTICE.txt"), "utf8");
+        for (const expected of [ "Test model", "Test Lab", "https://example.com/test-model",
+            "Converted to ONNX.", "Copyright (c) 2024 Test Lab", "Permission is hereby granted" ]) {
+            expect(mit).toContain(expected);
+        }
+        const apache = fs.readFileSync(path.join(manager.getPath("test.apache") ?? "", "NOTICE.txt"), "utf8");
+        expect(apache).toContain("https://www.apache.org/licenses/LICENSE-2.0");
+        expect(apache).toContain("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION");
     });
 
     it("downloads through the fetch it is given, such as one that follows the system proxy", async () => {
@@ -398,6 +420,8 @@ describe("ResourceManager", () => {
         manager.register(defineModel());
         expect(() => manager.register(defineModel())).toThrow(/already registered/);
         expect(() => manager.register(defineModel({ id: "Test Model" }))).toThrow(/invalid ID/);
+        expect(() => manager.register({ ...defineModel({ id: "test.unlicensed" }), license: "WTFPL" }))
+            .toThrow(/license/);
         expect(() => manager.register({ ...defineModel({ id: "test.escape" }), files: [ file("../outside", MODEL) ] }))
             .toThrow(/outside its directory/);
         expect(() => manager.getPath("test.unknown")).toThrow();
@@ -413,6 +437,13 @@ function defineModel({ id = "test.model", modelUrl = "/model.bin", tokensUrl = "
         description: () => "For tests",
         icon: "bx bx-test-tube",
         license: "MIT",
+        attribution: {
+            work: "Test model",
+            author: "Test Lab",
+            homepage: "https://example.com/test-model",
+            copyright: "Copyright (c) 2024 Test Lab",
+            changes: "Converted to ONNX."
+        },
         files: [
             { ...file("nested/model.bin", MODEL), url: `${baseUrl}${modelUrl}` },
             { path: "tokens.txt", url: `${baseUrl}${tokensUrl}`, size: tokensSize, sha256: tokensHash }

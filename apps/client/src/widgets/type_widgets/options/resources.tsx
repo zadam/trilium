@@ -13,6 +13,7 @@ import openService from "../../../services/open";
 import server from "../../../services/server";
 import { formatSize, isElectron } from "../../../services/utils";
 import { subscribeToMessages, unsubscribeToMessage } from "../../../services/ws";
+import { ResourceCredits } from "../../dialogs/resource_download";
 import ActionButton from "../../react/ActionButton";
 import { Card, CardSection } from "../../react/Card";
 import Icon from "../../react/Icon";
@@ -141,11 +142,7 @@ function ResourceRow({ resource, unitOf, onDeleted }: ResourceRowProps) {
             onDelete={() => void remove()}
         >
             <small className="tn-card-option-description">{resource.description}</small>
-            <small className="tn-card-option-description">
-                {t("resource_download.sources", { sources: resource.sources.join(", ") })}
-                {" · "}
-                {t("resource_download.license", { license: resource.license })}
-            </small>
+            <ResourceCredits resource={resource} />
         </EntryRow>
     );
 }

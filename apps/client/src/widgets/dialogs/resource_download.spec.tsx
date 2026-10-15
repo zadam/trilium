@@ -16,6 +16,15 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../../services/i18n", () => ({
     t: (key: string, values?: object) => (values ? `${key}:${JSON.stringify(values)}` : key)
 }));
+// The real i18n is not initialized under test, so `Trans` would render the bare key and drop what
+// it wires in; the stub renders its values and the components themselves.
+vi.mock("react-i18next", () => ({
+    Trans: ({ i18nKey, values, components }: {
+        i18nKey: string, values: object, components: Record<string, preact.VNode>
+    }) => (
+        <span data-i18n-key={i18nKey}>{JSON.stringify(values)}{Object.values(components)}</span>
+    )
+}));
 vi.mock("../../services/server", () => ({
     default: { get: mocks.get, post: mocks.post }
 }));
@@ -38,6 +47,9 @@ const STATUS: ResourcesStatusResponse = {
         downloadedSize: 200,
         unverifiedSize: 0,
         sources: [ "huggingface.co", "github.com" ],
+        author: "NVIDIA",
+        homepage: "https://example.com/model",
+        licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
         installed: false,
         directory: null
     } ],
@@ -70,9 +82,14 @@ describe("ResourceDownloadDialog", () => {
         const row = container.querySelector(".resource-download-item");
         expect(row?.querySelector(".resource-download-icon")?.classList).toContain("bx-captions");
         expect(row?.textContent).toContain("Speech recognition model");
-        expect(text(".resource-download-meta")).toContain("huggingface.co, github.com");
-        expect(text(".resource-download-license"))
-            .toBe(`resource_download.license:{"license":"CC-BY-4.0"}`);
+        const credits = container.querySelector(".resource-download-meta");
+        expect(credits?.querySelector("[data-i18n-key]")?.textContent)
+            .toBe(`{"author":"NVIDIA","sources":"huggingface.co, github.com"}`);
+        expect(credits?.querySelector(".resource-download-author")?.getAttribute("href"))
+            .toBe("https://example.com/model");
+        const license = credits?.querySelector(".resource-download-license");
+        expect(license?.textContent).toBe(`resource_download.license:{"license":"CC-BY-4.0"}`);
+        expect(license?.getAttribute("href")).toBe("https://creativecommons.org/licenses/by/4.0/");
         expect(row?.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")).toBe("200");
         expect(row?.querySelector(".resource-download-progress")?.textContent)
             .toContain(`"received":"200 B","total":"700 B"`);

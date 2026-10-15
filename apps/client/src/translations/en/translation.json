@@ -4613,7 +4613,6 @@
     "title": "Download required",
     "intro": "Trilium needs to download the following files before it can continue. They are saved on this device and are not synced, so each of your devices downloads them separately.",
     "partially_downloaded": "Already downloaded",
-    "sources": "From {{sources}}",
     "total": "Download size",
     "free_space": "Free space on disk: {{size}}",
     "not_enough_space": "The download needs {{size}}, but only {{free}} is free on this device. Free up some space, then close this and try again.",
@@ -4626,7 +4625,8 @@
     "failed_title": "Download failed",
     "license": "{{license}} license",
     "verify": "Verify",
-    "unverified": "{{size}} already on this device, checked instead of downloaded"
+    "unverified": "{{size}} already on this device, checked instead of downloaded",
+    "credits": "By <Author>{{author}}</Author>, from {{sources}}"
   },
   "transcription_options": {
     "recognition_title": "Speech recognition",

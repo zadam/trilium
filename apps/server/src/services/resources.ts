@@ -11,6 +11,7 @@ import { pipeline } from "node:stream/promises";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import dataDirs from "./data_dir.js";
+import { RESOURCE_DIR } from "./resource_dir.js";
 
 /** One file of a resource, downloaded from `url` and accepted only if it matches `size` and `sha256`. */
 export interface ResourceFile {
@@ -29,9 +30,24 @@ export interface ResourceDefinition {
     description(): string;
     /** Boxicons classes, `bx bx-…`, for the download dialog. */
     icon: string;
-    /** The SPDX identifier of the license the files are under, such as `CC-BY-4.0`. */
+    /** The SPDX identifier of the license the files are under, one of {@link LICENSES}. */
     license: string;
+    attribution: ResourceAttribution;
     files: ResourceFile[];
+}
+
+/** Who made a resource, as its license asks it to be credited. */
+export interface ResourceAttribution {
+    /** The name of the original work, such as `Parakeet TDT 0.6B v3`. */
+    work: string;
+    /** Who made the original, such as `NVIDIA`. */
+    author: string;
+    /** Where the original is published. */
+    homepage: string;
+    /** The copyright line the work states, which its license asks to keep. */
+    copyright?: string;
+    /** How the files downloaded differ from the original, in English, for the notice. */
+    changes?: string;
 }
 
 /** The part of `fetch()` a download uses. */
@@ -51,6 +67,44 @@ interface Download {
 /** The size and modification time of each verified file of a resource, by its path. */
 type VerifiedFiles = Record<string, { size: number; mtimeMs: number }>;
 
+/** The licenses a resource can be under: where each is published, and the text its notice carries. */
+const LICENSES: Record<string, { url: string; getText(): string }> = {
+    "CC-BY-4.0": {
+        url: "https://creativecommons.org/licenses/by/4.0/",
+        getText: () => [
+            "Licensed under the Creative Commons Attribution 4.0 International License,",
+            "https://creativecommons.org/licenses/by/4.0/legalcode. The licensor offers the",
+            "material as is and makes no representations or warranties of any kind concerning",
+            "it; see Section 5 of the license, Disclaimer of Warranties and Limitation of Liability."
+        ].join("\n")
+    },
+    "MIT": {
+        url: "https://opensource.org/license/mit",
+        getText: () => [
+            "Permission is hereby granted, free of charge, to any person obtaining a copy",
+            "of this software and associated documentation files (the \"Software\"), to deal",
+            "in the Software without restriction, including without limitation the rights",
+            "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell",
+            "copies of the Software, and to permit persons to whom the Software is",
+            "furnished to do so, subject to the following conditions:",
+            "",
+            "The above copyright notice and this permission notice shall be included in all",
+            "copies or substantial portions of the Software.",
+            "",
+            "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR",
+            "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,",
+            "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER",
+            "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,",
+            "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE",
+            "SOFTWARE."
+        ].join("\n")
+    },
+    "Apache-2.0": {
+        url: "https://www.apache.org/licenses/LICENSE-2.0",
+        getText: () => fs.readFileSync(path.join(RESOURCE_DIR, "licenses", "Apache-2.0.txt"), "utf8")
+    }
+};
 const ID_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/;
 const CONTENT_HASH_PATTERN = /^[0-9a-f]{12}$/;
 const PROGRESS_INTERVAL_MS = 250;
@@ -58,6 +112,8 @@ const PROGRESS_INTERVAL_MS = 250;
 const STALL_TIMEOUT_MS = 30_000;
 /** How many hex digits of the files' combined hash a resource's directory name carries. */
 const CONTENT_HASH_LENGTH = 12;
+/** Credits a resource and states its license, in its directory, so that a copy of it carries both. */
+const NOTICE_FILE = "NOTICE.txt";
 /** Holds the {@link VerifiedFiles} of a resource, in its directory. */
 const VERIFIED_FILE = ".verified.json";
 
@@ -215,6 +271,7 @@ export class ResourceManager {
                     verified[file.path] = { size, mtimeMs };
                     await writeVerifiedFiles(directory, verified);
                 }
+                await writeNotice(directory, definition);
                 state.done = true;
                 report(true);
                 getLog().info(`Resources: installed ${definition.id} in ${directory}.`);
@@ -324,6 +381,9 @@ export class ResourceManager {
             downloadedSize,
             unverifiedSize,
             sources: [ ...new Set(definition.files.map(({ url }) => new URL(url).hostname)) ],
+            author: definition.attribution.author,
+            homepage: definition.attribution.homepage,
+            licenseUrl: LICENSES[definition.license].url,
             installed: installedDirectory !== null,
             directory: installedDirectory
         };
@@ -432,9 +492,12 @@ export async function downloadFile(file: ResourceFile, destination: string, sign
     }
 }
 
-function validateDefinition({ id, files }: ResourceDefinition) {
+function validateDefinition({ id, license, files }: ResourceDefinition) {
     if (!ID_PATTERN.test(id)) {
         throw new Error(`The resource ${id} has an invalid ID.`);
+    }
+    if (!Object.hasOwn(LICENSES, license)) {
+        throw new Error(`The resource ${id} has a license with no notice: ${license}.`);
     }
     for (const file of files) {
         const segments = file.path.split("/");
@@ -558,3 +621,26 @@ function sumSizes(files: ResourceFile[]) {
 export default new ResourceManager(dataDirs.RESOURCES_DIR, (download) => {
     ws.sendMessageToAllClients({ type: "resource-download", download });
 });
+
+/**
+ * Writes `NOTICE.txt` into the directory of a resource: the original work and who made it, how the
+ * files differ from it, where they came from, and the license with the text it asks copies to carry.
+ */
+async function writeNotice(directory: string, { license, attribution, files }: ResourceDefinition) {
+    const { work, author, homepage, copyright, changes } = attribution;
+    const { url, getText } = LICENSES[license];
+    const lines = [
+        `${work} by ${author}`,
+        homepage,
+        "",
+        ...(changes ? [ `Changes: ${changes}`, "" ] : []),
+        "Downloaded by Trilium from:",
+        ...files.map((file) => `    ${file.url}`),
+        "",
+        `License: ${license}, ${url}`,
+        ...(copyright ? [ copyright ] : []),
+        "",
+        getText()
+    ];
+    await fs.promises.writeFile(path.join(directory, NOTICE_FILE), lines.join("\n"));
+}

@@ -4,7 +4,9 @@ import type {
     ResourceDownloadProgress, ResourceDownloadState, ResourceInfo, ResourcesStatusResponse,
     WebSocketMessage
 } from "@triliumnext/commons";
+import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
+import { Trans } from "react-i18next";
 
 import { t } from "../../services/i18n";
 import server from "../../services/server";
@@ -225,17 +227,12 @@ function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
             <div className="tn-card-option-label">
                 <span className="tn-card-option-title">{resource.title}</span>
                 <small className="tn-card-option-description">{resource.description}</small>
-                <small className="tn-card-option-description resource-download-meta">
-                    {t("resource_download.sources", { sources: resource.sources.join(", ") })}
-                    {" · "}
-                    <span className="resource-download-license">
-                        {t("resource_download.license", { license: resource.license })}
-                    </span>
+                <ResourceCredits resource={resource}>
                     {resource.unverifiedSize > 0 && <>
                         {" · "}
                         {t("resource_download.unverified", { size: formatSize(resource.unverifiedSize) })}
                     </>}
-                </small>
+                </ResourceCredits>
                 {isActive && state && (
                     <RowProgress
                         received={state.receivedBytes}
@@ -255,6 +252,46 @@ function ResourceItem({ resource, unitOf, state, file }: ResourceItemProps) {
                 {formatSize(getMissingSize(resource), 2, unitOf)}
             </span>
         </CardSection>
+    );
+}
+
+/**
+ * Who made a resource and where its files come from, then its license, as the license asks a
+ * resource to be credited: the author links to the original work and the license to its text.
+ */
+export function ResourceCredits({ resource, children }: {
+    resource: ResourceInfo;
+    children?: ComponentChildren;
+}) {
+    return (
+        <small className="tn-card-option-description resource-download-meta">
+            <Trans
+                i18nKey="resource_download.credits"
+                values={{ author: resource.author, sources: resource.sources.join(", ") }}
+                components={{
+                    Author: <ExternalLink className="resource-download-author" href={resource.homepage} />
+                }}
+            />
+            {" · "}
+            <ExternalLink className="resource-download-license" href={resource.licenseUrl}>
+                {t("resource_download.license", { license: resource.license })}
+            </ExternalLink>
+            {children}
+        </small>
+    );
+}
+
+interface ExternalLinkProps {
+    className: string;
+    href: string;
+    children?: ComponentChildren;
+}
+
+function ExternalLink({ className, href, children }: ExternalLinkProps) {
+    return (
+        <a className={`tn-link external ${className}`} href={href} target="_blank" rel="noopener noreferrer">
+            {children}
+        </a>
     );
 }
 

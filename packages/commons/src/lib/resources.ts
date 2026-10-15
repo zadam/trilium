@@ -25,6 +25,12 @@ export interface ResourceInfo {
     unverifiedSize: number;
     /** The host names its files are downloaded from. */
     sources: string[];
+    /** Who made the original work. */
+    author: string;
+    /** Where the original work is published. */
+    homepage: string;
+    /** Where its license is published. */
+    licenseUrl: string;
     installed: boolean;
     /** The directory holding its files while it is installed, else `null`. */
     directory: string | null;

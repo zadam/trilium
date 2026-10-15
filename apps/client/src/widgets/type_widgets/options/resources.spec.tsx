@@ -16,6 +16,16 @@ const mocks = vi.hoisted(() => ({
     handlers: [] as ((message: WebSocketMessage) => void)[]
 }));
 
+// The real i18n is not initialized under test, so `Trans` would render the bare key and drop what
+// it wires in; the stub renders its values and the components themselves.
+vi.mock("react-i18next", () => ({
+    Trans: ({ i18nKey, values, components }: {
+        i18nKey: string, values: object, components: Record<string, preact.VNode>
+    }) => (
+        <span data-i18n-key={i18nKey}>{JSON.stringify(values)}{Object.values(components)}</span>
+    )
+}));
+
 vi.mock("../../../services/server", () => ({
     default: {
         get: async (url: string) => {
@@ -121,6 +131,10 @@ describe("ResourcesSettings", () => {
         ]);
         expect([ ...host.querySelectorAll(".resources-size") ].map((size) => size.textContent))
             .toEqual([ "2.00 GiB", "0.01 GiB", "2.00 GiB" ]);
+        expect(rows[0].querySelector(".resource-download-author")?.getAttribute("href"))
+            .toBe("https://example.com/model");
+        expect(rows[0].querySelector(".resource-download-license")?.getAttribute("href"))
+            .toBe("https://opensource.org/license/mit");
     });
 
     it("lists files copied in but not yet checked, and counts them in the space used", async () => {
@@ -271,6 +285,9 @@ function resource(overrides: Partial<ResourceInfo> & { id: string }): ResourceIn
         downloadedSize: 0,
         unverifiedSize: 0,
         sources: [ "example.com" ],
+        author: "Test Lab",
+        homepage: "https://example.com/model",
+        licenseUrl: "https://opensource.org/license/mit",
         installed: false,
         directory: null,
         ...overrides
