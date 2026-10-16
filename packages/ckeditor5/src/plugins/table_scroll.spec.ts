@@ -207,7 +207,7 @@ describe("a table with content wider than the editable", () => {
 describe("the controls of a scrolling table", () => {
     useEditorStylesheet();
 
-    it("keeps the caption, the handle and the buttons whole and in view", async () => {
+    it("keeps the controls whole and in view, above and below the caption and table", async () => {
         const editor = await createTestEditor([...PLUGINS, TableCaption]);
         setEditableWidth(editor, 400);
         setModelData(editor.model, '<table tableWidth="150%"><tableRow><tableCell>'
@@ -232,14 +232,16 @@ describe("the controls of a scrolling table", () => {
             expect(scrolledLefts[index]).toBeCloseTo(left, 0);
         }
 
-        const [caption, , before] = controls;
-        const table = figure.querySelector("table");
-        expect(caption?.getBoundingClientRect().top)
-            .toBeCloseTo(figure.getBoundingClientRect().top + figure.clientTop, 0);
-        expect(table?.getBoundingClientRect().top)
-            .toBeCloseTo(caption?.getBoundingClientRect().bottom ?? 0, 0);
-        expect(before && getComputedStyle(before).borderBottomLeftRadius)
-            .toBe(before && getComputedStyle(before).borderTopLeftRadius);
+        const [caption, handle, before, after] = controls.map(rectOf);
+        const table = rectOf(figure.querySelector("table"));
+        expect(handle.top).toBeCloseTo(before.top, 0);
+        expect(handle.bottom).toBeLessThanOrEqual(caption.top + 0.5);
+        expect(caption.top).toBeCloseTo(before.bottom, 0);
+        expect(table.top).toBeCloseTo(caption.bottom, 0);
+        expect(after.top).toBeCloseTo(table.bottom, 0);
+        const beforeButton = controls[2];
+        expect(beforeButton && getComputedStyle(beforeButton).borderBottomLeftRadius)
+            .toBe(beforeButton && getComputedStyle(beforeButton).borderTopLeftRadius);
     });
 });
 
@@ -347,6 +349,10 @@ function expectInside(figure: HTMLElement, control: Element | null) {
     expect(rect?.left).toBeGreaterThanOrEqual(left - 0.5);
     expect(rect?.right).toBeLessThanOrEqual(left + figure.clientWidth + 0.5);
     return rect?.left ?? NaN;
+}
+
+function rectOf(element: Element | null) {
+    return element?.getBoundingClientRect() ?? new DOMRect(NaN, NaN, NaN, NaN);
 }
 
 function setReferenceWidth(width: string) {

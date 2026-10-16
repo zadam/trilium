@@ -81,7 +81,6 @@
                 order: -2;
                 align-self: flex-start;
                 inset-inline-start: var(--button-inset);
-                margin-block-end: calc(-1 * var(--ck-widget-type-around-button-size));
                 margin-inline-start: var(--button-inset);
             }
 
@@ -90,7 +89,6 @@
                 align-self: flex-end;
                 inset-inline-start:
                     calc(100% - min(10%, 30px) - var(--ck-widget-type-around-button-size));
-                margin-block-start: calc(-1 * var(--ck-widget-type-around-button-size));
                 margin-inline-end: min(10%, 30px);
             }
         }
