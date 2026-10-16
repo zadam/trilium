@@ -315,6 +315,8 @@ describe("useNoteIds nesting depth", () => {
                 }
             ]
         });
+        // Other modules, such as `services/import.ts`, subscribe as well; only the hook's handlers run.
+        const otherHandlers = new Set(wsHandlers);
         const mountPoint = document.createElement("div");
         await act(async () => {
             render(
@@ -330,7 +332,9 @@ describe("useNoteIds nesting depth", () => {
         expect(currentNoteIds).toEqual([ "import-existing", "import-root" ]);
 
         await act(async () => {
-            for (const handler of wsHandlers) {
+            const hookHandlers = [ ...wsHandlers ].filter((handler) => !otherHandlers.has(handler));
+            expect(hookHandlers).toHaveLength(1);
+            for (const handler of hookHandlers) {
                 handler({
                     type: "taskSucceeded",
                     taskType: "importNotes",
