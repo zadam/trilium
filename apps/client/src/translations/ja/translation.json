@@ -3503,7 +3503,8 @@
     "fullscreen": "全画面表示",
     "exit_fullscreen": "全画面表示を終了",
     "open_in_new_tab": "新しいタブで開く",
-    "more_actions": "その他のアクション"
+    "more_actions": "その他のアクション",
+    "beta": "Beta"
   },
   "spreadsheet": {
     "read-only": "このノートは読み取り専用です。",
@@ -4213,7 +4214,12 @@
     "status_attachments": "添付ファイル",
     "status_deleted_items": "削除済みアイテム",
     "selection_hint": "アイテムをタップして詳細を表示",
-    "show_selection_details": "選択項目の詳細を表示"
+    "show_selection_details": "選択項目の詳細を表示",
+    "compress_jpeg_keep_description": "現在の画質を維持します。",
+    "compress_jpeg_compress_description": "画質を下げて画像を再度保存し、ファイルサイズを小さくします。この操作は元に戻せません。",
+    "compress_png_keep_description": "画像を元の状態のままで保存します。",
+    "compress_png_optimize_description": "色数を減らします。スクリーンショットや図表の場合、通常、見た目にはほとんど影響しません。",
+    "compress_png_jpeg_description": "最もファイルサイズを小さくできます。透過情報を含む画像は、それに適した形で最適化されます。"
   },
   "contextual_help": {
     "label": "ヘルプ: {{- message}}",
@@ -4515,7 +4521,8 @@
     "note_title": "ミーティング {{date}}",
     "starting": "文字起こしを開始しています…",
     "stop": "文字起こしを停止",
-    "stopping": "文字起こしを終了しています…"
+    "stopping": "文字起こしを終了しています…",
+    "title_keeping_recordings": "{{title}} （トラブルシューティング用に音声を保存）"
   },
   "transcript": {
     "speaker_me": "自分",
@@ -4528,5 +4535,65 @@
     "offset": "文字起こし開始から {{offset}}",
     "cleanup": "フィラーワードを非表示",
     "cleanup_tooltip": "“えー”、 “あのー” などの言葉や、言い淀み（どもり）を非表示にします。文字起こし自体は変更されません。"
+  },
+  "resource_download": {
+    "title": "ダウンロードが必要",
+    "intro": "Trilium を続行するには、以下のファイルをダウンロードする必要があります。これらのファイルはデバイス上にのみ保存され、同期は行われないため、使用するデバイスごとに個別にダウンロードする必要があります。",
+    "partially_downloaded": "ダウンロード済み",
+    "total": "ダウンロードサイズ",
+    "free_space": "ディスクの空き容量: {{size}}",
+    "not_enough_space": "ダウンロードには {{size}} の空き容量が必要ですが、このデバイス上の空き容量は {{free}} しかありません。ディスクの空き容量を確保してから、この画面を閉じて再度お試しください。",
+    "progress": "{{received}} / {{total}}",
+    "current_file": "{{file}} をダウンロード中…",
+    "download": "ダウンロード",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "not_enough_space_title": "空き容量が不足しています",
+    "failed_title": "ダウンロードに失敗しました",
+    "license": "{{license}} ライセンス",
+    "verify": "確認",
+    "unverified": "{{size}} は既にデバイス上に存在するため、ダウンロードは行わず、確認のみ実施しました",
+    "credits": "作成者: <Author>{{author}}</Author>, 出典: {{sources}}"
+  },
+  "transcription_options": {
+    "recognition_title": "音声認識",
+    "european_languages": "ヨーロッパ言語",
+    "european_languages_description": "25 種類のヨーロッパ言語に対応しており、話されている言語を自動的に判別します。初めて録音を行う際に、モデルがダウンロードされます。",
+    "model_standard": "標準",
+    "model_high_accuracy": "高精度",
+    "identify_speakers": "話者の識別",
+    "identify_speakers_description": "参加者を個別に識別し、それぞれの発言にラベルを付けます。マイクに向かって話した内容は、常にあなたの発言として記録されます。声の照合は録音中のみ行われ、声に関する情報が保存されることはありません。また、ミーティングをまたいで特定の個人が識別されることもありません。もし話者の識別が正しく行われない場合は、この機能をオフにしてください。設定の変更は、次回の録音から適用されます。",
+    "troubleshooting_title": "トラブルシューティング",
+    "keep_recordings": "トラブルシューティング用に録音を保存",
+    "keep_recordings_description": "ミーティング参加者全員の音声、使用された設定、および生成された文字起こしデータを保持します。これにより、録音に関する問題が発生した際に、その状況を報告・再現することが可能になります。この機能を使用すると、ミーティング 1 時間あたり約 230 MBのデータが保存されます。なお、これらのデータが自動的に削除されることはありません。",
+    "saved_in": "保存先",
+    "enabled": "ミーティングの文字起こし",
+    "enabled_description": "ランチバーに「ミーティングの文字起こし」ボタンが追加されます。この機能を使うと、マイクに向かって話した内容や、スピーカーから聞こえる他の参加者の発言が文字起こしされます。音声認識はすべてこのデバイス上で行われるため、音声データが外部に送信されることはありません。",
+    "related_resources": "ダウンロード済みのリソース",
+    "related_resources_description": "このデバイスにダウンロードされた音声認識モデルを確認し、不要になったものを削除できます。",
+    "model_standard_description": "NVIDIA 社製の Parakeet TDT 0.6B v3。ほとんどのコンピュータで快適に動作するよう量子化されています。",
+    "model_high_accuracy_description": "NVIDIA 社製の Parakeet TDT 0.6B v3（フル精度版）。認識精度が高く誤りが少ない反面、録音時には約 1.6 GB と多くのメモリを必要とします。",
+    "model_size": "{{size}} をダウンロード",
+    "keep_recordings_warning": "この機能を有効にする前に、ミーティングの参加者全員から録音・録画の同意を得てください。ドイツ、フランス、および米国の一部の州では、全員の同意なしに会話を録音することが犯罪とされています。また、異なる場所から参加者が集まる場合、適用されるのは最も厳しい地域の法律となります。音声データは暗号化されずに保存されます。保護されたノートであっても同様です。",
+    "unsupported": "このコンピュータではミーティングの文字起こし機能を利用できません: 音声認識エンジンを読み込めませんでした。"
+  },
+  "resources_options": {
+    "list_title": "リソース",
+    "list_description": "音声認識モデルなど、機能が必要になった際に初めてダウンロードされる大容量ファイルです。これらはデバイス上に保存されますが、同期は行われないため、デバイスごとに個別にダウンロードされます。",
+    "installed": "インストール済み",
+    "partially_downloaded": "{{size}} 中 {{downloaded}} ダウンロード済み",
+    "space_used": "使用容量",
+    "no_resources": "まだ何もダウンロードされていません。",
+    "delete": "削除",
+    "delete_confirmation": "{{title}} を削除しますか？ 次回、この機能が必要になった際に、再度ダウンロードされます。",
+    "open_folder": "フォルダーを開く",
+    "outdated": "旧バージョン",
+    "outdated_description": "このリソースの以前のバージョンのファイルであり、現在のバージョンでは使用されていません。",
+    "unregistered": "未使用",
+    "unregistered_description": "このアプリのどの機能でも使用されていない、ダウンロード済みのリソースです。",
+    "unknown": "不明",
+    "unknown_description": "Trilium によってダウンロードされたものではありません。",
+    "delete_foreign_confirmation": "{{name}} を削除しますか？ このアプリのどの機能からも使用されていません。",
+    "unverified": "未確認"
   }
 }
