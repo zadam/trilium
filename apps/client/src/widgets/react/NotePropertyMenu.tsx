@@ -1,6 +1,6 @@
 import { FilterLabelsByType } from "@triliumnext/commons";
 import { Fragment, VNode } from "preact";
-import { useContext } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 
 import Component from "../../components/component";
 import FNote from "../../entities/fnote";
@@ -265,8 +265,7 @@ function SplitButtonPropertyView({ note, property }: { note: FNote, property: Sp
 }
 
 function NumberPropertyView({ note, property }: { note: FNote, property: NumberProperty }) {
-    //@ts-expect-error Interop with text box which takes in string values even for numbers.
-    const [ value, setValue ] = useNoteLabel(note, property.bindToLabel);
+    const [ draft, setDraft, commit ] = useNumberLabelDraft(note, property.bindToLabel);
     const disabled = property.disabled?.(note);
 
     return (
@@ -278,7 +277,8 @@ function NumberPropertyView({ note, property }: { note: FNote, property: NumberP
             <PropertyLabel property={property} />
             <FormTextBox
                 type="number"
-                currentValue={value ?? ""} onChange={setValue}
+                allowEmpty
+                currentValue={draft} onChange={setDraft} onBlur={commit}
                 style={{ width: `${property.width ?? 100}px` }}
                 min={property.min ?? 0}
                 disabled={disabled}
@@ -380,8 +380,7 @@ function OptionGroupPropertySection({ note, property }: {
 }
 
 function NumberPropertySection({ note, property }: { note: FNote, property: NumberProperty & PropertyHelp }) {
-    //@ts-expect-error Interop with text box which takes in string values even for numbers.
-    const [ value, setValue ] = useNoteLabel(note, property.bindToLabel);
+    const [ draft, setDraft, commit ] = useNumberLabelDraft(note, property.bindToLabel);
     return (
         <OptionCardSection
             name={property.bindToLabel}
@@ -390,8 +389,10 @@ function NumberPropertySection({ note, property }: { note: FNote, property: Numb
         >
             <FormTextBox
                 type="number"
-                currentValue={value ?? ""}
-                onChange={setValue}
+                allowEmpty
+                currentValue={draft}
+                onChange={setDraft}
+                onBlur={commit}
                 min={property.min ?? 0}
                 disabled={property.disabled?.(note)}
             />
@@ -421,4 +422,25 @@ function ComboBoxPropertySection({ note, property }: {
             />
         </OptionCardSection>
     );
+}
+
+/**
+ * A number label edited in a box: the typed value is held as a draft, written once the box commits
+ * (on leaving it, or on a spinner step), and an emptied box removes the label.
+ */
+function useNumberLabelDraft(note: FNote, labelName: NumberProperty["bindToLabel"]) {
+    //@ts-expect-error Interop with text box which takes in string values even for numbers.
+    const [ value, setValue ] = useNoteLabel(note, labelName);
+    const [ draft, setDraft ] = useState(value ?? "");
+
+    useEffect(() => setDraft(value ?? ""), [ value ]);
+
+    function commit(newValue: string) {
+        const next = newValue.trim() || null;
+        if (next !== (value ?? null)) {
+            setValue(next);
+        }
+    }
+
+    return [ draft, setDraft, commit ] as const;
 }
