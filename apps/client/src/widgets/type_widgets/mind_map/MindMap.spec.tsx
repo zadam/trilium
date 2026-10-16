@@ -4,11 +4,46 @@
 // sanitization-dependent specs under jsdom, which matches real-browser behavior.
 import i18next from "i18next";
 import { DARK_THEME, MindElixirInstance, THEME as LIGHT_THEME } from "mind-elixir";
-import { beforeAll, describe, expect, it } from "vitest";
+import { render } from "preact";
+import { act } from "preact/test-utils";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
+import { renderInto } from "../../../test/render";
 import englishTranslation from "../../../translations/en/translation.json";
 
-import { buildTheme, localizeBuiltLabels, renameOverlayLabel, sanitizeMindMapData } from "./MindMap.js";
+import { buildTheme, localizeBuiltLabels, MindElixir, renameOverlayLabel, sanitizeMindMapData } from "./MindMap.js";
+
+const builtMaps = vi.hoisted(() => [] as { destroy: () => void; destroyed: boolean }[]);
+
+vi.mock("mind-elixir", async (importOriginal) => {
+    const original = await importOriginal<typeof import("mind-elixir")>();
+
+    /** Records each instance built and whether it was destroyed. */
+    class FakeMindElixir {
+        nodes = document.createElement("me-nodes");
+        currentNodes = [];
+        theme = { name: "Latte" };
+        bus = { addListener: vi.fn(), removeListener: vi.fn() };
+        destroyed = false;
+
+        constructor() {
+            builtMaps.push(this);
+        }
+
+        getData() { return {}; }
+        init() {}
+        linkDiv() {}
+        destroy() { this.destroyed = true; }
+    }
+
+    return { ...original, default: FakeMindElixir };
+});
+
+vi.mock("../../react/hooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../react/hooks")>()),
+    useColorScheme: () => "light",
+    useTriliumOption: () => [ "en" ]
+}));
 
 describe("sanitizeMindMapData", () => {
     it("strips XSS/RCE vectors from dangerouslySetInnerHTML (GHSA-rj57-j38v-3577)", () => {
@@ -201,5 +236,31 @@ describe("renameOverlayLabel", () => {
         renameOverlayLabel(label, "Rezumat");
         expect(label.textContent).toBe("Rezumat");
         expect([ label.style.left, label.style.top ]).toEqual([ "", "" ]);
+    });
+});
+
+describe("MindElixir", () => {
+    const liveMaps = () => builtMaps.filter((map) => !map.destroyed);
+
+    /** Builds the map and settles it, so that its effects have run before it is looked at. */
+    function renderMap(editable: boolean) {
+        let container: HTMLElement | undefined;
+        act(() => { container = renderInto(<MindElixir editable={editable} />); });
+        if (!container) throw new Error("the map was not rendered");
+        return container;
+    }
+
+    it("destroys the instance it replaces, and the last one when it unmounts", () => {
+        builtMaps.length = 0;
+        const container = renderMap(true);
+        expect(liveMaps()).toHaveLength(1);
+
+        const first = liveMaps()[0];
+        act(() => render(<MindElixir editable={false} />, container));
+        expect(first.destroyed).toBe(true);
+        expect(liveMaps()).toHaveLength(1);
+
+        act(() => render(null, container));
+        expect(liveMaps()).toHaveLength(0);
     });
 });

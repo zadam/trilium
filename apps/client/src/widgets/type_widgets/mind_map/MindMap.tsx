@@ -198,7 +198,7 @@ export default function MindMap({ note, ntxId, noteContext }: TypeWidgetProps) {
     );
 }
 
-function MindElixir({ children, containerRef: externalContainerRef, containerProps, apiRef: externalApiRef, onChange, onSelectionChange, editable }: MindElixirProps) {
+export function MindElixir({ children, containerRef: externalContainerRef, containerProps, apiRef: externalApiRef, onChange, onSelectionChange, editable }: MindElixirProps) {
     const containerRef = useSyncedRef<HTMLDivElement>(externalContainerRef, null);
     const apiRef = useRef<MindElixirInstance>(null);
     const [ locale ] = useTriliumOption("locale");
@@ -211,6 +211,7 @@ function MindElixir({ children, containerRef: externalContainerRef, containerPro
     function reinitialize() {
         if (!containerRef.current) return;
 
+        apiRef.current?.destroy();
         const mind = new VanillaMindElixir({
             el: containerRef.current,
             editable,
@@ -238,12 +239,11 @@ function MindElixir({ children, containerRef: externalContainerRef, containerPro
         setInstanceVersion((version) => version + 1);
     }
 
-    useEffect(() => {
-        reinitialize();
-        return () => {
-            apiRef.current?.destroy();
-            apiRef.current = null;
-        };
+    // The instance is built by the effect that follows `editable` and `locale`, which also runs on
+    // mount; this one only tears it down.
+    useEffect(() => () => {
+        apiRef.current?.destroy();
+        apiRef.current = null;
     }, []);
 
     // React to theme changes.
