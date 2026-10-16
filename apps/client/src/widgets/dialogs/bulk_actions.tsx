@@ -32,7 +32,8 @@ export default function BulkActionsDialog() {
     const [ shown, setShown ] = useState(false);
 
     useTriliumEvent("openBulkActionsDialog", async ({ selectedOrActiveNoteIds }) => {
-        setSelectedOrActiveNoteIds(selectedOrActiveNoteIds);
+        // Clones of one note share its ID.
+        setSelectedOrActiveNoteIds([ ...new Set(selectedOrActiveNoteIds) ]);
         setBulkActionNote(await froca.getNote("_bulkAction"));
         setShown(true);
     });

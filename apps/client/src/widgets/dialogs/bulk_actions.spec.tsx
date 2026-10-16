@@ -259,4 +259,14 @@ describe("BulkActionsDialog", () => {
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n2" ], includeDescendants: false });
         expect(container.querySelector<HTMLButtonElement>(".tn-chip-remove")?.disabled).toBe(true);
     });
+
+    it("lists a note selected through two of its clones once", async () => {
+        await open([ "n1", "n1", "n2" ]);
+        expect(chipNoteIds()).toStrictEqual([ "n1", "n2" ]);
+        expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1", "n2" ], includeDescendants: false });
+
+        await open([ "n1", "n1" ]);
+        expect(chipNoteIds()).toStrictEqual([ "n1" ]);
+        expect(container.querySelector<HTMLButtonElement>(".tn-chip-remove")?.disabled).toBe(true);
+    });
 });
