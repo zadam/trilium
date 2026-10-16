@@ -979,6 +979,16 @@ export default class TabManager extends Component {
     }
 
     async frocaReloadedEvent() {
+        // A rebuild drops the notes the backend no longer has. Collected before the per-context
+        // handlers clear noteId, as in entitiesReloadedEvent().
+        const removedPinnedNtxIds = this.mainNoteContexts
+            .filter((nc) => nc.pinned && nc.noteId && !(nc.noteId in froca.notes))
+            .map((nc) => nc.ntxId);
+
+        for (const ntxId of removedPinnedNtxIds) {
+            await this.setTabPinned(ntxId, false);
+        }
+
         const activeContext = this.getActiveContext();
         if (activeContext) {
             await this.updateDocumentTitle(activeContext);
