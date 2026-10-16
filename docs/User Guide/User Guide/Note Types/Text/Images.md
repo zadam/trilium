@@ -8,7 +8,7 @@ An image can be uploaded in the form of note's [attachment](../../Basic%20Concep
 To add an image to the note:
 
 *   Simply drag it from file explorer onto the note editor inside Trilium and the image will be uploaded.
-*   Alternatively, from the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a> look for the _Insert image_ icon.
+*   Alternatively, from the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a> look for the <span class="tn-icon cke cke-image-upload"></span> _Upload image from computer_ button.
 *   You can also copy and paste an image from web (see section below).
 
 > [!TIP]

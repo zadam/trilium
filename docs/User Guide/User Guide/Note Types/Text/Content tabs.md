@@ -45,7 +45,7 @@ In read-only notes, a title too long for its tab fades out where it is cut off. 
 A link can point to a single tab, much like a link to a block (see <a class="reference-link" href="Block%20references.md">Block references</a>):
 
 1.  Place the cursor in the tab, either in its title or in its panel.
-2.  Press _Copy link to tab_ in the toolbar of the tabs block. Alternatively, right-click the text and select _Copy_ → _Copy link to this tab_. The tab flashes briefly.
+2.  Press _Copy link to tab_ (<span class="tn-icon cke cke-link"></span>) in the toolbar of the tabs block. Alternatively, right-click the text and select _Copy_ → _Copy link to this tab_. The tab flashes briefly.
 3.  Go to the note where to insert the link and press <kbd>Ctrl</kbd>+<kbd>V</kbd>.
 
 The link shows the title of the note, followed by the title of the tab. Clicking it opens the note, shows the tab and flashes it. As with any block reference, the link can be turned into an <a class="reference-link" href="Include%20Note.md">Include Note</a> that shows only that tab.
