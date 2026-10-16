@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type FNote from "../../../entities/fnote";
 import froca from "../../../services/froca";
 import { buildNote } from "../../../test/easy-froca";
-import GeoMapProperties, { type GeoMapImageState } from "./GeoMapProperties";
+import GeoMapProperties, { type GeoMapImageState, isTileUrlTemplate } from "./GeoMapProperties";
 
 vi.mock("../../../services/i18n", () => ({
     t: (key: string) => key
@@ -51,6 +51,7 @@ vi.mock("../../react/NoteAutocomplete", () => ({
 }));
 
 const LOADED_IMAGE: GeoMapImageState = { status: "image", size: { width: 2048, height: 1024 } };
+const TILE_URL = "https://tiles.example.org/{z}/{x}/{y}{r}.png";
 
 describe("GeoMapProperties", () => {
     let container: HTMLElement;
@@ -131,6 +132,16 @@ describe("GeoMapProperties", () => {
         });
     }
 
+    /** Types `value` into `input` and leaves it, which is when a text box commits. */
+    function type(input: HTMLInputElement | null, value: string) {
+        if (!input) throw new Error("no such input");
+        act(() => {
+            input.value = value;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        });
+    }
+
     beforeEach(() => {
         vi.clearAllMocks();
         container = document.createElement("div");
@@ -180,6 +191,7 @@ describe("GeoMapProperties", () => {
         expect(backgroundType()).toBe("geo-map.background-map");
         expect(openBackgroundTypes().map((item) => item.textContent?.trim())).toEqual([
             "geo-map.background-mapgeo-map.background-map-description",
+            "geo-map.background-tilesgeo-map.background-tiles-description",
             "geo-map.background-imagegeo-map.background-image-description"
         ]);
         expect(optionTitles(".geo-map-properties-background")).toEqual([
@@ -237,11 +249,80 @@ describe("GeoMapProperties", () => {
 
         const worldMap = openBackgroundTypes().find((item) =>
             item.textContent?.trim().startsWith("geo-map.background-map"));
+        const tiles = openBackgroundTypes().find((item) =>
+            item.textContent?.trim().startsWith("geo-map.background-tiles"));
         expect(worldMap?.classList.contains("disabled")).toBe(true);
+        expect(tiles?.classList.contains("disabled")).toBe(true);
         act(() => worldMap?.click());
         expect(mocks.toggleDangerousAttribute).not.toHaveBeenCalled();
         expect(backgroundType()).toBe("geo-map.background-image");
         expect(note.noteId).toBe("inheritingMap");
+    });
+
+    it("draws a tileset once a URL naming its tiles is entered", () => {
+        const note = draw({});
+        choose("geo-map.background-tiles");
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "geo-map.tiles-url", "geo-map.dark-tiles"
+        ]);
+        expect(mocks.setLabel).not.toHaveBeenCalled();
+
+        const url = query<HTMLInputElement>(".geo-map-tiles-url");
+        type(url, "https://tiles.example.org/map.png");
+        expect(query(".geo-map-tiles-url-error")).not.toBeNull();
+        expect(url?.value).toBe("https://tiles.example.org/map.png");
+        expect(mocks.setLabel).not.toHaveBeenCalled();
+
+        type(url, ` ${TILE_URL} `);
+        expect(query(".geo-map-tiles-url-error")).toBeNull();
+        expect(mocks.setLabel).toHaveBeenCalledWith(note.noteId, "map:style", TILE_URL);
+    });
+
+    it("goes back to a built-in style by disabling the tileset, which it keeps", () => {
+        const note = draw({ "#map:style": TILE_URL });
+        expect(backgroundType()).toBe("geo-map.background-tiles");
+        expect(query<HTMLInputElement>(".geo-map-tiles-url")?.value).toBe(TILE_URL);
+
+        choose("geo-map.background-map");
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(note, "label", "map:style", false);
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "book_properties_config.map-style"
+        ]);
+    });
+
+    it("enables a disabled tileset again, and replaces it when another URL is entered", () => {
+        const note = draw({ "#disabled:map:style": TILE_URL });
+        expect(backgroundType()).toBe("geo-map.background-map");
+
+        choose("geo-map.background-tiles");
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(note, "label", "map:style", true);
+
+        const other = "https://other.example.org/{z}/{y}/{x}";
+        type(query<HTMLInputElement>(".geo-map-tiles-url"), other);
+        expect(mocks.setLabel).toHaveBeenCalledWith(note.noteId, "map:style", other);
+        expect(mocks.removeOwnedLabelByName).toHaveBeenCalledWith(note, "disabled:map:style");
+    });
+
+    it("overrides an inherited tileset with the default style, and disables an image for one", () => {
+        buildNote({
+            title: "Maps",
+            "#map:style(inheritable)": TILE_URL,
+            children: [ { id: "tiledMap", title: "Map" } ]
+        });
+        const tiled = drawNote(froca.notes.tiledMap);
+        choose("geo-map.background-map");
+        expect(mocks.toggleDangerousAttribute).not.toHaveBeenCalled();
+        expect(mocks.setLabel)
+            .toHaveBeenCalledWith(tiled.noteId, "map:style", "versatile-colorful-eclipse");
+
+        vi.clearAllMocks();
+        const imageMap = draw({ "~map:image": "image1", "#map:style": TILE_URL }, LOADED_IMAGE);
+        choose("geo-map.background-tiles");
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(imageMap, "relation", "map:image", false);
+        expect(backgroundType()).toBe("geo-map.background-tiles");
     });
 
     it("measures in pixels until custom corners are chosen, starting them at the size", () => {
@@ -301,5 +382,15 @@ describe("GeoMapProperties", () => {
         render(null, container);
         draw({ "~map:image": "image1" }, LOADED_IMAGE);
         expect(query(".geo-map-image-notice")).toBeNull();
+    });
+});
+
+describe("isTileUrlTemplate", () => {
+    it("accepts an http(s) URL naming the tile by z/x/y or by quadkey", () => {
+        expect(isTileUrlTemplate(TILE_URL)).toBe(true);
+        expect(isTileUrlTemplate("http://tiles.example.org/{quadkey}.jpeg")).toBe(true);
+        expect(isTileUrlTemplate("https://tiles.example.org/{z}/{x}.png")).toBe(false);
+        expect(isTileUrlTemplate("ftp://tiles.example.org/{z}/{x}/{y}.png")).toBe(false);
+        expect(isTileUrlTemplate("versatiles-colorful")).toBe(false);
     });
 });

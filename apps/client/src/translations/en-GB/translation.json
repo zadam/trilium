@@ -250,6 +250,6 @@
     "license": "{{license}} licence"
   },
   "geo-map": {
-    "dark-image-description": "Draws the marker titles in a light colour, so that they can be read over a dark image."
+    "dark-tiles-description": "Draws the marker titles in a light colour, so that they can be read over dark tiles."
   }
 }

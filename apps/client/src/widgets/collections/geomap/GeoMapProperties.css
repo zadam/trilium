@@ -8,7 +8,8 @@
     }
 
     .geo-map-image-notice,
-    .geo-map-coordinates-error {
+    .geo-map-coordinates-error,
+    .geo-map-tiles-url-error {
         margin: 0;
     }
 }

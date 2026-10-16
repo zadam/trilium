@@ -3170,7 +3170,14 @@
     "background-image": "Custom image",
     "background-map-description": "A world map in one of the vector or raster styles.",
     "background-image-description": "An image of your own, such as a floor plan or a fantasy map, with markers and shapes placed on it.",
-    "background-image-inherited": "This map's image comes from a parent note or a template, so it can only be switched off there."
+    "background-image-inherited": "This map's image comes from a parent note or a template, so it can only be switched off there.",
+    "background-tiles": "Custom tileset",
+    "background-tiles-description": "A world map drawn from the raster tiles of a server of your choice.",
+    "tiles-url": "Tile URL",
+    "tiles-url-description": "The address of one tile, with {z}, {x} and {y} where the zoom level and the tile's position go. A server with high-resolution tiles can be given {r}, where it expects @2x.",
+    "tiles-url-invalid": "A tile URL starts with http:// or https:// and contains {z}, {x} and {y}, so this change wasn't saved.",
+    "dark-tiles": "Dark tileset",
+    "dark-tiles-description": "Draws the marker titles in a light color, so that they can be read over dark tiles."
   },
   "embedded_note": {
     "open-note": "Open note",

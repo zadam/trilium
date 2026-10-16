@@ -18,6 +18,7 @@ import { useNoteLabel, useNoteLabelBoolean, useNoteRelation } from "../../react/
 import NoteAutocomplete from "../../react/NoteAutocomplete";
 import { type BookProperty, ViewPropertySection } from "../../react/NotePropertyMenu";
 import SegmentedChoice from "../../react/SegmentedChoice";
+import { DEFAULT_MAP_LAYER_NAME, isTileUrl } from "./map_layer";
 import { formatImageExtent, type ImageSize, parseImageExtent } from "./space";
 
 /** What the map knows of its image: none, loading, unusable, or loaded at its natural size. */
@@ -26,8 +27,8 @@ export type GeoMapImageState =
     | { status: "error"; reason: "unloadable" | "svg" }
     | { status: "image"; size: ImageSize };
 
-/** What a geo map is drawn over: a world map in one of its styles, or an image note. */
-type BackgroundKind = "map" | "image";
+/** What a geo map is drawn over: a built-in world map, a raster tileset, or an image note. */
+type BackgroundKind = "map" | "tiles" | "image";
 
 interface BackgroundOption {
     value: BackgroundKind;
@@ -92,35 +93,49 @@ function isMapStyle(property: BookProperty) {
 }
 
 /**
- * A world map with its style, or an image with its coordinates.
+ * A built-in world map with its style, a tileset with its URL, or an image with its coordinates.
  *
- * Going back to a world map disables `~map:image` as `~disabled:map:image` rather than removing it,
- * and choosing the image enables it again. Without a disabled image, choosing the image writes
- * nothing until an image note is picked, so the map stays drawn as it was until then. An inherited
- * image can only be disabled on the note that owns it.
+ * Leaving the image disables `~map:image` as `~disabled:map:image` rather than removing it, and
+ * going back to a built-in style disables a tileset's `#map:style` the same way; choosing either
+ * again enables it. Without a disabled one, choosing the image or a tileset writes nothing until an
+ * image note is picked or a URL is entered, so the map stays drawn as it was until then. An
+ * inherited image can only be disabled on the note that owns it.
  */
 function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState }) {
     const [ imageNoteId, setImageNoteId ] = useNoteRelation(note, "map:image");
-    // Read so that the card follows the relation being disabled and enabled.
+    const [ style, setStyle ] = useNoteLabel(note, "map:style");
+    // Read so that the card follows the image and the tileset being disabled and enabled.
     useNoteRelation(note, "disabled:map:image");
-    const [ kind, setKind ] = useState<BackgroundKind>(imageNoteId ? "image" : "map");
+    useNoteLabel(note, "disabled:map:style");
+    const tileUrl = isTileUrl(style) ? style : undefined;
+    const savedKind: BackgroundKind = imageNoteId ? "image" : tileUrl ? "tiles" : "map";
+    const [ kind, setKind ] = useState<BackgroundKind>(savedKind);
     const isInherited = !!imageNoteId && !note.getOwnedRelation("map:image");
     const inheritedReason = isInherited ? t("geo-map.background-image-inherited") : undefined;
     const options = BACKGROUND_OPTIONS.map((option) =>
-        option.value === "map" ? { ...option, unavailable: inheritedReason } : option);
+        option.value !== "image" ? { ...option, unavailable: inheritedReason } : option);
 
     useEffect(() => {
-        if (imageNoteId) setKind("image");
-    }, [ imageNoteId ]);
+        if (savedKind !== "map") setKind(savedKind);
+    }, [ savedKind ]);
 
     function changeKind(newKind: BackgroundKind) {
         setKind(newKind);
-        const ownsImage = !!note.getOwnedRelation("map:image");
-        const ownsDisabledImage = !!note.getOwnedRelation("disabled:map:image");
-        if (newKind === "map" && ownsImage) {
+        if (newKind !== "image" && note.getOwnedRelation("map:image")) {
             void attributes.toggleDangerousAttribute(note, "relation", "map:image", false);
-        } else if (newKind === "image" && !imageNoteId && ownsDisabledImage) {
+        } else if (newKind === "image" && !imageNoteId && note.getOwnedRelation("disabled:map:image")) {
             void attributes.toggleDangerousAttribute(note, "relation", "map:image", true);
+        }
+
+        if (newKind === "map" && tileUrl) {
+            if (note.getOwnedLabel("map:style")) {
+                void attributes.toggleDangerousAttribute(note, "label", "map:style", false);
+            } else {
+                // An inherited tileset is overridden, since only its owner can disable it.
+                setStyle(DEFAULT_MAP_LAYER_NAME);
+            }
+        } else if (newKind === "tiles" && !tileUrl && note.getOwnedLabel("disabled:map:style")) {
+            void attributes.toggleDangerousAttribute(note, "label", "map:style", true);
         }
     }
 
@@ -129,6 +144,13 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
         // The note holds one image at a time, so a disabled one does not outlive its replacement.
         if (note.getOwnedRelation("disabled:map:image")) {
             void attributes.removeOwnedRelationByName(note, "disabled:map:image");
+        }
+    }
+
+    function setTileUrl(url: string) {
+        setStyle(url);
+        if (note.getOwnedLabel("disabled:map:style")) {
+            void attributes.removeOwnedLabelByName(note, "disabled:map:style");
         }
     }
 
@@ -155,6 +177,10 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
                 <ViewPropertySection note={note} property={MAP_STYLE_PROPERTY} />
             )}
 
+            {kind === "tiles" && (
+                <TileSettings note={note} tileUrl={tileUrl} onChangeUrl={setTileUrl} />
+            )}
+
             {kind === "image" && (
                 <ImageSettings
                     note={note}
@@ -175,12 +201,88 @@ const BACKGROUND_OPTIONS: BackgroundOption[] = [
         icon: "bx bx-world"
     },
     {
+        value: "tiles",
+        title: t("geo-map.background-tiles"),
+        description: t("geo-map.background-tiles-description"),
+        icon: "bx bx-grid-alt"
+    },
+    {
         value: "image",
         title: t("geo-map.background-image"),
         description: t("geo-map.background-image-description"),
         icon: "bx bx-image"
     }
 ];
+
+/** A tileset's URL, committed when the box is left, and whether its tiles are dark. */
+function TileSettings({ note, tileUrl, onChangeUrl }: {
+    note: FNote;
+    tileUrl: string | undefined;
+    onChangeUrl: (url: string) => void;
+}) {
+    const [ isDarkTiles, setDarkTiles ] = useNoteLabelBoolean(note, "map:darkStyle");
+    const [ draft, setDraft ] = useState(tileUrl ?? "");
+    const [ isInvalid, setInvalid ] = useState(false);
+
+    useEffect(() => {
+        setDraft(tileUrl ?? "");
+        setInvalid(false);
+    }, [ tileUrl ]);
+
+    function commit(value: string) {
+        const url = value.trim();
+        if (!url || url === tileUrl) {
+            setInvalid(false);
+            return;
+        }
+
+        const isValid = isTileUrlTemplate(url);
+        setInvalid(!isValid);
+        if (isValid) onChangeUrl(url);
+    }
+
+    return <>
+        <OptionCardSection
+            label={t("geo-map.tiles-url")}
+            description={t("geo-map.tiles-url-description")}
+            stacked
+        >
+            <FormTextBox
+                className="geo-map-tiles-url"
+                type="url"
+                placeholder={TILE_URL_PLACEHOLDER}
+                currentValue={draft}
+                onChange={setDraft}
+                onBlur={commit}
+            />
+        </OptionCardSection>
+
+        {isInvalid && (
+            <CardSection>
+                <Admonition type="caution" className="geo-map-tiles-url-error">
+                    {t("geo-map.tiles-url-invalid")}
+                </Admonition>
+            </CardSection>
+        )}
+
+        <OptionCardSection
+            name="geo-map-dark-tiles"
+            label={t("geo-map.dark-tiles")}
+            description={t("geo-map.dark-tiles-description")}
+        >
+            <FormToggle currentValue={isDarkTiles} onChange={setDarkTiles} />
+        </OptionCardSection>
+    </>;
+}
+
+const TILE_URL_PLACEHOLDER = "https://tile.example.org/{z}/{x}/{y}.png";
+
+/** Whether a URL can serve tiles: an `http(s)` address naming the tile by `{z}/{x}/{y}` or `{quadkey}`. */
+export function isTileUrlTemplate(url: string) {
+    if (!isTileUrl(url)) return false;
+    return url.includes("{quadkey}")
+        || [ "{z}", "{x}", "{y}" ].every((placeholder) => url.includes(placeholder));
+}
 
 function ImageSettings({ note, image, imageNoteId, onPickImage }: {
     note: FNote;

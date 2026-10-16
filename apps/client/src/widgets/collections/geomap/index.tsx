@@ -32,7 +32,7 @@ import ImageRulers from "./ImageRulers";
 import { GPX_MIME, GpxTrack } from "./GpxTrack";
 import type { GeoSearchResult } from "./geocoding";
 import Map, { type CameraLimits, DEFAULT_ZOOM, GeoMouseEvent } from "./map";
-import { DEFAULT_MAP_LAYER_NAME, MAP_LAYERS, MapLayer } from "./map_layer";
+import { DEFAULT_MAP_LAYER_NAME, isTileUrl, MAP_LAYERS, MapLayer } from "./map_layer";
 import MapToolbar from "./MapToolbar";
 import Markers, { DEFAULT_MARKER_COLOR, FitToNotes } from "./Markers";
 import PlaceMarker from "./PlaceMarker";
@@ -702,7 +702,7 @@ function useLayerData(note: FNote, image: { url: string; space: ImageSpace } | u
         }
 
         // Custom layers.
-        if (layerName?.startsWith("http")) {
+        if (isTileUrl(layerName)) {
             return {
                 name: "Custom",
                 type: "raster",

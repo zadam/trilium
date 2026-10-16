@@ -23,6 +23,11 @@ interface BuiltinLabelCommon {
      */
     isDangerous?: boolean;
     /**
+     * Whether the label can be switched off by a `disabled:` prefix, keeping its value, although it
+     * is not dangerous. Gives it a `disabled:*` member of {@link LabelNames}, as a dangerous one has.
+     */
+    canBeDisabled?: boolean;
+    /**
      * Whether the *value* may contain user data, even though the *name* is system-defined. The name of
      * such an attribute is safe to keep in an anonymized database dump, its value is not — see
      * `anonymization.ts`, which preserves builtin attributes wholesale except for these.
@@ -326,7 +331,9 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "mapType", valueType: "select", hasUserValue: true, selectOptions: [
         "link", "tree"
     ] },
-    { type: "label", name: "map:style", valueType: "text", hasUserValue: true },
+    // A built-in style's name, or the URL of a raster tileset. A tileset is switched off rather than
+    // removed when the map goes back to a built-in style, so its URL is kept for switching back.
+    { type: "label", name: "map:style", valueType: "text", hasUserValue: true, canBeDisabled: true },
     // Says of a style Trilium knows nothing about that it is a dark one, which only the style itself
     // can tell. The styles offered in the collection properties declare it for themselves.
     { type: "label", name: "map:darkStyle", valueType: "boolean", hasUserValue: true },
