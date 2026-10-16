@@ -34,8 +34,8 @@ import CollectionProperties from "../../note_bars/CollectionProperties";
 import { FormListItem } from "../../react/FormList";
 import {
     useContextualShortcutHints, useEffectiveReadOnly, useLingeringTrue, useNoteContext, useNoteLabel,
-    useNoteLabelBoolean, useNoteLabelWithDefault, useNoteTypeOptions, useSetContextData,
-    useTrackedElement, useTriliumEvent
+    useNoteLabelBoolean, useNoteLabelInt, useNoteLabelWithDefault, useNoteTypeOptions,
+    useSetContextData, useTrackedElement, useTriliumEvent
 } from "../../react/hooks";
 import OverlayControlGroup, { OverlayControlButton } from "../../react/OverlayControlGroup";
 import { type TemplateChoiceConfig, useTemplateChoice } from "../../react/TemplateDropdown";
@@ -405,6 +405,7 @@ function Board({
     let viewConfig = adoptedConfig ?? storedConfig;
     const [ includeArchived ] = useNoteLabelBoolean(parentNote, "includeArchived");
     const [ inboxEnabled ] = useNoteLabelBoolean(parentNote, "board:showInbox");
+    const [ maxDepth ] = useNoteLabelInt(parentNote, "maxNestingDepth");
     const [ addColumnHidden ] = useNoteLabelBoolean(parentNote, "board:hideAddColumn");
     // Read undefaulted: a board naming no width wears no class, so `--board-column-width` keeps
     // whatever it inherits.
@@ -935,7 +936,7 @@ function Board({
 
         getBoardData(
             parentNote, target, viewConfig ?? {}, includeArchived,
-            definition?.options ?? [], renames, inboxEnabled)
+            definition?.options ?? [], renames, inboxEnabled, maxDepth)
             .then(({
                 byColumn: allCards, columns, newPersistedData, isInRelationMode, settledRenames
             }) => {
@@ -1204,7 +1205,8 @@ function Board({
     // `groupBy` is a dependency as well as `requestedGroupBy`: committing a switch is what asks for
     // the refresh that stores the new grouping's columns.
     useEffect(refresh, [
-        parentNote, noteIds, viewConfig, requestedGroupBy, groupBy, statusDefinition, inboxEnabled
+        parentNote, noteIds, viewConfig, requestedGroupBy, groupBy, statusDefinition, inboxEnabled,
+        maxDepth
     ]);
 
     // The drag reports where the column landed among the ones on screen, which is not where it

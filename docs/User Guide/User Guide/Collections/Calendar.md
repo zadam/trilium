@@ -97,7 +97,7 @@ In the <a class="reference-link" href="Collection%20Properties.md">Collection P
 *   Set the slot duration (the length of each time row in day/week view).
 *   Set the slot label interval (how often time labels appear on the axis in day/week view).
 
-The same settings, together with whether archived notes are shown, are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it). The time slots are listed there whichever view the calendar is in.
+The same settings are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span> _Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it). The time slots are listed there whichever view the calendar is in. Its _Included notes_ section sets whether archived notes are shown and how deep the calendar looks for events (see [Limiting the depth](#limiting-the-depth)).
 
 ### Event templates
 
@@ -211,6 +211,10 @@ This will result in:
 ![](7_Calendar_image.png)
 
 When not used in a Journal, the calendar is recursive. That is, it will look for events not just in its child notes but also in the children of these child notes.
+
+### Limiting the depth
+
+To limit how deep the calendar looks for events, set _Maximum nesting depth_ under _Included notes_ in the <span class="tn-icon bx bx-cog"></span>_Calendar properties_ dialog (see [Event templates](#event-templates) for how to open it), or the `#maxNestingDepth` label: `0` shows only the child notes, `1` adds their children, and so on. Without a value, events are looked for at every level. The setting doesn't apply in a Journal.
 
 ## Recurrence
 

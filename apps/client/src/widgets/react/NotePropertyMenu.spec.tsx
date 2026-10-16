@@ -145,4 +145,34 @@ describe("ViewPropertySection", () => {
         act(() => { select.dispatchEvent(new Event("change", { bubbles: true })); });
         expect(setLabel).toHaveBeenCalledWith(note.noteId, "calendar:slotDuration", "00:30:00");
     });
+
+    it("writes a number once the box commits, and removes the label when the box is emptied", () => {
+        const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined);
+        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockReturnValue(true);
+        const note = buildNote({ title: "Map", "#maxNestingDepth": "2" }) as unknown as FNote;
+        const element = draw(note, [
+            { type: "number", label: "Maximum nesting depth", bindToLabel: "maxNestingDepth" }
+        ]);
+        const input = element.querySelector<HTMLInputElement>("input");
+        if (!input) throw new Error("The number property has no box.");
+        expect(input.value).toBe("2");
+
+        const type = (value: string) => act(() => {
+            input.value = value;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        const commit = () => act(() => { input.dispatchEvent(new Event("change")); });
+
+        type("1");
+        type("12");
+        expect(setLabel).not.toHaveBeenCalled();
+        commit();
+        expect(setLabel).toHaveBeenCalledExactlyOnceWith(note.noteId, "maxNestingDepth", "12");
+
+        type("");
+        commit();
+        expect(input.value).toBe("");
+        expect(removeLabel).toHaveBeenCalledExactlyOnceWith(note, "maxNestingDepth");
+        expect(setLabel).toHaveBeenCalledTimes(1);
+    });
 });
