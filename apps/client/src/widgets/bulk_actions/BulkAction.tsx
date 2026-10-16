@@ -2,8 +2,10 @@ import "./BulkAction.css";
 
 import { ComponentChildren } from "preact";
 import { memo } from "preact/compat";
+import { useEffect, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
-import AbstractBulkAction from "./abstract_bulk_action";
+import AbstractBulkAction, { ActionDefinition } from "./abstract_bulk_action";
+import { useSpacedUpdate } from "../react/hooks";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
 import Icon from "../react/Icon";
 
@@ -34,6 +36,24 @@ const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
 });
 
 export default BulkAction;
+
+/**
+ * Saves `data` to `bulkAction` a second after it changes. The values a row opens with are already
+ * stored, so the first render saves nothing.
+ */
+export function useSaveAction(bulkAction: AbstractBulkAction, data: Partial<ActionDefinition>) {
+    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction(data));
+    const isFirstRender = useRef(true);
+    const serialized = JSON.stringify(data);
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        spacedUpdate.scheduleUpdate();
+    }, [ serialized ]);
+}
 
 /** Separates a row's source field from its target field, in place of a word such as "to". */
 export function BulkActionArrow() {

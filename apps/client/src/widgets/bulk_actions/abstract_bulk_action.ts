@@ -22,6 +22,8 @@ export interface ActionDefinition {
 export default abstract class AbstractBulkAction {
     attribute: FAttribute;
     actionDef: ActionDefinition;
+    /** Set by `deleteAction()`, so a save still pending in the row's `SpacedUpdate` is dropped. */
+    private deleted = false;
 
     constructor(attribute: FAttribute, actionDef: ActionDefinition) {
         this.attribute = attribute;
@@ -62,6 +64,9 @@ export default abstract class AbstractBulkAction {
     }
 
     async saveAction(data: {}) {
+        if (this.deleted) {
+            return;
+        }
         const actionObject = Object.assign({ name: (this.constructor as typeof AbstractBulkAction).actionName }, data);
 
         await server.put(`notes/${this.attribute.noteId}/attribute`, {
@@ -75,6 +80,7 @@ export default abstract class AbstractBulkAction {
     }
 
     async deleteAction() {
+        this.deleted = true;
         await server.remove(`notes/${this.attribute.noteId}/attributes/${this.attribute.attributeId}`);
         await ws.waitForMaxKnownEntityChangeId();
     }

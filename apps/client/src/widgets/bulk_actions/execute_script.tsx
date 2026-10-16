@@ -1,14 +1,12 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { t } from "../../services/i18n.js";
 import FormTextBox from "../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "./abstract_bulk_action.js";
-import BulkAction from "./BulkAction.jsx";
-import { useSpacedUpdate } from "../react/hooks.jsx";
+import BulkAction, { useSaveAction } from "./BulkAction.jsx";
 
 function ExecuteScriptBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ script, setScript ] = useState(actionDef.script);
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ script }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ script ]);
+    useSaveAction(bulkAction, { script });
 
     return (
         <BulkAction

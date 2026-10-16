@@ -1,16 +1,14 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
 import NoteAutocomplete from "../../react/NoteAutocomplete.jsx";
 import FormTextBox from "../../react/FormTextBox.jsx";
-import { useEffect, useState } from "preact/hooks";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
+import { useState } from "preact/hooks";
 
 function AddRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ relationName, setRelationName ] = useState<string>(actionDef.relationName);
     const [ targetNoteId, setTargetNoteId ] = useState<string>(actionDef.targetNoteId);
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ relationName, targetNoteId }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ relationName, targetNoteId ]);
+    useSaveAction(bulkAction, { relationName, targetNoteId });
 
     return (
         <BulkAction

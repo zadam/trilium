@@ -1,15 +1,13 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
 import FormTextBox from "../../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
+import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
 
 function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ oldLabelName, setOldLabelName ] = useState(actionDef.oldLabelName);
     const [ newLabelName, setNewLabelName ] = useState(actionDef.newLabelName);
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ oldLabelName, newLabelName }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ oldLabelName, newLabelName ]);
+    useSaveAction(bulkAction, { oldLabelName, newLabelName });
 
     return (
         <BulkAction

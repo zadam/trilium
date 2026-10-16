@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { useEffect, useState, useCallback, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
 import Modal from "../react/Modal";
@@ -181,7 +182,9 @@ function ExistingActionsList({ existingActions }: { existingActions: AbstractBul
         <CardSection noPadding>
             <table class="bulk-existing-action-list">
                 <tbody>
-                    {existingActions.map((action) => action.doRender())}
+                    {existingActions.map((action) => (
+                        <Fragment key={action.attribute.attributeId}>{action.doRender()}</Fragment>
+                    ))}
                 </tbody>
             </table>
         </CardSection>

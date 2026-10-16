@@ -1,8 +1,7 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction from "../BulkAction.jsx";
-import { useEffect, useState } from "preact/hooks";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
+import BulkAction, { useSaveAction } from "../BulkAction.jsx";
+import { useState } from "preact/hooks";
 import TemplateField from "../TemplateField.jsx";
 
 /** What the server's `renameNote` handler passes to `evaluateTemplate()`. */
@@ -10,8 +9,7 @@ const RENAME_TEMPLATE_VARIABLES = { note: "note" } as const;
 
 function RenameNoteBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ newTitle, setNewTitle ] = useState<string>(actionDef.newTitle ?? "");
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ newTitle }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ newTitle ]);
+    useSaveAction(bulkAction, { newTitle });
 
     return (
         <BulkAction

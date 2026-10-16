@@ -1,14 +1,12 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction from "../BulkAction.jsx";
+import BulkAction, { useSaveAction } from "../BulkAction.jsx";
 import FormTextBox from "../../react/FormTextBox.jsx";
-import { useEffect, useState } from "preact/hooks";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
+import { useState } from "preact/hooks";
 
 function DeleteRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ relationName, setRelationName ] = useState(actionDef.relationName);
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ relationName }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ relationName ]);
+    useSaveAction(bulkAction, { relationName });
 
     return (
         <BulkAction

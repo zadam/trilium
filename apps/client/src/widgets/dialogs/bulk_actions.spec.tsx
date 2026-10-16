@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../components/component";
 import bulk_action from "../../services/bulk_action";
+import froca from "../../services/froca";
 import noteAttributeCache from "../../services/note_attribute_cache";
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
@@ -11,7 +12,10 @@ import BulkActionsDialog from "./bulk_actions";
 
 const server = vi.hoisted(() => ({
     get: vi.fn(async () => []),
-    post: vi.fn()
+    post: vi.fn(),
+    put: vi.fn(async () => {}),
+    remove: vi.fn(async () => {}),
+    getMaxKnownEntityChangeId: () => 0
 }));
 
 vi.mock("../../services/i18n", async (importOriginal) => ({
@@ -53,6 +57,28 @@ describe("BulkActionsDialog", () => {
 
     function lastAffectedNotesRequest() {
         return server.post.mock.calls.filter(([ url ]) => url === "bulk-action/affected-notes").at(-1)?.[1];
+    }
+
+    function actionAttributeIds() {
+        return [ ...(froca.notes._bulkAction?.attributes ?? []) ];
+    }
+
+    /** Removes the action as the server does, then sends the change back as the WebSocket would. */
+    async function deleteActionOnServer(attributeId: string) {
+        const note = froca.notes._bulkAction;
+        if (!note) throw new Error("No _bulkAction note.");
+        note.attributes = note.attributes.filter((id) => id !== attributeId);
+        delete noteAttributeCache.attributes._bulkAction;
+        const loadResults = {
+            getAttributeRows: () => [ { attributeId, type: "label", name: "action", noteId: "_bulkAction" } ]
+        };
+        await act(async () => {
+            await host.handleEventInChildren("entitiesReloaded", { loadResults } as never);
+        });
+    }
+
+    function labelNameInputs() {
+        return [ ...container.querySelectorAll<HTMLInputElement>(".bulk-existing-action-list input.bulk-action-name") ];
     }
 
     it("shows the first selected notes as chips and the rest on demand", async () => {
@@ -258,6 +284,64 @@ describe("BulkActionsDialog", () => {
         expect(chipNoteIds()).toStrictEqual([ "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n2" ], includeDescendants: false });
         expect(container.querySelector<HTMLButtonElement>(".tn-chip-remove")?.disabled).toBe(true);
+    });
+
+    it("saves an action only when its fields change", async () => {
+        vi.useFakeTimers();
+        try {
+            buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteLabel", labelName: "a" }) });
+            await open([ "n1" ]);
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(2000);
+            });
+            expect(server.put).not.toHaveBeenCalled();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("drops an edit still waiting to be saved when its action is removed", async () => {
+        vi.useFakeTimers();
+        try {
+            buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteLabel", labelName: "a" }) });
+            const [ attributeId ] = actionAttributeIds();
+            await open([ "n1" ]);
+
+            const [ input ] = labelNameInputs();
+            expect(input).toBeDefined();
+            await act(async () => {
+                input.value = "ab";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            const remove = container.querySelector<HTMLElement>(".bulk-existing-action-list .search-option-del");
+            expect(remove).not.toBeNull();
+            await act(async () => remove?.click());
+            expect(server.remove).toHaveBeenCalledWith(`notes/_bulkAction/attributes/${attributeId}`);
+            await deleteActionOnServer(attributeId);
+
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(2000);
+            });
+            expect(server.put).not.toHaveBeenCalled();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("keeps each row's fields with its own action when an earlier one is removed", async () => {
+        buildNote({
+            id: "_bulkAction",
+            title: "Bulk action",
+            "#action": [
+                JSON.stringify({ name: "deleteLabel", labelName: "a" }),
+                JSON.stringify({ name: "deleteLabel", labelName: "b" })
+            ]
+        });
+        await open([ "n1" ]);
+        expect(labelNameInputs().map((input) => input.value)).toStrictEqual([ "a", "b" ]);
+
+        await deleteActionOnServer(actionAttributeIds()[0]);
+        expect(labelNameInputs().map((input) => input.value)).toStrictEqual([ "b" ]);
     });
 
     it("lists a note selected through two of its clones once", async () => {

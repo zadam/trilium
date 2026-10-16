@@ -1,15 +1,13 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n";
 import FormTextBox from "../../react/FormTextBox";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action";
-import BulkAction, { BulkActionArrow } from "../BulkAction";
-import { useSpacedUpdate } from "../../react/hooks";
+import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction";
 
 function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ labelName, setLabelName ] = useState<string>(actionDef.labelName ?? "");
     const [ labelValue, setLabelValue ] = useState<string>(actionDef.labelValue ?? "");
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ labelName, labelValue }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [labelName, labelValue]);
+    useSaveAction(bulkAction, { labelName, labelValue });
 
     return (
         <BulkAction

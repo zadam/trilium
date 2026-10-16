@@ -1,15 +1,13 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { BulkActionArrow } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
 import FormTextBox from "../../react/FormTextBox.jsx";
-import { useEffect, useState } from "preact/hooks";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
+import { useState } from "preact/hooks";
 
 function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ oldRelationName, setOldRelationName ] = useState(actionDef.oldRelationName);
     const [ newRelationName, setNewRelationName ] = useState(actionDef.newRelationName);
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ oldRelationName, newRelationName }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [ oldRelationName, newRelationName ]);
+    useSaveAction(bulkAction, { oldRelationName, newRelationName });
 
     return (
         <BulkAction

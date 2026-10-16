@@ -1,14 +1,12 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
 import FormTextBox from "../../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import { useSpacedUpdate } from "../../react/hooks.jsx";
-import BulkAction from "../BulkAction.jsx";
+import BulkAction, { useSaveAction } from "../BulkAction.jsx";
 
 function DeleteLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ labelName, setLabelName ] = useState<string>(actionDef.labelName ?? "");
-    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction({ labelName }));
-    useEffect(() => spacedUpdate.scheduleUpdate(), [labelName]);
+    useSaveAction(bulkAction, { labelName });
 
     return (
         <BulkAction
