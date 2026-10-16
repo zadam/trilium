@@ -83,7 +83,8 @@
   "bulk_actions": {
     "bulk_actions": "Bulk acties",
     "chosen_actions": "Gekozen acties",
-    "execute_bulk_actions": "Bulk acties uitvoeren",
+    "execute_bulk_actions_one": "Bulk acties uitvoeren",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Bulk acties zijn succesvol uitgevoerd.",
     "none_yet": "Nog niks... voeg een actie toe door op een van de beschikbare bovenstaande opties te klikken.",
     "labels": "Labels",
