@@ -6,9 +6,9 @@ An image map is a geo map drawn over an image of your own instead of a world map
 1.  Upload the image as a note of its own, for example by dragging the file into the note tree. PNG, JPEG, WebP and GIF images are supported; SVG images are not.
 2.  Create a geo map, or open an existing one.
 3.  Open the <span class="tn-icon bx bx-cog"></span>_Geo map properties_ dialog from the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="../Collection%20Properties.md">Collection Properties</a>.
-4.  Under _Image_, choose the image note in _Image note_.
+4.  Under _Background_, set _Type_ to _Custom image_, then choose the image note in _Image note_.
 
-The map then shows the image instead of the world map and opens with the whole image in view. To go back to a world map, clear _Image note_.
+The map then shows the image instead of the world map and opens with the whole image in view. To go back to a world map, set _Type_ back to _Vector & Raster_, which removes the image.
 
 The image note is stored in a `~map:image` [relation](../../Advanced%20Usage/Attributes/Relations.md) of the geo map, which can also be added by hand.
 
@@ -36,15 +36,15 @@ The features that only make sense on a real map are not available on an image ma
 *   The 3D buildings.
 *   Opening a location in an external map application.
 
-The look of the marker titles follows the image: if the image is dark, turn on _Dark image_ under _Image_ in the _Geo map properties_ dialog, so that the titles are drawn in a light color. This sets the `#map:darkStyle` label.
+The look of the marker titles follows the image: if the image is dark, turn on _Dark image_ under _Background_ in the _Geo map properties_ dialog, so that the titles are drawn in a light color. This sets the `#map:darkStyle` label.
 
-The _Map style_ setting doesn't apply to an image map, so it's hidden while the map has an image.
+The _Map style_ setting doesn't apply to an image map, so it's hidden from the settings menu of the collection while the map has an image.
 
 ## Choosing the coordinate system
 
 By default, positions are measured in pixels of the image at its original size, from its top-left corner, with `x` growing to the right and `y` growing downwards.
 
-To use coordinates of your own instead, open the _Geo map properties_ dialog, set _Coordinates_ under _Image_ to _Custom_, and enter the coordinates of the image's _Top-left corner_ and _Bottom-right corner_. Switching to _Custom_ starts from the image's size in pixels, so the markers stay where they are until the corners are changed. All positions are then read and written in those coordinates, including the ones shown in the contextual menu and in the popup view. To go back to pixels, set _Coordinates_ to _Image pixels_.
+To use coordinates of your own instead, open the _Geo map properties_ dialog, set _Coordinates_ under _Background_ to _Custom_, and enter the coordinates of the image's _Top-left corner_ and _Bottom-right corner_. Switching to _Custom_ starts from the image's size in pixels, so the markers stay where they are until the corners are changed. All positions are then read and written in those coordinates, including the ones shown in the contextual menu and in the popup view. To go back to pixels, set _Coordinates_ to _Image pixels_.
 
 The corners are stored in the `#map:imageBounds` label of the geo map as `x,y x,y`, with a space between the two corners, which can also be set by hand. For example:
 

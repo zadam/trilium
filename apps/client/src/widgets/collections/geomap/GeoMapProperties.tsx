@@ -3,6 +3,7 @@ import "./GeoMapProperties.css";
 import { useEffect, useState } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
+import attributes from "../../../services/attributes";
 import { t } from "../../../services/i18n";
 import {
     CollectionPropertiesDialog, INCLUDE_ARCHIVED_PROPERTY
@@ -10,12 +11,13 @@ import {
 import { bookPropertiesConfig } from "../../note_bars/collection-properties-config";
 import Admonition from "../../react/Admonition";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
+import FormDropdownList from "../../react/FormDropdownList";
 import FormSelect from "../../react/FormSelect";
 import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useNoteLabel, useNoteLabelBoolean, useNoteRelation } from "../../react/hooks";
 import NoteAutocomplete from "../../react/NoteAutocomplete";
-import { isPropertyVisible, ViewPropertySection } from "../../react/NotePropertyMenu";
+import { type BookProperty, ViewPropertySection } from "../../react/NotePropertyMenu";
 import { formatImageExtent, type ImageSize, parseImageExtent } from "./space";
 
 /** What the map knows of its image: none, loading, unusable, or loaded at its natural size. */
@@ -24,21 +26,28 @@ export type GeoMapImageState =
     | { status: "error"; reason: "unloadable" | "svg" }
     | { status: "image"; size: ImageSize };
 
+/** What a geo map is drawn over: a world map in one of its styles, or an image note. */
+type BackgroundKind = "map" | "image";
+
+interface BackgroundOption {
+    value: BackgroundKind;
+    title: string;
+    description: string;
+    icon: string;
+}
+
 /** The longest side, in pixels, that practically every graphics card can draw an image at. */
 const SAFE_IMAGE_SIDE = 4096;
 
 /**
- * The geo map's settings: those of the collection's settings dropdown, and the image an image map
- * is drawn over, which only this dialog holds.
+ * The geo map's settings: those of the collection's settings dropdown, and what the map is drawn
+ * over, which this dialog sets up in full.
  */
 export default function GeoMapProperties({ note, image, onClose }: {
     note: FNote;
     image: GeoMapImageState;
     onClose: () => void;
 }) {
-    // Read here so that the General card hides the map style as soon as an image is picked.
-    useNoteRelation(note, "map:image");
-
     return (
         <CollectionPropertiesDialog
             className="geo-map-properties-dialog"
@@ -47,69 +56,140 @@ export default function GeoMapProperties({ note, image, onClose }: {
             onHidden={onClose}
         >
             <Card className="geo-map-properties-general" heading={t("geo-map.general")}>
-                {GENERAL_PROPERTIES
-                    .filter((property) => isPropertyVisible(property, note))
-                    .map((property, index) => (
-                        <ViewPropertySection key={index} note={note} property={property} />
-                    ))}
+                {GENERAL_PROPERTIES.map((property, index) => (
+                    <ViewPropertySection key={index} note={note} property={property} />
+                ))}
             </Card>
 
-            <ImageCard note={note} image={image} />
+            <BackgroundCard note={note} image={image} />
         </CollectionPropertiesDialog>
     );
 }
 
+/** The settings dropdown's map style, which the Background card holds instead of General. */
+const MAP_STYLE_PROPERTY = bookPropertiesConfig.geoMap.properties.find(isMapStyle);
+
 /** What the settings dropdown offers for a geo map, which the General card repeats. */
 const GENERAL_PROPERTIES = [
-    ...bookPropertiesConfig.geoMap.properties, INCLUDE_ARCHIVED_PROPERTY
+    ...bookPropertiesConfig.geoMap.properties.filter((property) => !isMapStyle(property)),
+    INCLUDE_ARCHIVED_PROPERTY
 ];
 
-function ImageCard({ note, image }: { note: FNote; image: GeoMapImageState }) {
+function isMapStyle(property: BookProperty) {
+    return "bindToLabel" in property && property.bindToLabel === "map:style";
+}
+
+/**
+ * A world map with its style, or an image with its coordinates. Choosing the image writes nothing
+ * until an image note is picked, so the map stays drawn as it was until then.
+ */
+function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState }) {
     const [ imageNoteId, setImageNoteId ] = useNoteRelation(note, "map:image");
-    const [ isDarkImage, setDarkImage ] = useNoteLabelBoolean(note, "map:darkStyle");
-    const notice = imageNotice(image);
+    const [ kind, setKind ] = useState<BackgroundKind>(imageNoteId ? "image" : "map");
+
+    useEffect(() => {
+        if (imageNoteId) setKind("image");
+    }, [ imageNoteId ]);
+
+    function changeKind(newKind: BackgroundKind) {
+        setKind(newKind);
+        if (newKind === "map") {
+            void attributes.removeOwnedRelationByName(note, "map:image");
+        }
+    }
 
     return (
-        <Card
-            className="geo-map-properties-image"
-            heading={t("geo-map.image")}
-            description={t("geo-map.image-description")}
-        >
+        <Card className="geo-map-properties-background" heading={t("geo-map.background")}>
             <OptionCardSection
-                label={t("geo-map.image-note")}
-                description={t("geo-map.image-note-description")}
-                stacked
+                className="geo-map-background-type"
+                label={t("geo-map.background-type")}
             >
-                <NoteAutocomplete
-                    noteId={imageNoteId ?? undefined}
-                    placeholder={t("geo-map.image-note-placeholder")}
-                    noteIdChanged={setImageNoteId}
+                <FormDropdownList
+                    values={BACKGROUND_OPTIONS}
+                    keyProperty="value"
+                    titleProperty="title"
+                    descriptionProperty="description"
+                    iconProperty="icon"
+                    currentValue={kind}
+                    onChange={(value) => changeKind(value as BackgroundKind)}
                 />
             </OptionCardSection>
 
-            {imageNoteId && notice && (
-                <CardSection>
-                    <Admonition type={notice.type} className="geo-map-image-notice">
-                        {notice.text}
-                    </Admonition>
-                </CardSection>
+            {kind === "map" && MAP_STYLE_PROPERTY && (
+                <ViewPropertySection note={note} property={MAP_STYLE_PROPERTY} />
             )}
 
-            {imageNoteId && <>
-                <ImageCoordinates
+            {kind === "image" && (
+                <ImageSettings
                     note={note}
-                    size={image.status === "image" ? image.size : undefined}
+                    image={image}
+                    imageNoteId={imageNoteId}
+                    onPickImage={setImageNoteId}
                 />
-                <OptionCardSection
-                    name="geo-map-dark-image"
-                    label={t("geo-map.dark-image")}
-                    description={t("geo-map.dark-image-description")}
-                >
-                    <FormToggle currentValue={isDarkImage} onChange={setDarkImage} />
-                </OptionCardSection>
-            </>}
+            )}
         </Card>
     );
+}
+
+const BACKGROUND_OPTIONS: BackgroundOption[] = [
+    {
+        value: "map",
+        title: t("geo-map.background-map"),
+        description: t("geo-map.background-map-description"),
+        icon: "bx bx-world"
+    },
+    {
+        value: "image",
+        title: t("geo-map.background-image"),
+        description: t("geo-map.background-image-description"),
+        icon: "bx bx-image"
+    }
+];
+
+function ImageSettings({ note, image, imageNoteId, onPickImage }: {
+    note: FNote;
+    image: GeoMapImageState;
+    imageNoteId: string | null | undefined;
+    onPickImage: (noteId: string) => void;
+}) {
+    const [ isDarkImage, setDarkImage ] = useNoteLabelBoolean(note, "map:darkStyle");
+    const notice = imageNotice(image);
+
+    return <>
+        <OptionCardSection
+            label={t("geo-map.image-note")}
+            description={t("geo-map.image-note-description")}
+            stacked
+        >
+            <NoteAutocomplete
+                noteId={imageNoteId ?? undefined}
+                placeholder={t("geo-map.image-note-placeholder")}
+                noteIdChanged={onPickImage}
+            />
+        </OptionCardSection>
+
+        {imageNoteId && notice && (
+            <CardSection>
+                <Admonition type={notice.type} className="geo-map-image-notice">
+                    {notice.text}
+                </Admonition>
+            </CardSection>
+        )}
+
+        {imageNoteId && <>
+            <ImageCoordinates
+                note={note}
+                size={image.status === "image" ? image.size : undefined}
+            />
+            <OptionCardSection
+                name="geo-map-dark-image"
+                label={t("geo-map.dark-image")}
+                description={t("geo-map.dark-image-description")}
+            >
+                <FormToggle currentValue={isDarkImage} onChange={setDarkImage} />
+            </OptionCardSection>
+        </>}
+    </>;
 }
 
 /**

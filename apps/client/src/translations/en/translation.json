@@ -3150,8 +3150,6 @@
     "properties": "Geo map properties...",
     "properties-title": "Geo map properties",
     "general": "General",
-    "image": "Image",
-    "image-description": "Draw the map over an image of your own instead of a world map, such as a floor plan or a fantasy map. Markers and shapes are then placed on the image.",
     "image-note": "Image note",
     "image-note-description": "A PNG, JPEG, WebP or GIF image. SVG images can't be used.",
     "image-note-placeholder": "Search for an image note",
@@ -3164,7 +3162,13 @@
     "bottom-right-corner": "Bottom-right corner",
     "coordinates-invalid": "The two corners must differ in both x and y, so this change wasn't saved.",
     "dark-image": "Dark image",
-    "dark-image-description": "Draws the marker titles in a light color, so that they can be read over a dark image."
+    "dark-image-description": "Draws the marker titles in a light color, so that they can be read over a dark image.",
+    "background": "Background",
+    "background-type": "Type",
+    "background-map": "Vector & Raster",
+    "background-image": "Custom image",
+    "background-map-description": "A world map in one of the vector or raster styles.",
+    "background-image-description": "An image of your own, such as a floor plan or a fantasy map, with markers and shapes placed on it."
   },
   "embedded_note": {
     "open-note": "Open note",

@@ -340,7 +340,7 @@ To set a map as read-only, go to <a class="reference-link" href="../Basic%20Con
 
 ### Map Style
 
-The styling of the map can be adjusted in the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> or manually via the `#map:style` attribute.
+The styling of the map can be adjusted in the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, under _Background_ in the _Geo map properties_ dialog, or manually via the `#map:style` attribute.
 
 The geo map comes with two different types of styles:
 
@@ -396,4 +396,4 @@ The following options can be configured either via the <a class="reference-link
     *   Clicking on a cluster will automatically zoom in so that the individual markers that make up the cluster are now visible.
 *   The map shows the notes of its whole subtree, not only its children. _Max nesting depth_ (`#maxNestingDepth`) limits how deep below the map it looks: `0` shows only the children, `1` adds their children, and so on. Without a value, every level is shown.
 
-The same options, together with whether archived notes are shown, are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span>_Geo map properties_ dialog, opened from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>. Its _Image_ section draws the map over an image of your own instead, as described in <a class="reference-link" href="Geo%20Map/Image%20maps.md">Image maps</a>.
+The same options, together with whether archived notes are shown, are also listed in the <span class="tn-icon bx bx-cog"></span>_Geo map properties_ dialog, opened from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>. Its _Background_ section holds the map style, or, with _Type_ set to _Custom image_, draws the map over an image of your own instead, as described in <a class="reference-link" href="Geo%20Map/Image%20maps.md">Image maps</a>.

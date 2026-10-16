@@ -19,6 +19,7 @@ vi.mock("i18next", async (importOriginal) => ({
 const mocks = vi.hoisted(() => ({
     setLabel: vi.fn(async () => {}),
     removeOwnedLabelByName: vi.fn(async () => {}),
+    removeOwnedRelationByName: vi.fn(async () => {}),
     setAttribute: vi.fn(async () => {})
 }));
 
@@ -26,6 +27,7 @@ vi.mock("../../../services/attributes", () => ({
     default: {
         setLabel: mocks.setLabel,
         removeOwnedLabelByName: mocks.removeOwnedLabelByName,
+        removeOwnedRelationByName: mocks.removeOwnedRelationByName,
         setAttribute: mocks.setAttribute,
         isAffecting: () => true
     }
@@ -72,6 +74,28 @@ describe("GeoMapProperties", () => {
             ".geo-map-properties-dialog .geo-map-corner input") ];
     }
 
+    /** The background type the dropdown shows as chosen. */
+    function backgroundType() {
+        return query(".geo-map-background-type .dropdown > button")?.textContent?.trim();
+    }
+
+    /** Opens the background type dropdown, unless it is open, and returns its items. */
+    function openBackgroundTypes() {
+        const toggle = query(".geo-map-background-type .dropdown > button");
+        if (!toggle) throw new Error("no background type dropdown");
+        if (toggle.getAttribute("aria-expanded") !== "true") {
+            act(() => toggle.click());
+        }
+        return [ ...document.querySelectorAll<HTMLElement>(".dropdown-item") ];
+    }
+
+    function choose(label: string) {
+        const item = openBackgroundTypes()
+            .find((candidate) => candidate.textContent?.trim().startsWith(label));
+        if (!item) throw new Error(`no ${label} item`);
+        act(() => item.click());
+    }
+
     /** Types `value` into `input` and leaves it, which is when a number box commits. */
     function commit(input: HTMLInputElement | undefined, value: string) {
         if (!input) throw new Error("no such input");
@@ -102,38 +126,58 @@ describe("GeoMapProperties", () => {
         document.body.classList.remove("modal-open");
     });
 
-    it("repeats the settings dropdown in a General card, minus the style of an image map", () => {
+    it("repeats the settings dropdown in a General card, except the map style", () => {
         draw({});
         expect(document.querySelector(".geo-map-properties-dialog .modal-title")?.textContent)
             .toContain("geo-map.properties-title");
         expect(optionTitles(".geo-map-properties-general")).toEqual([
-            "book_properties_config.map-style",
             "book_properties_config.show-scale",
             "book_properties_config.show-labels",
             "book_properties_config.cluster-markers",
             "book_properties_config.max-nesting-depth",
             "book_properties.include_archived_notes"
         ]);
-
-        render(null, container);
-        draw({ "~map:image": "image1" }, LOADED_IMAGE);
-        expect(optionTitles(".geo-map-properties-general"))
-            .not.toContain("book_properties_config.map-style");
     });
 
-    it("offers only the image picker until the map has an image, and stores the one picked", () => {
+    it("draws a world map with a style, until a custom image is chosen and picked", () => {
         const note = draw({});
-        expect(optionTitles(".geo-map-properties-image")).toEqual([ "geo-map.image-note" ]);
+        expect(backgroundType()).toBe("geo-map.background-map");
+        expect(openBackgroundTypes().map((item) => item.textContent?.trim())).toEqual([
+            "geo-map.background-mapgeo-map.background-map-description",
+            "geo-map.background-imagegeo-map.background-image-description"
+        ]);
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "book_properties_config.map-style"
+        ]);
+
+        // Choosing the image writes nothing: the map stays a world map until an image is picked.
+        choose("geo-map.background-image");
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "geo-map.image-note"
+        ]);
+        expect(mocks.setAttribute).not.toHaveBeenCalled();
 
         act(() => query(".autocomplete-stub")?.click());
         expect(mocks.setAttribute).toHaveBeenCalledWith(note, "relation", "map:image", "image2");
     });
 
+    it("goes back to a world map by removing the image", () => {
+        const note = draw({ "~map:image": "image1" }, LOADED_IMAGE);
+        expect(backgroundType()).toBe("geo-map.background-image");
+
+        choose("geo-map.background-map");
+        expect(mocks.removeOwnedRelationByName).toHaveBeenCalledWith(note, "map:image");
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "book_properties_config.map-style"
+        ]);
+    });
+
     it("measures in pixels until custom corners are chosen, starting them at the size", () => {
         const note = draw({ "~map:image": "image1" }, LOADED_IMAGE);
         expect(query(".autocomplete-stub")?.dataset.noteId).toBe("image1");
-        expect(optionTitles(".geo-map-properties-image")).toEqual([
-            "geo-map.image-note", "geo-map.coordinates", "geo-map.dark-image"
+        expect(optionTitles(".geo-map-properties-background")).toEqual([
+            "geo-map.background-type", "geo-map.image-note",
+            "geo-map.coordinates", "geo-map.dark-image"
         ]);
         expect(cornerInputs()).toHaveLength(0);
 

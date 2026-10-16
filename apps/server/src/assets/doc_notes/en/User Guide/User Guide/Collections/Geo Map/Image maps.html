@@ -13,10 +13,12 @@
   <li>Open the <span class="tn-icon bx bx-cog"></span><em>Geo map properties</em> dialog
     from the&nbsp;<a class="reference-link" href="#root/_help_8YBEPzcpUgxw">Note menu</a> or
     from the settings menu of the&nbsp;<a class="reference-link" href="#root/_help_CssoWBu8I7jF">Collection Properties</a>.</li>
-  <li>Under <em>Image</em>, choose the image note in <em>Image note</em>.</li>
+  <li>Under <em>Background</em>, set <em>Type</em> to <em>Custom image</em>, then
+    choose the image note in <em>Image note</em>.</li>
 </ol>
 <p>The map then shows the image instead of the world map and opens with the
-  whole image in view. To go back to a world map, clear <em>Image note</em>.</p>
+  whole image in view. To go back to a world map, set <em>Type</em> back to <em>Vector &amp; Raster</em>,
+  which removes the image.</p>
 <p>The image note is stored in a <code>~map:image</code>  <a href="#root/_help_Cq5X6iKQop6R">relation</a> of
   the geo map, which can also be added by hand.</p>
 <h2>Image size</h2>
@@ -54,16 +56,16 @@
   <li>Opening a location in an external map application.</li>
 </ul>
 <p>The look of the marker titles follows the image: if the image is dark,
-  turn on <em>Dark image</em> under <em>Image</em> in the <em>Geo map properties</em> dialog,
+  turn on <em>Dark image</em> under <em>Background</em> in the <em>Geo map properties</em> dialog,
   so that the titles are drawn in a light color. This sets the <code>#map:darkStyle</code> label.</p>
 <p>The <em>Map style</em> setting doesn't apply to an image map, so it's hidden
-  while the map has an image.</p>
+  from the settings menu of the collection while the map has an image.</p>
 <h2>Choosing the coordinate system</h2>
 <p>By default, positions are measured in pixels of the image at its original
   size, from its top-left corner, with <code>x</code> growing to the right
   and <code>y</code> growing downwards.</p>
 <p>To use coordinates of your own instead, open the <em>Geo map properties</em> dialog,
-  set <em>Coordinates</em> under <em>Image</em> to <em>Custom</em>, and enter
+  set <em>Coordinates</em> under <em>Background</em> to <em>Custom</em>, and enter
   the coordinates of the image's <em>Top-left corner</em> and <em>Bottom-right corner</em>.
   Switching to <em>Custom</em> starts from the image's size in pixels, so the
   markers stay where they are until the corners are changed. All positions
