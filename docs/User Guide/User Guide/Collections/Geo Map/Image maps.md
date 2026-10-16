@@ -44,7 +44,7 @@ The _Map style_ setting doesn't apply to an image map, so it's hidden from the s
 
 By default, positions are measured in pixels of the image at its original size, from its top-left corner, with `x` growing to the right and `y` growing downwards.
 
-To use coordinates of your own instead, open the _Geo map properties_ dialog, set _Coordinates_ under _Background_ to _Custom_, and enter the coordinates of the image's _Top-left corner_ and _Bottom-right corner_. Switching to _Custom_ starts from the image's size in pixels, so the markers stay where they are until the corners are changed. All positions are then read and written in those coordinates, including the ones shown in the contextual menu and in the popup view. To go back to pixels, set _Coordinates_ to _Image pixels_.
+To use coordinates of your own instead, open the _Geo map properties_ dialog, set _Coordinates_ under _Background_ to _Custom_, and enter the coordinates of the image's _Top-left corner_ and _Bottom-right corner_. Switching to _Custom_ starts from the image's size in pixels, so the markers stay where they are until the corners are changed; for that reason, _Custom_ can only be chosen once the image has loaded. All positions are then read and written in those coordinates, including the ones shown in the contextual menu and in the popup view. To go back to pixels, set _Coordinates_ to _Image pixels_. Corners that the geo map inherits from a parent note or a template can only be removed on the note that holds them; entering other corners on this map overrides them.
 
 The corners are stored in the `#map:imageBounds` label of the geo map as `x,y x,y`, with a space between the two corners, which can also be set by hand. For example:
 

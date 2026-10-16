@@ -3159,6 +3159,7 @@
     "coordinates-description": "How positions on the image are measured: in its pixels from the top-left corner, or in coordinates of your own, such as the ones a video game uses.",
     "coordinates-pixels": "Image pixels",
     "coordinates-custom": "Custom",
+    "coordinates-inherited": "These corners come from a parent note or a template, so they can only be removed there.",
     "top-left-corner": "Top-left corner",
     "bottom-right-corner": "Bottom-right corner",
     "coordinates-invalid": "The two corners must differ in both x and y, so this change wasn't saved.",

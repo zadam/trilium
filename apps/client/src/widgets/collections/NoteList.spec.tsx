@@ -23,6 +23,15 @@ import { ParentComponent } from "../react/react_utils";
 import type { ViewTypeOptions } from "./interface";
 import { CustomNoteList, useNoteIds, useViewModeConfig } from "./NoteList";
 
+const wsHandlers = vi.hoisted(() => new Set<(message: unknown) => void>());
+vi.mock("../../services/ws", () => {
+    const ws = {
+        subscribeToMessages: (handler: (message: unknown) => void) => wsHandlers.add(handler),
+        unsubscribeToMessage: (handler: (message: unknown) => void) => wsHandlers.delete(handler)
+    };
+    return { default: ws, ...ws };
+});
+
 let currentNoteIds: string[] = [];
 
 // The child ids below stand for real notes: a collection view resolves the ids it is given through
@@ -291,6 +300,51 @@ describe("useNoteIds nesting depth", () => {
             render(null, mountPoint);
         });
     });
+
+    it("counts an imported subtree's depth from the collection", async () => {
+        const note = buildNote({
+            title: "Map",
+            type: "book",
+            "#maxNestingDepth": "0",
+            children: [
+                { id: "import-existing", title: "Existing" },
+                {
+                    id: "import-root",
+                    title: "Imported",
+                    children: [{ id: "import-child", title: "Imported child" }]
+                }
+            ]
+        });
+        const mountPoint = document.createElement("div");
+        await act(async () => {
+            render(
+                <ParentComponent.Provider value={new Component()}>
+                    <Harness note={note} viewType="geoMap" />
+                </ParentComponent.Provider>,
+                mountPoint
+            );
+        });
+        await act(async () => {
+            await flushMicrotasks();
+        });
+        expect(currentNoteIds).toEqual([ "import-existing", "import-root" ]);
+
+        await act(async () => {
+            for (const handler of wsHandlers) {
+                handler({
+                    type: "taskSucceeded",
+                    taskType: "importNotes",
+                    result: { parentNoteId: note.noteId, importedNoteId: "import-root" }
+                });
+            }
+            await flushMicrotasks();
+        });
+        expect(currentNoteIds).toEqual([ "import-existing", "import-root" ]);
+
+        await act(async () => {
+            render(null, mountPoint);
+        });
+    });
 });
 
 describe("useViewModeConfig view type switch", () => {
@@ -335,6 +389,61 @@ describe("useViewModeConfig view type switch", () => {
         const tableConfigs = seen.filter((entry) => entry.viewType === "table").map((entry) => entry.config);
         expect(tableConfigs.filter((config) => config !== undefined))
             .toEqual(tableConfigs.filter((config) => config !== undefined).map(() => stored["table.json"]));
+
+        await act(async () => {
+            render(null, mountPoint);
+        });
+    });
+
+    it("ignores a restore that resolves after the view type it was for was replaced", async () => {
+        const note = buildNote({ title: "Collection", type: "book" });
+        const stored: Record<string, object> = {
+            "geoMap.json": { view: { center: [ 0, 0 ], zoom: 3 } },
+            "table.json": { tableData: { columns: [] } }
+        };
+        const pending: ReturnType<typeof deferred<void>>[] = [];
+        note.getAttachmentsByRole = vi.fn(async () => {
+            const gate = deferred<void>();
+            pending.push(gate);
+            await gate;
+            return Object.entries(stored).map(([ title, config ]) => ({
+                attachmentId: title,
+                title,
+                getBlob: async () => ({ content: JSON.stringify(config) })
+            }));
+        }) as unknown as FNote["getAttachmentsByRole"];
+
+        let latest: object | undefined;
+        function ConfigProbe({ viewType }: { viewType: ViewTypeOptions }) {
+            latest = useViewModeConfig<object>(note, viewType)?.config;
+            return null;
+        }
+
+        const mountPoint = document.createElement("div");
+        for (const viewType of [ "geoMap", "table" ] as const) {
+            await act(async () => {
+                render(
+                    <ParentComponent.Provider value={new Component()}>
+                        <ConfigProbe viewType={viewType} />
+                    </ParentComponent.Provider>,
+                    mountPoint
+                );
+            });
+        }
+        const [ geoMapRestore, tableRestore ] = pending;
+        if (!geoMapRestore || !tableRestore) throw new Error("expected two pending restores");
+
+        await act(async () => {
+            tableRestore.resolve();
+            await flushMicrotasks();
+        });
+        expect(latest).toEqual(stored["table.json"]);
+
+        await act(async () => {
+            geoMapRestore.resolve();
+            await flushMicrotasks();
+        });
+        expect(latest).toEqual(stored["table.json"]);
 
         await act(async () => {
             render(null, mountPoint);

@@ -371,6 +371,51 @@ describe("GeoMapProperties", () => {
         expect(mocks.removeOwnedLabelByName).toHaveBeenCalledWith(note, "map:imageBounds");
     });
 
+    it("offers custom corners only once the image's size is known", () => {
+        const unmeasured = [ { status: "loading" }, { status: "error", reason: "unloadable" } ] as const;
+        for (const image of unmeasured) {
+            draw({ "~map:image": "image1" }, image);
+            expect(coordinateButtons()).toHaveLength(2);
+            expect(coordinateButtons().every((button) => button.disabled)).toBe(true);
+            chooseCoordinateMode("geo-map.coordinates-custom");
+            expect(mocks.setLabel).not.toHaveBeenCalled();
+            render(null, container);
+        }
+
+        // Corners already chosen can still be removed while the image loads.
+        draw({ "~map:image": "image1", "#map:imageBounds": "0,0 10,10" }, { status: "loading" });
+        expect(coordinateButtons().some((button) => button.disabled)).toBe(false);
+    });
+
+    it("keeps inherited corners, which only their owner can remove", () => {
+        buildNote({
+            title: "Maps",
+            "#map:imageBounds(inheritable)": "-512,512 512,-512",
+            children: [ { id: "cornersMap", title: "Map", "~map:image": "image1" } ]
+        });
+        drawNote(froca.notes.cornersMap, LOADED_IMAGE);
+        expect(coordinateModes()).toEqual([
+            [ "geo-map.coordinates-pixels", false ], [ "geo-map.coordinates-custom", true ]
+        ]);
+        expect(query(".geo-map-coordinates .tn-card-option-description")?.textContent)
+            .toBe("geo-map.coordinates-inherited");
+        expect(coordinateButtons().every((button) => button.disabled)).toBe(true);
+        chooseCoordinateMode("geo-map.coordinates-pixels");
+        expect(mocks.removeOwnedLabelByName).not.toHaveBeenCalled();
+    });
+
+    it("keeps drawing the image until a tileset's URL is entered", () => {
+        const note = draw({ "~map:image": "image1" }, LOADED_IMAGE);
+        choose("geo-map.background-tiles");
+        expect(backgroundType()).toBe("geo-map.background-tiles");
+        expect(mocks.toggleDangerousAttribute).not.toHaveBeenCalled();
+
+        type(query<HTMLInputElement>(".geo-map-tiles-url"), TILE_URL);
+        expect(mocks.setLabel).toHaveBeenCalledWith(note.noteId, "map:style", TILE_URL);
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(note, "relation", "map:image", false);
+    });
+
     it("says why an image cannot be drawn, or might not be on every device", () => {
         draw({ "~map:image": "image1" }, { status: "error", reason: "svg" });
         expect(query(".geo-map-image-notice")?.textContent).toBe("geo-map.image-svg-unsupported");

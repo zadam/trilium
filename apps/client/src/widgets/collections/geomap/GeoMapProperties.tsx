@@ -121,8 +121,10 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
 
     function changeKind(newKind: BackgroundKind) {
         setKind(newKind);
-        if (newKind !== "image" && note.getOwnedRelation("map:image")) {
-            void attributes.toggleDangerousAttribute(note, "relation", "map:image", false);
+        const hasTileset = !!tileUrl || !!note.getOwnedLabel("disabled:map:style");
+        const replacesImage = newKind === "map" || (newKind === "tiles" && hasTileset);
+        if (replacesImage && note.getOwnedRelation("map:image")) {
+            disableImage();
         } else if (newKind === "image" && !imageNoteId && note.getOwnedRelation("disabled:map:image")) {
             void attributes.toggleDangerousAttribute(note, "relation", "map:image", true);
         }
@@ -152,6 +154,13 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
         if (note.getOwnedLabel("disabled:map:style")) {
             void attributes.removeOwnedLabelByName(note, "disabled:map:style");
         }
+        if (note.getOwnedRelation("map:image")) {
+            disableImage();
+        }
+    }
+
+    function disableImage() {
+        void attributes.toggleDangerousAttribute(note, "relation", "map:image", false);
     }
 
     return (
@@ -338,6 +347,9 @@ function ImageSettings({ note, image, imageNoteId, onPickImage }: {
 function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undefined }) {
     const [ boundsValue, setBoundsValue ] = useNoteLabel(note, "map:imageBounds");
     const isCustom = boundsValue !== null && boundsValue !== undefined;
+    const isInherited = isCustom && !note.getOwnedLabel("map:imageBounds");
+    // Custom corners start from the image's size, so they cannot be chosen before it is known.
+    const isDisabled = isInherited || (!isCustom && !size);
     const [ corners, setCorners ] = useState(() => cornersOf(boundsValue));
     const [ isInvalid, setInvalid ] = useState(false);
 
@@ -349,9 +361,10 @@ function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undef
     function changeMode(mode: string) {
         if (mode === "custom") {
             // Starts from the pixels, so that switching leaves every marker where it is.
+            if (!size) return;
             setBoundsValue(formatImageExtent({
                 topLeft: [ 0, 0 ],
-                bottomRight: [ size?.width ?? 100, size?.height ?? 100 ]
+                bottomRight: [ size.width, size.height ]
             }));
         } else {
             setBoundsValue(null);
@@ -374,7 +387,9 @@ function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undef
         <OptionCardSection
             className="geo-map-coordinates"
             label={t("geo-map.coordinates")}
-            description={t("geo-map.coordinates-description")}
+            description={isInherited
+                ? t("geo-map.coordinates-inherited")
+                : t("geo-map.coordinates-description")}
             subSectionsVisible
             subSections={isCustom ? <>
                 <CornerSection
@@ -403,6 +418,7 @@ function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undef
                 ]}
                 currentValue={isCustom ? "custom" : "pixels"}
                 onChange={changeMode}
+                disabled={isDisabled}
             />
         </OptionCardSection>
     );

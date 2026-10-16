@@ -23,7 +23,7 @@ import { showImageCompressionDialog } from "../dialogs/image_compression/image_c
 import { isAlwaysFullWidthByType } from "../note_wrapper";
 import Dropdown, { type DropdownHandle } from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem } from "../react/FormList";
-import { useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useNoteRelation, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
+import { useEffectiveReadOnly, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useNoteRelation, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
 import { ParentComponent, POPUP_EDITOR_NTX_ID, useCommandTrigger } from "../react/react_utils";
 import NoteActionsCustom from "./NoteActionsCustom";
 import { useShareState } from "./NoteBadges";
@@ -92,6 +92,10 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const isHelpPage = note.noteId.startsWith("_help");
     const [syncServerHost] = useTriliumOption("syncServerHost");
     const { isReadOnly, enableEditing } = useIsNoteReadOnly(note, noteContext);
+    const isViewReadOnly = useEffectiveReadOnly(note, noteContext);
+    // The views other than the board open their properties dialog only while they are editable.
+    const hasCollectionProperties = isBoard
+        || (!isViewReadOnly && (isEventCalendar || isGeoMap || isTable));
     const isNormalViewMode = noteContext?.viewScope?.viewMode === "default";
     // The quick edit popup has no find bar, and the note map and a converted attachment open in the tab behind it.
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
@@ -179,7 +183,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                 {note.type === "render" && <CommandItem command="renderActiveNote" icon="bx bx-extension" text={t("note_actions.re_render_note")}
                 />}
 
-                {(isBoard || isEventCalendar || isGeoMap || isTable) && <CommandItem icon="bx bx-cog"
+                {hasCollectionProperties && <CommandItem icon="bx bx-cog"
                     text={isBoard ? t("board_view.properties")
                         : isGeoMap ? t("geo-map.properties")
                         : isTable ? t("table_view.properties") : t("calendar_view.properties")}

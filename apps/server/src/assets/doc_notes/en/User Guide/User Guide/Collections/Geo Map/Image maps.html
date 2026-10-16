@@ -74,9 +74,13 @@
   set <em>Coordinates</em> under <em>Background</em> to <em>Custom</em>, and enter
   the coordinates of the image's <em>Top-left corner</em> and <em>Bottom-right corner</em>.
   Switching to <em>Custom</em> starts from the image's size in pixels, so the
-  markers stay where they are until the corners are changed. All positions
-  are then read and written in those coordinates, including the ones shown
-  in the contextual menu and in the popup view. To go back to pixels, set <em>Coordinates</em> to <em>Image pixels</em>.</p>
+  markers stay where they are until the corners are changed; for that reason, <em>Custom</em> can
+  only be chosen once the image has loaded. All positions are then read and
+  written in those coordinates, including the ones shown in the contextual
+  menu and in the popup view. To go back to pixels, set <em>Coordinates</em> to <em>Image pixels</em>.
+  Corners that the geo map inherits from a parent note or a template can
+  only be removed on the note that holds them; entering other corners on
+  this map overrides them.</p>
 <p>The corners are stored in the <code>#map:imageBounds</code> label of the
   geo map as <code>x,y x,y</code>, with a space between the two corners, which
   can also be set by hand. For example:</p>

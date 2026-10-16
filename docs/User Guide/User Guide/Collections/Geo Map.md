@@ -333,6 +333,7 @@ When a map is [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%2
 *   Editing from the contextual menu (removing locations or adding new items).
 *   Keeping a place as a marker, whether you found it by searching or clicked it on the map. You can still search and click, and you can still look at a place and copy its coordinates.
 *   Drawing [shapes](Geo%20Map/Drawing%20shapes.md).
+*   The _Geo map properties_ dialog; its entry is hidden from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a>.
 
 To set a map as read-only, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Editable_ → _Read-only_.
 
@@ -376,7 +377,7 @@ To use one:
 
 1.  Open the _Geo map properties_ dialog from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a>.
 2.  Under _Background_, set _Type_ to _Custom tileset_.
-3.  In _Tile URL_, enter the address of the tile set, with `{z}`, `{x}` and `{y}` where the zoom level and the position of the tile go. For example, to use Esri.NatGeoWorldMap, enter [`https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`](https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D). The URL is saved once you leave the field; a URL that doesn't start with `http://` or `https://`, or that lacks one of the three placeholders, is not saved.
+3.  In _Tile URL_, enter the address of the tile set, with `{z}`, `{x}` and `{y}` where the zoom level and the position of the tile go. For example, to use Esri.NatGeoWorldMap, enter [`https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`](https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D). The URL is saved once you leave the field; a URL that doesn't start with `http://` or `https://`, or that lacks one of the three placeholders, is not saved. A map drawn over an image keeps its image until a URL is saved.
 4.  If the tiles are dark, turn on _Dark tileset_, which draws the marker titles in a light color so that they remain readable.
 
 Additionally:

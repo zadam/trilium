@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../entities/fnote";
 import type { PrintReport } from "../../print";
-import froca from "../../services/froca";
 import { subscribeToMessages, unsubscribeToMessage as unsubscribeFromMessage } from "../../services/ws";
 import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelInt, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import { allViewTypes, ViewModeMedia, ViewModeProps, ViewTypeOptions } from "./interface";
@@ -244,24 +243,19 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
 
     // Refresh on import.
     useEffect(() => {
-        async function onImport(message: WebSocketMessage) {
+        function onImport(message: WebSocketMessage) {
             if (!("taskType" in message) || message.taskType !== "importNotes" || message.type !== "taskSucceeded") return;
             const { parentNoteId, importedNoteId } = message.result;
             if (!parentNoteId || !importedNoteId) return;
-            if (importedNoteId && (parentNoteId === note?.noteId || noteIds.includes(parentNoteId))) {
-                const importedNote = await froca.getNote(importedNoteId);
-                if (!importedNote) return;
-                setNoteIds([
-                    ...noteIds,
-                    ...await getNoteIds(importedNote),
-                    importedNoteId
-                ]);
+            // Walked again from the collection, so that `maxDepth` counts from there.
+            if (parentNoteId === note?.noteId || noteIds.includes(parentNoteId)) {
+                void refreshNoteIds();
             }
         }
 
         subscribeToMessages(onImport);
         return () => unsubscribeFromMessage(onImport);
-    }, [ note, noteIds, setNoteIds ]);
+    }, [ note, noteIds, includeArchived, directChildrenOnly, maxDepth ]);
 
     return noteIds;
 }
@@ -288,8 +282,12 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
             setViewConfig({ note, viewType, config, storeFn });
             viewStorage.store(config);
         };
-        storageRef.current = { storage: viewStorage, storeFn, note, viewType };
+        const current = { storage: viewStorage, storeFn, note, viewType };
+        storageRef.current = current;
         viewStorage.restore().then(config => {
+            // A restore that resolves after the note or view type changed would replace the newer
+            // config.
+            if (storageRef.current !== current) return;
             setViewConfig({ note, viewType, config, storeFn });
         });
     }, [ note, viewType ]);
@@ -305,7 +303,7 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
             return;
         }
         current.storage.restoreIfChanged().then(config => {
-            if (config === undefined) return;
+            if (config === undefined || storageRef.current !== current) return;
             setViewConfig({ note: current.note, viewType: current.viewType, config, storeFn: current.storeFn });
         });
     });

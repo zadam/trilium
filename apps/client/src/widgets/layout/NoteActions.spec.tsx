@@ -121,8 +121,10 @@ describe("NoteContextMenu", () => {
     });
 
     it("offers the properties dialog of the collections that have one", async () => {
-        const hasPropertiesItem = async (viewType: string) => {
-            const note = buildNote({ title: viewType, type: "book", "#viewType": viewType });
+        const hasPropertiesItem = async (viewType: string, labels: Record<string, string> = {}) => {
+            const note = buildNote({
+                title: viewType, type: "book", "#viewType": viewType, ...labels
+            });
             const noteContext = new NoteContext("ntx-collection");
             noteContext.noteId = note.noteId;
             noteContext.viewScope = { viewMode: "default" };
@@ -143,6 +145,13 @@ describe("NoteContextMenu", () => {
         expect(await hasPropertiesItem("table")).toBe(true);
         expect(await hasPropertiesItem("geoMap")).toBe(true);
         expect(await hasPropertiesItem("list")).toBe(false);
+
+        // The board opens its dialog on a read-only note; the other views do not.
+        for (const viewType of [ "table", "geoMap", "calendar" ]) {
+            expect(await hasPropertiesItem(viewType, { "#readOnly": "" })).toBe(false);
+        }
+        expect(await hasPropertiesItem("calendar")).toBe(true);
+        expect(await hasPropertiesItem("board", { "#readOnly": "" })).toBe(true);
     });
 
     it("offers to print a render note only while it has a render target", async () => {
