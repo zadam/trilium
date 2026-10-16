@@ -327,7 +327,9 @@
     "content-manager-title": "Bainisteoir Ábhair",
     "database-title": "Bunachar Sonraí",
     "space-usage-title": "Úsáid Spáis",
-    "record-meeting-title": "Trasscríobh cruinniú"
+    "record-meeting-title": "Trasscríobh cruinniú",
+    "transcription-title": "Tras-scríobh",
+    "resources-title": "Acmhainní íoslódáilte"
   },
   "notes": {
     "new-note": "Nóta nua",
@@ -579,6 +581,23 @@
     "save-locked": "Ní féidir an tras-scríbhinn a shábháil fad is atá an seisiún cosanta faoi ghlas. Coinníonn an córas tras-scríofa í agus sábhálann sé í a luaithe a théann tú isteach sa seisiún cosanta, ar choinníoll go bhfanann Trilium ar oscailt.",
     "save-failed": "Níorbh fhéidir an tras-scríbhinn a shábháil: {{- message}} Coinníonn an próiseas tras-scríofa í agus déanann sé iarracht arís leis an gcéad abairt eile.",
     "capture-lost": "Chuir an tras-scríobh stad toisc nach raibh sé indéanta an fhuaim a ghabháil a thuilleadh. Coinnítear an méid a bhí tras-scríofa go dtí sin.",
-    "attachment-title": "Tras-scríbhinn"
+    "attachment-title": "Tras-scríbhinn",
+    "model-not-downloaded": "Níl an tsamhail aitheantais cainte íoslódáilte go fóill. Tosaigh taifeadadh ón lainseálaí chun í a íoslódáil.",
+    "recognizer-int8-title": "Parakeet TDT 0.6B v3",
+    "recognizer-fp32-title": "Parakeet TDT 0.6B v3, cruinneas ard",
+    "recognizer-description": "Múnla aitheantais cainte ó NVIDIA a thacaíonn le 25 teanga Eorpach. Déantar an t-aitheantas go hiomlán ar an ngléas seo, mar sin ní fhágann do thaifeadtaí an gléas riamh.",
+    "vad-title": "Silero VAD",
+    "vad-description": "Úsáidtear é chun caint a bhrath san fhuaim, ionas nach ndéanfar ach na codanna ina bhfuil caint a thras-scríobh.",
+    "speaker-title": "TitaNet beag",
+    "speaker-description": "Úsáidtear é chun idirdhealú a dhéanamh idir cainteoirí, ionas gur féidir a fheiceáil cé a dúirt cad sa tras-scríbhinn."
+  },
+  "resources": {
+    "unknown": "Níl acmhainn ar a bhfuil an t-ainm {{id}} ann.",
+    "http-error": "Theip ar íoslódáil {{name}} le stádas HTTP {{status}}.",
+    "size-mismatch": "Níl an méid a bhfuiltear ag súil leis ag {{name}}.",
+    "hash-mismatch": "Ní mheaitseálann {{name}} leis an suim sheiceála a bhíothas ag sú leis, mar sin caitheadh i leataobh é.",
+    "delete-while-downloading": "Tá {{- title}} á íoslódáil. Cealaigh an íoslódáil sula scriosann tú é.",
+    "not-foreign": "Ní iontráil neamhúsáidte i bhfillteán na n-acmhainní é {{- name}}.",
+    "stalled": "Cuireadh stop le híoslódáil {{name}}: níor tháinig aon rud ar feadh {{seconds}} soicind. Seiceáil do nasc, ansin bain triail as arís."
   }
 }
