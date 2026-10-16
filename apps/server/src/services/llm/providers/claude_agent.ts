@@ -20,7 +20,7 @@
  *     with every built-in Claude Code tool (file access, bash, …) disabled.
  */
 
-import type { Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
+import type { Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
 import type { ContentBlockParam } from "@anthropic-ai/sdk/resources";
 import type { LlmMessage, LlmMessagePart, LlmStreamChunk } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
@@ -46,7 +46,7 @@ import {
     rememberSession as rememberWarmSession,
     takeWarmSession
 } from "./claude_session_pool.js";
-import { buildHistoryReplay, buildTitlePrompt, cleanTitle, flattenContent, hashTranscript, MAX_TITLES_PER_SESSION } from "./transcript.js";
+import { buildHistoryReplay, buildTitlePrompt, cleanTitle, flattenContent, hashTranscript } from "./transcript.js";
 
 // Re-exported for existing importers (specs, siblings); the implementations
 // now live in the shared transcript module.
@@ -149,6 +149,16 @@ const TITLE_MODEL = "claude-haiku-4-5-20251001";
  */
 const TITLE_SESSION_KEY = ":title";
 const TITLE_FINGERPRINT = "title";
+/**
+ * The title session's system prompt. `/clear` leaves no earlier titles in the
+ * history to imitate, so the examples here hold the model to the word limit.
+ */
+const TITLE_SYSTEM_PROMPT = "You generate short, descriptive titles. A title has at most five words: name the subject "
+    + "and leave out filler such as \"Guide\", \"Overview\", \"Basics\" or \"Common Mistakes\". Reply with only the title "
+    + "text — no quotes, no punctuation around it. Examples of good titles: \"Garden Shed Wiring Plan\", "
+    + "\"Quarterly Budget Review\", \"Fixing Login Timeouts\".";
+/** How long a title or a `/clear` waits for its result before the title session is closed. */
+export const TITLE_TIMEOUT_MS = 60_000;
 
 /** Upper bound on assistant↔tool round-trips within one chat turn. */
 const MAX_TURNS = 25;
@@ -185,8 +195,6 @@ interface SessionEntry {
  */
 const sessionsByChatNote = new Map<string, SessionEntry>();
 
-/** Titles the current title session answered, counting the one in progress. */
-let titleCount = 0;
 /** Settles when the title in progress does; a session answers one prompt at a time. */
 let titleQueue: Promise<unknown> = Promise.resolve();
 
@@ -644,11 +652,12 @@ export class ClaudeAgentProvider implements LlmProvider {
 
     /**
      * Name a chat after its first message, in the session titles share. Titles
-     * take turns, because a session answers one prompt at a time.
+     * take turns, because a session answers one prompt at a time, and each is
+     * followed by a `/clear` that the title does not wait for but the next one does.
      */
     async generateTitle(firstMessage: string): Promise<string> {
         const title = titleQueue.then(() => this.requestTitle(firstMessage));
-        titleQueue = title;
+        titleQueue = title.then(() => clearTitleSession());
         return title;
     }
 
@@ -658,19 +667,9 @@ export class ClaudeAgentProvider implements LlmProvider {
         try {
             session = await this.titleSession();
             await pushUserTurn(session.input, buildTitlePrompt(firstMessage));
-            // Manual iteration, as in chatChunks(): breaking out of `for await` closes the query.
-            for (;;) {
-                const next = await session.query.next();
-                if (next.done) {
-                    session.closed = true;
-                    return "";
-                }
-                const message = next.value;
-                if (message.type === "result") {
-                    answered = true;
-                    return message.subtype === "success" ? cleanTitle(message.result) : "";
-                }
-            }
+            const result = await nextResult(session);
+            answered = result !== undefined;
+            return result?.subtype === "success" ? cleanTitle(result.result) : "";
         } catch (error) {
             getLog().error(`Claude Agent title generation failed: ${describeAgentError(error)}`);
             return "";
@@ -684,18 +683,11 @@ export class ClaudeAgentProvider implements LlmProvider {
         }
     }
 
-    /**
-     * The warm title session, or a new one on {@link TITLE_MODEL} when there is
-     * none or the current one reached {@link MAX_TITLES_PER_SESSION}.
-     */
+    /** The warm title session, or a new one on {@link TITLE_MODEL}. */
     private async titleSession(): Promise<ClaudeSession> {
         const warm = takeWarmSession(TITLE_SESSION_KEY, TITLE_FINGERPRINT);
-        if (warm && titleCount < MAX_TITLES_PER_SESSION) {
-            titleCount++;
-            return warm;
-        }
         if (warm) {
-            closeSession(TITLE_SESSION_KEY, warm);
+            return warm;
         }
 
         const query = await loadQuery();
@@ -705,7 +697,7 @@ export class ClaudeAgentProvider implements LlmProvider {
                 prompt: input,
                 options: {
                     ...await this.buildBaseOptions({ enableNoteTools: false }),
-                    systemPrompt: "You generate short, descriptive titles. Reply with only the title text — no quotes, no punctuation around it.",
+                    systemPrompt: TITLE_SYSTEM_PROMPT,
                     model: TITLE_MODEL,
                     maxTurns: 1,
                     persistSession: false
@@ -718,7 +710,6 @@ export class ClaudeAgentProvider implements LlmProvider {
             model: TITLE_MODEL
         };
         rememberWarmSession(TITLE_SESSION_KEY, session);
-        titleCount = 1;
         return session;
     }
 
@@ -1054,6 +1045,55 @@ function buildContentBlocks(content: LlmMessagePart[], prefix: string): ContentB
 /** One-shot streaming-input prompt: a single user message, then end of input. */
 async function* streamSingleUserMessage(content: ContentBlockParam[]): AsyncIterable<SDKUserMessage> {
     yield { type: "user", message: { role: "user", content }, parent_tool_use_id: null };
+}
+
+/**
+ * Empty the warm title session with `/clear`, which Claude Code runs in the
+ * process without a model call, so the next title starts from no history. A
+ * `/clear` that fails closes the session, and the next title starts another.
+ */
+async function clearTitleSession(): Promise<void> {
+    const session = takeWarmSession(TITLE_SESSION_KEY, TITLE_FINGERPRINT);
+    if (!session) {
+        return;
+    }
+    try {
+        await pushUserTurn(session.input, "/clear");
+        if (await nextResult(session)) {
+            releaseSession(TITLE_SESSION_KEY, session);
+            return;
+        }
+    } catch (error) {
+        getLog().info(`Claude Agent provider: clearing the title session failed (${describeAgentError(error)}).`);
+    }
+    closeSession(TITLE_SESSION_KEY, session);
+}
+
+/**
+ * Read a title session up to the `result` of the turn just pushed, or undefined
+ * when the stream ends first. Throws when no result comes within
+ * {@link TITLE_TIMEOUT_MS}, since a wedged `query.next()` might never settle.
+ * Iterates by hand, as in `chatChunks()`: breaking out of `for await` closes the query.
+ */
+async function nextResult(session: ClaudeSession): Promise<SDKResultMessage | undefined> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`no reply within ${TITLE_TIMEOUT_MS / 1000} s`)), TITLE_TIMEOUT_MS);
+    });
+    try {
+        for (;;) {
+            const next = await Promise.race([session.query.next(), timeout]);
+            if (next.done) {
+                session.closed = true;
+                return undefined;
+            }
+            if (next.value.type === "result") {
+                return next.value;
+            }
+        }
+    } finally {
+        clearTimeout(timer);
+    }
 }
 
 /**

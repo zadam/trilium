@@ -5,6 +5,7 @@ import type { ClaudeSession } from "./claude_session_pool.js";
 
 const queryMock = vi.hoisted(() => vi.fn());
 const errorLogMock = vi.hoisted(() => vi.fn());
+const infoLogMock = vi.hoisted(() => vi.fn());
 /** Streaming-input-only Query controls the session pool drives. */
 const setModelMock = vi.hoisted(() => vi.fn());
 const closeMock = vi.hoisted(() => vi.fn());
@@ -14,7 +15,7 @@ vi.mock("@anthropic-ai/claude-agent-sdk", () => ({
 }));
 
 vi.mock("@triliumnext/core", () => ({
-    getLog: () => ({ info: vi.fn(), error: errorLogMock })
+    getLog: () => ({ info: infoLogMock, error: errorLogMock })
 }));
 
 // buildSystemPrompt (reached via composeSystemPrompt) reads the workspace task
@@ -56,7 +57,7 @@ vi.mock("@triliumnext/core/src/services/llm/attachment_content.js", async (impor
 const spawnMock = vi.hoisted(() => vi.fn());
 vi.mock("child_process", () => ({ spawn: spawnMock }));
 
-const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests } = await import("./claude_agent.js");
+const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests, TITLE_TIMEOUT_MS } = await import("./claude_agent.js");
 const { MAX_WARM_SESSIONS, Pushable, releaseSession, rememberSession: rememberWarmSession, resetClaudeSessionPoolForTests } = await import("./claude_session_pool.js");
 const { buildTitlePrompt, MAX_TITLES_PER_SESSION } = await import("./transcript.js");
 type PushablePrompt = { pending: readonly { message: { role: string; content: unknown[] } }[] };
@@ -1085,6 +1086,7 @@ describe("generateTitle", () => {
     beforeEach(() => {
         queryMock.mockReset();
         errorLogMock.mockReset();
+        infoLogMock.mockReset();
         resetClaudeSessionPoolForTests();
         closeMock.mockClear();
     });
@@ -1093,7 +1095,7 @@ describe("generateTitle", () => {
         let inFlight = 0;
         let maxInFlight = 0;
         const answered: string[] = [];
-        scriptTitleAgent(async prompt => {
+        const pushed = scriptTitleAgent(async prompt => {
             inFlight++;
             maxInFlight = Math.max(maxInFlight, inFlight);
             await new Promise(resolve => setTimeout(resolve, 5));
@@ -1109,6 +1111,9 @@ describe("generateTitle", () => {
 
         expect(answered).toEqual(["a", "b", "c"]);
         expect(maxInFlight).toBe(1);
+        await vi.waitFor(() => expect(pushed).toEqual([
+            buildTitlePrompt("a"), "/clear", buildTitlePrompt("b"), "/clear", buildTitlePrompt("c"), "/clear"
+        ]));
         expect(queryMock).toHaveBeenCalledTimes(1);
         const options = queryMock.mock.calls[0][0].options;
         expect(options).toMatchObject({ model: "claude-haiku-4-5-20251001", maxTurns: 1, persistSession: false });
@@ -1129,7 +1134,58 @@ describe("generateTitle", () => {
         expect(prompts[0]).toContain("earlier messages in this conversation do not apply");
     });
 
-    it("replaces the title session when it is full, failed, or its stream ended", async () => {
+    it("states the five-word limit with example titles in the system prompt, since /clear leaves none in the history", async () => {
+        scriptTitleAgent(async () => [titleResult("Title")]);
+
+        await new ClaudeAgentProvider().generateTitle("hi");
+
+        const systemPrompt: string = queryMock.mock.calls[0][0].options.systemPrompt;
+        expect(systemPrompt).toContain("at most five words");
+        const examples = [...systemPrompt.matchAll(/"([^"]+)"/g)].map(match => match[1]).filter(text => /^[A-Z]/.test(text) && text.includes(" "));
+        expect(examples.length).toBeGreaterThanOrEqual(2);
+        for (const example of examples) {
+            expect(example.split(/\s+/).length).toBeLessThanOrEqual(5);
+        }
+    });
+
+    it("empties the session with /clear after a title, without holding that title back", async () => {
+        let releaseClear = () => {};
+        const gate = new Promise<void>(resolve => {
+            releaseClear = resolve;
+        });
+        const pushed = scriptTitleAgent(
+            async prompt => [titleResult(prompt.slice(prompt.lastIndexOf("\n") + 1).toUpperCase())],
+            async () => {
+                await gate;
+                return clearedMessages();
+            }
+        );
+        const provider = new ClaudeAgentProvider();
+
+        await expect(provider.generateTitle("a")).resolves.toBe("A");
+        const second = provider.generateTitle("b");
+        await vi.waitFor(() => expect(pushed).toEqual([buildTitlePrompt("a"), "/clear"]));
+
+        releaseClear();
+        await expect(second).resolves.toBe("B");
+        expect(pushed.slice(0, 3)).toEqual([buildTitlePrompt("a"), "/clear", buildTitlePrompt("b")]);
+        expect(queryMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps one session however many titles it answers", async () => {
+        scriptTitleAgent(async () => [titleResult("Title")]);
+        const provider = new ClaudeAgentProvider();
+
+        for (let i = 0; i < MAX_TITLES_PER_SESSION + 5; i++) {
+            await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        }
+
+        expect(queryMock).toHaveBeenCalledTimes(1);
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it("replaces the title session when a title or a /clear fails, or its stream ended", async () => {
+        let clears = 0;
         scriptTitleAgent(async prompt => {
             if (prompt.endsWith("boom")) {
                 throw new Error("agent crashed");
@@ -1138,28 +1194,65 @@ describe("generateTitle", () => {
                 return null;
             }
             return [titleResult("Title")];
+        }, async () => {
+            clears++;
+            if (clears === 1) {
+                throw new Error("clear crashed");
+            }
+            return clears === 2 ? null : clearedMessages();
         });
         const provider = new ClaudeAgentProvider();
 
-        // Full: the next title starts a new session and closes the old one.
-        for (let i = 0; i <= MAX_TITLES_PER_SESSION; i++) {
-            await expect(provider.generateTitle("hi")).resolves.toBe("Title");
-        }
+        // A /clear that throws closes the session, and the next title starts another.
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
         expect(queryMock).toHaveBeenCalledTimes(2);
         expect(closeMock).toHaveBeenCalledTimes(1);
+        expect(infoLogMock).toHaveBeenCalledWith(expect.stringContaining("clear crashed"));
+
+        // A /clear whose stream ends closes the session too.
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(3);
 
         // Failed: the session is closed, the failure logged, and the next title starts another.
         await expect(provider.generateTitle("boom")).resolves.toBe("");
-        expect(closeMock).toHaveBeenCalledTimes(2);
         expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("agent crashed"));
         await expect(provider.generateTitle("hi")).resolves.toBe("Title");
-        expect(queryMock).toHaveBeenCalledTimes(3);
+        expect(queryMock).toHaveBeenCalledTimes(4);
 
         // Ended: a stream that stops before its result yields no title, and the next title starts another.
         await expect(provider.generateTitle("quit")).resolves.toBe("");
         await expect(provider.generateTitle("hi")).resolves.toBe("Title");
-        expect(queryMock).toHaveBeenCalledTimes(4);
+        expect(queryMock).toHaveBeenCalledTimes(5);
     });
+
+    it("gives up on a title or a /clear that gets no reply in time, so later titles still run", async () => {
+        vi.useFakeTimers();
+        try {
+            const never = new Promise<null>(() => {});
+            scriptTitleAgent(async prompt => (prompt.endsWith("hang") ? never : [titleResult("Title")]), async () => never);
+            const provider = new ClaudeAgentProvider();
+
+            const hung = provider.generateTitle("hang");
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            await expect(hung).resolves.toBe("");
+            expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("no reply"));
+
+            const answered = provider.generateTitle("hi");
+            await vi.advanceTimersByTimeAsync(0);
+            await expect(answered).resolves.toBe("Title");
+            const next = provider.generateTitle("hi");
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            await expect(next).resolves.toBe("Title");
+
+            expect(queryMock).toHaveBeenCalledTimes(3);
+            expect(closeMock).toHaveBeenCalledTimes(2);
+        } finally {
+            // The last title's /clear hangs as well; let it time out so the next test's titles can run.
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            vi.useRealTimers();
+        }
+    }, 5000);
 
     it("keeps the session after an unsuccessful result, which leaves it in a known state", async () => {
         scriptTitleAgent(async prompt => (prompt.endsWith("fail")
@@ -1183,18 +1276,24 @@ describe("generateTitle", () => {
 });
 
 /**
- * A title session: Claude Code in streaming input mode, answering each message
- * pushed onto its input with what `reply` returns for its text. `null` ends the
- * stream, as a process that exits does.
+ * A title session: Claude Code in streaming input mode, answering each title
+ * prompt pushed onto its input with what `reply` returns for its text, and each
+ * `/clear` with what `clear` returns. `null` ends the stream, as a process that
+ * exits does. Returns the texts pushed, in order.
  */
-function scriptTitleAgent(reply: (prompt: string) => Promise<unknown[] | null>) {
+function scriptTitleAgent(
+    reply: (prompt: string) => Promise<unknown[] | null>,
+    clear: () => Promise<unknown[] | null> = async () => clearedMessages()
+): string[] {
     type Pushed = { message: { content: { text: string }[] } };
+    const pushed: string[] = [];
     queryMock.mockImplementation(({ prompt }: { prompt: string | AsyncIterable<Pushed> }) => {
         const generator = (async function* () {
             const input = typeof prompt === "string" ? [prompt] : prompt;
-            for await (const pushed of input) {
-                const text = typeof pushed === "string" ? pushed : pushed.message.content.map(block => block.text).join("");
-                const messages = await reply(text);
+            for await (const message of input) {
+                const text = typeof message === "string" ? message : message.message.content.map(block => block.text).join("");
+                pushed.push(text);
+                const messages = await (text === "/clear" ? clear() : reply(text));
                 if (!messages) {
                     return;
                 }
@@ -1203,6 +1302,16 @@ function scriptTitleAgent(reply: (prompt: string) => Promise<unknown[] | null>) 
         })();
         return Object.assign(generator, { setModel: setModelMock, close: closeMock });
     });
+    return pushed;
+}
+
+/** What Claude Code streams for a `/clear`, as recorded from CLI 2.1.287. */
+function clearedMessages() {
+    return [
+        { type: "conversation_reset", trigger: "clear", session_id: "sess-1", new_conversation_id: "conv-2" },
+        { type: "system", subtype: "init", session_id: "sess-2" },
+        { ...successResult("sess-2"), result: "" }
+    ];
 }
 
 function titleResult(title: string) {
