@@ -10,6 +10,7 @@ import {
 import type { Editor, ModelElement } from "ckeditor5";
 import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, onTestFinished } from "vitest";
+import { cdp } from "vitest/browser";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
 import { modelTable, scrollFigure } from "../../../test/table-kit.js";
@@ -108,6 +109,31 @@ describe("TableTouchSelection", () => {
                 await expect.poll(() => overlay(editor).isVisible).toBe(false);
             });
 
+        it("fades in each time it shows, unless motion is reduced", async () => {
+            await showHandles(editor, GRID);
+            const element = overlayElement(editor);
+            const [fadeIn] = element.getAnimations();
+            const style = getComputedStyle(element);
+            expect(style.animationName).toBe("ck-table-touch-selection-fade-in");
+            expect(style.animationDuration).toBe("0.3s");
+            await fadeIn.finished;
+            expect(element.getAnimations()).toHaveLength(0);
+
+            touch("mouse");
+            await expect.poll(() => overlay(editor).isVisible).toBe(false);
+            touch();
+            await expect.poll(() => overlay(editor).isVisible).toBe(true);
+            expect(element.getAnimations()).toHaveLength(1);
+
+            const session = cdp() as { send(method: string, params: object): Promise<unknown> };
+            const setReducedMotion = (value: string) => session.send("Emulation.setEmulatedMedia", {
+                features: [{ name: "prefers-reduced-motion", value }]
+            });
+            await setReducedMotion("reduce");
+            onTestFinished(() => setReducedMotion(""));
+            expect(getComputedStyle(element).animationName).toBe("none");
+        });
+
         it("hides while the cells are out of view", async () => {
             await showHandles(editor, GRID);
             const editorElement = editor.ui.element as HTMLElement;
@@ -126,6 +152,31 @@ describe("TableTouchSelection", () => {
             editorElement.style.marginLeft = "";
             window.visualViewport?.dispatchEvent(new Event("resize"));
             await expect.poll(() => overlay(editor).isVisible).toBe(true);
+        });
+
+        it("hides while the table scrolls and shows again once the scroll settles", async () => {
+            const scroller = wrapInScroller(editor, 200);
+            await showHandles(editor, `${GRID}${"<paragraph>x</paragraph>".repeat(12)}`);
+            const elsewhere = document.createElement("div");
+            elsewhere.style.cssText = "height: 50px; overflow: auto";
+            elsewhere.append(document.createElement("div"));
+            elsewhere.firstElementChild?.setAttribute("style", "height: 200px");
+            document.body.append(elsewhere);
+            onTestFinished(() => elsewhere.remove());
+            await scrollBy(elsewhere, 20);
+            expect(overlay(editor).isVisible).toBe(true);
+
+            const handle = handleCenter(editor, BOTTOM_RIGHT);
+            touchStart(handle.x, handle.y);
+            await scrollBy(scroller, 10);
+            expect(overlay(editor).isVisible).toBe(false);
+            expect(touchMove(handle.x + 30, handle.y + 30).defaultPrevented).toBe(false);
+            touchEnd();
+
+            await scrollBy(scroller, 10);
+            expect(overlay(editor).isVisible).toBe(false);
+            await expect.poll(() => overlay(editor).isVisible).toBe(true);
+            expectAround(editor, [0, 0], [0, 0]);
         });
 
         it("hides the handles beyond either side of a table that scrolls sideways", async () => {
@@ -384,6 +435,7 @@ describe("TableTouchSelection", () => {
                 touchMove(handle.x, scrollerRect.top + scroller.clientHeight - 5);
                 await expect.poll(() => scroller.scrollTop).toBeGreaterThan(100);
                 await expect.poll(() => selectedCells(editor).length).toBeGreaterThan(14);
+                expect(overlay(editor).isVisible).toBe(true);
 
                 touchEnd();
                 const scrollTop = scroller.scrollTop;
@@ -502,6 +554,14 @@ function dispatchTouch(
 
 function overlay(editor: Editor) {
     return editor.plugins.get(TableTouchSelection).view;
+}
+
+function overlayElement(editor: Editor) {
+    const element = overlay(editor).element;
+    if (!element) {
+        throw new Error("The overlay is not rendered.");
+    }
+    return element;
 }
 
 function outlineRectOf(editor: Editor) {
@@ -630,6 +690,15 @@ function rootOf(editor: Editor) {
         throw new Error("The editor has no editable.");
     }
     return root;
+}
+
+/** Scrolls `element` down by `distance` and waits for its `scroll` event. */
+async function scrollBy(element: HTMLElement, distance: number) {
+    const scrolled = new Promise((resolve) => {
+        element.addEventListener("scroll", resolve, { once: true });
+    });
+    element.scrollTop += distance;
+    await scrolled;
 }
 
 /** Puts the editor in a scroll container `height` pixels tall. */

@@ -33,6 +33,8 @@ import TableTouchSelectionView, {
 
 /** The distance from a handle within which a touch drags it, in pixels. */
 const HANDLE_REACH = 24;
+/** The time after the last scroll at which the overlay shows again, in milliseconds. */
+const SCROLL_SETTLE_MS = 150;
 
 /**
  * Handles at the corners of the selected table cells, or of the cell with the caret, shown after a
@@ -47,6 +49,8 @@ export default class TableTouchSelection extends Plugin {
     private layout: SelectionLayout | null = null;
     private gesture: Gesture | null = null;
     private frame = 0;
+    private isScrolling = false;
+    private scrollTimer: ReturnType<typeof setTimeout> | undefined;
     private readonly domEmitter = new (DomEmitterMixin())();
     private readonly resizeObserver = new ResizeObserver(() => this.scheduleUpdate());
 
@@ -86,7 +90,7 @@ export default class TableTouchSelection extends Plugin {
         this.domEmitter.listenTo(document, "pointerdown", (_evt, event: PointerEvent) => {
             this.detectTouch(event);
         }, { useCapture: true });
-        this.domEmitter.listenTo(document, "scroll", () => this.scheduleUpdate(), {
+        this.domEmitter.listenTo(document, "scroll", (_evt, event: Event) => this.onScroll(event), {
             useCapture: true,
             usePassive: true
         });
@@ -108,6 +112,7 @@ export default class TableTouchSelection extends Plugin {
     override destroy() {
         this.endGesture();
         cancelAnimationFrame(this.frame);
+        clearTimeout(this.scrollTimer);
         this.domEmitter.stopListening();
         this.resizeObserver.disconnect();
         this.view.destroy();
@@ -128,7 +133,7 @@ export default class TableTouchSelection extends Plugin {
         }
 
         this.target = target;
-        this.layout = target ? this.layOut(target) : null;
+        this.layout = target && !this.isScrolling ? this.layOut(target) : null;
         this.view.isVisible = !!this.layout;
         if (!this.layout) {
             this.endGesture();
@@ -144,6 +149,32 @@ export default class TableTouchSelection extends Plugin {
             this.frame = 0;
             this.update();
         });
+    }
+
+    /**
+     * Hides the overlay while an element around the table scrolls, and shows it again once the
+     * scroll settles. The auto-scroll of a drag keeps the overlay shown.
+     */
+    private onScroll(event: Event) {
+        const domTable = this.target?.domTable;
+        if (!domTable || !isScrolledAround(event.target, domTable)) {
+            return;
+        }
+
+        if (this.gesture?.isDragging) {
+            this.scheduleUpdate();
+            return;
+        }
+
+        clearTimeout(this.scrollTimer);
+        this.scrollTimer = setTimeout(() => {
+            this.isScrolling = false;
+            this.scheduleUpdate();
+        }, SCROLL_SETTLE_MS);
+        if (!this.isScrolling) {
+            this.isScrolling = true;
+            this.update();
+        }
     }
 
     /** Shows the handles after a touch and hides them after a press of a mouse or pen. */
@@ -433,6 +464,11 @@ function findCorner({ range, visible }: SelectionLayout, x: number, y: number): 
         }
     }
     return closest;
+}
+
+/** Whether a scroll of `scrolled`, an element or the document, moves `element`. */
+function isScrolledAround(scrolled: EventTarget | null, element: Element) {
+    return scrolled === document || (scrolled instanceof Node && scrolled.contains(element));
 }
 
 function getOppositeCorner({ x, y }: Corner): Corner {
