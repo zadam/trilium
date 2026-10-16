@@ -10,11 +10,11 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
     *   Multiple notes. See <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree/Multiple%20selection.md">Multiple selection</a> on how to do so.
 *   Right click in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Advanced_ → _Apply bulk actions_.
 *   The _Selected notes_ section at the top of the dialog lists the notes the actions apply to. When many notes are selected, only the first few are shown; click _+N more_ to show the rest.
-    *   To leave a note out without changing the selection in the note tree, press the X button on its entry. The last remaining note cannot be removed.
+    *   To leave a note out without changing the selection in the note tree, press the <span class="tn-icon bx bx-x"></span> button on its entry. The last remaining note cannot be removed.
 *   By default, only the selected notes will be affected. To also include all the descendants of the notes, turn on _Include descendants of the selected notes_. The number of affected notes, shown below that option, updates to reflect the change.
-*   To add an action, click _Add action_ at the bottom of the _Chosen actions_ section and pick one from the menu. Hovering over an entry shows a short description of what it does; a detailed description of each is available in the next section.
+*   To add an action, click _Add action_ (<span class="tn-icon bx bx-plus"></span>) at the bottom of the _Chosen actions_ section and pick one from the menu. Hovering over an entry shows a short description of what it does; a detailed description of each is available in the next section.
     *   Each chosen action appears as an entry in the _Chosen actions_ section, with its own configuration.
-    *   To remove an action, simply press the X button to the right of it.
+    *   To remove an action, simply press the <span class="tn-icon bx bx-x"></span> button to the right of it.
     *   It is possible to apply multiple actions of the same type, such as adding multiple types.
     *   The fields for a label or relation name suggest the names already used in the database as you type, marking the ones Trilium itself attaches a meaning to.
     *   The value field of _Add label_ and _Update label value_ suggests the values the named label already has in the database.
