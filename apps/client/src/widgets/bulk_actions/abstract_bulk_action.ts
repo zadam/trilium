@@ -81,7 +81,13 @@ export default abstract class AbstractBulkAction {
 
     async deleteAction() {
         this.deleted = true;
-        await server.remove(`notes/${this.attribute.noteId}/attributes/${this.attribute.attributeId}`);
+        try {
+            await server.remove(`notes/${this.attribute.noteId}/attributes/${this.attribute.attributeId}`);
+        } catch {
+            // `server.remove()` has already shown the error; the row stays, so its edits save again.
+            this.deleted = false;
+            return;
+        }
         await ws.waitForMaxKnownEntityChangeId();
     }
 }

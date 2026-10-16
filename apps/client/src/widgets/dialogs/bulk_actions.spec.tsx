@@ -328,6 +328,35 @@ describe("BulkActionsDialog", () => {
         }
     });
 
+    it("keeps saving an action whose removal failed", async () => {
+        vi.useFakeTimers();
+        try {
+            buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteLabel", labelName: "a" }) });
+            const [ attributeId ] = actionAttributeIds();
+            await open([ "n1" ]);
+
+            server.remove.mockRejectedValueOnce(new Error("offline"));
+            await act(async () => container.querySelector<HTMLElement>(".bulk-existing-action-list .search-option-del")?.click());
+            expect(server.remove).toHaveBeenCalledOnce();
+
+            const [ input ] = labelNameInputs();
+            expect(input).toBeDefined();
+            await act(async () => {
+                input.value = "ab";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(2000);
+            });
+            expect(server.put).toHaveBeenCalledWith("notes/_bulkAction/attribute", expect.objectContaining({
+                attributeId,
+                value: JSON.stringify({ name: "deleteLabel", labelName: "ab" })
+            }));
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it("keeps each row's fields with its own action when an earlier one is removed", async () => {
         buildNote({
             id: "_bulkAction",
