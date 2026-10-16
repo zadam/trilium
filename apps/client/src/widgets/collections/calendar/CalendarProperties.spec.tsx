@@ -140,6 +140,7 @@ describe("CalendarProperties", () => {
             "calendar_view.time_slots",
             "calendar_view.slot_duration",
             "calendar_view.slot_label_interval",
+            "book_properties_config.max-nesting-depth",
             "book_properties.include_archived_notes"
         ]);
         expect(general?.compareDocumentPosition(document.querySelector(".templates-stub") as Node))

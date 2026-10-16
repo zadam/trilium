@@ -154,6 +154,8 @@
   <li>Set the slot duration (the length of each time row in day/week view).</li>
   <li>Set the slot label interval (how often time labels appear on the axis
     in day/week view).</li>
+  <li>Limit how deep below the calendar events are looked for, with <em>Max nesting depth</em> (see <a
+    href="#limiting-the-depth">below</a>).</li>
 </ul>
 <p>The same settings, together with whether archived notes are shown, are
   also listed under <em>General</em> in the <span class="tn-icon bx bx-cog"></span>  <em>Calendar properties</em> dialog
@@ -430,6 +432,12 @@ class="table">
 <p>When not used in a Journal, the calendar is recursive. That is, it will
   look for events not just in its child notes but also in the children of
   these child notes.</p>
+<h3>Limiting the depth</h3>
+<p>To limit how deep the calendar looks for events, set <em>Max nesting depth</em> in
+  the&nbsp;<a class="reference-link" href="#root/_help_CssoWBu8I7jF">Collection Properties</a>,
+  or the <code>#maxNestingDepth</code> label: <code>0</code> shows only the child
+  notes, <code>1</code> adds their children, and so on. Without a value, events
+  are looked for at every level. The setting doesn't apply in a Journal.</p>
 <h2>Recurrence</h2>
 <p>The built in calendar view also supports repeating tasks (e.g. every week,
   every month as well as more complex recurrency rules).</p>

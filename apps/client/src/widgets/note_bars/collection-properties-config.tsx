@@ -102,6 +102,8 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 type: "combobox",
                 bindToLabel: "map:style",
                 defaultValue: DEFAULT_MAP_LAYER_NAME,
+                // An image map is drawn over its image instead.
+                isVisible: (note) => !note.getRelationValue("map:image"),
                 options: [
                     {
                         title: t("book_properties_config.raster"),
