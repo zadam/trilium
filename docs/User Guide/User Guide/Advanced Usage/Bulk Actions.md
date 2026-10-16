@@ -89,6 +89,7 @@ These actions operate the <a class="reference-link" href="Attributes/Relations.
 
 *   **Execute script**
     *   For more complex scenarios, it is possible to type in a JavaScript expression in order to apply the necessary changes.
+    *   The script runs on the server once for each note, with that note available as `note` and the backend script API as `api`. The field completes both as you type and underlines mistakes, as the editor of a backend script note does.
     *   Examples:
         *   To apply a suffix (`- suffix` in this example), to the note title:
             

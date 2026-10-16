@@ -188,7 +188,7 @@ describe("BulkActionsDialog", () => {
             deleteNote: { required: [], names: [] },
             saveRevision: { required: [ false ], names: [ false ] },
             deleteRevisions: { required: [], names: [] },
-            executeScript: { required: [ true ], names: [ false ] }
+            executeScript: { required: [], names: [] }
         };
         buildNote({
             id: "_bulkAction",
