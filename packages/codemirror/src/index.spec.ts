@@ -377,6 +377,20 @@ describe("CodeMirror", () => {
             expect(result.totalFound).toBe(2);
         });
 
+        it("wraps around to the first match when every match is before the cursor", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+            editor.dispatch({ selection: EditorSelection.cursor(11) });
+
+            const result = await editor.performFind("foo", false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 1 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            await editor.replace("baz");
+            expect(editor.getText()).toBe("baz bar foo");
+        });
+
         it("replaces the active match and then all of them", async () => {
             editor = build();
             editor.setText("foo bar foo");
