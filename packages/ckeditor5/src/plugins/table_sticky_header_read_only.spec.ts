@@ -56,6 +56,24 @@ describe("applyStickyTableHeaders", () => {
         expect(bordersOf(thead)).toBe("none");
     });
 
+    it("leaves the header rows in place while `sticky-table-headers-disabled` is set", async () => {
+        document.body.classList.add("sticky-table-headers-disabled");
+        onTestFinished(() => document.body.classList.remove("sticky-table-headers-disabled"));
+        const { scroller, content } = renderContent(tableFigure(1, 20));
+        applyStickyTableHeaders(content);
+        await settle();
+
+        const { thead } = parts(content);
+        await scrollTo(scroller, offsetIn(scroller, thead) + 150);
+        expect(topIn(scroller, thead)).toBeCloseTo(-150, 0);
+        expect(getComputedStyle(thead).translate).toBe("none");
+
+        // Content already on screen follows the class.
+        document.body.classList.remove("sticky-table-headers-disabled");
+        await settle();
+        expect(topIn(scroller, thead)).toBeCloseTo(0, 0);
+    });
+
     it("measures the header rows again when the table grows while they stick", async () => {
         const { scroller, content } = renderContent(tableFigure(1, 20));
         applyStickyTableHeaders(content);
@@ -73,6 +91,20 @@ describe("applyStickyTableHeaders", () => {
         expect(thead.style.getPropertyValue(START_PROPERTY)).toBe(start);
         expect(lengthOf(thead, TRAVEL_PROPERTY)).toBeCloseTo(travel + row.offsetHeight, 0);
         expect(topIn(scroller, thead)).toBeCloseTo(0, 0);
+    });
+
+    it("stops measuring the header rows once disposed", async () => {
+        const { content } = renderContent(tableFigure(1, 20));
+        const dispose = applyStickyTableHeaders(content);
+        await settle();
+
+        const { table, thead } = parts(content);
+        const travel = lengthOf(thead, TRAVEL_PROPERTY);
+        dispose();
+        const row = table.tBodies[0].rows[0];
+        row.after(row.cloneNode(true));
+        await settle();
+        expect(lengthOf(thead, TRAVEL_PROPERTY)).toBe(travel);
     });
 
     it("sticks below the scroll padding of the scrolled area", async () => {

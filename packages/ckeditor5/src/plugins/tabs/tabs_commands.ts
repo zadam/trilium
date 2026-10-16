@@ -7,7 +7,7 @@ import {
 
 /**
  * Inserts a tabs block with two numbered tabs at the selection and selects the first tab's title,
- * so typing replaces it.
+ * so typing replaces it. Selected content moves into the first tab's panel.
  */
 export class InsertTabsCommand extends Command {
 
@@ -19,13 +19,18 @@ export class InsertTabsCommand extends Command {
 
     public override execute(): void {
         const model = this.editor.model;
+        const selection = model.document.selection;
 
         model.change(writer => {
+            const content = selection.isCollapsed ? null : model.getSelectedContent(selection);
             const tabs = writer.createElement(ELEMENTS.tabs);
             const firstTab = createTab(writer, getDefaultTitle(this.editor, 0));
             writer.append(firstTab, tabs);
             writer.append(createTab(writer, getDefaultTitle(this.editor, 1)), tabs);
             model.insertObject(tabs, null, null, { setSelection: "on" });
+            if (content) {
+                model.insertContent(content, writer.createRangeIn(getPanel(firstTab)));
+            }
             selectTitle(writer, firstTab);
         });
     }
@@ -240,6 +245,11 @@ export function getSelectedTabs(editor: Editor): ModelElement | null {
 /** Returns the title of `tab`, which the post-fixer keeps as its first child. */
 function getTitle(tab: ModelElement): ModelElement {
     return tab.getChild(0) as ModelElement;
+}
+
+/** Returns the panel of `tab`, which the post-fixer keeps as its second child. */
+function getPanel(tab: ModelElement): ModelElement {
+    return tab.getChild(1) as ModelElement;
 }
 
 /** Returns "Tab N" for the tab at the zero-based `index`. */

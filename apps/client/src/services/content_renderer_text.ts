@@ -11,7 +11,9 @@ import {
 import FAttachment from "../entities/fattachment.js";
 import FNote from "../entities/fnote.js";
 import { highlightBlockReference } from "./block_reference.js";
-import { default as content_renderer, type RenderOptions } from "./content_renderer.js";
+import {
+    addContentDisposer, default as content_renderer, type RenderOptions
+} from "./content_renderer.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
 import { applyNoteImageVersions, resolveContentImageUrls } from "./image_urls.js";
@@ -50,8 +52,8 @@ export async function renderTextContent(
             .addClass("block-reference-broken")
             .text(t("block_reference.broken")));
     } else if (hasContent) {
-        applyTableScroll($content[0]);
-        applyStickyTableHeaders($content[0]);
+        addContentDisposer($content[0], applyTableScroll($content[0]));
+        addContentDisposer($content[0], applyStickyTableHeaders($content[0]));
         // Runs before `postProcessRichContent()` renders embeds, so their blocks are not searched.
         if (options.highlightBlock) {
             highlightBlockReference($content[0], options.highlightBlock);

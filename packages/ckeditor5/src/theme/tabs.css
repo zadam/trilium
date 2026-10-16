@@ -1,3 +1,7 @@
+:where(:root) {
+    --tabs-focus-border-color: var(--link-color, var(--ck-color-focus-border));
+}
+
 /* Saved HTML without a marked tab, such as a preview or a printout, reads as a sequence of titled
    sections. */
 @media screen {
@@ -23,19 +27,25 @@
 
         & > .trilium-tab > .trilium-tab-title {
             order: 0;
+            box-sizing: border-box;
             min-width: 4em;
-            max-width: 100%;
+            max-width: 30%;
             margin: 0 0 var(--_tabs-delimiter-width);
             padding: 6px 1rem;
             border-radius: var(--_tabs-border-radius) var(--_tabs-border-radius) 0 0;
             background: var(--_tabs-inactive-background);
+            overflow: hidden;
             color: var(--_tabs-title-color);
             font-weight: 500;
+            white-space: nowrap;
             cursor: pointer;
-            transition: color 200ms ease-out, background-color 200ms ease-out;
 
             &:hover {
                 color: var(--_tabs-active-title-color);
+            }
+
+            body.mobile & {
+                max-width: 45%;
             }
         }
 
@@ -97,6 +107,19 @@
                 order: 1;
             }
         }
+    }
+}
+
+.ck-editor__editable .trilium-tabs:has(.ck-editor__nested-editable_focused) {
+    &:not(:has(.trilium-tabs .ck-editor__nested-editable_focused)) {
+        outline: var(--ck-widget-outline-thickness, 3px) solid var(--tabs-focus-border-color);
+    }
+}
+
+.ck-editor__editable .trilium-tabs > .trilium-tab > .trilium-tab-panel {
+    &:is(.ck-editor__nested-editable_focused, :focus) {
+        border-color: transparent;
+        box-shadow: none;
     }
 }
 

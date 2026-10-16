@@ -133,12 +133,14 @@ import type { SaveState } from "../components/note_context.js";
 import FAttachment from "../entities/fattachment.js";
 import { buildNote } from "../test/easy-froca.js";
 import {
+    addContentDisposer,
     CONTENT_RENDERERS,
     disposeInteractiveContent,
     getEmbedBoxSize,
     getRenderedContent as rawGetRenderedContent,
     getUploadBoxSize,
-    hasRenderedPreview
+    hasRenderedPreview,
+    snapshotAndDispose
 } from "./content_renderer.js";
 import froca from "./froca.js";
 import server from "./server.js";
@@ -1166,6 +1168,33 @@ describe("interactive content disposal", () => {
         const { $renderedContent } = await getRenderedContent(note);
         expect($renderedContent.find("[data-interactive-mount]").length).toBe(0);
         expect(() => disposeInteractiveContent($renderedContent)).not.toThrow();
+    });
+
+    it("runs every registered disposer once, the root's own included", () => {
+        const $root = $("<div>");
+        const child = $("<div>").appendTo($root)[0];
+        const disposers = [ vi.fn(), vi.fn(), vi.fn() ];
+        addContentDisposer($root[0], disposers[0]);
+        addContentDisposer(child, disposers[1]);
+        addContentDisposer(child, disposers[2]);
+
+        disposeInteractiveContent($root);
+        disposeInteractiveContent($root);
+        for (const dispose of disposers) {
+            expect(dispose).toHaveBeenCalledTimes(1);
+        }
+    });
+
+    it("snapshots the markup without the markers before disposing of the content", async () => {
+        const { $renderedContent } = await getRenderedContent(buildChatNote([ "Hi" ]));
+        const dispose = vi.fn();
+        addContentDisposer($renderedContent[0], dispose);
+
+        const chat = "<span class=\"mock-chat-marker\">messages:1</span>";
+        expect(snapshotAndDispose($renderedContent))
+            .toBe(`<div class="note-detail-llm-chat-preview">${chat}</div>`);
+        expect(dispose).toHaveBeenCalledTimes(1);
+        expect($renderedContent.find(".mock-chat-marker").length).toBe(0);
     });
 });
 

@@ -29,6 +29,7 @@ import "@triliumnext/ckeditor5/src/theme/collapsible_blocks.css";
 import "@triliumnext/ckeditor5/src/theme/table_scroll.css";
 import "@triliumnext/ckeditor5/src/theme/table_sticky_header.css";
 import "@triliumnext/ckeditor5/src/theme/todo_lists.css";
+import "@triliumnext/commons/src/lib/scroll_fade.css";
 
 import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
 import {

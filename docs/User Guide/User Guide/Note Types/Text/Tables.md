@@ -8,10 +8,12 @@ To create a table, simply press the table button and select with the mouse the d
 Since v0.107.0, the same menu starts with an _Insert table…_ item, for a table larger than the grid or to type its size instead:
 
 1.  Click the <span class="tn-icon cke cke-table"></span>button and select _Insert table…_. A small form opens at the cursor.
-2.  Enter the number of _Rows_ (up to 1000) and _Columns_ (up to 100). The table can have at most 5000 cells in total, for example 1000 rows of 5 columns.
+2.  Enter the number of _Columns_ (up to 100) and _Rows_ (up to 1000). The table can have at most 5000 cells in total, for example 1000 rows of 5 columns.
 3.  Press _Insert_ or <kbd>Enter</kbd>.
 
 To close the form without inserting a table, press <kbd>Esc</kbd> or click outside it. From the keyboard, <kbd>Tab</kbd> moves between _Insert table…_ and the grid while the menu is open.
+
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the <span class="tn-icon cke cke-table"></span>button opens the form directly, without the grid.
 
 ## Formatting toolbar
 
@@ -61,6 +63,9 @@ Right-clicking a cell that is not part of the current selection moves the cursor
     *   It's also possible to use <kbd>Tab</kbd> to go to the next cell and Shift+Tab to go to the previous cell.
     *   Unlike arrow keys, pressing <kbd>Tab</kbd> at the end of the table (last row, last column) will create a new row automatically.
     *   To select multiple cells, hold <kbd>Shift</kbd> while using the arrow keys.
+*   Using touch:
+    *   Since v0.107.0, touching a table outlines the cell with the cursor, or the selected cells, and shows a handle at each corner of the outline.
+    *   To select multiple cells, drag one of the handles across the table. The cell at the opposite corner stays selected, so the selection grows or shrinks as the finger moves. The note and wide tables scroll when the handle reaches the edge of the screen.
 
 ## Resizing cells
 
@@ -71,13 +76,15 @@ Right-clicking a cell that is not part of the current selection moves the cursor
 
 ### Resizing with touch
 
-Since v0.107.0, touching a table shows a bar at the bottom of the note, above the formatting toolbar on mobile. The bar has a segment for each column of the table, with a divider at the end of each column.
+Since v0.107.0, touching a table shows a bar at the bottom of the note, above the formatting toolbar on mobile. The bar has a segment for each column of the table, with a divider at the end of each column. Only the divider of the column with the cursor is a handle that resizes; the other dividers only mark where the columns meet, so a swipe across them scrolls instead. When several cells are selected, each column they cover has a handle.
 
-*   To resize a column, drag its divider. The table grows or shrinks with the column, and scrolls when the divider reaches the edge of the screen. The column snaps to its starting width and to the widths of the columns beside it.
-*   To cancel a resize, drag the divider back to where it started, or touch the screen with a second finger.
-*   To give two neighboring columns the same width, double-tap the divider between them.
+*   To resize a column, place the cursor in one of its cells or tap its segment, then drag its handle. The table grows or shrinks with the column, and scrolls when the handle reaches the edge of the screen. The column snaps to its starting width and to the widths of the columns beside it.
+*   To cancel a resize, drag the handle back to where it started, or touch the screen with a second finger.
+*   To give a column and the next one the same width, double-tap the handle between them.
 *   To select a column, tap its segment. To open the column menu, touch and hold the segment.
 *   To scroll a wide table sideways, swipe along the bar.
+
+A wide table scrolls a little past its end, so the handle of its last column stays away from the edge of the screen, where a swipe navigates back.
 
 ## Wide tables
 
@@ -102,6 +109,8 @@ To resize columns on mobile, use the bar described in [Resizing with touch](#res
 Since v0.107.0, the header rows of a table stay visible at the top of the note while you scroll through the rest of the table, and leave with the end of the table. This also works in read-only notes, on shared pages and in wide tables.
 
 To turn rows into header rows, use _Set as header_ in the [context menu](#context-menu), or _Header row_ in the <span class="tn-icon cke cke-table-row"></span> button of the formatting toolbar.
+
+To let header rows scroll away with the rest of the table, turn off <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Text Notes_ → _Features_ → _Use sticky header rows for tables_. The setting applies to the current device only, and shared pages keep their sticky header rows.
 
 ## Inserting new rows and new columns
 

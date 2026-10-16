@@ -17,29 +17,39 @@ import type { DropdownView, ModelElement, ToolbarView, ViewElement } from "ckedi
 
 import {
     distributeColumns,
+    getSpannedColumns,
     getTableWidthBasis,
     measureColumnEdges
 } from "../table_distribute_columns.js";
 import TriliumTableScroll from "../table_scroll.js";
+import {
+    type ClientBox,
+    findScroller,
+    getAutoScrollStep,
+    getClientBox,
+    getViewportBottom
+} from "../viewport_geometry.js";
 import { trackPointer } from "./pointer_tracking.js";
-import TableColumnBarView from "./table_column_bar_view.js";
+import TableColumnBarView, {
+    HANDLE_SELECTOR,
+    RESIZABLE_DIVIDER_CLASS
+} from "./table_column_bar_view.js";
 
 const LONG_PRESS_MS = 500;
 const DOUBLE_TAP_MS = 400;
 const VIBRATION_MS = 10;
 /** The distance from a snap point at which a dragged width takes it, in pixels. */
 const SNAP_DISTANCE = 8;
-/** The distance from the ends of the visible part of the table that scrolls it, in pixels. */
-const AUTO_SCROLL_EDGE = 40;
-/** The largest distance scrolled per frame, in pixels. */
-const AUTO_SCROLL_STEP = 16;
 const RESIZED_TABLE_CLASS = "ck-table-resized";
+/** Set on the editable while touch is in use. Scrolling tables then end with a gap. */
+const TOUCH_CLASS = "ck-table-column-bar-touch";
 
 /**
  * A bar along the bottom of the editing area for the table at the selection, shown after a touch.
  * Each segment is a column: a tap selects it, a long press opens the column menu and a swipe
- * scrolls the table. Dragging the divider at the end of a column resizes it, and the table grows
- * or shrinks with it. A double tap on a divider evens out the two columns beside it.
+ * scrolls the table. Dragging the divider at the end of a column of the selected cells resizes
+ * it, and the table grows or shrinks with it. A double tap on that divider evens out the two
+ * columns beside it.
  */
 export default class TableColumnBar extends Plugin {
 
@@ -50,7 +60,7 @@ export default class TableColumnBar extends Plugin {
     private edges: number[] | null = null;
     private isMeasureNeeded = true;
     private frame = 0;
-    /** The visible part of the table in the viewport, in pixels. */
+    /** The visible part of the table's horizontal scroller in the viewport, in pixels. */
     private trackBox = { left: 0, right: 0 };
     private bottomOffset = 0;
     private resizedColumn: number | null = null;
@@ -98,12 +108,15 @@ export default class TableColumnBar extends Plugin {
             this.domEmitter.listenTo(viewport, "resize", () => this.scheduleUpdate(false));
         }
 
-        // The columns are measured again only when the content or the size of the table changes.
+        // The columns are measured again only when the content, the selection or the size of
+        // the table changes.
         const update = () => this.scheduleUpdate(false);
+        const measure = () => this.scheduleUpdate(true);
         this.listenTo(editor.ui, "update", update);
         this.listenTo(editor.ui.focusTracker, "change:isFocused", update);
         this.listenTo(editor, "change:isReadOnly", update);
-        this.listenTo(editor.model.document, "change:data", () => this.scheduleUpdate(true));
+        this.listenTo(editor.model.document, "change:data", measure);
+        this.listenTo(editor.model.document.selection, "change:range", measure);
     }
 
     override destroy() {
@@ -158,8 +171,22 @@ export default class TableColumnBar extends Plugin {
         const isOnBar = !!(event.target as Element).closest(".ck-table-column-bar");
         if (isTouch !== this.isTouch && !isOnBar) {
             this.isTouch = isTouch;
+            this.setTouchClass(isTouch);
             this.scheduleUpdate(true);
         }
+    }
+
+    private setTouchClass(isTouch: boolean) {
+        const view = this.editor.editing.view;
+        view.change((writer) => {
+            for (const root of view.document.roots) {
+                if (isTouch) {
+                    writer.addClass(TOUCH_CLASS, root);
+                } else {
+                    writer.removeClass(TOUCH_CLASS, root);
+                }
+            }
+        });
     }
 
     private findTarget(): BarTarget | null {
@@ -204,8 +231,10 @@ export default class TableColumnBar extends Plugin {
         const barTop = area.bottom - view.track.offsetHeight;
         const tableRect = target.domTable.getBoundingClientRect();
         const clip = getClientBox(findScroller(target.domTable, "overflowX"));
-        const left = Math.max(tableRect.left, clip.left, area.left);
-        const right = Math.min(tableRect.right, clip.right, area.right);
+        const trackLeft = Math.max(clip.left, area.left);
+        const trackRight = Math.min(clip.right, area.right);
+        const left = Math.max(tableRect.left, trackLeft);
+        const right = Math.min(tableRect.right, trackRight);
         const top = Math.max(tableRect.top, clip.top, area.top);
         const bottom = Math.min(tableRect.bottom, clip.bottom, barTop);
         if (right <= left || bottom <= top) {
@@ -218,9 +247,11 @@ export default class TableColumnBar extends Plugin {
             return null;
         }
 
+        // The track spans the scroller, so the divider at the table's end shows in full and the
+        // auto-scroll starts only near the edges of the scroller.
         view.set({ left: area.left, top: barTop, width: area.right - area.left });
-        view.setTrack(left - area.left, right - left, tableRect.left - left);
-        this.trackBox = { left, right };
+        view.setTrack(trackLeft - area.left, trackRight - trackLeft, tableRect.left - trackLeft);
+        this.trackBox = { left: trackLeft, right: trackRight };
 
         const column = this.resizedColumn;
         view.setActiveDivider(column);
@@ -230,15 +261,19 @@ export default class TableColumnBar extends Plugin {
         return barTop;
     }
 
-    /** The column boundaries of the target table, measured again when its layout can differ. */
+    /**
+     * The column boundaries of the target table, measured again when its layout or the selection
+     * can differ.
+     */
     private measure(target: BarTarget, tableRect: DOMRect) {
         if (this.edges && !this.isMeasureNeeded) {
             return this.edges;
         }
 
         const editor = this.editor;
+        const tableUtils = editor.plugins.get(TableUtils);
         const isRtl = editor.locale.contentLanguageDirection === "rtl";
-        const columnCount = editor.plugins.get(TableUtils).getColumns(target.table);
+        const columnCount = tableUtils.getColumns(target.table);
         const measured = measureColumnEdges(editor, target.table, columnCount);
         /* v8 ignore next 3 -- defensive: the bar shows a rendered table */
         if (!measured) {
@@ -254,7 +289,8 @@ export default class TableColumnBar extends Plugin {
             labels.push(editor.t("Column %0 width: %1%", [column + 1, share]));
         }
 
-        this.view.setColumns(edges, labels);
+        const cells = tableUtils.getSelectionAffectedTableCells(editor.model.document.selection);
+        this.view.setColumns(edges, labels, getSpannedColumns(target.table, cells));
         this.edges = edges;
         this.isMeasureNeeded = false;
         return edges;
@@ -279,7 +315,7 @@ export default class TableColumnBar extends Plugin {
 
     private onPointerDown(event: PointerEvent) {
         const target = this.target;
-        const handle = (event.target as Element).closest<HTMLElement>("[data-column]");
+        const handle = (event.target as Element).closest<HTMLElement>(HANDLE_SELECTOR);
         if (!target || !handle || !event.isPrimary) {
             return;
         }
@@ -293,7 +329,7 @@ export default class TableColumnBar extends Plugin {
         const previousTap = this.lastTap;
         this.lastTap = null;
         const column = Number(handle.dataset.column);
-        if (handle.classList.contains("ck-table-column-bar__divider")) {
+        if (handle.classList.contains(RESIZABLE_DIVIDER_CLASS)) {
             this.startResize(event, column, target, previousTap);
         } else {
             this.startPress(event, column, target);
@@ -386,7 +422,7 @@ export default class TableColumnBar extends Plugin {
         };
 
         const scrollStep = () => {
-            const step = getAutoScrollStep(clientX, this.trackBox);
+            const step = getAutoScrollStep(clientX, this.trackBox.left, this.trackBox.right);
             if (step) {
                 const scroller = findScroller(domTable, "overflowX");
                 const scrollLeft = scroller.scrollLeft;
@@ -561,13 +597,6 @@ interface Tap {
     time: number;
 }
 
-interface ClientBox {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-}
-
 /**
  * The part of the viewport that the bar spans: the visible part of the scroll container of
  * `domRoot`, up to the top of a toolbar at its bottom.
@@ -582,58 +611,6 @@ function getBarArea(domRoot: HTMLElement, toolbar: HTMLElement | null): ClientBo
         bottom = toolbarRect.top;
     }
     return { ...area, bottom };
-}
-
-/** The bottom of the visual viewport, which is above an on-screen keyboard. */
-function getViewportBottom() {
-    const viewport = window.visualViewport;
-    /* v8 ignore next 3 -- defensive: supported browsers have a visual viewport */
-    if (!viewport) {
-        return Infinity;
-    }
-    return viewport.offsetTop + viewport.height;
-}
-
-/** The box inside the borders and scroll bars of `element`, in the viewport. */
-function getClientBox(element: HTMLElement): ClientBox {
-    if (element === document.documentElement) {
-        return { left: 0, top: 0, right: element.clientWidth, bottom: element.clientHeight };
-    }
-
-    const rect = element.getBoundingClientRect();
-    const left = rect.left + element.clientLeft;
-    const top = rect.top + element.clientTop;
-    return { left, top, right: left + element.clientWidth, bottom: top + element.clientHeight };
-}
-
-/**
- * The closest ancestor of `element` that scrolls vertically, or that clips it horizontally, or the
- * document.
- */
-function findScroller(element: HTMLElement, overflow: "overflowX" | "overflowY"): HTMLElement {
-    const pattern = overflow === "overflowX" ? /auto|scroll|hidden|clip/ : /auto|scroll/;
-    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-        if (pattern.test(getComputedStyle(parent)[overflow])) {
-            return parent;
-        }
-    }
-    return document.documentElement;
-}
-
-/**
- * The distance to scroll the table by while the pointer is at `x`: further the closer it is to an
- * end of the visible part of the table, and nothing away from them.
- */
-function getAutoScrollStep(x: number, { left, right }: { left: number; right: number }) {
-    let depth = 0;
-    if (x > right - AUTO_SCROLL_EDGE) {
-        depth = x - (right - AUTO_SCROLL_EDGE);
-    } else if (x < left + AUTO_SCROLL_EDGE) {
-        depth = x - (left + AUTO_SCROLL_EDGE);
-    }
-
-    const ratio = Math.max(-1, Math.min(1, depth / AUTO_SCROLL_EDGE));
-    return Math.round(ratio * AUTO_SCROLL_STEP);
 }
 
 /**

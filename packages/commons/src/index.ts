@@ -49,6 +49,7 @@ export * from "./lib/favicon_contrast.js";
 export * from "./lib/mermaid_config.js";
 export * from "./lib/link_embed.js";
 export * from "./lib/link_embed_dom.js";
+export * from "./lib/scroll_fade.js";
 export * from "./lib/link_embed_markup.js";
 export * from "./lib/llm_api.js";
 export * from "./lib/marked_extensions.js";

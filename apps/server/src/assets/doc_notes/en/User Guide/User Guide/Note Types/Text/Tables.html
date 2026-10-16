@@ -11,14 +11,17 @@
 <ol>
   <li>Click the <span class="tn-icon cke cke-table"></span>button and select <em>Insert table…</em>.
     A small form opens at the cursor.</li>
-  <li>Enter the number of <em>Rows</em> (up to 1000) and <em>Columns</em> (up to
-    100). The table can have at most 5000 cells in total, for example 1000
+  <li>Enter the number of <em>Columns</em> (up to 100) and <em>Rows</em> (up to
+    1000). The table can have at most 5000 cells in total, for example 1000
     rows of 5 columns.</li>
   <li>Press <em>Insert</em> or <kbd>Enter</kbd>.</li>
 </ol>
 <p>To close the form without inserting a table, press <kbd>Esc</kbd> or click
   outside it. From the keyboard, <kbd>Tab</kbd> moves between <em>Insert table…</em> and
   the grid while the menu is open.</p>
+<p>On the <a class="reference-link" href="#root/_help_RDslemsQ6gCp">Mobile Frontend</a>,
+  the <span class="tn-icon cke cke-table"></span>button opens the form directly,
+  without the grid.</p>
 <h2>Formatting toolbar</h2>
 <p>When a table is selected, a special formatting toolbar will appear:</p>
 <img
@@ -137,6 +140,16 @@ src="3_Tables_image.png" width="384" height="100">
       <li>To select multiple cells, hold <kbd>Shift</kbd> while using the arrow keys.</li>
     </ul>
   </li>
+  <li>Using touch:
+    <ul>
+      <li>Since v0.107.0, touching a table outlines the cell with the cursor, or
+        the selected cells, and shows a handle at each corner of the outline.</li>
+      <li>To select multiple cells, drag one of the handles across the table. The
+        cell at the opposite corner stays selected, so the selection grows or shrinks
+        as the finger moves. The note and wide tables scroll when the handle reaches
+        the edge of the screen.</li>
+    </ul>
+  </li>
 </ul>
 <h2>Resizing cells</h2>
 <ul>
@@ -153,20 +166,27 @@ src="3_Tables_image.png" width="384" height="100">
 <h3>Resizing with touch</h3>
 <p>Since v0.107.0, touching a table shows a bar at the bottom of the note,
   above the formatting toolbar on mobile. The bar has a segment for each
-  column of the table, with a divider at the end of each column.</p>
+  column of the table, with a divider at the end of each column. Only the
+  divider of the column with the cursor is a handle that resizes; the other
+  dividers only mark where the columns meet, so a swipe across them scrolls
+  instead. When several cells are selected, each column they cover has a
+  handle.</p>
 <ul>
-  <li>To resize a column, drag its divider. The table grows or shrinks with
-    the column, and scrolls when the divider reaches the edge of the screen.
-    The column snaps to its starting width and to the widths of the columns
-    beside it.</li>
-  <li>To cancel a resize, drag the divider back to where it started, or touch
+  <li>To resize a column, place the cursor in one of its cells or tap its segment,
+    then drag its handle. The table grows or shrinks with the column, and scrolls
+    when the handle reaches the edge of the screen. The column snaps to its
+    starting width and to the widths of the columns beside it.</li>
+  <li>To cancel a resize, drag the handle back to where it started, or touch
     the screen with a second finger.</li>
-  <li>To give two neighboring columns the same width, double-tap the divider
+  <li>To give a column and the next one the same width, double-tap the handle
     between them.</li>
   <li>To select a column, tap its segment. To open the column menu, touch and
     hold the segment.</li>
   <li>To scroll a wide table sideways, swipe along the bar.</li>
 </ul>
+<p>A wide table scrolls a little past its end, so the handle of its last
+  column stays away from the edge of the screen, where a swipe navigates
+  back.</p>
 <h2>Wide tables</h2>
 <p>Since v0.107.0, a table can be wider than the&nbsp;<a class="reference-link"
   href="#root/_help_t596jLvPrqkS">Content width</a>. Such a table scrolls
@@ -204,6 +224,10 @@ src="3_Tables_image.png" width="384" height="100">
 <p>To turn rows into header rows, use <em>Set as header</em> in the <a href="#context-menu">context menu</a>,
   or <em>Header row</em> in the <span class="tn-icon cke cke-table-row"></span> button
   of the formatting toolbar.</p>
+<p>To let header rows scroll away with the rest of the table, turn off <a
+  class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Text Notes</em> → <em>Features</em> → <em>Use sticky header rows for tables</em>.
+  The setting applies to the current device only, and shared pages keep their
+  sticky header rows.</p>
 <h2>Inserting new rows and new columns</h2>
 <ul>
   <li>To insert a new column, click on a desired location, then press the&nbsp;<span

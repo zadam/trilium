@@ -20,7 +20,7 @@ The box size sets how much of the included note is shown.
 *   _Tiny_ shows a single row instead of the content: the note's icon, its title with the path to the note above it, and buttons to act on the note. The included note is never rendered, so wherever the note is shown outside the editor, such as in print, in a tooltip or on a shared page, a _Tiny_ include appears as a link to the included note.
 *   _Small_ and _Medium_ show the content in a box of limited height. Text scrolls inside the box, while a picture, a diagram or a video is scaled down to fit it.
 *   _Full_ shows the whole content.
-*   _Expandable_ shows only the title until its <span class="tn-icon bx bx-chevron-right"></span> arrow is pressed.
+*   _Expandable_ shows only the title until its <span class="tn-icon bx bx-chevron-right"></span> arrow is pressed. In a read-only note, a click anywhere on the title row other than its buttons and link expands or collapses it as well.
 
 A new include gets the size that suits what it shows:
 

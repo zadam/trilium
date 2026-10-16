@@ -76,6 +76,7 @@ import TableToolbarDropdowns from "./plugins/table_toolbar_dropdowns.js";
 import TriliumTableScroll from "./plugins/table_scroll.js";
 import TableStickyHeader from "./plugins/table_sticky_header.js";
 import TableColumnBar from "./plugins/table_column_bar/table_column_bar.js";
+import TableTouchSelection from "./plugins/table_touch_selection/table_touch_selection.js";
 import ToolbarGroupMenu from "./plugins/toolbar_group_menu.js";
 import BlockDragHandle from "./plugins/block_drag_handle.js";
 
@@ -123,6 +124,7 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     TriliumTableScroll,
     TableStickyHeader,
     TableColumnBar,
+    TableTouchSelection,
     ToolbarGroupMenu,
     CopyAnchorLinkButton,
     CopyLinkUrlButton,

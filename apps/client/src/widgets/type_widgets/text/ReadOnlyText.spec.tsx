@@ -47,7 +47,8 @@ vi.mock("./utils", async (importOriginal) => ({
     loadEmbeddedNote
 }));
 
-const applyStickyTableHeaders = vi.hoisted(() => vi.fn());
+const disposeStickyTableHeaders = vi.hoisted(() => vi.fn());
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn(() => disposeStickyTableHeaders));
 vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
     applyStickyTableHeaders
 }));
@@ -454,6 +455,39 @@ describe("ReadOnlyText tables", () => {
         expect(figure?.style.getPropertyValue("--table-width"))
             .toBe("calc(var(--table-reference-width, 100%) * 150 / 100)");
         expect(applyStickyTableHeaders).toHaveBeenCalledWith(figure?.parentElement);
+
+        disposeStickyTableHeaders.mockClear();
+        await act(async () => render(null, harness.container));
+        expect(disposeStickyTableHeaders).toHaveBeenCalledTimes(1);
+        harness.container.remove();
+    });
+});
+
+describe("ReadOnlyText tabs", () => {
+    it("shows each tab title with text as a scrollable label", async () => {
+        const harness = setupHarness({ isVisible: true });
+        harness.note.getBlob = async () => ({
+            content: "<div class=\"trilium-tabs\"><section class=\"trilium-tab\">"
+                + "<p class=\"trilium-tab-title\">First <b>tab</b></p>"
+                + "<div class=\"trilium-tab-panel\"><p>One</p></div></section>"
+                + "<section class=\"trilium-tab\"><p class=\"trilium-tab-title\">&nbsp;</p>"
+                + "<div class=\"trilium-tab-panel\"><p>Two</p></div></section>"
+                + "</div>"
+        }) as never;
+
+        await harness.mount();
+
+        const titles = harness.container.querySelectorAll<HTMLElement>(".trilium-tab-title");
+        const [ first, second ] = titles;
+        const label = first.querySelector(":scope > .scrollable-label");
+        expect(label?.innerHTML).toBe("<span>First <b>tab</b></span>");
+        expect(second.childNodes.length).toBe(0);
+
+        second.click();
+        label?.querySelector("b")?.click();
+        expect(first.parentElement?.classList.contains("trilium-tab--active")).toBe(true);
+        expect(second.parentElement?.classList.contains("trilium-tab--active")).toBe(false);
+
         await act(async () => render(null, harness.container));
         harness.container.remove();
     });

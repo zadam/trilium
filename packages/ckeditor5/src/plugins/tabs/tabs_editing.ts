@@ -228,6 +228,13 @@ export default class TabsEditing extends Plugin {
                     element: title,
                     keepOnFocus: true
                 });
+                // A title clips its overflow, so it shows its start again once the caret leaves.
+                title.on("change:isFocused", (_evt, _name, isFocused) => {
+                    const domTitle = editor.editing.view.domConverter.mapViewToDom(title);
+                    if (!isFocused && domTitle) {
+                        domTitle.scrollLeft = 0;
+                    }
+                });
                 return toWidgetEditable(title, writer, { label: t("Tab title") });
             }
         });
