@@ -1,0 +1,45 @@
+:where(:root) {
+    --ck-table-touch-selection-color: var(--ck-color-focus-border);
+    --ck-table-touch-selection-handle-background:
+        var(--main-background-color, var(--ck-color-base-background));
+
+    --ck-table-touch-selection-line-width: 2px;
+    --ck-table-touch-selection-handle-size: 14px;
+    --ck-table-touch-selection-handle-dragged-scale: 1.3;
+}
+
+/* Outranks the `.ck-reset_all` rules of the body collection. */
+.ck-reset_all .ck.ck-table-touch-selection {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--ck-z-panel) - 1);
+    pointer-events: none;
+
+    .ck-table-touch-selection__clip {
+        position: fixed;
+        overflow: hidden;
+    }
+
+    .ck-table-touch-selection__outline {
+        position: absolute;
+        outline: var(--ck-table-touch-selection-line-width) solid
+            var(--ck-table-touch-selection-color);
+        outline-offset: calc(var(--ck-table-touch-selection-line-width) / -2);
+    }
+
+    .ck-table-touch-selection__handle {
+        position: fixed;
+        border: var(--ck-table-touch-selection-line-width) solid
+            var(--ck-table-touch-selection-color);
+        border-radius: 50%;
+        box-sizing: border-box;
+        width: var(--ck-table-touch-selection-handle-size);
+        height: var(--ck-table-touch-selection-handle-size);
+        background: var(--ck-table-touch-selection-handle-background);
+        translate: -50% -50%;
+    }
+
+    &.ck-table-touch-selection_dragging .ck-table-touch-selection__handle {
+        scale: var(--ck-table-touch-selection-handle-dragged-scale);
+    }
+}

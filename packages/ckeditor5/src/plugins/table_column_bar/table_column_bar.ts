@@ -21,6 +21,13 @@ import {
     measureColumnEdges
 } from "../table_distribute_columns.js";
 import TriliumTableScroll from "../table_scroll.js";
+import {
+    type ClientBox,
+    findScroller,
+    getAutoScrollStep,
+    getClientBox,
+    getViewportBottom
+} from "../viewport_geometry.js";
 import { trackPointer } from "./pointer_tracking.js";
 import TableColumnBarView from "./table_column_bar_view.js";
 
@@ -29,10 +36,6 @@ const DOUBLE_TAP_MS = 400;
 const VIBRATION_MS = 10;
 /** The distance from a snap point at which a dragged width takes it, in pixels. */
 const SNAP_DISTANCE = 8;
-/** The distance from the ends of the visible part of the table that scrolls it, in pixels. */
-const AUTO_SCROLL_EDGE = 40;
-/** The largest distance scrolled per frame, in pixels. */
-const AUTO_SCROLL_STEP = 16;
 const RESIZED_TABLE_CLASS = "ck-table-resized";
 
 /**
@@ -386,7 +389,7 @@ export default class TableColumnBar extends Plugin {
         };
 
         const scrollStep = () => {
-            const step = getAutoScrollStep(clientX, this.trackBox);
+            const step = getAutoScrollStep(clientX, this.trackBox.left, this.trackBox.right);
             if (step) {
                 const scroller = findScroller(domTable, "overflowX");
                 const scrollLeft = scroller.scrollLeft;
@@ -561,13 +564,6 @@ interface Tap {
     time: number;
 }
 
-interface ClientBox {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-}
-
 /**
  * The part of the viewport that the bar spans: the visible part of the scroll container of
  * `domRoot`, up to the top of a toolbar at its bottom.
@@ -582,58 +578,6 @@ function getBarArea(domRoot: HTMLElement, toolbar: HTMLElement | null): ClientBo
         bottom = toolbarRect.top;
     }
     return { ...area, bottom };
-}
-
-/** The bottom of the visual viewport, which is above an on-screen keyboard. */
-function getViewportBottom() {
-    const viewport = window.visualViewport;
-    /* v8 ignore next 3 -- defensive: supported browsers have a visual viewport */
-    if (!viewport) {
-        return Infinity;
-    }
-    return viewport.offsetTop + viewport.height;
-}
-
-/** The box inside the borders and scroll bars of `element`, in the viewport. */
-function getClientBox(element: HTMLElement): ClientBox {
-    if (element === document.documentElement) {
-        return { left: 0, top: 0, right: element.clientWidth, bottom: element.clientHeight };
-    }
-
-    const rect = element.getBoundingClientRect();
-    const left = rect.left + element.clientLeft;
-    const top = rect.top + element.clientTop;
-    return { left, top, right: left + element.clientWidth, bottom: top + element.clientHeight };
-}
-
-/**
- * The closest ancestor of `element` that scrolls vertically, or that clips it horizontally, or the
- * document.
- */
-function findScroller(element: HTMLElement, overflow: "overflowX" | "overflowY"): HTMLElement {
-    const pattern = overflow === "overflowX" ? /auto|scroll|hidden|clip/ : /auto|scroll/;
-    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-        if (pattern.test(getComputedStyle(parent)[overflow])) {
-            return parent;
-        }
-    }
-    return document.documentElement;
-}
-
-/**
- * The distance to scroll the table by while the pointer is at `x`: further the closer it is to an
- * end of the visible part of the table, and nothing away from them.
- */
-function getAutoScrollStep(x: number, { left, right }: { left: number; right: number }) {
-    let depth = 0;
-    if (x > right - AUTO_SCROLL_EDGE) {
-        depth = x - (right - AUTO_SCROLL_EDGE);
-    } else if (x < left + AUTO_SCROLL_EDGE) {
-        depth = x - (left + AUTO_SCROLL_EDGE);
-    }
-
-    const ratio = Math.max(-1, Math.min(1, depth / AUTO_SCROLL_EDGE));
-    return Math.round(ratio * AUTO_SCROLL_STEP);
 }
 
 /**

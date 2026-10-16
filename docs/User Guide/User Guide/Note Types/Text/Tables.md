@@ -61,6 +61,9 @@ Right-clicking a cell that is not part of the current selection moves the cursor
     *   It's also possible to use <kbd>Tab</kbd> to go to the next cell and Shift+Tab to go to the previous cell.
     *   Unlike arrow keys, pressing <kbd>Tab</kbd> at the end of the table (last row, last column) will create a new row automatically.
     *   To select multiple cells, hold <kbd>Shift</kbd> while using the arrow keys.
+*   Using touch:
+    *   Since v0.107.0, touching a table outlines the cell with the cursor, or the selected cells, and shows a handle at each corner of the outline.
+    *   To select multiple cells, drag one of the handles across the table. The cell at the opposite corner stays selected, so the selection grows or shrinks as the finger moves. The note and wide tables scroll when the handle reaches the edge of the screen.
 
 ## Resizing cells
 
