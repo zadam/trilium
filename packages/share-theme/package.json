@@ -28,6 +28,6 @@
     "ejs": "7.0.1",
     "happy-dom": "20.14.6",
     "typescript": "6.0.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.4"
   }
 }
