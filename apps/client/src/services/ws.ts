@@ -95,6 +95,10 @@ export async function dispatchMessage(message: WebSocketMessage) {
         }
     } else if (messageType === "reload-frontend") {
         utils.reloadFrontendApp("received request from backend to reload frontend");
+    } else if (messageType === "reload-froca") {
+        logInfo(`Reloading froca: ${msg.reason}`);
+        await froca.reloadAll();
+        await appContext.triggerEvent("frocaReloaded", {});
     } else if (messageType === "frontend-update") {
         await executeFrontendUpdate(msg.data.entityChanges);
     } else if (messageType === "sync-hash-check-failed") {
@@ -241,8 +245,7 @@ async function consumeFrontendUpdateData() {
 
             if (!glob.isDev && !options.is("debugModeEnabled")) {
                 // if there's an error in updating the frontend, then the easy option to recover is to reload the frontend completely
-
-                utils.reloadFrontendApp();
+                utils.reloadFrontendApp(`processing entity changes failed: ${e.message}`);
             } else {
                 console.log("nonProcessedEntityChanges causing the timeout", nonProcessedEntityChanges);
 

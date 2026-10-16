@@ -85,6 +85,14 @@ describe("dispatchMessage", () => {
         await ws.dispatchMessage({ type: "reload-frontend", reason: "x" } as WebSocketMessage);
         expect(utilsCtrl.reloadFrontendApp).toHaveBeenCalledWith(expect.stringContaining("reload"));
 
+        const { default: froca } = await import("./froca.js");
+        const reloadAllSpy = vi.spyOn(froca, "reloadAll").mockImplementation(async () => {});
+        utilsCtrl.reloadFrontendApp.mockClear();
+        await ws.dispatchMessage({ type: "reload-froca", reason: "consistency checks" } as WebSocketMessage);
+        expect(reloadAllSpy).toHaveBeenCalledTimes(1);
+        expect(appCtx.triggerEvent).toHaveBeenCalledWith("frocaReloaded", {});
+        expect(utilsCtrl.reloadFrontendApp).not.toHaveBeenCalled();
+
         await ws.dispatchMessage({ type: "sync-hash-check-failed", sectors: ["blobs/9"] } as any);
         expect(toast.showErrorTitleAndMessage).toHaveBeenCalledTimes(1);
 
@@ -189,7 +197,7 @@ describe("frontend-update / executeFrontendUpdate", () => {
         (window as any).glob.isDev = false;
 
         await ws.dispatchMessage({ type: "frontend-update", data: { entityChanges: [{ id: 101, entityName: "notes", entityId: "nA" }] } } as any);
-        expect(utilsCtrl.reloadFrontendApp).toHaveBeenCalled();
+        expect(utilsCtrl.reloadFrontendApp).toHaveBeenCalledWith(expect.stringContaining("boom"));
     });
 
     it("shows a toast instead of reloading when debug mode is enabled", async () => {

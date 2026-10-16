@@ -64,6 +64,17 @@ class FrocaImpl implements Froca {
         this.addResp(resp);
     }
 
+    /**
+     * Replaces everything froca holds with the backend's current state: the initial tree, then
+     * the notes froca held outside it, which open tabs and widgets can still refer to.
+     */
+    async reloadAll() {
+        const allNoteIds = Object.keys(this.notes);
+
+        await this.loadInitialTree();
+        await this.reloadNotes(allNoteIds);
+    }
+
     #clear() {
         this.notes = {};
         this.branches = {};

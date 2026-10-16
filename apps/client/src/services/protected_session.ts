@@ -50,15 +50,6 @@ function enterProtectedSession() {
     return dfd.promise();
 }
 
-async function reloadData() {
-    const allNoteIds = Object.keys(froca.notes);
-
-    await froca.loadInitialTree();
-
-    // make sure that all notes used in the application are loaded, including the ones not shown in the tree
-    await froca.reloadNotes(allNoteIds);
-}
-
 async function setupProtectedSession(password: string) {
     const response = await server.post<Response>("login/protected", { password: password });
 
@@ -72,7 +63,7 @@ async function setupProtectedSession(password: string) {
 
 ws.subscribeToMessages(async (message) => {
     if (message.type === "protectedSessionLogin") {
-        await reloadData();
+        await froca.reloadAll();
 
         await appContext.triggerEvent("frocaReloaded", {});
 

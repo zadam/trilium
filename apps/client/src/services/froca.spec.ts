@@ -56,6 +56,24 @@ describe("loadInitialTree", () => {
     });
 });
 
+describe("reloadAll", () => {
+    it("reloads the initial tree, then every note froca held outside it", async () => {
+        const held = buildNote({ title: "Held outside the tree" });
+        const calls: string[] = [];
+        vi.spyOn(froca, "loadInitialTree").mockImplementation(async () => {
+            calls.push("loadInitialTree");
+        });
+        vi.spyOn(froca, "reloadNotes").mockImplementation(async (noteIds) => {
+            calls.push("reloadNotes");
+            expect(noteIds).toContain(held.noteId);
+        });
+
+        await froca.reloadAll();
+
+        expect(calls).toEqual([ "loadInitialTree", "reloadNotes" ]);
+    });
+});
+
 describe("loadSubTree", () => {
     it("fetches the subtree and returns the requested note", async () => {
         const noteId = "subtree-target";

@@ -227,21 +227,22 @@ describe("becca_loader", () => {
     });
 
     describe("reload()", () => {
-        it("reloads becca and notifies the frontend with the supplied reason", () => {
-            const spy = vi.spyOn(ws, "reloadFrontend").mockImplementation(() => {});
+        it("reloads becca and has the clients refresh froca with the supplied reason", () => {
+            const refresh = vi.spyOn(ws, "reloadFroca").mockImplementation(() => {});
+            const fullReload = vi.spyOn(ws, "reloadFrontend").mockImplementation(() => {});
 
             getContext().init(() => reload("custom reason"));
 
             expect(becca.loaded).toBe(true);
-            expect(spy).toHaveBeenCalledWith("custom reason");
+            expect(refresh).toHaveBeenCalledWith("custom reason");
+            expect(fullReload).not.toHaveBeenCalled();
         });
 
         it("falls back to a default reason when none is given", () => {
-            const spy = vi.spyOn(ws, "reloadFrontend").mockImplementation(() => {});
+            const spy = vi.spyOn(ws, "reloadFroca").mockImplementation(() => {});
 
             getContext().init(() => reload(""));
 
-            // The empty reason triggers the `reason || "becca reloaded"` fallback.
             expect(spy).toHaveBeenCalledWith("becca reloaded");
         });
     });

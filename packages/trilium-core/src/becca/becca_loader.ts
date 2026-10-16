@@ -94,7 +94,7 @@ const ATTRIBUTE_COLUMNS = [
 function reload(reason: string) {
     load();
 
-    ws.reloadFrontend(reason || "becca reloaded");
+    ws.reloadFroca(reason || "becca reloaded");
 }
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED], ({ entityName, entityRow }) => {
