@@ -13,31 +13,80 @@ import englishTranslation from "../../../translations/en/translation.json";
 
 import { buildTheme, localizeBuiltLabels, MindElixir, renameOverlayLabel, sanitizeMindMapData } from "./MindMap.js";
 
-const builtMaps = vi.hoisted(() => [] as { destroy: () => void; destroyed: boolean }[]);
+interface FakeMap {
+    destroyed: boolean;
+    /** The height `nodes` reports, which is 0 while the map is hidden. */
+    height: number;
+    init: () => void;
+    linkDiv: ReturnType<typeof vi.fn>;
+    toCenter: ReturnType<typeof vi.fn>;
+}
+
+const builtMaps = vi.hoisted(() => [] as FakeMap[]);
 
 vi.mock("mind-elixir", async (importOriginal) => {
     const original = await importOriginal<typeof import("mind-elixir")>();
 
-    /** Records each instance built and whether it was destroyed. */
+    /** Records each instance built, whether it was destroyed, and when it was laid out. */
     class FakeMindElixir {
         nodes = document.createElement("me-nodes");
         currentNodes = [];
         theme = { name: "Latte" };
-        bus = { addListener: vi.fn(), removeListener: vi.fn() };
+        listeners = new Map<string, Set<() => void>>();
+        bus = {
+            addListener: (type: string, listener: () => void) => {
+                this.listeners.set(type, (this.listeners.get(type) ?? new Set()).add(listener));
+            },
+            removeListener: (type: string, listener: () => void) => this.listeners.get(type)?.delete(listener),
+            fire: (type: string) => {
+                for (const listener of this.listeners.get(type) ?? []) listener();
+            }
+        };
         destroyed = false;
+        height = 0;
+        linkDiv = vi.fn(() => this.bus.fire("linkDiv"));
+        toCenter = vi.fn();
 
         constructor() {
+            Object.defineProperty(this.nodes, "offsetHeight", { get: () => this.height });
             builtMaps.push(this);
         }
 
         getData() { return {}; }
-        init() {}
-        linkDiv() {}
+        /** As the map does: lays out the root, draws the branches and centers itself. */
+        init() {
+            this.nodes.replaceChildren(document.createElement("me-root"));
+            this.linkDiv();
+            this.toCenter();
+        }
         destroy() { this.destroyed = true; }
     }
 
     return { ...original, default: FakeMindElixir };
 });
+
+const resizeCallbacks = vi.hoisted(() => new Set<() => void>());
+
+globalThis.ResizeObserver = class {
+
+    private readonly callback: () => void;
+
+    constructor(callback: () => void) {
+        this.callback = callback;
+    }
+
+    observe() { resizeCallbacks.add(this.callback); }
+    unobserve() {}
+    disconnect() { resizeCallbacks.delete(this.callback); }
+
+} as unknown as typeof ResizeObserver;
+
+/** Resizes the map's container, as the browser reports it. */
+function resize() {
+    act(() => {
+        for (const callback of resizeCallbacks) callback();
+    });
+}
 
 vi.mock("../../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../react/hooks")>()),
@@ -262,5 +311,28 @@ describe("MindElixir", () => {
 
         act(() => render(null, container));
         expect(liveMaps()).toHaveLength(0);
+    });
+
+    it("lays out and centers again a map that was laid out while hidden, once it is shown", () => {
+        builtMaps.length = 0;
+        renderMap(true);
+        const [ map ] = liveMaps();
+
+        // Filled while a quick-edit popup is still hidden, where every node measures 0.
+        act(() => map.init());
+        map.linkDiv.mockClear();
+        map.toCenter.mockClear();
+        resize();
+        expect(map.linkDiv).not.toHaveBeenCalled();
+
+        map.height = 400;
+        resize();
+        expect(map.linkDiv).toHaveBeenCalledOnce();
+        expect(map.toCenter).toHaveBeenCalledOnce();
+
+        // Laid out while visible: a later resize leaves where the map was panned to alone.
+        resize();
+        expect(map.linkDiv).toHaveBeenCalledOnce();
+        expect(map.toCenter).toHaveBeenCalledOnce();
     });
 });

@@ -318,6 +318,37 @@ export function MindElixir({ children, containerRef: externalContainerRef, conta
         return () => bus.removeListener("linkDiv", dressNodes);
     }, [ instanceVersion ]);
 
+    // A map laid out while hidden, such as in a quick-edit popup that is still loading, measures
+    // every node at 0: `linkDiv()` draws its branches with `NaN` coordinates and `toCenter()`
+    // misplaces it. Lay it out and center it again once its container gets a size.
+    useEffect(() => {
+        const mind = apiRef.current;
+        const container = containerRef.current;
+        if (!mind || !container) return;
+
+        const isLaidOutHidden = () =>
+            mind.nodes.querySelector("me-root") !== null && mind.nodes.offsetHeight === 0;
+        let laidOutHidden = isLaidOutHidden();
+        const recordLayout = () => {
+            laidOutHidden = isLaidOutHidden();
+        };
+
+        const observer = new ResizeObserver(() => {
+            if (!laidOutHidden || mind.nodes.offsetHeight === 0) return;
+            mind.linkDiv();
+            mind.toCenter();
+        });
+
+        const { bus } = mind;
+        bus.addListener("linkDiv", recordLayout);
+        observer.observe(container);
+
+        return () => {
+            bus.removeListener("linkDiv", recordLayout);
+            observer.disconnect();
+        };
+    }, [ instanceVersion ]);
+
     // Selection listener. The events only carry the nodes that were added to or removed from the
     // selection, so the full selection is read back from the instance instead.
     useEffect(() => {
