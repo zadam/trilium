@@ -202,6 +202,30 @@ describe("BulkActionsDialog", () => {
         expect(executeButton().disabled).toBe(true);
     });
 
+    it("keeps the execute button disabled until the count for a changed selection arrives", async () => {
+        buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRevisions" }) });
+        server.post.mockResolvedValue({ affectedNoteCount: 1 });
+        await open([ "n1" ]);
+        const button = container.querySelector<HTMLButtonElement>("button[name='execute-bulk-actions']");
+        expect(button?.disabled).toBe(false);
+
+        let respond = (_count: number) => {};
+        server.post.mockImplementation(() => new Promise((resolve) => {
+            respond = (affectedNoteCount) => resolve({ affectedNoteCount });
+        }));
+        const toggle = container.querySelector<HTMLInputElement>("input.switch-toggle");
+        if (!toggle) throw new Error("No include-descendants toggle.");
+        await act(async () => {
+            toggle.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n1" ], includeDescendants: true });
+        expect(button?.disabled).toBe(true);
+
+        await act(async () => respond(300));
+        expect(button?.textContent).toContain("bulk_actions.execute_bulk_actions:300");
+        expect(button?.disabled).toBe(false);
+    });
+
     it("runs the actions once, however often the execute button is pressed", async () => {
         buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRevisions" }) });
         server.post.mockResolvedValue({ affectedNoteCount: 1 });

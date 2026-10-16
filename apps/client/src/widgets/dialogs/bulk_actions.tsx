@@ -33,12 +33,13 @@ export default function BulkActionsDialog() {
 
     useTriliumEvent("openBulkActionsDialog", async ({ selectedOrActiveNoteIds }) => {
         setSelectedOrActiveNoteIds(selectedOrActiveNoteIds);
-        setAffectedNoteCount(undefined);
         setBulkActionNote(await froca.getNote("_bulkAction"));
         setShown(true);
     });
 
     useEffect(() => {
+        // Execution stays disabled until the count matches the notes it runs on.
+        setAffectedNoteCount(undefined);
         if (!selectedOrActiveNoteIds || !bulkActionNote) return;
 
         let stale = false;
