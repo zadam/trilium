@@ -1,7 +1,10 @@
 import { h, render } from "preact";
+import { useContext } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { EventData } from "../components/app_context";
+import Component from "../components/component";
 import NoteContext from "../components/note_context";
 import type FNote from "../entities/fnote";
 import froca from "../services/froca";
@@ -10,8 +13,10 @@ import froca from "../services/froca";
 // global the test env doesn't provide. The pure function under test never touches the tree, so stub it.
 vi.mock("./note_tree", () => ({ default: class {} }));
 
-import { getExtendedWidgetType, useDeferredDetailFocus } from "./NoteDetail";
-import { isContextInActiveTab } from "./react/hooks";
+import { getExtendedWidgetType, NoteDetailWrapper, useDeferredDetailFocus } from "./NoteDetail";
+import { isContextInActiveTab, useTriliumEvent } from "./react/hooks";
+import { ContainerVisibilityContext, ParentComponent } from "./react/react_utils";
+import type { TypeWidgetProps } from "./type_widgets/type_widget";
 
 const FAKE_NOTE_ID = "blob-stub-note";
 
@@ -141,5 +146,83 @@ describe("useDeferredDetailFocus", () => {
         renderHarness(false);
         renderHarness(true);
         expect(replay).not.toHaveBeenCalled();
+    });
+});
+
+describe("NoteDetailWrapper", () => {
+    const host = document.createElement("div");
+    const received: string[] = [];
+    let typeWidgetParent: Component | null = null;
+    let hostComponent = new Component();
+
+    function TypeWidget() {
+        typeWidgetParent = useContext(ParentComponent);
+        useTriliumEvent("findInText", () => received.push("findInText"));
+        useTriliumEvent("executeWithCodeEditor", () => received.push("executeWithCodeEditor"));
+        useTriliumEvent("entitiesReloaded", () => received.push("entitiesReloaded"));
+        useTriliumEvent("noteSwitched", () => received.push("noteSwitched"));
+        return h("div", {});
+    }
+
+    function renderWrapper(isVisible: boolean, containerVisible = true) {
+        const wrapper = h(NoteDetailWrapper, {
+            Element: TypeWidget, type: "editableText", isVisible, isFullHeight: false,
+            props: {} as TypeWidgetProps
+        });
+        act(() => render(
+            h(ParentComponent.Provider, { value: hostComponent },
+                h(ContainerVisibilityContext.Provider, { value: containerVisible }, wrapper)),
+            host
+        ));
+    }
+
+    async function dispatchAll() {
+        await hostComponent.handleEventInChildren("findInText", {});
+        await hostComponent.handleEventInChildren("executeWithCodeEditor",
+            { ntxId: "ntx", resolve: () => {} } as unknown as EventData<"executeWithCodeEditor">);
+        await hostComponent.handleEventInChildren("entitiesReloaded",
+            {} as EventData<"entitiesReloaded">);
+        await hostComponent.handleEventInChildren("noteSwitched", {} as EventData<"noteSwitched">);
+    }
+
+    afterEach(() => {
+        render(null, host);
+        received.length = 0;
+        typeWidgetParent = null;
+        hostComponent = new Component();
+    });
+
+    it("sends requests only to the displayed type widget, and syncs a hidden one", async () => {
+        renderWrapper(false);
+        await dispatchAll();
+        expect(received).toEqual([ "entitiesReloaded", "noteSwitched" ]);
+
+        received.length = 0;
+        renderWrapper(true, false);
+        await dispatchAll();
+        expect(received).toEqual([ "entitiesReloaded", "noteSwitched" ]);
+
+        received.length = 0;
+        renderWrapper(true);
+        await dispatchAll();
+        expect(received).toEqual(
+            [ "findInText", "executeWithCodeEditor", "entitiesReloaded", "noteSwitched" ]);
+    });
+
+    it("gives the type widget a parent that saves and commands as the host", () => {
+        const triggerCommand = vi.spyOn(hostComponent, "triggerCommand");
+        renderWrapper(true);
+
+        const parent = typeWidgetParent;
+        if (!parent) throw new Error("The type widget did not render.");
+        expect(parent).not.toBe(hostComponent);
+        expect(parent.componentId).toBe(hostComponent.componentId);
+        expect(hostComponent.children).toContain(parent);
+
+        parent.triggerCommand("hoistNote", { noteId: "root" });
+        expect(triggerCommand).toHaveBeenCalledWith("hoistNote", { noteId: "root" });
+
+        render(null, host);
+        expect(hostComponent.children).not.toContain(parent);
     });
 });

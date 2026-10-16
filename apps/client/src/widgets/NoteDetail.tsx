@@ -3,9 +3,12 @@ import "./NoteDetail.css";
 import clsx from "clsx";
 import { note } from "mermaid/dist/rendering-util/rendering-elements/shapes/note.js";
 import { isValidElement, VNode } from "preact";
-import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
+import {
+    useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState
+} from "preact/hooks";
 
-import appContext, { type EventData } from "../components/app_context";
+import appContext, { type EventData, type EventNames } from "../components/app_context";
+import Component from "../components/component";
 import NoteContext from "../components/note_context";
 import FNote from "../entities/fnote";
 import type { PrintReport } from "../print";
@@ -30,7 +33,7 @@ import {
 import Icon from "./react/Icon";
 import NoItems from "./react/NoItems";
 import { NoteListWithLinks } from "./react/NoteList";
-import { ContainerVisibilityContext } from "./react/react_utils";
+import { ContainerVisibilityContext, ParentComponent } from "./react/react_utils";
 import { TypeWidgetProps } from "./type_widgets/type_widget";
 
 /**
@@ -275,13 +278,14 @@ export function useDeferredDetailFocus(isReady: boolean, replay: (data: EventDat
  * Wraps a single note type widget, in order to keep it in the DOM even after the user has switched away to another note type. This allows faster loading of the same note type again. The properties are cached, so that they are updated only
  * while the widget is visible, to avoid rendering in the background. When not visible, the DOM element is simply hidden.
  */
-function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, props }: { Element: (props: TypeWidgetProps) => VNode, type: ExtendedNoteType, isVisible: boolean, isFullHeight: boolean, props: TypeWidgetProps }) {
+export function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, props }: { Element: (props: TypeWidgetProps) => VNode, type: ExtendedNoteType, isVisible: boolean, isFullHeight: boolean, props: TypeWidgetProps }) {
     // False when an enclosing dialog (e.g. the quick-edit popup) is hidden but kept in the DOM, so a widget
     // there is told it isn't displayed even though it's the context's current type — letting a media player
     // inside a closed popup stop, just like one in a navigated-away tab.
     const containerVisible = useContext(ContainerVisibilityContext);
     const [ cachedProps, setCachedProps ] = useState(props);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const eventGate = useTypeWidgetEventGate(isVisible && containerVisible);
 
     useEffect(() => {
         if (isVisible) {
@@ -309,9 +313,59 @@ function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, props }: { 
                 height: isFullHeight ? "100%" : ""
             }}
         >
-            <Element {...cachedProps} isVisible={isVisible && containerVisible} />
+            <ParentComponent.Provider value={eventGate}>
+                <Element {...cachedProps} isVisible={isVisible && containerVisible} />
+            </ParentComponent.Provider>
         </div>
     );
+}
+
+/**
+ * Events that reach a type widget while `NoteDetailWrapper` hides it. They keep its state current
+ * for when it is displayed again; every other event is meant for the displayed type widget only.
+ */
+const EVENTS_FOR_HIDDEN_TYPE_WIDGETS = new Set<EventNames>([
+    "entitiesReloaded", "frocaReloaded", "refreshEmbeddedNote", "searchRefreshed", "apiLogMessages",
+    "themeChanged", "protectedSessionStarted", "readOnlyTemporarilyDisabled", "contextDataChanged",
+    "setNoteContext", "activeContextChanged", "activeNoteChanged", "hoistedNoteChanged",
+    "noteSwitched", "noteSwitchedAndActivated", "beforeNoteSwitch", "noteTypeMimeChanged",
+    "beforeNoteContextRemove"
+]);
+
+/**
+ * Stands between `NoteDetail`'s component and one cached type widget, and stops the events in
+ * `handleEventInChildren()` that a hidden type widget must not answer. It takes the host's
+ * `componentId`, so the type widget's saves still count as `NoteDetail`'s own.
+ */
+class TypeWidgetEventGate extends Component {
+    isDisplayed = true;
+
+    constructor(host: Component | null) {
+        super();
+        if (host) {
+            this.componentId = host.componentId;
+            this.setParent(host);
+        }
+    }
+
+    handleEventInChildren<T extends EventNames>(name: T, data: EventData<T>) {
+        if (!this.isDisplayed && !EVENTS_FOR_HIDDEN_TYPE_WIDGETS.has(name)) return null;
+        return super.handleEventInChildren(name, data);
+    }
+}
+
+function useTypeWidgetEventGate(isDisplayed: boolean) {
+    const host = useContext(ParentComponent);
+    const gate = useMemo(() => new TypeWidgetEventGate(host), [ host ]);
+    gate.isDisplayed = isDisplayed;
+
+    useLayoutEffect(() => {
+        if (!host) return;
+        host.child(gate);
+        return () => host.removeChild(gate);
+    }, [ host, gate ]);
+
+    return gate;
 }
 
 /**
