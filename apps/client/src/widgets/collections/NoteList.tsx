@@ -277,20 +277,21 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
         config: T | undefined;
         storeFn: (data: T) => void;
         note: FNote;
+        viewType: ViewModeStorageType;
     }>();
-    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote } | undefined>(undefined);
+    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote, viewType: ViewModeStorageType } | undefined>(undefined);
 
     useEffect(() => {
         if (!note || !viewType) return;
         setViewConfig(undefined);
         const viewStorage = new ViewModeStorage<T>(note, viewType);
         const storeFn = (config: T) => {
-            setViewConfig({ note, config, storeFn });
+            setViewConfig({ note, viewType, config, storeFn });
             viewStorage.store(config);
         };
-        storageRef.current = { storage: viewStorage, storeFn, note };
+        storageRef.current = { storage: viewStorage, storeFn, note, viewType };
         viewStorage.restore().then(config => {
-            setViewConfig({ note, config, storeFn });
+            setViewConfig({ note, viewType, config, storeFn });
         });
     }, [ note, viewType ]);
 
@@ -306,11 +307,12 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
         }
         current.storage.restoreIfChanged().then(config => {
             if (config === undefined) return;
-            setViewConfig({ note: current.note, config, storeFn: current.storeFn });
+            setViewConfig({ note: current.note, viewType: current.viewType, config, storeFn: current.storeFn });
         });
     });
 
-    // Only expose config for the current note, avoid leaking notes when switching between them.
-    if (viewConfig?.note !== note) return undefined;
+    // Only expose the config of the current note and view type, so a view never receives the config
+    // or `storeFn` of the one it replaced before the effect above resets them.
+    if (viewConfig?.note !== note || viewConfig?.viewType !== viewType) return undefined;
     return viewConfig;
 }

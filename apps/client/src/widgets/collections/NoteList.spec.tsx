@@ -21,7 +21,7 @@ import LoadResults from "../../services/load_results";
 import { buildNote, buildNotes } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
 import type { ViewTypeOptions } from "./interface";
-import { CustomNoteList, useNoteIds } from "./NoteList";
+import { CustomNoteList, useNoteIds, useViewModeConfig } from "./NoteList";
 
 let currentNoteIds: string[] = [];
 
@@ -237,6 +237,55 @@ describe("useNoteIds nesting depth", () => {
             expect(await renderNoteIds(viewType, { "#maxNestingDepth": "1" }))
                 .toEqual([ "nested-0", "nested-1" ]);
         }
+    });
+});
+
+describe("useViewModeConfig view type switch", () => {
+    it("never hands a view the config of the view type it replaced", async () => {
+        const note = buildNote({ title: "Collection", type: "book" });
+        const stored: Record<string, object> = {
+            "geoMap.json": { view: { center: [ 0, 0 ], zoom: 3 } },
+            "table.json": { tableData: { columns: [] } }
+        };
+        note.getAttachmentsByRole = vi.fn(async () => Object.entries(stored).map(([ title, config ]) => ({
+            attachmentId: title,
+            title,
+            getBlob: async () => ({ content: JSON.stringify(config) })
+        }))) as unknown as FNote["getAttachmentsByRole"];
+
+        const seen: { viewType: ViewTypeOptions; config: object | undefined }[] = [];
+        function ConfigProbe({ viewType }: { viewType: ViewTypeOptions }) {
+            seen.push({ viewType, config: useViewModeConfig<object>(note, viewType)?.config });
+            return null;
+        }
+
+        const mountPoint = document.createElement("div");
+        const renderProbe = async (viewType: ViewTypeOptions) => {
+            await act(async () => {
+                render(
+                    <ParentComponent.Provider value={new Component()}>
+                        <ConfigProbe viewType={viewType} />
+                    </ParentComponent.Provider>,
+                    mountPoint
+                );
+            });
+            await act(async () => {
+                await flushMicrotasks();
+            });
+        };
+
+        await renderProbe("geoMap");
+        expect(seen.at(-1)?.config).toEqual(stored["geoMap.json"]);
+
+        await renderProbe("table");
+        expect(seen.at(-1)?.config).toEqual(stored["table.json"]);
+        const tableConfigs = seen.filter((entry) => entry.viewType === "table").map((entry) => entry.config);
+        expect(tableConfigs.filter((config) => config !== undefined))
+            .toEqual(tableConfigs.filter((config) => config !== undefined).map(() => stored["table.json"]));
+
+        await act(async () => {
+            render(null, mountPoint);
+        });
     });
 });
 

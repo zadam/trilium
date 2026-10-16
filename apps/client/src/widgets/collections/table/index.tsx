@@ -152,6 +152,7 @@ function usePersistence(viewConfig: TableConfig | null | undefined, saveConfig: 
                 return viewConfigLocal.tableData?.[type];
             },
             persistenceWriterFunc(_, type, data) {
+                viewConfigLocal.tableData ??= {};
                 (viewConfigLocal.tableData as Record<string, {}>)[type] = data;
                 spacedUpdate.scheduleUpdate();
             },
