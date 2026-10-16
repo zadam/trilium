@@ -751,6 +751,9 @@ export class ClaudeAgentProvider implements LlmProvider {
             settingSources: [],
             strictMcpConfig: true,
             permissionMode: "dontAsk",
+            // A preset title stops Claude Code from spending a model call on one of
+            // its own; Trilium names the chat note itself (see generateTitle()).
+            title: "Trilium chat",
             // Extended thinking: `adaptive` lets these (modern) models decide how
             // much to think and stream summarized reasoning, mirroring the metered
             // Anthropic provider. Adaptive is the SDK's default for supporting

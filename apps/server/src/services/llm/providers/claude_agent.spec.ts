@@ -163,6 +163,19 @@ describe("ClaudeAgentProvider.chatChunks", () => {
         closeMock.mockClear();
     });
 
+    it("titles every session it opens, so Claude Code generates no title of its own", async () => {
+        scriptAgent([successResult()]);
+        const provider = new ClaudeAgentProvider();
+        await collect(provider.chatChunks([{ role: "user", content: "hi" }], {}));
+        scriptTitleAgent(async () => [titleResult("Title")]);
+        await provider.generateTitle("hi");
+
+        expect(queryMock).toHaveBeenCalledTimes(2);
+        for (const [{ options }] of queryMock.mock.calls) {
+            expect(options.title).toEqual(expect.stringMatching(/\S/));
+        }
+    });
+
     it("names Claude Code's web tools the way the other providers name theirs", async () => {
         const webCall = (id: string, name: string, input: Record<string, unknown>) => [
             {
