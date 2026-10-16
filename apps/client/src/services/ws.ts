@@ -97,8 +97,7 @@ export async function dispatchMessage(message: WebSocketMessage) {
         utils.reloadFrontendApp("received request from backend to reload frontend");
     } else if (messageType === "reload-froca") {
         logInfo(`Reloading froca: ${msg.reason}`);
-        await froca.reloadAll();
-        await appContext.triggerEvent("frocaReloaded", {});
+        await reloadFroca();
     } else if (messageType === "frontend-update") {
         await executeFrontendUpdate(msg.data.entityChanges);
     } else if (messageType === "sync-hash-check-failed") {
@@ -165,20 +164,35 @@ async function executeFrontendUpdate(entityChanges: EntityChange[]) {
 
         sendPing();
 
-        // first wait for all the preceding consumers to finish
-        while (consumeQueuePromise) {
-            await consumeQueuePromise;
-        }
+        await runInUpdateQueue(consumeFrontendUpdateData);
+    }
+}
 
-        try {
-            // it's my turn, so start it up
-            consumeQueuePromise = consumeFrontendUpdateData();
+/**
+ * Rebuilds froca from the backend and has the widgets switch to the new objects. It runs in the
+ * update queue, so entity changes that arrive meanwhile apply on top of the rebuilt cache.
+ */
+export async function reloadFroca() {
+    await runInUpdateQueue(async () => {
+        await froca.reloadAll();
+        await appContext.triggerEvent("frocaReloaded", {});
+    });
+}
 
-            await consumeQueuePromise;
-        } finally {
-            // finish and set to null to signal somebody else can pick it up
-            consumeQueuePromise = null;
-        }
+async function runInUpdateQueue(task: () => Promise<void>) {
+    // first wait for all the preceding consumers to finish
+    while (consumeQueuePromise) {
+        await consumeQueuePromise;
+    }
+
+    try {
+        // it's my turn, so start it up
+        consumeQueuePromise = task();
+
+        await consumeQueuePromise;
+    } finally {
+        // finish and set to null to signal somebody else can pick it up
+        consumeQueuePromise = null;
     }
 }
 
@@ -370,5 +384,6 @@ export default {
     logError,
     subscribeToMessages,
     waitForMaxKnownEntityChangeId,
+    reloadFroca,
     getMaxKnownEntityChangeSyncId: () => lastAcceptedEntityChangeSyncId
 };

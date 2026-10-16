@@ -67,7 +67,8 @@ class FrocaImpl implements Froca {
 
     /**
      * Replaces everything froca holds with the backend's current state: the initial tree, then
-     * the notes froca held outside it, which open tabs and widgets can still refer to.
+     * the notes froca held outside it, which open tabs and widgets can still refer to. Run it
+     * through `reloadFroca()` in ws.ts, which keeps entity changes from applying meanwhile.
      */
     async reloadAll() {
         const allNoteIds = Object.keys(this.notes);
