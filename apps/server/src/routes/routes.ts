@@ -1,6 +1,7 @@
 import { routes } from "@triliumnext/core";
 import express from "express";
 
+import shareEditRoutes from "../collab/routes.js";
 import etapiAppInfoRoutes from "../etapi/app_info.js";
 import etapiAttachmentRoutes from "../etapi/attachments.js";
 import etapiAttributeRoutes from "../etapi/attributes.js";
@@ -12,7 +13,6 @@ import etapiNoteRoutes from "../etapi/notes.js";
 import etapiRevisionsRoutes from "../etapi/revisions.js";
 import etapiSpecRoute from "../etapi/spec.js";
 import etapiSpecialNoteRoutes from "../etapi/special_notes.js";
-import shareEditRoutes from "../collab/routes.js";
 import auth from "../services/auth.js";
 import openID from '../services/open_id.js';
 import { isElectron } from "../services/utils.js";

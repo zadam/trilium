@@ -21,11 +21,11 @@ vi.mock("../../services/i18n", () => ({
     t: (key: string) => key
 }));
 
-import { buildNote } from "../../test/easy-froca";
-import { renderInto } from "../../test/render";
 import appContext from "../../components/app_context";
 import froca from "../../services/froca";
 import server from "../../services/server";
+import { buildNote } from "../../test/easy-froca";
+import { renderInto } from "../../test/render";
 import {
     ClippedNoteBadge, ExecuteBadge, OfficePreviewBadge, toggleShareEdit,
     useShareEditState

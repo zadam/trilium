@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import optionService from "../services/options.js";
-import { buildShareNote } from "../test/shaca_mocking.js";
 import SAttribute from "../share/shaca/entities/sattribute.js";
 import shaca from "../share/shaca/shaca.js";
+import { buildShareNote } from "../test/shaca_mocking.js";
 import {
     buildEditPayload, EDIT_OPTION_OVERRIDES, getShareEditPolicy, hashShareEditPassword,
     verifyShareEditPassword
