@@ -148,7 +148,7 @@ describe("ViewPropertySection", () => {
 
     it("writes a number once the box commits, and removes the label when the box is emptied", () => {
         const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined);
-        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockReturnValue(true);
+        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockResolvedValue(true);
         const note = buildNote({ title: "Map", "#maxNestingDepth": "2" }) as unknown as FNote;
         const element = draw(note, [
             { type: "number", label: "Maximum nesting depth", bindToLabel: "maxNestingDepth" }
