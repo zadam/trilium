@@ -82,7 +82,7 @@ Simply click on a cell within a row to change its value. The change will not onl
 
 ### Editing columns
 
-It is possible to edit a column by right clicking it and selecting _Edit column._ This will basically change the label/relation definition at the collection level.
+It is possible to edit a column by right clicking it and selecting _Edit column…_ This will basically change the label/relation definition at the collection level.
 
 If the _Name_ field of a column is changed, this will trigger a batch operation in which the corresponding label/relation will be renamed in all the children.
 

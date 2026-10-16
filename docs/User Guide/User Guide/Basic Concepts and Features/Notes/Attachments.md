@@ -61,7 +61,7 @@ An embed follows its attachment like a link does. Converting the attachment into
 To do so:
 
 *   For a single note, press the context menu from the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a> and select _Convert into attachment_.
-*   For multiple notes, select the given notes in the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>, right click → Advanced → Convert to attachment.
+*   For multiple notes, select the given notes in the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>, right click → Advanced → _Convert to attachment…_.
 
 ## Attachment previews
 
