@@ -145,10 +145,6 @@ async function deleteNotes(branchIdsToDelete: string[], forceDeleteAllClones = f
         taskId: utils.randomString(10)
     }, componentId);
 
-    if (eraseNotes) {
-        utils.reloadFrontendApp("erasing notes requires reload");
-    }
-
     return true;
 }
 
