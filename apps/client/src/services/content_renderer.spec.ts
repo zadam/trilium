@@ -139,7 +139,8 @@ import {
     getEmbedBoxSize,
     getRenderedContent as rawGetRenderedContent,
     getUploadBoxSize,
-    hasRenderedPreview
+    hasRenderedPreview,
+    snapshotAndDispose
 } from "./content_renderer.js";
 import froca from "./froca.js";
 import server from "./server.js";
@@ -1182,6 +1183,18 @@ describe("interactive content disposal", () => {
         for (const dispose of disposers) {
             expect(dispose).toHaveBeenCalledTimes(1);
         }
+    });
+
+    it("snapshots the markup without the markers before disposing of the content", async () => {
+        const { $renderedContent } = await getRenderedContent(buildChatNote([ "Hi" ]));
+        const dispose = vi.fn();
+        addContentDisposer($renderedContent[0], dispose);
+
+        const chat = "<span class=\"mock-chat-marker\">messages:1</span>";
+        expect(snapshotAndDispose($renderedContent))
+            .toBe(`<div class="note-detail-llm-chat-preview">${chat}</div>`);
+        expect(dispose).toHaveBeenCalledTimes(1);
+        expect($renderedContent.find(".mock-chat-marker").length).toBe(0);
     });
 });
 

@@ -910,6 +910,20 @@ export function disposeInteractiveContent($renderedContent: JQuery<HTMLElement>)
 }
 
 /**
+ * Returns the HTML of the rendered content and then disposes of it, for a caller that keeps only
+ * the markup. The HTML leaves out the markers that {@link disposeInteractiveContent} reads.
+ */
+export function snapshotAndDispose($renderedContent: JQuery<HTMLElement>) {
+    const $snapshot = $renderedContent.clone();
+    disposeInteractiveContent($renderedContent);
+
+    const markers = [ INTERACTIVE_MOUNT_ATTR, DISPOSER_ATTR ];
+    const selector = markers.map((marker) => `[${marker}]`).join(", ");
+    $snapshot.find(selector).addBack(selector).removeAttr(markers.join(" "));
+    return $snapshot.html();
+}
+
+/**
  * Registers `dispose` to run when {@link disposeInteractiveContent} discards the rendered content
  * that holds `element`, such as a pass that keeps observing the content.
  */

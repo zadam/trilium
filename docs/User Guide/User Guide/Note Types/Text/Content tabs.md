@@ -38,6 +38,8 @@ In <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Note
 
 A tab without a title shows “Tab title” in place of one.
 
+In read-only notes, a title too long for its tab fades out where it is cut off. To read the rest of it, swipe it sideways or drag it with the mouse.
+
 ## Linking to a tab
 
 A link can point to a single tab, much like a link to a block (see <a class="reference-link" href="Block%20references.md">Block references</a>):

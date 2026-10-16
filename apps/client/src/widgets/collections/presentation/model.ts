@@ -1,6 +1,6 @@
 import { NoteType } from "@triliumnext/commons";
 import FNote from "../../../entities/fnote";
-import contentRenderer, { disposeInteractiveContent } from "../../../services/content_renderer";
+import contentRenderer, { snapshotAndDispose } from "../../../services/content_renderer";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content";
 import { ProgressChangedFn } from "../interface";
 
@@ -74,9 +74,7 @@ async function processContent(note: FNote): Promise<DangerouslySetInnerHTML> {
         noChildrenList: true,
         mediaEnvironment: "native"
     });
-    // Disposing before the read also drops the `data-content-disposer` markers from the HTML.
-    disposeInteractiveContent($renderedContent);
-    return { __html: sanitizeNoteContentHtml($renderedContent.html()) };
+    return { __html: sanitizeNoteContentHtml(snapshotAndDispose($renderedContent)) };
 }
 
 async function postProcessSlides(slides: (PresentationSlideModel | PresentationSlideBaseModel)[]) {

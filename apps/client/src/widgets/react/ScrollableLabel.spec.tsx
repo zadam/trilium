@@ -2,7 +2,7 @@ import { type ComponentChildren, render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import ScrollableLabel from "./ScrollableLabel";
+import ScrollableLabel, { mountScrollableLabel } from "./ScrollableLabel";
 
 let container: HTMLDivElement | undefined;
 
@@ -265,5 +265,27 @@ describe("ScrollableLabel", () => {
         await scrollTo(label, 0);
         expect(label.classList.contains("scroll-fade-start")).toBe(false);
         expect(label.classList.contains("scroll-fade-end")).toBe(false);
+    });
+});
+
+describe("mountScrollableLabel", () => {
+    it("moves the content of an element into a label, and back once disposed of", () => {
+        const element = document.body.appendChild(document.createElement("p"));
+        element.innerHTML = "Long <b>title</b>";
+        const [ text, bold ] = element.childNodes;
+
+        let dispose = () => {};
+        act(() => {
+            dispose = mountScrollableLabel(element);
+        });
+        const content = element.querySelector(":scope > .scrollable-label > span");
+        expect(content?.childNodes[0]).toBe(text);
+        expect(content?.childNodes[1]).toBe(bold);
+
+        const replacement = document.createElement("i");
+        bold.replaceWith(replacement);
+        act(() => dispose());
+        expect([ ...element.childNodes ]).toEqual([ text, replacement ]);
+        element.remove();
     });
 });

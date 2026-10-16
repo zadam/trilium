@@ -1,7 +1,7 @@
 import "./ScrollableLabel.css";
 
 import clsx from "clsx";
-import type { ComponentChildren, RefObject } from "preact";
+import { type ComponentChildren, createRef, type RefObject, render } from "preact";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { useScrollFade } from "./scroll_fade";
@@ -119,6 +119,27 @@ export default function ScrollableLabel({ children, className, autoScroll }: Scr
             onWheel={autoScroll ? handOver : undefined}
         >{children}</div>
     );
+}
+
+/**
+ * Moves the content of `element`, which Preact does not render, into a {@link ScrollableLabel}
+ * mounted inside it. Returns a function that unmounts the label and puts the content back.
+ */
+export function mountScrollableLabel(element: HTMLElement) {
+    // `render()` reuses or removes the children it finds in `element`.
+    const nodes = [ ...element.childNodes ];
+    element.replaceChildren();
+
+    const contentRef = createRef<HTMLSpanElement>();
+    render(<ScrollableLabel><span ref={contentRef} /></ScrollableLabel>, element);
+    const content = contentRef.current;
+    content?.append(...nodes);
+
+    return () => {
+        const current = content ? [ ...content.childNodes ] : nodes;
+        render(null, element);
+        element.replaceChildren(...current);
+    };
 }
 
 /**

@@ -8,6 +8,7 @@ import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scrol
 import {
     applyStickyTableHeaders
 } from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
+import { CLASSES as TAB_CLASSES } from "@triliumnext/ckeditor5/src/plugins/tabs/constants.js";
 import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import clsx from "clsx";
 import { Ref } from "preact";
@@ -31,6 +32,7 @@ import {
     useTriliumEvent, useTriliumOption, useTriliumOptionBool
 } from "../../react/hooks";
 import { RawHtmlBlock } from "../../react/RawHtml";
+import { mountScrollableLabel } from "../../react/ScrollableLabel";
 import { TypeWidgetProps } from "../type_widget";
 import { applyReferenceLinks } from "./read_only_helper";
 import {
@@ -155,11 +157,18 @@ export function ReadOnlyTextContent({
         const disposeStickyTableHeaders = applyStickyTableHeaders(container);
         applyMath(container);
         applyTabs(container, { placeholder: t("text-editor.ck.tab-title") });
+        const tabTitles = container.querySelectorAll<HTMLElement>(`.${TAB_CLASSES.tabTitle}`);
+        const disposeTabTitles = [ ...tabTitles ]
+            .filter((title) => title.hasChildNodes())
+            .map((title) => mountScrollableLabel(title));
         setupImageOpening(container, true);
 
         return () => {
             disposeTableScroll();
             disposeStickyTableHeaders();
+            for (const dispose of disposeTabTitles) {
+                dispose();
+            }
         };
     }, [ html, noteId, ntxId, contentRef ]);
 
