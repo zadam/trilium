@@ -89,7 +89,8 @@ export class RecordingSession {
             try {
                 const pipeline = this.pipelineFor(source, samples);
                 this.tap(source, samples, pipeline.firstSampleOffsetMs);
-                this.options.onLevel?.(source, pipeline.accept(samples));
+                const level = pipeline.accept(samples);
+                this.options.onLevel?.(source, level);
                 this.updatePending();
             } catch (e) {
                 this.log.error(`Transcription: ${source} failed: ${(e as Error)?.message ?? e}`);

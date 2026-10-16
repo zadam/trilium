@@ -30,7 +30,7 @@ function speechChunk(speaking: boolean) {
     return samples;
 }
 
-function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = []) {
+function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [], reportsLevels = true) {
     let clock = 1000;
     let onSamples: SamplesListener = () => {};
     const capture = {
@@ -82,7 +82,9 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     const onPendingChanged = vi.fn();
     const onLevel = vi.fn();
     const session = new RecordingSession({
-        capture, engine, sinks, taps, log, onPendingChanged, onLevel, now: () => clock
+        capture, engine, sinks, taps, log, onPendingChanged,
+        onLevel: reportsLevels ? onLevel : undefined,
+        now: () => clock
     });
 
     return {
@@ -291,6 +293,17 @@ describe("RecordingSession", () => {
         expect(loudSource).toBe("system");
         expect(level).toBeCloseTo(Math.sqrt((2 + 0.25 * 15997) / 16000));
         await session.stop();
+    });
+
+    it("transcribes without a level listener", async () => {
+        const { session, deliver, written } = createHarness([], [], false);
+        await session.start();
+        deliver("microphone", utteranceChunk(1, 8000), 3000);
+        await session.stop();
+
+        expect(written).toEqual([
+            { source: "microphone", offsetMs: 1500, durationMs: 1000, text: "utterance 1" }
+        ]);
     });
 
     it("logs a failed transcription or tap, and still finishes the rest", async () => {
