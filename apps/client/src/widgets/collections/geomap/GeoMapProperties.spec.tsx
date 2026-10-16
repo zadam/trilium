@@ -151,10 +151,21 @@ describe("GeoMapProperties", () => {
         expect(optionTitles(".geo-map-properties-general")).toEqual([
             "book_properties_config.show-scale",
             "book_properties_config.show-labels",
-            "book_properties_config.cluster-markers",
+            "book_properties_config.cluster-markers"
+        ]);
+    });
+
+    it("holds which notes the map gathers in a card of their own, after General", () => {
+        draw({});
+        const included = query(".collection-included-notes");
+        expect(optionTitles(".collection-included-notes")).toEqual([
             "book_properties.include_archived_notes",
             "book_properties_config.max-nesting-depth"
         ]);
+        expect(query(".geo-map-properties-general")?.compareDocumentPosition(included as Node))
+            .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+        expect(included?.compareDocumentPosition(query(".geo-map-properties-background") as Node))
+            .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
     it("draws a world map with a style, until a custom image is chosen and picked", () => {

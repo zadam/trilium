@@ -1320,7 +1320,8 @@
     "open_all_in_tabs_tooltip": "Open all results in new tabs",
     "open_all_confirm_one": "This will open {{count}} note in new tabs. Continue?",
     "open_all_confirm_other": "This will open {{count}} notes in new tabs. Continue?",
-    "open_all_limit_exceeded": "Too many notes to open at once ({{count}}). The maximum is {{max}}, try narrowing the results first."
+    "open_all_limit_exceeded": "Too many notes to open at once ({{count}}). The maximum is {{max}}, try narrowing the results first.",
+    "included_notes": "Included notes"
   },
   "edited_notes": {
     "no_edited_notes_found": "No edited notes on this day yet..."

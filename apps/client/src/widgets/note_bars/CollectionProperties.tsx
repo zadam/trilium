@@ -15,13 +15,14 @@ import { getErrorMessage, isShare } from "../../services/utils";
 import { ViewTypeOptions } from "../collections/interface";
 import { searchTermsFor } from "../collections/search/SearchResultCard";
 import ActionButton from "../react/ActionButton";
+import { Card } from "../react/Card";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import Modal from "../react/Modal";
 import {
-    CheckBoxProperty, NumberProperty, PropertyHelp, ViewProperty
+    CheckBoxProperty, NumberProperty, PropertyHelp, ViewProperty, ViewPropertySection
 } from "../react/NotePropertyMenu";
 import { bookPropertiesConfig } from "./collection-properties-config";
 
@@ -255,6 +256,19 @@ function ViewOptions({ note, viewType, optionsChildren }: {
                 {optionsChildren}
             </>}
         </Dropdown>
+    );
+}
+
+/**
+ * Which notes a collection gathers, as opposed to how its view draws them: a card shared by the
+ * properties dialogs, placed after their General card.
+ */
+export function IncludedNotesCard({ note }: { note: FNote }) {
+    return (
+        <Card className="collection-included-notes" heading={t("book_properties.included_notes")}>
+            <ViewPropertySection note={note} property={INCLUDE_ARCHIVED_PROPERTY} />
+            <ViewPropertySection note={note} property={MAX_NESTING_DEPTH_PROPERTY} />
+        </Card>
     );
 }
 
