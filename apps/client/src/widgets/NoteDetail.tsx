@@ -27,6 +27,7 @@ import {
     useDelayedVisibility,
     useGetContextDataFrom,
     useHasTabBeenShown,
+    useLegacyComponentElement,
     useNoteContext,
     useTriliumEvent
 } from "./react/hooks";
@@ -286,6 +287,7 @@ export function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, prop
     const [ cachedProps, setCachedProps ] = useState(props);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const eventGate = useTypeWidgetEventGate(isVisible && containerVisible);
+    useLegacyComponentElement(wrapperRef, eventGate);
 
     useEffect(() => {
         if (isVisible) {
@@ -314,7 +316,11 @@ export function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, prop
             }}
         >
             <ParentComponent.Provider value={eventGate}>
-                <Element {...cachedProps} isVisible={isVisible && containerVisible} />
+                <Element
+                    {...cachedProps}
+                    parentComponent={eventGate}
+                    isVisible={isVisible && containerVisible}
+                />
             </ParentComponent.Provider>
         </div>
     );
@@ -326,6 +332,7 @@ export function NoteDetailWrapper({ Element, type, isVisible, isFullHeight, prop
  */
 const EVENTS_FOR_HIDDEN_TYPE_WIDGETS = new Set<EventNames>([
     "entitiesReloaded", "frocaReloaded", "refreshEmbeddedNote", "searchRefreshed", "apiLogMessages",
+    "sqlQueryResults",
     "themeChanged", "protectedSessionStarted", "readOnlyTemporarilyDisabled", "contextDataChanged",
     "setNoteContext", "activeContextChanged", "activeNoteChanged", "hoistedNoteChanged",
     "noteSwitched", "noteSwitchedAndActivated", "beforeNoteSwitch", "noteTypeMimeChanged",

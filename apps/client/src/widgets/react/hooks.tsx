@@ -1507,8 +1507,9 @@ export function useLegacyImperativeHandlers(handlers: Record<string, Function>) 
  * marks its own element (see `BasicWidget.render`), and a React tree mounted under one answers to
  * that same widget, so the two already agree everywhere else.
  */
-export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>) {
-    const parentComponent = useContext(ParentComponent);
+export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>, component?: Component) {
+    const contextComponent = useContext(ParentComponent);
+    const parentComponent = component ?? contextComponent;
 
     useEffect(() => {
         const el = elRef.current;
