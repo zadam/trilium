@@ -317,8 +317,8 @@ importers:
         specifier: 0.19.0
         version: 0.19.0
       maplibre-gl:
-        specifier: 6.13.0
-        version: 6.13.0
+        specifier: 6.14.0
+        version: 6.14.0
       mark.js:
         specifier: 8.11.1
         version: 8.11.1
@@ -363,7 +363,7 @@ importers:
         version: 1.37.0
       terra-draw-maplibre-gl-adapter:
         specifier: 1.5.0
-        version: 1.5.0(maplibre-gl@6.13.0)(terra-draw@1.37.0)
+        version: 1.5.0(maplibre-gl@6.14.0)(terra-draw@1.37.0)
     devDependencies:
       '@ckeditor/ckeditor5-inspector':
         specifier: 5.0.3
@@ -946,8 +946,8 @@ importers:
         specifier: 0.19.0
         version: 0.19.0
       maplibre-gl:
-        specifier: 6.13.0
-        version: 6.13.0
+        specifier: 6.14.0
+        version: 6.14.0
       mark.js:
         specifier: 8.11.1
         version: 8.11.1
@@ -8907,8 +8907,8 @@ packages:
     resolution: {integrity: sha512-1DiZmDHPXMBgMRjeUtHy1q1VYmeJscHxhIAexX9z/zjRMP80+0ETuPfssi8z+kMY4DwUgsKuHqpjxgmeA9gBNA==}
     engines: {node: '>=18'}
 
-  maplibre-gl@6.13.0:
-    resolution: {integrity: sha512-ELXk4h+xl0URFQEnVbAN6MGn61P6jq4amUWHiskLVsvHCaKdf1Zq6G8UNOD0AQ3UaXoL5ECc8ovz8yqYEBGPKw==}
+  maplibre-gl@6.14.0:
+    resolution: {integrity: sha512-L7U9y9TyPJ3P/JJbW+eH+A3FzdPq+3fnZFqqeCwf/S6cRGganHwVI5b/C8/zOYzreUzsloDPZVVaMQA94wOt4A==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
   mark.js@8.11.1:
@@ -21156,7 +21156,7 @@ snapshots:
 
   many-keys-map@3.0.3: {}
 
-  maplibre-gl@6.13.0:
+  maplibre-gl@6.14.0:
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.2.0
@@ -23596,9 +23596,9 @@ snapshots:
 
   terminal-size@4.0.1: {}
 
-  terra-draw-maplibre-gl-adapter@1.5.0(maplibre-gl@6.13.0)(terra-draw@1.37.0):
+  terra-draw-maplibre-gl-adapter@1.5.0(maplibre-gl@6.14.0)(terra-draw@1.37.0):
     dependencies:
-      maplibre-gl: 6.13.0
+      maplibre-gl: 6.14.0
       terra-draw: 1.37.0
 
   terra-draw@1.37.0: {}
