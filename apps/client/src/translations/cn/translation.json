@@ -3503,7 +3503,8 @@
     "fullscreen": "全屏",
     "exit_fullscreen": "退出全屏",
     "open_in_new_tab": "在新标签页中打开",
-    "more_actions": "更多操作"
+    "more_actions": "更多操作",
+    "beta": "Beta"
   },
   "spreadsheet": {
     "read-only": "此注释为只读。",
@@ -4213,7 +4214,12 @@
     "status_attachments": "附件",
     "status_deleted_items": "已删除项",
     "selection_hint": "点击某项查看详情",
-    "show_selection_details": "显示选中项详情"
+    "show_selection_details": "显示选中项详情",
+    "compress_jpeg_keep_description": "保留图片当前的质量。",
+    "compress_jpeg_compress_description": "以较低质量重新保存图片以减小体积。此操作无法撤销。",
+    "compress_png_keep_description": "完整保留图片。",
+    "compress_png_optimize_description": "减少颜色数量，在截图和图表中通常难以察觉。",
+    "compress_png_jpeg_description": "最节省空间。带透明度的图片会改为优化处理。"
   },
   "sidebar_help": {
     "attributes_inheritable": "将其标记为可继承后，它会向下传递到该笔记下的整个子树，并在其中显示为「可继承」而非「自有」。",
@@ -4515,7 +4521,8 @@
     "note_title": "会议 {{date}}",
     "starting": "正在开始转录…",
     "stop": "停止转录",
-    "stopping": "正在完成转录文本…"
+    "stopping": "正在完成转录文本…",
+    "title_keeping_recordings": "{{title}}（保留音频以便疑难解答）"
   },
   "transcript": {
     "speaker_me": "我",
@@ -4528,5 +4535,65 @@
     "offset": "转录开始后 {{offset}}",
     "cleanup": "隐藏填充词",
     "cleanup_tooltip": "隐藏「呃」「嗯」等填充词和结巴的词。转录文本本身不会改变。"
+  },
+  "resource_download": {
+    "title": "需要下载",
+    "intro": "Trilium 需要先下载以下文件才能继续。这些文件保存在本设备上，不会同步，因此每个设备都会分别下载它们。",
+    "partially_downloaded": "已下载",
+    "total": "下载大小",
+    "free_space": "磁盘可用空间：{{size}}",
+    "not_enough_space": "本次下载需要 {{size}}，但本设备仅剩 {{free}} 可用空间。请先释放一些空间，然后关闭此窗口再试。",
+    "progress": "{{received}} / {{total}}",
+    "current_file": "正在下载 {{file}}…",
+    "download": "下载",
+    "retry": "重试",
+    "cancel": "取消",
+    "not_enough_space_title": "可用空间不足",
+    "failed_title": "下载失败",
+    "license": "{{license}} 许可证",
+    "verify": "校验",
+    "unverified": "本设备上已有 {{size}}，改为校验而无需下载",
+    "credits": "由 <Author>{{author}}</Author> 提供，来源：{{sources}}"
+  },
+  "transcription_options": {
+    "recognition_title": "语音识别",
+    "european_languages": "欧洲语言",
+    "european_languages_description": "可识别 25 种欧洲语言，并自动判断所说的是哪一种。首次用它录制时，会下载一个模型。",
+    "model_standard": "标准",
+    "model_high_accuracy": "高精度",
+    "identify_speakers": "识别说话人",
+    "identify_speakers_description": "将其他参会者区分开来，并标注各自所说的话；你对麦克风说的话始终算作你自己。声音只在录制期间进行比对：不会存储任何与声音有关的信息，也不会在会议之间识别出同一个人。如果它把不同人的声音弄混了，请关闭此选项。该设置从下次录制起生效。",
+    "troubleshooting_title": "疑难解答",
+    "keep_recordings": "保留录音以便疑难解答",
+    "keep_recordings_description": "保留会议中所有人的音频，连同所用设置和当时生成的转录文本，以便报告并复现录制中出现的问题。每小时会议约占用 230 MB，且永远不会被自动删除。",
+    "saved_in": "保存位置",
+    "enabled": "会议转录",
+    "enabled_description": "在启动栏中添加「转录会议」按钮，它会转录你对着麦克风说的话，以及其他参会者通过扬声器传来的声音。识别完全在本设备上进行，音频不会离开本设备。",
+    "related_resources": "已下载的资源",
+    "related_resources_description": "查看已下载到本设备的语音识别模型，并删除不再需要的模型。",
+    "model_standard_description": "NVIDIA 的 Parakeet TDT 0.6B v3，经过量化，可在大多数电脑上流畅运行。",
+    "model_high_accuracy_description": "NVIDIA 的 Parakeet TDT 0.6B v3，采用全精度。它出错更少，但录制时约多占用 1.6 GB 内存。",
+    "model_size": "需下载 {{size}}",
+    "keep_recordings_warning": "开启此功能前，请先征得会议中所有人的同意。在德国、法国以及美国的若干州，未经所有人同意录制对话属于刑事犯罪；当参会者来自不同地点时，适用其中最为严格的法律。音频以未加密形式存储，即使是受保护的笔记也是如此。",
+    "unsupported": "此电脑无法使用会议转录：其语音识别引擎无法加载。"
+  },
+  "resources_options": {
+    "list_title": "资源",
+    "list_description": "功能在首次需要时下载的大文件，例如语音识别模型。它们保存在本设备上，不会同步，因此每个设备都会各自下载一份。",
+    "installed": "已安装",
+    "partially_downloaded": "已下载 {{downloaded}} / {{size}}",
+    "space_used": "已用空间",
+    "no_resources": "尚未下载任何内容。",
+    "delete": "删除",
+    "delete_confirmation": "要删除 {{title}} 吗？下次有功能需要时会重新下载。",
+    "open_folder": "打开文件夹",
+    "outdated": "旧版本",
+    "outdated_description": "此资源较早版本的文件，当前版本已不再使用。",
+    "unregistered": "未使用",
+    "unregistered_description": "已下载、但此应用没有任何功能会使用的资源。",
+    "unknown": "未知",
+    "unknown_description": "并非由 Trilium 下载。",
+    "delete_foreign_confirmation": "要删除 {{name}} 吗？此应用没有任何功能会使用它。",
+    "unverified": "尚未校验"
   }
 }
