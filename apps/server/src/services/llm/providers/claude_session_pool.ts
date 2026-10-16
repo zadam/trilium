@@ -18,8 +18,9 @@
  * manual: `for await (…) { break }` calls `iterator.return()`, which would
  * close the query and defeat the whole point.
  *
- * Sessions are keyed by chat note, reaped after {@link IDLE_TIMEOUT_MS}, and
- * rebuilt whenever an option that is fixed at construction changes.
+ * Sessions are keyed by chat note, plus one key for the session chat titles
+ * share, reaped after {@link IDLE_TIMEOUT_MS}, and rebuilt whenever an option
+ * that is fixed at construction changes.
  */
 
 import type { Query, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";

@@ -46,7 +46,7 @@ import {
     rememberSession as rememberWarmSession,
     takeWarmSession
 } from "./claude_session_pool.js";
-import { buildHistoryReplay, flattenContent, hashTranscript } from "./transcript.js";
+import { buildHistoryReplay, buildTitlePrompt, cleanTitle, flattenContent, hashTranscript, MAX_TITLES_PER_SESSION } from "./transcript.js";
 
 // Re-exported for existing importers (specs, siblings); the implementations
 // now live in the shared transcript module.
@@ -143,6 +143,13 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
 
 const TITLE_MODEL = "claude-haiku-4-5-20251001";
 
+/**
+ * The pool key of the session titles share. Note IDs never contain a colon, so
+ * it cannot collide with a chat's own session.
+ */
+const TITLE_SESSION_KEY = ":title";
+const TITLE_FINGERPRINT = "title";
+
 /** Upper bound on assistant↔tool round-trips within one chat turn. */
 const MAX_TURNS = 25;
 
@@ -177,6 +184,11 @@ interface SessionEntry {
  * the transcript the client sends.
  */
 const sessionsByChatNote = new Map<string, SessionEntry>();
+
+/** Titles the current title session answered, counting the one in progress. */
+let titleCount = 0;
+/** Settles when the title in progress does; a session answers one prompt at a time. */
+let titleQueue: Promise<unknown> = Promise.resolve();
 
 function rememberSession(chatNoteId: string, entry: SessionEntry) {
     // Refresh insertion order so the oldest mapping is evicted first.
@@ -630,11 +642,67 @@ export class ClaudeAgentProvider implements LlmProvider {
         }
     }
 
+    /**
+     * Name a chat after its first message, in the session titles share. Titles
+     * take turns, because a session answers one prompt at a time.
+     */
     async generateTitle(firstMessage: string): Promise<string> {
+        const title = titleQueue.then(() => this.requestTitle(firstMessage));
+        titleQueue = title;
+        return title;
+    }
+
+    private async requestTitle(firstMessage: string): Promise<string> {
+        let session: ClaudeSession | undefined;
+        let answered = false;
         try {
-            const query = await loadQuery();
-            const response = query({
-                prompt: `Generate a short title (at most 5 words) summarizing this chat message. Reply with only the title, no quotes or punctuation around it:\n\n${firstMessage.substring(0, 500)}`,
+            session = await this.titleSession();
+            await pushUserTurn(session.input, buildTitlePrompt(firstMessage));
+            // Manual iteration, as in chatChunks(): breaking out of `for await` closes the query.
+            for (;;) {
+                const next = await session.query.next();
+                if (next.done) {
+                    session.closed = true;
+                    return "";
+                }
+                const message = next.value;
+                if (message.type === "result") {
+                    answered = true;
+                    return message.subtype === "success" ? cleanTitle(message.result) : "";
+                }
+            }
+        } catch (error) {
+            getLog().error(`Claude Agent title generation failed: ${describeAgentError(error)}`);
+            return "";
+        } finally {
+            // A title that got no result leaves the session in an unknown state.
+            if (session && answered) {
+                releaseSession(TITLE_SESSION_KEY, session);
+            } else if (session) {
+                closeSession(TITLE_SESSION_KEY, session);
+            }
+        }
+    }
+
+    /**
+     * The warm title session, or a new one on {@link TITLE_MODEL} when there is
+     * none or the current one reached {@link MAX_TITLES_PER_SESSION}.
+     */
+    private async titleSession(): Promise<ClaudeSession> {
+        const warm = takeWarmSession(TITLE_SESSION_KEY, TITLE_FINGERPRINT);
+        if (warm && titleCount < MAX_TITLES_PER_SESSION) {
+            titleCount++;
+            return warm;
+        }
+        if (warm) {
+            closeSession(TITLE_SESSION_KEY, warm);
+        }
+
+        const query = await loadQuery();
+        const input = new Pushable<SDKUserMessage>();
+        const session: ClaudeSession = {
+            query: query({
+                prompt: input,
                 options: {
                     ...await this.buildBaseOptions({ enableNoteTools: false }),
                     systemPrompt: "You generate short, descriptive titles. Reply with only the title text — no quotes, no punctuation around it.",
@@ -642,17 +710,16 @@ export class ClaudeAgentProvider implements LlmProvider {
                     maxTurns: 1,
                     persistSession: false
                 }
-            });
-
-            for await (const message of response) {
-                if (message.type === "result" && message.subtype === "success") {
-                    return message.result.trim().replace(/^["']|["']$/g, "").substring(0, 100);
-                }
-            }
-        } catch (error) {
-            getLog().error(`Claude Agent title generation failed: ${describeAgentError(error)}`);
-        }
-        return "";
+            }),
+            input,
+            fingerprint: TITLE_FINGERPRINT,
+            closed: false,
+            busy: true,
+            model: TITLE_MODEL
+        };
+        rememberWarmSession(TITLE_SESSION_KEY, session);
+        titleCount = 1;
+        return session;
     }
 
     /**

@@ -58,6 +58,7 @@ vi.mock("child_process", () => ({ spawn: spawnMock }));
 
 const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests } = await import("./claude_agent.js");
 const { MAX_WARM_SESSIONS, Pushable, releaseSession, rememberSession: rememberWarmSession, resetClaudeSessionPoolForTests } = await import("./claude_session_pool.js");
+const { buildTitlePrompt, MAX_TITLES_PER_SESSION } = await import("./transcript.js");
 type PushablePrompt = { pending: readonly { message: { role: string; content: unknown[] } }[] };
 
 /**
@@ -1083,36 +1084,130 @@ describe("ClaudeAgentProvider.chatChunks", () => {
 describe("generateTitle", () => {
     beforeEach(() => {
         queryMock.mockReset();
+        errorLogMock.mockReset();
+        resetClaudeSessionPoolForTests();
+        closeMock.mockClear();
     });
 
-    it("returns the agent's one-shot result with surrounding quotes stripped", async () => {
-        scriptAgent([{ ...successResult(), result: '"Meeting Notes Summary"' }]);
-        const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("summarize my meeting notes")).resolves.toBe("Meeting Notes Summary");
+    it("names chats in one shared session on the cheap model, one title at a time", async () => {
+        let inFlight = 0;
+        let maxInFlight = 0;
+        const answered: string[] = [];
+        scriptTitleAgent(async prompt => {
+            inFlight++;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise(resolve => setTimeout(resolve, 5));
+            inFlight--;
+            const name = prompt.slice(prompt.lastIndexOf("\n") + 1);
+            answered.push(name);
+            return [textDelta("streamed noise"), titleResult(`  "${name.toUpperCase()} notes"  `)];
+        });
 
+        const provider = new ClaudeAgentProvider();
+        await expect(Promise.all([provider.generateTitle("a"), provider.generateTitle("b"), provider.generateTitle("c")]))
+            .resolves.toEqual(["A notes", "B notes", "C notes"]);
+
+        expect(answered).toEqual(["a", "b", "c"]);
+        expect(maxInFlight).toBe(1);
+        expect(queryMock).toHaveBeenCalledTimes(1);
         const options = queryMock.mock.calls[0][0].options;
-        expect(options.maxTurns).toBe(1);
-        expect(options.persistSession).toBe(false);
+        expect(options).toMatchObject({ model: "claude-haiku-4-5-20251001", maxTurns: 1, persistSession: false });
+        expect(options.mcpServers).toBeUndefined();
+        expect(closeMock).not.toHaveBeenCalled();
     });
 
-    it("returns an empty string when the agent fails", async () => {
-        queryMock.mockImplementation(() => (async function* () {
-            throw new Error("not logged in");
-            yield undefined;
-        })());
-        const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("hello")).resolves.toBe("");
+    it("sends the shared title prompt, which tells the agent to ignore earlier titles", async () => {
+        const prompts: string[] = [];
+        scriptTitleAgent(async prompt => {
+            prompts.push(prompt);
+            return [titleResult("Title")];
+        });
+
+        await new ClaudeAgentProvider().generateTitle("x".repeat(600));
+
+        expect(prompts).toEqual([buildTitlePrompt("x".repeat(600))]);
+        expect(prompts[0]).toContain("earlier messages in this conversation do not apply");
     });
 
-    it("skips non-result messages and returns empty on a non-success result", async () => {
-        scriptAgent([textDelta("streamed noise"), { ...successResult(), result: "The Title" }]);
+    it("replaces the title session when it is full, failed, or its stream ended", async () => {
+        scriptTitleAgent(async prompt => {
+            if (prompt.endsWith("boom")) {
+                throw new Error("agent crashed");
+            }
+            if (prompt.endsWith("quit")) {
+                return null;
+            }
+            return [titleResult("Title")];
+        });
         const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("hello")).resolves.toBe("The Title");
 
-        scriptAgent([{ ...successResult(), subtype: "error_during_execution", is_error: true, errors: [] }]);
-        await expect(provider.generateTitle("hello")).resolves.toBe("");
+        // Full: the next title starts a new session and closes the old one.
+        for (let i = 0; i <= MAX_TITLES_PER_SESSION; i++) {
+            await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        }
+        expect(queryMock).toHaveBeenCalledTimes(2);
+        expect(closeMock).toHaveBeenCalledTimes(1);
+
+        // Failed: the session is closed, the failure logged, and the next title starts another.
+        await expect(provider.generateTitle("boom")).resolves.toBe("");
+        expect(closeMock).toHaveBeenCalledTimes(2);
+        expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("agent crashed"));
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(3);
+
+        // Ended: a stream that stops before its result yields no title, and the next title starts another.
+        await expect(provider.generateTitle("quit")).resolves.toBe("");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(4);
+    });
+
+    it("keeps the session after an unsuccessful result, which leaves it in a known state", async () => {
+        scriptTitleAgent(async prompt => (prompt.endsWith("fail")
+            ? [{ ...successResult(), subtype: "error_during_execution", is_error: true, errors: [] }]
+            : [titleResult("Title")]));
+        const provider = new ClaudeAgentProvider();
+
+        await expect(provider.generateTitle("fail")).resolves.toBe("");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+
+        expect(queryMock).toHaveBeenCalledTimes(1);
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it("returns an empty title and logs when the agent cannot start", async () => {
+        resolveClaudeBinaryMock.mockRejectedValueOnce(new Error("claude not found"));
+
+        await expect(new ClaudeAgentProvider().generateTitle("hi")).resolves.toBe("");
+        expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("claude not found"));
     });
 });
+
+/**
+ * A title session: Claude Code in streaming input mode, answering each message
+ * pushed onto its input with what `reply` returns for its text. `null` ends the
+ * stream, as a process that exits does.
+ */
+function scriptTitleAgent(reply: (prompt: string) => Promise<unknown[] | null>) {
+    type Pushed = { message: { content: { text: string }[] } };
+    queryMock.mockImplementation(({ prompt }: { prompt: string | AsyncIterable<Pushed> }) => {
+        const generator = (async function* () {
+            const input = typeof prompt === "string" ? [prompt] : prompt;
+            for await (const pushed of input) {
+                const text = typeof pushed === "string" ? pushed : pushed.message.content.map(block => block.text).join("");
+                const messages = await reply(text);
+                if (!messages) {
+                    return;
+                }
+                yield* messages;
+            }
+        })();
+        return Object.assign(generator, { setModel: setModelMock, close: closeMock });
+    });
+}
+
+function titleResult(title: string) {
+    return { ...successResult(), result: title };
+}
 
 describe("transcript helpers", () => {
     it("hashTranscript is stable across content shapes and sensitive to edits", () => {
