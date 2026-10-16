@@ -38,12 +38,13 @@ vi.mock("../../../services/attributes", () => ({
 
 // NoteAutocomplete is tested in its own spec. A click on the stub picks `image2`.
 vi.mock("../../react/NoteAutocomplete", () => ({
-    default: ({ noteId, noteIdChanged }: {
-        noteId?: string, noteIdChanged: (noteId: string) => void
+    default: ({ noteId, filter, noteIdChanged }: {
+        noteId?: string, filter?: string, noteIdChanged: (noteId: string) => void
     }) => (
         <div
             className="autocomplete-stub"
             data-note-id={noteId ?? ""}
+            data-filter={filter}
             onClick={() => noteIdChanged("image2")}
         />
     )
@@ -246,6 +247,11 @@ describe("GeoMapProperties", () => {
     it("measures in pixels until custom corners are chosen, starting them at the size", () => {
         const note = draw({ "~map:image": "image1" }, LOADED_IMAGE);
         expect(query(".autocomplete-stub")?.dataset.noteId).toBe("image1");
+        // Only the images a map can be drawn over are offered.
+        expect(query(".autocomplete-stub")?.dataset.filter).toBe(
+            "note.type = image AND (note.mime = 'image/png' OR note.mime = 'image/jpeg' "
+            + "OR note.mime = 'image/jpg' OR note.mime = 'image/webp' "
+            + "OR note.mime = 'image/gif')");
         expect(optionTitles(".geo-map-properties-background")).toEqual([
             "geo-map.background-type", "geo-map.image-note",
             "geo-map.coordinates", "geo-map.dark-image"

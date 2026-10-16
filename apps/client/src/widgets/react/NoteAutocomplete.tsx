@@ -48,6 +48,11 @@ export interface NoteAutocompleteProps {
     onBlur?: (newValue: string) => void;
     noteIdChanged?: (noteId: string) => void;
     noteId?: string;
+    /**
+     * A search query the suggested notes must also match, such as `note.type = image`, whatever is
+     * typed. With an empty field, the notes it matches are suggested instead of the recent ones.
+     */
+    filter?: string;
     /** Shows the selected note without allowing a different one to be picked. */
     readOnly?: boolean;
     /** Keeps an enclosing form from submitting while the field is empty. */
@@ -83,7 +88,7 @@ export interface NoteAutocompleteHandle {
     clear(): void;
 }
 
-export default function NoteAutocomplete({ id, inputRef: externalInputRef, text, placeholder, container, containerStyle, opts, onChange, onTextChange, onKeyDown, onBlur, noteIdChanged, noteId, readOnly, required, tabIndex, handleRef, anchorRef, searchFooter, onHighlight }: NoteAutocompleteProps) {
+export default function NoteAutocomplete({ id, inputRef: externalInputRef, text, placeholder, container, containerStyle, opts, onChange, onTextChange, onKeyDown, onBlur, noteIdChanged, noteId, filter, readOnly, required, tabIndex, handleRef, anchorRef, searchFooter, onHighlight }: NoteAutocompleteProps) {
     const inputRef = useSyncedRef<HTMLInputElement>(externalInputRef);
     const groupRef = useRef<HTMLDivElement>(null);
     const [ value, setValue ] = useState("");
@@ -107,7 +112,8 @@ export default function NoteAutocomplete({ id, inputRef: externalInputRef, text,
         const options = {
             allowCreatingNotes,
             allowJumpToSearchNotes: allowJumpToSearchNotes && !hasSearchFooter,
-            allowExternalLinks
+            allowExternalLinks,
+            filter
         };
         if (hasSearchFooter) {
             return getNoteSuggestions(query, includeContents ? { ...options, fastSearch: false } : options);
@@ -124,7 +130,7 @@ export default function NoteAutocomplete({ id, inputRef: externalInputRef, text,
         }
     }, [
         isCommandPalette, allowCreatingNotes, allowJumpToSearchNotes, allowExternalLinks, fullTextSearchCount,
-        hasSearchFooter, includeContents
+        hasSearchFooter, includeContents, filter
     ]);
     const schedule = useMemo(() => createSearchScheduler(), []);
 

@@ -38,6 +38,16 @@ interface BackgroundOption {
     unavailable?: string;
 }
 
+/**
+ * The media types of the image notes a map can be drawn over: MapLibre decodes these, and refuses
+ * SVG. `image/jpg` is not a registered type, but it is how Trilium stores a JPEG it compressed.
+ */
+const MAP_IMAGE_MIMES = [ "image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif" ];
+
+/** The search query the image picker is limited to. */
+const IMAGE_NOTE_FILTER = `note.type = image AND (${
+    MAP_IMAGE_MIMES.map((mime) => `note.mime = '${mime}'`).join(" OR ")})`;
+
 /** The longest side, in pixels, that practically every graphics card can draw an image at. */
 const SAFE_IMAGE_SIDE = 4096;
 
@@ -190,6 +200,7 @@ function ImageSettings({ note, image, imageNoteId, onPickImage }: {
             <NoteAutocomplete
                 noteId={imageNoteId ?? undefined}
                 placeholder={t("geo-map.image-note-placeholder")}
+                filter={IMAGE_NOTE_FILTER}
                 noteIdChanged={onPickImage}
             />
         </OptionCardSection>

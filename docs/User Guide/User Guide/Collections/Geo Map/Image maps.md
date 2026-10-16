@@ -6,7 +6,7 @@ An image map is a geo map drawn over an image of your own instead of a world map
 1.  Upload the image as a note of its own, for example by dragging the file into the note tree. PNG, JPEG, WebP and GIF images are supported; SVG images are not.
 2.  Create a geo map, or open an existing one.
 3.  Open the <span class="tn-icon bx bx-cog"></span>_Geo map properties_ dialog from the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="../Collection%20Properties.md">Collection Properties</a>.
-4.  Under _Background_, set _Type_ to _Custom image_, then choose the image note in _Image note_.
+4.  Under _Background_, set _Type_ to _Custom image_, then choose the image note in _Image note_. The list only offers image notes in a format the map can draw (PNG, JPEG, WebP or GIF), and shows all of them before anything is typed.
 
 The map then shows the image instead of the world map and opens with the whole image in view. To go back to a world map, set _Type_ back to _Vector & Raster_. The image is switched off rather than removed: its relation is renamed to `~disabled:map:image`, so setting _Type_ to _Custom image_ again brings back the same image, with its coordinates. An image that the geo map inherits from a parent note or a template can only be switched off on the note that holds it.
 
