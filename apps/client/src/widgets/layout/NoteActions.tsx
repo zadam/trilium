@@ -189,7 +189,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                         <ConvertNoteFormat note={note} />}
                     {/* Always the note-level dialog, an image note included: it has children of its
                         own, and reaching them is what makes this "images" and not "image". */}
-                    <CommandItem icon="bx bx-collapse-alt" text={t("compress-images")}
+                    <CommandItem icon="bx bx-collapse-alt" text={t("compress-images-menu")}
                         disabled={isInOptionsOrHelp || !isContentAvailable}
                         command={() => void showImageCompressionDialog({ type: "note", noteId: note.noteId })} />
                     <CommandItem command="showNoteOCRText" icon="bx bx-text" disabled={!["image", "file"].includes(noteType) || !isContentAvailable} text={t("note_actions.view_ocr_text")} />

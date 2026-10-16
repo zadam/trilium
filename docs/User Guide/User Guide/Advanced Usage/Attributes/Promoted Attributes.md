@@ -50,6 +50,13 @@ The following types are supported:
 > [!NOTE]
 > For label-based attributes, these types are not enforced by the attribute system, meaning that changing the type afterwards does not guarantee that the values in it correspond to the type (e.g. turning a text into a number).
 
+## Multiple values
+
+When the definition allows multiple values, each value is shown as a chip and a new one is added in the box after them. Press the <span class="tn-icon bx bx-x"></span> on a chip to remove that value.
+
+*   For free-form types such as _Text_, _Number_ or _Date_, press <kbd>Enter</kbd> (or leave the field) to add what was typed. The same value can be added more than once, for example two payments of the same amount.
+*   For _Select_, _Checkbox_ and _Relation_ attributes, a value is picked from the list rather than typed, and each one can be picked only once.
+
 ## Creating a new promoted attribute definition
 
 To create a new promoted attribute:
@@ -57,14 +64,14 @@ To create a new promoted attribute:
 1.  Go to a note.
 2.  Go to the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Right%20Sidebar/Attributes%20tab.md">Attributes tab</a> in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Right%20Sidebar.md">Right Sidebar</a>.
 3.  Press the <span class="tn-icon bx bx-plus"></span> button for the top-most section (_Owned attributes_).
-4.  Select either _Add new label definition_ or _Add new relation definition_.
+4.  Select either _Add new label definition…_ or _Add new relation definition…_.
 5.  Select the name which will be name of the label or relation that will be created when the promoted attribute is edited.
 6.  Ensure _Promoted_ is checked in order to display it at the top of notes.
 7.  Optionally, choose an _Alias_ which will be displayed next to the promoted attribute instead of the attribute name. Generally it's best to choose a “user-friendly” name since it can contain spaces and other characters which are not supported as attribute names.
 8.  Check _Inheritable_ to apply it to this note and all its descendants. To keep it only for the current note, un-check it.
 9.  Press _Save & Close_ to apply the changes.
 
-Alternatively, promoted attributes can be created from the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a> by going to <span class="tn-icon bx bx-list-check"></span> (_Attributes_), pressing the <span class="tn-icon bx bx-plus"></span> button and selecting _Add new label definition_. The resulting attribute can also be copy-pasted or written manually (albeit discouraged).
+Alternatively, promoted attributes can be created from the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a> by going to <span class="tn-icon bx bx-list-check"></span> (_Attributes_), pressing the <span class="tn-icon bx bx-plus"></span> button and selecting _Add new label definition…_. The resulting attribute can also be copy-pasted or written manually (albeit discouraged).
 
 ## How attribute definitions actually work
 

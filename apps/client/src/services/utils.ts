@@ -261,20 +261,27 @@ const SIZE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"];
  *   what is not needed, which reads best for a size at rest. Pass a number for a counter that is
  *   still climbing: there, dropping a trailing zero shortens the text on every other update and the
  *   line shifts about while it is being read.
+ * @param unitOf a size whose unit to show `size` in instead, so that a column of sizes shares one
+ *   unit and can be summed by eye: the largest of them, or their total.
  */
-export function formatSize(size: number | null | undefined, decimals?: number) {
+export function formatSize(size: number | null | undefined, decimals?: number, unitOf?: number) {
     if (size === null || size === undefined) {
         return "";
     }
 
-    if (size <= 0) {
+    const reference = unitOf ?? size;
+    if (reference <= 0) {
         return "0 B";
     }
 
-    const unit = Math.min(Math.floor(Math.log(size) / Math.log(1024)), SIZE_UNITS.length - 1);
+    const unit = Math.min(Math.floor(Math.log(reference) / Math.log(1024)), SIZE_UNITS.length - 1);
     const value = size / Math.pow(1024, unit);
     // Nothing below a byte to show, however many places were asked for.
     const places = decimals !== undefined && unit === 0 ? 0 : decimals;
+    const step = Math.pow(10, -(places ?? 2));
+    if (size > 0 && value < step / 2) {
+        return `<${step.toFixed(places ?? 2)} ${SIZE_UNITS[unit]}`;
+    }
 
     return `${places === undefined ? Math.round(value * 100) / 100 : value.toFixed(places)} ${SIZE_UNITS[unit]}`;
 }

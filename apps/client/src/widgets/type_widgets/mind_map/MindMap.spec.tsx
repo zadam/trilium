@@ -4,11 +4,95 @@
 // sanitization-dependent specs under jsdom, which matches real-browser behavior.
 import i18next from "i18next";
 import { DARK_THEME, MindElixirInstance, THEME as LIGHT_THEME } from "mind-elixir";
-import { beforeAll, describe, expect, it } from "vitest";
+import { render } from "preact";
+import { act } from "preact/test-utils";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
+import { renderInto } from "../../../test/render";
 import englishTranslation from "../../../translations/en/translation.json";
 
-import { buildTheme, localizeBuiltLabels, renameOverlayLabel, sanitizeMindMapData } from "./MindMap.js";
+import { buildTheme, localizeBuiltLabels, MindElixir, renameOverlayLabel, sanitizeMindMapData } from "./MindMap.js";
+
+interface FakeMap {
+    destroyed: boolean;
+    /** The height `nodes` reports, which is 0 while the map is hidden. */
+    height: number;
+    init: () => void;
+    linkDiv: ReturnType<typeof vi.fn>;
+    toCenter: ReturnType<typeof vi.fn>;
+}
+
+const builtMaps = vi.hoisted(() => [] as FakeMap[]);
+
+vi.mock("mind-elixir", async (importOriginal) => {
+    const original = await importOriginal<typeof import("mind-elixir")>();
+
+    /** Records each instance built, whether it was destroyed, and when it was laid out. */
+    class FakeMindElixir {
+        nodes = document.createElement("me-nodes");
+        currentNodes = [];
+        theme = { name: "Latte" };
+        listeners = new Map<string, Set<() => void>>();
+        bus = {
+            addListener: (type: string, listener: () => void) => {
+                this.listeners.set(type, (this.listeners.get(type) ?? new Set()).add(listener));
+            },
+            removeListener: (type: string, listener: () => void) => this.listeners.get(type)?.delete(listener),
+            fire: (type: string) => {
+                for (const listener of this.listeners.get(type) ?? []) listener();
+            }
+        };
+        destroyed = false;
+        height = 0;
+        linkDiv = vi.fn(() => this.bus.fire("linkDiv"));
+        toCenter = vi.fn();
+
+        constructor() {
+            Object.defineProperty(this.nodes, "offsetHeight", { get: () => this.height });
+            builtMaps.push(this);
+        }
+
+        getData() { return {}; }
+        /** As the map does: lays out the root, draws the branches and centers itself. */
+        init() {
+            this.nodes.replaceChildren(document.createElement("me-root"));
+            this.linkDiv();
+            this.toCenter();
+        }
+        destroy() { this.destroyed = true; }
+    }
+
+    return { ...original, default: FakeMindElixir };
+});
+
+const resizeCallbacks = vi.hoisted(() => new Set<() => void>());
+
+globalThis.ResizeObserver = class {
+
+    private readonly callback: () => void;
+
+    constructor(callback: () => void) {
+        this.callback = callback;
+    }
+
+    observe() { resizeCallbacks.add(this.callback); }
+    unobserve() {}
+    disconnect() { resizeCallbacks.delete(this.callback); }
+
+} as unknown as typeof ResizeObserver;
+
+/** Resizes the map's container, as the browser reports it. */
+function resize() {
+    act(() => {
+        for (const callback of resizeCallbacks) callback();
+    });
+}
+
+vi.mock("../../react/hooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../react/hooks")>()),
+    useColorScheme: () => "light",
+    useTriliumOption: () => [ "en" ]
+}));
 
 describe("sanitizeMindMapData", () => {
     it("strips XSS/RCE vectors from dangerouslySetInnerHTML (GHSA-rj57-j38v-3577)", () => {
@@ -201,5 +285,54 @@ describe("renameOverlayLabel", () => {
         renameOverlayLabel(label, "Rezumat");
         expect(label.textContent).toBe("Rezumat");
         expect([ label.style.left, label.style.top ]).toEqual([ "", "" ]);
+    });
+});
+
+describe("MindElixir", () => {
+    const liveMaps = () => builtMaps.filter((map) => !map.destroyed);
+
+    /** Builds the map and settles it, so that its effects have run before it is looked at. */
+    function renderMap(editable: boolean) {
+        let container: HTMLElement | undefined;
+        act(() => { container = renderInto(<MindElixir editable={editable} />); });
+        if (!container) throw new Error("the map was not rendered");
+        return container;
+    }
+
+    it("destroys the instance it replaces, and the last one when it unmounts", () => {
+        builtMaps.length = 0;
+        const container = renderMap(true);
+        expect(liveMaps()).toHaveLength(1);
+
+        const first = liveMaps()[0];
+        act(() => render(<MindElixir editable={false} />, container));
+        expect(first.destroyed).toBe(true);
+        expect(liveMaps()).toHaveLength(1);
+
+        act(() => render(null, container));
+        expect(liveMaps()).toHaveLength(0);
+    });
+
+    it("lays out and centers again a map that was laid out while hidden, once it is shown", () => {
+        builtMaps.length = 0;
+        renderMap(true);
+        const [ map ] = liveMaps();
+
+        // Filled while a quick-edit popup is still hidden, where every node measures 0.
+        act(() => map.init());
+        map.linkDiv.mockClear();
+        map.toCenter.mockClear();
+        resize();
+        expect(map.linkDiv).not.toHaveBeenCalled();
+
+        map.height = 400;
+        resize();
+        expect(map.linkDiv).toHaveBeenCalledOnce();
+        expect(map.toCenter).toHaveBeenCalledOnce();
+
+        // Laid out while visible: a later resize leaves where the map was panned to alone.
+        resize();
+        expect(map.linkDiv).toHaveBeenCalledOnce();
+        expect(map.toCenter).toHaveBeenCalledOnce();
     });
 });

@@ -4,8 +4,8 @@ import {
     CALENDAR_EVENT_ICON, CANVAS_ATTACHMENT_MIME, GEO_LOCATION_ATTRIBUTE, GEO_SHAPE_ATTRIBUTE,
     getAttachedFileMime, getContentRendererGroup, getDrawingPictureTitle,
     getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
-    MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS,
-    parseMindMapNoteLink
+    MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, MEETING_RECORDING_ICON, MEETING_RECORDING_LABEL,
+    NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS, parseMindMapNoteLink
 } from "./notes.js";
 import { NoteType } from "./rows.js";
 
@@ -131,6 +131,20 @@ describe("getNoteIcon", () => {
         for (const clipType of [ "unknown", "constructor" ]) {
             expect(getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))).toBe("bx bx-note");
         }
+    });
+
+    it("draws a recorded meeting by its label, ahead of a start date and the folder icon", () => {
+        const labelled = (labels: Record<string, string>) => (name: string) => labels[name] ?? null;
+        const meeting = labelled({ [MEETING_RECORDING_LABEL]: "" });
+
+        expect(getNoteIcon(buildArgs({ getLabelValue: meeting }))).toBe(MEETING_RECORDING_ICON);
+        expect(getNoteIcon(buildArgs({ getLabelValue: meeting, isFolder: () => true })))
+            .toBe(MEETING_RECORDING_ICON);
+        expect(getNoteIcon(buildArgs({
+            getLabelValue: labelled({ [MEETING_RECORDING_LABEL]: "", startDate: "2026-10-13" })
+        }))).toBe(MEETING_RECORDING_ICON);
+        expect(getNoteIcon(buildArgs({ getLabelValue: meeting, iconClass: "bx bx-star" })))
+            .toBe("bx bx-star");
     });
 
     it("draws a calendar event by its start date, under its own name where it renames it", () => {

@@ -18,13 +18,12 @@ import { bootToSetup, canBootToSetup } from "../../../services/setup_mode";
 import toast from "../../../services/toast";
 import { isElectron } from "../../../services/utils";
 import Button from "../../react/Button";
-import { Card, CardSection, OptionCardSection } from "../../react/Card";
-import DirectoryLink from "../../react/DirectoryLink";
+import { Card, OptionCardSection } from "../../react/Card";
+import { DirectoryLocation } from "../../react/DirectoryLink";
 import FormPasswordWithConfirmation from "../../react/FormPasswordWithConfirmation";
 import FormText from "../../react/FormText";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
-import Icon from "../../react/Icon";
 import Modal from "../../react/Modal";
 import SetupForm from "../helpers/SetupForm";
 import DatabaseFileList from "./components/DatabaseFileList";
@@ -309,13 +308,10 @@ export function BackupLocation({ backupFolderPath, refreshCallback }: { backupFo
 
     return (
         <Card className="backup-location" heading={t("backup.location_title")}>
-            <CardSection>
-                <Icon icon="bx bx-folder" className="backup-location-icon" />
-
-                <div className="backup-location-label">{t("backup.saved_in")}</div>
-                <div className="backup-location-path"><DirectoryLink directory={backupFolderPath} /></div>
-
-                <div className="backup-location-actions">
+            <DirectoryLocation
+                label={t("backup.saved_in")}
+                directory={backupFolderPath}
+                actions={<>
                     <Button
                         name="select-backup-location-button"
                         text={t("backup.select_location")}
@@ -333,8 +329,8 @@ export function BackupLocation({ backupFolderPath, refreshCallback }: { backupFo
                             onClick={resetToDefault}
                         />
                     )}
-                </div>
-            </CardSection>
+                </>}
+            />
         </Card>
     );
 }

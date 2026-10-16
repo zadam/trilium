@@ -1,0 +1,16 @@
+.collapsible.pinned-attachment {
+    margin-bottom: 1rem;
+
+    .collapsible-inner-body {
+        margin-top: 0.5em;
+        padding: 0;
+        overflow: hidden;
+        border-radius: var(--card-border-radius, 8px);
+        background: var(--card-background-color, var(--accented-background-color));
+    }
+
+    .transcript {
+        height: auto;
+        max-height: 40vh;
+    }
+}

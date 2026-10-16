@@ -153,7 +153,10 @@
     "tab-switcher-title": "탭 스위처",
     "sidebar-chat-title": "AI 채팅",
     "database-title": "데이터베이스",
-    "space-usage-title": "공간 사용량"
+    "space-usage-title": "공간 사용량",
+    "record-meeting-title": "회의 내용 전사",
+    "transcription-title": "전사",
+    "resources-title": "다운로드된 리소스"
   },
   "keyboard_action_names": {
     "back-in-note-history": "노트 기록에서 뒤로 이동",
@@ -557,5 +560,32 @@
     "detail": "먼저 현재 지식 베이스의 백업이 제공됩니다. 새 지식 베이스를 만들거나, 백업을 복원하거나, 다른 기기에서 동기화하도록 선택하기 전까지는 아무것도 삭제되지 않습니다.\n\n스크립트나 익숙하지 않은 노트에서 이 작업을 하도록 안내했다면 계속하지 마세요.",
     "cancel": "취소",
     "confirm": "재시작 후 처음부터 시작"
+  },
+  "transcription": {
+    "already-recording": "이미 회의 내용을 전사하고 있습니다.",
+    "note-not-found": "회의 노트가 더 이상 존재하지 않습니다.",
+    "start-failed": "전사를 시작할 수 없습니다: {{- message}}",
+    "stopped-unexpectedly": "전사가 예기치 않게 중단되었습니다. 중단 전까지 전사된 내용은 유지됩니다.",
+    "save-locked": "보호된 세션이 잠겨 있어 전사 내용을 저장할 수 없습니다. Trilium이 열려 있는 동안 전사 내용을 보관하며, 보호된 세션에 들어가면 저장합니다.",
+    "save-failed": "전사 내용을 저장할 수 없습니다: {{- message}} 전사 내용은 유지되며 다음 문장에서 다시 저장을 시도합니다.",
+    "capture-lost": "오디오를 더 이상 캡처할 수 없어 전사가 중단되었습니다. 중단 전까지 전사된 내용은 유지됩니다.",
+    "attachment-title": "전사 내용",
+    "model-not-downloaded": "음성 인식 모델이 아직 다운로드되지 않았습니다. 실행 표시줄에서 녹음을 시작하면 모델을 다운로드할 수 있습니다.",
+    "recognizer-int8-title": "Parakeet TDT 0.6B v3",
+    "recognizer-fp32-title": "Parakeet TDT 0.6B v3, 고정밀",
+    "recognizer-description": "25개 유럽 언어를 지원하는 NVIDIA의 음성 인식 모델입니다. 음성 인식은 전적으로 이 기기에서 실행되므로 녹음 내용은 기기 외부로 전송되지 않습니다.",
+    "vad-title": "Silero VAD",
+    "vad-description": "오디오에서 음성 구간을 감지하여 말소리가 있는 부분만 전사하는 데 사용됩니다.",
+    "speaker-title": "TitaNet small",
+    "speaker-description": "화자를 구별하여 전사 내용에서 누가 무엇을 말했는지 확인할 수 있도록 사용됩니다."
+  },
+  "resources": {
+    "unknown": "{{id}} 이름의 리소스가 없습니다.",
+    "http-error": "{{name}} 다운로드가 HTTP 상태 {{status}} 오류로 실패했습니다.",
+    "size-mismatch": "{{name}} 파일의 크기가 예상 크기와 일치하지 않습니다.",
+    "hash-mismatch": "{{name}} 파일의 체크섬이 예상값과 일치하지 않아 폐기했습니다.",
+    "delete-while-downloading": "{{- title}} 항목을 다운로드하고 있습니다. 삭제하려면 먼저 다운로드를 취소하세요.",
+    "not-foreign": "{{- name}} 항목은 리소스 폴더에서 사용되지 않는 항목이 아닙니다.",
+    "stalled": "{{name}} 다운로드가 중단되었습니다. {{seconds}}초 동안 데이터가 수신되지 않았습니다. 연결 상태를 확인하고 다시 시도하세요."
   }
 }

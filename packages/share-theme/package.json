@@ -26,8 +26,8 @@
     "@triliumnext/client": "workspace:*",
     "@types/ejs": "3.1.5",
     "ejs": "7.0.1",
-    "happy-dom": "20.14.6",
+    "happy-dom": "21.0.1",
     "typescript": "6.0.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.4"
   }
 }

@@ -8,13 +8,14 @@ import {
     TableSelection
 } from "ckeditor5";
 import type { ClassicEditor, ModelElement } from "ckeditor5";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, onTestFinished } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
 import { cellAt, modelTable, selectCells } from "../../test/table-kit.js";
 import type { CellSpec } from "../../test/table-kit.js";
 import { equalizeWidths } from "./table_distribute_columns.js";
 import TableContextMenu from "./table_context_menu.js";
+import TriliumTableScroll, { REFERENCE_WIDTH_PROPERTY } from "./table_scroll.js";
 
 const PLUGINS = [Essentials, Paragraph, Table, TableSelection, TableColumnResize, TableContextMenu];
 const COMMAND = "triliumDistributeTableColumns";
@@ -214,6 +215,29 @@ describe("DistributeTableColumnsCommand", () => {
             rtlEditor.execute(COMMAND);
 
             expectDistributed(rtlEditor, shares);
+        });
+
+        it("measures the table width as a share of the reference width", async () => {
+            const scrollEditor = await createTestEditor([...PLUGINS, TriliumTableScroll]);
+            for (const target of [editor, scrollEditor]) {
+                target.ui.element?.style.setProperty("width", "400px");
+                setModelData(target.model, modelTable([["a", "b"]]));
+                selectCells(target, [0, 0], [0, 1]);
+                target.execute(COMMAND);
+            }
+            expect(firstTable(scrollEditor).getAttribute("tableWidth"))
+                .toBe(firstTable(editor).getAttribute("tableWidth"));
+
+            document.body.style.setProperty(REFERENCE_WIDTH_PROPERTY, "800px");
+            onTestFinished(() => {
+                document.body.style.removeProperty(REFERENCE_WIDTH_PROPERTY);
+            });
+            setModelData(scrollEditor.model, modelTable([["a", "b"]]));
+            const domTable = scrollEditor.editing.view.getDomRoot()?.querySelector("table");
+            expect(domTable?.getBoundingClientRect().width).toBeCloseTo(800, 0);
+            selectCells(scrollEditor, [0, 0], [0, 1]);
+            scrollEditor.execute(COMMAND);
+            expect(firstTable(scrollEditor).getAttribute("tableWidth")).toBe("100%");
         });
 
         it("changes nothing while the table cannot be measured", () => {

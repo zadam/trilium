@@ -118,7 +118,7 @@ describe("CalendarProperties", () => {
         const card = draw(undefined);
 
         expect(document.querySelector(".calendar-properties-dialog .modal-title")?.textContent)
-            .toContain("calendar_view.properties");
+            .toContain("calendar_view.properties-title");
         expect(card?.dataset.heading).toBe("calendar_view.event_templates");
         expect(card?.dataset.instruction).toBe("calendar_view.event_templates_hint");
         expect(card?.dataset.note).toBe("calendar1");

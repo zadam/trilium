@@ -187,7 +187,7 @@ function CompressImageButton({ note, noteMime }: NoteActionsCustomInnerProps) {
     return (
         <NoteAction
             icon="bx bx-collapse-alt"
-            text={t("compress-image")}
+            text={t("compress-image-menu")}
             disabled={!note.isContentAvailable()}
             onClick={() => void showImageCompressionDialog({ type: "note", noteId: note.noteId, mime: noteMime })}
         />

@@ -6,7 +6,7 @@ import { t } from "i18next";
 import path from "path";
 
 import { markStartupMetric } from "./startup_metrics.js";
-import { TRILIUM_APP_BASE_URL } from "./trilium_app_origin.js";
+import { isTriliumAppShellUrl, TRILIUM_APP_BASE_URL } from "./trilium_app_origin.js";
 import { setupWebContentsSecurity } from "./web_contents_security.js";
 
 // Preload bundle path. Two layouts:
@@ -528,9 +528,12 @@ export function setupWindowing() {
         console.error(`Could not set the application menu: ${e}`);
     });
 
+    // Only app windows: reloading the hidden transcription capture page would end its capture.
     electron.ipcMain.on("reload-all-windows", () => {
         for (const win of electron.BrowserWindow.getAllWindows()) {
-            win.reload();
+            if (isTriliumAppShellUrl(win.webContents.getURL())) {
+                win.reload();
+            }
         }
     });
 

@@ -232,7 +232,8 @@
   "content_renderer": {
     "note-cannot-be-displayed": "Este tipo de nota no se puede mostrar.",
     "included-note-requires-credentials": "Esta nota incluida está protegida con contraseña y no puede mostrarse aquí.",
-    "broken-block-reference": "Referencia no válida"
+    "broken-block-reference": "Referencia no válida",
+    "play-video": "Reproducir vídeo"
   },
   "pdf": {
     "export_filter": "Documento PDF (*.pdf)",
@@ -274,7 +275,20 @@
     "toggle-toc": "Alternar tabla de contenido",
     "logo-alt": "Logo",
     "login": "Iniciar sesión",
-    "tab-title": "Título de la pestaña"
+    "tab-title": "Título de la pestaña",
+    "heading-link": "Enlace a esta sección",
+    "appearance": "Apariencia",
+    "theme-light": "Claro",
+    "theme-dark": "Oscuro",
+    "theme-system": "Sistema",
+    "theme-current": "Apariencia: {{- theme}}",
+    "subpages-of": "Subpáginas de {{- title}}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page-navigation": "Páginas anterior y siguiente",
+    "hidden-subpages_one": "{{count}} subpágina que está oculta en el árbol",
+    "hidden-subpages_many": "{{count}} subpáginas que están ocultas en el árbol",
+    "hidden-subpages_other": "{{count}} subpáginas que están ocultas en el árbol"
   },
   "keyboard_action_names": {
     "jump-to-note": "Saltar a...",

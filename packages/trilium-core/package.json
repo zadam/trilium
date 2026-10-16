@@ -8,23 +8,23 @@
     "update-model-prices": "tsx ./scripts/update-model-prices.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "4.0.78",
-    "@ai-sdk/deepseek": "3.0.63",
-    "@ai-sdk/google": "4.0.93",
-    "@ai-sdk/openai": "4.0.91",
+    "@ai-sdk/anthropic": "4.0.79",
+    "@ai-sdk/deepseek": "3.0.64",
+    "@ai-sdk/google": "4.0.94",
+    "@ai-sdk/openai": "4.0.92",
     "@braintree/sanitize-url": "7.1.2",
     "@triliumnext/commons": "workspace:*",
     "@triliumnext/highlightjs": "workspace:*",
     "@triliumnext/share-theme": "workspace:*",
     "@triliumnext/turndown-plugin-gfm": "workspace:*",
-    "ai": "7.0.137",
+    "ai": "7.0.138",
     "async-mutex": "0.5.0",
     "chardet": "2.2.0",
     "color": "5.0.3",
     "ejs": "7.0.1",
     "escape-html": "1.0.3",
     "html-to-text": "10.0.1",
-    "i18next": "26.4.2",
+    "i18next": "26.4.4",
     "js-yaml": "5.4.3",
     "lz-string": "1.5.0",
     "mime-types": "3.0.2",
@@ -37,7 +37,7 @@
     "sucrase": "3.35.1",
     "turnish": "1.13.0",
     "xml2js": "0.6.2",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/ejs": "3.1.5",

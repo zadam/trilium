@@ -216,7 +216,10 @@
     "color-scheme-switcher-title": "配色方案切换",
     "content-manager-title": "扩展管理",
     "database-title": "数据库",
-    "space-usage-title": "空间占用"
+    "space-usage-title": "空间占用",
+    "record-meeting-title": "转录会议",
+    "transcription-title": "转录",
+    "resources-title": "已下载的资源"
   },
   "notes": {
     "new-note": "新建笔记",
@@ -557,5 +560,32 @@
     "detail": "系统会先提供当前知识库的备份。只有当你选择创建新知识库、恢复备份或从其他设备同步时，才会删除任何内容。\n\n如果是脚本或陌生笔记提示你执行此操作，请不要继续。",
     "cancel": "取消",
     "confirm": "重启并从头开始"
+  },
+  "transcription": {
+    "already-recording": "已有会议正在转录。",
+    "note-not-found": "会议笔记已不存在。",
+    "start-failed": "无法开始转录：{{- message}}",
+    "stopped-unexpectedly": "转录意外停止了。此前已转录的内容会保留。",
+    "save-locked": "受保护会话锁定期间无法保存转录文本。转录功能会将其保留，只要你进入受保护会话，且 Trilium 保持打开，就会保存它。",
+    "save-failed": "无法保存转录文本：{{- message}} 转录功能会将其保留，并在下一句时重试。",
+    "capture-lost": "由于无法再采集音频，转录已停止。此前已转录的内容会保留。",
+    "attachment-title": "转录文本",
+    "model-not-downloaded": "语音识别模型尚未下载。请从启动栏开始一次录制即可下载它。",
+    "recognizer-int8-title": "Parakeet TDT 0.6B v3",
+    "recognizer-fp32-title": "Parakeet TDT 0.6B v3（高精度）",
+    "recognizer-description": "NVIDIA 的语音识别模型，支持 25 种欧洲语言。识别完全在本设备上进行，录音不会离开本设备。",
+    "vad-title": "Silero VAD",
+    "vad-description": "用于检测音频中的语音，从而只转录包含语音的部分。",
+    "speaker-title": "TitaNet small",
+    "speaker-description": "用于区分说话人，让你能在转录文本中看出每句话是谁说的。"
+  },
+  "resources": {
+    "unknown": "没有名为 {{id}} 的资源。",
+    "http-error": "下载 {{name}} 失败，HTTP 状态码 {{status}}。",
+    "size-mismatch": "{{name}} 的大小与预期不符。",
+    "hash-mismatch": "{{name}} 与预期的校验和不符，已被丢弃。",
+    "delete-while-downloading": "{{- title}} 正在下载中。请先取消下载，再删除它。",
+    "not-foreign": "{{- name}} 不是资源文件夹中未使用的条目。",
+    "stalled": "下载 {{name}} 已停止：{{seconds}} 秒内没有收到任何数据。请检查网络连接，然后重试。"
   }
 }

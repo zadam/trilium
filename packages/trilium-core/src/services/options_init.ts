@@ -1,4 +1,4 @@
-import { type KeyboardShortcutWithRequiredActionName, type OptionDefinitions, type OptionMap, type OptionNames, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
+import { DEFAULT_TRANSCRIPTION_MODEL, type KeyboardShortcutWithRequiredActionName, type OptionDefinitions, type OptionMap, type OptionNames, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
 
 import appInfo from "./app_info.js";
 import { getPlatform } from "./platform.js";
@@ -183,6 +183,11 @@ const defaultOptions: DefaultOption[] = [
     { name: "autoFixConsistencyIssues", value: "true", isSynced: false },
     { name: "vimKeymapEnabled", value: "false", isSynced: false },
     { name: "codeLineWrapEnabled", value: "true", isSynced: false },
+    { name: "transcriptCleanupEnabled", value: "true", isSynced: true },
+    { name: "transcriptionEnabled", value: "false", isSynced: true },
+    { name: "transcriptionModel", value: DEFAULT_TRANSCRIPTION_MODEL, isSynced: false },
+    { name: "transcriptionSpeakersEnabled", value: "true", isSynced: true },
+    { name: "transcriptionKeepRecordings", value: "false", isSynced: false },
     { name: "codeNoteTabWidth", value: "4", isSynced: true },
     { name: "codeNoteIndentWithTabs", value: "false", isSynced: true },
     {

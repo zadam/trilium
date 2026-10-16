@@ -42,11 +42,12 @@ import {
 } from "./services/backup_passphrase";
 import { setupOneNoteHandlers } from "./services/onenote";
 import { setupPrintingHandlers } from "./services/printing";
-import ElectronRequestProvider from "./services/request";
+import ElectronRequestProvider, { setupResourceDownloads } from "./services/request";
 import { setupRestoreHandlers } from "./services/restore";
 import { getSecuritySettings, registerSecurityIpcHandlers } from "./services/security_settings";
 import { setupShellHandlers } from "./services/shell";
 import { markStartupMetric, setupStartupMetricsIpc } from "./services/startup_metrics";
+import { setupTranscriptionHandlers } from "./services/transcription";
 import { setupSystemTray } from "./services/tray";
 import windowService, { setupWindowing } from "./services/window";
 
@@ -145,6 +146,8 @@ export async function main() {
     registerSecurityIpcHandlers();
     registerBackupPassphraseIpcHandlers();
     setupStartupMetricsIpc();
+    setupResourceDownloads();
+    setupTranscriptionHandlers();
 
     app.on("will-quit", () => {
         globalShortcut.unregisterAll();

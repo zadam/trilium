@@ -215,7 +215,7 @@ vi.mock("@triliumnext/server/src/services/i18n.js", () => ({ initializeTranslati
 vi.mock("@triliumnext/server/src/services/image_provider.js", () => ({ serverImageProvider: {} }));
 vi.mock("@triliumnext/server/src/www.js", () => ({ default: vi.fn(() => h.startServer()) }));
 
-vi.mock("./services/request", () => ({ default: class {} }));
+vi.mock("./services/request", () => ({ default: class {}, setupResourceDownloads: vi.fn() }));
 vi.mock("./services/window", () => ({
     default: {
         getLastFocusedWindow: () => h.lastFocusedWindow,
@@ -255,6 +255,7 @@ vi.mock("./services/startup_metrics", () => ({
     markStartupMetric: vi.fn(),
     setupStartupMetricsIpc: vi.fn()
 }));
+vi.mock("./services/transcription", () => ({ setupTranscriptionHandlers: vi.fn() }));
 
 const realPlatform = process.platform;
 function setPlatform(platform: NodeJS.Platform) {

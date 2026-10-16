@@ -18,12 +18,12 @@
     "dayjs": "1.11.23",
     "exceljs": "4.4.0",
     "jszip": "3.10.2",
-    "marked": "18.1.0",
+    "marked": "18.1.1",
     "marked-footnote": "1.4.0",
     "numfmt": "3.2.6"
   },
   "devDependencies": {
-    "happy-dom": "20.14.6",
+    "happy-dom": "21.0.1",
     "preact": "11.0.1"
   }
 }

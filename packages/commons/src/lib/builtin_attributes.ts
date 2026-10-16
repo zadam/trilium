@@ -77,6 +77,8 @@ export interface BuiltinRelation {
 const BUILTIN_ATTRIBUTES = [
     // Note tree & organisation
     { type: "label", name: "inbox", valueType: "boolean" },
+    // Marks a note created by the "Record meeting" launcher, which holds a meeting transcript.
+    { type: "label", name: "meetingRecording", valueType: "boolean" },
     { type: "label", name: "disableVersioning", valueType: "boolean" },
     { type: "label", name: "versioningLimit", valueType: "number" },
     { type: "label", name: "calendarRoot", valueType: "boolean" },
@@ -242,7 +244,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "builtinWidget", valueType: "select", selectOptions: [
         "calendar", "spacer", "bookmarks", "protectedSession", "syncStatus", "backInHistoryButton",
         "forwardInHistoryButton", "todayInJournal", "quickSearch", "mobileTabSwitcher", "sidebarChat",
-        "colorSchemeSwitcher"
+        "colorSchemeSwitcher", "recordMeeting"
     ] },
     // Dangerous together with `~script` below: it makes the launcher run its own content instead, so
     // neutralising only the relation would leave this as a way around it.

@@ -188,7 +188,7 @@ const TEXT_ENTRY = "input:not([type='checkbox'], [type='radio']), textarea, sele
 
 const TOOLTIP_CONFIG: Partial<Tooltip.Options> = {
     placement: handleRightToLeftPlacement("right"),
-    fallbackPlacements: [ handleRightToLeftPlacement("right") ],
+    fallbackPlacements: [ handleRightToLeftPlacement("right"), handleRightToLeftPlacement("left") ],
     animation: false
 };
 

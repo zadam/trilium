@@ -720,4 +720,54 @@ describe("preload script", () => {
             expect(ipcRendererInvoked).toContainEqual({ channel: "restore-pick-backup", args: [] });
         });
     });
+
+    describe("transcription", () => {
+        const transcription = () => getGroup("transcription");
+
+        it("isSupported, start, stop, getState, renameSpeaker and getRecordingsDirectory invoke their IPC channels", async () => {
+            await transcription().isSupported();
+            await transcription().start("meeting");
+            await transcription().stop();
+            await transcription().getState();
+            await transcription().renameSpeaker("transcript1", "system:1", "Alexandra");
+            await transcription().getRecordingsDirectory();
+            expect(ipcRendererInvoked).toEqual([
+                { channel: "transcription-is-supported", args: [] },
+                { channel: "transcription-start", args: [ "meeting" ] },
+                { channel: "transcription-stop", args: [] },
+                { channel: "transcription-get-state", args: [] },
+                {
+                    channel: "transcription-rename-speaker",
+                    args: [ "transcript1", "system:1", "Alexandra" ]
+                },
+                { channel: "transcription-get-recordings-directory", args: [] }
+            ]);
+        });
+
+        it("onStateChanged relays each state until unsubscribed", () => {
+            const callback = vi.fn();
+            const unsubscribe = transcription().onStateChanged(callback);
+
+            const listeners = ipcRendererListeners.get("transcription-state") ?? [];
+            expect(listeners).toHaveLength(1);
+            listeners[0]({}, { status: "recording", noteId: "meeting" });
+            expect(callback).toHaveBeenCalledExactlyOnceWith({ status: "recording", noteId: "meeting" });
+
+            unsubscribe();
+            expect(ipcRendererListeners.has("transcription-state")).toBe(false);
+        });
+
+        it("onLevel relays each source's level until unsubscribed", () => {
+            const callback = vi.fn();
+            const unsubscribe = transcription().onLevel(callback);
+
+            const listeners = ipcRendererListeners.get("transcription-level") ?? [];
+            expect(listeners).toHaveLength(1);
+            listeners[0]({}, "microphone", 0.25);
+            expect(callback).toHaveBeenCalledExactlyOnceWith("microphone", 0.25);
+
+            unsubscribe();
+            expect(ipcRendererListeners.has("transcription-level")).toBe(false);
+        });
+    });
 });
