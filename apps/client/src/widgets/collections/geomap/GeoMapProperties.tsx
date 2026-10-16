@@ -12,12 +12,12 @@ import { bookPropertiesConfig } from "../../note_bars/collection-properties-conf
 import Admonition from "../../react/Admonition";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import FormDropdownList from "../../react/FormDropdownList";
-import FormSelect from "../../react/FormSelect";
 import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useNoteLabel, useNoteLabelBoolean, useNoteRelation } from "../../react/hooks";
 import NoteAutocomplete from "../../react/NoteAutocomplete";
 import { type BookProperty, ViewPropertySection } from "../../react/NotePropertyMenu";
+import SegmentedChoice from "../../react/SegmentedChoice";
 import { formatImageExtent, type ImageSize, parseImageExtent } from "./space";
 
 /** What the map knows of its image: none, loading, unusable, or loaded at its natural size. */
@@ -234,7 +234,6 @@ function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undef
     return (
         <OptionCardSection
             className="geo-map-coordinates"
-            name="geo-map-coordinates"
             label={t("geo-map.coordinates")}
             description={t("geo-map.coordinates-description")}
             subSectionsVisible
@@ -258,13 +257,11 @@ function ImageCoordinates({ note, size }: { note: FNote; size: ImageSize | undef
                 )}
             </> : undefined}
         >
-            <FormSelect
-                values={[
-                    { value: "pixels", title: t("geo-map.coordinates-pixels") },
-                    { value: "custom", title: t("geo-map.coordinates-custom") }
+            <SegmentedChoice
+                options={[
+                    { value: "pixels", label: t("geo-map.coordinates-pixels") },
+                    { value: "custom", label: t("geo-map.coordinates-custom") }
                 ]}
-                keyProperty="value"
-                titleProperty="title"
                 currentValue={isCustom ? "custom" : "pixels"}
                 onChange={changeMode}
             />

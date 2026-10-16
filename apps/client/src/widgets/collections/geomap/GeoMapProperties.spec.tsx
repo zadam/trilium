@@ -96,6 +96,24 @@ describe("GeoMapProperties", () => {
         act(() => item.click());
     }
 
+    function coordinateButtons() {
+        return [ ...document.querySelectorAll<HTMLButtonElement>(
+            ".geo-map-properties-dialog .geo-map-coordinates .tn-segmented-choice button") ];
+    }
+
+    /** The coordinate modes, as their labels and whether each is the chosen one. */
+    function coordinateModes() {
+        return coordinateButtons()
+            .map((button) => [ button.textContent?.trim(), button.classList.contains("active") ]);
+    }
+
+    function chooseCoordinateMode(label: string) {
+        const button = coordinateButtons()
+            .find((candidate) => candidate.textContent?.trim() === label);
+        if (!button) throw new Error(`no ${label} button`);
+        act(() => button.click());
+    }
+
     /** Types `value` into `input` and leaves it, which is when a number box commits. */
     function commit(input: HTMLInputElement | undefined, value: string) {
         if (!input) throw new Error("no such input");
@@ -181,13 +199,10 @@ describe("GeoMapProperties", () => {
         ]);
         expect(cornerInputs()).toHaveLength(0);
 
-        const mode = query<HTMLSelectElement>(".geo-map-coordinates select");
-        expect(mode?.value).toBe("pixels");
-        act(() => {
-            if (!mode) return;
-            mode.value = "custom";
-            mode.dispatchEvent(new Event("change"));
-        });
+        expect(coordinateModes()).toEqual([
+            [ "geo-map.coordinates-pixels", true ], [ "geo-map.coordinates-custom", false ]
+        ]);
+        chooseCoordinateMode("geo-map.coordinates-custom");
         expect(mocks.setLabel)
             .toHaveBeenCalledWith(note.noteId, "map:imageBounds", "0,0 2048,1024");
     });
@@ -209,13 +224,10 @@ describe("GeoMapProperties", () => {
             .toHaveBeenCalledWith(note.noteId, "map:imageBounds", "-512,512 1024.5,-512");
         expect(query(".geo-map-coordinates-error")).toBeNull();
 
-        const mode = query<HTMLSelectElement>(".geo-map-coordinates select");
-        expect(mode?.value).toBe("custom");
-        act(() => {
-            if (!mode) return;
-            mode.value = "pixels";
-            mode.dispatchEvent(new Event("change"));
-        });
+        expect(coordinateModes()).toEqual([
+            [ "geo-map.coordinates-pixels", false ], [ "geo-map.coordinates-custom", true ]
+        ]);
+        chooseCoordinateMode("geo-map.coordinates-pixels");
         expect(mocks.removeOwnedLabelByName).toHaveBeenCalledWith(note, "map:imageBounds");
     });
 
