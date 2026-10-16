@@ -88,11 +88,11 @@ export interface TemplateLintMessages {
 
 /** Marks the expressions `evaluateTemplate()` refuses, given the variables it is called with. */
 export function diagnoseTemplate(text: string, variables: TemplateVariableTypes, messages: TemplateLintMessages): Diagnostic[] {
-    return findTemplateIssues(text, variables).map(({ kind, from, to, name }) => ({
-        from,
-        to,
+    return findTemplateIssues(text, variables).map((issue) => ({
+        from: issue.from,
+        to: issue.to,
         severity: "error",
-        message: kind === "unclosed" || kind === "unsupported" ? messages[kind] : messages[kind](name ?? "")
+        message: issue.name === undefined ? messages[issue.kind] : messages[issue.kind](issue.name)
     }));
 }
 

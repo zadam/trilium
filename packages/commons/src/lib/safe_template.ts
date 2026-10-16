@@ -60,18 +60,18 @@ const TEMPLATE_METHODS_OF: Readonly<Record<TemplateValueType, ReadonlySet<string
 
 const NOTE_DATE_PROPERTIES: ReadonlySet<string> = new Set([ "dateCreatedObj", "utcDateCreatedObj" ]);
 
-/** Why {@link findTemplateIssues} refuses an expression, which `evaluateTemplate()` would throw for. */
-export type TemplateIssueKind =
-    | "unclosed" | "unsupported" | "unknownVariable" | "propertyNotAllowed" | "methodNotAllowed" | "methodNotOnValue";
+/**
+ * Why {@link findTemplateIssues} refuses an expression, which `evaluateTemplate()` would throw for,
+ * with the variable, property or method refused for the kinds that name one.
+ */
+export type TemplateProblem =
+    | { kind: "unclosed" | "unsupported"; name: undefined }
+    | { kind: "unknownVariable" | "propertyNotAllowed" | "methodNotAllowed" | "methodNotOnValue"; name: string };
 
-export interface TemplateIssue {
-    kind: TemplateIssueKind;
-    /** Where the `${...}` expression starts and ends in the template. */
-    from: number;
-    to: number;
-    /** The variable, property or method that is refused, for the kinds that name one. */
-    name: string | undefined;
-}
+export type TemplateIssueKind = TemplateProblem["kind"];
+
+/** A refused expression, and where its `${...}` starts and ends in the template. */
+export type TemplateIssue = TemplateProblem & { from: number; to: number };
 
 // `{` is excluded too, so a `${` without a closing brace scans only to the next brace.
 const EXPRESSION = /\$\{([^{}]+)\}/g;
@@ -145,7 +145,7 @@ function parseExpression(expr: string): ParsedExpression | null {
 }
 
 /** What `evaluateExpression()` throws for `parsed` when the variables hold values of `variables`. */
-function checkExpression(parsed: ParsedExpression | null, variables: TemplateVariableTypes): Omit<TemplateIssue, "from" | "to"> | null {
+function checkExpression(parsed: ParsedExpression | null, variables: TemplateVariableTypes): TemplateProblem | null {
     if (!parsed) {
         return { kind: "unsupported", name: undefined };
     }
