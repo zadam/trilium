@@ -250,6 +250,10 @@
     "license": "{{license}} licence"
   },
   "geo-map": {
+    "dark-image-description": "Draws the marker titles in a light colour, so that they can be read over a dark image.",
     "dark-tiles-description": "Draws the marker titles in a light colour, so that they can be read over dark tiles."
+  },
+  "ocr": {
+    "no_text_recognized": "OCR found no text to recognise."
   }
 }

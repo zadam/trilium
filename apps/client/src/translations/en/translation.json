@@ -3773,7 +3773,9 @@
     "processing_complete": "OCR processing complete.",
     "processing_failed": "Failed to start OCR processing",
     "text_filtered_low_confidence": "OCR detected text with {{confidence}}% confidence, but it was discarded because your minimum threshold is {{threshold}}%.",
-    "image_based_pdf_not_supported": "This PDF appears to be image-based (scanned). Text extraction from image-based PDFs is not yet supported.",
+    "no_text_recognized": "OCR found no text to recognize.",
+    "pages_failed_one": "OCR failed on {{count}} page, so its text is missing. The log has the reason.",
+    "pages_failed_other": "OCR failed on {{count}} pages, so their text is missing. The log has the reason.",
     "open_media_settings": "Open Settings",
     "view_extracted_text": "View extracted text (OCR)"
   },

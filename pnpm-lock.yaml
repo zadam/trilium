@@ -657,8 +657,8 @@ importers:
         specifier: ^0.3.207
         version: 0.3.296(@anthropic-ai/sdk@0.124.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7))(zod@4.6.7)
       '@hyzyla/pdfium':
-        specifier: 2.1.13
-        version: 2.1.13
+        specifier: 3.0.0
+        version: 3.0.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.32.1(supports-color@10.2.2)(zod@4.6.7)
@@ -2990,8 +2990,9 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@hyzyla/pdfium@2.1.13':
-    resolution: {integrity: sha512-4J+xMFJW6V+jktxor6Lsk/2YdPCpeY+Ga69J98uyNQwYESkAsUDxz8BeFU0ZbZJIJ+fK3J6bm61gmwWnUzVU1g==}
+  '@hyzyla/pdfium@3.0.0':
+    resolution: {integrity: sha512-Hw7/Pc/y2f8ZYVNXxAvDiLAV0qJT4+e5HMwbMghra/s2RKXuuWYdR/8ohoD4YwQfTL5UzSNlTtP1LJHip7LiEQ==}
+    engines: {node: '>=22'}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -14067,7 +14068,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@hyzyla/pdfium@2.1.13': {}
+  '@hyzyla/pdfium@3.0.0': {}
 
   '@iconify/types@2.0.0': {}
 
