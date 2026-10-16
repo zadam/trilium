@@ -60,7 +60,7 @@ export interface TemplateIssue {
 
 // `{` is excluded too, so a `${` without a closing brace scans only to the next brace.
 const EXPRESSION = /\$\{([^{}]+)\}/g;
-const METHOD_CALL = /^([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)\.([a-zA-Z_]\w*)\(\s*(?:'([^']*)'|"([^"]*)")?\s*\)$/;
+const METHOD_CALL = /^([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)\.([a-zA-Z_]\w*)\(\s*(?:(?:'([^']*)'|"([^"]*)")\s*)?\)$/;
 const PROPERTY_CHAIN = /^[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*$/;
 
 /**
@@ -92,7 +92,7 @@ export function findTemplateIssues(template: string, variableNames: readonly str
     let closedUpTo = 0;
 
     for (const match of template.matchAll(EXPRESSION)) {
-        const from = match.index ?? 0;
+        const from = match.index;
         const to = from + match[0].length;
         reportUnclosed(template.slice(closedUpTo, from), closedUpTo, issues);
         closedUpTo = to;

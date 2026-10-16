@@ -188,6 +188,18 @@ describe("safe_template - rejected expressions", () => {
             })
         ).toThrow(/is not a supported expression/);
     });
+
+    it("rejects an unclosed method call padded with whitespace in linear time", () => {
+        const expression = `A.A(${"\t".repeat(100_000)}x`;
+        const start = performance.now();
+        expect(() => evaluateTemplate(`\${${expression}}`, { A: {} })).toThrow(
+            /is not a supported expression/
+        );
+        expect(findTemplateIssues(`\${${expression}}`, [ "A" ])).toMatchObject([
+            { kind: "unsupported" }
+        ]);
+        expect(performance.now() - start).toBeLessThan(1000);
+    });
 });
 
 describe("safe_template - findTemplateIssues", () => {
