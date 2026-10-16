@@ -15,12 +15,15 @@ import { getErrorMessage, isShare } from "../../services/utils";
 import { ViewTypeOptions } from "../collections/interface";
 import { searchTermsFor } from "../collections/search/SearchResultCard";
 import ActionButton from "../react/ActionButton";
+import { Card } from "../react/Card";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import Modal from "../react/Modal";
-import { CheckBoxProperty, ViewProperty } from "../react/NotePropertyMenu";
+import {
+    CheckBoxProperty, NumberProperty, PropertyHelp, ViewProperty, ViewPropertySection
+} from "../react/NotePropertyMenu";
 import { bookPropertiesConfig } from "./collection-properties-config";
 
 export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
@@ -53,6 +56,19 @@ export const INCLUDE_ARCHIVED_PROPERTY: CheckBoxProperty = {
     icon: "bx bx-archive",
     label: t("book_properties.include_archived_notes"),
     bindToLabel: "includeArchived"
+};
+
+/**
+ * How many levels below its children a collection shows, for the views that show a whole subtree.
+ * Offered in a view's properties dialog only.
+ */
+export const MAX_NESTING_DEPTH_PROPERTY: NumberProperty & PropertyHelp = {
+    type: "number",
+    icon: "bx bx-subdirectory-right",
+    label: t("book_properties_config.max-nesting-depth"),
+    helpTooltip: t("book_properties_config.max-nesting-depth-description"),
+    bindToLabel: "maxNestingDepth",
+    disabled: (note) => note.type === "search"
 };
 
 interface CollectionPropertiesProps {
@@ -240,6 +256,27 @@ function ViewOptions({ note, viewType, optionsChildren }: {
                 {optionsChildren}
             </>}
         </Dropdown>
+    );
+}
+
+/**
+ * Which notes a collection gathers, as opposed to how its view draws them: a card shared by the
+ * properties dialogs, placed after their General card.
+ */
+export function IncludedNotesCard({ note, archivedLabel }: {
+    note: FNote;
+    /** Names the archived toggle in the view's own words, such as a board's cards and columns. */
+    archivedLabel?: string;
+}) {
+    const archivedProperty = archivedLabel
+        ? { ...INCLUDE_ARCHIVED_PROPERTY, label: archivedLabel }
+        : INCLUDE_ARCHIVED_PROPERTY;
+
+    return (
+        <Card className="collection-included-notes" heading={t("book_properties.included_notes")}>
+            <ViewPropertySection note={note} property={archivedProperty} />
+            <ViewPropertySection note={note} property={MAX_NESTING_DEPTH_PROPERTY} />
+        </Card>
     );
 }
 

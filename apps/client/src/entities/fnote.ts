@@ -272,13 +272,19 @@ export default class FNote {
         return this.children;
     }
 
-    async getSubtreeNoteIds(includeArchived = false) {
+    /**
+     * @param maxDepth how many levels below the children to descend: `0` returns only the children,
+     *                 and a negative value descends without limit.
+     */
+    async getSubtreeNoteIds(includeArchived = false, maxDepth = -1) {
         const noteIds: (string | string[])[] = [];
         for (const child of await this.getChildNotes()) {
             if (child.isArchived && !includeArchived) continue;
 
             noteIds.push(child.noteId);
-            noteIds.push(await child.getSubtreeNoteIds(includeArchived));
+            if (maxDepth !== 0) {
+                noteIds.push(await child.getSubtreeNoteIds(includeArchived, maxDepth - 1));
+            }
         }
         return noteIds.flat();
     }

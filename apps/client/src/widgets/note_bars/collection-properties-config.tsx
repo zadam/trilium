@@ -3,7 +3,7 @@ import { t } from "i18next";
 import Component from "../../components/component";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
-import { DEFAULT_MAP_LAYER_NAME, MAP_LAYERS, type MapLayer } from "../collections/geomap/map_layer";
+import { DEFAULT_MAP_LAYER_NAME, isTileUrl, MAP_LAYERS, type MapLayer } from "../collections/geomap/map_layer";
 import { ViewTypeOptions } from "../collections/interface";
 import { DEFAULT_THEME, getPresentationThemes } from "../collections/presentation/themes";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
@@ -100,6 +100,9 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 type: "combobox",
                 bindToLabel: "map:style",
                 defaultValue: DEFAULT_MAP_LAYER_NAME,
+                // An image map is drawn over its image, and a tileset map over its tiles.
+                isVisible: (note) => !note.getRelationValue("map:image")
+                    && !isTileUrl(note.getLabelValue("map:style")),
                 options: [
                     {
                         title: t("book_properties_config.raster"),
@@ -149,16 +152,7 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
         ]
     },
     table: {
-        properties: [
-            {
-                label: t("book_properties_config.max-nesting-depth"),
-                icon: "bx bx-subdirectory-right",
-                type: "number",
-                bindToLabel: "maxNestingDepth",
-                width: 65,
-                disabled: (note) => note.type === "search"
-            }
-        ]
+        properties: []
     },
     board: {
         properties: [

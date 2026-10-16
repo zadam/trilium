@@ -64,6 +64,8 @@ The following entries only appear on some notes:
 *   <span class="tn-icon bx bx-extension"></span>_Re-render note_ appears on a <a class="reference-link" href="../../Note%20Types/Render%20Note.md">Render Note</a>, and runs its script again to refresh the output.
 *   <span class="tn-icon bx bx-cog"></span>_Board properties_ appears on a <a class="reference-link" href="../../Collections/Kanban%20Board.md">Kanban Board</a>, and configures its columns, card attributes and card templates.
 *   <span class="tn-icon bx bx-cog"></span>_Calendar properties_ appears on a <a class="reference-link" href="../../Collections/Calendar.md">Calendar</a> that creates events, and configures its event templates.
+*   <span class="tn-icon bx bx-cog"></span>_Geo map properties_ appears on a <a class="reference-link" href="../../Collections/Geo%20Map.md">Geo Map</a>, and configures its map settings and the image of an [image map](../../Collections/Geo%20Map/Image%20maps.md).
+*   <span class="tn-icon bx bx-cog"></span>_Table properties_ appears on a <a class="reference-link" href="../../Collections/Table.md">Table</a>, and configures which notes it shows.
 
 ## Advanced
 

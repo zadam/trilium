@@ -14,6 +14,24 @@ import BoardProperties from "./properties";
 vi.mock("../../../services/i18n", () => ({
     t: (key: string) => key
 }));
+// The shared property definitions translate through i18next directly, at import.
+vi.mock("i18next", async (importOriginal) => ({
+    ...await importOriginal<typeof import("i18next")>(),
+    t: (key: string) => key
+}));
+
+const mocks = vi.hoisted(() => ({
+    setBooleanWithInheritance: vi.fn(async () => {}),
+    setLabel: vi.fn(async () => {})
+}));
+
+vi.mock("../../../services/attributes", () => ({
+    default: {
+        setBooleanWithInheritance: mocks.setBooleanWithInheritance,
+        setLabel: mocks.setLabel,
+        isAffecting: () => true
+    }
+}));
 
 // TemplateSelectionCard is tested in its own spec. What this dialog decides is the labels it
 // passes and where onChange writes.
@@ -155,30 +173,25 @@ describe("Board properties", () => {
     });
 
     describe("what the board shows", () => {
-        /** Both were on the board's own menu; the inbox column is now offered only here. */
         it("draws a segment for each, reading what the board's labels say", () => {
             const rows = general()
                 ?.querySelectorAll(".tn-card-section:not(.tn-card-section-nested)") ?? [];
 
-            expect(rows.length).toBe(5);
+            expect(rows.length).toBe(4);
             expect(toggleAt(0)?.classList.contains("on")).toBe(false);
             expect(toggleAt(1)?.classList.contains("on")).toBe(true);
-            expect(toggleAt(2)?.classList.contains("on")).toBe(true);
 
             labels["board:hideAddColumn"] = "true";
             act(() => { render(null, container); });
             draw();
-            expect(toggleAt(2)?.classList.contains("on")).toBe(false);
+            expect(toggleAt(1)?.classList.contains("on")).toBe(false);
         });
 
         it("asks the board to show each of them", () => {
             act(() => { toggleAt(0)?.click(); });
             act(() => { toggleAt(1)?.click(); });
-            act(() => { toggleAt(2)?.click(); });
 
-            expect(toggled).toEqual([
-                [ "inbox", true ], [ "archived", false ], [ "add-column", false ]
-            ]);
+            expect(toggled).toEqual([ [ "inbox", true ], [ "add-column", false ] ]);
         });
 
         function toggleAt(index: number) {
@@ -268,6 +281,24 @@ describe("Board properties", () => {
         function picker() {
             return general()?.querySelector<HTMLSelectElement>("select");
         }
+    });
+
+    it("holds which notes the board gathers in a card of their own, after General", () => {
+        const included = dialog()?.querySelector<HTMLElement>(".collection-included-notes");
+        const titles = [ ...included?.querySelectorAll(".tn-card-option-title") ?? [] ]
+            .map((title) => title.textContent);
+        expect(titles).toEqual([
+            "board_view.show-archived", "book_properties_config.max-nesting-depth"
+        ]);
+        expect(general()?.compareDocumentPosition(included as Node))
+            .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+        const archived = included?.querySelector<HTMLElement>(".switch-button");
+        expect(archived?.classList.contains("on")).toBe(true);
+        act(() => { archived?.click(); });
+        expect(mocks.setBooleanWithInheritance)
+            .toHaveBeenCalledWith(
+                expect.objectContaining({ noteId: "board1" }), "includeArchived", false);
     });
 
     it("holds the promoted attributes, in the board's own words and from its own config", () => {
