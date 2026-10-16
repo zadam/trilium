@@ -37,7 +37,8 @@
   "bulk_actions": {
     "bulk_actions": "Massatoiminnot",
     "chosen_actions": "Valitut toiminnot",
-    "execute_bulk_actions": "Toteuta massatoiminnot",
+    "execute_bulk_actions_one": "Toteuta massatoiminnot",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Massatoiminnot on toteutettu onnistuneesti.",
     "none_yet": "Ei vielä... lisää toiminto klikkaamalla jotiain yllä saatavilla olevaa yltä.",
     "labels": "Merkit",
