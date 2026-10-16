@@ -601,7 +601,7 @@ describe("TranscriptView", () => {
         expect(edges()).toEqual([ "more-above" ]);
     });
 
-    it("hides filler words and stutters while the option is on, and saves the toggle", async () => {
+    it("hides filler words and stutters while the option is on, else grays them out", async () => {
         options.set("transcriptCleanupEnabled", "true");
         const content = transcript([
             { source: "system", offsetMs: 0, text: "Uh the the data is old." },
@@ -614,10 +614,13 @@ describe("TranscriptView", () => {
                 <TranscriptView attachment={attachment as unknown as FAttachment} />
             </ParentComponent.Provider>
         );
-        const spans = () => [ ...container.querySelectorAll(".transcript-turn p span") ]
+        const spans = () => [ ...container.querySelectorAll(".transcript-turn p > span") ]
+            .map((span) => span.textContent);
+        const disfluencies = () => [ ...container.querySelectorAll(".transcript-disfluency") ]
             .map((span) => span.textContent);
         await vi.waitFor(() => expect(spans()).toHaveLength(2));
         expect(spans()).toEqual([ "The data is old.", " I know, I know." ]);
+        expect(disfluencies()).toEqual([]);
 
         const toggle = container.querySelector<HTMLButtonElement>(
             ".transcript-options button.transcript-cleanup");
@@ -630,6 +633,7 @@ describe("TranscriptView", () => {
         });
         expect(h.put).toHaveBeenCalledWith("options", { transcriptCleanupEnabled: "false" });
         expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+        expect(disfluencies()).toEqual([ "Uh", "the", "Uh." ]);
         expect(spans()).toEqual([ "Uh the the data is old.", " Uh.", " I know, I know." ]);
     });
 

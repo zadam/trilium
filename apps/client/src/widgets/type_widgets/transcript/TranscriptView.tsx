@@ -1,10 +1,11 @@
 import "./TranscriptView.css";
 
 import {
-    cleanUtteranceText, getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
-    type TranscriptSource, type TranscriptUtterance
+    cleanUtteranceText, getSpeakerKey, markDisfluencies, MAX_SPEAKER_NAME_LENGTH, parseTranscript,
+    setSpeakerName, type TranscriptSource, type TranscriptUtterance
 } from "@triliumnext/commons";
 import clsx from "clsx";
+import { Fragment } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
@@ -33,8 +34,10 @@ const PARAGRAPH_PAUSE_MS = 2000;
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
  * hears before their words are transcribed, keeps a reader who is at the end there as new
- * turns arrive, and fades its top and bottom edges while more turns are above or below. With `transcriptCleanupEnabled`, shows each utterance through
- * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
+ * turns arrive, and fades its top and bottom edges while more turns are above or below. With
+ * `transcriptCleanupEnabled`, shows each utterance through `cleanUtteranceText()` and leaves out
+ * the ones it empties; without, shows every word, the ones the cleanup removes grayed out. The
+ * stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
@@ -166,7 +169,8 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                                         key={utterance.offsetMs}
                                         className={arrived.has(utterance) ? "transcript-new" : undefined}
                                     >
-                                        {position ? ` ${text}` : text}
+                                        {position ? " " : ""}
+                                        {isCleanedUp ? text : <SaidText text={text} />}
                                     </span>
                                 );
                             })}
@@ -186,6 +190,22 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                 </div>
             ))}
         </div>
+    );
+}
+
+/** An utterance as said, its disfluencies grayed out. */
+function SaidText({ text }: { text: string }) {
+    return (
+        <>
+            {markDisfluencies(text).map((word, index) => (
+                <Fragment key={index}>
+                    {index ? " " : ""}
+                    {word.isDisfluency
+                        ? <span className="transcript-disfluency">{word.text}</span>
+                        : word.text}
+                </Fragment>
+            ))}
+        </>
     );
 }
 

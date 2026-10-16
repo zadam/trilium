@@ -106,6 +106,10 @@
         margin-top: 0.5rem;
     }
 
+    .transcript-disfluency {
+        color: var(--muted-text-color);
+    }
+
     .transcript-speaking {
         user-select: none;
         display: flex;
