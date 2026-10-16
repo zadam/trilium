@@ -42,7 +42,7 @@ overrides:
   # The Codex provider runs the adapter against the user's own `codex` (CODEX_PATH), so the
   # 300-400 MB native Codex build the adapter depends on is never used.
   "@agentclientprotocol/codex-acp>@openai/codex": "-"
-  "zod": "4.6.5"
+  "zod": "4.6.7"
   "mermaid": "12.1.0"
   "preact": "11.0.1"
   "roughjs": "4.6.6"
