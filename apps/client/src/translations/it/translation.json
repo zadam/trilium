@@ -82,11 +82,11 @@
   },
   "bulk_actions": {
     "bulk_actions": "Azioni massive",
-    "affected_notes": "Note influenzate",
     "include_descendants": "Includi i discendenti della nota selezionata",
-    "available_actions": "Azioni disponibili",
     "chosen_actions": "Azioni scelte",
-    "execute_bulk_actions": "Esegui le azioni massive",
+    "execute_bulk_actions_one": "Esegui le azioni massive",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Le azioni massive sono state eseguite con successo.",
     "none_yet": "Ancora nessuna... aggiungi una azione cliccando su una di quelle disponibili sopra.",
     "labels": "Etichette",
@@ -388,21 +388,13 @@
     "add_label": "Aggiungi etichetta",
     "label_name_placeholder": "nome dell'etichetta",
     "new_value_placeholder": "nuovo valore",
-    "to_value": "al valore",
-    "label_name_title": "Sono consentiti caratteri alfanumerici, trattino basso e due punti.",
-    "help_text": "Su tutte le note abbinate:",
-    "help_text_item1": "crea l'etichetta data se la nota non ne ha ancora una",
-    "help_text_item2": "o modificare il valore dell'etichetta esistente",
-    "help_text_note": "È possibile chiamare questo metodo anche senza valore, in tal caso l'etichetta verrà assegnata alla nota senza valore."
+    "label_name_title": "Sono consentiti caratteri alfanumerici, trattino basso e due punti."
   },
   "update_label_value": {
-    "to_value": "al valore",
     "label_name_placeholder": "nome dell'etichetta",
     "update_label_value": "Aggiorna il valore dell'etichetta",
     "label_name_title": "Sono consentiti caratteri alfanumerici, trattino basso e due punti.",
-    "new_value_placeholder": "nuovo valore",
-    "help_text": "Su tutte le note corrispondenti, modifica il valore dell'etichetta esistente.",
-    "help_text_note": "È possibile chiamare questo metodo anche senza valore, in tal caso l'etichetta verrà assegnata alla nota senza valore."
+    "new_value_placeholder": "nuovo valore"
   },
   "delete_label": {
     "delete_label": "Elimina etichetta",
@@ -1392,57 +1384,32 @@
     "add_new_label_definition": "Aggiungi nuova definizione di etichetta"
   },
   "execute_script": {
-    "execute_script": "Esegui script",
-    "help_text": "È possibile eseguire semplici script sulle note abbinate.",
-    "example_1": "Ad esempio, per aggiungere una stringa al titolo di una nota, utilizzare questo piccolo script:",
-    "example_2": "Un esempio più complesso sarebbe l'eliminazione di tutti gli attributi delle note corrispondenti:"
+    "execute_script": "Esegui script"
   },
   "rename_label": {
     "rename_label": "Rinomina etichetta",
-    "rename_label_from": "Rinomina etichetta da",
     "old_name_placeholder": "vecchio nome",
-    "to": "A",
     "new_name_placeholder": "nuovo nome",
     "name_title": "Sono consentiti caratteri alfanumerici, trattino basso e due punti."
   },
   "delete_note": {
-    "delete_note": "Elimina nota",
-    "delete_matched_notes": "Elimina le note corrispondenti",
-    "delete_matched_notes_description": "In questo modo verranno eliminate le note corrispondenti.",
-    "undelete_notes_instruction": "Dopo l'eliminazione, è possibile ripristinarli dalla finestra di dialogo Modifiche recenti.",
-    "erase_notes_instruction": "Per cancellare definitivamente le note, dopo l'eliminazione puoi andare su Opzioni -> Altro e cliccare sul pulsante \"Cancella note eliminate ora\"."
+    "delete_note": "Elimina nota"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Elimina le revisioni delle note",
-    "all_past_note_revisions": "Tutte le revisioni passate delle note corrispondenti verranno eliminate. La nota stessa verrà conservata integralmente. In altri termini, la cronologia della nota verrà rimossa."
+    "delete_note_revisions": "Elimina le revisioni delle note"
   },
   "move_note": {
     "move_note": "Sposta nota",
-    "to": "A",
-    "target_parent_note": "nota del genitore di destinazione",
-    "on_all_matched_notes": "Su tutte le note abbinate",
-    "move_note_new_parent": "sposta la nota al nuovo genitore se la nota ha un solo genitore (ad esempio, il vecchio ramo viene rimosso e viene creato un nuovo ramo nel nuovo genitore)",
-    "clone_note_new_parent": "clona la nota sul nuovo genitore se la nota ha più cloni/rami (non è chiaro quale ramo debba essere rimosso)",
-    "nothing_will_happen": "non accadrà nulla se la nota non può essere spostata sulla nota di destinazione (cioè ciò creerebbe un ciclo ad albero)"
+    "target_parent_note": "nota del genitore di destinazione"
   },
   "rename_note": {
-    "rename_note": "Rinomina nota",
-    "rename_note_title_to": "Rinomina il titolo della nota in",
-    "new_note_title": "nuovo titolo della nota",
-    "click_help_icon": "Fare clic sull'icona della guida a destra per vedere tutte le opzioni",
-    "evaluated_as_js_string": "Il valore specificato viene valutato come stringa JavaScript e può quindi essere arricchito con contenuto dinamico tramite la variabile <code>note</code> inserita (la nota viene rinominata). Esempi:",
-    "example_note": "<code>Nota</code> - tutte le note corrispondenti vengono rinominate in 'Nota'",
-    "example_new_title": "<code>NEW: ${note.title}</code> - i titoli delle note corrispondenti sono preceduti dal prefisso 'NEW:'",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - le note corrispondenti sono precedute dal mese e dalla data di creazione della nota",
-    "api_docs": "Per i dettagli, consultare la documentazione API per <a href='https://zadam.github.io/trilium/backend_api/Note.html'>nota</a> e le sue <a href='https://day.js.org/docs/en/display/format'>proprietà dateCreatedObj / utcDateCreatedObj</a>."
+    "rename_note": "Rinomina nota"
   },
   "add_relation": {
     "add_relation": "Aggiungi relazione",
     "relation_name": "nome della relazione",
     "allowed_characters": "Sono consentiti caratteri alfanumerici, trattino basso e due punti.",
-    "to": "A",
-    "target_note": "nota di destinazione",
-    "create_relation_on_all_matched_notes": "Su tutte le note corrispondenti crea la relazione data."
+    "target_note": "nota di destinazione"
   },
   "delete_relation": {
     "delete_relation": "Elimina relazione",
@@ -1451,20 +1418,14 @@
   },
   "rename_relation": {
     "rename_relation": "Rinomina relazione",
-    "rename_relation_from": "Rinomina la relazione da",
     "old_name": "vecchio nome",
-    "to": "A",
     "new_name": "nuovo nome",
     "allowed_characters": "Sono consentiti caratteri alfanumerici, trattino basso e due punti."
   },
   "update_relation_target": {
-    "update_relation": "Aggiorna relazione",
     "relation_name": "nome della relazione",
     "allowed_characters": "Sono consentiti caratteri alfanumerici, trattino basso e due punti.",
-    "to": "A",
     "target_note": "nota di destinazione",
-    "on_all_matched_notes": "Su tutte le note abbinate",
-    "change_target_note": "cambia la nota di destinazione della relazione esistente",
     "update_relation_target": "Aggiorna la destinazione della relazione"
   },
   "attachments_actions": {
@@ -3871,16 +3832,13 @@
   },
   "save_revision": {
     "save_revision": "Salva revisione",
-    "revision_name_placeholder": "Nome della revisione (facoltativo)",
-    "help": "Per ogni nota corrispondente verrà salvata una revisione con nome, che ne registrerà il contenuto e il titolo attuali."
+    "revision_name_placeholder": "Nome della revisione (facoltativo)"
   },
   "convert_note": {
     "convert_note": "Converti",
-    "convert_note_to": "Converti nota",
     "choose_conversion": "(scegli una conversione)",
     "conversion_htmlToMarkdown": "Note di testo → Note Markdown (con perdita di dati)",
     "conversion_markdownToHtml": "Note in Markdown → Note di testo",
-    "help_text": "La conversione viene applicata solo alle note che corrispondono al tipo di origine; le altre note rimangono invariate. Prima della conversione viene salvata una versione di ciascuna nota convertita.",
     "warning": "Durante la conversione delle note, è possibile che alcune impostazioni di formattazione vadano perse e che sia necessario apportare alcune correzioni in seguito. Verrà salvata in anticipo una versione precedente di ogni nota convertita, in modo da poterla ripristinare. Vuoi continuare?",
     "warning_risky": "Stai effettuando una conversione tra due formati che non hanno le stesse funzionalità; pertanto, è possibile che alcune impostazioni di formattazione vadano perse e che alcuni elementi non supportati vengano eliminati.<br><br>Accetti pienamente questo rischio e desideri procedere con la conversione?<br><br>Verrà salvata in anticipo una versione di ciascuna nota convertita, in modo da poter ripristinare il formato originale."
   },
@@ -4227,11 +4185,9 @@
     "compress_resize_help": "Riduce le dimensioni delle immagini che superano le dimensioni selezionate. Le immagini che già rientrano nelle dimensioni indicate rimangono invariate.",
     "compress_max_dimensions": "Riduci le dimensioni dell'immagine a",
     "compress_jpeg_handling": "Immagine JPEG",
-    "compress_jpeg_handling_help": "Mantenere l'immagine originale ne preserva la qualità attuale. Comprimerla, invece, la salva nuovamente a una qualità inferiore per ridurne le dimensioni, operazione che non può essere annullata.",
     "compress_jpeg_keep": "Lascialo così com'è",
     "compress_jpeg_compress": "Comprimere",
     "compress_png_handling": "Immagine PNG",
-    "compress_png_handling_help": "Mantenere l'immagine la preserva esattamente. Ottimizzare riduce il numero di colori, il che di solito è impercettibile in screenshot e diagrammi. La conversione in JPEG consente di risparmiare più spazio, ma non può essere applicata alle immagini con trasparenza, che vengono invece ottimizzate.",
     "compress_png_keep": "Lascialo così com'è",
     "compress_png_optimize": "Ottimizzare",
     "compress_png_jpeg": "Converti in JPEG",

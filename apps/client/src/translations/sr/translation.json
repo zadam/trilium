@@ -36,11 +36,11 @@
   },
   "bulk_actions": {
     "bulk_actions": "Grupne akcije",
-    "affected_notes": "Pogođene beleške",
     "include_descendants": "Obuhvati potomke izabranih beleški",
-    "available_actions": "Dostupne akcije",
     "chosen_actions": "Izabrane akcije",
-    "execute_bulk_actions": "Izvrši grupne akcije",
+    "execute_bulk_actions_one": "Izvrši grupne akcije",
+    "execute_bulk_actions_few": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Grupne akcije su uspešno izvršene.",
     "none_yet": "Nijedna za sad... dodajte akciju tako što ćete pritisnuti na neku od dostupnih akcija iznad.",
     "labels": "Oznake",
@@ -384,21 +384,13 @@
     "remove_this_search_action": "Ukloni ovu radnju pretrage"
   },
   "execute_script": {
-    "execute_script": "Izvrši skriptu",
-    "help_text": "Možete izvršiti jednostavne skripte na podudarnim beleškama.",
-    "example_1": "Na primer, da biste dodali string u naslov beleške, koristite ovu malu skriptu:",
-    "example_2": "Složeniji primer bi bio brisanje svih atributa podudarnih beleški:"
+    "execute_script": "Izvrši skriptu"
   },
   "add_label": {
     "add_label": "Dodaj oznaku",
     "label_name_placeholder": "ime oznake",
     "label_name_title": "Alfanumerički znakovi, donja crta i dvotačka su dozvoljeni znakovi.",
-    "to_value": "za vrednost",
-    "new_value_placeholder": "nova vrednost",
-    "help_text": "Na svim podudarnim beleškama:",
-    "help_text_item1": "dodajte datu oznaku ako beleška još uvek nema jednu",
-    "help_text_item2": "ili izmenite vrednost postojeće oznake",
-    "help_text_note": "Takođe možete pozvati ovu metodu bez vrednosti, u tom slučaju će oznaka biti dodeljena belešci bez vrednosti."
+    "new_value_placeholder": "nova vrednost"
   },
   "delete_label": {
     "delete_label": "Obriši oznaku",
@@ -407,9 +399,7 @@
   },
   "rename_label": {
     "rename_label": "Preimenuj oznaku",
-    "rename_label_from": "Preimenuj oznaku iz",
     "old_name_placeholder": "stari naziv",
-    "to": "U",
     "new_name_placeholder": "novi naziv",
     "name_title": "Alfanumerički znakovi, donja crtica i dvotačka su dozvoljeni znakovi."
   },
@@ -417,15 +407,9 @@
     "update_label_value": "Ažuriraj vrednost oznake",
     "label_name_placeholder": "ime oznake",
     "label_name_title": "Alfanumerički znakovi, donja crtica i dvotačka su dozvoljeni znakovi.",
-    "to_value": "u vrednost",
-    "new_value_placeholder": "nova vrednost",
-    "help_text": "Na svim podudarnim beleškama, promenite vrednost postojeće oznake.",
-    "help_text_note": "Takođe možete pozvati ovu metodu bez vrednosti, u tom slučaju će oznaka biti dodeljena belešci bez vrednosti."
+    "new_value_placeholder": "nova vrednost"
   },
   "delete_note": {
-    "delete_note": "Obriši belešku",
-    "delete_matched_notes": "Obriši podudarne beleške",
-    "delete_matched_notes_description": "Ovo će obrisati podudarne beleške.",
-    "undelete_notes_instruction": "Nakon brisanja, moguće ga je poništiti iz dijaloga Nedavne izmene."
+    "delete_note": "Obriši belešku"
   }
 }

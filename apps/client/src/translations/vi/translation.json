@@ -42,9 +42,7 @@
   "bulk_actions": {
     "other": "Khác",
     "bulk_actions": "Hành động hàng loạt",
-    "affected_notes": "Các ghi chú bị ảnh hưởng",
     "include_descendants": "Bao gồm các ghi chú con của ghi chú được chọn",
-    "available_actions": "Hành động khả dụng",
     "chosen_actions": "Hành động đã chọn",
     "execute_bulk_actions": "Thực thi hành động hàng loạt",
     "bulk_actions_executed": "Các hành động hàng loạt đã được thực thi thành công.",
@@ -567,32 +565,17 @@
     "meeting_recording": "Đánh dấu ghi chú được tạo bởi nút \"Transcribe meeting\" trong thanh khởi chạy, chứa bản ghi chú của cuộc họp."
   },
   "rename_note": {
-    "rename_note": "Đổi tên ghi chú",
-    "rename_note_title_to": "Đổi tiêu đề ghi chú thành",
-    "new_note_title": "Tiêu đề ghi chú mới",
-    "click_help_icon": "Nhấp vào biểu tượng trợ giúp ở bên phải để xem tất cả các tùy chọn",
-    "evaluated_as_js_string": "Giá trị được cung cấp được đánh giá dưới dạng chuỗi JavaScript và do đó có thể được làm phong phú với nội dung động thông qua biến <code>note</code> được chèn vào (ghi chú đang được đổi tên). Ví dụ:",
-    "example_note": "<code>Note</code> - tất cả các ghi chú khớp được đổi tên thành 'Note'",
-    "example_new_title": "<code>NEW: ${note.title}</code> - tiêu đề các ghi chú khớp được thêm tiền tố 'NEW: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - Các ghi chú khớp được thêm tiền tố là ngày-tháng tạo của ghi chú",
-    "api_docs": "Xem tài liệu API cho <a href='https://zadam.github.io/trilium/backend_api/Note.html'>note</a> và các thuộc tính <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj của nó</a> để biết chi tiết."
+    "rename_note": "Đổi tên ghi chú"
   },
   "add_label": {
     "add_label": "Thêm nhãn",
     "label_name_placeholder": "Tên nhãn",
-    "help_text_item2": "Hoặc thay đổi giá trị của nhãn có sẵn",
     "new_value_placeholder": "Giá trị mới",
-    "label_name_title": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép.",
-    "to_value": "Thành giá trị",
-    "help_text": "Trên tất cả các ghi chú khớp:",
-    "help_text_item1": "Tạo nhãn đã cho nếu ghi chú chưa có nhãn đó",
-    "help_text_note": "Bạn cũng có thể gọi phương thức này mà không cần giá trị, trong trường hợp đó nhãn sẽ được gán cho ghi chú mà không có giá trị."
+    "label_name_title": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép."
   },
   "rename_label": {
     "rename_label": "Đặt lại tên nhãn",
-    "rename_label_from": "Đổi tên nhãn từ",
     "old_name_placeholder": "Tên cũ",
-    "to": "Thành",
     "new_name_placeholder": "Tên mới",
     "name_title": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép."
   },
@@ -613,12 +596,10 @@
     "failed_rendering": "Lỗi hiển thị tùy chọn tìm kiếm: {{dto}} với lỗi: {{error}} {{stack}}"
   },
   "add_relation": {
-    "to": "Tới",
     "add_relation": "Thêm quan hệ",
     "relation_name": "Tên quan hệ",
     "allowed_characters": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép.",
-    "target_note": "Ghi chú đích",
-    "create_relation_on_all_matched_notes": "Trên tất cả các ghi chú khớp, tạo quan hệ đã cho."
+    "target_note": "Ghi chú đích"
   },
   "abstract_bulk_action": {
     "remove_this_search_action": "Xoá hành động tìm kiếm này"
@@ -951,10 +932,7 @@
     "system_description": "Trilium gán một ý nghĩa cho tên này: giá trị của nó có thể thay đổi cách ghi chú hoạt động, thay vì chỉ mô tả nó."
   },
   "execute_script": {
-    "execute_script": "Thực thi tập lệnh",
-    "help_text": "Bạn có thể thực thi các tập lệnh đơn giản trên các ghi chú khớp.",
-    "example_1": "Ví dụ, để nối thêm một chuỗi vào tiêu đề ghi chú, hãy sử dụng tập lệnh nhỏ này:",
-    "example_2": "Một ví dụ phức tạp hơn là xóa tất cả thuộc tính của ghi chú khớp:"
+    "execute_script": "Thực thi tập lệnh"
   },
   "delete_label": {
     "delete_label": "Xóa nhãn",
@@ -965,43 +943,27 @@
     "update_label_value": "Cập nhật giá trị nhãn",
     "label_name_placeholder": "Tên nhãn",
     "label_name_title": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép.",
-    "to_value": "Thành giá trị",
-    "new_value_placeholder": "Giá trị mới",
-    "help_text": "Trên tất cả các ghi chú khớp, thay đổi giá trị của nhãn hiện có.",
-    "help_text_note": "Bạn cũng có thể gọi phương thức này mà không cần giá trị, trong trường hợp đó nhãn sẽ được gán cho ghi chú mà không có giá trị."
+    "new_value_placeholder": "Giá trị mới"
   },
   "delete_note": {
-    "delete_note": "Xóa ghi chú",
-    "delete_matched_notes": "Xóa các ghi chú khớp",
-    "delete_matched_notes_description": "Thao tác này sẽ xóa các ghi chú khớp.",
-    "undelete_notes_instruction": "Sau khi xóa, bạn có thể khôi phục chúng từ hộp thoại Thay đổi gần đây.",
-    "erase_notes_instruction": "Để xóa vĩnh viễn các ghi chú, sau khi xóa bạn có thể vào Tùy chọn -> Khác và nhấp vào nút \"Xóa vĩnh viễn các ghi chú đã xóa bây giờ\"."
+    "delete_note": "Xóa ghi chú"
   },
   "save_revision": {
     "save_revision": "Lưu phiên bản lịch sử",
-    "revision_name_placeholder": "Tên phiên bản lịch sử (tùy chọn)",
-    "help": "Một phiên bản lịch sử có tên sẽ được lưu cho mỗi ghi chú khớp, ghi lại nội dung ghi chú và tiêu đề ghi chú hiện tại của nó."
+    "revision_name_placeholder": "Tên phiên bản lịch sử (tùy chọn)"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Xóa các phiên bản lịch sử ghi chú",
-    "all_past_note_revisions": "Tất cả các phiên bản lịch sử ghi chú trước đây của các ghi chú khớp sẽ bị xóa. Bản thân ghi chú sẽ được bảo toàn hoàn toàn. Nói cách khác, lịch sử ghi chú sẽ bị xóa bỏ."
+    "delete_note_revisions": "Xóa các phiên bản lịch sử ghi chú"
   },
   "move_note": {
     "move_note": "Di chuyển ghi chú",
-    "to": "Tới",
-    "target_parent_note": "Ghi chú cha đích",
-    "on_all_matched_notes": "Trên tất cả các ghi chú khớp",
-    "move_note_new_parent": "Di chuyển ghi chú sang ghi chú cha mới nếu ghi chú chỉ có một cha (tức là nhánh cũ bị xóa và nhánh mới vào ghi chú cha mới được tạo)",
-    "clone_note_new_parent": "Nhân bản ghi chú sang ghi chú cha mới nếu ghi chú có nhiều bản sao/nhánh (không rõ nhánh nào nên bị xóa)",
-    "nothing_will_happen": "Sẽ không có gì xảy ra nếu ghi chú không thể di chuyển đến ghi chú đích (tức là điều này sẽ tạo ra một chu trình cây)"
+    "target_parent_note": "Ghi chú cha đích"
   },
   "convert_note": {
     "convert_note": "Chuyển đổi",
-    "convert_note_to": "Chuyển đổi ghi chú",
     "choose_conversion": "(Chọn một chuyển đổi)",
     "conversion_htmlToMarkdown": "Ghi chú văn bản → Ghi chú Markdown (mất dữ liệu)",
     "conversion_markdownToHtml": "Ghi chú Markdown → Ghi chú văn bản",
-    "help_text": "Chuyển đổi chỉ được áp dụng cho các ghi chú khớp với loại nguồn; các ghi chú khác được giữ nguyên. Một phiên bản lịch sử của mỗi ghi chú được chuyển đổi sẽ được lưu trước đó.",
     "warning": "Một số định dạng có thể bị mất khi chuyển đổi các ghi chú và bạn có thể cần phải sửa lại một vài thứ sau đó. Một phiên bản lịch sử của mỗi ghi chú được chuyển đổi sẽ được lưu trước đó để bạn có thể khôi phục. Bạn có muốn tiếp tục không?",
     "warning_risky": "Bạn đang chuyển đổi giữa hai định dạng không có tính năng giống hệt nhau, vì vậy một số định dạng có thể bị mất và một số thành phần không được hỗ trợ có thể bị bỏ qua.<br><br>Bạn có hoàn toàn chấp nhận rủi ro này và muốn tiếp tục chuyển đổi không?<br><br>Một phiên bản lịch sử của mỗi ghi chú được chuyển đổi sẽ được lưu trước đó, vì vậy bạn có thể hoàn tác về định dạng ban đầu."
   },
@@ -1012,20 +974,14 @@
   },
   "rename_relation": {
     "rename_relation": "Đổi tên quan hệ",
-    "rename_relation_from": "Đổi tên quan hệ từ",
     "old_name": "Tên cũ",
-    "to": "Thành",
     "new_name": "Tên mới",
     "allowed_characters": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép."
   },
   "update_relation_target": {
-    "update_relation": "Cập nhật quan hệ",
     "relation_name": "Tên quan hệ",
     "allowed_characters": "Các ký tự chữ số, dấu gạch dưới và dấu hai chấm là các ký tự được cho phép.",
-    "to": "Tới",
     "target_note": "Ghi chú đích",
-    "on_all_matched_notes": "Trên tất cả các ghi chú khớp",
-    "change_target_note": "Thay đổi ghi chú đích của quan hệ hiện có",
     "update_relation_target": "Cập nhật đích quan hệ"
   },
   "attachments_actions": {
@@ -3243,11 +3199,9 @@
     "compress_resize_help": "Giảm kích thước các hình ảnh lớn hơn kích thước đã chọn. Các hình ảnh đã phù hợp sẽ không bị thay đổi.",
     "compress_max_dimensions": "Giảm kích thước hình ảnh xuống",
     "compress_jpeg_handling": "Hình ảnh JPEG",
-    "compress_jpeg_handling_help": "Giữ nguyên ảnh sẽ bảo toàn chất lượng hiện tại. Nén sẽ lưu lại ảnh ở chất lượng thấp hơn để giảm kích thước, thao tác này không thể hoàn tác.",
     "compress_jpeg_keep": "Giữ nguyên",
     "compress_jpeg_compress": "Nén",
     "compress_png_handling": "Ảnh PNG",
-    "compress_png_handling_help": "Giữ nguyên sẽ bảo toàn ảnh chính xác. Tối ưu hóa sẽ giảm số lượng màu, điều này thường không đáng chú ý trong ảnh chụp màn hình và sơ đồ. Chuyển đổi sang JPEG sẽ tiết kiệm dung lượng nhất, nhưng không thể áp dụng cho các ảnh có độ trong suốt, những ảnh này sẽ được tối ưu hóa thay thế.",
     "compress_png_keep": "Giữ nguyên",
     "compress_png_optimize": "Tối ưu hóa",
     "compress_png_jpeg": "Chuyển đổi sang JPEG",

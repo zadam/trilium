@@ -315,7 +315,9 @@
     "content-manager-title": "コンテンツマネージャー",
     "database-title": "データベース",
     "space-usage-title": "スペース使用状況",
-    "record-meeting-title": "ミーティングの文字起こし"
+    "record-meeting-title": "ミーティングの文字起こし",
+    "transcription-title": "文字起こし",
+    "resources-title": "ダウンロード済みリソース"
   },
   "notes": {
     "new-note": "新しいノート",
@@ -567,6 +569,23 @@
     "save-locked": "保護されたセッションがロックされている間は、文字起こしを保存できません。Trilium が開いている限りデータは保持され、保護されたセッションに入ると保存されます。",
     "save-failed": "文字起こしを保存できませんでした: {{- message}} データは保持され、次の文で再試行します。",
     "capture-lost": "音声を取得できなくなったため、文字起こしが停止しました。それまでに文字起こしされた内容は保存されます。",
-    "attachment-title": "文字起こし"
+    "attachment-title": "文字起こし",
+    "model-not-downloaded": "音声認識モデルがまだダウンロードされていません。ランチャーから録音を開始して、モデルをダウンロードしてください。",
+    "recognizer-int8-title": "Parakeet TDT 0.6B v3",
+    "recognizer-fp32-title": "Parakeet TDT 0.6B v3（高精度）",
+    "recognizer-description": "NVIDIA が提供する音声認識モデルでヨーロッパの 25 言語に対応しています。認識処理はすべてデバイス上で行われるため、録音データが外部に送信されることはありません。",
+    "vad-title": "Silero VAD",
+    "vad-description": "音声の中の発言を検出し、発言が含まれる部分のみを文字起こしするために使用されます。",
+    "speaker-title": "TitaNet small",
+    "speaker-description": "話者を識別し、文字起こし結果において誰が何を言ったかを判別するために使用されます。"
+  },
+  "resources": {
+    "unknown": "{{id}} という名前のリソースは存在しません。",
+    "http-error": "{{name}} のダウンロードに失敗しました。 HTTP ステータス {{status}}。",
+    "size-mismatch": "{{name}} のサイズが想定されたサイズと一致しません。",
+    "hash-mismatch": "{{name}} のチェックサムが想定と一致しなかったため、破棄されました。",
+    "delete-while-downloading": "{{- title}} は現在ダウンロード中です。削除する前にダウンロードをキャンセルしてください。",
+    "not-foreign": "{{- name}} はリソースフォルダ内の未使用エントリーではありません。",
+    "stalled": "{{name}} のダウンロードが停止しました: {{seconds}} 秒間データを受信できませんでした。接続状況を確認してから、再度お試しください。"
   }
 }

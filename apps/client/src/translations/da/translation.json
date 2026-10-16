@@ -83,11 +83,10 @@
   },
   "bulk_actions": {
     "bulk_actions": "Massehandlinger",
-    "affected_notes": "Berørte noter",
     "include_descendants": "Inkluder efterkommere af de valgte noter",
-    "available_actions": "Tilgængelige handlinger",
     "chosen_actions": "Valgte handlinger",
-    "execute_bulk_actions": "Udfør massehandlinger",
+    "execute_bulk_actions_one": "Udfør massehandlinger",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Massehandlingerne er blevet udført.",
     "none_yet": "Ingen endnu… tilføj en handling ved at klikke på en af de tilgængelige ovenfor.",
     "labels": "Etiketter",

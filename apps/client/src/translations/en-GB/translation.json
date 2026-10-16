@@ -145,11 +145,10 @@
   },
   "bulk_actions": {
     "bulk_actions": "Bulk actions",
-    "affected_notes": "Affected notes",
     "include_descendants": "Include descendants of the selected notes",
-    "available_actions": "Available actions",
     "chosen_actions": "Chosen actions",
-    "execute_bulk_actions": "Execute bulk actions",
+    "execute_bulk_actions_one": "Execute bulk actions",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Bulk actions have been executed successfully.",
     "none_yet": "None yet... add an action by clicking one of the available ones above.",
     "labels": "Labels",
