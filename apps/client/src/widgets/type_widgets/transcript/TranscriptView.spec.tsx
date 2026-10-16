@@ -15,7 +15,8 @@ import TranscriptView, {
     formatOffset, groupIntoTurns, levelToMeter, TranscriptRecordingLevels, type TranscriptTurn
 } from "./TranscriptView";
 
-const h = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn() }));
+const h = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn(), copyTextWithToast: vi.fn() }));
+vi.mock("../../../services/clipboard_ext", () => ({ copyTextWithToast: h.copyTextWithToast }));
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 // keyboard_actions asks the server for its shortcuts at import.
 vi.mock("../../../services/server", () => ({
@@ -625,5 +626,36 @@ describe("TranscriptView", () => {
         });
         expect(h.put).toHaveBeenCalledWith("options", { transcriptCleanupEnabled: "false" });
         expect(spans()).toEqual([ "Uh the the data is old.", " Uh.", " I know, I know." ]);
+    });
+
+    it("copies the transcript as shown, one named and timed turn after another", async () => {
+        options.set("transcriptCleanupEnabled", "true");
+        const content = transcript([
+            { source: "microphone", offsetMs: 5000, durationMs: 1000, text: "Uh hello." },
+            { source: "microphone", offsetMs: 6000, durationMs: 1000, text: "Can you hear me?" },
+            { source: "microphone", offsetMs: 30_000, text: "Um." },
+            { source: "microphone", offsetMs: 40_000, text: "Still there?" },
+            { source: "system", offsetMs: 70_000, speaker: 1, text: "Yes, I can." }
+        ], STARTED_AT, { "system:1": "Olivier" });
+        const attachment = { attachmentId: "transcript1", getBlob: async () => ({ content }) };
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const copy = () => container.querySelector<HTMLButtonElement>(
+            ".transcript-options .transcript-copy");
+        await vi.waitFor(() => expect(copy()).not.toBeNull());
+
+        act(() => copy()?.click());
+        expect(h.copyTextWithToast).toHaveBeenCalledExactlyOnceWith([
+            "transcript.speaker_me (14:30)",
+            "Hello. Can you hear me?",
+            "",
+            "Still there?",
+            "",
+            "Olivier (14:31)",
+            "Yes, I can."
+        ].join("\n"));
     });
 });

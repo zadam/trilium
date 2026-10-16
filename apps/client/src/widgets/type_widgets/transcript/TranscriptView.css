@@ -29,7 +29,9 @@
 
     .transcript-options {
         display: flex;
+        align-items: center;
         justify-content: flex-end;
+        gap: 0.5rem;
         max-width: var(--preferred-max-content-width, 900px);
         margin-bottom: 0.5rem;
         color: var(--muted-text-color);

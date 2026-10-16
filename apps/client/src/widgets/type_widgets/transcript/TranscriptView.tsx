@@ -8,11 +8,13 @@ import clsx from "clsx";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
+import { copyTextWithToast } from "../../../services/clipboard_ext";
 import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import { isIMEComposing } from "../../../services/shortcuts";
 import utils from "../../../services/utils";
 import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
+import ActionButton from "../../react/ActionButton";
 import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useStaticTooltip, useTriliumEvent, useTriliumOptionBool } from "../../react/hooks";
@@ -127,6 +129,14 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
         >
             {transcript.utterances.length > 0 && (
                 <div className="transcript-options">
+                    <ActionButton
+                        className="transcript-copy"
+                        icon="bx bx-copy"
+                        text={t("transcript.copy")}
+                        onClick={() => copyTextWithToast(formatTranscriptText(
+                            turns, transcript.startedAt, names,
+                            (utterance) => shownTexts.get(utterance) ?? utterance.text))}
+                    />
                     <FormToggle
                         switchOnName={t("transcript.cleanup")}
                         switchOffName={t("transcript.cleanup")}
@@ -340,8 +350,7 @@ async function renameSpeaker(attachment: FAttachment, key: string, name: string)
 function TurnTime({ startedAt, offsetMs }: { startedAt: string; offsetMs: number }) {
     const timeRef = useRef<HTMLTimeElement>(null);
     const offset = formatOffset(offsetMs);
-    const startedAtMs = Date.parse(startedAt);
-    const time = Number.isNaN(startedAtMs) ? null : new Date(startedAtMs + offsetMs);
+    const time = getTurnTime(startedAt, offsetMs);
     const tooltip = time ? t("transcript.offset", { offset }) : "";
     const tooltipConfig = useMemo(() => ({ title: tooltip }), [ tooltip ]);
     useStaticTooltip(timeRef, tooltipConfig);
@@ -419,6 +428,31 @@ export function levelToMeter(level: number) {
     const db = 20 * Math.log10(level);
     const fraction = (db - METER_FLOOR_DB) / (METER_CEILING_DB - METER_FLOOR_DB);
     return Math.min(1, Math.max(0, fraction));
+}
+
+/**
+ * The transcript as plain text: each turn a line with its speaker's name and clock time, then its
+ * paragraphs, each as `textOf` gives its utterances, with a blank line between paragraphs and
+ * turns.
+ */
+export function formatTranscriptText(
+    turns: TranscriptTurn[], startedAt: string, names: SpeakerNames,
+    textOf: (utterance: TranscriptUtterance) => string
+) {
+    return turns.map((turn) => {
+        const time = getTurnTime(startedAt, turn.offsetMs);
+        const clock = time ? utils.formatTime(time) : formatOffset(turn.offsetMs);
+        const heading = `${speakerName(turn.source, turn.speaker, names)} (${clock})`;
+        const paragraphs = turn.paragraphs
+            .map((paragraph) => paragraph.map(textOf).join(" "));
+        return `${heading}\n${paragraphs.join("\n\n")}`;
+    }).join("\n\n");
+}
+
+/** The clock time a turn began at, or `null` when the transcript's start is unreadable. */
+function getTurnTime(startedAt: string, offsetMs: number) {
+    const startedAtMs = Date.parse(startedAt);
+    return Number.isNaN(startedAtMs) ? null : new Date(startedAtMs + offsetMs);
 }
 
 export function formatOffset(milliseconds: number) {
