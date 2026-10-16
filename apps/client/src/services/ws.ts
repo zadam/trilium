@@ -9,7 +9,7 @@ import { t } from "./i18n.js";
 import options from "./options.js";
 import server from "./server.js";
 import toastService, { showUnhandledError } from "./toast.js";
-import utils, { isPreAuthScreen } from "./utils.js";
+import utils, { getErrorMessage, isPreAuthScreen } from "./utils.js";
 
 type MessageHandler = (message: WebSocketMessage) => void;
 let messageHandlers: MessageHandler[] = [];
@@ -174,11 +174,20 @@ async function executeFrontendUpdate(entityChanges: EntityChange[]) {
  */
 export async function reloadFroca() {
     await runInUpdateQueue(async () => {
-        await froca.reloadAll();
-        await appContext.triggerEvent("frocaReloaded", {});
+        try {
+            await froca.reloadAll();
+            await appContext.triggerEvent("frocaReloaded", {});
+        } catch (e: unknown) {
+            // A partly rebuilt froca is not safe to keep using.
+            utils.reloadFrontendApp(`rebuilding froca failed: ${getErrorMessage(e)}`);
+        }
     });
 }
 
+/**
+ * Runs `task` once the tasks queued before it finish. `task` must handle its own errors: a
+ * rejection would also reject every task waiting behind it, leaving their changes unapplied.
+ */
 async function runInUpdateQueue(task: () => Promise<void>) {
     // first wait for all the preceding consumers to finish
     while (consumeQueuePromise) {

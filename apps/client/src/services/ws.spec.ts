@@ -268,6 +268,28 @@ describe("frontend-update / executeFrontendUpdate", () => {
         await Promise.all([ heldUpdate, rebuildDuringUpdate ]);
         expect(reloadAll).toHaveBeenCalledTimes(2);
     });
+
+    it("falls back to a full reload when a rebuild fails, and still applies the changes queued behind it", async () => {
+        const ws = await loadWs();
+        const { default: froca } = await import("./froca.js");
+        let failRebuild = (_error: Error) => {};
+        vi.spyOn(froca, "reloadAll")
+            .mockImplementationOnce(() => new Promise<void>((_res, rej) => { failRebuild = rej; }));
+
+        const failingRebuild = ws.dispatchMessage({ type: "reload-froca", reason: "test" } as WebSocketMessage);
+        await new Promise((res) => setTimeout(res, 0));
+        const queuedUpdate = ws.dispatchMessage({
+            type: "frontend-update", data: { entityChanges: [{ id: 401, entityName: "notes", entityId: "f1" }] }
+        } as any);
+        failRebuild(new Error("tree request failed"));
+
+        await expect(queuedUpdate).resolves.toBeUndefined();
+        expect(frocaUpdater.processEntityChanges).toHaveBeenCalledWith([
+            expect.objectContaining({ id: 401 })
+        ]);
+        await failingRebuild;
+        expect(utilsCtrl.reloadFrontendApp).toHaveBeenCalledWith(expect.stringContaining("tree request failed"));
+    });
 });
 
 describe("waitForMaxKnownEntityChangeId", () => {
