@@ -65,7 +65,9 @@
     "anchor": "Ancre (optionnel)",
     "anchor_none": "Aucune (lien vers la note)",
     "edit_link": "Modifier le lien",
-    "button_edit_link": "Enregistrer le lien"
+    "button_edit_link": "Enregistrer le lien",
+    "fix_link": "Corriger le lien",
+    "button_fix_link": "Corriger le lien"
   },
   "branch_prefix": {
     "edit_branch_prefix": "Modifier le préfixe de branche",
@@ -112,7 +114,10 @@
     "ok": "OK",
     "are_you_sure_remove_note": "Voulez-vous vraiment supprimer la note « {{title}} » de la carte des relations ? ",
     "if_you_dont_check": "La note elle-même est conservée ; seule sa place ici est enlevée.",
-    "also_delete_note": "Supprimer également la note"
+    "also_delete_note": "Supprimer également la note",
+    "delete_note_keeps_note_one": "Cette note a {{count}} autre clone, cette note sera donc conservée.",
+    "delete_note_keeps_note_many": "Cette note a {{count}} autres clones, cette note sera donc conservée.",
+    "delete_note_keeps_note_other": "Cette note a {{count}} autres clones, cette note sera donc conservée."
   },
   "delete_notes": {
     "close": "Fermer",
@@ -151,7 +156,12 @@
     "format_opml_description": "format extérieur avec contenu HTML",
     "format_share_name": "HTML pour internet",
     "format_share_description": "statique pouvant être publié avec le thème des notes partagées",
-    "recommended": "Recommandé"
+    "recommended": "Recommandé",
+    "format": "Format",
+    "format_html_name": "HTML",
+    "result_subtree_html": "Une archive ZIP où les notes de texte sont enregistrées en HTML. Le code, les images et les autres fichiers conservent leur format d'origine.",
+    "result_single_html": "Un fichier HTML unique. Les images et pièces jointes y sont intégrées.",
+    "export_in_progress_with_total": "{{progressCount}} notes exportées sur {{totalCount}}"
   },
   "help": {
     "noteNavigation": "Navigation dans les notes",
@@ -2777,5 +2787,11 @@
     "description_long": "Zippez votre dossier de coffre Obsidian, puis sélectionnez le fichier .zip généré ici.",
     "choose_file": "Coffre Obsidian (.zip)",
     "import": "Import"
+  },
+  "resources_options": {
+    "space_used": "Espace utilisé",
+    "partially_downloaded": "{{downloaded}} de {{size}} téléchargé",
+    "delete": "Supprimer",
+    "no_resources": "Rien n'a encore été téléchargé."
   }
 }
