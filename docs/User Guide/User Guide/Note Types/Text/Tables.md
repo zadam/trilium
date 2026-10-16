@@ -8,7 +8,7 @@ To create a table, simply press the table button and select with the mouse the d
 Since v0.107.0, the same menu starts with an _Insert table…_ item, for a table larger than the grid or to type its size instead:
 
 1.  Click the <span class="tn-icon cke cke-table"></span>button and select _Insert table…_. A small form opens at the cursor.
-2.  Enter the number of _Rows_ (up to 1000) and _Columns_ (up to 100). The table can have at most 5000 cells in total, for example 1000 rows of 5 columns.
+2.  Enter the number of _Columns_ (up to 100) and _Rows_ (up to 1000). The table can have at most 5000 cells in total, for example 1000 rows of 5 columns.
 3.  Press _Insert_ or <kbd>Enter</kbd>.
 
 To close the form without inserting a table, press <kbd>Esc</kbd> or click outside it. From the keyboard, <kbd>Tab</kbd> moves between _Insert table…_ and the grid while the menu is open.
