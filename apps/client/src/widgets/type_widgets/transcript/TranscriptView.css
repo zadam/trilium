@@ -5,6 +5,10 @@
     padding: 0.5rem 1rem 1rem;
     user-select: text;
 
+    &.more-below {
+        mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent);
+    }
+
     .transcript-options {
         display: flex;
         justify-content: flex-end;

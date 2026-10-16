@@ -31,8 +31,8 @@ const PARAGRAPH_PAUSE_MS = 2000;
 /**
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
- * hears before their words are transcribed, and keeps a reader who is at the end there as new
- * turns arrive. With `transcriptCleanupEnabled`, shows each utterance through
+ * hears before their words are transcribed, keeps a reader who is at the end there as new
+ * turns arrive, and fades its bottom edge while more turns are below. With `transcriptCleanupEnabled`, shows each utterance through
  * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
@@ -41,6 +41,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     const recording = useTranscriptionState();
     const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
     const scrollerRef = useRef<HTMLDivElement>(null);
+    const [ hasMoreBelow, setHasMoreBelow ] = useState(false);
     /** The scroll height at the previous render, or `null` before the transcript first shows. */
     const scrollHeightRef = useRef<number | null>(null);
     /** How many utterances the first transcript read held; only later ones fade in. */
@@ -71,6 +72,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             scroller.scrollTop = scroller.scrollHeight;
         }
         scrollHeightRef.current = scroller.scrollHeight;
+        setHasMoreBelow(!wasAtEnd(scroller, scroller.scrollHeight));
     });
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const { attachmentId } = attachment;
@@ -110,7 +112,12 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
         </p>
     );
     return (
-        <div ref={scrollerRef} className="transcript">
+        <div
+            ref={scrollerRef}
+            className={clsx("transcript", { "more-below": hasMoreBelow })}
+            onScroll={(e) => setHasMoreBelow(
+                !wasAtEnd(e.currentTarget, e.currentTarget.scrollHeight))}
+        >
             {transcript.utterances.length > 0 && (
                 <div className="transcript-options">
                     <FormToggle
