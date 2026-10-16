@@ -85,7 +85,9 @@
     "bulk_actions": "Akcje masowe",
     "include_descendants": "Uwzględnij elementy podrzędne wybranych notatek",
     "chosen_actions": "Wybrane akcje",
-    "execute_bulk_actions": "Wykonaj akcje masowe",
+    "execute_bulk_actions_one": "Wykonaj akcje masowe",
+    "execute_bulk_actions_few": "",
+    "execute_bulk_actions_many": "",
     "bulk_actions_executed": "Akcje masowe zostały wykonane pomyślnie.",
     "none_yet": "Jeszcze nic... dodaj akcję, klikając jedną z dostępnych powyżej."
   },
