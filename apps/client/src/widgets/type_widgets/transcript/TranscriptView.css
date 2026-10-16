@@ -36,6 +36,12 @@
         margin-bottom: 0.5rem;
         color: var(--muted-text-color);
         font-size: 0.9em;
+
+        .transcript-cleanup.active {
+            --icon-button-color: var(--link-color);
+            --icon-button-hover-color: var(--link-color);
+            color: var(--link-color);
+        }
     }
 
     .transcript-turn {

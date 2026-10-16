@@ -4619,7 +4619,6 @@
     "speaking": "Speaking…",
     "offset": "{{offset}} into the transcription",
     "cleanup": "Hide filler words",
-    "cleanup_tooltip": "Hides “uh”, “um” and stuttered words. The transcript itself is not changed.",
     "no_audio": "No audio",
     "copy": "Copy transcript"
   },

@@ -16,7 +16,6 @@ import utils from "../../../services/utils";
 import { useTranscriptionState } from "../../launch_bar/RecordMeetingButton";
 import ActionButton from "../../react/ActionButton";
 import FormTextBox from "../../react/FormTextBox";
-import FormToggle from "../../react/FormToggle";
 import { useStaticTooltip, useTriliumEvent, useTriliumOptionBool } from "../../react/hooks";
 import LinkButton from "../../react/LinkButton";
 import NoItems from "../../react/NoItems";
@@ -137,13 +136,13 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
                             turns, transcript.startedAt, names,
                             (utterance) => shownTexts.get(utterance) ?? utterance.text))}
                     />
-                    <FormToggle
-                        switchOnName={t("transcript.cleanup")}
-                        switchOffName={t("transcript.cleanup")}
-                        switchOnTooltip={t("transcript.cleanup_tooltip")}
-                        switchOffTooltip={t("transcript.cleanup_tooltip")}
-                        currentValue={isCleanedUp}
-                        onChange={setCleanedUp}
+                    <ActionButton
+                        className="transcript-cleanup"
+                        icon="bx bx-eraser"
+                        text={t("transcript.cleanup")}
+                        active={isCleanedUp}
+                        aria-pressed={isCleanedUp}
+                        onClick={() => setCleanedUp(!isCleanedUp)}
                     />
                 </div>
             )}

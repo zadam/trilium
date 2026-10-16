@@ -36,8 +36,8 @@ The transcript is stored as an [attachment](Basic%20Concepts%20and%20Features/No
 *   What you say into your microphone is labeled _Me_.
 *   What the other participants say is labeled _Speaker 1_, _Speaker 2_ and so on, while _Identify speakers_ is on; otherwise it is labeled _Others_.
 *   To name a speaker, click their name, type the new name and press <kbd>Enter</kbd>. The name changes on every turn of that speaker. Press <kbd>Esc</kbd> to cancel, or clear the name to restore the default one.
-*   To show the transcript with or without hesitations such as "uh", "um" and stuttered words, use the _Hide filler words_ switch above it. This affects only what is shown; the stored transcript keeps every word.
-*   To copy the transcript as plain text, press the <span class="tn-icon bx bx-copy"></span> _Copy transcript_ button above it. Each turn is copied with the speaker's name and the time it started, as shown, so the copy leaves out filler words while _Hide filler words_ is on.
+*   To show the transcript with or without hesitations such as "uh", "um" and stuttered words, press the <span class="tn-icon bx bx-eraser"></span> _Hide filler words_ button above it, which shows as pressed while they are hidden. This affects only what is shown; the stored transcript keeps every word.
+*   To copy the transcript as plain text, press the <span class="tn-icon bx bx-copy"></span> _Copy transcript_ button above it. Each turn is copied with the speaker's name and the time it started, as shown, so the copy leaves out filler words while they are hidden.
 
 If the meeting note is [protected](Basic%20Concepts%20and%20Features/Notes/Protected%20Notes.md) and the protected session is locked during the meeting, the transcript cannot be saved. Trilium keeps it in memory and saves it once you enter the protected session again, as long as Trilium stays open.
 
