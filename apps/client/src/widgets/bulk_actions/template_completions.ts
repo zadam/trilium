@@ -113,7 +113,7 @@ export function templateCompletionAt(before: string, variables: TemplateVariable
 }
 
 function resolvePathType([ root, ...properties ]: string[], variables: TemplateVariableTypes): TemplateValueType | undefined {
-    let type: TemplateValueType | undefined = variables[root];
+    let type: TemplateValueType | undefined = Object.hasOwn(variables, root) ? variables[root] : undefined;
     for (const property of properties) {
         type = type && MEMBERS[type].find((m) => m.kind === "property" && m.name === property)?.type;
     }

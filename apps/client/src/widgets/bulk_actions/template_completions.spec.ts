@@ -39,6 +39,12 @@ describe("templateCompletionAt", () => {
         expect(titlesAt("${other.")).toBeNull();
     });
 
+    it("offers nothing after a name inherited from Object.prototype", () => {
+        expect(titlesAt("${constructor.")).toBeNull();
+        expect(titlesAt("${constructor.title.")).toBeNull();
+        expect(titlesAt("${__proto__.")).toBeNull();
+    });
+
     it("offers only what the template engine allows", () => {
         for (const member of NOTE_TEMPLATE_MEMBERS) {
             const allowed = member.kind === "method" ? TEMPLATE_ALLOWED_METHODS : TEMPLATE_ALLOWED_PROPERTIES;
