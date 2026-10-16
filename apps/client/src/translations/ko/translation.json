@@ -4489,8 +4489,7 @@
     "unreadable": "이 전사 내용을 읽을 수 없습니다.",
     "speaking": "말하는 중…",
     "offset": "전사 시작 후 {{offset}} 경과",
-    "cleanup": "군더더기 말 숨기기",
-    "cleanup_tooltip": "‘어’, ‘음’ 같은 군더더기 말과 더듬은 단어를 숨깁니다. 전사 내용 자체는 변경되지 않습니다."
+    "cleanup": "군더더기 말 숨기기"
   },
   "resource_download": {
     "title": "다운로드 필요",

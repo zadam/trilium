@@ -4489,8 +4489,7 @@
     "unreadable": "无法读取该转录文本。",
     "speaking": "正在说话…",
     "offset": "转录开始后 {{offset}}",
-    "cleanup": "隐藏填充词",
-    "cleanup_tooltip": "隐藏「呃」「嗯」等填充词和结巴的词。转录文本本身不会改变。"
+    "cleanup": "隐藏填充词"
   },
   "resource_download": {
     "title": "需要下载",

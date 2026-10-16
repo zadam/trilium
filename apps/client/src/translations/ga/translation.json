@@ -4828,8 +4828,7 @@
     "unreadable": "Ní féidir an tras-scríbhinn seo a léamh.",
     "speaking": "Ag labhairt…",
     "offset": "{{offset}} isteach sa tras-scríobh",
-    "cleanup": "Folaigh focail líonta",
-    "cleanup_tooltip": "Folaíonn sé “uh”, “um” agus focail a dúradh le stammeráil. Ní dhéantar aon athrú ar an tras-scríbhinn féin."
+    "cleanup": "Folaigh focail líonta"
   },
   "note_chips": {
     "more": "+{{count}} eile"
