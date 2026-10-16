@@ -31,7 +31,9 @@
     "bulk_actions": "Accions en bloc",
     "include_descendants": "Inclou els descendents de les notes seleccionades",
     "chosen_actions": "Accions escollides",
-    "execute_bulk_actions": "Executa accions en bloc",
+    "execute_bulk_actions_one": "Executa accions en bloc",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Les accions en bloc s'han executat amb èxit.",
     "none_yet": "Cap encara.... afegeix una acció clicant una de les disponibles a dalt."
   },
