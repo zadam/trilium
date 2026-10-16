@@ -91,7 +91,7 @@ The <span class="tn-icon bx bx-wrench"></span>_Advanced_ submenu groups the acti
 <span class="tn-icon bx bx-trash"></span>_Delete note_ opens the deletion dialog for the current note and its subtree. The dialog lists the notes that will be deleted and the relations that will be broken, and offers to:
 
 *   Also delete the other clones of the note, if it is cloned elsewhere. Otherwise, only the current placement is removed and the note stays in its other locations. See <a class="reference-link" href="../Notes/Cloning%20Notes.md">Cloning Notes</a>.
-*   _Erase permanently_ instead of the usual soft deletion. This cannot be undone and reloads the application.
+*   _Erase permanently_ instead of the usual soft deletion. This cannot be undone.
 
 Notes deleted without erasing can be brought back, see <a class="reference-link" href="../Notes/Restoring%20Deleted%20Notes.md">Restoring Deleted Notes</a>.
 

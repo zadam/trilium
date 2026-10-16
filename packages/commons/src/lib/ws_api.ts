@@ -169,7 +169,7 @@ export type WebSocketMessage = AllTaskDefinitions | {
     originEntityName: string;
     originEntityId?: string | null;
 } | {
-    type: "reload-frontend";
+    type: "reload-frontend" | "reload-froca";
     reason: string;
 } | {
     type: "sync-push-in-progress" | "sync-finished" | "sync-failed";
