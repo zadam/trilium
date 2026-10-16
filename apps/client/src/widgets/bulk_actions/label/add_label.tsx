@@ -1,8 +1,9 @@
 import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n";
-import FormTextBox from "../../react/FormTextBox";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action";
-import BulkAction, { BulkActionArrow, BulkActionAttributeName, useSaveAction } from "../BulkAction";
+import BulkAction, {
+    BulkActionArrow, BulkActionAttributeName, BulkActionLabelValue, useSaveAction
+} from "../BulkAction";
 
 function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
     const [ labelName, setLabelName ] = useState<string>(actionDef.labelName ?? "");
@@ -20,7 +21,8 @@ function AddLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: Ab
                 currentValue={labelName} onChange={setLabelName}
             />
             <BulkActionArrow />
-            <FormTextBox
+            <BulkActionLabelValue
+                name={labelName}
                 placeholder={t("add_label.new_value_placeholder")}
                 currentValue={labelValue} onChange={setLabelValue}
             />

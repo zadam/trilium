@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { t } from "../../services/i18n";
 import { AttributeNameSuggestion, fetchAttributeNames } from "../attribute_widgets/attribute_detail";
+import { useLabelValueSuggestions } from "../attribute_widgets/label_value_input";
 import FormAutocomplete from "../react/FormAutocomplete";
 import { useSpacedUpdate } from "../react/hooks";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
@@ -85,6 +86,26 @@ export function BulkActionAttributeName({ type, currentValue, onChange, placehol
             onChange={onChange}
             source={suggestNames}
             renderItem={renderSuggestion}
+            openOnFocus
+        />
+    );
+}
+
+/** A row's label value field, completing against the values the label `name` already has. */
+export function BulkActionLabelValue({ name, currentValue, onChange, placeholder }: {
+    name: string;
+    currentValue: string;
+    onChange(newValue: string): void;
+    placeholder: string;
+}) {
+    const suggestValues = useLabelValueSuggestions(name);
+
+    return (
+        <FormAutocomplete
+            placeholder={placeholder}
+            currentValue={currentValue}
+            onChange={onChange}
+            source={suggestValues}
             openOnFocus
         />
     );

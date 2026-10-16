@@ -81,6 +81,19 @@ describe("BulkActionsDialog", () => {
         return [ ...container.querySelectorAll<HTMLInputElement>(".bulk-existing-action-list input.bulk-action-name") ];
     }
 
+    /** Types `value` into `input`, lets the debounced lookup run and returns the suggestion rows. */
+    async function typeAndSuggest(input: HTMLInputElement | undefined, value: string) {
+        if (!input) throw new Error("No such field.");
+        await act(async () => {
+            input.value = value;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        });
+        return [ ...document.querySelectorAll<HTMLElement>(".form-autocomplete-dropdown li") ];
+    }
+
     it("shows the first selected notes as chips and the rest on demand", async () => {
         const noteIds = [ "n1", "n2", "n3", "n4", "n5", "n6", "n7" ];
         await open(noteIds);
@@ -292,20 +305,26 @@ describe("BulkActionsDialog", () => {
         buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRelation" }) });
         await open([ "n1" ]);
 
-        const input = labelNameInputs()[0];
-        expect(input).toBeDefined();
-        await act(async () => {
-            input.value = "au";
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-        });
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 200));
-        });
-        const suggestions = [ ...document.querySelectorAll<HTMLElement>(".form-autocomplete-dropdown li") ];
+        const suggestions = await typeAndSuggest(labelNameInputs()[0], "au");
         expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "author" ]);
 
         await act(async () => suggestions[0].click());
         expect(labelNameInputs()[0].value).toBe("author");
+    });
+
+    it("completes a label value against the values the label already has", async () => {
+        server.get.mockImplementation(async (url) =>
+            (url === "attribute-values/status" ? [ "done", "doing", "todo" ] : []));
+        buildNote({
+            id: "_bulkAction", title: "Bulk action",
+            "#action": JSON.stringify({ name: "updateLabelValue", labelName: "status" })
+        });
+        await open([ "n1" ]);
+
+        const valueInput = container.querySelector<HTMLInputElement>(
+            ".bulk-existing-action-list .bulk-action-fields input:not(.bulk-action-name)");
+        const suggestions = await typeAndSuggest(valueInput ?? undefined, "doi");
+        expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "doing" ]);
     });
 
     it("saves an action only when its fields change", async () => {
