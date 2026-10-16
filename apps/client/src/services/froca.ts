@@ -10,6 +10,7 @@ import FBranch, { type FBranchRow } from "../entities/fbranch.js";
 import FNote, { type FNoteRow } from "../entities/fnote.js";
 import type { Bundle } from "./bundle.js";
 import type { Froca, FrocaSource, NoteMapFilters, SavedAttachment, SubtreeResponse } from "./froca-interface.js";
+import noteAttributeCache from "./note_attribute_cache.js";
 import server from "./server.js";
 import { isPreAuthScreen, reuseAcrossHotReloads } from "./utils.js";
 
@@ -73,6 +74,7 @@ class FrocaImpl implements Froca {
 
         await this.loadInitialTree();
         await this.reloadNotes(allNoteIds);
+        noteAttributeCache.invalidate();
     }
 
     #clear() {
