@@ -123,7 +123,7 @@ If the child notes of the collection also have their own child notes, then they 
 
 Next to the title of each element there will be a button to expand or collapse. By default, all items are expanded.
 
-Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely, by setting the `#maxNestingDepth` [label](../Advanced%20Usage/Attributes/Labels.md) of the collection:
+Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely. To do so, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Table properties_ and set _Maximum nesting depth_ (under the _Included notes_ section), or set the `#maxNestingDepth` [label](../Advanced%20Usage/Attributes/Labels.md) of the collection:
 
 *   `0` disables nesting, showing only the children of the collection.
 *   `1` also shows their children, `2` the level below that, and so on.

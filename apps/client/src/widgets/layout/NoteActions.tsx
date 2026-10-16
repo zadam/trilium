@@ -85,6 +85,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const isSearchOrBook = ["search", "book"].includes(noteType);
     const isBoard = noteType === "book" && viewType === "board";
     const isGeoMap = noteType === "book" && viewType === "geoMap";
+    const isTable = noteType === "book" && viewType === "table";
     // A calendar root makes day notes rather than events, so it has no templates to configure.
     const isEventCalendar = noteType === "book" && viewType === "calendar"
         && !note.hasLabel("calendarRoot") && !note.hasLabel("workspaceCalendarRoot");
@@ -178,9 +179,10 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                 {note.type === "render" && <CommandItem command="renderActiveNote" icon="bx bx-extension" text={t("note_actions.re_render_note")}
                 />}
 
-                {(isBoard || isEventCalendar || isGeoMap) && <CommandItem icon="bx bx-cog"
+                {(isBoard || isEventCalendar || isGeoMap || isTable) && <CommandItem icon="bx bx-cog"
                     text={isBoard ? t("board_view.properties")
-                        : isGeoMap ? t("geo-map.properties") : t("calendar_view.properties")}
+                        : isGeoMap ? t("geo-map.properties")
+                        : isTable ? t("table_view.properties") : t("calendar_view.properties")}
                     command={() => parentComponent?.triggerEvent("showCollectionProperties", { ntxId: noteContext?.ntxId })} />}
 
                 <FormDropdownSubmenu icon="bx bx-wrench" title={t("note_actions.advanced")}>

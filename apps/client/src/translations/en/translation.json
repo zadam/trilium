@@ -3525,7 +3525,9 @@
     "delete_column_confirmation": "Are you sure you want to delete this column? The corresponding attribute will be removed from all notes.",
     "delete-column": "Delete column...",
     "new-column-label": "Label...",
-    "new-column-relation": "Relation..."
+    "new-column-relation": "Relation...",
+    "properties": "Table properties...",
+    "properties-title": "Table properties"
   },
   "book_properties_config": {
     "board-inbox-column": "Show inbox column",

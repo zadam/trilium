@@ -120,6 +120,31 @@ describe("NoteContextMenu", () => {
         }
     });
 
+    it("offers the properties dialog of the collections that have one", async () => {
+        const hasPropertiesItem = async (viewType: string) => {
+            const note = buildNote({ title: viewType, type: "book", "#viewType": viewType });
+            const noteContext = new NoteContext("ntx-collection");
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            await vi.waitFor(() => expect(document.querySelector(".tn-popup li.dropdown-item")).toBeTruthy());
+            const item = document.querySelector(".tn-popup li.dropdown-item:has(.bx-cog)");
+            render(null, host);
+            return !!item;
+        };
+
+        expect(await hasPropertiesItem("table")).toBe(true);
+        expect(await hasPropertiesItem("geoMap")).toBe(true);
+        expect(await hasPropertiesItem("list")).toBe(false);
+    });
+
     it("offers to print a render note only while it has a render target", async () => {
         const isPrintEnabled = async (note: FNote) => {
             const noteContext = new NoteContext("ntx-render");
