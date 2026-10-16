@@ -311,9 +311,11 @@ function MindElixir({ children, containerRef: externalContainerRef, containerPro
         };
 
         dressNodes();
-        mind.bus.addListener("linkDiv", dressNodes);
+        const { bus } = mind;
+        bus.addListener("linkDiv", dressNodes);
 
-        return () => mind.bus.removeListener("linkDiv", dressNodes);
+        // The instance is destroyed by the effect above, whose cleanup runs first and clears `bus`.
+        return () => bus.removeListener("linkDiv", dressNodes);
     }, [ instanceVersion ]);
 
     // Selection listener. The events only carry the nodes that were added to or removed from the
@@ -325,16 +327,17 @@ function MindElixir({ children, containerRef: externalContainerRef, containerPro
         const reportSelection = () => onSelectionChange(mind.currentNodes.map(({ nodeObj }) => nodeObj));
 
         reportSelection();
-        mind.bus.addListener("selectNodes", reportSelection);
-        mind.bus.addListener("unselectNodes", reportSelection);
+        const { bus } = mind;
+        bus.addListener("selectNodes", reportSelection);
+        bus.addListener("unselectNodes", reportSelection);
         // Operations edit the node objects in place, leaving the selection pointing at the same
         // ones. Report it again so that what is shown of a selected node follows its edits.
-        mind.bus.addListener("operation", reportSelection);
+        bus.addListener("operation", reportSelection);
 
         return () => {
-            mind.bus.removeListener("selectNodes", reportSelection);
-            mind.bus.removeListener("unselectNodes", reportSelection);
-            mind.bus.removeListener("operation", reportSelection);
+            bus.removeListener("selectNodes", reportSelection);
+            bus.removeListener("unselectNodes", reportSelection);
+            bus.removeListener("operation", reportSelection);
         };
     }, [ onSelectionChange, instanceVersion ]);
 
