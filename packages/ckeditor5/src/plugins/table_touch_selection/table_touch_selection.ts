@@ -15,6 +15,7 @@ import type {
     ViewDocumentTouchStartEvent
 } from "ckeditor5";
 
+import { getStuckHeaderBottom } from "../table_sticky_header_read_only.js";
 import {
     type ClientBox,
     findScroller,
@@ -225,15 +226,17 @@ export default class TableTouchSelection extends Plugin {
      * of the cells is visible.
      */
     private layOut({ cells, domTable, domRoot }: SelectionTarget): SelectionLayout | null {
-        const cellBoxes: ClientBox[] = [];
+        const domCells: HTMLElement[] = [];
         for (const cell of cells) {
             const domCell = this.getDomElement(cell);
             /* v8 ignore next 3 -- defensive: a cell in the model is rendered in its table */
             if (!domCell) {
                 return null;
             }
-            cellBoxes.push(domCell.getBoundingClientRect());
+            domCells.push(domCell);
         }
+
+        const cellBoxes: ClientBox[] = domCells.map((domCell) => domCell.getBoundingClientRect());
 
         const range = cellBoxes.reduce<ClientBox>((union, box) => ({
             left: Math.min(union.left, box.left),
@@ -241,7 +244,7 @@ export default class TableTouchSelection extends Plugin {
             right: Math.max(union.right, box.right),
             bottom: Math.max(union.bottom, box.bottom)
         }), cellBoxes[0]);
-        const visible = this.getVisibleArea(domTable, domRoot);
+        const visible = this.getVisibleArea(domTable, domRoot, domCells);
         if (isEmptyBox(intersectBoxes(range, visible))) {
             return null;
         }
@@ -251,14 +254,20 @@ export default class TableTouchSelection extends Plugin {
     }
 
     /**
-     * The part of the viewport where the table can be seen: inside the element that clips it
-     * horizontally, the scroll container of the editable and the viewport offset of the editor.
+     * The part of the viewport where `domCells` of the table can be seen: inside the element that
+     * clips the table horizontally, the scroll container of the editable and the viewport offset
+     * of the editor, and below the stuck header rows unless `domCells` includes one of them.
      */
-    private getVisibleArea(domTable: HTMLElement, domRoot: HTMLElement): ClientBox {
+    private getVisibleArea(
+        domTable: HTMLElement,
+        domRoot: HTMLElement,
+        domCells: readonly HTMLElement[]
+    ): ClientBox {
         const offset = this.editor.ui.viewportOffset;
+        const headerBottom = domCells.some(isHeaderCell) ? null : getStuckHeaderBottom(domTable);
         const viewport = {
             left: offset.left ?? 0,
-            top: offset.top ?? 0,
+            top: Math.max(offset.top ?? 0, headerBottom ?? -Infinity),
             right: document.documentElement.clientWidth - (offset.right ?? 0),
             bottom: Math.min(getViewportBottom(), window.innerHeight - (offset.bottom ?? 0))
         };
@@ -464,6 +473,11 @@ function findCorner({ range, visible }: SelectionLayout, x: number, y: number): 
         }
     }
     return closest;
+}
+
+/** Whether `domCell` is in the header rows of its table. */
+function isHeaderCell(domCell: HTMLElement) {
+    return domCell.parentElement?.parentElement?.localName === "thead";
 }
 
 /** Whether a scroll of `scrolled`, an element or the document, moves `element`. */

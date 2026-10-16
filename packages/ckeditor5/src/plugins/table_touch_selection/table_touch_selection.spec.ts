@@ -1,3 +1,5 @@
+import "../../theme/table_sticky_header.css";
+
 import {
     _setModelData as setModelData,
     ClassicEditor,
@@ -15,6 +17,7 @@ import { cdp } from "vitest/browser";
 import { createTestEditor } from "../../../test/editor-kit.js";
 import { modelTable, scrollFigure } from "../../../test/table-kit.js";
 import TriliumTableScroll from "../table_scroll.js";
+import TableStickyHeader from "../table_sticky_header.js";
 import TableTouchSelection from "./table_touch_selection.js";
 
 const PLUGINS = [
@@ -23,6 +26,7 @@ const PLUGINS = [
     Table,
     TableColumnResize,
     TriliumTableScroll,
+    TableStickyHeader,
     TableTouchSelection
 ];
 const TOUCH_ID = 1;
@@ -217,6 +221,41 @@ describe("TableTouchSelection", () => {
                 ui.update();
                 await expect.poll(() => shownHandles(editor)).toEqual([]);
                 expect(overlay(editor).isVisible).toBe(true);
+            });
+
+        it("hides the cells under the stuck header rows, unless the selection includes them",
+            async () => {
+                const scroller = wrapInScroller(editor, 200);
+                // The client unsets the `overflow` of the editable, so the header rows stick to
+                // `scroller` instead of the editable.
+                editor.editing.view.change((writer) => {
+                    const root = editor.editing.view.document.getRoot();
+                    if (root) {
+                        writer.setStyle("overflow", "visible", root);
+                    }
+                });
+                const rows = Array.from({ length: 12 }, (_, row) => [`${row}`, "x"]);
+                rows[3][0] = "3[]";
+                await showHandles(editor, modelTable(rows, 'headingRows="1"'));
+                await frames();
+                const thead = domCell(editor, cell(editor, 0, 0)).closest("thead");
+                if (!thead) {
+                    throw new Error("The table has no header rows.");
+                }
+
+                const scrollerTop = scroller.getBoundingClientRect().top;
+                // Leaves the top 10px of the cell with the caret under the stuck header rows.
+                const headerBottom = scrollerTop + thead.getBoundingClientRect().height;
+                await scrollBy(scroller, cellRect(editor, 3, 0).top - headerBottom + 10);
+                await expect.poll(() => overlay(editor).isVisible).toBe(true);
+                expectNear(thead.getBoundingClientRect().top, scrollerTop);
+                expect(shownHandles(editor)).toEqual([BOTTOM_LEFT, BOTTOM_RIGHT]);
+                expectNear(clipRectOf(editor).top, thead.getBoundingClientRect().bottom);
+
+                selectCells(editor, [0, 0], [0, 1]);
+                await expect.poll(() => shownHandles(editor))
+                    .toEqual([TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT]);
+                expectAround(editor, [0, 0], [0, 1]);
             });
 
         it("follows the cells when the table moves and into another table", async () => {
@@ -567,6 +606,11 @@ function overlayElement(editor: Editor) {
 function outlineRectOf(editor: Editor) {
     const outline = overlay(editor).element?.querySelector(".ck-table-touch-selection__outline");
     return outline?.getBoundingClientRect() ?? new DOMRect();
+}
+
+function clipRectOf(editor: Editor) {
+    const clip = overlay(editor).element?.querySelector(".ck-table-touch-selection__clip");
+    return clip?.getBoundingClientRect() ?? new DOMRect();
 }
 
 /** The indexes in `CORNERS` of the handles that are shown. */

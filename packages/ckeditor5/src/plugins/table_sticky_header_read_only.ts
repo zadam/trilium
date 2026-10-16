@@ -93,6 +93,15 @@ export class StickyTableHeaders {
 
 }
 
+/**
+ * The bottom of the header rows of `table` in the viewport while they stick, or `null` while they
+ * rest at the top of the table.
+ */
+export function getStuckHeaderBottom(table: Element) {
+    const thead = table.querySelector<HTMLElement>(":scope > thead");
+    return thead && getShift(thead) > 0 ? thead.getBoundingClientRect().bottom : null;
+}
+
 /** Sets the start and the travel of the header rows, measured without the shift of sticking. */
 function measure(figure: Element) {
     const table = figure.querySelector(":scope > table");
