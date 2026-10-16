@@ -3332,8 +3332,7 @@
     "processing_failed": "Fallo al iniciar procesamiento de OCR",
     "text_filtered_low_confidence": "Texto OCR detectado con {{confidence}}% de confianza, pero fue descartado porque su umbral mínimo es {{threshold}}%.",
     "open_media_settings": "Abrir ajustes",
-    "view_extracted_text": "Ver texto extraído (OCR)",
-    "image_based_pdf_not_supported": "Este PDF parece estar basado en una imagen (escaneado). Todavía no se admite la extracción de texto de PDF basados en imágenes."
+    "view_extracted_text": "Ver texto extraído (OCR)"
   },
   "launcher_button_context_menu": {
     "remove_from_launch_bar": "Quitar de la barra de inicio",

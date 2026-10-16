@@ -3513,8 +3513,7 @@
     "view_extracted_text": "Féach ar théacs eastósctha (OCR)",
     "processing_complete": "Próiseáil OCR críochnaithe.",
     "text_filtered_low_confidence": "Bhraith OCR téacs le muinín {{confidence}}%, ach caitheadh leis é mar is é {{threshold}}% an tairseach íosta atá agat.",
-    "open_media_settings": "Oscail Socruithe",
-    "image_based_pdf_not_supported": "Is cosúil go bhfuil an PDF seo bunaithe ar íomhánna (scanadh). Ní thacaítear le téacs a bhaint as PDFanna bunaithe ar íomhánna go fóill."
+    "open_media_settings": "Oscail Socruithe"
   },
   "database": {
     "title": "Bunachar Sonraí",

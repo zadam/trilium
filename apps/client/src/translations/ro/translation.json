@@ -2854,7 +2854,6 @@
     "processing_complete": "Procesarea OCR a fost finalizată.",
     "processing_failed": "Pornirea procesării OCR a eșuat",
     "text_filtered_low_confidence": "OCR a detectat text cu o încredere de {{confidence}}%, dar a fost eliminat deoarece pragul dvs. minim este {{threshold}}%.",
-    "image_based_pdf_not_supported": "Acest PDF pare a fi bazat pe imagini (scanat). Extragerea textului din fișierele PDF bazate pe imagini nu este încă acceptată.",
     "open_media_settings": "Deschide setările",
     "view_extracted_text": "Vezi textul extras (OCR)"
   },

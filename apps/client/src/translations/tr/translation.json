@@ -3323,7 +3323,6 @@
     "processing_complete": "OCR işleme tamamlandı.",
     "processing_failed": "OCR işleme başlatılamadı",
     "text_filtered_low_confidence": "OCR, %{{confidence}} güvenle metin algıladı, ancak en düşük eşiğiniz %{{threshold}} olduğu için bu göz ardı edildi.",
-    "image_based_pdf_not_supported": "Bu PDF resim tabanlı (taranmış) görünüyor. Resim tabanlı PDF'lerden metin çıkarma henüz desteklenmiyor.",
     "open_media_settings": "Ayarları Aç",
     "view_extracted_text": "Çıkarılan metni görüntüle (OCR)"
   },

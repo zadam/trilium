@@ -2456,7 +2456,6 @@
     "processing_complete": "OCR प्रोसेसिंग पूरी हुई।",
     "processing_failed": "OCR प्रोसेसिंग शुरू करने में विफल",
     "text_filtered_low_confidence": "OCR ने {{confidence}}% कॉन्फिडेंस के साथ टेक्स्ट का पता लगाया, लेकिन इसे छोड़ दिया गया क्योंकि आपका न्यूनतम थ्रेशोल्ड {{threshold}}% है।",
-    "image_based_pdf_not_supported": "यह PDF इमेज-आधारित (स्कैन की गई) प्रतीत होती है। इमेज-आधारित पीडीएफ से टेक्स्ट निकालना अभी समर्थित नहीं है।",
     "open_media_settings": "सेटिंग्स खोलें",
     "view_extracted_text": "निकाला गया टेक्स्ट देखें (OCR)"
   },

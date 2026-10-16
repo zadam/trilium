@@ -2296,8 +2296,7 @@
     "failed_to_load": "載入 OCR 文字失敗",
     "process_now": "處理 OCR",
     "processing": "正在處理…",
-    "processing_started": "OCR 處理已開始。請稍候片刻並重新整理頁面。",
-    "image_based_pdf_not_supported": "這份 PDF 檔案似乎是圖像檔（掃描檔）。目前尚不支援從圖像型 PDF 檔案中提取文字。"
+    "processing_started": "OCR 處理已開始。請稍候片刻並重新整理頁面。"
   },
   "mind-map": {
     "addChild": "新增子節點",

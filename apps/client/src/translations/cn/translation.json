@@ -3128,8 +3128,7 @@
     "view_extracted_text": "查看提取的文本（OCR）",
     "processing_complete": "OCR识别处理完成。",
     "text_filtered_low_confidence": "OCR 检测到文本，置信度为 {{confidence}}% ，但由于你的最小阈值为 {{threshold}}% ，因此该文本已被丢弃。",
-    "open_media_settings": "打开设置",
-    "image_based_pdf_not_supported": "此PDF看起来是由图片组成的（扫描件）。目前还不支持从图片型PDF中提取文字。"
+    "open_media_settings": "打开设置"
   },
   "mind-map": {
     "addChild": "添加子节点",

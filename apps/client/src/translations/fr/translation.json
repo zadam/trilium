@@ -2540,7 +2540,6 @@
     "processing_complete": "Traitement OCR terminé.",
     "processing_failed": "Échec du démarrage du traitement OCR",
     "text_filtered_low_confidence": "Texte détecté par l’OCR avec un niveau de confiance de {{confidence}} %, mais ignoré car votre seuil minimum est de {{threshold}} %.",
-    "image_based_pdf_not_supported": "Ce PDF semble être basé sur des images (document scanné). L’extraction de texte depuis les PDF image n’est pas encore prise en charge.",
     "open_media_settings": "Ouvrir les paramètres",
     "view_extracted_text": "Afficher le texte extrait (OCR)"
   },

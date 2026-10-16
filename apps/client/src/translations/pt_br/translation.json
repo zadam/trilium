@@ -2853,7 +2853,6 @@
     "processing_complete": "Processamento de OCR concluído.",
     "processing_failed": "Falha ao iniciar o processamento de OCR",
     "text_filtered_low_confidence": "O OCR detectou texto com {{confidence}}% de confiança, mas ele foi descartado porque seu limiar mínimo é {{threshold}}%.",
-    "image_based_pdf_not_supported": "Este PDF parece ser baseado em imagem (digitalizado). A extração de texto de PDFs baseados em imagem ainda não é suportada.",
     "open_media_settings": "Abrir configurações",
     "view_extracted_text": "Ver texto extraído (OCR)"
   },

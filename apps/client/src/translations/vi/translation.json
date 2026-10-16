@@ -4310,7 +4310,6 @@
     "processing_complete": "Xử lý OCR hoàn tất.",
     "processing_failed": "Không thể bắt đầu xử lý OCR",
     "text_filtered_low_confidence": "OCR đã phát hiện văn bản với {{confidence}}% cđộ tin cậy, nhưng đã bị loại bỏ vì ngưỡng tối thiểu của bạn là {{threshold}}%.",
-    "image_based_pdf_not_supported": "PDF này dường như dựa trên hình ảnh (quét). Trích xuất văn bản từ PDF dựa trên hình ảnh hiện chưa được hỗ trợ.",
     "open_media_settings": "Mở Cài đặt",
     "view_extracted_text": "Xem văn bản trích xuất (OCR)"
   },
