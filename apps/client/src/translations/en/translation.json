@@ -4605,9 +4605,13 @@
     "stop": "Stop transcribing",
     "stopping": "Finishing the transcript…",
     "title_keeping_recordings": "{{title}} (keeps the audio for troubleshooting)",
-    "stop_no_audio": "Stop transcribing (no audio is arriving)",
+    "stop_with_issue": "Stop transcribing (some audio is not being transcribed)",
+    "not_captured_microphone": "Your microphone could not be captured, so what you say is not being transcribed. Check that a microphone is connected and that Trilium is allowed to use it, then start the transcription again.",
+    "not_captured_system": "The meeting audio could not be captured, so what the others say is not being transcribed. If your system asks for permission to record the screen or its audio, allow it for Trilium, then start the transcription again.",
     "no_audio_microphone": "No audio has arrived from your microphone for 10 seconds, so what you say is not being transcribed. Stop the transcription and start it again.",
     "no_audio_system": "No audio has arrived from the meeting for 10 seconds, so what the others say is not being transcribed. Stop the transcription and start it again.",
+    "silent_microphone": "Only silence has arrived from your microphone for 15 seconds. Check that it is not muted and that it is the default microphone of your system.",
+    "silent_system": "Only silence has arrived from the meeting for a minute. If the others are speaking, check that the meeting plays through the default speakers or headphones of your system.",
     "consent": "Let everyone in the meeting know that it is being transcribed, and ask for their consent.",
     "consent_keeping_recordings": "Let everyone in the meeting know that it is being transcribed and its audio kept, and ask for their consent."
   },
@@ -4621,7 +4625,9 @@
     "speaking": "Speaking…",
     "offset": "{{offset}} into the transcription",
     "cleanup": "Hide filler words",
+    "not_captured": "Not captured",
     "no_audio": "No audio",
+    "silent": "Only silence",
     "copy": "Copy transcript"
   },
   "resource_download": {

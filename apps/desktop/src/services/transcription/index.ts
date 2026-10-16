@@ -1,5 +1,5 @@
 import type {
-    TranscriptionState, TranscriptSource, TranscriptUtterance
+    TranscriptionState, TranscriptSource, TranscriptSourceIssue, TranscriptUtterance
 } from "@triliumnext/commons";
 import { becca, events, getLog, options, protected_session } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
@@ -31,11 +31,24 @@ const QUIT_TIMEOUT_MS = 15_000;
  */
 const NO_AUDIO_MS = 10_000;
 
+/**
+ * How long a source can deliver only digital silence before it counts as silent. A working
+ * microphone picks up some noise even in a quiet room, while the meeting audio is digital silence
+ * whenever nobody speaks, so the meeting gets longer.
+ */
+const SILENCE_MS: Record<TranscriptSource, number> = {
+    microphone: 15_000,
+    system: 60_000
+};
+const SOURCES = Object.keys(SILENCE_MS) as TranscriptSource[];
+
 interface Recording {
     worker: TranscriptionWorker;
     capture: CaptureWindow;
-    /** When each source last delivered a chunk, in milliseconds since the epoch. */
+    /** When each captured source last delivered a chunk, in milliseconds since the epoch. */
     lastHeard: Map<TranscriptSource, number>;
+    /** When each captured source last delivered a chunk that was not digital silence. */
+    lastSound: Map<TranscriptSource, number>;
     audioCheck?: ReturnType<typeof setInterval>;
 }
 
@@ -102,7 +115,8 @@ export async function startRecording(noteId: unknown): Promise<string> {
             onUnexpectedExit: (code) => handleUnexpectedExit(recording, code),
             log: getLog()
         }),
-        lastHeard: new Map()
+        lastHeard: new Map(),
+        lastSound: new Map()
     };
     activeRecording = recording;
     try {
@@ -121,9 +135,11 @@ export async function startRecording(noteId: unknown): Promise<string> {
         getLog().info(`Transcription: recording ${sources.join(" and ")} for note ${noteId}.`);
         for (const source of sources) {
             recording.lastHeard.set(source, Date.now());
+            recording.lastSound.set(source, Date.now());
         }
-        recording.audioCheck = setInterval(() => checkAudio(recording), 1000);
+        recording.audioCheck = setInterval(() => updateSourceIssues(recording), 1000);
         setState({ ...state, status: "recording", startedAt });
+        updateSourceIssues(recording);
         return "";
     } catch (e) {
         activeRecording = null;
@@ -299,44 +315,79 @@ function handleUnexpectedExit(recording: Recording, code: number) {
     broadcast({ ...IDLE, error: t("transcription.stopped-unexpectedly") });
 }
 
-/** Passes a source's level on to every window, and clears that source's stall. */
+/** Passes a source's level on to every window, and updates the sources' issues. */
 function handleLevel(recording: Recording, source: TranscriptSource, level: number) {
     if (activeRecording !== recording) {
         return;
     }
-    recording.lastHeard.set(source, Date.now());
-    if (state.stalledSources?.includes(source)) {
-        getLog().info(`Transcription: audio from the ${source} again.`);
-        setStalledSources(state.stalledSources.filter((stalled) => stalled !== source));
+    const now = Date.now();
+    recording.lastHeard.set(source, now);
+    if (level > 0) {
+        recording.lastSound.set(source, now);
     }
     for (const window of BrowserWindow.getAllWindows()) {
         window.webContents.send("transcription-level", source, level);
     }
+    updateSourceIssues(recording);
 }
 
-/** Reports the sources that have delivered nothing for {@link NO_AUDIO_MS}. */
-function checkAudio(recording: Recording) {
+/** Works out the issue of every source, logs each one that changed, and reports them. */
+function updateSourceIssues(recording: Recording) {
     if (activeRecording !== recording || state.status !== "recording") {
         return;
     }
     const now = Date.now();
-    const stalled = [ ...recording.lastHeard ]
-        .filter(([ , lastHeard ]) => now - lastHeard >= NO_AUDIO_MS)
-        .map(([ source ]) => source)
-        .sort();
-    const current = state.stalledSources ?? [];
-    if (stalled.join() === current.join()) {
+    const current = state.sourceIssues ?? {};
+    const issues: Partial<Record<TranscriptSource, TranscriptSourceIssue>> = {};
+    let hasChanged = false;
+    for (const source of SOURCES) {
+        const issue = getSourceIssue(recording, source, now);
+        if (issue) {
+            issues[source] = issue;
+        }
+        if (issue !== current[source]) {
+            hasChanged = true;
+            logSourceIssue(source, issue);
+        }
+    }
+    if (!hasChanged) {
         return;
     }
-    for (const source of stalled.filter((source) => !current.includes(source))) {
-        getLog().error(`Transcription: no audio from the ${source} for ${NO_AUDIO_MS / 1000} s.`);
-    }
-    setStalledSources(stalled);
+    const { sourceIssues: _, ...rest } = state;
+    setState(Object.keys(issues).length ? { ...rest, sourceIssues: issues } : rest);
 }
 
-function setStalledSources(stalledSources: TranscriptSource[]) {
-    const { stalledSources: _, ...rest } = state;
-    setState(stalledSources.length ? { ...rest, stalledSources } : rest);
+function getSourceIssue(
+    recording: Recording, source: TranscriptSource, now: number
+): TranscriptSourceIssue | undefined {
+    const lastHeard = recording.lastHeard.get(source);
+    if (lastHeard === undefined) {
+        return "not_captured";
+    }
+    if (now - lastHeard >= NO_AUDIO_MS) {
+        return "no_audio";
+    }
+    if (now - (recording.lastSound.get(source) ?? lastHeard) >= SILENCE_MS[source]) {
+        return "silent";
+    }
+}
+
+function logSourceIssue(source: TranscriptSource, issue: TranscriptSourceIssue | undefined) {
+    switch (issue) {
+        case "not_captured":
+            getLog().error(`Transcription: the ${source} is not captured.`);
+            break;
+        case "no_audio":
+            getLog().error(`Transcription: no audio from the ${source} for ${NO_AUDIO_MS / 1000} s.`);
+            break;
+        case "silent":
+            getLog().error(
+                `Transcription: only silence from the ${source} for ${SILENCE_MS[source] / 1000} s.`);
+            break;
+        case undefined:
+            getLog().info(`Transcription: audio from the ${source} again.`);
+            break;
+    }
 }
 
 function setState(newState: TranscriptionState) {

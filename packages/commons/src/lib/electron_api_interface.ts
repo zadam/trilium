@@ -717,6 +717,13 @@ export interface ElectronDialogApi {
 /** Phase of the meeting transcription; at most one recording runs at a time. */
 export type TranscriptionStatus = "idle" | "starting" | "recording" | "stopping";
 
+/**
+ * Why a source's audio is not being transcribed: its capture did not start (`not_captured`), it
+ * has delivered no audio for 10 s (`no_audio`), as when its capture hangs, or it has delivered
+ * only digital silence for a while (`silent`), as from a muted device.
+ */
+export type TranscriptSourceIssue = "not_captured" | "no_audio" | "silent";
+
 /** What {@link ElectronTranscriptionApi} reports to every window. */
 export interface TranscriptionState {
     status: TranscriptionStatus;
@@ -725,10 +732,10 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
-     * The sources that have delivered no audio for 10 s while recording, as when their capture
-     * hangs; absent when every source delivers. A muted source still delivers silence.
+     * While recording, the sources whose audio is not being transcribed, and why; absent when
+     * every source delivers sound.
      */
-    stalledSources?: TranscriptSource[];
+    sourceIssues?: Partial<Record<TranscriptSource, TranscriptSourceIssue>>;
     /**
      * When the recording started, in milliseconds since the epoch: set once it records, kept while
      * it stops, absent otherwise.

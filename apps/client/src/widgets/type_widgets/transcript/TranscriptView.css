@@ -175,7 +175,7 @@
         }
     }
 
-    &.stalled {
+    &.has-issue {
         color: var(--danger-color, #dc3545);
 
         .transcript-level-bar {

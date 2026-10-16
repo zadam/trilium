@@ -2,7 +2,7 @@ import "./TranscriptView.css";
 
 import {
     cleanUtteranceText, getSpeakerKey, markDisfluencies, MAX_SPEAKER_NAME_LENGTH, parseTranscript,
-    setSpeakerName, type TranscriptSource, type TranscriptUtterance
+    setSpeakerName, type TranscriptSource, type TranscriptSourceIssue, type TranscriptUtterance
 } from "@triliumnext/commons";
 import clsx from "clsx";
 import { Fragment } from "preact";
@@ -214,32 +214,40 @@ const LEVEL_ICONS: Record<TranscriptSource, string> = {
     system: "bx-volume-full"
 };
 const LEVEL_SOURCES = Object.keys(LEVEL_ICONS) as TranscriptSource[];
+const ISSUE_LABELS: Record<TranscriptSourceIssue, () => string> = {
+    not_captured: () => t("transcript.not_captured"),
+    no_audio: () => t("transcript.no_audio"),
+    silent: () => t("transcript.silent")
+};
 
 /**
  * While the meeting of `attachment` records, one meter per source, named as the transcript names
- * it, filled to its latest level, and saying so when the source delivers no audio. Shown in the
- * header of the transcript's section, so it stays in view while the turns scroll or are collapsed.
+ * it, filled to its latest level, and saying so when the source is not captured, delivers no
+ * audio or only silence. Shown in the header of the transcript's section, so it stays in view
+ * while the turns scroll or are collapsed.
  */
 export function TranscriptRecordingLevels({ attachment }: { attachment: FAttachment }) {
-    const { status, noteId, stalledSources } = useTranscriptionState();
+    const { status, noteId, sourceIssues } = useTranscriptionState();
     if (status !== "recording" || noteId !== attachment.ownerId) {
         return null;
     }
-    return <TranscriptLevels stalledSources={stalledSources ?? []} />;
+    return <TranscriptLevels sourceIssues={sourceIssues ?? {}} />;
 }
 
-function TranscriptLevels({ stalledSources }: { stalledSources: TranscriptSource[] }) {
+function TranscriptLevels({ sourceIssues }: {
+    sourceIssues: Partial<Record<TranscriptSource, TranscriptSourceIssue>>;
+}) {
     const levels = useTranscriptionLevels();
     return (
         <div className="transcript-levels">
             {LEVEL_SOURCES.map((source) => {
                 const level = levelToMeter(levels[source]);
-                const isStalled = stalledSources.includes(source);
+                const issue = sourceIssues[source];
                 return (
                     <span
                         key={source}
                         data-source={source}
-                        className={clsx("transcript-level", { stalled: isStalled })}
+                        className={clsx("transcript-level", { "has-issue": issue })}
                         role="meter"
                         aria-label={speakerName(source)}
                         aria-valuemin={0}
@@ -250,9 +258,9 @@ function TranscriptLevels({ stalledSources }: { stalledSources: TranscriptSource
                         <span className={`bx ${LEVEL_ICONS[source]}`} aria-hidden="true" />
                         {speakerName(source)}
                         <span className="transcript-level-bar" aria-hidden="true" />
-                        {isStalled && (
+                        {issue && (
                             <span className="transcript-level-warning">
-                                {t("transcript.no_audio")}
+                                {ISSUE_LABELS[issue]()}
                             </span>
                         )}
                     </span>

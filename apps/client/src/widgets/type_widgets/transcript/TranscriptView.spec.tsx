@@ -525,11 +525,15 @@ describe("TranscriptView", () => {
         expect(fill("system")).toBe(0);
         expect(meter("microphone")?.getAttribute("aria-valuenow")).toBe("0.5");
 
-        await report({ stalledSources: [ "system" ] });
-        expect(meter("system")?.classList.contains("stalled")).toBe(true);
+        await report({ sourceIssues: { system: "no_audio" } });
+        expect(meter("system")?.classList.contains("has-issue")).toBe(true);
         expect(meter("system")?.textContent).toContain("transcript.no_audio");
-        expect(meter("microphone")?.classList.contains("stalled")).toBe(false);
-        expect(meter("microphone")?.textContent).not.toContain("transcript.no_audio");
+        expect(meter("microphone")?.classList.contains("has-issue")).toBe(false);
+        expect(meter("microphone")?.querySelector(".transcript-level-warning")).toBeNull();
+        await report({ sourceIssues: { microphone: "silent", system: "not_captured" } });
+        expect(meter("microphone")?.textContent).toContain("transcript.silent");
+        expect(meter("system")?.textContent).toContain("transcript.not_captured");
+        expect(meter("system")?.textContent).not.toContain("transcript.no_audio");
 
         await report({ noteId: "other" });
         expect(meter("microphone")).toBeNull();

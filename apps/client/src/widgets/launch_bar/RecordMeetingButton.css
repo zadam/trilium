@@ -32,7 +32,7 @@
         box-shadow: var(--left-pane-item-selected-shadow);
         font-variant-numeric: tabular-nums;
 
-        &.stalled {
+        &.has-issue {
             --color: var(--danger-color, #dc3545);
             color: #fff;
         }

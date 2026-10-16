@@ -47,11 +47,26 @@
 <p>Only one meeting can be transcribed at a time. The note itself is an ordinary
   text note: you can take notes in it during the meeting, rename it or move
   it anywhere in the tree. It carries the <code>#meetingRecording</code> label.</p>
-<p>If no audio arrives from your microphone or from the meeting for 10 seconds,
-  Trilium shows a message, the time on the button turns red and the button's
-  tooltip says that no audio is arriving. Silence does not cause this: a
-  muted microphone still delivers audio. Stop the transcription and start
-  it again; what was transcribed until then is kept.</p>
+<p>Trilium tells you when your microphone or the meeting's audio is not being
+  transcribed. It shows a message saying which one and why, the time on the
+  button turns red and the button's tooltip says that some audio is not being
+  transcribed:</p>
+<ul>
+  <li><strong>Not captured</strong>: the transcription started without that
+    audio, for example because there is no microphone or because Trilium was
+    not allowed to record the screen and its audio. Connect the microphone
+    or allow the recording, then stop the transcription and start it again.</li>
+  <li><strong>No audio</strong>: nothing has arrived from it for 10 seconds,
+    as when its capture hangs. Stop the transcription and start it again; what
+    was transcribed until then is kept.</li>
+  <li><strong>Only silence</strong>: it has delivered nothing but silence, for
+    15 seconds from your microphone or for a minute from the meeting. A microphone
+    muted in your system's settings, or with a mute button of its own, does
+    this. A meeting nobody speaks in for a minute does it too, so this message
+    can be ignored when the others are just quiet.</li>
+</ul>
+<p>Each message shows once. <em>No audio</em> and <em>Only silence</em> clear
+  by themselves once sound arrives again.</p>
 <p>If the transcription stops on its own, for example because the audio could
   no longer be captured, Trilium shows a message and keeps everything transcribed
   until then. Closing Trilium during a meeting waits for the transcription
@@ -64,10 +79,10 @@
   transcribed, the header of the <em>Transcript</em> section shows the level
   of your microphone (<em>Me</em>) and of the meeting's audio (<em>Others</em>),
   so you can tell that both are being heard, even while the section is collapsed;
-  a source that delivers no audio is marked <em>No audio</em>. While someone
-  is talking, <em>Speaking…</em> shows under their name until their words are
-  transcribed. If you are reading the end of the transcript, it scrolls to
-  follow new text.</p>
+  a source that is not being transcribed is marked <em>Not captured</em>, <em>No audio</em> or <em>Only silence</em>.
+  While someone is talking, <em>Speaking…</em> shows under their name until
+  their words are transcribed. If you are reading the end of the transcript,
+  it scrolls to follow new text.</p>
 <ul>
   <li>What you say into your microphone is labeled <em>Me</em>.</li>
   <li>What the other participants say is labeled <em>Speaker 1</em>, <em>Speaker 2</em> and

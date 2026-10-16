@@ -2,7 +2,7 @@ import "./RecordMeetingButton.css";
 
 import {
     dayjs, getTranscriptionResources, MEETING_RECORDING_LABEL, type TranscriptionState,
-    type TranscriptionStatus, type TranscriptSource
+    type TranscriptionStatus, type TranscriptSource, type TranscriptSourceIssue
 } from "@triliumnext/commons";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
@@ -28,13 +28,14 @@ import {
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
  * recording, the second stops it. Desktop only, since the main process does the recording, and
  * shown only while `transcriptionEnabled` is on and the computer can transcribe. Its corner badge reads "Beta" while idle and the
- * time elapsed while recording, which turns red, with a message once, when a source stops
- * delivering audio. A recording started from this window opens a reminder beside the button, for
+ * time elapsed while recording, which turns red, with a message once per issue, while a source is
+ * not captured, delivers no audio or only silence. A recording started from this window opens a reminder beside the button, for
  * 10 s, to ask the people in the meeting for their consent.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
-    const { status, error, startedAt, stalledSources } = useTranscriptionState();
+    const { status, error, startedAt, sourceIssues } = useTranscriptionState();
+    const hasIssue = !!sourceIssues && Object.keys(sourceIssues).length > 0;
     const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
     const isSupported = useTranscriptionSupported(isEnabled);
     const [ keepsRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
@@ -71,7 +72,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
         }
     }, [ error ]);
 
-    useStalledSourceWarnings(stalledSources);
+    useSourceIssueWarnings(sourceIssues);
 
     useEffect(() => {
         if (status !== "recording") {
@@ -92,7 +93,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             <LaunchBarActionButton
                 launcherNote={launcherNote}
                 onClick={handleClick}
-                {...getAppearance(status, icon, title, keepsRecordings, !!stalledSources?.length)}
+                {...getAppearance(status, icon, title, keepsRecordings, hasIssue)}
             />
             {status === "idle" && (
                 <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
@@ -100,9 +101,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             {status === "recording" && startedAt !== undefined && (
                 <Badge
                     text={formatElapsed(now - startedAt)}
-                    className={clsx("record-meeting-time-badge", {
-                        stalled: !!stalledSources?.length
-                    })}
+                    className={clsx("record-meeting-time-badge", { "has-issue": hasIssue })}
                 />
             )}
             {isShowingConsent && (
@@ -147,20 +146,41 @@ function ConsentReminder({ getAnchorRect, keepsRecordings, onDismiss }: {
     );
 }
 
-/** Shows an error once for each source that joins `stalledSources`. */
-function useStalledSourceWarnings(stalledSources: TranscriptSource[] | undefined) {
-    const warned = useRef<TranscriptSource[]>([]);
-    const key = stalledSources?.join() ?? "";
+type SourceIssues = TranscriptionState["sourceIssues"];
+
+/** Shows an error once each time a source gets an issue in `sourceIssues`, or another one. */
+function useSourceIssueWarnings(sourceIssues: SourceIssues) {
+    const warned = useRef<SourceIssues>({});
+    const key = JSON.stringify(sourceIssues ?? {});
 
     useEffect(() => {
-        const stalled = stalledSources ?? [];
-        for (const source of stalled.filter((source) => !warned.current.includes(source))) {
-            toast.showError(source === "microphone"
-                ? t("record_meeting.no_audio_microphone")
-                : t("record_meeting.no_audio_system"));
+        const issues = sourceIssues ?? {};
+        for (const source of Object.keys(issues) as TranscriptSource[]) {
+            const issue = issues[source];
+            if (issue && warned.current?.[source] !== issue) {
+                toast.showError(getIssueWarning(source, issue));
+            }
         }
-        warned.current = stalled;
+        warned.current = issues;
     }, [ key ]);
+}
+
+function getIssueWarning(source: TranscriptSource, issue: TranscriptSourceIssue) {
+    const isMicrophone = source === "microphone";
+    switch (issue) {
+        case "not_captured":
+            return isMicrophone
+                ? t("record_meeting.not_captured_microphone")
+                : t("record_meeting.not_captured_system");
+        case "no_audio":
+            return isMicrophone
+                ? t("record_meeting.no_audio_microphone")
+                : t("record_meeting.no_audio_system");
+        case "silent":
+            return isMicrophone
+                ? t("record_meeting.silent_microphone")
+                : t("record_meeting.silent_system");
+    }
 }
 
 const BUSY_ICON = "bx bx-loader-alt bx-spin";
@@ -171,7 +191,7 @@ const BUSY_ICON = "bx bx-loader-alt bx-spin";
  */
 function getAppearance(
     status: TranscriptionStatus, idleIcon: string, idleTitle: string, keepsRecordings: boolean,
-    isStalled: boolean
+    hasIssue: boolean
 ) {
     switch (status) {
         case "idle":
@@ -186,7 +206,7 @@ function getAppearance(
         case "recording":
             return {
                 icon: "bx bx-stop-circle",
-                text: isStalled ? t("record_meeting.stop_no_audio") : t("record_meeting.stop"),
+                text: hasIssue ? t("record_meeting.stop_with_issue") : t("record_meeting.stop"),
                 className: "record-meeting-active"
             };
         case "stopping":

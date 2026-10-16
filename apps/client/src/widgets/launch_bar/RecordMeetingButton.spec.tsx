@@ -295,7 +295,7 @@ describe("RecordMeetingButton", () => {
         window.electronApi = undefined;
     });
 
-    it("says once for each source that stops delivering audio, and marks the time", async () => {
+    it("says once why each source is not transcribed, and marks the time", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const recording: TranscriptionState = {
             status: "recording", noteId: "meeting", pendingSources: [], startedAt: Date.now()
@@ -321,21 +321,26 @@ describe("RecordMeetingButton", () => {
         const button = () => (container as HTMLElement | null)?.querySelector("button");
 
         await vi.waitFor(() => expect(badge()).not.toBeNull());
-        expect(badge()?.classList.contains("stalled")).toBe(false);
-        await report({ stalledSources: [ "system" ] });
-        await report({ stalledSources: [ "system" ] });
-        expect(badge()?.classList.contains("stalled")).toBe(true);
-        expect(button()?.textContent).toContain("record_meeting.stop_no_audio");
+        expect(badge()?.classList.contains("has-issue")).toBe(false);
+        await report({ sourceIssues: { system: "not_captured" } });
+        await report({ sourceIssues: { system: "not_captured" } });
+        expect(badge()?.classList.contains("has-issue")).toBe(true);
+        expect(button()?.textContent).toContain("record_meeting.stop_with_issue");
         expect(mocks.showError).toHaveBeenCalledExactlyOnceWith(
-            expect.stringContaining("record_meeting.no_audio_system"));
+            expect.stringContaining("record_meeting.not_captured_system"));
 
         await report({});
-        expect(badge()?.classList.contains("stalled")).toBe(false);
-        expect(button()?.textContent).not.toContain("no_audio");
-        await report({ stalledSources: [ "microphone", "system" ] });
-        expect(mocks.showError).toHaveBeenCalledTimes(3);
-        expect(mocks.showError).toHaveBeenCalledWith(
-            expect.stringContaining("record_meeting.no_audio_microphone"));
+        expect(badge()?.classList.contains("has-issue")).toBe(false);
+        expect(button()?.textContent).not.toContain("stop_with_issue");
+        await report({ sourceIssues: { microphone: "no_audio", system: "silent" } });
+        await report({ sourceIssues: { microphone: "silent", system: "silent" } });
+        const keys = mocks.showError.mock.calls.map(([ message ]) => String(message).split(" ")[0]);
+        expect(keys).toEqual([
+            "record_meeting.not_captured_system",
+            "record_meeting.no_audio_microphone",
+            "record_meeting.silent_system",
+            "record_meeting.silent_microphone"
+        ]);
         window.electronApi = undefined;
     });
 
