@@ -16,6 +16,8 @@ The _Bulk Actions_ dialog makes it easy to apply changes to multiple notes at on
     *   Each chosen action appears as an entry in the _Chosen actions_ section, with its own configuration.
     *   To remove an action, simply press the X button to the right of it.
     *   It is possible to apply multiple actions of the same type, such as adding multiple types.
+    *   The fields for a label or relation name suggest the names already used in the database as you type, marking the ones Trilium itself attaches a meaning to.
+    *   The value field of _Add label_ and _Update label value_ suggests the values the named label already has in the database.
 *   When all the actions are defined, press the _Apply to N notes_ button to trigger all of them at once. The button names the number of notes that will be affected, and stays disabled until at least one action is added.
     *   If an action is missing a field it needs, such as the name of the label to rename, the dialog does not run and points out the empty field instead.
 *   For convenience, the last bulk action configuration is saved for further use and will be restored when entering the dialog again.
@@ -87,6 +89,7 @@ These actions operate the <a class="reference-link" href="Attributes/Relations.
 
 *   **Execute script**
     *   For more complex scenarios, it is possible to type in a JavaScript expression in order to apply the necessary changes.
+    *   The script runs on the server once for each note, with that note available as `note` and the backend script API as `api`. The field completes both as you type and underlines mistakes, as the editor of a backend script note does.
     *   Examples:
         *   To apply a suffix (`- suffix` in this example), to the note title:
             

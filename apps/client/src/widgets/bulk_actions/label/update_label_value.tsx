@@ -1,7 +1,8 @@
 import { t } from "../../../services/i18n.js";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import FormTextBox from "../../react/FormTextBox.jsx";
-import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
+import BulkAction, {
+    BulkActionArrow, BulkActionAttributeName, BulkActionLabelValue, useSaveAction
+} from "../BulkAction.jsx";
 import { useState } from "preact/hooks";
 
 function UpdateLabelValueComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
@@ -13,15 +14,15 @@ function UpdateLabelValueComponent({ bulkAction, actionDef }: { bulkAction: Abst
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
+            <BulkActionAttributeName
+                type="label"
                 placeholder={t("update_label_value.label_name_placeholder")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("update_label_value.label_name_title")}
-                className="bulk-action-name" required
                 currentValue={labelName} onChange={setLabelName}
             />
             <BulkActionArrow />
-            <FormTextBox
+            <BulkActionLabelValue
+                name={labelName}
                 placeholder={t("update_label_value.new_value_placeholder")}
                 currentValue={labelValue} onChange={setLabelValue}
             />

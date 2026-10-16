@@ -1,7 +1,6 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
-import FormTextBox from "../../react/FormTextBox.jsx";
+import BulkAction, { BulkActionArrow, BulkActionAttributeName, useSaveAction } from "../BulkAction.jsx";
 import { useState } from "preact/hooks";
 
 function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
@@ -13,21 +12,19 @@ function RenameRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
+            <BulkActionAttributeName
+                type="relation"
                 placeholder={t("rename_relation.old_name")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_relation.allowed_characters")}
-                className="bulk-action-name" required
                 currentValue={oldRelationName} onChange={setOldRelationName}
             />
 
             <BulkActionArrow />
 
-            <FormTextBox
+            <BulkActionAttributeName
+                type="relation"
                 placeholder={t("rename_relation.new_name")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_relation.allowed_characters")}
-                className="bulk-action-name" required
                 currentValue={newRelationName} onChange={setNewRelationName}
             />
         </BulkAction>

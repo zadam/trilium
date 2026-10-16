@@ -187,8 +187,8 @@ const EMPTY_ICON = "bx bx-empty";
 const TEXT_ENTRY = "input:not([type='checkbox'], [type='radio']), textarea, select, [contenteditable='true']";
 
 const TOOLTIP_CONFIG: Partial<Tooltip.Options> = {
-    placement: handleRightToLeftPlacement("right"),
-    fallbackPlacements: [ handleRightToLeftPlacement("right"), handleRightToLeftPlacement("left") ],
+    placement: menuItemTooltipSide,
+    fallbackPlacements: [],
     animation: false
 };
 
@@ -293,6 +293,27 @@ export function FormListItem({ className, icon, iconSvg, iconClassName, value, t
             </span>
         </li>
     );
+}
+
+/** Bootstrap's default `--bs-tooltip-max-width` and the gap its `offset` leaves beside the row. */
+const TOOLTIP_MAX_WIDTH = 200;
+const TOOLTIP_OFFSET = 6;
+
+/**
+ * Puts a row's tooltip on the reading-direction end of the menu, or on the other side when the
+ * viewport has no room there for a tooltip at its widest. The room is measured against that widest
+ * tooltip rather than this one, so every row of a menu gets the same side whatever its text.
+ */
+export function menuItemTooltipSide(_tooltip?: unknown, tip?: HTMLElement, row?: Element): "left" | "right" {
+    const preferred = handleRightToLeftPlacement("right");
+    if (!tip || !row) return preferred;
+
+    const maxWidth = parseFloat(getComputedStyle(tip).getPropertyValue("--bs-tooltip-max-width"));
+    const needed = (Number.isNaN(maxWidth) ? TOOLTIP_MAX_WIDTH : maxWidth) + TOOLTIP_OFFSET;
+    const { left, right } = row.getBoundingClientRect();
+    const room = preferred === "right" ? window.innerWidth - right : left;
+    if (room >= needed) return preferred;
+    return preferred === "right" ? "left" : "right";
 }
 
 export function FormListToggleableItem({

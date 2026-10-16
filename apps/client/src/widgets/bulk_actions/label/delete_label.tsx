@@ -1,8 +1,7 @@
 import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
-import FormTextBox from "../../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import BulkAction, { useSaveAction } from "../BulkAction.jsx";
+import BulkAction, { BulkActionAttributeName, useSaveAction } from "../BulkAction.jsx";
 
 function DeleteLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ labelName, setLabelName ] = useState<string>(actionDef.labelName ?? "");
@@ -12,11 +11,10 @@ function DeleteLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
-                pattern="[\\p{L}\\p{N}_:]+"
-                title={t("delete_label.label_name_title")}
+            <BulkActionAttributeName
+                type="label"
                 placeholder={t("delete_label.label_name_placeholder")}
-                className="bulk-action-name" required
+                title={t("delete_label.label_name_title")}
                 currentValue={labelName} onChange={setLabelName}
             />
         </BulkAction>

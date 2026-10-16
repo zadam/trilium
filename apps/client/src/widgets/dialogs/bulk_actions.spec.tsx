@@ -11,9 +11,9 @@ import { ParentComponent } from "../react/react_utils";
 import BulkActionsDialog from "./bulk_actions";
 
 const server = vi.hoisted(() => ({
-    get: vi.fn(async () => []),
+    get: vi.fn(async (_url: string): Promise<string[]> => []),
     post: vi.fn(),
-    put: vi.fn(async () => {}),
+    put: vi.fn(async (_url: string, _body: { value: string }) => {}),
     remove: vi.fn(async () => {}),
     getMaxKnownEntityChangeId: () => 0
 }));
@@ -79,6 +79,28 @@ describe("BulkActionsDialog", () => {
 
     function labelNameInputs() {
         return [ ...container.querySelectorAll<HTMLInputElement>(".bulk-existing-action-list input.bulk-action-name") ];
+    }
+
+    /** Types `value` into `input`, lets the debounced lookup run and returns the suggestion rows. Needs fake timers. */
+    async function typeAndSuggest(input: HTMLInputElement | undefined, value: string) {
+        if (!input) throw new Error("No such field.");
+        await act(async () => {
+            input.value = value;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(200);
+        });
+        return [ ...document.querySelectorAll<HTMLElement>(".form-autocomplete-dropdown li") ];
+    }
+
+    /** Runs the row's debounced save, so it lands in this test, and returns the saved action. */
+    async function savedAction() {
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(2000);
+        });
+        const value = server.put.mock.calls.at(-1)?.[1]?.value;
+        return value === undefined ? undefined : JSON.parse(value);
     }
 
     it("shows the first selected notes as chips and the rest on demand", async () => {
@@ -175,7 +197,7 @@ describe("BulkActionsDialog", () => {
             deleteNote: { required: [], names: [] },
             saveRevision: { required: [ false ], names: [ false ] },
             deleteRevisions: { required: [], names: [] },
-            executeScript: { required: [ true ], names: [ false ] }
+            executeScript: { required: [], names: [] }
         };
         buildNote({
             id: "_bulkAction",
@@ -284,6 +306,46 @@ describe("BulkActionsDialog", () => {
         expect(chipNoteIds()).toStrictEqual([ "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n2" ], includeDescendants: false });
         expect(container.querySelector<HTMLButtonElement>(".tn-chip-remove")?.disabled).toBe(true);
+    });
+
+    it("completes a relation name against the names in use", async () => {
+        vi.useFakeTimers();
+        try {
+            server.get.mockImplementation(async (url) =>
+                (url.startsWith("attribute-names/?type=relation&query=au") ? [ "author" ] : []));
+            buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRelation" }) });
+            await open([ "n1" ]);
+
+            const suggestions = await typeAndSuggest(labelNameInputs()[0], "au");
+            expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "author" ]);
+
+            await act(async () => suggestions[0].click());
+            expect(labelNameInputs()[0].value).toBe("author");
+            expect(await savedAction()).toStrictEqual({ name: "deleteRelation", relationName: "author" });
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("completes a label value against the values the label already has", async () => {
+        vi.useFakeTimers();
+        try {
+            server.get.mockImplementation(async (url) =>
+                (url === "attribute-values/status" ? [ "done", "doing", "todo" ] : []));
+            buildNote({
+                id: "_bulkAction", title: "Bulk action",
+                "#action": JSON.stringify({ name: "updateLabelValue", labelName: "status" })
+            });
+            await open([ "n1" ]);
+
+            const valueInput = container.querySelector<HTMLInputElement>(
+                ".bulk-existing-action-list .bulk-action-fields input:not(.bulk-action-name)");
+            const suggestions = await typeAndSuggest(valueInput ?? undefined, "doi");
+            expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "doing" ]);
+            expect(await savedAction()).toStrictEqual({ name: "updateLabelValue", labelName: "status", labelValue: "doi" });
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it("saves an action only when its fields change", async () => {

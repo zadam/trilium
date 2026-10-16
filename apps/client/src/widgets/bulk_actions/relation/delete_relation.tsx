@@ -1,7 +1,6 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { useSaveAction } from "../BulkAction.jsx";
-import FormTextBox from "../../react/FormTextBox.jsx";
+import BulkAction, { BulkActionAttributeName, useSaveAction } from "../BulkAction.jsx";
 import { useState } from "preact/hooks";
 
 function DeleteRelationBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition }) {
@@ -12,11 +11,10 @@ function DeleteRelationBulkActionComponent({ bulkAction, actionDef }: { bulkActi
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
-                pattern="[\\p{L}\\p{N}_:]+"
+            <BulkActionAttributeName
+                type="relation"
                 placeholder={t("delete_relation.relation_name")}
                 title={t("delete_relation.allowed_characters")}
-                className="bulk-action-name" required
                 currentValue={relationName} onChange={setRelationName}
             />
         </BulkAction>

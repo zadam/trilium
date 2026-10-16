@@ -41,6 +41,11 @@ export interface ScriptApiContext {
      * when this is true.
      */
     customRequestHandler?: boolean;
+    /**
+     * Whether the script is a bulk action's "Execute script", which the server runs once per note
+     * with that note in scope as `note`. Declares `note` as a backend note.
+     */
+    bulkActionNote?: boolean;
 }
 
 /**
@@ -156,7 +161,8 @@ async function createEnv(mime: string, context: ScriptApiContext = {}) {
         const apiType = context.customRequestHandler
             ? "BackendApi"
             : `Omit<BackendApi, ${CUSTOM_REQUEST_HANDLER_MEMBERS.map((m) => `"${m}"`).join(" | ")}>`;
-        fsMap.set(API_GLOBALS_PATH, `import type { BackendApi } from "./trilium-script-api";\ndeclare global {\n    // eslint-disable-next-line no-var\n    var api: ${apiType};\n}\n`);
+        const noteGlobal = context.bulkActionNote ? "    var note: ScriptBNote;\n" : "";
+        fsMap.set(API_GLOBALS_PATH, `import type { BackendApi, ScriptBNote } from "./trilium-script-api";\ndeclare global {\n    // eslint-disable-next-line no-var\n    var api: ${apiType};\n${noteGlobal}}\n`);
         rootFiles.push(API_TYPES_PATH);
     }
 
