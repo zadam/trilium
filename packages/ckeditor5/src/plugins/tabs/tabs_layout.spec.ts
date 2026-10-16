@@ -126,7 +126,7 @@ describe("tabs layout styles", () => {
         }
     });
 
-    it("clips a long title at 30% of the block and scrolls it back after editing", async () => {
+    it("clips a long title at 30% of the block (45% on mobile) and scrolls it back", async () => {
         const long = tab("A title far too long for a third of the block", "<p>Body</p>");
         const html = `<div class="trilium-tabs">${long}${tab("B", "")}</div>`;
         const container = document.createElement("div");
@@ -143,14 +143,19 @@ describe("tabs layout styles", () => {
         editor.setData(html);
 
         const blocks = [container, editable].map(root => root.querySelector(".trilium-tabs"));
-        for (const block of blocks) {
-            const [long, short] = [...block?.querySelectorAll(".trilium-tab-title") ?? []];
-            expect(long).toBeDefined();
-            expect(short).toBeDefined();
-            const width = block?.getBoundingClientRect().width ?? NaN;
-            expect(long.getBoundingClientRect().width / width).toBeCloseTo(0.3, 2);
-            expect(long.scrollWidth).toBeGreaterThan(long.clientWidth);
-            expect(textHeightOf(long)).toBe(textHeightOf(short));
+        onTestFinished(() => document.body.classList.remove("mobile"));
+        for (const [isMobile, share] of [[false, 0.3], [true, 0.45]] as const) {
+            document.body.classList.toggle("mobile", isMobile);
+            for (const block of blocks) {
+                const [long, short] = [...block?.querySelectorAll(".trilium-tab-title") ?? []];
+                expect(long).toBeDefined();
+                expect(short).toBeDefined();
+                const width = block?.getBoundingClientRect().width ?? NaN;
+                expect(long.getBoundingClientRect().width / width, `mobile: ${isMobile}`)
+                    .toBeCloseTo(share, 2);
+                expect(long.scrollWidth).toBeGreaterThan(long.clientWidth);
+                expect(textHeightOf(long)).toBe(textHeightOf(short));
+            }
         }
 
         const title = editable.querySelector(".trilium-tab-title") as HTMLElement;

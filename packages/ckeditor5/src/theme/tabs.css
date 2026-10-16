@@ -43,6 +43,10 @@
             &:hover {
                 color: var(--_tabs-active-title-color);
             }
+
+            body.mobile & {
+                max-width: 45%;
+            }
         }
 
         & > .trilium-tab > .trilium-tab-panel {
