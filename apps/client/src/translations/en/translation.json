@@ -959,6 +959,7 @@
     "error_unknown_variable": "There is no variable named “{{name}}”.",
     "error_property_not_allowed": "The property “{{name}}” cannot be used in a template.",
     "error_method_not_allowed": "The method “{{name}}” cannot be used in a template.",
+    "error_method_not_on_value": "The value before “{{name}}” has no such method.",
     "variable_note": "The note being renamed",
     "member_title": "The note's title",
     "member_note_id": "The note's ID",

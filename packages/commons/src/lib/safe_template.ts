@@ -46,8 +46,23 @@ export interface TemplateVariables {
     [key: string]: unknown;
 }
 
+/** What a template value holds: a `BNote`, a `dayjs` date, or a string or other plain value. */
+export type TemplateValueType = "note" | "date" | "text";
+
+/** The variables a template can read, by name, and what each holds. */
+export type TemplateVariableTypes = Readonly<Record<string, TemplateValueType>>;
+
+const TEMPLATE_METHODS_OF: Readonly<Record<TemplateValueType, ReadonlySet<string>>> = {
+    note: new Set([ "getLabelValue", "getLabel", "getLabelValues", "getRelationValue", "getAttributeValue" ]),
+    date: new Set([ "format" ]),
+    text: new Set()
+};
+
+const NOTE_DATE_PROPERTIES: ReadonlySet<string> = new Set([ "dateCreatedObj", "utcDateCreatedObj" ]);
+
 /** Why {@link findTemplateIssues} refuses an expression, which `evaluateTemplate()` would throw for. */
-export type TemplateIssueKind = "unclosed" | "unsupported" | "unknownVariable" | "propertyNotAllowed" | "methodNotAllowed";
+export type TemplateIssueKind =
+    | "unclosed" | "unsupported" | "unknownVariable" | "propertyNotAllowed" | "methodNotAllowed" | "methodNotOnValue";
 
 export interface TemplateIssue {
     kind: TemplateIssueKind;
@@ -82,13 +97,12 @@ export function evaluateTemplate(template: string, variables: TemplateVariables)
 }
 
 /**
- * Lists the expressions of `template` that `evaluateTemplate()` refuses when given `variableNames`,
- * without evaluating anything, so an editor can mark them as they are typed. Also lists a `${` that
- * is never closed, which `evaluateTemplate()` leaves in the result as text.
+ * Lists the expressions of `template` that `evaluateTemplate()` refuses when given values of
+ * `variables`, without evaluating anything, so an editor can mark them as they are typed. Also lists
+ * a `${` that is never closed, which `evaluateTemplate()` leaves in the result as text.
  */
-export function findTemplateIssues(template: string, variableNames: readonly string[]): TemplateIssue[] {
+export function findTemplateIssues(template: string, variables: TemplateVariableTypes): TemplateIssue[] {
     const issues: TemplateIssue[] = [];
-    const known = new Set(variableNames);
     let closedUpTo = 0;
 
     for (const match of template.matchAll(EXPRESSION)) {
@@ -97,7 +111,7 @@ export function findTemplateIssues(template: string, variableNames: readonly str
         reportUnclosed(template.slice(closedUpTo, from), closedUpTo, issues);
         closedUpTo = to;
 
-        const problem = checkExpression(parseExpression(match[1].trim()), known);
+        const problem = checkExpression(parseExpression(match[1].trim()), variables);
         if (problem) {
             issues.push({ ...problem, from, to });
         }
@@ -130,8 +144,8 @@ function parseExpression(expr: string): ParsedExpression | null {
     return PROPERTY_CHAIN.test(expr) ? { chain: expr.split(".") } : null;
 }
 
-/** What `evaluateExpression()` throws for `parsed`, short of what depends on the values. */
-function checkExpression(parsed: ParsedExpression | null, known: ReadonlySet<string>): Omit<TemplateIssue, "from" | "to"> | null {
+/** What `evaluateExpression()` throws for `parsed` when the variables hold values of `variables`. */
+function checkExpression(parsed: ParsedExpression | null, variables: TemplateVariableTypes): Omit<TemplateIssue, "from" | "to"> | null {
     if (!parsed) {
         return { kind: "unsupported", name: undefined };
     }
@@ -140,12 +154,33 @@ function checkExpression(parsed: ParsedExpression | null, known: ReadonlySet<str
     }
 
     const [ root, ...properties ] = parsed.chain;
-    if (!known.has(root)) {
+    if (!Object.hasOwn(variables, root)) {
         return { kind: "unknownVariable", name: root };
     }
 
     const refused = properties.find((property) => !TEMPLATE_ALLOWED_PROPERTIES.has(property));
-    return refused ? { kind: "propertyNotAllowed", name: refused } : null;
+    if (refused) {
+        return { kind: "propertyNotAllowed", name: refused };
+    }
+
+    // A method on a missing value gives an empty result, so only a value of a known type is checked.
+    const target = resolveChainType(variables[root], properties);
+    if (parsed.method && target && !TEMPLATE_METHODS_OF[target].has(parsed.method.name)) {
+        return { kind: "methodNotOnValue", name: parsed.method.name };
+    }
+    return null;
+}
+
+/** What reading `properties` off a value of `type` gives, or `undefined` when it gives nothing. */
+function resolveChainType(type: TemplateValueType, properties: readonly string[]): TemplateValueType | undefined {
+    let current: TemplateValueType | undefined = type;
+    for (const property of properties) {
+        if (current !== "note") {
+            return undefined;
+        }
+        current = NOTE_DATE_PROPERTIES.has(property) ? "date" : "text";
+    }
+    return current;
 }
 
 /**
@@ -197,7 +232,7 @@ function evaluateExpression(expr: string, variables: TemplateVariables): unknown
 function resolvePropertyChain(parts: string[], variables: TemplateVariables): unknown {
     const rootName = parts[0];
 
-    if (!(rootName in variables)) {
+    if (!Object.hasOwn(variables, rootName)) {
         throw new Error(`Unknown variable '${rootName}' in template expression`);
     }
 

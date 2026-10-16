@@ -1,7 +1,7 @@
 import { type Diagnostic, linter } from "@codemirror/lint";
 import { type EditorState, type Extension, RangeSetBuilder, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
-import { findTemplateIssues } from "@triliumnext/commons";
+import { findTemplateIssues, type TemplateVariableTypes } from "@triliumnext/commons";
 
 /**
  * Highlighting and linting for the templates `evaluateTemplate()` in `@triliumnext/commons` fills
@@ -83,11 +83,12 @@ export interface TemplateLintMessages {
     unknownVariable(name: string): string;
     propertyNotAllowed(name: string): string;
     methodNotAllowed(name: string): string;
+    methodNotOnValue(name: string): string;
 }
 
 /** Marks the expressions `evaluateTemplate()` refuses, given the variables it is called with. */
-export function diagnoseTemplate(text: string, variableNames: readonly string[], messages: TemplateLintMessages): Diagnostic[] {
-    return findTemplateIssues(text, variableNames).map(({ kind, from, to, name }) => ({
+export function diagnoseTemplate(text: string, variables: TemplateVariableTypes, messages: TemplateLintMessages): Diagnostic[] {
+    return findTemplateIssues(text, variables).map(({ kind, from, to, name }) => ({
         from,
         to,
         severity: "error",
@@ -130,12 +131,12 @@ function buildTemplateDecorations(state: EditorState): DecorationSet {
 
 /**
  * The extension to register on an editor holding a template whose expressions can read
- * `variableNames`. It colours the expressions and underlines the ones the evaluator refuses.
+ * `variables`. It colours the expressions and underlines the ones the evaluator refuses.
  */
-export function triliumTemplate(variableNames: readonly string[], messages: TemplateLintMessages): Extension {
+export function triliumTemplate(variables: TemplateVariableTypes, messages: TemplateLintMessages): Extension {
     return [
         templateHighlightField,
         templateHighlightTheme,
-        linter((view) => diagnoseTemplate(view.state.doc.toString(), variableNames, messages), { delay: 250 })
+        linter((view) => diagnoseTemplate(view.state.doc.toString(), variables, messages), { delay: 250 })
     ];
 }

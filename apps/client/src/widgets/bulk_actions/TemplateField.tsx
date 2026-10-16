@@ -4,7 +4,7 @@ import "./TemplateField.css";
 import { hostedCompletion, type HostedCompletionState } from "@triliumnext/codemirror/src/extensions/hosted_completion";
 import { triliumTemplate } from "@triliumnext/codemirror/src/extensions/trilium_template";
 import { createFieldEditor, type FieldEditor } from "@triliumnext/codemirror/src/field_editor";
-import { dayjs, evaluateTemplate, type TemplateVariables } from "@triliumnext/commons";
+import { dayjs, evaluateTemplate, type TemplateVariables, type TemplateVariableTypes } from "@triliumnext/commons";
 import clsx from "clsx";
 import { createContext } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
@@ -15,7 +15,7 @@ import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import { CommandMentionList, createHostedList, filterCommandEntries } from "../react/NoteAutocomplete";
 import { SEARCH_FIELD_EDITOR_CLASS } from "../search_field_editor";
-import { type TemplateCompletion, templateCompletionAt, type TemplateEntry, type TemplateVariableTypes } from "./template_completions";
+import { type TemplateCompletion, templateCompletionAt, type TemplateEntry } from "./template_completions";
 
 /** The note a template is previewed against, such as the first of the notes a bulk action runs on. */
 export const TemplatePreviewNoteContext = createContext<string | undefined>(undefined);
@@ -51,7 +51,7 @@ export default function TemplateField({ currentValue, onChange, variables, place
             singleLine: true,
             onChange: (value) => onChangeRef.current(value),
             extensions: [
-                triliumTemplate(Object.keys(variables), templateLintMessages()),
+                triliumTemplate(variables, templateLintMessages()),
                 hostedCompletion({
                     match: (before) => templateCompletionAt(before, variables),
                     list: createTemplateCompletionList
@@ -78,7 +78,8 @@ function templateLintMessages() {
         unsupported: t("template_field.error_unsupported"),
         unknownVariable: (name: string) => t("template_field.error_unknown_variable", { name }),
         propertyNotAllowed: (name: string) => t("template_field.error_property_not_allowed", { name }),
-        methodNotAllowed: (name: string) => t("template_field.error_method_not_allowed", { name })
+        methodNotAllowed: (name: string) => t("template_field.error_method_not_allowed", { name }),
+        methodNotOnValue: (name: string) => t("template_field.error_method_not_on_value", { name })
     };
 }
 

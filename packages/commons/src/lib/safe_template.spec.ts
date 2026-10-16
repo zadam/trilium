@@ -195,7 +195,7 @@ describe("safe_template - rejected expressions", () => {
         expect(() => evaluateTemplate(`\${${expression}}`, { A: {} })).toThrow(
             /is not a supported expression/
         );
-        expect(findTemplateIssues(`\${${expression}}`, [ "A" ])).toMatchObject([
+        expect(findTemplateIssues(`\${${expression}}`, { A: "text" })).toMatchObject([
             { kind: "unsupported" }
         ]);
         expect(performance.now() - start).toBeLessThan(1000);
@@ -203,7 +203,7 @@ describe("safe_template - rejected expressions", () => {
 });
 
 describe("safe_template - findTemplateIssues", () => {
-    const variables = [ "note" ];
+    const variables = { note: "note" } as const;
 
     it("accepts what evaluateTemplate accepts", () => {
         expect(findTemplateIssues("NEW: ${note.title}", variables)).toStrictEqual([]);
@@ -227,14 +227,28 @@ describe("safe_template - findTemplateIssues", () => {
         }
     });
 
+    it("reports a method called on a value that does not have it", () => {
+        const template = "${note.title.format('YYYY')} ${note.format('YYYY')} ${note.dateCreatedObj.getLabelValue('x')}";
+        expect(findTemplateIssues(template, variables).map(({ kind, name }) => ({ kind, name }))).toStrictEqual([
+            { kind: "methodNotOnValue", name: "format" },
+            { kind: "methodNotOnValue", name: "format" },
+            { kind: "methodNotOnValue", name: "getLabelValue" }
+        ]);
+        expect(findTemplateIssues("${now.format('YYYY')} ${now.title.format('YYYY')}", { now: "date" })).toStrictEqual([]);
+    });
+
     it("reports a ${ that is never closed, which evaluateTemplate leaves as text", () => {
         const issues = findTemplateIssues("NEW: ${note.title", variables);
         expect(issues).toStrictEqual([ { kind: "unclosed", from: 5, to: 17, name: undefined } ]);
     });
 
     it("agrees with evaluateTemplate on every case", () => {
-        const note = fakeNote();
-        for (const template of [ "${note.title}", "${note.nope}", "${note.eval('x')}", "${note['title']}", "${other}" ]) {
+        const note = fakeNote({ format: undefined, dateCreatedObj: { format: (fmt: string) => fmt } });
+        for (const template of [
+            "${note.title}", "${note.nope}", "${note.eval('x')}", "${note['title']}", "${other}", "${constructor}",
+            "${note.dateCreatedObj.format('YYYY')}", "${note.title.format('YYYY')}", "${note.format('YYYY')}",
+            "${note.dateCreatedObj.getLabelValue('x')}", "${note.dateCreatedObj.title.format('YYYY')}"
+        ]) {
             const throws = (() => {
                 try {
                     evaluateTemplate(template, { note });

@@ -1,4 +1,5 @@
 import type { HostedCompletionInsert } from "@triliumnext/codemirror/src/extensions/hosted_completion";
+import type { TemplateValueType, TemplateVariableTypes } from "@triliumnext/commons";
 
 import { t } from "../../services/i18n";
 import type { CommandEntry } from "../react/NoteAutocomplete";
@@ -8,12 +9,6 @@ import type { CommandEntry } from "../react/NoteAutocomplete";
  * the members of what the path before a `.` resolves to. Only members the template engine allows,
  * and that give a readable value on the server's `BNote`, are offered.
  */
-
-/** What a template variable or member holds, which decides the members offered after it. */
-export type TemplateValueType = "note" | "date" | "text";
-
-/** The variables a template can read, by name, and what each holds. */
-export type TemplateVariableTypes = Readonly<Record<string, TemplateValueType>>;
 
 export interface TemplateMember {
     name: string;
