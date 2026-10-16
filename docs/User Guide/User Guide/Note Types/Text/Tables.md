@@ -13,6 +13,8 @@ Since v0.107.0, the same menu starts with an _Insert table…_ item, for a table
 
 To close the form without inserting a table, press <kbd>Esc</kbd> or click outside it. From the keyboard, <kbd>Tab</kbd> moves between _Insert table…_ and the grid while the menu is open.
 
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the <span class="tn-icon cke cke-table"></span>button opens the form directly, without the grid.
+
 ## Formatting toolbar
 
 When a table is selected, a special formatting toolbar will appear:

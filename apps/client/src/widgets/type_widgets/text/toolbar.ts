@@ -52,7 +52,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 items.push(subitem);
             }
         } else {
-            items.push(item);
+            // The size grid of `insertTable` needs a pointer that hovers over its cells.
+            items.push(item === "insertTable" ? "insertTableForm" : item);
         }
     }
 
