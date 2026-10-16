@@ -360,29 +360,31 @@ describe("removeAttributeById / removeOwnedAttributesByNameOrType", () => {
 describe("removeOwnedLabelByName / removeOwnedRelationByName", () => {
     beforeEach(() => vi.clearAllMocks());
 
-    it("removeOwnedLabelByName removes an existing label and returns true", () => {
+    it("removeOwnedLabelByName removes an existing label and returns true", async () => {
         const note = buildNote({ title: "N", "#color": "red" });
         const labelId = note.getOwnedLabel("color")!.attributeId;
-        expect(attributeService.removeOwnedLabelByName(note, "color")).toBe(true);
+        await expect(attributeService.removeOwnedLabelByName(note, "color")).resolves.toBe(true);
         expect(server.remove).toHaveBeenCalledWith(`notes/${note.noteId}/attributes/${labelId}`);
     });
 
-    it("removeOwnedLabelByName returns false when label is absent", () => {
+    it("removeOwnedLabelByName returns false when label is absent", async () => {
         const note = buildNote({ title: "N" });
-        expect(attributeService.removeOwnedLabelByName(note, "missing")).toBe(false);
+        await expect(attributeService.removeOwnedLabelByName(note, "missing")).resolves.toBe(false);
         expect(server.remove).not.toHaveBeenCalled();
     });
 
-    it("removeOwnedRelationByName removes an existing relation and returns true", () => {
+    it("removeOwnedRelationByName removes an existing relation and returns true", async () => {
         const note = buildNote({ title: "N", "~template": "tpl1" });
         const relId = note.getOwnedRelation("template")!.attributeId;
-        expect(attributeService.removeOwnedRelationByName(note, "template")).toBe(true);
+        await expect(attributeService.removeOwnedRelationByName(note, "template"))
+            .resolves.toBe(true);
         expect(server.remove).toHaveBeenCalledWith(`notes/${note.noteId}/attributes/${relId}`);
     });
 
-    it("removeOwnedRelationByName returns false when relation is absent", () => {
+    it("removeOwnedRelationByName returns false when relation is absent", async () => {
         const note = buildNote({ title: "N" });
-        expect(attributeService.removeOwnedRelationByName(note, "missing")).toBe(false);
+        await expect(attributeService.removeOwnedRelationByName(note, "missing"))
+            .resolves.toBe(false);
         expect(server.remove).not.toHaveBeenCalled();
     });
 });
