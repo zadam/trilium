@@ -82,9 +82,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Massenaktionen",
-    "affected_notes": "Betroffene Notizen",
     "include_descendants": "Unternotizen der ausgewählten Notizen einbeziehen",
-    "available_actions": "Verfügbare Aktionen",
     "chosen_actions": "Ausgewählte Aktionen",
     "execute_bulk_actions": "Massenaktionen ausführen",
     "bulk_actions_executed": "Massenaktionen wurden erfolgreich ausgeführt.",
@@ -644,21 +642,13 @@
     "remove_this_search_action": "Diese Suchaktion entfernen"
   },
   "execute_script": {
-    "execute_script": "Skript ausführen",
-    "help_text": "Sie können einfache Skripte für die übereinstimmenden Notizen ausführen.",
-    "example_1": "Um beispielsweise eine Zeichenfolge an den Titel einer Notiz anzuhängen, verwenden Sie dieses kleine Skript:",
-    "example_2": "Ein komplexeres Beispiel wäre das Löschen aller übereinstimmenden Notizattribute:"
+    "execute_script": "Skript ausführen"
   },
   "add_label": {
     "add_label": "Label hinzufügen",
     "label_name_placeholder": "Labelname",
     "label_name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to_value": "auf Wert",
-    "new_value_placeholder": "neuer Wert",
-    "help_text": "Auf allen übereinstimmenden Notizen:",
-    "help_text_item1": "Erstellt das angegebene Label, sofern die Notiz noch keines hat",
-    "help_text_item2": "oder den Wert des vorhandenen Labels ändern",
-    "help_text_note": "Sie können diese Methode auch ohne Wert aufrufen. In diesem Fall wird der Notiz ein Label ohne Wert zugewiesen."
+    "new_value_placeholder": "neuer Wert"
   },
   "delete_label": {
     "delete_label": "Label löschen",
@@ -667,9 +657,7 @@
   },
   "rename_label": {
     "rename_label": "Label umbenennen",
-    "rename_label_from": "Label umbenennen von",
     "old_name_placeholder": "alter Name",
-    "to": "zu",
     "new_name_placeholder": "neuer Name",
     "name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt."
   },
@@ -677,49 +665,26 @@
     "update_label_value": "Labelwert aktualisieren",
     "label_name_placeholder": "Labelname",
     "label_name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to_value": "auf Wert",
-    "new_value_placeholder": "neuer Wert",
-    "help_text": "Bei allen übereinstimmenden Notizen den Wert des vorhandenen Labels ändern.",
-    "help_text_note": "Sie können diese Methode auch ohne Wert aufrufen. In diesem Fall wird der Notiz ein Label ohne Wert zugewiesen."
+    "new_value_placeholder": "neuer Wert"
   },
   "delete_note": {
-    "delete_note": "Notiz löschen",
-    "delete_matched_notes": "Übereinstimmende Notizen löschen",
-    "delete_matched_notes_description": "Dadurch werden übereinstimmende Notizen gelöscht.",
-    "undelete_notes_instruction": "Nach dem Löschen ist es möglich, sie im Dialogfeld „Letzte Änderungen“ wiederherzustellen.",
-    "erase_notes_instruction": "Um Notizen dauerhaft zu löschen, gehen Sie nach der Löschung zu Optionen → Andere und klicken Sie auf die Schaltfläche „Gelöschte Notizen jetzt löschen“."
+    "delete_note": "Notiz löschen"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Notizrevisionen löschen",
-    "all_past_note_revisions": "Alle früheren Notizrevisionen übereinstimmender Notizen werden gelöscht. Die Notiz selbst bleibt vollständig erhalten. Mit anderen Worten: Der Verlauf der Notiz wird entfernt."
+    "delete_note_revisions": "Notizrevisionen löschen"
   },
   "move_note": {
     "move_note": "Notiz verschieben",
-    "to": "nach",
-    "target_parent_note": "Übergeordnete Zielnotiz",
-    "on_all_matched_notes": "Auf allen übereinstimmenden Notizen",
-    "move_note_new_parent": "Die Notiz in die neue übergeordnete Notiz verschieben, wenn die Notiz nur eine übergeordnete Notiz hat (d. h. der alte Zweig wird entfernt und ein neuer Zweig in die neue übergeordnete Notiz erstellt)",
-    "clone_note_new_parent": "Notiz zur neuen übergeordneten Notiz klonen, wenn die Notiz mehrere Klone/Zweige hat (es ist unklar, welcher Zweig entfernt werden soll)",
-    "nothing_will_happen": "Es passiert nichts, wenn die Notiz nicht zur Zielnotiz verschoben werden kann (z.B. wenn dies einen Kreislauf in der Baumstruktur erzeugen würde)"
+    "target_parent_note": "Übergeordnete Zielnotiz"
   },
   "rename_note": {
-    "rename_note": "Notiz umbenennen",
-    "rename_note_title_to": "Notiztitel umbenennen in",
-    "new_note_title": "neuer Notiztitel",
-    "click_help_icon": "Klicken Sie rechts auf das Hilfesymbol, um alle Optionen anzuzeigen",
-    "evaluated_as_js_string": "Der angegebene Wert wird als JavaScript-String ausgewertet und kann somit über die injizierte <code>note</code>-Variable mit dynamischem Inhalt angereichert werden (Notiz wird umbenannt). Beispiele:",
-    "example_note": "<code>Notiz</code> – alle übereinstimmenden Notizen werden in „Notiz“ umbenannt",
-    "example_new_title": "<code>NEU: ${note.title}</code> – Übereinstimmende Notiztitel erhalten das Präfix „NEU:“",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> – übereinstimmende Notizen werden mit dem Erstellungsmonat und -datum der Notiz vorangestellt",
-    "api_docs": "Siehe API-Dokumentation für <a href='https://zadam.github.io/trilium/backend_api/Note.html'>Notiz</a> und <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj-Eigenschaften</a> für Details."
+    "rename_note": "Notiz umbenennen"
   },
   "add_relation": {
     "add_relation": "Relation hinzufügen",
     "relation_name": "Relationsname",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to": "zu",
-    "target_note": "Zielnotiz",
-    "create_relation_on_all_matched_notes": "Für alle übereinstimmenden Notizen die angegebene Relation erstellen."
+    "target_note": "Zielnotiz"
   },
   "delete_relation": {
     "delete_relation": "Relation löschen",
@@ -728,20 +693,14 @@
   },
   "rename_relation": {
     "rename_relation": "Relation umbenennen",
-    "rename_relation_from": "Relation umbenennen von",
     "old_name": "alter Name",
-    "to": "zu",
     "new_name": "neuer Name",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt."
   },
   "update_relation_target": {
-    "update_relation": "Relation aktualisieren",
     "relation_name": "Relationsname",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to": "zu",
     "target_note": "Zielnotiz",
-    "on_all_matched_notes": "Auf allen übereinstimmenden Notizen",
-    "change_target_note": "oder die Zielnotiz der bestehenden Relation ändern",
     "update_relation_target": "Relationsziel aktualisieren"
   },
   "attachments_actions": {
@@ -3172,16 +3131,13 @@
   },
   "save_revision": {
     "save_revision": "Revision speichern",
-    "revision_name_placeholder": "Revisionsname (optional)",
-    "help": "Für jede passende Notiz wird eine benannte Revision mit ihrem aktuellen Inhalt und Titel gespeichert."
+    "revision_name_placeholder": "Revisionsname (optional)"
   },
   "convert_note": {
     "convert_note": "Konvertieren",
-    "convert_note_to": "Notiz konvertieren",
     "choose_conversion": "(Konvertierung auswählen)",
     "conversion_htmlToMarkdown": "Textnotizen → Markdown-Notizen (verlustbehaftet)",
     "conversion_markdownToHtml": "Markdown-Notizen → Textnotizen",
-    "help_text": "Die Konvertierung wird nur auf Notizen des Quelltyps angewendet; andere Notizen bleiben unverändert. Vorher wird eine Revision jeder konvertierten Notiz gespeichert.",
     "warning": "Bei der Konvertierung von Notizen können einige Formatierungen verloren gehen und anschließend Anpassungen nötig sein. Vorher wird eine Revision jeder konvertierten Notiz gespeichert, damit Sie sie wiederherstellen können. Möchten Sie fortfahren?",
     "warning_risky": "Sie konvertieren zwischen zwei Formaten mit unterschiedlichen Möglichkeiten. Dabei können Formatierungen verloren gehen und nicht unterstützte Elemente entfernt werden.<br><br>Möchten Sie dieses Risiko vollständig übernehmen und mit der Konvertierung fortfahren?<br><br>Vorher wird eine Revision jeder konvertierten Notiz gespeichert, damit Sie zum ursprünglichen Format zurückkehren können."
   },

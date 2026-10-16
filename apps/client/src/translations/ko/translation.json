@@ -84,9 +84,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "대량 작업",
-    "affected_notes": "영향을 받는 노트",
     "include_descendants": "선택한 노트의 하위 노트 포함",
-    "available_actions": "사용 가능한 작업",
     "chosen_actions": "선택한 작업",
     "execute_bulk_actions": "대량 작업 실행",
     "bulk_actions_executed": "대량 작업이 성공적으로 실행되었습니다.",
@@ -896,21 +894,13 @@
     "remove_this_search_action": "이 검색 작업 제거"
   },
   "execute_script": {
-    "execute_script": "스크립트 실행",
-    "help_text": "일치한 노트에 간단한 스크립트를 실행할 수 있습니다.",
-    "example_1": "예를 들어, 노트 제목에 문자열을 덧붙이려면 다음 작은 스크립트를 사용하세요:",
-    "example_2": "더 복잡한 예로는 모든 매칭된 노트의 속성을 삭제하는 것이 있습니다:"
+    "execute_script": "스크립트 실행"
   },
   "add_label": {
     "add_label": "라벨 추가",
     "label_name_placeholder": "라벨 이름",
     "label_name_title": "영숫자 문자, 밑줄, 콜론은 허용됩니다.",
-    "to_value": "값을",
-    "new_value_placeholder": "새 값",
-    "help_text": "일치하는 모든 노트에 대해:",
-    "help_text_item1": "노트에 아직 해당 라벨이 없으면 새로 생성",
-    "help_text_item2": "또는 기존 라벨이 있으면 값 변경",
-    "help_text_note": "이 메서드는 값 없이 호출할 수도 있습니다. 이 경우 값이 없는 라벨을 노트에 지정합니다."
+    "new_value_placeholder": "새 값"
   },
   "delete_label": {
     "delete_label": "라벨 삭제",
@@ -919,9 +909,7 @@
   },
   "rename_label": {
     "rename_label": "라벨 이름 변경",
-    "rename_label_from": "다음 라벨의 이름 변경",
     "old_name_placeholder": "이전 이름",
-    "to": "로",
     "new_name_placeholder": "새 이름",
     "name_title": "영숫자 문자, 밑줄, 콜론은 허용됩니다."
   },
@@ -929,64 +917,38 @@
     "update_label_value": "라벨 값 업데이트",
     "label_name_placeholder": "라벨 이름",
     "label_name_title": "영숫자 문자, 밑줄, 콜론은 허용됩니다.",
-    "to_value": "값을",
-    "new_value_placeholder": "새 값",
-    "help_text": "모든 매칭된 노트에서 기존 라벨의 값을 변경하세요.",
-    "help_text_note": "이 메서드는 값 없이 호출할 수도 있습니다. 이 경우 값이 없는 라벨을 노트에 지정합니다."
+    "new_value_placeholder": "새 값"
   },
   "delete_note": {
-    "delete_note": "노트 삭제",
-    "delete_matched_notes": "일치하는 노트 삭제",
-    "delete_matched_notes_description": "이 경우 매치된 노트가 삭제됩니다.",
-    "undelete_notes_instruction": "삭제한 노트는 최근 변경 사항 대화 상자에서 복원할 수 있습니다.",
-    "erase_notes_instruction": "노트를 영구적으로 지우려면, 삭제 후 옵션 -> 기타 항목에서 \"삭제된 노트 지우기\" 버튼을 클릭하세요."
+    "delete_note": "노트 삭제"
   },
   "save_revision": {
     "save_revision": "수정본 저장",
-    "revision_name_placeholder": "수정본 이름 (선택 사항)",
-    "help": "각 매칭된 노트마다 현재 내용과 제목을 담은 명명된 수정본이 저장됩니다."
+    "revision_name_placeholder": "수정본 이름 (선택 사항)"
   },
   "delete_revisions": {
-    "delete_note_revisions": "노트 수정본 삭제",
-    "all_past_note_revisions": "일치하는 노트의 모든 이전 수정본을 삭제합니다. 노트 자체는 그대로 보존되고 노트 기록만 제거됩니다."
+    "delete_note_revisions": "노트 수정본 삭제"
   },
   "move_note": {
     "move_note": "노트 이동",
-    "to": "로",
-    "target_parent_note": "대상 상위 노트",
-    "on_all_matched_notes": "일치하는 모든 노트에 대해",
-    "move_note_new_parent": "노트에 상위 노트가 하나만 있으면 새 상위 노트로 이동합니다(즉, 기존 분기는 제거되고 새 상위 노트 아래에 새 분기가 생성됩니다)",
-    "clone_note_new_parent": "노트에 복제본이나 분기가 여러 개 있으면 새 상위 노트 아래에 복제합니다(어떤 분기를 제거해야 할지 명확하지 않음)",
-    "nothing_will_happen": "노트를 대상 노트로 이동할 수 없으면 아무 작업도 수행하지 않습니다(즉, 트리 순환이 생성되는 경우)"
+    "target_parent_note": "대상 상위 노트"
   },
   "convert_note": {
     "convert_note": "변환",
-    "convert_note_to": "노트 변환",
     "choose_conversion": "(변환 선택)",
     "conversion_htmlToMarkdown": "텍스트 노트 → Markdown 노트(일부 손실 가능)",
     "conversion_markdownToHtml": "Markdown 노트 → 텍스트 노트",
-    "help_text": "변환은 원본 유형과 일치하는 노트에만 적용하며 다른 노트는 변경하지 않습니다. 변환할 각 노트의 수정본을 미리 저장합니다.",
     "warning": "노트를 변환하면 일부 서식이 손실되어 나중에 직접 수정해야 할 수 있습니다. 복원할 수 있도록 변환할 각 노트의 수정본을 미리 저장합니다. 계속하시겠습니까?",
     "warning_risky": "기능이 서로 다른 두 형식 간에 변환하므로 일부 서식이 손실되거나 지원되지 않는 요소가 제거될 수 있습니다.<br><br>이 위험을 감수하고 변환을 계속하시겠습니까?<br><br>원래 형식으로 되돌릴 수 있도록 변환된 각 노트의 수정본을 미리 저장합니다."
   },
   "rename_note": {
-    "rename_note": "노트 이름 변경",
-    "rename_note_title_to": "노트 제목을 다음으로 변경",
-    "new_note_title": "새로운 노트 제목",
-    "click_help_icon": "오른쪽의 도움말 아이콘을 클릭하면 모든 옵션을 볼 수 있습니다",
-    "evaluated_as_js_string": "입력한 값을 JavaScript 문자열로 평가합니다. 주입된 <code>note</code> 변수(이름을 바꿀 노트)를 사용하여 동적 콘텐츠를 추가할 수 있습니다. 예:",
-    "example_note": "<code>Note</code> - 일치하는 모든 노트의 이름을 'Note'로 변경합니다",
-    "example_new_title": "<code>NEW: ${note.title}</code> - 일치하는 노트 제목 앞에 'NEW:'가 붙습니다",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - 일치하는 노트 제목 앞에 노트 생성 월·일이 붙습니다",
-    "api_docs": "자세한 내용은 <a href='https://zadam.github.io/trilium/backend_api/Note.html'>노트</a> API 문서와 <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj 속성</a> 문서를 참조하세요."
+    "rename_note": "노트 이름 변경"
   },
   "add_relation": {
     "add_relation": "관계 추가",
     "relation_name": "관계 이름",
     "allowed_characters": "영숫자 문자, 밑줄, 콜론은 허용됩니다.",
-    "to": "로",
-    "target_note": "대상 노트",
-    "create_relation_on_all_matched_notes": "일치하는 모든 노트에 지정된 관계를 생성합니다."
+    "target_note": "대상 노트"
   },
   "delete_relation": {
     "delete_relation": "관계 삭제",
@@ -995,20 +957,14 @@
   },
   "rename_relation": {
     "rename_relation": "관계 이름 변경",
-    "rename_relation_from": "다음 관계의 이름 변경",
     "old_name": "이전 이름",
-    "to": "로",
     "new_name": "새 이름",
     "allowed_characters": "영숫자 문자, 밑줄, 콜론은 허용됩니다."
   },
   "update_relation_target": {
-    "update_relation": "관계 업데이트",
     "relation_name": "관계 이름",
     "allowed_characters": "영숫자 문자, 밑줄, 콜론은 허용됩니다.",
-    "to": "로",
     "target_note": "대상 노트",
-    "on_all_matched_notes": "일치하는 모든 노트에 대해",
-    "change_target_note": "기존 관계의 대상 노트 변경",
     "update_relation_target": "관계 대상 업데이트"
   },
   "attachments_actions": {

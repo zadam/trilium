@@ -29,9 +29,7 @@
     "notes": "Notes",
     "other": "Altres",
     "bulk_actions": "Accions en bloc",
-    "affected_notes": "Notes afectades",
     "include_descendants": "Inclou els descendents de les notes seleccionades",
-    "available_actions": "Accions disponibles",
     "chosen_actions": "Accions escollides",
     "execute_bulk_actions": "Executa accions en bloc",
     "bulk_actions_executed": "Les accions en bloc s'han executat amb èxit.",
@@ -116,21 +114,6 @@
     "textarea": "Text multi linia",
     "date_time": "Data i hora",
     "precision_title": "Quants dígits han d'estar disponibles per a coma flotant a la interfície de configuració."
-  },
-  "rename_label": {
-    "to": "Per"
-  },
-  "move_note": {
-    "to": "a"
-  },
-  "add_relation": {
-    "to": "a"
-  },
-  "rename_relation": {
-    "to": "Per"
-  },
-  "update_relation_target": {
-    "to": "a"
   },
   "attachments_actions": {
     "download": "Descarrega"

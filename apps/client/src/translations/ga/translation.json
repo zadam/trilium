@@ -117,9 +117,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Gníomhartha mórchóir",
-    "affected_notes": "Nótaí a ndearnadh difear dóibh",
     "include_descendants": "Cuir sliocht na nótaí roghnaithe san áireamh",
-    "available_actions": "Gníomhartha atá ar fáil",
     "chosen_actions": "Gníomhartha roghnaithe",
     "execute_bulk_actions": "Gníomhartha mórchóir a fhorghníomhú",
     "bulk_actions_executed": "Tá gníomhartha mórchóir curtha i gcrích go rathúil.",
@@ -713,21 +711,13 @@
     "remove_this_search_action": "Bain an gníomh cuardaigh seo"
   },
   "execute_script": {
-    "execute_script": "Forghníomhaigh script",
-    "help_text": "Is féidir leat scripteanna simplí a fhorghníomhú ar na nótaí meaitseáilte.",
-    "example_1": "Mar shampla, chun teaghrán a chur le teideal nóta, bain úsáid as an script beag seo:",
-    "example_2": "Sampla níos casta ná tréithe uile an nóta mheaitseáilte a scriosadh:"
+    "execute_script": "Forghníomhaigh script"
   },
   "add_label": {
     "add_label": "Cuir lipéad leis",
     "label_name_placeholder": "ainm lipéid",
     "label_name_title": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon.",
-    "to_value": "luach a chur",
-    "new_value_placeholder": "luach nua",
-    "help_text": "Ar na nótaí uile a mheaitseálann:",
-    "help_text_item1": "cruthaigh lipéad tugtha mura bhfuil ceann ag an nóta fós",
-    "help_text_item2": "nó luach an lipéid atá ann cheana a athrú",
-    "help_text_note": "Is féidir leat an modh seo a ghlaoch gan luach freisin, sa chás sin sanntar lipéad don nóta gan luach."
+    "new_value_placeholder": "luach nua"
   },
   "delete_label": {
     "delete_label": "Scrios lipéad",
@@ -736,9 +726,7 @@
   },
   "rename_label": {
     "rename_label": "Athainmnigh an lipéad",
-    "rename_label_from": "Athainmnigh an lipéad ó",
     "old_name_placeholder": "seanainm",
-    "to": "Chuig",
     "new_name_placeholder": "ainm nua",
     "name_title": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon."
   },
@@ -746,49 +734,26 @@
     "update_label_value": "Nuashonraigh luach an lipéid",
     "label_name_placeholder": "ainm lipéid",
     "label_name_title": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon.",
-    "to_value": "luach a chur",
-    "new_value_placeholder": "luach nua",
-    "help_text": "Ar na nótaí uile a mheaitseálann, athraigh luach an lipéid atá ann cheana féin.",
-    "help_text_note": "Is féidir leat an modh seo a ghlaoch gan luach freisin, sa chás sin sanntar lipéad don nóta gan luach."
+    "new_value_placeholder": "luach nua"
   },
   "delete_note": {
-    "delete_note": "Scrios nóta",
-    "delete_matched_notes": "Scrios nótaí comhoiriúnacha",
-    "delete_matched_notes_description": "Scriosfaidh sé seo nótaí comhoiriúnacha.",
-    "undelete_notes_instruction": "Tar éis an scriosta, is féidir iad a athscriosadh ón dialóg Athruithe Le Déanaí.",
-    "erase_notes_instruction": "Chun nótaí a scriosadh go buan, is féidir leat dul i ndiaidh an scriosta chuig Rogha -> Eile agus cliceáil ar an gcnaipe \"Scrios nótaí scriosta anois\"."
+    "delete_note": "Scrios nóta"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Scrios athbhreithnithe nótaí",
-    "all_past_note_revisions": "Scriosfar gach athbhreithniú nóta roimhe seo ar nótaí meaitseáilte. Caomhnófar an nóta féin go hiomlán. I dtéarmaí eile, bainfear stair an nóta."
+    "delete_note_revisions": "Scrios athbhreithnithe nótaí"
   },
   "move_note": {
     "move_note": "Bog nóta",
-    "to": "chuig",
-    "target_parent_note": "nóta tuismitheora sprice",
-    "on_all_matched_notes": "Ar na nótaí uile a mheaitseálann",
-    "move_note_new_parent": "bog nóta chuig an tuismitheoir nua mura bhfuil ach tuismitheoir amháin ag an nóta (i.e. baintear an seanbhrainse agus cruthaítear brainse nua isteach sa tuismitheoir nua)",
-    "clone_note_new_parent": "nóta clónála chuig an tuismitheoir nua má tá ilchlónanna/brainsí sa nóta (níl sé soiléir cén brainse ba chóir a bhaint)",
-    "nothing_will_happen": "ní tharlóidh aon rud mura féidir an nóta a bhogadh chuig an nóta sprice (i.e. chruthódh sé seo timthriall crainn)"
+    "target_parent_note": "nóta tuismitheora sprice"
   },
   "rename_note": {
-    "rename_note": "Athainmnigh an nóta",
-    "rename_note_title_to": "Athainmnigh teideal an nóta go",
-    "new_note_title": "teideal nóta nua",
-    "click_help_icon": "Cliceáil ar an deilbhín cabhrach ar dheis chun na roghanna go léir a fheiceáil",
-    "evaluated_as_js_string": "Déantar an luach tugtha a mheas mar theaghrán JavaScript agus dá bhrí sin is féidir é a shaibhriú le hábhar dinimiciúil tríd an athróg <code>note</code> insteallta (nóta á athainmniú). Samplaí:",
-    "example_note": "<code>Nóta</code> - athainmnítear na nótaí uile a mheaitseálann go 'Nóta'",
-    "example_new_title": "<code>NUA: ${note.title}</code> - cuirtear 'NUA:' roimh theidil nótaí meaitseáilte",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - cuirtear réimír mhí-dháta cruthaithe an nóta leis na nótaí meaitseáilte",
-    "api_docs": "Féach ar dhoiciméid API le haghaidh <a href='https://zadam.github.io/trilium/backend_api/Note.html'>nóta</a> agus a airíonna <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj</a> le haghaidh tuilleadh sonraí."
+    "rename_note": "Athainmnigh an nóta"
   },
   "add_relation": {
     "add_relation": "Cuir gaol leis",
     "relation_name": "ainm an chaidrimh",
     "allowed_characters": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon.",
-    "to": "chuig",
-    "target_note": "nóta sprice",
-    "create_relation_on_all_matched_notes": "Ar na nótaí meaitseáilte uile, cruthaigh gaol tugtha."
+    "target_note": "nóta sprice"
   },
   "delete_relation": {
     "delete_relation": "Scrios an gaol",
@@ -797,20 +762,14 @@
   },
   "rename_relation": {
     "rename_relation": "Athainmnigh an gaol",
-    "rename_relation_from": "Athainmnigh an gaol ó",
     "old_name": "seanainm",
-    "to": "Chuig",
     "new_name": "ainm nua",
     "allowed_characters": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon."
   },
   "update_relation_target": {
-    "update_relation": "Nuashonraigh an gaol",
     "relation_name": "ainm an chaidrimh",
     "allowed_characters": "Is carachtair cheadaithe iad carachtair alfa-uimhriúla, fo-strait agus colon.",
-    "to": "chuig",
     "target_note": "nóta sprice",
-    "on_all_matched_notes": "Ar na nótaí uile a mheaitseálann",
-    "change_target_note": "athrú nóta sprice an chaidrimh atá ann cheana",
     "update_relation_target": "Nuashonraigh sprioc an chaidrimh"
   },
   "attachments_actions": {
@@ -4156,16 +4115,13 @@
   },
   "save_revision": {
     "save_revision": "Sábháil athbhreithniú",
-    "revision_name_placeholder": "Ainm an athbhreithnithe (roghnach)",
-    "help": "Sábhálfar athbhreithniú ainmnithe do gach nóta a mheaitseálfar, ag gabháil a ábhair agus a theidil reatha."
+    "revision_name_placeholder": "Ainm an athbhreithnithe (roghnach)"
   },
   "convert_note": {
     "convert_note": "Tiontaigh",
-    "convert_note_to": "Nóta a thiontú",
     "choose_conversion": "(roghnaigh comhshó)",
     "conversion_htmlToMarkdown": "Nótaí Téacs → Nótaí Marcála Anuas (caillteanach)",
     "conversion_markdownToHtml": "Nótaí Marcála Anuas → Nótaí Téacs",
-    "help_text": "Ní chuirtear an tiontú i bhfeidhm ach ar nótaí a mheaitseálann an cineál foinse; fágtar nótaí eile gan athrú. Sábháiltear athbhreithniú ar gach nóta tiontaithe roimh ré.",
     "warning": "D’fhéadfadh roinnt formáidithe a bheith caillte agus nótaí á gcomhshó agus b’fhéidir go mbeadh ort cúpla rud a shocrú ina dhiaidh sin. Sábhálfar athbhreithniú ar gach nóta comhshóite roimh ré ionas gur féidir leat é a athchóiriú. Ar mhaith leat leanúint ar aghaidh?",
     "warning_risky": "Tá tú ag tiontú idir dhá fhormáid nach bhfuil cumais chomhionanna acu, mar sin d'fhéadfadh roinnt formáidithe a bheith caillte agus d'fhéadfadh roinnt eilimintí nach dtacaítear leo a bheith fágtha ar lár.<br><br>An nglacann tú leis an riosca seo go hiomlán agus an mian leat dul ar aghaidh leis an tiontú?<br><br>Sábhálfar athbhreithniú ar gach nóta tiontaithe roimh ré, ionas gur féidir leat filleadh ar an bhformáid bhunaidh."
   },

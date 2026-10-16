@@ -84,9 +84,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "批量操作",
-    "affected_notes": "受影响的笔记",
     "include_descendants": "包括所选笔记的子笔记",
-    "available_actions": "可用操作",
     "chosen_actions": "选择的操作",
     "execute_bulk_actions": "执行批量操作",
     "bulk_actions_executed": "批量操作已成功执行。",
@@ -668,21 +666,13 @@
     "remove_this_search_action": "删除此搜索操作"
   },
   "execute_script": {
-    "execute_script": "执行脚本",
-    "help_text": "你可以在匹配的笔记上执行简单的脚本。",
-    "example_1": "例如，要在笔记标题后附加字符串，请使用以下脚本：",
-    "example_2": "更复杂的例子，删除所有匹配的笔记属性："
+    "execute_script": "执行脚本"
   },
   "add_label": {
     "add_label": "添加标签",
     "label_name_placeholder": "标签名称",
     "label_name_title": "允许使用字母、数字、下划线和冒号。",
-    "to_value": "值为",
-    "new_value_placeholder": "新值",
-    "help_text": "在所有匹配的笔记上：",
-    "help_text_item1": "如果笔记尚无此标签，则创建给定的标签",
-    "help_text_item2": "或更改现有标签的值",
-    "help_text_note": "你也可以在不指定值的情况下调用此方法，这种情况下，标签将分配给没有值的笔记。"
+    "new_value_placeholder": "新值"
   },
   "delete_label": {
     "delete_label": "删除标签",
@@ -691,9 +681,7 @@
   },
   "rename_label": {
     "rename_label": "重命名标签",
-    "rename_label_from": "重命名标签从",
     "old_name_placeholder": "旧名称",
-    "to": "改为",
     "new_name_placeholder": "新名称",
     "name_title": "允许使用字母、数字、下划线和冒号。"
   },
@@ -701,49 +689,26 @@
     "update_label_value": "更新标签值",
     "label_name_placeholder": "标签名称",
     "label_name_title": "允许使用字母、数字、下划线和冒号。",
-    "to_value": "值为",
-    "new_value_placeholder": "新值",
-    "help_text": "在所有匹配的笔记上，更改现有标签的值。",
-    "help_text_note": "你也可以在不指定值的情况下调用此方法，这种情况下，标签将分配给没有值的笔记。"
+    "new_value_placeholder": "新值"
   },
   "delete_note": {
-    "delete_note": "删除笔记",
-    "delete_matched_notes": "删除匹配的笔记",
-    "delete_matched_notes_description": "这将删除匹配的笔记。",
-    "undelete_notes_instruction": "删除后，可以从“最近修改”对话框中恢复它们。",
-    "erase_notes_instruction": "要永久擦除笔记，你可以在删除后转到“选项”->“其他”，然后单击“立即擦除已删除的笔记”按钮。"
+    "delete_note": "删除笔记"
   },
   "delete_revisions": {
-    "delete_note_revisions": "删除笔记修订版本",
-    "all_past_note_revisions": "所有匹配笔记的过去修订版本都将被删除。笔记本身将完全保留。换句话说，笔记的历史将被删除。"
+    "delete_note_revisions": "删除笔记修订版本"
   },
   "move_note": {
     "move_note": "移动笔记",
-    "to": "到",
-    "target_parent_note": "目标父笔记",
-    "on_all_matched_notes": "对于所有匹配的笔记",
-    "move_note_new_parent": "如果笔记只有一个父级（即旧分支被移除并创建新分支到新父级），则将笔记移动到新父级",
-    "clone_note_new_parent": "如果笔记有多个克隆/分支（不清楚应该移除哪个分支），则将笔记克隆到新父级",
-    "nothing_will_happen": "如果笔记无法移动到目标笔记（即这会创建一个树循环），则不会发生任何事情"
+    "target_parent_note": "目标父笔记"
   },
   "rename_note": {
-    "rename_note": "重命名笔记",
-    "rename_note_title_to": "重命名笔记标题为",
-    "new_note_title": "新笔记标题",
-    "click_help_icon": "点击右侧的帮助图标查看所有选项",
-    "evaluated_as_js_string": "给定的值被评估为 JavaScript 字符串，因此可以通过注入的 <code>note</code> 变量（正在重命名的笔记）丰富动态内容。 例如：",
-    "example_note": "<code>Note</code> - 所有匹配的笔记都被重命名为“Note”",
-    "example_new_title": "<code>NEW: ${note.title}</code> - 匹配的笔记标题以“NEW: ”为前缀",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - 匹配的笔记以笔记的创建月份-日期为前缀",
-    "api_docs": "有关详细信息，请参阅 <a href='https://zadam.github.io/trilium/backend_api/Note.html'>笔记</a> 及其 <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj 属性</a> 的API文档。"
+    "rename_note": "重命名笔记"
   },
   "add_relation": {
     "add_relation": "添加关系",
     "relation_name": "关系名称",
     "allowed_characters": "允许的字符为字母数字、下划线和冒号。",
-    "to": "到",
-    "target_note": "目标笔记",
-    "create_relation_on_all_matched_notes": "在所有匹配的笔记上创建指定的关系。"
+    "target_note": "目标笔记"
   },
   "delete_relation": {
     "delete_relation": "删除关系",
@@ -752,20 +717,14 @@
   },
   "rename_relation": {
     "rename_relation": "重命名关系",
-    "rename_relation_from": "重命名关系，从",
     "old_name": "旧名称",
-    "to": "改为",
     "new_name": "新名称",
     "allowed_characters": "允许的字符为字母数字、下划线和冒号。"
   },
   "update_relation_target": {
-    "update_relation": "更新关系",
     "relation_name": "关系名称",
     "allowed_characters": "允许的字符为字母数字、下划线和冒号。",
-    "to": "到",
     "target_note": "目标笔记",
-    "on_all_matched_notes": "在所有匹配的笔记上",
-    "change_target_note": "或更改现有关系的目标笔记",
     "update_relation_target": "更新关系目标"
   },
   "attachments_actions": {
@@ -3961,16 +3920,13 @@
   },
   "save_revision": {
     "save_revision": "保存修订",
-    "revision_name_placeholder": "修订名称（可选）",
-    "help": "将为每个匹配的笔记保存一个命名修订，记录其当前的内容和标题。"
+    "revision_name_placeholder": "修订名称（可选）"
   },
   "convert_note": {
     "convert_note": "转换",
-    "convert_note_to": "转换笔记",
     "choose_conversion": "（选择转换方式）",
     "conversion_htmlToMarkdown": "文本笔记 → Markdown 笔记（有损转换）",
     "conversion_markdownToHtml": "Markdown 笔记 → 文本笔记",
-    "help_text": "转换仅应用于符合源类型的笔记，其他笔记保持不变。转换前会先为每篇笔记保存一个修订。",
     "warning": "转换笔记时可能会丢失部分格式，之后可能需要手动调整。转换前会先为每篇笔记保存一个修订，方便随时还原。要继续吗？",
     "warning_risky": "你正在两种功能不完全一致的格式之间进行转换，因此部分格式可能会丢失，部分不支持的元素可能会被舍弃。<br><br>你愿意自行承担这一风险，并继续转换吗？<br><br>转换前会先为每篇笔记保存一个修订，以便随时还原为原始格式。"
   },

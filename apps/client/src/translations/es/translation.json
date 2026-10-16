@@ -84,9 +84,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Acciones en bloque",
-    "affected_notes": "Notas afectadas",
     "include_descendants": "Incluir descendientes de las notas seleccionadas",
-    "available_actions": "Acciones disponibles",
     "chosen_actions": "Acciones elegidas",
     "execute_bulk_actions": "Ejecutar acciones en bloque",
     "bulk_actions_executed": "Las acciones en bloque se han ejecutado con éxito.",
@@ -673,21 +671,13 @@
     "remove_this_search_action": "Eliminar esta acción de búsqueda"
   },
   "execute_script": {
-    "execute_script": "Ejecutar script",
-    "help_text": "Puede ejecutar scripts simples en las notas coincidentes.",
-    "example_1": "Por ejemplo, para añadir una cadena al título de una nota, use este pequeño script:",
-    "example_2": "Un ejemplo más complejo sería eliminar todos los atributos de las notas coincidentes:"
+    "execute_script": "Ejecutar script"
   },
   "add_label": {
     "add_label": "Añadir etiqueta",
     "label_name_placeholder": "nombre de la etiqueta",
     "label_name_title": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos.",
-    "to_value": "a valor",
-    "new_value_placeholder": "nuevo valor",
-    "help_text": "Sobre todas las notas coincidentes:",
-    "help_text_item1": "crear una etiqueta dada si la nota aún no tiene una",
-    "help_text_item2": "o cambiar el valor de la etiqueta existente",
-    "help_text_note": "También puede llamar a este método sin valor, en tal caso se asignará una etiqueta a la nota sin valor."
+    "new_value_placeholder": "nuevo valor"
   },
   "delete_label": {
     "delete_label": "Eliminar etiqueta",
@@ -696,9 +686,7 @@
   },
   "rename_label": {
     "rename_label": "Renombrar etiqueta",
-    "rename_label_from": "Renombrar etiqueta de",
     "old_name_placeholder": "antiguo nombre",
-    "to": "A",
     "new_name_placeholder": "nuevo nombre",
     "name_title": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos."
   },
@@ -706,49 +694,26 @@
     "update_label_value": "Actualizar valor de etiqueta",
     "label_name_placeholder": "nombre de la etiqueta",
     "label_name_title": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos.",
-    "to_value": "a valor",
-    "new_value_placeholder": "nuevo valor",
-    "help_text": "En todas las notas coincidentes, cambie el valor de la etiqueta existente.",
-    "help_text_note": "También puede llamar a este método sin valor, en tal caso se asignará una etiqueta a la nota sin valor."
+    "new_value_placeholder": "nuevo valor"
   },
   "delete_note": {
-    "delete_note": "Eliminar nota",
-    "delete_matched_notes": "Eliminar notas coincidentes",
-    "delete_matched_notes_description": "Esto eliminará las notas coincidentes.",
-    "undelete_notes_instruction": "Después de la eliminación, es posible recuperarlos desde el cuadro de diálogo Cambios recientes.",
-    "erase_notes_instruction": "Para eliminar las notas permanentemente, puede ir después de la eliminación a Opción -> Otro y hacer clic en el botón \"Borrar notas eliminadas ahora\"."
+    "delete_note": "Eliminar nota"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Eliminar revisiones de notas",
-    "all_past_note_revisions": "Se eliminarán todas las revisiones anteriores de notas coincidentes. La nota en sí se conservará por completo. En otros términos, se eliminará el historial de la nota."
+    "delete_note_revisions": "Eliminar revisiones de notas"
   },
   "move_note": {
     "move_note": "Mover nota",
-    "to": "a",
-    "target_parent_note": "nota padre objetivo",
-    "on_all_matched_notes": "En todas las notas coincidentes",
-    "move_note_new_parent": "mover nota al nuevo padre si la nota solo tiene un padre (es decir, la rama anterior es eliminada y una nueva rama es creada en el nuevo padre)",
-    "clone_note_new_parent": "clonar la nota al nuevo padre si la nota tiene múltiples clones/ramas (no es claro que rama debe ser eliminada)",
-    "nothing_will_happen": "no pasará nada si la nota no se puede mover a la nota de destino (es decir, esto crearía un ciclo de árbol)"
+    "target_parent_note": "nota padre objetivo"
   },
   "rename_note": {
-    "rename_note": "Renombrar nota",
-    "rename_note_title_to": "Renombrar título de la nota a",
-    "new_note_title": "nuevo título de nota",
-    "click_help_icon": "Haga clic en el icono de ayuda a la derecha para ver todas las opciones",
-    "evaluated_as_js_string": "El valor dado se evalúa como una cadena de JavaScript y, por lo tanto, se puede enriquecer con contenido dinámico a través de la variable <code>note</code> inyectada (se cambia el nombre de la nota). Ejemplos:",
-    "example_note": "<code>Note</code>: todas las notas coincidentes se renombran a 'Note'",
-    "example_new_title": "<code>NEW: ${note.title}</code> - los títulos de las notas coincidentes reciben el prefijo 'NEW: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - las notas coincidentes tienen el prefijo fecha-mes de creación de la nota",
-    "api_docs": "Consulte la documentación de la API de <a href='https://zadam.github.io/trilium/backend_api/Note.html'>nota</a> y sus <a href='https://day.js.org/docs/en/display/format'>propiedades dateCreatedObj/utcDateCreatedObj</a> para más detalles."
+    "rename_note": "Renombrar nota"
   },
   "add_relation": {
     "add_relation": "Añadir relación",
     "relation_name": "nombre de la relación",
     "allowed_characters": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos.",
-    "to": "a",
-    "target_note": "nota de destino",
-    "create_relation_on_all_matched_notes": "En todas las notas coincidentes, cree una relación determinada."
+    "target_note": "nota de destino"
   },
   "delete_relation": {
     "delete_relation": "Eliminar relación",
@@ -757,20 +722,14 @@
   },
   "rename_relation": {
     "rename_relation": "Renombrar relación",
-    "rename_relation_from": "Renombrar relación de",
     "old_name": "antiguo nombre",
-    "to": "A",
     "new_name": "nuevo nombre",
     "allowed_characters": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos."
   },
   "update_relation_target": {
-    "update_relation": "Relación de actualización",
     "relation_name": "nombre de la relación",
     "allowed_characters": "Se permiten caracteres alfanuméricos, guiones bajos y dos puntos.",
-    "to": "a",
     "target_note": "nota de destino",
-    "on_all_matched_notes": "En todas las notas coincidentes",
-    "change_target_note": "o cambiar la nota de destino de la relación existente",
     "update_relation_target": "Actualizar destino de relación"
   },
   "attachments_actions": {
@@ -3725,16 +3684,13 @@
   },
   "save_revision": {
     "save_revision": "Guardar revisión",
-    "revision_name_placeholder": "Nombre de la revisión (opcional)",
-    "help": "Se guardará una revisión con nombre de cada nota coincidente, capturando su contenido y título actuales."
+    "revision_name_placeholder": "Nombre de la revisión (opcional)"
   },
   "convert_note": {
     "convert_note": "Convertir",
-    "convert_note_to": "Convertir nota",
     "choose_conversion": "(elija una conversión)",
     "conversion_htmlToMarkdown": "Notas de texto → Notas Markdown (con pérdida)",
     "conversion_markdownToHtml": "Notas Markdown → Notas de texto",
-    "help_text": "La conversión se aplica solo a las notas que coinciden con el tipo de origen; las demás no se modifican. Antes se guarda una revisión de cada nota convertida.",
     "warning": "Es posible que se pierda parte del formato al convertir notas y que deba corregir algunos detalles después. Se guardará de antemano una revisión de cada nota convertida para que pueda restaurarla. ¿Desea continuar?",
     "warning_risky": "Está convirtiendo entre dos formatos que no tienen las mismas capacidades, por lo que puede perderse parte del formato y omitirse algunos elementos no admitidos.<br><br>¿Asume plenamente este riesgo y desea proceder con la conversión?<br><br>Se guardará de antemano una revisión de cada nota convertida, de modo que pueda volver al formato original."
   },

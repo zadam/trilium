@@ -84,9 +84,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Actions groupées",
-    "affected_notes": "Notes concernées",
     "include_descendants": "Inclure les descendants des notes sélectionnées",
-    "available_actions": "Actions disponibles",
     "chosen_actions": "Actions choisies",
     "execute_bulk_actions": "Exécuter des Actions groupées",
     "bulk_actions_executed": "Les actions groupées ont été exécutées avec succès.",
@@ -479,21 +477,13 @@
     "remove_this_search_action": "Supprimer cette action dans la recherche"
   },
   "execute_script": {
-    "execute_script": "Exécuter le script",
-    "help_text": "Vous pouvez exécuter des scripts simples sur les notes correspondantes.",
-    "example_1": "Par exemple pour ajouter une chaîne de caractères au titre d'une note, utilisez ce petit script :",
-    "example_2": "Un exemple plus complexe serait de supprimer tous les attributs de la note correspondante :"
+    "execute_script": "Exécuter le script"
   },
   "add_label": {
     "add_label": "Ajouter un label",
     "label_name_placeholder": "nom du label",
     "label_name_title": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points.",
-    "to_value": "modifié par",
-    "new_value_placeholder": "nouvelle valeur",
-    "help_text": "Pour toutes les notes correspondantes :",
-    "help_text_item1": "créer un label donné si la note ne le possède pas encore",
-    "help_text_item2": "ou modifier la valeur du label existant",
-    "help_text_note": "Vous pouvez également appeler cette méthode sans valeur : dans ce cas le label sera attribué sans valeur à la note."
+    "new_value_placeholder": "nouvelle valeur"
   },
   "delete_label": {
     "delete_label": "Supprimer le label",
@@ -502,9 +492,7 @@
   },
   "rename_label": {
     "rename_label": "Renommer le label",
-    "rename_label_from": "Renommer le label de",
     "old_name_placeholder": "ancien nom",
-    "to": "En",
     "new_name_placeholder": "nouveau nom",
     "name_title": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points."
   },
@@ -512,49 +500,26 @@
     "update_label_value": "Mettre à jour la valeur du label",
     "label_name_placeholder": "nom du label",
     "label_name_title": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points.",
-    "to_value": "modifié par",
-    "new_value_placeholder": "nouvelle valeur",
-    "help_text": "Pour toutes les notes correspondantes, modifier la valeur du label.",
-    "help_text_note": "Vous pouvez également appeler cette méthode sans valeur, dans ce cas le label sera attribué à la note sans valeur."
+    "new_value_placeholder": "nouvelle valeur"
   },
   "delete_note": {
-    "delete_note": "Supprimer la note",
-    "delete_matched_notes": "Supprimer les notes correspondantes",
-    "delete_matched_notes_description": "Cela supprimera les notes correspondantes.",
-    "undelete_notes_instruction": "Après la suppression, il est possible de les restaurer à partir de la boîte de dialogue Modifications récentes.",
-    "erase_notes_instruction": "Pour effacer définitivement les notes, après leur suppression, allez dans Paramètres → Autres et cliquez sur le bouton \"Effacer immédiatement les notes supprimées\"."
+    "delete_note": "Supprimer la note"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Supprimer les versions de notes",
-    "all_past_note_revisions": "Toutes les versions de notes antérieures des notes correspondantes seront supprimées. La note elle-même sera entièrement préservée. En d’autres termes, l’historique de la note sera supprimé."
+    "delete_note_revisions": "Supprimer les versions de notes"
   },
   "move_note": {
     "move_note": "Déplacer la note",
-    "to": "vers",
-    "target_parent_note": "note parent cible",
-    "on_all_matched_notes": "Pour toutes les notes correspondantes",
-    "move_note_new_parent": "déplacer la note vers le nouveau parent si la note n'a qu'un seul parent (c.-à-d. l'ancienne branche est supprimée et une nouvelle branche est créée dans le nouveau parent)",
-    "clone_note_new_parent": "cloner la note vers le nouveau parent si la note a plusieurs clones/branches (il n'est pas clair quelle branche doit être supprimée)",
-    "nothing_will_happen": "rien ne se passera si la note ne peut pas être déplacée vers la note cible (cela créerait une boucle dans l'arborescence)"
+    "target_parent_note": "note parent cible"
   },
   "rename_note": {
-    "rename_note": "Renommer la note",
-    "rename_note_title_to": "Renommer le titre de la note en",
-    "new_note_title": "nouveau titre de note",
-    "click_help_icon": "Cliquez sur l'icône d'aide à droite pour voir toutes les options",
-    "evaluated_as_js_string": "La valeur donnée est évaluée comme une chaîne JavaScript et peut ainsi être enrichie de contenu dynamique via la variable <code>note</code> injectée (la note étant renommée). Exemples :",
-    "example_note": "<code>Note</code> - toutes les notes correspondantes sont renommées « Note »",
-    "example_new_title": "<code>NOUVEAU : ${note.title}</code> : les titres des notes correspondantes sont préfixés par \"NOUVEAU : \"",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')} : ${note.title}</code> : les notes correspondantes sont précédées du mois et de la date de création de la note",
-    "api_docs": "Consultez la documentation de l'API pour la <a href='https://zadam.github.io/trilium/backend_api/Note.html'>note</a> et ses <a href='https://day.js.org/docs/en/display/format'>propriétés dateCreatedObj / utcDateCreatedObj</a> pour plus de détails."
+    "rename_note": "Renommer la note"
   },
   "add_relation": {
     "add_relation": "Ajouter une relation",
     "relation_name": "nom de la relation",
     "allowed_characters": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points.",
-    "to": "vers",
-    "target_note": "note cible",
-    "create_relation_on_all_matched_notes": "Pour toutes les notes correspondantes, créer une relation donnée."
+    "target_note": "note cible"
   },
   "delete_relation": {
     "delete_relation": "Supprimer la relation",
@@ -563,20 +528,14 @@
   },
   "rename_relation": {
     "rename_relation": "Renommer la relation",
-    "rename_relation_from": "Renommer la relation de",
     "old_name": "ancien nom",
-    "to": "En",
     "new_name": "nouveau nom",
     "allowed_characters": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points."
   },
   "update_relation_target": {
-    "update_relation": "Mettre à jour la relation",
     "relation_name": "nom de la relation",
     "allowed_characters": "Les caractères autorisés sont : caractères alphanumériques, les tirets bas et les deux-points.",
-    "to": "vers",
     "target_note": "note cible",
-    "on_all_matched_notes": "Pour toutes les notes correspondantes",
-    "change_target_note": "ou changer la note cible de la relation existante",
     "update_relation_target": "Mettre à jour la cible de la relation"
   },
   "attachments_actions": {

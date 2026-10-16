@@ -83,9 +83,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Massehandlinger",
-    "affected_notes": "Berørte noter",
     "include_descendants": "Inkluder efterkommere af de valgte noter",
-    "available_actions": "Tilgængelige handlinger",
     "chosen_actions": "Valgte handlinger",
     "execute_bulk_actions": "Udfør massehandlinger",
     "bulk_actions_executed": "Massehandlingerne er blevet udført.",

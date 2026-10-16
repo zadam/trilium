@@ -655,11 +655,7 @@
     "unpin_tab_description": "このタブの固定を解除し、自由に閉じたり移動したりできるようにする"
   },
   "delete_note": {
-    "delete_note": "ノートを削除",
-    "delete_matched_notes": "一致したノートを削除",
-    "delete_matched_notes_description": "これにより、一致したノートが削除されます。",
-    "undelete_notes_instruction": "削除後、「最近の変更」ダイアログから削除を取り消すことができます。",
-    "erase_notes_instruction": "ノートを完全に消去するには、削除後に「設定」->「その他」に移動し、「削除したノートを今すぐ消去」ボタンをクリックします。"
+    "delete_note": "ノートを削除"
   },
   "board_view": {
     "delete-note": "ノートを削除...",
@@ -812,10 +808,7 @@
     "electron_api_docs_button_title": "Electron API ドキュメントを開く"
   },
   "execute_script": {
-    "execute_script": "スクリプトを実行",
-    "help_text": "一致したノートに対して簡単なスクリプトを実行できます。",
-    "example_2": "より複雑な例としては、一致したノートの属性をすべて削除することが挙げられます:",
-    "example_1": "例えば、ノートのタイトルに文字列を追加するには、この小さなスクリプトを使用します:"
+    "execute_script": "スクリプトを実行"
   },
   "book_properties": {
     "grid": "グリッド",
@@ -1738,9 +1731,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "一括操作",
-    "affected_notes": "影響されるノート",
     "include_descendants": "選択したノートの子ノートを含む",
-    "available_actions": "利用可能なアクション",
     "chosen_actions": "選択されたアクション",
     "execute_bulk_actions": "一括操作を実行",
     "bulk_actions_executed": "一括操作が成功に実行されました。",
@@ -1957,12 +1948,7 @@
     "add_label": "ラベルを追加",
     "label_name_placeholder": "ラベル名",
     "label_name_title": "英数字、アンダーバー、コロンが使用可能な文字です。",
-    "new_value_placeholder": "新しい値",
-    "help_text": "一致したすべてのノートに:",
-    "help_text_note": "このメソッドを値なしで呼び出すこともできます。その場合、ラベルは値なしでノートに割り当てられます。",
-    "to_value": "値",
-    "help_text_item1": "ノートにまだラベルがない場合は、指定されたラベルを作成します",
-    "help_text_item2": "または既存のラベルの値を変更する"
+    "new_value_placeholder": "新しい値"
   },
   "delete_label": {
     "delete_label": "ラベルを削除",
@@ -1971,9 +1957,7 @@
   },
   "rename_label": {
     "rename_label": "ラベル名の変更",
-    "rename_label_from": "ラベル名を",
     "old_name_placeholder": "古い名前",
-    "to": "から",
     "new_name_placeholder": "新しい名前",
     "name_title": "英数字、アンダーバー、コロンが使用可能な文字です。"
   },
@@ -1981,18 +1965,13 @@
     "update_label_value": "ラベルの値を更新",
     "label_name_placeholder": "ラベル名",
     "label_name_title": "英数字、アンダーバー、コロンが使用可能な文字です。",
-    "new_value_placeholder": "新しい値",
-    "help_text_note": "このメソッドは値なしで呼び出すこともできます。その場合、値なしでラベルがノートに割り当てられます。",
-    "help_text": "一致したすべてのノートで、既存のラベルの値を変更する。",
-    "to_value": "値"
+    "new_value_placeholder": "新しい値"
   },
   "add_relation": {
     "add_relation": "リレーションを追加",
     "relation_name": "リレーションの名前",
     "allowed_characters": "英数字、アンダーバー、コロンが使用可能な文字です。",
-    "create_relation_on_all_matched_notes": "一致したすべてのノートに対して、指定されたリレーションを作成します。",
-    "target_note": "対象のノート",
-    "to": "を"
+    "target_note": "対象のノート"
   },
   "delete_relation": {
     "delete_relation": "リレーションを削除",
@@ -2001,21 +1980,15 @@
   },
   "rename_relation": {
     "rename_relation": "リレーションの名前を変更",
-    "rename_relation_from": "リレーションの名前を",
     "old_name": "古い名前",
-    "to": "から",
     "new_name": "新しい名前",
     "allowed_characters": "英数字、アンダーバー、コロンが使用可能な文字です。"
   },
   "update_relation_target": {
-    "update_relation": "リレーションの更新",
     "relation_name": "リレーションの名前",
     "allowed_characters": "英数字、アンダーバー、コロンが使用可能な文字です。",
-    "on_all_matched_notes": "一致したすべてのノートに",
     "target_note": "対象のノート",
-    "change_target_note": "既存のリレーション対象のノートを変更する",
-    "update_relation_target": "リレーション対象の更新",
-    "to": "を"
+    "update_relation_target": "リレーション対象の更新"
   },
   "note_launcher": {
     "this_launcher_doesnt_define_target_note": "このランチャーにはターゲットとなるノートが設定されていないため、開く対象がありません。\"ターゲット\" リレーションを設定して、特定のノートを指すようにしてください。"
@@ -2165,19 +2138,10 @@
     "error_title": "検索エラー"
   },
   "delete_revisions": {
-    "delete_note_revisions": "ノートの変更履歴を削除",
-    "all_past_note_revisions": "一致したノートの過去の変更履歴がすべて削除されます。ノート自体は完全に保持されます。言い換えると、ノートのリビジョンが削除されます。"
+    "delete_note_revisions": "ノートの変更履歴を削除"
   },
   "rename_note": {
-    "rename_note": "ノート名を変更",
-    "new_note_title": "新しいノート名",
-    "rename_note_title_to": "ノート名を変更",
-    "example_note": "<code>Note</code> - マッチしたノートの名前をすべて'Note'に変更",
-    "example_new_title": "<code>NEW: ${note.title}</code> - 一致したノートの名前の前に 'NEW: ' を付ける",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - マッチしたノートの前にノートの作成月日を付ける",
-    "api_docs": "詳細については、 <a href='https://zadam.github.io/trilium/backend_api/Note.html'>note</a> および <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj properties</a> の API ドキュメントを参照してください。",
-    "evaluated_as_js_string": "与えられた値は JavaScript 文字列として評価されるため、注入された <code>note</code> 変数（noteは名前が変更されます）を介して動的なコンテンツで強化できます。例:",
-    "click_help_icon": "右側のヘルプアイコンをクリックすると、すべてのオプションが表示されます"
+    "rename_note": "ノート名を変更"
   },
   "electron_integration": {
     "desktop-application": "デスクトップアプリケーション",
@@ -2235,13 +2199,8 @@
     "add_new_relation_definition": "新しいリレーション定義を追加..."
   },
   "move_note": {
-    "on_all_matched_notes": "一致したすべてのノートに",
     "move_note": "ノートを移動",
-    "target_parent_note": "対象の親ノート",
-    "move_note_new_parent": "ノートに親が 1 つしかない場合は、ノートを新しい親に移動します (つまり、古いブランチが削除され、新しい親に新しいブランチが作成されます)",
-    "clone_note_new_parent": "ノートに複数のクローン/ブランチがある場合、ノートを新しい親にクローンします（どのブランチを削除すべきか不明なため）",
-    "nothing_will_happen": "ノートを対象のノートに移動できない場合は何も起こりません（つまり、ツリーサイクルが生じるため）",
-    "to": "次へ"
+    "target_parent_note": "対象の親ノート"
   },
   "onclick_button": {
     "no_click_handler": "ボタン ウィジェット '{{componentId}}' にはクリック ハンドラーが定義されていません"
@@ -3965,16 +3924,13 @@
   },
   "save_revision": {
     "save_revision": "変更履歴を保存",
-    "revision_name_placeholder": "変更履歴名（任意）",
-    "help": "該当する各ノートの現在の内容とタイトルを保持した、名前付きの変更履歴が保存されます。"
+    "revision_name_placeholder": "変更履歴名（任意）"
   },
   "convert_note": {
     "convert_note": "変換",
-    "convert_note_to": "ノートを変換",
     "choose_conversion": "（変換方法を選択）",
     "conversion_htmlToMarkdown": "テキストノート → マークダウンノート（一部書式が失われます）",
     "conversion_markdownToHtml": "マークダウンノート → テキストノート",
-    "help_text": "この変換は、変換元の形式に一致するノートにのみ適用され、その他のノートは変更されません。変換対象となる各ノートの変更履歴は、事前に保存されます。",
     "warning": "ノートの変換時に一部の書式が失われる可能性があり、後で修正が必要になる場合があります。変換対象となる各ノートの変更履歴は事前に保存されるため、元に戻すことが可能です。続行しますか？",
     "warning_risky": "機能の異なる2つの形式間で変換を行うため、一部の書式が失われたり、サポートされていない要素が削除されたりする可能性があります。<br><br>このリスクを十分に理解した上で、変換を続行しますか？<br><br> 変換された各ノートについては、事前に変更履歴が保存されるため、元の形式に戻すことが可能です。"
   },

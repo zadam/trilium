@@ -145,9 +145,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Bulk actions",
-    "affected_notes": "Affected notes",
     "include_descendants": "Include descendants of the selected notes",
-    "available_actions": "Available actions",
     "chosen_actions": "Chosen actions",
     "execute_bulk_actions": "Execute bulk actions",
     "bulk_actions_executed": "Bulk actions have been executed successfully.",

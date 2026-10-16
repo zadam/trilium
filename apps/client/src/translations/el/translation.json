@@ -51,9 +51,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Μαζικές ενέργειες",
-    "affected_notes": "Επηρεαζόμενες σημειώσεις",
     "include_descendants": "Συμπερίληψη απογόνων των επιλεγμένων σημειώσεων",
-    "available_actions": "Διαθέσιμες ενέργειες",
     "chosen_actions": "Επιλεγμένες ενέργειες",
     "execute_bulk_actions": "Εκτέλεση μαζικών ενεργειών",
     "bulk_actions_executed": "Οι μαζικές ενέργειες εκτελέστηκαν επιτυχώς.",

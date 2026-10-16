@@ -36,7 +36,6 @@
   },
   "bulk_actions": {
     "bulk_actions": "Massatoiminnot",
-    "available_actions": "Saatavilla olevat toiminnot",
     "chosen_actions": "Valitut toiminnot",
     "execute_bulk_actions": "Toteuta massatoiminnot",
     "bulk_actions_executed": "Massatoiminnot on toteutettu onnistuneesti.",
@@ -44,8 +43,7 @@
     "labels": "Merkit",
     "relations": "Suhteet",
     "notes": "Muistiot",
-    "other": "Muut",
-    "affected_notes": "Vaikuttaa muistioihin"
+    "other": "Muut"
   },
   "clone_to": {
     "clone_notes_to": "Kopioi muistiot...",
