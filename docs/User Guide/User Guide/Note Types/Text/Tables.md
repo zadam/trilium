@@ -74,13 +74,15 @@ Right-clicking a cell that is not part of the current selection moves the cursor
 
 ### Resizing with touch
 
-Since v0.107.0, touching a table shows a bar at the bottom of the note, above the formatting toolbar on mobile. The bar has a segment for each column of the table, with a divider at the end of each column.
+Since v0.107.0, touching a table shows a bar at the bottom of the note, above the formatting toolbar on mobile. The bar has a segment for each column of the table, with a divider at the end of each column. Only the divider of the column with the cursor is a handle that resizes; the other dividers only mark where the columns meet, so a swipe across them scrolls instead. When several cells are selected, each column they cover has a handle.
 
-*   To resize a column, drag its divider. The table grows or shrinks with the column, and scrolls when the divider reaches the edge of the screen. The column snaps to its starting width and to the widths of the columns beside it.
-*   To cancel a resize, drag the divider back to where it started, or touch the screen with a second finger.
-*   To give two neighboring columns the same width, double-tap the divider between them.
+*   To resize a column, place the cursor in one of its cells or tap its segment, then drag its handle. The table grows or shrinks with the column, and scrolls when the handle reaches the edge of the screen. The column snaps to its starting width and to the widths of the columns beside it.
+*   To cancel a resize, drag the handle back to where it started, or touch the screen with a second finger.
+*   To give a column and the next one the same width, double-tap the handle between them.
 *   To select a column, tap its segment. To open the column menu, touch and hold the segment.
 *   To scroll a wide table sideways, swipe along the bar.
+
+A wide table scrolls a little past its end, so the handle of its last column stays away from the edge of the screen, where a swipe navigates back.
 
 ## Wide tables
 

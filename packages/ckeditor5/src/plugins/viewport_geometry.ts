@@ -1,4 +1,7 @@
-/** The distance from an edge of a visible area that scrolls it, in pixels. */
+/**
+ * The distance from an edge of a visible area that scrolls it, in pixels. Less than
+ * `--ck-table-column-bar-end-gap`, so the last divider of a scrolled table rests outside it.
+ */
 const AUTO_SCROLL_EDGE = 40;
 /** The largest distance scrolled per frame, in pixels. */
 const AUTO_SCROLL_STEP = 16;
