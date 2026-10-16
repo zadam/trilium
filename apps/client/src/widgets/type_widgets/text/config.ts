@@ -1,6 +1,6 @@
 import {
-    type EditorConfig, getCkLocale, LinkEmbedEditing, SnippetDefinition,
-    type TextTransformationConfig
+    BlockReferenceEditing, type EditorConfig, getCkLocale, InlineIconEditing, LinkEmbedEditing,
+    SnippetDefinition, type TextTransformationConfig
 } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
@@ -488,12 +488,14 @@ export const SHARE_EDIT_UPLOAD_PLUGINS = [
 ];
 
 /**
- * The plugins a shared page's guest gets beyond the editor's own; none elsewhere. `LinkEmbed` is
- * removed for guests, which would drop its editing part: the schema and converters that carry the
- * note's existing link previews through a save.
+ * The plugins a shared page's guest gets beyond the editor's own; none elsewhere. Removing
+ * `LinkEmbed`, `BlockReference` and `InlineIcon` for guests would drop their editing parts: the
+ * schema and converters that carry the note's link previews, block ids and icons through a save.
  */
 export function getExtraPlugins() {
-    return isShareEditing() ? [ LinkEmbedEditing ] : undefined;
+    return isShareEditing()
+        ? [ LinkEmbedEditing, BlockReferenceEditing, InlineIconEditing ]
+        : undefined;
 }
 
 export function getDisabledPlugins() {

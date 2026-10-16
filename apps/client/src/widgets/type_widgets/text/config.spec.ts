@@ -1,4 +1,6 @@
-import { type EditorConfig, LinkEmbedEditing } from "@triliumnext/ckeditor5";
+import {
+    BlockReferenceEditing, type EditorConfig, InlineIconEditing, LinkEmbedEditing
+} from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -635,10 +637,12 @@ describe("CK config - disabled plugins", () => {
                 ...SHARE_EDIT_DISABLED_PLUGINS, ...SHARE_EDIT_UPLOAD_PLUGINS
             ]));
             // Link previews fetch their metadata through the host's server; the note's existing
-            // previews still need the schema and converters that keep them through a save.
+            // previews, block ids and icons still need the schema and converters that keep them
+            // through a save.
             expect(locked.removePlugins)
                 .toEqual(expect.arrayContaining([ "LinkEmbed", "LinkEmbedToolbar" ]));
-            expect(locked.extraPlugins).toEqual([ LinkEmbedEditing ]);
+            expect(locked.extraPlugins)
+                .toEqual([ LinkEmbedEditing, BlockReferenceEditing, InlineIconEditing ]);
             expect(locked.link?.toolbar).not.toContain("linkEmbedDisplayDropdown");
 
             glob.shareEdit = { version: "blob1", attachments: true };

@@ -64,6 +64,10 @@ describe("guest writes", () => {
         ].join(""));
         expect(includes).not.toContain("include-note");
         expect(includes).toContain("<p>kept</p>");
+        // A block's id, which block references link to, and an inline icon stay as they are.
+        const marked = "<p data-trilium-block-id=\"b1\">a "
+            + "<span class=\"tn-icon bx bx-star\"></span></p>";
+        expect(sanitizeGuestContent(marked)).toBe(marked);
     });
 
     it("refuses a save over a newer version, and one past the size cap", () => {
