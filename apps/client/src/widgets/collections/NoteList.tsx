@@ -9,7 +9,7 @@ import FNote from "../../entities/fnote";
 import type { PrintReport } from "../../print";
 import froca from "../../services/froca";
 import { subscribeToMessages, unsubscribeToMessage as unsubscribeFromMessage } from "../../services/ws";
-import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty, useTriliumEvent } from "../react/hooks";
+import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelInt, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import { allViewTypes, ViewModeMedia, ViewModeProps, ViewTypeOptions } from "./interface";
 import ViewModeStorage, { type ViewModeStorageType } from "./view_mode_storage";
 
@@ -190,6 +190,10 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
     const [ noteIds, setNoteIds ] = useState<string[]>([]);
     const [ includeArchived ] = useNoteLabelBoolean(note, "includeArchived");
     const directChildrenOnly = (viewType === "list" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
+    // The board walks the subtree itself in `getBoardData()`, so its note IDs stay unlimited to
+    // match the cards it draws.
+    const [ labelMaxDepth ] = useNoteLabelInt(note, "maxNestingDepth");
+    const maxDepth = (viewType === "calendar" || viewType === "geoMap") ? labelMaxDepth : undefined;
     // getNoteIds can do a server round-trip (archive filtering), so concurrent refreshes may resolve
     // out of order. Track the latest issued refresh so a stale one can't clobber a newer result.
     const refreshSeqRef = useRef(0);
@@ -211,14 +215,14 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
         if (directChildrenOnly) {
             return await note.getChildNoteIdsWithArchiveFiltering(includeArchived);
         }
-        return await note.getSubtreeNoteIds(includeArchived);
+        return await note.getSubtreeNoteIds(includeArchived, maxDepth);
 
     }
 
     // Refresh on note switch.
     useEffect(() => {
         refreshNoteIds();
-    }, [ note, includeArchived, directChildrenOnly ]);
+    }, [ note, includeArchived, directChildrenOnly, maxDepth ]);
 
     // Refresh on alterations to the note subtree.
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {

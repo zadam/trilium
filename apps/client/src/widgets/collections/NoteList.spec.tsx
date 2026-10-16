@@ -20,6 +20,7 @@ import type { EntityChange } from "../../server_types";
 import LoadResults from "../../services/load_results";
 import { buildNote, buildNotes } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
+import type { ViewTypeOptions } from "./interface";
 import { CustomNoteList, useNoteIds } from "./NoteList";
 
 let currentNoteIds: string[] = [];
@@ -38,8 +39,8 @@ async function flushMicrotasks() {
 }
 
 /** Renders `useNoteIds` and exposes its current value through the module-level `currentNoteIds`. */
-function Harness({ note }: { note: FNote }) {
-    currentNoteIds = useNoteIds(note, "dashboard", "ntx-1");
+function Harness({ note, viewType = "dashboard" }: { note: FNote; viewType?: ViewTypeOptions }) {
+    currentNoteIds = useNoteIds(note, viewType, "ntx-1");
     return null;
 }
 
@@ -191,6 +192,51 @@ describe("useNoteIds refresh race", () => {
         expect(currentNoteIds).toEqual([ "child-a", "child-b", "child-new" ]);
         // A new reference is what makes React/`useEffect([noteIds])` downstream actually re-run.
         expect(currentNoteIds).not.toBe(afterMount);
+    });
+});
+
+describe("useNoteIds nesting depth", () => {
+    async function renderNoteIds(viewType: ViewTypeOptions, labels: Record<string, string> = {}) {
+        const note = buildNote({
+            title: "Collection",
+            type: "book",
+            ...labels,
+            children: [{
+                id: "nested-0",
+                title: "Depth 0",
+                children: [{
+                    id: "nested-1",
+                    title: "Depth 1",
+                    children: [{ id: "nested-2", title: "Depth 2" }]
+                }]
+            }]
+        });
+        const mountPoint = document.createElement("div");
+        currentNoteIds = [];
+        await act(async () => {
+            render(
+                <ParentComponent.Provider value={new Component()}>
+                    <Harness note={note} viewType={viewType} />
+                </ParentComponent.Provider>,
+                mountPoint
+            );
+        });
+        await act(async () => {
+            await flushMicrotasks();
+        });
+        await act(async () => {
+            render(null, mountPoint);
+        });
+        return currentNoteIds;
+    }
+
+    it("limits the calendar and geo map subtree to #maxNestingDepth", async () => {
+        for (const viewType of [ "calendar", "geoMap" ] as const) {
+            expect(await renderNoteIds(viewType)).toEqual([ "nested-0", "nested-1", "nested-2" ]);
+            expect(await renderNoteIds(viewType, { "#maxNestingDepth": "0" })).toEqual([ "nested-0" ]);
+            expect(await renderNoteIds(viewType, { "#maxNestingDepth": "1" }))
+                .toEqual([ "nested-0", "nested-1" ]);
+        }
     });
 });
 
