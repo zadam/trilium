@@ -2,9 +2,10 @@ import "./RecordMeetingButton.css";
 
 import {
     dayjs, getTranscriptionResources, MEETING_RECORDING_LABEL, type TranscriptionState,
-    type TranscriptionStatus
+    type TranscriptionStatus, type TranscriptSource
 } from "@triliumnext/commons";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import clsx from "clsx";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import dateNoteService from "../../services/date_notes";
 import { requireResources } from "../../services/dialog";
@@ -24,11 +25,12 @@ import {
  * Launcher button that records a meeting: the first click creates the meeting note and starts the
  * recording, the second stops it. Desktop only, since the main process does the recording, and
  * shown only while `transcriptionEnabled` is on and the computer can transcribe. Its corner badge reads "Beta" while idle and the
- * time elapsed while recording.
+ * time elapsed while recording, which turns red, with a message once, when a source stops
+ * delivering audio.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
-    const { status, error, startedAt } = useTranscriptionState();
+    const { status, error, startedAt, stalledSources } = useTranscriptionState();
     const [ isEnabled ] = useTriliumOptionBool("transcriptionEnabled");
     const isSupported = useTranscriptionSupported(isEnabled);
     const [ keepsRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
@@ -42,6 +44,8 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             toast.showError(error);
         }
     }, [ error ]);
+
+    useStalledSourceWarnings(stalledSources);
 
     useEffect(() => {
         if (status !== "recording") {
@@ -62,7 +66,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             <LaunchBarActionButton
                 launcherNote={launcherNote}
                 onClick={handleClick}
-                {...getAppearance(status, icon, title, keepsRecordings)}
+                {...getAppearance(status, icon, title, keepsRecordings, !!stalledSources?.length)}
             />
             {status === "idle" && (
                 <Badge text={t("common.beta")} className="record-meeting-beta-badge" />
@@ -70,11 +74,29 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
             {status === "recording" && startedAt !== undefined && (
                 <Badge
                     text={formatElapsed(now - startedAt)}
-                    className="record-meeting-time-badge"
+                    className={clsx("record-meeting-time-badge", {
+                        stalled: !!stalledSources?.length
+                    })}
                 />
             )}
         </div>
     );
+}
+
+/** Shows an error once for each source that joins `stalledSources`. */
+function useStalledSourceWarnings(stalledSources: TranscriptSource[] | undefined) {
+    const warned = useRef<TranscriptSource[]>([]);
+    const key = stalledSources?.join() ?? "";
+
+    useEffect(() => {
+        const stalled = stalledSources ?? [];
+        for (const source of stalled.filter((source) => !warned.current.includes(source))) {
+            toast.showError(source === "microphone"
+                ? t("record_meeting.no_audio_microphone")
+                : t("record_meeting.no_audio_system"));
+        }
+        warned.current = stalled;
+    }, [ key ]);
 }
 
 const BUSY_ICON = "bx bx-loader-alt bx-spin";
@@ -84,7 +106,8 @@ const BUSY_ICON = "bx bx-loader-alt bx-spin";
  * starting is when the people in the meeting would need to agree to it.
  */
 function getAppearance(
-    status: TranscriptionStatus, idleIcon: string, idleTitle: string, keepsRecordings: boolean
+    status: TranscriptionStatus, idleIcon: string, idleTitle: string, keepsRecordings: boolean,
+    isStalled: boolean
 ) {
     switch (status) {
         case "idle":
@@ -99,7 +122,7 @@ function getAppearance(
         case "recording":
             return {
                 icon: "bx bx-stop-circle",
-                text: t("record_meeting.stop"),
+                text: isStalled ? t("record_meeting.stop_no_audio") : t("record_meeting.stop"),
                 className: "record-meeting-active"
             };
         case "stopping":

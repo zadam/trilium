@@ -4,6 +4,7 @@ import {
     cleanUtteranceText, getSpeakerKey, MAX_SPEAKER_NAME_LENGTH, parseTranscript, setSpeakerName,
     type TranscriptSource, type TranscriptUtterance
 } from "@triliumnext/commons";
+import clsx from "clsx";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type FAttachment from "../../../entities/fattachment";
@@ -31,14 +32,17 @@ const PARAGRAPH_PAUSE_MS = 2000;
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
  * hears before their words are transcribed, and keeps a reader who is at the end there as new
- * turns arrive. With `transcriptCleanupEnabled`, shows each utterance through
+ * turns arrive. While its meeting records, shows each source's level above the turns, and which
+ * source delivers no audio. With `transcriptCleanupEnabled`, shows each utterance through
  * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
     const [ isCleanedUp, setCleanedUp ] = useTriliumOptionBool("transcriptCleanupEnabled");
     const recording = useTranscriptionState();
-    const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
+    const isOwnRecording = recording.noteId === attachment.ownerId;
+    const pending = isOwnRecording ? recording.pendingSources : [];
+    const isRecording = isOwnRecording && recording.status === "recording";
     const scrollerRef = useRef<HTMLDivElement>(null);
     /** The scroll height at the previous render, or `null` before the transcript first shows. */
     const scrollHeightRef = useRef<number | null>(null);
@@ -86,8 +90,25 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     if (!transcript) {
         return <NoItems icon="bx bx-error" text={t("transcript.unreadable")} />;
     }
-    if (!transcript.utterances.length && !pending.length) {
-        return <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
+    const hasUtterances = transcript.utterances.length > 0;
+    const options = (hasUtterances || isRecording) && (
+        <div className="transcript-options">
+            {isRecording && <TranscriptLevels stalledSources={recording.stalledSources ?? []} />}
+            {hasUtterances && (
+                <FormToggle
+                    switchOnName={t("transcript.cleanup")}
+                    switchOffName={t("transcript.cleanup")}
+                    switchOnTooltip={t("transcript.cleanup_tooltip")}
+                    switchOffTooltip={t("transcript.cleanup_tooltip")}
+                    currentValue={isCleanedUp}
+                    onChange={setCleanedUp}
+                />
+            )}
+        </div>
+    );
+    if (!hasUtterances && !pending.length) {
+        const empty = <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
+        return options ? <div className="transcript">{options}{empty}</div> : empty;
     }
 
     initialCountRef.current ??= transcript.utterances.length;
@@ -110,18 +131,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     );
     return (
         <div ref={scrollerRef} className="transcript">
-            {transcript.utterances.length > 0 && (
-                <div className="transcript-options">
-                    <FormToggle
-                        switchOnName={t("transcript.cleanup")}
-                        switchOffName={t("transcript.cleanup")}
-                        switchOnTooltip={t("transcript.cleanup_tooltip")}
-                        switchOffTooltip={t("transcript.cleanup_tooltip")}
-                        currentValue={isCleanedUp}
-                        onChange={setCleanedUp}
-                    />
-                </div>
-            )}
+            {options}
             {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
@@ -163,6 +173,62 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             ))}
         </div>
     );
+}
+
+const LEVEL_ICONS: Record<TranscriptSource, string> = {
+    microphone: "bx-microphone",
+    system: "bx-volume-full"
+};
+const LEVEL_SOURCES = Object.keys(LEVEL_ICONS) as TranscriptSource[];
+
+/**
+ * One meter per source, named as the transcript names it, filled to its latest level, and saying
+ * so when the source delivers no audio.
+ */
+function TranscriptLevels({ stalledSources }: { stalledSources: TranscriptSource[] }) {
+    const levels = useTranscriptionLevels();
+    return (
+        <div className="transcript-levels">
+            {LEVEL_SOURCES.map((source) => {
+                const level = levelToMeter(levels[source]);
+                const isStalled = stalledSources.includes(source);
+                return (
+                    <span
+                        key={source}
+                        data-source={source}
+                        className={clsx("transcript-level", { stalled: isStalled })}
+                        role="meter"
+                        aria-label={speakerName(source)}
+                        aria-valuemin={0}
+                        aria-valuemax={1}
+                        aria-valuenow={Math.round(level * 100) / 100}
+                        style={{ "--level": level }}
+                    >
+                        <span className={`bx ${LEVEL_ICONS[source]}`} aria-hidden="true" />
+                        {speakerName(source)}
+                        <span className="transcript-level-bar" aria-hidden="true" />
+                        {isStalled && (
+                            <span className="transcript-level-warning">
+                                {t("transcript.no_audio")}
+                            </span>
+                        )}
+                    </span>
+                );
+            })}
+        </div>
+    );
+}
+
+/** Each source's latest level, from `electronApi.transcription.onLevel()`. */
+function useTranscriptionLevels() {
+    const [ levels, setLevels ] = useState<Record<TranscriptSource, number>>({
+        microphone: 0, system: 0
+    });
+
+    useEffect(() => window.electronApi?.transcription.onLevel((source, level) =>
+        setLevels((current) => ({ ...current, [source]: level }))), []);
+
+    return levels;
 }
 
 /**
@@ -324,6 +390,23 @@ export function groupIntoTurns(
 }
 
 /** `m:ss`, or `h:mm:ss` from the first hour on. */
+/** The quietest and the loudest RMS a level meter shows, in dB below full scale. */
+const METER_FLOOR_DB = -60;
+const METER_CEILING_DB = -10;
+
+/**
+ * Maps an RMS from 0 to 1 onto a level meter's 0 to 1, in decibels: speech, about 35 dB below full
+ * scale, fills half of it.
+ */
+export function levelToMeter(level: number) {
+    if (level <= 0) {
+        return 0;
+    }
+    const db = 20 * Math.log10(level);
+    const fraction = (db - METER_FLOOR_DB) / (METER_CEILING_DB - METER_FLOOR_DB);
+    return Math.min(1, Math.max(0, fraction));
+}
+
 export function formatOffset(milliseconds: number) {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
     const hours = Math.floor(totalSeconds / 3600);

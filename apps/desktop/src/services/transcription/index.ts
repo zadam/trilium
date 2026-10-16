@@ -1,4 +1,6 @@
-import type { TranscriptionState, TranscriptUtterance } from "@triliumnext/commons";
+import type {
+    TranscriptionState, TranscriptSource, TranscriptUtterance
+} from "@triliumnext/commons";
 import { becca, events, getLog, options, protected_session } from "@triliumnext/core";
 import dataDirs from "@triliumnext/server/src/services/data_dir.js";
 import resources from "@triliumnext/server/src/services/resources.js";
@@ -23,9 +25,18 @@ const IDLE: TranscriptionState = { status: "idle", noteId: null, pendingSources:
 /** How long quitting waits for a running transcription to finish. */
 const QUIT_TIMEOUT_MS = 15_000;
 
+/**
+ * How long a source can go without delivering a chunk before it counts as stalled. A silent
+ * source still delivers chunks of silence, about four a second.
+ */
+const NO_AUDIO_MS = 10_000;
+
 interface Recording {
     worker: TranscriptionWorker;
     capture: CaptureWindow;
+    /** When each source last delivered a chunk, in milliseconds since the epoch. */
+    lastHeard: Map<TranscriptSource, number>;
+    audioCheck?: ReturnType<typeof setInterval>;
 }
 
 let state = IDLE;
@@ -87,9 +98,11 @@ export async function startRecording(noteId: unknown): Promise<string> {
         worker: new TranscriptionWorker({
             onUtterance: (utterance) => writeUtterance(sink, noteId, utterance),
             onPendingChanged: (pendingSources) => setState({ ...state, pendingSources }),
+            onLevel: (source, level) => handleLevel(recording, source, level),
             onUnexpectedExit: (code) => handleUnexpectedExit(recording, code),
             log: getLog()
-        })
+        }),
+        lastHeard: new Map()
     };
     activeRecording = recording;
     try {
@@ -106,11 +119,16 @@ export async function startRecording(noteId: unknown): Promise<string> {
         recording.worker.connectCapture(port2);
         const sources = await recording.capture.start(port1);
         getLog().info(`Transcription: recording ${sources.join(" and ")} for note ${noteId}.`);
+        for (const source of sources) {
+            recording.lastHeard.set(source, Date.now());
+        }
+        recording.audioCheck = setInterval(() => checkAudio(recording), 1000);
         setState({ ...state, status: "recording", startedAt });
         return "";
     } catch (e) {
         activeRecording = null;
         writer = null;
+        clearInterval(recording.audioCheck);
         void recording.capture.stop();
         recording.worker.kill();
         setState(IDLE);
@@ -131,6 +149,7 @@ export function stopRecording(error?: string): Promise<void> {
 
     setState({ ...state, status: "stopping" });
     activeRecording = null;
+    clearInterval(recording.audioCheck);
     const { noteId } = state;
     stopping = recording.capture.stop()
         .then(() => recording.worker.stop())
@@ -273,10 +292,51 @@ function handleUnexpectedExit(recording: Recording, code: number) {
     }
     activeRecording = null;
     writer = null;
+    clearInterval(recording.audioCheck);
     void recording.capture.stop();
     getLog().error(`Transcription: the transcription process exited with code ${code}.`);
     state = IDLE;
     broadcast({ ...IDLE, error: t("transcription.stopped-unexpectedly") });
+}
+
+/** Passes a source's level on to every window, and clears that source's stall. */
+function handleLevel(recording: Recording, source: TranscriptSource, level: number) {
+    if (activeRecording !== recording) {
+        return;
+    }
+    recording.lastHeard.set(source, Date.now());
+    if (state.stalledSources?.includes(source)) {
+        getLog().info(`Transcription: audio from the ${source} again.`);
+        setStalledSources(state.stalledSources.filter((stalled) => stalled !== source));
+    }
+    for (const window of BrowserWindow.getAllWindows()) {
+        window.webContents.send("transcription-level", source, level);
+    }
+}
+
+/** Reports the sources that have delivered nothing for {@link NO_AUDIO_MS}. */
+function checkAudio(recording: Recording) {
+    if (activeRecording !== recording || state.status !== "recording") {
+        return;
+    }
+    const now = Date.now();
+    const stalled = [ ...recording.lastHeard ]
+        .filter(([ , lastHeard ]) => now - lastHeard >= NO_AUDIO_MS)
+        .map(([ source ]) => source)
+        .sort();
+    const current = state.stalledSources ?? [];
+    if (stalled.join() === current.join()) {
+        return;
+    }
+    for (const source of stalled.filter((source) => !current.includes(source))) {
+        getLog().error(`Transcription: no audio from the ${source} for ${NO_AUDIO_MS / 1000} s.`);
+    }
+    setStalledSources(stalled);
+}
+
+function setStalledSources(stalledSources: TranscriptSource[]) {
+    const { stalledSources: _, ...rest } = state;
+    setState(stalledSources.length ? { ...rest, stalledSources } : rest);
 }
 
 function setState(newState: TranscriptionState) {

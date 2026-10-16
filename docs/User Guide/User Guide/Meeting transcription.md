@@ -25,11 +25,13 @@ The speech recognition models are not part of Trilium. The first time you transc
 
 Only one meeting can be transcribed at a time. The note itself is an ordinary text note: you can take notes in it during the meeting, rename it or move it anywhere in the tree. It carries the `#meetingRecording` label.
 
+If no audio arrives from your microphone or from the meeting for 10 seconds, Trilium shows a message, the time on the button turns red and the button's tooltip says that no audio is arriving. Silence does not cause this: a muted microphone still delivers audio. Stop the transcription and start it again; what was transcribed until then is kept.
+
 If the transcription stops on its own, for example because the audio could no longer be captured, Trilium shows a message and keeps everything transcribed until then. Closing Trilium during a meeting waits for the transcription to finish first.
 
 ## The transcript
 
-The transcript is stored as an [attachment](Basic%20Concepts%20and%20Features/Notes/Attachments.md) of the meeting note and is shown in a collapsible _Transcript_ section above the note's content. It updates as the meeting goes on, one paragraph per speaker turn, each with the time it started. While someone is talking, _Speaking…_ shows under their name until their words are transcribed. If you are reading the end of the transcript, it scrolls to follow new text.
+The transcript is stored as an [attachment](Basic%20Concepts%20and%20Features/Notes/Attachments.md) of the meeting note and is shown in a collapsible _Transcript_ section above the note's content. It updates as the meeting goes on, one paragraph per speaker turn, each with the time it started. While the meeting is being transcribed, a meter above the transcript shows the level of your microphone (_Me_) and of the meeting's audio (_Others_), so you can tell that both are being heard; a source that delivers no audio is marked _No audio_. While someone is talking, _Speaking…_ shows under their name until their words are transcribed. If you are reading the end of the transcript, it scrolls to follow new text.
 
 *   What you say into your microphone is labeled _Me_.
 *   What the other participants say is labeled _Speaker 1_, _Speaker 2_ and so on, while _Identify speakers_ is on; otherwise it is labeled _Others_.

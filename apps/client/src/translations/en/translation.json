@@ -4604,7 +4604,10 @@
     "starting": "Starting the transcription…",
     "stop": "Stop transcribing",
     "stopping": "Finishing the transcript…",
-    "title_keeping_recordings": "{{title}} (keeps the audio for troubleshooting)"
+    "title_keeping_recordings": "{{title}} (keeps the audio for troubleshooting)",
+    "stop_no_audio": "Stop transcribing (no audio is arriving)",
+    "no_audio_microphone": "No audio has arrived from your microphone for 10 seconds, so what you say is not being transcribed. Stop the transcription and start it again.",
+    "no_audio_system": "No audio has arrived from the meeting for 10 seconds, so what the others say is not being transcribed. Stop the transcription and start it again."
   },
   "transcript": {
     "speaker_me": "Me",
@@ -4616,7 +4619,8 @@
     "speaking": "Speaking…",
     "offset": "{{offset}} into the transcription",
     "cleanup": "Hide filler words",
-    "cleanup_tooltip": "Hides “uh”, “um” and stuttered words. The transcript itself is not changed."
+    "cleanup_tooltip": "Hides “uh”, “um” and stuttered words. The transcript itself is not changed.",
+    "no_audio": "No audio"
   },
   "resource_download": {
     "title": "Download required",

@@ -31,5 +31,10 @@
         color: var(--left-pane-item-selected-color, var(--main-text-color));
         box-shadow: var(--left-pane-item-selected-shadow);
         font-variant-numeric: tabular-nums;
+
+        &.stalled {
+            --color: var(--danger-color, #dc3545);
+            color: #fff;
+        }
     }
 }

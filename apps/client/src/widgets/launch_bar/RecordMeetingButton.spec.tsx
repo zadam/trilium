@@ -294,6 +294,50 @@ describe("RecordMeetingButton", () => {
         window.electronApi = undefined;
     });
 
+    it("says once for each source that stops delivering audio, and marks the time", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        const recording: TranscriptionState = {
+            status: "recording", noteId: "meeting", pendingSources: [], startedAt: Date.now()
+        };
+        const report = (state: Partial<TranscriptionState>) =>
+            act(() => onStateChanged({ ...recording, ...state }));
+        window.electronApi = {
+            transcription: {
+                isSupported: async () => true,
+                getState: async () => recording,
+                onStateChanged: (callback: typeof onStateChanged) => {
+                    onStateChanged = callback;
+                    return () => {};
+                }
+            }
+        } as unknown as typeof window.electronApi;
+        let container: HTMLElement | null = null;
+        await act(async () => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        const badge = () => (container as HTMLElement | null)
+            ?.querySelector(".record-meeting-time-badge");
+        const button = () => (container as HTMLElement | null)?.querySelector("button");
+
+        await vi.waitFor(() => expect(badge()).not.toBeNull());
+        expect(badge()?.classList.contains("stalled")).toBe(false);
+        await report({ stalledSources: [ "system" ] });
+        await report({ stalledSources: [ "system" ] });
+        expect(badge()?.classList.contains("stalled")).toBe(true);
+        expect(button()?.textContent).toContain("record_meeting.stop_no_audio");
+        expect(mocks.showError).toHaveBeenCalledExactlyOnceWith(
+            expect.stringContaining("record_meeting.no_audio_system"));
+
+        await report({});
+        expect(badge()?.classList.contains("stalled")).toBe(false);
+        expect(button()?.textContent).not.toContain("no_audio");
+        await report({ stalledSources: [ "microphone", "system" ] });
+        expect(mocks.showError).toHaveBeenCalledTimes(3);
+        expect(mocks.showError).toHaveBeenCalledWith(
+            expect.stringContaining("record_meeting.no_audio_microphone"));
+        window.electronApi = undefined;
+    });
+
     it("shows the shared recording's state, and starts or stops it on a click", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         const report = (status: TranscriptionState["status"]) =>

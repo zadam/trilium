@@ -80,12 +80,13 @@ function createHarness(extraSinks: TranscriptSink[] = [], taps: AudioTap[] = [])
     };
     const sinks = [ ...extraSinks, sink ];
     const onPendingChanged = vi.fn();
+    const onLevel = vi.fn();
     const session = new RecordingSession({
-        capture, engine, sinks, taps, log, onPendingChanged, now: () => clock
+        capture, engine, sinks, taps, log, onPendingChanged, onLevel, now: () => clock
     });
 
     return {
-        session, capture, engine, sink, written, flushed, onPendingChanged,
+        session, capture, engine, sink, written, flushed, onPendingChanged, onLevel,
         /** Delivers `samples` from `source` when the clock reads `at`. */
         deliver(source: TranscriptSource, samples: Float32Array, at: number) {
             clock = at;
@@ -273,6 +274,22 @@ describe("RecordingSession", () => {
             deliver("system", speechChunk(false), 1000 + second * 1000);
         }
         expect(log.info).toHaveBeenCalledExactlyOnceWith("Transcription: system peak 1.0000 over 5 s");
+        await session.stop();
+    });
+
+    it("reports the loudness of every chunk as it arrives, per source", async () => {
+        const { session, deliver, onLevel } = createHarness();
+        await session.start();
+        const loud = speechChunk(true).fill(0.5, 3);
+        deliver("microphone", speechChunk(false), 2000);
+        deliver("system", loud, 3000);
+
+        expect(onLevel).toHaveBeenCalledTimes(2);
+        const [ [ quietSource, quiet ], [ loudSource, level ] ] = onLevel.mock.calls;
+        expect(quietSource).toBe("microphone");
+        expect(quiet).toBeCloseTo(Math.sqrt(1 / 16000));
+        expect(loudSource).toBe("system");
+        expect(level).toBeCloseTo(Math.sqrt((2 + 0.25 * 15997) / 16000));
         await session.stop();
     });
 

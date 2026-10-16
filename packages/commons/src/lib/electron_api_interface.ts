@@ -725,6 +725,11 @@ export interface TranscriptionState {
     /** The sources heard speaking, or whose speech is still being transcribed. */
     pendingSources: TranscriptSource[];
     /**
+     * The sources that have delivered no audio for 10 s while recording, as when their capture
+     * hangs; absent when every source delivers. A muted source still delivers silence.
+     */
+    stalledSources?: TranscriptSource[];
+    /**
      * When the recording started, in milliseconds since the epoch: set once it records, kept while
      * it stops, absent otherwise.
      */
@@ -780,6 +785,14 @@ export interface ElectronTranscriptionApi {
      * @returns A function that removes the listener.
      */
     onStateChanged(callback: (state: TranscriptionState) => void): () => void;
+
+    /**
+     * Calls `callback` with the RMS, from 0 to 1, of every chunk a source of the running recording
+     * delivers, about four times a second per source.
+     *
+     * @returns A function that stops the calls.
+     */
+    onLevel(callback: (source: TranscriptSource, level: number) => void): () => void;
 }
 
 /**

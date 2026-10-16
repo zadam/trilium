@@ -12,7 +12,7 @@ import options from "../../../services/options";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import TranscriptView, {
-    formatOffset, groupIntoTurns, type TranscriptTurn
+    formatOffset, groupIntoTurns, levelToMeter, type TranscriptTurn
 } from "./TranscriptView";
 
 const h = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn() }));
@@ -111,6 +111,14 @@ describe("transcript helpers", () => {
         expect(turns.map(paragraphTexts)).toEqual([
             [ "First point, continued. Short pause.", "Second point." ]
         ]);
+    });
+
+    it("spreads 60 dB below full scale up to 10 dB below it over a level meter", () => {
+        expect(levelToMeter(0)).toBe(0);
+        expect(levelToMeter(10 ** (-60 / 20))).toBeCloseTo(0);
+        expect(levelToMeter(10 ** (-35 / 20))).toBeCloseTo(0.5);
+        expect(levelToMeter(10 ** (-10 / 20))).toBeCloseTo(1);
+        expect(levelToMeter(1)).toBe(1);
     });
 
     it("formats offsets as m:ss, with hours once there are any", () => {
@@ -305,6 +313,7 @@ describe("TranscriptView", () => {
             transcription: {
                 getState: async () => ({ status: "recording", noteId: "meeting", pendingSources: [] }),
                 onStateChanged: () => () => {},
+                onLevel: () => () => {},
                 renameSpeaker
             }
         } as unknown as typeof window.electronApi;
@@ -427,7 +436,8 @@ describe("TranscriptView", () => {
                 onStateChanged: (callback: typeof onStateChanged) => {
                     onStateChanged = callback;
                     return () => {};
-                }
+                },
+                onLevel: () => () => {}
             }
         } as unknown as typeof window.electronApi;
         const getBlob = vi.fn()
@@ -462,6 +472,64 @@ describe("TranscriptView", () => {
 
         await recording("other", [ "system" ]);
         expect(turns()).toEqual([ "transcript.speaker_me14:29Hello?" ]);
+        window.electronApi = undefined;
+    });
+
+    it("shows each source's level while its meeting records, and which is silent", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        let onLevel: (source: TranscriptSource, level: number) => void = () => {};
+        const unsubscribeLevels = vi.fn();
+        const recording: TranscriptionState = {
+            status: "recording", noteId: "meeting", pendingSources: []
+        };
+        const report = (state: Partial<TranscriptionState>) =>
+            act(() => onStateChanged({ ...recording, ...state }));
+        window.electronApi = {
+            transcription: {
+                getState: async () => recording,
+                onStateChanged: (callback: typeof onStateChanged) => {
+                    onStateChanged = callback;
+                    return () => {};
+                },
+                onLevel: (callback: typeof onLevel) => {
+                    onLevel = callback;
+                    return unsubscribeLevels;
+                }
+            }
+        } as unknown as typeof window.electronApi;
+        const attachment = {
+            attachmentId: "transcript1", ownerId: "meeting",
+            getBlob: async () => ({ content: transcript([]) })
+        };
+        const container = renderInto(
+            <ParentComponent.Provider value={new Component()}>
+                <TranscriptView attachment={attachment as unknown as FAttachment} />
+            </ParentComponent.Provider>
+        );
+        const meter = (source: string) => container.querySelector<HTMLElement>(
+            `.transcript-level[data-source="${source}"]`);
+        const fill = (source: string) =>
+            Number(meter(source)?.style.getPropertyValue("--level"));
+
+        await vi.waitFor(() => expect(meter("microphone")).not.toBeNull());
+        expect(container.textContent).toContain("transcript.empty");
+        expect(meter("microphone")?.textContent).toContain("transcript.speaker_me");
+        expect(meter("system")?.textContent).toContain("transcript.speaker_others");
+        expect(container.querySelector(".transcript-options input")).toBeNull();
+        act(() => onLevel("microphone", 10 ** (-35 / 20)));
+        expect(fill("microphone")).toBeCloseTo(0.5);
+        expect(fill("system")).toBe(0);
+        expect(meter("microphone")?.getAttribute("aria-valuenow")).toBe("0.5");
+
+        await report({ stalledSources: [ "system" ] });
+        expect(meter("system")?.classList.contains("stalled")).toBe(true);
+        expect(meter("system")?.textContent).toContain("transcript.no_audio");
+        expect(meter("microphone")?.classList.contains("stalled")).toBe(false);
+        expect(meter("microphone")?.textContent).not.toContain("transcript.no_audio");
+
+        await report({ noteId: "other" });
+        expect(meter("microphone")).toBeNull();
+        expect(unsubscribeLevels).toHaveBeenCalledOnce();
         window.electronApi = undefined;
     });
 
