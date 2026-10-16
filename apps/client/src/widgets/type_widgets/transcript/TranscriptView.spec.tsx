@@ -536,7 +536,7 @@ describe("TranscriptView", () => {
         window.electronApi = undefined;
     });
 
-    it("follows new turns for a reader at the end, and marks when more is below", async () => {
+    it("follows new turns for a reader at the end, and marks when more is above or below", async () => {
         const utterance = (index: number): TranscriptUtterance =>
             ({ source: "microphone", offsetMs: index * 60_000, text: `Line ${index}` });
         // Each reload adds a turn, alternating sources so that none merge.
@@ -583,17 +583,21 @@ describe("TranscriptView", () => {
 
         await addTurn();
         await addTurn();
+        const edges = () => [ "more-above", "more-below" ]
+            .filter((name) => scroller.classList.contains(name));
         expect(scroller.scrollTop).toBe(150);
-        expect(scroller.classList.contains("more-below")).toBe(false);
+        expect(edges()).toEqual([ "more-above" ]);
 
         scrollTo(0);
-        expect(scroller.classList.contains("more-below")).toBe(true);
+        expect(edges()).toEqual([ "more-below" ]);
         await addTurn();
         expect(scroller.scrollTop).toBe(0);
-        expect(scroller.classList.contains("more-below")).toBe(true);
+        expect(edges()).toEqual([ "more-below" ]);
 
+        scrollTo(50);
+        expect(edges()).toEqual([ "more-above", "more-below" ]);
         scrollTo(100);
-        expect(scroller.classList.contains("more-below")).toBe(false);
+        expect(edges()).toEqual([ "more-above" ]);
     });
 
     it("hides filler words and stutters while the option is on, and saves the switch", async () => {

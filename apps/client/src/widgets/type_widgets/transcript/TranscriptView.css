@@ -5,8 +5,26 @@
     padding: 0.5rem 1rem 1rem;
     user-select: text;
 
+    --transcript-fade-top: 0px;
+    --transcript-fade-bottom: 0px;
+
+    &.more-above {
+        --transcript-fade-top: 2.5rem;
+    }
+
     &.more-below {
-        mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent);
+        --transcript-fade-bottom: 2.5rem;
+    }
+
+    &.more-above,
+    &.more-below {
+        mask-image: linear-gradient(
+            to bottom,
+            transparent,
+            #000 var(--transcript-fade-top),
+            #000 calc(100% - var(--transcript-fade-bottom)),
+            transparent
+        );
     }
 
     .transcript-options {

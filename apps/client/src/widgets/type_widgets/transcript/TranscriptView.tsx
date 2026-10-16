@@ -32,7 +32,7 @@ const PARAGRAPH_PAUSE_MS = 2000;
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
  * hears before their words are transcribed, keeps a reader who is at the end there as new
- * turns arrive, and fades its bottom edge while more turns are below. With `transcriptCleanupEnabled`, shows each utterance through
+ * turns arrive, and fades its top and bottom edges while more turns are above or below. With `transcriptCleanupEnabled`, shows each utterance through
  * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
@@ -41,7 +41,12 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     const recording = useTranscriptionState();
     const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
     const scrollerRef = useRef<HTMLDivElement>(null);
+    const [ hasMoreAbove, setHasMoreAbove ] = useState(false);
     const [ hasMoreBelow, setHasMoreBelow ] = useState(false);
+    const updateEdges = (scroller: HTMLElement) => {
+        setHasMoreAbove(scroller.scrollTop > 0);
+        setHasMoreBelow(!wasAtEnd(scroller, scroller.scrollHeight));
+    };
     /** The scroll height at the previous render, or `null` before the transcript first shows. */
     const scrollHeightRef = useRef<number | null>(null);
     /** How many utterances the first transcript read held; only later ones fade in. */
@@ -72,7 +77,7 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
             scroller.scrollTop = scroller.scrollHeight;
         }
         scrollHeightRef.current = scroller.scrollHeight;
-        setHasMoreBelow(!wasAtEnd(scroller, scroller.scrollHeight));
+        updateEdges(scroller);
     });
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const { attachmentId } = attachment;
@@ -114,9 +119,11 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     return (
         <div
             ref={scrollerRef}
-            className={clsx("transcript", { "more-below": hasMoreBelow })}
-            onScroll={(e) => setHasMoreBelow(
-                !wasAtEnd(e.currentTarget, e.currentTarget.scrollHeight))}
+            className={clsx("transcript", {
+                "more-above": hasMoreAbove,
+                "more-below": hasMoreBelow
+            })}
+            onScroll={(e) => updateEdges(e.currentTarget)}
         >
             {transcript.utterances.length > 0 && (
                 <div className="transcript-options">
