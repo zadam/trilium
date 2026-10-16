@@ -865,10 +865,13 @@ describe("window service", () => {
             expect(extraWindowOptions?.webPreferences?.nodeIntegration).toBe(false);
         });
 
-        it("reload-all-windows reloads every window", () => {
+        it("reload-all-windows reloads every app window and leaves other pages alone", () => {
             const win = state.windows[state.windows.length - 1];
+            const capture = new FakeBrowserWindow();
+            capture.webContents.getURL.mockReturnValue("file:///tmp/trilium-transcription.html");
             fireOn("reload-all-windows", makeEvent());
             expect(win.reload).toHaveBeenCalled();
+            expect(capture.reload).not.toHaveBeenCalled();
         });
 
         it("restart-app relaunches and exits", () => {
