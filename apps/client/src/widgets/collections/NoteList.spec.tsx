@@ -238,6 +238,59 @@ describe("useNoteIds nesting depth", () => {
                 .toEqual([ "nested-0", "nested-1" ]);
         }
     });
+
+    it("follows a #maxNestingDepth changed while the collection is shown", async () => {
+        const note = buildNote({
+            title: "Map",
+            type: "book",
+            "#maxNestingDepth": "0",
+            children: [{
+                id: "live-0",
+                title: "Depth 0",
+                children: [{ id: "live-1", title: "Depth 1" }]
+            }]
+        });
+        const parent = new Component();
+        const mountPoint = document.createElement("div");
+        await act(async () => {
+            render(
+                <ParentComponent.Provider value={parent}>
+                    <Harness note={note} viewType="geoMap" />
+                </ParentComponent.Provider>,
+                mountPoint
+            );
+        });
+        await act(async () => {
+            await flushMicrotasks();
+        });
+        expect(currentNoteIds).toEqual([ "live-0" ]);
+
+        // The label changes as a sync or the properties dialog would change it.
+        const label = note.getOwnedLabel("maxNestingDepth");
+        if (!label) throw new Error("no #maxNestingDepth label");
+        label.value = "1";
+        const loadResults = new LoadResults([ {
+            entityName: "attributes",
+            entityId: label.attributeId,
+            entity: {
+                attributeId: label.attributeId, noteId: note.noteId, type: "label",
+                name: "maxNestingDepth", value: "1", isDeleted: false
+            },
+            componentId: "comp-1"
+        } as unknown as EntityChange ]);
+        loadResults.addAttribute(label.attributeId, "comp-1");
+        await act(async () => {
+            await parent.handleEvent("entitiesReloaded", { loadResults });
+        });
+        await act(async () => {
+            await flushMicrotasks();
+        });
+        expect(currentNoteIds).toEqual([ "live-0", "live-1" ]);
+
+        await act(async () => {
+            render(null, mountPoint);
+        });
+    });
 });
 
 describe("useViewModeConfig view type switch", () => {
