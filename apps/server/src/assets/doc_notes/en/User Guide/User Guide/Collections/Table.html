@@ -157,19 +157,14 @@
 <p>Next to the title of each element there will be a button to expand or
   collapse. By default, all items are expanded.</p>
 <p>Since nesting is not always desirable, it is possible to limit the nesting
-  to a certain number of levels or even disable it completely. To do so,
-  either:</p>
+  to a certain number of levels or even disable it completely, by setting
+  the <code>#maxNestingDepth</code>  <a href="#root/_help_HI6GBBIduIgv">label</a> of
+  the collection:</p>
 <ul>
-  <li>Go to&nbsp;<a class="reference-link" href="#root/_help_CssoWBu8I7jF">Collection Properties</a>&nbsp;and
-    look for the <em>Max nesting depth</em> section.
-    <ul>
-      <li>To disable nesting, type 0 and press Enter.</li>
-      <li>To limit to a certain depth, type in the desired number (e.g. 2 to only
-        display children and sub-children).</li>
-      <li>To re-enable unlimited nesting, remove the number and press Enter.</li>
-    </ul>
-  </li>
-  <li>Manually set <code>maxNestingDepth</code> to the desired value.</li>
+  <li><code>0</code> disables nesting, showing only the children of the collection.</li>
+  <li><code>1</code> also shows their children, <code>2</code> the level below
+    that, and so on.</li>
+  <li>Removing the label shows every level again.</li>
 </ul>
 <p>Limitations:</p>
 <ul>

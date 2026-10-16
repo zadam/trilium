@@ -20,7 +20,9 @@ import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import { useNoteContext, useNoteLabel, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import Modal from "../react/Modal";
-import { CheckBoxProperty, ViewProperty } from "../react/NotePropertyMenu";
+import {
+    CheckBoxProperty, NumberProperty, PropertyHelp, ViewProperty
+} from "../react/NotePropertyMenu";
 import { bookPropertiesConfig } from "./collection-properties-config";
 
 export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
@@ -53,6 +55,19 @@ export const INCLUDE_ARCHIVED_PROPERTY: CheckBoxProperty = {
     icon: "bx bx-archive",
     label: t("book_properties.include_archived_notes"),
     bindToLabel: "includeArchived"
+};
+
+/**
+ * How many levels below its children a collection shows, for the views that show a whole subtree.
+ * Offered in a view's properties dialog only.
+ */
+export const MAX_NESTING_DEPTH_PROPERTY: NumberProperty & PropertyHelp = {
+    type: "number",
+    icon: "bx bx-subdirectory-right",
+    label: t("book_properties_config.max-nesting-depth"),
+    helpTooltip: t("book_properties_config.max-nesting-depth-description"),
+    bindToLabel: "maxNestingDepth",
+    disabled: (note) => note.type === "search"
 };
 
 interface CollectionPropertiesProps {

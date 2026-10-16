@@ -3524,7 +3524,7 @@
     "hide-weekends": "Hide weekends",
     "display-week-numbers": "Display week numbers",
     "map-style": "Map style",
-    "max-nesting-depth": "Max nesting depth:",
+    "max-nesting-depth": "Maximum nesting depth",
     "raster": "Raster",
     "vector_light": "Vector (Light)",
     "vector_dark": "Vector (Dark)",
@@ -3532,7 +3532,8 @@
     "show-scale": "Show scale",
     "show-labels": "Show marker names",
     "cluster-markers": "Group nearby markers",
-    "presentation-theme": "Theme"
+    "presentation-theme": "Theme",
+    "max-nesting-depth-description": "How many levels below the collection's children are shown: 0 shows only the children, 1 also shows their children, and so on. Leave it empty to show every level."
   },
   "table_context_menu": {
     "delete_row": "Delete row...",

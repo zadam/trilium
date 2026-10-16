@@ -152,8 +152,8 @@ describe("GeoMapProperties", () => {
             "book_properties_config.show-scale",
             "book_properties_config.show-labels",
             "book_properties_config.cluster-markers",
-            "book_properties_config.max-nesting-depth",
-            "book_properties.include_archived_notes"
+            "book_properties.include_archived_notes",
+            "book_properties_config.max-nesting-depth"
         ]);
     });
 

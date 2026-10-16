@@ -140,9 +140,12 @@ describe("CalendarProperties", () => {
             "calendar_view.time_slots",
             "calendar_view.slot_duration",
             "calendar_view.slot_label_interval",
-            "book_properties_config.max-nesting-depth",
-            "book_properties.include_archived_notes"
+            "book_properties.include_archived_notes",
+            "book_properties_config.max-nesting-depth"
         ]);
+        const depth = [ ...general?.querySelectorAll(".tn-card-option-label") ?? [] ].at(-1);
+        expect(depth?.querySelector(".tn-card-option-description")?.textContent)
+            .toBe("book_properties_config.max-nesting-depth-description");
         expect(general?.compareDocumentPosition(document.querySelector(".templates-stub") as Node))
             .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });

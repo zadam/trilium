@@ -4,7 +4,7 @@ import type FNote from "../../../entities/fnote";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
 import {
-    CollectionPropertiesDialog, INCLUDE_ARCHIVED_PROPERTY
+    CollectionPropertiesDialog, INCLUDE_ARCHIVED_PROPERTY, MAX_NESTING_DEPTH_PROPERTY
 } from "../../note_bars/CollectionProperties";
 import { bookPropertiesConfig } from "../../note_bars/collection-properties-config";
 import { Card } from "../../react/Card";
@@ -87,7 +87,9 @@ export default function CalendarProperties({
     );
 }
 
-/** What the settings dropdown offers for a calendar, which the General card repeats. */
+/** The settings dropdown's calendar settings and the depth, for the General card. */
 const GENERAL_PROPERTIES = [
-    ...bookPropertiesConfig.calendar.properties, INCLUDE_ARCHIVED_PROPERTY
+    ...bookPropertiesConfig.calendar.properties,
+    INCLUDE_ARCHIVED_PROPERTY,
+    MAX_NESTING_DEPTH_PROPERTY
 ];

@@ -123,13 +123,11 @@ If the child notes of the collection also have their own child notes, then they 
 
 Next to the title of each element there will be a button to expand or collapse. By default, all items are expanded.
 
-Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely. To do so, either:
+Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely, by setting the `#maxNestingDepth` [label](../Advanced%20Usage/Attributes/Labels.md) of the collection:
 
-*   Go to <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> and look for the _Max nesting depth_ section.
-    *   To disable nesting, type 0 and press Enter.
-    *   To limit to a certain depth, type in the desired number (e.g. 2 to only display children and sub-children).
-    *   To re-enable unlimited nesting, remove the number and press Enter.
-*   Manually set `maxNestingDepth` to the desired value.
+*   `0` disables nesting, showing only the children of the collection.
+*   `1` also shows their children, `2` the level below that, and so on.
+*   Removing the label shows every level again.
 
 Limitations:
 

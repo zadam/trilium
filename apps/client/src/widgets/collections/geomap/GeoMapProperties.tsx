@@ -6,7 +6,7 @@ import type FNote from "../../../entities/fnote";
 import attributes from "../../../services/attributes";
 import { t } from "../../../services/i18n";
 import {
-    CollectionPropertiesDialog, INCLUDE_ARCHIVED_PROPERTY
+    CollectionPropertiesDialog, INCLUDE_ARCHIVED_PROPERTY, MAX_NESTING_DEPTH_PROPERTY
 } from "../../note_bars/CollectionProperties";
 import { bookPropertiesConfig } from "../../note_bars/collection-properties-config";
 import Admonition from "../../react/Admonition";
@@ -69,10 +69,11 @@ export default function GeoMapProperties({ note, image, onClose }: {
 /** The settings dropdown's map style, which the Background card holds instead of General. */
 const MAP_STYLE_PROPERTY = bookPropertiesConfig.geoMap.properties.find(isMapStyle);
 
-/** What the settings dropdown offers for a geo map, which the General card repeats. */
+/** The settings dropdown's geo map settings and the depth, for the General card. */
 const GENERAL_PROPERTIES = [
     ...bookPropertiesConfig.geoMap.properties.filter((property) => !isMapStyle(property)),
-    INCLUDE_ARCHIVED_PROPERTY
+    INCLUDE_ARCHIVED_PROPERTY,
+    MAX_NESTING_DEPTH_PROPERTY
 ];
 
 function isMapStyle(property: BookProperty) {

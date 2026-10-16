@@ -89,9 +89,7 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                         options: slotDurationOptions([15, 30, 60])
                     }
                 ]
-            },
-            maxNestingDepthProperty((note) =>
-                note.hasLabel("calendarRoot") || note.hasLabel("workspaceCalendarRoot"))
+            }
         ]
     },
     geoMap: {
@@ -149,14 +147,11 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 icon: "bx bx-collection",
                 type: "checkbox",
                 bindToLabel: "map:cluster"
-            },
-            maxNestingDepthProperty()
+            }
         ]
     },
     table: {
-        properties: [
-            maxNestingDepthProperty()
-        ]
+        properties: []
     },
     board: {
         properties: [
@@ -193,21 +188,6 @@ function buildMapLayer([ id, layer ]: [ string, MapLayer ]): ComboBoxItem {
     return {
         value: id,
         label: layer.name
-    };
-}
-
-/**
- * The `#maxNestingDepth` input, disabled for a search collection, which shows only its results.
- * @param isDisabled disables the input for further notes.
- */
-function maxNestingDepthProperty(isDisabled?: (note: FNote) => boolean): BookProperty {
-    return {
-        label: t("book_properties_config.max-nesting-depth"),
-        icon: "bx bx-subdirectory-right",
-        type: "number",
-        bindToLabel: "maxNestingDepth",
-        width: 65,
-        disabled: (note) => note.type === "search" || !!isDisabled?.(note)
     };
 }
 
