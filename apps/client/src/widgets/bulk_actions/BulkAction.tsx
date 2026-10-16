@@ -1,33 +1,34 @@
+import "./BulkAction.css";
+
 import { ComponentChildren } from "preact";
 import { memo } from "preact/compat";
-import AbstractBulkAction from "./abstract_bulk_action";
+import { useEffect, useRef } from "preact/hooks";
+import { t } from "../../services/i18n";
+import AbstractBulkAction, { ActionDefinition } from "./abstract_bulk_action";
+import { useSpacedUpdate } from "../react/hooks";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
+import Icon from "../react/Icon";
 
 interface BulkActionProps {
-    label: string | ComponentChildren;
     children?: ComponentChildren;
-    helpText?: ComponentChildren;
     bulkAction: AbstractBulkAction;
 }
 
-// Define styles as constants to prevent recreation
-const flexContainerStyle = { display: "flex", alignItems: "center" } as const;
-const labelStyle = { marginInlineEnd: "10px" } as const;
-const textStyle = { marginInlineEnd: "10px", marginInlineStart: "10px" } as const;
+const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
+    const { actionIcon, actionTitle, actionDescription } = bulkAction.constructor as typeof AbstractBulkAction;
 
-const BulkAction = memo(({ label, children, helpText, bulkAction }: BulkActionProps) => {
     return (
         <tr>
-            <td colSpan={2}>
-                <div style={flexContainerStyle}>
-                    <div style={labelStyle} className="text-nowrap">{label}</div>
-
-                    {children}
+            <td className="title-column">
+                {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{actionTitle}
+            </td>
+            <td className="bulk-action-fields-column">
+                <div className="bulk-action-fields">
+                    {children ?? <span className="bulk-action-description">{actionDescription}</span>}
                 </div>
             </td>
             <HelpRemoveButtons
-                help={helpText}
-                removeText="Delete"
+                removeText={t("bulk_actions.remove_action")}
                 onRemove={() => bulkAction?.deleteAction()}
             />
         </tr>
@@ -36,12 +37,25 @@ const BulkAction = memo(({ label, children, helpText, bulkAction }: BulkActionPr
 
 export default BulkAction;
 
-export const BulkActionText = memo(({ text }: { text: string }) => {
-    return (
-        <div
-            style={textStyle}
-            className="text-nowrap">
-                {text}
-            </div>
-    );
-});
+/**
+ * Saves `data` to `bulkAction` a second after it changes. The values a row opens with are already
+ * stored, so the first render saves nothing.
+ */
+export function useSaveAction(bulkAction: AbstractBulkAction, data: Partial<ActionDefinition>) {
+    const spacedUpdate = useSpacedUpdate(() => bulkAction.saveAction(data));
+    const isFirstRender = useRef(true);
+    const serialized = JSON.stringify(data);
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        spacedUpdate.scheduleUpdate();
+    }, [ serialized ]);
+}
+
+/** Separates a row's source field from its target field, in place of a word such as "to". */
+export function BulkActionArrow() {
+    return <Icon icon="bx bx-right-arrow-alt" className="bulk-action-arrow" />;
+}

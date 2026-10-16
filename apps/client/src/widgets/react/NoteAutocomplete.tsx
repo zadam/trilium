@@ -50,6 +50,8 @@ export interface NoteAutocompleteProps {
     noteId?: string;
     /** Shows the selected note without allowing a different one to be picked. */
     readOnly?: boolean;
+    /** Keeps an enclosing form from submitting while the field is empty. */
+    required?: boolean;
     /** Places the input in the tab order of a host that orders its fields with `tabIndex`. */
     tabIndex?: number;
     /** Receives the functions that drive the field from outside it. */
@@ -81,7 +83,7 @@ export interface NoteAutocompleteHandle {
     clear(): void;
 }
 
-export default function NoteAutocomplete({ id, inputRef: externalInputRef, text, placeholder, container, containerStyle, opts, onChange, onTextChange, onKeyDown, onBlur, noteIdChanged, noteId, readOnly, tabIndex, handleRef, anchorRef, searchFooter, onHighlight }: NoteAutocompleteProps) {
+export default function NoteAutocomplete({ id, inputRef: externalInputRef, text, placeholder, container, containerStyle, opts, onChange, onTextChange, onKeyDown, onBlur, noteIdChanged, noteId, readOnly, required, tabIndex, handleRef, anchorRef, searchFooter, onHighlight }: NoteAutocompleteProps) {
     const inputRef = useSyncedRef<HTMLInputElement>(externalInputRef);
     const groupRef = useRef<HTMLDivElement>(null);
     const [ value, setValue ] = useState("");
@@ -290,6 +292,7 @@ export default function NoteAutocomplete({ id, inputRef: externalInputRef, text,
                 className="note-autocomplete form-control note-autocomplete-input"
                 value={value}
                 readOnly={readOnly}
+                required={required}
                 tabIndex={tabIndex}
                 placeholder={placeholder ?? t("add_link.search_note")}
                 autoComplete="off"

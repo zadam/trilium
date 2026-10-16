@@ -2,22 +2,22 @@ import "./SearchDefinition.css";
 
 import { SaveSearchNoteResponse } from "@triliumnext/commons";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
-import { Fragment } from "preact/jsx-runtime";
 
 import appContext from "../../components/app_context";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
-import bulk_action, { ACTION_GROUPS } from "../../services/bulk_action";
+import bulk_action from "../../services/bulk_action";
 import { t } from "../../services/i18n";
 import search from "../../services/search";
 import server from "../../services/server";
 import toast from "../../services/toast";
 import tree from "../../services/tree";
 import ws from "../../services/ws";
+import AddBulkActionButton from "../bulk_actions/AddBulkActionButton";
 import RenameNoteBulkAction from "../bulk_actions/note/rename_note";
 import Button, { SplitButton } from "../react/Button";
 import Dropdown from "../react/Dropdown";
-import { FormListHeader, FormListItem } from "../react/FormList";
+import { FormListItem } from "../react/FormList";
 import { useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import { ParentComponent } from "../react/react_utils";
@@ -114,7 +114,11 @@ export default function SearchDefinition({ note, ntxId }: {
                                         }
                                     />
 
-                                    <AddBulkActionButton note={note} />
+                                    <AddBulkActionButton
+                                        noteId={note.noteId}
+                                        buttonClassName="action-add-toggle btn btn-sm"
+                                        text={<><Icon icon="bx bxs-zap" />{" "}{t("search_definition.action")}</>}
+                                    />
                                 </td>
                             </tr>
                         </tbody>
@@ -221,29 +225,5 @@ function BulkActionsList({ note }: { note: FNote }) {
                 bulkAction.doRender()
             ))}
         </tbody>
-    );
-}
-
-function AddBulkActionButton({ note }: { note: FNote }) {
-    return (
-        <Dropdown
-            buttonClassName="action-add-toggle btn btn-sm"
-            dropdownContainerClassName="action-add-menu"
-            text={<><Icon icon="bx bxs-zap" />{" "}{t("search_definition.action")}</>}
-            noSelectButtonStyle
-            mobileBottomSheet
-        >
-            {ACTION_GROUPS.map(({ actions, title }, index) => (
-                <Fragment key={index}>
-                    <FormListHeader text={title} />
-
-                    <div>
-                        {actions.map(({ actionName, actionTitle }) => (
-                            <FormListItem key={actionName} onClick={() => bulk_action.addAction(note.noteId, actionName)}>{actionTitle}</FormListItem>
-                        ))}
-                    </div>
-                </Fragment>
-            ))}
-        </Dropdown>
     );
 }
