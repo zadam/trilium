@@ -4,6 +4,7 @@ import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../../entities/fnote";
+import froca from "../../../services/froca";
 import { buildNote } from "../../../test/easy-froca";
 import GeoMapProperties, { type GeoMapImageState } from "./GeoMapProperties";
 
@@ -20,7 +21,8 @@ const mocks = vi.hoisted(() => ({
     setLabel: vi.fn(async () => {}),
     removeOwnedLabelByName: vi.fn(async () => {}),
     removeOwnedRelationByName: vi.fn(async () => {}),
-    setAttribute: vi.fn(async () => {})
+    setAttribute: vi.fn(async () => {}),
+    toggleDangerousAttribute: vi.fn(async () => {})
 }));
 
 vi.mock("../../../services/attributes", () => ({
@@ -29,6 +31,7 @@ vi.mock("../../../services/attributes", () => ({
         removeOwnedLabelByName: mocks.removeOwnedLabelByName,
         removeOwnedRelationByName: mocks.removeOwnedRelationByName,
         setAttribute: mocks.setAttribute,
+        toggleDangerousAttribute: mocks.toggleDangerousAttribute,
         isAffecting: () => true
     }
 }));
@@ -52,7 +55,10 @@ describe("GeoMapProperties", () => {
     let container: HTMLElement;
 
     function draw(labels: Record<string, string>, image: GeoMapImageState = { status: "geo" }) {
-        const note = buildNote({ title: "Map", ...labels }) as unknown as FNote;
+        return drawNote(buildNote({ title: "Map", ...labels }) as unknown as FNote, image);
+    }
+
+    function drawNote(note: FNote, image: GeoMapImageState = { status: "geo" }) {
         act(() => {
             render(<GeoMapProperties note={note} image={image} onClose={() => {}} />, container);
         });
@@ -190,15 +196,51 @@ describe("GeoMapProperties", () => {
         expect(mocks.setAttribute).toHaveBeenCalledWith(note, "relation", "map:image", "image2");
     });
 
-    it("goes back to a world map by removing the image", () => {
+    it("goes back to a world map by disabling the image, which it keeps", () => {
         const note = draw({ "~map:image": "image1" }, LOADED_IMAGE);
         expect(backgroundType()).toBe("geo-map.background-image");
 
         choose("geo-map.background-map");
-        expect(mocks.removeOwnedRelationByName).toHaveBeenCalledWith(note, "map:image");
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(note, "relation", "map:image", false);
+        expect(mocks.removeOwnedRelationByName).not.toHaveBeenCalled();
         expect(optionTitles(".geo-map-properties-background")).toEqual([
             "geo-map.background-type", "book_properties_config.map-style"
         ]);
+    });
+
+    it("enables a disabled image again, and replaces it when another one is picked", () => {
+        const note = draw({ "~disabled:map:image": "image1" });
+        expect(backgroundType()).toBe("geo-map.background-map");
+
+        choose("geo-map.background-image");
+        expect(mocks.toggleDangerousAttribute)
+            .toHaveBeenCalledExactlyOnceWith(note, "relation", "map:image", true);
+
+        act(() => query(".autocomplete-stub")?.click());
+        expect(mocks.setAttribute).toHaveBeenCalledWith(note, "relation", "map:image", "image2");
+        expect(mocks.removeOwnedRelationByName).toHaveBeenCalledWith(note, "disabled:map:image");
+    });
+
+    it("keeps an inherited image, which only its owner can switch off", () => {
+        const parent = buildNote({
+            title: "Maps",
+            "~map:image(inheritable)": "image1",
+            children: [ { id: "inheritingMap", title: "Map" } ]
+        });
+        expect(parent.children).toContain("inheritingMap");
+        const note = drawNote(froca.notes.inheritingMap, LOADED_IMAGE);
+        expect(backgroundType()).toBe("geo-map.background-image");
+        expect(query(".geo-map-background-type .tn-card-option-description")?.textContent)
+            .toBe("geo-map.background-image-inherited");
+
+        const worldMap = openBackgroundTypes().find((item) =>
+            item.textContent?.trim().startsWith("geo-map.background-map"));
+        expect(worldMap?.classList.contains("disabled")).toBe(true);
+        act(() => worldMap?.click());
+        expect(mocks.toggleDangerousAttribute).not.toHaveBeenCalled();
+        expect(backgroundType()).toBe("geo-map.background-image");
+        expect(note.noteId).toBe("inheritingMap");
     });
 
     it("measures in pixels until custom corners are chosen, starting them at the size", () => {

@@ -72,6 +72,12 @@ export interface BuiltinRelation {
     type: "relation";
     name: string;
     isDangerous?: boolean;
+    /**
+     * Whether the relation can be switched off by a `disabled:` prefix, keeping its target, although
+     * it is not dangerous. Gives it a `disabled:*` member of {@link RelationNames}, as a dangerous
+     * one has.
+     */
+    canBeDisabled?: boolean;
 }
 
 const BUILTIN_ATTRIBUTES = [
@@ -365,8 +371,9 @@ const BUILTIN_ATTRIBUTES = [
     { type: "relation", name: "runOnChildNoteCreation", isDangerous: true },
     { type: "relation", name: "runOnAttributeCreation", isDangerous: true },
     { type: "relation", name: "runOnAttributeChange", isDangerous: true },
-    // The image a geo map draws in place of a world map.
-    { type: "relation", name: "map:image" },
+    // The image a geo map draws in place of a world map. Switched off rather than removed when the
+    // map goes back to a world map, so the image is kept for switching back.
+    { type: "relation", name: "map:image", canBeDisabled: true },
     { type: "relation", name: "template" },
     // Set on a template: where a note created from it goes when no parent is picked explicitly.
     { type: "relation", name: "template:newNoteDefaultParent" },
@@ -408,10 +415,11 @@ type RelationEntry = Extract<BuiltinAttributeEntry, { type: "relation" }>;
 
 /**
  * The `disabled:`-prefixed forms of the dangerous entries in `T`, which is how a dangerous attribute is
- * neutralised without losing its value. Derived rather than enumerated, so marking an attribute
- * dangerous is enough to make its disabled form known to the type system.
+ * neutralised without losing its value, and of the ones that opt in with `canBeDisabled`. Derived
+ * rather than enumerated, so either flag makes the disabled form known to the type system.
  */
-type DisabledForms<T extends { name: string }> = `disabled:${Extract<T, { isDangerous: true }>["name"]}`;
+type DisabledForms<T extends { name: string }> =
+    `disabled:${Extract<T, { isDangerous: true } | { canBeDisabled: true }>["name"]}`;
 
 /**
  * What each label type is read as in TypeScript. Written as a mapped type over {@link LabelType} so a

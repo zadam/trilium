@@ -3169,7 +3169,8 @@
     "background-map": "Vector & Raster",
     "background-image": "Custom image",
     "background-map-description": "A world map in one of the vector or raster styles.",
-    "background-image-description": "An image of your own, such as a floor plan or a fantasy map, with markers and shapes placed on it."
+    "background-image-description": "An image of your own, such as a floor plan or a fantasy map, with markers and shapes placed on it.",
+    "background-image-inherited": "This map's image comes from a parent note or a template, so it can only be switched off there."
   },
   "embedded_note": {
     "open-note": "Open note",

@@ -34,6 +34,8 @@ interface BackgroundOption {
     title: string;
     description: string;
     icon: string;
+    /** Why the option cannot be chosen, if it cannot. */
+    unavailable?: string;
 }
 
 /** The longest side, in pixels, that practically every graphics card can draw an image at. */
@@ -80,12 +82,22 @@ function isMapStyle(property: BookProperty) {
 }
 
 /**
- * A world map with its style, or an image with its coordinates. Choosing the image writes nothing
- * until an image note is picked, so the map stays drawn as it was until then.
+ * A world map with its style, or an image with its coordinates.
+ *
+ * Going back to a world map disables `~map:image` as `~disabled:map:image` rather than removing it,
+ * and choosing the image enables it again. Without a disabled image, choosing the image writes
+ * nothing until an image note is picked, so the map stays drawn as it was until then. An inherited
+ * image can only be disabled on the note that owns it.
  */
 function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState }) {
     const [ imageNoteId, setImageNoteId ] = useNoteRelation(note, "map:image");
+    // Read so that the card follows the relation being disabled and enabled.
+    useNoteRelation(note, "disabled:map:image");
     const [ kind, setKind ] = useState<BackgroundKind>(imageNoteId ? "image" : "map");
+    const isInherited = !!imageNoteId && !note.getOwnedRelation("map:image");
+    const inheritedReason = isInherited ? t("geo-map.background-image-inherited") : undefined;
+    const options = BACKGROUND_OPTIONS.map((option) =>
+        option.value === "map" ? { ...option, unavailable: inheritedReason } : option);
 
     useEffect(() => {
         if (imageNoteId) setKind("image");
@@ -93,8 +105,20 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
 
     function changeKind(newKind: BackgroundKind) {
         setKind(newKind);
-        if (newKind === "map") {
-            void attributes.removeOwnedRelationByName(note, "map:image");
+        const ownsImage = !!note.getOwnedRelation("map:image");
+        const ownsDisabledImage = !!note.getOwnedRelation("disabled:map:image");
+        if (newKind === "map" && ownsImage) {
+            void attributes.toggleDangerousAttribute(note, "relation", "map:image", false);
+        } else if (newKind === "image" && !imageNoteId && ownsDisabledImage) {
+            void attributes.toggleDangerousAttribute(note, "relation", "map:image", true);
+        }
+    }
+
+    function pickImage(noteId: string) {
+        setImageNoteId(noteId);
+        // The note holds one image at a time, so a disabled one does not outlive its replacement.
+        if (note.getOwnedRelation("disabled:map:image")) {
+            void attributes.removeOwnedRelationByName(note, "disabled:map:image");
         }
     }
 
@@ -103,13 +127,15 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
             <OptionCardSection
                 className="geo-map-background-type"
                 label={t("geo-map.background-type")}
+                description={inheritedReason}
             >
                 <FormDropdownList
-                    values={BACKGROUND_OPTIONS}
+                    values={options}
                     keyProperty="value"
                     titleProperty="title"
                     descriptionProperty="description"
                     iconProperty="icon"
+                    disabledProperty="unavailable"
                     currentValue={kind}
                     onChange={(value) => changeKind(value as BackgroundKind)}
                 />
@@ -124,7 +150,7 @@ function BackgroundCard({ note, image }: { note: FNote; image: GeoMapImageState 
                     note={note}
                     image={image}
                     imageNoteId={imageNoteId}
-                    onPickImage={setImageNoteId}
+                    onPickImage={pickImage}
                 />
             )}
         </Card>

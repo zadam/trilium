@@ -65,6 +65,8 @@ describe("derived name types", () => {
         // Dangerous attributes get their `disabled:` form generated, rather than enumerated by hand.
         const disabledLabel: LabelNames = "disabled:webViewSrc";
         const disabledRelation: RelationNames = "disabled:renderNote";
+        // So do the harmless ones that opt in to being switched off.
+        const disabledImage: RelationNames = "disabled:map:image";
 
         const flag: FilterLabelsByType<boolean> = "archived";
         const text: FilterLabelsByType<string> = "searchString";
@@ -76,7 +78,9 @@ describe("derived name types", () => {
         // @ts-expect-error `archived` is a flag, so it is absent from the string-valued subset
         const wrongValueType: FilterLabelsByType<string> = "archived";
 
-        expect([ label, relation, disabledLabel, disabledRelation, flag, text, count, unknown, wrongValueType ])
-            .toHaveLength(9);
+        expect([
+            label, relation, disabledLabel, disabledRelation, disabledImage, flag, text, count, unknown,
+            wrongValueType
+        ]).toHaveLength(10);
     });
 });

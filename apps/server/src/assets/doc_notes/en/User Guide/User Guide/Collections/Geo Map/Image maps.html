@@ -17,8 +17,12 @@
     choose the image note in <em>Image note</em>.</li>
 </ol>
 <p>The map then shows the image instead of the world map and opens with the
-  whole image in view. To go back to a world map, set <em>Type</em> back to <em>Vector &amp; Raster</em>,
-  which removes the image.</p>
+  whole image in view. To go back to a world map, set <em>Type</em> back to <em>Vector &amp; Raster</em>.
+  The image is switched off rather than removed: its relation is renamed
+  to <code>~disabled:map:image</code>, so setting <em>Type</em> to <em>Custom image</em> again
+  brings back the same image, with its coordinates. An image that the geo
+  map inherits from a parent note or a template can only be switched off
+  on the note that holds it.</p>
 <p>The image note is stored in a <code>~map:image</code>  <a href="#root/_help_Cq5X6iKQop6R">relation</a> of
   the geo map, which can also be added by hand.</p>
 <h2>Image size</h2>
