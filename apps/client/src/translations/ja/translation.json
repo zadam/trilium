@@ -107,7 +107,7 @@
     "toggle-zen-mode": "禅モード",
     "switch_to_mobile_version": "モバイル版に切り替え",
     "switch_to_desktop_version": "デスクトップ版に切り替え",
-    "configure_launchbar": "ランチャーバーの設定",
+    "configure_launchbar": "ランチャーバーの設定...",
     "show_shared_notes_subtree": "共有ノートのサブツリーを表示",
     "new-version-available": "新しいアップデートが利用可能",
     "download-update": "{{latestVersion}} をバージョンを入手",
@@ -547,7 +547,7 @@
     "open-in-a-new-split": "新しく分割して開く",
     "insert-note-after": "ノートを後ろに挿入",
     "insert-child-note": "子ノートを挿入",
-    "delete": "削除",
+    "delete": "削除...",
     "search-in-subtree": "サブツリー内を検索",
     "expand-subtree": "サブツリーを展開",
     "collapse-subtree": "サブツリーを折りたたむ",
@@ -562,16 +562,16 @@
     "paste-into": "貼り付け",
     "paste-after": "後ろに貼り付け",
     "duplicate": "複製",
-    "export": "エクスポート",
-    "import-into-note": "ノートにインポート",
-    "apply-bulk-actions": "一括操作の適用",
+    "export": "エクスポート...",
+    "import-into-note": "ノートにインポート...",
+    "apply-bulk-actions": "一括操作の適用...",
     "converted-to-attachments_other": "{{count}} 件のノートが添付ファイルに変換されました。",
-    "convert-to-attachment": "添付ファイルに変換",
+    "convert-to-attachment": "添付ファイルに変換...",
     "convert-to-attachment-confirm": "選択したノートを親ノートの添付ファイルに変換してもよろしいですか？この操作は画像ノートにのみ適用され、その他のノートはスキップされます。",
     "open-in-popup": "クイック編集",
     "hoist-note": "ホイストノート",
     "unhoist-note": "ノートのホイストを解除",
-    "edit-branch-prefix": "ブランチの接頭辞を編集",
+    "edit-branch-prefix": "ブランチの接頭辞を編集...",
     "archive": "アーカイブ",
     "unarchive": "アーカイブ解除",
     "open-in-a-new-window": "新しいウィンドウで開く",
@@ -599,13 +599,13 @@
     "note_source": "ノートのソース",
     "open_note_externally": "外部でノートを開く",
     "open_note_externally_title": "ファイルを外部アプリケーションで開き、変更を監視します。その後、変更されたバージョンをTriliumにアップロードできるようになります。",
-    "open_note_custom": "プログラムからノートを開く",
-    "import_files": "ファイルをインポート",
-    "export_note": "ノートをエクスポート",
-    "delete_note": "ノートを削除",
+    "open_note_custom": "プログラムからノートを開く...",
+    "import_files": "ファイルをインポート...",
+    "export_note": "ノートをエクスポート...",
+    "delete_note": "ノートを削除...",
     "print_note": "ノートを印刷...",
     "print_pdf": "PDFとしてエクスポート...",
-    "convert_into_attachment": "添付ファイルに変換",
+    "convert_into_attachment": "添付ファイルに変換...",
     "save_revision": "変更履歴を保存",
     "convert_into_attachment_failed": "ノート '{{title}}' の変換に失敗しました。",
     "convert_into_attachment_successful": "ノート '{{title}}' は添付ファイルに変換されました。",
@@ -626,13 +626,14 @@
     "word_wrap_off": "オフ",
     "save_named_revision": "名前を付けて変更履歴を保存...",
     "print_or_export_to_pdf": "印刷 / PDF へのエクスポート...",
-    "convert_to_markdown": "マークダウンノートに変換",
-    "convert_to_text": "テキストノートに変換",
+    "convert_to_markdown": "マークダウンノートに変換...",
+    "convert_to_text": "テキストノートに変換...",
     "convert_format_warning": "変換中に一部の書式が失われる可能性があり、後で修正が必要になる場合があります。現在のノートの変更履歴は事前に保存されるため、復元できます。続行しますか？",
     "convert_format_warning_risky": "機能の異なる2つの形式間で変換を行うため、一部の書式が失われたり、サポートされていない要素が削除されたりする可能性があります。<br><br>このリスクを十分に理解した上で、変換を続行しますか？<br><br> 現在のノートの変更履歴が事前に保存されるため、元の形式に戻すことができます。",
     "convert_to_markdown_successful": "ノートがマークダウンに変換されました。",
     "convert_to_text_successful": "ノートがテキストノートに変換されました。",
-    "note_attributes": "ノートの属性"
+    "note_attributes": "ノートの属性...",
+    "note_attributes_title": "ノートの属性"
   },
   "command_palette": {
     "export_note_title": "ノートをエクスポート",
@@ -758,7 +759,7 @@
     "change-note-icon": "アイコンを変更",
     "general": "一般",
     "show-archived": "アーカイブされたカードと列を表示",
-    "properties": "ボードのプロパティ",
+    "properties": "ボードのプロパティ...",
     "properties-title": "ボードのプロパティ",
     "card-templates": "カードテンプレート",
     "card-templates-hint": "新しいボードカードを作成する際に使用するノートタイプとノートテンプレートを選択してください。",
@@ -897,7 +898,7 @@
     "mime": "MIME タイプ"
   },
   "image_properties": {
-    "upload_new_revision": "編集履歴をアップロード",
+    "upload_new_revision": "編集履歴をアップロード...",
     "copy_reference_to_clipboard": "参照をクリップボードにコピー",
     "upload_success": "新しい画像の変更がアップロードされました。",
     "upload_failed": "新しい画像の変更のアップロードに失敗しました: {{message}}"
@@ -906,22 +907,23 @@
     "download": "ダウンロード",
     "open_externally": "外部で開く",
     "open_externally_title": "ファイルを外部アプリケーションで開き、変更を監視します。その後、変更されたバージョンをTriliumにアップロードできるようになります。",
-    "open_custom": "プログラムから開く",
+    "open_custom": "プログラムから開く...",
     "open_custom_title": "ファイルを外部アプリケーションで開き、変更を監視します。その後、変更されたバージョンをTriliumにアップロードできるようになります。",
-    "rename_attachment": "添付ファイルの名前を変更",
+    "rename_attachment": "添付ファイルの名前を変更...",
     "copy_link_to_clipboard": "参照先をクリップボードにコピー",
-    "convert_attachment_into_note": "添付ファイルをノートに変換",
-    "delete_attachment": "添付ファイルを削除",
+    "convert_attachment_into_note": "添付ファイルをノートに変換...",
+    "delete_attachment": "添付ファイルを削除...",
     "open_externally_detail_page": "添付ファイルを外部で開くは、詳細ページからのみ可能です。まず添付ファイル詳細をクリックしてから、再度操作を行ってください。",
     "open_custom_client_only": "添付ファイルをプログラムから開くは、デスクトップクライアントからのみ可能です。",
     "delete_confirm": "本当に添付ファイル '{{title}}' を削除しますか？",
     "delete_success": "添付ファイル '{{title}}' は削除されました。",
     "enter_new_name": "新しい添付ファイルの名前を入力してください",
-    "upload_new_revision": "編集履歴をアップロード",
+    "upload_new_revision": "編集履歴をアップロード...",
     "upload_success": "新しい添付ファイルの変更がアップロードされました。",
     "upload_failed": "新しい添付ファイルの変更のアップロードに失敗しました。",
     "convert_confirm": "添付ファイル「{{title}}」を別のノートに変換してもよろしいですか？",
-    "convert_success": "添付ファイル「{{title}}」がノートに変換されました。"
+    "convert_success": "添付ファイル「{{title}}」がノートに変換されました。",
+    "rename_attachment_title": "添付ファイルの名前を変更"
   },
   "etapi": {
     "created": "作成日時",
@@ -1009,11 +1011,11 @@
     "row-insert-child": "子ノートを挿入",
     "add-column-to-the-left": "列を左に追加",
     "add-column-to-the-right": "列を右に追加",
-    "edit-column": "列を編集",
+    "edit-column": "列を編集...",
     "delete_column_confirmation": "この列を本当に削除してもよろしいですか？対応する属性はすべてのノートから削除されます。",
-    "delete-column": "列を削除",
-    "new-column-label": "ラベル",
-    "new-column-relation": "リレーション"
+    "delete-column": "列を削除...",
+    "new-column-label": "ラベル...",
+    "new-column-relation": "リレーション..."
   },
   "search_script": {
     "title": "検索スクリプト:",
@@ -1692,7 +1694,7 @@
   "open-help-page": "ヘルプページを開く",
   "highlights_list_2": {
     "title_with_count_other": "{{count}} ハイライト",
-    "menu_configure": "ハイライトリストの設定...",
+    "menu_configure": "ハイライトリストの設定",
     "no_highlights": "ハイライトが見つかりません。"
   },
   "quick-search": {
@@ -1797,8 +1799,8 @@
     "add-script-launcher": "スクリプトランチャーを追加",
     "add-custom-widget": "カスタムウィジェットを追加",
     "add-spacer": "スペーサーを追加",
-    "delete": "削除 <kbd data-command=\"deleteNotes\"></kbd>",
-    "reset": "リセット",
+    "delete": "削除... <kbd data-command=\"deleteNotes\"></kbd>",
+    "reset": "リセット...",
     "move-to-visible-launchers": "可視ランチャーに移動",
     "move-to-available-launchers": "利用可能なランチャーに移動",
     "duplicate-launcher": "ランチャーの複製 <kbd data-command=\"duplicateSubtree\">",
@@ -1870,7 +1872,7 @@
   "note_language": {
     "not_set": "言語が設定されていません",
     "configure-languages": "言語を設定...",
-    "help-on-languages": "コンテンツの言語に関するヘルプ...",
+    "help-on-languages": "コンテンツの言語に関するヘルプ",
     "not_set_with_default": "言語が設定されていない場合 — {{- language}}"
   },
   "content_language": {
@@ -1919,7 +1921,7 @@
     "mathlive_description": "ビジュアルエディターを使用して数式を編集できます。"
   },
   "table_context_menu": {
-    "delete_row": "行を削除",
+    "delete_row": "行を削除...",
     "insert_rows_above": "行を上に挿入",
     "insert_rows_below": "行を下に挿入",
     "insert_columns_left": "列を左に挿入",
@@ -2060,7 +2062,7 @@
     "select_values_placeholder": "オプションを選択、または作成",
     "values_placeholder": "値を入力して Enter キーを押してください",
     "add_value": "この値を追加",
-    "create_attribute": "新しい属性を作成",
+    "create_attribute": "新しい属性を作成...",
     "edit_attribute": "この属性を編集",
     "delete_attribute": "この属性を削除",
     "delete_confirmation": "このコレクション内のすべてのノートから <strong>{{name}}</strong> とその値を削除しますか？この操作は元に戻せません。",
@@ -2072,11 +2074,11 @@
     "conflicting_tooltip": "この属性は複数の方法で定義されているため、テキスト（文字列）として並べ替えられ、アイテムメニューから設定することはできません。"
   },
   "relation_map": {
-    "remove_note": "ノートを削除",
-    "edit_title": "タイトルを編集",
+    "remove_note": "ノートを削除...",
+    "edit_title": "タイトルを編集...",
     "rename_note": "ノート名を変更",
     "enter_new_title": "新しいノート名を入力:",
-    "remove_relation": "リレーションを削除",
+    "remove_relation": "リレーションを削除...",
     "confirm_remove_relation": "本当にこのリレーションを削除しますか？",
     "specify_new_relation_name": "新しいリレーションの名前（使用可能な文字: 英数字、コロン、アンダースコア）を指定:",
     "note_not_found": "ノート {{noteId}} が見つかりません！",
@@ -2084,7 +2086,7 @@
     "connection_exists": "これらのノート間の接続 '{{name}}' は既に存在します。",
     "start_dragging_relations": "ここからリレーションをドラッグして、別のノートにドロップします。",
     "note_already_in_diagram": "ノート「{{title}}」はすでに図に含まれています。",
-    "rename_relation": "リレーション名の変更",
+    "rename_relation": "リレーション名の変更...",
     "rename": "名前を変更",
     "new_relation": "新しいリレーション",
     "create_relation": "リレーションを作成",
@@ -2102,7 +2104,8 @@
       "paste_notes": "コピーまたは切り取ったノートを貼り付け",
       "cancel_adding_note": "ノートの追加をキャンセル",
       "close_note_pane": "ノートパネルを閉じる"
-    }
+    },
+    "rename_relation_heading": "リレーション名の変更"
   },
   "database_anonymization": {
     "title": "データベースの匿名化",
@@ -2226,10 +2229,10 @@
     "help_text_body3": "代わりに、右側の <code>+</code> ボタンを使用してラベルとリレーションを追加することもできます。",
     "save_attributes": "属性を保存 <enter>",
     "add_a_new_attribute": "新しい属性を追加",
-    "add_new_label": "新しいラベルを追加 <kbd data-command=\"addNewLabel\"></kbd>",
-    "add_new_relation": "新しいリレーションを追加 <kbd data-command=\"addNewRelation\"></kbd>",
-    "add_new_label_definition": "新しいラベル定義を追加",
-    "add_new_relation_definition": "新しいリレーション定義を追加"
+    "add_new_label": "新しいラベルを追加... <kbd data-command=\"addNewLabel\"></kbd>",
+    "add_new_relation": "新しいリレーションを追加... <kbd data-command=\"addNewRelation\"></kbd>",
+    "add_new_label_definition": "新しいラベル定義を追加...",
+    "add_new_relation_definition": "新しいリレーション定義を追加..."
   },
   "move_note": {
     "on_all_matched_notes": "一致したすべてのノートに",
@@ -2528,11 +2531,11 @@
   },
   "geo-map-context": {
     "open-location": "現在位置を表示",
-    "remove-from-map": "マップから削除",
+    "remove-from-map": "マップから削除...",
     "add-note": "この場所にマーカーを追加",
     "move-marker": "別の場所に移動",
     "remove-from-map-confirmation": "地図からノート \"{{title}}\" を削除してもよろしいですか？",
-    "delete-note": "ノートを削除",
+    "delete-note": "ノートを削除...",
     "delete-note-confirmation": "ノート \"{{title}}\" を削除してもよろしいですか？このノートからは軌跡が描画されているため、単独で地図から削除することはできません。"
   },
   "help-button": {
@@ -2747,7 +2750,7 @@
     "duration_minutes": "{{minutes}} 分",
     "duration_hours": "{{hours}} 時間",
     "duration_hours_minutes": "{{hours}} 時間 {{minutes}} 分",
-    "properties": "カレンダーのプロパティ",
+    "properties": "カレンダーのプロパティ...",
     "event_templates": "イベントテンプレート",
     "event_templates_hint": "新しいカレンダーイベントを作成する際に使用するノートのタイプとノートテンプレートを選択します。",
     "new_template_name": "新しいイベントテンプレート",
@@ -2757,7 +2760,8 @@
     "general": "一般",
     "event_attributes": "イベントの属性",
     "event_attributes_hint": "イベントに表示する属性と、その表示順序を選択します。新しい属性は、有効にするまで非表示になっています。",
-    "event_attributes_overridden": "このカレンダーには calendar:displayedAttributes ラベルが設定されているため、ここで選択した属性ではなく、そのラベルにリストされている属性がイベントに表示されます。"
+    "event_attributes_overridden": "このカレンダーには calendar:displayedAttributes ラベルが設定されているため、ここで選択した属性ではなく、そのラベルにリストされている属性がイベントに表示されます。",
+    "properties-title": "カレンダーのプロパティ"
   },
   "read-only-info": {
     "edit-note": "ノートを編集"
@@ -3076,7 +3080,7 @@
     "save_as_note": "ノートとして保存",
     "save_note_failed": "メッセージからノートを作成できませんでした。",
     "regenerate": "再生成",
-    "delete_message": "メッセージを削除",
+    "delete_message": "メッセージを削除...",
     "delete_message_confirm": "このメッセージを削除しますか？この操作は取り消せません。",
     "model_cost_included": "サブスクリプション",
     "no_models_selected": "モデルが選択されていません — 鉛筆アイコンをクリックして選択してください",
@@ -3148,10 +3152,10 @@
     "no_chats": "過去のチャットはありません",
     "view_all_chats": "すべてのチャットを表示",
     "more_actions": "その他の操作",
-    "rename": "名前を変更",
+    "rename": "名前を変更...",
     "rename_title": "チャットの名前を変更",
     "rename_message": "このチャットの新しい名前を入力してください:",
-    "delete": "削除",
+    "delete": "削除...",
     "delete_chat": "チャットを削除",
     "delete_confirm": "このチャットを削除しますか？この操作は取り消せません。"
   },
@@ -3488,7 +3492,7 @@
   },
   "launcher_button_context_menu": {
     "remove_from_launch_bar": "ランチャーバーから削除",
-    "configure_launch_bar": "ランチャーバーの設定",
+    "configure_launch_bar": "ランチャーバーの設定...",
     "launch_bar_orientation": "ランチャーバーの向き",
     "will_reload_frontend": "（アプリが再読み込みされます）"
   },
@@ -3868,7 +3872,7 @@
   },
   "dashboard_view": {
     "refresh-widget": "更新",
-    "remove-widget": "ダッシュボードから削除",
+    "remove-widget": "ダッシュボードから削除...",
     "empty-hint": "子ノートはすべてウィジェットになります。ツリーからここにノートをドラッグするか、新しく作成してください。"
   },
   "split_editor": {
@@ -4595,5 +4599,7 @@
     "unknown_description": "Trilium によってダウンロードされたものではありません。",
     "delete_foreign_confirmation": "{{name}} を削除しますか？ このアプリのどの機能からも使用されていません。",
     "unverified": "未確認"
-  }
+  },
+  "compress-images-menu": "画像を圧縮…",
+  "compress-image-menu": "画像を圧縮…"
 }
