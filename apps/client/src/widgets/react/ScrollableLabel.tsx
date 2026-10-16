@@ -156,9 +156,16 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
             | undefined;
         let isClickCanceled = false;
 
+        // `user-select: none` on a pressed label keeps Firefox from starting a selection drag, whose
+        // autoscroll moves the label toward the pointer even when `selectstart` is canceled.
+        const setPress = (next: typeof press) => {
+            press = next;
+            element.toggleAttribute("data-pressed", !!next);
+        };
+
         const onPointerDown = (event: PointerEvent) => {
             isClickCanceled = false;
-            press = event.pointerType === "mouse" && event.button === 0
+            setPress(event.pointerType === "mouse" && event.button === 0
                 && element.scrollWidth > element.clientWidth
                 ? {
                     pointerId: event.pointerId,
@@ -166,13 +173,13 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
                     scrollLeft: element.scrollLeft,
                     isDragging: false
                 }
-                : undefined;
+                : undefined);
         };
         const onPointerMove = (event: PointerEvent) => {
             if (event.pointerId !== press?.pointerId) return;
             // Released away from the label before the drag captured the pointer.
             if (!(event.buttons & 1)) {
-                press = undefined;
+                setPress(undefined);
                 return;
             }
 
@@ -190,7 +197,7 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
             if (event.pointerId !== press?.pointerId) return;
 
             isClickCanceled = event.type === "pointerup" && press.isDragging;
-            press = undefined;
+            setPress(undefined);
         };
         const preventWhilePressed = (event: Event) => {
             if (press) {
@@ -210,7 +217,6 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
         element.addEventListener("pointerup", onPointerUp);
         element.addEventListener("pointercancel", onPointerUp);
         element.addEventListener("dragstart", preventWhilePressed);
-        element.addEventListener("selectstart", preventWhilePressed);
         element.addEventListener("click", cancelClick, true);
         return () => {
             element.removeEventListener("pointerdown", onPointerDown);
@@ -218,8 +224,8 @@ function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
             element.removeEventListener("pointerup", onPointerUp);
             element.removeEventListener("pointercancel", onPointerUp);
             element.removeEventListener("dragstart", preventWhilePressed);
-            element.removeEventListener("selectstart", preventWhilePressed);
             element.removeEventListener("click", cancelClick, true);
+            element.removeAttribute("data-pressed");
         };
     }, [ ref ]);
 }

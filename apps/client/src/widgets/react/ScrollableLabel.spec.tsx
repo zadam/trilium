@@ -188,7 +188,7 @@ describe("ScrollableLabel", () => {
 
         pointer(text, "pointerdown", 100);
         expect(isPrevented(text, "dragstart")).toBe(true);
-        expect(isPrevented(text, "selectstart")).toBe(true);
+        expect(label.hasAttribute("data-pressed")).toBe(true);
         pointer(text, "pointermove", 98);
         expect(label.scrollLeft).toBe(0);
         expect(label.hasPointerCapture(1)).toBe(false);
@@ -199,6 +199,7 @@ describe("ScrollableLabel", () => {
         pointer(label, "pointermove", 70);
         expect(label.scrollLeft).toBe(30);
         pointer(label, "pointerup", 70);
+        expect(label.hasAttribute("data-pressed")).toBe(false);
         expect(isPrevented(label, "click")).toBe(true);
         expect(click).not.toHaveBeenCalled();
 
@@ -208,6 +209,7 @@ describe("ScrollableLabel", () => {
         pointer(text, "pointercancel", 20);
         pointer(text, "pointermove", 0);
         expect(label.scrollLeft).toBe(80);
+        expect(label.hasAttribute("data-pressed")).toBe(false);
         expect(isPrevented(text, "click")).toBe(false);
 
         // A press that stays put is a click.
@@ -233,6 +235,7 @@ describe("ScrollableLabel", () => {
         pointer(label, "pointermove", 40, { buttons: 0 });
         expect(label.scrollLeft).toBe(0);
         expect(isPrevented(label, "dragstart")).toBe(false);
+        expect(label.hasAttribute("data-pressed")).toBe(false);
     });
 
     it("leaves the presses of a touch, another button, or on a label that fits alone", () => {
@@ -246,6 +249,7 @@ describe("ScrollableLabel", () => {
             const label = renderLabel("a name", scrollWidth);
             pointer(label, "pointerdown", 100, init);
             expect(isPrevented(label, "dragstart")).toBe(false);
+            expect(label.hasAttribute("data-pressed")).toBe(false);
             pointer(label, "pointermove", 40, init);
             expect(label.scrollLeft).toBe(0);
             pointer(label, "pointerup", 40, init);
