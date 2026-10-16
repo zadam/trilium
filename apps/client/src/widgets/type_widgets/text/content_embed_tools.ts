@@ -14,8 +14,13 @@ export interface ContentEmbedTool {
     isOn?: boolean;
     /** `true` when left out. */
     isEnabled?: boolean;
-    /** A separator goes between buttons of different groups. */
+    /** A separator goes between buttons, or items of a menu, of different groups. */
     group?: string;
+    /**
+     * The keystroke shown beside the label of an item of a menu: CKEditor's notation, such as
+     * `Ctrl+F`, or a single character, such as `?`.
+     */
+    keystroke?: string;
     /** The tools of the menu that the button opens. */
     children?: ContentEmbedTool[];
     /** A class of the button, for the content to style it. */

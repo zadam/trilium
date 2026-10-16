@@ -18,6 +18,7 @@ vi.mock("../NoteDetail", () => ({
     checkFullHeight: () => true
 }));
 vi.mock("./NoteTypeSwitcher", () => ({ default: () => null }));
+vi.mock("./PinnedAttachments", () => ({ default: () => null }));
 
 describe("NoteTitleActions", () => {
     it("toggles the promoted attributes on their shortcut only for its own note context", async () => {

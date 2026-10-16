@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { Fragment, TargetedMouseEvent, TargetedWheelEvent } from "preact";
-import { flushSync } from "preact/compat";
+import { flushSync, lazy, Suspense } from "preact/compat";
 import {
     useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState
 } from "preact/hooks";
@@ -13,12 +13,13 @@ import dialog from "../../../services/dialog";
 import { getHue, parseColor } from "../../../services/css_class_manager";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
+import { noteTypeOptionIcon } from "../../../services/note_types";
 import { isMobile } from "../../../services/utils";
-import { DragData, TREE_CLIPBOARD_TYPE } from "../../note_tree";
 import ActionButton from "../../react/ActionButton";
 import Icon from "../../react/Icon";
-import { IconPickerButton } from "../../react/IconPicker";
-import { useIsOnScreen, useLingeringTrue, useStaticTooltip } from "../../react/hooks";
+import {
+    type DragData, TREE_CLIPBOARD_TYPE, useIsOnScreen, useLingeringTrue, useStaticTooltip
+} from "../../react/hooks";
 import { useFlip } from "../../react/flip";
 import { useScrollFade } from "../../react/scroll_fade";
 import { useSelection } from "../../react/selection";
@@ -39,14 +40,13 @@ const MIN_CARD_HEIGHT = 32;
 /** How long an open takes. Matches `--board-expand-duration` in the board's own rules. */
 export const EXPAND_MS = 200;
 import NoteLink from "../../react/NoteLink";
+import TemplateDropdown, { type TemplateChoice } from "../../react/TemplateDropdown";
 import {
-    BoardActionsContext, BoardDragStateContext, BoardOverlayHostContext, BoardSelectionModeContext,
-    TitleEditor
+    BoardActionsContext, BoardDragStateContext, BoardEditingContext, BoardOverlayHostContext,
+    BoardSelectionModeContext
 } from ".";
 import BoardApi from "./api";
 import Card from "./card";
-import CardTemplatePill from "./card_template_pill";
-import { cardTemplateIcon, type CardTemplates } from "./card_templates";
 import { DEFAULT_CARD_ICON, DEFAULT_COLUMN_ICON, INBOX_COLUMN } from "./columns";
 import { ColumnToolbar, RAIL_EXIT_MS } from "./card_toolbar";
 import { openColumnContextMenu, openColumnSortMenu, openCreateCardMenu } from "./context_menu";
@@ -133,7 +133,7 @@ export default function Column({
      */
     standsAside?: number,
     /** What a new card is made from, and how the reader picks something else. */
-    cardTemplates: CardTemplates,
+    cardTemplates: TemplateChoice,
     /** Whether the inbox also collects notes deeper than the board's direct children. */
     nested?: boolean,
     /** The note limit, absent if disabled. */
@@ -463,7 +463,7 @@ export default function Column({
     }, [ column, isActive, isPeeked, setActiveColumn ]);
 
     // Only for a sorted column. The arrow shows which way the order runs.
-    const sortButton = sort && (
+    const sortButton = sort && !api.isReadOnly && (
         <ActionButton
             className="column-sort"
             icon={sort.isDescending ? "bx bx-sort-down" : "bx bx-sort-up"}
@@ -531,6 +531,10 @@ export default function Column({
     }, [ color ]);
 
     const handleTitleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (api.isReadOnly) {
+            return;
+        }
+
         if (e.key === "F2" && !isCollapsed) {
             setColumnNameToEdit(column);
         }
@@ -556,7 +560,7 @@ export default function Column({
                 beginInsert(0);
             }
         }
-    }, [ beginInsert, beginNewItem, collapse, column, isCollapsed, isSorted ]);
+    }, [ api, beginInsert, beginNewItem, collapse, column, isCollapsed, isSorted ]);
 
     const overlayHost = useContext(BoardOverlayHostContext);
     /** Whether the heading holds the focus, which on mobile floats the column's rail. */
@@ -571,6 +575,7 @@ export default function Column({
         setIsHeaderFocused(false);
     }, []);
     const isSelecting = useContext(BoardSelectionModeContext);
+    const editing = useContext(BoardEditingContext);
     // Off the heading while its title is edited, since the rename it offers is under way, and in
     // selection mode, where the board's own rail stands for the selection.
     const isRailWanted = isMobile() && isHeaderFocused && !isEditing && !isSelecting;
@@ -664,7 +669,7 @@ export default function Column({
 
     // The field a card is inserted in, drawn where the reader asked for the card. The same field
     // as the one below the column, so a card is made the same way wherever it goes.
-    const insertField = insertBefore && (
+    const insertField = insertBefore && !api.isReadOnly && (
         <AddNewItem
             api={api}
             cardTemplates={cardTemplates}
@@ -775,15 +780,19 @@ export default function Column({
                 ) : (<>
                 {/* In relation mode the column is a note, and NoteLink already shows that note's
                     own icon, which is not the board's to change. */}
-                {!isInRelationMode && (
-                    <IconPickerButton
-                        className="column-icon"
-                        icon={api.getColumnIcon(column) ?? DEFAULT_COLUMN_ICON}
-                        title={t("board_view.change-column-icon")}
-                        onSelect={(picked) => api.setColumnIcon(column, picked)}
-                        onReset={icon ? () => api.setColumnIcon(column, undefined) : undefined}
-                    />
-                )}
+                {!isInRelationMode && (api.isReadOnly
+                    ? <StaticColumnIcon api={api} column={column} />
+                    : (
+                        <Suspense fallback={<StaticColumnIcon api={api} column={column} />}>
+                            <IconPickerButton
+                                className="column-icon"
+                                icon={api.getColumnIcon(column) ?? DEFAULT_COLUMN_ICON}
+                                title={t("board_view.change-column-icon")}
+                                onSelect={(picked) => api.setColumnIcon(column, picked)}
+                                onReset={icon ? () => api.setColumnIcon(column, undefined) : undefined}
+                            />
+                        </Suspense>
+                    ))}
 
                 {!isEditing ? (
                     <>
@@ -807,8 +816,8 @@ export default function Column({
                             }}
                         />
                     </>
-                ) : (
-                    <TitleEditor
+                ) : editing && (
+                    <editing.TitleEditor
                         currentValue={api.getColumnTitle(column)}
                         save={newTitle => api.setColumnTitle(column, newTitle)}
                         dismiss={() => setColumnNameToEdit(undefined)}
@@ -866,7 +875,7 @@ export default function Column({
                 <div ref={roomRef} className="board-drop-room" />
             </div>}
 
-            {isRailDrawn && overlayHost.current && (
+            {isRailDrawn && overlayHost.current && !api.isReadOnly && (
                 <ColumnToolbar
                     host={overlayHost.current}
                     isLeaving={!isRailShown}
@@ -877,7 +886,7 @@ export default function Column({
                     onFocusOut={handleHeaderFocusOut}
                 />
             )}
-            {!isCollapsed && <AddNewItem
+            {!isCollapsed && !api.isReadOnly && <AddNewItem
                 api={api}
                 cardTemplates={cardTemplates}
                 column={column}
@@ -888,6 +897,18 @@ export default function Column({
             />}
         </div>
     );
+}
+
+/**
+ * Loaded once a column can change its icon, so a read-only board never loads the picker and the
+ * grid of every icon pack it brings.
+ */
+const IconPickerButton = lazy(() => import("../../react/IconPicker")
+    .then(({ IconPickerButton: button }) => ({ default: button })));
+
+/** The column's icon on its ring, as the picker's button draws it, for a column that cannot change it. */
+function StaticColumnIcon({ api, column }: { api: BoardApi; column: string }) {
+    return <Icon className="column-icon static" icon={api.getColumnIcon(column) ?? DEFAULT_COLUMN_ICON} />;
 }
 
 /**
@@ -999,7 +1020,7 @@ function AddNewItem({
 }: {
     column: string,
     api: BoardApi,
-    cardTemplates: CardTemplates,
+    cardTemplates: TemplateChoice,
     /** Whether the column orders its own cards, which leaves the reader no end to pick. */
     isSorted?: boolean,
     isCreating?: boolean,
@@ -1018,11 +1039,12 @@ function AddNewItem({
     const close = useCallback(
         () => insert ? insert.close() : setIsCreating?.(false),
         [ insert, setIsCreating ]);
+    const editing = useContext(BoardEditingContext);
     // What the editor opens with: empty to begin with, then whatever was typed into it and left
     // unsaved, so that reaching for something else and coming back does not cost the title.
     const [ initialTitle, setInitialTitle ] = useState("");
     // The icon a card made from the current template would carry.
-    const templateIcon = cardTemplateIcon(cardTemplates.current) ?? DEFAULT_CARD_ICON;
+    const templateIcon = noteTypeOptionIcon(cardTemplates.current) ?? DEFAULT_CARD_ICON;
     // Kept between cards, unlike the title: a run of cards is often a run of the same kind of card.
     const [ icon, setIcon ] = useState(templateIcon);
     /** The template icon `icon` was last set from, telling a picked icon from a followed one. */
@@ -1105,8 +1127,8 @@ function AddNewItem({
                     <Icon icon="bx bx-plus" />{" "}
                     {t("board_view.new-item")}
                 </>
-            ) : (
-                <TitleEditor
+            ) : editing && (
+                <editing.TitleEditor
                     currentValue={initialTitle}
                     placeholder={t("board_view.new-item-placeholder")}
                     save={create}
@@ -1125,7 +1147,15 @@ function AddNewItem({
                     // cards is already at the end the reader asked for, and a sorted column places
                     // the card itself.
                     openPlacements={!insert && !isSorted ? openCreateCardMenu : undefined}
-                    footer={(hold) => <CardTemplatePill {...cardTemplates} {...hold} />}
+                    footer={(hold) => (
+                        <TemplateDropdown
+                            {...cardTemplates}
+                            {...hold}
+                            pill
+                            title={t("board_view.card-template")}
+                            moreText={t("board_view.more-templates")}
+                        />
+                    )}
                     icon={{
                         current: icon,
                         onSelect: setIcon,
@@ -1223,7 +1253,8 @@ function useDragging({
     }, [setDraggedColumn]);
 
     const handleDragOver = useCallback((e: DragEvent) => {
-        if (isEditing || draggedColumn || isDraggingRef.current) return; // Don't handle card drops when dragging columns
+        // Don't handle card drops when dragging columns
+        if (api.isReadOnly || isEditing || draggedColumn || isDraggingRef.current) return;
         // Cards are carried by pointer now; what still arrives this way comes from the note tree.
         if (!e.dataTransfer?.types.includes(TREE_CLIPBOARD_TYPE)) return;
 
@@ -1266,7 +1297,8 @@ function useDragging({
     }, [setDropTarget, setDropPosition]);
 
     const handleDrop = useCallback(async (e: DragEvent) => {
-        if (draggedColumn) return; // Don't handle card drops when dragging columns
+        // Don't handle card drops when dragging columns
+        if (api.isReadOnly || draggedColumn) return;
         e.preventDefault();
         // Taken before the gap is closed, which is what says where the note goes.
         const standing = dropState.get().position;

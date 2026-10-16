@@ -129,8 +129,8 @@ Once you select a result, a counter appears under the search bar, with a previou
 
 ### The keyboard
 
-*   **Enter** runs the online search when its row is the one selected, and otherwise moves to the highlighted result. Pressed after a result has been taken, it brings the list back.
-*   **Escape** closes the result list, and closes the place panel.
+*   <kbd>Enter</kbd> runs the online search when its row is the one selected, and otherwise moves to the highlighted result. Pressed after a result has been taken, it brings the list back.
+*   <kbd>Escape</kbd> closes the result list, and closes the place panel.
 *   Returning to the search bar reopens the list it was showing.
 *   The **X** at the end of the bar empties it, which also takes a searched place, its pin and its panel off the map.
 
@@ -188,6 +188,8 @@ Some things to keep in mind:
 The location of a marker is stored in the `#geolocation` attribute of the child notes:
 
 This value can be added manually if needed. The value of the attribute is made up of the latitude and longitude separated by a comma.
+
+On an image map, the position is stored in `#mapPosition` instead (see <a class="reference-link" href="Geo%20Map/Image%20maps.md">Image maps</a>).
 
 ## Repositioning markers
 
@@ -294,6 +296,10 @@ Similarly to the Google Maps approach:
 
 See the dedicated <a class="reference-link" href="Geo%20Map/Drawing%20shapes.md">Drawing shapes</a> page.
 
+## Using an image instead of the world map
+
+A geo map can be drawn over an image of your own, such as a floor plan or a fantasy map, with markers placed in the image's pixels. See <a class="reference-link" href="Geo%20Map/Image%20maps.md">Image maps</a>.
+
 ## Adding GPS tracks (.gpx)
 
 <figure class="image"><img style="aspect-ratio:1566/1155;" src="1_Geo Map_image.png" width="1566" height="1155"></figure>
@@ -327,14 +333,15 @@ When a map is [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%2
 *   Editing from the contextual menu (removing locations or adding new items).
 *   Keeping a place as a marker, whether you found it by searching or clicked it on the map. You can still search and click, and you can still look at a place and copy its coordinates.
 *   Drawing [shapes](Geo%20Map/Drawing%20shapes.md).
+*   The _Geo map properties_ dialog; its entry is hidden from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a>.
 
-To set a map as read-only, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20buttons.md">Note buttons</a> → _Editable_ → _Read-only_ (on the new layout, or in Basic Properties on the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Ribbon.md">Ribbon</a> for the old layout).
+To set a map as read-only, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Editable_ → _Read-only_.
 
 ## Configuration
 
 ### Map Style
 
-The styling of the map can be adjusted in the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> or manually via the `#map:style` attribute.
+The styling of the map can be adjusted in the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, under _Background_ in the _Geo map properties_ dialog, or manually via the `#map:style` attribute.
 
 The geo map comes with two different types of styles:
 
@@ -366,12 +373,21 @@ The buildings will only appear from zoom 14 onwards to avoid lag.
 
 Starting with v0.102.0 it is possible to use custom tile sets, but only in raster format.
 
-To do so, manually set the `#map:style` [label](../Advanced%20Usage/Attributes/Labels.md) to the URL of the tile set. For example, to use Esri.NatGeoWorldMap, set the value to [`https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`.](https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D.)
+To use one:
+
+1.  Open the _Geo map properties_ dialog from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a>.
+2.  Under _Background_, set _Type_ to _Custom tileset_.
+3.  In _Tile URL_, enter the address of the tile set, with `{z}`, `{x}` and `{y}` where the zoom level and the position of the tile go. For example, to use Esri.NatGeoWorldMap, enter [`https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`](https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D). The URL is saved once you leave the field; a URL that doesn't start with `http://` or `https://`, or that lacks one of the three placeholders, is not saved. A map drawn over an image keeps its image until a URL is saved.
+4.  If the tiles are dark, turn on _Dark tileset_, which draws the marker titles in a light color so that they remain readable.
 
 Additionally:
 
 *   Hi-DPI tiles are supported via the `{r}` placeholder.
-*   To mark the custom style as dark (which affects the styling of the UI), apply the `map:darkStyle` label. This attribute also overrides builtin themes.
+*   Servers that number their tiles by quadkey are supported via the `{quadkey}` placeholder, in place of `{z}`, `{x}` and `{y}`.
+
+To go back to a built-in style, set _Type_ back to _Vector & Raster_. The tile set is switched off rather than removed: its label is renamed to `#disabled:map:style`, so setting _Type_ to _Custom tileset_ again brings back the same URL. A tile set inherited from a parent note or a template is overridden by the default style instead.
+
+The tile set can also be set manually: the URL goes in the `#map:style` [label](../Advanced%20Usage/Attributes/Labels.md), and the `#map:darkStyle` label marks it as dark. `#map:darkStyle` also overrides the built-in styles.
 
 > [!NOTE]
 > For a list of tile sets, see the [Leaflet Providers preview](https://leaflet-extras.github.io/leaflet-providers/preview/) page. Select a desired tile set and just copy the URL from the _Plain JavaScript_ example.
@@ -388,3 +404,7 @@ The following options can be configured either via the <a class="reference-link
 *   v0.105.0 also introduces a feature called _Group nearby markers_ which will cluster multiple markers together at low zoom.
     *   The clusters display the number of items they contain. The color also changes based on the count.
     *   Clicking on a cluster will automatically zoom in so that the individual markers that make up the cluster are now visible.
+
+The same options are also listed under _General_ in the <span class="tn-icon bx bx-cog"></span>_Geo map properties_ dialog, opened from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> or from the settings menu of the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>. Its _Included notes_ section sets whether archived notes are shown and the _Maximum nesting depth_ (see below), and its _Background_ section holds the map style, the URL of a custom tile set when _Type_ is set to _Custom tileset_ (see above), or, with _Type_ set to _Custom image_, draws the map over an image of your own instead, as described in <a class="reference-link" href="Geo%20Map/Image%20maps.md">Image maps</a>.
+
+The map shows the notes of its whole subtree, not only its children. _Maximum nesting depth_ (`#maxNestingDepth`) limits how deep below the map it looks: `0` shows only the children, `1` adds their children, and so on. Without a value, every level is shown.

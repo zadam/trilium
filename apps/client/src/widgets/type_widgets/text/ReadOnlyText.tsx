@@ -4,6 +4,12 @@ import "./ReadOnlyText.css";
 // (see https://github.com/zadam/trilium/issues/1590 for example of such conflict)
 import "@triliumnext/ckeditor5";
 
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
+import {
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
+import { CLASSES as TAB_CLASSES } from "@triliumnext/ckeditor5/src/plugins/tabs/constants.js";
+import { applyTabs } from "@triliumnext/ckeditor5/src/plugins/tabs/tabs_read_only.js";
 import clsx from "clsx";
 import { Ref } from "preact";
 import { useEffect, useLayoutEffect, useMemo, useRef as usePreactRef } from "preact/hooks";
@@ -13,6 +19,8 @@ import FNote from "../../../entities/fnote";
 import { consumeBlockReference } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import { applyInlineMermaid, rewriteMermaidDiagramsInContainer } from "../../../services/content_renderer_text";
+import { t } from "../../../services/i18n";
+import { applyNoteImageVersions } from "../../../services/image_urls";
 import { applyLinkEmbeds } from "../../../services/link_embed";
 import { renderMathInElement } from "../../../services/math";
 import { trackPendingRender } from "../../../services/pending_renders";
@@ -24,6 +32,7 @@ import {
     useTriliumEvent, useTriliumOption, useTriliumOptionBool
 } from "../../react/hooks";
 import { RawHtmlBlock } from "../../react/RawHtml";
+import { mountScrollableLabel } from "../../react/ScrollableLabel";
 import { TypeWidgetProps } from "../type_widget";
 import { applyReferenceLinks } from "./read_only_helper";
 import {
@@ -104,7 +113,7 @@ interface ReadOnlyTextContentProps {
 /**
  * Renders arbitrary CKEditor-style HTML with the same pipeline as {@link ReadOnlyText}:
  * mermaid rewriting, inline mermaid, embed expansion, KaTeX math, reference-link
- * titles, code-block syntax highlighting, and image click handling. Transforms re-run
+ * titles, tabs, code-block syntax highlighting, and image click handling. Transforms re-run
  * whenever `html` changes.
  */
 export function ReadOnlyTextContent({
@@ -143,14 +152,34 @@ export function ReadOnlyTextContent({
             formatCodeBlocks($(container))
         ]));
 
+        applyNoteImageVersions(container);
+        const disposeTableScroll = applyTableScroll(container);
+        const disposeStickyTableHeaders = applyStickyTableHeaders(container);
         applyMath(container);
+        applyTabs(container, { placeholder: t("text-editor.ck.tab-title") });
+        const tabTitles = container.querySelectorAll<HTMLElement>(`.${TAB_CLASSES.tabTitle}`);
+        const disposeTabTitles = [ ...tabTitles ]
+            .filter((title) => title.hasChildNodes())
+            .map((title) => mountScrollableLabel(title));
         setupImageOpening(container, true);
+
+        return () => {
+            disposeTableScroll();
+            disposeStickyTableHeaders();
+            for (const dispose of disposeTabTitles) {
+                dispose();
+            }
+        };
     }, [ html, noteId, ntxId, contentRef ]);
 
     useEffect(() => {
         if (!contentRef.current) return;
         return watchContentEmbeds(contentRef.current);
     }, [ contentRef ]);
+
+    useTriliumEvent("entitiesReloaded", () => {
+        if (contentRef.current) applyNoteImageVersions(contentRef.current);
+    });
 
     // React to embedded note changes.
     useTriliumEvent("refreshEmbeddedNote", ({ noteId }) => {

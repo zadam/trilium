@@ -500,6 +500,7 @@ describe("CK config - image actions", () => {
         const unsupportedToolbar = (unsupported.image as { toolbar: unknown[] }).toolbar;
         expect(unsupportedToolbar).not.toContain("copyImageToClipboard");
         expect(unsupportedToolbar).toContain("downloadImage");
+        expect(unsupportedToolbar).toContain("convertImageToDrawing");
 
         imageState.copySupported = true;
         const supported = await buildConfig(baseOpts());

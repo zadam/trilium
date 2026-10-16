@@ -68,3 +68,45 @@
     }
 }
 
+
+.dropdown-menu.clipped-note-details-panel {
+    width: max-content;
+    max-width: min(420px, calc(100vw - 20px));
+    padding: 1em;
+
+    .clipped-note-source {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        overflow-wrap: anywhere;
+    }
+
+    .clipped-note-description {
+        margin: 0.75em 0 0;
+        user-select: text;
+    }
+
+    .clipped-note-fields {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.2em 2em;
+        margin: 0.75em 0 0;
+
+        > div {
+            display: contents;
+        }
+
+        dt {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            font-weight: normal;
+            opacity: 0.5;
+        }
+
+        dd {
+            margin: 0;
+            user-select: text;
+        }
+    }
+}

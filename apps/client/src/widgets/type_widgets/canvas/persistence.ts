@@ -1,7 +1,10 @@
 import { CaptureUpdateAction, exportToSvg, getSceneVersion } from "@excalidraw/excalidraw";
 import { ExcalidrawElement, NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
-import { AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState, ExcalidrawProps, LibraryItem } from "@excalidraw/excalidraw/types";
-import { deferred, type DeferredPromise } from "@triliumnext/commons";
+import {
+    AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState,
+    ExcalidrawProps, LibraryItem
+} from "@excalidraw/excalidraw/types";
+import { deferred, type DeferredPromise, getDrawingPictureTitle } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
@@ -9,9 +12,13 @@ import NoteContext from "../../../components/note_context";
 import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
+import froca from "../../../services/froca";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
-import { buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments } from "./image_attachments";
+import { type DrawingView, getBoundedView, getFittedView } from "./drawing_view";
+import {
+    buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
+} from "./image_attachments";
 
 interface AttachmentMetadata {
     title: string;
@@ -344,6 +351,13 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
     };
 }
 
+interface DrawingPersistenceOptions {
+    /** The view to open the drawing at, instead of the saved one. */
+    initialView?: DrawingView | null;
+    /** Called once Excalidraw shows the loaded scene. */
+    onSceneShown?: () => void;
+}
+
 /**
  * Loads a canvas drawing from an attachment and passes its changes to `editor`, which saves them.
  * Without `editor`, the drawing is read-only.
@@ -352,13 +366,19 @@ export function useCanvasDrawingPersistence(
     attachment: FAttachment,
     editor: ContentEditor | undefined,
     apiRef: RefObject<ExcalidrawImperativeAPI | null>,
-    theme: AppState["theme"]
+    theme: AppState["theme"],
+    { initialView, onSceneShown }: DrawingPersistenceOptions = {}
 ): Partial<ExcalidrawProps> {
     const currentSceneVersion = useRef(0);
     /** The saved part of the app state, read from the editor at the first change. */
     const appStateToCompare = useRef<ImportantAppState | null>(null);
     // Same guard as the canvas note: the scene is empty until Excalidraw applies `initialData`.
     const initialSceneAppliedRef = useRef(true);
+    const referencedFileIds = useRef<ReadonlySet<string>>(new Set());
+    const isFitPendingRef = useRef(false);
+    /** Whether the loaded scene shows nothing, known once it loads. */
+    const isLoadedSceneEmptyRef = useRef(false);
+    const isSceneShownRef = useRef(false);
 
     const [ initialData ] = useState(async (): Promise<ExcalidrawInitialDataState> => {
         const unsavedContent = editor?.getUnsavedContent();
@@ -366,16 +386,23 @@ export function useCanvasDrawingPersistence(
             ? (await attachment.getBlob())?.content ?? ""
             : unsavedContent;
         const content = parseContent(blobContent, attachment);
+        const loaded = await loadDrawingFiles(attachment, content);
+        referencedFileIds.current = loaded.referencedFileIds;
 
         const elements = content.elements ?? [];
         currentSceneVersion.current = getSceneVersion(elements);
         initialSceneAppliedRef.current = currentSceneVersion.current === 0;
+        isLoadedSceneEmptyRef.current = !elements.some((element) => !element.isDeleted);
+        isFitPendingRef.current = !initialView && !content.appState?.zoom
+            && !isLoadedSceneEmptyRef.current;
 
         return {
             elements,
             // A drawing shows the background of the note unless one is picked for it.
-            appState: { viewBackgroundColor: "transparent", ...content.appState, theme },
-            files: getInlineFiles(content)
+            appState: {
+                viewBackgroundColor: "transparent", ...content.appState, ...initialView, theme
+            },
+            files: loaded.files
         };
     });
 
@@ -388,11 +415,23 @@ export function useCanvasDrawingPersistence(
         excalidrawAPI: (api) => {
             apiRef.current = api;
         },
-        onChange: () => {
+        onChange: (elements, state) => {
             const api = apiRef.current;
-            if (!api || !editor) return;
+            // Excalidraw reports its size only once the drawing is laid out in the note.
+            const fitted = isFitPendingRef.current
+                && getFittedView(elements, state.width, state.height);
+            if (fitted) isFitPendingRef.current = false;
+            const view = fitted || getBoundedView(elements, state);
+            if (api && view) api.updateScene({ appState: view });
+            if (!api) return;
 
             const sceneVersion = getSceneVersion(api.getSceneElements());
+            if (!isSceneShownRef.current && (isLoadedSceneEmptyRef.current || sceneVersion)) {
+                isSceneShownRef.current = true;
+                onSceneShown?.();
+            }
+            if (!editor) return;
+
             if (!initialSceneAppliedRef.current) {
                 if (sceneVersion === 0) return;
                 initialSceneAppliedRef.current = true;
@@ -407,24 +446,195 @@ export function useCanvasDrawingPersistence(
             if (sceneVersion === currentSceneVersion.current && !isAppStateChanged) return;
 
             currentSceneVersion.current = sceneVersion;
-            editor.scheduleSave(() => serializeDrawing(api));
+            editor.scheduleSave(
+                () => serializeDrawing(api, referencedFileIds.current),
+                (content) => saveDrawingPicture(attachment, content, api.getFiles())
+            );
         }
     };
 }
 
-/** The images kept inline in `content`, keyed by their file ID. */
-export function getInlineFiles(content: CanvasContent): BinaryFiles {
+/**
+ * The images of the canvas drawing in `content`: the ones it keeps inline, and the ones it refers
+ * to by file ID, which the note that owns `entity` keeps as image attachments titled with that ID.
+ * `referencedFileIds` lists the latter.
+ */
+export async function loadDrawingFiles(
+    entity: FNote | Pick<FAttachment, "ownerId">,
+    content: CanvasContent
+) {
     const files: BinaryFiles = {};
     for (const file of Object.values(content.files ?? {})) {
         files[file.id] = file;
     }
-    return files;
+
+    const referencedFileIds = new Set<string>();
+    for (const element of content.elements ?? []) {
+        if ("fileId" in element && element.fileId && !files[element.fileId]) {
+            referencedFileIds.add(element.fileId);
+        }
+    }
+
+    if (referencedFileIds.size) {
+        const owner = entity instanceof FNote ? entity : await froca.getNote(entity.ownerId);
+        const images = (await owner?.getAttachmentsByRole(IMAGE_ROLE) ?? [])
+            .filter((attachment) => referencedFileIds.has(attachment.title));
+        for (const file of (await loadImageFiles(images)).files) {
+            files[file.id] = file;
+        }
+    }
+
+    return { files, referencedFileIds };
 }
 
-/** The content of a canvas drawing. Unlike a canvas note, a drawing keeps its images inline. */
-function serializeDrawing(api: ExcalidrawImperativeAPI) {
+/**
+ * The picture of the canvas drawing `scene` with the images `files`, as the list of attachments and
+ * shared pages show it, or `null` for an empty drawing.
+ */
+export async function exportDrawingPicture(
+    scene: CanvasContent,
+    files: BinaryFiles,
+    isDark: boolean
+) {
+    const elements = (scene.elements ?? []).filter((element) => !element.isDeleted);
+    if (!elements.length) {
+        return null;
+    }
+
+    return exportToSvg({
+        elements,
+        appState: { ...scene.appState, exportBackground: true, exportWithDarkMode: isDark },
+        files,
+        exportPadding: 5
+    });
+}
+
+/** The saved content that the latest picture of each canvas drawing comes from, by its ID. */
+const drawnPictureContents = new Map<string, string>();
+/** The last picture write of each canvas drawing, which the next write waits for, by its ID. */
+const pictureWrites = new Map<string, Promise<void>>();
+
+/** The picture of an empty canvas drawing. */
+const EMPTY_PICTURE = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>`;
+
+/** The filter that Excalidraw draws a drawing in dark colors with. */
+export const DRAWING_DARK_FILTER = "invert(93%) hue-rotate(180deg)";
+/** The filter that keeps the colors of a picture in a drawing drawn with `DRAWING_DARK_FILTER`. */
+export const IMAGE_DARK_FILTER = "invert(100%) hue-rotate(180deg) saturate(1.25)";
+
+/** The class of a saved picture, which scopes its own style. */
+const SAVED_PICTURE_CLASS = "trilium-drawing-picture";
+/** The class of a `<use>` element that places a bitmap in a saved picture. */
+const BITMAP_CLASS = "trilium-drawing-bitmap";
+
+/**
+ * Draws a saved picture in the dark colors of Excalidraw while the page that shows it has a dark
+ * color scheme, with the filters of Excalidraw's dark export: the root inverted, the bitmaps in it
+ * inverted back. The filter of a bitmap is on its `<use>` element, as Excalidraw sets it: a filter
+ * on the `<image>` in the `<symbol>` does not apply.
+ */
+const SAVED_PICTURE_STYLE = `@media (prefers-color-scheme: dark) {
+    svg.${SAVED_PICTURE_CLASS} {
+        filter: ${DRAWING_DARK_FILTER};
+    }
+    svg.${SAVED_PICTURE_CLASS} use.${BITMAP_CLASS} {
+        filter: ${IMAGE_DARK_FILTER};
+    }
+}`;
+
+/**
+ * Saves the picture of the canvas drawing in `drawing`, drawn from its saved `content`, as the
+ * image attachment that shared pages show in place of the drawing. The picture follows the light
+ * or dark color scheme of the page. `files` are the images of the drawing already loaded; the
+ * others load from the note.
+ */
+export async function saveDrawingPicture(
+    drawing: Pick<FAttachment, "attachmentId" | "ownerId">,
+    content: string,
+    files: BinaryFiles = {}
+) {
+    const { attachmentId, ownerId } = drawing;
+    drawnPictureContents.set(attachmentId, content);
+    try {
+        const scene = JSON.parse(content) as CanvasContent;
+        const isLoaded = (scene.elements ?? []).every((element) =>
+            !("fileId" in element) || !element.fileId || files[element.fileId]);
+        const picture = await exportDrawingPicture(
+            scene,
+            isLoaded ? files : (await loadDrawingFiles(drawing, scene)).files,
+            false
+        );
+        if (picture) {
+            const style = picture.ownerDocument.createElementNS(picture.namespaceURI, "style");
+            style.textContent = SAVED_PICTURE_STYLE;
+            picture.classList.add(SAVED_PICTURE_CLASS);
+            picture.prepend(style);
+            markBitmaps(picture);
+        }
+
+        await queuePictureWrite(attachmentId, async () => {
+            // A newer save draws a picture of its own.
+            if (drawnPictureContents.get(attachmentId) !== content) return;
+
+            await server.post(`notes/${ownerId}/attachments?matchBy=title`, {
+                role: IMAGE_ROLE,
+                mime: "image/svg+xml",
+                title: getDrawingPictureTitle(attachmentId),
+                content: picture?.outerHTML ?? EMPTY_PICTURE
+            });
+        });
+    } catch (e) {
+        console.error(`Could not save the picture of the canvas drawing '${attachmentId}'`, e);
+    } finally {
+        if (drawnPictureContents.get(attachmentId) === content) {
+            drawnPictureContents.delete(attachmentId);
+        }
+    }
+}
+
+/** Runs `write` once the previous picture write of the drawing `attachmentId` is done. */
+async function queuePictureWrite(attachmentId: string, write: () => Promise<void>) {
+    const queued = (pictureWrites.get(attachmentId) ?? Promise.resolve()).then(write);
+    const settled = queued.catch(() => {});
+    pictureWrites.set(attachmentId, settled);
+    try {
+        await queued;
+    } finally {
+        if (pictureWrites.get(attachmentId) === settled) {
+            pictureWrites.delete(attachmentId);
+        }
+    }
+}
+
+/**
+ * Adds `BITMAP_CLASS` to the `<use>` elements of `picture` that place a bitmap. Excalidraw puts each
+ * image in a `<symbol>`; an SVG image keeps its colors in the dark export.
+ */
+function markBitmaps(picture: SVGSVGElement) {
+    const bitmapHrefs = new Set<string>();
+    for (const image of picture.querySelectorAll("symbol > image")) {
+        const symbol = image.parentElement;
+        if (symbol && !image.getAttribute("href")?.startsWith("data:image/svg+xml")) {
+            bitmapHrefs.add(`#${symbol.id}`);
+        }
+    }
+    for (const use of picture.querySelectorAll("use")) {
+        if (bitmapHrefs.has(use.getAttribute("href") ?? "")) {
+            use.classList.add(BITMAP_CLASS);
+        }
+    }
+}
+
+/**
+ * The content of a canvas drawing. Unlike a canvas note, a drawing keeps its images inline, except
+ * the ones it refers to by file ID.
+ */
+function serializeDrawing(api: ExcalidrawImperativeAPI, referencedFileIds: ReadonlySet<string>) {
     const elements = api.getSceneElements();
     const files = getActiveFiles(elements, api.getFiles());
+    for (const fileId of referencedFileIds) {
+        delete files[fileId];
+    }
     return JSON.stringify(buildSceneContent(elements, api.getAppState(), files));
 }
 

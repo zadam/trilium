@@ -19,36 +19,60 @@
   </li>
   <li>Right click in the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>&nbsp;and
     select <em>Advanced</em> → <em>Apply bulk actions</em>.</li>
-  <li>By default, only the selected notes will be affected. To also include
-    all the descendants of the notes, check <em>Include descendants of the selected notes</em>.
-    The number of affected notes at the top of the dialog will update to reflect
-    the change.</li>
-  <li>Click on which action to apply from the <em>Available actions</em> section.
-    A detailed description of each is available in the next section.
+  <li>The <em>Selected notes</em> section at the top of the dialog lists the notes
+    the actions apply to. When many notes are selected, only the first few
+    are shown; click <em>+N more</em> to show the rest.
     <ul>
-      <li>For each action selected, the <em>Chosen actions</em> section will update
-        to reveal the entry. Each action will have its own configuration.</li>
+      <li>To leave a note out without changing the selection in the note tree, press
+        the X button on its entry. The last remaining note cannot be removed.</li>
+    </ul>
+  </li>
+  <li>By default, only the selected notes will be affected. To also include
+    all the descendants of the notes, turn on <em>Include descendants of the selected notes</em>.
+    The number of affected notes, shown below that option, updates to reflect
+    the change.</li>
+  <li>To add an action, click <em>Add action</em> at the bottom of the <em>Chosen actions</em> section
+    and pick one from the menu. Hovering over an entry shows a short description
+    of what it does; a detailed description of each is available in the next
+    section.
+    <ul>
+      <li>Each chosen action appears as an entry in the <em>Chosen actions</em> section,
+        with its own configuration.</li>
       <li>To remove an action, simply press the X button to the right of it.</li>
       <li>It is possible to apply multiple actions of the same type, such as adding
         multiple types.</li>
+      <li>The fields for a label or relation name suggest the names already used
+        in the database as you type, marking the ones Trilium itself attaches a
+        meaning to.</li>
+      <li>The value field of <em>Add label</em> and <em>Update label value</em> suggests
+        the values the named label already has in the database.</li>
     </ul>
   </li>
-  <li>When all the actions are defined, press <em>Execute bulk actions</em> to
-    trigger all of them at once.</li>
+  <li>When all the actions are defined, press the <em>Apply to N notes</em> button
+    to trigger all of them at once. The button names the number of notes that
+    will be affected, and stays disabled until at least one action is added.
+    <ul>
+      <li>If an action is missing a field it needs, such as the name of the label
+        to rename, the dialog does not run and points out the empty field instead.</li>
+    </ul>
+  </li>
   <li>For convenience, the last bulk action configuration is saved for further
     use and will be restored when entering the dialog again.</li>
 </ul>
 <h2>Actions</h2>
 <h3>Labels</h3>
 <p>These actions operate the&nbsp;<a class="reference-link" href="#root/_help_HI6GBBIduIgv">Labels</a>&nbsp;of
-  a note:</p>
+  a note. Except for <em>Add label</em>, they only affect labels set directly
+  on the note; inherited labels are left unchanged.</p>
 <ul>
   <li><strong>Add label</strong>
     <ul>
-      <li>For each note, if it doesn't already have a <a href="#root/_help_HI6GBBIduIgv">label</a> of
-        the given name, it will create it. Keep the <em>New value</em> field empty
-        to create a label without a value, or complete it to assign a value.</li>
-      <li>If a note already has this label, its value will be updated.</li>
+      <li>For each note, it creates a <a href="#root/_help_HI6GBBIduIgv">label</a> of
+        the given name. Keep the <em>New value</em> field empty to create a label
+        without a value, or complete it to assign a value.</li>
+      <li>The label is added even if the note already has one of the same name,
+        so the note ends up with both. To change the value of an existing label
+        instead, use <em>Update label value</em>.</li>
     </ul>
   </li>
   <li><strong>Update label value</strong>
@@ -77,12 +101,13 @@
 </ul>
 <h3>Relations</h3>
 <p>These actions operate the&nbsp;<a class="reference-link" href="#root/_help_Cq5X6iKQop6R">Relations</a>&nbsp;of
-  a note:</p>
+  a note. Except for <em>Add relation</em>, they only affect relations set
+  directly on the note; inherited relations are left unchanged.</p>
 <ul>
   <li><strong>Add relation</strong>
     <ul>
       <li>For each note, it will create a relation pointing to the given note.</li>
-      <li>Notes without this relation will not be affected.</li>
+      <li>The relation is added even if the note already has one of the same name.</li>
     </ul>
   </li>
   <li><strong>Update relation target</strong>
@@ -111,20 +136,30 @@
   <li><strong>Rename note</strong>
     <ul>
       <li>For each note, it will change the title of the note to the given one.</li>
-      <li>As a more advanced use case, the note can be a “template string” which
-        allows for dynamic values with access to the note information via&nbsp;<a
-        class="reference-link" href="#root/_help_habiZ3HU8Kw8">FNote</a>, for example:
+      <li>The title can contain expressions between <code>${</code> and <code>}</code>,
+        which are filled in for each note. They can read the note's properties,
+        such as <code>${note.title}</code>, <code>${note.noteId}</code> or <code>${note.type}</code>,
+        and call <code>getLabelValue('name')</code>, <code>getRelationValue('name')</code> or,
+        on a date such as <code>dateCreatedObj</code>, <code>format('…')</code>.
+        For example:
         <ul>
           <li><code>NEW: ${note.title}</code> will prefix all notes with <code>NEW:</code> .</li>
           <li><code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> will
             prefix the note titles with each note's creation date (in month-day format).</li>
         </ul>
       </li>
+      <li>Only property access and those methods are allowed, not arbitrary JavaScript.
+        While typing, the field completes the expressions, underlines one that
+        is not allowed and shows the resulting title for the first selected note.</li>
     </ul>
   </li>
   <li><strong>Move note</strong>
     <ul>
       <li>For each note, it will be moved to the specified parent note.</li>
+      <li>A note with several parents is cloned to the new parent instead, since
+        it is not clear which of its places to remove.</li>
+      <li>A note that cannot be placed there, such as a parent of the target note,
+        stays where it is.</li>
       <li>As an alternative for less complex situations, the notes can be moved
         directly from within the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>&nbsp;via
         cut → paste or via the contextual menu.</li>
@@ -157,7 +192,10 @@
   </li>
   <li><strong>Delete note</strong>
     <ul>
-      <li>For each note, it will be deleted.</li>
+      <li>For each note, it will be deleted, including all of its clones and any
+        child notes that are not cloned elsewhere.</li>
+      <li>Deleted notes can be restored from <em>Recent changes</em> until they are
+        erased.</li>
       <li>As an alternative for less complex situations, the notes can be removed
         directly from within the&nbsp;<a class="reference-link" href="#root/_help_oPVyFC7WL2Lp">Note Tree</a>&nbsp;by
         selecting them and pressing <kbd>Delete</kbd>.</li>
@@ -165,8 +203,8 @@
   </li>
   <li><strong>Delete note revisions</strong>
     <ul>
-      <li>This will delete all the&nbsp;<a class="reference-link" href="#root/_help_vZWERwf8U3nx">Note Revisions</a>&nbsp;of
-        the notes.</li>
+      <li>This will permanently erase all the&nbsp;<a class="reference-link" href="#root/_help_vZWERwf8U3nx">Note Revisions</a>&nbsp;of
+        the notes. Unlike deleted notes, erased revisions cannot be restored.</li>
     </ul>
   </li>
 </ul>
@@ -176,6 +214,10 @@
     <ul>
       <li>For more complex scenarios, it is possible to type in a JavaScript expression
         in order to apply the necessary changes.</li>
+      <li>The script runs on the server once for each note, with that note available
+        as <code>note</code> and the backend script API as <code>api</code>. The field
+        completes both as you type and underlines mistakes, as the editor of a
+        backend script note does.</li>
       <li>Examples:
         <ul>
           <li>

@@ -15,7 +15,7 @@ import options from "../services/options.js";
 import type { ShortcutHintSection } from "../services/shortcut_hints.js";
 import { reportSplashPhase } from "../services/splash.js";
 import toast from "../services/toast.js";
-import utils from "../services/utils.js";
+import utils, { reuseAcrossHotReloads } from "../services/utils.js";
 import { ReactWrappedWidget } from "../widgets/basic_widget.js";
 import type RootContainer from "../widgets/containers/root_container.js";
 import { AddLinkOpts } from "../widgets/dialogs/add_link.jsx";
@@ -24,6 +24,7 @@ import { ContentEmbedOpts } from "../widgets/dialogs/content_embed.jsx";
 import type { ResolveOptions } from "../widgets/dialogs/delete_notes.js";
 import { IconPickerOpts } from "../widgets/dialogs/icon_picker.jsx";
 import type { InfoProps } from "../widgets/dialogs/info.jsx";
+import type { ResourceDownloadDialogOptions } from "../widgets/dialogs/resource_download.jsx";
 import type { LightboxOptions } from "../widgets/dialogs/lightbox.jsx";
 import type { MarkdownImportOpts } from "../widgets/dialogs/markdown_import.jsx";
 import { ChooseNoteTypeCallback } from "../widgets/dialogs/note_type_chooser.jsx";
@@ -169,6 +170,7 @@ export type CommandMappings = {
     showLightbox: LightboxOptions;
     showToolCallDetails: { toolCall: ToolCall };
     showConfirmDialog: ConfirmWithMessageOptions;
+    showResourceDownloadDialog: ResourceDownloadDialogOptions;
     showRecentChanges: CommandData & { ancestorNoteId: string };
     showDeletedNotes: CommandData & { ancestorNoteId?: string };
     showImportDialog: CommandData & { noteId: string };
@@ -567,8 +569,8 @@ type EventMappings = {
     geoMapCreateChildNote: {
         ntxId: string | null | undefined; // TODO: deduplicate ntxId
     };
-    /** Opens the board's properties dialog, which only the board itself can show. */
-    showBoardProperties: { ntxId: string | null | undefined; };
+    /** Opens the properties dialog of a board or calendar, which only the view itself can show. */
+    showCollectionProperties: { ntxId: string | null | undefined; };
     tabReorder: {
         ntxIdsInOrder: string[];
     };
@@ -762,45 +764,51 @@ export class AppContext extends Component {
     }
 }
 
-const appContext = new AppContext(window.glob.isMainWindow);
-
-// we should save all outstanding changes before the page/app is closed
-$(window).on("beforeunload", () => {
-    let allSaved = true;
-
-    appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter((wr) => typeof wr === "function" || !!wr.deref());
-
-    for (const listener of appContext.beforeUnloadListeners) {
-        if (typeof listener === "object") {
-            const component = listener.deref();
-
-            if (!component) {
-                continue;
-            }
-
-            if (!component.beforeUnloadEvent()) {
-                console.log(`Component ${component.componentId} is not finished saving its state.`);
-                allSaved = false;
-            }
-        } else if (!listener()) {
-            allSaved = false;
-        }
-    }
-
-    if (!allSaved) {
-        toast.showMessage(t("app_context.please_wait_for_save"), 10000);
-        return "some string";
-    }
-});
-
-$(window).on("hashchange", () => {
-    const { notePath, ntxId, viewScope, searchString } = linkService.parseNavigationStateFromUrl(window.location.href);
-
-    if (notePath || ntxId) {
-        appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
-    } else if (searchString) {
-        appContext.triggerCommand("searchNotes", { searchString });
-    }
+const appContext = reuseAcrossHotReloads(import.meta.hot, () => {
+    const context = new AppContext(window.glob.isMainWindow);
+    registerWindowHandlers(context);
+    return context;
 });
 
 export default appContext;
+
+function registerWindowHandlers(appContext: AppContext) {
+    // we should save all outstanding changes before the page/app is closed
+    $(window).on("beforeunload", () => {
+        let allSaved = true;
+
+        appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter((wr) => typeof wr === "function" || !!wr.deref());
+
+        for (const listener of appContext.beforeUnloadListeners) {
+            if (typeof listener === "object") {
+                const component = listener.deref();
+
+                if (!component) {
+                    continue;
+                }
+
+                if (!component.beforeUnloadEvent()) {
+                    console.log(`Component ${component.componentId} is not finished saving its state.`);
+                    allSaved = false;
+                }
+            } else if (!listener()) {
+                allSaved = false;
+            }
+        }
+
+        if (!allSaved) {
+            toast.showMessage(t("app_context.please_wait_for_save"), 10000);
+            return "some string";
+        }
+    });
+
+    $(window).on("hashchange", () => {
+        const { notePath, ntxId, viewScope, searchString } = linkService.parseNavigationStateFromUrl(window.location.href);
+
+        if (notePath || ntxId) {
+            appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
+        } else if (searchString) {
+            appContext.triggerCommand("searchNotes", { searchString });
+        }
+    });
+}

@@ -13,16 +13,16 @@ Trilium supports custom user themes, allowing you to personalize the application
 
 1.  **Create a CSS Code Note**: Start by creating a new [code note](../Note%20Types/Code.md) with the `CSS` type.
 2.  **Annotate with** `#appTheme`: Add the [attribute](../Advanced%20Usage/Attributes.md) `#appTheme=my-theme-name` to your note, where `my-theme-name` is the name of your custom theme.
-3.  **Define Your Styles**: Write your custom CSS within the note. Below is an example of a custom theme:
+3.  **Define Your Styles**: Write your custom CSS within the note.
 
-```
-@font-face {
+<details open="">
+    <summary>Example of a custom theme</summary>
+    <pre><code class="language-text-x-trilium-auto">@font-face {
   font-family: 'Raleway';
   font-style: normal;
   font-weight: 400;
   src: url('/custom/fonts/raleway.woff2') format('woff2');
-}
-
+}&#10;
 :root {
     --main-font-family: 'Raleway' !important;
     --main-font-size: normal;
@@ -30,8 +30,7 @@ Trilium supports custom user themes, allowing you to personalize the application
     --tree-font-size: normal;
     --detail-font-family: inherit;
     --detail-font-size: normal;
-    --detail-text-font-family: 'Garamond' !important;
-
+    --detail-text-font-family: 'Garamond' !important;&#10;
     --main-background-color: #404552;
     --main-text-color: #AFB8C6;
     --main-border-color: #AFB8C6;
@@ -60,16 +59,17 @@ Trilium supports custom user themes, allowing you to personalize the application
     --modal-background-color: #404552;
     --modal-backdrop-color: black;
     --scrollbar-border-color: rgba(175, 184, 198, 0.5);
-}
-
+}&#10;
 body .note-detail-text {
     font-size: 120%;
-}
-
+}&#10;
 body .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
-}
-```
+}</code></pre>
+    <p>&nbsp;</p>
+</details>
+
+ 
 
 ### Activating Your Custom Theme
 

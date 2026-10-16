@@ -41,6 +41,7 @@ body.setup {
                 display: flex;
                 width: 750px;
                 height: 650px;
+                max-height: 100%;
                 top: unset;
                 overflow: hidden;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -483,21 +484,8 @@ body.setup .bx-spin {
         align-items: center;
         gap: 0.5rem;
 
-        progress {
-            width: 100%;
-            height: 1rem;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            appearance: none;
-
-            &::-webkit-progress-bar {
-                background-color: var(--main-border-color);
-            }
-
-            &::-webkit-progress-value {
-                background-color: var(--main-text-color);
-                transition: width 0.2s ease-out;
-            }
+        .tn-progress-bar {
+            flex: 1;
         }
 
         span {

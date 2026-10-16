@@ -23,7 +23,7 @@ import { showImageCompressionDialog } from "../dialogs/image_compression/image_c
 import { isAlwaysFullWidthByType } from "../note_wrapper";
 import Dropdown, { type DropdownHandle } from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem } from "../react/FormList";
-import { useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
+import { useEffectiveReadOnly, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useNoteRelation, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
 import { ParentComponent, POPUP_EDITOR_NTX_ID, useCommandTrigger } from "../react/react_utils";
 import NoteActionsCustom from "./NoteActionsCustom";
 import { useShareState } from "./NoteBadges";
@@ -61,6 +61,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const parentComponent = useContext(ParentComponent);
     const noteType = useNoteProperty(note, "type") ?? "";
     const [viewType] = useNoteLabel(note, "viewType");
+    const [renderNote] = useNoteRelation(note, "renderNote");
     const canBeConvertedToAttachment = note?.isEligibleForConversionToAttachment();
     const isSourceView = noteContext?.viewScope?.viewMode === "source";
     const isSearchable = isSourceView
@@ -73,6 +74,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const isContentAvailable = note.isContentAvailable();
     const isPrintable = isContentAvailable && (
         ["text", "code", "spreadsheet", "llmChat"].includes(noteType) ||
+        (noteType === "render" && !!renderNote) ||
         (noteType === "book" && ["presentation", "list", "table"].includes(viewType ?? "")) ||
         (noteType === "file" && note.mime === "application/pdf")
     );
@@ -82,9 +84,18 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const hasSource = ["text", "code", "relationMap", "mermaid", "canvas", "mindMap", "spreadsheet", "llmChat"].includes(noteType) || note.isSvg();
     const isSearchOrBook = ["search", "book"].includes(noteType);
     const isBoard = noteType === "book" && viewType === "board";
+    const isGeoMap = noteType === "book" && viewType === "geoMap";
+    const isTable = noteType === "book" && viewType === "table";
+    // A calendar root makes day notes rather than events, so it has no templates to configure.
+    const isEventCalendar = noteType === "book" && viewType === "calendar"
+        && !note.hasLabel("calendarRoot") && !note.hasLabel("workspaceCalendarRoot");
     const isHelpPage = note.noteId.startsWith("_help");
     const [syncServerHost] = useTriliumOption("syncServerHost");
     const { isReadOnly, enableEditing } = useIsNoteReadOnly(note, noteContext);
+    const isViewReadOnly = useEffectiveReadOnly(note, noteContext);
+    // The views other than the board open their properties dialog only while they are editable.
+    const hasCollectionProperties = isBoard
+        || (!isViewReadOnly && (isEventCalendar || isGeoMap || isTable));
     const isNormalViewMode = noteContext?.viewScope?.viewMode === "default";
     // The quick edit popup has no find bar, and the note map and a converted attachment open in the tab behind it.
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
@@ -172,8 +183,11 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                 {note.type === "render" && <CommandItem command="renderActiveNote" icon="bx bx-extension" text={t("note_actions.re_render_note")}
                 />}
 
-                {isBoard && <CommandItem icon="bx bx-cog" text={t("board_view.properties")}
-                    command={() => parentComponent?.triggerEvent("showBoardProperties", { ntxId: noteContext?.ntxId })} />}
+                {hasCollectionProperties && <CommandItem icon="bx bx-cog"
+                    text={isBoard ? t("board_view.properties")
+                        : isGeoMap ? t("geo-map.properties")
+                        : isTable ? t("table_view.properties") : t("calendar_view.properties")}
+                    command={() => parentComponent?.triggerEvent("showCollectionProperties", { ntxId: noteContext?.ntxId })} />}
 
                 <FormDropdownSubmenu icon="bx bx-wrench" title={t("note_actions.advanced")}>
                     <CommandItem command="openNoteExternally" icon="bx bx-file-find" disabled={isSearchOrBook || !isElectron} text={t("note_actions.open_note_externally")} title={t("note_actions.open_note_externally_title")} />
@@ -183,7 +197,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                         <ConvertNoteFormat note={note} />}
                     {/* Always the note-level dialog, an image note included: it has children of its
                         own, and reaching them is what makes this "images" and not "image". */}
-                    <CommandItem icon="bx bx-collapse-alt" text={t("compress-images")}
+                    <CommandItem icon="bx bx-collapse-alt" text={t("compress-images-menu")}
                         disabled={isInOptionsOrHelp || !isContentAvailable}
                         command={() => void showImageCompressionDialog({ type: "note", noteId: note.noteId })} />
                     <CommandItem command="showNoteOCRText" icon="bx bx-text" disabled={!["image", "file"].includes(noteType) || !isContentAvailable} text={t("note_actions.view_ocr_text")} />
@@ -335,11 +349,10 @@ function DevelopmentActions({ note, noteContext }: { note: FNote, noteContext?: 
             <FormListItem
                 icon="bx bx-error"
                 disabled={note.type !== "text"}
-                onClick={() => {
-                    noteContext?.getTextEditor(editor => {
-                        editor.editing.view.change(() => {
-                            throw new Error("Editor crashed.");
-                        });
+                onClick={async () => {
+                    const editor = await noteContext?.getTextEditor();
+                    editor?.editing.view.change(() => {
+                        throw new Error("Editor crashed.");
                     });
                 }}>Crash editor</FormListItem>
         </>

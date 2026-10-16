@@ -3,19 +3,20 @@ import "./LinkEmbed.css";
 
 import {
     type AttachmentLinkChange,
+    type CKEditorError,
     CKTextEditor,
-    EditorWatchdog,
     type FileUploadData,
     type FileUploadEvent,
     SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/commons";
 import { createPortal } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../../components/app_context";
 import {
-    consumeBlockReference, copyBlockReference, openBlockHandleMenu
+    consumeBlockReference, copyBlockReference, copyBlockShareLink, copyTabReference,
+    openBlockHandleMenu
 } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import { getUploadBoxSize } from "../../../services/content_renderer";
@@ -26,6 +27,7 @@ import type LoadResults from "../../../services/load_results";
 import note_create from "../../../services/note_create";
 import options from "../../../services/options";
 import { consumeSearchTerms } from "../../../services/search_jump";
+import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { IconPickerOpts } from "../../dialogs/icon_picker";
@@ -35,9 +37,10 @@ import {
 } from "../../react/hooks";
 import IconPicker from "../../react/IconPicker";
 import { setEditorNoteId } from "../../react/NoteStore";
+import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
 import AttachmentSaves, { useNoteEditor } from "./attachment_saves";
-import CKEditorWithWatchdog, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditorWithWatchdog";
+import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
 import { getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
 import getTemplates, { updateTemplateCache } from "./snippets.js";
@@ -71,12 +74,12 @@ export default function EditableText({
 }: EditableTextProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<string>("");
-    /** The note `contentRef` holds the content of, so a restarted editor can be marked as holding it. */
+    /** The note `contentRef` holds the content of, so a rebuilt editor can be marked as holding it. */
     const contentNoteIdRef = useRef<string | undefined>(undefined);
     const pendingAttachmentChangesRef = useRef<PendingAttachmentChanges | undefined>(undefined);
     /** The attachment whose embed takes the focus when it renders next. */
     const focusedAttachmentIdRef = useRef<string | undefined>(undefined);
-    const watchdogRef = useRef<EditorWatchdog>(null);
+    const editorRef = useRef<CKTextEditor>(null);
     const stopWatchingEmbedsRef = useRef<(() => void) | undefined>(undefined);
     const editorApiRef = useRef<CKEditorApi>(null);
     /** The open icon picker request and its balloon container, or `null` when none is open. */
@@ -105,16 +108,16 @@ export default function EditableText({
         noteType: "text",
         block,
         getData() {
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (!editor) {
-                // There is nothing to save, most likely a result of the editor crashing and reinitializing.
+                // The editor is still being built, so there is nothing to save.
                 return;
             }
 
             const attachments = attachmentSaves.collect();
             const savedAttachments = attachments.length ? { attachments } : {};
             if (block !== undefined) {
-                return { ...getBlockData(editor as CKTextEditor, block), ...savedAttachments };
+                return { ...getBlockData(editor, block), ...savedAttachments };
             }
 
             const content = editor.getData() ?? "";
@@ -129,14 +132,13 @@ export default function EditableText({
             attachmentSaves.setNoteId(note?.noteId);
             contentRef.current = newContent;
             contentNoteIdRef.current = note?.noteId;
-            const editor = watchdogRef.current?.editor;
+            const editor = editorRef.current;
             if (editor && note) {
                 setEditorNoteId(editor, note.noteId);
             }
             editor?.setData(newContent);
             if (editor && note) {
-                const textEditor = editor as CKTextEditor;
-                applyPendingAttachmentChanges(textEditor, note.noteId, pendingAttachmentChangesRef);
+                applyPendingAttachmentChanges(editor, note.noteId, pendingAttachmentChangesRef);
             }
 
             // Jump to the first search match when navigated from search results.
@@ -148,13 +150,23 @@ export default function EditableText({
             );
         },
         dataSaved(savedData) {
-            // Store back the saved data in order to retrieve it in case the CKEditor crashes.
+            // Keeps the saved data, which a rebuilt editor loads in `onEditorInitialized`.
             contentRef.current = savedData.content;
             contentNoteIdRef.current = note?.noteId;
             attachmentSaves.markSaved(savedData.attachments);
         }
     });
     const templates = useTemplates();
+    const [ editorRebuildKey, setEditorRebuildKey ] = useState(0);
+
+    /** Saves what the model holds, then builds a new editor from the saved content. */
+    async function reloadEditor() {
+        try {
+            await spacedUpdate.updateNowIfNecessary();
+        } finally {
+            setEditorRebuildKey((key) => key + 1);
+        }
+    }
 
     useSearchTermsConsumer(note, noteContext, ntxId);
     // A hidden widget leaves the link target to the one on display.
@@ -165,23 +177,26 @@ export default function EditableText({
     });
 
     function revealLinkTarget() {
-        const root = watchdogRef.current?.editor?.editing.view.getDomRoot();
+        const root = editorRef.current?.editing.view.getDomRoot();
         consumeBookmark(root, noteContext?.viewScope);
         consumeBlockReference(root, noteContext?.viewScope);
     }
 
-    async function copyReference() {
-        const editor = watchdogRef.current?.editor as CKTextEditor | undefined;
+    async function copyReference(
+        copy: (editor: CKTextEditor, notePath: string, noteTitle: string) => void | Promise<void>
+            = copyBlockReference
+    ) {
+        const editor = editorRef.current;
         if (!editor) return;
 
         const notePath = noteContext?.notePath ?? `root/${note.noteId}`;
-        await copyBlockReference(editor, notePath, note.title);
-        // Saved now, so that the link resolves in other notes at once.
+        await copy(editor, notePath, note.title);
+        // Saved now, so that the link resolves at once.
         spacedUpdate.updateNowIfNecessary();
     }
 
     useTriliumEvent("scrollToEnd", () => {
-        const editor = watchdogRef.current?.editor;
+        const editor = editorRef.current;
         if (!editor) return;
 
         editor.model.change((writer) => {
@@ -195,7 +210,7 @@ export default function EditableText({
 
     useTriliumEvent("focusOnDetail", async ({ ntxId: eventNtxId, insertNewlineAtTop }) => {
         if (eventNtxId !== ntxId) return;
-        const editor = await waitForEditor() as CKTextEditor | undefined;
+        const editor = await waitForEditor();
         if (!editor) return;
         if (insertNewlineAtTop) {
             placeCursorInNewTopParagraph(editor);
@@ -212,6 +227,16 @@ export default function EditableText({
                 async addLink(notePath, linkTitle, externalLink) {
                     await waitForEditor();
                     return editorApiRef.current?.addLink(notePath, linkTitle, externalLink);
+                }
+            });
+        },
+        fixReferenceLink(storedTitle: string, fix: (href: string) => void) {
+            parentComponent?.triggerCommand("showAddLinkDialog", {
+                text: storedTitle,
+                hasSelection: false,
+                fixLink: true,
+                async addLink(notePath) {
+                    fix(`#${notePath}`);
                 }
             });
         },
@@ -273,6 +298,9 @@ export default function EditableText({
         focusContentEmbed(attachmentId: string) {
             focusedAttachmentIdRef.current = attachmentId;
         },
+        convertImageToDrawing(src: string) {
+            return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
+        },
         getAttachmentHref,
         getNoteId() {
             return note.noteId;
@@ -280,9 +308,16 @@ export default function EditableText({
         getEmbedBoxSize: getUploadBoxSize,
         openContentEmbedMenu,
         openBlockHandleMenu(event: MouseEvent, count: number) {
-            openBlockHandleMenu(event, count, () => void copyReference());
+            const shareLink = getNoteShareLink(note);
+            openBlockHandleMenu(event, count, {
+                copyReference: () => void copyReference(),
+                copyShareLink: shareLink
+                    ? () => void copyReference((editor) => copyBlockShareLink(editor, shareLink))
+                    : undefined
+            });
         },
-        copyBlockReference: copyReference,
+        copyBlockReference: () => copyReference(),
+        copyTabReference: () => void copyReference(copyTabReference),
         getContentEmbedTools,
         // Link preview functionality. The insert flow itself lives in the editor (a balloon form),
         // so the host only has to supply the metadata and the rendering.
@@ -337,7 +372,7 @@ export default function EditableText({
             // This component's own editor, rather than noteContext.getTextEditor(): that one races the
             // round trip through the event bus against a 200 ms timeout and resolves to null when it
             // loses, which again meant an empty sub-note and a selection left where it was.
-            const textEditor = await waitForEditor() as CKTextEditor | undefined;
+            const textEditor = await waitForEditor();
             if (!sourceNote || !parentNotePath || !textEditor) return;
 
             if (!textEditor.getSelectedHtml()) {
@@ -366,7 +401,7 @@ export default function EditableText({
     useEffect(() => () => stopWatchingEmbedsRef.current?.(), []);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
-        const editor = watchdogRef.current?.editor as CKTextEditor | null | undefined;
+        const editor = editorRef.current;
         if (editor && note) {
             notifyAttachmentChanges(
                 editor,
@@ -376,11 +411,14 @@ export default function EditableText({
                 pendingAttachmentChangesRef
             );
         }
+        if (editor?.plugins.has("ImageEditingSource")) {
+            editor.plugins.get("ImageEditingSource").refresh();
+        }
     });
 
     useTriliumEvent("executeWithTextEditor", async ({ callback, resolve, ntxId: eventNtxId }) => {
         if (eventNtxId !== ntxId) return;
-        const editor = await waitForEditor() as CKTextEditor | undefined;
+        const editor = await waitForEditor();
         if (!editor) return;
         if (callback) callback(editor);
         resolve(editor);
@@ -388,7 +426,7 @@ export default function EditableText({
 
     async function waitForEditor() {
         await initialized.current;
-        const editor = watchdogRef.current?.editor;
+        const editor = editorRef.current;
         if (!editor) return;
         return editor;
     }
@@ -407,8 +445,6 @@ export default function EditableText({
         if (!noteContext?.isActive()) return;
         addTextToEditor(text);
     });
-
-    const onWatchdogStateChange = useWatchdogCrashHandling();
 
     useEffect(() => {
         document.body.style.setProperty("--code-block-tab-width", codeBlockTabWidth || "4");
@@ -582,31 +618,24 @@ export default function EditableText({
 
     return (
         <>
-            {note && !!templates && <CKEditorWithWatchdog
+            {note && !!templates && <CKEditor
                 containerRef={containerRef}
                 className={`note-detail-editable-text-editor use-tn-links ${codeBlockWordWrap ? "word-wrap" : ""}`}
                 tabIndex={300}
                 contentLanguage={language}
                 isClassicEditor={isClassicEditor}
                 editorApi={editorApiRef}
-                watchdogRef={watchdogRef}
-                watchdogConfig={{
-                    // An average number of milliseconds between the last editor errors (defaults to 5000). When the period of time between errors is lower than that and the crashNumberLimit is also reached, the watchdog changes its state to crashedPermanently, and it stops restarting the editor. This prevents an infinite restart loop.
-                    minimumNonErrorTimePeriod: 5000,
-                    // A threshold specifying the number of errors (defaults to 3). After this limit is reached and the time between last errors is shorter than minimumNonErrorTimePeriod, the watchdog changes its state to crashedPermanently, and it stops restarting the editor. This prevents an infinite restart loop.
-                    crashNumberLimit: 10,
-                    // A minimum number of milliseconds between saving the editor data internally (defaults to 5000). Note that for large documents, this might impact the editor performance.
-                    saveInterval: Number.MAX_SAFE_INTEGER
-                }}
+                editorRef={editorRef}
                 templates={templates}
                 onNotificationWarning={onNotificationWarning}
                 onNotificationInfo={onNotificationInfo}
-                onWatchdogStateChange={onWatchdogStateChange}
+                onEditorError={(error) => reportEditorError(error, reloadEditor)}
+                rebuildKey={editorRebuildKey}
                 onChange={() => {
                     spacedUpdate.scheduleUpdate();
-                    const editor = watchdogRef.current?.editor;
+                    const editor = editorRef.current;
                     if (editor) {
-                        reportBlocks?.(editor as CKTextEditor);
+                        reportBlocks?.(editor);
                     }
                 }}
                 onEditorInitialized={(editor) => {
@@ -626,8 +655,8 @@ export default function EditableText({
                         editor.plugins.get("BlockReferenceEditing").editRange();
                     }
                     initialized.current.resolve();
-                    // Restore the data, either on the first render or if the editor crashes.
-                    // We are not using CKEditor's built-in watch dog content, instead we are using the data we store regularly in the spaced update (see `dataSaved`).
+                    // Loads the content on the first build and after a rebuild, from the data the
+                    // spaced update last saved (see `dataSaved`).
                     if (contentNoteIdRef.current) {
                         setEditorNoteId(editor, contentNoteIdRef.current);
                     }
@@ -749,62 +778,56 @@ function useTemplates() {
     return templates;
 }
 
-function useWatchdogCrashHandling() {
-    const hasCrashed = useRef(false);
-    const onWatchdogStateChange = useCallback((watchdog: EditorWatchdog) => {
-        const currentState = watchdog.state;
-        logInfo(`CKEditor state changed to ${currentState}`);
+/**
+ * Tells the user about an error that escaped the editor in a toast, which offers to reload the
+ * editor and opens the error details for a bug report; the toast returns once the details close.
+ * The editor keeps running until it is reloaded, so a later error replaces the toast. The global
+ * error handlers in `glob.ts` log the error.
+ *
+ * Exported for testing.
+ */
+export function reportEditorError(error: CKEditorError, reloadEditor: () => void) {
+    const details = JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        date: new Date().toISOString()
+    }, null, 4);
 
-        if (currentState === "ready" && hasCrashed.current) {
-            hasCrashed.current = false;
-            watchdog.editor?.focus();
-        }
+    showErrorToast();
 
-        if (!["crashed", "crashedPermanently"].includes(currentState)) {
-            return;
-        }
-
-        hasCrashed.current = true;
-        const formattedCrash = JSON.stringify(watchdog.crashes, null, 4);
-        logError(`CKEditor crash logs: ${formattedCrash}`);
-
-        if (currentState === "crashed") {
-            toast.showPersistent({
-                id: "editor-crashed",
-                icon: "bx bx-bug",
-                title: t("editable_text.editor_crashed_title"),
-                message: t("editable_text.editor_crashed_content"),
-                buttons: [
-                    {
-                        text: t("editable_text.editor_crashed_details_button"),
-                        onClick: ({ dismissToast }) => {
-                            dismissToast();
-                            dialog.info(<>
-                                <p>{t("editable_text.editor_crashed_details_intro")}</p>
-                                <h3>{t("editable_text.editor_crashed_details_title")}</h3>
-                                <pre><code class="language-application-json">{formattedCrash}</code></pre>
-                            </>, {
-                                title: t("editable_text.editor_crashed_title"),
-                                size: "lg",
-                                copyToClipboardButton: true
-                            });
-                        }
+    function showErrorToast() {
+        toast.showPersistent({
+            id: "editor-error",
+            icon: "bx bx-bug",
+            title: t("editable_text.editor_error_title"),
+            message: t("editable_text.editor_error_content"),
+            buttons: [
+                {
+                    text: t("editable_text.editor_error_reload_button"),
+                    onClick: ({ dismissToast }) => {
+                        dismissToast();
+                        reloadEditor();
                     }
-                ],
-                timeout: 20_000
-            });
-        } else if (currentState === "crashedPermanently") {
-            toast.showPersistent({
-                id: "editor-crashed-permanently",
-                icon: "bx bx-error-circle",
-                title: t("editable_text.editor_crashed_title"),
-                message: t("editable_text.keeps-crashing")
-            });
-            watchdog.editor?.enableReadOnlyMode("crashed-editor");
-        }
-    }, []);
-
-    return onWatchdogStateChange;
+                },
+                {
+                    text: t("editable_text.editor_crashed_details_button"),
+                    onClick: async ({ dismissToast }) => {
+                        dismissToast();
+                        await dialog.info(<>
+                            <p>{t("editable_text.editor_crashed_details_intro")}</p>
+                            <h3>{t("editable_text.editor_crashed_details_title")}</h3>
+                            <pre><code class="language-application-json">{details}</code></pre>
+                        </>, {
+                            title: t("editable_text.editor_error_title"),
+                            size: "lg",
+                            copyToClipboardButton: true
+                        });
+                        showErrorToast();
+                    }
+                }
+            ]
+        });
+    }
 }
 
 /**

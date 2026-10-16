@@ -67,6 +67,15 @@ function branchEntitiesReloaded(parentNoteId: string, childNoteId: string) {
     return loadResults;
 }
 
+function noteEntitiesReloaded(noteId: string, { contentChanged }: { contentChanged: boolean }) {
+    const loadResults = new LoadResults([]);
+    loadResults.addNote(noteId, "comp-1");
+    if (contentChanged) {
+        loadResults.addNoteContent(noteId, "comp-1");
+    }
+    return loadResults;
+}
+
 async function flushMicrotasks() {
     await Promise.resolve();
     await Promise.resolve();
@@ -357,6 +366,34 @@ describe("useCollectionFilter", () => {
         await act(async () => {
             await parent.handleEvent("entitiesReloaded", {
                 loadResults: branchEntitiesReloaded("unrelated", "elsewhere")
+            });
+            await vi.advanceTimersByTimeAsync(400);
+        });
+        expect(searchInSubtree).toHaveBeenCalledTimes(2);
+    });
+
+    it("re-runs for a note's own change but not for a save of its content", async () => {
+        vi.useFakeTimers();
+        searchInSubtree.mockResolvedValue(matchResponse([ "n1" ]));
+        await mount({ collectionNoteIds: [ "n1", "n2" ] });
+
+        await act(async () => {
+            currentFilter?.setQuery("#done");
+            await vi.advanceTimersByTimeAsync(0);
+        });
+        expect(searchInSubtree).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            await parent.handleEvent("entitiesReloaded", {
+                loadResults: noteEntitiesReloaded("n1", { contentChanged: true })
+            });
+            await vi.advanceTimersByTimeAsync(400);
+        });
+        expect(searchInSubtree).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            await parent.handleEvent("entitiesReloaded", {
+                loadResults: noteEntitiesReloaded("n2", { contentChanged: false })
             });
             await vi.advanceTimersByTimeAsync(400);
         });

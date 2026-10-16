@@ -1,6 +1,6 @@
 import "./NoteBadges.css";
 
-import { isOfficeMimeType } from "@triliumnext/commons";
+import { isOfficeMimeType, safeHostname } from "@triliumnext/commons";
 import { clsx } from "clsx";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
@@ -13,7 +13,9 @@ import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { goToLinkExt } from "../../services/link";
 import server from "../../services/server";
-import { buildShareLink } from "../../services/share_link";
+import {
+    buildShareLink, getShareId, getShareScope, type ShareScope
+} from "../../services/share_link";
 import sync from "../../services/sync";
 import { isElectron, isMobileApp, isStandalone } from "../../services/utils";
 import { Badge, BadgeWithDropdown } from "../react/Badge";
@@ -22,6 +24,7 @@ import {
     useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelByName, useNoteProperty,
     useTriliumEvent, useTriliumOption
 } from "../react/hooks";
+import Icon from "../react/Icon";
 import { ActiveContentBadges } from "./ActiveContentBadges";
 import { SnippetBadge } from "./SnippetBadge";
 
@@ -136,10 +139,14 @@ const SHARE_BADGES: Record<ShareScope, { icon: string; text: string; tooltip?: s
     }
 };
 
-function ClippedNoteBadge() {
+export function ClippedNoteBadge() {
     const { note } = useNoteContext();
     const isHelpNote = !!note?.noteId.startsWith("_help");
     const [ url ] = useNoteLabel(note, isHelpNote ? "docUrl" : "pageUrl");
+    const [ description ] = useNoteLabel(note, "pageDescription");
+    const [ author ] = useNoteLabel(note, "pageAuthor");
+    const [ published ] = useNoteLabel(note, "publishedDate");
+    const [ modified ] = useNoteLabel(note, "modifiedDate");
 
     if (!url) return;
 
@@ -155,14 +162,53 @@ function ClippedNoteBadge() {
         );
     }
 
+    const fields = [
+        { icon: "bx bx-user", label: t("breadcrumb_badges.clipped_note_author"), value: author },
+        { icon: "bx bx-calendar", label: t("breadcrumb_badges.clipped_note_published"), value: published },
+        { icon: "bx bx-history", label: t("breadcrumb_badges.clipped_note_modified"), value: modified }
+    ].filter((field) => field.value);
+
+    if (!description && !fields.length) {
+        return (
+            <Badge
+                className="clipped-note-badge"
+                icon="bx bx-globe"
+                text={t("breadcrumb_badges.clipped_note")}
+                tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
+                href={url}
+            />
+        );
+    }
+
     return (
-        <Badge
+        <BadgeWithDropdown
+            panel
             className="clipped-note-badge"
             icon="bx bx-globe"
             text={t("breadcrumb_badges.clipped_note")}
-            tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
-            href={url}
-        />
+            tooltip={t("breadcrumb_badges.clipped_note_details")}
+            dropdownProps={{ dropdownContainerClassName: "clipped-note-details-panel" }}
+        >
+            <div className="clipped-note-details">
+                <div className="clipped-note-source">
+                    <Icon icon="bx bx-globe" />
+                    <a className="tn-link external" href={url} target="_blank" rel="noopener noreferrer">
+                        {safeHostname(url)}
+                    </a>
+                </div>
+                {description && <p className="clipped-note-description pre-wrap-text">{description}</p>}
+                {fields.length > 0 && (
+                    <dl className="clipped-note-fields">
+                        {fields.map((field) => (
+                            <div key={field.icon}>
+                                <dt><Icon icon={field.icon} />{field.label}</dt>
+                                <dd>{field.value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                )}
+            </div>
+        </BadgeWithDropdown>
     );
 }
 
@@ -310,43 +356,4 @@ function useShareInfo(note: FNote | null | undefined) {
             syncServerHost
         })
     };
-}
-
-/**
- * Where a shared note can be opened from. `local` is the desktop app without a sync server, which
- * serves the page on the loopback address. `preview` is the standalone build without a sync server,
- * which renders the page in its own service worker, so only this browser can open it. `export-only`
- * is the mobile app without a sync server: its link opens nowhere, so the static export is the only
- * way to publish the note. A server cannot tell whether it is reachable from outside, so it always
- * reports `public`.
- */
-export function getShareScope({ isElectron, isStandalone, isMobileApp, syncServerHost }: {
-    isElectron: boolean;
-    isStandalone: boolean;
-    isMobileApp: boolean;
-    syncServerHost: string | null | undefined;
-}): ShareScope {
-    if (syncServerHost) {
-        return "public";
-    }
-
-    if (isMobileApp) {
-        return "export-only";
-    }
-
-    if (isStandalone) {
-        return "preview";
-    }
-
-    return isElectron ? "local" : "public";
-}
-
-type ShareScope = "public" | "local" | "preview" | "export-only";
-
-function getShareId(note: FNote) {
-    if (note.hasOwnedLabel("shareRoot")) {
-        return "";
-    }
-
-    return note.getOwnedLabelValue("shareAlias") || note.noteId;
 }

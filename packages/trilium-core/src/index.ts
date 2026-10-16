@@ -141,7 +141,7 @@ export { default as sync_mutex } from "./services/sync_mutex";
 export { default as setup } from "./services/setup";
 export { getPlatform, type PlatformProvider } from "./services/platform";
 export { InAppHelpProvider } from "./services/in_app_help";
-export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ProcessedImage, getImageProvider } from "./services/image_provider";
+export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ImageShrink, type ProcessedImage, getImageProvider } from "./services/image_provider";
 export { default as imageCompressionService } from "./services/image_compression";
 export { default as imageInventoryService, type ImageInventoryOptions } from "./services/image_inventory";
 export { getContentCounts } from "./services/space_usage";
@@ -157,6 +157,7 @@ export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceO
 export type * from "./meta";
 export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
+export { resolveYouTubePreview, storeFavicon } from "./routes/api/link_embed";
 
 export { getZipProvider, type ZipArchive, type ZipProvider } from "./services/zip_provider";
 export { default as zipImportService } from "./services/import/zip";

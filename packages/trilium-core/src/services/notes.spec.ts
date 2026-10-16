@@ -1,3 +1,4 @@
+import { CANVAS_ATTACHMENT_MIME } from "@triliumnext/commons";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import becca from "../becca/becca.js";
@@ -14,7 +15,7 @@ import { fakeRequestProvider } from "../test/request_provider.js";
 import { initRequest } from "./request.js";
 import { getSql } from "./sql/index.js";
 import TaskContext from "./task_context.js";
-import { encodeUtf8 } from "./utils/binary.js";
+import { decodeUtf8, encodeUtf8 } from "./utils/binary.js";
 
 /**
  * The pure link-extraction helpers (findBookmarks, findLlmChatLinks) and the
@@ -660,6 +661,63 @@ describe("notes service (real DB)", () => {
             expect(note.getAttachments().map((a) => a.attachmentId))
                 .toStrictEqual([ own.attachmentId ]);
         });
+
+        it("keeps the images that a drawing saved along with the content shows again", () => {
+            const note = createNote("root", { title: "spec-update-drawing" }).note;
+            const drawing = saveDrawing(note, sceneOf([]));
+            const image = getContext().init(() => note.saveAttachment(PNG));
+            const content = "<figure class=\"include-note\" "
+                + `data-attachment-id="${drawing.attachmentId}"></figure>`;
+            const isScheduled = () =>
+                !!becca.getAttachment(image.attachmentId ?? "")?.utcDateScheduledForErasureSince;
+
+            getContext().init(() => noteService.updateNoteData(note.noteId, content));
+            expect(isScheduled()).toBe(true);
+
+            getContext().init(() => noteService.updateNoteData(note.noteId, content, [ {
+                ...DRAWING, attachmentId: drawing.attachmentId, ownerId: note.noteId,
+                content: sceneOf([ PNG.title ])
+            } ]));
+            expect(isScheduled()).toBe(false);
+        });
+    });
+
+    describe("getPortableContent", () => {
+        it("puts in a canvas drawing the images that it refers to", () => {
+            const note = createNote("root", { title: "spec-portable" }).note;
+            const inline = {
+                id: "inline", mimeType: "image/png", dataURL: "data:image/png;base64,AA=="
+            };
+            const drawing = saveDrawing(note, sceneOf([ PNG.title, "inline" ], { inline }));
+            getContext().init(() => {
+                note.saveAttachment(PNG);
+                note.saveAttachment({ ...PNG, title: "unused.png" });
+                note.saveAttachment({ ...PNG, title: "inline" });
+            });
+
+            const portable = JSON.parse(decodeUtf8(noteService.getPortableContent(drawing)));
+            expect(portable.files).toEqual({
+                inline,
+                [PNG.title]: {
+                    id: PNG.title,
+                    mimeType: "image/png",
+                    dataURL: "data:image/png;base64,AQID",
+                    created: expect.any(Number)
+                }
+            });
+            const { elements } = JSON.parse(sceneOf([ PNG.title, "inline" ]));
+            expect(portable.elements).toEqual(elements);
+
+            const json = getContext().init(() => note.saveAttachment({
+                role: "file",
+                mime: "application/json",
+                title: "a.json",
+                content: sceneOf([ PNG.title ])
+            }));
+            expect(decodeUtf8(noteService.getPortableContent(json))).toBe(sceneOf([ PNG.title ]));
+            const malformed = saveDrawing(note, "{");
+            expect(decodeUtf8(noteService.getPortableContent(malformed))).toBe("{");
+        });
     });
 
     describe("duplicateSubtree", () => {
@@ -765,6 +823,21 @@ describe("notes service (real DB)", () => {
         });
     });
 });
+
+const DRAWING = { role: "file", mime: CANVAS_ATTACHMENT_MIME, title: "Canvas.excalidraw" };
+const PNG = {
+    role: "image", mime: "image/png", title: "f1.png", content: new Uint8Array([ 1, 2, 3 ])
+};
+
+/** A canvas scene with an image element for each of `fileIds`, and `files` inline. */
+function sceneOf(fileIds: string[], files: object = {}) {
+    const elements = fileIds.map((fileId) => ({ type: "image", fileId }));
+    return JSON.stringify({ type: "excalidraw", version: 2, elements, files });
+}
+
+function saveDrawing(note: BNote, content: string) {
+    return getContext().init(() => note.saveAttachment({ ...DRAWING, content }));
+}
 
 /**
  * Characterization of the attachment-title derivation used by saveAttachments

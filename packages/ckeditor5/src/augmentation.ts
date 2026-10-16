@@ -43,8 +43,13 @@ declare global {
         isOn?: boolean;
         /** `true` when left out. */
         isEnabled?: boolean;
-        /** A separator goes between buttons of different groups. */
+        /** A separator goes between buttons, or items of a menu, of different groups. */
         group?: string;
+        /**
+         * The keystroke shown beside the label of an item of a menu: CKEditor's notation, such as
+         * `Ctrl+F`, or a single character, such as `?`.
+         */
+        keystroke?: string;
         /** The tools of the menu that the button opens. */
         children?: ContentEmbedTool[];
         /** A class of the button, for the content to style it. */
@@ -82,7 +87,14 @@ declare global {
          * `customDateTimeFormat` when none is given.
          */
         formatDateTime(date: Date, format?: string): string;
-        loadReferenceLinkTitle($el: JQuery<HTMLElement>, href: string): Promise<void>;
+        loadReferenceLinkTitle(
+            $el: JQuery<HTMLElement>, href: string, storedTitle?: string
+        ): Promise<void>;
+        /**
+         * Lets the user pick the note a reference link to a missing note should point at instead,
+         * starting from `storedTitle`, and calls `fix()` with the new href.
+         */
+        fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
         /**
          * Fills an embed with the note, or with the `block` of it, a `block` link parameter. An
          * editor of those blocks calls `onBlockChange()` once the blocks at its edges change.
@@ -119,6 +131,11 @@ declare global {
          */
         openBlockHandleMenu?(event: MouseEvent, count: number): void;
         /**
+         * Copies a link to the tab that holds the selection. Hosts without block references leave
+         * it out.
+         */
+        copyTabReference?(): void;
+        /**
          * The buttons that what `embed` shows adds to the toolbar of the embed, or `null`. Hosts
          * without embeds leave it out.
          */
@@ -128,6 +145,11 @@ declare global {
          * without embeds leave it out.
          */
         focusContentEmbed?(attachmentId: string): void;
+        /**
+         * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
+         * attachment, or `null` when that fails. Hosts without drawings leave it out.
+         */
+        convertImageToDrawing?(src: string): Promise<string | null>;
         /**
          * Reads a page's preview metadata through the host. Never rejects: any failure — network
          * error, HTTP error, unparseable page — resolves as `{ unresolved: true }` with
@@ -147,6 +169,6 @@ declare global {
         /** The headers of a request to the server, with `headers` added to them. */
         getHeaders(headers?: Record<string, string | undefined>): Promise<Record<string, string>>;
         getReferenceLinkTitle(href: string): Promise<string>;
-        getReferenceLinkTitleSync(href: string): string;
+        getReferenceLinkTitleSync(href: string, storedTitle?: string): string;
     };
 }

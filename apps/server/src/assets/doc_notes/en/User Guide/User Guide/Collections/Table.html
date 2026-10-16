@@ -107,11 +107,18 @@
   </li>
 </ul>
 <h3>Editing columns</h3>
-<p>It is possible to edit a column by right clicking it and selecting <em>Edit column.</em> This
+<p>It is possible to edit a column by right clicking it and selecting <em>Edit column…</em> This
   will basically change the label/relation definition at the collection level.</p>
 <p>If the <em>Name</em> field of a column is changed, this will trigger a batch
   operation in which the corresponding label/relation will be renamed in
   all the children.</p>
+<h3>Read-only tables</h3>
+<p>On a <a href="#root/_help_CoFPLs3dRlXc">read-only</a> table, the cells can't
+  be edited and the rows can't be dragged. The <em>New row</em> and <em>New column</em> buttons
+  are hidden, and the context menus offer only what leaves the notes as they
+  are: sorting and hiding columns, and opening the notes. Columns can still
+  be resized and reordered, but the layout isn't saved. The <em>Table properties</em> dialog
+  isn't available.</p>
 <h2>Working with the data</h2>
 <h3>Sorting by column</h3>
 <p>By default, the order of the notes matches the order in the&nbsp;<a class="reference-link"
@@ -152,18 +159,15 @@
   collapse. By default, all items are expanded.</p>
 <p>Since nesting is not always desirable, it is possible to limit the nesting
   to a certain number of levels or even disable it completely. To do so,
-  either:</p>
+  go to <a class="reference-link" href="#root/_help_8YBEPzcpUgxw">Note menu</a> → <em>Table properties</em> and
+  set <em>Maximum nesting depth</em> (under the <em>Included notes</em> section),
+  or set the <code>#maxNestingDepth</code>  <a href="#root/_help_HI6GBBIduIgv">label</a> of
+  the collection:</p>
 <ul>
-  <li>Go to&nbsp;<a class="reference-link" href="#root/_help_CssoWBu8I7jF">Collection Properties</a>&nbsp;and
-    look for the <em>Max nesting depth</em> section.
-    <ul>
-      <li>To disable nesting, type 0 and press Enter.</li>
-      <li>To limit to a certain depth, type in the desired number (e.g. 2 to only
-        display children and sub-children).</li>
-      <li>To re-enable unlimited nesting, remove the number and press Enter.</li>
-    </ul>
-  </li>
-  <li>Manually set <code>maxNestingDepth</code> to the desired value.</li>
+  <li><code>0</code> disables nesting, showing only the children of the collection.</li>
+  <li><code>1</code> also shows their children, <code>2</code> the level below
+    that, and so on.</li>
+  <li>Removing the label shows every level again.</li>
 </ul>
 <p>Limitations:</p>
 <ul>

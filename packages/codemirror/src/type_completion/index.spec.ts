@@ -7,11 +7,12 @@ import {
     renderHoverTooltip,
     SCRIPT_MIME_BACKEND,
     SCRIPT_MIME_FRONTEND,
-    SCRIPT_MIME_JSX
+    SCRIPT_MIME_JSX,
+    type ScriptApiContext
 } from "./index.js";
 
 /** Returns completions at the `|` marker in `source` (the marker is stripped). */
-function completionsAtMarker(mime: string, source: string, context?: { customRequestHandler?: boolean }) {
+function completionsAtMarker(mime: string, source: string, context?: ScriptApiContext) {
     const offset = source.indexOf("|");
     // Strip exactly the marker at `offset` (not the first `|` in the string, which
     // may differ if the snippet legitimately contains a `|` operator earlier).
@@ -309,6 +310,28 @@ describe("backend note (ScriptBNote) surface", () => {
             + "}"
         );
         expect(codes).toEqual([]);
+    }, TIMEOUT);
+});
+
+describe("bulk action script (note global)", () => {
+    const BULK_ACTION = { bulkActionNote: true };
+
+    it("declares the note being processed as a backend note, next to the api", async () => {
+        const names = await completionsAtMarker(SCRIPT_MIME_BACKEND, "note.|", BULK_ACTION);
+        expect(names).toContain("setLabel");
+        expect(names).toContain("title");
+
+        const codes = await getScriptDiagnosticCodes(
+            SCRIPT_MIME_BACKEND,
+            "if (note.hasLabel('done')) return;\nnote.title = api.getNote('root')?.title + note.title;",
+            BULK_ACTION
+        );
+        expect(codes).toEqual([]);
+    }, TIMEOUT);
+
+    it("declares no note global in other backend scripts", async () => {
+        const codes = await getScriptDiagnosticCodes(SCRIPT_MIME_BACKEND, "note.title;");
+        expect(codes).toContain(TS_NAME_NOT_FOUND);
     }, TIMEOUT);
 });
 

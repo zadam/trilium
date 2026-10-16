@@ -1,6 +1,6 @@
 @import "./stylesheets/boxicons-compat.css";
 /* No dark theme class is set when printing, so colors get the light theme's shades. */
-@import "./stylesheets/adaptive-colors.css";
+@import "@triliumnext/ckeditor5/src/theme/adaptive_colors.css";
 
 :root {
     --print-font-size: 11pt;
@@ -350,6 +350,51 @@ details::details-content {
 
 .ck-content details.trilium-collapsible > summary::before {
     transform: scale(1.3) rotate(90deg) !important;
+}
+/* #endregion */
+
+/* #region Tabs */
+.ck-content .trilium-tabs {
+    margin: 1em 0;
+}
+
+.ck-content .trilium-tab {
+    break-inside: avoid;
+
+    & + .trilium-tab {
+        margin-top: 8pt;
+    }
+}
+
+.ck-content .trilium-tab-title {
+    width: fit-content;
+    min-width: 3em;
+    min-height: calc(1.5em + 4pt);
+    margin: 0;
+    padding: 2pt 8pt;
+    border: 0.5pt solid #ccc;
+    border-bottom: 0;
+    border-radius: 4pt 4pt 0 0;
+    background: #f0f0f0;
+    font-weight: 500;
+    text-align: start;
+    break-after: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.ck-content .trilium-tab-panel {
+    padding: 6pt 10pt;
+    border: 0.5pt solid #ccc;
+    border-radius: 0 4pt 4pt 4pt;
+
+    & > :first-child {
+        margin-top: 0;
+    }
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
 }
 /* #endregion */
 

@@ -23,16 +23,16 @@ import zoomInIcon from "boxicons/svg/regular/bx-zoom-in.svg?raw";
 import zoomOutIcon from "boxicons/svg/regular/bx-zoom-out.svg?raw";
 import handIcon from "boxicons/svg/solid/bxs-hand.svg?raw";
 import type { RefObject } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
 import {
     type ContentEmbedTool,
     type ContentEmbedToolbarItem,
     type ContentEmbedToolProvider,
-    registerContentEmbedTools,
     showContentEmbedFullscreen
 } from "../text/content_embed_tools";
+import { getBoundedView, MAX_ZOOM, MIN_ZOOM } from "./drawing_view";
 
 /** The tools with a button of their own, in the order of their buttons. */
 export const MAIN_TOOLS = [
@@ -45,15 +45,58 @@ const TOOLS = [ ...MAIN_TOOLS, ...EXTRA_TOOLS ];
 export const LOCK = "lock";
 /** The button that opens the "More tools" menu, named by Excalidraw's `toolBar.extraTools`. */
 export const MORE_TOOLS = "moreTools";
+/** The name of Excalidraw's default sidebar, whose tabs are the library and the search. */
+export const DEFAULT_SIDEBAR = "default";
+export const SEARCH_TAB = "search";
+
+/** A command after the tools in the "More tools" menu. */
+interface MenuCommand {
+    id: string;
+    /** The key of Excalidraw's translation of the label, such as `search.title`. */
+    label: string;
+    /** The keystroke that Excalidraw binds to the command. */
+    keystroke?: string;
+    group: string;
+    run(api: ExcalidrawImperativeAPI): void;
+}
+
+/** The commands after the tools in the "More tools" menu. */
+export const MENU_COMMANDS: readonly MenuCommand[] = [
+    {
+        id: "exportImage",
+        label: "buttons.exportImage",
+        keystroke: "Ctrl+Shift+E",
+        group: "export",
+        run: (api) => api.updateScene({ appState: { openDialog: { name: "imageExport" } } })
+    },
+    {
+        id: "searchMenu",
+        label: "search.title",
+        keystroke: "Ctrl+F",
+        group: "canvas",
+        run: (api) => api.toggleSidebar({ name: DEFAULT_SIDEBAR, tab: SEARCH_TAB, force: true })
+    },
+    {
+        id: "library",
+        label: "toolBar.library",
+        group: "canvas",
+        run: (api) => api.toggleSidebar({ name: DEFAULT_SIDEBAR })
+    },
+    {
+        id: "help",
+        label: "helpDialog.title",
+        keystroke: "?",
+        group: "canvas",
+        run: (api) => api.updateScene({ appState: { openDialog: { name: "help" } } })
+    }
+];
 /** Shows the embed in fullscreen, as the button of its title row does while the title is hidden. */
 const FULLSCREEN = "fullscreen";
 /** The commands that click Excalidraw's own `button-undo` and `button-redo`. */
 export const HISTORY_ACTIONS = [ "undo", "redo" ] as const;
 
-/** Excalidraw's zoom step and limits, from its own zoom buttons. */
+/** Excalidraw's zoom step, from its own zoom buttons. */
 export const ZOOM_STEP = 0.1;
-export const MIN_ZOOM = 0.1;
-export const MAX_ZOOM = 30;
 /** The zoom that each zoom button sets, from the current one. */
 export const ZOOMS: Record<string, (zoom: number) => number> = {
     zoomOut: (zoom) => zoom - ZOOM_STEP,
@@ -92,17 +135,20 @@ interface CanvasEmbedToolsProps {
     /** The element of the drawing, inside the embed whose toolbar shows the tools. */
     rootRef: RefObject<HTMLElement | null>;
     apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+    /** The tools of the drawing, which the drawing adds to the toolbar of its embed. */
+    tools: CanvasTools;
     /** Whether the Editable toggle of the embed is on. A read-only drawing offers the zoom only. */
     isEditable: boolean;
 }
 
 /**
- * Adds Excalidraw's tools, undo and redo, and zoom to the toolbar of the embed that shows the
- * drawing. Renders inside `<Excalidraw>`, for its translations.
+ * Gives `tools` Excalidraw's tools, undo and redo, and zoom, while Excalidraw shows the drawing.
+ * Renders inside `<Excalidraw>`, for its translations.
  */
-export default function CanvasEmbedTools({ rootRef, apiRef, isEditable }: CanvasEmbedToolsProps) {
+export default function CanvasEmbedTools({
+    rootRef, apiRef, tools, isEditable
+}: CanvasEmbedToolsProps) {
     const { t, langCode } = useExcalidrawTranslation();
-    const [ tools ] = useState(() => new CanvasTools(rootRef));
 
     useEffect(() => tools.setTranslate(t), [ tools, t, langCode ]);
     useEffect(() => tools.setEditable(isEditable), [ tools, isEditable ]);
@@ -113,12 +159,10 @@ export default function CanvasEmbedTools({ rootRef, apiRef, isEditable }: Canvas
         if (!root || !api) return;
 
         const disconnect = tools.connect(api);
-        const unregister = registerContentEmbedTools(root, tools);
         // `CanvasDrawing.css` hides Excalidraw's own controls while these replace them.
         root.setAttribute("data-embed-tools", "");
         return () => {
             root.removeAttribute("data-embed-tools");
-            unregister();
             disconnect();
         };
     }, [ tools, rootRef, apiRef ]);
@@ -132,7 +176,10 @@ export function useExcalidrawTranslation() {
     return useI18n() as unknown as { t: Translate; langCode: string };
 }
 
-/** Excalidraw's tools and commands, as buttons of the toolbar of the embed with the drawing. */
+/**
+ * Excalidraw's tools and commands, as buttons of the toolbar of the embed with the drawing. Without
+ * Excalidraw, as while the drawing shows as a picture, only fullscreen.
+ */
 export class CanvasTools implements ContentEmbedToolProvider {
     readonly hiddenToolbarItems: readonly ContentEmbedToolbarItem[] = [
         "contentEmbedBoxSizeDropdown", "toggleContentEmbedTitle", "convertEmbedToLink"
@@ -186,7 +233,7 @@ export class CanvasTools implements ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[] {
         const appState = this.api?.getAppState();
         if (!appState) {
-            return [];
+            return this.getFullscreenTools();
         }
 
         const zoomTools = [
@@ -199,21 +246,26 @@ export class CanvasTools implements ContentEmbedToolProvider {
     }
 
     execute(id: string) {
-        const api = this.api;
-        if (!api) return;
-
         // The embed covers the drawing with a backdrop until the drawing has the focus.
         const container = this.rootRef.current?.querySelector<HTMLElement>(".excalidraw-container");
         if (container && !container.contains(document.activeElement)) {
             container.focus({ preventScroll: true });
         }
 
-        const appState = api.getAppState();
-        const getZoom = ZOOMS[id];
         if (id === FULLSCREEN) {
             showContentEmbedFullscreen(this.rootRef.current);
-        } else if (getZoom) {
-            api.updateScene({ appState: getZoomState(appState, getZoom(appState.zoom.value)) });
+            return;
+        }
+
+        const api = this.api;
+        if (!api) return;
+
+        const appState = api.getAppState();
+        const getZoom = ZOOMS[id];
+        if (getZoom) {
+            const view = getZoomState(appState, getZoom(appState.zoom.value));
+            const boundedView = getBoundedView(api.getSceneElements(), { ...appState, ...view });
+            api.updateScene({ appState: boundedView ?? view });
         } else if (this.isEditable) {
             this.runEditingTool(api, appState, id);
         }
@@ -240,7 +292,7 @@ export class CanvasTools implements ContentEmbedToolProvider {
         return this.translate?.(key) ?? key;
     }
 
-    /** The lock, the drawing tools, undo and redo. */
+    /** The lock, the drawing tools with the menu commands, undo and redo. */
     private getEditingTools(activeTool: AppState["activeTool"]): ContentEmbedTool[] {
         return [
             {
@@ -263,12 +315,17 @@ export class CanvasTools implements ContentEmbedToolProvider {
                 icon: moreToolsIcon,
                 isOn: EXTRA_TOOLS.some((type) => activeTool.type === type),
                 group: MORE_TOOLS,
-                children: EXTRA_TOOLS.map((type) => ({
-                    id: type,
-                    label: this.t(`toolBar.${type}`),
-                    icon: ICONS[type],
-                    isOn: activeTool.type === type
-                }))
+                children: [
+                    ...EXTRA_TOOLS.map((type) => ({
+                        id: type,
+                        label: this.t(`toolBar.${type}`),
+                        icon: ICONS[type],
+                        isOn: activeTool.type === type
+                    })),
+                    ...MENU_COMMANDS.map(({ id, label, keystroke, group }) => ({
+                        id, label: this.t(label), keystroke, group
+                    }))
+                ]
             },
             this.getHistoryTool("undo", undoIcon),
             this.getHistoryTool("redo", redoIcon)
@@ -318,9 +375,12 @@ export class CanvasTools implements ContentEmbedToolProvider {
         ];
     }
 
-    /** Runs the lock, a drawing tool, undo or redo. */
+    /** Runs the lock, a drawing tool, a menu command, undo or redo. */
     private runEditingTool(api: ExcalidrawImperativeAPI, appState: AppState, id: string) {
-        if (id === "undo" || id === "redo") {
+        const command = MENU_COMMANDS.find((menuCommand) => menuCommand.id === id);
+        if (command) {
+            command.run(api);
+        } else if (id === "undo" || id === "redo") {
             this.getHistoryButton(id)?.click();
         } else if (id === LOCK) {
             const locked = !appState.activeTool.locked;

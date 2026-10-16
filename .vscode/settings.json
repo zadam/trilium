@@ -27,7 +27,6 @@
         ".github/workflows/nightly.yml"
     ],
     "typescript.validate.enable": true,
-    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "search.exclude": {

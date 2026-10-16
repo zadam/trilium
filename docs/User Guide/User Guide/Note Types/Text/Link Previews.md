@@ -11,24 +11,27 @@ A link preview can be displayed in one of three modes:
     *   Currently supported for YouTube videos, which render interactively (via an `iframe`).
     *   To prevent unwanted remote requests, the video is shown only after clicking on it first.
 
-<table class="ck-table-resized">
-    <colgroup>
-        <col style="width:21.85%;">
-        <col style="width:38.84%;">
-        <col style="width:39.31%;">
-    </colgroup>
-    <tbody>
-        <tr>
-            <td><figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:251/42;" src="Link Previews_image.png" width="251" height="42"><figcaption><em>Inline</em> link preview</figcaption></figure></td>
-            <td><figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:1217/196;" src="2_Link Previews_image.png" width="1217" height="196"><figcaption><em>Card</em> link preview</figcaption></figure></td>
-            <td><figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:994/563;" src="1_Link Previews_image.png" width="994" height="563"><figcaption><em>Embed</em> link preview</figcaption></figure></td>
-        </tr>
-    </tbody>
-</table>
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1-1">
+<div class="trilium-multicolumn-column">
+
+<figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:251/42;" src="Link Previews_image.png" width="251" height="42"><figcaption><em>Inline</em> link preview</figcaption></figure>
+
+</div>
+<div class="trilium-multicolumn-column">
+
+<figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:1217/196;" src="2_Link Previews_image.png" width="1217" height="196"><figcaption><em>Card</em> link preview</figcaption></figure>
+
+</div>
+<div class="trilium-multicolumn-column">
+
+<figure class="image image_resized" style="width:100%;"><img style="aspect-ratio:994/563;" src="1_Link Previews_image.png" width="994" height="563"><figcaption><em>Embed</em> link preview</figcaption></figure>
+
+</div>
+</div>
 
 ## Inserting a link preview
 
-There are two ways to create one:
+There are three ways to create one:
 
 ### 1\. By pasting a URL
 
@@ -48,7 +51,13 @@ If the link is not accessible to the Trilium server (or the network request fail
 
 ### 2\. By using the "Link preview" toolbar button
 
-Click **Link preview** in the formatting toolbar to open the _Link preview_ popup. Paste the URL and choose the type of preview.
+Click _Link preview_ in the formatting toolbar to open the _Link preview_ popup. Paste the URL and choose the type of preview.
+
+### 3\. By saving browser tabs from the Web Clipper
+
+When the <a class="reference-link" href="../../Installation%20%26%20Setup/Web%20Clipper.md">Web Clipper</a> saves the tabs of a window, each tab becomes an _inline_ link preview showing the title and favicon the browser displays for it. Because this data comes from the browser, pages behind a login keep their real title, and the Trilium server does not contact the saved pages.
+
+When _Autogenerate link previews_ is turned off, the tabs are saved as a list of plain links instead.
 
 ## Altering an existing link preview
 

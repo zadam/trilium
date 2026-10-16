@@ -323,7 +323,7 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
                 {
                     // One note at a time: the dialog is configured against what that note holds and
                     // reports on what it changed there, neither of which a multi-selection has.
-                    title: t("compress-images"),
+                    title: t("compress-images-menu"),
                     uiIcon: "bx bx-collapse-alt",
                     enabled: noSelectedNotes && notOptionsOrHelp,
                     handler: () => void showImageCompressionDialog({ type: "note", noteId: note.noteId })

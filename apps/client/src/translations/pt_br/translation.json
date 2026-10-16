@@ -92,11 +92,11 @@
   },
   "bulk_actions": {
     "bulk_actions": "Ações em massa",
-    "affected_notes": "Notas Afetadas",
     "include_descendants": "Incluir notas filhas das notas selecionadas",
-    "available_actions": "Ações disponíveis",
     "chosen_actions": "Ações selecionadas",
-    "execute_bulk_actions": "Executar ações em massa",
+    "execute_bulk_actions_one": "Executar ações em massa",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "As ações em massa foram concluídas com sucesso.",
     "none_yet": "Nenhuma até agora... adicione uma ação clicando em uma das disponíveis acima.",
     "labels": "Etiquetas",
@@ -688,9 +688,7 @@
     "add_relation": "Adicionar relação",
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
     "relation_name": "nome da relação",
-    "to": "para",
-    "target_note": "nota destino",
-    "create_relation_on_all_matched_notes": "Crie a relação informada em todas as notas correspondentes."
+    "target_note": "nota destino"
   },
   "delete_label": {
     "label_name_placeholder": "nome da etiqueta",
@@ -699,17 +697,12 @@
   },
   "rename_label": {
     "rename_label": "Renomear etiqueta",
-    "rename_label_from": "Renomear etiqueta de",
     "old_name_placeholder": "nome antigo",
-    "to": "Para",
     "new_name_placeholder": "novo nome",
     "name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos."
   },
   "execute_script": {
-    "example_1": "Por exemplo para anexar um texto ao título de uma nota, use este pequeno script:",
-    "execute_script": "Executar script",
-    "help_text": "Você pode executar scripts simples nas notas correspondentes.",
-    "example_2": "Um exemplo mais complexo seria excluir todos os atributos das notas correspondentes:"
+    "execute_script": "Executar script"
   },
   "attribute_editor": {
     "help_text_body1": "Para adicionar uma etiqueta, digite por exemplo <code>#rock</code> ou se você também quer adicionar um valor então por exemplo <code>#year = 2020</code>",
@@ -730,21 +723,13 @@
     "add_label": "Adicionar etiqueta",
     "label_name_placeholder": "nome da etiqueta",
     "label_name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to_value": "para o valor",
-    "new_value_placeholder": "novo valor",
-    "help_text": "Em todas as notas correspondentes:",
-    "help_text_item1": "criar a etiqueta indicada se a nota ainda não tiver uma",
-    "help_text_item2": "ou altere o valor da etiqueta existente",
-    "help_text_note": "Você também pode chamar este método sem valor, neste caso a etiqueta será atribuída à nota sem valor."
+    "new_value_placeholder": "novo valor"
   },
   "update_label_value": {
     "update_label_value": "Atualizar valor da etiqueta",
     "label_name_placeholder": "nome da etiqueta",
     "label_name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "new_value_placeholder": "novo valor",
-    "to_value": "para o valor",
-    "help_text": "Em todas as notas correspondentes, altera o valor da etiqueta existente.",
-    "help_text_note": "Você também pode chamar este método sem um valor, neste caso a etiqueta será à nota sem um valor."
+    "new_value_placeholder": "novo valor"
   },
   "delete_relation": {
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
@@ -754,19 +739,13 @@
   "rename_relation": {
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
     "rename_relation": "Renomar relação",
-    "rename_relation_from": "Renomear relação de",
     "old_name": "nome antigo",
-    "to": "Para",
     "new_name": "novo nome"
   },
   "update_relation_target": {
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to": "para",
     "target_note": "nota destino",
-    "on_all_matched_notes": "Em todas as notas correspondentes",
-    "change_target_note": "alterar nota destino da relação existente",
     "update_relation_target": "Atualizar destino da relação",
-    "update_relation": "Atualizar relação",
     "relation_name": "nome da relação"
   },
   "content_renderer": {
@@ -865,35 +844,17 @@
     "unpin_tab_description": "Desafixar esta aba, permitindo que seja fechada e movida livremente"
   },
   "delete_note": {
-    "delete_note": "Excluir nota",
-    "delete_matched_notes": "Excluir notas correspondentes",
-    "delete_matched_notes_description": "Isso irá excluir as notas correspondentes.",
-    "undelete_notes_instruction": "Depois da exclusão, é possível desfazer através da janela de Alterações Recentes.",
-    "erase_notes_instruction": "Para apagar notas permanentemente, você pode fazer isso depois da exclusão indo em Opções -> Outros e clicar no botão \"Apagar notas excluídas agora\"."
+    "delete_note": "Excluir nota"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Excluir revisões da nota",
-    "all_past_note_revisions": "Todas as revisões anteriores das notas correspondentes serão excluídas. A nota em si será perservada. Ou seja, o histórico da nota será removido."
+    "delete_note_revisions": "Excluir revisões da nota"
   },
   "move_note": {
     "move_note": "Mover nota",
-    "to": "para",
-    "target_parent_note": "nota pai destino",
-    "on_all_matched_notes": "Em todas as notas correspondentes",
-    "move_note_new_parent": "move a nota para o novo pai se a nota tem apenas um pai (ou seja, a antiga ramificação é removida e uma nova ramificação é criada para o novo pai)",
-    "clone_note_new_parent": "clona a nota para o novo pai se a nota tem vários clones / ramificações (não é claro qual ramificação deve ser removida)",
-    "nothing_will_happen": "nada acontecerá se a nota não puder ser movida para a nota de destino (por exemplo, se criaria um ciclo de árvore)"
+    "target_parent_note": "nota pai destino"
   },
   "rename_note": {
-    "rename_note": "Renomear nota",
-    "rename_note_title_to": "Renomear título da nota para",
-    "new_note_title": "novo título da nota",
-    "click_help_icon": "Clique no ícone de ajuda a direita para ver todas as opções",
-    "example_note": "<code>Nota</code> - todas as notas correspondentes serão renomeadas para 'Nota'",
-    "example_new_title": "<code>NOVO: ${note.title}</code> - o título das notas correspondentes receberá o prefixo 'NOVO: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - notas correspondentes receberão um prefixo com o mês-dia da data de criação da nota",
-    "api_docs": "Veja da documentação da API para <a href='https://zadam.github.io/trilium/backend_api/Note.html'>nota</a> e suas <a href='https://day.js.org/docs/en/display/format'>propriedades dateCreatedObj / utcDateCreatedObj</a> para detalhes.",
-    "evaluated_as_js_string": "O valor digitado é avaliado como string JavaScript e, portanto, pode ser enriquecido com conteúdo dinâmico através da variável injetada <code>note</code> (nota sendo renomeada). Exemplos:"
+    "rename_note": "Renomear nota"
   },
   "calendar": {
     "mon": "Seg",
@@ -1327,12 +1288,9 @@
   "editable_text": {
     "placeholder": "Digite o conteúdo da sua nota aqui…",
     "auto-detect-language": "Detectado automaticamente",
-    "editor_crashed_title": "O editor de texto travou",
-    "editor_crashed_content": "Seu conteúdo foi recuperado com sucesso, mas algumas das suas alterações mais recentes podem não ter sido salvas.",
     "editor_crashed_details_button": "Veja mais detalhes...",
     "editor_crashed_details_intro": "Se você encontrar este erro várias vezes, considere relatá-lo no GitHub colando as informações abaixo.",
-    "editor_crashed_details_title": "Informação técnica",
-    "keeps-crashing": "O componente de edição continua travando. Tente reiniciar o Trilium. Se o problema persistir, considere criar um relatório de bug."
+    "editor_crashed_details_title": "Informação técnica"
   },
   "empty": {
     "search_placeholder": "buscar uma nota pelo nome",
@@ -3197,16 +3155,13 @@
   },
   "save_revision": {
     "save_revision": "Salvar revisão",
-    "revision_name_placeholder": "Nome da revisão (opcional)",
-    "help": "Uma revisão nomeada será salva para cada nota correspondente, capturando seu conteúdo e título atuais."
+    "revision_name_placeholder": "Nome da revisão (opcional)"
   },
   "convert_note": {
     "convert_note": "Converter",
-    "convert_note_to": "Converter nota",
     "choose_conversion": "(escolha uma conversão)",
     "conversion_htmlToMarkdown": "Notas de texto → Notas Markdown (com perdas)",
     "conversion_markdownToHtml": "Notas Markdown → Notas de texto",
-    "help_text": "A conversão é aplicada apenas às notas que correspondem ao tipo de origem; outras notas permanecem intactas. Uma revisão de cada nota convertida é salva antes.",
     "warning": "Alguma formatação pode ser perdida ao converter notas e você talvez precise corrigir algumas coisas depois. Uma revisão de cada nota convertida será salva antes, para que você possa restaurá-la. Deseja continuar?",
     "warning_risky": "Você está convertendo entre dois formatos que não têm recursos idênticos, então alguma formatação pode ser perdida e alguns elementos não suportados podem ser descartados.<br><br>Você assume plenamente esse risco e deseja prosseguir com a conversão?<br><br>Uma revisão de cada nota convertida será salva antes, para que você possa reverter ao formato original."
   },
@@ -3617,11 +3572,9 @@
     "compress_resize_help": "Reduz imagens maiores que o tamanho escolhido. Imagens que já cabem permanecem inalteradas.",
     "compress_max_dimensions": "Reduzir o tamanho da imagem para",
     "compress_jpeg_handling": "Imagem JPEG",
-    "compress_jpeg_handling_help": "Manter a imagem preserva sua qualidade atual. Comprimir a salva novamente com qualidade menor para reduzir seu tamanho, o que não pode ser desfeito.",
     "compress_jpeg_keep": "Manter como está",
     "compress_jpeg_compress": "Comprimir",
     "compress_png_handling": "Imagem PNG",
-    "compress_png_handling_help": "Manter a imagem a preserva exatamente. Otimizar reduz o número de cores, o que geralmente é imperceptível em capturas de tela e diagramas. Converter para JPEG economiza mais espaço, mas não pode ser aplicado a imagens com transparência, que são otimizadas em vez disso.",
     "compress_png_keep": "Manter como está",
     "compress_png_optimize": "Otimizar",
     "compress_png_jpeg": "Converter para JPEG",

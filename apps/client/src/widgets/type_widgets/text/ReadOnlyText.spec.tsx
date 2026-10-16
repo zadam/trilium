@@ -47,6 +47,12 @@ vi.mock("./utils", async (importOriginal) => ({
     loadEmbeddedNote
 }));
 
+const disposeStickyTableHeaders = vi.hoisted(() => vi.fn());
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn(() => disposeStickyTableHeaders));
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
+    applyStickyTableHeaders
+}));
+
 vi.stubGlobal("logError", vi.fn());
 vi.stubGlobal("logInfo", vi.fn());
 
@@ -265,8 +271,8 @@ describe("ReadOnlyText ?block= handling", () => {
     });
 
     async function mountWithBlock(block: string | undefined, isVisible = true) {
-        const scrollIntoView = vi.fn();
-        Element.prototype.scrollIntoView = scrollIntoView;
+        const scrollBy = vi.fn();
+        Element.prototype.scrollBy = scrollBy;
         const note = buildNote({
             title: "Blocks",
             type: "text",
@@ -299,20 +305,25 @@ describe("ReadOnlyText ?block= handling", () => {
         const isBlockKept = noteContext.viewScope?.block === block;
         await act(async () => {});
 
-        return { parent, noteContext, container, scrollIntoView, isBlockKept };
+        return { parent, noteContext, container, scrollBy, isBlockKept };
+    }
+
+    function isFlashed(container: HTMLElement, block: string) {
+        const element = container.querySelector(`[data-trilium-block-id='${block}']`);
+        return element?.classList.contains("block-reference-flash");
     }
 
     it("reveals the referenced block once the content renders", async () => {
-        const { noteContext, container, scrollIntoView, isBlockKept } = await mountWithBlock("b2");
+        const { noteContext, container, scrollBy, isBlockKept } = await mountWithBlock("b2");
 
         expect(isBlockKept).toBe(true);
         expect(noteContext.viewScope?.block).toBeUndefined();
-        expect(scrollIntoView.mock.contexts)
-            .toEqual([ container.querySelector("[data-trilium-block-id='b2']") ]);
+        expect(scrollBy).toHaveBeenCalledOnce();
+        expect([ isFlashed(container, "b1"), isFlashed(container, "b2") ]).toEqual([ false, true ]);
     });
 
     it("reveals a block of the open note when a link to it is followed", async () => {
-        const { parent, noteContext, container, scrollIntoView } = await mountWithBlock("b2");
+        const { parent, noteContext, container, scrollBy } = await mountWithBlock("b2");
         const otherContext = new NoteContext("other-ntx");
         otherContext.noteId = noteContext.noteId;
 
@@ -326,8 +337,8 @@ describe("ReadOnlyText ?block= handling", () => {
             await parent.handleEvent("noteSwitched", { noteContext, notePath: "" });
         });
         expect(noteContext.viewScope?.block).toBeUndefined();
-        expect(scrollIntoView.mock.contexts.at(-1))
-            .toBe(container.querySelector("[data-trilium-block-id='b1']"));
+        expect(scrollBy).toHaveBeenCalledTimes(2);
+        expect(isFlashed(container, "b1")).toBe(true);
     });
 
     it("labels a link to a block of its note by the text of the block", async () => {
@@ -345,7 +356,7 @@ describe("ReadOnlyText ?block= handling", () => {
     });
 
     it("leaves a link to a block of its note to the editor while hidden", async () => {
-        const { parent, noteContext, container, scrollIntoView } = await mountWithBlock(
+        const { parent, noteContext, container, scrollBy } = await mountWithBlock(
             undefined,
             false
         );
@@ -356,7 +367,7 @@ describe("ReadOnlyText ?block= handling", () => {
             await parent.handleEvent("noteSwitched", { noteContext, notePath: "" });
         });
         expect(noteContext.viewScope?.block).toBe("b1");
-        expect(scrollIntoView).not.toHaveBeenCalled();
+        expect(scrollBy).not.toHaveBeenCalled();
     });
 });
 
@@ -426,6 +437,57 @@ describe("ReadOnlyText embedded notes", () => {
 
         expect(loadEmbeddedNote)
             .toHaveBeenCalledWith("src1", expect.anything(), undefined, { block: "b1:b2" });
+        await act(async () => render(null, harness.container));
+        harness.container.remove();
+    });
+});
+
+describe("ReadOnlyText tables", () => {
+    it("sizes its tables for scrolling and keeps their header rows in view", async () => {
+        const harness = setupHarness({ isVisible: true });
+        harness.note.getBlob = async () => ({
+            content: "<figure class=\"table\" style=\"width:150%;\"><table></table></figure>"
+        }) as never;
+
+        await harness.mount();
+
+        const figure = harness.container.querySelector<HTMLElement>("figure.table");
+        expect(figure?.style.getPropertyValue("--table-width"))
+            .toBe("calc(var(--table-reference-width, 100%) * 150 / 100)");
+        expect(applyStickyTableHeaders).toHaveBeenCalledWith(figure?.parentElement);
+
+        disposeStickyTableHeaders.mockClear();
+        await act(async () => render(null, harness.container));
+        expect(disposeStickyTableHeaders).toHaveBeenCalledTimes(1);
+        harness.container.remove();
+    });
+});
+
+describe("ReadOnlyText tabs", () => {
+    it("shows each tab title with text as a scrollable label", async () => {
+        const harness = setupHarness({ isVisible: true });
+        harness.note.getBlob = async () => ({
+            content: "<div class=\"trilium-tabs\"><section class=\"trilium-tab\">"
+                + "<p class=\"trilium-tab-title\">First <b>tab</b></p>"
+                + "<div class=\"trilium-tab-panel\"><p>One</p></div></section>"
+                + "<section class=\"trilium-tab\"><p class=\"trilium-tab-title\">&nbsp;</p>"
+                + "<div class=\"trilium-tab-panel\"><p>Two</p></div></section>"
+                + "</div>"
+        }) as never;
+
+        await harness.mount();
+
+        const titles = harness.container.querySelectorAll<HTMLElement>(".trilium-tab-title");
+        const [ first, second ] = titles;
+        const label = first.querySelector(":scope > .scrollable-label");
+        expect(label?.innerHTML).toBe("<span>First <b>tab</b></span>");
+        expect(second.childNodes.length).toBe(0);
+
+        second.click();
+        label?.querySelector("b")?.click();
+        expect(first.parentElement?.classList.contains("trilium-tab--active")).toBe(true);
+        expect(second.parentElement?.classList.contains("trilium-tab--active")).toBe(false);
+
         await act(async () => render(null, harness.container));
         harness.container.remove();
     });

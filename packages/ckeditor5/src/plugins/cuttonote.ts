@@ -5,10 +5,11 @@ import {
 	ModelLiveRange,
 	Plugin,
 	plainTextToHtml,
-	ViewDataTransfer,
-	viewToPlainText
+	ViewDataTransfer
 } from 'ckeditor5';
 import type { ModelRange, ViewDocumentFragment } from 'ckeditor5';
+
+import { viewToIndentedPlainText } from './clipboard_plain_text_indent.js';
 
 /** A selection pinned by `capturePasteTarget()` for a paste whose content arrives later. */
 export interface PasteTarget {
@@ -67,11 +68,11 @@ export default class CutToNotePlugin extends Plugin {
 	}
 
 	/**
-	 * Returns the selected content as plain text, through the same `viewToPlainText` the native
-	 * copy uses for the `text/plain` clipboard flavor.
+	 * Returns the selected content as plain text, through the same `viewToIndentedPlainText()` the
+	 * native copy uses for the `text/plain` clipboard flavor.
 	 */
 	getSelectedPlainText() {
-		return viewToPlainText(this.editor.editing.view.domConverter, this.getSelectedViewFragment());
+		return viewToIndentedPlainText(this.editor, this.getSelectedViewFragment());
 	}
 
 	/**
@@ -97,7 +98,8 @@ export default class CutToNotePlugin extends Plugin {
 	/**
 	 * Runs `html` (or `text` when `html` is empty) through the clipboard paste pipeline, as a
 	 * paste at the current selection. Pasting a table into a multi-cell table selection merges
-	 * it the way a native paste does.
+	 * it the way a native paste does. Both flavors also go on the event's `dataTransfer`, where
+	 * listeners such as `CodeBlockEditing` read them.
 	 */
 	pasteContent(html: string, text: string) {
 		const content = html || (text ? plainTextToHtml(text) : "");
@@ -105,10 +107,18 @@ export default class CutToNotePlugin extends Plugin {
 			return;
 		}
 
+		const dataTransfer = new DataTransfer();
+		if (html) {
+			dataTransfer.setData("text/html", html);
+		}
+		if (text) {
+			dataTransfer.setData("text/plain", text);
+		}
+
 		const view = this.editor.editing.view;
 		view.focus();
 		view.document.fire("clipboardInput", {
-			dataTransfer: new ViewDataTransfer(new DataTransfer()),
+			dataTransfer: new ViewDataTransfer(dataTransfer),
 			content,
 			method: "paste",
 			targetRanges: null

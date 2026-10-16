@@ -12,7 +12,7 @@ import type { LlmMessage, LlmStreamChunk } from "@triliumnext/commons";
 import { getLog } from "../log.js";
 import { safeExtractMessageAndStackFromError } from "../utils/index.js";
 import { generateChatTitle } from "./chat_title.js";
-import { getProvider, getProviderByType, getSearchProviderSetup, getSelectedModel, hasConfiguredProviders, type LlmProviderConfig } from "./index.js";
+import { getProvider, getProviderByType, getSearchProviderSetup, getSelectedModel, hasConfiguredProviders, type LlmProvider, type LlmProviderConfig } from "./index.js";
 import { formatStreamError, streamToChunks } from "./stream.js";
 import { resolveToolRegistries } from "./tools/index.js";
 
@@ -89,7 +89,7 @@ export async function* runChat(
             yield chunk;
         }
 
-        await generateTitleForFirstTurn(messages, config);
+        await generateTitleForFirstTurn(messages, config, provider);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         getLog().error(`LLM chat stream failed: ${safeExtractMessageAndStackFromError(error)}`);
@@ -101,7 +101,7 @@ export async function* runChat(
  * Name the chat note after the user's opening message, once the first turn is
  * answered. Best-effort: a failure here must not fail a completed chat.
  */
-async function generateTitleForFirstTurn(messages: LlmMessage[], config: LlmProviderConfig): Promise<void> {
+async function generateTitleForFirstTurn(messages: LlmMessage[], config: LlmProviderConfig, provider: LlmProvider): Promise<void> {
     const userMessages = messages.filter(m => m.role === "user");
     // Later turns are not a naming opportunity at all, so they pass without a word.
     if (userMessages.length !== 1) {
@@ -125,7 +125,7 @@ async function generateTitleForFirstTurn(messages: LlmMessage[], config: LlmProv
             getLog().info(`Not naming chat note ${config.chatNoteId}: the opening message carries no text.`);
             return;
         }
-        await generateChatTitle(config.chatNoteId, firstText);
+        await generateChatTitle(config.chatNoteId, firstText, provider);
     } catch (err) {
         getLog().error(`Failed to generate chat title: ${safeExtractMessageAndStackFromError(err)}`);
     }

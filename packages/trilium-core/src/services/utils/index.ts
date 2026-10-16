@@ -390,8 +390,8 @@ export function removeFileExtension(filePath: string, mime?: string) {
 }
 
 export function getNoteTitle(filePath: string, replaceUnderscoresWithSpaces: boolean, noteMeta?: NoteMeta) {
-    const trimmedNoteMeta = noteMeta?.title?.trim();
-    if (trimmedNoteMeta) return trimmedNoteMeta;
+    // An empty title in `!!!meta.json` is an untitled note, not a missing title.
+    if (noteMeta?.title !== undefined) return noteMeta.title.trim();
 
     const fileBasename = basename(removeFileExtension(filePath, noteMeta?.mime));
     return replaceUnderscoresWithSpaces ? fileBasename.replace(/_/g, " ").trim() : fileBasename;
@@ -517,9 +517,10 @@ export function stripTags(text: string) {
  *
  * This keeps anchor IDs and their table-of-contents links unique on shared
  * pages, so clicking a duplicate heading in the ToC jumps to the right one.
+ * No slug is one of `reserved`, the IDs the page already uses.
  */
-export function slugifyHeadings(titles: string[]): string[] {
-    const used = new Set<string>();
+export function slugifyHeadings(titles: string[], reserved: Iterable<string> = []): string[] {
+    const used = new Set(reserved);
     return titles.map((title) => {
         const base = slugify(stripTags(title));
         let slug = base;

@@ -82,9 +82,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "批次操作",
-    "affected_notes": "受影響的筆記",
     "include_descendants": "包括所選筆記的子筆記",
-    "available_actions": "可用操作",
     "chosen_actions": "已選操作",
     "execute_bulk_actions": "執行批次操作",
     "bulk_actions_executed": "已成功執行批次操作。",
@@ -504,21 +502,13 @@
     "remove_this_search_action": "刪除此搜尋操作"
   },
   "execute_script": {
-    "execute_script": "執行腳本",
-    "help_text": "您可以在匹配的筆記上執行簡單的腳本。",
-    "example_1": "例如，要在筆記標題後附加字串，請使用以下腳本：",
-    "example_2": "更複雜的例子，刪除所有匹配的筆記屬性："
+    "execute_script": "執行腳本"
   },
   "add_label": {
     "add_label": "新增標籤",
     "label_name_placeholder": "標籤名稱",
     "label_name_title": "允許使用字母、數字、下劃線和冒號。",
-    "to_value": "值為",
-    "new_value_placeholder": "新值",
-    "help_text": "在所有匹配的筆記上：",
-    "help_text_item1": "如果筆記尚無此標籤，則新增給定的標籤",
-    "help_text_item2": "或更改現有標籤的值",
-    "help_text_note": "您也可以在不指定值的情況下調用此方法，這種情況下，標籤將分配給沒有值的筆記。"
+    "new_value_placeholder": "新值"
   },
   "delete_label": {
     "delete_label": "刪除標籤",
@@ -527,9 +517,7 @@
   },
   "rename_label": {
     "rename_label": "重新命名標籤",
-    "rename_label_from": "重新命名標籤從",
     "old_name_placeholder": "舊名稱",
-    "to": "改為",
     "new_name_placeholder": "新名稱",
     "name_title": "允許使用字母、數字、下劃線和冒號。"
   },
@@ -537,49 +525,26 @@
     "update_label_value": "更新標籤值",
     "label_name_placeholder": "標籤名稱",
     "label_name_title": "允許使用字母、數字、下劃線和冒號。",
-    "to_value": "值為",
-    "new_value_placeholder": "新值",
-    "help_text": "在所有匹配的筆記上，更改現有標籤的值。",
-    "help_text_note": "您也可以在不指定值的情況下調用此方法，這種情況下，標籤將分配給沒有值的筆記。"
+    "new_value_placeholder": "新值"
   },
   "delete_note": {
-    "delete_note": "刪除筆記",
-    "delete_matched_notes": "刪除匹配的筆記",
-    "delete_matched_notes_description": "這將刪除匹配的筆記。",
-    "undelete_notes_instruction": "刪除後，可以從「最近修改」對話方塊中還原它們。",
-    "erase_notes_instruction": "要永久擦除筆記，您可以在刪除後至「選項」→「其他」，然後點擊「立即擦除已刪除的筆記」按鈕。"
+    "delete_note": "刪除筆記"
   },
   "delete_revisions": {
-    "delete_note_revisions": "刪除筆記歷史",
-    "all_past_note_revisions": "所有匹配筆記的過去歷史都將被刪除。筆記本身將完全保留。換句話說，筆記的歷史將被刪除。"
+    "delete_note_revisions": "刪除筆記歷史"
   },
   "move_note": {
     "move_note": "移動筆記",
-    "to": "到",
-    "target_parent_note": "目標父級筆記",
-    "on_all_matched_notes": "對於所有匹配的筆記",
-    "move_note_new_parent": "如果筆記只有一個父級（即舊分支被移除並新增新分支至新父級），則將筆記移動至新父級",
-    "clone_note_new_parent": "如果筆記有多個克隆 / 分支（不清楚應該移除哪個分支），則將筆記克隆至新父級",
-    "nothing_will_happen": "如果筆記無法移動至目標筆記（即這會新增一個樹循環），則不會發生任何事情"
+    "target_parent_note": "目標父級筆記"
   },
   "rename_note": {
-    "rename_note": "重新命名筆記",
-    "rename_note_title_to": "重新命名筆記標題為",
-    "new_note_title": "新筆記標題",
-    "click_help_icon": "點擊右側的說明圖示查看所有選項",
-    "evaluated_as_js_string": "給定的值被認為是 JavaScript 字串，因此可以透過注入的 <code>note</code> 變數（正在重新命名的筆記）豐富動態內容。 例如：",
-    "example_note": "<code>Note</code> - 所有匹配的筆記都被重新命名為「Note」",
-    "example_new_title": "<code>NEW: ${note.title}</code> - 匹配的筆記標題以「NEW: 」為前綴",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - 匹配的筆記以筆記的新增月份-日期為前綴",
-    "api_docs": "有關詳細資訊，請參閱<a href='https://zadam.github.io/trilium/backend_api/Note.html'>筆記</a>及其<a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj 屬性</a>的API文檔。"
+    "rename_note": "重新命名筆記"
   },
   "add_relation": {
     "add_relation": "新增關聯",
     "relation_name": "關聯名稱",
     "allowed_characters": "允許的字符為字母數字、下劃線和冒號。",
-    "to": "到",
-    "target_note": "目標筆記",
-    "create_relation_on_all_matched_notes": "在所有匹配的筆記上新增指定的關聯。"
+    "target_note": "目標筆記"
   },
   "delete_relation": {
     "delete_relation": "刪除關聯",
@@ -588,20 +553,14 @@
   },
   "rename_relation": {
     "rename_relation": "重新命名關聯",
-    "rename_relation_from": "重新命名關聯，從",
     "old_name": "舊名稱",
-    "to": "改為",
     "new_name": "新名稱",
     "allowed_characters": "允許的字符為字母數字、下劃線和冒號。"
   },
   "update_relation_target": {
-    "update_relation": "更新關聯",
     "relation_name": "關聯名稱",
     "allowed_characters": "允許的字符為字母數字、下劃線和冒號。",
-    "to": "到",
     "target_note": "目標筆記",
-    "on_all_matched_notes": "在所有匹配的筆記上",
-    "change_target_note": "或更改現有關聯的目標筆記",
     "update_relation_target": "更新關聯目標"
   },
   "attachments_actions": {
@@ -1024,9 +983,6 @@
   "editable_text": {
     "placeholder": "在這裡輸入您的筆記內容…",
     "auto-detect-language": "自動檢測",
-    "keeps-crashing": "編輯元件持續發生崩潰。請嘗試重新啟動 Trilium。若問題仍存在，請考慮提交錯誤報告。",
-    "editor_crashed_title": "文字編輯器崩潰",
-    "editor_crashed_content": "您的內容已成功恢復，但最近的幾項變更可能未被儲存。",
     "editor_crashed_details_button": "檢視更多資訊⋯",
     "editor_crashed_details_intro": "若您多次遇到此錯誤，請考慮在 GitHub 回報以下資訊。",
     "editor_crashed_details_title": "技術資訊"
@@ -2623,16 +2579,13 @@
   },
   "save_revision": {
     "save_revision": "儲存筆記修訂",
-    "revision_name_placeholder": "修訂名稱（選擇性）",
-    "help": "系統會針對每則符合條件的筆記儲存一個命名版本，並記錄其當前內容與標題。"
+    "revision_name_placeholder": "修訂名稱（選擇性）"
   },
   "convert_note": {
     "convert_note": "轉換",
-    "convert_note_to": "轉換筆記",
     "choose_conversion": "（選擇轉換方式）",
     "conversion_htmlToMarkdown": "文字筆記 → Markdown 筆記（有損轉換）",
     "conversion_markdownToHtml": "Markdown 筆記 → 文字筆記",
-    "help_text": "轉換僅套用至符合來源類型的筆記；其餘筆記則維持不變。每則經轉換的筆記，其修訂版本都會事先儲存。",
     "warning": "轉換筆記時可能會遺失部分格式，您之後可能需要進行一些修正。系統會事先儲存每則轉換後筆記的修訂版本，以便您能還原。您要繼續嗎？",
     "warning_risky": "您正在將兩種功能不完全相同的格式相互轉換，因此部分格式可能會遺失，某些不支援的元素可能會被刪除。<br><br>您是否完全承擔此風險，並希望繼續進行轉換？<br><br>每則轉換後的筆記都會事先儲存一份修訂版本，因此您可以還原至原始格式。"
   },

@@ -141,7 +141,8 @@ class FakeAcpError extends Error {
 
 vi.mock("./acp_client.js", () => ({ AcpClient: FakeAcpClient, AcpError: FakeAcpError }));
 
-const { buildPromptBlocks, createUpdateCollector, denyPermission, MAX_TITLES_PER_SESSION } = await import("./acp_agent.js");
+const { buildPromptBlocks, createUpdateCollector, denyPermission } = await import("./acp_agent.js");
+const { MAX_TITLES_PER_SESSION } = await import("./transcript.js");
 const { IDLE_TIMEOUT_MS } = await import("./acp_client_pool.js");
 const { buildCopilotModelList, CopilotAgentProvider, resetModelCatalogCacheForTests } = await import("./copilot_agent.js");
 

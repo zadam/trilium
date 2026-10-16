@@ -5,7 +5,9 @@ import type {
     ElectronContextMenuParams,
     NativeImportOptions,
     OneNoteLoginResult,
-    RendererStartupMetric
+    RendererStartupMetric,
+    TranscriptionState,
+    TranscriptSource
 } from "@triliumnext/commons";
 import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 
@@ -188,8 +190,8 @@ contextBridge.exposeInMainWorld("electronApi", {
         onPrintProgress(callback: (data: { progress: number; action: string }) => void) {
             ipcRenderer.on("print-progress", (_event, data) => callback(data));
         },
-        onPrintDone(callback: (printReport: unknown) => void) {
-            ipcRenderer.on("print-done", (_event, printReport) => callback(printReport));
+        onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void) {
+            ipcRenderer.on("print-done", (_event, printReport, liveJobId) => callback(printReport, liveJobId));
         },
         removePrintListeners() {
             ipcRenderer.removeAllListeners("print-progress");
@@ -250,6 +252,38 @@ contextBridge.exposeInMainWorld("electronApi", {
     restore: {
         pickBackup() {
             return ipcRenderer.invoke("restore-pick-backup");
+        }
+    },
+
+    transcription: {
+        isSupported() {
+            return ipcRenderer.invoke("transcription-is-supported");
+        },
+        start(noteId: string) {
+            return ipcRenderer.invoke("transcription-start", noteId);
+        },
+        stop() {
+            return ipcRenderer.invoke("transcription-stop");
+        },
+        getState() {
+            return ipcRenderer.invoke("transcription-get-state");
+        },
+        renameSpeaker(attachmentId: string, key: string, name: string) {
+            return ipcRenderer.invoke("transcription-rename-speaker", attachmentId, key, name);
+        },
+        getRecordingsDirectory() {
+            return ipcRenderer.invoke("transcription-get-recordings-directory");
+        },
+        onStateChanged(callback: (state: TranscriptionState) => void) {
+            const listener = (_event: unknown, state: TranscriptionState) => callback(state);
+            ipcRenderer.on("transcription-state", listener);
+            return () => ipcRenderer.removeListener("transcription-state", listener);
+        },
+        onLevel(callback: (source: TranscriptSource, level: number) => void) {
+            const listener = (_event: unknown, source: TranscriptSource, level: number) =>
+                callback(source, level);
+            ipcRenderer.on("transcription-level", listener);
+            return () => ipcRenderer.removeListener("transcription-level", listener);
         }
     },
 

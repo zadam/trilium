@@ -7,13 +7,11 @@ The content language determines:
 *   Whether the text is displayed from right-to-left, for languages such as Arabic, Hebrew, etc.
 *   How typed quotes are [automatically replaced](Automatic%20replacements.md) (e.g. English uses `“text”`, whereas some languages use `«text»`). This applies only if <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Text_ → _Single/Double quotation marks_ is set to _Based on note's content language_.
 *   Which languages are offered by the <a class="reference-link" href="In-editor%20AI%20assistant.md">In-editor AI assistant</a> for translation.
+*   The language and the text direction the content is marked with on a [shared page](../../Advanced%20Usage/Sharing.md), which screen readers and browsers follow.
 
 ## Setting the language of a single note
 
-To set the language of the content of a <a class="reference-link" href="../Text.md">Text</a> note:
-
-*   On the new layout, there is a language selector in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/New%20Layout/Status%20bar.md">Status bar</a>.
-*   On the old layout, go to the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Ribbon.md">Ribbon</a> → _Basic Properties_ and look for the _Language_ field.
+To set the language of the content of a <a class="reference-link" href="../Text.md">Text</a> note, there is a language selector in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a> indicated by a <span class="tn-icon bx bx-globe"></span> icon.
 
 ## Adjusting the list of languages
 

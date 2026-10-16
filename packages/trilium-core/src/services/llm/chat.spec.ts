@@ -19,8 +19,9 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("./index.js", () => {
-    const makeProvider = () => ({
+    const makeProvider = (resolvedFrom: string) => ({
         name: "fake",
+        resolvedFrom,
         chat: (_messages: unknown, config: unknown, signal?: AbortSignal) => {
             state.chatConfig = config;
             state.chatSignal = signal;
@@ -40,8 +41,8 @@ vi.mock("./index.js", () => {
         hasConfiguredProviders: () => state.configured,
         getSelectedModel: () => undefined,
         getSearchProviderSetup: (id: string | undefined) => (id === "s1" ? { id: "s1", provider: "tavily", apiKey: "tk" } : undefined),
-        getProvider: (id: string) => { state.providerIdRequested = id; return makeProvider(); },
-        getProviderByType: (type: string) => { state.providerTypeRequested = type; return makeProvider(); }
+        getProvider: (id: string) => { state.providerIdRequested = id; return makeProvider(`id:${id}`); },
+        getProviderByType: (type: string) => { state.providerTypeRequested = type; return makeProvider(`type:${type}`); }
     };
 });
 
@@ -179,14 +180,23 @@ describe("runChat", () => {
     describe("title generation", () => {
         it("titles the note from the opening message, including the text parts of a multimodal one", async () => {
             await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc" });
-            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello");
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.anything());
 
             generateChatTitle.mockClear();
             await collect([{ role: "user", content: [
                 { type: "image", attachmentId: "a1", mime: "image/png" },
                 { type: "text", text: "describe this" }
             ] }], { chatNoteId: "abc" });
-            expect(generateChatTitle).toHaveBeenCalledWith("abc", "describe this");
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "describe this", expect.anything());
+        });
+
+        it("titles the note with the provider the chat talks to", async () => {
+            await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc", providerId: "p2" });
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.objectContaining({ resolvedFrom: "id:p2" }));
+
+            generateChatTitle.mockClear();
+            await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc", provider: "openai" });
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.objectContaining({ resolvedFrom: "type:openai" }));
         });
 
         it("skips an image-only opening message, a follow-up turn, and a chat with no note", async () => {

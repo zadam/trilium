@@ -1,6 +1,7 @@
 import { render } from "preact";
 import { useCallback, useLayoutEffect, useRef } from "preact/hooks";
 
+import Component from "./components/component";
 import FNote from "./entities/fnote";
 import content_renderer from "./services/content_renderer";
 import { applyInlineMermaid } from "./services/content_renderer_text";
@@ -115,9 +116,16 @@ export function SingleNoteRenderer({ note, onReady }: RendererProps) {
             } else {
                 if (note.type === "text") {
                     await import("@triliumnext/ckeditor5/src/theme/ck-content.css");
+                    await import("@triliumnext/ckeditor5/src/theme/multicolumn.css");
                 }
-                // Printing preserves full embed nesting (see expandNestedEmbeds).
-                const { $renderedContent } = await content_renderer.getRenderedContent(note, { noChildrenList: true, expandNestedEmbeds: true, mediaEnvironment: "native" });
+                // Printing preserves full embed nesting (see expandNestedEmbeds). The print page has
+                // no component tree, so a JSX render note mounts under a bare root `Component`.
+                const { $renderedContent } = await content_renderer.getRenderedContent(note, {
+                    noChildrenList: true,
+                    expandNestedEmbeds: true,
+                    mediaEnvironment: "native",
+                    parentComponent: new Component()
+                });
                 container.replaceChildren(...$renderedContent);
 
                 // Note types rendered as a mounted component (an AI chat) start their transform

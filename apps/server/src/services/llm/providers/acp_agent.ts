@@ -33,7 +33,7 @@ import dataDirs from "../../data_dir.js";
 import { AcpClient, AcpError } from "./acp_client.js";
 import { AcpClientPool, type AcpLease, type AcpPoolConnection } from "./acp_client_pool.js";
 import { getAcpMcpEndpointUrl } from "./acp_mcp_endpoint.js";
-import { buildHistoryReplay, hashTranscript } from "./transcript.js";
+import { buildHistoryReplay, buildTitlePrompt, cleanTitle, hashTranscript, MAX_TITLES_PER_SESSION } from "./transcript.js";
 
 /** How an ACP provider starts its agent subprocess. */
 export interface AcpLaunchSpec {
@@ -139,13 +139,6 @@ const PROMPT_TIMEOUT_MS = 15 * 60_000;
 
 /** Session mappings kept per chat note; bounded to avoid unbounded growth. */
 const MAX_TRACKED_SESSIONS = 200;
-
-/**
- * Titles one session answers before it is replaced. Titles share a session to
- * skip `session/new` (~2.5 s on Antigravity, which also keeps every session on
- * disk); the cap bounds the history each title prompt carries.
- */
-export const MAX_TITLES_PER_SESSION = 20;
 
 /** The name the loopback MCP server is registered under in `session/new`. */
 export const NOTE_TOOLS_MCP_SERVER_NAME = "trilium";
@@ -684,17 +677,12 @@ export abstract class AcpAgentProvider implements LlmProvider {
                 "session/prompt",
                 {
                     sessionId,
-                    prompt: [{
-                        type: "text",
-                        text: `Generate a short title (at most 5 words) summarizing the chat message below. It is a new request: earlier messages in this conversation do not apply. Reply with only the title, no quotes or punctuation around it:
-
-${firstMessage.substring(0, 500)}`
-                    }]
+                    prompt: [{ type: "text", text: buildTitlePrompt(firstMessage) }]
                 },
                 SESSION_TIMEOUT_MS
             );
             answered = true;
-            return title.trim().replace(/^["']|["']$/g, "").substring(0, 100);
+            return cleanTitle(title);
         } catch (error) {
             getLog().error(`${this.logLabel} title generation failed: ${this.describeFailure(error)}`);
             return "";

@@ -14,6 +14,7 @@ import { Badge } from "../../react/Badge";
 import { useFocusWithin } from "../../react/hooks";
 import Icon from "../../react/Icon";
 import OverlayControlGroup, { OverlayControlButton } from "../../react/OverlayControlGroup";
+import ScrollableLabel from "../../react/ScrollableLabel";
 import {
     type ContentEmbedEvent, getContentEmbedTools, showContentEmbedFullscreen,
     useIsContentEmbedEditable, watchContentEmbedTools
@@ -91,6 +92,11 @@ export default function ContentEmbed({
         <>
             <div
                 className="include-note-title-row"
+                onClick={(e) => {
+                    if (isExpandable && isTogglingClick(e)) {
+                        setIsExpanded(!isExpanded);
+                    }
+                }}
                 onContextMenu={(e) => openMenuOnRightClick(e, notePath, viewScope)}
             >
                 {isExpandable && (
@@ -341,6 +347,7 @@ function getFocusTargetAt(content: HTMLElement, x: number, y: number) {
     return hit?.closest<HTMLElement>(FOCUSABLE_SELECTOR) ?? content;
 }
 
+/** The title on a single line, which scrolls sideways when it does not fit. */
 function ContentEmbedTitle({ title }: { title: HTMLElement }) {
     const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -348,7 +355,11 @@ function ContentEmbedTitle({ title }: { title: HTMLElement }) {
         titleRef.current?.replaceChildren(title);
     }, [ title ]);
 
-    return <h4 ref={titleRef} className="include-note-title" />;
+    return (
+        <ScrollableLabel className="include-note-title-label">
+            <h4 ref={titleRef} className="include-note-title" />
+        </ScrollableLabel>
+    );
 }
 
 function ContentEmbedActionButton({ className, action }: {
@@ -457,6 +468,15 @@ function useFullscreenEvents(contentRef: RefObject<HTMLElement | null>) {
             observer?.disconnect();
         };
     }, [ contentRef ]);
+}
+
+/**
+ * Whether a click on the title row expands or collapses the embed: one outside its buttons and
+ * link, in content that no text editor holds. In an editor, the click selects the embed.
+ */
+function isTogglingClick(e: MouseEvent) {
+    return e.target instanceof Element && !e.target.closest("a, button")
+        && e.currentTarget instanceof HTMLElement && !findTextEditorAround(e.currentTarget);
 }
 
 /**

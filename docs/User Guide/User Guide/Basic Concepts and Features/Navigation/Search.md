@@ -8,15 +8,12 @@ Note search enables you to find notes by searching for text in the title, conten
 There are multiple types of searches, all using the same search mechanism and query language:
 
 *   <a class="reference-link" href="Quick%20search.md">Quick search</a> which can be found in the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a> for small one-off searches.
-    
     *   The results are shown in a popup and it has an infinite scroll.
 *   _Full search_ is the more advanced search mechanism.
-    
     *   The results are displayed in a separate page and it has multiple advanced features (search script, fast search, include archived notes, order by, limit).
     *   <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a> such as adding a label/relation can be applied to the results.
     *   The results are paginated and they can be displayed in any <a class="reference-link" href="../../Collections.md">Collections</a> view (e.g. grid, list, calendar, table).
 *   Some <a class="reference-link" href="../../Collections.md">Collections</a> such as board view have a dedicated search bar which applies to that collection.
-    
     *   In this case, the results are displayed directly in the collection instead of a popup and they are limited to the collection but the query language remains the same.
 
 > [!NOTE]
@@ -60,12 +57,10 @@ The autocomplete offers:
 *   Fields for object-like fields such as `note` or `~relation`, triggered by typing `.`.
 *   Contextual enumerations such as `note.type = "` or `note.mime = "`.
 *   [Label](../../Advanced%20Usage/Attributes/Labels.md) names by typing `#`.
-    
     *   A small gear on the name's icon indicates a system attribute.
     *   After typing the label name, the value is also autocompleted with values that are present in the database.
 *   [Relation](../../Advanced%20Usage/Attributes/Relations.md) names by typing `~`.
 *   [Note ID](../../Advanced%20Usage/Note%20ID.md)s can be inserted easily by typing `@` and looking for a note.
-    
     *   If the note ID is under a valid syntax, it will be shown as a chip of the note instead of the raw ID.
     *   This is especially useful for queries that make use of the note ID such as searching by template: `~template.noteId = @`
 
@@ -80,7 +75,7 @@ The search is also checked for errors in two phases, which will be displayed as 
 *   Linter errors which identify common error patterns and also provide a way to fix them.
 *   Search errors which are checked by the server, without indicating the exact place the error occurred.
 
-An error the search only runs into while running, such as an operator that note content cannot be searched with, is shown in a _Search error_ card instead: below the search string, or at the top of the <a class="reference-link" href="Quick%20search.md">Quick search</a> results.
+An error the search only runs into while running, such as an operator that note content cannot be searched with, is shown in a _Search error_ card instead: below the search string, or at the top of the <a class="reference-link" href="Quick%20search.md">Quick search</a> results.
 
 ### Multiline
 
@@ -136,6 +131,7 @@ In addition: 
 *   The **total number of results** is always shown, so you can immediately tell how broad a query is.
 *   A **page-size selector** lets you choose how many results to display per page. Your choice is remembered and synced across your devices (stored in the `searchResultsPageSize` option), so you do not have to reset it on every device.
 *   **Clicking a result** opens the note and jumps straight to the first match. The in-note find bar opens pre-filled with the first word of your search, so you can step through its matches with the find controls. To have the find bar look for a whole phrase instead, put the phrase in quotes in the search, e.g. `"The Lord of the Rings"`. In read-only notes, the other words of the search are highlighted as well.
+*   _Open all results in new tabs_ (the button above the results) opens every result in a tab of its own, up to 50. Each tab opens on its first match with the find bar pre-filled, as when clicking a result.
 *   If a match is inside a **collapsed section** (for example a folded heading), that section is expanded automatically so the match is visible.
 
 ## Simple Note Search Examples
@@ -143,7 +139,7 @@ In addition: 
 *   `rings tolkien`: Full-text search to find notes containing both "rings" and "tolkien".
 *   `"The Lord of the Rings" Tolkien`: Full-text search where "The Lord of the Rings" must match exactly.
 *   `note.content *=* rings OR note.content *=* tolkien`: Find notes containing "rings" or "tolkien" in their content.
-*   `towers #book`: Combine full-text and attribute search to find notes containing "towers" and having the "book" label.
+*   `towers #book`: Combine full-text and attribute search to find notes containing "towers" and having the "book" label. Writing `towers AND #book` does the same; to search for the word "and" itself, put it in quotes.
 *   `c#` or `towers#book`: A `#` or `~` inside a word is part of the text, so these find notes containing "c#" or "towers#book". To start a label or relation, put a space before it.
 *   `towers #book or #author`: Search for notes containing "towers" and having either the "book" or "author" label.
 *   `towers #!book`: Search for notes containing "towers" and not having the "book" label.

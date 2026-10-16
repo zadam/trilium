@@ -61,7 +61,7 @@ Here is a brief summary of all the notes within the hidden tree:
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_lbRoot">Launch Bar</a></td>
-            <td><p>The tree contains both available and displayed items of the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>.</p><p>This section can be accessed without going to the hidden tree by:</p><ul><li>Going to the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>&nbsp;and selecting <em>Configure Launchbar</em>.</li><li>Right-clicking an empty space on the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>&nbsp;and selecting <em>Configure Launchbar</em>.</li></ul><p>Sub-notes cannot be created here.</p></td>
+            <td><p>The tree contains both available and displayed items of the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>.</p><p>This section can be accessed without going to the hidden tree by:</p><ul><li>Going to the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>&nbsp;and selecting <em>Configure Launchbar…</em>.</li><li>Right-clicking an empty space on the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>&nbsp;and selecting <em>Configure Launchbar…</em>.</li></ul><p>Sub-notes cannot be created here.</p></td>
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_options">Options</a></td>

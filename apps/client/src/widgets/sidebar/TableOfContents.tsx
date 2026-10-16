@@ -4,6 +4,7 @@ import type { CKTextEditor, ModelElement, ModelNode } from "@triliumnext/ckedito
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
+import { revealElement } from "../../services/collapsible";
 import { t } from "../../services/i18n";
 import { randomString } from "../../services/utils";
 import { useActiveNoteContext, useContentElement, useGetContextData, useIsNoteReadOnly, useMathRendering, useNoteProperty, useTextEditor } from "../react/hooks";
@@ -197,7 +198,7 @@ export function useActiveHeading<T extends RawHeading>({ headings, scrollingCont
             window.clearTimeout(timeoutId);
             scrollingContainer.removeEventListener("scroll", handleScroll);
         };
-        // getHeadingElement must re-subscribe the listener: when the watchdog replaces the editor,
+        // getHeadingElement must re-subscribe the listener: when a rebuild replaces the editor,
         // .scrolling-container is an ancestor of the editor root and stays the same element, so
         // scrollingContainer alone would keep the listener mapping through the destroyed editor.
     }, [scrollingContainer, getHeadingElement]);
@@ -293,7 +294,10 @@ function EditableTextTableOfContents() {
         if (!viewEl) return;
 
         const domEl = textEditor.editing.view.domConverter.mapViewToDom(viewEl);
-        domEl?.scrollIntoView();
+        if (domEl) {
+            revealElement(domEl);
+            domEl.scrollIntoView();
+        }
     }, [ textEditor ]);
 
     return <AbstractTableOfContents
@@ -392,6 +396,7 @@ function ReadOnlyTextTableOfContents() {
     }, [contentEl]);
 
     const scrollToHeading = useCallback((heading: DomHeading) => {
+        revealElement(heading.element);
         heading.element.scrollIntoView();
     }, []);
 

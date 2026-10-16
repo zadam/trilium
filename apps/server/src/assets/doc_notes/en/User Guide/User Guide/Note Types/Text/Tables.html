@@ -9,16 +9,19 @@
 <p>Since v0.107.0, the same menu starts with an <em>Insert table…</em> item,
   for a table larger than the grid or to type its size instead:</p>
 <ol>
-  <li>Click the <span class="tn-icon cke cke-table"></span> button and select <em>Insert table…</em>.
+  <li>Click the <span class="tn-icon cke cke-table"></span>button and select <em>Insert table…</em>.
     A small form opens at the cursor.</li>
-  <li>Enter the number of <em>Rows</em> (up to 1000) and <em>Columns</em> (up to
-    100). The table can have at most 5000 cells in total, for example 1000
+  <li>Enter the number of <em>Columns</em> (up to 100) and <em>Rows</em> (up to
+    1000). The table can have at most 5000 cells in total, for example 1000
     rows of 5 columns.</li>
   <li>Press <em>Insert</em> or <kbd>Enter</kbd>.</li>
 </ol>
 <p>To close the form without inserting a table, press <kbd>Esc</kbd> or click
   outside it. From the keyboard, <kbd>Tab</kbd> moves between <em>Insert table…</em> and
   the grid while the menu is open.</p>
+<p>On the <a class="reference-link" href="#root/_help_RDslemsQ6gCp">Mobile Frontend</a>,
+  the <span class="tn-icon cke cke-table"></span>button opens the form directly,
+  without the grid.</p>
 <h2>Formatting toolbar</h2>
 <p>When a table is selected, a special formatting toolbar will appear:</p>
 <img
@@ -97,7 +100,7 @@ src="3_Tables_image.png" width="384" height="100">
     removed.</li>
   <li>Since v0.107.0, <em>Select</em>, below <em>Delete table</em>, selects the
     cells of every row (<em>Row</em>) or column (<em>Column</em>) the selection
-    touches, or every cell of the table (<em>Table</em>). Unlike the <span class="tn-icon cke cke-drag-handle"></span> button,
+    touches, or every cell of the table (<em>Table</em>). Unlike the <span class="tn-icon cke cke-drag-handle"></span>button,
     which selects the table as a whole, <em>Table</em> selects its cells, so
     cell operations such as <em>Merge cells</em> apply to all of them. In a table
     nested inside another, <em>Table</em> selects only the cells of the inner
@@ -122,7 +125,7 @@ src="3_Tables_image.png" width="384" height="100">
       <li>Click on a cell to focus it.</li>
       <li>Click the&nbsp;<span class="tn-icon cke cke-return-arrow"></span> button
         at the top or the bottom of a table to insert an empty paragraph near it.</li>
-      <li>Click the&nbsp;<span style="color:hsl(0,0%,60%);"><span class="tn-icon cke cke-drag-handle"></span></span>button
+      <li>Click the&nbsp;<span style="--tn-color:hsl(0,0%,60%);color:hsl(0,0%,60%);"><span class="tn-icon cke cke-drag-handle"></span></span>button
         at the top-left of the table to select it entirely (for easy copy-pasting
         or cutting) or drag and drop it to relocate the table.</li>
     </ul>
@@ -137,19 +140,94 @@ src="3_Tables_image.png" width="384" height="100">
       <li>To select multiple cells, hold <kbd>Shift</kbd> while using the arrow keys.</li>
     </ul>
   </li>
+  <li>Using touch:
+    <ul>
+      <li>Since v0.107.0, touching a table outlines the cell with the cursor, or
+        the selected cells, and shows a handle at each corner of the outline.</li>
+      <li>To select multiple cells, drag one of the handles across the table. The
+        cell at the opposite corner stays selected, so the selection grows or shrinks
+        as the finger moves. The note and wide tables scroll when the handle reaches
+        the edge of the screen.</li>
+    </ul>
+  </li>
 </ul>
 <h2>Resizing cells</h2>
 <ul>
   <li>Columns can be resized by hovering the mouse over the border of two adjacent
     cells and dragging it.</li>
   <li>To give several columns the same width, select cells across them and choose <em>Distribute columns evenly</em> from
-    the <span class="tn-icon cke cke-table-column"></span> button of the formatting
+    the <span class="tn-icon cke cke-table-column"></span>button of the formatting
     toolbar or from the <a href="#context-menu">context menu</a>.</li>
   <li>By default, the row height is not adjustable using the mouse, but it can
     be configured from the cell settings (see below).</li>
   <li>To adjust exactly the width (in pixels or percentages) of a cell, select
     the&nbsp;<span class="tn-icon cke cke-table-cell-properties"></span> button.</li>
 </ul>
+<h3>Resizing with touch</h3>
+<p>Since v0.107.0, touching a table shows a bar at the bottom of the note,
+  above the formatting toolbar on mobile. The bar has a segment for each
+  column of the table, with a divider at the end of each column. Only the
+  divider of the column with the cursor is a handle that resizes; the other
+  dividers only mark where the columns meet, so a swipe across them scrolls
+  instead. When several cells are selected, each column they cover has a
+  handle.</p>
+<ul>
+  <li>To resize a column, place the cursor in one of its cells or tap its segment,
+    then drag its handle. The table grows or shrinks with the column, and scrolls
+    when the handle reaches the edge of the screen. The column snaps to its
+    starting width and to the widths of the columns beside it.</li>
+  <li>To cancel a resize, drag the handle back to where it started, or touch
+    the screen with a second finger.</li>
+  <li>To give a column and the next one the same width, double-tap the handle
+    between them.</li>
+  <li>To select a column, tap its segment. To open the column menu, touch and
+    hold the segment.</li>
+  <li>To scroll a wide table sideways, swipe along the bar.</li>
+</ul>
+<p>A wide table scrolls a little past its end, so the handle of its last
+  column stays away from the edge of the screen, where a swipe navigates
+  back.</p>
+<h2>Wide tables</h2>
+<p>Since v0.107.0, a table can be wider than the&nbsp;<a class="reference-link"
+  href="#root/_help_t596jLvPrqkS">Content width</a>. Such a table scrolls
+  sideways, while the rest of the note keeps its width.</p>
+<ul>
+  <li>A new table is as wide as the content. To make it wider, drag the right
+    border of its last column past the edge of the content. The border snaps
+    to the edge and holds there briefly, so the table is easy to bring back
+    to the width of the content.</li>
+  <li>To set an exact width, enter a percentage above <code>100%</code> or a width
+    in pixels in the&nbsp;<span class="tn-icon cke cke-table-properties"></span>  <a
+    href="#table-properties">table properties</a>.</li>
+  <li>A table whose content needs more room than the note, such as a pasted
+    table with many columns, also scrolls instead of stretching the note.</li>
+  <li>Wide tables scroll the same way in read-only notes and on shared pages.</li>
+  <li>When printing or exporting to PDF, a wide table is shrunk to fit the page.</li>
+</ul>
+<p>Tables inside other blocks, such as block quotes, admonitions, collapsible
+  blocks, columns or tabs, are limited to the width of their block and do
+  not scroll.</p>
+<h3>Mobile support</h3>
+<p>On the&nbsp;<a class="reference-link" href="#root/_help_RDslemsQ6gCp">Mobile Frontend</a>,
+  a table keeps the width it has on a desktop and scrolls sideways, instead
+  of squeezing its columns into the width of the screen. The full width of
+  a table is the <em>Max content width</em> set in&nbsp;<a class="reference-link"
+  href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Appearance</em> → <em>Content Width</em> on
+  the mobile device, 1200 pixels by default. For example, a table set to <code>50%</code> is
+  600 pixels wide.</p>
+<p>To resize columns on mobile, use the bar described in <a href="#resizing-with-touch">Resizing with touch</a>.</p>
+<h2>Long tables</h2>
+<p>Since v0.107.0, the header rows of a table stay visible at the top of
+  the note while you scroll through the rest of the table, and leave with
+  the end of the table. This also works in read-only notes, on shared pages
+  and in wide tables.</p>
+<p>To turn rows into header rows, use <em>Set as header</em> in the <a href="#context-menu">context menu</a>,
+  or <em>Header row</em> in the <span class="tn-icon cke cke-table-row"></span> button
+  of the formatting toolbar.</p>
+<p>To let header rows scroll away with the rest of the table, turn off <a
+  class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Text Notes</em> → <em>Features</em> → <em>Use sticky header rows for tables</em>.
+  The setting applies to the current device only, and shared pages keep their
+  sticky header rows.</p>
 <h2>Inserting new rows and new columns</h2>
 <ul>
   <li>To insert a new column, click on a desired location, then press the&nbsp;<span
@@ -190,7 +268,7 @@ src="3_Tables_image.png" width="384" height="100">
   <li>To sort all the rows, place the cursor in any cell of the column to sort
     by, then select <em>Sort</em> → <em>Ascending</em> or <em>Descending</em> from
     the <a href="#context-menu">context menu</a>. The same items are in the <span
-    class="tn-icon bx bx-sort-alt-2"></span> button of the formatting toolbar.</li>
+    class="tn-icon bx bx-sort-alt-2"></span>button of the formatting toolbar.</li>
   <li>To sort only some of the rows, select their cells in the column to sort
     by, then sort the same way. Sorting is not available while the selection
     spans more than one column.</li>
@@ -250,7 +328,7 @@ src="3_Tables_image.png" width="384" height="100">
 <ul>
   <li>Dates are also recognized in the formats of the note's language, such
     as <code>30.09.2026</code> or <code>30. September 2026</code> for German, and
-    in the format chosen in <a class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Text Notes</em> → <em>Editor</em> → <em>Date/time format</em> for <a
+    in the format chosen in&nbsp;<a class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a>&nbsp;→ <em>Text Notes</em> → <em>Editor</em> → <em>Date/time format</em> for <a
     href="#root/_help_CohkqWQC1iBv">inserting the date and time</a>.</li>
   <li>A number can start with a currency symbol, such as <code>$</code>, <code>€</code> or <code>£</code>.
     Whatever follows the number, such as a unit, is ignored, so units are not
@@ -260,8 +338,9 @@ src="3_Tables_image.png" width="384" height="100">
     one and a half in English, but one thousand five hundred in German. A comma
     or period that is not followed by exactly three digits is always read as
     a decimal separator, so <code>1,5</code> is one and a half in either language.</li>
-  <li>The language of the note is the one set in its Basic Properties, or else
-    the default content language. See&nbsp;<a class="reference-link" href="#root/_help_veGu4faJErEM">Content language &amp; Right-to-left support</a>.</li>
+  <li>The language of the note set in the&nbsp;<a class="reference-link" href="#root/_help_AlJ73vBCjWDw">Status bar</a>&nbsp;via
+    the&nbsp;<span class="tn-icon bx bx-globe"></span> icon, or else the default
+    content language. See&nbsp;<a class="reference-link" href="#root/_help_veGu4faJErEM">Content language &amp; Right-to-left support</a>.</li>
 </ul>
 <h3>Merged cells</h3>
 <p>Rows joined by a merged cell are kept together and move as one block.
@@ -398,7 +477,7 @@ src="3_Tables_image.png" width="384" height="100">
 <p>Since v0.104.1, tables can be indented as a block (the whole table moves,
   rather than just the content of a cell).</p>
 <ol>
-  <li>Click the&nbsp;<span style="color:hsl(0,0%,60%);"><span class="tn-icon cke cke-drag-handle"></span></span>button
+  <li>Click the&nbsp;<span style="--tn-color:hsl(0,0%,60%);color:hsl(0,0%,60%);"><span class="tn-icon cke cke-drag-handle"></span></span>button
     to select the entire table. Otherwise, the indentation applies only to
     the current cell's content.</li>
   <li>Press <kbd>Tab</kbd> to increase the indent, or <kbd>Shift</kbd>+<kbd>Tab</kbd> to

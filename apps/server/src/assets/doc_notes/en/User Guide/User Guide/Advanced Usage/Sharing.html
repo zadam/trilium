@@ -9,13 +9,35 @@ class="image">
 <h2>Features, interaction and limitations</h2>
 <ul>
   <li>Searching by note title.</li>
-  <li>Automatic dark/light mode based on the user's browser settings.</li>
-  <li>Mobile-friendly layout, with sidebar.</li>
-  <li>Collapsible tree with the same note icons as the application.</li>
+  <li>Light and dark mode, following the visitor's system setting by default,
+    also while the page is open. The visitor can pick <em>Light</em>, <em>Dark</em> or <em>System</em> with
+    the buttons at the top of the navigation pane; the choice is remembered
+    by the browser.</li>
+  <li>A layout centered on wide screens, with the navigation tree and the table
+    of contents at either side of the content, and a mobile-friendly layout
+    on narrow ones. There, the navigation tree slides in from the menu button
+    in the header, and lists the headings of the current page below its entry
+    (at the top of the pane, for a page the tree does not show).</li>
+  <li>Collapsible tree with the same note icons as the application. It keeps
+    the sections the visitor expanded and its scroll position while they move
+    between the pages of the site, and shows the current note.</li>
   <li>Customizable logo.</li>
-  <li>Toggle button for dark/light mode, which also stores the user preferences.</li>
   <li>Quick navigation buttons (previous and next note).</li>
-  <li>Displaying the date of the last update of the note.</li>
+  <li>Notes that hide their children from the tree with <code>#subtreeHidden</code> (such
+    as a <a class="reference-link" href="#root/_help_CtBQqbwXDx1w">Kanban Board</a>)
+    show a badge counting them in place of listing them. The page of one of
+    those children shows only that child below its parent, and the previous
+    and next buttons skip them.</li>
+  <li>The subpages of a text or code note shown below its content as cards,
+    as in the application. Each card shows the icon of the subpage and the
+    start of its text (or its <code>#shareDescription</code>), or, for a subpage
+    without text, links to its own first subpages. The cards can be hidden
+    with <code>#hideChildrenOverview</code>.</li>
+  <li>Displaying the date of the last update of the note, written out in the
+    application's language.</li>
+  <li>Marking the page with the application's language and its text direction,
+    and the content of the note with its own <a href="#root/_help_veGu4faJErEM">content language</a>,
+    for screen readers and right-to-left text.</li>
 </ul>
 <h3>By note type</h3>
 <figure class="table">
@@ -39,20 +61,23 @@ class="image">
         <td>
           <ul>
             <li>Table of contents.</li>
-            <li>Syntax highlight of code blocks, in the language selected for each block.
-              For “Auto-detected” blocks, the language is guessed among the ones enabled
-              in <a class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Code Notes</em>;
+            <li>A link next to each heading, shown while the pointer is over the heading.
+              Clicking it shows the address of the section in the address bar of the
+              browser and copies it, to share a link to the section.</li>
+            <li>Syntax highlight of code blocks, in the language selected for each block
+              and in the colors of the VS Code light or dark theme, following the page's
+              mode. For “Auto-detected” blocks, the language is guessed among the ones
+              enabled in <a class="reference-link" href="#root/_help_4TIF1oA4VQRO">Options</a> → <em>Code Notes</em>;
               a language not enabled there is not highlighted.</li>
             <li>Rendering for math equations.</li>
             <li><a href="#root/_help_nBAXQFj20hS1">Including notes</a> (only if the included
               notes are also shared).</li>
+            <li>Drawing canvases, shown as pictures at their own size.</li>
+            <li>Mermaid diagrams in code blocks, drawn in the page's light or dark mode
+              and redrawn when the visitor switches it.</li>
           </ul>
         </td>
-        <td>
-          <ul>
-            <li>Inline Mermaid diagrams are not rendered.</li>
-          </ul>
-        </td>
+        <td>&nbsp;</td>
       </tr>
       <tr>
         <th><a class="reference-link" href="#root/_help_6f9hih2hXXZk">Code</a>
@@ -97,12 +122,16 @@ class="image">
         </th>
         <td>
           <ul>
-            <li>The child notes are displayed in a fixed format.&nbsp;</li>
+            <li>The child notes are shown as cards, or as a list when the view type of
+              the collection is <em>List</em>. Each shows its icon and the start of its
+              text (or its <code>#shareDescription</code>), or, for a child note without
+              text, links to its own first child notes.</li>
           </ul>
         </td>
         <td>
           <ul>
-            <li>More advanced view types such as the calendar view are not supported.</li>
+            <li>The calendar, table, board, geo map, dashboard and presentation view types
+              are shown as in the app, but read-only.</li>
           </ul>
         </td>
       </tr>
@@ -111,14 +140,19 @@ class="image">
         </th>
         <td>
           <ul>
-            <li>The diagram is displayed as a vector image.</li>
+            <li>The diagram is drawn in the page's light or dark mode and redrawn when
+              the visitor switches it. In browsers with JavaScript disabled, the image
+              saved when the note was last edited is shown instead, and the source of
+              the diagram can be expanded below it.</li>
+            <li>The diagram fills the page and can be zoomed with the <span class="tn-icon bx bx-minus-circle"></span> and <span
+              class="tn-icon bx bx-plus-circle"></span> buttons in its bottom corner
+              or with the mouse wheel, between 50% and 1000% of its fitted size, and
+              on touch screens by pinching. Clicking the percentage between the buttons,
+              or double-clicking the diagram, shows it whole again. The diagram can be
+              panned by dragging it.</li>
           </ul>
         </td>
-        <td>
-          <ul>
-            <li>No further interaction supported.</li>
-          </ul>
-        </td>
+        <td>&nbsp;</td>
       </tr>
       <tr>
         <th><a class="reference-link" href="#root/_help_grjYqerjn243">Canvas</a>
@@ -286,7 +320,8 @@ for (const attr of parentNote.attributes) {
 <p>Shared notes typically have URLs like <code>http://domain.tld/share/knvU8aJy4dJ7</code>,
   where the last part is the note's ID. You can make these URLs more user-friendly
   by adding the <code>#shareAlias</code> label to individual notes (e.g., <code>#shareAlias=highlighting</code>).
-  This will change the URL to <code>http://domain.tld/share/highlighting</code>.</p>
+  This will change the URL to <code>http://domain.tld/share/highlighting</code>.
+  The URL with the note's ID keeps working and redirects to the alias.</p>
 <p><strong>Important</strong>:</p>
 <ol>
   <li>Ensure that aliases are unique.</li>
@@ -327,9 +362,11 @@ for (const attr of parentNote.attributes) {
   target URL as its value (e.g. <code>#shareExternalLink="https://example.com"</code>).</p>
 <p>Any link pointing to this note will then redirect to the external website
   and open in a new browser tab, instead of opening the note's own shared
-  page. This applies to:</p>
+  page. Opening the note's shared URL by its ID also redirects to the external
+  website. This applies to:</p>
 <ul>
   <li>the listing produced by the <code>#shareIndex</code> label;</li>
+  <li>the navigation tree of the shared site;</li>
   <li>the "Subpages" list shown under a parent note;</li>
   <li>inline links to this note from within other shared notes.</li>
 </ul>
@@ -356,8 +393,9 @@ class="admonition note">
       <tr>
         <td><code>#shareHiddenFromTree</code>
         </td>
-        <td>this note is hidden from the left navigation tree and from its parent's
-          list of subpages, but still accessible with its URL</td>
+        <td>this note is hidden from the left navigation tree, from its parent's list
+          of subpages, from shared note maps and from the share's search, but still
+          accessible with its URL</td>
       </tr>
       <tr>
         <td><code>#shareExternalLink</code>
@@ -387,7 +425,9 @@ class="admonition note">
       <tr>
         <td><code>#shareDescription</code>
         </td>
-        <td>define text to be added to the HTML meta tag for description</td>
+        <td>define text to be added to the HTML meta tag for description. It also
+          describes the note in the list of subpages of its parent, in place of the
+          start of its text.</td>
       </tr>
       <tr>
         <td><code>#shareRaw</code>
@@ -432,8 +472,8 @@ class="admonition note">
   </table>
 </figure>
 <h3>Customizing logo</h3>
-<p>It's possible to adjust the logo which is displayed on the top-left of
-  the left pane.</p>
+<p>It's possible to adjust the logo which is displayed above the navigation
+  tree (in the header, on a narrow screen).</p>
 <figure class="table">
   <table>
     <thead>
@@ -447,17 +487,21 @@ class="admonition note">
         <td><code>~shareLogo</code>
         </td>
         <td>Relation set to an image to use as logo. The image must be part of the
-          share tree (it can be hidden if needed).</td>
+          share tree (it can be hidden if needed). Without it, the logo is the icon
+          of the shared root note.</td>
       </tr>
       <tr>
         <td><code>#shareLogoWidth</code>
         </td>
-        <td>The width (in pixels, without unit) to set for the logo. Default is <code>53</code>.</td>
+        <td>The width of the logo, as a number without unit. With <code>#shareLogoHeight</code>,
+          it sets the proportions of the logo, which is shown 32 pixels wide. Default
+          is <code>53</code>.</td>
       </tr>
       <tr>
         <td><code>#shareLogoHeight</code>
         </td>
-        <td>The height (in pixels, without unit) to set for the logo. Default is <code>40</code>.</td>
+        <td>The height of the logo, as a number without unit. With <code>#shareLogoWidth</code>,
+          it sets the proportions of the logo. Default is <code>40</code>.</td>
       </tr>
       <tr>
         <td><code>#shareRootLink</code>
@@ -468,6 +512,8 @@ class="admonition note">
   </table>
 </figure>
 <h3>Customizing OpenGraph</h3>
+<p>A meta-property is left out of the page when its attribute is not set.
+  Without an image, link previews use a small card.</p>
 <figure class="table">
   <table>
     <thead>
@@ -485,7 +531,9 @@ class="admonition note">
       <tr>
         <td><code>#shareOpenGraphURL</code>
         </td>
-        <td>This adjusts the <code>og:url</code> and <code>twitter:url</code> meta-properties.</td>
+        <td>This adjusts the <code>og:url</code> and <code>twitter:url</code> meta-properties.
+          It is also the address a relative <code>og:image</code> is completed with,
+          so it should be the public address of the shared site, such as <code>https://example.com/share/</code>.</td>
       </tr>
       <tr>
         <td><code>#shareOpenGraphDomain</code>
@@ -496,9 +544,12 @@ class="admonition note">
         <td><code>#shareOpenGraphImage</code>&nbsp;
           <br><code>~shareOpenGraphImage</code>
         </td>
-        <td>Can be either a label, case in which the value is passed on as-is, or
-          it can be a relation to an image&nbsp;<a class="reference-link" href="#root/_help_W8vYD3Q1zjCR">File</a>.
-          This controls the <code>og:image</code> meta-property.</td>
+        <td>Can be either a label with the address of an image, or a relation to an
+          image&nbsp;<a class="reference-link" href="#root/_help_W8vYD3Q1zjCR">File</a>.
+          This controls the <code>og:image</code> meta-property. Sites that show a
+          preview of the link load the image from their own servers, so a relative
+          address, which the relation always gives, is completed with <code>#shareOpenGraphURL</code>;
+          without it, the image does not show in such previews.</td>
       </tr>
     </tbody>
   </table>

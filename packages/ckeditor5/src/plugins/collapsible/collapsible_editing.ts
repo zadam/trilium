@@ -396,10 +396,10 @@ export default class CollapsibleEditing extends Plugin {
         writer.insert(writer.createPositionAt(summary, 0), handle);
         // "Title" placeholder shown while the summary is empty. UIElements like the
         // arrow above don't count as content for placeholder purposes.
+        summary.placeholder = t("Summary");
         enableViewPlaceholder({
             view: this.editor.editing.view,
             element: summary,
-            text: t("Summary"),
             keepOnFocus: true
         });
         return summary;
@@ -554,10 +554,10 @@ export default class CollapsibleEditing extends Plugin {
                 const view = conversionApi.mapper.toViewElement(paragraph);
                 /* v8 ignore next -- the mapper always resolves a rendered model element */
                 if (!view || this.bodyPlaceholdersApplied.has(view)) return;
+                view.placeholder = t("Type the content here...");
                 enableViewPlaceholder({
                     view: editor.editing.view,
                     element: view,
-                    text: t("Type the content here..."),
                     keepOnFocus: true
                 });
                 this.bodyPlaceholdersApplied.add(view);

@@ -137,13 +137,23 @@ skeletons per page kind are [references/page-templates.md](references/page-templ
 5. Other pages by title as a pill, preceded by a non-breaking space:
    `&nbsp;<a class="reference-link" href="../Rel/Path%20Name.md">Path Name</a>` (text = target title).
    Inline phrases as `[phrase](../Rel/Path.md)`. Issues go to "[report the issue](…/Troubleshooting/Reporting%20issues.md)".
-6. UI labels and menu items in _italics_; paths with `→`: `<Options pill> → _Appearance_ → _Fonts_`.
-   Settings by their UI path, never by option key.
+   **A part of the app's chrome that has a page under _UI Elements_ is always a pill** — Note menu,
+   Note Tree, Launch Bar, Options, Global menu, Right Sidebar, Status bar… — never `**Note menu**`
+   or plain text, on every mention, including the first segment of a menu path. `check` warns on
+   the bold form and prints the pill to paste.
+6. UI labels and menu items in _italics_; paths with `→`: `<Options pill> → _Appearance_ → _Fonts_`,
+   `<Note menu pill> → _Board properties_`. Settings by their UI path, never by option key.
 7. Keys: `<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>`, no spaces. Labels/relations in backticks with
    prefix: `` `#board:groupBy` ``, `` `~template` ``. Files, values, env vars, syntax in backticks.
 8. A button is shown by its icon: `<span class="tn-icon cke cke-<name>"></span>` for a text-editor
    toolbar button, `<span class="tn-icon bx bx-<name>"></span>` for the rest of the app, followed by
    "button"/"icon"/"menu". Never a cropped screenshot of a button. `icons` finds the class.
+   **A toolbar button with no `cke` class means the font is stale**, not that the icon is missing:
+   the `cke` pack is built from the editor's SVGs and is not rebuilt with them. Run
+   `pnpm --filter @triliumnext/icon-pack-builder start cke` and commit both outputs,
+   `apps/client/src/fonts/text-editor-icons.woff2` and
+   `packages/trilium-core/src/services/icon_pack_text_editor.json`. `icons` and `check` both flag
+   a Trilium SVG the font lacks. A Trilium SVG `src/icons/foo.svg` becomes `cke-trilium-foo`.
 9. Callouts: `> [!NOTE]` context/history · `> [!TIP]` a better way · `> [!IMPORTANT]` beta status,
    requirement, third-party disclaimer · `> [!WARNING]` data/security risk or a version-gated break.
 10. Version facts: "Since v0.104.0, …", "Starting with v0.104.0, …", "Versions prior to v0.103.0 …".
@@ -172,6 +182,7 @@ rediscovers them. Fix what you pass by; none blocks a change:
   affordances; wire a new page through them.
 - **working-with-translations** — the English strings `impact --diff` reads come from those catalogues.
 - **ckeditor5-plugin-development** — the `cke` icon pack: an editor icon added, renamed or removed
-  means regenerating the font and grepping the docs for the old `cke-<name>` class.
+  means regenerating the font (rule 8 has the command) and grepping the docs for the old
+  `cke-<name>` class.
 - [references/pipeline.md](references/pipeline.md) — how the trees, the meta files, the in-app help and
   the docs site are produced and consumed, and which identifiers are load-bearing.

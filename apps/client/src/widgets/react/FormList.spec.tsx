@@ -17,7 +17,7 @@ vi.mock("../../services/keyboard_actions", () => ({
     getActionSync: () => ({ effectiveShortcuts: [ "CommandOrControl+Q" ] })
 }));
 
-import FormList, { focusListItem, FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem, FormListToggleableItem } from "./FormList";
+import FormList, { focusListItem, FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem, FormListToggleableItem, menuItemTooltipSide } from "./FormList";
 
 describe("FormDropdownDivider", () => {
     it("draws a separator among the rows, whose click closes no menu", () => {
@@ -401,3 +401,33 @@ function press(el: Element, key: string) {
     el.dispatchEvent(event);
     return event;
 }
+
+describe("menuItemTooltipSide", () => {
+    /** A row spanning `left`–`right` and a tooltip of `width`, which must not sway the side. */
+    function sideFor(left: number, right: number, width: number) {
+        const row = document.createElement("li");
+        row.getBoundingClientRect = () => ({ left, right } as DOMRect);
+        const tip = document.createElement("div");
+        tip.style.width = `${width}px`;
+        return menuItemTooltipSide(undefined, tip, row);
+    }
+
+    it("keeps every row of a menu on one side, whatever its tooltip's width", () => {
+        const { innerWidth } = window;
+        window.innerWidth = 1000;
+        try {
+            window.glob.isRtl = false;
+            // Room for the widest tooltip on the right.
+            expect([ 40, 400 ].map((width) => sideFor(500, 780, width))).toStrictEqual([ "right", "right" ]);
+            // Not enough of it: both go left, the narrow one included.
+            expect([ 40, 400 ].map((width) => sideFor(600, 900, width))).toStrictEqual([ "left", "left" ]);
+
+            window.glob.isRtl = true;
+            expect(sideFor(300, 600, 40)).toBe("left");
+            expect(sideFor(100, 400, 40)).toBe("right");
+        } finally {
+            window.glob.isRtl = false;
+            window.innerWidth = innerWidth;
+        }
+    });
+});

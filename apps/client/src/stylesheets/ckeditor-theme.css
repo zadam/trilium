@@ -120,6 +120,7 @@ div.ck.ck-dialog {
     --ck-border-radius: var(--bs-border-radius);
 
     --ck-focus-ring: 1px solid var(--input-focus-outline-color, var(--main-border-color));
+    --ck-button-focus-border-color: var(--input-focus-outline-color, var(--main-border-color));
     --ck-color-focus-border: var(--input-focus-outline-color, var(--main-border-color));
     --ck-focus-outer-shadow: none;
     --ck-focus-disabled-outer-shadow: none;
@@ -172,6 +173,10 @@ div.ck.ck-dialog .ck.ck-form__header > .ck.ck-button:focus-visible {
 div.ck.ck-dropdown__panel,
 div.ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
     --ck-font-size-base: 0.9rem;
+    --ck-button-font-size: var(--ck-font-size-base);
+    --ck-input-font-size: var(--ck-font-size-base);
+    --ck-labeled-field-label-font-size: var(--ck-font-size-base);
+    --ck-toolbar-text-font-size: var(--ck-font-size-base);
     --ck-line-height-base: 1.3;
     --ck-dropdown-item-height: 27px;
 }
@@ -188,4 +193,16 @@ div.ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
 
 div.ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
     overflow-x: clip;
+}
+
+:root .ck.ck-editor__editable_inline {
+    --ck-editor-editable-padding: 0 .6em;
+
+    & > :first-child {
+        margin-top: .9em;
+    }
+
+    & > :last-child {
+        margin-bottom: .9em;
+    }
 }

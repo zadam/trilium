@@ -71,6 +71,12 @@ Buttons and links:
 - `Button` — the general button (also carries the tooltip for a *disabled* control via a wrapper, since a disabled `<button>` emits no pointer events). `ActionButton` — icon button with consistent styling. `SplitButton` — a button with its related actions in a `Dropdown` menu on a toggle beside it; its rows are `FormListItem`s.
 - `HelpButton`, `HelpTooltipButton`, `HelpDropdown` — open in-app help pages; don't invent a new "?" affordance.
 - A menu row's shortcut is `FormListItem`'s `keyboardShortcut` (an action's configured keys) or `shortcut` (literal text); never put keycaps into its label by hand.
+- **Everything at a menu row's trailing edge is a `FormListItem` prop, never a child.** Children render inside the row's label, not in the row's flex layout, so an `Icon` or badge placed there sits right after the text, and `margin-inline-start: auto` can't push it to the edge. Use:
+  - `checked` for the current choice: a trailing check when the row has an icon of its own, and in place of the icon when it has none; add `checkable` so a menu announces it as a checkbox row;
+  - `trailingIcon` for any other end-of-row icon;
+  - `keyboardShortcut` / `shortcut` for keys.
+
+  The template dropdown once hand-placed a `bx-check` in its rows and it landed mid-row; specs find the real mark as `.menu-trailing-icon`.
 
 **Never hand-roll `<a className="tn-link">`.** Which link component to reach for depends on what the link *is*:
 
@@ -89,9 +95,9 @@ Display and layout:
 
 - `NoItems` — empty state placeholder with icon and message ("no results", "too many items", error states).
 - `Badge` — colored pill/label with optional icon, tooltip and `onClick` (counts, status flags). Set its color through the `--color` CSS variable on a wrapper class, not inline styles; pass `outline` for a colored-border/transparent-fill variant. `BadgeWithDropdown` pairs a badge with a dropdown menu. Don't hand-roll pill/badge markup.
-- `Chip` — one entry of a set, with a remove button.
+- `Chip` — one entry of a set, with a remove button. `NoteChips` — a set of notes as chips (icon and title, linking to the note), the first five then "+N more" revealing a page of 100 at a time; read-only unless given `onRemove`. Use it wherever a dialog shows "these notes" (the bulk actions and delete dialogs do) rather than a list of `NoteLink`s.
 - `Alert`, `InfoBar`, `Admonition`, `ContentErrorMessage`, `RenderErrorCard` — inline notices and error surfaces of increasing weight.
-- `Card` — a titled group of sections (filter-aware under `FilterProvider`). `Collapsible` — animated, theme-styled expandable section with self-managed `initiallyExpanded`; `ExternallyControlledCollapsible` is the controlled variant (caller owns `expanded`/`setExpanded`).
+- `Card` — a titled group of sections (filter-aware under `FilterProvider`). **Anything that scrolls inside a card** (a list, a set of chips, a log, a table with a `max-height`) goes in a `CardSection noPadding`, with the card's padding moved onto the scrolling element itself: `padding: var(--card-padding-block) var(--card-padding-inline)`. In a padded section the scroller stops short of the card's border, so scrolled content is cut off along an inset edge with an empty strip of padding between the cut and the border. `NoteChips` (`.tn-card-section.tn-no-padding > .note-chips`) is the worked example. `Collapsible` — animated, theme-styled expandable section with self-managed `initiallyExpanded`; `ExternallyControlledCollapsible` is the controlled variant (caller owns `expanded`/`setExpanded`).
 - `TabStrip` — a row of icon-only tabs named by tooltips, heading a panel divided into groups.
 - `Modal`, `WizardModal` — dialogs; `Popover` — a card anchored beside something, with an arrow pointing at it, as the calendar's event card (portaled to the body and placed by `placeFloating()`, so no scroll container clips it).
 - `LoadingSpinner`, `LazyComponent`, `Icon`, `MaskedIcon`, `NoteList`, `SiblingNavigator`, `ImageViewer`, `CodeBlock`, `charts/DonutChart`, `charts/Treemap`.
@@ -123,6 +129,13 @@ Rules for both:
 - **A bottom sheet is only ever `mobileBottomSheet`.** Never put `mobile-bottom-menu` in `dropdownContainerClassName`: the stylesheet then pins the popup to the bottom while Floating UI still places it beside its toggle, and Floating UI's inline `max-height` caps the sheet to the room the toggle had. `mobileBottomSheet` also dims the page, so it needs no `mobileBackdrop`.
 - **`dropdownRef` holds a `DropdownHandle`** (`show`, `hide`, `toggle`), exported from `Dropdown.tsx`. Type the ref with it, never with Bootstrap's `Dropdown`, which compiles but promises methods the handle doesn't have.
 - **Submenus**: `FormDropdownSubmenu` opens a submenu only inside a `Dropdown` menu (elsewhere, its title is rendered as a header above its rows). Which side a submenu opens on, and which way its row's arrow points, is detected from the room around the menu; there is no prop for it.
+- **A menu item that needs more input before it completes ends in "..."**. This follows the Windows convention, where a confirmation counts as more input. The rule covers `FormListItem`, `CommandItem` and `contextMenu.show()` items alike. Add the "..." when the item opens:
+  - a dialog with options (Export..., Board properties...)
+  - a prompt or popover that asks for a value (Rename attachment..., Edit column...)
+  - a file or app chooser (Upload new revision..., Open custom...)
+  - a confirm (Delete note..., Reset..., Convert to attachment...)
+
+  An item that acts at once, toggles, navigates, opens a note or tab, opens a submenu, or opens a dialog that only displays information (Recent changes, Note Info, About) has no "...". Write three periods, which most catalogue keys use. The "..." belongs in the English string, before any `<kbd>` in it (`"Delete... <kbd data-command=\"deleteNotes\"></kbd>"`). When the dialog's title or a heading shows the same words, give that use its own key without the "..." (`board_view.properties` / `board_view.properties-title`).
 - **Style a popup by its own classes.** It lives in `<body>`, inside a `.tn-dropdown-portal` wrapper that carries the dropdown's `className`, so a rule scoped under the toggle's ancestors (`.status-bar .dropdown-menu`) never matches it. Use `dropdownContainerClassName` with top-level rules. Its z-index (1200, over dialogs) is set in `Popup.css`; `--bs-dropdown-zindex` doesn't reach it.
 
 Other floating surfaces:
@@ -240,6 +253,7 @@ use parameter defaults.
 - **Dialog registered but not wired** — no `<LazyDialog triggerEvents={…}>` in `applyModals()`, so the summon event has no listener and nothing happens.
 - **Modal can't reopen** — a missing/empty `onHidden`, or a dynamic `className` fighting Bootstrap's `fade`/`show`.
 - **Bootstrap utility classes or inline static styles on `Form*` components** — use the sibling per-component `.css` scoped under a root class.
+- **A scroller inside a padded `CardSection`** — scrolled content is clipped short of the card's border. Use `noPadding` on the section and put `--card-padding-block`/`--card-padding-inline` on the scrolling element (see `Card` in the catalogue).
 - **Hand-rolled overlay buttons** — `tn-overlay-*` classes at a call site instead of `OverlayControlGroup` / `OverlayControlButton`.
 - **Copying the jQuery lifecycle** (`doRenderBody` / `refreshWithNote` / `this.$widget`) into new `.tsx` — use `useLegacyWidget` only to embed an existing widget.
 - **A `useEffect` cleanup that must run during the unmount** — it runs after paint; reporting to a host or reading a child instance belongs in a `useLayoutEffect` cleanup (see "Preact 11 conventions").
