@@ -90,7 +90,9 @@
   "bulk_actions": {
     "bulk_actions": "Масові дії",
     "chosen_actions": "Обрані дії",
-    "execute_bulk_actions": "Виконання масових дій",
+    "execute_bulk_actions_one": "Виконання масових дій",
+    "execute_bulk_actions_few": "",
+    "execute_bulk_actions_many": "",
     "bulk_actions_executed": "Масові дії успішно виконано.",
     "none_yet": "Поки що немає... додайте дію, натиснувши одну з доступних вище.",
     "include_descendants": "Включити нащадків вибраних нотаток",
