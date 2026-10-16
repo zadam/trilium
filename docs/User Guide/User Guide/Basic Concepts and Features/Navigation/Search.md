@@ -27,7 +27,7 @@ There are multiple types of searches, all using the same search mechanism and qu
 
 ## Interaction
 
-To search for notes, click on the <span class="tn-icon bx bx-search"></span> icon in the Launch Bar or press the keyboard [shortcut](../Keyboard%20Shortcuts.md).
+To search for notes, click on the <span class="tn-icon bx bx-search"></span> icon in the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a> or press the keyboard [shortcut](../Keyboard%20Shortcuts.md).
 
 1.  Set the text to search for in the _Search string_ field.
     1.  Apart from searching for words literally, there is also the possibility to search for attributes or properties of notes.
