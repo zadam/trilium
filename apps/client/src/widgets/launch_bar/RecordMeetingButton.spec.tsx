@@ -51,7 +51,8 @@ vi.mock("./launch_bar_widgets", () => ({
     LaunchBarActionButton: ({ icon, text, disabled, onClick }: {
         icon: string; text: string; disabled?: boolean; onClick: () => void;
     }) => <button className={icon} disabled={disabled} onClick={onClick}>{text}</button>,
-    useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" })
+    useLauncherIconAndTitle: () => ({ icon: "bx bx-microphone", title: "Record meeting" }),
+    useLaunchBarTitlePosition: () => "right"
 }));
 
 import RecordMeetingButton, {
@@ -105,18 +106,18 @@ describe("toggleRecording", () => {
 
     it("starts recording into a new meeting note, and shows why it could not", async () => {
         transcription.start.mockResolvedValueOnce("");
-        await toggleRecording("idle");
+        expect(await toggleRecording("idle")).toBe(true);
         expect(transcription.start).toHaveBeenCalledExactlyOnceWith("meeting");
         expect(mocks.showError).not.toHaveBeenCalled();
 
         transcription.start.mockResolvedValueOnce("No speech model");
-        await toggleRecording("idle");
+        expect(await toggleRecording("idle")).toBe(false);
         expect(mocks.showError).toHaveBeenCalledExactlyOnceWith("No speech model");
         expect(mocks.createNote).toHaveBeenCalledTimes(2);
     });
 
     it("stops a running recording, and leaves one that is starting or stopping alone", async () => {
-        await toggleRecording("recording");
+        expect(await toggleRecording("recording")).toBe(false);
         await toggleRecording("starting");
         await toggleRecording("stopping");
 
@@ -335,6 +336,104 @@ describe("RecordMeetingButton", () => {
         expect(mocks.showError).toHaveBeenCalledTimes(3);
         expect(mocks.showError).toHaveBeenCalledWith(
             expect.stringContaining("record_meeting.no_audio_microphone"));
+        window.electronApi = undefined;
+    });
+
+    it("reminds to ask for consent once its own click starts a recording", async () => {
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        const report = (state: Partial<TranscriptionState>) => act(() => onStateChanged({
+            status: "recording", noteId: "meeting", pendingSources: [], ...state
+        }));
+        const transcription = {
+            isSupported: async () => true,
+            getState: async () => ({ status: "idle", noteId: null, pendingSources: [] }),
+            onStateChanged: (callback: typeof onStateChanged) => {
+                onStateChanged = callback;
+                return () => {};
+            },
+            start: vi.fn(async () => {
+                onStateChanged({ status: "recording", noteId: "meeting", pendingSources: [] });
+                return "";
+            }),
+            stop: vi.fn(async () => {})
+        };
+        window.electronApi = { transcription } as unknown as typeof window.electronApi;
+        mocks.getInboxNote.mockResolvedValue({ noteId: "inbox", isProtected: false });
+        mocks.createNote.mockResolvedValue({ note: { noteId: "meeting" } });
+        mocks.requireResources.mockResolvedValue(true);
+        let container: HTMLElement | null = null;
+        await act(async () => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        const button = () => (container as HTMLElement | null)?.querySelector("button");
+        const reminder = () => document.body.querySelector(".record-meeting-consent");
+        const start = async () => {
+            await vi.waitFor(() => expect(button()?.className).toBe("bx bx-microphone"));
+            await act(async () => button()?.click());
+            await vi.waitFor(() => expect(reminder()).not.toBeNull());
+        };
+
+        await report({ status: "idle", noteId: null });
+        await report({});
+        expect(reminder()).toBeNull();
+        await report({ status: "idle", noteId: null });
+
+        await start();
+        expect(reminder()?.textContent).toContain("record_meeting.consent");
+        expect(reminder()?.textContent).not.toContain("keeping");
+        act(() => {
+            document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+        });
+        expect(reminder()).not.toBeNull();
+        act(() => reminder()?.querySelector<HTMLElement>(".record-meeting-consent-body")?.click());
+        expect(reminder()).toBeNull();
+
+        await report({ status: "idle", noteId: null });
+        mocks.keepRecordings = true;
+        await start();
+        expect(reminder()?.textContent).toContain("record_meeting.consent_keeping_recordings");
+        await report({ status: "stopping" });
+        expect(reminder()).toBeNull();
+        window.electronApi = undefined;
+    });
+
+    it("closes the consent reminder by itself after 10 seconds", async () => {
+        vi.useFakeTimers({ toFake: [ "setTimeout", "clearTimeout", "Date" ] });
+        let onStateChanged: (state: TranscriptionState) => void = () => {};
+        window.electronApi = {
+            transcription: {
+                isSupported: async () => true,
+                getState: async () => ({ status: "idle", noteId: null, pendingSources: [] }),
+                onStateChanged: (callback: typeof onStateChanged) => {
+                    onStateChanged = callback;
+                    return () => {};
+                },
+                start: async () => {
+                    onStateChanged({ status: "recording", noteId: "meeting", pendingSources: [] });
+                    return "";
+                }
+            }
+        } as unknown as typeof window.electronApi;
+        mocks.getInboxNote.mockResolvedValue({ noteId: "inbox", isProtected: false });
+        mocks.createNote.mockResolvedValue({ note: { noteId: "meeting" } });
+        mocks.requireResources.mockResolvedValue(true);
+        const advance = (ms: number) => act(async () => {
+            await vi.advanceTimersByTimeAsync(ms);
+        });
+        let container: HTMLElement | null = null;
+        await act(async () => {
+            container = renderInto(<RecordMeetingButton launcherNote={{} as FNote} />);
+        });
+        await advance(50);
+        const reminder = () => document.body.querySelector(".record-meeting-consent");
+
+        await act(async () => (container as HTMLElement | null)?.querySelector("button")?.click());
+        await advance(50);
+        expect(reminder()).not.toBeNull();
+        await advance(9_900);
+        expect(reminder()).not.toBeNull();
+        await advance(100);
+        expect(reminder()).toBeNull();
         window.electronApi = undefined;
     });
 

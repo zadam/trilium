@@ -4607,7 +4607,9 @@
     "title_keeping_recordings": "{{title}} (keeps the audio for troubleshooting)",
     "stop_no_audio": "Stop transcribing (no audio is arriving)",
     "no_audio_microphone": "No audio has arrived from your microphone for 10 seconds, so what you say is not being transcribed. Stop the transcription and start it again.",
-    "no_audio_system": "No audio has arrived from the meeting for 10 seconds, so what the others say is not being transcribed. Stop the transcription and start it again."
+    "no_audio_system": "No audio has arrived from the meeting for 10 seconds, so what the others say is not being transcribed. Stop the transcription and start it again.",
+    "consent": "Let everyone in the meeting know that it is being transcribed, and ask for their consent.",
+    "consent_keeping_recordings": "Let everyone in the meeting know that it is being transcribed and its audio kept, and ask for their consent."
   },
   "transcript": {
     "speaker_me": "Me",

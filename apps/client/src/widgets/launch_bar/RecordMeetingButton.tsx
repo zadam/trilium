@@ -15,9 +15,12 @@ import options from "../../services/options";
 import toast from "../../services/toast";
 import { Badge } from "../react/Badge";
 import { useTriliumOptionBool } from "../react/hooks";
+import Icon from "../react/Icon";
+import Popover from "../react/Popover";
 import {
     LaunchBarActionButton,
     LauncherNoteProps,
+    useLaunchBarTitlePosition,
     useLauncherIconAndTitle
 } from "./launch_bar_widgets";
 
@@ -26,7 +29,8 @@ import {
  * recording, the second stops it. Desktop only, since the main process does the recording, and
  * shown only while `transcriptionEnabled` is on and the computer can transcribe. Its corner badge reads "Beta" while idle and the
  * time elapsed while recording, which turns red, with a message once, when a source stops
- * delivering audio.
+ * delivering audio. A recording started from this window opens a reminder beside the button, for
+ * 10 s, to ask the people in the meeting for their consent.
  */
 export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps) {
     const { icon, title } = useLauncherIconAndTitle(launcherNote);
@@ -35,9 +39,31 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
     const isSupported = useTranscriptionSupported(isEnabled);
     const [ keepsRecordings ] = useTriliumOptionBool("transcriptionKeepRecordings");
     const [ now, setNow ] = useState(Date.now);
+    const [ isRemindingConsent, setRemindingConsent ] = useState(false);
+    const launcherRef = useRef<HTMLDivElement>(null);
     const handleClick = useCallback(() => {
-        void toggleRecording(status);
+        void toggleRecording(status).then((started) => {
+            if (started) {
+                setRemindingConsent(true);
+            }
+        });
     }, [ status ]);
+    const dismissConsent = useCallback(() => setRemindingConsent(false), []);
+
+    useEffect(() => {
+        if (status !== "recording" && status !== "starting") {
+            setRemindingConsent(false);
+        }
+    }, [ status ]);
+
+    const isShowingConsent = isRemindingConsent && status === "recording";
+    useEffect(() => {
+        if (!isShowingConsent) {
+            return;
+        }
+        const timeout = setTimeout(dismissConsent, CONSENT_REMINDER_MS);
+        return () => clearTimeout(timeout);
+    }, [ isShowingConsent, dismissConsent ]);
 
     useEffect(() => {
         if (error) {
@@ -62,7 +88,7 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
     }
 
     return (
-        <div className="record-meeting-launcher">
+        <div ref={launcherRef} className="record-meeting-launcher">
             <LaunchBarActionButton
                 launcherNote={launcherNote}
                 onClick={handleClick}
@@ -79,7 +105,45 @@ export default function RecordMeetingButton({ launcherNote }: LauncherNoteProps)
                     })}
                 />
             )}
+            {isShowingConsent && (
+                <ConsentReminder
+                    getAnchorRect={() =>
+                        launcherRef.current?.getBoundingClientRect() ?? new DOMRect()}
+                    keepsRecordings={keepsRecordings}
+                    onDismiss={dismissConsent}
+                />
+            )}
         </div>
+    );
+}
+
+/** How long the consent reminder stays open unless dismissed first. */
+const CONSENT_REMINDER_MS = 10_000;
+
+/**
+ * A card beside the launcher asking to tell the people in the meeting and ask their consent. Only a
+ * click on the card dismisses it, so the first click into the meeting note leaves it to be read.
+ */
+function ConsentReminder({ getAnchorRect, keepsRecordings, onDismiss }: {
+    getAnchorRect(): DOMRect;
+    keepsRecordings: boolean;
+    onDismiss(): void;
+}) {
+    return (
+        <Popover
+            className="record-meeting-consent"
+            getAnchorRect={getAnchorRect}
+            placement={useLaunchBarTitlePosition()}
+        >
+            <div className="record-meeting-consent-body" role="status" onClick={onDismiss}>
+                <Icon icon="bx bx-info-circle" />
+                <span>
+                    {keepsRecordings
+                        ? t("record_meeting.consent_keeping_recordings")
+                        : t("record_meeting.consent")}
+                </span>
+            </div>
+        </Popover>
     );
 }
 
@@ -187,34 +251,39 @@ export function useTranscriptionSupported(shouldAsk: boolean) {
     return isSupported;
 }
 
-/** Starts a recording into a new meeting note when idle, stops the running one when recording. */
+/**
+ * Starts a recording into a new meeting note when idle, stops the running one when recording.
+ *
+ * @returns Whether a recording started.
+ */
 export async function toggleRecording(status: TranscriptionStatus) {
     const api = window.electronApi?.transcription;
     if (!api) {
-        return;
+        return false;
     }
 
     if (status === "recording") {
         await api.stop();
-        return;
+        return false;
     }
     if (status !== "idle") {
-        return;
+        return false;
     }
     const resources = getTranscriptionResources(
         options.get("transcriptionModel"), options.is("transcriptionSpeakersEnabled"));
     if (!await requireResources(resources)) {
-        return;
+        return false;
     }
 
     const note = (await createMeetingNote())?.note;
     if (!note) {
-        return;
+        return false;
     }
     const error = await api.start(note.noteId);
     if (error) {
         toast.showError(error);
     }
+    return !error;
 }
 
 /** Creates a text note titled with the current date and time in the inbox, and opens it. */

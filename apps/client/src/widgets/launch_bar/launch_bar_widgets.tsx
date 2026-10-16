@@ -90,6 +90,12 @@ export function useLauncherIconAndTitle(note: FNote) {
     };
 }
 
+/** The side of a launcher its tooltips and popups open on. */
+export function useLaunchBarTitlePosition() {
+    const { isHorizontalLayout } = useContext(LaunchBarContext);
+    return getTitlePosition(isHorizontalLayout);
+}
+
 function getTitlePosition(isHorizontalLayout: boolean) {
     if (cachedIsMobile) {
         return "top";

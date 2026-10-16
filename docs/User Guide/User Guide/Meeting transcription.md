@@ -20,7 +20,7 @@ The speech recognition models are not part of Trilium. The first time you transc
 
 1.  Press the <span class="tn-icon bx bx-microphone"></span> _Transcribe meeting_ button in the <a class="reference-link" href="Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>.
 2.  If the models are not downloaded yet, confirm the download and wait for it to finish.
-3.  Trilium creates a text note titled with the current date and time (for example _Meeting 2026-10-15 14:30_) in the <a class="reference-link" href="Basic%20Concepts%20and%20Features/Notes/Note%20Inbox.md">Note Inbox</a>, opens it and starts transcribing. While it transcribes, the button turns into a <span class="tn-icon bx bx-stop-circle"></span> _Stop transcribing_ button and shows the time elapsed.
+3.  Trilium creates a text note titled with the current date and time (for example _Meeting 2026-10-15 14:30_) in the <a class="reference-link" href="Basic%20Concepts%20and%20Features/Notes/Note%20Inbox.md">Note Inbox</a>, opens it and starts transcribing. While it transcribes, the button turns into a <span class="tn-icon bx bx-stop-circle"></span> _Stop transcribing_ button and shows the time elapsed. Beside it, a reminder asks you to let everyone in the meeting know that it is being transcribed and to ask for their consent; it closes by itself after 10 seconds, or when you click it.
 4.  To end the transcription, press the <span class="tn-icon bx bx-stop-circle"></span> _Stop transcribing_ button. Trilium finishes transcribing what was already said before it stops.
 
 Only one meeting can be transcribed at a time. The note itself is an ordinary text note: you can take notes in it during the meeting, rename it or move it anywhere in the tree. It carries the `#meetingRecording` label.
@@ -52,7 +52,7 @@ The settings are in <a class="reference-link" href="Basic%20Concepts%20and%20Fe
 | _Keep recordings for troubleshooting_ | Keeps the audio of the meeting, the settings used and the transcript as it was produced, so that a problem can be reported and reproduced. It takes about 230 MB per hour of meeting and is never deleted automatically. The folder where they are kept is shown below the option. |
 
 > [!WARNING]
-> Before turning on _Keep recordings for troubleshooting_, ask everyone in the meeting to agree to being recorded. In several countries and US states, recording a conversation without everyone's consent is a criminal offense. The audio is stored unencrypted, even for protected notes. While the option is on, the tooltip of the _Transcribe meeting_ button says so.
+> Before turning on _Keep recordings for troubleshooting_, ask everyone in the meeting to agree to being recorded. In several countries and US states, recording a conversation without everyone's consent is a criminal offense. The audio is stored unencrypted, even for protected notes. While the option is on, the tooltip of the _Transcribe meeting_ button says so, and the reminder shown when the transcription starts mentions that the audio is kept.
 
 ## Limitations
 
