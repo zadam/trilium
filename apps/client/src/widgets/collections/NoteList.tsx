@@ -190,10 +190,9 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
     const [ noteIds, setNoteIds ] = useState<string[]>([]);
     const [ includeArchived ] = useNoteLabelBoolean(note, "includeArchived");
     const directChildrenOnly = (viewType === "list" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
-    // The board walks the subtree itself in `getBoardData()`, so its note IDs stay unlimited to
-    // match the cards it draws.
     const [ labelMaxDepth ] = useNoteLabelInt(note, "maxNestingDepth");
-    const maxDepth = (viewType === "calendar" || viewType === "geoMap") ? labelMaxDepth : undefined;
+    const maxDepth = (viewType === "calendar" || viewType === "geoMap" || viewType === "board")
+        ? labelMaxDepth : undefined;
     // getNoteIds can do a server round-trip (archive filtering), so concurrent refreshes may resolve
     // out of order. Track the latest issued refresh so a stale one can't clobber a newer result.
     const refreshSeqRef = useRef(0);

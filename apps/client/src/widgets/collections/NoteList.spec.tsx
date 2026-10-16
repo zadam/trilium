@@ -230,8 +230,8 @@ describe("useNoteIds nesting depth", () => {
         return currentNoteIds;
     }
 
-    it("limits the calendar and geo map subtree to #maxNestingDepth", async () => {
-        for (const viewType of [ "calendar", "geoMap" ] as const) {
+    it("limits the calendar, geo map and board subtree to #maxNestingDepth", async () => {
+        for (const viewType of [ "calendar", "geoMap", "board" ] as const) {
             expect(await renderNoteIds(viewType)).toEqual([ "nested-0", "nested-1", "nested-2" ]);
             expect(await renderNoteIds(viewType, { "#maxNestingDepth": "0" })).toEqual([ "nested-0" ]);
             expect(await renderNoteIds(viewType, { "#maxNestingDepth": "1" }))

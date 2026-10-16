@@ -263,10 +263,18 @@ function ViewOptions({ note, viewType, optionsChildren }: {
  * Which notes a collection gathers, as opposed to how its view draws them: a card shared by the
  * properties dialogs, placed after their General card.
  */
-export function IncludedNotesCard({ note }: { note: FNote }) {
+export function IncludedNotesCard({ note, archivedLabel }: {
+    note: FNote;
+    /** Names the archived toggle in the view's own words, such as a board's cards and columns. */
+    archivedLabel?: string;
+}) {
+    const archivedProperty = archivedLabel
+        ? { ...INCLUDE_ARCHIVED_PROPERTY, label: archivedLabel }
+        : INCLUDE_ARCHIVED_PROPERTY;
+
     return (
         <Card className="collection-included-notes" heading={t("book_properties.included_notes")}>
-            <ViewPropertySection note={note} property={INCLUDE_ARCHIVED_PROPERTY} />
+            <ViewPropertySection note={note} property={archivedProperty} />
             <ViewPropertySection note={note} property={MAX_NESTING_DEPTH_PROPERTY} />
         </Card>
     );

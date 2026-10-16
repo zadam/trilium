@@ -11,6 +11,8 @@ When you first create a collection of the _Board_ type, a few subnotes are creat
 
 Notes are displayed recursively, so even grandchildren and more deeply nested notes will be displayed. However, unlike the <a class="reference-link" href="Table.md">Table</a>, the notes are not displayed hierarchically.
 
+To limit how deep the board looks, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Board properties_ and set _Maximum nesting depth_ (under the _Included notes_ section), or apply the `#maxNestingDepth` label to the board note: `0` shows only the children, `1` adds their children, and so on. Without a value, every level is shown.
+
 ## Working with columns
 
 ### Creating columns
@@ -146,7 +148,7 @@ A column that has reached its limit can still accept new cards. Blocking new car
 
 If you want to hide a column from the board without deleting it, you can archive it by opening the column menu → <span class="tn-icon bx bx-archive-in"></span> _Archive column_. Archiving a column does not set the archived flag (see <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Archived%20Notes.md">Archived Notes</a>) on the notes corresponding to its cards.
 
-To show archived columns again, go to <span class="tn-icon bx bx-cog"></span> _Collection options_ and toggle <span class="tn-icon bx bx-archive-in"></span> _Show archived notes_. Archived columns will appear faded. To restore one, open its column menu and select <span class="tn-icon bx bx-archive-out"></span> _Unarchive column_.
+To show archived columns again, go to <span class="tn-icon bx bx-cog"></span> _Collection options_ and toggle <span class="tn-icon bx bx-archive-in"></span> _Show archived notes_, or turn on _Show archived cards and columns_ in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Board properties_ (under the _Included notes_ section). Archived columns will appear faded. To restore one, open its column menu and select <span class="tn-icon bx bx-archive-out"></span> _Unarchive column_.
 
 ### Deleting a column
 
@@ -289,7 +291,7 @@ Each card can be tinted with a different color. Open the card's context menu and
 
 A card can be hidden from the board without deleting it by using the <span class="tn-icon bx bx-archive-in"></span> _Archive note_ command from the card's context menu.
 
-To show archived cards again, go to <span class="tn-icon bx bx-cog"></span> _Collection options_ and toggle <span class="tn-icon bx bx-archive-in"></span> _Show archived notes_. Archived cards will appear faded. To restore one, open its context menu and select <span class="tn-icon bx bx-archive-out"></span> _Unarchive note_.
+To show archived cards again, go to <span class="tn-icon bx bx-cog"></span> _Collection options_ and toggle <span class="tn-icon bx bx-archive-in"></span> _Show archived notes_, or turn on _Show archived cards and columns_ in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Board properties_ (under the _Included notes_ section). Archived cards will appear faded. To restore one, open its context menu and select <span class="tn-icon bx bx-archive-out"></span> _Unarchive note_.
 
 > [!WARNING]
 > Archiving a card sets the `#archived` flag on its note. If the note exists in multiple locations in the tree, it will appear archived in those locations as well. Read more about <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Archived%20Notes.md">Archived Notes</a>.
