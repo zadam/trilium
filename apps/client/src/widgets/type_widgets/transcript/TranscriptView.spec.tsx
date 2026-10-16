@@ -12,7 +12,7 @@ import options from "../../../services/options";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import TranscriptView, {
-    formatOffset, groupIntoTurns, levelToMeter, type TranscriptTurn
+    formatOffset, groupIntoTurns, levelToMeter, TranscriptRecordingLevels, type TranscriptTurn
 } from "./TranscriptView";
 
 const h = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn() }));
@@ -475,7 +475,7 @@ describe("TranscriptView", () => {
         window.electronApi = undefined;
     });
 
-    it("shows each source's level while its meeting records, and which is silent", async () => {
+    it("shows each source's level while its meeting records, apart from the turns", async () => {
         let onStateChanged: (state: TranscriptionState) => void = () => {};
         let onLevel: (source: TranscriptSource, level: number) => void = () => {};
         const unsubscribeLevels = vi.fn();
@@ -501,10 +501,13 @@ describe("TranscriptView", () => {
             attachmentId: "transcript1", ownerId: "meeting",
             getBlob: async () => ({ content: transcript([]) })
         };
-        const container = renderInto(
+        const view = renderInto(
             <ParentComponent.Provider value={new Component()}>
                 <TranscriptView attachment={attachment as unknown as FAttachment} />
             </ParentComponent.Provider>
+        );
+        const container = renderInto(
+            <TranscriptRecordingLevels attachment={attachment as unknown as FAttachment} />
         );
         const meter = (source: string) => container.querySelector<HTMLElement>(
             `.transcript-level[data-source="${source}"]`);
@@ -512,10 +515,10 @@ describe("TranscriptView", () => {
             Number(meter(source)?.style.getPropertyValue("--level"));
 
         await vi.waitFor(() => expect(meter("microphone")).not.toBeNull());
-        expect(container.textContent).toContain("transcript.empty");
+        await vi.waitFor(() => expect(view.textContent).toContain("transcript.empty"));
+        expect(view.querySelector(".transcript-level, .transcript-options")).toBeNull();
         expect(meter("microphone")?.textContent).toContain("transcript.speaker_me");
         expect(meter("system")?.textContent).toContain("transcript.speaker_others");
-        expect(container.querySelector(".transcript-options input")).toBeNull();
         act(() => onLevel("microphone", 10 ** (-35 / 20)));
         expect(fill("microphone")).toBeCloseTo(0.5);
         expect(fill("system")).toBe(0);

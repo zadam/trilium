@@ -14,52 +14,6 @@
         font-size: 0.9em;
     }
 
-    .transcript-levels {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.25rem 1rem;
-        margin-inline-end: auto;
-        user-select: none;
-    }
-
-    .transcript-level {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-
-        .transcript-level-bar {
-            position: relative;
-            width: 4rem;
-            height: 0.35rem;
-            border-radius: 0.2rem;
-            background: color-mix(in srgb, var(--main-text-color) 15%, transparent);
-            overflow: hidden;
-
-            &::after {
-                content: "";
-                position: absolute;
-                inset-block: 0;
-                inset-inline-start: 0;
-                width: calc(var(--level, 0) * 100%);
-                background: var(--main-text-color);
-                transition: width 120ms linear;
-            }
-        }
-
-        &.stalled {
-            color: var(--danger-color, #dc3545);
-
-            .transcript-level-bar {
-                background: var(--danger-color, #dc3545);
-
-                &::after {
-                    display: none;
-                }
-            }
-        }
-    }
-
     .transcript-turn {
         max-width: var(--preferred-max-content-width, 900px);
         margin-bottom: 1rem;
@@ -153,13 +107,60 @@
     }
 }
 
+.transcript-levels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    color: var(--muted-text-color);
+    font-size: 0.9em;
+    user-select: none;
+}
+
+.transcript-level {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    .transcript-level-bar {
+        position: relative;
+        width: 4rem;
+        height: 0.35rem;
+        border-radius: 0.2rem;
+        background: color-mix(in srgb, var(--main-text-color) 15%, transparent);
+        overflow: hidden;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset-block: 0;
+            inset-inline-start: 0;
+            width: calc(var(--level, 0) * 100%);
+            background: var(--main-text-color);
+            transition: width 120ms linear;
+        }
+    }
+
+    &.stalled {
+        color: var(--danger-color, #dc3545);
+
+        .transcript-level-bar {
+            background: var(--danger-color, #dc3545);
+
+            &::after {
+                display: none;
+            }
+        }
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .transcript .transcript-speaking .bx,
     .transcript .transcript-new {
         animation: none;
     }
 
-    .transcript .transcript-level .transcript-level-bar::after {
+    .transcript-level .transcript-level-bar::after {
         transition: none;
     }
 }

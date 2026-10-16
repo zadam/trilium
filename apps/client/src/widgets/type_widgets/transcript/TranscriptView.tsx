@@ -32,17 +32,14 @@ const PARAGRAPH_PAUSE_MS = 2000;
  * Shows a `transcript` attachment as the conversation it records, one paragraph per speaker turn.
  * Follows the attachment as a running recording rewrites it, shows which speakers the recording
  * hears before their words are transcribed, and keeps a reader who is at the end there as new
- * turns arrive. While its meeting records, shows each source's level above the turns, and which
- * source delivers no audio. With `transcriptCleanupEnabled`, shows each utterance through
+ * turns arrive. With `transcriptCleanupEnabled`, shows each utterance through
  * `cleanUtteranceText()` and leaves out the ones it empties; the stored transcript stays verbatim.
  */
 export default function TranscriptView({ attachment }: { attachment: FAttachment }) {
     const [ content, setContent ] = useState<string | null>();
     const [ isCleanedUp, setCleanedUp ] = useTriliumOptionBool("transcriptCleanupEnabled");
     const recording = useTranscriptionState();
-    const isOwnRecording = recording.noteId === attachment.ownerId;
-    const pending = isOwnRecording ? recording.pendingSources : [];
-    const isRecording = isOwnRecording && recording.status === "recording";
+    const pending = recording.noteId === attachment.ownerId ? recording.pendingSources : [];
     const scrollerRef = useRef<HTMLDivElement>(null);
     /** The scroll height at the previous render, or `null` before the transcript first shows. */
     const scrollHeightRef = useRef<number | null>(null);
@@ -90,25 +87,8 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     if (!transcript) {
         return <NoItems icon="bx bx-error" text={t("transcript.unreadable")} />;
     }
-    const hasUtterances = transcript.utterances.length > 0;
-    const options = (hasUtterances || isRecording) && (
-        <div className="transcript-options">
-            {isRecording && <TranscriptLevels stalledSources={recording.stalledSources ?? []} />}
-            {hasUtterances && (
-                <FormToggle
-                    switchOnName={t("transcript.cleanup")}
-                    switchOffName={t("transcript.cleanup")}
-                    switchOnTooltip={t("transcript.cleanup_tooltip")}
-                    switchOffTooltip={t("transcript.cleanup_tooltip")}
-                    currentValue={isCleanedUp}
-                    onChange={setCleanedUp}
-                />
-            )}
-        </div>
-    );
-    if (!hasUtterances && !pending.length) {
-        const empty = <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
-        return options ? <div className="transcript">{options}{empty}</div> : empty;
+    if (!transcript.utterances.length && !pending.length) {
+        return <NoItems icon="bx bx-microphone" text={t("transcript.empty")} />;
     }
 
     initialCountRef.current ??= transcript.utterances.length;
@@ -131,7 +111,18 @@ export default function TranscriptView({ attachment }: { attachment: FAttachment
     );
     return (
         <div ref={scrollerRef} className="transcript">
-            {options}
+            {transcript.utterances.length > 0 && (
+                <div className="transcript-options">
+                    <FormToggle
+                        switchOnName={t("transcript.cleanup")}
+                        switchOffName={t("transcript.cleanup")}
+                        switchOnTooltip={t("transcript.cleanup_tooltip")}
+                        switchOffTooltip={t("transcript.cleanup_tooltip")}
+                        currentValue={isCleanedUp}
+                        onChange={setCleanedUp}
+                    />
+                </div>
+            )}
             {turns.map((turn) => (
                 <div key={turn.offsetMs} className={`transcript-turn transcript-${turn.source}`}>
                     <div className="transcript-turn-header">
@@ -182,9 +173,18 @@ const LEVEL_ICONS: Record<TranscriptSource, string> = {
 const LEVEL_SOURCES = Object.keys(LEVEL_ICONS) as TranscriptSource[];
 
 /**
- * One meter per source, named as the transcript names it, filled to its latest level, and saying
- * so when the source delivers no audio.
+ * While the meeting of `attachment` records, one meter per source, named as the transcript names
+ * it, filled to its latest level, and saying so when the source delivers no audio. Shown in the
+ * header of the transcript's section, so it stays in view while the turns scroll or are collapsed.
  */
+export function TranscriptRecordingLevels({ attachment }: { attachment: FAttachment }) {
+    const { status, noteId, stalledSources } = useTranscriptionState();
+    if (status !== "recording" || noteId !== attachment.ownerId) {
+        return null;
+    }
+    return <TranscriptLevels stalledSources={stalledSources ?? []} />;
+}
+
 function TranscriptLevels({ stalledSources }: { stalledSources: TranscriptSource[] }) {
     const levels = useTranscriptionLevels();
     return (
