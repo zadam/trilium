@@ -75,7 +75,12 @@
   "bulk_actions": {
     "bulk_actions": "اجراءات جماعية",
     "chosen_actions": "الأجراءات المختارة",
-    "execute_bulk_actions": "تنفيذ الأجراءات الجماعية",
+    "execute_bulk_actions_zero": "تنفيذ الأجراءات الجماعية",
+    "execute_bulk_actions_one": "",
+    "execute_bulk_actions_two": "",
+    "execute_bulk_actions_few": "",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "تم تنفيذ الاجراءات الجماعية بنجاح،",
     "none_yet": "لايوجد أجراء بعد... اضف اجراء بالنقر على احد الأجراءات المتاحة اعلاه.",
     "relations": "العلاقات",
