@@ -1,8 +1,7 @@
 import { useState } from "preact/hooks";
 import { t } from "../../../services/i18n.js";
-import FormTextBox from "../../react/FormTextBox.jsx";
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
-import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
+import BulkAction, { BulkActionArrow, BulkActionAttributeName, useSaveAction } from "../BulkAction.jsx";
 
 function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction: AbstractBulkAction, actionDef: ActionDefinition}) {
     const [ oldLabelName, setOldLabelName ] = useState(actionDef.oldLabelName);
@@ -13,21 +12,19 @@ function RenameLabelBulkActionComponent({ bulkAction, actionDef }: { bulkAction:
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
+            <BulkActionAttributeName
+                type="label"
                 placeholder={t("rename_label.old_name_placeholder")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_label.name_title")}
-                className="bulk-action-name" required
                 currentValue={oldLabelName} onChange={setOldLabelName}
             />
 
             <BulkActionArrow />
 
-            <FormTextBox
+            <BulkActionAttributeName
+                type="label"
                 placeholder={t("rename_label.new_name_placeholder")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("rename_label.name_title")}
-                className="bulk-action-name" required
                 currentValue={newLabelName} onChange={setNewLabelName}
             />
         </BulkAction>

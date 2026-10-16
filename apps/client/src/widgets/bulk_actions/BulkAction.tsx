@@ -2,12 +2,15 @@ import "./BulkAction.css";
 
 import { ComponentChildren } from "preact";
 import { memo } from "preact/compat";
-import { useEffect, useRef } from "preact/hooks";
+import { useCallback, useEffect, useRef } from "preact/hooks";
+
 import { t } from "../../services/i18n";
-import AbstractBulkAction, { ActionDefinition } from "./abstract_bulk_action";
+import { AttributeNameSuggestion, fetchAttributeNames } from "../attribute_widgets/attribute_detail";
+import FormAutocomplete from "../react/FormAutocomplete";
 import { useSpacedUpdate } from "../react/hooks";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
 import Icon from "../react/Icon";
+import AbstractBulkAction, { ActionDefinition } from "./abstract_bulk_action";
 
 interface BulkActionProps {
     children?: ComponentChildren;
@@ -58,4 +61,31 @@ export function useSaveAction(bulkAction: AbstractBulkAction, data: Partial<Acti
 /** Separates a row's source field from its target field, in place of a word such as "to". */
 export function BulkActionArrow() {
     return <Icon icon="bx bx-right-arrow-alt" className="bulk-action-arrow" />;
+}
+
+/** A row's label or relation name field, completing against the names already in use. */
+export function BulkActionAttributeName({ type, currentValue, onChange, placeholder, title }: {
+    type: "label" | "relation";
+    currentValue: string | undefined;
+    onChange(newValue: string): void;
+    placeholder: string;
+    title: string;
+}) {
+    const suggestNames = useCallback((query: string) => fetchAttributeNames(type, query), [ type ]);
+    const renderSuggestion = useCallback(
+        (name: string, query: string) => <AttributeNameSuggestion type={type} name={name} query={query} />, [ type ]);
+
+    return (
+        <FormAutocomplete
+            className="bulk-action-name" required
+            pattern="[\p{L}\p{N}_:]+"
+            placeholder={placeholder}
+            title={title}
+            currentValue={currentValue ?? ""}
+            onChange={onChange}
+            source={suggestNames}
+            renderItem={renderSuggestion}
+            openOnFocus
+        />
+    );
 }

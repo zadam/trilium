@@ -11,7 +11,7 @@ import { ParentComponent } from "../react/react_utils";
 import BulkActionsDialog from "./bulk_actions";
 
 const server = vi.hoisted(() => ({
-    get: vi.fn(async () => []),
+    get: vi.fn(async (_url: string): Promise<string[]> => []),
     post: vi.fn(),
     put: vi.fn(async () => {}),
     remove: vi.fn(async () => {}),
@@ -284,6 +284,28 @@ describe("BulkActionsDialog", () => {
         expect(chipNoteIds()).toStrictEqual([ "n2" ]);
         expect(lastAffectedNotesRequest()).toStrictEqual({ noteIds: [ "n2" ], includeDescendants: false });
         expect(container.querySelector<HTMLButtonElement>(".tn-chip-remove")?.disabled).toBe(true);
+    });
+
+    it("completes a relation name against the names in use", async () => {
+        server.get.mockImplementation(async (url) =>
+            (url.startsWith("attribute-names/?type=relation&query=au") ? [ "author" ] : []));
+        buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteRelation" }) });
+        await open([ "n1" ]);
+
+        const input = labelNameInputs()[0];
+        expect(input).toBeDefined();
+        await act(async () => {
+            input.value = "au";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        });
+        const suggestions = [ ...document.querySelectorAll<HTMLElement>(".form-autocomplete-dropdown li") ];
+        expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "author" ]);
+
+        await act(async () => suggestions[0].click());
+        expect(labelNameInputs()[0].value).toBe("author");
     });
 
     it("saves an action only when its fields change", async () => {

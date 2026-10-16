@@ -1,7 +1,6 @@
 import AbstractBulkAction, { ActionDefinition } from "../abstract_bulk_action.js";
 import { t } from "../../../services/i18n.js";
-import BulkAction, { BulkActionArrow, useSaveAction } from "../BulkAction.jsx";
-import FormTextBox from "../../react/FormTextBox.jsx";
+import BulkAction, { BulkActionArrow, BulkActionAttributeName, useSaveAction } from "../BulkAction.jsx";
 import NoteAutocomplete from "../../react/NoteAutocomplete.jsx";
 import { useState } from "preact/hooks";
 
@@ -14,11 +13,10 @@ function UpdateRelationTargetComponent({ bulkAction, actionDef }: { bulkAction: 
         <BulkAction
             bulkAction={bulkAction}
         >
-            <FormTextBox
+            <BulkActionAttributeName
+                type="relation"
                 placeholder={t("update_relation_target.relation_name")}
-                pattern="[\\p{L}\\p{N}_:]+"
                 title={t("update_relation_target.allowed_characters")}
-                className="bulk-action-name" required
                 currentValue={relationName} onChange={setRelationName}
             />
 
