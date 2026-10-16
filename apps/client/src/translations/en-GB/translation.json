@@ -248,5 +248,8 @@
   },
   "resource_download": {
     "license": "{{license}} licence"
+  },
+  "ocr": {
+    "no_text_recognized": "OCR found no text to recognise."
   }
 }
