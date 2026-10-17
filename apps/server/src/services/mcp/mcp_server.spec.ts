@@ -128,4 +128,11 @@ describe("tool annotations", () => {
         expect(annotationsOf("add_tool")).toEqual({ readOnlyHint: false, destructiveHint: false, openWorldHint: false });
         expect(annotationsOf("mutate_tool")).toEqual({ readOnlyHint: false, destructiveHint: true, openWorldHint: false });
     });
+
+    it("leaves the hints out when asked to", async () => {
+        await createMcpServer({ toolHints: false });
+
+        expect(registered.map((r) => r.name)).toContain("read_tool");
+        expect(registered.map((r) => r.config.annotations)).toEqual(registered.map(() => undefined));
+    });
 });
