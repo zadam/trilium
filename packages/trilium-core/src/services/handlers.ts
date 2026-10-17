@@ -185,24 +185,38 @@ function handleMaybeSortingLabel(entity: BAttribute) {
     const note = becca.notes[entity.noteId];
 
     // this will not work on deleted notes, but in that case we don't really need to re-sort
-    if (note) {
-        for (const parentNote of note.getParentNotes()) {
-            const sorted = parentNote.getLabelValue("sorted");
-            if (sorted === null) {
-                // checking specifically for null since that means the label doesn't exist
-                // empty valued "sorted" is still valid
-                continue;
-            }
+    if (!note || !becca.findAttributes("label", "sorted").some(
+        (sorted) => sortsByLabel(sorted.value, entity.name)
+    )) {
+        return;
+    }
 
-            if (
-                entity.name === "top" ||
-                entity.name === "bottom" ||
-                parseSortCriteria(sorted).some(({ key, isLabel }) => isLabel && key === entity.name)
-            ) {
-                treeService.sortNotesIfNeeded(parentNote.noteId);
-            }
+    // An inheritable or template label also applies to the notes that inherit it.
+    const affectedNotes = entity.isInheritable
+        ? note.getSubtreeNotesIncludingTemplated()
+        : note.getInheritingNotes();
+    const parentNotes = new Set<BNote>();
+
+    for (const affectedNote of affectedNotes) {
+        for (const parentNote of affectedNote.getParentNotes()) {
+            parentNotes.add(parentNote);
         }
     }
+
+    for (const parentNote of parentNotes) {
+        const sorted = parentNote.getLabelValue("sorted");
+        // checking specifically for null since that means the label doesn't exist
+        // empty valued "sorted" is still valid
+        if (sorted !== null && sortsByLabel(sorted, entity.name)) {
+            treeService.sortNotesIfNeeded(parentNote.noteId);
+        }
+    }
+}
+
+function sortsByLabel(sorted: string, labelName: string) {
+    return labelName === "top"
+        || labelName === "bottom"
+        || parseSortCriteria(sorted).some(({ key, isLabel }) => isLabel && key === labelName);
 }
 
 eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {

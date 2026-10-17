@@ -141,6 +141,41 @@ describe("handlers", () => {
             eventService.emit(eventService.ENTITY_CHANGED, { entityName: "attributes", entity: topAttr });
             expect(sortNotesIfNeeded).toHaveBeenCalledWith("par");
         });
+
+        it("re-sorts the parents of notes that inherit a change to a #sorted label", () => {
+            buildNote({ id: "ai-tpl" });
+            buildNote({ id: "ai-folder", children: [{ id: "ai-clone" }] });
+            buildNote({
+                id: "ai-par",
+                "#sorted": "#archived last",
+                children: [{ id: "ai-chld", "~template": "ai-tpl" }, { id: "ai-other" }]
+            });
+            buildNote({ id: "ai-plain", "#sorted": "", children: [{ id: "ai-plain-chld" }] });
+            new BBranch({
+                noteId: "ai-clone", parentNoteId: "ai-par", branchId: "ai-par_ai-clone"
+            });
+            new BBranch({
+                noteId: "ai-clone", parentNoteId: "ai-plain", branchId: "ai-plain_ai-clone"
+            });
+
+            const templateArchived = addAttribute("ai-tpl", "label", "archived", "");
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: "attributes", entity: templateArchived
+            });
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("ai-par");
+            sortNotesIfNeeded.mockClear();
+
+            const folderArchived = new BAttribute({
+                noteId: "ai-folder", attributeId: randomString(12), type: "label",
+                name: "archived", value: "", position: 0, isInheritable: true
+            });
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: "attributes", entity: folderArchived
+            });
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("ai-par");
+            // `ai-plain` also holds the clone, but its #sorted does not name #archived.
+            expect(sortNotesIfNeeded).not.toHaveBeenCalledWith("ai-plain");
+        });
     });
 
     describe("ENTITY_CREATED (template relation)", () => {
