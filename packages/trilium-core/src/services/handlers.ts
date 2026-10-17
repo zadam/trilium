@@ -197,7 +197,7 @@ function handleMaybeSortingLabel(entity: BAttribute) {
             if (
                 entity.name === "top" ||
                 entity.name === "bottom" ||
-                parseSortCriteria(sorted).some((criterion) => criterion.key === entity.name)
+                parseSortCriteria(sorted).some(({ key, isLabel }) => isLabel && key === entity.name)
             ) {
                 treeService.sortNotesIfNeeded(parentNote.noteId);
             }

@@ -1,6 +1,6 @@
 "use strict";
 
-import { parseSortCriteria } from "@triliumnext/commons";
+import { parseSortCriteria, type SortCriterion } from "@triliumnext/commons";
 
 import { getLog } from "./log.js";
 import { compareSortValues } from "./utils/sort_values.js";
@@ -117,18 +117,18 @@ function sortNotes(
 
         const notes = note.getChildNotes();
 
-        function fetchValue(note: BNote, key: string): string | null {
-            let rawValue: string | null;
+        function fetchValue(note: BNote, key: string, isLabel = true): string | null {
+            let rawValue: string | null = null;
 
-            if (key === "title") {
+            if (isLabel) {
+                rawValue = note.getLabelValue(key);
+            } else if (key === "title") {
                 const branch = note.getParentBranches()
                     .find((branch) => branch.parentNoteId === parentNoteId);
                 const prefix = branch?.prefix;
                 rawValue = prefix ? `${prefix} - ${note.title}` : note.title;
-            } else {
-                rawValue = key === "dateCreated" || key === "dateModified"
-                    ? note[key] ?? null
-                    : note.getLabelValue(key);
+            } else if (key === "dateCreated" || key === "dateModified") {
+                rawValue = note[key] ?? null;
             }
 
             return typeof rawValue === "string" ? rawValue.toLowerCase() : rawValue;
@@ -148,21 +148,26 @@ function sortNotes(
         // A child without the label sorts after every child that has it, whichever direction the
         // level runs in, so only the values both children have follow `descending`. Two children
         // without it tie, leaving the next level to decide.
-        function compareLevel(a: BNote, b: BNote, key: string, descending: boolean) {
+        function compareLevel(a: BNote, b: BNote, level: SortCriterion, descending: boolean) {
             return compareSortValues(
-                fetchValue(a, key),
-                fetchValue(b, key),
+                fetchValue(a, level.key, level.isLabel),
+                fetchValue(b, level.key, level.isLabel),
                 descending ? compareReversed : compare
             );
         }
 
-        // Orders by whether each child has a truthy `key` label, ignoring its value and `reverse`.
-        function compareGroup(a: BNote, b: BNote, key: string, group: "first" | "last") {
-            const hasA = a.isLabelTruthy(key);
-            if (hasA === b.isLabelTruthy(key)) {
+        // Orders by whether each child has a truthy label (or any value of a property), ignoring
+        // the value and `reverse`.
+        function compareGroup(a: BNote, b: BNote, level: SortCriterion) {
+            const hasA = isInGroup(a, level);
+            if (hasA === isInGroup(b, level)) {
                 return 0;
             }
-            return (hasA ? -1 : 1) * (group === "last" ? -1 : 1);
+            return (hasA ? -1 : 1) * (level.group === "last" ? -1 : 1);
+        }
+
+        function isInGroup(note: BNote, { key, isLabel }: SortCriterion) {
+            return isLabel ? note.isLabelTruthy(key) : fetchValue(note, key, false) !== null;
         }
 
         notes.sort((a, b) => {
@@ -194,16 +199,16 @@ function sortNotes(
                 }
             }
 
-            for (const { key, descending, group } of criteria) {
-                const result = group
-                    ? compareGroup(a, b, key, group)
-                    : compareLevel(a, b, key, descending ?? reverse);
+            for (const level of criteria) {
+                const result = level.group
+                    ? compareGroup(a, b, level)
+                    : compareLevel(a, b, level, level.descending ?? reverse);
                 if (result !== 0) {
                     return result;
                 }
             }
 
-            return compareLevel(a, b, "title", reverse);
+            return compareLevel(a, b, { key: "title", isLabel: false }, reverse);
         });
 
         let position = 10;

@@ -197,7 +197,11 @@ export function serializeSortLevels(levels: SortLevel[]) {
     for (const level of levels) {
         const key = level.kind === "label" ? level.labelName.trim() : level.kind;
         if (key) {
-            criteria.push({ key, descending: level.direction === "desc" });
+            criteria.push({
+                key,
+                isLabel: level.kind === "label",
+                descending: level.direction === "desc"
+            });
         }
     }
     return serializeSortCriteria(criteria);

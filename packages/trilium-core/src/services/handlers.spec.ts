@@ -113,11 +113,16 @@ describe("handlers", () => {
 
         it("re-sorts the parent only when the changed label is one of the #sorted levels", () => {
             buildNote({ id: "ml-par", children: [{ id: "ml-chld" }] });
-            addAttribute("ml-par", "label", "sorted", "priority desc, dueDate");
+            addAttribute("ml-par", "label", "sorted", "#priority desc, #dueDate, title");
 
             const unrelated = addAttribute("ml-chld", "label", "priorityNote", "x");
             eventService.emit(eventService.ENTITY_CHANGED, {
                 entityName: "attributes", entity: unrelated
+            });
+            // A bare `title` is the note's title, not a label.
+            const titleLabel = addAttribute("ml-chld", "label", "title", "x");
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: "attributes", entity: titleLabel
             });
             expect(sortNotesIfNeeded).not.toHaveBeenCalledWith("ml-par");
 

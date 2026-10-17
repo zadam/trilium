@@ -186,7 +186,7 @@ describe("Tree", () => {
                 {title: "d", "#priority": "1", "#area": "work"},
                 {title: "e", "#priority": "1", "#area": "home"}
             ],
-            "#sorted": "priority desc, area, title desc"
+            "#sorted": "#priority desc, #area, title desc"
         });
         getContext().init(() => {
             tree.sortNotesIfNeeded(note.noteId);
@@ -205,7 +205,7 @@ describe("Tree", () => {
                 {title: "top", "#top": ""},
                 {title: "bottom", "#bottom": ""}
             ],
-            "#sorted": "priority asc, area",
+            "#sorted": "#priority asc, #area",
             "#sortDirection": "desc"
         });
         getContext().init(() => {
@@ -269,7 +269,7 @@ describe("Tree", () => {
             ["desc", ["m", "a", "unlabelled", "also"]]
         ] as const) {
             const note = buildNote({
-                children, "#sorted": "order, area", "#sortDirection": direction
+                children, "#sorted": "#order, #area", "#sortDirection": direction
             });
             getContext().init(() => {
                 tree.sortNotesIfNeeded(note.noteId);
@@ -286,7 +286,7 @@ describe("Tree", () => {
                 {title: "one", "#priority": "1", "#due": "2026-01-15"},
                 {title: "nine", "#priority": "9", "#due": "2026-01-15"}
             ],
-            "#sorted": "due, priority desc"
+            "#sorted": "#due, #priority desc"
         });
         getContext().init(() => {
             tree.sortNotesIfNeeded(note.noteId);
@@ -306,11 +306,31 @@ describe("Tree", () => {
             {title: "e", "#pinned": "yes"}
         ];
         for (const [sorted, direction, expected] of [
-            ["archived last", "asc", ["c", "d", "e", "a", "b"]],
-            ["archived last", "desc", ["e", "d", "c", "b", "a"]],
-            ["pinned first, archived last", "asc", ["e", "a", "c", "d", "b"]]
+            ["#archived last", "asc", ["c", "d", "e", "a", "b"]],
+            ["#archived last", "desc", ["e", "d", "c", "b", "a"]],
+            ["#pinned first, #archived last", "asc", ["e", "a", "c", "d", "b"]]
         ] as const) {
             const note = buildNote({children, "#sorted": sorted, "#sortDirection": direction});
+            getContext().init(() => {
+                tree.sortNotesIfNeeded(note.noteId);
+            });
+            expect(note.children.map((child) => child.title)).toStrictEqual([...expected]);
+        }
+    });
+
+    it("sorts by a label for `#name` and by a property for a bare name", () => {
+        const children: Parameters<typeof buildNote>[0]["children"] = [
+            {title: "b", "#title": "1", "#area": "x"},
+            {title: "a", "#title": "2", "#area": "y"}
+        ];
+        for (const [sorted, expected] of [
+            ["#title", ["b", "a"]],
+            ["title desc", ["b", "a"]],
+            ["#title desc", ["a", "b"]],
+            // A bare word that names no property ties every child, so the title decides.
+            ["area desc", ["a", "b"]]
+        ] as const) {
+            const note = buildNote({children, "#sorted": sorted});
             getContext().init(() => {
                 tree.sortNotesIfNeeded(note.noteId);
             });
@@ -326,7 +346,7 @@ describe("Tree", () => {
                 {title: "bottom", "#bottom": ""},
                 {title: "b"}
             ],
-            "#sorted": "archived last"
+            "#sorted": "#archived last"
         });
         getContext().init(() => {
             tree.sortNotesIfNeeded(note.noteId);
