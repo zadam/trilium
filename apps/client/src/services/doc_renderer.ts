@@ -2,6 +2,7 @@ import type FNote from "../entities/fnote.js";
 import { applyReferenceLinks } from "../widgets/type_widgets/text/read_only_helper.js";
 import { t } from "./i18n.js";
 import { formatCodeBlocks } from "./syntax_highlight.js";
+import { escapeHtml } from "./utils.js";
 
 /**
  * The pages that ship with the application, named by the `docName` label that selects one. Their
@@ -44,7 +45,8 @@ export default async function renderDoc(note: FNote) {
         return $content;
     }
 
-    $content.html(t(`doc_notes.${docName}`, { sample: SAMPLES[docName] }));
+    const sample = SAMPLES[docName];
+    $content.html(t(`doc_notes.${docName}`, { sample: sample && escapeHtml(sample) }));
 
     formatCodeBlocks($content);
 
@@ -56,8 +58,8 @@ export default async function renderDoc(note: FNote) {
 
 /**
  * Code examples are not prose and have no business in the catalog, so the pages that carry one
- * leave a `sample` placeholder for it. i18next escapes what it interpolates, which is what keeps
- * the markup in the examples from being parsed as markup.
+ * leave a `sample` placeholder for it. The client's i18next does not escape interpolations, so
+ * `renderDoc()` passes each sample through `escapeHtml()`.
  */
 const SAMPLES: Partial<Record<DocName, string>> = {
     launchbar_script_launcher: `api.showMessage("Current note is " + api.getActiveContextNote().title);`,

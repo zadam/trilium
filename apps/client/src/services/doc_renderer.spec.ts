@@ -16,11 +16,10 @@ import renderDoc, { isDocName } from "./doc_renderer.js";
 const formatCodeBlocksMock = vi.fn((_arg?: unknown) => {});
 const applyReferenceLinksMock = vi.fn(async (_arg?: unknown) => {});
 
-/** Resolves against the shipped English catalog, escaping interpolations the way i18next does. */
+/** Resolves against the shipped English catalog, interpolating unescaped as the client's i18next does. */
 function translate(key: string, options?: Record<string, unknown>) {
     const entry = (en.doc_notes as Record<string, string>)[key.replace("doc_notes.", "")] ?? key;
-    return entry.replaceAll(/\{\{(\w+)\}\}/g, (_match, name: string) =>
-        String(options?.[name] ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"));
+    return entry.replaceAll(/\{\{(\w+)\}\}/g, (_match, name: string) => String(options?.[name] ?? ""));
 }
 
 /** Builds a minimal FNote-like object with the given docName label. */
