@@ -1,5 +1,6 @@
 import "./CodeEmbed.css";
 
+import type VanillaCodeMirror from "@triliumnext/codemirror";
 import { createPortal, type RefObject } from "preact";
 import { lazy, useSyncExternalStore } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -7,8 +8,12 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
 import { type ContentEditor, renderCodePreview } from "../../../services/content_renderer";
+import {
+    type CodeText, useCodeLanguageMenu, useTabWidthMenu
+} from "../../layout/code_note_menus";
 import { SaveStateBadge } from "../../layout/NoteBadges";
 import { useNoteBlob, useNoteProperty, useTriliumEvent } from "../../react/hooks";
+import { useContentEmbedMenus } from "../text/content_embed_menus";
 import {
     EditableEmbedContent, useEditableEmbed, useEmbedBadgeSlot, useEmbedPreview
 } from "../text/editable_embed";
@@ -35,8 +40,12 @@ export default function CodeEmbed({
     entity, editor, content: initialContent, mime: initialMime, preview
 }: CodeEmbedProps) {
     const rootRef = useRef<HTMLDivElement>(null);
+    const viewRef = useRef<VanillaCodeMirror>(null);
     const note = entity instanceof FNote ? entity : null;
-    const { isEditing } = useEditableEmbed(rootRef, { editor, note, focusTarget: ".cm-content" });
+    // The toolbar buttons of a note come from `CodeNoteTools`, with the Editable toggle.
+    const { canEdit, isEditing } = useEditableEmbed(rootRef, {
+        editor, note, tools: note ? null : undefined, focusTarget: ".cm-content"
+    });
     const [ content, setContent ] = useState(initialContent);
     const mime = useNoteProperty(note, "mime") ?? initialMime;
     useSavedContent(entity, editor, setContent);
@@ -46,6 +55,14 @@ export default function CodeEmbed({
         () => renderCodePreview(content, mime),
         isEditing
     );
+    // The editor while it is open, otherwise the content, which a change saves.
+    const getCodeText = (): CodeText => viewRef.current ?? {
+        getText: () => content,
+        setText: (text) => {
+            editor.scheduleSave(() => text);
+            setContent(text);
+        }
+    };
 
     return (
         <>
@@ -61,12 +78,38 @@ export default function CodeEmbed({
                     editor={editor}
                     content={content}
                     mime={mime}
+                    viewRef={viewRef}
                     onClose={setContent}
                 />
             </EditableEmbedContent>
             <SaveStatus rootRef={rootRef} editor={editor} isShown={isEditing} />
+            {canEdit && note && (
+                <CodeNoteTools rootRef={rootRef} note={note} getCodeText={getCodeText} />
+            )}
         </>
     );
+}
+
+interface CodeNoteToolsProps {
+    rootRef: RefObject<HTMLElement | null>;
+    note: FNote;
+    /** The text that the re-indent items of the tab width menu convert. */
+    getCodeText: () => CodeText;
+}
+
+/**
+ * The "Change language mode" and "Change tab width" menus of the status bar, as buttons of the
+ * toolbar of the embed around `rootRef`.
+ */
+function CodeNoteTools({ rootRef, note, getCodeText }: CodeNoteToolsProps) {
+    const language = useCodeLanguageMenu(note);
+    const tabWidth = useTabWidthMenu(note, async () => getCodeText());
+    useContentEmbedMenus(rootRef, [
+        { id: "codeLanguage", ...language.menu },
+        { id: "tabWidth", ...tabWidth }
+    ]);
+
+    return language.modal;
 }
 
 interface SaveStatusProps {

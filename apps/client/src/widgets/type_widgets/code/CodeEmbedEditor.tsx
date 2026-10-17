@@ -1,4 +1,5 @@
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import type { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
@@ -16,15 +17,16 @@ export interface CodeEmbedEditorProps {
     editor: ContentEditor;
     content: string;
     mime: string;
+    /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
+    viewRef: RefObject<VanillaCodeMirror | null>;
     /** Receives the edited content when the editor goes away. */
     onClose: (content: string) => void;
 }
 
 /** CodeMirror over the content of a code embed, which `editor` saves as it changes. */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, onClose
+    note, editor, content, mime, viewRef, onClose
 }: CodeEmbedEditorProps) {
-    const viewRef = useRef<VanillaCodeMirror>(null);
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
     const [ noteTabWidth ] = useNoteLabelInt(note, "tabWidth");
@@ -55,6 +57,7 @@ export default function CodeEmbedEditor({
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
         const text = viewRef.current?.getText();
+        viewRef.current = null;
         editor.release();
         if (text !== undefined) {
             onClose(text);

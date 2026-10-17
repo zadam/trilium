@@ -27,6 +27,11 @@ export interface ContentEmbedTool {
     keystroke?: string;
     /** The tools of the menu that the button opens. */
     children?: ContentEmbedTool[];
+    /**
+     * Whether the button opens a menu that the content draws, with
+     * `ContentEmbedToolProvider.openMenu()`, instead of running the tool.
+     */
+    opensMenu?: boolean;
     /** A class of the button, for the content to style it. */
     class?: string;
 }
@@ -39,6 +44,8 @@ export type ContentEmbedToolbarItem =
 export interface ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[];
     execute(id: string): void;
+    /** Opens the menu of the tool `id`, which sets `opensMenu`, below `anchor`. */
+    openMenu?(id: string, anchor: HTMLElement): void;
     /** Calls `callback` when `getTools()` changes, until the returned function is called. */
     subscribe(callback: () => void): () => void;
     /** The items of the embed toolbar to hide. The menu of the embed still offers them. */

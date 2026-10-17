@@ -429,6 +429,7 @@ export default {
     getQuickEditItem,
     getOpenNoteItem,
     handleLinkContextMenuItem,
+    keepEditorFocused,
     openContextMenu,
     setShareLinkResolver
 };

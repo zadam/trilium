@@ -7,6 +7,7 @@ import type { SaveState } from "../../../components/note_context";
 import FAttachment from "../../../entities/fattachment";
 import FBlob from "../../../entities/fblob";
 import type FNote from "../../../entities/fnote";
+import contextMenu from "../../../menus/context_menu";
 import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import LoadResults from "../../../services/load_results";
@@ -23,6 +24,10 @@ const renderCodePreview = vi.hoisted(() => vi.fn(async (content: string, _mime: 
     return pre;
 }));
 vi.mock("../../../services/content_renderer", () => ({ renderCodePreview }));
+vi.mock("../../../services/i18n", () => ({
+    t: (key: string, values?: Record<string, unknown>) =>
+        values ? `${key} ${Object.values(values).join(" ")}` : key
+}));
 
 // `CodeEditor` reads the theme as a string.
 options.set("codeNoteTheme", "");
@@ -37,6 +42,7 @@ afterEach(() => {
         figure.remove();
     }
     figures.length = 0;
+    vi.restoreAllMocks();
 });
 
 describe("CodeEmbed", () => {
@@ -125,6 +131,78 @@ describe("CodeEmbed", () => {
             expect(figure.querySelector(".editable-embed-preview")?.textContent).toBe("ab");
         });
         expect(figure.querySelector(".cm-editor")).toBeNull();
+    });
+
+    it("offers the language and tab width menus of a note on the toolbar of its embed", async () => {
+        options.set("codeNoteTabWidth", "4");
+        options.set("codeNoteIndentWithTabs", "false");
+        options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
+        const show = vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        let unsavedContent: string | undefined;
+        const editor = buildEditor({
+            getUnsavedContent: () => unsavedContent,
+            scheduleSave: vi.fn((getContent: () => string) => {
+                unsavedContent = getContent();
+            })
+        });
+        const { figure } = await mount(buildCodeNote("if a:\n    b"), editor);
+        const tools = getContentEmbedTools(figure);
+        expect(tools?.hasEditableFlag).toBe(true);
+        expect(tools?.getTools().map(({ id, label, text, opensMenu }) => ({
+            id, label, text, opensMenu
+        }))).toEqual([
+            {
+                id: "codeLanguage", label: "status_bar.code_note_switcher", text: "Python",
+                opensMenu: true
+            },
+            {
+                id: "tabWidth", label: "status_bar.tab_width_title",
+                text: "status_bar.tab_width_spaces_short 4", opensMenu: true
+            }
+        ]);
+
+        /** Runs the item `title` of the "Re-indent" part of the tab width menu. */
+        const reindentTo = async (title: string) => {
+            tools?.openMenu?.("tabWidth", document.createElement("button"));
+            const items = show.mock.lastCall?.[0].items.slice(-7) ?? [];
+            const item = items.find((candidate) => "title" in candidate && candidate.title === title);
+            if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
+            await act(async () => item.handler?.(item, new MouseEvent("click")));
+        };
+        const getLastSave = () => vi.mocked(editor.scheduleSave).mock.lastCall?.[0]();
+
+        // The preview, which is saved.
+        await reindentTo("status_bar.tab_width_style_tabs");
+        expect(getLastSave()).toBe("if a:\n\tb");
+        await vi.waitFor(() => {
+            expect(figure.querySelector(".editable-embed-preview")?.textContent).toBe("if a:\n\tb");
+        });
+
+        // The editor while it is open, then the preview again once it closes.
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        const view = await findView(figure);
+        act(() => view.dispatch({ changes: { from: 0, insert: "# " } }));
+        await reindentTo("status_bar.tab_width_spaces 8");
+        expect(view.state.doc.toString()).toBe("# if a:\n        b");
+        await act(async () => {
+            delete figure.dataset.editable;
+            await Promise.resolve();
+        });
+        await reindentTo("status_bar.tab_width_spaces 2");
+        expect(getLastSave()).toBe("# if a:\n    b");
+        await vi.waitFor(() => {
+            expect(figure.querySelector(".editable-embed-preview")?.textContent)
+                .toBe("# if a:\n    b");
+        });
+
+        const { figure: attachmentFigure } = await mount(buildAttachment("script.py"), editor, {
+            content: "a"
+        });
+        expect(getContentEmbedTools(attachmentFigure)?.getTools()).toEqual([]);
+        expect(getContentEmbedTools(attachmentFigure)?.hasEditableFlag).toBe(true);
     });
 
     it("highlights an attachment with the MIME type it is given", async () => {
