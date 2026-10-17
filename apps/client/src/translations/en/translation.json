@@ -2694,7 +2694,11 @@
     "tool_approval_prompt": "Allow this tool call?",
     "tool_approval_allow": "Allow",
     "tool_approval_deny": "Deny",
-    "tool_approval_declined": "denied"
+    "tool_approval_declined": "denied",
+    "tool_approval_allow_for_chat": "Allow for this chat",
+    "allowed_tools": "Allowed in this chat",
+    "allowed_tools_count_one": "{{count}} tool",
+    "allowed_tools_count_other": "{{count}} tools"
   },
   "sidebar_chat": {
     "title": "AI Chat",

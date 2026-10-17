@@ -161,8 +161,11 @@ When the reply stops moving for a couple of seconds while the AI is still at wor
 Before the AI runs a tool, the chat asks whether to allow it. The tool's line is marked with a <span class="tn-icon bx bxs-hand"></span> icon and has _Allow_ and _Deny_ buttons below it. When the call would write to a note, the line opens on the text it would write or the changes of an edit. The reply waits until you answer.
 
 *   To let the call run, press _Allow_.
+*   To stop asking about a tool for the rest of the chat, open the menu next to _Allow_ and choose _Allow for this chat_. The call runs, and so do the other calls of that tool still waiting and every later one in this chat. Other tools keep asking, and a new chat asks again.
 *   To refuse it, press _Deny_. The AI is told that you declined, and its reply carries on without the call, which is marked _denied_.
 *   Stopping the reply denies every call that is still waiting.
+
+To make a chat ask about a tool again, open the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu at the bottom of the chat and, under _Allowed in this chat_, press the tool. The submenu is shown once the chat has allowed a tool.
 
 Every tool call asks, including the ones that only read: searching notes, reading a note or an attachment, and reading a web page through a search provider. A model's built-in web search runs on the provider's side and does not ask.
 

@@ -9,26 +9,34 @@
  * client does not send back.
  */
 
-import type { LlmToolApprovalRequest } from "@triliumnext/commons";
+import type { LlmToolApprovalAnswer, LlmToolApprovalRequest } from "@triliumnext/commons";
 
 /** The reason the model is given for a call the user declined. */
 export const TOOL_CALL_DECLINED_REASON = "The user declined this tool call.";
 
 /** The tool calls of one turn that wait for the user's answer. */
 export class ToolApprovals {
-    private readonly pending = new Map<string, (approved: boolean) => void>();
+    private readonly pending = new Map<string, { toolName: string; settle: (approved: boolean) => void }>();
+    /** The tools whose calls run without asking. */
+    private readonly allowedTools: Set<string>;
     /** Called with every request, so the turn can pass it on to the client. */
     onRequest?: (request: LlmToolApprovalRequest) => void;
 
-    constructor(private readonly abortSignal?: AbortSignal) {}
+    constructor(private readonly abortSignal?: AbortSignal, allowedTools: Iterable<string> = []) {
+        this.allowedTools = new Set(allowedTools);
+    }
 
     /**
      * Ask the user about a tool call. Resolves to whether it was approved; a turn that
-     * is stopped, or ends, before the user answers declines the call.
+     * is stopped, or ends, before the user answers declines the call. A call of an allowed
+     * tool is approved without asking.
      */
     request(request: LlmToolApprovalRequest): Promise<boolean> {
         if (this.abortSignal?.aborted) {
             return Promise.resolve(false);
+        }
+        if (this.allowedTools.has(request.toolName)) {
+            return Promise.resolve(true);
         }
 
         return new Promise((resolve) => {
@@ -39,21 +47,36 @@ export class ToolApprovals {
             };
             const onAbort = () => settle(false);
             this.abortSignal?.addEventListener("abort", onAbort, { once: true });
-            this.pending.set(request.toolCallId, settle);
+            this.pending.set(request.toolCallId, { toolName: request.toolName, settle });
             this.onRequest?.(request);
         });
     }
 
-    /** Settle a pending call. Returns `false` when no call with that id is waiting. */
-    answer(toolCallId: string, approved: boolean): boolean {
-        const settle = this.pending.get(toolCallId);
-        settle?.(approved);
-        return !!settle;
+    /**
+     * Settle a pending call. Approved with the `"chat"` scope, its tool is allowed from then on,
+     * and the other calls of it that wait are approved too. Returns `false` when no call with
+     * that id is waiting.
+     */
+    answer(toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]): boolean {
+        const call = this.pending.get(toolCallId);
+        if (!call) {
+            return false;
+        }
+        call.settle(approved);
+        if (approved && scope === "chat") {
+            this.allowedTools.add(call.toolName);
+            for (const waiting of [ ...this.pending.values() ]) {
+                if (waiting.toolName === call.toolName) {
+                    waiting.settle(true);
+                }
+            }
+        }
+        return true;
     }
 
     /** Decline every call that still waits. */
     declineAll(): void {
-        for (const settle of [ ...this.pending.values() ]) {
+        for (const { settle } of [ ...this.pending.values() ]) {
             settle(false);
         }
     }
@@ -62,17 +85,18 @@ export class ToolApprovals {
 const openApprovals = new Map<string, ToolApprovals>();
 
 /**
- * Open the approvals of a turn under its stream id. Returns `undefined` when a turn
- * with that id is already running.
+ * Open the approvals of a turn under its stream id, with the tools the chat allowed. Returns
+ * `undefined` when a turn with that id is already running.
  */
 export function openToolApprovals(
     streamId: string,
-    abortSignal?: AbortSignal
+    abortSignal?: AbortSignal,
+    allowedTools?: Iterable<string>
 ): ToolApprovals | undefined {
     if (openApprovals.has(streamId)) {
         return undefined;
     }
-    const approvals = new ToolApprovals(abortSignal);
+    const approvals = new ToolApprovals(abortSignal, allowedTools);
     openApprovals.set(streamId, approvals);
     return approvals;
 }
@@ -84,13 +108,14 @@ export function closeToolApprovals(streamId: string): void {
 }
 
 /**
- * Pass on the user's answer to a tool call. Returns `false` when the turn has ended or
- * the call was already answered.
+ * Pass on the user's answer to a tool call. Returns `false` when the turn has ended or the call
+ * was already answered.
  */
 export function answerToolApproval(
     streamId: string,
     toolCallId: string,
-    approved: boolean
+    approved: boolean,
+    scope?: LlmToolApprovalAnswer["scope"]
 ): boolean {
-    return openApprovals.get(streamId)?.answer(toolCallId, approved) ?? false;
+    return openApprovals.get(streamId)?.answer(toolCallId, approved, scope) ?? false;
 }

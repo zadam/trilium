@@ -97,11 +97,14 @@ export function startChatStream(req: { body: ChatStreamRequest }) {
  * was already answered, which a second click or a stopped turn can cause.
  */
 export function answerToolCall(req: { body: Partial<LlmToolApprovalAnswer> }) {
-    const { streamId, toolCallId, approved } = req.body ?? {};
+    const { streamId, toolCallId, approved, scope } = req.body ?? {};
     if (!streamId || !toolCallId || typeof approved !== "boolean") {
         throw new ValidationError("streamId, toolCallId and approved are required");
     }
-    return { answered: answerToolApproval(streamId, toolCallId, approved) };
+    if (scope !== undefined && scope !== "chat") {
+        throw new ValidationError("scope must be \"chat\" when given");
+    }
+    return { answered: answerToolApproval(streamId, toolCallId, approved, scope) };
 }
 
 /** Stop a completion started by {@link startChatStream}; unknown ids are a no-op. */

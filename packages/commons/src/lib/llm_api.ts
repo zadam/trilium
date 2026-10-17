@@ -118,6 +118,8 @@ export interface LlmChatConfig {
     contextNoteId?: string;
     /** The note ID of the chat note (used for auto-renaming on first message) */
     chatNoteId?: string;
+    /** The tools the user allowed for the whole chat, whose calls run without asking. */
+    allowedTools?: string[];
 }
 
 /**
@@ -262,6 +264,11 @@ export interface LlmToolApprovalAnswer {
     streamId: string;
     toolCallId: string;
     approved: boolean;
+    /**
+     * `"chat"` allows the call's tool for the rest of the chat: its other calls in the turn run
+     * without asking. Ignored for a denial.
+     */
+    scope?: "chat";
 }
 
 /**

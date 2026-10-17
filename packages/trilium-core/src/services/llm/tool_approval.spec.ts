@@ -130,3 +130,36 @@ describe("ToolApprovals", () => {
         expect(open.answer("c3", true)).toBe(false);
     });
 });
+
+describe("ToolApprovals allowed for the chat", () => {
+    it("runs a tool allowed for the chat without asking", async () => {
+        const approvals = new ToolApprovals(undefined, [ "rename_note" ]);
+        const onRequest = vi.fn();
+        approvals.onRequest = onRequest;
+
+        await expect(approvals.request({ toolCallId: "c1", toolName: "rename_note", toolInput: {} })).resolves.toBe(true);
+        expect(onRequest).not.toHaveBeenCalled();
+        void approvals.request({ toolCallId: "c2", toolName: "delete_note", toolInput: {} });
+        expect(onRequest).toHaveBeenCalledOnce();
+    });
+
+    it("allows the tool of a call allowed for the chat, for the calls that wait and the ones to come", async () => {
+        const approvals = new ToolApprovals();
+        const first = approvals.request({ toolCallId: "c1", toolName: "rename_note", toolInput: {} });
+        const parallel = approvals.request({ toolCallId: "c2", toolName: "rename_note", toolInput: {} });
+        const other = approvals.request({ toolCallId: "c3", toolName: "delete_note", toolInput: {} });
+
+        expect(approvals.answer("c1", true, "chat")).toBe(true);
+        await expect(first).resolves.toBe(true);
+        await expect(parallel).resolves.toBe(true);
+        await expect(approvals.request({ toolCallId: "c4", toolName: "rename_note", toolInput: {} })).resolves.toBe(true);
+
+        // A denial is never remembered, whatever its scope.
+        expect(approvals.answer("c3", false, "chat")).toBe(true);
+        await expect(other).resolves.toBe(false);
+        const asked = vi.fn();
+        approvals.onRequest = asked;
+        void approvals.request({ toolCallId: "c5", toolName: "delete_note", toolInput: {} });
+        expect(asked).toHaveBeenCalledOnce();
+    });
+});

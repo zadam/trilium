@@ -25,8 +25,9 @@ import { resolveToolRegistries } from "./tools/index.js";
  * ends with a `done` chunk only when the turn completed — an errored one stops
  * after its `error` chunk, so a caller that needs a terminator must add its own.
  *
- * Every tool call waits for the user: it is announced as a `tool_approval_request` chunk
- * and answered through `answerToolApproval()`, keyed by `streamId`.
+ * Every tool call waits for the user, unless the chat allowed its tool (`allowedTools`): it is
+ * announced as a `tool_approval_request` chunk and answered through `answerToolApproval()`,
+ * keyed by `streamId`.
  *
  * @param streamId the id the client gave the turn, unique among the turns running.
  * @param abortSignal stops the turn early: the provider aborts its completion and any tool
@@ -38,7 +39,10 @@ export async function* runChat(
     requestConfig: LlmProviderConfig = {},
     abortSignal?: AbortSignal
 ): AsyncGenerator<LlmStreamChunk> {
-    const toolApprovals = openToolApprovals(streamId, abortSignal);
+    const allowedTools = Array.isArray(requestConfig.allowedTools)
+        ? requestConfig.allowedTools.filter((name): name is string => typeof name === "string")
+        : [];
+    const toolApprovals = openToolApprovals(streamId, abortSignal, allowedTools);
     if (!toolApprovals) {
         yield { type: "error", error: `Stream '${streamId}' is already running.` };
         return;

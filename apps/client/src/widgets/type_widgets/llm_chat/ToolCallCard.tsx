@@ -1,5 +1,6 @@
 import "./ToolCallCard.css";
 
+import type { LlmToolApprovalAnswer } from "@triliumnext/commons";
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
 import { Trans } from "react-i18next";
@@ -7,7 +8,8 @@ import { Trans } from "react-i18next";
 import appContext from "../../../components/app_context.js";
 import { t } from "../../../services/i18n.js";
 import ActionButton from "../../react/ActionButton.js";
-import Button from "../../react/Button.js";
+import Button, { SplitButton } from "../../react/Button.js";
+import { FormListItem } from "../../react/FormList.js";
 import MaskedIcon from "../../react/MaskedIcon.js";
 import { NewNoteLink } from "../../react/NoteLink.js";
 import { providerIconUrl } from "../options/llm/provider_icons.js";
@@ -17,11 +19,13 @@ import { isFailedToolCall, type ToolCall } from "./llm_chat_types.js";
 import { ExternalLink, getToolCallView, type ToolCallView } from "./ToolCallViews.js";
 
 /**
- * Allows or denies a tool call of the running turn that waits for the user. Provided only around
- * the reply that streams, since a saved reply has nothing left to answer.
+ * Allows or denies a tool call of the running turn that waits for the user, or allows its tool for
+ * the rest of the chat. Provided only around the reply that streams, since a saved reply has nothing
+ * left to answer.
  */
-export const ToolApprovalContext =
-    createContext<((toolCallId: string, approved: boolean) => void) | undefined>(undefined);
+export const ToolApprovalContext = createContext<
+    ((toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => void) | undefined
+>(undefined);
 
 interface ToolCallContext {
     /** The primary note the tool operates on or created. */
@@ -440,13 +444,17 @@ function ToolApprovalBar({ toolCallId }: { toolCallId: string }) {
                 text={t("llm_chat.tool_approval_deny")}
                 onClick={() => answer(toolCallId, false)}
             />
-            <Button
+            <SplitButton
                 size="small"
                 kind="primary"
                 icon="bx bx-check"
                 text={t("llm_chat.tool_approval_allow")}
                 onClick={() => answer(toolCallId, true)}
-            />
+            >
+                <FormListItem icon="bx bx-check-double" onClick={() => answer(toolCallId, true, "chat")}>
+                    {t("llm_chat.tool_approval_allow_for_chat")}
+                </FormListItem>
+            </SplitButton>
         </div>
     );
 }

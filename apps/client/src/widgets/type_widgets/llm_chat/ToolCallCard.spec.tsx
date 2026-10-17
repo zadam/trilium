@@ -818,7 +818,7 @@ describe("ToolCallCard", () => {
         const buttons = (target: HTMLElement) =>
             [ ...target.querySelectorAll<HTMLButtonElement>(".llm-chat-tool-approval button") ];
 
-        it("shows a waiting call with nothing to preview as its line, and answers it from the buttons below", () => {
+        it("shows a waiting call with nothing to preview as its line, and answers it from the buttons below", async () => {
             const answer = vi.fn();
             const target = renderCard([ PENDING ], answer);
 
@@ -828,12 +828,26 @@ describe("ToolCallCard", () => {
             expect(line?.querySelector(".llm-chat-tool-call-approval-badge")).toBeNull();
             expect(line?.querySelector(".bxs-hand")).not.toBeNull();
 
-            const [ deny, allow ] = buttons(target);
+            const [ deny, allow, more ] = buttons(target);
             expect([ deny?.textContent?.trim(), allow?.textContent?.trim() ]).toEqual([ "llm_chat.tool_approval_deny", "llm_chat.tool_approval_allow" ]);
             act(() => allow?.click());
             expect(answer).toHaveBeenCalledExactlyOnceWith("c1", true);
             act(() => deny?.click());
             expect(answer).toHaveBeenLastCalledWith("c1", false);
+
+            // The menu of the Allow button allows the tool for the rest of the chat.
+            act(() => {
+                more?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+                more?.click();
+            });
+            const row = await vi.waitFor(() => {
+                const found = document.querySelector<HTMLElement>(".tn-popup.tn-menu li.dropdown-item");
+                if (!found) throw new Error("expected the menu to open");
+                return found;
+            });
+            expect(row.textContent).toBe("llm_chat.tool_approval_allow_for_chat");
+            act(() => row.click());
+            expect(answer).toHaveBeenLastCalledWith("c1", true, "chat");
         });
 
         it("opens a waiting writing call on what it would write", () => {
@@ -842,7 +856,7 @@ describe("ToolCallCard", () => {
             } ], vi.fn());
             expect(target.querySelector(".code-block-stub")?.textContent).toBe("hello");
             expect(target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call")?.open).toBe(true);
-            expect(buttons(target)).toHaveLength(2);
+            expect(buttons(target)).toHaveLength(3);
         });
 
         it("keeps a waiting call out of the group of its tool, and offers no buttons outside the streaming reply", () => {

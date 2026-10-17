@@ -206,4 +206,6 @@ export interface LlmChatContent {
     enableExtendedThinking?: boolean;
     /** The effort chosen for a model with levels; absent means the model's default. */
     reasoningEffort?: LlmReasoningEffort;
+    /** The tools the user allowed for this chat, whose calls run without asking. */
+    allowedTools?: string[];
 }

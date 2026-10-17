@@ -68,6 +68,8 @@ interface ChatInputBarProps {
     onNoteToolsChange?: () => void;
     /** Callback when the extended thinking switch or the reasoning effort changes */
     onExtendedThinkingChange?: () => void;
+    /** Callback when a tool allowed for the chat is revoked */
+    onAllowedToolsChange?: () => void;
     /** Callback when model changes */
     onModelChange?: (model: string) => void;
 }
@@ -80,6 +82,7 @@ export default function ChatInputBar({
     onWebSearchChange,
     onNoteToolsChange,
     onExtendedThinkingChange,
+    onAllowedToolsChange,
     onModelChange
 }: ChatInputBarProps) {
     // Provider add/edit modal. `modalProvider` undefined = adding; a config = editing.
@@ -168,6 +171,11 @@ export default function ChatInputBar({
     const handleNoteToolsToggle = (newValue: boolean) => {
         chat.setEnableNoteTools(newValue);
         onNoteToolsChange?.();
+    };
+
+    const handleRevokeAllowedTool = (toolName: string) => {
+        chat.revokeAllowedTool(toolName);
+        onAllowedToolsChange?.();
     };
 
     const handleExtendedThinkingToggle = (newValue: boolean) => {
@@ -464,6 +472,8 @@ export default function ChatInputBar({
                             webSearch={webSearch}
                             searchProviders={searchProviders}
                             onWebSearchChoose={chooseWebSearch}
+                            allowedTools={chat.allowedTools}
+                            onRevokeAllowedTool={handleRevokeAllowedTool}
                             disabled={chat.isStreaming}
                         />
                         {!currentModel?.reasoningEfforts?.length && (

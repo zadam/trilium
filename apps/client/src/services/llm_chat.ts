@@ -69,11 +69,12 @@ export interface StreamCallbacks {
     onToolUse?: (toolCallId: string, toolName: string, input: Record<string, unknown>) => void;
     /**
      * A tool call waits for the user to allow or deny it. `answer` sends the decision, and the call
-     * then runs or reports itself declined in a `tool_result`.
+     * then runs or reports itself declined in a `tool_result`. With the `"chat"` scope, the turn
+     * also runs its tool's other calls without asking.
      */
     onToolApprovalRequest?: (
         request: LlmToolApprovalRequest,
-        answer: (approved: boolean) => Promise<void>
+        answer: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => Promise<void>
     ) => void;
     onToolResult?: (toolCallId: string, toolName: string, result: string, isError?: boolean) => void;
     onCitation?: (citation: LlmCitation) => void;
@@ -312,8 +313,11 @@ async function handleChunk(
             break;
         case "tool_approval_request": {
             const { toolCallId, toolName, toolInput } = chunk;
-            callbacks.onToolApprovalRequest?.({ toolCallId, toolName, toolInput }, (approved) =>
-                answerToolApproval({ streamId, toolCallId, approved }));
+            callbacks.onToolApprovalRequest?.({ toolCallId, toolName, toolInput }, (approved, scope) => {
+                const answer: LlmToolApprovalAnswer = { streamId, toolCallId, approved };
+                if (scope) answer.scope = scope;
+                return answerToolApproval(answer);
+            });
             break;
         }
         case "tool_result":

@@ -483,7 +483,7 @@ describe("useLlmChat", () => {
             api().answerToolCall("c1", true);
             callbacks?.onToolResult("c1", "delete_note", JSON.stringify({ error: "declined" }), true);
         });
-        expect(answers.c1).toHaveBeenCalledExactlyOnceWith(false);
+        expect(answers.c1).toHaveBeenCalledExactlyOnceWith(false, undefined);
         expect(api().streamingBlocks[0]).toMatchObject({ toolCall: { id: "c1", approval: "declined" } });
 
         // Stopped while waiting: the call that was never answered is no longer waiting.
@@ -496,5 +496,72 @@ describe("useLlmChat", () => {
         ]);
         api().answerToolCall("c2", true);
         expect(answers.c2).not.toHaveBeenCalled();
+    });
+
+    it("allows a tool for the chat: releases its waiting calls, sends and saves the list, and revokes it", async () => {
+        type Answer = (approved: boolean, scope?: "chat") => Promise<void>;
+        let callbacks: {
+            onToolApprovalRequest: (request: { toolCallId: string; toolName: string; toolInput: Record<string, unknown> }, answer: Answer) => void;
+        } | undefined;
+        let finish: () => void = () => undefined;
+        streamChatCompletionMock.mockImplementation(async (_messages, _options, cb) => {
+            callbacks = cb;
+            await new Promise<void>(resolve => { finish = resolve; });
+            cb.onDone();
+        });
+        const answers = { c1: vi.fn<Answer>(async () => {}), c2: vi.fn<Answer>(async () => {}), c3: vi.fn<Answer>(async () => {}) };
+        const send = async (text: string) => {
+            await act(async () => {
+                api().setInput(text);
+            });
+            await act(async () => {
+                void api().handleSubmit(new Event("submit"));
+            });
+        };
+        await mountChat();
+        await send("rename them");
+        await act(async () => {
+            callbacks?.onToolApprovalRequest({ toolCallId: "c1", toolName: "rename_note", toolInput: {} }, answers.c1);
+            callbacks?.onToolApprovalRequest({ toolCallId: "c2", toolName: "rename_note", toolInput: {} }, answers.c2);
+            callbacks?.onToolApprovalRequest({ toolCallId: "c3", toolName: "delete_note", toolInput: {} }, answers.c3);
+        });
+
+        await act(async () => {
+            api().answerToolCall("c1", true, "chat");
+        });
+        // The turn approves the other calls of the tool itself, so only the first answer is sent.
+        expect(answers.c1).toHaveBeenCalledExactlyOnceWith(true, "chat");
+        expect(answers.c2).not.toHaveBeenCalled();
+        expect(api().streamingBlocks).toMatchObject([
+            { toolCall: { id: "c1", approval: undefined } },
+            { toolCall: { id: "c2", approval: undefined } },
+            { toolCall: { id: "c3", approval: "pending" } }
+        ]);
+        expect(api().allowedTools).toEqual([ "rename_note" ]);
+        expect(api().getContent().allowedTools).toEqual([ "rename_note" ]);
+
+        await act(async () => {
+            finish();
+        });
+        await send("again");
+        expect(streamChatCompletionMock.mock.calls.at(-1)?.[1]).toMatchObject({ allowedTools: [ "rename_note" ] });
+        await act(async () => {
+            finish();
+        });
+
+        await act(async () => {
+            api().revokeAllowedTool("rename_note");
+        });
+        expect(api().allowedTools).toEqual([]);
+        expect(api().getContent().allowedTools).toBeUndefined();
+
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [], allowedTools: [ "get_note", 3 as unknown as string ] });
+        });
+        expect(api().allowedTools).toEqual([ "get_note" ]);
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [] });
+        });
+        expect(api().allowedTools).toEqual([]);
     });
 });

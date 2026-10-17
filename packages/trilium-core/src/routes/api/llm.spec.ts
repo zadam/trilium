@@ -221,9 +221,20 @@ describe("answerToolCall", () => {
         expect(answerToolCall({ body: { streamId: "s2", toolCallId: "c1", approved: true } })).toEqual({ answered: false });
     });
 
+    it("allows the tool for the rest of the turn when the answer is scoped to the chat", async () => {
+        const approvals = openToolApprovals("s1");
+        const decision = approvals?.request({ toolCallId: "c1", toolName: "create_note", toolInput: {} });
+
+        expect(answerToolCall({ body: { streamId: "s1", toolCallId: "c1", approved: true, scope: "chat" } })).toEqual({ answered: true });
+        await expect(decision).resolves.toBe(true);
+        await expect(approvals?.request({ toolCallId: "c2", toolName: "create_note", toolInput: {} })).resolves.toBe(true);
+    });
+
     it("rejects an answer that names no call or gives no decision", () => {
         expect(() => answerToolCall({ body: { streamId: "s1", toolCallId: "c1" } })).toThrow(/approved are required/);
         expect(() => answerToolCall({ body: { streamId: "s1", approved: true } })).toThrow(/approved are required/);
         expect(() => answerToolCall({ body: { toolCallId: "c1", approved: true } })).toThrow(/approved are required/);
+        expect(() => answerToolCall({ body: { streamId: "s1", toolCallId: "c1", approved: true, scope: "forever" as "chat" } }))
+            .toThrow(/scope/);
     });
 });

@@ -1,4 +1,4 @@
-import { LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmReasoningEffort, type LlmStreamStatus, type LlmUsage } from "@triliumnext/commons";
+import { LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmReasoningEffort, type LlmStreamStatus, type LlmToolApprovalAnswer, type LlmUsage } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
@@ -86,6 +86,15 @@ function stripQuoteSourcesFromApiContent(content: string | LlmMessagePart[]): st
     return content.map(part => (part.type === "text" ? { ...part, text: stripQuoteSources(part.text) } : part));
 }
 
+/** A tool call of the running turn that waits for the user. */
+interface WaitingToolCall {
+    toolName: string;
+    /** Send the user's answer to the turn. */
+    answer: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => void;
+    /** Stop waiting on a call the turn approved itself, without answering it. */
+    release: () => void;
+}
+
 export interface LlmChatOptions {
     /** Default value for enableNoteTools */
     defaultEnableNoteTools?: boolean;
@@ -124,6 +133,8 @@ export interface UseLlmChatReturn {
     enableExtendedThinking: boolean;
     /** The effort chosen for a model with levels; undefined means the model's default. */
     reasoningEffort: LlmReasoningEffort | undefined;
+    /** The tools allowed for this chat, whose calls run without asking. */
+    allowedTools: string[];
     contextNoteId: string | undefined;
     /** The chat note's ID — used as the upload target for attachments. */
     chatNoteId: string | undefined;
@@ -180,8 +191,11 @@ export interface UseLlmChatReturn {
     refreshModels: () => void;
     /** Stop the current generation */
     stopStreaming: () => void;
-    /** Allow or deny a tool call of the running turn that waits for the user. */
-    answerToolCall: (toolCallId: string, approved: boolean) => void;
+    /** Allow or deny a tool call of the running turn that waits for the user. With the
+     * `"chat"` scope, its tool is allowed for the rest of the chat. */
+    answerToolCall: (toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => void;
+    /** Make the chat ask about a tool it allowed again. */
+    revokeAllowedTool: (toolName: string) => void;
     /** Re-run the last turn after a failed response (drops the trailing error message) */
     retryLast: () => void;
     /** Regenerate the last reply: re-run from the last user message, dropping the reply that followed */
@@ -229,6 +243,7 @@ export function useLlmChat(
     const [enableNoteTools, setEnableNoteTools] = useState(defaultEnableNoteTools);
     const [enableExtendedThinking, setEnableExtendedThinking] = useState(false);
     const [reasoningEffort, setReasoningEffort] = useState<LlmReasoningEffort | undefined>(undefined);
+    const [allowedTools, setAllowedTools] = useState<string[]>([]);
     const [contextNoteId, setContextNoteId] = useState<string | undefined>(initialContextNoteId);
     const [chatNoteId, setChatNoteIdState] = useState<string | undefined>(initialChatNoteId);
     const [lastPromptTokens, setLastPromptTokens] = useState<number>(0);
@@ -242,8 +257,9 @@ export function useLlmChat(
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomSpacerRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
-    // How to answer each tool call of the running turn that waits for the user, by call id.
-    const toolApprovalAnswersRef = useRef(new Map<string, (approved: boolean) => void>());
+    // The tool calls of the running turn that wait for the user, by call id: how to answer one,
+    // and how to stop waiting on one the turn approved itself.
+    const toolApprovalAnswersRef = useRef(new Map<string, WaitingToolCall>());
     const anchorRafRef = useRef<number | null>(null);
     // A one-shot scroll to run after the next messages render: "anchor" parks a fresh
     // reply near the top (sending/retrying), "bottom" jumps to the latest content
@@ -270,6 +286,8 @@ export function useLlmChat(
     enableWebSearchRef.current = enableWebSearch;
     const enableNoteToolsRef = useRef(enableNoteTools);
     enableNoteToolsRef.current = enableNoteTools;
+    const allowedToolsRef = useRef(allowedTools);
+    allowedToolsRef.current = allowedTools;
     const enableExtendedThinkingRef = useRef(enableExtendedThinking);
     enableExtendedThinkingRef.current = enableExtendedThinking;
     const reasoningEffortRef = useRef(reasoningEffort);
@@ -545,6 +563,9 @@ export function useLlmChat(
             setEnableExtendedThinking(content.enableExtendedThinking);
         }
         setReasoningEffort(LLM_REASONING_EFFORTS.find(level => level === content.reasoningEffort));
+        setAllowedTools(Array.isArray(content.allowedTools)
+            ? content.allowedTools.filter((name): name is string => typeof name === "string")
+            : []);
         // Restore last prompt tokens from the most recent message with usage
         const lastUsage = [...(content.messages || [])].reverse().find(m => m.usage)?.usage;
         setLastPromptTokens(lastUsage?.promptTokens ?? 0);
@@ -567,6 +588,9 @@ export function useLlmChat(
         }
         if (reasoningEffortRef.current) {
             content.reasoningEffort = reasoningEffortRef.current;
+        }
+        if (allowedToolsRef.current.length) {
+            content.allowedTools = allowedToolsRef.current;
         }
         return content;
     }, [supportsExtendedThinking]);
@@ -658,6 +682,9 @@ export function useLlmChat(
         }
         if (reasoningEffort && matchedModel?.reasoningEfforts?.length) {
             streamOptions.reasoningEffort = reasoningEffort;
+        }
+        if (allowedTools.length) {
+            streamOptions.allowedTools = allowedTools;
         }
 
         const abortController = new AbortController();
@@ -812,13 +839,20 @@ export function useLlmChat(
                         };
                         contentBlocks.push({ type: "tool_call", toolCall });
                     }
-                    toolApprovalAnswersRef.current.set(toolCallId, (approved) => {
+                    const settle = (approved: boolean) => {
                         toolApprovalAnswersRef.current.delete(toolCallId);
                         updateToolCall(toolCallId, { approval: approved ? undefined : "declined" });
                         setTargetBlocks([...contentBlocks]);
-                        answer(approved).catch((e: unknown) => {
-                            console.error("Failed to answer the tool call:", e);
-                        });
+                    };
+                    toolApprovalAnswersRef.current.set(toolCallId, {
+                        toolName,
+                        answer: (approved, scope) => {
+                            settle(approved);
+                            answer(approved, scope).catch((e: unknown) => {
+                                console.error("Failed to answer the tool call:", e);
+                            });
+                        },
+                        release: () => settle(true)
                     });
                     setTargetBlocks([...contentBlocks]);
                 },
@@ -894,7 +928,7 @@ export function useLlmChat(
             setIsStreaming(false);
             abortControllerRef.current = null;
         });
-    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
+    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, allowedTools, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
 
     const handleSubmit = useCallback(async (e: Event) => {
         e.preventDefault();
@@ -969,9 +1003,27 @@ export function useLlmChat(
         }
     }, [handleSubmit]);
 
-    /** Allow or deny a tool call of the running turn that waits for the user. */
-    const answerToolCall = useCallback((toolCallId: string, approved: boolean) => {
-        toolApprovalAnswersRef.current.get(toolCallId)?.(approved);
+    /**
+     * Allow or deny a tool call of the running turn that waits for the user. Allowed for the chat,
+     * its tool is added to `allowedTools`, and the other calls of it that wait stop waiting, since
+     * the turn approves them itself.
+     */
+    const answerToolCall = useCallback((toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => {
+        const waiting = toolApprovalAnswersRef.current.get(toolCallId);
+        if (!waiting) return;
+        waiting.answer(approved, scope);
+        if (!approved || scope !== "chat") return;
+
+        setAllowedTools(tools => (tools.includes(waiting.toolName) ? tools : [ ...tools, waiting.toolName ]));
+        for (const other of [ ...toolApprovalAnswersRef.current.values() ]) {
+            if (other.toolName === waiting.toolName) {
+                other.release();
+            }
+        }
+    }, []);
+
+    const revokeAllowedTool = useCallback((toolName: string) => {
+        setAllowedTools(tools => tools.filter(tool => tool !== toolName));
     }, []);
 
     /** Stop the current generation by aborting the SSE connection. */
@@ -1015,6 +1067,7 @@ export function useLlmChat(
         enableNoteTools,
         enableExtendedThinking,
         reasoningEffort,
+        allowedTools,
         contextNoteId,
         chatNoteId,
         lastPromptTokens,
@@ -1055,6 +1108,7 @@ export function useLlmChat(
         refreshModels,
         stopStreaming,
         answerToolCall,
+        revokeAllowedTool,
         retryLast,
         regenerateLastReply
     };

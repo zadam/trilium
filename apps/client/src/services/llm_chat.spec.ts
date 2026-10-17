@@ -131,10 +131,12 @@ describe("streamChatCompletion", () => {
         await streamChatCompletion(messages, config, cb);
         expect(cb.onToolApprovalRequest).toHaveBeenCalledExactlyOnceWith(request, expect.any(Function));
 
-        const answer = cb.onToolApprovalRequest.mock.calls[0][1] as (approved: boolean) => Promise<void>;
+        const answer = cb.onToolApprovalRequest.mock.calls[0][1] as (approved: boolean, scope?: "chat") => Promise<void>;
         await answer(false);
         const { streamId } = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
         expect(server.post).toHaveBeenCalledExactlyOnceWith("llm-chat/tool-approval", { streamId, toolCallId: "c1", approved: false });
+        await answer(true, "chat");
+        expect(server.post).toHaveBeenLastCalledWith("llm-chat/tool-approval", { streamId, toolCallId: "c1", approved: true, scope: "chat" });
     });
 
     it("rethrows an AbortError from fetch (user stopped)", async () => {

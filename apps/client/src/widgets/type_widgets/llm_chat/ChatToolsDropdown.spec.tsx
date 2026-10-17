@@ -66,13 +66,15 @@ afterEach(() => {
 
 const TAVILY = { id: "s1", name: "Tavily", provider: "tavily" };
 
-function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choice: "disabled", enableWebSearch: false } }: {
+function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choice: "disabled", enableWebSearch: false }, allowedTools = [] }: {
     enableNoteTools?: boolean;
+    allowedTools?: string[];
     modelProvider?: string;
     webSearch?: WebSearchState;
 } = {}) {
     const onNoteToolsChange = vi.fn();
     const onWebSearchChoose = vi.fn();
+    const onRevokeAllowedTool = vi.fn();
     host = document.body.appendChild(document.createElement("div"));
     const target = host;
     act(() => render(
@@ -83,6 +85,8 @@ function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choi
             webSearch={webSearch}
             searchProviders={[ TAVILY ]}
             onWebSearchChoose={onWebSearchChoose}
+            allowedTools={allowedTools}
+            onRevokeAllowedTool={onRevokeAllowedTool}
         />, target));
 
     const rows = [ ...target.querySelectorAll<HTMLElement>(".menu .dropdown-item") ];
@@ -104,13 +108,25 @@ function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choi
         marked: () => rows.filter((candidate) => candidate.getAttribute("aria-checked") === "true" || candidate.querySelector(".bx-check"))
             .map((candidate) => candidate.textContent),
         onNoteToolsChange,
-        onWebSearchChoose
+        onWebSearchChoose,
+        onRevokeAllowedTool
     };
 }
 
 const isOn = (row: HTMLElement | undefined) => row?.querySelector<HTMLInputElement>("input[type='checkbox']")?.checked;
 
 describe("ChatToolsDropdown", () => {
+    it("lists the tools allowed for the chat, and makes the chat ask about a pressed one again", async () => {
+        expect(renderMenu().toggle?.parentElement?.textContent).not.toContain("llm_chat.allowed_tools");
+
+        const menu = renderMenu({ allowedTools: [ "rename_note", "delete_note" ] });
+        const submenus = [ ...(menu.toggle?.parentElement?.querySelectorAll(".submenu-row") ?? []) ].map(row => row.textContent);
+        expect(submenus).toContain("llm_chat.allowed_toolsllm_chat.allowed_tools_count");
+        expect(menu.marked()).toEqual(expect.arrayContaining([ "llm.tools.rename_note", "llm.tools.delete_note" ]));
+        await act(async () => menu.row("llm.tools.rename_note")?.click());
+        expect(menu.onRevokeAllowedTool).toHaveBeenCalledExactlyOnceWith("rename_note");
+    });
+
     it("marks the toggle while note access or a usable web search is on", () => {
         const off = renderMenu();
         expect(off.toggle?.title).toBe("llm_chat.tools");

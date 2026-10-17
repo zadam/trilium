@@ -157,7 +157,7 @@
         justify-content: flex-end;
         gap: 0.5rem;
 
-        > button.btn.btn-sm {
+        button.btn.btn-sm {
             min-width: unset;
         }
     }

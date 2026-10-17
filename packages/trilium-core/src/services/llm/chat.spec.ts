@@ -206,6 +206,16 @@ describe("runChat", () => {
             expect(answerToolApproval("s1", "c1", true)).toBe(false);
         });
 
+        it("runs a call of a tool the chat allowed without announcing it", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const turn = runChat("s1", HELLO, { allowedTools: [ "create_note" ] });
+
+            expect((await turn.next()).value).toEqual(TOOL_USE);
+            expect((await turn.next()).value).toEqual({ type: "text", content: "approved: true" });
+            expect((await turn.next()).done).toBe(true);
+        });
+
         it("declines a waiting call when the turn is stopped", async () => {
             state.chunkNative = true;
             state.asksApproval = true;
