@@ -1,10 +1,7 @@
 import {
     CANVAS_ATTACHMENT_MIME,
     CANVAS_ATTACHMENT_TITLE,
-    EMPTY_CANVAS_CONTENT,
-    MERMAID_ATTACHMENT_MIME,
-    MERMAID_ATTACHMENT_TITLE,
-    NEW_MERMAID_CONTENT
+    EMPTY_CANVAS_CONTENT
 } from "@triliumnext/commons";
 import {
     ButtonView,
@@ -21,7 +18,6 @@ import {
     type Locale
 } from "ckeditor5";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
-import bxNetworkChart from "boxicons/svg/regular/bx-network-chart.svg?raw";
 import bxPen from "boxicons/svg/regular/bx-pen.svg?raw";
 import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
 
@@ -32,7 +28,7 @@ import type { FileUploadOptions } from "./fileuploadcommand.js";
  * the list also offers to link them. In an editor without embeds, the button links them.
  *
  * Also registers the `drawingCanvas` button, which attaches an empty canvas drawing and embeds it,
- * editable, and the `mermaidDiagram` button, which does the same with a new Mermaid diagram.
+ * editable.
  */
 export default class FileUploadUI extends Plugin {
     static get pluginName() {
@@ -98,19 +94,17 @@ export default class FileUploadUI extends Plugin {
         editor.ui.componentFactory.add("drawingCanvas", (locale) => {
             const button = new ButtonView(locale);
             button.set({ label: t("Drawing canvas"), icon: bxPen, tooltip: true });
-            bindToEmbedUpload(editor, button);
+
+            const uploadCommand = editor.commands.get("fileUpload");
+            const embedCommand = editor.commands.get("insertContentEmbed");
+            if (uploadCommand && embedCommand) {
+                button.bind("isEnabled").to(uploadCommand, "isEnabled", embedCommand, "isEnabled",
+                    (canUpload, canEmbed) => canUpload && canEmbed);
+            } else {
+                button.isEnabled = false;
+            }
+
             button.on("execute", () => insertDrawingCanvas(editor));
-
-            return button;
-        });
-
-        editor.ui.componentFactory.add("mermaidDiagram", (locale) => {
-            const button = new ButtonView(locale);
-            button.set({
-                label: t("Mermaid diagram (embedded)"), icon: bxNetworkChart, tooltip: true
-            });
-            bindToEmbedUpload(editor, button);
-            button.on("execute", () => insertMermaidDiagram(editor));
 
             return button;
         });
@@ -148,35 +142,9 @@ export default class FileUploadUI extends Plugin {
  * the `drawingCanvas` button does.
  */
 export function insertDrawingCanvas(editor: Editor) {
-    insertEditableEmbed(editor, new File([ EMPTY_CANVAS_CONTENT ], CANVAS_ATTACHMENT_TITLE, {
+    const file = new File([ EMPTY_CANVAS_CONTENT ], CANVAS_ATTACHMENT_TITLE, {
         type: CANVAS_ATTACHMENT_MIME
-    }));
-}
-
-/**
- * Attaches a new Mermaid diagram and embeds it, editable and untitled, with the focus in it, as the
- * `mermaidDiagram` button does.
- */
-export function insertMermaidDiagram(editor: Editor) {
-    insertEditableEmbed(editor, new File([ NEW_MERMAID_CONTENT ], MERMAID_ATTACHMENT_TITLE, {
-        type: MERMAID_ATTACHMENT_MIME
-    }));
-}
-
-/** Enables `button` while a file can be attached and embedded at the selection. */
-function bindToEmbedUpload(editor: Editor, button: ButtonView) {
-    const uploadCommand = editor.commands.get("fileUpload");
-    const embedCommand = editor.commands.get("insertContentEmbed");
-    if (uploadCommand && embedCommand) {
-        button.bind("isEnabled").to(uploadCommand, "isEnabled", embedCommand, "isEnabled",
-            (canUpload, canEmbed) => canUpload && canEmbed);
-    } else {
-        button.isEnabled = false;
-    }
-}
-
-/** Attaches `file` and embeds it, editable and untitled, with the focus in it. */
-function insertEditableEmbed(editor: Editor, file: File) {
+    });
     editor.execute("fileUpload", {
         file: [ file ],
         asEmbed: true,

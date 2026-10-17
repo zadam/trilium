@@ -34,6 +34,7 @@ import { waitForPendingRenders } from "./pending_renders.js";
 import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
+import { getSourceEmbedTypeByContentType } from "./source_embeds.js";
 import { applySingleBlockSyntaxHighlight } from "./syntax_highlight.js";
 import { getErrorMessage } from "./utils.js";
 
@@ -209,8 +210,8 @@ export async function getRenderedContent(this: {} | { ctx: string }, entity: FNo
         await renderIconPack(entity, $renderedContent, options);
     } else if (type === "canvasDrawing") {
         await renderCanvasDrawing(entity, $renderedContent, options);
-    } else if (type === "mermaidDiagram") {
-        await renderMermaidDiagram(entity, $renderedContent, options);
+    } else if (getSourceEmbedTypeByContentType(type)) {
+        await renderSourceEmbed(entity, type, $renderedContent, options);
     } else if (type === "image" && options.mediaEnvironment === "embedded") {
         await renderImageViewer(entity, $renderedContent);
     } else if (["image", "canvas", "mermaid", "mindMap", "spreadsheet"].includes(type)) {
@@ -295,7 +296,7 @@ export const CONTENT_RENDERERS = {
     image: () => import("../widgets/react/ImageViewer"),
     file: {
         canvasDrawing: () => import("../widgets/type_widgets/canvas/CanvasDrawing"),
-        mermaidDiagram: () => import("../widgets/type_widgets/mermaid/MermaidDiagram"),
+        sourceEmbed: () => import("../widgets/type_widgets/text/SourceEmbed"),
         pdf: () => import("../widgets/type_widgets/file/PdfViewer"),
         media: () => import("../widgets/type_widgets/file/MediaPreview")
     },
@@ -591,22 +592,32 @@ async function renderCanvasDrawing(
 }
 
 /**
- * Renders a Mermaid diagram kept in a file or an attachment, in a zoom/pan viewer. Interactive
- * content of an attachment is edited beside the diagram while the Editable toggle of its embed is on.
+ * Renders the source of a {@link SourceEmbedType} kept in a file or an attachment, such as a Mermaid
+ * diagram. Interactive content of an attachment can be edited while the Editable toggle of its
+ * embed is on.
  */
-async function renderMermaidDiagram(
+async function renderSourceEmbed(
     entity: FNote | FAttachment,
+    type: string,
     $renderedContent: JQuery<HTMLElement>,
     options: RenderOptions
 ) {
-    const { default: MermaidDiagram } = await CONTENT_RENDERERS.file.mermaidDiagram();
+    const sourceType = getSourceEmbedTypeByContentType(type);
+    if (!sourceType) return;
+
+    const [ { default: AttachmentSourceEmbed }, component ] = await Promise.all([
+        CONTENT_RENDERERS.file.sourceEmbed(),
+        sourceType.load()
+    ]);
     const editor = options.interactive ? getContentEditor(entity, options) : undefined;
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
 
-    const $container = $('<div class="mermaid-diagram-embed">');
+    const $container = $('<div class="source-embed">');
     const container = $container.get(0);
     if (container) {
-        await mountInteractiveWidget(h(MermaidDiagram, { entity, editor, content }), container);
+        await mountInteractiveWidget(
+            h(AttachmentSourceEmbed, { entity, editor, content, component }), container
+        );
     }
     $renderedContent.append($container);
 }

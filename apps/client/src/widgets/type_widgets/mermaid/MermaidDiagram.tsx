@@ -11,16 +11,13 @@ import { lazy, Suspense } from "preact/compat";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
-import type FAttachment from "../../../entities/fattachment";
-import FNote from "../../../entities/fnote";
-import type { ContentEditor } from "../../../services/content_renderer";
 import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
+import type { SourceEmbedProps } from "../../../services/source_embeds";
 import OverlayControlGroup, { ZoomControls } from "../../react/OverlayControlGroup";
 import { RawHtmlBlock } from "../../react/RawHtml";
 import { useZoomPanPinch, useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard, ZOOM_PAN_VIEWPORT_CLASS } from "../../react/zoom_pan_keyboard";
-import { useSavedContent } from "../code/CodeEmbed";
 import mermaidLinter from "../linters/mermaid";
 import {
     type ContentEmbedTool,
@@ -32,23 +29,15 @@ import { useEditableEmbed } from "../text/editable_embed";
 
 const CodeEmbedEditor = lazy(() => import("../code/CodeEmbedEditor"));
 
-interface MermaidDiagramProps {
-    entity: FNote | FAttachment;
-    /** Saves the changes. Without it the diagram is read-only. */
-    editor?: ContentEditor;
-    /** The source shown first. */
-    content: string;
-}
-
 /**
  * A Mermaid diagram in an embed, shown in a zoom/pan viewer, and edited in CodeMirror beside it
  * while the Editable toggle of its embed is on. The zoom and fullscreen are buttons of the toolbar
- * of the embed.
+ * of the embed. The source is kept inline or in an attachment, see `SOURCE_EMBED_TYPES`.
  */
-export default function MermaidDiagram({ entity, editor, content: initialContent }: MermaidDiagramProps) {
+export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     const rootRef = useRef<HTMLDivElement>(null);
     const [ previewEl, setPreviewEl ] = useState<HTMLDivElement | null>(null);
-    const [ source, setSource ] = useState(initialContent);
+    const [ source, setSource ] = useState(content);
     const { svg, error } = useMermaidRender(source);
 
     const zoom = useZoomPanPinch({ minScale: MIN_ZOOM, maxScale: MAX_ZOOM });
@@ -56,12 +45,17 @@ export default function MermaidDiagram({ entity, editor, content: initialContent
     tools.setZoom(zoom);
     const { canEdit, isEditing } = useEditableEmbed(rootRef, {
         editor,
-        note: entity instanceof FNote ? entity : null,
+        note: null,
         tools,
         focusTarget: ".cm-content"
     });
 
-    useSavedContent(entity, editor, setSource);
+    // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
+    useEffect(() => {
+        if (editor?.getUnsavedContent() === undefined) {
+            setSource(content);
+        }
+    }, [ content ]);
     useZoomPanKeyboard(zoom.ref, previewEl);
     useZoomPanWheel(zoom.ref, previewEl, true);
 

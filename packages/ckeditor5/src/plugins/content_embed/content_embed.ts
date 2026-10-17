@@ -27,6 +27,7 @@ import noteIcon from '../../icons/note.svg?raw';
 import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
+import ContentEmbedInlineSource, { isInlineSourceEmbed } from './inline_source.js';
 import './nested_editor_events.js';
 
 export const COMMAND_NAME = 'insertContentEmbed';
@@ -104,7 +105,7 @@ export default class ContentEmbed extends Plugin {
 	declare public selectedEmbedTools: ContentEmbedToolProvider | null;
 
 	static get requires() {
-		return [ ContentEmbedEditing, ContentEmbedUI ];
+		return [ ContentEmbedEditing, ContentEmbedUI, ContentEmbedInlineSource ];
 	}
 
 	static get pluginName() {
@@ -943,7 +944,7 @@ function isContentEmbed( node: ModelNode | ModelDocumentFragment | null ): node 
 /** Whether the title of `embed` can be hidden: a Tiny or an Expandable one always shows it. */
 function isEmbedTitleToggleable( embed: ModelElement ) {
 	const boxSize = embed.getAttribute( 'boxSize' );
-	return boxSize !== 'tiny' && boxSize !== 'expandable';
+	return boxSize !== 'tiny' && boxSize !== 'expandable' && !isInlineSourceEmbed( embed );
 }
 
 /** Whether the content of `embed` has an editable mode, which its content type opts in to. */
@@ -953,7 +954,7 @@ function isEmbedEditableToggleable( editor: Editor, embed: ModelElement ) {
 
 /** Whether `embed` can have a caption. A Tiny embed has none. */
 function isEmbedCaptionToggleable( editor: Editor, embed: ModelElement ) {
-	return embed.getAttribute( 'boxSize' ) !== 'tiny'
+	return embed.getAttribute( 'boxSize' ) !== 'tiny' && !isInlineSourceEmbed( embed )
 		&& editor.model.schema.checkChild( embed, 'caption' );
 }
 
@@ -1001,6 +1002,10 @@ function addContentEmbeds(
  * it. An embed whose upload has not ended names nothing.
  */
 function getEmbeddedEntityAttributes( element: ModelElement ): Record<string, string> {
+	const language = element.getAttribute( 'language' ) as string | undefined;
+	if ( language ) {
+		return { 'data-language': language };
+	}
 	const attachmentId = element.getAttribute( 'attachmentId' ) as string | undefined;
 	const noteId = element.getAttribute( 'noteId' ) as string | undefined;
 	const block = element.getAttribute( 'block' ) as string | undefined;
@@ -1171,6 +1176,11 @@ function loadEmbeddedContent(
 	wrapper: HTMLElement,
 	boxSize: string | undefined
 ) {
+	if ( isInlineSourceEmbed( element ) ) {
+		editor.plugins.get( ContentEmbedInlineSource ).load( element, wrapper, boxSize );
+		return;
+	}
+
 	const $wrapper = $( wrapper );
 	const editorEl = editor.editing.view.getDomRoot();
 	const component = glob.getComponentByEl<EditorComponent>( editorEl );

@@ -43,11 +43,22 @@ Choose <span class="tn-icon bx bx-pen"></span> _Drawing canvas_ to draw on an Ex
 
 ## Mermaid diagram
 
-Press the <span class="tn-icon cke cke-trilium-mermaid-insert"></span> button to create an inline Mermaid diagram.
+Press the <span class="tn-icon cke cke-trilium-mermaid-insert"></span> button to create an inline Mermaid diagram. The arrow next to it lists a template for each kind of diagram. The diagram is also available as _Mermaid diagram_ in the <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>.
 
 This feature is quite similar to the <a class="reference-link" href="../Mermaid%20Diagrams.md">Mermaid Diagrams</a> note types and is meant as an alternative to it for simple diagrams. For more complex diagrams, use the <a class="reference-link" href="Include%20Note.md">Include Note</a> feature for a dedicated Mermaid note.
 
 <figure class="image"><img style="aspect-ratio:1174/358;" src="2_Insert buttons_image.png" width="1174" height="358"></figure>
+
+A diagram shows in a box like the one of an included note, so it can be resized, given another box size from its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu or shown in fullscreen, as described in <a class="reference-link" href="Include%20Note.md">Include Note</a>.
+
+*   A new diagram starts editable: the Mermaid source is on the left, and the diagram next to it updates a moment after you stop typing. If the source has an error, the last diagram that worked stays, dimmed, under the error.
+*   To show only the diagram, select it and turn off the <span class="tn-icon bx bx-edit-alt"></span> _Editable_ button at the start of its toolbar, or uncheck _Editable_ in its _More actions_ menu. Turn _Editable_ back on to change the source.
+*   To zoom, use the <span class="tn-icon bx bx-zoom-out"></span> and <span class="tn-icon bx bx-zoom-in"></span> buttons of the diagram's toolbar; the zoom level between them resets the zoom. Drag the diagram to move around it, and double-click it to reset the view. The mouse wheel scrolls the note until you click the diagram, and then zooms it.
+*   Undo in the text note also undoes the changes made to the source of a diagram.
+
+The source of the diagram stays in the note as a Mermaid code block, so the diagram is exported to Markdown as a `mermaid` code block that other applications can show.
+
+Starting with v0.106.0, diagrams created in earlier versions open with _Editable_ turned off.
 
 ## Horizontal ruler
 

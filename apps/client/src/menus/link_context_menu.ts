@@ -60,6 +60,27 @@ async function openContextMenu(
 }
 
 /**
+ * Opens the menu of the embed at `e` with its own commands only, for an embed that shows no note or
+ * attachment, such as one that keeps its source in the note.
+ */
+async function openEmbedContextMenu(e: LinkMenuOrigin) {
+    const request = ++lastMenuRequest;
+    const editor = await getEditingTextEditor(getTarget(e));
+    const embed = editor && getMenuEmbed(e, editor);
+    if (!editor || !embed || request !== lastMenuRequest) {
+        return;
+    }
+
+    contextMenu.show({
+        x: e.pageX,
+        y: e.pageY,
+        items: getEmbedItems(embed),
+        selectMenuItemHandler: () => {},
+        ...keepEditorFocused(editor)
+    });
+}
+
+/**
  * Menu options adding the menu to the focus tracker of `editor`, so that the editor stays focused
  * while the menu is up.
  */
@@ -430,5 +451,6 @@ export default {
     getOpenNoteItem,
     handleLinkContextMenuItem,
     openContextMenu,
+    openEmbedContextMenu,
     setShareLinkResolver
 };
