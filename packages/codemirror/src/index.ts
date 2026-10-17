@@ -377,7 +377,13 @@ export default class CodeMirror extends EditorView {
         });
     }
 
-    async performFind(searchTerm: string, matchCase: boolean, wholeWord: boolean) {
+    /**
+     * Highlights the matches of `searchTerm`. While `isActivating`, the match nearest the cursor
+     * becomes the active one and scrolls into view.
+     */
+    async performFind(
+        searchTerm: string, matchCase: boolean, wholeWord: boolean, isActivating = true
+    ) {
         const plugin = createSearchHighlighter();
         this.dispatch({
             effects: this.searchHighlightCompartment.reconfigure(plugin)
@@ -386,7 +392,7 @@ export default class CodeMirror extends EditorView {
         // Wait for the plugin to activate in the next render cycle
         await new Promise(requestAnimationFrame);
         const instance = this.plugin(plugin);
-        instance?.searchFor(searchTerm, matchCase, wholeWord);
+        instance?.searchFor(searchTerm, matchCase, wholeWord, isActivating);
         this.searchPlugin = instance;
 
         /* v8 ignore next 4 -- the plugin was just installed via the compartment above and the
@@ -408,6 +414,16 @@ export default class CodeMirror extends EditorView {
 
     async replaceAll(replaceText: string) {
         this.searchPlugin?.replaceAll(replaceText);
+    }
+
+    /** Leaves no match of the search active, keeping every match highlighted. */
+    clearActiveMatch() {
+        this.searchPlugin?.clearActiveMatch();
+    }
+
+    /** The matches of the search, in document order. */
+    getSearchMatches() {
+        return this.searchPlugin?.matchRanges ?? [];
     }
 
     cleanSearch() {

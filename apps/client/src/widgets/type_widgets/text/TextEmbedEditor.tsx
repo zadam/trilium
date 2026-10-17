@@ -1,7 +1,8 @@
 import "./TextEmbedEditor.css";
 
+import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { createPortal, type RefObject } from "preact";
-import { useLayoutEffect, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import type Component from "../../../components/component";
 import type NoteContext from "../../../components/note_context";
@@ -9,8 +10,11 @@ import type FNote from "../../../entities/fnote";
 import {
     announceEmbeddedNoteClosing, EmbeddedNoteScope, useEmbeddedNoteContext
 } from "../../EmbeddedNotePane";
+import { TextEditorFindTarget } from "../../find_in_text";
 import { SaveStatusBadge } from "../../layout/NoteBadges";
-import { useLegacyComponentElement, useNoteContext } from "../../react/hooks";
+import MergedFind from "../../merged_find";
+import { useLegacyComponentElement, useNoteContext, useTriliumEvent } from "../../react/hooks";
+import { registerEmbedFindTarget } from "./content_embed_tools";
 import EditableText, { getBlockData } from "./EditableText";
 import {
     findTextEditorIn, NestedEmbedContext, useEmbedBadgeSlot, useEmbedCaretNavigation
@@ -95,6 +99,7 @@ function ScopedEditor({ rootRef, note, block, onBlockChange }: ScopedEditorProps
     // The plugins of the editor find their host by the element of its component.
     useLegacyComponentElement(rootRef);
     const badgeSlot = useEmbedBadgeSlot(rootRef);
+    useEditorFindTarget(ntxId);
 
     return (
         <div ref={rootRef} className="text-embed-editor">
@@ -112,6 +117,26 @@ function ScopedEditor({ rootRef, note, block, onBlockChange }: ScopedEditorProps
             {badgeSlot && createPortal(<SaveStatusBadge />, badgeSlot)}
         </div>
     );
+}
+
+/**
+ * Lets "Search in note" search the text editor of `ntxId` and its embeds, once the editor is
+ * ready, in place of the preview of the embed.
+ */
+function useEditorFindTarget(ntxId: string | null | undefined) {
+    const [ editor, setEditor ] = useState<CKTextEditor | null>(null);
+    useTriliumEvent("textEditorRefreshed", ({ ntxId: editorNtxId, editor: refreshedEditor }) => {
+        if (editorNtxId === ntxId) {
+            setEditor(refreshedEditor);
+        }
+    });
+
+    useEffect(() => {
+        const root = editor?.editing.view.getDomRoot();
+        if (!editor || !root) return;
+
+        return registerEmbedFindTarget(root, new MergedFind(new TextEditorFindTarget(editor)));
+    }, [ editor ]);
 }
 
 /**

@@ -115,6 +115,7 @@ An included text note, an included code note and an embedded code file such as a
 *   The changes are saved as you type, to the included note or to the attachment, as they would be in its own tab.
 *   An include of <a class="reference-link" href="Block%20references.md">Block references</a> edits only the referenced blocks.
 *   Editing is not available in a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), for an included note marked `#readOnly`, or for an attachment of another note.
+*   <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Navigation/Search%20in%20note.md">Search in note</a> finds the text of included text and code notes among the results of the note around them, and replaces it while _Editable_ is on.
 
 ## Drawing canvases
 

@@ -462,9 +462,29 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("foo bar foo");
         });
 
+        it("finds without activating a match, and clears the active match on request", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+
+            const result = await editor.performFind("foo", false, false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 0 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.getSearchMatches()).toEqual([ { from: 0, to: 3 }, { from: 8, to: 11 } ]);
+
+            await editor.findNext(1, 0, 1);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            editor.clearActiveMatch();
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+        });
+
         it("does nothing when cleaning a search that never ran", () => {
             editor = build();
             expect(() => editor?.cleanSearch()).not.toThrow();
+            expect(() => editor?.clearActiveMatch()).not.toThrow();
+            expect(editor.getSearchMatches()).toEqual([]);
         });
 
         it("does nothing when replace is called before a search", async () => {

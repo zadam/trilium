@@ -16,6 +16,7 @@ import {
 } from "ckeditor5";
 
 import { BLOCK_ID } from "../block_reference/block_reference_editing.js";
+import FindReveal from "../find_reveal.js";
 import {
     ALIGNMENT_ATTRIBUTE, ALIGNMENT_DATA_ATTRIBUTE, CLASSES, DEFAULT_TAB_ALIGNMENT, ELEMENTS,
     parseTabAlignment, TABS_WIDGET_PROPERTY
@@ -37,7 +38,7 @@ export default class TabsEditing extends Plugin {
     }
 
     public static get requires() {
-        return [TabsTitleBar, Widget] as const;
+        return [ TabsTitleBar, Widget, FindReveal ] as const;
     }
 
     /** The tab each tabs block shows, keyed by the `tabs` model element. */
@@ -326,16 +327,11 @@ export default class TabsEditing extends Plugin {
         }, { priority: "lowest" });
     }
 
-    /** Shows the tab that holds the highlighted find-in-note result, without moving the caret. */
+    /** Shows the tab that holds the match the find shows, without moving the caret. */
     private registerFindReveal() {
-        const plugins = this.editor.plugins;
-        const state = plugins.has("FindAndReplaceEditing") ? plugins.get("FindAndReplaceEditing").state : undefined;
-        if (!state) {
-            return;
-        }
-
-        this.listenTo(state, "change:highlightedResult", (_evt, _name, highlighted) => {
-            this.showTabsAround(highlighted?.marker?.getStart());
+        const findReveal = this.editor.plugins.get(FindReveal);
+        this.listenTo(findReveal, "change:position", (_evt, _name, position) => {
+            this.showTabsAround(position);
         });
     }
 
