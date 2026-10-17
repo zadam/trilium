@@ -12,7 +12,8 @@ import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
     note: FNote | null;
-    editor: ContentEditor;
+    /** Saves the edits, or `undefined` to show the content read-only. */
+    editor: ContentEditor | undefined;
     content: string;
     mime: string;
     /** The tab width, or `undefined` to follow the global option. */
@@ -23,11 +24,18 @@ export interface CodeEmbedEditorProps {
     viewRef: RefObject<VanillaCodeMirror | null>;
     /** Receives the edited content when the editor goes away. */
     onClose: (content: string) => void;
+    /** Receives the content as it is edited. */
+    onChange?: (content: string) => void;
+    /** Called with CodeMirror once it mounts, for extensions such as a linter. */
+    onReady?: (view: VanillaCodeMirror) => void;
 }
 
-/** CodeMirror over the content of a code embed, which `editor` saves as it changes. */
+/**
+ * CodeMirror over the content of a code embed, which `editor` saves as it changes. Without an
+ * `editor`, the content is read-only.
+ */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, tabWidth, useTabs, viewRef, onClose
+    note, editor, content, mime, tabWidth, useTabs, viewRef, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
@@ -39,6 +47,7 @@ export default function CodeEmbedEditor({
         const view = viewRef.current;
         if (!view) return;
 
+        onReady?.(view);
         return registerEmbedFindTarget(view.dom, new CodeMirrorFindTarget(view));
     }, []);
 
@@ -58,6 +67,8 @@ export default function CodeEmbedEditor({
     useLayoutEffect(() => () => {
         const text = viewRef.current?.getText();
         viewRef.current = null;
+        if (!editor) return;
+
         editor.release();
         if (text !== undefined) {
             onClose(text);
@@ -71,9 +82,11 @@ export default function CodeEmbedEditor({
             className="code-embed-editor"
             mime={mime}
             vimKeybindings={vimKeymapEnabled}
+            readOnly={!editor}
             onContentChanged={() => {
-                if (!isLoadingRef.current) {
+                if (editor && !isLoadingRef.current) {
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
+                    onChange?.(viewRef.current?.getText() ?? "");
                 }
             }}
             {...(tabWidth !== undefined && { indentSize: tabWidth })}

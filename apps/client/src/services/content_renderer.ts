@@ -8,6 +8,7 @@ import {
     getNoteContentType,
     isAcceptedImageMime,
     isImageAttachmentRole,
+    isMarkdownMime,
     normalizeMimeTypeForCKEditor,
     type TextRepresentationResponse
 } from "@triliumnext/commons";
@@ -77,6 +78,11 @@ export interface RenderOptions {
      * in place of the language of its name.
      */
     codeLanguage?: string;
+    /**
+     * Lets content that has a source and a rendering, such as Markdown, show either or both, as
+     * the box of an embed picks. Without it, the rendering shows alone.
+     */
+    hasDisplayModes?: boolean;
     showTextRepresentation?: boolean;
     /**
      * If enabled, note types that have a richer live representation (currently only web views) are
@@ -304,7 +310,8 @@ export const CONTENT_RENDERERS = {
     webView: () => import("../widgets/type_widgets/WebView"),
     llmChat: () => import("../widgets/type_widgets/llm_chat/ChatPreview"),
     editableText: () => import("../widgets/type_widgets/text/TextEmbed"),
-    editableCode: () => import("../widgets/type_widgets/code/CodeEmbed")
+    editableCode: () => import("../widgets/type_widgets/code/CodeEmbed"),
+    editableMarkdown: () => import("../widgets/type_widgets/markdown/MarkdownEmbed")
 };
 
 /**
@@ -358,6 +365,11 @@ function isEditableBlockRange(content: string, block: string) {
  * the user sees in the Markdown note type's preview pane.
  */
 async function renderMarkdown(note: FNote | FAttachment, $renderedContent: JQuery<HTMLElement>, options: RenderOptions) {
+    if (options.hasDisplayModes) {
+        await renderMarkdownEmbed(note, $renderedContent, options);
+        return;
+    }
+
     const blob = await note.getBlob();
     const source = blob?.content ?? "";
 
@@ -375,6 +387,57 @@ async function renderMarkdown(note: FNote | FAttachment, $renderedContent: JQuer
     });
     $renderedContent.append($('<div class="ck-content">').html(html));
     await postProcessRichContent(note, $renderedContent, options);
+}
+
+/**
+ * Renders a Markdown note or file in the box of an embed, which `MarkdownEmbed` shows as the split
+ * editor of a Markdown note does: the source, the rendering or both. An editor that can save the
+ * changes lets the source be edited.
+ */
+async function renderMarkdownEmbed(
+    entity: FNote | FAttachment,
+    $renderedContent: JQuery<HTMLElement>,
+    options: RenderOptions
+) {
+    const editor = getContentEditor(entity, options);
+    const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
+    const { default: MarkdownEmbed, renderMarkdownHtml } =
+        await CONTENT_RENDERERS.editableMarkdown();
+    const renderPreview = (source: string) =>
+        renderMarkdownPreview(entity, renderMarkdownHtml(source), options);
+    const preview = await renderPreview(content);
+
+    const $container = $('<div class="markdown-embed">');
+    const container = $container.get(0);
+    if (container) {
+        await mountInteractiveWidget(
+            h(MarkdownEmbed, { entity, editor, content, preview, renderPreview }),
+            container
+        );
+    }
+    $renderedContent.append($container);
+}
+
+/**
+ * The rendering of `html`, the Markdown of `entity` as HTML, as the preview of a Markdown note
+ * shows it. Empty Markdown shows the children of a note instead.
+ */
+async function renderMarkdownPreview(
+    entity: FNote | FAttachment,
+    html: string,
+    options: RenderOptions
+) {
+    if (!html) {
+        const $children = $("<div>");
+        if (entity instanceof FNote && !options.noChildrenList) {
+            await renderChildrenList($children, entity, options.includeArchivedNotes ?? false);
+        }
+        return $children[0];
+    }
+
+    const $preview = $('<div class="ck-content markdown-preview">').html(html);
+    await postProcessRichContent(entity, $preview, options);
+    return $preview[0];
 }
 
 /**
@@ -1059,20 +1122,24 @@ function getContentType(entity: FNote | FAttachment) {
         return "image";
     }
     return entity.role === "file"
-        ? getAttachedFileContentType(entity.mime, entity.contentLength)
+        ? getAttachedFileContentType(entity.mime, entity.contentLength, entity.title)
         : getFileContentType(entity.role, entity.mime);
 }
 
 /**
  * The kind of file an attachment holds, which is code for text and the code media types up to
- * `MAX_ATTACHED_CODE_SIZE`.
+ * `MAX_ATTACHED_CODE_SIZE`, and Markdown for code that its name, or else its media type, marks
+ * as Markdown.
  */
-function getAttachedFileContentType(mime: string, size = 0) {
+function getAttachedFileContentType(mime: string, size = 0, fileName?: string) {
     const type = getFileContentType("file", mime);
     const isCode = type === "code"
         || (type === "file" && (mime.startsWith("text/") || ATTACHED_CODE_MIME_TYPES.has(mime)));
     if (!isCode) return type;
-    return size <= MAX_ATTACHED_CODE_SIZE ? "code" : "file";
+    if (size > MAX_ATTACHED_CODE_SIZE) return "file";
+
+    const codeMime = (fileName && getMimeTypeFromFileName(fileName)) || mime;
+    return isMarkdownMime(codeMime) ? "markdown" : "code";
 }
 
 export default {

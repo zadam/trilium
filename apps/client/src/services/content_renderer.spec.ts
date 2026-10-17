@@ -116,6 +116,14 @@ const textEmbedComponent = vi.fn((_props: any): VNode<any> =>
     h("span", { class: "mock-text-embed-marker" }));
 vi.mock("../widgets/type_widgets/text/TextEmbed", () => ({ default: textEmbedComponent }));
 
+const markdownEmbedComponent = vi.fn((_props: any): VNode<any> =>
+    h("span", { class: "mock-markdown-embed-marker" }));
+const renderMarkdownHtml = vi.fn((source: string) => (source ? `<p>${source}</p>` : ""));
+vi.mock("../widgets/type_widgets/markdown/MarkdownEmbed", () => ({
+    default: markdownEmbedComponent,
+    renderMarkdownHtml: (source: string) => renderMarkdownHtml(source)
+}));
+
 // `addHook` is a no-op here: sanitize_content.ts registers a DOMPurify hook at
 // module load (pulled in transitively), which would otherwise throw against this mock.
 vi.mock("dompurify", () => ({ default: { sanitize: (s: string) => s, addHook: () => {} } }));
@@ -226,8 +234,10 @@ describe("getEmbedBoxSize", () => {
             buildNote({ title: "Clip", type: "file", mime: "video/mp4" }),
             buildAttachment({ role: "file", mime: "application/pdf" }),
             buildAttachment({ role: "image", mime: "image/png" }),
-            buildAttachment({ role: "file", mime: "application/vnd.excalidraw+json" })
-        ].map(getEmbedBoxSize)).toEqual(Array(9).fill("medium"));
+            buildAttachment({ role: "file", mime: "application/vnd.excalidraw+json" }),
+            buildAttachment({ role: "file", mime: "text/markdown" }),
+            buildAttachment({ role: "file", mime: "text/plain", title: "readme.md" })
+        ].map(getEmbedBoxSize)).toEqual(Array(11).fill("medium"));
     });
 
     it("shows an upload too large to highlight as a file", () => {
@@ -240,10 +250,10 @@ describe("getEmbedBoxSize", () => {
         expect([
             "application/zip", "", "audio/mpeg", "application/json", "application/pdf",
             "image/png", "video/mp4", "application/vnd.excalidraw+json", "text/plain",
-            "application/x-sql", "text/rtf"
+            "application/x-sql", "text/rtf", "text/markdown"
         ].map(getUploadBoxSize)).toEqual([
             "tiny", "tiny", "small", "full", "medium", "medium", "medium", "medium", "full",
-            "full", "medium"
+            "full", "medium", "medium"
         ]);
     });
 });
@@ -447,6 +457,55 @@ describe("getRenderedContent editable code", () => {
         props.editor.subscribeSaveState(listener);
         expect(noteEditor.getSaveState).toHaveBeenCalledWith(note.noteId);
         expect(noteEditor.subscribeSaveState).toHaveBeenCalledWith(listener);
+    });
+
+    it("mounts MarkdownEmbed for a Markdown note in an embed, saved by `noteEditor`", async () => {
+        const note = buildNote({
+            title: "Readme", type: "code", mime: "text/x-markdown", content: "saved"
+        });
+        const noteEditor = buildEditor();
+        noteEditor.getUnsavedContent.mockReturnValue("unsaved");
+
+        const { type, $renderedContent } = await getRenderedContent(note, {
+            interactive: true, hasDisplayModes: true, noteEditor
+        });
+
+        expect(type).toBe("markdown");
+        expect($renderedContent.find(".markdown-embed[data-interactive-mount]")
+            .find(".mock-markdown-embed-marker").length).toBe(1);
+        const props = markdownEmbedComponent.mock.calls[0][0];
+        expect([ props.entity, props.content ]).toEqual([ note, "unsaved" ]);
+        expect(props.preview.outerHTML)
+            .toBe("<div class=\"ck-content markdown-preview\"><p>unsaved</p></div>");
+        expect(postProcessRichContent).toHaveBeenCalledWith(note, expect.anything(),
+            expect.objectContaining({ hasDisplayModes: true }));
+        expect(renderToHtml).not.toHaveBeenCalled();
+        const getContent = () => "edited";
+        props.editor.scheduleSave(getContent);
+        expect(noteEditor.scheduleSave).toHaveBeenCalledWith(note, getContent, undefined);
+
+        // Other Markdown renders the same way, and none shows the children of the note.
+        expect((await props.renderPreview("edited")).innerHTML).toBe("<p>edited</p>");
+        expect(renderChildrenList).not.toHaveBeenCalled();
+        await props.renderPreview("");
+        expect(renderChildrenList).toHaveBeenCalledWith(expect.anything(), note, false);
+    });
+
+    it("mounts MarkdownEmbed read-only for a Markdown file in an embed that cannot save", async () => {
+        const att = buildAttachment({ role: "file", mime: "text/plain", title: "readme.md" });
+        att.getBlob = (async () => ({ content: "# A" })) as any;
+
+        const { type } = await getRenderedContent(att, { interactive: true, hasDisplayModes: true });
+        expect(type).toBe("markdown");
+        const props = markdownEmbedComponent.mock.calls[0][0];
+        expect([ props.entity, props.editor, props.content ]).toEqual([ att, undefined, "# A" ]);
+        await props.renderPreview("");
+        expect(renderChildrenList).not.toHaveBeenCalled();
+
+        // Elsewhere, the rendering shows alone.
+        await getRenderedContent(att, { interactive: true });
+        expect(renderToHtml).toHaveBeenCalledWith("# A", "readme.md", expect.anything());
+        expect(markdownEmbedComponent).toHaveBeenCalledOnce();
     });
 
     it("mounts CodeEmbed for an interactive code file, saved by `attachmentEditor`", async () => {

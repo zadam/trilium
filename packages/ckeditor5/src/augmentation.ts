@@ -80,6 +80,11 @@ declare global {
          * then turn on and off. The embed carries `data-editable="true"` while it is on.
          */
         hasEditableFlag?: boolean;
+        /**
+         * Whether the content shows its source, its rendering or both, which the toolbar and the
+         * menu of the embed then switch. The embed carries the mode as `data-display-mode`.
+         */
+        hasDisplayModes?: boolean;
     }
 
     interface EditorComponent extends Component {

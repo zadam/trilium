@@ -1232,6 +1232,15 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     flex-shrink: 0;
 }
 
+.include-note-title-row > .include-note-display-modes {
+    flex-shrink: 0;
+}
+
+/* Outranks `:root div.btn-group .icon-action`, so the group is as tall as the other buttons. */
+:root .include-note-title-row > .include-note-display-modes .icon-action {
+    --icon-button-size: 24px;
+}
+
 /* Browsers drop a click on a disabled button, which then toggles no expandable embed. */
 .include-note-title-row > .icon-action.disabled {
     pointer-events: auto;

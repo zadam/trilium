@@ -69,6 +69,7 @@ export async function loadEmbeddedNote(
         interactive: true,
         embedsAsReferenceLinks: true,
         mediaEnvironment: "embedded",
+        hasDisplayModes: true,
         noteEditor,
         block,
         onBlockChange
@@ -135,6 +136,7 @@ export async function loadEmbeddedAttachment(
     const { $renderedContent, type } = await content_renderer.getRenderedContent(attachment, {
         interactive: true,
         mediaEnvironment: "embedded",
+        hasDisplayModes: true,
         attachmentEditor,
         codeLanguage: el.closest(".include-note")?.getAttribute("data-code-language") ?? undefined
     });

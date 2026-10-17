@@ -599,6 +599,33 @@ describe("openContextMenu", () => {
                 .toMatchObject({ title: "link_context_menu.editable", checked: false });
         });
 
+        it("offers the display modes above the size, for content that has them", async () => {
+            state = { ...state, displayMode: "source" };
+            const items = await openOn(editable.querySelector("a"));
+
+            expect(items.slice(6, 12)).toMatchObject([
+                { kind: "separator" },
+                { title: "display_mode.source", uiIcon: "bx bx-code", checked: true },
+                { title: "display_mode.split", uiIcon: "bx bxs-dock-left", checked: false },
+                { title: "display_mode.preview", uiIcon: "bx bx-show", checked: false },
+                { kind: "separator" },
+                { title: "link_context_menu.include_size" }
+            ]);
+            expect(items).toHaveLength(17);
+            expect(pick(items[9]))
+                .toEqual([ [ "contentEmbedDisplayMode", { value: "preview" } ] ]);
+
+            // After Editable, which comes first.
+            state = { ...state, isEditableToggleable: true };
+            expect((await openOn(editable.querySelector("a"))).slice(7, 12)).toMatchObject([
+                { title: "link_context_menu.editable" },
+                { title: "display_mode.source" },
+                { title: "display_mode.split" },
+                { title: "display_mode.preview" },
+                { kind: "separator" }
+            ]);
+        });
+
         it("appends the commands of an embedded note, its conversion in a group of its own", async () => {
             embed().removeAttribute("data-attachment-id");
             embed().setAttribute("data-note-id", "n1");

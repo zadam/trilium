@@ -171,7 +171,7 @@ interface SaveStatusProps {
  * The save state of `editor` in the title row of the embed around `rootRef`, while `isShown`, for
  * content that saves on its own.
  */
-function SaveStatus({ rootRef, editor, isShown }: SaveStatusProps) {
+export function SaveStatus({ rootRef, editor, isShown }: SaveStatusProps) {
     const slot = useEmbedBadgeSlot(rootRef, isShown);
     const state = useSyncExternalStore(
         editor.subscribeSaveState ?? subscribeToNothing,
@@ -185,9 +185,9 @@ function SaveStatus({ rootRef, editor, isShown }: SaveStatusProps) {
  * Shows the content of `entity` each time it saves, also when another embed of it saved it.
  * Unsaved changes made in the embed are kept, and replace that content when they save.
  */
-function useSavedContent(
+export function useSavedContent(
     entity: FNote | FAttachment,
-    editor: ContentEditor,
+    editor: ContentEditor | undefined,
     setContent: (content: string) => void
 ) {
     const noteBlob = useNoteBlob(entity instanceof FNote ? entity : null);
@@ -209,7 +209,7 @@ function useSavedContent(
     });
 
     useEffect(() => {
-        if (content !== undefined && editor.getUnsavedContent() === undefined) {
+        if (content !== undefined && editor?.getUnsavedContent() === undefined) {
             setContent(content);
         }
     }, [ content ]);

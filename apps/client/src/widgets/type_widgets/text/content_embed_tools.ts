@@ -55,6 +55,11 @@ export interface ContentEmbedToolProvider {
      * turn on and off. The embed carries `data-editable="true"` while it is on.
      */
     hasEditableFlag?: boolean;
+    /**
+     * Whether the content shows its source, its rendering or both, which the toolbar and the menu
+     * of the embed then switch. The embed carries the mode as `data-display-mode`.
+     */
+    hasDisplayModes?: boolean;
 }
 
 /**
@@ -287,6 +292,15 @@ export function useContentEmbedAttribute(
     }, [ ref, name ]);
 
     return value;
+}
+
+/**
+ * The display mode picked for the embed that contains `ref`, for content whose provider sets
+ * `hasDisplayModes`. `null` while none is picked, outside an embed, and until the content is in the
+ * embed: `resolveDisplayMode()` then tells what to show.
+ */
+export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
+    return useContentEmbedAttribute(ref, "data-display-mode");
 }
 
 /**

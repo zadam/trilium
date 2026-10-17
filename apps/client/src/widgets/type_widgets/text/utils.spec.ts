@@ -124,7 +124,8 @@ describe("loadEmbeddedNote", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(note, {
             interactive: true,
             embedsAsReferenceLinks: true,
-            mediaEnvironment: "embedded"
+            mediaEnvironment: "embedded",
+            hasDisplayModes: true
         });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
@@ -224,8 +225,9 @@ describe("loadEmbeddedAttachment", () => {
             showNoteIcon: true,
             viewScope: ATTACHMENT_SCOPE
         });
-        expect(content_renderer.getRenderedContent)
-            .toHaveBeenCalledWith(attachment, { interactive: true, mediaEnvironment: "embedded" });
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
+            interactive: true, mediaEnvironment: "embedded", hasDisplayModes: true
+        });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
         expect(mount.container).toBe(wrapper);
@@ -250,6 +252,7 @@ describe("loadEmbeddedAttachment", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
             interactive: true,
             mediaEnvironment: "embedded",
+            hasDisplayModes: true,
             attachmentEditor
         });
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
