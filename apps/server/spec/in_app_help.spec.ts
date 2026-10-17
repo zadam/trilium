@@ -57,12 +57,14 @@ describe("in-app help (shipped artifacts)", () => {
         // build copies the same tree into the package.
         const assetRoot = path.resolve(__dirname, "../../../docs/User Guide");
         const missing: string[] = [];
+        let assetCount = 0;
 
         for (const page of contentPages(meta)) {
             const html = String(becca.getNoteOrThrow(page.id).getContent());
             expect(html, `page ${page.id} still carries an unsubstituted asset placeholder`).not.toContain(HELP_ASSET_TOKEN);
 
             for (const match of html.matchAll(/(?:src|href)="([^"]*\/help\/[^"]*)"/g)) {
+                assetCount++;
                 const relative = decodeURIComponent(match[1].split("/help/")[1]);
                 if (!fs.existsSync(path.join(assetRoot, relative))) {
                     missing.push(`${page.title} -> ${relative}`);
@@ -70,6 +72,7 @@ describe("in-app help (shipped artifacts)", () => {
             }
         }
 
+        expect(assetCount).toBeGreaterThan(0);
         expect(missing).toEqual([]);
     });
 

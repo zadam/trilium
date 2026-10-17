@@ -73,6 +73,10 @@ describe("virtual note injection", () => {
         expect(root.isVirtual).toBe(true);
         expect(root.title).toBe("Virtual root");
         expect(root.type).toBe("book");
+        expect(root.mime).toBe("");
+        // A text page without a mime of its own gets the one every text note carries, which
+        // the full-text search needs to read its markup as HTML.
+        expect(becca.getNoteOrThrow("_vtestPage").mime).toBe("text/html");
         expect(root.getParentNotes().map((note) => note.noteId)).toEqual(["_hidden"]);
         expect(root.getChildNotes().map((note) => note.noteId)).toEqual(["_vtestPage", "_vtestLinked", "_vtestLast"]);
 

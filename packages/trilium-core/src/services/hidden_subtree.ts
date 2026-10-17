@@ -349,9 +349,6 @@ function buildHiddenSubtreeDefinition(): HiddenSubtreeItem {
                     { id: "_optionsAdvanced", title: t("hidden-subtree.advanced-title"), type: "contentWidget" }
                 ]
             },
-            // The in-app help (`_help`) is deliberately absent here: it is a virtual subtree
-            // injected into becca by the provider registered in `services/in_app_help.ts`,
-            // never persisted or synced.
             buildHiddenSubtreeTemplates()
         ]
     };

@@ -127,7 +127,9 @@ function injectVirtualSubtrees() {
             // notes still need the target-relation backfill below.
             injectedAny = true;
 
-            subtree.forEach((item, index) => injectVirtualItem(provider, provider.parentNoteId, item, basePosition + (index + 1) * 10));
+            for (const [index, item] of subtree.entries()) {
+                injectVirtualItem(provider, provider.parentNoteId, item, basePosition + (index + 1) * 10);
+            }
         } catch (e) {
             // A broken provider must never take down the becca load.
             log.error(`Virtual note provider '${provider.namespace}' failed, skipping: ${e instanceof Error ? (e.stack ?? e.message) : String(e)}`);
@@ -172,7 +174,7 @@ function injectVirtualItem(provider: VirtualNoteProvider, parentNoteId: string, 
             noteId: item.id,
             title: item.title,
             type: item.type,
-            mime: item.mime ?? "",
+            mime: item.mime ?? (item.type === "text" ? "text/html" : ""),
             isProtected: false,
             dateCreated: dateUtils.localNowDateTime(),
             dateModified: dateUtils.localNowDateTime(),
@@ -212,7 +214,7 @@ function injectVirtualItem(provider: VirtualNoteProvider, parentNoteId: string, 
         attributeDefs.push({ type: "label", name: "iconClass", value: `bx ${item.icon}` });
     }
 
-    attributeDefs.forEach((def, index) => {
+    for (const [index, def] of attributeDefs.entries()) {
         // Deterministic ID, unique thanks to the note-ID prefix; the counter suffix
         // disambiguates multiple same-named attributes on one note, probing until free so
         // pathological names (e.g. "x" colliding with an explicit "x_1") cannot overwrite.
@@ -232,9 +234,11 @@ function injectVirtualItem(provider: VirtualNoteProvider, parentNoteId: string, 
             position: (index + 1) * 10
         });
         attribute.isVirtual = true;
-    });
+    }
 
-    (item.children ?? []).forEach((child, index) => injectVirtualItem(provider, item.id, child, (index + 1) * 10));
+    for (const [index, child] of (item.children ?? []).entries()) {
+        injectVirtualItem(provider, item.id, child, (index + 1) * 10);
+    }
 }
 
 /**
