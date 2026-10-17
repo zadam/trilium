@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { quadrantTags } from '../../tags';
+import { quadrantTags } from '../../tags/index.js';
 
 export const quadrantHighlighting = styleTags({
   DiagramName: quadrantTags.diagramName,

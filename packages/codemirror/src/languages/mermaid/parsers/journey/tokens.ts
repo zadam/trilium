@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { Keyword, text1, text2, text3 } from './journey.grammar.terms';
+import { Keyword, text1, text2, text3 } from './parser.terms.js';
 
 import type { InputStream } from '@lezer/lr';
 

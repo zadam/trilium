@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { erTags } from '../../tags';
+import { erTags } from '../../tags/index.js';
 
 export const erHighlighting = styleTags({
   DiagramName: erTags.diagramName,

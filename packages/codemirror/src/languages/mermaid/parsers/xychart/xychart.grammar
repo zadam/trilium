@@ -66,4 +66,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { Arrow, Number, identifier }
 }
 
-@external propSource xychartHighlighting from "./highlight"
+@external propSource xychartHighlighting from "./highlight.js"

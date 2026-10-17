@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { RelationshipStart } from './requirement.grammar.terms';
+import { RelationshipStart } from './parser.terms.js';
 
 const notAllowedCodePoints = [-1, 45, 60, 62, 10, 13, 123, 61];
 

@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { RelationshipToken, labelTextTerm } from './er.grammar.terms';
+import { RelationshipToken, labelTextTerm } from './parser.terms.js';
 
 // Characters that can appear in an ER relationship, e.g. ||--o{ or }|..|{
 // codes: | = 124, o = 111, { = 123, } = 125, . = 46, - = 45

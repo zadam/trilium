@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { requirementTags } from '../../tags';
+import { requirementTags } from '../../tags/index.js';
 
 export const requirementHighlighting = styleTags({
   'DiagramName SubDiagramType': requirementTags.diagramName,

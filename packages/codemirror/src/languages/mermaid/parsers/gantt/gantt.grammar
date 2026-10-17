@@ -35,7 +35,7 @@ DiagramName { kw<"gantt"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens textToken from "./tokens" {
+@external tokens textToken from "./tokens.js" {
   AxisFormat[group=Keyword],
   DateFormat[group=Keyword],
   Excludes[group=Keyword],
@@ -57,4 +57,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { newlines, spaces }
 }
 
-@external propSource ganttHighlighting from "./highlight"
+@external propSource ganttHighlighting from "./highlight.js"

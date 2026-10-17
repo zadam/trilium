@@ -70,4 +70,4 @@ DiagramName { @specialize<identifier, "gitGraph"> }
   ":"
 }
 
-@external propSource gitHighlighting from "./highlight"
+@external propSource gitHighlighting from "./highlight.js"

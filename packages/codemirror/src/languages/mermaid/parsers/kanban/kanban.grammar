@@ -29,10 +29,10 @@ Metadata { metadataTerm }
 
 DiagramName { @specialize<identifier, "kanban"> }
 
-@external tokens metadataTokens from "./tokens" { metadataTerm }
-@external tokens columnTitleTokens from "./tokens" { columnTitleTerm }
-@external tokens nodeIdTokens from "./tokens" { nodeIdTerm }
-@external tokens cardTextTokens from "./tokens" { cardTextTerm }
+@external tokens metadataTokens from "./tokens.js" { metadataTerm }
+@external tokens columnTitleTokens from "./tokens.js" { columnTitleTerm }
+@external tokens nodeIdTokens from "./tokens.js" { nodeIdTerm }
+@external tokens cardTextTokens from "./tokens.js" { cardTextTerm }
 
 @tokens {
   spaces { $[ \t\r]+ }
@@ -43,4 +43,4 @@ DiagramName { @specialize<identifier, "kanban"> }
   "]"
 }
 
-@external propSource kanbanHighlighting from "./highlight"
+@external propSource kanbanHighlighting from "./highlight.js"

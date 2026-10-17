@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { DiagramName, Icon, Label } from './architecture.grammar.terms';
+import { DiagramName, Icon, Label } from './parser.terms.js';
 
 const isLetter = (c: number) =>
   (c >= 97 && c <= 122) || (c >= 65 && c <= 90);

@@ -59,7 +59,7 @@ DirectionKw { @specialize<identifier, "direction"> }
 
 DiagramName { @specialize<identifier, "classDiagram"> versionSuffix? }
 
-@external tokens memberTextToken from "./tokens" { memberText }
+@external tokens memberTextToken from "./tokens.js" { memberText }
 
 @tokens {
   spaces { $[ \t\r]+ }
@@ -77,4 +77,4 @@ DiagramName { @specialize<identifier, "classDiagram"> versionSuffix? }
   @precedence { versionSuffix, RelationArrow }
 }
 
-@external propSource classHighlighting from "./highlight"
+@external propSource classHighlighting from "./highlight.js"

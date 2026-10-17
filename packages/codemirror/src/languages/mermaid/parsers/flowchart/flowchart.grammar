@@ -110,9 +110,9 @@ Keyword {
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens nodeEdgeText from "./tokens" { NodeEdgeText }
-@external tokens nodeText from "./tokens" { NodeText }
-@external tokens styleText from "./tokens" { StyleText }
+@external tokens nodeEdgeText from "./tokens.js" { NodeEdgeText }
+@external tokens nodeText from "./tokens.js" { NodeText }
+@external tokens styleText from "./tokens.js" { StyleText }
 
 /*
 Single character tokens will need to go inside the @tokens rule to specify precedence over "char".
@@ -167,4 +167,4 @@ The @specialize rule also helps makes "DiagramName" have higher priority for "fl
   }
 }
 
-@external propSource flowchartHighlighting from "./highlight"
+@external propSource flowchartHighlighting from "./highlight.js"

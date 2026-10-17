@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { kanbanTags } from '../../tags';
+import { kanbanTags } from '../../tags/index.js';
 
 export const kanbanHighlighting = styleTags({
   DiagramName: kanbanTags.diagramName,

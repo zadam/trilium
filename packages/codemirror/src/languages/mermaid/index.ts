@@ -20,7 +20,7 @@ export {
   erLanguage,
   gitLanguage,
   c4Language,
-} from './language-definitions';
+} from './language-definitions/index.js';
 
 export {
   mermaidLanguageDescription,
@@ -44,7 +44,7 @@ export {
   erLanguageDescription,
   gitLanguageDescription,
   c4LanguageDescription,
-} from './language-descriptions';
+} from './language-descriptions/index.js';
 
 export {
   mermaid,
@@ -68,7 +68,7 @@ export {
   er,
   git,
   c4,
-} from './language-support';
+} from './language-support/index.js';
 
 export {
   mermaidTags,
@@ -92,6 +92,6 @@ export {
   erTags,
   gitTags,
   c4Tags,
-} from './tags';
+} from './tags/index.js';
 
-export { foldByIndent } from './extensions';
+export { foldByIndent } from './extensions/index.js';

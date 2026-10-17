@@ -1,6 +1,6 @@
 import { ExternalTokenizer } from '@lezer/lr';
 import type { InputStream } from '@lezer/lr';
-import { Keyword, periodEventText, keywordText } from './timeline.grammar.terms';
+import { Keyword, periodEventText, keywordText } from './parser.terms.js';
 
 const skipCodePoints = [-1, 9, 10, 13, 32];
 

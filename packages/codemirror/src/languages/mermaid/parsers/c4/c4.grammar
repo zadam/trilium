@@ -55,7 +55,7 @@ DiagramName {
   @specialize<identifier, "C4Deployment">
 }
 
-@external tokens titleTextToken from "./tokens" { titleTextTerm }
+@external tokens titleTextToken from "./tokens.js" { titleTextTerm }
 
 @tokens {
   spaces { $[ \t\r]+ }
@@ -72,4 +72,4 @@ DiagramName {
   "="
 }
 
-@external propSource c4Highlighting from "./highlight"
+@external propSource c4Highlighting from "./highlight.js"

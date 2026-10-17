@@ -4,7 +4,7 @@ import {
   nodeIdTerm,
   cardTextTerm,
   metadataTerm,
-} from './kanban.grammar.terms';
+} from './parser.terms.js';
 
 const newline = 10,
   space = 32,

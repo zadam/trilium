@@ -1,5 +1,5 @@
 import { styleTags, tags as t } from '@lezer/highlight';
-import { flowchartTags } from '../../tags';
+import { flowchartTags } from '../../tags/index.js';
 
 export const flowchartHighlighting = styleTags({
   '( )': t.paren,

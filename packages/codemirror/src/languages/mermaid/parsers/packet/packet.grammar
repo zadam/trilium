@@ -35,6 +35,6 @@ Title { "title" }
   ":"
 }
 
-@external tokens titleText from "./tokens" { TitleText }
+@external tokens titleText from "./tokens.js" { TitleText }
 
-@external propSource packetHighlighting from "./highlight"
+@external propSource packetHighlighting from "./highlight.js"

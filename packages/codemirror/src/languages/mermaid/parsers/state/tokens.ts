@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { stateText } from './state.grammar.terms';
+import { stateText } from './parser.terms.js';
 
 // Reads the remainder of a line as a single free-text token, used for the label
 // that follows a `:` on a transition or note. Bails out at a closing brace or a

@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { ganttTags } from '../../tags';
+import { ganttTags } from '../../tags/index.js';
 
 export const ganttHighlighting = styleTags({
   'DiagramName Section': ganttTags.diagramName,

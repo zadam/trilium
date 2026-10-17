@@ -56,8 +56,8 @@ DiagramName { kw<"sequenceDiagram"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens messageTextToken from "./tokens" { messageText }
-@external tokens textTokens from "./tokens" {
+@external tokens messageTextToken from "./tokens.js" { messageText }
+@external tokens textTokens from "./tokens.js" {
   Activate[group=Keyword1],
   Autonumber[group=Keyword1],
   Create[group=Keyword1],
@@ -111,4 +111,4 @@ kw<term> { @specialize<identifier, term> }
   }
 }
 
-@external propSource sequenceHighlighting from "./highlight"
+@external propSource sequenceHighlighting from "./highlight.js"

@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { timelineTags } from '../../tags';
+import { timelineTags } from '../../tags/index.js';
 
 export const timelineHighlighting = styleTags({
   DiagramName: timelineTags.diagramName,

@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { c4Tags } from '../../tags';
+import { c4Tags } from '../../tags/index.js';
 
 export const c4Highlighting = styleTags({
   DiagramName: c4Tags.diagramName,

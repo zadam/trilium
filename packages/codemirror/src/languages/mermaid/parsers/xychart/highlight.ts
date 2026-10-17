@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { xychartTags } from '../../tags';
+import { xychartTags } from '../../tags/index.js';
 
 export const xychartHighlighting = styleTags({
   DiagramName: xychartTags.diagramName,

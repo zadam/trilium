@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { gitTags } from '../../tags';
+import { gitTags } from '../../tags/index.js';
 
 export const gitHighlighting = styleTags({
   DiagramName: gitTags.diagramName,

@@ -32,7 +32,7 @@
   space { $[ \t\r]+ }
 }
 
-@external tokens diagramText from "./tokens" {
+@external tokens diagramText from "./tokens.js" {
   preDiagramLine,
   PieDiagram,
   MindmapDiagram,

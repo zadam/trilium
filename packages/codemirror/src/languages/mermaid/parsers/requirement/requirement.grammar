@@ -129,7 +129,7 @@ diagramKw<term> { @specialize<word, term> }
 propKw<term> { @specialize[@name=PropKeyword]<word, term> }
 kw<term> { @specialize[@name=Keyword]<word, term> }
 
-@external tokens relationshipStart from "./tokens" { RelationshipStart }
+@external tokens relationshipStart from "./tokens.js" { RelationshipStart }
 
 @tokens {
   word { @asciiLetter+ }
@@ -148,4 +148,4 @@ kw<term> { @specialize[@name=Keyword]<word, term> }
   @precedence { BackArrow, Hyphen }
 }
 
-@external propSource requirementHighlighting from "./highlight"
+@external propSource requirementHighlighting from "./highlight.js"

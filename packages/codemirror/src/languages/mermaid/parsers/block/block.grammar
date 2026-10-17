@@ -38,8 +38,8 @@ EndKeyword { kw<"end"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens diagramName from "./tokens" { DiagramName }
-@external tokens shapeToken from "./tokens" { Shape }
+@external tokens diagramName from "./tokens.js" { DiagramName }
+@external tokens shapeToken from "./tokens.js" { Shape }
 
 @tokens {
   whitespace { $[ \t\r\n]+ }
@@ -50,4 +50,4 @@ kw<term> { @specialize<identifier, term> }
   Arrow { "<"? ("-" | "=" | ".")+ ">"? }
 }
 
-@external propSource blockHighlighting from "./highlight"
+@external propSource blockHighlighting from "./highlight.js"

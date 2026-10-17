@@ -26,7 +26,7 @@ import {
   Participant,
   Position,
   rect,
-} from './sequence.grammar.terms';
+} from './parser.terms.js';
 
 const skipCodePoints = [-1, 9, 10, 13, 32, 37];
 const arrowSuffixCodePoints = [43, 45];

@@ -41,8 +41,8 @@ KeyType {
 
 DiagramName { @specialize<identifier, "erDiagram"> }
 
-@external tokens relationshipTokens from "./tokens" { RelationshipToken }
-@external tokens labelTokens from "./tokens" { labelTextTerm }
+@external tokens relationshipTokens from "./tokens.js" { RelationshipToken }
+@external tokens labelTokens from "./tokens.js" { labelTextTerm }
 
 @tokens {
   spaces { $[ \t\r]+ }
@@ -55,4 +55,4 @@ DiagramName { @specialize<identifier, "erDiagram"> }
   ":"
 }
 
-@external propSource erHighlighting from "./highlight"
+@external propSource erHighlighting from "./highlight.js"

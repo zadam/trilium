@@ -21,7 +21,7 @@ import {
   ERDiagram,
   GitDiagram,
   C4Diagram,
-} from './mermaid.grammar.terms';
+} from './parser.terms.js';
 
 const skipCodePoints = [-1, 9, 13, 32];
 

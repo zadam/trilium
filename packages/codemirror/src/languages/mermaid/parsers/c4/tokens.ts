@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { titleTextTerm } from './c4.grammar.terms';
+import { titleTextTerm } from './parser.terms.js';
 
 // Reads the remainder of a line as a single free-text token, used for the text
 // that follows the `title` keyword. Bails out at a line comment so it keeps its

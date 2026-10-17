@@ -40,9 +40,9 @@ InKeyword { kw<"in"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens diagramName from "./tokens" { DiagramName }
-@external tokens iconToken from "./tokens" { Icon }
-@external tokens labelToken from "./tokens" { Label }
+@external tokens diagramName from "./tokens.js" { DiagramName }
+@external tokens iconToken from "./tokens.js" { Icon }
+@external tokens labelToken from "./tokens.js" { Label }
 
 @tokens {
   whitespace { $[ \t\r\n]+ }
@@ -51,4 +51,4 @@ kw<term> { @specialize<identifier, term> }
   Arrow { "<"? "-"+ ">"? }
 }
 
-@external propSource architectureHighlighting from "./highlight"
+@external propSource architectureHighlighting from "./highlight.js"

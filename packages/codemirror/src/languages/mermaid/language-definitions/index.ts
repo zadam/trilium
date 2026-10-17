@@ -22,8 +22,8 @@ import {
   erParser,
   gitParser,
   c4Parser,
-} from '../parsers';
-import { DiagramType, MermaidLanguageType } from '../types';
+} from '../parsers/index.js';
+import { DiagramType, MermaidLanguageType } from '../types/index.js';
 
 export const mermaidLanguage = LRLanguage.define({
   name: MermaidLanguageType.Mermaid,

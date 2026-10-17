@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { pieTags } from '../../tags';
+import { pieTags } from '../../tags/index.js';
 
 export const pieHighlighting = styleTags({
   DiagramName: pieTags.diagramName,

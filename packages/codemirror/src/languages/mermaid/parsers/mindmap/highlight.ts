@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { mindmapTags } from '../../tags';
+import { mindmapTags } from '../../tags/index.js';
 
 export const mindmapHighlighting = styleTags({
   DiagramName: mindmapTags.diagramName,

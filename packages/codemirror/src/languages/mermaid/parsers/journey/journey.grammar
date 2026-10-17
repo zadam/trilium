@@ -42,10 +42,10 @@ DiagramName { kw<"journey"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens keywordTokens from "./tokens" { Keyword }
-@external tokens textTokens1 from "./tokens" { text1 }
-@external tokens textTokens2 from "./tokens" { text2 }
-@external tokens textTokens3 from "./tokens" { text3 }
+@external tokens keywordTokens from "./tokens.js" { Keyword }
+@external tokens textTokens1 from "./tokens.js" { text1 }
+@external tokens textTokens2 from "./tokens.js" { text2 }
+@external tokens textTokens3 from "./tokens.js" { text3 }
 
 @tokens {
   spaces { @whitespace+ }
@@ -56,4 +56,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { newlines, spaces }
 }
 
-@external propSource journeyHighlighting from "./highlight"
+@external propSource journeyHighlighting from "./highlight.js"

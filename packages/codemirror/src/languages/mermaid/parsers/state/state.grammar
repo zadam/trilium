@@ -65,7 +65,7 @@ DirectionKw { @specialize<identifier, "direction"> }
 
 DiagramName { @specialize<identifier, "stateDiagram"> versionSuffix? }
 
-@external tokens stateTextToken from "./tokens" { stateText }
+@external tokens stateTextToken from "./tokens.js" { stateText }
 
 @tokens {
   spaces { $[ \t\r]+ }
@@ -80,4 +80,4 @@ DiagramName { @specialize<identifier, "stateDiagram"> versionSuffix? }
   "{" "}" ":"
 }
 
-@external propSource stateHighlighting from "./highlight"
+@external propSource stateHighlighting from "./highlight.js"

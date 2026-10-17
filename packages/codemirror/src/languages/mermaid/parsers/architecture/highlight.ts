@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { architectureTags } from '../../tags';
+import { architectureTags } from '../../tags/index.js';
 
 export const architectureHighlighting = styleTags({
   DiagramName: architectureTags.diagramName,

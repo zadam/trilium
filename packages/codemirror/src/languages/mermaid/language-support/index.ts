@@ -21,7 +21,7 @@ import {
   erLanguage,
   gitLanguage,
   c4Language,
-} from '../language-definitions';
+} from '../language-definitions/index.js';
 
 export function mermaid() {
   return new LanguageSupport(mermaidLanguage);

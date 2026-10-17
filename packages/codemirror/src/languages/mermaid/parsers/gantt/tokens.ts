@@ -10,7 +10,7 @@ import {
   TodayMarker,
   Weekday,
   text,
-} from './gantt.grammar.terms';
+} from './parser.terms.js';
 
 const keywordMap: { [key: string]: number } = {
   axisFormat: AxisFormat,

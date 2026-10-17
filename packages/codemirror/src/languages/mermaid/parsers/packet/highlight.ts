@@ -1,5 +1,5 @@
 import { styleTags } from '@lezer/highlight';
-import { packetTags } from '../../tags';
+import { packetTags } from '../../tags/index.js';
 
 export const packetHighlighting = styleTags({
   DiagramName: packetTags.diagramName,

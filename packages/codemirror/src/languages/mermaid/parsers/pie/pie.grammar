@@ -31,7 +31,7 @@ Title { kw<"title"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens titleText from "./tokens" { TitleText }
+@external tokens titleText from "./tokens.js" { TitleText }
 
 @tokens {
   identifier { @asciiLetter+ }
@@ -41,4 +41,4 @@ kw<term> { @specialize<identifier, term> }
   LineComment { "%%" ![\n]* }
 }
 
-@external propSource pieHighlighting from "./highlight"
+@external propSource pieHighlighting from "./highlight.js"

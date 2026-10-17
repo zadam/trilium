@@ -31,9 +31,9 @@ DiagramName { kw<"timeline"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens keywordTokens from "./tokens" { Keyword }
-@external tokens periodEventTokens from "./tokens" { periodEventText }
-@external tokens keywordTextTokens from "./tokens" { keywordText }
+@external tokens keywordTokens from "./tokens.js" { Keyword }
+@external tokens periodEventTokens from "./tokens.js" { periodEventText }
+@external tokens keywordTextTokens from "./tokens.js" { keywordText }
 
 @tokens {
   spaces { @whitespace+ }
@@ -44,4 +44,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { newlines, spaces }
 }
 
-@external propSource timelineHighlighting from "./highlight"
+@external propSource timelineHighlighting from "./highlight.js"

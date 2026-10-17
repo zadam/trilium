@@ -1,6 +1,6 @@
 import { ExternalTokenizer } from '@lezer/lr';
 import type { InputStream } from '@lezer/lr';
-import { Keyword, labelText, axisText } from './quadrant.grammar.terms';
+import { Keyword, labelText, axisText } from './parser.terms.js';
 
 const skipCodePoints = [-1, 9, 10, 13, 32];
 

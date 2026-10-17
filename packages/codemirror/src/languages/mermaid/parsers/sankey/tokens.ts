@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { fieldText } from './sankey.grammar.terms';
+import { fieldText } from './parser.terms.js';
 
 const COMMA = 44;
 const NEWLINE = 10;

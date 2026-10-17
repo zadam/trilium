@@ -30,9 +30,9 @@ DiagramName { kw<"quadrantChart"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens keywordTokens from "./tokens" { Keyword }
-@external tokens labelTokens from "./tokens" { labelText }
-@external tokens axisTextTokens from "./tokens" { axisText }
+@external tokens keywordTokens from "./tokens.js" { Keyword }
+@external tokens labelTokens from "./tokens.js" { labelText }
+@external tokens axisTextTokens from "./tokens.js" { axisText }
 
 @tokens {
   spaces { @whitespace+ }
@@ -44,4 +44,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { newlines, spaces }
 }
 
-@external propSource quadrantHighlighting from "./highlight"
+@external propSource quadrantHighlighting from "./highlight.js"

@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { memberText } from './class.grammar.terms';
+import { memberText } from './parser.terms.js';
 
 // Reads the remainder of a line as a single free-text token. Used for class
 // member declarations and relationship labels. Bails out at the start of a line

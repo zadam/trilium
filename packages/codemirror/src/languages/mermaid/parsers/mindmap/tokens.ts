@@ -8,7 +8,7 @@ import {
   LineText3,
   LineText4,
   LineText5,
-} from './mindmap.grammar.terms';
+} from './parser.terms.js';
 
 import type { InputStream } from '@lezer/lr';
 

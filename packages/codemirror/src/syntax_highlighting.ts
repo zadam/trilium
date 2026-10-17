@@ -12,7 +12,7 @@ async function buildJavaScript() {
 }
 
 async function buildMermaid() {
-    const { mermaid, foldByIndent } = (await import('codemirror-lang-mermaid'));
+    const { mermaid, foldByIndent } = (await import("./languages/mermaid/index.js"));
     return [ mermaid(), foldByIndent() ];
 }
 

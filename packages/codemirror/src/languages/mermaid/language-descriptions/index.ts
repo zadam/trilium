@@ -21,8 +21,8 @@ import {
   er,
   git,
   c4,
-} from '../language-support';
-import { MermaidDescriptionName, MermaidAlias } from '../types';
+} from '../language-support/index.js';
+import { MermaidDescriptionName, MermaidAlias } from '../types/index.js';
 
 export const mermaidLanguageDescription = LanguageDescription.of({
   name: MermaidDescriptionName.Mermaid,

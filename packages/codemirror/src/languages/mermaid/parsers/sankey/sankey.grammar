@@ -26,7 +26,7 @@ DiagramName { kw<"sankey-beta"> | kw<"sankey"> }
 
 kw<term> { @specialize<identifier, term> }
 
-@external tokens fieldTokens from "./tokens" { fieldText }
+@external tokens fieldTokens from "./tokens.js" { fieldText }
 
 @tokens {
   identifier { (@asciiLetter | "-")+ }
@@ -36,4 +36,4 @@ kw<term> { @specialize<identifier, term> }
   @precedence { newlines, spaces }
 }
 
-@external propSource sankeyHighlighting from "./highlight"
+@external propSource sankeyHighlighting from "./highlight.js"
