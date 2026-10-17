@@ -1,6 +1,6 @@
 ---
 name: developing-mermaid-highlighting
-description: Use when changing how Mermaid diagram source is highlighted in Trilium's code editor — the Lezer grammars vendored in `packages/codemirror/src/languages/mermaid/` (`parsers/<diagram>/<diagram>.grammar`, `tokens.ts`, `highlight.ts`, `tags/`, the `mermaid` dispatcher grammar, `index.ts`), adding highlighting for a diagram type it does not know yet (radar, treemap, Venn, railroad, …), fixing a diagram that highlights wrongly, the `test/<diagram>.txt` fixtures, `scripts/build_mermaid_grammars.mts`, or the `text/vnd.mermaid` entry and the Markdown code-block wiring (`buildMarkdown()`) in `syntax_highlighting.ts`. Covers regenerating the committed parsers, the checklist for a new diagram type, the Lezer traps already hit (precedence beats length, external-tokenizer order, CRLF), and how to prove a grammar change (fixtures first, real Mermaid as the referee, tree comparison over a generated corpus). Includes tree.mts, fixtures.mts and compare.mts — don't write new parse-tree probes.
+description: Use when changing how Mermaid diagram source is highlighted in Trilium's code editor — the Lezer grammars vendored in `packages/codemirror/src/languages/mermaid/` (`parsers/<diagram>/<diagram>.grammar`, `tokens.ts`, `highlight.ts`, `tags/`, the `mermaid` dispatcher grammar, `index.ts`), adding highlighting for a diagram type a newer Mermaid adds (from its Langium, Jison or Chevrotain parser), fixing a diagram that highlights wrongly, the `test/<diagram>.txt` fixtures, `scripts/build_mermaid_grammars.mts`, or the `text/vnd.mermaid` entry and the Markdown code-block wiring (`buildMarkdown()`) in `syntax_highlighting.ts`. Covers regenerating the committed parsers, the checklist for a new diagram type, the Lezer traps already hit (precedence beats length, external-tokenizer order, CRLF), and how to prove a grammar change (fixtures first, real Mermaid as the referee, tree comparison over a generated corpus). Includes tree.mts, fixtures.mts, compare.mts and langium.mts — don't write new parse-tree probes.
 ---
 
 # Developing Mermaid syntax highlighting
@@ -28,6 +28,7 @@ languages/mermaid/
   parsers/mermaid/      the dispatcher: detects the diagram type from the first meaningful line
   parsers/<diagram>/    <diagram>.grammar, tokens.ts (external tokenizers, optional),
                         highlight.ts (styleTags), parser.ts + parser.terms.ts (GENERATED)
+  parsers/line_text.ts  lineText(): the "rest of the line after a keyword" tokenizer (titles, styles)
   test/<diagram>.txt    Lezer fixtures, one file per parsers/ directory, same name
   mermaid.spec.ts       runs every fixture file, checks generated parsers are current
   LICENSE               upstream MIT licence — keep it
@@ -80,10 +81,18 @@ reject them.
 
 ## Adding a diagram type
 
-Twelve built-in Mermaid types have no grammar yet: radar, treemap, tree view, event modeling,
-Ishikawa, Venn, use case, Wardley, Cynefin, railroad (four dialects), swimlane, agent flow. The
-official VS Code extension (Mermaid-Chart/vscode-mermaid-chart, MIT, `syntaxes/`) has a TextMate
-grammar for radar; the rest have none anywhere, so write them from Mermaid's syntax docs.
+Every type Mermaid 12.2.0 registers has a grammar. Swimlanes (`swimlane-beta`) is a flowchart to
+Mermaid and to us; agent flow (`agentflow-beta`) is the flowchart grammar in its `agentflow`
+dialect (`DIAGRAM_PARSERS` configures it), which adds its `flow`, `connector` and `global`
+keywords without taking those names away from flowchart node ids. Use case follows Mermaid's
+lexer token for token, without statement structure: its Chevrotain parser has about fifty rules.
+
+**Write a new grammar from Mermaid's own parser, not from its docs.** `langium.mts` prints the
+Langium grammars of `@mermaid-js/parser` (radar, treemap, tree view, Wardley, Cynefin, event
+modeling, railroad, …); the others are Jison or Chevrotain inside Mermaid's chunks, and the tool's
+header says where to look. The grammar can still differ from what Mermaid accepts (event modeling
+declares `title` but rejects it), so check each construct with the probe below. The VS Code
+extension (Mermaid-Chart/vscode-mermaid-chart, `syntaxes/`) only lists keywords.
 
 1. **`parsers/<diagram>/<diagram>.grammar`.** Its `@top` node is named `<Something>Diagram`. Start
    from the closest existing grammar: line-oriented diagrams (pie, packet, sankey) are small;
@@ -113,6 +122,20 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
   more. Flowchart's `--` label opener ranked below the link tokens, so `-- text -->` always lexed as
   a link: the edge-label rule could never match, and upstream fixtures recorded the broken tree.
   The fix made the opener longer (`"--" $[ \t]+`) so no link token overlaps it, then ranked it first.
+- **External tokenizers run before the grammar's skip.** One that reads text must decline at
+  whitespace, or its token starts with the spaces after the keyword. `lineText()` declines, lets
+  the skip run, then looks back for a newline so a `title` on its own line takes no text.
+- **The spec does not see a new `parsers/<dir>` until `mermaid.spec.ts` changes.** Vitest's
+  module cache (`node_modules/.vitest-cache`) keys the spec's transform by its contents, and that
+  transform holds the expanded `import.meta.glob`. The symptom: the wiring test and every fixture of
+  the new grammar fail with `Cannot read properties of undefined (reading 'configure')`. Delete
+  the cache entries that hold the spec (`grep -l fileTests` there, then those containing
+  `parsers/mermaid/parser.ts`).
+- **A literal token next to flowchart's Unicode `identifier` overflows the tokenizer tables**
+  ("too big to represent with 16-bit offsets"). The `swimlane-beta`/`agentflow-beta` headers are
+  an external token for that reason.
+- **`styleTags` selectors treat `/` as a path separator**: quote it (`'"/"'`). `Tag.define()`
+  cannot take a modified tag such as `t.definition(…)`; apply the modifier in `styleTags` instead.
 - **External tokenizers run in declaration order; the first that accepts wins.** Kanban's
   `columnTitleTokens` claims every line without a `[`, so `nodeIdTokens` only ever sees card lines.
   Check what an earlier tokenizer swallows before deciding a later one's branch is reachable.
@@ -192,6 +215,7 @@ any document Mermaid accepts reaches it, remove it, and say how you know in the 
 | `tree.mts <diagram> '<input>' [--spans]` | prints the parse tree; `--spans` adds each node's range and text. `mermaid` parses with the top-level language |
 | `fixtures.mts <cases.json> [--append]` | `[diagram, name, input][]` → fixture blocks from the current parser; `--append` writes them to `test/<diagram>.txt` |
 | `compare.mts record\|check <diagram> <file>` | before/after tree comparison over a generated corpus |
+| `langium.mts [<Module>]` | prints a Langium grammar of `@mermaid-js/parser`; without an argument, lists them |
 
 All run with `npx tsx .claude/skills/developing-mermaid-highlighting/<script>` from the repository
 root; `\n`, `\r` and `\t` in an input are unescaped.
@@ -202,6 +226,11 @@ root; `\n`, `\r` and `\t` in an input are unescaped.
 - A bare word under a kanban column parses as another column, not a card.
 - Dotted edge labels (`A -. text .-> B`) parse as two links.
 - `flowchart` or `graph` without a direction (valid Mermaid, top to bottom) parses with errors.
+- Block has no `style` statement: `style B fill:#969` parses with errors (Trilium's own sample).
+- Diagram detection is case-sensitive; Mermaid accepts `ISHIKAWA-BETA` and `SET` in a Venn
+  diagram.
+- Radar, treemap, Wardley and the railroad dialects skip newlines, so they accept a few layouts
+  Mermaid rejects (a statement split over lines, two Wardley names on separate lines as a link).
 - Inside a diagram, only mindmap knows `Directive`; the other grammars highlight a directive as a
   `LineComment`. None highlights the JSON a directive holds: Mermaid accepts single quotes there,
   so a JSON parser would flag valid input.
