@@ -48,6 +48,11 @@ describe("buildSystemPrompt", () => {
         expect(buildSystemPrompt([], {})).not.toContain("declines a tool call");
     });
 
+    it("tells a model with note tools to read a linked note by the ID in its link", () => {
+        expect(buildSystemPrompt([], { enableNoteTools: true })).toContain("#root/<noteId>");
+        expect(buildSystemPrompt([], { enableWebSearch: true })).not.toContain("#root/<noteId>");
+    });
+
     it("emits the context-note-only notice when a context note is set but note tools are off", () => {
         const prompt = buildSystemPrompt([], { contextNoteId: "ctx" }) ?? "";
         expect(prompt).toContain("cannot search or access other notes");
