@@ -304,3 +304,67 @@ MermaidDiagram(LineComment,PieDiagram(DiagramName,String,Number))
 ==>
 
 MermaidDiagram(LineComment,⚠)
+
+# Accessibility title and description
+
+flowchart LR
+  accTitle: Order flow
+  accDescr: How an order moves
+  A --> B
+
+==>
+
+MermaidDiagram(FlowchartDiagram(AccTitle(Keyword,":",AccText),AccDescr(Keyword,":",AccText)))
+
+# Multi-line accessibility description
+
+sequenceDiagram
+  A->>B: hi
+  accDescr {
+    Line one
+    line two
+  }
+
+==>
+
+MermaidDiagram(SequenceDiagram(AccDescr(Keyword,"{",AccText,"}")))
+
+# Accessibility lines are content in a kanban
+
+kanban
+  accTitle: Board
+
+==>
+
+MermaidDiagram(KanbanDiagram(DiagramName,Column(ColumnTitle)))
+
+# Empty accessibility title and description
+
+pie
+  accTitle:
+  accDescr {}
+  "A": 1
+
+==>
+
+MermaidDiagram(PieDiagram(AccTitle(Keyword,":"),AccDescr(Keyword,"{","}")))
+
+# Accessibility keywords without their punctuation are diagram text
+
+flowchart LR
+  accTitleNode --> B
+  accDescr --> C
+  accTitle { x }
+
+==>
+
+MermaidDiagram(FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId,NodeId,Link,NodeId,NodeId,Node(NodeText)))
+
+# Text after an accessibility description block (invalid)
+
+gitGraph
+  accDescr { x }commit
+
+==>
+
+MermaidDiagram(GitDiagram(AccDescr(Keyword,"{",AccText,"}")))

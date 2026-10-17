@@ -46,6 +46,16 @@ the preamble is `Directive`s (`%%{…}%%`, which can span lines), `LineComment`s
 over it. A diagram with no entry there, or a keyword missing from `diagramMap`, gets no highlighting
 at all.
 
+Accessibility lines (`accTitle:`, `accDescr:`, `accDescr { … }`) are handled once, here, not in
+each grammar. In the 15 diagrams whose Mermaid parser stores them (`accessibleDiagrams` in
+`parsers/mermaid/tokens.ts`), the diagram node is a rule: an anonymous `…Text` token, then
+`AccTitle`/`AccDescr` nodes and `diagramRest` chunks. `textAroundAccessibility()` in `index.ts`
+mounts the diagram's parser as an **overlay** on the text around those nodes, so the diagram grammar
+never sees them. `Tree.toString()` does not print overlay mounts: a fixture with an accessibility
+line shows only the dispatcher's nodes, and the spec reads the mounted tree through
+`NodeProp.mounted`. Timeline and kanban read these lines as content; mindmap, sankey and block
+reject them.
+
 ## Rules
 
 - **Never edit `parser.ts` or `parser.terms.ts`.** After any `.grammar` change, regenerate:
@@ -87,6 +97,9 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
    alternatives and the `@external tokens diagramText` list; in `parsers/mermaid/tokens.ts` add each
    keyword the diagram starts with to `diagramMap` (`radar-beta`, …). `diagramMap` matches with
    `startsWith` and takes the first hit, so list a longer key before a shorter key it starts with.
+   If Mermaid stores `accTitle` for the new type (ask `mermaid.mermaidAPI.getDiagramFromText()`
+   after a `mermaid.parse()`, then `db.getAccTitle()`), make the node a rule like the others,
+   `<Name>Diagram { <name>Text accessible* }`, and add its token to `accessibleDiagrams`.
 5. **Wire it** into `DIAGRAM_PARSERS` in `index.ts`, keyed by the node name. The spec fails if a
    parser directory is missing from the map.
 6. **Fixtures**: `test/<diagram>.txt`, named exactly like the directory. Start with Trilium's own
@@ -107,6 +120,9 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
   `stack.canShift(term)` says which. For context (am I at the start, inside front matter?) ask the
   stack, not `input.pos`: `frontMatter` has a separate `frontMatterStart` token, valid only at the
   start of the document, and both its `---` tokens keep one node name with `[@name=DashLine]`.
+  The same rule makes branches dead: a literal in `@tokens` (such as `}`) is claimed before a
+  later external tokenizer runs, and an `else if (stack.canShift(…))` that every calling state
+  satisfies can never be false. Coverage finds these; delete them instead of writing fixtures.
 - **`acceptToken(term, offset)`** with a negative offset ends the token before what was read —
   kanban uses it to keep the spaces in `id1 [Task]` out of the id. Fixture trees do not show token
   ranges; assert those in the spec, or look with `tree.mts --spans`.

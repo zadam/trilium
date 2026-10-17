@@ -1,6 +1,8 @@
 import { Tag, tags as t } from "@lezer/highlight";
 
 export const mermaidTags = {
+    accessibilityKeyword: Tag.define(t.keyword),
+    accessibilityText: Tag.define(t.string),
     diagramName: Tag.define(t.typeName),
     frontMatterDelimiter: Tag.define(t.meta),
     directive: Tag.define(t.processingInstruction),

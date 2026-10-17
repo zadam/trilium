@@ -4,7 +4,7 @@
 // `pnpm --filter @triliumnext/codemirror build:mermaid-grammars`.
 import { yamlLanguage } from "@codemirror/lang-yaml";
 import { languageDataProp, LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parseMixed } from "@lezer/common";
+import { parseMixed, type SyntaxNode } from "@lezer/common";
 import type { LRParser } from "@lezer/lr";
 
 import { parser as architectureParser } from "./parsers/architecture/parser.js";
@@ -65,7 +65,9 @@ export const mermaidLanguage = LRLanguage.define({
         wrap: parseMixed((node) => {
             if (node.name === "FrontMatterContent") return { parser: yamlLanguage.parser };
             const parser = nestedParsers[node.name];
-            return parser ? { parser } : null;
+            if (!parser) return null;
+            const overlay = textAroundAccessibility(node.node);
+            return overlay ? { parser, overlay } : { parser };
         })
     }),
     languageData: {
@@ -84,4 +86,21 @@ const nestedParsers = Object.fromEntries(Object.entries(DIAGRAM_PARSERS).map(([ 
 
 export function mermaid() {
     return new LanguageSupport(mermaidLanguage);
+}
+
+/**
+ * The ranges of a diagram outside its `AccTitle` and `AccDescr` nodes, for the diagram's parser to
+ * cover; `null` when it has none. Those nodes are the only named children of a diagram, and
+ * diagram text always comes before each one.
+ */
+function textAroundAccessibility(diagram: SyntaxNode) {
+    const ranges: { from: number; to: number }[] = [];
+    let from = diagram.from;
+    for (let child = diagram.firstChild; child; child = child.nextSibling) {
+        ranges.push({ from, to: child.from });
+        from = child.to;
+    }
+    if (from === diagram.from) return null;
+    if (diagram.to > from) ranges.push({ from, to: diagram.to });
+    return ranges;
 }

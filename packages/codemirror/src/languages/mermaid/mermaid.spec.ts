@@ -5,7 +5,9 @@ import { toggleComment } from "@codemirror/commands";
 import { foldable, LanguageSupport } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
+import { NodeProp } from "@lezer/common";
 import { fileTests } from "@lezer/generator/test";
+import { classHighlighter, highlightTree } from "@lezer/highlight";
 import type { LRParser } from "@lezer/lr";
 import { describe, expect, it } from "vitest";
 
@@ -100,6 +102,52 @@ describe("mermaid", () => {
         for (const unix of docs) {
             expect(tree(unix.replaceAll("\n", "\r\n")), JSON.stringify(unix)).toBe(tree(unix));
         }
+    });
+});
+
+describe("accessibility lines", () => {
+    // The diagrams whose Mermaid parser stores accTitle and accDescr; the others read them as
+    // content or reject them.
+    const docs = [
+        "flowchart LR\n  A --> B", "sequenceDiagram\n  A->>B: hi", "classDiagram\n  class A",
+        "stateDiagram-v2\n  [*] --> A", "erDiagram\n  A ||--o{ B : has", "gantt\n  title X",
+        "pie\n  \"A\": 1", "journey\n  title X", "gitGraph\n  commit",
+        "requirementDiagram\n  requirement r {\n    id: 1\n  }", "C4Context\n  Person(a, \"A\")",
+        "quadrantChart\n  x-axis A --> B", "xychart-beta\n  bar [1, 2]",
+        "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]"
+    ];
+    const lines = [
+        "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"
+    ].join("\n");
+
+    it("highlights them and the diagram around them", () => {
+        const doc = "flowchart LR\n  accTitle: My title\n  A --> B";
+        const tree = mermaidLanguage.parser.parse(doc);
+        const classes: Record<string, string> = {};
+        highlightTree(tree, classHighlighter, (from, to, style) => {
+            classes[doc.slice(from, to)] = style;
+        });
+        expect(classes).toMatchObject({
+            "flowchart": "tok-typeName",
+            "accTitle": "tok-keyword",
+            "My title": "tok-string",
+            "A": "tok-variableName"
+        });
+    });
+
+    it.each(docs)("leaves them out of the diagram grammar in %j", (doc) => {
+        const [ header, ...body ] = doc.split("\n");
+        const withLines = [ header, lines, ...body ].join("\n");
+        const blanked = [ header, lines.replace(/[^\n]/g, ""), ...body ].join("\n");
+
+        const tree = mermaidLanguage.parser.parse(withLines);
+        expect(tree.toString()).toContain("AccTitle(Keyword,\":\",AccText),"
+            + "AccDescr(Keyword,\":\",AccText),AccDescr(Keyword,\"{\",AccText,\"}\")");
+        const mounted = tree.topNode.lastChild?.tree?.prop(NodeProp.mounted);
+        expect(mounted?.overlay).toBeTruthy();
+        expect(`MermaidDiagram(${mounted?.tree.toString()})`)
+            .toBe(mermaidLanguage.parser.parse(blanked).toString());
+        expect(mounted?.tree.toString()).not.toContain("⚠");
     });
 });
 

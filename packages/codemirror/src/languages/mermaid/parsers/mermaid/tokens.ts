@@ -1,30 +1,35 @@
 import { ExternalTokenizer, type InputStream } from "@lezer/lr";
 import {
+    accBlockText,
+    accDescrKeyword,
+    AccText,
+    accTitleKeyword,
+    diagramRest,
     Directive,
     FrontMatterContent,
     frontMatterEnd,
     frontMatterStart,
     preDiagramLine,
     MindmapDiagram,
-    PieDiagram,
-    FlowchartDiagram,
-    SequenceDiagram,
-    JourneyDiagram,
-    RequirementDiagram,
-    GanttDiagram,
+    pieText,
+    flowchartText,
+    sequenceText,
+    journeyText,
+    requirementText,
+    ganttText,
     TimelineDiagram,
-    QuadrantDiagram,
+    quadrantText,
     SankeyDiagram,
-    XYChartDiagram,
-    PacketDiagram,
+    xyChartText,
+    packetText,
     KanbanDiagram,
     BlockDiagram,
-    ArchitectureDiagram,
-    ClassDiagram,
-    StateDiagram,
-    ERDiagram,
-    GitDiagram,
-    C4Diagram,
+    architectureText,
+    classText,
+    stateText,
+    erText,
+    gitText,
+    c4Text,
     LineComment
 } from "./parser.terms.js";
 
@@ -35,40 +40,47 @@ const skipCodePoints = [ -1, 9, 13, 32 ];
 // another still maps to the same diagram, so ties resolve to the correct type.
 const diagramMap: Record<string, number> = {
     "mindmap": MindmapDiagram,
-    "pie": PieDiagram,
-    "flowchart": FlowchartDiagram,
-    "graph": FlowchartDiagram,
-    "sequenceDiagram": SequenceDiagram,
-    "journey": JourneyDiagram,
-    "requirementDiagram": RequirementDiagram,
-    "gantt": GanttDiagram,
+    "pie": pieText,
+    "flowchart": flowchartText,
+    "graph": flowchartText,
+    "sequenceDiagram": sequenceText,
+    "journey": journeyText,
+    "requirementDiagram": requirementText,
+    "gantt": ganttText,
     "timeline": TimelineDiagram,
-    "quadrantChart": QuadrantDiagram,
+    "quadrantChart": quadrantText,
     "sankey-beta": SankeyDiagram,
     "sankey": SankeyDiagram,
-    "xychart-beta": XYChartDiagram,
-    "xychart": XYChartDiagram,
-    "packet-beta": PacketDiagram,
-    "packet": PacketDiagram,
+    "xychart-beta": xyChartText,
+    "xychart": xyChartText,
+    "packet-beta": packetText,
+    "packet": packetText,
     "kanban": KanbanDiagram,
     "block-beta": BlockDiagram,
     "block": BlockDiagram,
-    "architecture-beta": ArchitectureDiagram,
-    "architecture": ArchitectureDiagram,
-    "classDiagram-v2": ClassDiagram,
-    "classDiagram": ClassDiagram,
-    "stateDiagram-v2": StateDiagram,
-    "stateDiagram": StateDiagram,
-    "erDiagram": ERDiagram,
-    "gitGraph": GitDiagram,
-    "C4Context": C4Diagram,
-    "C4Container": C4Diagram,
-    "C4Component": C4Diagram,
-    "C4Dynamic": C4Diagram,
-    "C4Deployment": C4Diagram
+    "architecture-beta": architectureText,
+    "architecture": architectureText,
+    "classDiagram-v2": classText,
+    "classDiagram": classText,
+    "stateDiagram-v2": stateText,
+    "stateDiagram": stateText,
+    "erDiagram": erText,
+    "gitGraph": gitText,
+    "C4Context": c4Text,
+    "C4Container": c4Text,
+    "C4Component": c4Text,
+    "C4Dynamic": c4Text,
+    "C4Deployment": c4Text
 };
 
 const diagrams = Object.keys(diagramMap);
+
+// The diagrams whose Mermaid parser stores accTitle and accDescr. Timeline and kanban read those
+// lines as content; mindmap, sankey and block reject them.
+const accessibleDiagrams = new Set([
+    pieText, flowchartText, sequenceText, journeyText, requirementText, ganttText, quadrantText,
+    xyChartText, packetText, architectureText, classText, stateText, erText, gitText, c4Text
+]);
 
 /**
  * Splits front matter into its `---` lines and the YAML between them. Like Mermaid, it takes a
@@ -119,12 +131,42 @@ export const diagramText = new ExternalTokenizer((input) => {
     });
 
     if (activeDiagram.length > 0) {
+        const diagram = diagramMap[activeDiagram[0]];
+        if (accessibleDiagrams.has(diagram)) {
+            input.acceptToken(diagram, bodyLength(input, 0));
+            return;
+        }
         while (input.next !== -1) {
             input.advance();
         }
-        input.acceptToken(diagramMap[activeDiagram[0]]);
+        input.acceptToken(diagram);
     } else {
         input.acceptToken(preDiagramLine);
+    }
+});
+
+/**
+ * Splits the body of a diagram in `accessibleDiagrams` at its `accTitle:`, `accDescr:` and
+ * `accDescr { … }` lines, which Mermaid reads only at the start of a line.
+ */
+export const accessibility = new ExternalTokenizer((input, stack) => {
+    if (input.next === -1) return;
+
+    if (stack.canShift(accBlockText)) {
+        let length = 0;
+        while (input.peek(length) !== 125 && input.peek(length) !== -1) length++;
+        input.acceptToken(accBlockText, length);
+    } else if (stack.canShift(AccText) && input.next !== 10) {
+        input.acceptToken(AccText, lineLength(input));
+    } else {
+        const keyword = accessibilityKeyword(input, 0);
+        if (keyword) {
+            input.acceptToken(keyword, 8);
+        } else {
+            const lineEnd = lineLength(input);
+            const nextLine = lineEnd + (input.peek(lineEnd) === 10 ? 1 : 0);
+            input.acceptToken(diagramRest, bodyLength(input, nextLine));
+        }
     }
 });
 
@@ -146,6 +188,38 @@ export function lineLength(input: InputStream) {
     let length = 0;
     while (input.peek(length) !== 10 && input.peek(length) !== -1) length++;
     return length;
+}
+
+/**
+ * The offset of the first line at or after `offset`, a line start, that opens an accessibility
+ * statement; the end of the input when none does.
+ */
+function bodyLength(input: InputStream, offset: number) {
+    while (input.peek(offset) !== -1) {
+        let start = offset;
+        while (input.peek(start) === 32 || input.peek(start) === 9) start++;
+        if (accessibilityKeyword(input, start)) return offset;
+        while (input.peek(offset) !== 10 && input.peek(offset) !== -1) offset++;
+        if (input.peek(offset) === 10) offset++;
+    }
+    return offset;
+}
+
+/**
+ * The keyword token of the accessibility statement at `offset`: `accTitle` followed by `:`, or
+ * `accDescr` followed by `:` or `{`; 0 when there is none.
+ */
+function accessibilityKeyword(input: InputStream, offset: number) {
+    let keyword = "";
+    for (let index = 0; index < 8; index++) {
+        keyword += String.fromCharCode(input.peek(offset + index));
+    }
+    if (keyword !== "accTitle" && keyword !== "accDescr") return 0;
+
+    let next = offset + 8;
+    while (input.peek(next) === 32 || input.peek(next) === 9) next++;
+    if (input.peek(next) === 58) return keyword === "accTitle" ? accTitleKeyword : accDescrKeyword;
+    return keyword === "accDescr" && input.peek(next) === 123 ? accDescrKeyword : 0;
 }
 
 /** The offset of the first `---` line at or after `offset`, or -1 when there is none. */
