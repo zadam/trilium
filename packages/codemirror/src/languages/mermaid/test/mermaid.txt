@@ -467,3 +467,12 @@ ishikawa-beta
 ==>
 
 MermaidDiagram(IshikawaDiagram(DiagramName,Effect))
+
+# Venn
+
+venn-beta
+  set A
+
+==>
+
+MermaidDiagram(VennDiagram(DiagramName,Set(Keyword,Name)))

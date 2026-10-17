@@ -25,6 +25,7 @@
     RailroadAbnfDiagram |
     RailroadPegDiagram |
     IshikawaDiagram |
+    VennDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -113,6 +114,7 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   railroadAbnfText,
   railroadPegText,
   IshikawaDiagram,
+  VennDiagram,
   SankeyDiagram,
   xyChartText,
   packetText,

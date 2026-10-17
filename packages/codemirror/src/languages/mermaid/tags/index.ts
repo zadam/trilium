@@ -313,3 +313,17 @@ export const ishikawaTags = {
     effect: Tag.define(t.heading),
     lineComment: Tag.define(t.lineComment)
 };
+
+export const vennTags = {
+    color: Tag.define(t.color),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    keyword: Tag.define(t.keyword),
+    label: Tag.define(t.string),
+    lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.variableName),
+    number: Tag.define(t.number),
+    property: Tag.define(t.propertyName),
+    separator: Tag.define(t.separator),
+    string: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};
