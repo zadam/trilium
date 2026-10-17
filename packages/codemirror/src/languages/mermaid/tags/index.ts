@@ -327,3 +327,19 @@ export const vennTags = {
     string: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const usecaseTags = {
+    arrow: Tag.define(t.operator),
+    boolean: Tag.define(t.bool),
+    bracket: Tag.define(t.bracket),
+    color: Tag.define(t.color),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    direction: Tag.define(t.modifier),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.variableName),
+    number: Tag.define(t.number),
+    punctuation: Tag.define(t.punctuation),
+    stereotype: Tag.define(t.annotation),
+    string: Tag.define(t.string)
+};

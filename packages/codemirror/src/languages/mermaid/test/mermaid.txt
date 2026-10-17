@@ -476,3 +476,12 @@ venn-beta
 ==>
 
 MermaidDiagram(VennDiagram(DiagramName,Set(Keyword,Name)))
+
+# Use case
+
+usecase-beta
+  actor User
+
+==>
+
+MermaidDiagram(UsecaseDiagram(DiagramName,Keyword,Name))

@@ -119,7 +119,7 @@ describe("accessibility lines", () => {
         "treeView-beta\n  src", "wardley-beta\n  anchor A [0.5, 0.5]",
         "cynefin-beta\n  complex", "railroad-beta\n  a = terminal(\"x\");",
         "railroad-ebnf-beta\n  a = \"x\";", "railroad-abnf-beta\n  a = \"x\";",
-        "railroad-peg-beta\n  a <- \"x\";"
+        "railroad-peg-beta\n  a <- \"x\";", "usecase-beta\n  actor User"
     ];
     const lines = [
         "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"
