@@ -58,7 +58,7 @@
     "react-zoom-pan-pinch": "4.2.0",
     "reveal.js": "6.0.2",
     "tabulator-tables": "6.6.1",
-    "temporal-polyfill": "1.0.5"
+    "temporal-polyfill": "1.0.6"
   },
   "devDependencies": {
     "@types/aes-js": "3.1.4",
