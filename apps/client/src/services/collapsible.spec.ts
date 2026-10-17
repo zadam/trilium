@@ -78,13 +78,13 @@ describe("revealElement", () => {
                     `<details><summary>s</summary><span class="m">hit</span></details>` +
                 `</div></section>` +
             `</div>`;
-        applyTabs(container, { placeholder: "" });
+        applyTabs(container, { placeholder: "", scrollLabels: { start: "", end: "" } });
         const match = container.querySelector(".m");
         expect(match).not.toBeNull();
 
         revealElement(match as Element);
 
         expect(container.querySelector("details")?.open).toBe(true);
-        expect(container.querySelector(".trilium-tab--active > .trilium-tab-title")?.textContent).toBe("B");
+        expect(container.querySelector(".trilium-tab-title--active")?.textContent).toBe("B");
     });
 });

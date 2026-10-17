@@ -3,7 +3,7 @@ Content tabs group several titled panels of content into one block that shows a 
 
 A tabs block consists of:
 
-*   **A row of tab titles**, above the panel or, when the tabs are aligned at the bottom, below it. The title of the panel that is showing is highlighted.
+*   **A single row of tab titles**, above the panel or, when the tabs are aligned at the bottom, below it. The title of the panel that is showing is highlighted.
 *   **The panel of the active tab.** A panel can hold any kind of content (including nested tabs blocks).
 
 ## Inserting a tabs block
@@ -12,6 +12,15 @@ A tabs block consists of:
 *   Alternatively, type `/tabs` and press <kbd>Enter</kbd>, as described in <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>.
 
 A new block contains two tabs, named “Tab 1” and “Tab 2”. Any content that was selected prior to inserting the tabs will be moved into the first tab. The title of the first tab is selected, so typing replaces it.
+
+## Scrolling through the titles
+
+When the titles of a block do not fit on their row, a <span class="tn-icon bx bx-chevron-left"></span> button and a <span class="tn-icon bx bx-chevron-right"></span> button appear at its ends:
+
+*   To scroll the titles, click one of the buttons. Holding a button down scrolls the titles continuously until it is released.
+*   On a touch screen, the titles can also be swiped sideways.
+
+Whenever another tab is shown (for example by clicking its title, by moving the cursor into it or by following a link to it), the row scrolls so that its whole title is visible. This works the same while editing, in read-only notes and on shared pages.
 
 ## Editing tabs
 

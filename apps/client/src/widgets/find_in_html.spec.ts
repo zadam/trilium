@@ -100,8 +100,8 @@ describe("FindInHtml", () => {
                     "<div class=\"trilium-tab-panel\"><p>needle</p></div></section>" +
             "</div>"
         );
-        applyTabs(container, { placeholder: "" });
-        const activeTitle = () => container.querySelector(".trilium-tab--active > .trilium-tab-title")?.textContent;
+        applyTabs(container, { placeholder: "", scrollLabels: { start: "", end: "" } });
+        const activeTitle = () => container.querySelector(".trilium-tab-title--active")?.textContent;
         expect(activeTitle()).toBe("A");
 
         const result = await finder.performFind("needle", false, false);

@@ -99,7 +99,7 @@ function model(editor: ClassicEditor) {
 
 function activeTitles(editor: ClassicEditor) {
     const root = editor.editing.view.getDomRoot();
-    return [...root?.querySelectorAll(".trilium-tab--active > .trilium-tab-title") ?? []]
+    return [...root?.querySelectorAll(".trilium-tab-title--active") ?? []]
         .map(title => title.textContent);
 }
 

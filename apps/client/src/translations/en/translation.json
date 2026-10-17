@@ -4547,7 +4547,9 @@
       "make-the-tab-the-first-one": "Make the tab the first one",
       "make-the-tab-the-last-one": "Make the tab the last one",
       "add-a-tab-after-the-current-one": "Add a tab after the current one",
-      "add-a-tab-before-the-current-one": "Add a tab before the current one"
+      "add-a-tab-before-the-current-one": "Add a tab before the current one",
+      "scroll-to-the-previous-tabs": "Scroll to the previous tabs",
+      "scroll-to-the-next-tabs": "Scroll to the next tabs"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

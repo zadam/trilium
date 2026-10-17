@@ -24,6 +24,7 @@ import {
     AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand,
     MoveToTabCommand, RemoveTabCommand, TabAlignmentCommand
 } from "./tabs_commands.js";
+import TabsTitleBar from "./tabs_title_bar.js";
 
 /**
  * Schema, conversion, commands and key handling for tabs blocks. The active tab is editing-view
@@ -36,7 +37,7 @@ export default class TabsEditing extends Plugin {
     }
 
     public static get requires() {
-        return [Widget] as const;
+        return [TabsTitleBar, Widget] as const;
     }
 
     /** The tab each tabs block shows, keyed by the `tabs` model element. */
@@ -44,6 +45,9 @@ export default class TabsEditing extends Plugin {
 
     /** The editing-view ID prefix of each tab's title and panel, keyed by the `tab` model element. */
     private readonly tabIds = new WeakMap<ModelElement, string>();
+
+    /** The tab whose title each tabs block last scrolled into view, keyed by the `tabs` element. */
+    private readonly revealedTabs = new WeakMap<ModelElement, RevealedTab>();
 
     public init(): void {
         const editor = this.editor;
@@ -200,7 +204,9 @@ export default class TabsEditing extends Plugin {
             view: (_model, { writer }) => {
                 const div = writer.createContainerElement("div", { class: CLASSES.tabs });
                 writer.setCustomProperty(TABS_WIDGET_PROPERTY, true, div);
-                return toWidget(div, writer, { label: t("Tabs"), hasSelectionHandle: true });
+                toWidget(div, writer, { label: t("Tabs"), hasSelectionHandle: true });
+                editor.plugins.get(TabsTitleBar).addBar(writer, div);
+                return div;
             }
         });
         conversion.for("editingDowncast").elementToElement({
@@ -217,12 +223,14 @@ export default class TabsEditing extends Plugin {
                 // global `aria-current` and `aria-controls` attributes carry the tab semantics.
                 const tab = model.parent as ModelElement;
                 const id = this.getTabId(tab);
+                const isActive = this.isActiveTab(tab);
+                const classes = isActive ? [CLASSES.tabTitle, CLASSES.activeTitle] : [CLASSES.tabTitle];
                 const title: ViewEditableElement & PlaceholderableViewElement =
                     writer.createEditableElement("div", {
-                        class: CLASSES.tabTitle,
+                        class: classes.join(" "),
                         id: `${id}-title`,
                         "aria-controls": `${id}-panel`,
-                        ...(this.isActiveTab(tab) ? { "aria-current": "true" } : {})
+                        ...(isActive ? { "aria-current": "true" } : {})
                     });
                 title.placeholder = t("Tab title");
                 enableViewPlaceholder({
@@ -341,8 +349,13 @@ export default class TabsEditing extends Plugin {
         }
     }
 
+    /**
+     * Marks the active tab of each of `blocks`. Scrolls its title into view when another tab
+     * became active or the active tab moved.
+     */
     private updateActiveClasses(blocks: Set<ModelElement>) {
         const editing = this.editor.editing;
+        const titleBar = this.editor.plugins.get(TabsTitleBar);
         editing.view.change(writer => {
             for (const tabs of blocks) {
                 const active = this.getActiveTab(tabs);
@@ -353,12 +366,22 @@ export default class TabsEditing extends Plugin {
                     if (!view || !title) {
                         continue;
                     }
-                    if (tab === active) {
-                        writer.addClass(CLASSES.activeTab, view);
-                        writer.setAttribute("aria-current", "true", title);
-                    } else {
+                    if (tab !== active) {
                         writer.removeClass(CLASSES.activeTab, view);
+                        writer.removeClass(CLASSES.activeTitle, title);
                         writer.removeAttribute("aria-current", title);
+                        continue;
+                    }
+
+                    writer.addClass(CLASSES.activeTab, view);
+                    writer.addClass(CLASSES.activeTitle, title);
+                    writer.setAttribute("aria-current", "true", title);
+                    // A block shows its first tab until a tab is activated.
+                    const shown = this.revealedTabs.get(tabs)
+                        ?? { tab: tabs.getChild(0), index: 0 };
+                    if (tab !== shown.tab || tab.index !== shown.index) {
+                        titleBar.revealTitleAfterRender(title);
+                        this.revealedTabs.set(tabs, { tab, index: tab.index });
                     }
                 }
             }
@@ -385,6 +408,11 @@ export default class TabsEditing extends Plugin {
             evt.stop();
         }, { priority: "high" });
     }
+}
+
+interface RevealedTab {
+    tab: ModelNode | null;
+    index: number | null;
 }
 
 /** Adds every tabs block that encloses `position`. */

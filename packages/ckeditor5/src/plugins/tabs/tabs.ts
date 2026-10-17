@@ -1,5 +1,6 @@
 import { Plugin } from "ckeditor5";
 
+import "../../theme/scrollable_bar.css";
 import "../../theme/tabs.css";
 import type {
     AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand,
@@ -7,6 +8,7 @@ import type {
 } from "./tabs_commands.js";
 import TabsEditing from "./tabs_editing.js";
 import TabsKeyboard from "./tabs_keyboard.js";
+import TabsTitleBar from "./tabs_title_bar.js";
 import TabsUI from "./tabs_ui.js";
 
 /**
@@ -32,6 +34,7 @@ declare module "ckeditor5" {
         [Tabs.pluginName]: Tabs;
         [TabsEditing.pluginName]: TabsEditing;
         [TabsKeyboard.pluginName]: TabsKeyboard;
+        [TabsTitleBar.pluginName]: TabsTitleBar;
         [TabsUI.pluginName]: TabsUI;
     }
 
