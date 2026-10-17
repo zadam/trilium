@@ -73,6 +73,13 @@ export function getToolCallView(toolCall: ToolCall): ToolCallView | null {
             : null;
     }
 
+    if (toolCall.toolName === "delete_attribute" && !toolCall.result) {
+        const { noteId, attributeId } = toolCall.input;
+        return typeof noteId === "string" && typeof attributeId === "string"
+            ? { lead: <OwnedAttributePill noteId={noteId} attributeId={attributeId} deleted /> }
+            : null;
+    }
+
     if (!toolCall.result) return null;
 
     switch (toolCall.toolName) {
@@ -575,6 +582,22 @@ function AttributePill({ type, name, value, deleted }: NoteMetaAttribute & { del
         );
     }
     return <span className={className}>#{name}{value && `=${formatValue(value)}`}</span>;
+}
+
+/**
+ * The pill of an attribute of `noteId` as froca holds it, for a call whose input names the attribute
+ * only by its ID. Nothing shows when the note does not own the attribute.
+ */
+function OwnedAttributePill({ noteId, attributeId, deleted }: {
+    noteId: string;
+    attributeId: string;
+    deleted?: boolean;
+}) {
+    const note = useNote(noteId);
+    const attribute = note?.getOwnedAttributes().find(attr => attr.attributeId === attributeId);
+    if (!attribute) return null;
+    const { type, name, value } = attribute;
+    return <AttributePill type={type} name={name} value={value} deleted={deleted} />;
 }
 
 function parseAttributeList(result: string): NoteMetaAttribute[] | null {

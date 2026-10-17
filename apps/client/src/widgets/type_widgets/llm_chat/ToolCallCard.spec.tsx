@@ -16,7 +16,7 @@ vi.mock("react-i18next", () => ({
 const mocks = vi.hoisted(() => ({
     triggerEvent: vi.fn(),
     openInAppHelpFromUrl: vi.fn(),
-    notes: {} as Record<string, { type: string; mime: string }>
+    notes: {} as Record<string, { type: string; mime: string; getOwnedAttributes?: () => object[] }>
 }));
 vi.mock("../../../components/app_context.js", () => ({ default: { triggerEvent: mocks.triggerEvent } }));
 vi.mock("../../../services/utils.js", async (importOriginal) => ({
@@ -518,6 +518,25 @@ describe("ToolCallCard", () => {
         const ref = target.querySelector(".llm-chat-tool-call-note-ref");
         expect(ref?.textContent).toBe("llm.tools.note_in_parentDraftp");
         expect(ref?.querySelector(".llm-chat-tool-call-created-title")?.textContent).toBe("Draft");
+    });
+
+    it("names the attribute a delete_attribute call would delete, from the note, before the call runs", () => {
+        mocks.notes = {
+            n: {
+                type: "text", mime: "text/html",
+                getOwnedAttributes: () => [ { attributeId: "a1", type: "label", name: "iconClass", value: "bx bx-rocket" } ]
+            }
+        };
+        const call = (id: string, attributeId: string): ToolCall => ({ id, toolName: "delete_attribute", input: { noteId: "n", attributeId } });
+        const target = renderCard([ call("1", "a1"), { id: "2", toolName: "get_note", input: { noteId: "x" }, result: "{}" }, call("3", "gone") ]);
+        const [ known, , unknown ] = [ ...(target.querySelector(".llm-chat-tool-calls")?.children ?? []) ];
+
+        const pill = known?.querySelector(".llm-chat-attribute");
+        expect(pill?.textContent).toBe("#iconClass=\"bx bx-rocket\"");
+        expect(pill?.classList.contains("llm-chat-attribute-deleted")).toBe(true);
+        expect(unknown?.querySelector(".llm-chat-attribute")).toBeNull();
+        expect(unknown?.querySelector(".note-link-stub")?.textContent).toBe("n");
+        mocks.notes = {};
     });
 
     it("names the title a rename would give, after the note link, before the call runs", () => {
