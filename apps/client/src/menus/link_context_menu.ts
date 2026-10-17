@@ -29,6 +29,13 @@ interface MenuEmbed {
 
 const CHECK_ICON = "bx bx-check";
 
+/** The display modes of an embed, with the icons and labels of the note's mode switcher. */
+const DISPLAY_MODE_ITEMS = [
+    { value: "source", uiIcon: "bx bx-code", titleKey: "display_mode.source" },
+    { value: "split", uiIcon: "bx bxs-dock-left", titleKey: "display_mode.split" },
+    { value: "preview", uiIcon: "bx bx-show", titleKey: "display_mode.preview" }
+] as const;
+
 let lastMenuRequest = 0;
 
 async function openContextMenu(
@@ -311,9 +318,19 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
         checked: state.isEditable,
         handler: () => runEmbedCommand(embed, "toggleContentEmbedEditable")
     } ] : [];
+    const displayModeItems = state.displayMode
+        ? DISPLAY_MODE_ITEMS.map(({ value, uiIcon, titleKey }): MenuItem<CommandNames> => ({
+            title: t(titleKey),
+            uiIcon,
+            checked: value === state.displayMode,
+            handler: () => runEmbedCommand(embed, "contentEmbedDisplayMode", { value })
+        }))
+        : [];
 
     return [
         ...editableItems,
+        ...displayModeItems,
+        ...(displayModeItems.length ? [ { kind: "separator" } as const ] : []),
         submenuItem({
             title: t("link_context_menu.include_size"),
             uiIcon: "bx bx-expand-vertical"

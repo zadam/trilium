@@ -18,21 +18,24 @@ import OverlayControlGroup, { ZoomControls } from "../../react/OverlayControlGro
 import { RawHtmlBlock } from "../../react/RawHtml";
 import { useZoomPanPinch, useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard, ZOOM_PAN_VIEWPORT_CLASS } from "../../react/zoom_pan_keyboard";
+import type { DisplayMode } from "../helpers/split_editor_mode";
 import mermaidLinter from "../linters/mermaid";
 import {
     type ContentEmbedTool,
     type ContentEmbedToolbarItem,
     type ContentEmbedToolProvider,
-    showContentEmbedFullscreen
+    showContentEmbedFullscreen,
+    useContentEmbedDisplayMode
 } from "../text/content_embed_tools";
 import { useEditableEmbed } from "../text/editable_embed";
 
 const CodeEmbedEditor = lazy(() => import("../code/CodeEmbedEditor"));
 
 /**
- * A Mermaid diagram in an embed, shown in a zoom/pan viewer, and edited in CodeMirror beside it
- * while the Editable toggle of its embed is on. The zoom and fullscreen are buttons of the toolbar
- * of the embed. The source is kept inline or in an attachment, see `SOURCE_EMBED_TYPES`.
+ * A Mermaid diagram in an embed: its source in CodeMirror, the diagram in a zoom/pan viewer, or
+ * both side by side, as the display mode of its embed picks. The zoom and fullscreen are buttons of
+ * the toolbar of the embed. The source is kept inline or in an attachment, see
+ * `SOURCE_EMBED_TYPES`.
  */
 export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     const rootRef = useRef<HTMLDivElement>(null);
@@ -42,13 +45,15 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
 
     const zoom = useZoomPanPinch({ minScale: MIN_ZOOM, maxScale: MAX_ZOOM });
     const [ tools ] = useState(() => new MermaidDiagramTools(rootRef));
-    tools.setZoom(zoom);
-    const { canEdit, isEditing } = useEditableEmbed(rootRef, {
+    const { canEdit } = useEditableEmbed(rootRef, {
         editor,
         note: null,
         tools,
         focusTarget: ".cm-content"
     });
+    const embedMode = useContentEmbedDisplayMode(rootRef);
+    const mode = canEdit ? embedMode : "preview";
+    tools.setState(zoom, mode);
 
     // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
     useEffect(() => {
@@ -105,8 +110,8 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     );
 
     return (
-        <div ref={rootRef} className={clsx("mermaid-diagram", isEditing && "editing")}>
-            {isEditing && editor && (
+        <div ref={rootRef} className={`mermaid-diagram display-mode-${mode}`}>
+            {mode !== "preview" && editor && (
                 <div className="mermaid-diagram-source">
                     <Suspense fallback={null}>
                         <CodeEmbedEditor
@@ -121,7 +126,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                     </Suspense>
                 </div>
             )}
-            {preview}
+            {mode !== "source" && preview}
         </div>
     );
 }
@@ -168,16 +173,18 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     readonly hiddenToolbarItems: readonly ContentEmbedToolbarItem[] = [
         "contentEmbedBoxSizeDropdown", "toggleContentEmbedTitle", "convertEmbedToLink"
     ];
-    readonly hasEditableFlag = true;
+    readonly hasDisplayModes = true;
     private zoom: ZoomState | null = null;
+    private isDiagramShown = true;
     private listeners = new Set<() => void>();
     private shownTools = "";
 
     constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
 
-    /** Follows the zoom state of the latest render. */
-    setZoom(zoom: ZoomState) {
+    /** Follows the zoom state and the display mode of the latest render. */
+    setState(zoom: ZoomState, mode: DisplayMode) {
         this.zoom = zoom;
+        this.isDiagramShown = mode !== "source";
         // Notifies after the render, as a listener updates the toolbar of the editor.
         queueMicrotask(() => this.update());
     }
@@ -185,6 +192,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[] {
         const zoom = this.zoom;
         if (!zoom) return [];
+        if (!this.isDiagramShown) return this.getFullscreenTools();
 
         return [
             {

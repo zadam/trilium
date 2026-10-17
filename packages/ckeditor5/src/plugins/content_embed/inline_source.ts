@@ -13,6 +13,7 @@ import {
 } from 'ckeditor5';
 
 import { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
+import { getDisplayModeAttributes, getDisplayModeOfView, toDisplayMode } from './content_embed.js';
 
 export const INSERT_INLINE_EMBED_COMMAND = 'insertInlineEmbed';
 
@@ -148,6 +149,7 @@ export default class ContentEmbedInlineSource extends Plugin {
 			source,
 			boxSize: pre.getAttribute( 'data-box-size' ) ?? 'medium',
 			hideTitle: true,
+			...getDisplayModeOfSavedView( pre, code ),
 			...getFlagsOfView( pre ),
 			...getSizesOfView( pre )
 		} );
@@ -202,7 +204,8 @@ function downcastData( model: Model, embed: ModelElement, api: DowncastConversio
 
 	const { writer, mapper } = api;
 	const preAttributes: Record<string, string> = {
-		'data-box-size': embed.getAttribute( 'boxSize' ) as string
+		'data-box-size': embed.getAttribute( 'boxSize' ) as string,
+		...getDisplayModeAttributes( embed )
 	};
 	for ( const [ flag, dataAttribute ] of FLAG_ATTRIBUTES ) {
 		if ( embed.getAttribute( flag ) ) {
@@ -232,6 +235,19 @@ function getInlineLanguage( editor: Editor, code: ViewElement ) {
 		}
 	}
 	return null;
+}
+
+/**
+ * The display mode of a saved embed. A diagram of the old Mermaid plugin has no box size and keeps
+ * its mode on the `<code>`, split when it has none.
+ */
+function getDisplayModeOfSavedView( pre: ViewElement, code: ViewElement ) {
+	if ( pre.hasAttribute( 'data-box-size' ) ) {
+		return getDisplayModeOfView( pre );
+	}
+
+	const mode = toDisplayMode( code.getAttribute( 'data-trilium-display-mode' ) );
+	return { displayMode: mode ?? 'split' };
 }
 
 function getFlagsOfView( pre: ViewElement ) {

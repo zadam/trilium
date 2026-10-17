@@ -9,6 +9,10 @@
         overflow: auto;
         border-inline-end: 1px solid var(--main-border-color);
 
+        &:last-child {
+            border-inline-end: none;
+        }
+
         pre.code-embed-editor {
             height: 100%;
             margin: 0;
@@ -61,7 +65,7 @@
     height: 100%;
 }
 
-body.mobile .mermaid-diagram.editing {
+body.mobile .mermaid-diagram.display-mode-split {
     flex-direction: column;
 
     > .mermaid-diagram-source {

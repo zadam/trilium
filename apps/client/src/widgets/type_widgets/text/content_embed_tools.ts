@@ -1,6 +1,8 @@
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import { type DisplayMode, resolveDisplayMode } from "../helpers/split_editor_mode";
+
 /** A button that the content of an embed adds to the toolbar of the embed. */
 export interface ContentEmbedTool {
     id: string;
@@ -44,6 +46,11 @@ export interface ContentEmbedToolProvider {
      * turn on and off. The embed carries `data-editable="true"` while it is on.
      */
     hasEditableFlag?: boolean;
+    /**
+     * Whether the content shows its source, its rendering or both, which the toolbar and the menu
+     * of the embed then switch. The embed carries the mode as `data-display-mode`.
+     */
+    hasDisplayModes?: boolean;
 }
 
 /**
@@ -116,24 +123,91 @@ export function showContentEmbedFullscreen(element: Element | null) {
  * the content is in the page.
  */
 export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
-    const [ isEditable, setIsEditable ] = useState(false);
+    return useEmbedState(ref, {
+        initial: false,
+        outsideEmbed: true,
+        attributes: [ "data-editable" ],
+        read: (embed) => embed.dataset.editable === "true"
+    });
+}
+
+/**
+ * What the content in `ref` shows, for content whose provider sets `hasDisplayModes`: the mode of
+ * its embed, or split while the Editable flag of an embed without a mode is on. Content outside an
+ * embed shows both. `preview` until the content is in the page.
+ */
+export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
+    return useEmbedState<DisplayMode>(ref, {
+        initial: "preview",
+        outsideEmbed: "split",
+        attributes: [ "data-display-mode", "data-editable" ],
+        read: (embed) =>
+            resolveDisplayMode(embed.dataset.displayMode, embed.dataset.editable !== "true")
+    });
+}
+
+interface EmbedStateOptions<T> {
+    /** The value until the content is in the page. */
+    initial: T;
+    /** The value for content in the page but outside an embed. */
+    outsideEmbed: T;
+    /** The attributes of the embed that `read` depends on. */
+    attributes: string[];
+    read: (embed: HTMLElement) => T;
+}
+
+/**
+ * What `read` tells of the embed that contains `ref`, again whenever one of `attributes` changes.
+ * Content rendered apart, such as inline source, finds its embed once it joins the page.
+ */
+function useEmbedState<T>(
+    ref: RefObject<HTMLElement | null>,
+    { initial, outsideEmbed, attributes, read }: EmbedStateOptions<T>
+) {
+    const [ value, setValue ] = useState(initial);
 
     useEffect(() => {
-        const embed = ref.current?.closest<HTMLElement>(".include-note");
-        if (!embed) {
-            setIsEditable(true);
+        const element = ref.current;
+        if (!element) {
+            setValue(outsideEmbed);
             return;
         }
 
-        const update = () => setIsEditable(embed.dataset.editable === "true");
-        const observer = new MutationObserver(update);
-        observer.observe(embed, { attributes: true, attributeFilter: [ "data-editable" ] });
-        update();
-        return () => observer.disconnect();
+        let attributeObserver: MutationObserver | undefined;
+        const watch = () => {
+            const embed = element.closest<HTMLElement>(".include-note");
+            if (!embed) {
+                setValue(outsideEmbed);
+                return;
+            }
+
+            const update = () => setValue(read(embed));
+            attributeObserver = new MutationObserver(update);
+            attributeObserver.observe(embed, { attributes: true, attributeFilter: attributes });
+            update();
+        };
+
+        let pageObserver: MutationObserver | undefined;
+        if (element.isConnected) {
+            watch();
+        } else {
+            pageObserver = new MutationObserver(() => {
+                if (!element.isConnected) return;
+                pageObserver?.disconnect();
+                watch();
+            });
+            pageObserver.observe(document, { childList: true, subtree: true });
+        }
+
+        return () => {
+            pageObserver?.disconnect();
+            attributeObserver?.disconnect();
+        };
     }, [ ref ]);
 
-    return isEditable;
+    return value;
 }
+
 
 /**
  * Calls `callback` when the embed that contains `ref` dispatches `name`. Listens on the document,

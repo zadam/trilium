@@ -47,7 +47,8 @@ describe("ContentEmbedInlineSource", () => {
 
     it("loads a code block of an inline language as an embed of its source, and saves it back", () => {
         editor.setData(
-            `<pre spellcheck="false"><code class="language-mermaid" data-trilium-display-mode="split">`
+            `<pre spellcheck="false">`
+            + `<code class="language-mermaid" data-trilium-display-mode="source">`
             + `graph TD;\n    A--&gt;B</code></pre>`
         );
 
@@ -57,10 +58,28 @@ describe("ContentEmbedInlineSource", () => {
         expect(embed.getAttribute("boxSize")).toBe("medium");
         expect(embed.getAttribute("hideTitle")).toBe(true);
         expect(embed.getAttribute("editable")).toBeUndefined();
+        expect(embed.getAttribute("displayMode")).toBe("source");
         expect(editor.getData()).toBe(
-            `<pre data-box-size="medium" data-hide-title="true"><code class="language-mermaid">`
+            `<pre data-box-size="medium" data-display-mode="source" data-hide-title="true">`
+            + `<code class="language-mermaid">`
             + `graph TD;\n    A--&gt;B</code></pre>`
         );
+    });
+
+    it("keeps the mode a diagram of the old plugin was shown in, split when it has none", () => {
+        const modes = [ [ "", "split" ], [ " data-trilium-display-mode=\"preview\"", "preview" ],
+            [ " data-trilium-display-mode=\"other\"", "split" ] ];
+        for (const [ attribute, mode ] of modes) {
+            editor.setData(`<pre><code class="language-mermaid"${attribute}>a</code></pre>`);
+            expect(getEmbed().getAttribute("displayMode")).toBe(mode);
+        }
+
+        // A saved embed keeps the mode it has, or none.
+        editor.setData(`<pre data-box-size="small"><code class="language-mermaid">a</code></pre>`);
+        expect(getEmbed().getAttribute("displayMode")).toBeUndefined();
+        editor.setData(`<pre data-box-size="small" data-display-mode="source">`
+            + `<code class="language-mermaid" data-trilium-display-mode="preview">a</code></pre>`);
+        expect(getEmbed().getAttribute("displayMode")).toBe("source");
     });
 
     it("keeps the box size, the flags and the size of the embed on the <pre>", () => {
