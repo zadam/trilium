@@ -79,11 +79,11 @@ export function createScrollableBarEdge(
 }
 
 /**
- * Makes `bar` scroll: its buttons show while the items overflow `viewport`, and the button of an
- * edge that is reached is disabled. A click on a button scrolls by most of the viewport's width;
- * holding the button down scrolls continuously until it is released. A press on the bar outside
- * the viewport does not move the focus and does not reach the listeners of the bar's ancestors,
- * such as an editor's.
+ * Makes `bar` scroll: its buttons show while the items do not fit the bar without them, and the
+ * button of an edge that is reached is disabled. A click on a button scrolls by most of the
+ * viewport's width; holding the button down scrolls continuously until it is released. A press on
+ * the bar outside the viewport does not move the focus and does not reach the listeners of the
+ * bar's ancestors, such as an editor's.
  */
 export function attachScrollableBar(bar: HTMLElement, viewport: HTMLElement): ScrollableBar {
     const document = bar.ownerDocument;
@@ -154,7 +154,13 @@ export function attachScrollableBar(bar: HTMLElement, viewport: HTMLElement): Sc
     };
     const showState = (state: ScrollFadeState) => {
         isRtl = state.isRtl;
-        bar.classList.toggle(SCROLLABLE_BAR_CLASSES.overflowing, state.overflow > MIN_OVERFLOW);
+        // The edges take their width from the viewport while they show.
+        let overflow = state.overflow;
+        for (const edge of bar.querySelectorAll<HTMLElement>(
+            `:scope > .${SCROLLABLE_BAR_CLASSES.edge}`)) {
+            overflow -= edge.offsetWidth;
+        }
+        bar.classList.toggle(SCROLLABLE_BAR_CLASSES.overflowing, overflow > MIN_OVERFLOW);
         const buttons = bar.querySelectorAll<HTMLButtonElement>(
             `:scope > .${SCROLLABLE_BAR_CLASSES.edge} > .${SCROLLABLE_BAR_CLASSES.button}`);
         for (const button of buttons) {
@@ -174,6 +180,8 @@ export function attachScrollableBar(bar: HTMLElement, viewport: HTMLElement): Sc
 
     return {
         reveal(item, { isAnimated = true } = {}) {
+            // A bar that has just been shown still has the buttons it had while hidden.
+            watch.measure();
             const distance = getRevealDistance(
                 viewport.getBoundingClientRect(), item.getBoundingClientRect(), isRtl);
             if (distance) {

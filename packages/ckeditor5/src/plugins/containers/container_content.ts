@@ -38,7 +38,8 @@ export function moveToSibling(writer: ModelWriter, element: ModelElement, siblin
 /**
  * Returns the innermost `name` element around a non-collapsed selection, with the first and last
  * of its children that the selection touches, or `null` when the selection ends outside it. A
- * selection that ends at the start of a child leaves that child out.
+ * selection that ends at the start of a child leaves that child out. A touched list item counts
+ * with all of its blocks.
  */
 export function getSelectedChildren(editor: Editor, name: string): SelectedChildren | null {
     const model = editor.model;
@@ -59,7 +60,11 @@ export function getSelectedChildren(editor: Editor, name: string): SelectedChild
     if (!first || !last) {
         return null;
     }
-    return { parent, first, last };
+    return {
+        parent,
+        first: getListItemEnd(first, "previousSibling"),
+        last: getListItemEnd(last, "nextSibling")
+    };
 }
 
 /**
@@ -118,4 +123,19 @@ function getChildAt(parent: ModelElement, position: ModelPosition, side: "before
     }
     return position.getAncestors().find((ancestor): ancestor is ModelElement =>
         ancestor.is("element") && ancestor.parent === parent);
+}
+
+/**
+ * Returns the block on `side` of `node` that ends the list item of `node`, or `node` when it is not
+ * a list block.
+ */
+function getListItemEnd(node: ModelNode, side: "previousSibling" | "nextSibling"): ModelNode {
+    const itemId = node.getAttribute("listItemId");
+    let end = node;
+    let sibling = end[side];
+    while (itemId && sibling?.getAttribute("listItemId") === itemId) {
+        end = sibling;
+        sibling = sibling[side];
+    }
+    return end;
 }

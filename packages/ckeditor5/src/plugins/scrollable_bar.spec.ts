@@ -114,6 +114,23 @@ describe("scrollable bar", () => {
         await expect.poll(() => isOverflowing(bar)).toBe(false);
     });
 
+    it("hides the buttons once the items fit the bar without them", async () => {
+        const { bar, viewport } = renderBar(4);
+        viewport.lastElementChild?.remove();
+        viewport.lastElementChild?.remove();
+        viewport.append(createItem("Item 2", 80));
+        await expect.poll(() => isOverflowing(bar)).toBe(false);
+
+        viewport.append(createItem("Item 3", 120));
+        await expect.poll(() => isOverflowing(bar)).toBe(true);
+        bar.style.width = "380px";
+        await wait(100);
+        expect(isOverflowing(bar)).toBe(true);
+
+        bar.style.width = "420px";
+        await expect.poll(() => isOverflowing(bar)).toBe(false);
+    });
+
     it("scrolls by most of its width toward the edge clicked, in either direction", async () => {
         document.body.classList.add("motion-disabled");
         for (const [ dir, sign ] of [ [ "ltr", 1 ], [ "rtl", -1 ] ] as const) {

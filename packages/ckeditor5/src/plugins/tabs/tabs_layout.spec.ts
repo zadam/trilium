@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it, onTestFinished } from "vitest";
 import { createTestEditor } from "../../../test/editor-kit.js";
 import type { TabAlignment } from "./constants.js";
 import Tabs from "./tabs.js";
-import { applyTabs } from "./tabs_read_only.js";
+import { applyTabs, revealTab } from "./tabs_read_only.js";
 
 const OPTIONS = { placeholder: "Tab title", scrollLabels: { start: "Back", end: "Next" } };
 
@@ -325,6 +325,24 @@ describe("tabs layout styles", () => {
         editor.execute("moveTab", { target: "first" });
         expect(edited.viewport.scrollLeft).toBe(0);
         expect(edited.viewport.firstElementChild?.textContent).toBe("Step 10 of the guide");
+    });
+
+    it("reveals the title of a nested tab that was hidden in saved content", async () => {
+        document.body.classList.add("motion-disabled");
+        onTestFinished(() => document.body.classList.remove("motion-disabled"));
+        const innerTabs = Array.from({ length: 15 }, (_, index) =>
+            tab(`Tab ${index + 1}`, index === 9 ? "<p id=\"target\">x</p>" : ""));
+        const inner = `<div class="trilium-tabs">${innerTabs.join("")}</div>`;
+        const { container } = renderSaved(
+            `<div class="trilium-tabs">${tab("Outer 1", "")}${tab("Outer 2", inner)}</div>`);
+        const { bar, viewport, titles } = barOf(container.querySelectorAll(".trilium-tab")[1]);
+        expect(isOverflowing(bar)).toBe(false);
+
+        revealTab(container.querySelector("#target") as Element);
+        expect(isShown(titles[9], viewport)).toBe(true);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(isOverflowing(bar)).toBe(true);
+        expect(isShown(titles[9], viewport)).toBe(true);
     });
 
     it("stops the title bars of saved content on dispose, and starts them on the next call", () => {

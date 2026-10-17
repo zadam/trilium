@@ -447,6 +447,19 @@ describe("multicolumn commands", () => {
                 "<paragraph>B</paragraph>", "<paragraph>[A]</paragraph><paragraph>C</paragraph>"));
         });
 
+        it("moves every block of a list item that the selection touches", () => {
+            const item = (id: string, text: string) => "<paragraph listIndent=\"0\" " +
+                `listItemId="${id}" listType="bulleted">${text}</paragraph>`;
+            const itemA = item("a", "A1") + item("a", "A[2]") + item("a", "A3");
+            setModelData(editor.model, columns("1-1",
+                itemA + item("b", "B"), "<paragraph>C</paragraph>"));
+
+            editor.execute("moveToLayoutColumn", { target: "next" });
+
+            expect(modelWithSelection()).toBe(columns("1-1",
+                item("b", "B"), `${itemA}<paragraph>C</paragraph>`));
+        });
+
         it("moves a selected object", () => {
             setModelData(editor.model, columns("1-1",
                 `<paragraph>A</paragraph>[${TABLE}]`, "<paragraph>C</paragraph>"));

@@ -62,14 +62,18 @@ export function revealTab(element: Element) {
         return;
     }
 
-    let tab = element.closest(`.${CLASSES.tab}`);
-    while (tab) {
+    // From the outermost tab, so that each title bar shows when it reveals its title.
+    const tabs: Element[] = [];
+    for (let tab = element.closest(`.${CLASSES.tab}`); tab;
+        tab = tab.parentElement?.closest(`.${CLASSES.tab}`) ?? null) {
+        tabs.unshift(tab);
+    }
+    for (const tab of tabs) {
         const block = tab.parentElement;
         const title = sectionTitles.get(tab);
         if (block && title) {
             tabsBlocks.get(block)?.activate(title);
         }
-        tab = block?.closest(`.${CLASSES.tab}`) ?? null;
     }
 }
 
