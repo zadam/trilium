@@ -37,6 +37,7 @@ function makeCallbacks(): Record<keyof StreamCallbacks, ReturnType<typeof vi.fn>
         onToolInputStart: vi.fn(),
         onToolInputDelta: vi.fn(),
         onToolUse: vi.fn(),
+        onToolApprovalRequest: vi.fn(),
         onToolResult: vi.fn(),
         onCitation: vi.fn(),
         onUsage: vi.fn(),
@@ -116,8 +117,24 @@ describe("streamChatCompletion", () => {
         expect(init.method).toBe("POST");
         expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
         expect((init.headers as Record<string, string>)["x-csrf-token"]).toBe("tok");
-        expect(init.body).toBe(JSON.stringify({ messages, config }));
+        expect(JSON.parse(init.body as string)).toEqual({ streamId: expect.any(String), messages, config });
         expect(cb.onChunk).toHaveBeenCalledWith("hello");
+    });
+
+    it("hands a waiting tool call to the chat with a way to answer it under the stream's id", async () => {
+        const request = { toolCallId: "c1", toolName: "delete_note", toolInput: { noteId: "a" } };
+        const fetchMock = vi.fn(async () => makeStreamResponse([`data: ${JSON.stringify({ type: "tool_approval_request", ...request })}\n`]));
+        vi.stubGlobal("fetch", fetchMock);
+        server.post = vi.fn(async () => ({ answered: true })) as typeof server.post;
+
+        const cb = makeCallbacks();
+        await streamChatCompletion(messages, config, cb);
+        expect(cb.onToolApprovalRequest).toHaveBeenCalledExactlyOnceWith(request, expect.any(Function));
+
+        const answer = cb.onToolApprovalRequest.mock.calls[0][1] as (approved: boolean) => Promise<void>;
+        await answer(false);
+        const { streamId } = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+        expect(server.post).toHaveBeenCalledExactlyOnceWith("llm-chat/tool-approval", { streamId, toolCallId: "c1", approved: false });
     });
 
     it("rethrows an AbortError from fetch (user stopped)", async () => {

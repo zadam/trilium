@@ -1,4 +1,16 @@
-import type { LlmChatConfig, LlmCitation, LlmErrorDetails, LlmMessage, LlmModelInfo, LlmStreamChunk, LlmStreamStatus, LlmUsage, WebSocketMessage } from "@triliumnext/commons";
+import type {
+    LlmChatConfig,
+    LlmCitation,
+    LlmErrorDetails,
+    LlmMessage,
+    LlmModelInfo,
+    LlmStreamChunk,
+    LlmStreamStatus,
+    LlmToolApprovalAnswer,
+    LlmToolApprovalRequest,
+    LlmUsage,
+    WebSocketMessage
+} from "@triliumnext/commons";
 
 import server from "./server.js";
 import { isStandalone, randomString } from "./utils.js";
@@ -55,6 +67,14 @@ export interface StreamCallbacks {
     onToolInputStart?: (toolCallId: string, toolName: string) => void;
     onToolInputDelta?: (toolCallId: string, delta: string) => void;
     onToolUse?: (toolCallId: string, toolName: string, input: Record<string, unknown>) => void;
+    /**
+     * A tool call waits for the user to allow or deny it. `answer` sends the decision, and the call
+     * then runs or reports itself declined in a `tool_result`.
+     */
+    onToolApprovalRequest?: (
+        request: LlmToolApprovalRequest,
+        answer: (approved: boolean) => Promise<void>
+    ) => void;
     onToolResult?: (toolCallId: string, toolName: string, result: string, isError?: boolean) => void;
     onCitation?: (citation: LlmCitation) => void;
     onUsage?: (usage: LlmUsage) => void;
@@ -76,6 +96,9 @@ export interface StreamCallbacks {
  * {@link StreamCallbacks} and the promise settles when it is over, rejecting with
  * an `AbortError` if `abortSignal` fired. Which transport is used depends on what
  * the backend can be reached over — see {@link streamChatOverMessages}.
+ *
+ * The stream id is minted here for either transport: the backend finds the turn by
+ * it when the user answers one of its tool calls.
  */
 export function streamChatCompletion(
     messages: LlmMessage[],
@@ -83,9 +106,15 @@ export function streamChatCompletion(
     callbacks: StreamCallbacks,
     abortSignal?: AbortSignal
 ): Promise<void> {
+    const streamId = randomString(12);
     return isStandalone
-        ? streamChatOverMessages(messages, config, callbacks, abortSignal)
-        : streamChatOverSse(messages, config, callbacks, abortSignal);
+        ? streamChatOverMessages(streamId, messages, config, callbacks, abortSignal)
+        : streamChatOverSse(streamId, messages, config, callbacks, abortSignal);
+}
+
+/** Tell a running turn whether the user allows one of its tool calls. */
+async function answerToolApproval(answer: LlmToolApprovalAnswer): Promise<void> {
+    await server.post("llm-chat/tool-approval", answer);
 }
 
 /**
@@ -93,6 +122,7 @@ export function streamChatCompletion(
  * that stays open for the whole completion.
  */
 async function streamChatOverSse(
+    streamId: string,
     messages: LlmMessage[],
     config: LlmChatConfig,
     callbacks: StreamCallbacks,
@@ -107,7 +137,7 @@ async function streamChatOverSse(
                 ...headers,
                 "Content-Type": "application/json"
             } as HeadersInit,
-            body: JSON.stringify({ messages, config }),
+            body: JSON.stringify({ streamId, messages, config }),
             signal: abortSignal
         });
     } catch (e) {
@@ -148,7 +178,7 @@ async function streamChatOverSse(
             for (const line of lines) {
                 if (line.startsWith("data: ")) {
                     try {
-                        await handleChunk(JSON.parse(line.slice(6)), callbacks);
+                        await handleChunk(streamId, JSON.parse(line.slice(6)), callbacks);
                     } catch (e) {
                         console.error("Failed to parse SSE data line:", line, e);
                     }
@@ -173,18 +203,18 @@ async function streamChatOverSse(
  * request here only starts the completion; the chunks arrive as `llm-stream`
  * messages and an `llm-stream-end` says when there are no more.
  *
- * The stream id is minted here, before the completion is asked for, so the
+ * The stream id is minted before the completion is asked for, so the
  * subscription is already in place when the first chunk lands. Every tab receives
  * the messages — only the leader holds the worker, and the rest hear it through a
  * relay — so the id is also what makes a tab keep just its own.
  */
 async function streamChatOverMessages(
+    streamId: string,
     messages: LlmMessage[],
     config: LlmChatConfig,
     callbacks: StreamCallbacks,
     abortSignal?: AbortSignal
 ): Promise<void> {
-    const streamId = randomString(12);
     let resolveEnd: () => void = () => undefined;
     const ended = new Promise<void>((resolve) => { resolveEnd = resolve; });
     // Handlers are dispatched without being awaited, so nothing else keeps the
@@ -193,7 +223,7 @@ async function streamChatOverMessages(
 
     const onMessage = (message: WebSocketMessage) => {
         if (message.type === "llm-stream" && message.streamId === streamId) {
-            handled = handled.then(() => handleChunk(message.chunk, callbacks));
+            handled = handled.then(() => handleChunk(streamId, message.chunk, callbacks));
             // Marks the link handled the moment it is made. `await handled` below
             // still rethrows, but without this a chunk handler that threw would sit
             // as an unhandled rejection until the stream ends — and in the
@@ -250,7 +280,11 @@ function rejectWhenAborted(signal?: AbortSignal): Promise<never> {
  * Dispatch one chunk to the callbacks. Shared by both transports, so a chunk means
  * the same thing however it arrived.
  */
-async function handleChunk(chunk: LlmStreamChunk, callbacks: StreamCallbacks): Promise<void> {
+async function handleChunk(
+    streamId: string,
+    chunk: LlmStreamChunk,
+    callbacks: StreamCallbacks
+): Promise<void> {
     switch (chunk.type) {
         case "status":
             callbacks.onStatus?.(chunk.status);
@@ -276,6 +310,12 @@ async function handleChunk(chunk: LlmStreamChunk, callbacks: StreamCallbacks): P
             // state before we process the result.
             await new Promise((r) => setTimeout(r, 1));
             break;
+        case "tool_approval_request": {
+            const { toolCallId, toolName, toolInput } = chunk;
+            callbacks.onToolApprovalRequest?.({ toolCallId, toolName, toolInput }, (approved) =>
+                answerToolApproval({ streamId, toolCallId, approved }));
+            break;
+        }
         case "tool_result":
             callbacks.onToolResult?.(chunk.toolCallId, chunk.toolName, chunk.result, chunk.isError);
             await new Promise((r) => setTimeout(r, 1));

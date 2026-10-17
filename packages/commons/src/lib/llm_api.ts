@@ -249,6 +249,21 @@ export function isToolErrorResult(result: unknown): boolean {
     return typeof value === "object" && value !== null && !Array.isArray(value) && "error" in value;
 }
 
+/** A tool call that waits for the user to allow or deny it. */
+export interface LlmToolApprovalRequest {
+    toolCallId: string;
+    toolName: string;
+    toolInput: Record<string, unknown>;
+}
+
+/** The user's answer to a {@link LlmToolApprovalRequest}, posted to `/api/llm-chat/tool-approval`. */
+export interface LlmToolApprovalAnswer {
+    /** The id the client gave the turn when it started it. */
+    streamId: string;
+    toolCallId: string;
+    approved: boolean;
+}
+
 /**
  * Stream chunk types for real-time SSE updates.
  * Defines the protocol between server and client.
@@ -260,6 +275,7 @@ export type LlmStreamChunk =
     | { type: "tool_input_start"; toolCallId: string; toolName: string }
     | { type: "tool_input_delta"; toolCallId: string; delta: string }
     | { type: "tool_use"; toolCallId: string; toolName: string; toolInput: Record<string, unknown> }
+    | ({ type: "tool_approval_request" } & LlmToolApprovalRequest)
     | { type: "tool_result"; toolCallId: string; toolName: string; result: string; isError?: boolean }
     | { type: "citation"; citation: LlmCitation }
     | { type: "usage"; usage: LlmUsage }

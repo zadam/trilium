@@ -156,8 +156,21 @@ Each tool the AI uses appears in the chat as a single line naming the tool and t
 
 When the reply stops moving for a couple of seconds while the AI is still at work, for example while it reads what a tool returned, a _Still working…_ line appears under it until the next part of the reply arrives.
 
-> [!WARNING]
-> Currently there is **no permission management** implemented for note tools, meaning that the LLM could potentially remove existing notes or clutter the tree with notes. Generally most actions are easily reversible (deleting the notes, restoring deleted notes, reverting modifications to a note), but there are some that are harder to revert (e.g. setting an attribute because there is no attribute history).
+#### Approving tool calls
+
+Before the AI runs a tool, the chat asks whether to allow it. The tool's line opens on what the call would do (the text it would write, the changes of an edit, or else the values it would send to the tool), with _Allow_ and _Deny_ buttons below it and _waiting for approval_ beside the tool's name. The reply waits until you answer.
+
+*   To let the call run, press _Allow_.
+*   To refuse it, press _Deny_. The AI is told that you declined, and its reply carries on without the call, which is marked _denied_.
+*   Stopping the reply denies every call that is still waiting.
+
+Every tool call asks, including the ones that only read: searching notes, reading a note or an attachment, and reading a web page through a search provider. A model's built-in web search runs on the provider's side and does not ask.
+
+> [!IMPORTANT]
+> The <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a> (Claude Code, GitHub Copilot, Google Antigravity and OpenAI Codex) don't ask yet: their tool calls run without approval.
+
+> [!NOTE]
+> Most changes you allow can be undone: a deleted note can be restored, and an edit reverted from its revision. Setting an attribute is harder to undo, since attributes have no history.
 
 > [!NOTE]
 > Gemini can't use its built-in search while note access is on. While it is, the built-in search choice in the _Tools_ menu is disabled and says why; a search provider works with note access on.

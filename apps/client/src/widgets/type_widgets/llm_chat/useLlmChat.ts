@@ -10,7 +10,16 @@ import { useTriliumEvent } from "../../react/hooks.js";
 import { estimateTokens, quantizeDraftTokens } from "./chat_context_usage.js";
 import { stripQuoteSources } from "./chat_quote.js";
 import { conversationForRegenerate } from "./chat_regenerate.js";
-import { type ContentBlock, type FileBlock, type ImageBlock, type LlmChatContent, type StoredMessage, type TextFileBlock, trimToFirstUserMessage } from "./llm_chat_types.js";
+import {
+    type ContentBlock,
+    type FileBlock,
+    type ImageBlock,
+    type LlmChatContent,
+    type StoredMessage,
+    type TextFileBlock,
+    type ToolCall,
+    trimToFirstUserMessage
+} from "./llm_chat_types.js";
 import { useSmoothStreaming } from "./useSmoothStreaming.js";
 
 /** A user-supplied attachment waiting to be sent with the next message. */
@@ -171,6 +180,8 @@ export interface UseLlmChatReturn {
     refreshModels: () => void;
     /** Stop the current generation */
     stopStreaming: () => void;
+    /** Allow or deny a tool call of the running turn that waits for the user. */
+    answerToolCall: (toolCallId: string, approved: boolean) => void;
     /** Re-run the last turn after a failed response (drops the trailing error message) */
     retryLast: () => void;
     /** Regenerate the last reply: re-run from the last user message, dropping the reply that followed */
@@ -231,6 +242,8 @@ export function useLlmChat(
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomSpacerRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    // How to answer each tool call of the running turn that waits for the user, by call id.
+    const toolApprovalAnswersRef = useRef(new Map<string, (approved: boolean) => void>());
     const anchorRafRef = useRef<number | null>(null);
     // A one-shot scroll to run after the next messages render: "anchor" parks a fresh
     // reply near the top (sending/retrying), "bottom" jumps to the latest content
@@ -580,6 +593,23 @@ export function useLlmChat(
         const citations: LlmCitation[] = [];
         let usage: LlmUsage | undefined;
 
+        toolApprovalAnswersRef.current.clear();
+
+        /** Apply `change` to the tool call `toolCallId`. Returns `false` if the reply has none. */
+        function updateToolCall(toolCallId: string, change: Partial<ToolCall>): boolean {
+            for (let i = contentBlocks.length - 1; i >= 0; i--) {
+                const block = contentBlocks[i];
+                if (block.type === "tool_call" && block.toolCall.id === toolCallId) {
+                    contentBlocks[i] = {
+                        type: "tool_call",
+                        toolCall: { ...block.toolCall, ...change }
+                    };
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /** Get or create the last text block to append streaming text to. */
         function lastTextBlock(): ContentBlock & { type: "text" } {
             const last = contentBlocks[contentBlocks.length - 1];
@@ -650,7 +680,8 @@ export function useLlmChat(
                             ...block.toolCall,
                             inputStreaming: undefined,
                             result: "[Stopped]",
-                            isError: true
+                            isError: true,
+                            approval: undefined
                         }
                     };
                 }
@@ -670,6 +701,7 @@ export function useLlmChat(
             setTargetBlocks([]);
             setPendingCitations([]);
             setStreamingStatus(null);
+            toolApprovalAnswersRef.current.clear();
             setIsStreaming(false);
             abortControllerRef.current = null;
         }
@@ -763,6 +795,30 @@ export function useLlmChat(
                     contentBlocks.push({
                         type: "tool_call",
                         toolCall: { id: toolCallId, toolName, input: toolInput }
+                    });
+                    setTargetBlocks([...contentBlocks]);
+                },
+                onToolApprovalRequest: ({ toolCallId, toolName, toolInput }, answer) => {
+                    // The request can arrive before the `tool_use` chunk of its call.
+                    const waiting: Partial<ToolCall> = {
+                        input: toolInput,
+                        inputStreaming: undefined,
+                        approval: "pending"
+                    };
+                    if (!updateToolCall(toolCallId, waiting)) {
+                        smoothDrain();
+                        const toolCall: ToolCall = {
+                            id: toolCallId, toolName, input: toolInput, approval: "pending"
+                        };
+                        contentBlocks.push({ type: "tool_call", toolCall });
+                    }
+                    toolApprovalAnswersRef.current.set(toolCallId, (approved) => {
+                        toolApprovalAnswersRef.current.delete(toolCallId);
+                        updateToolCall(toolCallId, { approval: approved ? undefined : "declined" });
+                        setTargetBlocks([...contentBlocks]);
+                        answer(approved).catch((e: unknown) => {
+                            console.error("Failed to answer the tool call:", e);
+                        });
                     });
                     setTargetBlocks([...contentBlocks]);
                 },
@@ -913,6 +969,11 @@ export function useLlmChat(
         }
     }, [handleSubmit]);
 
+    /** Allow or deny a tool call of the running turn that waits for the user. */
+    const answerToolCall = useCallback((toolCallId: string, approved: boolean) => {
+        toolApprovalAnswersRef.current.get(toolCallId)?.(approved);
+    }, []);
+
     /** Stop the current generation by aborting the SSE connection. */
     const stopStreaming = useCallback(() => {
         if (abortControllerRef.current) {
@@ -993,6 +1054,7 @@ export function useLlmChat(
         clearMessages,
         refreshModels,
         stopStreaming,
+        answerToolCall,
         retryLast,
         regenerateLastReply
     };

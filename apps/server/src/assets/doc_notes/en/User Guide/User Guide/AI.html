@@ -262,13 +262,31 @@
 <p>When the reply stops moving for a couple of seconds while the AI is still
   at work, for example while it reads what a tool returned, a <em>Still working…</em> line
   appears under it until the next part of the reply arrives.</p>
-<aside class="admonition warning">
-  <p>Currently there is <strong>no permission management</strong> implemented
-    for note tools, meaning that the LLM could potentially remove existing
-    notes or clutter the tree with notes. Generally most actions are easily
-    reversible (deleting the notes, restoring deleted notes, reverting modifications
-    to a note), but there are some that are harder to revert (e.g. setting
-    an attribute because there is no attribute history).</p>
+<h4>Approving tool calls</h4>
+<p>Before the AI runs a tool, the chat asks whether to allow it. The tool's
+  line opens on what the call would do (the text it would write, the changes
+  of an edit, or else the values it would send to the tool), with <em>Allow</em> and <em>Deny</em> buttons
+  below it and <em>waiting for approval</em> beside the tool's name. The reply
+  waits until you answer.</p>
+<ul>
+  <li>To let the call run, press <em>Allow</em>.</li>
+  <li>To refuse it, press <em>Deny</em>. The AI is told that you declined, and
+    its reply carries on without the call, which is marked <em>denied</em>.</li>
+  <li>Stopping the reply denies every call that is still waiting.</li>
+</ul>
+<p>Every tool call asks, including the ones that only read: searching notes,
+  reading a note or an attachment, and reading a web page through a search
+  provider. A model's built-in web search runs on the provider's side and
+  does not ask.</p>
+<aside class="admonition important">
+  <p>The <a class="reference-link" href="#root/_help_eFhxp9laTW1S">Subscription-based providers</a> (Claude
+    Code, GitHub Copilot, Google Antigravity and OpenAI Codex) don't ask yet:
+    their tool calls run without approval.</p>
+</aside>
+<aside class="admonition note">
+  <p>Most changes you allow can be undone: a deleted note can be restored,
+    and an edit reverted from its revision. Setting an attribute is harder
+    to undo, since attributes have no history.</p>
 </aside>
 <aside class="admonition note">
   <p>Gemini can't use its built-in search while note access is on. While it

@@ -38,7 +38,7 @@ vi.mock("../../react/NoteLink.js", () => ({
         <a className="note-link-stub" href="#" onClick={onClick}>{notePath}</a>
 }));
 
-import ToolCallCard from "./ToolCallCard.js";
+import ToolCallCard, { ToolApprovalContext } from "./ToolCallCard.js";
 import type { ToolCall } from "./llm_chat_types.js";
 
 let host: HTMLElement | undefined;
@@ -53,10 +53,15 @@ afterEach(() => {
     }
 });
 
-function renderCard(toolCalls: ToolCall[]) {
+function renderCard(toolCalls: ToolCall[], answer?: (toolCallId: string, approved: boolean) => void) {
     host = document.body.appendChild(document.createElement("div"));
     const target = host;
-    act(() => render(<ToolCallCard toolCalls={toolCalls} />, target));
+    act(() => render(
+        <ToolApprovalContext.Provider value={answer}>
+            <ToolCallCard toolCalls={toolCalls} />
+        </ToolApprovalContext.Provider>,
+        target
+    ));
     return target;
 }
 
@@ -769,5 +774,54 @@ describe("ToolCallCard", () => {
         expect(link?.getAttribute("href")).toBe("https://triliumnotes.org");
         expect(link?.getAttribute("target")).toBe("_blank");
         expect(line?.querySelector(".llm-chat-note-result-preview")?.textContent).toBe("The page describes Trilium.");
+    });
+
+    describe("approval", () => {
+        const PENDING: ToolCall = { id: "c1", toolName: "rename_note", input: { noteId: "a", newTitle: "B" }, approval: "pending" };
+        const buttons = (target: HTMLElement) =>
+            [ ...target.querySelectorAll<HTMLButtonElement>(".llm-chat-tool-approval button") ];
+
+        it("opens a waiting call on its input, and answers it from the buttons below", () => {
+            const answer = vi.fn();
+            const target = renderCard([ PENDING ], answer);
+
+            const line = target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call");
+            expect(line?.open).toBe(true);
+            expect(JSON.parse(line?.querySelector(".llm-chat-tool-call-input")?.textContent ?? "null")).toEqual(PENDING.input);
+            expect(line?.querySelector(".llm-chat-tool-call-approval-badge")?.textContent).toBe("llm_chat.tool_approval_pending");
+
+            const [ deny, allow ] = buttons(target);
+            expect([ deny?.textContent?.trim(), allow?.textContent?.trim() ]).toEqual([ "llm_chat.tool_approval_deny", "llm_chat.tool_approval_allow" ]);
+            act(() => allow?.click());
+            expect(answer).toHaveBeenCalledExactlyOnceWith("c1", true);
+            act(() => deny?.click());
+            expect(answer).toHaveBeenLastCalledWith("c1", false);
+        });
+
+        it("shows what a waiting writing call would write instead of its raw input", () => {
+            const target = renderCard([ {
+                id: "c1", toolName: "create_note", input: { parentNoteId: "p", title: "T", type: "code", mime: "text/plain", content: "hello" }, approval: "pending"
+            } ], vi.fn());
+            expect(target.querySelector(".code-block-stub")?.textContent).toBe("hello");
+            expect(target.querySelector(".llm-chat-tool-call-input")).toBeNull();
+            expect(buttons(target)).toHaveLength(2);
+        });
+
+        it("opens a group holding a waiting call, and offers no buttons outside the streaming reply", () => {
+            const target = renderCard([ { ...PENDING, id: "c0", approval: undefined, result: "{}" }, PENDING ]);
+            expect(target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call-group")?.open).toBe(true);
+            expect(target.querySelector(".llm-chat-tool-approval")).toBeNull();
+        });
+
+        it("marks a denied call as denied rather than failed", () => {
+            const target = renderCard([ {
+                ...PENDING, approval: "declined", result: JSON.stringify({ error: "The user declined this tool call." }), isError: true
+            } ]);
+            const line = target.querySelector(".llm-chat-tool-call");
+            expect(line?.classList.contains("llm-chat-tool-call-error")).toBe(false);
+            expect(line?.querySelector(".llm-chat-tool-call-approval-badge")?.textContent).toBe("llm_chat.tool_approval_declined");
+            expect(target.querySelector(".llm-chat-tool-call-error-badge, .llm-chat-tool-call-error-message")).toBeNull();
+            expect(target.querySelector(".bx-block")).not.toBeNull();
+        });
     });
 });

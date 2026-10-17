@@ -12,7 +12,8 @@
 .llm-chat-tool-call-detail,
 .llm-chat-tool-call-attachment-title,
 .llm-chat-tool-call-count,
-.llm-chat-tool-call-result-count {
+.llm-chat-tool-call-result-count,
+.llm-chat-tool-call-approval-badge {
     font-size: 0.75rem;
     font-weight: 400;
     opacity: 0.75;
@@ -66,16 +67,19 @@
     overflow-wrap: anywhere;
 }
 
-/* Raw JSON arriving from the LLM, shown until it parses. The blinking caret marks it as still
-   arriving. */
-.llm-chat-tool-call-streaming {
+.llm-chat-tool-call-streaming,
+.llm-chat-tool-call-input {
     margin: 0;
     max-height: 300px;
     overflow: auto;
     font-size: 0.8rem;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
 
+/* Raw JSON arriving from the LLM, shown until it parses. The blinking caret marks it as still
+   arriving. */
+.llm-chat-tool-call-streaming {
     &::after {
         content: "▍";
         color: var(--muted-text-color);
@@ -112,4 +116,16 @@
     .masked-icon {
         --masked-icon-size: 0.9rem;
     }
+}
+
+/* The left margin matches `.expandable-line-body` in ExpandableCard.css, so the bar lines up with
+   the body of the call above it. */
+.llm-chat-tool-approval {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.5rem 0.45rem;
+    padding-left: 0.85rem;
+    font-size: 0.85rem;
 }

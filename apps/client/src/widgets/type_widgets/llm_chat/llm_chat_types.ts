@@ -19,6 +19,8 @@ export interface ToolCall {
     inputStreaming?: string;
     result?: string;
     isError?: boolean;
+    /** `pending` while the call waits for the user to allow it, `declined` once they denied it. */
+    approval?: "pending" | "declined";
 }
 
 /** A block of text content (rendered as Markdown for assistant messages). */
@@ -116,10 +118,12 @@ export function trimToFirstUserMessage<T extends { role: string }>(messages: T[]
  */
 /**
  * Whether a tool call failed: flagged so by the provider, or answered with the `{ error }` a note tool
- * returns. The result covers chats saved while a provider did not pass the flag on.
+ * returns. The result covers chats saved while a provider did not pass the flag on. A call the user
+ * denied never ran, so it did not fail.
  */
 export function isFailedToolCall(toolCall: ToolCall): boolean {
-    return !!toolCall.isError || isToolErrorResult(toolCall.result);
+    return toolCall.approval !== "declined"
+        && (!!toolCall.isError || isToolErrorResult(toolCall.result));
 }
 
 export function getMessageToolCalls(message: StoredMessage): ToolCall[] {

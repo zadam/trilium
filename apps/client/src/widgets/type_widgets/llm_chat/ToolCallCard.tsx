@@ -1,10 +1,13 @@
 import "./ToolCallCard.css";
 
+import { createContext } from "preact";
+import { useContext } from "preact/hooks";
 import { Trans } from "react-i18next";
 
 import appContext from "../../../components/app_context.js";
 import { t } from "../../../services/i18n.js";
 import ActionButton from "../../react/ActionButton.js";
+import Button from "../../react/Button.js";
 import MaskedIcon from "../../react/MaskedIcon.js";
 import { NewNoteLink } from "../../react/NoteLink.js";
 import { providerIconUrl } from "../options/llm/provider_icons.js";
@@ -12,6 +15,13 @@ import { EditNoteContentDiff, isSmallEdit, parseNoteContentEdits } from "./EditN
 import { ExpandableSection } from "./ExpandableCard.js";
 import { isFailedToolCall, type ToolCall } from "./llm_chat_types.js";
 import { ExternalLink, getToolCallView, type ToolCallView } from "./ToolCallViews.js";
+
+/**
+ * Allows or denies a tool call of the running turn that waits for the user. Provided only around
+ * the reply that streams, since a saved reply has nothing left to answer.
+ */
+export const ToolApprovalContext =
+    createContext<((toolCallId: string, approved: boolean) => void) | undefined>(undefined);
 
 interface ToolCallContext {
     /** The primary note the tool operates on or created. */
@@ -112,6 +122,8 @@ function toolNameIcon(toolName: string): string {
 }
 
 function toolCallIcon(toolCall: ToolCall) {
+    if (toolCall.approval === "pending") return "bx bx-help-circle";
+    if (toolCall.approval === "declined") return "bx bx-block";
     if (isFailedToolCall(toolCall)) return "bx bx-error-circle";
     if (!toolCall.result) return "bx bx-loader-alt bx-spin";
     const searchProvider = readSearchProvider(toolCall);
@@ -180,6 +192,13 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
                 </span>
             )}
             {view?.summary && <span className="llm-chat-tool-call-result-count">{view.summary}</span>}
+            {toolCall.approval && (
+                <span className="llm-chat-tool-call-approval-badge">
+                    {toolCall.approval === "pending"
+                        ? t("llm_chat.tool_approval_pending")
+                        : t("llm_chat.tool_approval_declined")}
+                </span>
+            )}
             {hasError && <span className="llm-chat-tool-call-error-badge">{t("llm_chat.tool_error")}</span>}
         </>
     );
@@ -212,10 +231,27 @@ function NoteRef({ noteId, parentNoteId, move }: {
  * streams, the diff of an `edit_note_content` call, why the call failed, or the view
  * `getToolCallView()` builds for the tools that have one. The raw input and
  * result are in the dialog the debug button opens.
+ *
+ * A call that waits for the user is open, showing what it would do (its view, or else its input),
+ * with the buttons that allow or deny it below.
  */
 function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
+    const section = <ToolCallDisclosure toolCall={toolCall} />;
+    if (toolCall.approval !== "pending") {
+        return section;
+    }
+    return (
+        <div className="llm-chat-tool-call-pending">
+            {section}
+            <ToolApprovalBar toolCallId={toolCall.id} />
+        </div>
+    );
+}
+
+function ToolCallDisclosure({ toolCall }: { toolCall: ToolCall }) {
     const hasError = isFailedToolCall(toolCall);
     const isStreamingInput = toolCall.inputStreaming !== undefined;
+    const isPending = toolCall.approval === "pending";
 
     // The partial JSON of a streaming input does not parse, so the diff waits for the whole input.
     const noteContentEdits = !isStreamingInput && toolCall.toolName === "edit_note_content"
@@ -224,13 +260,19 @@ function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
     const editedNoteId = typeof toolCall.input.noteId === "string" ? toolCall.input.noteId : undefined;
     const errorMessage = hasError && toolCall.result ? getErrorMessage(toolCall.result) : null;
     const view = isStreamingInput ? null : getToolCallView(toolCall);
+    // A waiting call with nothing else to show what it would do shows its input.
+    const pendingInput = isPending && !noteContentEdits && !view?.body
+        ? JSON.stringify(toolCall.input, null, 2)
+        : null;
 
     const className = `llm-chat-tool-call ${hasError ? "llm-chat-tool-call-error" : ""}`;
     const icon = toolCallIcon(toolCall);
     const label = <ToolCallLabel toolCall={toolCall} view={view} />;
     const debugButton = <ToolCallDebugButton toolCall={toolCall} />;
+    const open = isPending
+        || (noteContentEdits ? isSmallEdit(noteContentEdits) : isStreamingInput || undefined);
 
-    if (!isStreamingInput && !noteContentEdits && !errorMessage && !view?.body) {
+    if (!isStreamingInput && !noteContentEdits && !errorMessage && !view?.body && !pendingInput) {
         return (
             <div className={`expandable-line ${className}`}>
                 <div className="expandable-line-header">
@@ -249,7 +291,7 @@ function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
             actions={debugButton}
             variant="line"
             className={className}
-            open={noteContentEdits ? isSmallEdit(noteContentEdits) : isStreamingInput || undefined}
+            open={open}
         >
             {isStreamingInput && <pre className="llm-chat-tool-call-streaming">{toolCall.inputStreaming}</pre>}
             {noteContentEdits && (
@@ -259,6 +301,7 @@ function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
             )}
             {errorMessage && <p className="llm-chat-tool-call-error-message">{errorMessage}</p>}
             {view?.body}
+            {pendingInput && <pre className="llm-chat-tool-call-input">{pendingInput}</pre>}
         </ExpandableSection>
     );
 }
@@ -283,10 +326,12 @@ function ToolCallDebugButton({ toolCall }: { toolCall: ToolCall }) {
 function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     const first = toolCalls[0];
     const anyPending = toolCalls.some(tc => !tc.result);
+    const anyAwaitingApproval = toolCalls.some(tc => tc.approval === "pending");
     const anyError = toolCalls.some(isFailedToolCall);
 
     const searchProvider = readSearchProvider(first);
-    const icon = anyPending ? "bx bx-loader-alt bx-spin"
+    const icon = anyAwaitingApproval ? "bx bx-help-circle"
+        : anyPending ? "bx bx-loader-alt bx-spin"
         : searchProvider && toolCalls.every(tc => readSearchProvider(tc)?.type === searchProvider.type)
             ? <SearchProviderIcon {...searchProvider} />
             : toolNameIcon(first.toolName);
@@ -300,7 +345,13 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     );
 
     return (
-        <ExpandableSection variant="line" icon={icon} label={label} className="llm-chat-tool-call llm-chat-tool-call-group">
+        <ExpandableSection
+            variant="line"
+            icon={icon}
+            label={label}
+            className="llm-chat-tool-call llm-chat-tool-call-group"
+            open={anyAwaitingApproval || undefined}
+        >
             {toolCalls.map((tc, idx) => (
                 <ToolCallSection key={tc.id ?? idx} toolCall={tc} />
             ))}
@@ -334,6 +385,36 @@ export default function ToolCallCard({ toolCalls }: { toolCalls: ToolCall[] }) {
                     ? <ToolCallGroupSection key={idx} toolCalls={group} />
                     : <ToolCallSection key={group.id ?? idx} toolCall={group} />
             ))}
+        </div>
+    );
+}
+
+/** Asks the user whether a waiting tool call can run. */
+function ToolApprovalBar({ toolCallId }: { toolCallId: string }) {
+    const answer = useContext(ToolApprovalContext);
+    if (!answer) {
+        return null;
+    }
+
+    return (
+        <div
+            className="llm-chat-tool-approval"
+            role="group"
+            aria-label={t("llm_chat.tool_approval_prompt")}
+        >
+            <span>{t("llm_chat.tool_approval_prompt")}</span>
+            <Button
+                size="small"
+                text={t("llm_chat.tool_approval_deny")}
+                onClick={() => answer(toolCallId, false)}
+            />
+            <Button
+                size="small"
+                kind="primary"
+                icon="bx bx-check"
+                text={t("llm_chat.tool_approval_allow")}
+                onClick={() => answer(toolCallId, true)}
+            />
         </div>
     );
 }

@@ -2691,7 +2691,12 @@
     "manage_search_providers": "Manage search providers…",
     "web_search_builtin_unsupported": "This model has no built-in web search. Choose a search provider instead.",
     "web_search_provider_unsupported": "This model's provider searches the web with its own tools.",
-    "searched_with": "Searched with {{name}}"
+    "searched_with": "Searched with {{name}}",
+    "tool_approval_prompt": "Allow this tool call?",
+    "tool_approval_allow": "Allow",
+    "tool_approval_deny": "Deny",
+    "tool_approval_pending": "waiting for approval",
+    "tool_approval_declined": "denied"
   },
   "sidebar_chat": {
     "title": "AI Chat",

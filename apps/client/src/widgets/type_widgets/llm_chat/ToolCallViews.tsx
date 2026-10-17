@@ -30,9 +30,12 @@ export interface ToolCallView {
     body?: ComponentChildren;
 }
 
-/** The view of a successful call to a tool that has one, or `null` to show the bare line. */
+/**
+ * The view of a successful or pending call to a tool that has one, or `null` to show the bare
+ * line.
+ */
 export function getToolCallView(toolCall: ToolCall): ToolCallView | null {
-    if (isFailedToolCall(toolCall)) return null;
+    if (isFailedToolCall(toolCall) || toolCall.approval === "declined") return null;
 
     // What a writing tool writes is in its input, so it shows before the result arrives.
     if (toolCall.toolName === "create_note") {

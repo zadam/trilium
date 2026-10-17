@@ -446,4 +446,55 @@ describe("useLlmChat", () => {
         expect(api().isStreaming).toBe(false);
         expect(api().streamingStatus).toBeNull();
     });
+
+    it("holds a tool call for the user's answer, sends that answer once, and keeps a denial in the reply", async () => {
+        type Answer = (approved: boolean) => Promise<void>;
+        let callbacks: {
+            onToolApprovalRequest: (request: { toolCallId: string; toolName: string; toolInput: Record<string, unknown> }, answer: Answer) => void;
+            onToolResult: (toolCallId: string, toolName: string, result: string, isError?: boolean) => void;
+        } | undefined;
+        let finish: () => void = () => undefined;
+        streamChatCompletionMock.mockImplementation(async (_messages, _options, cb) => {
+            callbacks = cb;
+            await new Promise<void>(resolve => { finish = resolve; });
+            cb.onDone();
+        });
+        const answers = { c1: vi.fn<Answer>(async () => {}), c2: vi.fn<Answer>(async () => {}) };
+        await mountChat();
+        await act(async () => {
+            api().setInput("tidy up");
+        });
+        await act(async () => {
+            void api().handleSubmit(new Event("submit"));
+        });
+
+        // A request can arrive before the `tool_use` of its call, so it brings the call along.
+        await act(async () => {
+            callbacks?.onToolApprovalRequest({ toolCallId: "c1", toolName: "delete_note", toolInput: { noteId: "a" } }, answers.c1);
+            callbacks?.onToolApprovalRequest({ toolCallId: "c2", toolName: "delete_note", toolInput: { noteId: "b" } }, answers.c2);
+        });
+        expect(api().streamingBlocks).toMatchObject([
+            { type: "tool_call", toolCall: { id: "c1", input: { noteId: "a" }, approval: "pending" } },
+            { type: "tool_call", toolCall: { id: "c2", approval: "pending" } }
+        ]);
+
+        await act(async () => {
+            api().answerToolCall("c1", false);
+            api().answerToolCall("c1", true);
+            callbacks?.onToolResult("c1", "delete_note", JSON.stringify({ error: "declined" }), true);
+        });
+        expect(answers.c1).toHaveBeenCalledExactlyOnceWith(false);
+        expect(api().streamingBlocks[0]).toMatchObject({ toolCall: { id: "c1", approval: "declined" } });
+
+        // Stopped while waiting: the call that was never answered is no longer waiting.
+        await act(async () => {
+            finish();
+        });
+        expect(api().messages.at(-1)?.content).toMatchObject([
+            { toolCall: { id: "c1", approval: "declined" } },
+            { toolCall: { id: "c2", approval: undefined, result: "[Stopped]" } }
+        ]);
+        api().answerToolCall("c2", true);
+        expect(answers.c2).not.toHaveBeenCalled();
+    });
 });
