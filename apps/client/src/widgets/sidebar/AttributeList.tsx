@@ -294,6 +294,7 @@ export default function AttributeList() {
     }
 
     const sections = splitIntoSections(owned.current, inherited.current);
+    const canEdit = !!note && note.isContentWritable;
     const internalRows = internal.current.map((attribute) => toEntry(attribute, true));
     // Not built for an attribute the list no longer holds: a reload can rebuild the rows out from
     // under the editor within this very render, before the state has caught up (see above).
@@ -337,6 +338,7 @@ export default function AttributeList() {
         note,
         activeAttribute: detail?.attribute,
         valueEditor,
+        locked: !canEdit,
         onOpen: openDetail,
         onEditValue: startValueEdit,
         onDelete: (attribute: Attribute) => void deleteAttribute(attribute)
@@ -380,11 +382,11 @@ export default function AttributeList() {
                     buttons={note && (
                         <>
                             <SidebarHelp section="attributes" />
-                            <AddAttributeButton
+                            {canEdit && <AddAttributeButton
                                 text={t("attribute_editor.add_a_new_attribute")}
                                 attrTypes={ALL_ATTRIBUTE_KINDS}
                                 onSelect={addAttribute}
-                            />
+                            />}
                         </>
                     )}
                 >
@@ -405,7 +407,7 @@ export default function AttributeList() {
                         {creationRow && <AttributeRowList rows={[ creationRow ]} {...rowProps} />}
 
                         {/* Only on a desktop: a phone adds from the header, page flow and all. */}
-                        {!IS_MOBILE && note && (
+                        {!IS_MOBILE && canEdit && (
                             <AddAttributeRow onAdd={(e) => addAttribute("label", e)} />
                         )}
                     </div>
@@ -429,7 +431,7 @@ export default function AttributeList() {
                         title={t("attribute_list_panel.definitions", { count: sections.definitions.length })}
                         buttons={<>
                             <SidebarHelp section="attributes-definitions" />
-                            {note && (
+                            {canEdit && (
                                 <AddAttributeButton
                                     text={t("attribute_list_panel.add_definition")}
                                     attrTypes={DEFINITION_KINDS}
@@ -541,6 +543,8 @@ interface AttributeRowListProps {
      * every one of them is Trilium's, which is what the card they are in says.
      */
     readOnly?: boolean;
+    /** Shows the rows as usual, but with no way to change them, for a note that cannot be edited. */
+    locked?: boolean;
     onOpen: (attribute: Attribute, isOwned: boolean, anchor: HTMLElement | null, e: MouseEvent) => void;
     /** Asks for the in-place editor over the attribute's value; wired to editable labels alone. */
     onEditValue: (attribute: Attribute) => void;
@@ -552,7 +556,9 @@ interface AttributeRowListProps {
  * Trilium reads for itself. What a row offers follows from whether the note owns its attribute rather
  * than from the card it is in: the definitions card holds the note's own alongside a template's.
  */
-function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, onOpen, onEditValue, onDelete }: AttributeRowListProps) {
+function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, locked, onOpen, onEditValue, onDelete }: AttributeRowListProps) {
+    const canChange = !readOnly && !locked;
+
     function renderRows(group: AttributeEntry[]) {
         return (
             // The rows are menu items on a phone (see AttributeRow), and the theme dresses a menu item
@@ -571,15 +577,15 @@ function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, 
                         // An attribute of another note names it; the current note's own would name itself.
                         showOwner={!isOwned && !readOnly}
                         // A read-only row opens the popup as an inherited one does: to be read, not edited.
-                        onOpen={(anchor, e) => onOpen(attribute, isOwned && !readOnly, anchor, e)}
+                        onOpen={(anchor, e) => onOpen(attribute, isOwned && canChange, anchor, e)}
                         // A label's value is typed straight into its row, and a relation's target is
                         // repicked in it (from the pencil — the value itself is a link, and stays
                         // one). Definitions, whose value is a summary of settings, keep the popup. On
                         // a phone the row is a menu item and opens its page whole.
-                        onEditValue={isOwned && !readOnly && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
+                        onEditValue={isOwned && canChange && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
                             ? () => onEditValue(attribute)
                             : undefined}
-                        onDelete={isOwned && !readOnly ? () => onDelete(attribute) : undefined}
+                        onDelete={isOwned && canChange ? () => onDelete(attribute) : undefined}
                     />
                 ))}
             </ul>

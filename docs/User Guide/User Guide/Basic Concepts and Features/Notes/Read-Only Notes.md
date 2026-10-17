@@ -35,4 +35,4 @@ When accessing a read-only note, it's possible to temporarily edit it pressing t
 
 When pressed, the note will become editable but will become read-only again after navigating to a different note.
 
-The pages of the built-in user guide are an exception: they are part of Trilium itself and cannot be edited, not even temporarily. Their _Read-only_ badge cannot be pressed, and the note menu does not offer to edit them.
+The pages of the built-in user guide are an exception: they are part of Trilium itself and cannot be edited, not even temporarily. Their _Read-only_ badge cannot be pressed, the note menu does not offer to edit them, and their attributes are shown in the right sidebar without a way to change them.

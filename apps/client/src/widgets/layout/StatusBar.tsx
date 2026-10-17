@@ -66,10 +66,11 @@ export default function StatusBar() {
         setSimilarNotesShown: (shown) => setActivePane(shown && "similar-notes")
     };
     const isHiddenNote = note?.isHiddenCompletely();
+    const canEditAttributes = note?.isContentWritable !== false;
 
     return (
         <div className={clsx("status-bar", {"status-bar-panel-open": !!activePane})}>
-            {attributesContext && <AttributesPane {...attributesContext} />}
+            {attributesContext && canEditAttributes && <AttributesPane {...attributesContext} />}
             {noteInfoContext && <SimilarNotesPane {...noteInfoContext} />}
 
             <div className="status-bar-main-row">
@@ -81,7 +82,7 @@ export default function StatusBar() {
                         <TabWidthSwitcher {...context} />
                         <LanguageSwitcher {...context} />
                         {!isHiddenNote && <NotePaths {...context} />}
-                        <AttributesButton {...attributesContext} />
+                        {canEditAttributes && <AttributesButton {...attributesContext} />}
                         <AttachmentCount {...context} />
                         <BacklinksBadge {...context} />
                         <NoteInfoBadge {...noteInfoContext} />
