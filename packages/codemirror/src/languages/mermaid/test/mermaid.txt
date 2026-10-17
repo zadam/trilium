@@ -458,3 +458,12 @@ railroad-peg-beta
 ==>
 
 MermaidDiagram(RailroadPegDiagram(DiagramName,Rule(RuleName,"<-",String,";")))
+
+# Ishikawa
+
+ishikawa-beta
+  Effect
+
+==>
+
+MermaidDiagram(IshikawaDiagram(DiagramName,Effect))

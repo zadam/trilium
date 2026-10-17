@@ -188,6 +188,14 @@ describe("treemap grammar", () => {
     });
 });
 
+describe("ishikawa grammar", () => {
+    it("leaves the spaces after a line out of its node", () => {
+        const doc = "ishikawa-beta\n  Blurry photo \t\n  Process";
+        const effect = parserOf("ishikawa").parse(doc).topNode.getChild("Effect");
+        expect(effect && doc.slice(effect.from, effect.to)).toBe("Blurry photo");
+    });
+});
+
 describe("foldByIndent", () => {
     function foldAt(doc: string, lineNumber: number) {
         const state = EditorState.create({ doc, extensions: [ foldByIndent() ] });

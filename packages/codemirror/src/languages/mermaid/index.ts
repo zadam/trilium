@@ -17,6 +17,7 @@ import { parser as eventModelingParser } from "./parsers/eventmodeling/parser.js
 import { parser as flowchartParser } from "./parsers/flowchart/parser.js";
 import { parser as ganttParser } from "./parsers/gantt/parser.js";
 import { parser as gitParser } from "./parsers/git/parser.js";
+import { parser as ishikawaParser } from "./parsers/ishikawa/parser.js";
 import { parser as journeyParser } from "./parsers/journey/parser.js";
 import { parser as kanbanParser } from "./parsers/kanban/parser.js";
 import { parser as mermaidParser } from "./parsers/mermaid/parser.js";
@@ -57,6 +58,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     FlowchartDiagram: flowchartParser,
     GanttDiagram: ganttParser,
     GitDiagram: gitParser,
+    IshikawaDiagram: ishikawaParser,
     JourneyDiagram: journeyParser,
     KanbanDiagram: kanbanParser,
     MindmapDiagram: mindmapParser,

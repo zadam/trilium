@@ -306,3 +306,10 @@ export const railroadTags = {
     string: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const ishikawaTags = {
+    category: Tag.define(t.keyword),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    effect: Tag.define(t.heading),
+    lineComment: Tag.define(t.lineComment)
+};
