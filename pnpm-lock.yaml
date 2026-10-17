@@ -213,7 +213,7 @@ importers:
         version: 1.8.0
       '@fullcalendar/rrule':
         specifier: 7.1.2
-        version: 7.1.2(rrule@2.8.1)(temporal-polyfill@1.0.5)
+        version: 7.1.2(rrule@2.8.1)(temporal-polyfill@1.0.6)
       '@popperjs/core':
         specifier: 2.11.8
         version: 2.11.8
@@ -294,7 +294,7 @@ importers:
         version: 1.52.0(preact-render-to-string@6.8.0)
       fullcalendar:
         specifier: 7.1.2
-        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.5)
+        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6)
       gridstack:
         specifier: 14.0.0
         version: 14.0.0
@@ -356,8 +356,8 @@ importers:
         specifier: 6.6.1
         version: 6.6.1
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
       terra-draw:
         specifier: 1.37.0
         version: 1.37.0
@@ -917,7 +917,7 @@ importers:
         version: 1.52.0(preact-render-to-string@6.8.0)
       fullcalendar:
         specifier: 7.1.2
-        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.5)
+        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6)
       i18next:
         specifier: 26.4.4
         version: 26.4.4(typescript@6.0.3)
@@ -982,8 +982,8 @@ importers:
         specifier: 6.6.1
         version: 6.6.1
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@ckeditor/ckeditor5-inspector':
         specifier: 5.0.3
@@ -10884,8 +10884,8 @@ packages:
     resolution: {integrity: sha512-yYrrsWnrXMcdsnu/7YMYAofM1ktpL5By7vZhf15CrXijWWrEYZks5AXBudalfSWJLlnen/QUJUB5aoB0kqZUGA==}
     engines: {node: '>=6.0.0'}
 
-  temporal-polyfill@1.0.5:
-    resolution: {integrity: sha512-+H/mmY74i6wXCMcjIhGuSnODcyZnc4eois2myhOyX0UqRAKNXQY5m9iB1en5jQ/n4SXtjLXo1ElBI5bmn8tZwQ==}
+  temporal-polyfill@1.0.6:
+    resolution: {integrity: sha512-tYyEry1HLGUDbm2356W3iYD0OZdo7rlP7h98Zr/EnjqLZQwTAfcBDUvJnJbfA15v/vQad57hJZScG5O0W2oKEA==}
 
   temporal-spec@1.0.1:
     resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
@@ -14002,21 +14002,21 @@ snapshots:
       '@codemirror/view': 6.43.14
       '@lezer/highlight': 1.2.5
 
-  '@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.5)':
+  '@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.6)':
     dependencies:
-      temporal-polyfill: 1.0.5
+      temporal-polyfill: 1.0.6
 
-  '@fullcalendar/core@7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.5))(temporal-polyfill@1.0.5)':
+  '@fullcalendar/core@7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.6))(temporal-polyfill@1.0.6)':
     dependencies:
-      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.5)
-      temporal-polyfill: 1.0.5
+      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.6)
+      temporal-polyfill: 1.0.6
 
-  '@fullcalendar/rrule@7.1.2(rrule@2.8.1)(temporal-polyfill@1.0.5)':
+  '@fullcalendar/rrule@7.1.2(rrule@2.8.1)(temporal-polyfill@1.0.6)':
     dependencies:
-      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.5)
-      '@fullcalendar/core': 7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.5))(temporal-polyfill@1.0.5)
+      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.6)
+      '@fullcalendar/core': 7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.6))(temporal-polyfill@1.0.6)
       rrule: 2.8.1
-      temporal-polyfill: 1.0.5
+      temporal-polyfill: 1.0.6
 
   '@gerrit0/mini-shiki@3.23.0':
     dependencies:
@@ -19826,12 +19826,12 @@ snapshots:
       mkdirp: 0.5.6
       rimraf: 2.7.1
 
-  fullcalendar@7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.5):
+  fullcalendar@7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6):
     dependencies:
-      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.5)
-      '@fullcalendar/core': 7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.5))(temporal-polyfill@1.0.5)
+      '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.6)
+      '@fullcalendar/core': 7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.6))(temporal-polyfill@1.0.6)
       preact: 11.0.1(preact-render-to-string@6.8.0)
-      temporal-polyfill: 1.0.5
+      temporal-polyfill: 1.0.6
     transitivePeerDependencies:
       - preact-render-to-string
 
@@ -23608,7 +23608,7 @@ snapshots:
       rimraf: 2.6.3
     optional: true
 
-  temporal-polyfill@1.0.5:
+  temporal-polyfill@1.0.6:
     dependencies:
       temporal-spec: 1.0.1
       temporal-utils: 1.0.3
