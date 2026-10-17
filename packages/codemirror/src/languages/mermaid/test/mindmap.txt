@@ -140,3 +140,41 @@ Root
 ==>
 
 MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2,ShapedText(LineText2)),Line(ClassLine(LineText2)),Line(LineText2,ShapedText(LineText2)),Line(LineText2))
+
+# Shape at the start of a line
+
+mindmap
+  (root)
+
+==>
+
+MindmapDiagram(DiagramName,Line(ShapedText(LineText3)))
+
+# Tab indentation
+
+mindmap
+	root
+		child
+	  	grandchild
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText5),Line(LineText4),Line(LineText4))
+
+# Root on the diagram line (unsupported, parses as empty lines)
+
+mindmap root
+
+==>
+
+MindmapDiagram(DiagramName,Line,Line,Line,Line)
+
+# Lines starting with a hash
+
+mindmap
+  # x
+#x
+
+==>
+
+MindmapDiagram(DiagramName,Line,Line,Line)

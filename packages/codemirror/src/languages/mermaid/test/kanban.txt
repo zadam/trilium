@@ -108,3 +108,23 @@ kanban
 ==>
 
 KanbanDiagram(DiagramName,Column(ColumnTitle),Card(Node(⚠,CardText,"]")))
+
+# Empty card
+
+kanban
+  todo
+    id1[]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(NodeId,Node("[","]")))
+
+# Unclosed metadata
+
+kanban
+  todo
+    id1[Task]@{ priority: high
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(NodeId,Node("[",CardText,"]"),Metadata))

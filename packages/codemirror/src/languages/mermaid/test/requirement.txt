@@ -406,3 +406,12 @@ requirementDiagram
 ==>
 
 RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString,RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,BackArrow,RelationshipType(Keyword),Hyphen,UnquotedString))
+
+# Element name at the end of input
+
+requirementDiagram
+  a
+
+==>
+
+RequirementDiagram(DiagramName,⚠)

@@ -84,3 +84,12 @@ erDiagram
 ==>
 
 ERDiagram(DiagramName,LineComment,Relationship(EntityName,RelationshipToken,EntityName,LabelText))
+
+# Comment after a relationship colon
+
+erDiagram
+  A ||--o{ B : %% comment
+
+==>
+
+ERDiagram(DiagramName,Relationship(EntityName,RelationshipToken,EntityName,":",LineComment,⚠))

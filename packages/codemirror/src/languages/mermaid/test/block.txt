@@ -104,3 +104,39 @@ block-beta %% comment
 ==>
 
 BlockDiagram(DiagramName,LineComment,Node(NodeId))
+
+# Unknown diagram name
+
+Block2
+
+==>
+
+BlockDiagram(⚠,Node(NodeId))
+
+# Arrow between nodes without shapes
+
+block-beta
+  a <--> b
+
+==>
+
+BlockDiagram(DiagramName,Node(NodeId),Arrow,Node(NodeId))
+
+# Arrow directly after a shape
+
+block-beta
+  a["A"]<-->b["B"]
+
+==>
+
+BlockDiagram(DiagramName,Node(NodeId,Shape),Arrow,Node(NodeId,Shape))
+
+# Unclosed shape
+
+block-beta
+  a["A"
+
+
+==>
+
+BlockDiagram(DiagramName,Node(NodeId,Shape))

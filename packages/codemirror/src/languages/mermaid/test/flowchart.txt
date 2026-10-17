@@ -570,3 +570,12 @@ flowchart LR
 ==>
 
 FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId,NodeId,Link,NodeId)
+
+# Style without text
+
+flowchart LR
+  style A
+
+==>
+
+FlowchartDiagram(DiagramName,Orientation,StyleKeyword,NodeId,⚠)

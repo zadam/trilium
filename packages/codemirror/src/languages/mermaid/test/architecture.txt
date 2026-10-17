@@ -89,3 +89,50 @@ architecture-beta
 ==>
 
 ArchitectureDiagram(DiagramName,Group(GroupKeyword,NodeId,Icon,Label),Service(ServiceKeyword,NodeId,Icon,Label,InClause(InKeyword,NodeId)),Service(ServiceKeyword,NodeId,Icon,Label,InClause(InKeyword,NodeId)),Edge(NodeId,Port,Arrow,Port,NodeId))
+
+# Service with a label and no icon
+
+architecture-beta
+    service db[Database]
+
+==>
+
+ArchitectureDiagram(DiagramName,Service(ServiceKeyword,NodeId,Label))
+
+# Service with an icon and no label
+
+architecture-beta
+    service db(database)
+
+
+==>
+
+ArchitectureDiagram(DiagramName,Service(ServiceKeyword,NodeId,Icon))
+
+# Unclosed icon
+
+architecture-beta
+    service db(database
+
+
+==>
+
+ArchitectureDiagram(DiagramName,Service(ServiceKeyword,NodeId,⚠),Edge(NodeId,⚠))
+
+# Unclosed label
+
+architecture-beta
+    service db(database)[Database
+
+
+==>
+
+ArchitectureDiagram(DiagramName,Service(ServiceKeyword,NodeId,Icon,⚠),Edge(NodeId,⚠))
+
+# Unknown diagram name
+
+Architecture2
+
+==>
+
+ArchitectureDiagram(⚠)

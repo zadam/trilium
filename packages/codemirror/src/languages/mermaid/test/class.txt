@@ -164,3 +164,14 @@ classDiagram
 ==>
 
 ClassDiagram(DiagramName,Direction(DirectionKw,DirectionValue),ClassDef(Class,ClassName,ClassBody(Member,Member)),AnnotationStatement(Annotation,ClassName),Relation(ClassName,RelationArrow,ClassName,Label(LabelText)),Note(NoteKw,For,ClassName,String))
+
+# Comment in a class body
+
+classDiagram
+class A {
+  %% comment
+}
+
+==>
+
+ClassDiagram(DiagramName,ClassDef(Class,ClassName,ClassBody("{",LineComment,"}")))

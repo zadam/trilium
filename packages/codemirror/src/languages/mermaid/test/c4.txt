@@ -71,3 +71,12 @@ Container(web, "Web App")
 ==>
 
 C4Diagram(DiagramName,LineComment,Element(FunctionName,ArgumentList(Value,String)))
+
+# Comment after title
+
+C4Context
+title %% comment
+
+==>
+
+C4Diagram(DiagramName,Title,LineComment,⚠)

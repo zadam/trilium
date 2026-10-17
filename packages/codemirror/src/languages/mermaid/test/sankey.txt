@@ -53,3 +53,22 @@ A,B,10
 ==>
 
 SankeyDiagram(DiagramName,Row(Field,Field,Value))
+
+# Spaces around fields
+
+sankey-beta
+a, b ,1
+
+==>
+
+SankeyDiagram(DiagramName,Row(Field,Field,Value))
+
+# Unclosed quoted field
+
+sankey-beta
+"a,b,1
+c,d,2
+
+==>
+
+SankeyDiagram(DiagramName,Row(Field,⚠),Row(Field,Field,Value))

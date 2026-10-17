@@ -62,3 +62,12 @@ title UDP Packet
 ==>
 
 PacketDiagram(DiagramName,Title,TitleText,Field(Range(Number,Number),String),LineComment,Field(Range(Number,Number),String))
+
+# Title without text
+
+packet-beta
+title
+
+==>
+
+PacketDiagram(DiagramName,Title,⚠)
