@@ -278,3 +278,16 @@ export const cynefinTags = {
     string: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const eventModelingTags = {
+    arrow: Tag.define(t.operator),
+    bracket: Tag.define(t.bracket),
+    data: Tag.define(t.string),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    frameId: Tag.define(t.number),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.variableName),
+    separator: Tag.define(t.separator),
+    type: Tag.define(t.typeName)
+};

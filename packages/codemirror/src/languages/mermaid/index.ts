@@ -13,6 +13,7 @@ import { parser as c4Parser } from "./parsers/c4/parser.js";
 import { parser as classParser } from "./parsers/class/parser.js";
 import { parser as cynefinParser } from "./parsers/cynefin/parser.js";
 import { parser as erParser } from "./parsers/er/parser.js";
+import { parser as eventModelingParser } from "./parsers/eventmodeling/parser.js";
 import { parser as flowchartParser } from "./parsers/flowchart/parser.js";
 import { parser as ganttParser } from "./parsers/gantt/parser.js";
 import { parser as gitParser } from "./parsers/git/parser.js";
@@ -48,6 +49,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     ClassDiagram: classParser,
     CynefinDiagram: cynefinParser,
     ERDiagram: erParser,
+    EventModelingDiagram: eventModelingParser,
     FlowchartDiagram: flowchartParser,
     GanttDiagram: ganttParser,
     GitDiagram: gitParser,

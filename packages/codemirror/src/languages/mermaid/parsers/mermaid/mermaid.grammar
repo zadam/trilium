@@ -19,6 +19,7 @@
     TreeViewDiagram |
     WardleyDiagram |
     CynefinDiagram |
+    EventModelingDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -97,6 +98,7 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   treeViewText,
   wardleyText,
   cynefinText,
+  EventModelingDiagram,
   SankeyDiagram,
   xyChartText,
   packetText,

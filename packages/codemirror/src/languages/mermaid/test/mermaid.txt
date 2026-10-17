@@ -413,3 +413,12 @@ cynefin-beta
 ==>
 
 MermaidDiagram(CynefinDiagram(DiagramName,Domain(DomainName)))
+
+# Event modeling
+
+eventmodeling
+tf 01 ui A
+
+==>
+
+MermaidDiagram(EventModelingDiagram(DiagramName,Frame(Keyword,FrameId,EntityType(Type),QualifiedName(Name))))
