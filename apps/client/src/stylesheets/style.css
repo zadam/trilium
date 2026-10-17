@@ -289,7 +289,7 @@ samp {
  * content and not what anyone is asking for. Inheritance is what makes `.cm-editor` enough to cover
  * CodeMirror's internals.
  */
-body.monospace-ligatures-disabled :is(code, kbd, pre, samp, .cm-editor, .ck-mermaid__editing-view) {
+body.monospace-ligatures-disabled :is(code, kbd, pre, samp, .cm-editor) {
     font-variant-ligatures: none;
 }
 
@@ -824,10 +824,6 @@ div[data-notify="container"] {
     margin: var(--ck-spacing-large, var(--ck-spacing-lg)) 0;
 
     color: var(--muted-text-color);
-}
-
-.ck-editor__editable .ck-mermaid__editing-view {
-    font-family: var(--monospace-font-family);
 }
 
 svg.ck-icon.note-icon {
