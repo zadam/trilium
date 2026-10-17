@@ -46,7 +46,7 @@ import { ADMONITION_TYPE_NAMES, type AdmonitionType } from "../admonition/admoni
 import { getAdmonitionTitle } from "../admonition/admonition_ui.js";
 import aiIcon from "../ai_assistant/theme/icons/ai.svg?raw";
 import { COMMAND_NAME as CONTENT_EMBED_COMMAND } from "../content_embed/content_embed.js";
-import { insertDrawingCanvas } from "../file_upload/file_upload_ui.js";
+import { insertDrawingCanvas, insertMermaidDiagram } from "../file_upload/file_upload_ui.js";
 import { INSERT_ICON_COMMAND } from "../inline_icon/inline_icon_editing.js";
 import InlineIconUI from "../inline_icon/inline_icon_ui.js";
 import InsertDateTimePlugin, { COMMAND_NAME as INSERT_DATE_TIME_COMMAND, getDateTimeFormatOptions } from "../insert_date_time.js";
@@ -344,6 +344,16 @@ export function buildTriliumSlashCommands(editor: Editor): SlashCommandDefinitio
             commandName: "fileUpload",
             isEnabled: canEmbedFiles,
             execute: insertDrawingCanvas
+        },
+        {
+            id: "mermaid-diagram-embed",
+            title: t("Mermaid diagram (embedded)"),
+            description: t("Insert a Mermaid diagram stored as an attachment."),
+            aliases: [ "mermaid", "diagram", "flowchart" ],
+            icon: bxNetworkChart,
+            commandName: "fileUpload",
+            isEnabled: canEmbedFiles,
+            execute: insertMermaidDiagram
         },
         ...buildMermaidSlashCommands(editor),
         {

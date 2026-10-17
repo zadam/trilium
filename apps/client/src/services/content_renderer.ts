@@ -168,6 +168,7 @@ const ATTACHED_CODE_MIME_TYPES = new Set([
  */
 const PREVIEWED_TYPES = new Set([
     "book", "search", "text", "markdown", "code", "iconPack", "image", "canvas", "canvasDrawing",
+    "mermaidDiagram",
     "mindMap", "spreadsheet", "office", "pdf", "audio", "video", "mermaid", "render", "doc",
     "llmChat"
 ]);
@@ -208,6 +209,8 @@ export async function getRenderedContent(this: {} | { ctx: string }, entity: FNo
         await renderIconPack(entity, $renderedContent, options);
     } else if (type === "canvasDrawing") {
         await renderCanvasDrawing(entity, $renderedContent, options);
+    } else if (type === "mermaidDiagram") {
+        await renderMermaidDiagram(entity, $renderedContent, options);
     } else if (type === "image" && options.mediaEnvironment === "embedded") {
         await renderImageViewer(entity, $renderedContent);
     } else if (["image", "canvas", "mermaid", "mindMap", "spreadsheet"].includes(type)) {
@@ -292,6 +295,7 @@ export const CONTENT_RENDERERS = {
     image: () => import("../widgets/react/ImageViewer"),
     file: {
         canvasDrawing: () => import("../widgets/type_widgets/canvas/CanvasDrawing"),
+        mermaidDiagram: () => import("../widgets/type_widgets/mermaid/MermaidDiagram"),
         pdf: () => import("../widgets/type_widgets/file/PdfViewer"),
         media: () => import("../widgets/type_widgets/file/MediaPreview")
     },
@@ -584,6 +588,27 @@ async function renderCanvasDrawing(
         const $icon = $("<span>").addClass(attachmentIcon("file", entity.mime));
         $renderedContent.append($("<div>").append($icon));
     }
+}
+
+/**
+ * Renders a Mermaid diagram kept in a file or an attachment, in a zoom/pan viewer. Interactive
+ * content of an attachment is edited beside the diagram while the Editable toggle of its embed is on.
+ */
+async function renderMermaidDiagram(
+    entity: FNote | FAttachment,
+    $renderedContent: JQuery<HTMLElement>,
+    options: RenderOptions
+) {
+    const { default: MermaidDiagram } = await CONTENT_RENDERERS.file.mermaidDiagram();
+    const editor = options.interactive ? getContentEditor(entity, options) : undefined;
+    const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
+
+    const $container = $('<div class="mermaid-diagram-embed">');
+    const container = $container.get(0);
+    if (container) {
+        await mountInteractiveWidget(h(MermaidDiagram, { entity, editor, content }), container);
+    }
+    $renderedContent.append($container);
 }
 
 function getImageUrl(entity: FNote | FAttachment) {

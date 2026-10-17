@@ -15,11 +15,15 @@ export interface CodeEmbedEditorProps {
     mime: string;
     /** Receives the edited content when the editor goes away. */
     onClose: (content: string) => void;
+    /** Receives the content as it is edited. */
+    onChange?: (content: string) => void;
+    /** Called with CodeMirror once it mounts, for extensions such as a linter. */
+    onReady?: (view: VanillaCodeMirror) => void;
 }
 
 /** CodeMirror over the content of a code embed, which `editor` saves as it changes. */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, onClose
+    note, editor, content, mime, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const viewRef = useRef<VanillaCodeMirror>(null);
     const isLoadingRef = useRef(false);
@@ -40,6 +44,12 @@ export default function CodeEmbedEditor({
         view.clearHistory();
     }, [ content ]);
 
+    useEffect(() => {
+        if (viewRef.current) {
+            onReady?.(viewRef.current);
+        }
+    }, []);
+
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
         const text = viewRef.current?.getText();
@@ -59,6 +69,7 @@ export default function CodeEmbedEditor({
             onContentChanged={() => {
                 if (!isLoadingRef.current) {
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
+                    onChange?.(viewRef.current?.getText() ?? "");
                 }
             }}
             {...(noteTabWidth != null && { indentSize: noteTabWidth })}

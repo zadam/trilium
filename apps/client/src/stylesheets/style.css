@@ -1115,7 +1115,8 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 /* Media takes a resized height inside the border and padding, as with the edge-to-edge types. */
 .include-note[data-box-size] .include-note-content:is(
-    .type-image, .type-canvas, .type-canvasDrawing, .type-mindMap, .type-spreadsheet, .type-mermaid,
+    .type-image, .type-canvas, .type-canvasDrawing, .type-mermaidDiagram, .type-mindMap,
+    .type-spreadsheet, .type-mermaid,
     .type-video
 ) {
     box-sizing: content-box;
@@ -1373,6 +1374,7 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 .include-note-content.type-video,
 .include-note-content.type-canvas,
 .include-note-content.type-canvasDrawing,
+.include-note-content.type-mermaidDiagram,
 .include-note-content.type-webView,
 .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note-content.type-search:has(.note-list-widget.full-height) {

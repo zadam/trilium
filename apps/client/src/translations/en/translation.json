@@ -4526,6 +4526,8 @@
       "drawing-canvas": "Drawing canvas",
       "editable": "Editable",
       "insert-a-canvas-to-draw-on": "Insert a canvas to draw on.",
+      "mermaid-diagram-embedded": "Mermaid diagram (embedded)",
+      "insert-a-mermaid-diagram-stored-as-an-attachment": "Insert a Mermaid diagram stored as an attachment.",
       "tabs": "Tabs",
       "tab-title": "Tab title",
       "tab-0": "Tab %0",
