@@ -3956,7 +3956,10 @@
     "shared_export_only": "Not published",
     "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
     "template": "Template",
-    "template_description": "This note is a template. Notes created from it inherit its attributes, so changing them here changes every one of those notes."
+    "template_description": "This note is a template. Notes created from it inherit its attributes, so changing them here changes every one of those notes.",
+    "template_scope_global": "Available everywhere",
+    "template_scope_workspace": "Only inside its workspace",
+    "template_scope_workspace_unavailable": "The template is not inside a workspace."
   },
   "status_bar": {
     "language_title": "Change content language",

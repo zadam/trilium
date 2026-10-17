@@ -2,6 +2,8 @@ import { act } from "preact/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 import FNote from "../../entities/fnote";
+import attributes from "../../services/attributes";
+import froca from "../../services/froca";
 import { ViewScope } from "../../services/link";
 
 // The badge reads the note being shown and the view it is shown in, neither of which a rendered
@@ -96,9 +98,57 @@ describe("TemplateBadge", () => {
         expect(renderBadge({ "#template": "false" })).toBeNull();
     });
 
+    it("switches a template inside a workspace to the workspace only, adding the new label first", async () => {
+        const setBoolean = vi.spyOn(attributes, "setBooleanWithInheritance").mockResolvedValue();
+        shownNote.current = buildInWorkspace({ "#template": "" });
+
+        const [ global, workspace ] = await openScopes();
+        expect(global.getAttribute("aria-checked")).toBe("true");
+        expect(workspace.getAttribute("aria-checked")).toBe("false");
+
+        act(() => workspace.click());
+        await vi.waitFor(() => expect(setBoolean).toHaveBeenCalledTimes(2));
+        expect(setBoolean.mock.calls.map(([ , name, value ]) => [ name, value ])).toEqual([
+            [ "workspaceTemplate", true ], [ "template", false ]
+        ]);
+        setBoolean.mockRestore();
+    });
+
+    it("disables the workspace scope outside a workspace, still letting a workspace template go global", async () => {
+        for (const label of [ "#template", "#workspaceTemplate" ] as const) {
+            shownNote.current = buildNote({ title: "Meeting", [label]: "" });
+
+            const [ global, workspace ] = await openScopes();
+            expect(global.getAttribute("aria-checked")).toBe(String(label === "#template"));
+            expect(global.classList.contains("disabled")).toBe(false);
+            expect(workspace.classList.contains("disabled")).toBe(true);
+            document.body.replaceChildren();
+        }
+    });
+
     function renderBadge(labels: Record<`#${string}`, string>) {
         shownNote.current = buildNote({ title: "Meeting", ...labels });
         return renderInto(<TemplateBadge />).querySelector(".template-badge");
+    }
+
+    function buildInWorkspace(labels: Record<`#${string}`, string>) {
+        const templateId = `tmpl${Math.random().toString(36).slice(2, 10)}`;
+        buildNote({ title: "Project", "#workspace": "", children: [ { id: templateId, title: "Meeting", ...labels } ] });
+        return froca.notes[templateId];
+    }
+
+    async function openScopes() {
+        const toggle = renderInto(<TemplateBadge />).querySelector<HTMLButtonElement>(".dropdown-template-badge button");
+        expect(toggle).not.toBeNull();
+        act(() => {
+            toggle?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+            toggle?.click();
+        });
+        return await vi.waitFor(() => {
+            const rows = [ ...document.querySelectorAll<HTMLElement>(".tn-popup .dropdown-item") ];
+            if (rows.length !== 2) throw new Error("expected the two scopes to be listed");
+            return rows;
+        });
     }
 });
 

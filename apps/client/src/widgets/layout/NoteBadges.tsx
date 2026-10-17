@@ -243,20 +243,57 @@ export function ExecuteBadge() {
     );
 }
 
-/** Marks a template, whose attributes every note created from it inherits. */
+/**
+ * Marks a template, whose attributes every note created from it inherits. Its dropdown switches it
+ * between `#template` and `#workspaceTemplate`; the latter only for a template inside a workspace.
+ */
 export function TemplateBadge() {
     const { note } = useNoteContext();
     const [ isTemplate ] = useNoteLabelBoolean(note, "template");
     const [ isWorkspaceTemplate ] = useNoteLabelBoolean(note, "workspaceTemplate");
+    if (!note || (!isTemplate && !isWorkspaceTemplate)) return;
 
-    return ((isTemplate || isWorkspaceTemplate) &&
-        <Badge
+    const isInWorkspace = hasWorkspaceAncestor(note);
+
+    async function switchScope(toWorkspace: boolean) {
+        if (!note) return;
+        const [ added, removed ] = toWorkspace ? [ "workspaceTemplate", "template" ] : [ "template", "workspaceTemplate" ];
+        // The new label goes on first, so the note never stops being a template in between.
+        await attributes.setBooleanWithInheritance(note, added, true);
+        await attributes.setBooleanWithInheritance(note, removed, false);
+    }
+
+    return (
+        <BadgeWithDropdown
             className="template-badge"
             icon="bx bx-copy-alt"
             text={t("breadcrumb_badges.template")}
             tooltip={t("breadcrumb_badges.template_description")}
-        />
+            dropdownProps={{ mobileBottomSheet: true }}
+        >
+            <FormListItem
+                icon="bx bx-globe"
+                checkable checked={isTemplate}
+                onClick={() => !isTemplate && switchScope(false)}
+            >{t("breadcrumb_badges.template_scope_global")}</FormListItem>
+            <FormListItem
+                icon="bx bx-door-open"
+                checkable checked={!isTemplate}
+                disabled={!isInWorkspace}
+                disabledTooltip={t("breadcrumb_badges.template_scope_workspace_unavailable")}
+                onClick={() => isTemplate && switchScope(true)}
+            >{t("breadcrumb_badges.template_scope_workspace")}</FormListItem>
+        </BadgeWithDropdown>
     );
+}
+
+function hasWorkspaceAncestor(note: FNote, visited = new Set<string>()): boolean {
+    for (const parent of note.getParentNotes()) {
+        if (visited.has(parent.noteId)) continue;
+        visited.add(parent.noteId);
+        if (parent.hasOwnedLabel("workspace") || hasWorkspaceAncestor(parent, visited)) return true;
+    }
+    return false;
 }
 
 const SAVE_STATE_DEBOUNCE_MS = 200;
