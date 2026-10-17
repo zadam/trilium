@@ -24,11 +24,11 @@ Child notes can be automatically sorted by attaching specific [labels](../../Adv
     <tbody>
         <tr>
             <td><code>#sorted</code></td>
-            <td><p>Keeps child notes sorted by title alphabetically.</p><p>When given a value, it will sort by other criteria instead: a comma-separated list of levels, each <code>title</code>, <code>dateCreated</code>, <code>dateModified</code> or the name of a label on the child notes, optionally followed by <code>asc</code> or <code>desc</code>, as in a search's <code>orderBy</code>. For example <code>#sorted="priority desc, dueDate"</code> sorts by priority, highest first, and notes of equal priority by due date. A child note without a level's label sorts after every child that has it, whichever direction the level runs in. When neither note has the label, the next level decides.</p></td>
+            <td><p>Keeps child notes sorted by title alphabetically.</p><p>When given a value, it will sort by other criteria instead: a comma-separated list of levels, each a label on the child notes written with <code>#</code>, or one of the properties <code>title</code>, <code>dateCreated</code> and <code>dateModified</code>, optionally followed by <code>asc</code> or <code>desc</code>, as in a search's <code>orderBy</code>. For example <code>#sorted="#priority desc, #dueDate"</code> sorts by priority, highest first, and notes of equal priority by due date. A child note without a level's label sorts after every child that has it, whichever direction the level runs in. When neither note has the label, the next level decides.</p><p>A label followed by <code>first</code> or <code>last</code> instead groups the child notes that have it before or after the rest, whatever its value. For example <code>#sorted="#archived last, title"</code> keeps <a href="Archived%20Notes.md">archived notes</a> below the others.</p></td>
         </tr>
         <tr>
             <td><code>#sortDirection</code></td>
-            <td><p>If <code>sorted</code> is applied, specifies the direction of the sort:</p><ul><li><code>ASC</code>, ascending (default)</li><li><code>DESC</code>, descending</li></ul><p>A level of <code>sorted</code> followed by its own <code>asc</code> or <code>desc</code> keeps that direction regardless.</p></td>
+            <td><p>If <code>sorted</code> is applied, specifies the direction of the sort:</p><ul><li><code>ASC</code>, ascending (default)</li><li><code>DESC</code>, descending</li></ul><p>A level of <code>sorted</code> followed by its own <code>asc</code> or <code>desc</code> keeps that direction regardless, and so does a <code>first</code> or <code>last</code> group.</p></td>
         </tr>
         <tr>
             <td><code>#sortFoldersFirst</code></td>
@@ -60,8 +60,12 @@ Sorting is done by comparing note properties or specific labels on child notes. 
 3.  **Property/Label-Based Sorting**: Sorting is based on the parent note's `#sorted` label:
     *   **Default Sorting**: If `#sorted` has no value, notes are sorted alphabetically.
     *   **Property Sorting**: If `#sorted` is set to `title`, `dateModified`, or `dateCreated`, notes are sorted based on the specified property.
-    *   **Label Sorting**: If `#sorted` has any other value, this value is treated as the name of a child note's label, and sorting is based on the values of this label. For example, setting `#sorted=myOrder` on the parent note and using `#myOrder=001`, `#myOrder=002`, etc., on child notes.
-    *   **Multi-Level Sorting**: Several of the above can be combined, separated by commas; each level is applied only where the previous ones are equal. Every level can carry its own direction as a word after the name, `asc` or `desc`, otherwise it follows `#sortDirection`. For example `#sorted="priority desc, area, dateCreated"` sorts by priority, highest first, then by area, then by creation date.
+    *   **Label Sorting**: If `#sorted` is set to the name of a child note's label, sorting is based on the values of this label. For example, setting `#sorted=#myOrder` on the parent note and using `#myOrder=001`, `#myOrder=002`, etc., on child notes. A single name without `#` that is not one of the properties above is also treated as a label, so `#sorted=myOrder` works the same way.
+    *   **Multi-Level Sorting**: Several of the above can be combined, separated by commas; each level is applied only where the previous ones are equal. A label is written with `#` and a property without it. Every level can carry its own direction as a word after the name, `asc` or `desc`, otherwise it follows `#sortDirection`. For example `#sorted="#priority desc, #area, dateCreated"` sorts by priority, highest first, then by area, then by creation date.
+    *   **Grouping**: A label followed by `first` or `last` puts the child notes that have it (with any value other than `false`) before or after the rest, regardless of `#sortDirection`. The following levels then sort within each group. For example `#sorted="#archived last, #priority desc"`. Notes with `#top` or `#bottom` stay at the top or bottom even when they belong to a group.
 4.  **Alphabetical Sorting**: Used as a last resort when other criteria result in equality.
+
+> [!WARNING]
+> Since v0.107.0, a label in a multi-level `#sorted` must be written with `#`. In v0.106.0 the names were written bare, as in `#sorted="priority desc, dueDate"`; such a value now reads both names as properties that do not exist and falls back to sorting by title. Add a `#` before each label name to restore it.
 
 All comparisons are made string-wise (e.g., "1" \< "2" or "2020-10-10" < "2021-01-15", but also "2" \> "10").
