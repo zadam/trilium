@@ -19,13 +19,18 @@ const METADATA = {
 
 describe("noteTemplateVariables", () => {
     it("gives the note what the server's BNote gives a template", async () => {
-        const note = buildNote({ title: "Meeting", "#author": "Ada" });
+        const note = buildNote({ title: "Meeting", "#author": "Ada", "#tag": [ "a", "b" ] });
         const { evaluateTemplate } = await import("@triliumnext/commons");
 
         expect(evaluateTemplate(
             "${note.title} ${note.dateCreatedObj.format('MM-DD')} ${note.getLabelValue('author')} ${note.type}",
             noteTemplateVariables(note, METADATA)
         )).toBe("Meeting 03-05 Ada text");
+        // Every method the engine allows on a note, so that a template it accepts has a preview.
+        expect(evaluateTemplate(
+            "${note.getLabelValues('tag')}",
+            noteTemplateVariables(note, METADATA)
+        )).toBe("a,b");
     });
 });
 

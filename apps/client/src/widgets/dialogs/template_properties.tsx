@@ -1,12 +1,13 @@
 import "./template_properties.css";
 
 import { dayjs, evaluateTemplate } from "@triliumnext/commons";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import type FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
 import froca from "../../services/froca";
 import { t } from "../../services/i18n";
+import ws from "../../services/ws";
 import TemplateField, { noteTemplateVariables } from "../bulk_actions/TemplateField";
 import { CollectionPropertiesDialog } from "../note_bars/CollectionProperties";
 import { Card, OptionCardSection } from "../react/Card";
@@ -25,26 +26,40 @@ export default function TemplatePropertiesDialog() {
     const [ shown, setShown ] = useState(false);
     const [ titleTemplate, setTitleTemplate ] = useState("");
     const [ defaultParentId, setDefaultParentId ] = useState<string>();
+    /** The title template as last written, which froca can lag behind while a write is under way. */
+    const savedTitleTemplate = useRef("");
+    const titleWrites = useRef<Promise<void>>(Promise.resolve());
     const preview = useTitlePreview(titleTemplate, note);
 
     useTriliumEvent("showTemplateProperties", async ({ noteId }) => {
         const templateNote = await froca.getNote(noteId);
         if (!templateNote) return;
-        setTitleTemplate(templateNote.getOwnedLabelValue("template:titleTemplate") ?? "");
+        const ownTitleTemplate = templateNote.getOwnedLabelValue("template:titleTemplate") ?? "";
+        savedTitleTemplate.current = ownTitleTemplate;
+        setTitleTemplate(ownTitleTemplate);
         setDefaultParentId(templateNote.getOwnedRelationValue("template:newNoteDefaultParent") ?? undefined);
         setNote(templateNote);
         setShown(true);
     });
 
-    async function saveTitleTemplate() {
+    /**
+     * Queues writing the title template. The writes run one after another, each waiting for froca to
+     * hold the one before it, so the last value wins and removing finds the label just created.
+     */
+    function saveTitleTemplate() {
         if (!note) return;
+        const templateNote = note;
         const value = titleTemplate;
-        if (value === (note.getOwnedLabelValue("template:titleTemplate") ?? "")) return;
-        if (value) {
-            await attributes.setLabel(note.noteId, "template:titleTemplate", value);
-        } else {
-            await attributes.removeOwnedLabelByName(note, "template:titleTemplate");
-        }
+        titleWrites.current = titleWrites.current.catch(() => {}).then(async () => {
+            if (value === savedTitleTemplate.current) return;
+            if (value) {
+                await attributes.setLabel(templateNote.noteId, "template:titleTemplate", value);
+            } else {
+                await attributes.removeOwnedLabelByName(templateNote, "template:titleTemplate");
+            }
+            savedTitleTemplate.current = value;
+            await ws.waitForMaxKnownEntityChangeId();
+        });
     }
 
     async function saveDefaultParent(noteId: string | undefined) {
@@ -63,7 +78,7 @@ export default function TemplatePropertiesDialog() {
             title={t("template_properties.title")}
             show={shown}
             onHidden={() => {
-                void saveTitleTemplate();
+                saveTitleTemplate();
                 setShown(false);
             }}
         >
@@ -81,7 +96,7 @@ export default function TemplatePropertiesDialog() {
                             preview={preview}
                             currentValue={titleTemplate}
                             onChange={setTitleTemplate}
-                            onBlur={() => void saveTitleTemplate()}
+                            onBlur={saveTitleTemplate}
                         />
                     </OptionCardSection>
                     <OptionCardSection

@@ -1,9 +1,10 @@
 import { act } from "preact/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../components/component";
 import attributes from "../../services/attributes";
 import froca from "../../services/froca";
+import ws from "../../services/ws";
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
 import { ParentComponent } from "../react/react_utils";
@@ -38,6 +39,11 @@ vi.mock("../react/NoteAutocomplete", () => ({
 }));
 
 describe("TemplatePropertiesDialog", () => {
+    // No server pushes entity changes here, so nothing would ever be waited for.
+    beforeEach(() => {
+        vi.spyOn(ws, "waitForMaxKnownEntityChangeId").mockResolvedValue();
+    });
+
     it("saves the template's own #template:titleTemplate when the field loses focus", async () => {
         const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue();
         const note = buildNote({ title: "Meeting", "#template": "", "#template:titleTemplate": "Old" });
@@ -49,6 +55,7 @@ describe("TemplatePropertiesDialog", () => {
         // Leaving the field unchanged writes nothing.
         await act(async () => {
             field.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+            await new Promise((resolve) => setTimeout(resolve));
         });
         expect(setLabel).not.toHaveBeenCalled();
 
@@ -56,7 +63,8 @@ describe("TemplatePropertiesDialog", () => {
         await act(async () => {
             field.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
         });
-        expect(setLabel).toHaveBeenCalledWith(note.noteId, "template:titleTemplate", "Meeting ${now.format('YYYY-MM-DD')}");
+        await vi.waitFor(() => expect(setLabel)
+            .toHaveBeenCalledWith(note.noteId, "template:titleTemplate", "Meeting ${now.format('YYYY-MM-DD')}"));
         setLabel.mockRestore();
     });
 
@@ -70,7 +78,33 @@ describe("TemplatePropertiesDialog", () => {
             container.querySelector(".template-properties-dialog")
                 ?.dispatchEvent(new Event("hidden.bs.modal", { bubbles: true }));
         });
-        expect(remove).toHaveBeenCalledWith(note, "template:titleTemplate");
+        await vi.waitFor(() => expect(remove).toHaveBeenCalledWith(note, "template:titleTemplate"));
+        remove.mockRestore();
+    });
+
+    it("clears a title typed and saved while its first write is still under way", async () => {
+        let finishWrite: () => void = () => {};
+        const setLabel = vi.spyOn(attributes, "setLabel")
+            .mockImplementation(() => new Promise<void>((resolve) => { finishWrite = resolve; }));
+        const remove = vi.spyOn(attributes, "removeOwnedLabelByName").mockResolvedValue(true);
+        const note = buildNote({ title: "Meeting", "#template": "" });
+
+        const { container, field } = await open(note.noteId);
+        type(field, "Unwanted");
+        await act(async () => {
+            field.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        });
+        type(field, "");
+        await act(async () => {
+            container.querySelector(".template-properties-dialog")
+                ?.dispatchEvent(new Event("hidden.bs.modal", { bubbles: true }));
+        });
+        expect(remove).not.toHaveBeenCalled();
+
+        await act(async () => finishWrite());
+        await vi.waitFor(() => expect(remove).toHaveBeenCalledWith(note, "template:titleTemplate"));
+        expect(setLabel).toHaveBeenCalledTimes(1);
+        setLabel.mockRestore();
         remove.mockRestore();
     });
 

@@ -141,7 +141,8 @@ function useTemplatePreview(template: string, noteId: string | undefined) {
 
 /**
  * The `note` variable the server passes to `evaluateTemplate()` for a bulk rename, rebuilt from the
- * client's copy of the note: the same allowed properties and methods, with the dates of `BNote`.
+ * client's copy of the note: every property and method the template engine allows, with the dates
+ * of `BNote`.
  */
 export function noteTemplateVariables(note: FNote, metadata: NoteMetaData): TemplateVariables {
     return {
@@ -158,7 +159,10 @@ export function noteTemplateVariables(note: FNote, metadata: NoteMetaData): Temp
             dateCreatedObj: dayjs(metadata.dateCreated),
             utcDateCreatedObj: dayjs.utc(metadata.utcDateCreated),
             getLabelValue: (name: string) => note.getLabelValue(name),
-            getRelationValue: (name: string) => note.getRelationValue(name)
+            getLabel: (name: string) => note.getLabel(name),
+            getLabelValues: (name: string) => note.getLabels(name).map((label) => label.value),
+            getRelationValue: (name: string) => note.getRelationValue(name),
+            getAttributeValue: (type: "label" | "relation", name: string) => note.getAttributeValue(type, name)
         }
     };
 }
