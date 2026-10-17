@@ -1,14 +1,13 @@
-import {
-    Command, type Editor, type ModelElement, ModelLivePosition, type ModelPosition, type ModelWriter
-} from "ckeditor5";
+import { Command, type Editor, type ModelElement, type ModelWriter } from "ckeditor5";
 
+import {
+    getSelectedChildren, getSibling, hasContent, moveSelectedChildren, moveToSibling,
+    type SiblingTarget
+} from "../containers/container_content.js";
 import {
     COLUMN_RATIOS, ELEMENTS, getColumnCount, getDefaultRatios, MAX_COLUMNS, MIN_COLUMNS,
     RATIOS_ATTRIBUTE
 } from "./constants.js";
-
-/** Where content or a column goes, relative to the current column. */
-export type ColumnTarget = "previous" | "next" | "first" | "last";
 
 /**
  * Inserts a layout with the column weights `value`, two equal columns by default, at the selection.
@@ -111,45 +110,18 @@ export class RemoveMulticolumnLayoutCommand extends Command {
 export class MoveToLayoutColumnCommand extends Command {
 
     public override refresh(): void {
-        this.isEnabled = !!getSelectedColumnContent(this.editor);
+        this.isEnabled = !!getSelectedChildren(this.editor, ELEMENTS.column);
     }
 
-    public override execute({ target }: { target: ColumnTarget }): void {
-        const content = getSelectedColumnContent(this.editor);
+    public override execute({ target }: { target: SiblingTarget }): void {
+        const content = getSelectedChildren(this.editor, ELEMENTS.column);
         /* v8 ignore next 3 -- execute() runs only while refresh() keeps the command enabled */
         if (!content) {
             return;
         }
-        const { column, first, last } = content;
-        const destination = getTargetColumn(column, target);
-        if (!destination) {
-            return;
-        }
-
-        // The ends stick to the moved blocks; one in the block after `last` moves into `last`.
-        const model = this.editor.model;
-        const after = model.createPositionAfter(last);
-        /* v8 ignore next -- `last` holds a place for the selection, or is an object itself */
-        const lastEnd = model.schema.getNearestSelectionRange(after, "backward")?.end ?? after;
-        const ends = [...model.document.selection.getRanges()].map(range => [
-            ModelLivePosition.fromPosition(range.start, "toNext"),
-            ModelLivePosition.fromPosition(range.end.isAfter(after) ? lastEnd : range.end,
-                "toPrevious")
-        ] as const);
-
-        model.change(writer => {
-            if (!hasContent(destination)) {
-                writer.remove(writer.createRangeIn(destination));
-            }
-            const moved = writer.createRange(
-                writer.createPositionBefore(first), writer.createPositionAfter(last));
-            const offset = destination.isAfter(column) ? 0 : "end";
-            writer.move(moved, writer.createPositionAt(destination, offset));
-            writer.setSelection(ends.map(([start, end]) => writer.createRange(start, end)));
-        });
-
-        for (const position of ends.flat()) {
-            position.detach();
+        const destination = getSibling(content.parent, target);
+        if (destination) {
+            moveSelectedChildren(this.editor, content, destination);
         }
     }
 }
@@ -164,13 +136,13 @@ export class MoveLayoutColumnCommand extends Command {
         this.isEnabled = !!getSelectedColumn(this.editor);
     }
 
-    public override execute({ target }: { target: ColumnTarget }): void {
+    public override execute({ target }: { target: SiblingTarget }): void {
         const column = getSelectedColumn(this.editor);
         /* v8 ignore next 3 -- execute() runs only while refresh() keeps the command enabled */
         if (!column) {
             return;
         }
-        const sibling = getTargetColumn(column, target);
+        const sibling = getSibling(column, target);
         if (!sibling) {
             return;
         }
@@ -180,9 +152,7 @@ export class MoveLayoutColumnCommand extends Command {
         const from = columns.indexOf(column);
         const to = columns.indexOf(sibling);
         this.editor.model.change(writer => {
-            writer.move(writer.createRangeOn(column), to > from
-                ? writer.createPositionAfter(sibling)
-                : writer.createPositionBefore(sibling));
+            moveToSibling(writer, column, sibling);
 
             const weights = String(layout.getAttribute(RATIOS_ATTRIBUTE)).split("-");
             weights.splice(to, 0, ...weights.splice(from, 1));
@@ -241,57 +211,6 @@ export function getSelectedColumn(editor: Editor): ModelElement | null {
 }
 
 /**
- * Returns the column of a non-collapsed selection and the first and last of its children that the
- * selection touches. A selection that ends at the start of a child leaves that child out.
- */
-export function getSelectedColumnContent(editor: Editor) {
-    const model = editor.model;
-    const selection = model.document.selection;
-    const start = selection.getFirstPosition();
-    const end = selection.getLastPosition();
-    const column = start?.findAncestor(ELEMENTS.column);
-    if (selection.isCollapsed || !start || !end || !column
-        || end.findAncestor(ELEMENTS.column) !== column) {
-        return null;
-    }
-
-    const first = getChildAt(column, start, "after");
-    let last = getChildAt(column, end, "before");
-    if (last && end.parent !== column && end.isTouching(model.createPositionAt(last, 0))) {
-        last = last.previousSibling;
-    }
-    /* v8 ignore next 3 -- a selection that is not collapsed touches a child of the column */
-    if (!first || !last) {
-        return null;
-    }
-    return { column, first, last };
-}
-
-/**
- * Returns the column of the layout of `column` that `target` names, or `null` when that is `column`
- * itself or there is no such column.
- */
-function getTargetColumn(column: ModelElement, target: ColumnTarget): ModelElement | null {
-    const columns = [...(column.parent as ModelElement).getChildren()] as ModelElement[];
-    const index = columns.indexOf(column);
-    const last = columns.length - 1;
-    const found = columns[{ previous: index - 1, next: index + 1, first: 0, last }[target]];
-    return found && found !== column ? found : null;
-}
-
-/**
- * Returns the child of `column` that holds `position`, or the node on `side` of `position` when it
- * is directly in `column`.
- */
-function getChildAt(column: ModelElement, position: ModelPosition, side: "before" | "after") {
-    if (position.parent === column) {
-        return side === "after" ? position.nodeAfter : position.nodeBefore;
-    }
-    return position.getAncestors().find((ancestor): ancestor is ModelElement =>
-        ancestor.is("element") && ancestor.parent === column);
-}
-
-/**
  * Appends empty columns to `layout`, or merges its last columns into the column before them, until
  * it has `count` columns.
  */
@@ -324,16 +243,4 @@ function mergeColumn(writer: ModelWriter, from: ModelElement, to: ModelElement) 
         }
     }
     writer.remove(from);
-}
-
-/** Whether `column` holds more than the empty paragraph that a new column starts with. */
-function hasContent(column: ModelElement) {
-    const first = column.getChild(0);
-    if (!first) {
-        return false;
-    }
-    return column.childCount > 1
-        || !first.is("element", "paragraph")
-        || !first.isEmpty
-        || first.hasAttribute("listItemId");
 }

@@ -13,7 +13,7 @@ import {
 } from "ckeditor5";
 import { describe, expect, it, onTestFinished } from "vitest";
 
-import { createTestEditor } from "../../../test/editor-kit.js";
+import { createTestEditor, pressKey as press } from "../../../test/editor-kit.js";
 import Multicolumn from "./multicolumn.js";
 
 describe("multicolumn keyboard shortcuts", () => {
@@ -172,19 +172,6 @@ function StandIns(editor: Editor) {
     schema.register("reference", { inheritAllFrom: "$inlineObject" });
     editor.conversion.elementToElement({ model: "summary", view: "summary" });
     editor.conversion.elementToElement({ model: "reference", view: "span" });
-}
-
-/** Presses `key` in the editing root and returns whether the layout took the key. */
-function press(editor: ClassicEditor, key: string, modifiers: KeyboardEventInit) {
-    const root = editor.editing.view.getDomRoot();
-    if (!root) {
-        throw new Error("The editor has no editing root.");
-    }
-    const event = new KeyboardEvent("keydown", {
-        key, bubbles: true, cancelable: true, ...modifiers
-    });
-    root.dispatchEvent(event);
-    return event.defaultPrevented;
 }
 
 function model(editor: ClassicEditor) {

@@ -29,6 +29,41 @@ While the cursor is inside a tabs block, a toolbar appears above it with the fol
 
 The tab that is showing is not saved with the note: every tabs block opens on its first tab.
 
+### Adding tabs
+
+While the cursor is in a tab, either in its title or in its panel, you can use these key combinations:
+
+*   <kbd>Ctrl</kbd> + <kbd>Enter</kbd>: Add a tab after the current one.
+*   <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Enter</kbd>: Add a tab before the current one.
+
+The new tab is shown and its title is selected, so typing replaces it.
+
+<kbd>Ctrl</kbd> + <kbd>Enter</kbd> keeps its usual function on a link, in a to-do item and in the title of a collapsible block, and <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Enter</kbd> in a to-do item.
+
+### Reordering tabs
+
+While the cursor is in a tab, either in its title or in its panel, you can use these key combinations:
+
+*   <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Right</kbd>: Move the tab to the right.
+*   <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Left</kbd>: Move the tab to the left.
+*   <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Home</kbd>: Make it the first tab.
+*   <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>End</kbd>: Make it the last tab.
+
+## Moving content between tabs
+
+To move content to another tab, select it in the panel, and then use these key combinations:
+
+*   <kbd>Ctrl</kbd> + <kbd>Right</kbd>: Move to the tab on the right.
+*   <kbd>Ctrl</kbd> + <kbd>Left</kbd>: Move to the tab on the left.
+*   <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>End</kbd>: Move to the last tab.
+*   <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Home</kbd>: Move to the first tab.
+
+The tab that receives the content is shown, with the content still selected, so pressing the key again moves it on to the next tab. Paragraphs, list items, tables and other blocks move whole, even when only part of them is selected. Content moved to a tab on the left goes to the end of that tab, and content moved to a tab on the right goes to its start, so it keeps its place in the reading order.
+
+Without a selection, or with a selection in a tab title, these keys keep their usual function: moving the cursor by word, or selecting up to the start or end of the tab.
+
+When a tabs block and a <a class="reference-link" href="Multicolumn%20layout.md">Multicolumn layout</a> are nested in one another, the key combinations act on the one closest to the cursor.
+
 ## Reading tabs
 
 In <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md">Read-Only Notes</a> and on <a class="reference-link" href="../../Advanced%20Usage/Sharing.md">Sharing</a>, tabs blocks work as tabs as well:

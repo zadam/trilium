@@ -58,6 +58,8 @@ Paragraphs, list items, tables and other blocks move whole, even when only part 
 
 Without a selection, these keys keep their usual function: moving the cursor by word, or selecting up to the start or end of the column.
 
+When a layout and <a class="reference-link" href="Content%20tabs.md">Content tabs</a> are nested in one another, the key combinations act on the one closest to the cursor.
+
 ## Removing a layout
 
 *   To remove the layout but keep its content, click the <span class="tn-icon cke cke-remove"></span> _Remove layout_ button in the layout's toolbar. The content of the columns is placed one after another where the layout was, and empty columns are left out.

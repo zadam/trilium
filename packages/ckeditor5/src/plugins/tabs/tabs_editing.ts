@@ -22,7 +22,7 @@ import {
 } from "./constants.js";
 import {
     AssignTabReferenceCommand, InsertTabCommand, InsertTabsCommand, MoveTabCommand,
-    RemoveTabCommand, TabAlignmentCommand
+    MoveToTabCommand, RemoveTabCommand, TabAlignmentCommand
 } from "./tabs_commands.js";
 
 /**
@@ -50,8 +50,10 @@ export default class TabsEditing extends Plugin {
         editor.commands.add("tabs", new InsertTabsCommand(editor));
         editor.commands.add("insertTab", new InsertTabCommand(editor));
         editor.commands.add("removeTab", new RemoveTabCommand(editor));
-        editor.commands.add("moveTabLeft", new MoveTabCommand(editor, "left"));
-        editor.commands.add("moveTabRight", new MoveTabCommand(editor, "right"));
+        editor.commands.add("moveTabLeft", new MoveTabCommand(editor, "previous"));
+        editor.commands.add("moveTabRight", new MoveTabCommand(editor, "next"));
+        editor.commands.add("moveTab", new MoveTabCommand(editor));
+        editor.commands.add("moveToTab", new MoveToTabCommand(editor));
         editor.commands.add("assignTabReference", new AssignTabReferenceCommand(editor));
         editor.commands.add("tabAlignment", new TabAlignmentCommand(editor));
 
