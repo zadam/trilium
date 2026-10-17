@@ -161,9 +161,48 @@ function copyAttachments(origNote: BNote, newNote: BNote) {
 }
 
 function getNewNoteTitle(parentNote: BNote) {
-    let title = t("notes.new-note");
+    return evaluateTitleTemplate(
+        parentNote.getLabelValue("titleTemplate"),
+        parentNote,
+        `titleTemplate of note '${parentNote.noteId}'`
+    );
+}
 
-    const titleTemplate = parentNote.getLabelValue("titleTemplate");
+/**
+ * Returns the default title that the first of the note's templates carrying a
+ * `#template:titleTemplate` gives it, or `null` when none does.
+ */
+function getTemplateNoteTitle(note: BNote, parentNote: BNote) {
+    for (const relation of note.getOwnedRelations("template")) {
+        const templateNote = relation.targetNote;
+        const titleTemplate = templateNote ? getTemplateTitleTemplate(templateNote) : null;
+
+        if (templateNote && titleTemplate !== null) {
+            return evaluateTitleTemplate(
+                titleTemplate,
+                parentNote,
+                `template:titleTemplate of note '${templateNote.noteId}'`
+            );
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Reads the template's own `#template:titleTemplate`, or one inherited from its ancestors in the tree.
+ * A value lent through `~template` is skipped, so a note created from a template and later marked
+ * `#template` does not adopt the original template's title, as with `~template:newNoteDefaultParent`.
+ */
+function getTemplateTitleTemplate(templateNote: BNote) {
+    const sourceNoteIds = new Set([ templateNote.noteId, ...templateNote.getAncestorNoteIds() ]);
+
+    return templateNote.getLabels("template:titleTemplate")
+        .find((label) => sourceNoteIds.has(label.noteId))?.value ?? null;
+}
+
+function evaluateTitleTemplate(titleTemplate: string | null, parentNote: BNote, source: string) {
+    let title = t("notes.new-note");
 
     if (titleTemplate !== null) {
         const now = dayjs(date_utils.localNowDateTime() || new Date());
@@ -175,7 +214,7 @@ function getNewNoteTitle(parentNote: BNote) {
             titleTemplate,
             { now, parentNote },
             title,
-            `titleTemplate of note '${parentNote.noteId}'`
+            source
         );
     }
 
@@ -226,7 +265,8 @@ function createNewNote(params: NoteParams): {
 } {
     const parentNote = getAndValidateParent(params);
 
-    if (params.title === null || params.title === undefined) {
+    const isTitleDefaulted = params.title === null || params.title === undefined;
+    if (isTitleDefaulted) {
         params.title = getNewNoteTitle(parentNote);
     }
 
@@ -335,6 +375,13 @@ function createNewNote(params: NoteParams): {
         }
 
         copyChildAttributes(parentNote, note, params.isTypeDefaulted);
+
+        // Read once the templates are applied, so both a chosen template and a `child:template` count.
+        const templateTitle = isTitleDefaulted ? getTemplateNoteTitle(note, parentNote) : null;
+        if (templateTitle !== null) {
+            note.title = templateTitle;
+            note.save();
+        }
 
         eventService.emit(eventService.ENTITY_CREATED, { entityName: "notes", entity: note });
         eventService.emit(eventService.ENTITY_CHANGED, { entityName: "notes", entity: note });

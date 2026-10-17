@@ -59,10 +59,14 @@ By default, newly created notes are <a class="reference-link" href="../Note%20T
 
 Selecting a specific template from the creation menu always takes precedence over `child:template`.
 
+## Default title for new notes
+
+A template can also give its instances a default title, using the `#template:titleTemplate` label. See <a class="reference-link" href="Default%20Note%20Title.md">Default Note Title</a> for details.
+
 ## Additional Notes
 
 From a visual perspective, templates can define `#iconClass` and `#cssClass` attributes, allowing all instance notes (e.g., books) to display a specific icon and CSS style.
 
 Explore the concept further in the <a class="reference-link" href="Database/Demo%20Notes.md">Demo Notes</a>, including examples like the <a class="reference-link" href="../Note%20Types/Relation%20Map.md">Relation Map</a>, <a class="reference-link" href="Advanced%20Showcases/Task%20Manager.md">Task Manager</a>, and <a class="reference-link" href="Advanced%20Showcases/Day%20Notes.md">Day Notes</a>.
 
-Additionally, see <a class="reference-link" href="Default%20Note%20Title.md">Default Note Title</a> for creating title templates. Note templates and title templates can be combined by creating a `#titleTemplate` for a template note.
+Additionally, see <a class="reference-link" href="Default%20Note%20Title.md">Default Note Title</a> for creating title templates. A `#titleTemplate` on a template note is passed on to its instances like any other label, so it names the children of each instance rather than the instances themselves; to name the instances, use `#template:titleTemplate`.
