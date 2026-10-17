@@ -571,6 +571,8 @@ type EventMappings = {
     };
     /** Opens the properties dialog of a board or calendar, which only the view itself can show. */
     showCollectionProperties: { ntxId: string | null | undefined; };
+    /** Opens the properties dialog of a template note. */
+    showTemplateProperties: { noteId: string; };
     tabReorder: {
         ntxIdsInOrder: string[];
     };

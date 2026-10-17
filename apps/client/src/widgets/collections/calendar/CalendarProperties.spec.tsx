@@ -137,6 +137,7 @@ describe("CalendarProperties", () => {
         expect(titles).toEqual([
             "book_properties_config.hide-weekends",
             "book_properties_config.display-week-numbers",
+            "book_properties_config.hide-routine-events",
             "calendar_view.time_slots",
             "calendar_view.slot_duration",
             "calendar_view.slot_label_interval"

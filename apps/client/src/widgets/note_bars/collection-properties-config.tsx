@@ -3,6 +3,7 @@ import { t } from "i18next";
 import Component from "../../components/component";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
+import { ROUTINE_OCCURRENCES_PER_WEEK } from "../collections/calendar/recurrence";
 import { DEFAULT_MAP_LAYER_NAME, isTileUrl, MAP_LAYERS, type MapLayer } from "../collections/geomap/map_layer";
 import { ViewTypeOptions } from "../collections/interface";
 import { DEFAULT_THEME, getPresentationThemes } from "../collections/presentation/themes";
@@ -64,6 +65,15 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 icon: "bx bx-hash",
                 type: "checkbox",
                 bindToLabel: "calendar:weekNumbers"
+            },
+            {
+                label: t("book_properties_config.hide-routine-events"),
+                icon: "bx bx-repeat",
+                type: "checkbox",
+                helpTooltip: t("book_properties_config.hide-routine-events-help", {
+                    days: ROUTINE_OCCURRENCES_PER_WEEK
+                }),
+                bindToLabel: "calendar:hideRoutineEvents"
             },
             {
                 label: t("calendar_view.time_slots"),

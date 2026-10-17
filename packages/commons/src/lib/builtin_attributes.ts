@@ -303,6 +303,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "calendar:initialDate", valueType: "date", hasUserValue: true },
     { type: "label", name: "calendar:hideWeekends", valueType: "boolean", hasUserValue: true },
     { type: "label", name: "calendar:weekNumbers", valueType: "boolean", hasUserValue: true },
+    { type: "label", name: "calendar:hideRoutineEvents", valueType: "boolean", hasUserValue: true },
     { type: "label", name: "calendar:slotDuration", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:slotLabelInterval", valueType: "text", hasUserValue: true },
     { type: "label", name: "calendar:title", valueType: "text", hasUserValue: true },

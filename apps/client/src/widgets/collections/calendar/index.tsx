@@ -39,7 +39,7 @@ import { type CalendarViewData, changeEvent, DEFAULT_EVENT_TEMPLATES, newEvent }
 import Calendar from "./calendar";
 import { openCalendarContextMenu } from "./context_menu";
 import { CalendarSelection, EventDraft } from "./selection";
-import { buildEvents, buildEventsForCalendar, buildOccurrenceTitle } from "./event_builder";
+import { buildEvents, buildEventsForCalendar, buildOccurrenceTitle, routineEventDisplay } from "./event_builder";
 import { formatDateToLocalISO, formatTimeToLocalISO, isAttributeChangeAffecting, isBranchChangeAffecting, isValidDuration, parseDurationSeconds, parseStartEndDateFromEvent, parseStartEndTimeFromEvent } from "./utils";
 
 const CALENDAR_VIEWS = [
@@ -128,11 +128,15 @@ export default function CalendarView({
     const [ firstDayOfWeek ] = useTriliumOptionInt("firstDayOfWeek");
     const [ hideWeekends ] = useNoteLabelBoolean(note, "calendar:hideWeekends");
     const [ weekNumbers ] = useNoteLabelBoolean(note, "calendar:weekNumbers");
+    const [ hideRoutineEvents ] = useNoteLabelBoolean(note, "calendar:hideRoutineEvents");
     const [ calendarView, setCalendarView ] = useNoteLabel(note, "calendar:view");
     const [ initialDate ] = useNoteLabel(note, "calendar:initialDate");
     const [ slotDuration ] = useNoteLabel(note, "calendar:slotDuration");
     const [ slotLabelInterval ] = useNoteLabel(note, "calendar:slotLabelInterval");
     const initialView = useRef(calendarView);
+    const [ viewType, setViewType ] = useState(() =>
+        initialView.current && SUPPORTED_CALENDAR_VIEW_TYPE.includes(initialView.current)
+            ? initialView.current : "dayGridMonth");
     const viewSpacedUpdate = useSpacedUpdate(() => setCalendarView(initialView.current));
     // FullCalendar v7 sizes itself from its own ResizeObserver; the v6 `updateSize()` nudge this
     // used to need is gone along with the method.
@@ -370,6 +374,7 @@ export default function CalendarView({
                 firstDay={firstDayOfWeek ?? 0}
                 weekends={!hideWeekends}
                 weekNumbers={weekNumbers}
+                eventDisplay={routineEventDisplay(hideRoutineEvents, viewType)}
                 slotDuration={effectiveSlotDuration}
                 slotHeaderInterval={isValidDuration(slotLabelInterval) ? slotLabelInterval : DEFAULT_SLOT_LABEL_INTERVAL}
                 height="100%"
@@ -407,6 +412,13 @@ export default function CalendarView({
                 eventContent={eventContent}
                 eventInnerClass={eventInnerClass}
                 eventDidMount={eventDidMount}
+                datesSet={({ view }) => {
+                    // Set here as well as through the state, so the new view is drawn again
+                    // without routine events before the browser paints it.
+                    calendarRef.current?.setOption("eventDisplay",
+                        routineEventDisplay(hideRoutineEvents, view.type));
+                    setViewType(view.type);
+                }}
                 viewDidMount={({ view }) => {
                     // A read-only calendar keeps the view it was switched to only while it is shown.
                     if (initialView.current !== view.type && !isReadOnly) {
