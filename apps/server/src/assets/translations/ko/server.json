@@ -458,7 +458,9 @@
     "previous": "이전",
     "next": "다음",
     "page-navigation": "이전 및 다음 페이지",
-    "hidden-subpages_other": "트리에서 숨겨진 하위 페이지 {{count}}개"
+    "hidden-subpages_other": "트리에서 숨겨진 하위 페이지 {{count}}개",
+    "previous-tabs": "이전 탭으로 스크롤",
+    "next-tabs": "다음 탭으로 스크롤"
   },
   "hidden_subtree_templates": {
     "text-snippet": "텍스트 스니펫",
