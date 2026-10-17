@@ -23,7 +23,7 @@ vi.mock("../../services/i18n", () => ({
 
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
-import { ClippedNoteBadge, ExecuteBadge, OfficePreviewBadge, ReadOnlyBadge } from "./NoteBadges";
+import { ClippedNoteBadge, ExecuteBadge, OfficePreviewBadge, ReadOnlyBadge, TemplateBadge } from "./NoteBadges";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -81,6 +81,24 @@ describe("ExecuteBadge", () => {
     function renderBadge(labels: Record<`#${string}`, string>) {
         shownNote.current = buildNote({ title: "Script", type: "code", mime: "application/javascript;env=frontend", ...labels });
         return renderInto(<ExecuteBadge />).querySelector(".execute-badge .text");
+    }
+});
+
+describe("TemplateBadge", () => {
+    it("marks a template or a workspace template, and no other note", () => {
+        for (const label of [ "#template", "#workspaceTemplate" ] as const) {
+            const badge = renderBadge({ [label]: "" });
+            expect(badge?.textContent).toBe("breadcrumb_badges.template");
+            expect(badge?.querySelector(".bx-copy-alt")).not.toBeNull();
+        }
+
+        expect(renderBadge({})).toBeNull();
+        expect(renderBadge({ "#template": "false" })).toBeNull();
+    });
+
+    function renderBadge(labels: Record<`#${string}`, string>) {
+        shownNote.current = buildNote({ title: "Meeting", ...labels });
+        return renderInto(<TemplateBadge />).querySelector(".template-badge");
     }
 });
 

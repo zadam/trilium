@@ -3954,7 +3954,9 @@
     "shared_preview": "Share preview",
     "shared_preview_description": "Only this browser can open the shared page, and only while Trilium is open in it. To publish it, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
     "shared_export_only": "Not published",
-    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server."
+    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
+    "template": "Template",
+    "template_description": "This note is a template. Notes created from it inherit its attributes, so changing them here changes every one of those notes."
   },
   "status_bar": {
     "language_title": "Change content language",

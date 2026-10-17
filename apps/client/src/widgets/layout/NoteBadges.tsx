@@ -38,6 +38,7 @@ export default function NoteBadges() {
             <ClippedNoteBadge />
             <ExecuteBadge />
             <SnippetBadge />
+            <TemplateBadge />
             <ActiveContentBadges />
         </div>
     );
@@ -238,6 +239,22 @@ export function ExecuteBadge() {
             text={title || (isScript ? t("breadcrumb_badges.execute_script") : t("breadcrumb_badges.execute_sql"))}
             tooltip={executeDescription || (isScript ? t("breadcrumb_badges.execute_script_description") : t("breadcrumb_badges.execute_sql_description"))}
             onClick={() => parentComponent.triggerCommand("runActiveNote", { ntxId })}
+        />
+    );
+}
+
+/** Marks a template, whose attributes every note created from it inherits. */
+export function TemplateBadge() {
+    const { note } = useNoteContext();
+    const [ isTemplate ] = useNoteLabelBoolean(note, "template");
+    const [ isWorkspaceTemplate ] = useNoteLabelBoolean(note, "workspaceTemplate");
+
+    return ((isTemplate || isWorkspaceTemplate) &&
+        <Badge
+            className="template-badge"
+            icon="bx bx-copy-alt"
+            text={t("breadcrumb_badges.template")}
+            tooltip={t("breadcrumb_badges.template_description")}
         />
     );
 }
