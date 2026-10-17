@@ -17,6 +17,7 @@
     RadarDiagram |
     TreemapDiagram |
     TreeViewDiagram |
+    WardleyDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -41,6 +42,7 @@ QuadrantDiagram { quadrantText accessible* }
 RadarDiagram { radarText accessible* }
 TreemapDiagram { treemapText accessible* }
 TreeViewDiagram { treeViewText accessible* }
+WardleyDiagram { wardleyText accessible* }
 XYChartDiagram { xyChartText accessible* }
 PacketDiagram { packetText accessible* }
 ArchitectureDiagram { architectureText accessible* }
@@ -91,6 +93,7 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   radarText,
   treemapText,
   treeViewText,
+  wardleyText,
   SankeyDiagram,
   xyChartText,
   packetText,

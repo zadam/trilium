@@ -395,3 +395,12 @@ treeView-beta
 ==>
 
 MermaidDiagram(TreeViewDiagram(DiagramName,Node(Name)))
+
+# Wardley map
+
+wardley-beta
+  anchor A [0.5, 0.5]
+
+==>
+
+MermaidDiagram(WardleyDiagram(DiagramName,Anchor(Keyword,Name,Coordinates("[",Number,",",Number,"]"))))

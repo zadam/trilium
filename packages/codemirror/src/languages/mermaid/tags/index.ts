@@ -252,3 +252,18 @@ export const treeViewTags = {
     name: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const wardleyTags = {
+    arrow: Tag.define(t.operator),
+    bracket: Tag.define(t.bracket),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    linkLabel: Tag.define(t.string),
+    name: Tag.define(t.variableName),
+    number: Tag.define(t.number),
+    separator: Tag.define(t.separator),
+    strategy: Tag.define(t.atom),
+    string: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};

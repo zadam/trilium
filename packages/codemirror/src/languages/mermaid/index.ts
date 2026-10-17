@@ -30,6 +30,7 @@ import { parser as stateParser } from "./parsers/state/parser.js";
 import { parser as timelineParser } from "./parsers/timeline/parser.js";
 import { parser as treemapParser } from "./parsers/treemap/parser.js";
 import { parser as treeViewParser } from "./parsers/treeview/parser.js";
+import { parser as wardleyParser } from "./parsers/wardley/parser.js";
 import { parser as xychartParser } from "./parsers/xychart/parser.js";
 
 export { foldByIndent } from "./extensions/index.js";
@@ -62,6 +63,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     TimelineDiagram: timelineParser,
     TreemapDiagram: treemapParser,
     TreeViewDiagram: treeViewParser,
+    WardleyDiagram: wardleyParser,
     XYChartDiagram: xychartParser
 };
 
