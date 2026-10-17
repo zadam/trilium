@@ -58,17 +58,25 @@ describe("mermaid", () => {
         expect(support).toBeInstanceOf(LanguageSupport);
         expect(support.language).toBe(mermaidLanguage);
 
-        const tree = mermaidLanguage.parser.parse("---\ntitle: x\n---\npie\n  \"A\": 1\n");
+        const tree = mermaidLanguage.parser.parse("%%{init: {}}%%\n\npie\n  \"A\": 1\n");
         expect(tree.toString()).toBe("MermaidDiagram(PieDiagram(DiagramName,String,Number))");
         expect(mermaidLanguage.parser.parse("not a diagram\n").toString())
             .toBe("MermaidDiagram(⚠)");
     });
 
-    it("toggles %% line comments in the preamble and in the diagram", () => {
+    it("accepts whitespace after the dashes of front matter", () => {
+        // Kept out of the `.txt` fixtures, where an editor can strip trailing whitespace.
+        const tree = (doc: string) => mermaidLanguage.parser.parse(doc).toString();
+        const doc = "---\nconfig:\n  gantt: {}\n---\nsequenceDiagram\n  A->>B: hi";
+        expect(tree(doc)).toContain("FrontMatter");
+        expect(tree(doc.replace("---\n", "--- \t\n").replace("\n---", "\n---  "))).toBe(tree(doc));
+    });
+
+    it("toggles # comments in the front matter and %% comments in the diagram", () => {
         const doc = "---\ntitle: x\n---\nflowchart\n    A --> B";
         const state = EditorState.create({ doc, extensions: [ mermaid() ] });
         const view = new EditorView({ state });
-        const cases = [ [ 2, "%% title: x" ], [ 5, "    %% A --> B" ] ] as const;
+        const cases = [ [ 2, "# title: x" ], [ 5, "    %% A --> B" ] ] as const;
         for (const [ lineNumber, commented ] of cases) {
             view.dispatch({ selection: { anchor: view.state.doc.line(lineNumber).from } });
             expect(toggleComment(view), commented).toBe(true);
@@ -82,7 +90,10 @@ describe("mermaid", () => {
     it("parses Windows line endings like Unix ones", () => {
         // Kept out of the `.txt` fixtures, where Git normalizes CRLF to LF.
         const tree = (doc: string) => mermaidLanguage.parser.parse(doc).toString();
-        for (const unix of [ "mindmap\n  root\n  \n    child\n", "mindmap\n#x\n  \n" ]) {
+        const docs = [
+            "mindmap\n  root\n  \n    child\n", "mindmap\n#x\n  \n", "---\na: 1\n---\npie"
+        ];
+        for (const unix of docs) {
             expect(tree(unix.replaceAll("\n", "\r\n")), JSON.stringify(unix)).toBe(tree(unix));
         }
     });

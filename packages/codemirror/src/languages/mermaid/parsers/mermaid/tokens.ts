@@ -1,5 +1,8 @@
-import { ExternalTokenizer } from "@lezer/lr";
+import { ExternalTokenizer, type InputStream } from "@lezer/lr";
 import {
+    FrontMatterContent,
+    frontMatterEnd,
+    frontMatterStart,
     preDiagramLine,
     MindmapDiagram,
     PieDiagram,
@@ -65,6 +68,28 @@ const diagramMap: Record<string, number> = {
 
 const diagrams = Object.keys(diagramMap);
 
+/**
+ * Splits front matter into its `---` lines and the YAML between them. Like Mermaid, it takes a
+ * `---` line as the opening only at the start of the document (the only place the grammar can
+ * shift `frontMatterStart`) and only when a closing `---` line follows; otherwise the lines go
+ * to `diagramText`.
+ */
+export const frontMatter = new ExternalTokenizer((input, stack) => {
+    if (stack.canShift(frontMatterStart)) {
+        const opening = dashLineLength(input, 0);
+        if (opening > 0 && findClosingLine(input, opening) >= 0) {
+            input.acceptToken(frontMatterStart, opening);
+        }
+    } else {
+        const closing = findClosingLine(input, 0);
+        if (closing > 0) {
+            input.acceptToken(FrontMatterContent, closing);
+        } else {
+            input.acceptToken(frontMatterEnd, dashLineLength(input, 0));
+        }
+    }
+});
+
 export const diagramText = new ExternalTokenizer((input) => {
     if (skipCodePoints.includes(input.next)) return;
 
@@ -90,3 +115,29 @@ export const diagramText = new ExternalTokenizer((input) => {
         input.acceptToken(preDiagramLine);
     }
 });
+
+/** The offset of the first `---` line at or after `offset`, or -1 when there is none. */
+function findClosingLine(input: InputStream, offset: number) {
+    while (input.peek(offset) !== -1) {
+        if (dashLineLength(input, offset) > 0) return offset;
+        while (input.peek(offset) !== 10 && input.peek(offset) !== -1) offset++;
+        offset++;
+    }
+    return -1;
+}
+
+/**
+ * The length of the line at `offset`, newline included, when it is `---` followed by nothing but
+ * whitespace; otherwise 0.
+ */
+function dashLineLength(input: InputStream, offset: number) {
+    let length = 0;
+    while (length < 3) {
+        if (input.peek(offset + length) !== 45) return 0;
+        length++;
+    }
+    while ([ 9, 13, 32 ].includes(input.peek(offset + length))) length++;
+    const next = input.peek(offset + length);
+    if (next === 10) return length + 1;
+    return next === -1 ? length : 0;
+}

@@ -12,9 +12,11 @@ Markdown, `buildMarkdown()` there mounts it on ` ```mermaid ` code blocks throug
 Mermaid; `foldByIndent()` stays off there, since it folds by indentation across the whole document.
 
 The language was vendored from
-[Edge-Tools/codemirror-lang-mermaid](https://github.com/Edge-Tools/codemirror-lang-mermaid) at `03bcd7d`, itself a fork of inspirnathan's `codemirror-lang-mermaid`. Both upstreams are dormant:
-**the code is ours now**. Never re-vendor over it; `git log -- packages/codemirror/src/languages/mermaid`
-shows what changed after the verbatim copy and why.
+[Edge-Tools/codemirror-lang-mermaid](https://github.com/Edge-Tools/codemirror-lang-mermaid) at
+`03bcd7d`, itself a fork of inspirnathan's `codemirror-lang-mermaid`. Both upstreams are dormant:
+**the code is ours now**. Never re-vendor over it;
+`git log -- packages/codemirror/src/languages/mermaid` shows what changed after the verbatim copy
+and why.
 
 ## Layout
 
@@ -31,12 +33,17 @@ languages/mermaid/
   LICENSE               upstream MIT licence — keep it
 ```
 
-How a document parses: `mermaid.grammar` skips the preamble (front matter, `%%{init}%%`, blank
-lines) as `preDiagramLine`s, then its `diagramText` tokenizer (`parsers/mermaid/tokens.ts`) matches
-the first other line against `diagramMap` and emits one node for the rest of the document, such as
-`FlowchartDiagram`. `parseMixed()` in `index.ts` looks that node's name up in `DIAGRAM_PARSERS` and
-mounts the diagram's own parser over it. A diagram with no entry there, or a keyword missing from
-`diagramMap`, gets no highlighting at all.
+How a document parses: `mermaid.grammar` first takes the front matter, the way Mermaid does: a
+`---` line at the very start of the document, opening only when a closing `---` line follows. Its
+`frontMatter` tokenizer (`parsers/mermaid/tokens.ts`) emits a `FrontMatter` node, and `parseMixed()`
+in `index.ts` mounts the YAML parser of `@codemirror/lang-yaml` on its content, so the tree shows
+YAML's `Stream` there. The front matter must be its own token, not lines for diagram detection:
+Mermaid's config keys (`flowchart:`, `gantt:`, `block:`, …) start with diagram keywords. The rest of
+the preamble (`%%{init}%%`, blank lines) parses as `preDiagramLine`s, then the `diagramText`
+tokenizer matches the first other line against `diagramMap` and emits one node for the rest of the
+document, such as `FlowchartDiagram`. `parseMixed()` looks that node's name up in `DIAGRAM_PARSERS`
+and mounts the diagram's own parser over it. A diagram with no entry there, or a keyword missing
+from `diagramMap`, gets no highlighting at all.
 
 ## Rules
 
@@ -95,6 +102,10 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
 - **External tokenizers run in declaration order; the first that accepts wins.** Kanban's
   `columnTitleTokens` claims every line without a `[`, so `nodeIdTokens` only ever sees card lines.
   Check what an earlier tokenizer swallows before deciding a later one's branch is reachable.
+- **An external tokenizer runs only in parse states that accept one of its tokens**, and
+  `stack.canShift(term)` says which. For context (am I at the start, inside front matter?) ask the
+  stack, not `input.pos`: `frontMatter` has a separate `frontMatterStart` token, valid only at the
+  start of the document, and both its `---` tokens keep one node name with `[@name=DashLine]`.
 - **`acceptToken(term, offset)`** with a negative offset ends the token before what was read —
   kanban uses it to keep the spaces in `id1 [Task]` out of the id. Fixture trees do not show token
   ranges; assert those in the spec, or look with `tree.mts --spans`.
@@ -106,7 +117,8 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
   `languageData` on `mermaidLanguage` alone reaches only the preamble, so `index.ts` configures every
   diagram parser with `languageDataProp` pointing at `mermaidLanguage.data` (that is how `%%`
   comment toggling, `commentTokens`, reaches the diagram body). Add new data (autocompletion
-  sources, indentation hints) to `languageData`, never to one diagram parser.
+  sources, indentation hints) to `languageData`, never to one diagram parser. The YAML parser keeps
+  its own data, which is why Ctrl+/ comments front matter with `#`.
 - **Error recovery is behaviour too.** A fixture whose tree has `⚠` pins how the grammar recovers.
   That is fine for input Mermaid rejects; for input Mermaid accepts it records a limitation, and the
   fixture name must say so (`… (unsupported, parses as empty lines)`).
@@ -172,5 +184,7 @@ root; `\n`, `\r` and `\t` in an input are unescaped.
 - `mindmap root` (root on the `mindmap` line, valid Mermaid) parses as empty lines.
 - A bare word under a kanban column parses as another column, not a card.
 - Dotted edge labels (`A -. text .-> B`) parse as two links.
+- `flowchart` or `graph` without a direction (valid Mermaid, top to bottom) parses with errors.
+- `%%{init: …}%%` directives highlight as one comment, not as the JSON they hold.
 - No autocompletion exists for Mermaid in any editor library; it would be an
   `@codemirror/autocomplete` source written here.

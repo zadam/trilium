@@ -57,16 +57,20 @@ describe("byMimeType", () => {
         if (!syntax) return;
 
         // The Mermaid grammar loads on first use, so a code block parses as plain text until then.
-        const doc = "```mermaid\nflowchart\n    A --> B\n```\n";
+        const doc = "```mermaid\n---\nconfig:\n  gantt: {}\n---\nflowchart\n    A --> B\n```\n";
         await vi.waitFor(() => {
             const tree = ensureSyntaxTree(stateFor(syntax, doc), doc.length, 1000);
-            const names: string[] = [];
-            let node = tree?.resolveInner(doc.indexOf("A"), 1) ?? null;
-            while (node) {
-                names.push(node.name);
-                node = node.parent;
-            }
-            expect(names).toContain("FlowchartDiagram");
+            const nodeAt = (text: string) => {
+                const names: string[] = [];
+                let node = tree?.resolveInner(doc.indexOf(text), 1) ?? null;
+                while (node) {
+                    names.push(node.name);
+                    node = node.parent;
+                }
+                return names;
+            };
+            expect(nodeAt("A -->")).toContain("FlowchartDiagram");
+            expect(nodeAt("gantt")).toContain("Key");
         });
     });
 });

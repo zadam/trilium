@@ -2,7 +2,7 @@
 // meaningful line and emits a single node for it. The main mermaidLanguage then
 // uses parseMixed to hand that node's range to the matching sub-diagram parser.
 @top MermaidDiagram {
-  preDiagramLine* (
+  FrontMatter? preDiagramLine* (
     PieDiagram |
     MindmapDiagram |
     FlowchartDiagram |
@@ -26,10 +26,22 @@
   )
 }
 
+// Mermaid reads front matter only at the very start of the document. index.ts parses
+// FrontMatterContent with the YAML parser.
+@skip {} {
+  FrontMatter { frontMatterStart FrontMatterContent? frontMatterEnd }
+}
+
 @skip { space }
 
 @tokens {
   space { $[ \t\r]+ }
+}
+
+@external tokens frontMatter from "./tokens.js" {
+  frontMatterStart[@name=DashLine],
+  FrontMatterContent,
+  frontMatterEnd[@name=DashLine]
 }
 
 @external tokens diagramText from "./tokens.js" {
@@ -55,3 +67,5 @@
   GitDiagram,
   C4Diagram
 }
+
+@external propSource mermaidHighlighting from "./highlight.js"

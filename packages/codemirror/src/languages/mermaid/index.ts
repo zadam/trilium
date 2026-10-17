@@ -2,6 +2,7 @@
 // (itself a fork of https://github.com/inspirnathan/codemirror-lang-mermaid); MIT, see LICENSE.
 // After editing a `.grammar` file, regenerate its parser with
 // `pnpm --filter @triliumnext/codemirror build:mermaid-grammars`.
+import { yamlLanguage } from "@codemirror/lang-yaml";
 import { languageDataProp, LanguageSupport, LRLanguage } from "@codemirror/language";
 import { parseMixed } from "@lezer/common";
 import type { LRParser } from "@lezer/lr";
@@ -62,6 +63,7 @@ export const mermaidLanguage = LRLanguage.define({
     name: "mermaid",
     parser: mermaidParser.configure({
         wrap: parseMixed((node) => {
+            if (node.name === "FrontMatterContent") return { parser: yamlLanguage.parser };
             const parser = nestedParsers[node.name];
             return parser ? { parser } : null;
         })

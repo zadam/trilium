@@ -1,7 +1,8 @@
 import { Tag, tags as t } from "@lezer/highlight";
 
 export const mermaidTags = {
-    diagramName: Tag.define(t.typeName)
+    diagramName: Tag.define(t.typeName),
+    frontMatterDelimiter: Tag.define(t.meta)
 };
 
 export const mindmapTags = {

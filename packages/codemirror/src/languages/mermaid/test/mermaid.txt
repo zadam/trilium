@@ -165,3 +165,74 @@ C4Context
 ==>
 
 MermaidDiagram(C4Diagram(DiagramName))
+
+# Front matter whose config names another diagram
+
+---
+config:
+  gantt:
+    barHeight: 30
+---
+sequenceDiagram
+  A->>B: hi
+
+==>
+
+MermaidDiagram(FrontMatter(DashLine,Stream(Document(BlockMapping(Pair(Key(Literal),":",BlockMapping(Pair(Key(Literal),":",BlockMapping(Pair(Key(Literal),":",Literal)))))))),DashLine),SequenceDiagram(DiagramName,NodeText,Arrow,NodeText,MessageText1))
+
+# Empty front matter
+
+---
+---
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(FrontMatter(DashLine,DashLine),PieDiagram(DiagramName,String,Number))
+
+# Unclosed front matter is not front matter
+
+---
+title: x
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(PieDiagram(DiagramName,String,Number))
+
+# Front matter after a directive is not front matter
+
+%%{init: {}}%%
+---
+title: x
+---
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(PieDiagram(DiagramName,String,Number))
+
+# Front matter with no diagram after it
+
+---
+title: x
+---
+
+==>
+
+MermaidDiagram(FrontMatter(DashLine,Stream(Document(BlockMapping(Pair(Key(Literal),":",Literal)))),DashLine),⚠)
+
+# A dash line followed by other text is not a delimiter
+
+---x
+title: x
+---
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(PieDiagram(DiagramName,String,Number))
