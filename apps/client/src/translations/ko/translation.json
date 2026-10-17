@@ -3443,7 +3443,6 @@
     "processing_complete": "OCR 처리 완료.",
     "processing_failed": "OCR 처리 시작 실패",
     "text_filtered_low_confidence": "OCR은 텍스트를 {{confidence}}% 신뢰도로 감지했지만, 최소 임계값이 {{threshold}}%라서 버려졌습니다.",
-    "image_based_pdf_not_supported": "이 PDF는 이미지 기반(스캔 형태)으로 보입니다. 이미지 기반 PDF에서 텍스트 추출은 아직 지원되지 않습니다.",
     "open_media_settings": "설정 열기",
     "view_extracted_text": "추출된 텍스트 보기 (OCR)"
   },
@@ -4489,8 +4488,7 @@
     "unreadable": "이 전사 내용을 읽을 수 없습니다.",
     "speaking": "말하는 중…",
     "offset": "전사 시작 후 {{offset}} 경과",
-    "cleanup": "군더더기 말 숨기기",
-    "cleanup_tooltip": "‘어’, ‘음’ 같은 군더더기 말과 더듬은 단어를 숨깁니다. 전사 내용 자체는 변경되지 않습니다."
+    "cleanup": "군더더기 말 숨기기"
   },
   "resource_download": {
     "title": "다운로드 필요",

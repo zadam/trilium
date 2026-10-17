@@ -2909,7 +2909,6 @@
     "processing_complete": "Pemrosesan OCR selesai.",
     "processing_failed": "Gagal memulai pemrosesan OCR",
     "text_filtered_low_confidence": "OCR mendeteksi teks dengan kepercayaan {{confidence}}%, tetapi teks tersebut dibatalkan karena ambang batas minimum Anda adalah {{threshold}}%.",
-    "image_based_pdf_not_supported": "PDF ini tampaknya berbasis gambar (scanned). Ekstraksi teks dari PDF berbasis gambar belum didukung.",
     "open_media_settings": "Buka Pengaturan",
     "view_extracted_text": "Lihat teks yang diekstrak (OCR)"
   },

@@ -3215,8 +3215,7 @@
     "processing_failed": "Impossibile avviare l'elaborazione OCR",
     "text_filtered_low_confidence": "L'OCR ha rilevato il testo con un livello di affidabilità del {{confidence}}%, ma è stato scartato perché la soglia minima impostata è del {{threshold}}%.",
     "open_media_settings": "Apri Impostazioni",
-    "view_extracted_text": "Visualizza il testo estratto (OCR)",
-    "image_based_pdf_not_supported": "Questo PDF sembra essere un documento basato su immagini (scansionato). L'estrazione del testo dai PDF basati su immagini non è ancora supportata."
+    "view_extracted_text": "Visualizza il testo estratto (OCR)"
   },
   "mind-map": {
     "addChild": "Aggiungi figlio",
