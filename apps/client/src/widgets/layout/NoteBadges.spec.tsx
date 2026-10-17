@@ -88,9 +88,12 @@ describe("ExecuteBadge", () => {
 
 describe("TemplateBadge", () => {
     it("marks a template or a workspace template, and no other note", () => {
-        for (const label of [ "#template", "#workspaceTemplate" ] as const) {
+        for (const [ label, text ] of [
+            [ "#template", "breadcrumb_badges.template" ],
+            [ "#workspaceTemplate", "breadcrumb_badges.workspace_template" ]
+        ] as const) {
             const badge = renderBadge({ [label]: "" });
-            expect(badge?.textContent).toBe("breadcrumb_badges.template");
+            expect(badge?.textContent).toBe(text);
             expect(badge?.querySelector(".bx-copy-alt")).not.toBeNull();
         }
 

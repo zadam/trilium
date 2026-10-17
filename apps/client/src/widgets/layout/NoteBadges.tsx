@@ -267,7 +267,7 @@ export function TemplateBadge() {
         <BadgeWithDropdown
             className="template-badge"
             icon="bx bx-copy-alt"
-            text={t("breadcrumb_badges.template")}
+            text={isTemplate ? t("breadcrumb_badges.template") : t("breadcrumb_badges.workspace_template")}
             tooltip={t("breadcrumb_badges.template_description")}
             dropdownProps={{ mobileBottomSheet: true }}
         >

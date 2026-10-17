@@ -3959,7 +3959,8 @@
     "template_description": "This note is a template. Notes created from it inherit its attributes, so changing them here changes every one of those notes.",
     "template_scope_global": "Available everywhere",
     "template_scope_workspace": "Only inside its workspace",
-    "template_scope_workspace_unavailable": "The template is not inside a workspace."
+    "template_scope_workspace_unavailable": "The template is not inside a workspace.",
+    "workspace_template": "Workspace template"
   },
   "status_bar": {
     "language_title": "Change content language",
