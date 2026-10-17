@@ -19,13 +19,18 @@ const METADATA = {
 
 describe("noteTemplateVariables", () => {
     it("gives the note what the server's BNote gives a template", async () => {
-        const note = buildNote({ title: "Meeting", "#author": "Ada" });
+        const note = buildNote({ title: "Meeting", "#author": "Ada", "#tag": [ "a", "b" ] });
         const { evaluateTemplate } = await import("@triliumnext/commons");
 
         expect(evaluateTemplate(
             "${note.title} ${note.dateCreatedObj.format('MM-DD')} ${note.getLabelValue('author')} ${note.type}",
             noteTemplateVariables(note, METADATA)
         )).toBe("Meeting 03-05 Ada text");
+        // Every method the engine allows on a note, so that a template it accepts has a preview.
+        expect(evaluateTemplate(
+            "${note.getLabelValues('tag')}",
+            noteTemplateVariables(note, METADATA)
+        )).toBe("a,b");
     });
 });
 
@@ -41,6 +46,21 @@ describe("TemplateField", () => {
         const refused = await mount("NEW: ${note.constructor}", note.noteId);
         expect(refused.querySelector(".cm-editor")).not.toBeNull();
         expect(refused.querySelector(".template-field-preview")).toBeNull();
+    });
+
+    it("shows the preview its caller gives, over the note's", async () => {
+        const note = buildNote({ title: "Meeting" });
+        vi.spyOn(note, "getMetadata").mockResolvedValue(METADATA);
+
+        let container: HTMLElement | undefined;
+        await act(async () => {
+            container = renderInto(
+                <TemplatePreviewNoteContext.Provider value={note.noteId}>
+                    <TemplateField currentValue="${note.title}" preview="Given" onChange={() => {}} variables={{ note: "note" }} />
+                </TemplatePreviewNoteContext.Provider>
+            );
+        });
+        expect(container?.querySelector(".template-field-preview")?.textContent).toBe("template_field.preview:Given");
     });
 
     it("shows no preview without a note to preview against", async () => {

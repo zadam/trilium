@@ -3954,7 +3954,14 @@
     "shared_preview": "Share preview",
     "shared_preview_description": "Only this browser can open the shared page, and only while Trilium is open in it. To publish it, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
     "shared_export_only": "Not published",
-    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server."
+    "shared_export_only_description": "The mobile app cannot open shared pages. To publish this note, export the subtree as \"{{- format}}\" and host the files on any web server, or use a Trilium server.",
+    "template": "Template",
+    "template_description": "This note is a template. Notes created from it inherit its attributes, so changing them here changes every one of those notes.",
+    "template_scope_global": "Available everywhere",
+    "template_scope_workspace": "Only inside its workspace",
+    "template_scope_workspace_unavailable": "The template is not inside a workspace.",
+    "workspace_template": "Workspace template",
+    "template_properties": "Template properties..."
   },
   "status_bar": {
     "language_title": "Change content language",
@@ -4770,5 +4777,15 @@
     "unknown_description": "Not downloaded by Trilium.",
     "delete_foreign_confirmation": "Delete {{name}}? No feature of this app uses it.",
     "unverified": "Not checked yet"
+  },
+  "template_properties": {
+    "title": "Template properties",
+    "title_template": "Default title of created notes",
+    "title_template_description": "Can read the time of creation (now) and the note it is created under (parentNote).",
+    "title_template_placeholder": "Meeting ${now.format('YYYY-MM-DD')}",
+    "new_notes": "New notes",
+    "default_parent": "Default location of created notes",
+    "default_parent_description": "Where they are placed when no other location is picked, such as when created through @-completion in a text note.",
+    "default_parent_placeholder": "Where they are created"
   }
 }

@@ -23,6 +23,13 @@ export const TemplatePreviewNoteContext = createContext<string | undefined>(unde
 interface TemplateFieldProps {
     currentValue: string;
     onChange(value: string): void;
+    /** Called when focus leaves the field, for a caller that saves the value then. */
+    onBlur?(): void;
+    /**
+     * The result shown below the field, for a caller that fills the template in itself. Without it,
+     * the template is filled in for the note in {@link TemplatePreviewNoteContext}.
+     */
+    preview?: string;
     /** The variables the template can read, as the server passes them to `evaluateTemplate()`. */
     variables: TemplateVariableTypes;
     placeholder?: string;
@@ -34,11 +41,12 @@ interface TemplateFieldProps {
  * coloured, completed and checked by the same rules the server applies, and the result for the note
  * in {@link TemplatePreviewNoteContext} is shown below the field.
  */
-export default function TemplateField({ currentValue, onChange, variables, placeholder, ariaLabel }: TemplateFieldProps) {
+export default function TemplateField({ currentValue, onChange, onBlur, preview: givenPreview, variables, placeholder, ariaLabel }: TemplateFieldProps) {
     const parentRef = useRef<HTMLDivElement>(null);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
-    const preview = useTemplatePreview(currentValue, useContext(TemplatePreviewNoteContext));
+    const notePreview = useTemplatePreview(currentValue, useContext(TemplatePreviewNoteContext));
+    const preview = givenPreview ?? notePreview;
 
     useEffect(() => {
         if (!parentRef.current) return;
@@ -65,7 +73,7 @@ export default function TemplateField({ currentValue, onChange, variables, place
     }, []);
 
     return (
-        <div className="template-field">
+        <div className="template-field" onBlur={onBlur}>
             <div ref={parentRef} className={clsx(SEARCH_FIELD_EDITOR_CLASS, "form-control tn-input-field")} />
             {preview && <div className="template-field-preview">{t("template_field.preview", { result: preview })}</div>}
         </div>
@@ -133,7 +141,8 @@ function useTemplatePreview(template: string, noteId: string | undefined) {
 
 /**
  * The `note` variable the server passes to `evaluateTemplate()` for a bulk rename, rebuilt from the
- * client's copy of the note: the same allowed properties and methods, with the dates of `BNote`.
+ * client's copy of the note: every property and method the template engine allows, with the dates
+ * of `BNote`.
  */
 export function noteTemplateVariables(note: FNote, metadata: NoteMetaData): TemplateVariables {
     return {
@@ -150,7 +159,10 @@ export function noteTemplateVariables(note: FNote, metadata: NoteMetaData): Temp
             dateCreatedObj: dayjs(metadata.dateCreated),
             utcDateCreatedObj: dayjs.utc(metadata.utcDateCreated),
             getLabelValue: (name: string) => note.getLabelValue(name),
-            getRelationValue: (name: string) => note.getRelationValue(name)
+            getLabel: (name: string) => note.getLabel(name),
+            getLabelValues: (name: string) => note.getLabels(name).map((label) => label.value),
+            getRelationValue: (name: string) => note.getRelationValue(name),
+            getAttributeValue: (type: "label" | "relation", name: string) => note.getAttributeValue(type, name)
         }
     };
 }
