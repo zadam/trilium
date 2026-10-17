@@ -128,8 +128,8 @@ The @specialize rule also helps makes "DiagramName" have higher priority for "fl
   stringContentDouble { !["]+ }
   stringContentBackTick { ![`]+ }
   LineComment { "%%" ![\n]* }
-  DoubleHyphen { "--" }
-  DoubleEqual { "==" }
+  DoubleHyphen { "--" $[ \t]+ }
+  DoubleEqual { "==" $[ \t]+ }
   linkType1 { ("<-" | "x-" | "o-") ("->" | "-x" | "-o")}
   linkType2 { ("<=" | "x=" | "o=") ("=>" | "=x" | "=o")}
   linkType3 { ("<-" | "x-" | "o-")? "-"+ ("->" | "-x" | "-o")?}
@@ -148,14 +148,14 @@ The @specialize rule also helps makes "DiagramName" have higher priority for "fl
     newlines,
     spaces,
     LineComment,
+    DoubleHyphen,
+    DoubleEqual,
     linkType1,
     linkType2,
     linkType3,
     linkType4,
     linkType5,
     linkType6,
-    DoubleHyphen,
-    DoubleEqual,
     ampersand,
     semicolon,
     singleQuote,

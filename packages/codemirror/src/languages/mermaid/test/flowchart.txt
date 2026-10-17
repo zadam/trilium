@@ -417,7 +417,7 @@ flowchart TD
 
 ==>
 
-FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId,NodeId,NodeId,NodeId,Link,NodeId)
+FlowchartDiagram(DiagramName,Orientation,NodeId,NodeEdge(DoubleHyphen,NodeEdgeText,Link),NodeId)
 
 # NodeEdgeText (dotted)
 
@@ -435,7 +435,7 @@ flowchart TD
 
 ==>
 
-FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId,NodeId,NodeId,NodeId,Link,NodeId)
+FlowchartDiagram(DiagramName,Orientation,NodeId,NodeEdge(DoubleEqual,NodeEdgeText,Link),NodeId)
 
 # Link Chaining (same line)
 
@@ -444,7 +444,7 @@ flowchart LR
 
 ==>
 
-FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId,Link,NodeId,Link,NodeId,Link,NodeId)
+FlowchartDiagram(DiagramName,Orientation,NodeId,NodeEdge(DoubleHyphen,NodeEdgeText,Link),NodeId,NodeEdge(DoubleHyphen,NodeEdgeText,Link),NodeId)
 
 # Link Chaining (with &)
 
@@ -513,7 +513,7 @@ end
 
 ==>
 
-FlowchartDiagram(DiagramName,Orientation,Keyword,String,NodeId,Node(String),Link,String,Link,NodeId,Node(String),Keyword,Keyword,String,NodeId,Node(String),Link,String,Link,NodeId,Node(String),Keyword)
+FlowchartDiagram(DiagramName,Orientation,Keyword,String,NodeId,Node(String),NodeEdge(DoubleHyphen,String,Link),NodeId,Node(String),Keyword,Keyword,String,NodeId,Node(String),NodeEdge(DoubleHyphen,String,Link),NodeId,Node(String),Keyword)
 
 # Interaction
 
@@ -538,7 +538,7 @@ flowchart LR
 
 ==>
 
-FlowchartDiagram(DiagramName,Orientation,LineComment,NodeId,Link,NodeId,Link,NodeId,Link,NodeId,Link,NodeId)
+FlowchartDiagram(DiagramName,Orientation,LineComment,NodeId,NodeEdge(DoubleHyphen,NodeEdgeText,Link),NodeId,NodeEdge(DoubleHyphen,NodeEdgeText,Link),NodeId)
 
 # Styling
 
