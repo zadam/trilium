@@ -331,6 +331,34 @@ describe("Branches API (core)", () => {
                 getContext().init(() => load());
             }
         });
+
+        it("expands a note with more children than a call can take as arguments", async () => {
+            const anchor = await createTextNote(api, { title: "Crowded anchor" });
+            const childCount = 200_000;
+            registerVirtualNoteProvider({
+                namespace: "_vbig",
+                parentNoteId: anchor.noteId,
+                getSubtree: () => [{
+                    id: "_vbig",
+                    title: "Crowded note",
+                    type: "book",
+                    children: Array.from({ length: childCount }, (_, index) => ({
+                        id: `_vbig${index}`, title: `Child ${index}`, type: "text" as const
+                    }))
+                }]
+            });
+
+            try {
+                getContext().init(() => load());
+
+                const res = await api.put<{ branchIds: string[] }>(`/api/branches/${anchor.noteId}__vbig/expanded-subtree/1`);
+                expect(res.status).toBe(200);
+                expect(res.body.branchIds).toHaveLength(childCount + 1);
+            } finally {
+                unregisterVirtualNoteProvider("_vbig");
+                getContext().init(() => load());
+            }
+        }, 60_000);
     });
 
     describe("prefixes", () => {

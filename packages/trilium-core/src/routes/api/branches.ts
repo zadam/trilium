@@ -192,7 +192,11 @@ function setExpandedForSubtree(req: Request<{ branchId: string, expanded: string
 
         if (!visitedNoteIds.has(branch.noteId)) {
             visitedNoteIds.add(branch.noteId);
-            pending.push(...branch.childNote.getChildBranches().filter((child) => !!child));
+            for (const childBranch of branch.childNote.getChildBranches()) {
+                if (childBranch) {
+                    pending.push(childBranch);
+                }
+            }
         }
     }
 
