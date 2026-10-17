@@ -1,6 +1,6 @@
 import { type AnthropicProvider as AnthropicSDKProvider,createAnthropic } from "@ai-sdk/anthropic";
 import type { LlmMessage } from "@triliumnext/commons";
-import { type ModelMessage, stepCountIs, streamText, type SystemModelMessage, type ToolSet } from "ai";
+import { type ModelMessage, streamText, type SystemModelMessage, type ToolSet } from "ai";
 
 import type { LlmProviderConfig, ModelInfo, StreamResult } from "../types.js";
 import { BaseProvider, buildModelMessage, type RemoteModel, TELEMETRY_OFF } from "./base_provider.js";
@@ -158,12 +158,7 @@ export class AnthropicProvider extends BaseProvider {
             }
         };
 
-        const tools = this.buildTools(config);
-        if (Object.keys(tools).length > 0) {
-            streamOptions.tools = tools;
-            streamOptions.stopWhen = stepCountIs(5);
-            streamOptions.toolChoice = "auto";
-        }
+        this.addTools(streamOptions, config, 5);
 
         return streamText(streamOptions);
     }

@@ -1,3 +1,4 @@
+import { CANVAS_ATTACHMENT_MIME, getDrawingPictureTitle } from "@triliumnext/commons";
 import ExcelJS from "exceljs";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -116,6 +117,27 @@ describe("Files API (core)", () => {
             expect(res.status).toBe(200);
             expect(res.body).toContain("attachment payload");
             expect(res.headers["Content-Disposition"]).toBeUndefined();
+        });
+
+        it("downloads and opens a canvas drawing with the images it refers to inside", async () => {
+            const { noteId } = await createTextNote(api, { title: "Has a drawing" });
+            const scene = { elements: [ { type: "image", fileId: "f1.png" } ], files: {} };
+            for (const body of [
+                { role: "file", mime: CANVAS_ATTACHMENT_MIME, title: "Canvas.excalidraw",
+                    content: JSON.stringify(scene) },
+                { role: "image", mime: "image/png", title: "f1.png", content: "abc" }
+            ]) {
+                const save = await api.post(`/api/notes/${noteId}/attachments`, { body });
+                expect(save.status).toBe(204);
+            }
+            const list = await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`);
+            const drawing = list.body.find(({ mime }) => mime === CANVAS_ATTACHMENT_MIME);
+
+            for (const action of [ "download", "open" ]) {
+                const res = await api.get(`/api/attachments/${drawing?.attachmentId}/${action}`);
+                expect(JSON.parse(String(res.body)).files["f1.png"]?.dataURL)
+                    .toBe("data:image/png;base64,YWJj");
+            }
         });
 
         it("404s when downloading a missing attachment", async () => {
@@ -263,6 +285,41 @@ describe("Files API (core)", () => {
             expect(res.body).toEqual({ uploaded: true });
             expect(becca.getAttachmentOrThrow(attachmentId).getContent().toString()).toBe("new-att");
             expect(await revisionCount(noteId)).toBe(1);
+
+            const drawing = upload("{}", "application/octet-stream", "Drawing.excalidraw");
+            await api.put(`/api/attachments/${attachmentId}/file`, { file: drawing });
+            expect(becca.getAttachmentOrThrow(attachmentId).mime).toBe(CANVAS_ATTACHMENT_MIME);
+        });
+
+        it("drops only the share picture of a drawing whose file it replaces", async () => {
+            const { noteId } = await createTextNote(api, { title: "Has drawings" });
+            const attach = (role: string, mime: string, title: string) =>
+                api.post(`/api/notes/${noteId}/attachments`, {
+                    body: { role, mime, title, content: "<svg/>" }
+                });
+            const getTitles = async () =>
+                (await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`)).body
+                    .map(({ title }) => title);
+            const files = [ "notes.txt", "Canvas.excalidraw", "Other.excalidraw" ];
+            await attach("file", "text/plain", files[0]);
+            await attach("file", CANVAS_ATTACHMENT_MIME, files[1]);
+            await attach("file", CANVAS_ATTACHMENT_MIME, files[2]);
+            const list = await api.get<AttachmentPojo[]>(`/api/notes/${noteId}/attachments`);
+            const [ textId, drawingId, otherId ] = files.map((title) =>
+                list.body.find((attachment) => attachment.title === title)?.attachmentId ?? "");
+            // The picture of the drawing, and look-alikes: one of a file, one not an image.
+            await attach("image", "image/svg+xml", getDrawingPictureTitle(drawingId));
+            await attach("image", "image/svg+xml", getDrawingPictureTitle(textId));
+            await attach("file", "image/svg+xml", getDrawingPictureTitle(otherId));
+
+            for (const [ index, attachmentId ] of [ textId, otherId, drawingId ].entries()) {
+                const name = [ "notes.txt", "Other.excalidraw", "Drawing.excalidraw" ][index];
+                const file = upload("{}", "application/octet-stream", name);
+                await api.put(`/api/attachments/${attachmentId}/file`, { file });
+            }
+            expect((await getTitles()).sort()).toEqual([
+                ...files, getDrawingPictureTitle(textId), getDrawingPictureTitle(otherId)
+            ].sort());
         });
 
         it("reports a request that carries no file instead of writing an empty one", async () => {

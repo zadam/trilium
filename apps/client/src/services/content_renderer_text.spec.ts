@@ -2,7 +2,9 @@
 // DOMPurify relies on browser-faithful DOM traversal (NodeIterator); happy-dom
 // mishandles it and strips valid markup (surfaced by dompurify 3.4.8). Run the
 // sanitization-dependent specs under jsdom, which matches real-browser behavior.
-import { KATEX_MACROS, trimIndentation } from "@triliumnext/commons";
+import {
+    KATEX_MACROS, MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS, trimIndentation
+} from "@triliumnext/commons";
 import DOMPurify from "dompurify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -50,6 +52,20 @@ vi.mock("./math.js", async (importOriginal) => {
         renderMathInElement: renderMathInElementSpy
     };
 });
+
+const disposeStickyTableHeaders = vi.hoisted(() => vi.fn());
+const applyStickyTableHeaders = vi.hoisted(() => vi.fn(() => disposeStickyTableHeaders));
+vi.mock("@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js", () => ({
+    applyStickyTableHeaders
+}));
+
+// jsdom has no `ResizeObserver`.
+const scrollFade = vi.hoisted(() => ({ measure: vi.fn(), disconnect: vi.fn() }));
+const watchScrollFade = vi.hoisted(() => vi.fn(() => scrollFade));
+vi.mock("@triliumnext/commons/src/lib/scroll_fade.js", async (importOriginal) => ({
+    ...await importOriginal<object>(),
+    watchScrollFade
+}));
 
 import renderText, {
     applyInlineMermaid,
@@ -266,6 +282,35 @@ describe("Text content renderer", () => {
         expect(emptied.querySelector("a")?.textContent).toBe("Child note");
     });
 
+    it("sizes the tables for scrolling and keeps their header rows in view", async () => {
+        const note = buildNote({ title: "Tables" });
+        const table = `<figure class="table" style="width:800px;" data-trilium-block-id="t1">`
+            + "<table><tbody><tr><td>a</td></tr></tbody></table></figure>";
+        const tableWidth = (contentEl: HTMLElement) => contentEl
+            .querySelector<HTMLElement>(".ck-content > figure.table")
+            ?.style.getPropertyValue("--table-width");
+
+        const full = document.createElement("div");
+        await renderTextContent(note, table, $(full));
+        expect(tableWidth(full)).toBe("800px");
+        expect(applyStickyTableHeaders).toHaveBeenCalledWith(full.querySelector(".ck-content"));
+        expect(watchScrollFade).toHaveBeenCalledWith(full.querySelector("figure.table"),
+            expect.any(Function), { direction: "horizontal" });
+
+        // Both passes stop with the rest of the rendered content.
+        content_renderer.disposeInteractiveContent($(full));
+        expect(scrollFade.disconnect).toHaveBeenCalledTimes(1);
+        expect(disposeStickyTableHeaders).toHaveBeenCalledTimes(1);
+
+        // The excerpt of a table in one column of a layout has the table at its top level.
+        const excerpt = document.createElement("div");
+        const layout = `<div class="${MULTICOLUMN_LAYOUT_CLASS}">`
+            + `<div class="${MULTICOLUMN_COLUMN_CLASS}">${table}</div>`
+            + `<div class="${MULTICOLUMN_COLUMN_CLASS}"><p>Other</p></div></div>`;
+        await renderTextContent(note, layout, $(excerpt), { block: "t1" });
+        expect(tableWidth(excerpt)).toBe("800px");
+    });
+
     it("renders nothing for an empty note with no children when noChildrenList is set", async () => {
         const contentEl = document.createElement("div");
         const note = buildNote({ title: "Empty note" });
@@ -411,6 +456,25 @@ describe("Nested embeds (single-level display vs recursive print)", () => {
         expect(contentEl.querySelector("a.reference-link")).toBeNull();
     });
 
+    it("on print, links back to a note already expanded on the path instead of looping", async () => {
+        buildNote({
+            id: "cycB",
+            title: "Note B",
+            content: `<p>B body</p><section class="include-note" data-note-id="cycA" data-box-size="medium">&nbsp;</section>`
+        });
+        const noteA = buildNote({
+            id: "cycA",
+            title: "Note A",
+            content: `<p>A body</p><section class="include-note" data-note-id="cycB" data-box-size="medium">&nbsp;</section>`
+        });
+        const contentEl = document.createElement("div");
+        await renderText(noteA, $(contentEl), { expandNestedEmbeds: true });
+
+        expect(contentEl.textContent).toContain("B body");
+        expect(contentEl.querySelector('section.include-note[data-note-id="cycA"]')).toBeNull();
+        expect(contentEl.querySelector("a.reference-link")?.getAttribute("href")).toBe("#root/cycA");
+    });
+
     it("on print, expands a note shared across sibling branches in each branch (not a false cycle)", async () => {
         // Diamond: A embeds B and C; both B and C embed D. D is not a cycle, so under recursive
         // expansion it must render in both branches (the ancestor path is tracked per-branch).
@@ -527,6 +591,22 @@ describe("Attachment embeds", () => {
         expect(nestedEl.querySelector("a.reference-link")?.getAttribute("href"))
             .toBe(`#root/${owner.noteId}?viewMode=attachments&attachmentId=embedPic`);
     });
+
+    it("leaves the embed of an attachment that cannot be loaded as it is", async () => {
+        const owner = buildNote({
+            title: "Missing embed owner",
+            content: `<section class="include-note" data-attachment-id="gonePic">&nbsp;</section>`
+        });
+        const getAttachment = vi.spyOn(froca, "getAttachment").mockResolvedValue(null);
+
+        const contentEl = document.createElement("div");
+        await renderText(owner, $(contentEl));
+
+        expect(getAttachment).toHaveBeenCalledWith("gonePic", true);
+        expect(contentEl.querySelector(`section.include-note[data-attachment-id="gonePic"]`)?.innerHTML)
+            .toBe("&nbsp;");
+        getAttachment.mockRestore();
+    });
 });
 
 describe("postProcessRichContent with FAttachment", () => {
@@ -607,7 +687,17 @@ describe("rewriteMermaidDiagramsInContainer", () => {
         const div = container.querySelector("div.mermaid-diagram");
         expect(div).not.toBeNull();
         expect(div?.textContent).toContain("graph TD;");
+        expect(div?.hasAttribute("data-trilium-block-id")).toBe(false);
         expect(container.querySelector("pre")).toBeNull();
+    });
+
+    it("keeps the block ID of a code block on its diagram, for links to the block", async () => {
+        const container = document.createElement("div");
+        container.innerHTML = `<pre><code class="language-mermaid" data-trilium-block-id="d1">`
+            + `graph TD;A--&gt;B;</code></pre>`;
+        await rewriteMermaidDiagramsInContainer(container);
+        const diagram = container.querySelector("div.mermaid-diagram");
+        expect(diagram?.getAttribute("data-trilium-block-id")).toBe("d1");
     });
 
     it("uses an empty body when the code element is missing", async () => {

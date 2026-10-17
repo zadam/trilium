@@ -38,17 +38,25 @@ const READ_ONLY_CAPABLE_TYPES: string[] = [
     "mermaid",
     "canvas",
     "mindMap",
-    "spreadsheet"
+    "spreadsheet",
+    "noteMap",
+    "relationMap",
+    "render"
 ];
 
 /**
  * Collection view types that honour `#readOnly`, making a `book` note read-only capable.
  *
  * Listed by view type rather than by note type because the other views ignore the label: reporting
- * a table or a board as read-only would put a badge over a collection that can still be edited.
+ * a list or a grid as read-only would put a badge over a collection that can still be edited.
  */
 const READ_ONLY_CAPABLE_VIEW_TYPES: string[] = [
-    "geoMap"
+    "board",
+    "calendar",
+    "dashboard",
+    "geoMap",
+    "presentation",
+    "table"
 ];
 
 export interface NoteContextDataMap {
@@ -390,7 +398,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
 
     /** @returns {Promise<boolean>} */
     async isReadOnly() {
-        if (this?.viewScope?.readOnlyTemporarilyDisabled) {
+        if (this?.viewScope?.readOnlyTemporarilyDisabled && this.note?.isContentWritable !== false) {
             return false;
         }
 
@@ -408,7 +416,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return false;
         }
 
-        if (options.is("databaseReadonly")) {
+        if (options.is("databaseReadonly") || !this.note.isContentWritable) {
             return true;
         }
 
@@ -458,15 +466,25 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             const noteRow = loadResults.getEntityRow("notes", this.noteId);
 
             if (noteRow.isDeleted) {
-                this.noteId = null;
-                this.notePath = null;
-
-                this.triggerEvent("noteSwitched", {
-                    noteContext: this,
-                    notePath: this.notePath
-                });
+                this.clearRemovedNote();
             }
         }
+    }
+
+    frocaReloadedEvent() {
+        if (this.noteId && !(this.noteId in froca.notes)) {
+            this.clearRemovedNote();
+        }
+    }
+
+    private clearRemovedNote() {
+        this.noteId = null;
+        this.notePath = null;
+
+        this.triggerEvent("noteSwitched", {
+            noteContext: this,
+            notePath: this.notePath
+        });
     }
 
     hasNoteList() {

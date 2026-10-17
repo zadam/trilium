@@ -10,7 +10,7 @@ import { Suggestion } from "../../services/note_autocomplete";
 import tree from "../../services/tree";
 import froca from "../../services/froca";
 import { useNote, useTriliumEvent } from "../react/hooks";
-import type { BoxSize, CKEditorApi } from "../type_widgets/text/CKEditorWithWatchdog";
+import type { BoxSize, CKEditorApi } from "../type_widgets/text/CKEditor";
 
 export interface ContentEmbedOpts {
     editorApi: Pick<CKEditorApi, "addContentEmbed" | "addImage">;

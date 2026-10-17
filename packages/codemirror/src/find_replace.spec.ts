@@ -70,14 +70,12 @@ describe("SearchHighlighter", () => {
         expect(search.currentFound).toBe(2);
     });
 
-    it("leaves no active match when every occurrence is before the cursor", () => {
-        // Searching with the caret past the last hit finds matches but activates none, so
-        // "find next" starts from the top rather than jumping backwards.
+    it("activates the first match when every occurrence is before the cursor", () => {
         const search = highlighterFor("foo foo", 7);
         search.searchFor("foo", false, false);
 
         expect(search.totalFound).toBe(2);
-        expect(search.currentFound).toBe(0);
+        expect(search.currentFound).toBe(1);
     });
 
     it("exposes the match set through the plugin's decoration accessor", () => {

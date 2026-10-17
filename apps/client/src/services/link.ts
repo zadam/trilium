@@ -7,12 +7,14 @@ import { getCachedBlockReferenceLabel, loadBlockReferenceLabel } from "./block_e
 import cssClassManager from "./css_class_manager.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
+import { getNoteImageUrl } from "./image_urls.js";
 import { showError } from "./toast.js";
 import treeService from "./tree.js";
-import utils from "./utils.js";
+import utils, { isShare } from "./utils.js";
 
 /** The icon a column reference uses when the link carries no `columnIcon`. */
 const DEFAULT_COLUMN_REFERENCE_ICON = "bx bx-columns";
+const MISSING_NOTE_TITLE = "[missing note]";
 
 function getNotePathFromUrl(url: string) {
     const notePathMatch = /#(root[A-Za-z0-9_/]*)$/.exec(url);
@@ -149,7 +151,7 @@ async function createLink(notePath: string | undefined, options: CreateLinkOptio
     if (!notePath || !notePath.trim()) {
         logError("Missing note path");
 
-        return $("<span>").text("[missing note]");
+        return $("<span>").text(MISSING_NOTE_TITLE);
     }
 
     if (!notePath.startsWith("root")) {
@@ -168,7 +170,7 @@ async function createLink(notePath: string | undefined, options: CreateLinkOptio
     if (!noteId) {
         logError("Missing note ID");
 
-        return $("<span>").text("[missing note]");
+        return $("<span>").text(MISSING_NOTE_TITLE);
     }
 
     const viewScope = options.viewScope || {};
@@ -190,10 +192,8 @@ async function createLink(notePath: string | undefined, options: CreateLinkOptio
     const note = await froca.getNote(noteId);
 
     if (autoConvertToImage && note?.type && ["image", "canvas", "mermaid"].includes(note.type) && viewMode === "default") {
-        const encodedTitle = encodeURIComponent(linkTitle || "");
-
         return $("<img>")
-            .attr("src", `api/images/${noteId}/${encodedTitle}?${Math.random()}`)
+            .attr("src", getNoteImageUrl(noteId, linkTitle || "", String(Math.random())))
             .attr("alt", linkTitle || "");
     }
 
@@ -661,12 +661,14 @@ function linkContextMenu(e: PointerEvent) {
 
 /**
  * Fills `$el` with the label of the reference link to `href`. A link to blocks of `hostNoteId`, the
- * note the link is in, shows only the text of the blocks.
+ * note the link is in, shows only the text of the blocks. A link to a note that does not exist
+ * shows `storedTitle`, the title the content holds for it.
  */
 async function loadReferenceLinkTitle(
     $el: JQuery<HTMLElement>,
     href: string | null | undefined = null,
-    hostNoteId?: string
+    hostNoteId?: string,
+    storedTitle?: string
 ) {
     const $link = $el[0].tagName === "A" ? $el : $el.find("a");
 
@@ -678,12 +680,8 @@ async function loadReferenceLinkTitle(
 
     const { noteId, viewScope } = parseNavigationStateFromUrl(href);
     if (!noteId) {
-        // Warned about but not returned on. The editing downcast creates an empty <span> and this
-        // call is the only thing that ever fills it, so bailing here left the widget rendering as
-        // nothing at all while the stored HTML — which resolves its title through
-        // getReferenceLinkTitleSync instead — said "[missing note]". An href that is not a hash
-        // note URL is ordinary enough to reach: an attachment image URL, an external link, or
-        // imported HTML carrying an <a class="reference-link">.
+        // Not returned on: the editing downcast creates an empty <span> that only this call fills.
+        // An attachment image URL, an external link or imported HTML can carry such an href.
         console.warn("Missing note ID.");
     }
 
@@ -702,9 +700,14 @@ async function loadReferenceLinkTitle(
         }
     }
 
-    if (note) {
-        $el.addClass(note.getColorClass());
+    if (!note) {
+        $el.text(storedTitle || MISSING_NOTE_TITLE)
+            .addClass("reference-link-missing no-link-navigation")
+            .prepend($("<span>").addClass("tn-icon bx bx-x"));
+        return;
     }
+
+    $el.addClass(note.getColorClass());
 
     const title = await getReferenceLinkTitle(href);
     // A column reference renders as "<board>: <column>", the column in a `<small>` below.
@@ -717,7 +720,7 @@ async function loadReferenceLinkTitle(
         ));
     }
 
-    if (viewScope?.block && note) {
+    if (viewScope?.block) {
         const label = await loadBlockReferenceLabel(note, viewScope.block);
         if (label) {
             $el.append($("<small>")
@@ -745,25 +748,22 @@ async function loadReferenceLinkTitle(
             ));
     }
 
-    if (subjectId && note) {
-        const icon = await getLinkIcon(subjectId, viewScope?.viewMode);
-
-        if (icon) {
-            $el.prepend($("<span>").addClass(icon));
-        }
+    const icon = await getLinkIcon(note.noteId, viewScope?.viewMode);
+    if (icon) {
+        $el.prepend($("<span>").addClass(icon));
     }
 }
 
 async function getReferenceLinkTitle(href: string) {
     const { noteId, viewScope } = parseNavigationStateFromUrl(href);
     if (!noteId) {
-        return "[missing note]";
+        return MISSING_NOTE_TITLE;
     }
 
     // A card reference is titled by the card, not by the board in its path.
     const note = await froca.getNote(viewScope?.card || noteId);
     if (!note) {
-        return "[missing note]";
+        return MISSING_NOTE_TITLE;
     }
 
     if (viewScope?.viewMode === "attachments" && viewScope?.attachmentId) {
@@ -776,15 +776,19 @@ async function getReferenceLinkTitle(href: string) {
     return note.title;
 }
 
-function getReferenceLinkTitleSync(href: string) {
+/**
+ * The label of the reference link to `href`, from the notes already in froca. A link to a note that
+ * is not there gets `storedTitle`, the title the content holds for it.
+ */
+function getReferenceLinkTitleSync(href: string, storedTitle?: string) {
     const { noteId, viewScope } = parseNavigationStateFromUrl(href);
     if (!noteId) {
-        return "[missing note]";
+        return storedTitle || MISSING_NOTE_TITLE;
     }
 
     const note = froca.getNoteFromCache(viewScope?.card || noteId);
     if (!note) {
-        return "[missing note]";
+        return storedTitle || MISSING_NOTE_TITLE;
     }
 
     if (viewScope?.viewMode === "attachments" && viewScope?.attachmentId) {
@@ -824,8 +828,9 @@ function getPdfReferenceLabel(pageNumber: string, annotation: string | undefined
     return t(annotation ? "pdf.annotation_reference" : "pdf.page_reference", { pageNumber });
 }
 
+// A shared page hosting an app view keeps its links as plain links to other shared pages.
 /* v8 ignore next -- the `print` device branch is evaluated once at module load; under test glob.device is undefined, so the false arm cannot be exercised */
-if (glob.device !== "print") {
+if (glob.device !== "print" && !isShare) {
     // TODO: Check why the event is not supported.
     //@ts-ignore
     $(document).on("click", "a", goToLink);

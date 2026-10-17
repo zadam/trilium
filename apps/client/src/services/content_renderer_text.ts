@@ -1,11 +1,22 @@
-import { encodeBlockParameter, KATEX_MACROS, sliceToBlockReference } from "@triliumnext/commons";
+import { applyTableScroll } from "@triliumnext/ckeditor5/src/plugins/table_scroll_read_only.js";
+import {
+    applyStickyTableHeaders
+} from "@triliumnext/ckeditor5/src/plugins/table_sticky_header_read_only.js";
+import {
+    BLOCK_ID_ATTRIBUTE, type ContentEmbedContext, getAttachmentEmbedHref, getEmbedKey,
+    getNestedEmbedOptions, getNoteEmbedHref, KATEX_MACROS, resolveContentEmbed,
+    sliceToBlockReference
+} from "@triliumnext/commons";
 
 import FAttachment from "../entities/fattachment.js";
 import FNote from "../entities/fnote.js";
 import { highlightBlockReference } from "./block_reference.js";
-import { default as content_renderer, type RenderOptions } from "./content_renderer.js";
+import {
+    addContentDisposer, default as content_renderer, type RenderOptions
+} from "./content_renderer.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
+import { applyNoteImageVersions, resolveContentImageUrls } from "./image_urls.js";
 import link from "./link.js";
 import { applyLinkEmbeds } from "./link_embed.js";
 import { getMermaidConfig, postprocessMermaidSvg } from "./mermaid.js";
@@ -33,13 +44,16 @@ export async function renderTextContent(
 ) {
     const hasContent = content !== undefined && !isHtmlEmpty(content);
     const $content = $('<div class="ck-content">')
-        .html(hasContent ? sanitizeNoteContentHtml(content) : "");
+        .html(hasContent ? resolveContentImageUrls(sanitizeNoteContentHtml(content)) : "");
+    applyNoteImageVersions($content[0]);
 
     if (options.block !== undefined && !sliceToBlockReference($content[0], options.block)) {
         $renderedContent.append($("<p>")
             .addClass("block-reference-broken")
             .text(t("block_reference.broken")));
     } else if (hasContent) {
+        addContentDisposer($content[0], applyTableScroll($content[0]));
+        addContentDisposer($content[0], applyStickyTableHeaders($content[0]));
         // Runs before `postProcessRichContent()` renders embeds, so their blocks are not searched.
         if (options.highlightBlock) {
             highlightBlockReference($content[0], options.highlightBlock);
@@ -63,12 +77,12 @@ export async function postProcessRichContent(note: FNote | FAttachment, $rendere
     seenNoteIds.add(getEmbedKey("noteId" in note ? note.noteId : note.attachmentId, options.block));
     if (options.noContentEmbeds) {
         $renderedContent.find(".include-note").remove();
-    } else if (options.embedsAsReferenceLinks) {
-        // This note is itself an embedded note in display mode: stop after the first level by
-        // degrading its own embeds to reference links instead of expanding them.
-        await replaceEmbedsWithReferenceLinks($renderedContent[0]);
     } else {
-        await renderContentEmbeds($renderedContent[0], seenNoteIds, options.expandNestedEmbeds ?? false);
+        await renderContentEmbeds($renderedContent[0], {
+            seenNoteIds,
+            embedsAsReferenceLinks: options.embedsAsReferenceLinks,
+            expandNestedEmbeds: options.expandNestedEmbeds
+        });
     }
 
     if ($renderedContent.find("span.math-tex").length > 0) {
@@ -89,7 +103,8 @@ export async function postProcessRichContent(note: FNote | FAttachment, $rendere
     const hostNoteId = note instanceof FNote ? note.noteId : undefined;
     await Promise.all(referenceLinks.toArray().map(async (el) => {
         const innerSpan = document.createElement("span");
-        await link.loadReferenceLinkTitle($(innerSpan), el.getAttribute("href"), hostNoteId);
+        await link.loadReferenceLinkTitle($(innerSpan), el.getAttribute("href"), hostNoteId,
+            el.textContent ?? undefined);
         el.replaceChildren(innerSpan);
     }));
 
@@ -102,68 +117,51 @@ export async function postProcessRichContent(note: FNote | FAttachment, $rendere
     }
 }
 
-async function renderContentEmbeds(contentEl: HTMLElement, seenNoteIds: Set<string>, expandNested: boolean) {
-    // TODO: Consider duplicating with server's share/content_renderer.ts.
-    const embedEls = contentEl.querySelectorAll(".include-note");
-
-    // Gather the list of items to load.
-    const noteIds: string[] = [];
-    for (const embedEl of embedEls) {
-        const noteId = embedEl.getAttribute("data-note-id");
-        if (noteId) {
-            noteIds.push(noteId);
-        }
-    }
-
-    // Load the required notes.
+/**
+ * Expands each `.include-note` in `contentEl` into the note or attachment it shows, or replaces it
+ * with a reference link, as `resolveContentEmbed()` decides. The reference-link pass of
+ * `postProcessRichContent()` then fills in each link's title, icon and color.
+ */
+async function renderContentEmbeds(contentEl: HTMLElement, context: ContentEmbedContext) {
+    const embeds = [ ...contentEl.querySelectorAll(".include-note") ].map((embedEl) => ({
+        embedEl,
+        embed: resolveContentEmbed((name) => embedEl.getAttribute(name), context)
+    }));
+    const noteIds = embeds.flatMap(({ embed }) => embed?.kind === "note" ? [ embed.noteId ] : []);
     await froca.getNotes(noteIds);
 
-    // Render and integrate the notes.
-    for (const embedEl of embedEls) {
-        // A Tiny embed shows only a title, so it links to what it shows instead of rendering it.
-        if (embedEl.getAttribute("data-box-size") === "tiny") {
-            await replaceEmbedWithReferenceLink(embedEl);
+    for (const { embedEl, embed } of embeds) {
+        if (!embed) continue;
+
+        if (embed.kind === "attachment") {
+            const attachment = await froca.getAttachment(embed.attachmentId, true);
+            if (!attachment) continue;
+
+            if (embed.asLink) {
+                const { ownerId, attachmentId } = attachment;
+                replaceWithReferenceLink(embedEl, getAttachmentEmbedHref(ownerId, attachmentId));
+            } else {
+                const { $renderedContent } = await content_renderer.getRenderedContent(attachment);
+                replaceEmbedContent(embedEl, $renderedContent.toArray());
+            }
             continue;
         }
 
-        const attachment = await getEmbeddedAttachment(embedEl);
-        if (attachment) {
-            const { $renderedContent } = await content_renderer.getRenderedContent(attachment);
-            replaceEmbedContent(embedEl, $renderedContent.toArray());
+        if (embed.asLink) {
+            replaceWithReferenceLink(embedEl, getNoteEmbedHref(embed.noteId, embed.block));
             continue;
         }
 
-        const noteId = embedEl.getAttribute("data-note-id");
-        if (!noteId) continue;
-        const block = embedEl.getAttribute("data-block") ?? undefined;
-
-        const note = froca.getNoteFromCache(noteId);
+        const note = froca.getNoteFromCache(embed.noteId);
         if (!note) {
-            console.warn(`Unable to embed ${noteId} because it could not be found.`);
+            console.warn(`Unable to embed ${embed.noteId} because it could not be found.`);
             continue;
         }
 
-        if (seenNoteIds.has(getEmbedKey(noteId, block))) {
-            console.warn(`Skipping embedding of ${noteId} to avoid circular reference.`);
-            embedEl.remove();
-            continue;
-        }
-
-        // On display only the first level is expanded: the embedded note is rendered with its own
-        // embeds degraded to reference links. Printing/export keeps expanding recursively.
-        // Clone seenNoteIds per descent so it tracks the current ancestor path only — sibling
-        // branches must not pollute each other (a note embedded in two sub-trees is not a cycle).
-        const renderedContent = (await content_renderer.getRenderedContent(note, expandNested
-            ? { seenNoteIds: new Set(seenNoteIds), expandNestedEmbeds: true, block }
-            : { seenNoteIds: new Set(seenNoteIds), embedsAsReferenceLinks: true, block }
-        )).$renderedContent;
-        replaceEmbedContent(embedEl, renderedContent.toArray());
+        const { $renderedContent } = await content_renderer.getRenderedContent(note,
+            getNestedEmbedOptions(context, embed.block));
+        replaceEmbedContent(embedEl, $renderedContent.toArray());
     }
-}
-
-/** The key of an embed in `seenNoteIds`. A note can embed blocks of itself. */
-function getEmbedKey(noteId: string, block: string | undefined) {
-    return block ? `${noteId}:${block}` : noteId;
 }
 
 /** Puts `content` in an embed, followed by the embed's caption. */
@@ -181,55 +179,11 @@ export function getEmbedCaption(embedEl: Element) {
     return embedEl.querySelector<HTMLElement>(":scope > figcaption");
 }
 
-/**
- * Replace each `.include-note` in the given content with a bare reference link to the
- * embedded note, without expanding it. Used on display to stop embedding after the first level so a
- * note's transitive embed graph is not rendered inline. The link's title, icon and colour are
- * filled in by the reference-link post-processing pass in `postProcessRichContent` (the same pass
- * that resolves reference links authored in the note), which also batch-prefetches the note.
- */
-async function replaceEmbedsWithReferenceLinks(contentEl: HTMLElement) {
-    for (const embedEl of contentEl.querySelectorAll(".include-note")) {
-        await replaceEmbedWithReferenceLink(embedEl);
-    }
-}
-
-/** Replaces `embedEl` with a bare reference link to the note or attachment it shows. */
-async function replaceEmbedWithReferenceLink(embedEl: Element) {
-    const attachment = await getEmbeddedAttachment(embedEl);
-    if (attachment) {
-        const { ownerId, attachmentId } = attachment;
-        const href = `#root/${ownerId}?viewMode=attachments&attachmentId=${attachmentId}`;
-        const referenceLink = document.createElement("a");
-        referenceLink.className = "reference-link";
-        referenceLink.setAttribute("href", href);
-        embedEl.replaceWith(referenceLink);
-        return;
-    }
-
-    const noteId = embedEl.getAttribute("data-note-id");
-    // Validate the ID against a note-ID allow-list before interpolating it into the href: it
-    // comes from note HTML, and the reference-link pass later reinterprets that href.
-    if (!noteId || !/^[a-zA-Z0-9_]+$/.test(noteId)) return;
-
-    const block = embedEl.getAttribute("data-block");
+function replaceWithReferenceLink(embedEl: Element, href: string) {
     const referenceLink = document.createElement("a");
     referenceLink.className = "reference-link";
-    referenceLink.setAttribute("href", block
-        ? `#root/${noteId}?block=${encodeBlockParameter(block)}`
-        : `#root/${noteId}`);
+    referenceLink.setAttribute("href", href);
     embedEl.replaceWith(referenceLink);
-}
-
-/** The attachment an embed shows, or `null` for an embed of a note. */
-async function getEmbeddedAttachment(embedEl: Element) {
-    const attachmentId = embedEl.getAttribute("data-attachment-id");
-    // The ID comes from note HTML, so it is checked before it reaches a request or an href.
-    if (!attachmentId || !/^[a-zA-Z0-9_]+$/.test(attachmentId)) {
-        return null;
-    }
-
-    return await froca.getAttachment(attachmentId, true);
 }
 
 /** Rewrite the code block from <pre><code> to <div> in order not to apply a codeblock style to it. */
@@ -249,6 +203,10 @@ export async function rewriteMermaidDiagramsInContainer(container: HTMLDivElemen
         const div = document.createElement("div");
         div.classList.add("mermaid-diagram");
         div.textContent = code.textContent;
+        const blockId = code.getAttribute(BLOCK_ID_ATTRIBUTE);
+        if (blockId) {
+            div.setAttribute(BLOCK_ID_ATTRIBUTE, blockId);
+        }
         mermaidBlock.replaceWith(div);
     }
 }

@@ -1,4 +1,5 @@
 import { t } from "../../services/i18n.js";
+import { ROUTINE_OCCURRENCES_PER_WEEK } from "../collections/calendar/recurrence.js";
 
 export interface AttrHelpEntry {
     description: string;
@@ -42,6 +43,7 @@ export const ATTR_HELP: AttrHelpMap = {
         searchHome: t("attribute_detail.search_home"),
         workspaceSearchHome: t("attribute_detail.workspace_search_home"),
         inbox: t("attribute_detail.inbox"),
+        meetingRecording: t("attribute_detail.meeting_recording"),
         workspaceInbox: t("attribute_detail.workspace_inbox"),
         sqlConsoleHome: t("attribute_detail.sql_console_home"),
         bookmarkFolder: t("attribute_detail.bookmark_folder"),
@@ -58,6 +60,7 @@ export const ATTR_HELP: AttrHelpMap = {
         displayRelations: t("attribute_detail.display_relations"),
         hideRelations: t("attribute_detail.hide_relations"),
         titleTemplate: t("attribute_detail.title_template"),
+        "template:titleTemplate": t("attribute_detail.template_title_template"),
         template: t("attribute_detail.template"),
         color: t("attribute_detail.color"),
         keyboardShortcut: t("attribute_detail.keyboard_shortcut"),
@@ -123,6 +126,10 @@ export const ATTR_HELP: AttrHelpMap = {
         language: t("attribute_detail.language"),
         originalFileName: t("attribute_detail.original_file_name"),
         pageUrl: t("attribute_detail.page_url"),
+        pageDescription: t("attribute_detail.page_description"),
+        pageAuthor: t("attribute_detail.page_author"),
+        publishedDate: t("attribute_detail.published_date"),
+        modifiedDate: t("attribute_detail.modified_date"),
         command: t("attribute_detail.command"),
         displayMode: t("attribute_detail.display_mode"),
         searchString: t("attribute_detail.search_string"),
@@ -154,6 +161,7 @@ export const ATTR_HELP: AttrHelpMap = {
         maxNestingDepth: t("attribute_detail.max_nesting_depth"),
         includeArchived: t("attribute_detail.include_archived"),
         "board:showInbox": t("attribute_detail.board_show_inbox"),
+        "board:hideAddColumn": t("attribute_detail.board_hide_add_column"),
         "board:columnWidth": t("attribute_detail.board_column_width"),
         "board:sortColumns": t("attribute_detail.board_sort_columns"),
         "board:sortColumnsDescending": t("attribute_detail.board_sort_columns_descending"),
@@ -161,9 +169,13 @@ export const ATTR_HELP: AttrHelpMap = {
         "calendar:initialDate": t("attribute_detail.calendar_initial_date"),
         "calendar:hideWeekends": t("attribute_detail.calendar_hide_weekends"),
         "calendar:weekNumbers": t("attribute_detail.calendar_week_numbers"),
+        "calendar:hideRoutineEvents": t("attribute_detail.calendar_hide_routine_events", {
+            days: ROUTINE_OCCURRENCES_PER_WEEK
+        }),
         "calendar:slotDuration": t("attribute_detail.calendar_slot_duration"),
         "calendar:slotLabelInterval": t("attribute_detail.calendar_slot_label_interval"),
         "calendar:title": t("attribute_detail.calendar_title"),
+        "calendar:titleTemplate": t("attribute_detail.calendar_title_template"),
         "calendar:displayedAttributes": t("attribute_detail.calendar_displayed_attributes"),
         "calendar:startDate": t("attribute_detail.calendar_start_date"),
         "calendar:endDate": t("attribute_detail.calendar_end_date"),
@@ -177,6 +189,9 @@ export const ATTR_HELP: AttrHelpMap = {
         recurrence: t("attribute_detail.recurrence"),
         geolocation: t("attribute_detail.geolocation"),
         geoShape: t("attribute_detail.geo_shape"),
+        mapPosition: t("attribute_detail.map_position"),
+        mapShape: t("attribute_detail.map_shape"),
+        "map:imageBounds": t("attribute_detail.map_image_bounds"),
         mapType: t("attribute_detail.map_type"),
         "map:style": t("attribute_detail.map_style"),
         "map:darkStyle": t("attribute_detail.map_dark_style"),
@@ -216,6 +231,7 @@ export const ATTR_HELP: AttrHelpMap = {
         internalLink: t("attribute_detail.internal_link"),
         imageLink: t("attribute_detail.image_link"),
         relationMapLink: t("attribute_detail.relation_map_link"),
+        "map:image": t("attribute_detail.map_image"),
         includeNoteLink: t("attribute_detail.include_note_link"),
         dateTemplate: t("attribute_detail.date_template"),
         weekTemplate: t("attribute_detail.week_template"),

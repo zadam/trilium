@@ -82,9 +82,7 @@
   },
   "bulk_actions": {
     "bulk_actions": "Tindakan massal",
-    "affected_notes": "Catatan yang terdampak",
     "include_descendants": "Sertakan turunan dari catatan yang dipilih",
-    "available_actions": "Tindakan yang tersedia",
     "chosen_actions": "Tindakan yang dipilih",
     "execute_bulk_actions": "Jalankan tindakan massal",
     "bulk_actions_executed": "Tindakan massal telah berhasil dijalankan.",
@@ -744,21 +742,13 @@
     "remove_this_search_action": "Hapus tindakan pencarian ini"
   },
   "execute_script": {
-    "execute_script": "Jalankan skrip",
-    "help_text": "Anda dapat menjalankan skrip sederhana pada catatan yang cocok.",
-    "example_1": "Sebagai contoh, untuk menambahkan string ke judul catatan, gunakan skrip kecil ini:",
-    "example_2": "Contoh yang lebih kompleks adalah menghapus semua atribut dari catatan yang cocok:"
+    "execute_script": "Jalankan skrip"
   },
   "add_label": {
     "add_label": "Tambahkan label",
     "label_name_placeholder": "nama label",
     "label_name_title": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua.",
-    "to_value": "ke nilai",
-    "new_value_placeholder": "nilai baru",
-    "help_text": "Pada semua catatan yang cocok:",
-    "help_text_item1": "buat label yang diberikan jika catatan belum memilikinya",
-    "help_text_item2": "atau ubah nilai label yang sudah ada",
-    "help_text_note": "Anda juga dapat memanggil metode ini tanpa nilai; dalam hal tersebut label akan ditetapkan ke catatan tanpa nilai."
+    "new_value_placeholder": "nilai baru"
   },
   "delete_label": {
     "delete_label": "Hapus label",
@@ -767,9 +757,7 @@
   },
   "rename_label": {
     "rename_label": "Ganti nama label",
-    "rename_label_from": "Ganti nama label dari",
     "old_name_placeholder": "nama lama",
-    "to": "Menjadi",
     "new_name_placeholder": "nama baru",
     "name_title": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua."
   },
@@ -777,49 +765,26 @@
     "update_label_value": "Perbarui nilai label",
     "label_name_placeholder": "nama label",
     "label_name_title": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua.",
-    "to_value": "ke nilai",
-    "new_value_placeholder": "nilai baru",
-    "help_text": "Pada semua catatan yang cocok, ubah nilai label yang sudah ada.",
-    "help_text_note": "Anda juga dapat memanggil metode ini tanpa nilai; dalam hal tersebut label akan ditetapkan ke catatan tanpa nilai."
+    "new_value_placeholder": "nilai baru"
   },
   "delete_note": {
-    "delete_note": "Hapus catatan",
-    "delete_matched_notes": "Hapus catatan yang cocok",
-    "delete_matched_notes_description": "Ini akan menghapus catatan yang cocok.",
-    "undelete_notes_instruction": "Setelah penghapusan, catatan tersebut dapat dipulihkan dari dialog Perubahan terbaru.",
-    "erase_notes_instruction": "Untuk menghapus catatan secara permanen, setelah penghapusan Anda dapat masuk ke Opsi -> Lainnya lalu klik tombol \"Hapus permanen catatan yang dihapus sekarang\"."
+    "delete_note": "Hapus catatan"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Hapus revisi catatan",
-    "all_past_note_revisions": "Semua revisi catatan terdahulu dari catatan yang cocok akan dihapus. Catatan itu sendiri akan tetap sepenuhnya dipertahankan. Dengan kata lain, riwayat catatan akan dihapus."
+    "delete_note_revisions": "Hapus revisi catatan"
   },
   "move_note": {
     "move_note": "Pindahkan catatan",
-    "to": "ke",
-    "target_parent_note": "catatan induk target",
-    "on_all_matched_notes": "Pada semua catatan yang cocok",
-    "move_note_new_parent": "pindahkan catatan ke induk baru jika catatan hanya memiliki satu induk (yaitu branch lama dihapus dan branch baru ke induk baru dibuat)",
-    "clone_note_new_parent": "kloning catatan ke induk baru jika catatan memiliki beberapa klon/branch (tidak jelas branch mana yang harus dihapus)",
-    "nothing_will_happen": "tidak akan terjadi apa pun jika catatan tidak dapat dipindahkan ke catatan target (misalnya karena akan membuat siklus tree)"
+    "target_parent_note": "catatan induk target"
   },
   "rename_note": {
-    "rename_note": "Ganti nama catatan",
-    "rename_note_title_to": "Ganti judul catatan menjadi",
-    "new_note_title": "judul catatan baru",
-    "click_help_icon": "Klik ikon bantuan di sebelah kanan untuk melihat semua opsi",
-    "evaluated_as_js_string": "Nilai yang diberikan dievaluasi sebagai string JavaScript sehingga dapat diperkaya dengan konten dinamis melalui variabel <code>note</code> yang disuntikkan (catatan yang sedang diganti namanya). Contoh:",
-    "example_note": "<code>Note</code> - semua catatan yang cocok akan diganti namanya menjadi 'Note'",
-    "example_new_title": "<code>NEW: ${note.title}</code> - judul catatan yang cocok diberi awalan 'NEW: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - catatan yang cocok diberi awalan bulan-tanggal pembuatan catatan",
-    "api_docs": "Lihat dokumentasi API untuk <a href='https://zadam.github.io/trilium/backend_api/Note.html'>note</a> dan <a href='https://day.js.org/docs/en/display/format'>properti dateCreatedObj / utcDateCreatedObj</a> untuk detail."
+    "rename_note": "Ganti nama catatan"
   },
   "add_relation": {
     "add_relation": "Tambahkan relasi",
     "relation_name": "nama relasi",
     "allowed_characters": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua.",
-    "to": "ke",
-    "target_note": "catatan target",
-    "create_relation_on_all_matched_notes": "Pada semua catatan yang cocok, buat relasi yang diberikan."
+    "target_note": "catatan target"
   },
   "delete_relation": {
     "delete_relation": "Hapus relasi",
@@ -828,20 +793,14 @@
   },
   "rename_relation": {
     "rename_relation": "Ganti nama relasi",
-    "rename_relation_from": "Ganti nama relasi dari",
     "old_name": "nama lama",
-    "to": "Menjadi",
     "new_name": "nama baru",
     "allowed_characters": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua."
   },
   "update_relation_target": {
-    "update_relation": "Perbarui relasi",
     "relation_name": "nama relasi",
     "allowed_characters": "Karakter yang diperbolehkan adalah karakter alfanumerik, underscore, dan titik dua.",
-    "to": "ke",
     "target_note": "catatan target",
-    "on_all_matched_notes": "Pada semua catatan yang cocok",
-    "change_target_note": "ubah catatan target dari relasi yang sudah ada",
     "update_relation_target": "Perbarui target relasi"
   },
   "attachments_actions": {
@@ -1329,13 +1288,10 @@
   },
   "editable_text": {
     "placeholder": "Ketik isi catatan Anda di sini...",
-    "editor_crashed_title": "Editor teks mengalami crash",
-    "editor_crashed_content": "Konten Anda berhasil dipulihkan, tetapi beberapa perubahan terbaru Anda mungkin belum tersimpan.",
     "editor_crashed_details_button": "Lihat detail selengkapnya...",
     "editor_crashed_details_intro": "Jika Anda mengalami kesalahan ini beberapa kali, pertimbangkan untuk melaporkannya di GitHub dengan menempelkan informasi di bawah ini.",
     "editor_crashed_details_title": "Informasi teknis",
     "auto-detect-language": "Terdeteksi otomatis",
-    "keeps-crashing": "Komponen editor terus mengalami crash. Silakan coba mulai ulang Trilium. Jika masalah tetap berlanjut, pertimbangkan untuk membuat laporan bug.",
     "nothing_selected_to_cut": "Pilih beberapa teks terlebih dahulu untuk memotongnya menjadi sub-catatan."
   },
   "empty": {
@@ -2953,7 +2909,6 @@
     "processing_complete": "Pemrosesan OCR selesai.",
     "processing_failed": "Gagal memulai pemrosesan OCR",
     "text_filtered_low_confidence": "OCR mendeteksi teks dengan kepercayaan {{confidence}}%, tetapi teks tersebut dibatalkan karena ambang batas minimum Anda adalah {{threshold}}%.",
-    "image_based_pdf_not_supported": "PDF ini tampaknya berbasis gambar (scanned). Ekstraksi teks dari PDF berbasis gambar belum didukung.",
     "open_media_settings": "Buka Pengaturan",
     "view_extracted_text": "Lihat teks yang diekstrak (OCR)"
   },
@@ -3740,16 +3695,13 @@
   },
   "save_revision": {
     "save_revision": "Simpan revisi",
-    "revision_name_placeholder": "Nama revisi (opsional)",
-    "help": "Sebuah revisi bernama akan disimpan untuk setiap catatan yang cocok, menangkap isi dan judulnya saat ini."
+    "revision_name_placeholder": "Nama revisi (opsional)"
   },
   "convert_note": {
     "convert_note": "Konversi",
-    "convert_note_to": "Konversi catatan",
     "choose_conversion": "(pilih jenis konversi)",
     "conversion_htmlToMarkdown": "Catatan Teks → Catatan Markdown (berpotensi kehilangan data)",
     "conversion_markdownToHtml": "Catatan Markdown → Catatan Teks",
-    "help_text": "Konversi hanya diterapkan pada catatan yang sesuai dengan jenis sumber; catatan lainnya tidak diubah. Revisi setiap catatan yang dikonversi akan disimpan terlebih dahulu.",
     "warning": "Sebagian pemformatan mungkin hilang saat mengonversi catatan dan Anda mungkin perlu memperbaiki beberapa hal setelahnya. Revisi setiap catatan akan disimpan terlebih dahulu sehingga Anda dapat memulihkannya. Apakah Anda ingin melanjutkan?",
     "warning_risky": "Anda sedang mengonversi antara dua format yang tidak memiliki kemampuan yang sama, sehingga sebagian pemformatan mungkin hilang dan beberapa elemen yang tidak didukung mungkin akan dihapus.<br><br>Apakah Anda sepenuhnya menerima risiko ini dan ingin melanjutkan konversi?<br><br>Revisi setiap catatan yang dikonversi akan disimpan terlebih dahulu sehingga Anda dapat mengembalikannya ke format semula."
   },
@@ -3953,11 +3905,9 @@
     "compress_resize_help": "Mengurangi ukuran gambar yang lebih besar daripada ukuran yang dipilih. Gambar yang sudah sesuai akan dibiarkan tanpa perubahan.",
     "compress_max_dimensions": "Kurangi ukuran gambar menjadi",
     "compress_jpeg_handling": "Gambar JPEG",
-    "compress_jpeg_handling_help": "Mempertahankan gambar akan menjaga kualitasnya saat ini. Mengompres akan menyimpan ulang gambar dengan kualitas yang lebih rendah untuk mengurangi ukurannya, dan tindakan ini tidak dapat dibatalkan.",
     "compress_jpeg_keep": "Biarkan apa adanya",
     "compress_jpeg_compress": "Kompres",
     "compress_png_handling": "Gambar PNG",
-    "compress_png_handling_help": "Mempertahankan gambar akan menjaganya tetap sama persis. Mengoptimalkan akan mengurangi jumlah warna, yang biasanya tidak terlihat pada tangkapan layar dan diagram. Mengonversi ke JPEG akan menghemat ruang paling banyak, tetapi tidak dapat diterapkan pada gambar yang memiliki transparansi; gambar tersebut akan dioptimalkan sebagai gantinya.",
     "compress_png_keep": "Biarkan apa adanya",
     "compress_png_optimize": "Optimalkan",
     "compress_png_jpeg": "Konversi ke JPEG",

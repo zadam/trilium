@@ -5,7 +5,7 @@ import { join } from 'path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
-import { shareMermaidManifest, stripUniverEmojiData, stripUniverHyphenation } from './vite-plugins.mjs';
+import { shareTheme, stripUniverEmojiData, stripUniverHyphenation } from './vite-plugins.mjs';
 
 const assets = [ "assets", "stylesheets", "fonts", "translations" ];
 
@@ -19,13 +19,14 @@ if (isDev) {
         // work on such a view; components then reload with the page instead of in place.
         ...(process.env.TRILIUM_NO_HMR ? [] : [ prefresh() ]),
         stripUniverHyphenation(),
-        stripUniverEmojiData()
+        stripUniverEmojiData(),
+        ...shareTheme()
     ];
 } else {
     plugins = [
         stripUniverHyphenation(),
         stripUniverEmojiData(),
-        shareMermaidManifest("src/share_mermaid.json"),
+        ...shareTheme(),
         viteStaticCopy({
             targets: assets.map((asset) => ({
                 src: `src/${asset}/**/*`,
@@ -65,7 +66,11 @@ export default defineConfig(() => ({
     },
     css: {
         transformer: 'lightningcss',
-        devSourcemap: isDev
+        devSourcemap: isDev,
+        preprocessorOptions: {
+            // The share theme builds Bootstrap's tooltips from its partials, which only `@import` loads.
+            scss: { silenceDeprecations: [ "import" ], quietDeps: true }
+        }
     },
     server: {
         watch: {
@@ -143,7 +148,18 @@ export default defineConfig(() => ({
             deps: {
                 // The plugin reads `rrule` through a namespace import, which Node resolves to the
                 // package's CommonJS build with no named exports. Bundling it applies Vite's interop.
-                inline: ["@fullcalendar/rrule"]
+                inline: [
+                    "@fullcalendar/rrule",
+                    // Univer's components and the React libraries under them run on preact/compat
+                    // in the app, so specs bundle them to apply the same `react` alias.
+                    /@univerjs\/design/,
+                    /@radix-ui\//,
+                    /@floating-ui\/react-dom/,
+                    /react-remove-scroll/,
+                    /react-style-singleton/,
+                    /use-callback-ref/,
+                    /use-sidecar/
+                ]
             }
         },
         reporters: [

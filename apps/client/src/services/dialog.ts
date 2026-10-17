@@ -1,5 +1,7 @@
-import type { NotePickerDialogOptions } from "../widgets/dialogs/note_picker.js";
+import type { ResourcesStatusResponse } from "@triliumnext/commons";
 import { Modal } from "bootstrap";
+
+import type { NotePickerDialogOptions } from "../widgets/dialogs/note_picker.js";
 
 import appContext from "../components/app_context.js";
 import type { ConfirmDeleteNoteBoxOptions, ConfirmDialogOptions, ConfirmDialogResult, ConfirmWithMessageOptions, MessageType } from "../widgets/dialogs/confirm.js";
@@ -9,6 +11,7 @@ import type { PromptDialogOptions } from "../widgets/dialogs/prompt.js";
 import { focusSavedElement, saveFocusedElement } from "./focus.js";
 import keyboardActionsService from "./keyboard_actions.js";
 import type { NoteDeletionTarget } from "./note_deletion.js";
+import server from "./server.js";
 
 /**
  * @param declaredZIndex the z-index the dialog defines for itself, if any (see {@link raiseAboveStackedPopup}).
@@ -291,6 +294,22 @@ export async function prompt(props: PromptDialogOptions) {
     return new Promise<string | null>((res) => appContext.triggerCommand("showPromptDialog", { ...props, callback: res }));
 }
 
+/**
+ * Makes sure the resources `ids` are installed, asking to download those that are not and showing
+ * the download.
+ *
+ * @returns `true` once every resource is installed, `false` when the download was declined,
+ *   canceled or failed.
+ */
+export async function requireResources(ids: string[]) {
+    const status = await server.get<ResourcesStatusResponse>(`resources?ids=${ids.map(encodeURIComponent).join(",")}`);
+    if (status.resources.every(({ installed }) => installed)) {
+        return true;
+    }
+    return new Promise<boolean>((res) =>
+        appContext.triggerCommand("showResourceDownloadDialog", { ids, status, callback: res }));
+}
+
 export default {
     info,
     chooseNote,
@@ -298,5 +317,6 @@ export default {
     confirmWithNoteDeletion,
     confirmDeleteNoteBoxWithNote,
     pickSingleItem,
-    prompt
+    prompt,
+    requireResources
 };

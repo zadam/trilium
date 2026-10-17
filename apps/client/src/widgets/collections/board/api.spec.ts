@@ -19,8 +19,9 @@ import { buildNote } from "../../../test/easy-froca";
 import { BoardViewData } from ".";
 import BoardApi, { getPendingWrites, PendingColumnWrites } from "./api";
 import { ColumnItem, ColumnMap } from "./data";
-import { BOARD_TEMPLATE_ID, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN } from "./columns";
-import { DEFAULT_CARD_TEMPLATES } from "./card_templates";
+import {
+    BOARD_TEMPLATE_ID, DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, getStatusDefinition, INBOX_COLUMN
+} from "./columns";
 import { COLUMN_ID_LENGTH } from "./reference";
 
 vi.mock("../../../services/bulk_action", () => ({
@@ -403,9 +404,9 @@ describe("BoardApi column mutations", () => {
         );
 
         let releaseSecond = () => {};
+        const second = new Promise<void>((resolve) => { releaseSecond = resolve; });
         failNextRename();
-        vi.mocked(executeBulkActions).mockImplementationOnce(
-            () => new Promise<void>((resolve) => { releaseSecond = resolve; }));
+        vi.mocked(executeBulkActions).mockImplementationOnce(() => second);
 
         const failing = api.renameColumn("Done", "Shipped");
         const running = api.removeColumn("To Do");
@@ -478,9 +479,9 @@ describe("BoardApi column mutations", () => {
         );
 
         let releaseSecond = () => {};
+        const second = new Promise<void>((resolve) => { releaseSecond = resolve; });
         vi.mocked(executeBulkActions).mockRejectedValueOnce(new Error("offline"));
-        vi.mocked(executeBulkActions).mockImplementationOnce(
-            () => new Promise<void>((resolve) => { releaseSecond = resolve; }));
+        vi.mocked(executeBulkActions).mockImplementationOnce(() => second);
 
         // The same column, deleted twice over before either has answered.
         const failing = api.removeColumn("Done");
@@ -846,7 +847,7 @@ describe("BoardApi card operations", () => {
 
     it("takes a card off the board by removing the value it is grouped by", async () => {
         const { api, items } = createBoardWithCards();
-        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockReturnValue(true);
+        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockResolvedValue(true);
 
         await api.removeFromBoard([ items[0].note.noteId ]);
         expect(removeLabel).toHaveBeenCalledWith(items[0].note, "status");
@@ -868,7 +869,7 @@ describe("BoardApi card operations", () => {
         });
         const [ cardId ] = [ ...board.getChildNoteIds() ];
         const { api } = createApi({}, [], board);
-        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockReturnValue(true);
+        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName").mockResolvedValue(true);
         const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined as never);
 
         await api.removeFromBoard([ cardId ]);
@@ -881,7 +882,7 @@ describe("BoardApi card operations", () => {
         const board = buildNote({ title: "Board", children: [ { title: "Card" } ] });
         const { api } = createApi({}, [], board, "~status");
         const removeRelation = vi.spyOn(attributes, "removeOwnedRelationByName")
-            .mockReturnValue(true);
+            .mockResolvedValue(true);
 
         await api.removeFromBoard([ board.getChildNoteIds()[0] ]);
         expect(removeRelation).toHaveBeenCalledWith(expect.anything(), "status");
@@ -899,7 +900,7 @@ describe("BoardApi card operations", () => {
         });
         const { api } = createApi({}, [], board, "~status");
         const removeRelation = vi.spyOn(attributes, "removeOwnedRelationByName")
-            .mockReturnValue(true);
+            .mockResolvedValue(true);
         const message = vi.spyOn(toast, "showMessage").mockReturnValue(undefined);
 
         await api.removeFromBoard([ board.getChildNoteIds()[0] ]);
@@ -2037,7 +2038,7 @@ describe("filing a card under the inbox", () => {
         });
         const { api } = createApi({}, [], board, "~status");
         const removeRelation = vi.spyOn(attributes, "removeOwnedRelationByName")
-            .mockReturnValue(true);
+            .mockResolvedValue(true);
         const message = vi.spyOn(toast, "showMessage").mockReturnValue(undefined);
 
         await api.changeColumn(board.getChildNoteIds()[0], "");
@@ -2055,7 +2056,7 @@ describe("filing a card under the inbox", () => {
         });
         const { api } = createApi({}, [], board, "~status");
         const removeRelation = vi.spyOn(attributes, "removeOwnedRelationByName")
-            .mockReturnValue(true);
+            .mockResolvedValue(true);
 
         await api.removeFromBoard([ board.getChildNoteIds()[0] ]);
 

@@ -28,6 +28,7 @@ import CompositeMessagingProvider from "./composite_messaging_provider";
 import IpcMessagingProvider from "./ipc_messaging_provider";
 import DesktopPlatformProvider from "./platform_provider";
 import { registerTriliumAppScheme, setupTriliumAppProtocol } from "./protocol";
+import { setupAsarReadStreams } from "./services/asar_read_stream";
 import { applyLaunchOnStartup, setupAutoLaunch, wasLaunchedHidden } from "./services/auto_launch";
 import { setupCustomDictionary } from "./services/custom_dictionary";
 import { setupReferer } from "./services/referer";
@@ -41,11 +42,12 @@ import {
 } from "./services/backup_passphrase";
 import { setupOneNoteHandlers } from "./services/onenote";
 import { setupPrintingHandlers } from "./services/printing";
-import ElectronRequestProvider from "./services/request";
+import ElectronRequestProvider, { setupResourceDownloads } from "./services/request";
 import { setupRestoreHandlers } from "./services/restore";
 import { getSecuritySettings, registerSecurityIpcHandlers } from "./services/security_settings";
 import { setupShellHandlers } from "./services/shell";
 import { markStartupMetric, setupStartupMetricsIpc } from "./services/startup_metrics";
+import { setupTranscriptionHandlers } from "./services/transcription";
 import { setupSystemTray } from "./services/tray";
 import windowService, { setupWindowing } from "./services/window";
 
@@ -63,6 +65,7 @@ export async function main() {
     }
 
     registerTriliumAppScheme();
+    setupAsarReadStreams();
 
     const userDataPath = getUserData();
     app.setPath("userData", userDataPath);
@@ -143,6 +146,8 @@ export async function main() {
     registerSecurityIpcHandlers();
     registerBackupPassphraseIpcHandlers();
     setupStartupMetricsIpc();
+    setupResourceDownloads();
+    setupTranscriptionHandlers();
 
     app.on("will-quit", () => {
         globalShortcut.unregisterAll();

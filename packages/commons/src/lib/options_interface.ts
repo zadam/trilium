@@ -202,6 +202,22 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoFixConsistencyIssues: boolean;
     vimKeymapEnabled: boolean;
     codeLineWrapEnabled: boolean;
+    /** Whether meetings can be transcribed: shows the launcher and the transcription settings. */
+    transcriptionEnabled: boolean;
+    /** Whether a meeting transcript is shown without filler words and stutters. */
+    transcriptCleanupEnabled: boolean;
+    /**
+     * The speech recognition model a recording runs on, a key of `TRANSCRIPTION_MODELS`. Not synced:
+     * each device downloads and runs its own.
+     */
+    transcriptionModel: string;
+    /** Whether a recording tells the other participants apart, labeling each utterance with its speaker. */
+    transcriptionSpeakersEnabled: boolean;
+    /**
+     * Whether a recording keeps its audio and the transcript as produced in the data directory, for
+     * troubleshooting. Not synced: the files stay on the device that recorded.
+     */
+    transcriptionKeepRecordings: boolean;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;
@@ -277,6 +293,11 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     /** Whether a URL typed or pasted into a text note is automatically turned into a link preview. The "Link preview" dialog is unaffected and always inserts one on request. */
     textNoteAutoLinkPreviewsEnabled: boolean;
     /**
+     * Whether the header rows of a table stay at the top of the note while the rest of the table
+     * scrolls past.
+     */
+    textNoteStickyTableHeadersEnabled: boolean;
+    /**
      * Whether the editor preserves the HTML tags it has no editing feature of its own for — the
      * ones named by `allowedHtmlTags`, carried through CKEditor's General HTML Support.
      *
@@ -321,6 +342,8 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     llmProviders: string;
     /** Config id of the search provider the chat's web search uses; empty for the model's built-in search. */
     llmWebSearchProvider: string;
+    /** The permission mode picked last in any chat, which a new chat starts in. */
+    llmPermissionMode: string;
     /** The model the text editor's AI assistant runs on, as JSON `{ providerId, provider, model }`; empty to follow the first configured provider's default. */
     aiAssistantModel: string;
     /** Whether the MCP (Model Context Protocol) server endpoint is enabled. */

@@ -1,3 +1,5 @@
+import "./tooltip.css";
+
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { FilterLabelsByType, HighlightedTokenInfo, KeyboardActionNames, NoteType, OptionNames, RelationNames } from "@triliumnext/commons";
 import { Tooltip } from "bootstrap";
@@ -29,11 +31,10 @@ import SpacedUpdate, { type StateCallback } from "../../services/spaced_update";
 import { getEffectiveThemeStyle } from "../../services/theme";
 import toast, { ToastOptions } from "../../services/toast";
 import tree from "../../services/tree";
-import utils, { getErrorMessage, randomString, reloadFrontendApp } from "../../services/utils";
+import utils, { getErrorMessage, isShare, randomString, reloadFrontendApp } from "../../services/utils";
 import ws from "../../services/ws";
 import BasicWidget, { ReactWrappedWidget } from "../basic_widget";
 import NoteContextAwareWidget from "../note_context_aware_widget";
-import { DragData } from "../note_tree";
 import { noteSavedDataStore } from "./NoteStore";
 import { findClosestNoteContext, NoteContextContext, ParentComponent, refToJQuerySelector } from "./react_utils";
 import type FAttachment from "../../entities/fattachment";
@@ -148,8 +149,9 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     }, [ note, getData ]);
 
     const commit = useCallback(async (data: SavedData | undefined) => {
-        // for read only notes, or if note is not yet available (e.g. lazy creation)
-        if (data === undefined || !note || note.type !== noteType) return;
+        // for read only notes, or if note is not yet available (e.g. lazy creation); a visitor of a
+        // shared page cannot save
+        if (data === undefined || !note || note.type !== noteType || isShare) return;
 
         protected_session_holder.touchProtectedSessionIfNecessary(note);
 
@@ -759,7 +761,7 @@ export function useNoteLabel(note: FNote | undefined | null, labelName: FilterLa
  * themselves, e.g. a label a `#calendar:startDate` renaming points at. Prefer {@link useNoteLabel}
  * wherever the name is a builtin one, as it holds the name to the declared vocabulary.
  */
-export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => void] {
+export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => Promise<unknown>] {
     const [ , setLabelValue ] = useState<string | null | undefined>();
 
     useEffect(() => setLabelValue(note?.getLabelValue(labelName) ?? null), [ note, labelName ]);
@@ -776,12 +778,12 @@ export function useNoteLabelByName(note: FNote | undefined | null, labelName: st
         }
     });
 
-    const setter = useCallback((value: string | null | undefined) => {
+    const setter = useCallback(async (value: string | null | undefined) => {
         if (note) {
             if (value !== null) {
-                attributes.setLabel(note.noteId, labelName, value);
+                await attributes.setLabel(note.noteId, labelName, value);
             } else {
-                attributes.removeOwnedLabelByName(note, labelName);
+                await attributes.removeOwnedLabelByName(note, labelName);
             }
         }
     }, [note, labelName]);
@@ -1505,8 +1507,9 @@ export function useLegacyImperativeHandlers(handlers: Record<string, Function>) 
  * marks its own element (see `BasicWidget.render`), and a React tree mounted under one answers to
  * that same widget, so the two already agree everywhere else.
  */
-export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>) {
-    const parentComponent = useContext(ParentComponent);
+export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>, component?: Component) {
+    const contextComponent = useContext(ParentComponent);
+    const parentComponent = component ?? contextComponent;
 
     useEffect(() => {
         const el = elRef.current;
@@ -1693,6 +1696,16 @@ export function useImperativeSearchHighlighlighting(
         el.querySelectorAll<HTMLElement>(".ck-find-result").forEach(expandAncestorDetails);
     };
 }
+
+/** A note the note tree's drag carries, as JSON under the `text` type. */
+export interface DragData {
+    noteId: string;
+    branchId: string;
+    title: string;
+}
+
+/** The type that marks a drag as holding notes from the note tree, as fancytree's `dnd5` sets. */
+export const TREE_CLIPBOARD_TYPE = "application/x-fancytree-node";
 
 export function useNoteTreeDrag(containerRef: RefObject<HTMLElement | null | undefined>, { dragEnabled, dragNotEnabledMessage, callback }: {
     dragEnabled: boolean,
@@ -1915,21 +1928,23 @@ export function useGlobalShortcut(keyboardShortcut: string | null | undefined, h
 
 /**
  * Indicates that the current note is in read-only mode, while an editing mode is available,
- * and provides a way to switch to editing mode.
+ * and provides a way to switch to editing mode. `isLocked` marks a note that no editing mode can
+ * unlock, as its content cannot be saved; `enableEditing` does nothing for it.
  */
 export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: NoteContext | undefined) {
     const [ isReadOnly, setIsReadOnly ] = useState<boolean | undefined>(undefined);
     const [ readOnlyAttr ] = useNoteLabelBoolean(note, "readOnly");
     const [ autoReadOnlyDisabledAttr ] = useNoteLabelBoolean(note, "autoReadOnlyDisabled");
     const [ temporarilyEditable, setTemporarilyEditable ] = useState(false);
+    const isLocked = note?.isContentWritable === false;
 
     const enableEditing = useCallback((enabled = true) => {
-        if (noteContext?.viewScope) {
+        if (noteContext?.viewScope && !isLocked) {
             noteContext.viewScope.readOnlyTemporarilyDisabled = enabled;
             appContext.triggerEvent("readOnlyTemporarilyDisabled", {noteContext});
             setTemporarilyEditable(enabled);
         }
-    }, [noteContext]);
+    }, [noteContext, isLocked]);
 
     useEffect(() => {
         if (note && noteContext) {
@@ -1941,13 +1956,13 @@ export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: N
     }, [ note, noteContext, noteContext?.viewScope, readOnlyAttr, autoReadOnlyDisabledAttr ]);
 
     useTriliumEvent("readOnlyTemporarilyDisabled", ({noteContext: eventNoteContext}) => {
-        if (noteContext?.ntxId === eventNoteContext.ntxId) {
+        if (noteContext?.ntxId === eventNoteContext.ntxId && !isLocked) {
             setIsReadOnly(!noteContext.viewScope?.readOnlyTemporarilyDisabled);
             setTemporarilyEditable(true);
         }
     });
 
-    return { isReadOnly, enableEditing, temporarilyEditable };
+    return { isReadOnly, isLocked, enableEditing, temporarilyEditable };
 }
 
 /**
@@ -2145,9 +2160,10 @@ export function useNoteColorClass(note: FNote | null | undefined) {
  * reader's own.
  *
  * Read when the caller mounts and again whenever a template is made, deleted, renamed or given
- * another icon, so what is offered is what exists now.
+ * another icon, so what is offered is what exists now. Not read at all while `enabled` is off,
+ * for a caller that has nothing to create, such as a read-only board.
  */
-export function useNoteTypeOptions() {
+export function useNoteTypeOptions(enabled = true) {
     const [ options, setOptions ] = useState<NoteTypeOption[]>([]);
     /** How many reads were asked for, and the newest one answered. */
     const asked = useRef(0);
@@ -2168,10 +2184,13 @@ export function useNoteTypeOptions() {
     }, []);
 
     useEffect(() => {
+        if (!enabled) {
+            return;
+        }
         read();
         // A read still in flight when the caller goes has nothing left to answer.
         return () => { answered.current = asked.current + 1; };
-    }, [ read ]);
+    }, [ read, enabled ]);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const offered = new Set(options
@@ -2188,7 +2207,7 @@ export function useNoteTypeOptions() {
             option.options.templateNoteId
                 && loadResults.isNoteReloaded(option.options.templateNoteId));
 
-        if (templated || renamed) {
+        if (enabled && (templated || renamed)) {
             read();
         }
     });

@@ -32,7 +32,8 @@ import TableInsertFormView from "./table_insert_form.js";
 /**
  * Replaces the `insertTable` dropdown with one that has an "Insert table…" button above the size
  * grid. The button opens {@link TableInsertFormView} in a balloon at the caret, where the number
- * of rows and columns is typed.
+ * of rows and columns is typed. The `insertTableForm` toolbar button opens the form directly, for
+ * touch screens, where the size grid cannot be hovered.
  */
 export default class TableInsertUI extends Plugin {
 
@@ -49,6 +50,9 @@ export default class TableInsertUI extends Plugin {
     init() {
         // Replaces the dropdown of `TableUI`, which `Table` initializes before this plugin.
         this.editor.ui.componentFactory.add("insertTable", (locale) => this.createDropdown(locale));
+        this.editor.ui.componentFactory.add("insertTableForm", (locale) => {
+            return this.createFormButton(locale);
+        });
     }
 
     override destroy() {
@@ -127,6 +131,22 @@ export default class TableInsertUI extends Plugin {
         });
 
         return dropdownView;
+    }
+
+    private createFormButton(locale: Locale): ButtonView {
+        // Always registered: `Table` loads `TableEditing`.
+        const command = this.editor.commands.get("insertTable") as InsertTableCommand;
+        const button = new ButtonView(locale);
+
+        button.bind("isEnabled").to(command);
+        button.set({
+            icon: IconTable,
+            label: this.editor.t("Insert table"),
+            tooltip: true
+        });
+        button.on("execute", () => this.showForm());
+
+        return button;
     }
 
     private getFormView(): TableInsertFormView {

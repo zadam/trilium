@@ -220,6 +220,22 @@ describe("AttributeList", () => {
         expect(cards[2].querySelectorAll(".definition-marker")).toHaveLength(1);
     });
 
+    it("lists the attributes of a note that cannot be edited, offering no way to change them", () => {
+        const note = noteWithAttributes();
+        note.isContentWritable = false;
+        renderPanel(note);
+
+        const cards = [ ...container.querySelectorAll(".card") ];
+        expect(namesIn(cards[0])).toEqual([ "author", "cssClass", "template" ]);
+        // Read as any other note's: Trilium's own names below the rule, inherited ones naming their note.
+        expect(cards[0].querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
+        expect(cards[1].querySelectorAll(".attribute-owner")).toHaveLength(2);
+        expect(container.querySelectorAll(".attribute-delete-button")).toHaveLength(0);
+        expect(container.querySelectorAll(".attribute-edit-button")).toHaveLength(0);
+        expect(container.querySelector(".attribute-add-row")).toBeNull();
+        expect(container.querySelector(".bx-plus")).toBeNull();
+    });
+
     it("keeps to one card, collapsing and all, for a note with nothing but its own attributes", () => {
         renderPanel(buildNote({ id: "bare", title: "Bare", "#author": "Elian" }));
 

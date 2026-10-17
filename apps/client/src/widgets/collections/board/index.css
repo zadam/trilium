@@ -288,6 +288,18 @@ body.mobile .board-view-container .board-add-column {
   margin-inline-end: 0.4em;
 }
 
+.board-view-container .board-column h3 > .column-icon.static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(1em + var(--note-icon-container-padding-size) * 2);
+  height: calc(1em + var(--note-icon-container-padding-size) * 2);
+  border-radius: 50%;
+  background: var(--note-icon-custom-background-color, var(--note-icon-background-color));
+  color: var(--note-icon-custom-color, var(--note-icon-color));
+  font-size: var(--note-icon-size);
+}
+
 .board-view-container .board-column h3 > .column-icon button.note-icon {
   /* Cap height rather than the glyph box, so the icon sits on the title's own line. */
   line-height: 1;
@@ -571,7 +583,7 @@ body.mobile .board-view-container .board-add-column {
 }
 
 /* Centred on the first line, in a box the size of the glyph. The size is rounded to whole pixels,
-   as `note_icon.css` rounds the picker's glyph. */
+   as `IconPickerButton.css` rounds the picker's glyph. */
 .board-view-container .board-note > .title > .icon {
   position: absolute;
   inset-inline-start: var(--card-icon-inset);
@@ -1039,7 +1051,7 @@ body#trilium-app.motion-disabled .board-view.editing-open :is(
  * worked out where it is used, and both sit in the card's own font.
  */
 .board-view-container .title-editor-field .title-editor-icon {
-  /* Rounded here, not in `note_icon.css`: that file rounds the glyph but not the box, and the
+  /* Rounded here, not in `IconPickerButton.css`: that file rounds the glyph but not the box, and the
      insets below are computed from the box. */
   --note-icon-size: round(var(--card-icon-size), 1px);
   --note-icon-container-padding-size: 4px;
@@ -1092,44 +1104,13 @@ body#trilium-app.motion-disabled .board-view.editing-open :is(
   max-width: calc(100% - 2 * var(--card-icon-inset));
 }
 
-/* A quiet chip rather than a button: it names what the card will be, and is pressed only to change
-   it. The name is cut rather than wrapped, the field being one line tall to begin with. */
-.board-view-container .card-template-pill .card-template-pill-button {
-  display: flex;
-  align-items: center;
-  gap: 0.3em;
-  max-width: 100%;
+.board-view-container .template-pill .template-pill-button {
   height: var(--card-template-pill-height);
-  border: 1px solid var(--main-border-color);
-  border-radius: 999px;
-  padding-inline: 0.5em;
-  background-color: transparent;
   color: var(--board-muted-text-color);
-  font-size: 0.85em;
-  line-height: 1;
 }
 
-.board-view-container .card-template-pill .card-template-pill-button:hover {
-  border-color: var(--main-text-color);
+.board-view-container .template-pill .template-pill-button:hover {
   color: var(--board-text-color);
-}
-
-/* The menu is drawn at the end of the page, so it is named rather than nested in the board. The
-   tick stands at the trailing edge, where a shortcut would. */
-.tn-dropdown-portal.card-template-pill .dropdown-item {
-  display: flex;
-  align-items: center;
-}
-
-.tn-dropdown-portal.card-template-pill .card-template-current {
-  margin-inline-start: auto;
-  padding-inline-start: 1.5em;
-}
-
-.board-view-container .card-template-pill .card-template-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* A card or column lands where the reader may not be looking, so it announces itself. */
@@ -1484,6 +1465,27 @@ body.mobile .column-drop-placeholder {
    does not take from it. */
 .board-view-container .board-column.collapsed h3 > .column-sort {
   transform: rotate(-90deg);
+}
+
+/* Top-down, the only direction in which CJK characters stay upright. Applied to the whole board so
+   its collapsed columns all read the same way. */
+.board-view-container.cjk-titles .board-column.collapsed h3 > .title,
+.board-view-container.cjk-titles .board-column.collapsed h3 > .counter-badge {
+  transform: none;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-sort {
+  transform: rotate(90deg);
+}
+
+/* Read top-down, the header leads with the icon as it does when expanded. Sorted last and then
+   reversed, the menu stays on top, where it is on every other board. */
+.board-view-container.cjk-titles .board-column.collapsed h3 {
+  flex-direction: column-reverse;
+}
+
+.board-view-container.cjk-titles .board-column.collapsed h3 > .column-menu {
+  order: 1;
 }
 
 /* Swapped: `padding` is physical, so it does not turn with the count. */

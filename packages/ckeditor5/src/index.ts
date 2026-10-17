@@ -3,16 +3,19 @@ import "ckeditor5/ckeditor5.css";
 // admonition plugin (which was forked from block-quote) but styles `blockquote`, not admonitions —
 // the client's theme-next stylesheet overrides parts of it with `!important`.
 import "./theme/blockquote.css";
+import "./theme/content_colors.css";
 import "./theme/code_block_toolbar.css";
 import "./theme/link_embed_form.css";
 import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+import type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 import type { PasteTarget } from "./plugins/cuttonote.js";
 import { CLASSIC_EDITOR_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
 import { BalloonEditor, DecoupledEditor, FindAndReplaceEditing, FindCommand } from "ckeditor5";
-export { default as EditorWatchdog } from "./custom_watchdog";
+export { onTextEditorError } from "./editor_errors.js";
 export { CHAT_INPUT_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
-export type { EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription, WatchdogConfig, WatchdogState } from "ckeditor5";
+export type { CKEditorError, EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription } from "ckeditor5";
 export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+export type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
 export type { ContentEmbedState } from "./plugins/content_embed/content_embed.js";
@@ -34,6 +37,8 @@ import "./plugins/file_upload/uploadfileplugin.js";
 import "./plugins/block_reference/block_reference.js";
 import "./plugins/content_embed/content_embed.js";
 import "./plugins/math/math.js";
+import "./plugins/tabs/tabs.js";
+import "./plugins/multicolumn/multicolumn.js";
 import "./plugins/mermaid/mermaid.js";
 import "./plugins/referencelink.js";
 import "./plugins/table_context_menu.js";
@@ -117,6 +122,7 @@ declare module "ckeditor5" {
             copyHtml?(html: string, plainText: string): void;
         },
         clipboardImageEmbed?: ClipboardImageEmbedConfig,
+        imageEditingSource?: ImageEditingSourceConfig,
         autoSort?: {
             /** More date formats for table sorting to recognize, in Day.js syntax. */
             dateFormats?: string[];

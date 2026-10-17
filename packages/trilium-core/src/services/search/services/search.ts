@@ -834,24 +834,50 @@ function extractAttributeSnippet(noteId: string, searchTokens: HighlightedTokenI
 // response, so the limit follows what a dropdown shows rather than what the query matched.
 const AUTOCOMPLETE_RESULT_LIMIT = 25;
 
-/** Searches for the notes a dropdown lists, the first `limit` of them, at most {@link AUTOCOMPLETE_RESULT_LIMIT}. */
-function searchNotesForAutocomplete(query: string, fastSearch: boolean = true, limit = AUTOCOMPLETE_RESULT_LIMIT) {
+/**
+ * Searches for the notes a dropdown lists, the first `limit` of them, at most
+ * {@link AUTOCOMPLETE_RESULT_LIMIT}.
+ *
+ * @param filter a search query the notes must also match, such as `note.type = image`. It is run as
+ *               a search of its own rather than joined to `query`, so what is typed cannot change
+ *               what the filter means.
+ */
+function searchNotesForAutocomplete(
+    query: string, fastSearch: boolean = true, limit = AUTOCOMPLETE_RESULT_LIMIT, filter?: string
+) {
+    const ancestorNoteId = hoistedNoteService.isHoistedInHiddenSubtree()
+        ? "root"
+        : hoistedNoteService.getHoistedNoteId();
     const searchContext = new SearchContext({
         fastSearch,
         includeArchivedNotes: false,
         includeHiddenNotes: true,
         fuzzyAttributeSearch: true,
         ignoreInternalAttributes: true,
-        ancestorNoteId: hoistedNoteService.isHoistedInHiddenSubtree() ? "root" : hoistedNoteService.getHoistedNoteId(),
+        ancestorNoteId,
         // Typo tolerance is opt-in here: `searchEnableFuzzyMatching` covers quick search and the
         // search screen, and `searchAutocompleteFuzzy` decides it for the jump-to-note and note
         // selector dropdowns, which query on every keystroke.
         enableFuzzyMatching: optionService.getOptionBool("searchAutocompleteFuzzy"),
-        // Only the first `AUTOCOMPLETE_RESULT_LIMIT` results are ever read.
-        rankInTwoPasses: true
+        // Only the first `AUTOCOMPLETE_RESULT_LIMIT` results are ever read, unless a filter drops
+        // some of them first.
+        rankInTwoPasses: !filter
     });
 
-    const trimmed = findResultsWithQuery(query, searchContext).slice(0, Math.min(limit, AUTOCOMPLETE_RESULT_LIMIT));
+    let results = findResultsWithQuery(query, searchContext);
+    if (filter) {
+        const filterContext = new SearchContext({
+            fastSearch,
+            includeArchivedNotes: false,
+            includeHiddenNotes: true,
+            ancestorNoteId
+        });
+        const allowed = new Set(
+            findResultsWithQuery(filter, filterContext).map((result) => result.noteId));
+        results = results.filter((result) => allowed.has(result.noteId));
+    }
+
+    const trimmed = results.slice(0, Math.min(limit, AUTOCOMPLETE_RESULT_LIMIT));
 
     return buildSearchResultDetails(trimmed, searchContext);
 }

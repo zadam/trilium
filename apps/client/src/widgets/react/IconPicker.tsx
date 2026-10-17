@@ -1,4 +1,5 @@
 import "./IconPicker.css";
+import "./IconPickerButton.css";
 
 import { IconRegistry } from "@triliumnext/commons";
 import type { Tooltip } from "bootstrap";
@@ -90,7 +91,7 @@ export default function IconPicker({ onSelect, onReset, resetText, columnCount, 
                 class="icon-list"
                 ref={iconListRef}
                 style={{
-                    width: `${columnCount * iconSize + 10}px`,
+                    width: `calc(${columnCount * iconSize + 10}px + var(--icon-list-inset))`,
                     // The CSS sets the height of the regular grid; the compact grid shows
                     // `COMPACT_ROWS` rows.
                     ...(compact && { height: `${COMPACT_ROWS * iconSize}px` })
@@ -105,6 +106,7 @@ export default function IconPicker({ onSelect, onReset, resetText, columnCount, 
             >
                 {filteredIcons.length ? (
                     <Grid
+                        className="scroll-edge-fade"
                         columnCount={columnCount}
                         columnWidth={iconSize}
                         rowCount={Math.ceil(filteredIcons.length / columnCount)}
@@ -173,10 +175,9 @@ function IconPickerDropdownButton({
             // picker's own stylesheet reach through it.
             className={clsx("note-icon-widget", className)}
             buttonClassName={`note-icon tn-focusable-button ${icon}`}
-            title={title}
+            title={disabled ? undefined : title}
             disabled={disabled}
             dropdownRef={dropdownRef}
-            dropdownContainerStyle={{ width: "620px" }}
             autoClose="outside"
             backdrop={backdrop}
             hideToggleArrow

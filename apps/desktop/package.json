@@ -19,7 +19,8 @@
     "electron-forge:make": "pnpm build && electron-forge make dist",
     "electron-forge:make-flatpak": "pnpm build && DEBUG=* electron-forge make dist --targets=@electron-forge/maker-flatpak",
     "electron-forge:package": "pnpm build && electron-forge package dist",
-    "electron-forge:start": "pnpm build && electron-forge start dist",
+    "electron-forge:test-packaged": "pnpm electron-forge:package && tsx scripts/test-packaged.ts",
+    "electron-forge:start":"pnpm build && electron-forge start dist",
     "e2e": "pnpm build && cross-env TRILIUM_INTEGRATION_TEST=memory-no-store TRILIUM_PORT=8082 TRILIUM_DATA_DIR=data-e2e TRILIUM_ELECTRON_DATA_DIR=data-e2e-electron-8082 ELECTRON_IS_DEV=0 playwright test",
     "generate-setup-banners": "tsx electron-forge/setup-icon/generate/generate.mts",
     "generate-dmg-background": "tsx electron-forge/dmg-background/generate.mts",
@@ -33,7 +34,8 @@
     "electron-debug": "5.0.0",
     "electron-dl": "5.0.0",
     "electron-squirrel-startup": "1.0.1",
-    "electron-window-state": "5.0.3"
+    "electron-window-state": "5.0.3",
+    "sherpa-onnx-node": "1.13.8"
   },
   "devDependencies": {
     "@electron-forge/cli": "8.0.1",
@@ -51,7 +53,7 @@
     "@triliumnext/server": "workspace:*",
     "@types/electron-squirrel-startup": "1.0.2",
     "@types/pngjs": "6.0.5",
-    "electron": "44.5.1",
+    "electron": "44.7.2",
     "gifenc": "1.0.3",
     "node-mocks-http": "1.18.1",
     "pngjs": "7.0.0"

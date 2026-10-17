@@ -43,7 +43,11 @@ const config: ForgeConfig = {
         name: PRODUCT_NAME,
         appVersion: packageJson.version,
         overwrite: true,
-        asar: true,
+        asar: {
+            // The shared libraries beside sherpa-onnx's addon (onnxruntime) are loaded by the OS,
+            // which cannot read them from inside the archive. auto-unpack-natives adds `*.node`.
+            unpack: "**/node_modules/sherpa-onnx-*-*/**"
+        },
         icon: path.join(APP_ICON_PATH, isNightly ? "icon-dev" : "icon"),
         ...macosSignConfiguration,
         windowsSign: windowsSignConfiguration,

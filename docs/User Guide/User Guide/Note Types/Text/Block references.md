@@ -8,7 +8,11 @@ Block references are [links](Links.md) to a block of a text note, such as a para
 3.  Select _Copy reference to this block_, or _Copy reference to these blocks_ for a selection. The referenced blocks flash briefly.
 4.  Go to the note where to insert the link and press <kbd>Ctrl</kbd>+<kbd>V</kbd>.
 
+Inside a <a class="reference-link" href="Content%20tabs.md">Content tabs</a> block, the reference points to the whole block. To link to a single tab, use _Copy link to tab_ instead. Inside a <a class="reference-link" href="Multicolumn%20layout.md">Multicolumn layout</a>, the reference points to the blocks in the column, and an include shows them without the layout around them.
+
 The link shows the title of the note, followed by the beginning of the referenced text. A link to blocks of the same note shows only the beginning of the referenced text.
+
+If the note is [shared](../../Advanced%20Usage/Sharing.md), the menu of the block handle also offers _Copy public link to this block_. It copies the web address of the shared page with the reference added, to send to people who read the note outside Trilium. Opening the address scrolls the shared page to the referenced blocks and flashes them.
 
 The _Paste_ submenu of the context menu offers two more ways to insert a copied reference:
 
@@ -25,7 +29,7 @@ Clicking a block reference opens the note, scrolls to the referenced blocks and 
 
 To show the referenced blocks inside another note, right-click the link in a note being edited and select _Convert link to note excerpt_, or paste the copied reference with _Paste_ → _Paste reference as an excerpt_. The include shows only the referenced blocks, not the rest of the note, and marks them with an _Excerpt_ badge in its title. It starts at the _Full_ box size, so all the referenced blocks are visible. To see the whole note, press the <span class="tn-icon bx bx-link-external"></span> button in the same title, which opens the note in a new tab. Converting the include back to a link keeps the reference.
 
-To edit the referenced blocks without leaving the note, press the <span class="tn-icon bx bx-pencil"></span> _Edit excerpt_ button in the title of the include, or turn on _Editable_ in its toolbar, as for any <a class="reference-link" href="Include%20Note.md">Include Note</a>. Press the button again to stop editing. The changes are saved to the referenced blocks, and the rest of the note stays as it is. The button is grayed out where the blocks cannot be edited, such as in a read-only note. An excerpt has no _Fullscreen_ button.
+To edit the referenced blocks without leaving the note, press the <span class="tn-icon bx bx-pencil"></span> _Edit excerpt_ button in the title of the include, or turn on _Editable_ (<span class="tn-icon bx bx-edit-alt"></span>) in its toolbar, as for any <a class="reference-link" href="Include%20Note.md">Include Note</a>. Press the button again to stop editing. The changes are saved to the referenced blocks, and the rest of the note stays as it is. The button is grayed out where the blocks cannot be edited, such as in a read-only note. An excerpt has no _Fullscreen_ button.
 
 If a referenced block was deleted, the include shows _Broken reference_.
 

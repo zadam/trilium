@@ -120,6 +120,96 @@ describe("NoteContextMenu", () => {
         }
     });
 
+    it("offers the properties dialog of the collections that have one", async () => {
+        const hasPropertiesItem = async (viewType: string, labels: Record<string, string> = {}) => {
+            const note = buildNote({
+                title: viewType, type: "book", "#viewType": viewType, ...labels
+            });
+            const noteContext = new NoteContext("ntx-collection");
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            await vi.waitFor(() => expect(document.querySelector(".tn-popup li.dropdown-item")).toBeTruthy());
+            const item = document.querySelector(".tn-popup li.dropdown-item:has(.bx-cog)");
+            render(null, host);
+            return !!item;
+        };
+
+        expect(await hasPropertiesItem("table")).toBe(true);
+        expect(await hasPropertiesItem("geoMap")).toBe(true);
+        expect(await hasPropertiesItem("list")).toBe(false);
+
+        // The board opens its dialog on a read-only note; the other views do not.
+        for (const viewType of [ "table", "geoMap", "calendar" ]) {
+            expect(await hasPropertiesItem(viewType, { "#readOnly": "" })).toBe(false);
+        }
+        expect(await hasPropertiesItem("calendar")).toBe(true);
+        expect(await hasPropertiesItem("board", { "#readOnly": "" })).toBe(true);
+    });
+
+    it("offers to print a render note only while it has a render target", async () => {
+        const isPrintEnabled = async (note: FNote) => {
+            const noteContext = new NoteContext("ntx-render");
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            const printItem = await vi.waitFor(() => {
+                const item = document.querySelector<HTMLElement>(".tn-popup li.dropdown-item:has(.bx-printer)");
+                expect(item).toBeTruthy();
+                return item;
+            });
+            const enabled = !printItem?.classList.contains("disabled");
+            render(null, host);
+            return enabled;
+        };
+
+        const script = buildNote({ title: "Script", type: "code" });
+        expect(await isPrintEnabled(buildNote({ title: "Render", type: "render", "~renderNote": script.noteId }))).toBe(true);
+        expect(await isPrintEnabled(buildNote({ title: "Unset", type: "render" }))).toBe(false);
+        expect(await isPrintEnabled(buildNote({ title: "Disabled", type: "render", "~disabled:renderNote": script.noteId }))).toBe(false);
+    });
+
+    it("offers to export a help page, but not an options page", async () => {
+        const isExportEnabled = async (note: FNote) => {
+            const noteContext = new NoteContext("ntx-export");
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            const exportItem = await vi.waitFor(() => {
+                const item = document.querySelector<HTMLElement>(".tn-popup li.dropdown-item:has(.bx-export)");
+                expect(item).toBeTruthy();
+                return item;
+            });
+            const enabled = !exportItem?.classList.contains("disabled");
+            render(null, host);
+            return enabled;
+        };
+
+        expect(await isExportEnabled(buildNote({ id: "_helpExportPage", title: "Help page" }))).toBe(true);
+        expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
+    });
+
     it("opens on the Basic Properties shortcut only for its own note context", async () => {
         const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
         const noteContext = new NoteContext("ntx-split-2");

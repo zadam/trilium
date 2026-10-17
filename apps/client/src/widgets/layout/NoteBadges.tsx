@@ -1,6 +1,6 @@
 import "./NoteBadges.css";
 
-import { isOfficeMimeType } from "@triliumnext/commons";
+import { isOfficeMimeType, safeHostname } from "@triliumnext/commons";
 import { clsx } from "clsx";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
@@ -13,7 +13,9 @@ import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { goToLinkExt } from "../../services/link";
 import server from "../../services/server";
-import { buildShareLink } from "../../services/share_link";
+import {
+    buildShareLink, getShareId, getShareScope, type ShareScope
+} from "../../services/share_link";
 import sync from "../../services/sync";
 import { isElectron, isMobileApp, isStandalone } from "../../services/utils";
 import { Badge, BadgeWithDropdown } from "../react/Badge";
@@ -22,6 +24,7 @@ import {
     useGetContextDataFrom, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelByName, useNoteProperty,
     useTriliumEvent, useTriliumOption
 } from "../react/hooks";
+import Icon from "../react/Icon";
 import { ActiveContentBadges } from "./ActiveContentBadges";
 import { SnippetBadge } from "./SnippetBadge";
 
@@ -35,17 +38,25 @@ export default function NoteBadges() {
             <ClippedNoteBadge />
             <ExecuteBadge />
             <SnippetBadge />
+            <TemplateBadge />
             <ActiveContentBadges />
         </div>
     );
 }
 
-function ReadOnlyBadge() {
+export function ReadOnlyBadge() {
     const { note, noteContext } = useNoteContext();
-    const { isReadOnly, enableEditing, temporarilyEditable } = useIsNoteReadOnly(note, noteContext);
+    const { isReadOnly, isLocked, enableEditing, temporarilyEditable } = useIsNoteReadOnly(note, noteContext);
     const isExplicitReadOnly = note?.isLabelTruthy("readOnly");
 
-    if (temporarilyEditable) {
+    if (isLocked) {
+        return <Badge
+            icon="bx bx-lock-alt"
+            text={t("breadcrumb_badges.read_only_locked")}
+            tooltip={t("breadcrumb_badges.read_only_locked_description")}
+            className="read-only-badge"
+        />;
+    } else if (temporarilyEditable) {
         return <Badge
             icon="bx bx-lock-open-alt"
             text={t("breadcrumb_badges.read_only_temporarily_disabled")}
@@ -136,10 +147,14 @@ const SHARE_BADGES: Record<ShareScope, { icon: string; text: string; tooltip?: s
     }
 };
 
-function ClippedNoteBadge() {
+export function ClippedNoteBadge() {
     const { note } = useNoteContext();
     const isHelpNote = !!note?.noteId.startsWith("_help");
     const [ url ] = useNoteLabel(note, isHelpNote ? "docUrl" : "pageUrl");
+    const [ description ] = useNoteLabel(note, "pageDescription");
+    const [ author ] = useNoteLabel(note, "pageAuthor");
+    const [ published ] = useNoteLabel(note, "publishedDate");
+    const [ modified ] = useNoteLabel(note, "modifiedDate");
 
     if (!url) return;
 
@@ -155,14 +170,53 @@ function ClippedNoteBadge() {
         );
     }
 
+    const fields = [
+        { icon: "bx bx-user", label: t("breadcrumb_badges.clipped_note_author"), value: author },
+        { icon: "bx bx-calendar", label: t("breadcrumb_badges.clipped_note_published"), value: published },
+        { icon: "bx bx-history", label: t("breadcrumb_badges.clipped_note_modified"), value: modified }
+    ].filter((field) => field.value);
+
+    if (!description && !fields.length) {
+        return (
+            <Badge
+                className="clipped-note-badge"
+                icon="bx bx-globe"
+                text={t("breadcrumb_badges.clipped_note")}
+                tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
+                href={url}
+            />
+        );
+    }
+
     return (
-        <Badge
+        <BadgeWithDropdown
+            panel
             className="clipped-note-badge"
             icon="bx bx-globe"
             text={t("breadcrumb_badges.clipped_note")}
-            tooltip={t("breadcrumb_badges.clipped_note_description", { url })}
-            href={url}
-        />
+            tooltip={t("breadcrumb_badges.clipped_note_details")}
+            dropdownProps={{ dropdownContainerClassName: "clipped-note-details-panel" }}
+        >
+            <div className="clipped-note-details">
+                <div className="clipped-note-source">
+                    <Icon icon="bx bx-globe" />
+                    <a className="tn-link external" href={url} target="_blank" rel="noopener noreferrer">
+                        {safeHostname(url)}
+                    </a>
+                </div>
+                {description && <p className="clipped-note-description pre-wrap-text">{description}</p>}
+                {fields.length > 0 && (
+                    <dl className="clipped-note-fields">
+                        {fields.map((field) => (
+                            <div key={field.icon}>
+                                <dt><Icon icon={field.icon} />{field.label}</dt>
+                                <dd>{field.value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                )}
+            </div>
+        </BadgeWithDropdown>
     );
 }
 
@@ -187,6 +241,64 @@ export function ExecuteBadge() {
             onClick={() => parentComponent.triggerCommand("runActiveNote", { ntxId })}
         />
     );
+}
+
+/**
+ * Marks a template, whose attributes every note created from it inherits. Its dropdown switches it
+ * between `#template` and `#workspaceTemplate`; the latter only for a template inside a workspace.
+ */
+export function TemplateBadge() {
+    const { note, parentComponent } = useNoteContext();
+    const [ isTemplate ] = useNoteLabelBoolean(note, "template");
+    const [ isWorkspaceTemplate ] = useNoteLabelBoolean(note, "workspaceTemplate");
+    if (!note || (!isTemplate && !isWorkspaceTemplate)) return;
+
+    const isInWorkspace = hasWorkspaceAncestor(note);
+
+    async function switchScope(toWorkspace: boolean) {
+        if (!note) return;
+        const [ added, removed ] = toWorkspace ? [ "workspaceTemplate", "template" ] : [ "template", "workspaceTemplate" ];
+        // The new label goes on first, so the note never stops being a template in between.
+        await attributes.setBooleanWithInheritance(note, added, true);
+        await attributes.setBooleanWithInheritance(note, removed, false);
+    }
+
+    return (
+        <BadgeWithDropdown
+            className="template-badge"
+            icon="bx bx-copy-alt"
+            text={isTemplate ? t("breadcrumb_badges.template") : t("breadcrumb_badges.workspace_template")}
+            tooltip={t("breadcrumb_badges.template_description")}
+            dropdownProps={{ mobileBottomSheet: true }}
+        >
+            <FormListItem
+                icon="bx bx-globe"
+                checkable checked={isTemplate}
+                onClick={() => !isTemplate && switchScope(false)}
+            >{t("breadcrumb_badges.template_scope_global")}</FormListItem>
+            <FormListItem
+                icon="bx bx-door-open"
+                checkable checked={!isTemplate}
+                disabled={!isInWorkspace}
+                disabledTooltip={t("breadcrumb_badges.template_scope_workspace_unavailable")}
+                onClick={() => isTemplate && switchScope(true)}
+            >{t("breadcrumb_badges.template_scope_workspace")}</FormListItem>
+            <FormDropdownDivider />
+            <FormListItem
+                icon="bx bx-cog"
+                onClick={() => parentComponent?.triggerEvent("showTemplateProperties", { noteId: note.noteId })}
+            >{t("breadcrumb_badges.template_properties")}</FormListItem>
+        </BadgeWithDropdown>
+    );
+}
+
+function hasWorkspaceAncestor(note: FNote, visited = new Set<string>()): boolean {
+    for (const parent of note.getParentNotes()) {
+        if (visited.has(parent.noteId)) continue;
+        visited.add(parent.noteId);
+        if (parent.hasOwnedLabel("workspace") || hasWorkspaceAncestor(parent, visited)) return true;
+    }
+    return false;
 }
 
 const SAVE_STATE_DEBOUNCE_MS = 200;
@@ -310,43 +422,4 @@ function useShareInfo(note: FNote | null | undefined) {
             syncServerHost
         })
     };
-}
-
-/**
- * Where a shared note can be opened from. `local` is the desktop app without a sync server, which
- * serves the page on the loopback address. `preview` is the standalone build without a sync server,
- * which renders the page in its own service worker, so only this browser can open it. `export-only`
- * is the mobile app without a sync server: its link opens nowhere, so the static export is the only
- * way to publish the note. A server cannot tell whether it is reachable from outside, so it always
- * reports `public`.
- */
-export function getShareScope({ isElectron, isStandalone, isMobileApp, syncServerHost }: {
-    isElectron: boolean;
-    isStandalone: boolean;
-    isMobileApp: boolean;
-    syncServerHost: string | null | undefined;
-}): ShareScope {
-    if (syncServerHost) {
-        return "public";
-    }
-
-    if (isMobileApp) {
-        return "export-only";
-    }
-
-    if (isStandalone) {
-        return "preview";
-    }
-
-    return isElectron ? "local" : "public";
-}
-
-type ShareScope = "public" | "local" | "preview" | "export-only";
-
-function getShareId(note: FNote) {
-    if (note.hasOwnedLabel("shareRoot")) {
-        return "";
-    }
-
-    return note.getOwnedLabelValue("shareAlias") || note.noteId;
 }

@@ -356,6 +356,10 @@ body[dir=rtl] .attachment-icon-marker {
     overflow: hidden;
 }
 
+.attachment-content-wrapper.attachment-transcript {
+    overflow: hidden;
+}
+
 .attachment-content-wrapper.attachment-canvas-drawing {
     overflow: hidden;
 
@@ -427,13 +431,6 @@ body[dir=rtl] .attachment-icon-marker {
 /* #endregion */
 
 /* #region Attachment actions */
-
-.attachment-actions .dropdown-item .tn-icon {
-    position: relative;
-    top: 3px;
-    font-size: 120%;
-    margin-inline-end: 5px;
-}
 
 .attachment-actions .dropdown-item[disabled], .attachment-actions .dropdown-item[disabled]:hover {
     color: var(--muted-text-color) !important;

@@ -1,4 +1,4 @@
-import { type KeyboardShortcutWithRequiredActionName, type OptionDefinitions, type OptionMap, type OptionNames, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
+import { DEFAULT_TRANSCRIPTION_MODEL, type KeyboardShortcutWithRequiredActionName, type OptionDefinitions, type OptionMap, type OptionNames, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
 
 import appInfo from "./app_info.js";
 import { getPlatform } from "./platform.js";
@@ -183,6 +183,11 @@ const defaultOptions: DefaultOption[] = [
     { name: "autoFixConsistencyIssues", value: "true", isSynced: false },
     { name: "vimKeymapEnabled", value: "false", isSynced: false },
     { name: "codeLineWrapEnabled", value: "true", isSynced: false },
+    { name: "transcriptCleanupEnabled", value: "true", isSynced: true },
+    { name: "transcriptionEnabled", value: "false", isSynced: true },
+    { name: "transcriptionModel", value: DEFAULT_TRANSCRIPTION_MODEL, isSynced: false },
+    { name: "transcriptionSpeakersEnabled", value: "true", isSynced: true },
+    { name: "transcriptionKeepRecordings", value: "false", isSynced: false },
     { name: "codeNoteTabWidth", value: "4", isSynced: true },
     { name: "codeNoteIndentWithTabs", value: "false", isSynced: true },
     {
@@ -323,6 +328,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "mathFieldEnabled", value: "true", isSynced: true },
     { name: "textNoteContentHintsEnabled", value: "true", isSynced: true },
     { name: "textNoteAutoLinkPreviewsEnabled", value: "true", isSynced: true },
+    { name: "textNoteStickyTableHeadersEnabled", value: "true", isSynced: false },
     // Off: the tags this carries are the ones the editor has no feature for, and GHS's handling of
     // them is worse than their absence. See `textNoteHtmlSupportEnabled` for what turning it off costs.
     { name: "textNoteHtmlSupportEnabled", value: "false", isSynced: true },
@@ -364,6 +370,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "aiEnabled", value: (optionsMap) => optionsMap.experimentalFeatures?.includes('"llm"') ? "true" : "false", isSynced: true },
     { name: "llmProviders", value: "[]", isSynced: true },
     { name: "llmWebSearchProvider", value: "", isSynced: true },
+    { name: "llmPermissionMode", value: "ask_before_changes", isSynced: true },
     { name: "aiAssistantModel", value: "", isSynced: true },
     { name: "mcpEnabled", value: "false", isSynced: false },
 

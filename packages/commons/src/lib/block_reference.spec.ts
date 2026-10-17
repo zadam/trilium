@@ -8,6 +8,8 @@ import {
     getEditableBlockRun,
     getListItemNumber,
     isValidBlockId,
+    MULTICOLUMN_COLUMN_CLASS,
+    MULTICOLUMN_LAYOUT_CLASS,
     parseBlockRange,
     resolveBlockRange,
     resolveBlockReference,
@@ -144,6 +146,29 @@ describe("sliceToBlockReference", () => {
         );
     });
 
+    it("drops a layout left with one column around the blocks, and keeps one with more", () => {
+        const layout = (...columns: BlockNode[]) =>
+            el("div", { class: `${MULTICOLUMN_LAYOUT_CLASS} wide` }, ...columns);
+        const target = block("p", "b", text("B"));
+        const inner = layout(
+            layoutColumn(el("p", {}, text("A")), target),
+            layoutColumn(el("p", {}, text("C")))
+        );
+        const root = el("div", {}, layout(layoutColumn(inner), layoutColumn()));
+
+        expect(sliceToBlockReference(root, "b")).toBe(true);
+        expect(render(root)).toBe(`<div>${render(target)}</div>`);
+
+        const across = layout(
+            layoutColumn(block("p", "x")),
+            layoutColumn(block("p", "y"))
+        );
+        const otherRoot = el("div", {}, across);
+        sliceToBlockReference(otherRoot, "x:y");
+        expect(otherRoot.childNodes).toEqual([ across ]);
+        expect(across.childNodes).toHaveLength(2);
+    });
+
     it("changes nothing when a block is missing", () => {
         const root = el("div", {}, block("p", "a"), el("p", {}));
 
@@ -238,6 +263,16 @@ describe("getEditableBlockRun", () => {
         });
     });
 
+    it("finds the blocks of a column of a multicolumn layout", () => {
+        const first = block("p", "a");
+        const last = block("p", "b");
+        const column = layoutColumn(el("p", {}), first, last);
+        const root = el("div", {},
+            el("div", { class: MULTICOLUMN_LAYOUT_CLASS }, column, layoutColumn()));
+
+        expect(getEditableBlockRun(root, "a:b")).toEqual({ parent: column, first, last });
+    });
+
     it("finds nothing for a missing block, or an ancestor that holds other content", () => {
         const root = el("div", {},
             el("ul", {},
@@ -283,6 +318,17 @@ class TestElement implements BlockNode {
         removeFromParent(this);
     }
 
+    replaceWith(...nodes: BlockNode[]) {
+        const siblings = this.parentNode?.childNodes;
+        if (Array.isArray(siblings)) {
+            siblings.splice(siblings.indexOf(this), 1, ...nodes);
+        }
+        for (const node of nodes) {
+            node.parentNode = this.parentNode;
+        }
+        this.parentNode = null;
+    }
+
     render(): string {
         const attributes = Object.entries(this.attributes)
             .map(([ name, value ]) => ` ${name}="${value}"`);
@@ -316,6 +362,10 @@ function removeFromParent(node: BlockNode) {
 
 function el(tagName: string, attributes: Record<string, string>, ...children: BlockNode[]) {
     return new TestElement(tagName.toUpperCase(), attributes, children);
+}
+
+function layoutColumn(...children: BlockNode[]) {
+    return el("div", { class: MULTICOLUMN_COLUMN_CLASS }, ...children);
 }
 
 function block(tagName: string, id: string, ...children: BlockNode[]) {

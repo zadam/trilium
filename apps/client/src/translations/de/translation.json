@@ -82,11 +82,10 @@
   },
   "bulk_actions": {
     "bulk_actions": "Massenaktionen",
-    "affected_notes": "Betroffene Notizen",
     "include_descendants": "Unternotizen der ausgewählten Notizen einbeziehen",
-    "available_actions": "Verfügbare Aktionen",
     "chosen_actions": "Ausgewählte Aktionen",
-    "execute_bulk_actions": "Massenaktionen ausführen",
+    "execute_bulk_actions_one": "Massenaktionen ausführen",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Massenaktionen wurden erfolgreich ausgeführt.",
     "none_yet": "Noch keine ... Fügen Sie eine Aktion hinzu, indem Sie oben auf eine der verfügbaren Aktionen klicken.",
     "labels": "Labels",
@@ -111,7 +110,7 @@
     "cancel": "Abbrechen",
     "ok": "OK",
     "are_you_sure_remove_note": "Möchten Sie die Notiz „{{title}}“ wirklich von der Relationskarte entfernen? ",
-    "if_you_dont_check": "Wenn Sie dies nicht aktivieren, wird die Notiz nur aus der Relationskarte entfernt.",
+    "if_you_dont_check": "Die Notiz selber wird behalten; sie wird nur aus der Relationskarte entfernt.",
     "also_delete_note": "Auch die Notiz löschen",
     "delete_note_keeps_note_one": "Die Notiz hat {{count}} weiteren Klon, deswegen wird die Notiz selbst behalten.",
     "delete_note_keeps_note_other": "Die Notiz hat {{count}} weiter Klone, deswegen wird die Notiz selbst behalten.",
@@ -231,8 +230,8 @@
     "safeImport": "Sicherer Import",
     "explodeArchivesTooltip": "Erstellt Notizen aus den Dateien in <code>.zip</code>-, <code>.enex</code>- und <code>.opml</code>-Archiven. Wenn deaktiviert, werden die Archive unverändert angehängt.",
     "explodeArchives": "Inhalt der Archive <code>.zip</code>, <code>.enex</code> und <code>.opml</code> lesen.",
-    "shrinkImagesTooltip": "Skaliert und optimiert Bilder, um Speicherplatz zu sparen, wodurch sich die Qualität leicht verringern kann. Gilt nicht für <code>.zip</code>-Importe mit Metadaten, da diese als bereits optimiert gelten.",
-    "shrinkImages": "Bilder verkleinern",
+    "shrinkImagesTooltip": "Reduziert die Größe importierter Bilder, wodurch sich die Qualität leicht verringern kann. Gilt nicht für <code>.zip</code>-Importe mit Trilium-Metadaten, welche bereits optimiert angenommen werden.",
+    "shrinkImages": "Bilder komprimieren",
     "textImportedAsText": "HTML, Markdown und TXT als Textnotizen importieren, wenn die Metadaten unklar sind",
     "codeImportedAsCode": "Erkannte Codedateien (z. B. <code>.json</code>) als Codenotizen importieren, wenn die Metadaten unklar sind",
     "replaceUnderscoresWithSpaces": "Unterstriche in importierten Notiznamen durch Leerzeichen ersetzen",
@@ -254,7 +253,7 @@
     "import_from": "Importieren aus",
     "cardName": "Dateien und andere Formate",
     "cardDescription": "ZIP, ENEX, OPML, Markdown, HTML, Bilder und mehr",
-    "shrinkImagesProviderTooltip": "Skaliert und optimiert importierte Bilder, um Speicherplatz zu sparen, wodurch sich die Qualität leicht verringern kann.",
+    "shrinkImagesProviderTooltip": "Reduziert die Größe importierter Bilder, wodurch sich die Qualität leicht verringern kann.",
     "extracting": "{{progress}} von {{total}} Elementen extrahiert",
     "processing": "{{progress}} von {{total}} Notizen verarbeitet",
     "throttled": "Der Dienst begrenzt die Anfragerate; der Import wartet, bis der Zugriff fortgesetzt werden kann …",
@@ -344,9 +343,9 @@
     "title": "Titel",
     "date_created": "Erstellungsdatum",
     "date_modified": "Änderungsdatum",
-    "ascending": "aufsteigend",
-    "descending": "absteigend",
-    "sort_folders_at_top": "Ordner oben sortieren",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend",
+    "sort_folders_at_top": "Ordner nach oben sortieren",
     "natural_sort": "Natürliche Sortierung",
     "sort_with_respect_to_different_character_sorting": "Sortierung unter Berücksichtigung unterschiedlicher Regeln für Zeichensortierung und Kollation in verschiedenen Sprachen oder Regionen.",
     "natural_sort_language": "Natürliche Sortiersprache",
@@ -359,7 +358,7 @@
     "choose_files": "Dateien auswählen",
     "files_will_be_uploaded": "Dateien werden als Anhänge in {{noteTitle}} hochgeladen",
     "options": "Optionen",
-    "shrink_images": "Bilder verkleinern",
+    "shrink_images": "Bilder komprimieren",
     "upload": "Hochladen",
     "tooltip": "Wenn Sie diese Option aktivieren, versucht Trilium, die hochgeladenen Bilder durch Skalierung und Optimierung zu verkleinern, was sich auf die wahrgenommene Bildqualität auswirken kann. Wenn diese Option deaktiviert ist, werden die Bilder ohne Änderungen hochgeladen."
   },
@@ -369,9 +368,9 @@
     "value": "Wert",
     "target_note_title": "Eine Relation ist eine benannte Verbindung zwischen Quellnotiz und Zielnotiz.",
     "target_note": "Zielnotiz",
-    "promoted_title": "Das heraufgestufte Attribut wird deutlich in der Notiz angezeigt.",
+    "promoted_title": "Als bearbeitbares Feld für jede Notiz mit diesem Attribut angezeigt.",
     "promoted": "Hervorgehoben",
-    "promoted_alias": "Alias",
+    "promoted_alias": "Anzeigename",
     "multiplicity_title": "Multiplizität definiert, wie viele Attribute mit demselben Namen erstellt werden können – maximal 1 oder mehr als 1.",
     "multiplicity": "Multiplizität",
     "single_value": "Einzelwert",
@@ -384,10 +383,10 @@
     "date_time": "Datum und Uhrzeit",
     "time": "Uhrzeit",
     "url": "URL",
-    "precision_title": "Wie viele Nachkommastellen im Wert-Einstellungs-Interface verfügbar sein sollen.",
+    "precision_title": "Maximale Anzahl an Nachkommastellen.",
     "precision": "Präzision",
     "digits": "Ziffern",
-    "inverse_relation_title": "Optionale Einstellung, um zu definieren, zu welcher Relation diese entgegengesetzt ist. Beispiel: Vater – Sohn stehen in umgekehrter Relation zueinander.",
+    "inverse_relation_title": "Die umgekehrte Relation, z.B. Sohn zum Vater. Optional.",
     "inverse_relation": "Inverse Relation",
     "inheritable_title": "Das vererbbare Attribut wird an alle Nachkommen unter diesem Baum vererbt.",
     "inheritable": "Vererbbar",
@@ -644,21 +643,13 @@
     "remove_this_search_action": "Diese Suchaktion entfernen"
   },
   "execute_script": {
-    "execute_script": "Skript ausführen",
-    "help_text": "Sie können einfache Skripte für die übereinstimmenden Notizen ausführen.",
-    "example_1": "Um beispielsweise eine Zeichenfolge an den Titel einer Notiz anzuhängen, verwenden Sie dieses kleine Skript:",
-    "example_2": "Ein komplexeres Beispiel wäre das Löschen aller übereinstimmenden Notizattribute:"
+    "execute_script": "Skript ausführen"
   },
   "add_label": {
     "add_label": "Label hinzufügen",
     "label_name_placeholder": "Labelname",
     "label_name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to_value": "auf Wert",
-    "new_value_placeholder": "neuer Wert",
-    "help_text": "Auf allen übereinstimmenden Notizen:",
-    "help_text_item1": "Erstellt das angegebene Label, sofern die Notiz noch keines hat",
-    "help_text_item2": "oder den Wert des vorhandenen Labels ändern",
-    "help_text_note": "Sie können diese Methode auch ohne Wert aufrufen. In diesem Fall wird der Notiz ein Label ohne Wert zugewiesen."
+    "new_value_placeholder": "neuer Wert"
   },
   "delete_label": {
     "delete_label": "Label löschen",
@@ -667,9 +658,7 @@
   },
   "rename_label": {
     "rename_label": "Label umbenennen",
-    "rename_label_from": "Label umbenennen von",
     "old_name_placeholder": "alter Name",
-    "to": "zu",
     "new_name_placeholder": "neuer Name",
     "name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt."
   },
@@ -677,49 +666,26 @@
     "update_label_value": "Labelwert aktualisieren",
     "label_name_placeholder": "Labelname",
     "label_name_title": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to_value": "auf Wert",
-    "new_value_placeholder": "neuer Wert",
-    "help_text": "Bei allen übereinstimmenden Notizen den Wert des vorhandenen Labels ändern.",
-    "help_text_note": "Sie können diese Methode auch ohne Wert aufrufen. In diesem Fall wird der Notiz ein Label ohne Wert zugewiesen."
+    "new_value_placeholder": "neuer Wert"
   },
   "delete_note": {
-    "delete_note": "Notiz löschen",
-    "delete_matched_notes": "Übereinstimmende Notizen löschen",
-    "delete_matched_notes_description": "Dadurch werden übereinstimmende Notizen gelöscht.",
-    "undelete_notes_instruction": "Nach dem Löschen ist es möglich, sie im Dialogfeld „Letzte Änderungen“ wiederherzustellen.",
-    "erase_notes_instruction": "Um Notizen dauerhaft zu löschen, gehen Sie nach der Löschung zu Optionen → Andere und klicken Sie auf die Schaltfläche „Gelöschte Notizen jetzt löschen“."
+    "delete_note": "Notiz löschen"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Notizrevisionen löschen",
-    "all_past_note_revisions": "Alle früheren Notizrevisionen übereinstimmender Notizen werden gelöscht. Die Notiz selbst bleibt vollständig erhalten. Mit anderen Worten: Der Verlauf der Notiz wird entfernt."
+    "delete_note_revisions": "Notizrevisionen löschen"
   },
   "move_note": {
     "move_note": "Notiz verschieben",
-    "to": "nach",
-    "target_parent_note": "Übergeordnete Zielnotiz",
-    "on_all_matched_notes": "Auf allen übereinstimmenden Notizen",
-    "move_note_new_parent": "Die Notiz in die neue übergeordnete Notiz verschieben, wenn die Notiz nur eine übergeordnete Notiz hat (d. h. der alte Zweig wird entfernt und ein neuer Zweig in die neue übergeordnete Notiz erstellt)",
-    "clone_note_new_parent": "Notiz zur neuen übergeordneten Notiz klonen, wenn die Notiz mehrere Klone/Zweige hat (es ist unklar, welcher Zweig entfernt werden soll)",
-    "nothing_will_happen": "Es passiert nichts, wenn die Notiz nicht zur Zielnotiz verschoben werden kann (z.B. wenn dies einen Kreislauf in der Baumstruktur erzeugen würde)"
+    "target_parent_note": "Übergeordnete Zielnotiz"
   },
   "rename_note": {
-    "rename_note": "Notiz umbenennen",
-    "rename_note_title_to": "Notiztitel umbenennen in",
-    "new_note_title": "neuer Notiztitel",
-    "click_help_icon": "Klicken Sie rechts auf das Hilfesymbol, um alle Optionen anzuzeigen",
-    "evaluated_as_js_string": "Der angegebene Wert wird als JavaScript-String ausgewertet und kann somit über die injizierte <code>note</code>-Variable mit dynamischem Inhalt angereichert werden (Notiz wird umbenannt). Beispiele:",
-    "example_note": "<code>Notiz</code> – alle übereinstimmenden Notizen werden in „Notiz“ umbenannt",
-    "example_new_title": "<code>NEU: ${note.title}</code> – Übereinstimmende Notiztitel erhalten das Präfix „NEU:“",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> – übereinstimmende Notizen werden mit dem Erstellungsmonat und -datum der Notiz vorangestellt",
-    "api_docs": "Siehe API-Dokumentation für <a href='https://zadam.github.io/trilium/backend_api/Note.html'>Notiz</a> und <a href='https://day.js.org/docs/en/display/format'>dateCreatedObj / utcDateCreatedObj-Eigenschaften</a> für Details."
+    "rename_note": "Notiz umbenennen"
   },
   "add_relation": {
     "add_relation": "Relation hinzufügen",
     "relation_name": "Relationsname",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to": "zu",
-    "target_note": "Zielnotiz",
-    "create_relation_on_all_matched_notes": "Für alle übereinstimmenden Notizen die angegebene Relation erstellen."
+    "target_note": "Zielnotiz"
   },
   "delete_relation": {
     "delete_relation": "Relation löschen",
@@ -728,20 +694,14 @@
   },
   "rename_relation": {
     "rename_relation": "Relation umbenennen",
-    "rename_relation_from": "Relation umbenennen von",
     "old_name": "alter Name",
-    "to": "zu",
     "new_name": "neuer Name",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt."
   },
   "update_relation_target": {
-    "update_relation": "Relation aktualisieren",
     "relation_name": "Relationsname",
     "allowed_characters": "Erlaubte Zeichen sind alphanumerische Zeichen, Unterstrich und Doppelpunkt.",
-    "to": "zu",
     "target_note": "Zielnotiz",
-    "on_all_matched_notes": "Auf allen übereinstimmenden Notizen",
-    "change_target_note": "oder die Zielnotiz der bestehenden Relation ändern",
     "update_relation_target": "Relationsziel aktualisieren"
   },
   "attachments_actions": {
@@ -1215,9 +1175,6 @@
   "editable_text": {
     "placeholder": "Geben Sie hier den Inhalt Ihrer Notiz ein...",
     "auto-detect-language": "Automatisch erkannt",
-    "keeps-crashing": "Die Bearbeitungskomponente stürzt immer wieder ab. Bitte starten Sie Trilium neu. Wenn das Problem weiterhin besteht, erstellen Sie einen Fehlerbericht.",
-    "editor_crashed_title": "Der Texteditor ist abgestürzt",
-    "editor_crashed_content": "Ihr Inhalt wurde erfolgreich wiederhergestellt, aber kürzlich gemachte Änderungen wurden unter Umständen nicht gespeichert.",
     "editor_crashed_details_button": "Mehr Details anzeigen...",
     "editor_crashed_details_intro": "Falls dieser Fehler häufiger auftritt, ziehen Sie in Betracht uns diesen über GitHub zu melden, indem Sie die folgenden Informationen bereitstellen.",
     "editor_crashed_details_title": "Technische Informationen"
@@ -2799,8 +2756,7 @@
     "processing_started": "OCR-Verarbeitung wurde gestartet. Bitte warten Sie einen Moment und aktualisieren Sie die Ansicht.",
     "processing_complete": "OCR-Verarbeitung abgeschlossen.",
     "processing_failed": "OCR-Verarbeitung konnte nicht gestartet werden",
-    "text_filtered_low_confidence": "OCR hat Text mit einer Konfidenz von {{confidence}} % erkannt, aber er wurde verworfen, weil Ihr Mindestschwellenwert bei {{threshold}} % liegt.",
-    "image_based_pdf_not_supported": "Dieses PDF scheint bildbasiert (gescannt) zu sein. Die Textextraktion aus bildbasierten PDFs wird derzeit noch nicht unterstützt."
+    "text_filtered_low_confidence": "OCR hat Text mit einer Konfidenz von {{confidence}} % erkannt, aber er wurde verworfen, weil Ihr Mindestschwellenwert bei {{threshold}} % liegt."
   },
   "revisions": {
     "note_revisions": "Revisionsverlauf",
@@ -2880,14 +2836,30 @@
       "math": "Gleichung",
       "collapsible_summary": "Zusammenfassung",
       "collapsible_details": "Details",
-      "table_column": "Spalte {{number}}"
+      "table_column": "Spalte {{number}}",
+      "tab_title": "Tab {{number}}",
+      "tab_content": "Inhalt"
     },
     "page_break": "Seitenumbruch einfügen (zum Drucken)",
     "table": "Tabelle einfügen",
     "titles": {
       "date": "Datum/Zeit einfügen",
-      "include": "Notiz einfügen"
-    }
+      "include": "Notiz einfügen",
+      "image": "Bild hochladen",
+      "link": "Interne Verknüpfung",
+      "footnote": "Fußnote",
+      "mermaid": "Mermaid Diagram",
+      "mermaid_template": "Mermaid Diagram: {{name}}",
+      "tabs": "Tabs",
+      "page_break": "Seitenumbruch",
+      "table": "Tabelle",
+      "note": "Notiz",
+      "important": "Wichtig",
+      "caution": "Vorsicht",
+      "warning": "Warnung",
+      "todo": "Aufgabe: {{title}}"
+    },
+    "tabs": "Füge Tabs mit Titeln ein, welche maximal ein Panel gleichzeitig anzeigen"
   },
   "revisions_snapshot": {
     "title": "Revisionsverlauf"
@@ -3159,16 +3131,13 @@
   },
   "save_revision": {
     "save_revision": "Revision speichern",
-    "revision_name_placeholder": "Revisionsname (optional)",
-    "help": "Für jede passende Notiz wird eine benannte Revision mit ihrem aktuellen Inhalt und Titel gespeichert."
+    "revision_name_placeholder": "Revisionsname (optional)"
   },
   "convert_note": {
     "convert_note": "Konvertieren",
-    "convert_note_to": "Notiz konvertieren",
     "choose_conversion": "(Konvertierung auswählen)",
     "conversion_htmlToMarkdown": "Textnotizen → Markdown-Notizen (verlustbehaftet)",
     "conversion_markdownToHtml": "Markdown-Notizen → Textnotizen",
-    "help_text": "Die Konvertierung wird nur auf Notizen des Quelltyps angewendet; andere Notizen bleiben unverändert. Vorher wird eine Revision jeder konvertierten Notiz gespeichert.",
     "warning": "Bei der Konvertierung von Notizen können einige Formatierungen verloren gehen und anschließend Anpassungen nötig sein. Vorher wird eine Revision jeder konvertierten Notiz gespeichert, damit Sie sie wiederherstellen können. Möchten Sie fortfahren?",
     "warning_risky": "Sie konvertieren zwischen zwei Formaten mit unterschiedlichen Möglichkeiten. Dabei können Formatierungen verloren gehen und nicht unterstützte Elemente entfernt werden.<br><br>Möchten Sie dieses Risiko vollständig übernehmen und mit der Konvertierung fortfahren?<br><br>Vorher wird eine Revision jeder konvertierten Notiz gespeichert, damit Sie zum ursprünglichen Format zurückkehren können."
   },

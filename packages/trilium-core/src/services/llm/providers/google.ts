@@ -1,7 +1,7 @@
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google";
 import type { LlmMessage } from "@triliumnext/commons";
 import { getLog } from "../../../services/log.js";
-import { stepCountIs, streamText, type ToolSet } from "ai";
+import { streamText, type ToolSet } from "ai";
 
 import type { LlmProviderConfig, StreamResult } from "../types.js";
 import { BaseProvider, type RemoteModel, TELEMETRY_OFF } from "./base_provider.js";
@@ -117,12 +117,7 @@ export class GoogleProvider extends BaseProvider {
             }
         };
 
-        const tools = this.buildTools(config);
-        if (Object.keys(tools).length > 0) {
-            streamOptions.tools = tools;
-            streamOptions.stopWhen = stepCountIs(5);
-            streamOptions.toolChoice = "auto";
-        }
+        this.addTools(streamOptions, config, 5);
 
         return streamText(streamOptions);
     }

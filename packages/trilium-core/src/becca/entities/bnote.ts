@@ -1,5 +1,5 @@
 import type { AttachmentRow, AttributeType, CloneResponse, EraseExcessRevisionsOptions, NoteRow, NoteType, RevisionRow, RevisionSource } from "@triliumnext/commons";
-import { dayjs, getNoteIcon } from "@triliumnext/commons";
+import { dayjs, getNoteIcon, isMarkdownMime } from "@triliumnext/commons";
 
 import cloningService from "../../services/cloning.js";
 import dateUtils from "../../services/utils/date.js";
@@ -21,6 +21,7 @@ import BRevision from "./brevision.js";
 import { getLog } from "../../services/log.js";
 import { getSql } from "../../services/sql/index.js";
 import { formatDownloadTitle, isStringNote, normalize, randomString, replaceAll } from "../../services/utils/index.js";
+import { getVirtualNoteContent, isVirtualNoteContentWritable, setVirtualNoteContent } from "../../services/virtual_notes.js";
 
 const LABEL = "label";
 const RELATION = "relation";
@@ -219,6 +220,11 @@ class BNote extends AbstractBeccaEntity<BNote> {
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
     getContent() {
+        if (this.isVirtual) {
+            // Virtual notes have no blob row; content (if any) comes from their provider.
+            return getVirtualNoteContent(this.noteId);
+        }
+
         return this._getContent();
     }
 
@@ -245,9 +251,19 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     setContent(content: Uint8Array | string, opts: ContentOpts = {}) {
+        if (this.isVirtual) {
+            setVirtualNoteContent(this.noteId, content);
+            return;
+        }
+
         this._setContent(content, opts);
 
         eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: this });
+    }
+
+    /** Whether the content can be saved: always for a persisted note, per provider for a virtual one. */
+    isContentWritable() {
+        return !this.isVirtual || isVirtualNoteContentWritable(this.noteId);
     }
 
     setJsonContent(content: {}) {
@@ -299,7 +315,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
 
     /** @returns true if this note is a Markdown code note */
     isMarkdown() {
-        return this.type === "code" && (this.mime === "text/markdown" || this.mime === "text/x-markdown" || this.mime === "text/x-gfm");
+        return this.type === "code" && isMarkdownMime(this.mime);
     }
 
     /** @returns true if this note is an image */

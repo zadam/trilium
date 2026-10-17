@@ -10,7 +10,7 @@ This can be useful for a few things:
 
 For shorter snippets of code that can be embedded in [Text](Text.md) notes, see [Code blocks](Text/Developer-specific%20formatting/Code%20blocks.md).
 
-![](Code_image.png)
+![](Code_image.jpg)
 
 ## Creating a code note
 
@@ -21,9 +21,9 @@ In the [Note Tree](../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tre
 
 ## Adjusting the language of a code note
 
-In the [Ribbon](../Basic%20Concepts%20and%20Features/UI%20Elements/Ribbon.md), look for the _Note type_ selector and click it to reveal the possible note types. Inside of it there will be a section called _Code_, select any one of the languages. To find a language quickly, type its name: the list narrows to the matching entries, and <kbd>Enter</kbd> picks the first one.
+To change the language of a code note, look for the <span class="tn-icon bx bx-code"></span> icon in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>. When clicked it will reveal the list of available languages (which can be customized according to the section below). The menu also features a search bar to quickly filter, and icons to visually distinguish some of the programming languages.
 
-![](1_Code_image.png)
+On the <a class="reference-link" href="../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the same list is available in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Change language mode_.
 
 ## Adjusting the list of languages
 
@@ -38,7 +38,7 @@ The list of languages is also shared with the [Code blocks](Text/Developer-spec
 Long lines can be displayed on multiple lines:
 
 *   Globally for all code notes, from <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes._
-*   For a particular note, by going to the menu in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20buttons.md">Note buttons</a> and selecting _Word wrap_ and selecting the appropriate option:
+*   For a particular note, by going to the menu in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> and selecting _Word wrap_ and selecting the appropriate option:
     *   _Auto_, to respect the global word wrap for code notes.
     *   _On_ or _Off_, to change the state of the word wrap for this note regardless of the global option.
 
@@ -47,14 +47,11 @@ Long lines can be displayed on multiple lines:
 
 ## Adjusting options using the status bar
 
-> [!NOTE]
-> This feature is only available for the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/New%20Layout.md">New Layout</a>. For the old layout, the tab width can be adjusted at note level using the `#tabWidth` attribute, but re-indentation is not available.
-
 The status bar at the bottom of the editor shows the current indentation settings and language. Clicking on the indentation indicator opens a menu with three sections:
 
-1.  **Indent Using** — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
-2.  **Display Width** — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.
-3.  **Re-indent Content To** — convert existing indentation to a different style. For example, re-indent a file from 4 spaces to 2 spaces, or from spaces to tabs. This rewrites the leading whitespace on every line while preserving alignment remainders.
+1.  _Indent Using_ — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
+2.  _Display Width_ — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.
+3.  _Re-indent Content To_ — convert existing indentation to a different style. For example, re-indent a file from 4 spaces to 2 spaces, or from spaces to tabs. This rewrites the leading whitespace on every line while preserving alignment remainders.
 
 Clicking the language indicator lets you change the note's MIME type. As in the _Note type_ selector, typing narrows the list of languages.
 

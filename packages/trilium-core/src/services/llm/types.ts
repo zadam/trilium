@@ -7,6 +7,7 @@
 import type { LlmAttachmentKind, LlmChatConfig, LlmMessage, LlmReasoningEffort, LlmStreamChunk } from "@triliumnext/commons";
 import type { streamText } from "ai";
 
+import type { ToolApprovals } from "./tool_approval.js";
 import type { WebSearchSetup } from "./web_search.js";
 
 /**
@@ -20,6 +21,11 @@ export interface LlmProviderConfig extends LlmChatConfig {
      * `runChat()`. When set, web search goes through it instead of the model's built-in search.
      */
     webSearch?: WebSearchSetup;
+    /**
+     * Where the turn asks the user about each tool call, set by `runChat()`. Absent, the
+     * tools run unasked.
+     */
+    toolApprovals?: ToolApprovals;
 }
 
 /**

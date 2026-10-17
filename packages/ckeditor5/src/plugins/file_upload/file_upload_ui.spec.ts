@@ -77,7 +77,7 @@ describe("FileUploadUI", () => {
         expect(actionView.acceptedType).toBeUndefined();
     });
 
-    it("links the files picked through the button and returns the focus to the editor", () => {
+    it("embeds the files picked through the button and returns the focus to the editor", () => {
         const { actionView } = createDropdown();
         const execute = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
         const focus = vi.spyOn(editor.editing.view, "focus");
@@ -85,11 +85,13 @@ describe("FileUploadUI", () => {
 
         actionView.fire("done", files);
 
-        expect(execute).toHaveBeenCalledWith("fileUpload", { file: files });
+        expect(execute).toHaveBeenCalledExactlyOnceWith("fileUpload", {
+            file: files, asEmbed: true
+        });
         expect(focus).toHaveBeenCalled();
     });
 
-    it("lists attaching as links and as embeds, each closing the dropdown when picked", () => {
+    it("lists attaching as embeds and as links, each closing the dropdown when picked", () => {
         const { dropdown, items } = createDropdown();
         const execute = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
         const focus = vi.spyOn(editor.editing.view, "focus");
@@ -100,11 +102,11 @@ describe("FileUploadUI", () => {
         expect(items.map((item) => [
             item.label, item.icon, item.withText, item.allowMultipleFiles
         ])).toEqual([
-            [ "Attach file as a link", bxLink, true, true ],
-            [ "Attach and embed file", bxShapeSquare, true, true ]
+            [ "Attach and embed file", bxShapeSquare, true, true ],
+            [ "Attach file as a link", bxLink, true, true ]
         ]);
 
-        const [ linkItem, embedItem ] = items;
+        const [ embedItem, linkItem ] = items;
         dropdown.render();
         dropdown.isOpen = true;
         linkItem.fire("execute");
@@ -112,33 +114,41 @@ describe("FileUploadUI", () => {
         expect(openDialog).toHaveBeenCalledOnce();
         openDialog.mockRestore();
 
-        linkItem.fire("done", files);
         embedItem.fire("done", files);
+        linkItem.fire("done", files);
         expect(execute.mock.calls).toEqual([
-            [ "fileUpload", { file: files } ],
-            [ "fileUpload", { file: files, asEmbed: true } ]
+            [ "fileUpload", { file: files, asEmbed: true } ],
+            [ "fileUpload", { file: files } ]
         ]);
         expect(focus).toHaveBeenCalledTimes(2);
         dropdown.destroy();
     });
 
-    it("follows the `fileUpload` command, and offers embeds only where an embed can go", () => {
-        const { dropdown, actionView, items: [ linkItem, embedItem ] } = createDropdown();
+    it("follows the `fileUpload` command, and embeds only where an embed can go", () => {
+        const { dropdown, actionView, items: [ embedItem, linkItem ] } = createDropdown();
         expect([ dropdown.isEnabled, actionView.isEnabled ]).toEqual([ true, true ]);
-        expect([ linkItem.isEnabled, embedItem.isEnabled ]).toEqual([ true, true ]);
+        expect([ embedItem.isEnabled, linkItem.isEnabled ]).toEqual([ true, true ]);
 
         embedCommand.forceDisabled("spec");
-        expect([ linkItem.isEnabled, embedItem.isEnabled ]).toEqual([ true, false ]);
+        expect([ dropdown.isEnabled, actionView.isEnabled ]).toEqual([ true, false ]);
+        expect([ embedItem.isEnabled, linkItem.isEnabled ]).toEqual([ false, true ]);
 
+        embedCommand.clearForceDisabled("spec");
         command.forceDisabled("spec");
         expect([ dropdown.isEnabled, actionView.isEnabled ]).toEqual([ false, false ]);
     });
 
-    it("builds the button in an editor without the commands, listing no embeds", async () => {
+    it("builds a linking button in an editor without the commands", async () => {
         editor = await createTestEditor([Essentials, Paragraph, FileUploadUI]);
+        const execute = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
+        const files = pickFiles();
 
-        const labels = createDropdown().items.map((item) => item.label);
-        expect(labels).toEqual([ "Attach file as a link" ]);
+        const { actionView, items } = createDropdown();
+        actionView.fire("done", files);
+
+        expect(items.map((item) => item.label)).toEqual([ "Attach file as a link" ]);
+        expect(actionView.isEnabled).toBe(true);
+        expect(execute).toHaveBeenCalledExactlyOnceWith("fileUpload", { file: files });
     });
 
     describe("drawingCanvas", () => {

@@ -20,7 +20,7 @@ The box size sets how much of the included note is shown.
 *   _Tiny_ shows a single row instead of the content: the note's icon, its title with the path to the note above it, and buttons to act on the note. The included note is never rendered, so wherever the note is shown outside the editor, such as in print, in a tooltip or on a shared page, a _Tiny_ include appears as a link to the included note.
 *   _Small_ and _Medium_ show the content in a box of limited height. Text scrolls inside the box, while a picture, a diagram or a video is scaled down to fit it.
 *   _Full_ shows the whole content.
-*   _Expandable_ shows only the title until its <span class="tn-icon bx bx-chevron-right"></span> arrow is pressed.
+*   _Expandable_ shows only the title until its <span class="tn-icon bx bx-chevron-right"></span> arrow is pressed. In a read-only note, a click anywhere on the title row other than its buttons and link expands or collapses it as well.
 
 A new include gets the size that suits what it shows:
 
@@ -81,7 +81,7 @@ To replace an include with a link to the included note, select it and press the 
 
 ## Included notes in the share functionality
 
-If a [shared note](../../Advanced%20Usage/Sharing.md) contains one or more included notes, they will be displayed in the content of the note as if they were part of the note itself. The caption of an include is shown under the included content. A _Tiny_ include is shown as a link to the included note instead.
+If a [shared note](../../Advanced%20Usage/Sharing.md) contains one or more included notes, they will be displayed in the content of the note as if they were part of the note itself. The caption of an include is shown under the included content. A _Tiny_ include is shown as a link to the included note instead, and so is an include that would show a note already shown around it, such as a note that includes itself. The same goes for a printed or exported note.
 
 For this to work, the included notes must also be shared, otherwise they will not be shown. However, the included notes can still be hidden from the note tree via `#shareHiddenFromTree`.
 
@@ -120,16 +120,23 @@ An included text note, an included code note and an embedded code file such as a
 A drawing canvas is an Excalidraw canvas, like the one of a <a class="reference-link" href="../Canvas.md">Canvas</a> note, drawn directly in the text note. It is not a note of its own: the drawing is kept in a `Canvas.excalidraw` [attachment](../../Basic%20Concepts%20and%20Features/Notes/Attachments.md) of the text note and is saved together with the text.
 
 *   To insert a drawing canvas, open the <span class="tn-icon cke cke-plus"></span> _Insert_ menu of the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a> and choose <span class="tn-icon bx bx-pen"></span> _Drawing canvas_, above _Mermaid diagram_. It is also available as _Drawing canvas_ in the <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>. The canvas is added empty and editable, in a _Medium_ box with its title hidden, and takes the focus, ready for drawing.
-*   To draw on a canvas that does not have the focus, click it first. Until then, the mouse wheel and touch gestures scroll the note. The canvas then has the tools, menus and keyboard shortcuts of a Canvas note. The toolbars, the menus and the properties of the selected shapes show only while the canvas has the focus, so elsewhere the drawing reads like a picture in the text.
+*   To draw or write over an image, select the image and press the <span class="tn-icon bx bxs-pen"></span> _Convert image to a drawing canvas_ button of its toolbar. The image is replaced by an editable drawing canvas in a _Medium_ box, with its title hidden and the focus in it. The image sits at its original size in the middle of the canvas, zoomed so that all of it shows, and is locked so that it cannot be selected or moved by accident. While it is locked, the canvas can be zoomed in on the image but not zoomed out past it or scrolled beyond its edges. To move or resize the image anyway, right-click it and choose _Unlock_. The caption of the image is kept, but not its alignment or link. Only an image on its own line can be converted, not one inside a paragraph. Undo brings the image back.
+*   An Excalidraw file (`.excalidraw`) attached with the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button becomes a drawing canvas too, in a _Medium_ box titled with the file name. It starts with _Editable_ off, so the drawing shows but cannot be changed until _Editable_ is turned on (see below).
+*   To draw on a canvas that does not have the focus, click it first. Until then, touch gestures scroll the note. The canvas then has the tools, menus and keyboard shortcuts of a Canvas note. The toolbars, the menus and the properties of the selected shapes show only while the canvas has the focus, so elsewhere the drawing reads like a picture in the text.
+*   The mouse wheel and the touchpad scroll the note over a canvas too, as over the text. To zoom, use the zoom buttons of the canvas toolbar; to move around the drawing, use the <span class="tn-icon bx bxs-hand"></span> _Hand_ tool. In fullscreen, the mouse wheel moves and zooms the drawing instead.
+*   The canvas toolbar replaces the Excalidraw menu: _Export image_, _Find on canvas_, _Library_ and _Help_ are at the end of its <span class="tn-icon bx bx-category"></span> _More tools_ menu. In fullscreen, the Excalidraw menu shows again.
 *   A new drawing has the background color of the note. A background chosen from the Excalidraw menu replaces it.
-*   To protect a finished drawing from accidental changes, select it and turn off the <span class="tn-icon bx bx-edit-alt"></span> _Editable_ button at the start of its toolbar, or uncheck _Editable_ in its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu. The drawing can then be panned and zoomed but not changed, and its toolbar holds only the zoom buttons. To draw again, turn _Editable_ back on.
+*   To protect a finished drawing from accidental changes, select it and turn off the <span class="tn-icon bx bx-edit-alt"></span> _Editable_ button at the start of its toolbar, or uncheck _Editable_ in its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu. The drawing then shows as a still picture, at the zoom and position it had, and can no longer be changed, zoomed or moved. To draw again, turn _Editable_ back on.
 *   The box sizes, resizing, the caption and the title work as for an included note, but the toolbar of a drawing leaves the box size, _Show title_ and _Convert to link_ to its _More actions_ menu.
 *   In the desktop layout, Excalidraw keeps its desktop interface however small the box is. In the mobile layout, a narrow or short box switches it to a compact interface. For more room, choose _Full_, or show the title and press <span class="tn-icon bx bx-fullscreen"></span> _Fullscreen_.
-*   Pictures added to the drawing are stored in the same attachment.
-*   In a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), the drawing can be viewed but not changed.
+*   Pictures added to the drawing are stored in the same attachment. A converted image is kept as an image attachment of the note instead, named with a generated code.
+*   In a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), the drawing shows as a still picture too.
+*   On a [shared page](../../Advanced%20Usage/Sharing.md), the drawing is shown as a picture at its own size, whatever the size of its box, in light or dark colors to match the page. Each change to the drawing saves this picture as an SVG image attachment of the note, also named with a generated code.
 
 ### Limitations
 
 *   The Excalidraw shape library is not saved for a drawing canvas.
-*   Outside the editor, for example in a tooltip, when printing or in the list of attachments, the drawing is shown as a picture. On a [shared page](../../Advanced%20Usage/Sharing.md), it appears as a link to download `Canvas.excalidraw`.
+*   Outside the editor, for example in a tooltip, when printing or in the list of attachments, the drawing is shown as a picture.
+*   A drawing has no picture for shared pages until its first change, except one converted from an image. Until then, for example for an attached `.excalidraw` file, a shared page shows a link to download the drawing instead.
+*   In Safari, the picture of a drawing on a shared page follows the light or dark appearance of the system rather than the theme chosen on the page.
 *   A copy of a drawing canvas pasted in the same note shares the drawing with the original, so a change to one shows in the other only after the note is opened again. A copy pasted in another note gets a drawing of its own.

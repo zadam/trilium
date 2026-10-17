@@ -1,3 +1,4 @@
+import { getAttachedFileMime } from "@triliumnext/commons";
 import {
     Command,
     FileRepository,
@@ -141,5 +142,6 @@ interface EmbedPlaceholderOptions {
 /** The box size the host gives an embed of `file`, `medium` when the host does not say. */
 function getEmbedBoxSize(editor: Editor, file: File) {
     const component = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
-    return component.getEmbedBoxSize?.(file.type, file.size) ?? "medium";
+    const mime = getAttachedFileMime(file.name, file.type);
+    return component.getEmbedBoxSize?.(mime, file.size) ?? "medium";
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { buildNote } from "../test/easy-froca.js";
 import appContext from "./app_context.js";
 import NoteContext from "./note_context.js";
 import TabManager, { buildNoteContextStatesFromUrl } from "./tab_manager.js";
@@ -154,6 +155,28 @@ describe("handing a tab over to a window of its own", () => {
         triggerCommand.mockClear();
         await tm.copyTabToNewWindowCommand({ ntxId: "gone" });
         expect(triggerCommand).not.toHaveBeenCalled();
+    });
+});
+
+describe("TabManager after froca is rebuilt", () => {
+    it("unpins and empties a tab whose note the rebuild no longer holds", async () => {
+        vi.spyOn(appContext, "triggerEvent").mockResolvedValue(undefined as any);
+        const tm = new TabManager();
+        appContext.tabManager = tm;
+        const kept = buildNote({ title: "Kept" });
+        const gone = await tm.openEmptyTab(null, "root", null, true);
+        const stays = await tm.openEmptyTab(null, "root", null, true);
+        gone.noteId = "goneAfterRebuild";
+        gone.notePath = "root/goneAfterRebuild";
+        stays.noteId = kept.noteId;
+        stays.notePath = `root/${kept.noteId}`;
+
+        await tm.handleEvent("frocaReloaded", {});
+
+        expect(gone.pinned).toBe(false);
+        expect(gone.noteId).toBeNull();
+        expect(stays.pinned).toBe(true);
+        expect(stays.noteId).toBe(kept.noteId);
     });
 });
 

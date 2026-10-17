@@ -11,7 +11,6 @@ import { t } from "../../services/i18n";
 import { getActionSync } from "../../services/keyboard_actions";
 import { handleRightToLeftPlacement, isMobile, openInAppHelpFromUrl } from "../../services/utils";
 import FormToggle from "./FormToggle";
-import HelpTooltipButton from "./HelpTooltipButton";
 import { useStaticTooltip, useSyncedRef, useUniqueName } from "./hooks";
 import Icon, { SvgIcon } from "./Icon";
 import { MasterDetailHeader } from "./master_detail";
@@ -187,8 +186,8 @@ const EMPTY_ICON = "bx bx-empty";
 const TEXT_ENTRY = "input:not([type='checkbox'], [type='radio']), textarea, select, [contenteditable='true']";
 
 const TOOLTIP_CONFIG: Partial<Tooltip.Options> = {
-    placement: handleRightToLeftPlacement("right"),
-    fallbackPlacements: [ handleRightToLeftPlacement("right") ],
+    placement: menuItemTooltipSide,
+    fallbackPlacements: [],
     animation: false
 };
 
@@ -295,13 +294,34 @@ export function FormListItem({ className, icon, iconSvg, iconClassName, value, t
     );
 }
 
+/** Bootstrap's default `--bs-tooltip-max-width` and the gap its `offset` leaves beside the row. */
+const TOOLTIP_MAX_WIDTH = 200;
+const TOOLTIP_OFFSET = 6;
+
+/**
+ * Puts a row's tooltip on the reading-direction end of the menu, or on the other side when the
+ * viewport has no room there for a tooltip at its widest. The room is measured against that widest
+ * tooltip rather than this one, so every row of a menu gets the same side whatever its text.
+ */
+export function menuItemTooltipSide(_tooltip?: unknown, tip?: HTMLElement, row?: Element): "left" | "right" {
+    const preferred = handleRightToLeftPlacement("right");
+    if (!tip || !row) return preferred;
+
+    const maxWidth = parseFloat(getComputedStyle(tip).getPropertyValue("--bs-tooltip-max-width"));
+    const needed = (Number.isNaN(maxWidth) ? TOOLTIP_MAX_WIDTH : maxWidth) + TOOLTIP_OFFSET;
+    const { left, right } = row.getBoundingClientRect();
+    const room = preferred === "right" ? window.innerWidth - right : left;
+    if (room >= needed) return preferred;
+    return preferred === "right" ? "left" : "right";
+}
+
 export function FormListToggleableItem({
     title, currentValue, onChange, disabled, helpPage, helpTooltip, ...props
 }: Omit<FormListItemOpts, "onClick" | "children"> & {
     title: string;
     currentValue: boolean;
     helpPage?: string;
-    /** What the setting does, shown on hover. Unlike {@link helpPage}, it opens nothing. */
+    /** What the setting does, shown beside the menu while the row is hovered. */
     helpTooltip?: string;
     onChange(newValue: boolean): void | Promise<void>;
 }) {
@@ -310,6 +330,7 @@ export function FormListToggleableItem({
     return (
         <FormListItem
             {...props}
+            title={helpTooltip}
             disabled={disabled}
             onClick={async (e) => {
                 if ((e.target as HTMLElement | null)?.classList.contains("contextual-help")) {
@@ -335,7 +356,6 @@ export function FormListToggleableItem({
                             onClick={() => openInAppHelpFromUrl(helpPage)}
                         />
                     )}
-                    {helpTooltip && <HelpTooltipButton description={helpTooltip} />}
                     <span class="switch-spacer" />
                 </>}
             />
@@ -386,6 +406,8 @@ export interface FormDropdownSubmenuProps {
     iconSvg?: string;
     title: ComponentChildren;
     children: ComponentChildren;
+    /** A line under the title, as {@link FormListItem} shows one. */
+    description?: string;
     /** Called when the row is clicked, or run from the keyboard, on the desktop. */
     onDropdownToggleClicked?: (e: MouseEvent) => void;
     /**
@@ -411,7 +433,7 @@ export function FormDropdownSubmenu(props: FormDropdownSubmenuProps) {
     return <MenuSubmenu {...props} menu={menu} />;
 }
 
-function MenuSubmenu({ menu, icon, iconSvg, title, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
+function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
     const level = useContext(MenuLevelContext);
     const id = useUniqueName("menu-row");
     const openSubmenu = menu.open[level];
@@ -470,7 +492,12 @@ function MenuSubmenu({ menu, icon, iconSvg, title, children, onDropdownToggleCli
             <span className="dropdown-toggle">
                 {iconSvg ? <SvgIcon svg={iconSvg} /> : <Icon icon={icon} />}
                 <span className="tn-menu-gap" />
-                <span id={titleId(id)}>{title}</span>
+                {description ? (
+                    <div>
+                        <span id={titleId(id)}>{title}</span>
+                        <div className="description">{description}</div>
+                    </div>
+                ) : <span id={titleId(id)}>{title}</span>}
             </span>
             {split && !isMobile() && (
                 <span

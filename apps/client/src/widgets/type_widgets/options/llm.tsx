@@ -15,7 +15,7 @@ import Collapsible from "../../react/Collapsible";
 import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
-import MaskedIcon from "../../react/MaskedIcon";
+import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import { shortModelName } from "../llm_chat/model_name";
 import OptionsPageHeader from "./components/OptionsPageHeader";
@@ -299,7 +299,7 @@ function ProviderList({ providers, emptyIcon, emptyText, onEdit, onDelete }: Pro
                     key={provider.id}
                     label={
                         <span className="llm-provider-name">
-                            {providerType?.iconUrl && <MaskedIcon url={providerType.iconUrl} />}
+                            {providerType && <Icon icon={providerType.icon} />}
                             {provider.name}
                         </span>
                     }

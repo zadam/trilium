@@ -3,12 +3,18 @@ import { t } from "i18next";
 import Component from "../../components/component";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
-import { DEFAULT_MAP_LAYER_NAME, MAP_LAYERS, type MapLayer } from "../collections/geomap/map_layer";
+import { ROUTINE_OCCURRENCES_PER_WEEK } from "../collections/calendar/recurrence";
+import { DEFAULT_MAP_LAYER_NAME, isTileUrl, MAP_LAYERS, type MapLayer } from "../collections/geomap/map_layer";
 import { ViewTypeOptions } from "../collections/interface";
 import { DEFAULT_THEME, getPresentationThemes } from "../collections/presentation/themes";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import { useNoteLabel } from "../react/hooks";
 import { BookProperty, ClickContext, ComboBoxItem } from "../react/NotePropertyMenu";
+
+/** How long a row of the calendar's day and week views lasts, until `#calendar:slotDuration` says. */
+export const DEFAULT_SLOT_DURATION = "00:15:00";
+/** How often those views label their rows, until `#calendar:slotLabelInterval` says. */
+export const DEFAULT_SLOT_LABEL_INTERVAL = "01:00:00";
 
 interface BookConfig {
     properties: BookProperty[];
@@ -61,6 +67,15 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 bindToLabel: "calendar:weekNumbers"
             },
             {
+                label: t("book_properties_config.hide-routine-events"),
+                icon: "bx bx-repeat",
+                type: "checkbox",
+                helpTooltip: t("book_properties_config.hide-routine-events-help", {
+                    days: ROUTINE_OCCURRENCES_PER_WEEK
+                }),
+                bindToLabel: "calendar:hideRoutineEvents"
+            },
+            {
                 label: t("calendar_view.time_slots"),
                 icon: "bx bx-time",
                 type: "submenu",
@@ -71,6 +86,7 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                         label: t("calendar_view.slot_duration"),
                         type: "option-group",
                         bindToLabel: "calendar:slotDuration",
+                        defaultValue: DEFAULT_SLOT_DURATION,
                         options: slotDurationOptions([5, 10, 15, 20, 30, 60])
                     },
                     { type: "separator" },
@@ -78,6 +94,7 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                         label: t("calendar_view.slot_label_interval"),
                         type: "option-group",
                         bindToLabel: "calendar:slotLabelInterval",
+                        defaultValue: DEFAULT_SLOT_LABEL_INTERVAL,
                         // Labels want to be coarser than the slots themselves.
                         options: slotDurationOptions([15, 30, 60])
                     }
@@ -93,6 +110,9 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
                 type: "combobox",
                 bindToLabel: "map:style",
                 defaultValue: DEFAULT_MAP_LAYER_NAME,
+                // An image map is drawn over its image, and a tileset map over its tiles.
+                isVisible: (note) => !note.getRelationValue("map:image")
+                    && !isTileUrl(note.getLabelValue("map:style")),
                 options: [
                     {
                         title: t("book_properties_config.raster"),
@@ -142,16 +162,7 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
         ]
     },
     table: {
-        properties: [
-            {
-                label: t("book_properties_config.max-nesting-depth"),
-                icon: "bx bx-subdirectory-right",
-                type: "number",
-                bindToLabel: "maxNestingDepth",
-                width: 65,
-                disabled: (note) => note.type === "search"
-            }
-        ]
+        properties: []
     },
     board: {
         properties: [

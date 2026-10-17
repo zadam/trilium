@@ -5,7 +5,7 @@ import "jquery.fancytree/dist/modules/jquery.fancytree.filter.js";
 import "../stylesheets/tree.css";
 import "./note_tree.css";
 
-import { GEO_LOCATION_ATTRIBUTE } from "@triliumnext/commons";
+import { GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE } from "@triliumnext/commons";
 
 import appContext, { type CommandListenerData, type EventData } from "../components/app_context.js";
 import type { SetNoteOpts } from "../components/note_context.js";
@@ -183,17 +183,6 @@ interface RefreshContext {
     noteIdsToUpdate: Set<string>;
     noteIdsToReload: Set<string>;
 }
-
-/**
- * The information contained within a drag event.
- */
-export interface DragData {
-    noteId: string;
-    branchId: string;
-    title: string;
-}
-
-export const TREE_CLIPBOARD_TYPE = "application/x-fancytree-node";
 
 /** Entity changes below the given threshold will be processed without batching to avoid performance degradation. */
 const BATCH_UPDATE_THRESHOLD = 10;
@@ -539,7 +528,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         return false;
                     } else if (node.data.noteId === "_lbRoot") {
                         return false;
-                    } else if (node.data.noteId.startsWith("_options")) {
+                    } else if (node.data.noteId.startsWith("_options") || node.data.noteId.startsWith("_help")) {
                         return false;
                     } else if (node.data.noteId === hoistedNoteService.getHoistedNoteId()) {
                         // The hoisted note is the tree root, so it has no visible siblings to drop before/after.
@@ -589,6 +578,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                             notes = JSON.parse(jsonStr);
                         } catch (e) {
                             logError(`Cannot parse JSON '${jsonStr}' into notes for drop`);
+                            return;
+                        }
+
+                        // Help pages are virtual notes, which the server never moves.
+                        if (notes.some((note) => note.noteId?.startsWith("_help"))) {
+                            toastService.showError(t("note_tree.dropping-not-allowed"));
                             return;
                         }
 
@@ -1306,9 +1301,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     #processAttributeRows(attributeRows: AttributeRow[], refreshCtx: RefreshContext) {
         for (const attrRow of attributeRows) {
-            // `geolocation` decides the icon of a note that has none of its own (see getNoteIcon).
+            // `geolocation`, `mapPosition` and `startDate` decide the icon of a note that has none
+            // of its own (see getNoteIcon).
             const dirtyingLabels = ["iconClass", "cssClass", "workspace", "workspaceIconClass",
-                "color", GEO_LOCATION_ATTRIBUTE];
+                "color", GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE, "startDate"];
 
             if (attrRow.type === "label" && dirtyingLabels.includes(attrRow.name ?? "") && attrRow.noteId) {
                 if (attrRow.isInheritable) {

@@ -20,7 +20,7 @@
  *     with every built-in Claude Code tool (file access, bash, …) disabled.
  */
 
-import type { Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
+import type { CanUseTool, Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
 import type { ContentBlockParam } from "@anthropic-ai/sdk/resources";
 import type { LlmMessage, LlmMessagePart, LlmStreamChunk } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
@@ -29,6 +29,7 @@ import { buildNoteHint } from "@triliumnext/core/src/services/llm/note_hint.js";
 import { anthropicRecommendedIds } from "@triliumnext/core/src/services/llm/providers/anthropic.js";
 import { buildModelList, mergeModelLists, type RemoteModel } from "@triliumnext/core/src/services/llm/providers/base_provider.js";
 import { buildSystemPrompt } from "@triliumnext/core/src/services/llm/system_prompt.js";
+import { TOOL_CALL_DECLINED_REASON, type ToolApprovals } from "@triliumnext/core/src/services/llm/tool_approval.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "@triliumnext/core/src/services/llm/types.js";
 import { encodeBase64 } from "@triliumnext/core/src/services/utils/binary.js";
 import { spawn as nodeSpawn } from "child_process";
@@ -46,7 +47,7 @@ import {
     rememberSession as rememberWarmSession,
     takeWarmSession
 } from "./claude_session_pool.js";
-import { buildHistoryReplay, flattenContent, hashTranscript } from "./transcript.js";
+import { buildHistoryReplay, buildTitlePrompt, cleanTitle, flattenContent, hashTranscript } from "./transcript.js";
 
 // Re-exported for existing importers (specs, siblings); the implementations
 // now live in the shared transcript module.
@@ -143,6 +144,23 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
 
 const TITLE_MODEL = "claude-haiku-4-5-20251001";
 
+/**
+ * The pool key of the session titles share. Note IDs never contain a colon, so
+ * it cannot collide with a chat's own session.
+ */
+const TITLE_SESSION_KEY = ":title";
+const TITLE_FINGERPRINT = "title";
+/**
+ * The title session's system prompt. `/clear` leaves no earlier titles in the
+ * history to imitate, so the examples here hold the model to the word limit.
+ */
+const TITLE_SYSTEM_PROMPT = "You generate short, descriptive titles. A title has at most five words: name the subject "
+    + "and leave out filler such as \"Guide\", \"Overview\", \"Basics\" or \"Common Mistakes\". Reply with only the title "
+    + "text — no quotes, no punctuation around it. Examples of good titles: \"Garden Shed Wiring Plan\", "
+    + "\"Quarterly Budget Review\", \"Fixing Login Timeouts\".";
+/** How long a title or a `/clear` waits for its result before the title session is closed. */
+export const TITLE_TIMEOUT_MS = 60_000;
+
 /** Upper bound on assistant↔tool round-trips within one chat turn. */
 const MAX_TURNS = 25;
 
@@ -177,6 +195,9 @@ interface SessionEntry {
  * the transcript the client sends.
  */
 const sessionsByChatNote = new Map<string, SessionEntry>();
+
+/** Settles when the title in progress does; a session answers one prompt at a time. */
+let titleQueue: Promise<unknown> = Promise.resolve();
 
 function rememberSession(chatNoteId: string, entry: SessionEntry) {
     // Refresh insertion order so the oldest mapping is evicted first.
@@ -423,11 +444,11 @@ export class ClaudeAgentProvider implements LlmProvider {
             } else {
                 yield { type: "status", status: "starting_agent" };
                 const input = new Pushable<SDKUserMessage>();
-                session = {
+                const created: ClaudeSession = {
                     query: query({
                         prompt: input,
                         options: {
-                            ...await this.buildBaseOptions(config),
+                            ...await this.buildBaseOptions(config, () => created.toolApprovals),
                             systemPrompt,
                             model,
                             resume,
@@ -442,12 +463,14 @@ export class ClaudeAgentProvider implements LlmProvider {
                     busy: true,
                     model
                 };
+                session = created;
                 if (config.chatNoteId) {
                     rememberWarmSession(config.chatNoteId, session);
                 }
             }
             const active = session;
             held = active;
+            active.toolApprovals = config.toolApprovals;
             await pushUserTurn(active.input, prompt);
 
             // Manual iteration on purpose: `for await (…) { break }` calls
@@ -612,6 +635,9 @@ export class ClaudeAgentProvider implements LlmProvider {
             yield { type: "error", error: describeAgentError(error) };
         } finally {
             signal?.removeEventListener("abort", onAbort);
+            if (held) {
+                held.toolApprovals = undefined;
+            }
             const reusable = held && config.chatNoteId && turnComplete && !held.closed && !signal?.aborted;
             if (reusable && held && config.chatNoteId) {
                 // Keep the subprocess warm; the pool reaps it when idle.
@@ -630,29 +656,67 @@ export class ClaudeAgentProvider implements LlmProvider {
         }
     }
 
+    /**
+     * Name a chat after its first message, in the session titles share. Titles
+     * take turns, because a session answers one prompt at a time, and each is
+     * followed by a `/clear` that the title does not wait for but the next one does.
+     */
     async generateTitle(firstMessage: string): Promise<string> {
+        const title = titleQueue.then(() => this.requestTitle(firstMessage));
+        titleQueue = title.then(() => clearTitleSession());
+        return title;
+    }
+
+    private async requestTitle(firstMessage: string): Promise<string> {
+        let session: ClaudeSession | undefined;
+        let answered = false;
         try {
-            const query = await loadQuery();
-            const response = query({
-                prompt: `Generate a short title (at most 5 words) summarizing this chat message. Reply with only the title, no quotes or punctuation around it:\n\n${firstMessage.substring(0, 500)}`,
+            session = await this.titleSession();
+            await pushUserTurn(session.input, buildTitlePrompt(firstMessage));
+            const result = await nextResult(session);
+            answered = result !== undefined;
+            return result?.subtype === "success" ? cleanTitle(result.result) : "";
+        } catch (error) {
+            getLog().error(`Claude Agent title generation failed: ${describeAgentError(error)}`);
+            return "";
+        } finally {
+            // A title that got no result leaves the session in an unknown state.
+            if (session && answered) {
+                releaseSession(TITLE_SESSION_KEY, session);
+            } else if (session) {
+                closeSession(TITLE_SESSION_KEY, session);
+            }
+        }
+    }
+
+    /** The warm title session, or a new one on {@link TITLE_MODEL}. */
+    private async titleSession(): Promise<ClaudeSession> {
+        const warm = takeWarmSession(TITLE_SESSION_KEY, TITLE_FINGERPRINT);
+        if (warm) {
+            return warm;
+        }
+
+        const query = await loadQuery();
+        const input = new Pushable<SDKUserMessage>();
+        const session: ClaudeSession = {
+            query: query({
+                prompt: input,
                 options: {
                     ...await this.buildBaseOptions({ enableNoteTools: false }),
-                    systemPrompt: "You generate short, descriptive titles. Reply with only the title text — no quotes, no punctuation around it.",
+                    systemPrompt: TITLE_SYSTEM_PROMPT,
                     model: TITLE_MODEL,
                     maxTurns: 1,
                     persistSession: false
                 }
-            });
-
-            for await (const message of response) {
-                if (message.type === "result" && message.subtype === "success") {
-                    return message.result.trim().replace(/^["']|["']$/g, "").substring(0, 100);
-                }
-            }
-        } catch (error) {
-            getLog().error(`Claude Agent title generation failed: ${describeAgentError(error)}`);
-        }
-        return "";
+            }),
+            input,
+            fingerprint: TITLE_FINGERPRINT,
+            closed: false,
+            busy: true,
+            model: TITLE_MODEL
+        };
+        rememberWarmSession(TITLE_SESSION_KEY, session);
+        return session;
     }
 
     /**
@@ -675,8 +739,14 @@ export class ClaudeAgentProvider implements LlmProvider {
         return buildSystemPrompt(messages, promptConfig) ?? "";
     }
 
-    /** Options shared by every agent invocation. */
-    private async buildBaseOptions(config: Pick<LlmProviderConfig, "enableNoteTools" | "enableWebSearch" | "enableExtendedThinking">): Promise<AgentOptions> {
+    /**
+     * Options shared by every agent invocation. `approvalsOf` gives the approvals of the turn
+     * that drives the session when a note tool is called; without it, note tools run unasked.
+     */
+    private async buildBaseOptions(
+        config: Pick<LlmProviderConfig, "enableNoteTools" | "enableWebSearch" | "enableExtendedThinking">,
+        approvalsOf?: () => ToolApprovals | undefined
+    ): Promise<AgentOptions> {
         // Built-in Claude Code tools (file access, bash, …) stay disabled — the
         // agent runs on the server host and must only ever touch notes. Web
         // search is the one opt-in exception.
@@ -693,6 +763,9 @@ export class ClaudeAgentProvider implements LlmProvider {
             settingSources: [],
             strictMcpConfig: true,
             permissionMode: "dontAsk",
+            // A preset title stops Claude Code from spending a model call on one of
+            // its own; Trilium names the chat note itself (see generateTitle()).
+            title: "Trilium chat",
             // Extended thinking: `adaptive` lets these (modern) models decide how
             // much to think and stream summarized reasoning, mirroring the metered
             // Anthropic provider. Adaptive is the SDK's default for supporting
@@ -725,8 +798,13 @@ export class ClaudeAgentProvider implements LlmProvider {
             options.mcpServers = {
                 trilium: { type: "sdk", name: "trilium", instance: await createMcpServer() }
             };
-            // Bare server prefix auto-allows every tool from that server.
-            allowedTools.push("mcp__trilium");
+            if (approvalsOf) {
+                options.permissionMode = "default";
+                options.canUseTool = askBeforeNoteTool(approvalsOf);
+            } else {
+                // Bare server prefix auto-allows every tool from that server.
+                allowedTools.push("mcp__trilium");
+            }
         }
 
         options.allowedTools = allowedTools;
@@ -990,6 +1068,55 @@ async function* streamSingleUserMessage(content: ContentBlockParam[]): AsyncIter
 }
 
 /**
+ * Empty the warm title session with `/clear`, which Claude Code runs in the
+ * process without a model call, so the next title starts from no history. A
+ * `/clear` that fails closes the session, and the next title starts another.
+ */
+async function clearTitleSession(): Promise<void> {
+    const session = takeWarmSession(TITLE_SESSION_KEY, TITLE_FINGERPRINT);
+    if (!session) {
+        return;
+    }
+    try {
+        await pushUserTurn(session.input, "/clear");
+        if (await nextResult(session)) {
+            releaseSession(TITLE_SESSION_KEY, session);
+            return;
+        }
+    } catch (error) {
+        getLog().info(`Claude Agent provider: clearing the title session failed (${describeAgentError(error)}).`);
+    }
+    closeSession(TITLE_SESSION_KEY, session);
+}
+
+/**
+ * Read a title session up to the `result` of the turn just pushed, or undefined
+ * when the stream ends first. Throws when no result comes within
+ * {@link TITLE_TIMEOUT_MS}, since a wedged `query.next()` might never settle.
+ * Iterates by hand, as in `chatChunks()`: breaking out of `for await` closes the query.
+ */
+async function nextResult(session: ClaudeSession): Promise<SDKResultMessage | undefined> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`no reply within ${TITLE_TIMEOUT_MS / 1000} s`)), TITLE_TIMEOUT_MS);
+    });
+    try {
+        for (;;) {
+            const next = await Promise.race([session.query.next(), timeout]);
+            if (next.done) {
+                session.closed = true;
+                return undefined;
+            }
+            if (next.value.type === "result") {
+                return next.value;
+            }
+        }
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
  * Feed one user turn into a live session's streaming input. Accepts both prompt
  * forms {@link buildPrompt} produces: a plain string, or the one-message stream
  * used for natively-consumable attachments (drained here, since a pooled
@@ -1014,6 +1141,32 @@ async function pushUserTurn(input: Pushable<SDKUserMessage>, prompt: string | As
  * "mcp__trilium__search_notes"), and Claude Code's web tools under the names the other providers give
  * theirs. Their inputs already carry the `query` and `url` the chat shows.
  */
+/**
+ * Ask the user before a call to one of Trilium's note tools, through the approvals of the turn that
+ * makes it. Anything else is denied: the in-process server is the only one Trilium registers, and
+ * the agent has no other tool that is not pre-approved.
+ */
+function askBeforeNoteTool(approvalsOf: () => ToolApprovals | undefined): CanUseTool {
+    return async (toolName, input, { toolUseID, mcpServer }) => {
+        const isNoteTool = toolName.startsWith("mcp__trilium__")
+            && (mcpServer === undefined || (mcpServer.source === "sdk" && mcpServer.name === "trilium"));
+        if (!isNoteTool) {
+            getLog().info(`Claude Agent provider: denied the call to "${toolName}", which is not a note tool.`);
+            return { behavior: "deny", message: "Only Trilium's note tools are available." };
+        }
+
+        const approvals = approvalsOf();
+        const approved = !approvals || await approvals.request({
+            toolCallId: toolUseID,
+            toolName: friendlyToolName(toolName),
+            toolInput: input
+        });
+        return approved
+            ? { behavior: "allow", updatedInput: input }
+            : { behavior: "deny", message: TOOL_CALL_DECLINED_REASON };
+    };
+}
+
 function friendlyToolName(name: string): string {
     return BUILTIN_TOOL_NAMES[name] ?? name.replace(/^mcp__trilium__/, "");
 }

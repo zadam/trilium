@@ -12,6 +12,7 @@ import { attachmentPlaceholder, resolveAttachmentPart } from "../attachment_cont
 import { llmFetch } from "./fetch.js";
 import { buildNoteHint } from "../note_hint.js";
 import { buildSystemPrompt as composeSystemPrompt } from "../system_prompt.js";
+import { TOOL_CALL_DECLINED_REASON } from "../tool_approval.js";
 import { allToolRegistries } from "../tools/index.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "../types.js";
 import { createReadWebPageTool, createWebSearchTool } from "../web_search.js";
@@ -440,14 +441,46 @@ export abstract class BaseProvider implements LlmProvider {
             streamOptions.providerOptions = providerOptions;
         }
 
-        const tools = this.buildTools(config);
-        if (Object.keys(tools).length > 0) {
-            streamOptions.tools = tools;
-            streamOptions.stopWhen = stepCountIs(15);
-            streamOptions.toolChoice = "auto";
-        }
+        this.addTools(streamOptions, config, 15);
 
         return streamText(streamOptions);
+    }
+
+    /**
+     * Give a turn the tools of {@link buildTools}, letting it run up to `maxSteps` steps.
+     * With `config.toolApprovals`, every call the model makes waits for the user to answer it.
+     */
+    protected addTools(
+        streamOptions: Parameters<typeof streamText>[0],
+        config: LlmProviderConfig,
+        maxSteps: number
+    ): void {
+        const tools = this.buildTools(config);
+        if (Object.keys(tools).length === 0) {
+            return;
+        }
+
+        streamOptions.tools = tools;
+        streamOptions.stopWhen = stepCountIs(maxSteps);
+        streamOptions.toolChoice = "auto";
+
+        const approvals = config.toolApprovals;
+        if (approvals) {
+            streamOptions.toolApproval = async ({ toolCall }) => {
+                // A tool the provider runs itself (such as Anthropic's web search) cannot be held.
+                if (toolCall.providerExecuted) {
+                    return "not-applicable";
+                }
+                const approved = await approvals.request({
+                    toolCallId: toolCall.toolCallId,
+                    toolName: toolCall.toolName,
+                    toolInput: toolCall.input as Record<string, unknown>
+                });
+                return approved
+                    ? "approved"
+                    : { type: "denied", reason: TOOL_CALL_DECLINED_REASON };
+            };
+        }
     }
 
     /** Provider-specific `providerOptions` for a chat turn, such as a reasoning effort. */

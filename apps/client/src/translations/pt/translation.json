@@ -60,11 +60,11 @@
   },
   "bulk_actions": {
     "bulk_actions": "Ações em massa",
-    "affected_notes": "Notas Afetadas",
     "include_descendants": "Incluir notas filhas das notas selecionadas",
-    "available_actions": "Ações disponíveis",
     "chosen_actions": "Ações selecionadas",
-    "execute_bulk_actions": "Executar ações em massa",
+    "execute_bulk_actions_one": "Executar ações em massa",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "As ações em massa foram concluídas com sucesso.",
     "none_yet": "Nenhuma até agora... adicione uma ação a clicar numa das disponíveis acima.",
     "labels": "Etiquetas",
@@ -413,21 +413,13 @@
     "remove_this_search_action": "Remover esta ação de pesquisa"
   },
   "execute_script": {
-    "execute_script": "Executar script",
-    "help_text": "Pode executar scripts simples nas notas correspondentes.",
-    "example_1": "Por exemplo para anexar uma cadeia ao título de uma nota, use este pequeno script:",
-    "example_2": "Um exemplo mais complexo seria apagar todos os atributos das notas correspondentes:"
+    "execute_script": "Executar script"
   },
   "add_label": {
     "add_label": "Adicionar etiqueta",
     "label_name_placeholder": "nome da etiqueta",
     "label_name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to_value": "para o valor",
-    "new_value_placeholder": "novo valor",
-    "help_text": "Em todas as notas correspondentes:",
-    "help_text_item1": "criar a etiqueta indicada se a nota ainda não tiver uma",
-    "help_text_item2": "ou altere o valor da etiqueta existente",
-    "help_text_note": "Também pode chamar este método sem valor, neste caso a etiqueta será atribuída à nota sem valor."
+    "new_value_placeholder": "novo valor"
   },
   "delete_label": {
     "delete_label": "Apagar etiqueta",
@@ -436,9 +428,7 @@
   },
   "rename_label": {
     "rename_label": "Renomear etiqueta",
-    "rename_label_from": "Renomear etiqueta de",
     "old_name_placeholder": "nome antigo",
-    "to": "Para",
     "new_name_placeholder": "novo nome",
     "name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos."
   },
@@ -446,49 +436,26 @@
     "update_label_value": "Atualizar valor da etiqueta",
     "label_name_placeholder": "nome da etiqueta",
     "label_name_title": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to_value": "para o valor",
-    "new_value_placeholder": "novo valor",
-    "help_text": "Em todas as notas correspondentes, altera o valor da etiqueta existente.",
-    "help_text_note": "Também pode chamar este método sem um valor, neste caso a etiqueta será à nota sem um valor."
+    "new_value_placeholder": "novo valor"
   },
   "delete_note": {
-    "delete_note": "Apagar nota",
-    "delete_matched_notes": "Apagar notas correspondentes",
-    "delete_matched_notes_description": "Isto irá apagar as notas correspondentes.",
-    "undelete_notes_instruction": "Depois de apagar, é possível desapagá-las através da janela de Alterações Recentes.",
-    "erase_notes_instruction": "Para apagar notas permanentemente, pode fazê-lo depois de apagar em Opções -> Outros e clicar no botão \"Apagar notas apagadas agora\"."
+    "delete_note": "Apagar nota"
   },
   "delete_revisions": {
-    "delete_note_revisions": "Apagar revisões da nota",
-    "all_past_note_revisions": "Todas as revisões anteriores das notas correspondentes serão apagadas. A nota em si será perservada. Ou seja, o histórico da nota será removido."
+    "delete_note_revisions": "Apagar revisões da nota"
   },
   "move_note": {
     "move_note": "Mover nota",
-    "to": "para",
-    "target_parent_note": "nota pai destino",
-    "on_all_matched_notes": "Em todas as notas correspondentes",
-    "move_note_new_parent": "move a nota para o novo pai se a nota tem apenas um pai (ou seja, a antiga ramificação é removida e uma nova ramificação é criada para o novo pai)",
-    "clone_note_new_parent": "clona a nota para o novo pai se a nota tem vários clones / ramificações (não é claro qual ramificação deve ser removida)",
-    "nothing_will_happen": "nada acontecerá se a nota não puder ser movida para a nota de destino (por exemplo, criaria um ciclo de árvore)"
+    "target_parent_note": "nota pai destino"
   },
   "rename_note": {
-    "rename_note": "Renomear nota",
-    "rename_note_title_to": "Renomear título da nota para",
-    "new_note_title": "novo título da nota",
-    "click_help_icon": "Clique no ícone de ajuda a direita para ver todas as opções",
-    "evaluated_as_js_string": "O valor digitado é avaliado como cadeia JavaScript e, portanto, pode ser enriquecido com conteúdo dinâmico através da variável injetada <code>note</code> (nota a ser renomeada). Exemplos:",
-    "example_note": "<code>Nota</code> - todas as notas correspondentes serão renomeadas para 'Nota'",
-    "example_new_title": "<code>NOVO: ${note.title}</code> - o título das notas correspondentes receberá o prefixo 'NOVO: '",
-    "example_date_prefix": "<code>${note.dateCreatedObj.format('MM-DD:')}: ${note.title}</code> - notas correspondentes receberão um prefixo com o mês-dia da data de criação da nota",
-    "api_docs": "Veja da documentação da API para <a href='https://zadam.github.io/trilium/backend_api/Note.html'>nota</a> e as suas <a href='https://day.js.org/docs/en/display/format'>propriedades dateCreatedObj / utcDateCreatedObj</a> para pormenores."
+    "rename_note": "Renomear nota"
   },
   "add_relation": {
     "add_relation": "Adicionar relação",
     "relation_name": "nome da relação",
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to": "para",
-    "target_note": "nota destino",
-    "create_relation_on_all_matched_notes": "Crie a relação informada em todas as notas correspondentes."
+    "target_note": "nota destino"
   },
   "delete_relation": {
     "delete_relation": "Apagar relação",
@@ -497,20 +464,14 @@
   },
   "rename_relation": {
     "rename_relation": "Renomar relação",
-    "rename_relation_from": "Renomear relação de",
     "old_name": "nome antigo",
-    "to": "Para",
     "new_name": "novo nome",
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos."
   },
   "update_relation_target": {
-    "update_relation": "Atualizar relação",
     "relation_name": "nome da relação",
     "allowed_characters": "Caracteres alfanuméricos, underscore e vírgula são permitidos.",
-    "to": "para",
     "target_note": "nota destino",
-    "on_all_matched_notes": "Em todas as notas correspondentes",
-    "change_target_note": "alterar nota destino da relação existente",
     "update_relation_target": "Atualizar destino da relação"
   },
   "attachments_actions": {
@@ -903,12 +864,9 @@
   "editable_text": {
     "placeholder": "Digite o conteúdo da sua nota aqui…",
     "auto-detect-language": "Detetado automaticamente",
-    "editor_crashed_title": "O editor de texto quebrou",
     "editor_crashed_details_button": "Ver mais detalhes...",
     "editor_crashed_details_title": "Informação técnica",
-    "editor_crashed_details_intro": "Se teve este erro várias vezes, considerer reportar no GitHub disponibilizando a informação abaixo.",
-    "editor_crashed_content": "O seu conteudo foi recuperado com sucesso, mas alguns das alterações mais recentes podem não ter sido gravadas.",
-    "keeps-crashing": "Componente de edição a rebentar continuamente. Por favor tentar reiniciar Trilium. Se o problema persistir, considere abrir um bug report."
+    "editor_crashed_details_intro": "Se teve este erro várias vezes, considerer reportar no GitHub disponibilizando a informação abaixo."
   },
   "empty": {
     "open_note_instruction": "Abra uma nota a digitar o título da nota no campo abaixo ou escolha uma nota na árvore.",

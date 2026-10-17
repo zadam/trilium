@@ -1,7 +1,7 @@
 import "./ChatInputBar.css";
 
 import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
-import type { DISPLAYABLE_LOCALE_IDS, LlmReasoningEffort } from "@triliumnext/commons";
+import type { DISPLAYABLE_LOCALE_IDS, LlmPermissionMode, LlmReasoningEffort } from "@triliumnext/commons";
 import { Fragment } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
@@ -14,10 +14,10 @@ import CKEditor, { type CKEditorApi } from "../../react/CKEditor.js";
 import Dropdown from "../../react/Dropdown.js";
 import { FormListHeader, FormListItem } from "../../react/FormList.js";
 import { useLegacyImperativeHandlers, useTriliumOption } from "../../react/hooks.js";
+import Icon from "../../react/Icon.js";
 import LightboxLink from "../../react/LightboxLink.js";
-import MaskedIcon from "../../react/MaskedIcon.js";
 import AddProviderModal, { type LlmProviderConfig, type ProviderStep } from "../options/llm/AddProviderModal.js";
-import { providerIconUrl } from "../options/llm/provider_icons.js";
+import { providerIcon } from "../options/llm/provider_icons.js";
 import { createNoteMentionList } from "../text/mention_list_view.js";
 import { computeContextUsage } from "./chat_context_usage.js";
 import { insertNewBlock as insertNewBlockCommand, isSelectionInCodeBlock, outdentListItemAtStart } from "./chat_input_editing.js";
@@ -68,6 +68,8 @@ interface ChatInputBarProps {
     onNoteToolsChange?: () => void;
     /** Callback when the extended thinking switch or the reasoning effort changes */
     onExtendedThinkingChange?: () => void;
+    /** Callback when the permission mode changes or a tool allowed for the chat is revoked */
+    onPermissionsChange?: () => void;
     /** Callback when model changes */
     onModelChange?: (model: string) => void;
 }
@@ -80,6 +82,7 @@ export default function ChatInputBar({
     onWebSearchChange,
     onNoteToolsChange,
     onExtendedThinkingChange,
+    onPermissionsChange,
     onModelChange
 }: ChatInputBarProps) {
     // Provider add/edit modal. `modalProvider` undefined = adding; a config = editing.
@@ -115,8 +118,10 @@ export default function ChatInputBar({
     // CKEditor's ReferenceLink plugin calls back into the parent component to
     // resolve a note's title from its href.
     useLegacyImperativeHandlers({
-        async loadReferenceLinkTitle($el: JQuery<HTMLElement>, href: string | null = null) {
-            await link.loadReferenceLinkTitle($el, href);
+        async loadReferenceLinkTitle(
+            $el: JQuery<HTMLElement>, href: string | null = null, storedTitle?: string
+        ) {
+            await link.loadReferenceLinkTitle($el, href, undefined, storedTitle);
         }
     });
 
@@ -166,6 +171,16 @@ export default function ChatInputBar({
     const handleNoteToolsToggle = (newValue: boolean) => {
         chat.setEnableNoteTools(newValue);
         onNoteToolsChange?.();
+    };
+
+    const handleRevokeAllowedTool = (toolName: string) => {
+        chat.revokeAllowedTool(toolName);
+        onPermissionsChange?.();
+    };
+
+    const handlePermissionModeChange = (mode: LlmPermissionMode) => {
+        chat.setPermissionMode(mode);
+        onPermissionsChange?.();
     };
 
     const handleExtendedThinkingToggle = (newValue: boolean) => {
@@ -400,7 +415,7 @@ export default function ChatInputBar({
                             // of a word's, and the only provider signal the collapsed button has.
                             text={currentModel
                                 ? <>
-                                    <MaskedIcon url={providerIconUrl(currentModel.provider)} className="llm-chat-model-icon" />
+                                    <Icon icon={providerIcon(currentModel.provider)} className="llm-chat-model-icon" />
                                     <span className="llm-chat-model-select-name">{shortModelName(currentModel.name, currentModel.provider)}</span>
                                 </>
                                 : <span className="llm-chat-model-select-name llm-chat-model-placeholder">{t("llm_chat.no_model_selected")}</span>}
@@ -430,7 +445,7 @@ export default function ChatInputBar({
                                             onClick={() => handleModelSelect(model)}
                                             checked={isSelectedModel(model)}
                                         >
-                                            <MaskedIcon url={providerIconUrl(model.provider)} className="llm-chat-model-icon" />
+                                            <Icon icon={providerIcon(model.provider)} className="llm-chat-model-icon" />
                                             {shortModelName(model.name, model.provider)}{model.costDescription && <> <small>({model.costDescription})</small></>}
                                         </FormListItem>
                                     )) : (
@@ -462,6 +477,10 @@ export default function ChatInputBar({
                             webSearch={webSearch}
                             searchProviders={searchProviders}
                             onWebSearchChoose={chooseWebSearch}
+                            allowedTools={chat.allowedTools}
+                            onRevokeAllowedTool={handleRevokeAllowedTool}
+                            permissionMode={chat.permissionMode}
+                            onPermissionModeChange={handlePermissionModeChange}
                             disabled={chat.isStreaming}
                         />
                         {!currentModel?.reasoningEfforts?.length && (

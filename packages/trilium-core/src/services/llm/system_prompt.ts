@@ -48,6 +48,9 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
             `When referring to notes in your responses, use the wiki-link format [[noteId]] to create clickable internal links. Use the note ID (not the title) from tool results. The link will automatically display the note's title and icon, so don't repeat the title in your text. For example: "You can find more details in [[ZjSfLhzlqNY6]]" instead of "You can find more details in the Meeting Notes note ([[ZjSfLhzlqNY6]])".`
         );
         parts.push(
+            `A note the user links in a message appears as a Markdown link to #root/<noteId>, where the last part of the path is its note ID. To read a linked note, call get_note or get_note_content with that ID rather than searching for its title, which other notes can share.`
+        );
+        parts.push(
             `Do not create, modify, or delete notes unless the user explicitly asks you to (e.g. "create a note", "save this to a note"). The chat supports rich Markdown rendering including code blocks, math equations, mermaid diagrams, and tables — so always present content directly in your response rather than creating a note for it. For example, if asked to "visualize an algorithm", render a mermaid diagram in the chat, don't create a note.`
         );
         parts.push(
@@ -81,6 +84,9 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
         parts.push(
             `When you need several independent pieces of information, issue the tool calls in parallel within the same turn instead of waiting for each result before requesting the next. Only chain calls sequentially when a later call genuinely depends on the output of an earlier one.`
         );
+        parts.push(
+            `When the user declines a tool call, that is their decision about what you may access or change, not an error: do not retry the call, and do not try to reach the same information or make the same change through another tool or the file system. Continue with what you already have, or ask the user how to proceed.`
+        );
     }
 
     // Markdown formatting hints
@@ -102,6 +108,7 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
             + `**Tables** — GitHub-style pipe tables: a header row, a \`---\` separator row, then the data rows.\n\n`
             + `**Collapsible blocks** — use the standard HTML \`<details>\`/\`<summary>\` form; the \`<summary>\` is the always-visible title. Placed back-to-back with nothing between them, consecutive collapsible blocks are grouped into an accordion — handy when presenting several options or alternatives the user can expand one at a time. Example:\n`
             + `<details><summary>Option A</summary>\nDetails about the first option.\n</details>\n<details><summary>Option B</summary>\nDetails about the second option.\n</details>\n\n`
+            + buildTabsHint(config.enableNoteTools === true)
             + `**Footnotes** — use \`[^1]\` in text and \`[^1]: explanation\` at the bottom.\n\n`
             + `**Keyboard keys** — wrap each key in a \`<kbd>\` tag when documenting shortcuts, e.g. \`<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd>\`.\n\n`
             + buildIconHint(config.enableNoteTools === true)
@@ -121,6 +128,18 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
 function buildIconHint(canSearchIcons: boolean): string {
     const find = canSearchIcons ? ", find one with search_icons" : "";
     return `**Icons** — insert an inline icon as \`<span class="tn-icon bx bx-cog"></span>\`, with the icon's classes in place of \`bx bx-cog\` (Boxicons such as \`bx bx-star\`, or an installed icon pack's${find}). Use one to show a button or other UI element the user should look for, e.g. "click <span class="tn-icon bx bx-cog"></span> to open the settings"; not as decoration, and not in note titles.\n\n`;
+}
+
+/**
+ * The content-tabs hint. The note tools return text notes as Markdown, so a model that can edit
+ * notes is also told to keep the indentation that holds a tab's content inside the tab.
+ */
+function buildTabsHint(canEditNotes: boolean): string {
+    const keep = canEditNotes
+        ? " When editing a note that has content tabs, keep each `===` line and the four-space indentation of its content, or the content leaves the tab."
+        : "";
+    return `**Content tabs** — for content that comes in parallel variants of which the reader needs only one (steps for each operating system, the same snippet in several languages). Each tab is a \`=== "Title"\` line followed by its content indented four spaces; consecutive tabs form one block, and \`===! "Title"\` starts a new block straight after another. Prefer a collapsible accordion when the reader might want to open several options.${keep} Example:\n`
+        + "=== \"Windows\"\n\n    Run `setup.exe`.\n\n=== \"Linux\"\n\n    Run `./setup.sh`.\n\n";
 }
 
 /**
