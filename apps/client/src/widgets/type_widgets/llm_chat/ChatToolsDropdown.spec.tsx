@@ -35,6 +35,19 @@ vi.mock("../../react/Dropdown.js", () => ({
     )
 }));
 
+// Renders a submenu as its row followed by its rows, as the menu draws them once it is open.
+vi.mock("../../react/FormList.js", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../react/FormList.js")>()),
+    FormDropdownSubmenu: ({ title, description, iconElement, children }: {
+        title: ComponentChildren; description?: string; iconElement?: ComponentChildren; children: ComponentChildren;
+    }) => (
+        <>
+            <div className="submenu-row">{iconElement}{title}<span className="description">{description}</span></div>
+            {children}
+        </>
+    )
+}));
+
 import type { WebSearchState } from "../../../services/llm_providers.js";
 import ChatToolsDropdown, { useChatWebSearch } from "./ChatToolsDropdown.js";
 
@@ -123,10 +136,29 @@ describe("ChatToolsDropdown", () => {
         await act(async () => menu.row("llm_chat.note_tools")?.click());
         expect(menu.onNoteToolsChange).toHaveBeenCalledExactlyOnceWith(false);
 
-        const manage = host?.querySelector<HTMLButtonElement>(".dropdown-header button.bx-cog");
-        expect(manage).not.toBeNull();
-        await act(async () => manage?.click());
+        await act(async () => menu.row("llm_chat.manage_search_providers")?.click());
         expect(mocks.triggerCommand).toHaveBeenCalledExactlyOnceWith("showOptions", { section: "_optionsLlm" });
+    });
+
+    it("shows the chosen web search source on the submenu's row, by its icon and name", () => {
+        const submenuRow = (webSearch: WebSearchState) => {
+            renderMenu({ modelProvider: "anthropic", webSearch });
+            const row = host?.querySelector(".submenu-row");
+            expect(row?.textContent?.startsWith("llm_chat.web_search")).toBe(true);
+            return { icon: row?.firstElementChild, description: row?.querySelector(".description")?.textContent };
+        };
+
+        const off = submenuRow({ choice: "disabled", enableWebSearch: false });
+        expect(off.icon?.classList.contains("bx-block")).toBe(true);
+        expect(off.description).toBe("llm_chat.web_search_disabled");
+
+        const tavily = submenuRow({ choice: "s1", enableWebSearch: true, webSearchProviderId: "s1" });
+        expect(tavily.icon?.classList.contains("masked-icon")).toBe(true);
+        const tavilyRowIcon = [ ...(host?.querySelectorAll(".menu .dropdown-item") ?? []) ]
+            .find((row) => row.textContent === "Tavily")?.querySelector(".llm-chat-tools-choice-icon");
+        expect(tavily.icon?.getAttribute("style")).toBe(tavilyRowIcon?.getAttribute("style"));
+        expect(tavilyRowIcon).toBeDefined();
+        expect(tavily.description).toBe("Tavily");
     });
 
     it("gives every web search choice an icon, the model's own mark standing for its built-in search", () => {

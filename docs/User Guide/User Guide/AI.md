@@ -85,11 +85,11 @@ Pricing information is displayed for known models. The pricing information (pric
 
 The AI can optionally search the web to find more information about a specific topic. 
 
-Where the search comes from is chosen under _Web search_ in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu next to the model selector at the bottom of the chat:
+Where the search comes from is chosen in the _Web search_ submenu of the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu next to the model selector at the bottom of the chat, whose row shows the source in use:
 
 *   _Disabled_ turns web search off for this chat.
 *   _Use the model's built-in search_, the default, lets the model search with its provider's own search. Anthropic, OpenAI and Google Gemini models have one, as do Claude Code, Google Antigravity and OpenAI Codex. DeepSeek, Ollama, LM Studio and custom endpoints don't, so this choice is disabled for their models.
-*   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which the <span class="tn-icon bx bx-cog"></span> button beside the _Web search_ heading in the menu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
+*   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which _Manage search providers_ at the bottom of the submenu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
 
 To use SearXNG, enable its JSON output by adding `json` to the search formats in the instance's `settings.yml`. SearXNG turns JSON off by default, and without it every search fails.
 
