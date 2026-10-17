@@ -100,19 +100,27 @@ export function resolveToolRegistries(): Promise<void> {
 const WEB_READ_TOOLS = new Set([ "web_search", "read_web_page" ]);
 
 /**
- * Whether a tool only reads: a registered tool not marked `mutates`, or a web search tool. A tool
+ * What a tool's calls touch, which decides when they wait for approval: only what ships with Trilium
+ * (`"app_content"`), the user's data without changing it (`"read"`), or the user's data to change
+ * it (`"change"`).
+ */
+export type ToolKind = "app_content" | "read" | "change";
+
+/**
+ * The {@link ToolKind} of a tool, from its registry definition; the web search tools are reads. A tool
  * none of them names, such as one a future integration adds, counts as a change.
  */
-export function isReadOnlyTool(toolName: string): boolean {
+export function toolKind(toolName: string): ToolKind {
     if (WEB_READ_TOOLS.has(toolName)) {
-        return true;
+        return "read";
     }
     for (const registry of allToolRegistries) {
         for (const [ name, definition ] of registry) {
             if (name === toolName) {
-                return !definition.mutates;
+                if (definition.mutates) return "change";
+                return definition.readsUserData === false ? "app_content" : "read";
             }
         }
     }
-    return false;
+    return "change";
 }

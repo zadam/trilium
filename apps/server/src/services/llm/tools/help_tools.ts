@@ -31,6 +31,7 @@ export const helpTools = defineTools({
             "If a query finds nothing, retry with synonyms or browse get_help_toc — the guide may name the concept differently (e.g. placing a note in two locations is 'cloning').",
             "Read a found page with get_note_content."
         ].join(" "),
+        readsUserData: false,
         inputSchema: z.object({
             query: z.string().describe("Keyword search query (a few plain words, not a full question)"),
             limit: z.number().int().positive().optional().describe("Maximum number of results to return. Defaults to 10.")
@@ -80,6 +81,7 @@ export const helpTools = defineTools({
             "Use this when search_help does not find the right page (the guide may name the concept differently than the user), or to get an overview of a documentation area.",
             "Read a page with get_note_content."
         ].join(" "),
+        readsUserData: false,
         inputSchema: z.object({}),
         execute: () => {
             if (!isHelpAvailable()) {

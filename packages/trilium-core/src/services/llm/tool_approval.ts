@@ -11,6 +11,8 @@
 
 import type { LlmPermissionMode, LlmToolApprovalAnswer, LlmToolApprovalRequest } from "@triliumnext/commons";
 
+import type { ToolKind } from "./tools/index.js";
+
 /** The reason the model is given for a call the user declined. */
 export const TOOL_CALL_DECLINED_REASON = "The user declined this tool call.";
 
@@ -20,8 +22,11 @@ export interface ToolApprovalPolicy {
     allowedTools?: Iterable<string>;
     /** Absent means `"always_ask"`. */
     mode?: LlmPermissionMode;
-    /** Whether a tool only reads, which `"ask_before_changes"` lets run. Absent, every tool changes. */
-    isReadOnly?: (toolName: string) => boolean;
+    /**
+     * What a tool's calls touch. `"app_content"` never asks, and `"ask_before_changes"` lets
+     * `"read"` run too. Absent, every tool counts as a change.
+     */
+    kindOf?: (toolName: string) => ToolKind;
 }
 
 /** The tool calls of one turn that wait for the user's answer. */
@@ -30,14 +35,14 @@ export class ToolApprovals {
     /** The tools whose calls run without asking. */
     private readonly allowedTools: Set<string>;
     private readonly mode: LlmPermissionMode;
-    private readonly isReadOnly: (toolName: string) => boolean;
+    private readonly kindOf: (toolName: string) => ToolKind;
     /** Called with every request, so the turn can pass it on to the client. */
     onRequest?: (request: LlmToolApprovalRequest) => void;
 
     constructor(private readonly abortSignal?: AbortSignal, policy: ToolApprovalPolicy = {}) {
         this.allowedTools = new Set(policy.allowedTools);
         this.mode = policy.mode ?? "always_ask";
-        this.isReadOnly = policy.isReadOnly ?? (() => false);
+        this.kindOf = policy.kindOf ?? (() => "change");
     }
 
     /**
@@ -89,9 +94,11 @@ export class ToolApprovals {
     }
 
     private runsUnasked(toolName: string): boolean {
-        return this.mode === "dont_ask"
-            || this.allowedTools.has(toolName)
-            || (this.mode === "ask_before_changes" && this.isReadOnly(toolName));
+        if (this.mode === "dont_ask" || this.allowedTools.has(toolName)) {
+            return true;
+        }
+        const kind = this.kindOf(toolName);
+        return kind === "app_content" || (kind === "read" && this.mode === "ask_before_changes");
     }
 
     /** Decline every call that still waits. */

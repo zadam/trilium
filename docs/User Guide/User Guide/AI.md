@@ -175,7 +175,7 @@ Which calls ask depends on the chat's permission mode, chosen in the <span class
 
 A new chat starts in the mode you picked last, in any chat, or in _Ask before changes_ until you pick one. Picking _Don't ask_ therefore carries over to the next chat too.
 
-A tool allowed for the chat runs without asking in every mode. A model's built-in web search runs on the provider's side and never asks.
+A tool allowed for the chat runs without asking in every mode. So does looking something up in what ships with Trilium (its User Guide, the skill sheets that teach the AI Trilium's search syntax and note types, and the icons), since it reads none of your notes. A model's built-in web search runs on the provider's side and never asks.
 
 > [!IMPORTANT]
 > Among the <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a>, Claude Code and Google Antigravity ask like any other provider. GitHub Copilot and OpenAI Codex don't ask yet: their tool calls run without approval.

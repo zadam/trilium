@@ -36,6 +36,11 @@ interface ReadOnlyToolDefinition {
     description: string;
     inputSchema: z.ZodType;
     mutates?: false;
+    /**
+     * `false` for a tool that reads only what ships with Trilium (its User Guide, skill sheets,
+     * icons), never the user's notes, so its calls never wait for approval.
+     */
+    readsUserData?: false;
     /** Execute the tool synchronously. Kept sync for consistency with MCP. */
     execute: (args: any) => NotAPromise<object>;
 }

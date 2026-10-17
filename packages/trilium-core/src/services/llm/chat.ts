@@ -15,7 +15,7 @@ import { generateChatTitle } from "./chat_title.js";
 import { getProvider, getProviderByType, getSearchProviderSetup, getSelectedModel, hasConfiguredProviders, type LlmProvider, type LlmProviderConfig } from "./index.js";
 import { formatStreamError, streamToChunks } from "./stream.js";
 import { closeToolApprovals, openToolApprovals, type ToolApprovals } from "./tool_approval.js";
-import { isReadOnlyTool, resolveToolRegistries } from "./tools/index.js";
+import { resolveToolRegistries, toolKind } from "./tools/index.js";
 
 /**
  * Stream one assistant turn, yielding the chunks as the provider produces them.
@@ -46,7 +46,7 @@ export async function* runChat(
     const toolApprovals = openToolApprovals(streamId, abortSignal, {
         allowedTools,
         mode,
-        isReadOnly: isReadOnlyTool
+        kindOf: toolKind
     });
     if (!toolApprovals) {
         yield { type: "error", error: `Stream '${streamId}' is already running.` };
