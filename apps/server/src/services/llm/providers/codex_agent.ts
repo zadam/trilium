@@ -145,6 +145,14 @@ export class CodexAgentProvider extends AcpAgentProvider {
         return buildCodexModelList(remote);
     }
 
+    /**
+     * Codex lists MCP tools to the model only inside its `exec` tool, so the system prompt names
+     * them there. Without it, the model finds them only by searching `ALL_TOOLS` first.
+     */
+    protected noteToolsHint(): string {
+        return `Trilium's note tools (search_notes, get_note, get_note_content, create_note and the rest) are inside your exec tool, as tools.mcp__${NOTE_TOOLS_MCP_SERVER_NAME}__<tool name>. Call them there directly, for example: const note = await tools.mcp__${NOTE_TOOLS_MCP_SERVER_NAME}__get_note_content({ noteId: "abc123" }); text(note). Do not search ALL_TOOLS for them first.`;
+    }
+
     protected decidePermission(
         request: AcpPermissionRequest,
         config?: LlmProviderConfig,

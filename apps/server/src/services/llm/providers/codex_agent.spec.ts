@@ -311,6 +311,20 @@ const ALLOWED = { outcome: { outcome: "selected", optionId: "allow_once" } };
 const DENIED = { outcome: { outcome: "selected", optionId: "cancel" } };
 
 describe("CodexAgentProvider note tools", () => {
+    it("tells the model where its note tools are inside `exec`, only in a chat with note access", async () => {
+        const firstPrompt = async (config: Record<string, unknown>) => {
+            resetAcpAgentStateForTests();
+            await collect(new CodexAgentProvider().chatChunks([{ role: "user", content: "hi" }], config));
+            const prompt = FakeAcpClient.current?.requests.find(r => r.method === "session/prompt")?.params as { prompt?: { text?: string }[] } | undefined;
+            return prompt?.prompt?.map(block => block.text ?? "").join("") ?? "";
+        };
+
+        const withTools = await firstPrompt({ enableNoteTools: true });
+        expect(withTools).toContain("tools.mcp__trilium__get_note_content");
+        expect(withTools.indexOf("tools.mcp__trilium__")).toBeLessThan(withTools.indexOf("</system_instructions>"));
+        expect(await firstPrompt({})).not.toContain("tools.mcp__trilium__");
+    });
+
     it("runs Trilium's note tools, shown by their name and result, and denies calls to any other MCP server", async () => {
         const answers: unknown[] = [];
         FakeAcpClient.onPrompt = async client => {

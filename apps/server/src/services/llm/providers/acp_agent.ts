@@ -270,6 +270,14 @@ export abstract class AcpAgentProvider implements LlmProvider {
     }
 
     /**
+     * A line the system prompt of a chat with note access gains, for how this agent reaches
+     * Trilium's note tools. None by default.
+     */
+    protected noteToolsHint(): string | undefined {
+        return undefined;
+    }
+
+    /**
      * The configuration of the chat turn running in `sessionId` on the pooled
      * agent, for a hook that decides a tool call outside the ACP connection.
      * Undefined outside a chat turn.
@@ -552,7 +560,13 @@ export abstract class AcpAgentProvider implements LlmProvider {
             const hasAttachments = Array.isArray(lastMessage.content) && lastMessage.content.some(p => p.type !== "text");
             const noteHint = config.contextNoteId ? buildNoteHint(config.contextNoteId, hasAttachments) : null;
             const prefix = [
-                isFreshSession ? wrapSystemInstructions(composeSystemPrompt(messages, { ...config, enableNoteTools: noteToolsEnabled })) : null,
+                isFreshSession
+                    ? wrapSystemInstructions(composeSystemPrompt(
+                        messages,
+                        { ...config, enableNoteTools: noteToolsEnabled },
+                        noteToolsEnabled ? this.noteToolsHint() : undefined
+                    ))
+                    : null,
                 (isFreshSession && history.length > 0) ? buildHistoryReplay(history) : null,
                 noteHint
             ].filter((s): s is string => Boolean(s)).join("\n\n");
@@ -1151,11 +1165,12 @@ async function buildMcpServersConfig(noteToolsEnabled: boolean): Promise<AcpMcpS
  * system-prompt parameter, so it is delivered as a `<system_instructions>`
  * block leading the first prompt of each session.
  */
-function composeSystemPrompt(messages: LlmMessage[], config: LlmProviderConfig): string {
+function composeSystemPrompt(messages: LlmMessage[], config: LlmProviderConfig, agentHint?: string): string {
     // buildSystemPrompt only returns undefined in its own documented-unreachable
     // no-parts case (the markdown hints are always appended).
     /* v8 ignore next */
-    return buildSystemPrompt(messages, config) ?? "";
+    const systemPrompt = buildSystemPrompt(messages, config) ?? "";
+    return agentHint ? `${systemPrompt}\n\n${agentHint}` : systemPrompt;
 }
 
 /** Wrap the Trilium system prompt for delivery inside the first user prompt. */
