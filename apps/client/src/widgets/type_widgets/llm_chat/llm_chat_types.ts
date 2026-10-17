@@ -209,6 +209,6 @@ export interface LlmChatContent {
     reasoningEffort?: LlmReasoningEffort;
     /** The tools the user allowed for this chat, whose calls run without asking. */
     allowedTools?: string[];
-    /** Which tool calls of the chat wait for the user; absent means `"always_ask"`. */
+    /** Which tool calls of the chat wait for the user; absent means the mode picked last. */
     permissionMode?: LlmPermissionMode;
 }

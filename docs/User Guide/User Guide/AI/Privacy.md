@@ -57,7 +57,7 @@ The same applies to the <a class="reference-link" href="../Note%20Types/Text/In
 *   **Note access**: turn it off in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu at the bottom of the chat, and the model can read nothing beyond what you type.
 *   **The current note:** the file icon in the sidebar chat.
 *   **Web search:** also in the _Tools_ menu.
-*   **Which tool calls ask first:** the _Permissions_ submenu of the _Tools_ menu. _Always ask_, the mode a new chat starts in, has every call wait for you, reads included.
+*   **Which tool calls ask first:** the _Permissions_ submenu of the _Tools_ menu. _Always ask_ has every call wait for you, reads included. A new chat starts in the mode you picked last, so a chat after one set to _Don't ask_ asks about nothing either. Until you pick a mode, chats start in _Ask before changes_, where the AI reads and searches your notes without asking.
 *   **The editor assistant**: it has no per-run toggles. What you control is whether you run it, what you select before you do and which model answers.
 
 With note access and note context both off, the provider receives only the words you typed.

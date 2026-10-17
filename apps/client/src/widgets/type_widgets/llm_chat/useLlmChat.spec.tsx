@@ -12,8 +12,14 @@ vi.mock("../../../services/llm_chat.js", () => ({
 const optionsGetJsonMock = vi.hoisted(() => vi.fn());
 /** The `llmWebSearchProvider` option, unset unless a test picks a search provider. */
 const webSearchProvider = vi.hoisted(() => ({ id: undefined as string | undefined }));
+/** The `llmPermissionMode` option, and every write to it. */
+const permissionModeOption = vi.hoisted(() => ({ value: "", save: vi.fn(async (_name: string, _value: unknown) => {}) }));
 vi.mock("../../../services/options.js", () => ({
-    default: { getJson: optionsGetJsonMock, get: () => webSearchProvider.id }
+    default: {
+        getJson: optionsGetJsonMock,
+        get: (name: string) => (name === "llmPermissionMode" ? permissionModeOption.value : webSearchProvider.id),
+        save: permissionModeOption.save
+    }
 }));
 
 // useTriliumEvent subscribes to the app-wide event bus; stub it so the hook
@@ -564,7 +570,8 @@ describe("useLlmChat", () => {
         });
         expect(api().allowedTools).toEqual([]);
     });
-    it("keeps the chat's permission mode, sends it with each turn and saves it", async () => {
+    it("keeps the chat's permission mode, sends it with each turn and saves it, and remembers the last one picked", async () => {
+        permissionModeOption.value = "always_ask";
         await mountChat();
         const sentOptions = async () => {
             streamChatCompletionMock.mockClear();
@@ -577,23 +584,35 @@ describe("useLlmChat", () => {
             return streamChatCompletionMock.mock.calls[0][1];
         };
 
+        // A new chat starts in the mode picked last, in any chat.
         expect(api().permissionMode).toBe("always_ask");
         expect((await sentOptions()).permissionMode).toBe("always_ask");
 
         await act(async () => {
-            api().setPermissionMode("ask_before_changes");
+            api().setPermissionMode("dont_ask");
         });
-        expect(api().getContent()).toMatchObject({ permissionMode: "ask_before_changes" });
-        expect((await sentOptions()).permissionMode).toBe("ask_before_changes");
+        expect(api().getContent()).toMatchObject({ permissionMode: "dont_ask" });
+        expect((await sentOptions()).permissionMode).toBe("dont_ask");
+        expect(permissionModeOption.save).toHaveBeenCalledExactlyOnceWith("llmPermissionMode", "dont_ask");
 
         await act(async () => {
-            api().loadFromContent({ version: 1, messages: [], permissionMode: "dont_ask" });
+            api().loadFromContent({ version: 1, messages: [], permissionMode: "always_ask" });
         });
-        expect(api().permissionMode).toBe("dont_ask");
-        // A chat saved before the modes, or with a mode this version does not know.
+        expect(api().permissionMode).toBe("always_ask");
+        // Opening a chat does not change the remembered mode.
+        expect(permissionModeOption.save).toHaveBeenCalledOnce();
+
+        // A chat saved before the modes, or with a mode this version does not know, starts in the
+        // remembered mode; with none remembered, in "ask_before_changes".
         await act(async () => {
             api().loadFromContent({ version: 1, messages: [], permissionMode: "yolo" as "dont_ask" });
         });
         expect(api().permissionMode).toBe("always_ask");
+        permissionModeOption.value = "";
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [] });
+        });
+        expect(api().permissionMode).toBe("ask_before_changes");
+        permissionModeOption.save.mockClear();
     });
 });

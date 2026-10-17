@@ -169,9 +169,11 @@ To make a chat ask about a tool again, open the <span class="tn-icon bx bx-shiel
 
 Which calls ask depends on the chat's permission mode, chosen in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu under _Permissions_:
 
-*   _Always ask_, the mode a new chat starts in: every call asks, including the ones that only read (searching notes, reading a note or an attachment, and reading a web page through a search provider).
+*   _Always ask_: every call asks, including the ones that only read (searching notes, reading a note or an attachment, and reading a web page through a search provider).
 *   _Ask before changes_: the calls that only read run on their own, and the ones that change your notes (creating, editing, renaming, moving or deleting a note, and setting or deleting an attribute) ask.
 *   _Don't ask_: every call runs without asking, changes included.
+
+A new chat starts in the mode you picked last, in any chat, or in _Ask before changes_ until you pick one. Picking _Don't ask_ therefore carries over to the next chat too.
 
 A tool allowed for the chat runs without asking in every mode. A model's built-in web search runs on the provider's side and never asks.
 

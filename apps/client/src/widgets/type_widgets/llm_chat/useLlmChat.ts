@@ -176,6 +176,7 @@ export interface UseLlmChatReturn {
     setEnableNoteTools: (value: boolean) => void;
     setEnableExtendedThinking: (value: boolean) => void;
     setReasoningEffort: (value: LlmReasoningEffort | undefined) => void;
+    /** Set the chat's permission mode, which new chats then start in. */
     setPermissionMode: (value: LlmPermissionMode) => void;
     setContextNoteId: (noteId: string | undefined) => void;
     setChatNoteId: (noteId: string | undefined) => void;
@@ -247,7 +248,7 @@ export function useLlmChat(
     const [enableExtendedThinking, setEnableExtendedThinking] = useState(false);
     const [reasoningEffort, setReasoningEffort] = useState<LlmReasoningEffort | undefined>(undefined);
     const [allowedTools, setAllowedTools] = useState<string[]>([]);
-    const [permissionMode, setPermissionMode] = useState<LlmPermissionMode>("always_ask");
+    const [permissionMode, setPermissionMode] = useState<LlmPermissionMode>(rememberedPermissionMode);
     const [contextNoteId, setContextNoteId] = useState<string | undefined>(initialContextNoteId);
     const [chatNoteId, setChatNoteIdState] = useState<string | undefined>(initialChatNoteId);
     const [lastPromptTokens, setLastPromptTokens] = useState<number>(0);
@@ -569,7 +570,7 @@ export function useLlmChat(
             setEnableExtendedThinking(content.enableExtendedThinking);
         }
         setReasoningEffort(LLM_REASONING_EFFORTS.find(level => level === content.reasoningEffort));
-        setPermissionMode(LLM_PERMISSION_MODES.find(mode => mode === content.permissionMode) ?? "always_ask");
+        setPermissionMode(LLM_PERMISSION_MODES.find(mode => mode === content.permissionMode) ?? rememberedPermissionMode());
         setAllowedTools(Array.isArray(content.allowedTools)
             ? content.allowedTools.filter((name): name is string => typeof name === "string")
             : []);
@@ -1035,6 +1036,13 @@ export function useLlmChat(
         setAllowedTools(tools => tools.filter(tool => tool !== toolName));
     }, []);
 
+    const choosePermissionMode = useCallback((mode: LlmPermissionMode) => {
+        setPermissionMode(mode);
+        optionService.save("llmPermissionMode", mode).catch((e: unknown) => {
+            console.error("Failed to remember the permission mode:", e);
+        });
+    }, []);
+
     /** Stop the current generation by aborting the SSE connection. */
     const stopStreaming = useCallback(() => {
         if (abortControllerRef.current) {
@@ -1104,7 +1112,7 @@ export function useLlmChat(
         setEnableNoteTools,
         setEnableExtendedThinking,
         setReasoningEffort,
-        setPermissionMode,
+        setPermissionMode: choosePermissionMode,
         setContextNoteId,
         setChatNoteId,
         addPendingAttachment,
@@ -1125,3 +1133,8 @@ export function useLlmChat(
     };
 }
 
+/** The permission mode picked last in any chat, which a new chat starts in. */
+function rememberedPermissionMode(): LlmPermissionMode {
+    const remembered = optionService.get("llmPermissionMode");
+    return LLM_PERMISSION_MODES.find(mode => mode === remembered) ?? "ask_before_changes";
+}

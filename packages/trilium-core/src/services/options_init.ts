@@ -370,6 +370,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "aiEnabled", value: (optionsMap) => optionsMap.experimentalFeatures?.includes('"llm"') ? "true" : "false", isSynced: true },
     { name: "llmProviders", value: "[]", isSynced: true },
     { name: "llmWebSearchProvider", value: "", isSynced: true },
+    { name: "llmPermissionMode", value: "ask_before_changes", isSynced: true },
     { name: "aiAssistantModel", value: "", isSynced: true },
     { name: "mcpEnabled", value: "false", isSynced: false },
 
