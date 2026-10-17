@@ -179,6 +179,26 @@ describe("shape metadata", () => {
     });
 });
 
+describe("requirement highlighting", () => {
+    it("colours names, keys and values apart", () => {
+        const doc = [
+            "requirementDiagram", "  requirement test_req {", "    id: 1",
+            "    text: the test text.", "    risk: high", "  }", "  element \"test entity\" {",
+            "    type: simulation", "  }", "  test_entity - satisfies -> test_req"
+        ].join("\n");
+        const diagramKeywords = /^(requirementDiagram|requirement|element|-|->) /;
+        expect(styles(doc).filter((style) => !diagramKeywords.test(style))).toEqual([
+            "test_req tok-variableName", "{ tok-punctuation", "id tok-propertyName",
+            ": tok-punctuation", "1 tok-number", "text tok-propertyName", ": tok-punctuation",
+            "the test text. tok-string", "risk tok-propertyName", ": tok-punctuation",
+            "high tok-keyword", "} tok-punctuation", "\"test entity\" tok-variableName",
+            "{ tok-punctuation", "type tok-propertyName", ": tok-punctuation",
+            "simulation tok-string", "} tok-punctuation", "test_entity tok-variableName",
+            "satisfies tok-keyword", "test_req tok-variableName"
+        ]);
+    });
+});
+
 describe("mindmap highlighting", () => {
     it("colours each node by its level, and ids, shapes, icons and classes apart", () => {
         const doc = [

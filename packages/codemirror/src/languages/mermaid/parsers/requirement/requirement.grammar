@@ -18,11 +18,11 @@ document {
 }
 
 subDiagram {
-  SubDiagramType subDiagramName "{" newlines "}" |
-  SubDiagramType subDiagramName "{" newlines subDiagramLine+ "}"
+  SubDiagramType Name "{" newlines "}" |
+  SubDiagramType Name "{" newlines subDiagramLine+ "}"
 }
 
-subDiagramName {
+Name {
   UnquotedString | QuotedString
 }
 
@@ -66,16 +66,12 @@ textContent {
 }
 
 RelationshipLine {
-  relationshipStart Hyphen RelationshipType ForwardArrow relationshipEnd |
-  relationshipStart BackArrow RelationshipType Hyphen relationshipEnd
+  relationshipStart Hyphen RelationshipType ForwardArrow Name |
+  relationshipStart BackArrow RelationshipType Hyphen Name
 }
 
 relationshipStart {
   RelationshipStart | QuotedString
-}
-
-relationshipEnd {
-  UnquotedString | QuotedString
 }
 
 DiagramName { diagramKw<"requirementDiagram"> }
@@ -136,12 +132,13 @@ kw<term> { @specialize[@name=Keyword]<word, term> }
   spaces { @whitespace+ }
   newlines { $[\n]+ }
   LineComment { "%%" ![\n]* }
-  unquotedString { word ![\r\n\{\<\>\-\=]* }
+  unquotedString { word ($[ \t]* ![ \t\r\n\{\<\>\-\=])* }
   IDNumber { @digit+ ("." @digit+)* }
   stringContent { !["]+ }
   ForwardArrow { "->"}
   BackArrow { "<-"}
   Hyphen { "-" }
+  "{" "}" ":"
 
   @precedence { newlines, spaces }
   @precedence { ForwardArrow, Hyphen }

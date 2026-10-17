@@ -24,7 +24,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString))
 
 # Requirement Section with Quoted String
 
@@ -36,7 +36,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,QuotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(QuotedString))
 
 # Requirement Section - IDNumber with zero decimals
 
@@ -48,7 +48,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber)
 
 # Requirement Section - IDNumber with one decimal
 
@@ -60,7 +60,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber)
 
 # Requirement Section - IDNumber with two decimals
 
@@ -72,7 +72,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber)
 
 # Requirement Section - IDNumber with multidigit numbers and decimals
 
@@ -84,7 +84,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber)
 
 # Requirement Section - Text
 
@@ -96,7 +96,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,Text(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),Text(PropKeyword),UnquotedString)
 
 # Requirement Section - Risk
 
@@ -108,7 +108,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,Risk(PropKeyword),RiskType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),Risk(PropKeyword),RiskType(Keyword))
 
 # Requirement Section - ID + Text
 
@@ -121,7 +121,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString)
 
 # Requirement Section - All fields
 
@@ -136,7 +136,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # functionalRequirement Section - All fields
 
@@ -151,7 +151,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # performanceRequirement Section - All fields
 
@@ -166,7 +166,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # interfaceRequirement Section - All fields
 
@@ -181,7 +181,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # physicalRequirement Section - All fields
 
@@ -196,7 +196,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # designConstraint Section - All fields
 
@@ -211,7 +211,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword))
 
 # Element Line with Unquoted String - Type
 
@@ -223,7 +223,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString)
 
 # Element Line with Unquoted String - All fields
 
@@ -236,7 +236,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString)
 
 # Element Line with Quoted String - All fields
 
@@ -249,7 +249,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString)
 
 # Relationship Line with Forward Arrow
 
@@ -258,7 +258,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString))
+RequirementDiagram(DiagramName,RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)))
 
 # Relationship Line with Back Arrow
 
@@ -267,7 +267,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,RelationshipLine(RelationshipStart,BackArrow,RelationshipType(Keyword),Hyphen,UnquotedString))
+RequirementDiagram(DiagramName,RelationshipLine(RelationshipStart,BackArrow,RelationshipType(Keyword),Hyphen,Name(UnquotedString)))
 
 # All SubDiagram Types
 
@@ -331,7 +331,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString)
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString,SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString,SubDiagramType,Name(UnquotedString),Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString)
 
 # All Features
 
@@ -405,7 +405,7 @@ requirementDiagram
 
 ==>
 
-RequirementDiagram(DiagramName,SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString,SubDiagramType,UnquotedString,Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString,RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,UnquotedString),RelationshipLine(RelationshipStart,BackArrow,RelationshipType(Keyword),Hyphen,UnquotedString))
+RequirementDiagram(DiagramName,SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),ID(PropKeyword),IDNumber,Text(PropKeyword),UnquotedString,Risk(PropKeyword),RiskType(Keyword),VerifyMethod(PropKeyword),VerifyMethodType(Keyword),SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString,SubDiagramType,Name(UnquotedString),Type(PropKeyword),UnquotedString,DocRef(PropKeyword),UnquotedString,SubDiagramType,Name(UnquotedString),Type(PropKeyword),QuotedString,DocRef(PropKeyword),UnquotedString,RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,Hyphen,RelationshipType(Keyword),ForwardArrow,Name(UnquotedString)),RelationshipLine(RelationshipStart,BackArrow,RelationshipType(Keyword),Hyphen,Name(UnquotedString)))
 
 # Element name at the end of input
 

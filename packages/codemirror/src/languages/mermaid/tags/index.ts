@@ -77,9 +77,10 @@ export const requirementTags = {
     arrow: Tag.define(t.contentSeparator),
     keyword: Tag.define(t.keyword),
     lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.variableName),
     number: Tag.define(t.number),
-    quotedString: Tag.define(t.string),
-    unquotedString: Tag.define(t.content)
+    property: Tag.define(t.propertyName),
+    string: Tag.define(t.string)
 };
 
 export const ganttTags = {
