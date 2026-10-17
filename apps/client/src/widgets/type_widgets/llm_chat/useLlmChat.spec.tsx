@@ -681,6 +681,18 @@ describe("useLlmChat", () => {
             api().loadFromContent({ version: 1, messages: [] });
         });
         expect(api().allowedTools).toEqual([]);
+
+        // A chat emptied for a new one, as the sidebar's "New chat" does, keeps none of the old chat's grants.
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [], allowedTools: [ "get_note" ], permissionMode: "dont_ask" });
+        });
+        permissionModeOption.value = "always_ask";
+        await act(async () => {
+            api().clearMessages();
+        });
+        expect(api().allowedTools).toEqual([]);
+        expect(api().getContent().allowedTools).toBeUndefined();
+        expect(api().getContent().permissionMode).toBe("always_ask");
     });
     it("keeps the chat's permission mode, sends it with each turn and saves it, and remembers the last one picked", async () => {
         permissionModeOption.value = "always_ask";

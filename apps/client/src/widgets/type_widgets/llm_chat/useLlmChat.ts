@@ -610,6 +610,8 @@ export function useLlmChat(
         setMessages([]);
         setLastPromptTokens(0);
         setLastCompletionTokens(0);
+        setAllowedTools([]);
+        setPermissionMode(rememberedPermissionMode());
     }, [setMessages]);
 
     /**
