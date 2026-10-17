@@ -118,14 +118,25 @@
     }
 }
 
-/* The left margin matches `.expandable-line-body` in ExpandableCard.css, so the bar lines up with
-   the body of the call above it. */
-.llm-chat-tool-approval {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0.25rem 0 0.5rem 0.45rem;
-    padding-left: 0.85rem;
-    font-size: 0.85rem;
+/* The card recipe of the chat input island (ChatInputBar.css), so a call that waits for the user
+   stands out the same way. */
+.llm-chat-tool-call-pending {
+    --pending-inset: 0.5rem;
+
+    margin: 0.25rem calc(-1 * var(--pending-inset) - 1px);
+    padding: 0.25rem var(--pending-inset) var(--pending-inset);
+    border: 1px solid var(--card-border-color, var(--main-border-color));
+    border-radius: 10px;
+    background: var(--card-background-color, var(--accented-background-color));
+    box-shadow: var(--card-box-shadow, none);
+
+    > .llm-chat-tool-approval {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+
+        > button.btn.btn-sm {
+            min-width: unset;
+        }
+    }
 }

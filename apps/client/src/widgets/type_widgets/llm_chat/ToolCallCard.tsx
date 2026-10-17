@@ -402,7 +402,6 @@ function ToolApprovalBar({ toolCallId }: { toolCallId: string }) {
             role="group"
             aria-label={t("llm_chat.tool_approval_prompt")}
         >
-            <span>{t("llm_chat.tool_approval_prompt")}</span>
             <Button
                 size="small"
                 text={t("llm_chat.tool_approval_deny")}
