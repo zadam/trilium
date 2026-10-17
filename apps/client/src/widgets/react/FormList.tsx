@@ -11,7 +11,6 @@ import { t } from "../../services/i18n";
 import { getActionSync } from "../../services/keyboard_actions";
 import { handleRightToLeftPlacement, isMobile, openInAppHelpFromUrl } from "../../services/utils";
 import FormToggle from "./FormToggle";
-import HelpTooltipButton from "./HelpTooltipButton";
 import { useStaticTooltip, useSyncedRef, useUniqueName } from "./hooks";
 import Icon, { SvgIcon } from "./Icon";
 import { MasterDetailHeader } from "./master_detail";
@@ -322,7 +321,7 @@ export function FormListToggleableItem({
     title: string;
     currentValue: boolean;
     helpPage?: string;
-    /** What the setting does, shown on hover. Unlike {@link helpPage}, it opens nothing. */
+    /** What the setting does, shown beside the menu while the row is hovered. */
     helpTooltip?: string;
     onChange(newValue: boolean): void | Promise<void>;
 }) {
@@ -331,6 +330,7 @@ export function FormListToggleableItem({
     return (
         <FormListItem
             {...props}
+            title={helpTooltip}
             disabled={disabled}
             onClick={async (e) => {
                 if ((e.target as HTMLElement | null)?.classList.contains("contextual-help")) {
@@ -356,7 +356,6 @@ export function FormListToggleableItem({
                             onClick={() => openInAppHelpFromUrl(helpPage)}
                         />
                     )}
-                    {helpTooltip && <HelpTooltipButton description={helpTooltip} />}
                     <span class="switch-spacer" />
                 </>}
             />
