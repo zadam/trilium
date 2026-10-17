@@ -27,7 +27,8 @@ import {
     type ContentEmbedToolbarItem,
     type ContentEmbedToolProvider,
     showContentEmbedFullscreen,
-    useContentEmbedDisplayMode
+    useContentEmbedDisplayMode,
+    useContentEmbedEvent
 } from "../text/content_embed_tools";
 import { useEditableEmbed } from "../text/editable_embed";
 
@@ -57,6 +58,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     });
     const mode = resolveDisplayMode(useContentEmbedDisplayMode(rootRef), !isEditing);
     const { editorMounted, previewMounted } = useMountedPanes(mode);
+    const isFullscreen = useIsEmbedFullscreen(rootRef);
     tools.setState(zoom, mode);
 
     // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
@@ -99,7 +101,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                 error={error}
                 previewStale={!!svg}
                 previewContent={<SvgPreview svg={svg} zoom={zoom} viewportRef={setPreviewEl} />}
-                previewButtons={!canEdit && !!svg && <SvgZoomControls zoom={zoom} />}
+                previewButtons={(!canEdit || isFullscreen) && !!svg && <SvgZoomControls zoom={zoom} />}
             />
         </div>
     );
@@ -121,6 +123,14 @@ function useMermaidRender(source: string) {
     }, [ source ]);
 
     return { svg, error };
+}
+
+/** Whether the embed that contains `ref` is in fullscreen, where its toolbar does not show. */
+function useIsEmbedFullscreen(ref: RefObject<HTMLElement | null>) {
+    const [ isFullscreen, setIsFullscreen ] = useState(false);
+    useContentEmbedEvent(ref, "enterFullscreen", () => setIsFullscreen(true));
+    useContentEmbedEvent(ref, "leaveFullscreen", () => setIsFullscreen(false));
+    return isFullscreen;
 }
 
 /** The zoom and fullscreen of a Mermaid diagram, as buttons of the toolbar of its embed. */

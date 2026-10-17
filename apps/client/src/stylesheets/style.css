@@ -1409,7 +1409,8 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
         calc(var(--safe-area-inset-top, env(safe-area-inset-top)) + var(--overlay-group-inset));
     --overlay-group-inset-end:
         calc(var(--safe-area-inset-right, env(safe-area-inset-right)) + var(--overlay-group-inset));
-    z-index: 1;
+    /* Above the 10 of `.note-detail-error-card` in SplitEditor.css. */
+    z-index: 11;
 }
 
 .include-note-exit-fullscreen > button {

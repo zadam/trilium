@@ -118,6 +118,27 @@ describe("MermaidDiagram", () => {
         expect(failed.figure.querySelector(".svg-preview-root")).not.toBeNull();
     });
 
+    it("shows the zoom buttons over the diagram while in fullscreen", async () => {
+        const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
+        const box = figure.querySelector(".include-note-content");
+        if (!box) throw new Error("Expected the content box.");
+        await vi.waitFor(() => expect(figure.querySelector(".render-container svg")).not.toBeNull());
+        expect(getZoomButtons(figure)).toBeNull();
+
+        await act(async () => {
+            box.dispatchEvent(new Event("enterFullscreen", { bubbles: true }));
+        });
+        const buttons = getZoomButtons(figure);
+        expect(buttons).not.toBeNull();
+        // Zoom out, the zoom level, zoom in.
+        expect(buttons?.querySelectorAll("button")).toHaveLength(3);
+
+        await act(async () => {
+            box.dispatchEvent(new Event("leaveFullscreen", { bubbles: true }));
+        });
+        expect(getZoomButtons(figure)).toBeNull();
+    });
+
     it("makes the source editable once Editable turns on", async () => {
         const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
         expect(await isSourceEditable(figure)).toBe(false);
@@ -149,6 +170,10 @@ async function mount({ editor, isEditable, displayMode }: MountOptions) {
 
     await act(async () => render(<MermaidDiagram content="graph TD;" editor={editor} />, box));
     return { figure };
+}
+
+function getZoomButtons(figure: HTMLElement) {
+    return figure.querySelector(".note-detail-split-preview-col .svg-preview-controls");
 }
 
 /** The panes the layout shows, out of those mounted. */
