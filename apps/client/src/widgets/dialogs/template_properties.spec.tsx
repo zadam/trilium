@@ -142,6 +142,31 @@ describe("TemplatePropertiesDialog", () => {
         setLabel.mockRestore();
     });
 
+    it("opens another template while a write waits on updates that never come, and reopens with what was typed", async () => {
+        vi.spyOn(ws, "waitForMaxKnownEntityChangeId").mockReturnValue(new Promise<void>(() => {}));
+        const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue();
+        const first = buildNote({ title: "Meeting", "#template": "" });
+        const second = buildNote({ title: "Call", "#template": "", "#template:titleTemplate": "Call notes" });
+
+        const { host, container, field } = await open(first.noteId);
+        type(field, "Typed");
+        await act(async () => {
+            field.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        });
+        await vi.waitFor(() => expect(setLabel).toHaveBeenCalledWith(first.noteId, "template:titleTemplate", "Typed"));
+
+        const fieldValue = async (noteId: string) => {
+            await act(async () => {
+                await host.handleEventInChildren("showTemplateProperties", { noteId });
+            });
+            return container.querySelector<HTMLInputElement>(".template-properties-dialog .title-template-stub")?.value;
+        };
+        expect(await fieldValue(second.noteId)).toBe("Call notes");
+        // froca has not caught up with the first template's write, which the field shows anyway.
+        expect(await fieldValue(first.noteId)).toBe("Typed");
+        setLabel.mockRestore();
+    });
+
     it("previews the title below the field, filled in against the template's parent", async () => {
         buildNote({
             title: "Projects", children: [ { id: "tplPreview", title: "Meeting", "#template": "" } ]

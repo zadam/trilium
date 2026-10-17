@@ -26,41 +26,47 @@ export default function TemplatePropertiesDialog() {
     const [ shown, setShown ] = useState(false);
     const [ titleTemplate, setTitleTemplate ] = useState("");
     const [ defaultParentId, setDefaultParentId ] = useState<string>();
-    /** The title template as last written, which froca can lag behind while a write is under way. */
-    const savedTitleTemplate = useRef("");
-    const titleWrites = useRef<Promise<void>>(Promise.resolve());
+    const titleWrites = useRef(new Map<string, TitleWrites>());
     const preview = useTitlePreview(titleTemplate, note);
 
     useTriliumEvent("showTemplateProperties", async ({ noteId }) => {
-        // The writes of the template shown before go first, so that what is read below includes them.
-        await titleWrites.current.catch(() => {});
         const templateNote = await froca.getNote(noteId);
         if (!templateNote) return;
-        const ownTitleTemplate = templateNote.getOwnedLabelValue("template:titleTemplate") ?? "";
-        savedTitleTemplate.current = ownTitleTemplate;
-        setTitleTemplate(ownTitleTemplate);
+        // froca can lag behind writes still queued, so the template's own state is kept until they end.
+        let writes = titleWrites.current.get(noteId);
+        if (!writes?.pending) {
+            const ownTitleTemplate = templateNote.getOwnedLabelValue("template:titleTemplate") ?? "";
+            writes = { saved: ownTitleTemplate, latest: ownTitleTemplate, pending: 0, queue: Promise.resolve() };
+            titleWrites.current.set(noteId, writes);
+        }
+        setTitleTemplate(writes.latest);
         setDefaultParentId(templateNote.getOwnedRelationValue("template:newNoteDefaultParent") ?? undefined);
         setNote(templateNote);
         setShown(true);
     });
 
     /**
-     * Queues writing the title template. The writes run one after another, each waiting for froca to
-     * hold the one before it, so the last value wins and removing finds the label just created.
+     * Queues writing the title template. A template's writes run one after another, each waiting for
+     * froca to hold the one before it, so the last value wins and removing finds the label just created.
      */
     function saveTitleTemplate() {
-        if (!note) return;
+        const writes = note && titleWrites.current.get(note.noteId);
+        if (!note || !writes) return;
         const templateNote = note;
         const value = titleTemplate;
-        titleWrites.current = titleWrites.current.catch(() => {}).then(async () => {
-            if (value === savedTitleTemplate.current) return;
+        writes.latest = value;
+        writes.pending++;
+        writes.queue = writes.queue.catch(() => {}).then(async () => {
+            if (value === writes.saved) return;
             if (value) {
                 await attributes.setLabel(templateNote.noteId, "template:titleTemplate", value);
             } else {
                 await attributes.removeOwnedLabelByName(templateNote, "template:titleTemplate");
             }
-            savedTitleTemplate.current = value;
+            writes.saved = value;
             await ws.waitForMaxKnownEntityChangeId();
+        }).finally(() => {
+            writes.pending--;
         });
     }
 
@@ -115,6 +121,16 @@ export default function TemplatePropertiesDialog() {
             )}
         </CollectionPropertiesDialog>
     );
+}
+
+/** A template's title template as the dialog writes it, which froca can lag behind. */
+interface TitleWrites {
+    /** As last written. */
+    saved: string;
+    /** As last queued, which the field shows while writes are pending. */
+    latest: string;
+    pending: number;
+    queue: Promise<void>;
 }
 
 /**
