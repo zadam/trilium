@@ -3,7 +3,7 @@
   DiagramName Line*
 }
 
-@skip { spaces | newlineEmpty }
+@skip { spaces | newlineEmpty | LineComment | Directive }
 
 lineText {
   LineText1 |
@@ -74,6 +74,7 @@ kw<term> { @specialize<word, term> }
 @context trackIndent from "./tokens.js"
 
 @external tokens indentation from "./tokens.js" { indent }
+@external tokens comments from "./tokens.js" { LineComment, Directive }
 @external tokens lineTextType from "./tokens.js" { 
   LineText1,
   LineText2,

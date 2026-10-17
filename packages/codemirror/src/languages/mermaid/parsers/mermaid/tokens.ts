@@ -132,7 +132,7 @@ export const diagramText = new ExternalTokenizer((input) => {
  * The length of the `%%{…}%%` directive at the stream position, which can span lines; -1 when it
  * has no closing `}%%`.
  */
-function findDirectiveLength(input: InputStream) {
+export function findDirectiveLength(input: InputStream) {
     for (let offset = 3; input.peek(offset) !== -1; offset++) {
         const closes = input.peek(offset) === 125 && input.peek(offset + 1) === 37
             && input.peek(offset + 2) === 37;
@@ -142,7 +142,7 @@ function findDirectiveLength(input: InputStream) {
 }
 
 /** The length of the rest of the line at the stream position, newline excluded. */
-function lineLength(input: InputStream) {
+export function lineLength(input: InputStream) {
     let length = 0;
     while (input.peek(length) !== 10 && input.peek(length) !== -1) length++;
     return length;

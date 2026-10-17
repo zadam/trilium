@@ -1,5 +1,9 @@
 import { ExternalTokenizer, ContextTracker } from "@lezer/lr";
+
+import { findDirectiveLength, lineLength } from "../mermaid/tokens.js";
 import {
+    Directive,
+    LineComment,
     newline as newlineToken,
     newlineEmpty,
     indent,
@@ -23,6 +27,7 @@ const newline = 10,
     space = 32,
     tab = 9,
     hash = 35,
+    percent = 37,
     colon = 58,
     parenL = 40,
     parenR = 41,
@@ -44,7 +49,8 @@ export const newlines = new ExternalTokenizer(
             let empty =
                 input.next == newline ||
                 input.next == carriageReturn ||
-                input.next == hash;
+                input.next == hash ||
+                startsComment(input);
             input.acceptToken(empty ? newlineEmpty : newlineToken, -spaces);
         }
     },
@@ -90,7 +96,7 @@ const tabDepth = (depth: number) => {
 };
 
 // The indentation that starts a line; `trackIndent` measures its depth. A line that holds
-// nothing else, or starts with `#`, gets no `indent` token.
+// nothing else, or starts with `#` or `%%`, gets no `indent` token.
 export const indentation = new ExternalTokenizer((input) => {
     const prev = input.peek(-1);
     if (prev !== newline && prev !== carriageReturn) return;
@@ -98,10 +104,38 @@ export const indentation = new ExternalTokenizer((input) => {
     while (input.next === space || input.next === tab) {
         input.advance();
     }
-    if (input.next !== newline && input.next !== carriageReturn && input.next !== hash) {
+    const blank = input.next === newline || input.next === carriageReturn || input.next === hash;
+    if (!blank && !startsComment(input)) {
         input.acceptToken(indent);
     }
 });
+
+// A `%%` comment, on a line of its own or after a shape (`lineTextType` takes the `%%` in
+// `root %% text` as text), or a `%%{…}%%` directive, which Mermaid applies only on a line of
+// its own.
+export const comments = new ExternalTokenizer((input) => {
+    if (!startsComment(input)) return;
+
+    const directive = input.peek(2) === braceL && startsLine(input);
+    const directiveLength = directive ? findDirectiveLength(input) : -1;
+    if (directiveLength > 0) {
+        input.acceptToken(Directive, directiveLength);
+    } else {
+        input.acceptToken(LineComment, lineLength(input));
+    }
+});
+
+function startsComment(input: InputStream) {
+    return input.next === percent && input.peek(1) === percent;
+}
+
+function startsLine(input: InputStream) {
+    for (let offset = -1; ; offset--) {
+        const previous = input.peek(offset);
+        if (previous === newline || previous === -1) return true;
+        if (previous !== space && previous !== tab) return false;
+    }
+}
 
 const indentTracker = {
     lineType: LineText1

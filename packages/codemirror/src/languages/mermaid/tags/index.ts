@@ -9,6 +9,8 @@ export const mermaidTags = {
 
 export const mindmapTags = {
     diagramName: Tag.define(mermaidTags.diagramName),
+    directive: Tag.define(mermaidTags.directive),
+    lineComment: Tag.define(t.lineComment),
     lineText1: Tag.define(),
     lineText2: Tag.define(),
     lineText3: Tag.define(),

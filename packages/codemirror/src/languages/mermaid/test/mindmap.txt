@@ -178,3 +178,73 @@ mindmap
 ==>
 
 MindmapDiagram(DiagramName,Line,Line,Line)
+
+# Comment lines
+
+mindmap
+  root
+    %% a comment
+    child
+%% at column 0
+    other
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),LineComment,Line(LineText5),LineComment,Line(LineText5))
+
+# Directive below the root
+
+mindmap
+  root
+    %%{init: {"theme": "dark"}}%%
+    child
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),Directive,Line(LineText5))
+
+# Multi-line directive
+
+mindmap
+  root
+  %%{
+    init: {"theme": "dark"}
+  }%%
+    child
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),Directive,Line(LineText5))
+
+# Percent signs inside a node's text
+
+mindmap
+  root %% not a comment
+    child[50%% done]
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),Line(LineText5,ShapedText(LineText5)))
+
+# Comment after a shape
+
+mindmap
+  root
+    child[x] %% a comment
+    other[y] %%{init: {"theme": "dark"}}%%
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),Line(LineText5,ShapedText(LineText5)),LineComment,Line(LineText5,ShapedText(LineText5)),LineComment)
+
+# Comment after a line starting with a hash
+
+mindmap
+  root
+#x
+    %% a comment
+    child
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText3),Line,LineComment,Line(LineText5))
