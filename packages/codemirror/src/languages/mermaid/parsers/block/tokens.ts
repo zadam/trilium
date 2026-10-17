@@ -38,7 +38,6 @@ export const shapeToken = new ExternalTokenizer((input) => {
 
     let depth = 0;
     let inString = false;
-    let consumedAny = false;
 
     for (;;) {
         const c = input.next;
@@ -58,7 +57,6 @@ export const shapeToken = new ExternalTokenizer((input) => {
 
         if (isOpen(c)) {
             depth++;
-            consumedAny = true;
             input.advance();
             continue;
         }
@@ -81,5 +79,5 @@ export const shapeToken = new ExternalTokenizer((input) => {
         input.advance();
     }
 
-    if (consumedAny) input.acceptToken(Shape);
+    input.acceptToken(Shape);
 });
