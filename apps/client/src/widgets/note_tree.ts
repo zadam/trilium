@@ -582,7 +582,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         }
 
                         // Help pages are virtual notes, which the server never moves.
-                        if (notes.some((note) => note.noteId.startsWith("_help"))) {
+                        if (notes.some((note) => note.noteId?.startsWith("_help"))) {
                             toastService.showError(t("note_tree.dropping-not-allowed"));
                             return;
                         }
