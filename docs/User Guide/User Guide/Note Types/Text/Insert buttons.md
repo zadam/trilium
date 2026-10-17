@@ -60,7 +60,7 @@ A diagram shows in a box like the one of an included note, so it can be resized,
 
 The source of the diagram stays in the note as a Mermaid code block, so the diagram is exported to Markdown as a `mermaid` code block that other applications can show.
 
-Diagrams created in earlier versions keep the view they were saved with, and open with _Editable_ turned off: turn it on to change their source.
+Diagrams created in earlier versions keep the view they were saved with, and open editable.
 
 ## Horizontal ruler
 

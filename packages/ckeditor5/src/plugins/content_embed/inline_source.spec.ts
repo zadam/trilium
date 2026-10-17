@@ -61,26 +61,29 @@ describe("ContentEmbedInlineSource", () => {
         expect(embed.getAttribute("source")).toBe("graph TD;\n    A-->B");
         expect(embed.getAttribute("boxSize")).toBe("medium");
         expect(embed.getAttribute("hideTitle")).toBe(true);
-        expect(embed.getAttribute("editable")).toBeUndefined();
+        expect(embed.getAttribute("editable")).toBe(true);
         expect(embed.getAttribute("displayMode")).toBe("source");
         expect(editor.getData()).toBe(
-            `<pre data-box-size="medium" data-display-mode="source" data-hide-title="true">`
+            `<pre data-box-size="medium" data-display-mode="source" data-hide-title="true"`
+            + ` data-editable="true">`
             + `<code class="language-mermaid">`
             + `graph TD;\n    A--&gt;B</code></pre>`
         );
     });
 
-    it("keeps the mode a diagram of the old plugin was shown in, split when it has none", () => {
+    it("opens a diagram of the old plugin editable, in its mode or split", () => {
         const modes = [ [ "", "split" ], [ " data-trilium-display-mode=\"preview\"", "preview" ],
             [ " data-trilium-display-mode=\"other\"", "split" ] ];
         for (const [ attribute, mode ] of modes) {
             editor.setData(`<pre><code class="language-mermaid"${attribute}>a</code></pre>`);
             expect(getEmbed().getAttribute("displayMode")).toBe(mode);
+            expect(getEmbed().getAttribute("editable")).toBe(true);
         }
 
         // A saved embed keeps the mode it has, or none.
         editor.setData(`<pre data-box-size="small"><code class="language-mermaid">a</code></pre>`);
         expect(getEmbed().getAttribute("displayMode")).toBeUndefined();
+        expect(getEmbed().getAttribute("editable")).toBeUndefined();
         editor.setData(`<pre data-box-size="small" data-display-mode="source">`
             + `<code class="language-mermaid" data-trilium-display-mode="preview">a</code></pre>`);
         expect(getEmbed().getAttribute("displayMode")).toBe("source");

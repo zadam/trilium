@@ -149,7 +149,7 @@ export default class ContentEmbedInlineSource extends Plugin {
 			source,
 			boxSize: pre.getAttribute( 'data-box-size' ) ?? 'medium',
 			hideTitle: true,
-			...getDisplayModeOfSavedView( pre, code ),
+			...getModeOfSavedView( pre, code ),
 			...getFlagsOfView( pre ),
 			...getSizesOfView( pre )
 		} );
@@ -238,16 +238,17 @@ function getInlineLanguage( editor: Editor, code: ViewElement ) {
 }
 
 /**
- * The display mode of a saved embed. A diagram of the old Mermaid plugin has no box size and keeps
- * its mode on the `<code>`, split when it has none.
+ * The display mode of a saved embed. A diagram of the old Mermaid plugin, or any code block saved
+ * elsewhere, has no box size: it opens editable, in the mode the old plugin kept on the `<code>`,
+ * or split.
  */
-function getDisplayModeOfSavedView( pre: ViewElement, code: ViewElement ) {
+function getModeOfSavedView( pre: ViewElement, code: ViewElement ) {
 	if ( pre.hasAttribute( 'data-box-size' ) ) {
 		return getDisplayModeOfView( pre );
 	}
 
 	const mode = toDisplayMode( code.getAttribute( 'data-trilium-display-mode' ) );
-	return { displayMode: mode ?? 'split' };
+	return { displayMode: mode ?? 'split', editable: true };
 }
 
 function getFlagsOfView( pre: ViewElement ) {
