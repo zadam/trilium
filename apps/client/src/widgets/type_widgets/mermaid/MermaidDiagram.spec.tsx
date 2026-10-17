@@ -90,6 +90,17 @@ describe("MermaidDiagram", () => {
             .not.toContain("syntaxHelp");
     });
 
+    it("groups the fullscreen with the zoom, and the help apart", async () => {
+        const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
+        figure.dataset.hideTitle = "true";
+        figure.dataset.boxSize = "medium";
+        const tools = getContentEmbedTools(figure)?.getTools() ?? [];
+        expect(tools.map(({ id, group }) => [ id, group ])).toEqual([
+            [ "zoomOut", "zoom" ], [ "resetZoom", "zoom" ], [ "zoomIn", "zoom" ],
+            [ "fullscreen", "zoom" ], [ "syntaxHelp", "help" ]
+        ]);
+    });
+
     it("makes the source editable once Editable turns on", async () => {
         const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
         expect(await isSourceEditable(figure)).toBe(false);

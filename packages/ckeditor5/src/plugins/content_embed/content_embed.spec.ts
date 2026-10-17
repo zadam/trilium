@@ -29,6 +29,7 @@ import ContentEmbed, {
     CONVERT_EMBED_TO_LINK_COMMAND,
     CONVERT_LINK_TO_EMBED_COMMAND,
     CONTENT_EMBED_DISPLAY_MODE_COMMAND,
+    CONTENT_EMBED_DISPLAY_MODE_SEPARATOR,
     CONTENT_EMBED_MENU,
     DISPLAY_MODE_BUTTONS,
     DISPLAY_MODES,
@@ -1642,6 +1643,23 @@ describe("ContentEmbed display mode", () => {
         getContentEmbedTools.mockReturnValue({ hasDisplayModes: true });
         expect(editor.plugins.get(ContentEmbed).getEmbedStateAt(getRenderedEmbed()))
             .toMatchObject({ displayMode: "preview" });
+    });
+
+    it("separates the display modes from the Editable toggle, while both show", () => {
+        const separator = editor.ui.componentFactory.create(CONTENT_EMBED_DISPLAY_MODE_SEPARATOR);
+        separator.render();
+        insertContentEmbed(editor, "n1", "medium");
+        const isShown = () => !separator.element?.classList.contains("ck-hidden");
+        expect(separator.element?.classList.contains("ck-toolbar__separator")).toBe(true);
+        expect(isShown()).toBe(false);
+
+        getContentEmbedTools.mockReturnValue({ hasEditableFlag: true, hasDisplayModes: true });
+        editor.ui.update();
+        expect(isShown()).toBe(true);
+
+        getContentEmbedTools.mockReturnValue({ hasEditableFlag: true });
+        editor.ui.update();
+        expect(isShown()).toBe(false);
     });
 
     it("offers a button per mode, on while it is the mode and shown only while enabled", () => {

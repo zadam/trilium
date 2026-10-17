@@ -109,6 +109,7 @@ describe("ContentEmbedToolbar", () => {
 
         expect(repository._toolbarDefinitions.get("contentEmbed")?.itemsConfig).toEqual([
             TOGGLE_EDITABLE_COMMAND_NAME,
+            "contentEmbedDisplayModeSeparator",
             "contentEmbedDisplayMode:source",
             "contentEmbedDisplayMode:split",
             "contentEmbedDisplayMode:preview",

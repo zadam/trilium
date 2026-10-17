@@ -7,6 +7,7 @@ import {
 	IconCaption,
 	IconLink,
 	IconThreeVerticalDots,
+	type Locale,
 	type MapperModelToViewPositionEvent,
 	ModelElement,
 	type ModelNode,
@@ -16,6 +17,7 @@ import {
 	Plugin,
 	toWidget,
 	toWidgetEditable,
+	View,
 	type ViewEditableElement,
 	type ViewElement,
 	Widget,
@@ -41,6 +43,8 @@ export const TOGGLE_CAPTION_COMMAND_NAME = 'toggleContentEmbedCaption';
 export const TOGGLE_TITLE_COMMAND_NAME = 'toggleContentEmbedTitle';
 export const TOGGLE_EDITABLE_COMMAND_NAME = 'toggleContentEmbedEditable';
 export const CONTENT_EMBED_DISPLAY_MODE_COMMAND = 'contentEmbedDisplayMode';
+/** The toolbar separator between the Editable toggle and the display modes. */
+export const CONTENT_EMBED_DISPLAY_MODE_SEPARATOR = 'contentEmbedDisplayModeSeparator';
 /** The toolbar button that opens the context menu of an embed whose title is hidden. */
 export const CONTENT_EMBED_MENU = 'contentEmbedMenu';
 
@@ -339,6 +343,14 @@ class ContentEmbedUI extends Plugin {
 			} );
 
 			return buttonView;
+		} );
+
+		editor.ui.componentFactory.add( CONTENT_EMBED_DISPLAY_MODE_SEPARATOR, locale => {
+			const separator = new ToolbarItemSeparatorView( locale );
+			separator.bind( 'isVisible' ).to(
+				editor.plugins.get( ContentEmbed ), 'selectedEmbedTools',
+				tools => !!tools?.hasEditableFlag && !!tools.hasDisplayModes );
+			return separator;
 		} );
 
 		for ( const mode of DISPLAY_MODES ) {
@@ -1545,5 +1557,26 @@ declare module 'ckeditor5' {
 		toggleContentEmbedTitle: ToggleContentEmbedTitleCommand;
 		toggleContentEmbedEditable: ToggleContentEmbedEditableCommand;
 		contentEmbedDisplayMode: ContentEmbedDisplayModeCommand;
+	}
+}
+
+/** A toolbar separator that shows only while `isVisible`, as the items on both sides do. */
+class ToolbarItemSeparatorView extends View {
+	declare public isVisible: boolean;
+
+	constructor( locale?: Locale ) {
+		super( locale );
+		this.set( 'isVisible', false );
+
+		this.setTemplate( {
+			tag: 'span',
+			attributes: {
+				class: [
+					'ck',
+					'ck-toolbar__separator',
+					this.bindTemplate.if( 'isVisible', 'ck-hidden', isVisible => !isVisible )
+				]
+			}
+		} );
 	}
 }
