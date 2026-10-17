@@ -6,6 +6,7 @@ import { getContext } from "@triliumnext/core/src/services/context.js";
 import { HELP_ASSET_TOKEN, initInAppHelp } from "@triliumnext/core/src/services/in_app_help.js";
 import { helpTools } from "@triliumnext/core/src/services/llm/tools/help_tools.js";
 import searchService from "@triliumnext/core/src/services/search/services/search.js";
+import { getVirtualNoteAssets } from "@triliumnext/core/src/services/virtual_notes.js";
 import fs from "fs";
 import path from "path";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -38,8 +39,7 @@ describe("in-app help (shipped artifacts)", () => {
     });
 
     it("serves the content of every page that ships one, through becca and the blob route", () => {
-        // Text and code notes carry a page of their own; folders and web views do not.
-        const pages = flatten(meta).filter((item) => item.type === "text" || item.type === "code");
+        const pages = contentPages(meta);
         expect(pages.length).toBeGreaterThan(0);
 
         for (const page of pages) {
@@ -58,19 +58,36 @@ describe("in-app help (shipped artifacts)", () => {
         const assetRoot = path.resolve(__dirname, "../../../docs/User Guide");
         const missing: string[] = [];
 
-        for (const page of flatten(meta).filter((item) => item.source)) {
+        for (const page of contentPages(meta)) {
             const html = String(becca.getNoteOrThrow(page.id).getContent());
             expect(html, `page ${page.id} still carries an unsubstituted asset placeholder`).not.toContain(HELP_ASSET_TOKEN);
 
             for (const match of html.matchAll(/(?:src|href)="([^"]*\/help\/[^"]*)"/g)) {
                 const relative = decodeURIComponent(match[1].split("/help/")[1]);
                 if (!fs.existsSync(path.join(assetRoot, relative))) {
-                    missing.push(`${page.source} -> ${relative}`);
+                    missing.push(`${page.title} -> ${relative}`);
                 }
             }
         }
 
         expect(missing).toEqual([]);
+    });
+
+    it("can read every picture and file an export of the guide carries", async () => {
+        const unreadable: string[] = [];
+        let assetCount = 0;
+
+        for (const page of contentPages(meta)) {
+            for (const asset of getVirtualNoteAssets(page.id)) {
+                assetCount++;
+                if (await asset.getContent() === null) {
+                    unreadable.push(`${page.id} -> ${asset.url}`);
+                }
+            }
+        }
+
+        expect(assetCount).toBeGreaterThan(0);
+        expect(unreadable).toEqual([]);
     });
 
     it("is searchable by its content, but only when the search asks for hidden notes", () => {
@@ -106,6 +123,11 @@ describe("in-app help (shipped artifacts)", () => {
         }
     });
 });
+
+/** Text and code notes carry a page of their own; folders and web views do not. */
+function contentPages(items: HelpMetaItem[]) {
+    return flatten(items).filter((item) => item.type === "text" || item.type === "code");
+}
 
 function flatten(items: HelpMetaItem[], out: HelpMetaItem[] = []): HelpMetaItem[] {
     for (const item of items) {

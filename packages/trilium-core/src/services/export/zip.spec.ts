@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isLocalPreviewImageSrc } from "@triliumnext/commons";
 
 import becca from "../../becca/becca.js";
+import becca_loader from "../../becca/becca_loader.js";
 import type BBranch from "../../becca/entities/bbranch.js";
 import type BNote from "../../becca/entities/bnote.js";
 import type { ExportFormat, NoteMetaFile } from "../../meta.js";
@@ -14,6 +15,7 @@ import { getContext } from "../context.js";
 import noteService from "../notes.js";
 import sql_init from "../sql_init.js";
 import { decodeUtf8 } from "../utils/binary.js";
+import { registerVirtualNoteProvider, unregisterVirtualNoteProvider } from "../virtual_notes.js";
 import type { ZipArchive, ZipArchiveEntryOptions, ZipProvider } from "../zip_provider.js";
 import { getZipProvider, initZipProvider } from "../zip_provider.js";
 import zip, { shouldStoreUncompressed } from "./zip.js";
@@ -550,6 +552,80 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
                 for (const [, src] of sources) {
                     expect(isLocalPreviewImageSrc(src), `${format}: ${src}`).toBe(true);
                 }
+            }
+        });
+
+        it("exports a virtual subtree as a copy that imports with its pictures, files and links", async () => {
+            const picture = new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 1, 2, 3 ]);
+            const file = new Uint8Array([ 7, 8, 9 ]);
+            registerVirtualNoteProvider({
+                namespace: "_vzip",
+                parentNoteId: "_hidden",
+                getSubtree: () => [{
+                    id: "_vzipGuide", title: "Guide", type: "book",
+                    attributes: [{ type: "label", name: "readOnly", value: "", isInheritable: true }],
+                    children: [
+                        { id: "_vzipPage", title: "Page", type: "text" },
+                        { id: "_vzipOther", title: "Other", type: "text" }
+                    ]
+                }],
+                getContent: (noteId) => (noteId === "_vzipPage"
+                    ? `<p><img src="assets/v1/vzip/My%20picture.png"></p>`
+                        + `<p><a href="assets/v1/vzip/data.dat">data</a></p>`
+                        + `<p><a class="reference-link" href="#root/_vzipOther">Other</a></p>`
+                    : "<p>other</p>"),
+                getAssets: (noteId) => (noteId === "_vzipPage"
+                    ? [
+                        { id: "_vzipPage_a1", url: "assets/v1/vzip/My%20picture.png", title: "My picture.png", mime: "image/png", getContent: async () => picture },
+                        { id: "_vzipPage_a2", url: "assets/v1/vzip/data.dat", title: "data.dat", mime: "application/octet-stream", getContent: async () => file }
+                    ]
+                    : [])
+            });
+
+            try {
+                getContext().init(() => becca_loader.load());
+                const taskContext = (await import("../task_context.js")).default;
+                const importZip = (await import("../import/zip.js")).default;
+
+                for (const format of [ "html", "markdown" ] as const) {
+                    const { buffer, entries } = await exportSubtree(becca.getBranchOrThrow("_hidden__vzipGuide"), format);
+                    const guideMeta = parseMeta(entries).files[0];
+                    const pageMeta = guideMeta.children?.find((child) => child.noteId === "_vzipPage");
+                    const attachmentFile = (title: string) => pageMeta?.attachments?.find((a) => a.title === title)?.dataFileName;
+                    expect(new Uint8Array(entries[`Guide/${attachmentFile("My picture.png")}`]), format).toEqual(picture);
+                    expect(new Uint8Array(entries[`Guide/${attachmentFile("data.dat")}`]), format).toEqual(file);
+
+                    const pageFile = entries[`Guide/${pageMeta?.dataFileName}`].toString("utf-8");
+                    expect(pageFile, format).not.toContain("assets/v1/vzip");
+                    // Markdown percent-encodes the file name; HTML writes it as it is.
+                    const pictureFile = String(attachmentFile("My picture.png"));
+                    expect([ pictureFile, encodeURIComponent(pictureFile) ].some((name) => pageFile.includes(name)), format).toBe(true);
+
+                    const guide = await getContext().init(async () => await importZip.importZip(
+                        new taskContext("no-progress-reporting", "importNotes", {}),
+                        buffer,
+                        becca.getNoteOrThrow("root")
+                    ));
+
+                    const [ page, other ] = [ "Page", "Other" ].map((title) => guide.getChildNotes().find((n) => n.title === title));
+                    expect(guide.isVirtual || page?.isVirtual, format).toBeFalsy();
+                    const pictureCopy = page?.getAttachments().find((a) => a.title === "My picture.png");
+                    const fileCopy = page?.getAttachments().find((a) => a.title === "data.dat");
+                    expect(new Uint8Array(pictureCopy?.getContent() as Uint8Array), format).toEqual(picture);
+                    expect(new Uint8Array(fileCopy?.getContent() as Uint8Array), format).toEqual(file);
+
+                    const content = page?.getContent().toString();
+                    expect(content, format).toContain(`src="api/attachments/${pictureCopy?.attachmentId}/image/`);
+                    expect(content, format).toContain(`attachmentId=${fileCopy?.attachmentId}`);
+                    expect(content, format).toContain(`href="#root/${other?.noteId}"`);
+
+                    // The copy is the user's own: it saves like any other note.
+                    getContext().init(() => page?.setContent("<p>edited</p>"));
+                    expect(page?.getContent(), format).toBe("<p>edited</p>");
+                }
+            } finally {
+                unregisterVirtualNoteProvider("_vzip");
+                getContext().init(() => becca_loader.load());
             }
         });
 

@@ -22,6 +22,7 @@ import { extname } from "../utils/path";
 import { truncateUtf8Bytes } from "../utils/binary";
 import { rewriteMarkdownContentLinks, isMarkdownCodeNote } from "./rewrite_links.js";
 import { stripListItemIds } from "./strip_list_item_ids.js";
+import { getVirtualNoteAssets, referenceAssetsAsAttachments, type VirtualNoteAsset } from "../virtual_notes.js";
 
 // Most filesystems cap a single path component at 255 bytes; keep exported file names within that.
 const MAX_FILENAME_BYTES = 255;
@@ -42,6 +43,8 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
     const noteIdToMeta: Record<string, NoteMeta> = {};
     /** The file holding the content of an image or file note in a share export, beside its page. */
     const noteIdToRawFileName: Record<string, string> = {};
+    /** The files a virtual note's content links to, exported as attachments of that note. */
+    const noteIdToVirtualAssets: Record<string, VirtualNoteAsset[]> = {};
 
     async function buildProvider() {
         const providerData: ZipExportProviderData = {
@@ -217,6 +220,21 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
                 return attMeta;
             });
 
+        if (note.isVirtual) {
+            const assets = getVirtualNoteAssets(note.noteId);
+            noteIdToVirtualAssets[note.noteId] = assets;
+            for (const [index, asset] of assets.entries()) {
+                meta.attachments.push({
+                    attachmentId: asset.id,
+                    title: asset.title,
+                    role: asset.mime.startsWith("image/") ? "image" : "file",
+                    mime: asset.mime,
+                    position: (index + 1) * 10,
+                    dataFileName: getDataFileName(null, asset.mime, `${baseFileName}_${asset.title}`, existingFileNames)
+                });
+            }
+        }
+
         if (childBranches.length > 0) {
             meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
             meta.children = [];
@@ -366,6 +384,10 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
             content = stripListItemIds(content);
         }
 
+        if (note?.isVirtual && typeof content === "string") {
+            content = referenceAssetsAsAttachments(note.noteId, content, noteIdToVirtualAssets[note.noteId] ?? []);
+        }
+
         content = provider.prepareContent(title, content, noteMeta, note, branch);
 
         // Rewrite markdown-style links for code notes with markdown MIME.
@@ -437,11 +459,17 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
                 continue;
             }
 
-            const attachment = note.getAttachmentById(attachmentMeta.attachmentId);
+            const asset = noteIdToVirtualAssets[note.noteId]?.find((a) => a.id === attachmentMeta.attachmentId);
             // getContent() already returns a string or a Uint8Array; the binary
             // case can be appended as-is (the zip provider handles the Buffer
             // conversion), so avoid an extra full copy of the blob here.
-            const content = attachment.getContent();
+            const content = asset
+                ? await asset.getContent()
+                : note.getAttachmentById(attachmentMeta.attachmentId).getContent();
+            if (content === null) {
+                log.info(`Could not read asset '${attachmentMeta.title}' of virtual note '${note.noteId}', leaving it out of the export.`);
+                continue;
+            }
 
             archive.append(content, {
                 name: filePathPrefix + attachmentMeta.dataFileName,

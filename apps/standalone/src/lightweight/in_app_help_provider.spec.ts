@@ -39,6 +39,21 @@ describe("StandaloneInAppHelpProvider", () => {
         warn.mockRestore();
     });
 
+    it("fetches a help asset from the copy the build makes, encoding each path segment", async () => {
+        const provider = new StandaloneInAppHelpProvider();
+        const fetchSpy = vi.spyOn(globalThis, "fetch")
+            .mockResolvedValueOnce(new Response(new Uint8Array([ 1, 2 ]), { status: 200 }))
+            .mockResolvedValueOnce(new Response("", { status: 404 }))
+            .mockRejectedValueOnce(new Error("offline"));
+
+        expect(await provider.getHelpAsset("User Guide/My pic.png")).toEqual(new Uint8Array([ 1, 2 ]));
+        expect(fetchSpy).toHaveBeenCalledWith("/server-assets/help/User%20Guide/My%20pic.png");
+        expect(await provider.getHelpAsset("User Guide/missing.png")).toBeNull();
+        expect(await provider.getHelpAsset("User Guide/any.png")).toBeNull();
+
+        fetchSpy.mockRestore();
+    });
+
     it("points assets at the copy the build makes", () => {
         expect(new StandaloneInAppHelpProvider().getHelpAssetBase()).toBe("server-assets/help");
     });

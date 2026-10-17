@@ -1,9 +1,10 @@
 import fs from "fs";
+import path from "path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 // in_app_help_provider is loaded during boot (setup.ts), so vi.mock can't
 // intercept "fs" — spy on the real (shared) fs.readFileSync instead.
-import NodejsInAppHelpProvider from "./in_app_help_provider.js";
+import NodejsInAppHelpProvider, { getHelpAssetDir } from "./in_app_help_provider.js";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -42,5 +43,20 @@ describe("NodejsInAppHelpProvider", () => {
         const provider = new NodejsInAppHelpProvider();
         expect(provider.getHelpHiddenSubtreeData()).toEqual([]);
         expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it("reads a help asset by its path, and nothing outside the asset directory", async () => {
+        const provider = new NodejsInAppHelpProvider();
+        const inside = path.join(getHelpAssetDir(), "User Guide", "pic.png");
+        const readFile = vi.spyOn(fs.promises, "readFile").mockResolvedValue(Buffer.from([ 1, 2 ]));
+
+        expect(await provider.getHelpAsset("User Guide/pic.png")).toEqual(Buffer.from([ 1, 2 ]));
+        expect(path.resolve(String(readFile.mock.calls[0][0]))).toBe(path.resolve(inside));
+
+        expect(await provider.getHelpAsset("../../secret.txt")).toBeNull();
+        expect(readFile).toHaveBeenCalledTimes(1);
+
+        readFile.mockRejectedValue(new Error("ENOENT"));
+        expect(await provider.getHelpAsset("User Guide/missing.png")).toBeNull();
     });
 });

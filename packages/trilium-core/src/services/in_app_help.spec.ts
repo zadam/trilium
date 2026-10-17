@@ -6,7 +6,7 @@ import { load } from "../becca/becca_loader.js";
 import blobService from "./blob.js";
 import { getContext } from "./context.js";
 import { getHelpHiddenSubtreeData, HELP_ASSET_TOKEN, InAppHelpProvider, initInAppHelp } from "./in_app_help.js";
-import { getVirtualNoteProvider } from "./virtual_notes.js";
+import { getVirtualNoteAssets, getVirtualNoteProvider } from "./virtual_notes.js";
 
 /** Minimal concrete provider standing in for the platform-specific implementations. */
 class TestHelpProvider extends InAppHelpProvider {
@@ -24,6 +24,13 @@ class TestHelpProvider extends InAppHelpProvider {
 
     getHelpAssetBase(): string {
         return this.assetBase;
+    }
+
+    readAssets: string[] = [];
+
+    async getHelpAsset(assetPath: string): Promise<Uint8Array | null> {
+        this.readAssets.push(assetPath);
+        return new Uint8Array([ assetPath.length ]);
     }
 }
 
@@ -104,6 +111,31 @@ describe("in_app_help", () => {
         // One bundle ships to every platform; where its images live is decided on read.
         expect(becca.getNoteOrThrow("_helpPage").getContent())
             .toBe(`<img src="assets/v1.2.3/help/User%20Guide/pic.png">`);
+    });
+
+    it("declares each picture and file a page references, at the URL its content carries", async () => {
+        const page = `<img src="${HELP_ASSET_TOKEN}/User%20Guide/My%20pic.png">`
+            + `<a href="${HELP_ASSET_TOKEN}/User%20Guide/api.dat">API</a>`
+            + `<img src="${HELP_ASSET_TOKEN}/User%20Guide/My%20pic.png">`
+            + `<a href="https://example.com/x.png">elsewhere</a>`;
+        const provider = new TestHelpProvider(
+            [{ id: "_helpPage", title: "Page", type: "text" }],
+            { _helpPage: page },
+            "assets/v1.2.3/help"
+        );
+        initInAppHelp(provider);
+        reloadBecca();
+
+        const assets = getVirtualNoteAssets("_helpPage");
+        expect(assets.map(({ id, url, title, mime }) => ({ id, url, title, mime }))).toEqual([
+            { id: "_helpPage_a1", url: "assets/v1.2.3/help/User%20Guide/My%20pic.png", title: "My pic.png", mime: "image/png" },
+            { id: "_helpPage_a2", url: "assets/v1.2.3/help/User%20Guide/api.dat", title: "api.dat", mime: "application/octet-stream" }
+        ]);
+        const content = String(becca.getNoteOrThrow("_helpPage").getContent());
+        expect(assets.every((asset) => content.includes(`"${asset.url}"`))).toBe(true);
+
+        await assets[0].getContent();
+        expect(provider.readAssets).toEqual([ "User Guide/My pic.png" ]);
     });
 
     it("makes every help page read-only through an inheritable label on the root", () => {

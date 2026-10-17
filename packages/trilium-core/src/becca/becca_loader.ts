@@ -14,6 +14,7 @@ import BNote from "./entities/bnote.js";
 import BOption from "./entities/boption.js";
 import { getSql } from "../services/sql";
 import { getContext } from "../services/context.js";
+import dateUtils from "../services/utils/date.js";
 import { getVirtualNoteProviders, type VirtualNoteProvider, type VirtualSubtreeItem } from "../services/virtual_notes.js";
 
 export const beccaLoaded = new Promise<void>(async (res, rej) => {
@@ -172,7 +173,11 @@ function injectVirtualItem(provider: VirtualNoteProvider, parentNoteId: string, 
             title: item.title,
             type: item.type,
             mime: item.mime ?? "",
-            isProtected: false
+            isProtected: false,
+            dateCreated: dateUtils.localNowDateTime(),
+            dateModified: dateUtils.localNowDateTime(),
+            utcDateCreated: dateUtils.utcNowDateTime(),
+            utcDateModified: dateUtils.utcNowDateTime()
         };
 
         if (note) {

@@ -5,6 +5,7 @@ import path from "path";
 
 import { assetUrlFragment } from "./services/asset_path.js";
 import { RESOURCE_DIR } from "./services/resource_dir.js";
+import { isDev } from "./services/utils.js";
 
 /**
  * Serves the in-app help from the two artifacts `edit-docs` builds out of `docs/User Guide`:
@@ -39,6 +40,31 @@ export default class NodejsInAppHelpProvider extends InAppHelpProvider {
     getHelpAssetBase(): string {
         return `${assetUrlFragment}/help`;
     }
+
+    async getHelpAsset(assetPath: string): Promise<Uint8Array | null> {
+        const root = path.resolve(getHelpAssetDir());
+        const filePath = path.resolve(root, assetPath);
+        if (!filePath.startsWith(root + path.sep)) {
+            return null;
+        }
+
+        try {
+            return await fs.promises.readFile(filePath);
+        } catch {
+            return null;
+        }
+    }
+}
+
+/**
+ * Where the in-app help's images and attachments live: the Markdown export in a source checkout,
+ * the copy the build makes (see `copyServerAssets()`) in a packaged one.
+ */
+export function getHelpAssetDir() {
+    if (isDev) {
+        return path.join(RESOURCE_DIR, "..", "..", "..", "..", "docs", "User Guide");
+    }
+    return path.join(RESOURCE_DIR, "help");
 }
 
 function readHelpFile<T>(fileName: string): T | null {

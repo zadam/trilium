@@ -149,7 +149,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                     disabled={isInOptionsOrHelp || note.type === "search"}
                     command={() => parentComponent?.triggerCommand("showImportDialog", { noteId: note.noteId })} />
                 <CommandItem icon="bx bx-export" text={t("note_actions.export_note")}
-                    disabled={isInOptionsOrHelp || note.noteId === "_backendLog"}
+                    disabled={note.noteId.startsWith("_options") || note.noteId === "_backendLog"}
                     command={() => noteContext?.notePath && parentComponent?.triggerCommand("showExportDialog", {
                         notePath: noteContext.notePath,
                         defaultType: "single"

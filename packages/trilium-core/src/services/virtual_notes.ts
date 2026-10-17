@@ -44,12 +44,27 @@ export interface VirtualNoteProvider {
     getSubtree(): VirtualSubtreeItem[];
 
     /**
-     * Optional note content lookup, for providers whose notes carry content (e.g. file-system
-     * mounts). When absent — or when it returns `null`/`undefined` — the content is `""`.
-     * The in-app help does not use this: help pages are `doc` notes whose HTML the client
-     * fetches directly from bundled assets.
+     * Content of a virtual note. When absent, or when it returns `null` or `undefined`, the
+     * content is `""`.
      */
     getContent?(noteId: string): string | Uint8Array | null | undefined;
+
+    /**
+     * Files that the note's content references by URL (pictures, downloads). An export carries
+     * them as attachments of the note, so the exported copy works without the provider.
+     */
+    getAssets?(noteId: string): VirtualNoteAsset[];
+}
+
+export interface VirtualNoteAsset {
+    /** Stands in for an attachment ID in an export, so it uses only `[a-zA-Z0-9_]`. */
+    id: string;
+    /** The URL exactly as `getContent()` writes it into the note. */
+    url: string;
+    title: string;
+    mime: string;
+    /** Resolves to `null` when the file cannot be read; the export then leaves it out. */
+    getContent(): Promise<Uint8Array | null>;
 }
 
 export interface VirtualSubtreeItem {
@@ -123,4 +138,27 @@ export function getVirtualNoteProvider(noteId: string): VirtualNoteProvider | nu
 /** Content of a virtual note, delegated to its provider; `""` when the provider has none. */
 export function getVirtualNoteContent(noteId: string): string | Uint8Array {
     return getVirtualNoteProvider(noteId)?.getContent?.(noteId) ?? "";
+}
+
+/** Assets of a virtual note, delegated to its provider; empty when the provider has none. */
+export function getVirtualNoteAssets(noteId: string): VirtualNoteAsset[] {
+    return getVirtualNoteProvider(noteId)?.getAssets?.(noteId) ?? [];
+}
+
+/**
+ * Rewrites the asset URLs in a virtual note's HTML into the references a persisted note uses for
+ * its attachments: `api/attachments/<id>/image/<title>` for a picture, an attachment link for any
+ * other file. The export rewrites those references to the exported files.
+ */
+export function referenceAssetsAsAttachments(noteId: string, content: string, assets: VirtualNoteAsset[]) {
+    for (const asset of assets) {
+        const attachmentLink = `#root/${noteId}?viewMode=attachments&attachmentId=${asset.id}`;
+        if (asset.mime.startsWith("image/")) {
+            content = content.replaceAll(`src="${asset.url}"`,
+                `src="api/attachments/${asset.id}/image/${encodeURIComponent(asset.title)}"`);
+        }
+        content = content.replaceAll(`href="${asset.url}"`, `href="${attachmentLink}"`);
+    }
+
+    return content;
 }

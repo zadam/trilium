@@ -4,6 +4,7 @@ import { existsSync } from "fs";
 import path from "path";
 import type serveStatic from "serve-static";
 
+import { getHelpAssetDir } from "../in_app_help_provider.js";
 import { assetUrlFragment } from "../services/asset_path.js";
 import auth from "../services/auth.js";
 import port from "../services/port.js";
@@ -117,7 +118,7 @@ async function register(app: express.Application) {
     // Images and attachments of the in-app help. They are not committed under the server's assets
     // — the User Guide owns them — so in a source checkout they are served straight out of docs/,
     // while a packaged build copies them in (see scripts/build.ts).
-    app.use(`/${assetUrlFragment}/help`, persistentCacheStatic(getHelpAssetDir(srcRoot, resourceDir)));
+    app.use(`/${assetUrlFragment}/help`, persistentCacheStatic(getHelpAssetDir()));
     // `vX` is a version-independent alias so custom themes and scripts can reference built-in assets
     // without naming a version they would have to bump on every upgrade. It serves the same files as
     // the versioned routes above, but without `maxAge`: the URL no longer changes between releases,
@@ -125,17 +126,6 @@ async function register(app: express.Application) {
     app.use(`/assets/vX/stylesheets`, express.static(path.join(getClientDir(), "stylesheets"), STATIC_OPTIONS));
     app.use(`/assets/vX/fonts`, express.static(path.join(getClientDir(), "fonts"), STATIC_OPTIONS));
     app.use(`/assets/vX/images`, express.static(path.join(resourceDir, "assets", "images"), STATIC_OPTIONS));
-}
-
-/**
- * Where the in-app help's assets live: the markdown export in a source checkout, the copy the
- * build makes in a packaged one.
- */
-function getHelpAssetDir(srcRoot: string, resourceDir: string) {
-    if (isDev) {
-        return path.join(srcRoot, "..", "..", "docs", "User Guide");
-    }
-    return path.join(resourceDir, "assets", "help");
 }
 
 /** The fixed files of the share theme that every shared page loads. */

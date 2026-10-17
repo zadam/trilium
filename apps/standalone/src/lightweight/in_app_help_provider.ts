@@ -31,6 +31,16 @@ export default class StandaloneInAppHelpProvider extends InAppHelpProvider {
         return HELP_ASSETS;
     }
 
+    async getHelpAsset(assetPath: string): Promise<Uint8Array | null> {
+        const url = `/${HELP_ASSETS}/${assetPath.split("/").map(encodeURIComponent).join("/")}`;
+        try {
+            const response = await fetch(url);
+            return response.ok ? new Uint8Array(await response.arrayBuffer()) : null;
+        } catch {
+            return null;
+        }
+    }
+
     /**
      * Loads the page content. Failing costs the pages their bodies while the tree, the titles and
      * the navigation keep working, so it is logged rather than allowed to fail startup.

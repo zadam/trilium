@@ -1,7 +1,13 @@
 import type { HelpBundle, HiddenSubtreeItem } from "@triliumnext/commons";
 import { t } from "i18next";
+import mimeTypes from "mime-types";
 
-import { registerVirtualNoteProvider, unregisterVirtualNoteProvider, type VirtualSubtreeItem } from "./virtual_notes.js";
+import {
+    registerVirtualNoteProvider,
+    unregisterVirtualNoteProvider,
+    type VirtualNoteAsset,
+    type VirtualSubtreeItem
+} from "./virtual_notes.js";
 
 /**
  * Platform-specific source of the in-app help (User Guide), both its tree and the rendered content
@@ -29,6 +35,12 @@ export abstract class InAppHelpProvider {
      * custom protocol.
      */
     abstract getHelpAssetBase(): string;
+
+    /**
+     * Reads one of the guide's images or attachments, by its path from the export root as the
+     * pages reference it (percent-decoded). Resolves to `null` when the file cannot be read.
+     */
+    abstract getHelpAsset(assetPath: string): Promise<Uint8Array | null>;
 }
 
 /**
@@ -77,10 +89,35 @@ export function initInAppHelp(p: InAppHelpProvider) {
         getContent(noteId: string) {
             const page = provider?.getHelpContent()[noteId];
             return page?.replaceAll(HELP_ASSET_TOKEN, provider?.getHelpAssetBase() ?? "");
-        }
+        },
+        getAssets: (noteId) => getHelpPageAssets(p, noteId)
     });
 }
 
 export function getHelpHiddenSubtreeData(): HiddenSubtreeItem[] {
     return provider?.getHelpHiddenSubtreeData() ?? [];
+}
+
+/** The images and attachments one help page references, in the order they first appear. */
+function getHelpPageAssets(p: InAppHelpProvider, noteId: string): VirtualNoteAsset[] {
+    const page = p.getHelpContent()[noteId] ?? "";
+    const prefix = `${HELP_ASSET_TOKEN}/`;
+    const encodedPaths = new Set<string>();
+    for (const [ , url ] of page.matchAll(/(?:src|href)="([^"]*)"/g)) {
+        if (url.startsWith(prefix)) {
+            encodedPaths.add(url.slice(prefix.length));
+        }
+    }
+
+    return [ ...encodedPaths ].map((encodedPath, index) => {
+        const assetPath = decodeURIComponent(encodedPath);
+        const title = assetPath.split("/").pop() ?? assetPath;
+        return {
+            id: `${noteId}_a${index + 1}`,
+            url: `${p.getHelpAssetBase()}/${encodedPath}`,
+            title,
+            mime: mimeTypes.lookup(title) || "application/octet-stream",
+            getContent: () => p.getHelpAsset(assetPath)
+        };
+    });
 }

@@ -125,7 +125,8 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
 
     const notSearch = note.type !== "search";
     const hasSubtreeHidden = note.isLabelTruthy("subtreeHidden") ?? false;
-    const notOptionsOrHelp = !note.noteId.startsWith("_options") && !note.noteId.startsWith("_help");
+    const notOptions = !note.noteId.startsWith("_options");
+    const notOptionsOrHelp = notOptions && !note.noteId.startsWith("_help");
     const parentNotSearch = !parentNote || parentNote.type !== "search";
     const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
 
@@ -302,7 +303,7 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
 
         { title: t("tree-context-menu.import-into-note"), command: "importIntoNote", uiIcon: "bx bx-import", enabled: notSearch && noSelectedNotes && notOptionsOrHelp },
 
-        { title: t("tree-context-menu.export"), command: "exportNote", uiIcon: "bx bx-export", enabled: notSearch && noSelectedNotes && notOptionsOrHelp },
+        { title: t("tree-context-menu.export"), command: "exportNote", uiIcon: "bx bx-export", enabled: notSearch && noSelectedNotes && notOptions },
 
         { kind: "separator" },
 

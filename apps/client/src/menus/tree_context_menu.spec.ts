@@ -85,6 +85,33 @@ describe("buildTreeContextMenuItems", () => {
     });
 });
 
+describe("buildTreeContextMenuItems on system notes", () => {
+    async function enabledState(parentId: string, childId: string) {
+        vi.spyOn(noteTypesService, "loadNoteTypeData")
+            .mockResolvedValue({ builtInTemplateNotes: [], userTemplateNotes: [], newTemplates: new Set() });
+        buildNote({ id: parentId, title: "Parent", children: [ { id: childId, title: "Child" } ] });
+        const child = froca.notes[childId];
+        const [ branch ] = child?.getParentBranches() ?? [];
+        if (!child || !branch) throw new Error("expected the child and its branch");
+
+        const items = await buildTreeContextMenuItems({
+            note: child, branch, notePath: `${parentId}/${childId}`, component: {} as Component
+        });
+        const find = (command: TreeCommandNames) => items.find((item) => "command" in item && item.command === command);
+        const enabled = (command: TreeCommandNames) => {
+            const item = find(command);
+            if (!item || "kind" in item) throw new Error(`expected a ${command} row`);
+            return item.enabled;
+        };
+        return { exportNote: enabled("exportNote"), importIntoNote: enabled("importIntoNote") };
+    }
+
+    it("exports a help page, which cannot be imported into, and neither for an options page", async () => {
+        expect(await enabledState("_helpParent", "_helpPage")).toStrictEqual({ exportNote: true, importIntoNote: false });
+        expect(await enabledState("_optionsParent", "_optionsPage")).toStrictEqual({ exportNote: false, importIntoNote: false });
+    });
+});
+
 describe("getDuplicateItems", () => {
     it("offers the note-only copy as soon as one of the notes has children", () => {
         const leaf = buildNote({ title: "Leaf" });
