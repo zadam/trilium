@@ -306,7 +306,7 @@ function getMenuEmbed(e: LinkMenuOrigin, editor: CKTextEditor): MenuEmbed | null
  */
 function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
     const { editor, state } = embed;
-    const sizeItems = editor.plugins.get("ContentEmbed").getBoxSizes()
+    const sizeItems = editor.plugins.get("ContentEmbed").getBoxSizes(embed.element)
         .map(({ value, label }): MenuItem<CommandNames> => ({
             title: escapeHtml(label),
             trailingIcon: value === state.boxSize ? CHECK_ICON : undefined,

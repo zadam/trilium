@@ -13,7 +13,13 @@ import {
 } from 'ckeditor5';
 
 import { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
-import { getDisplayModeAttributes, getDisplayModeOfView, toDisplayMode } from './content_embed.js';
+import {
+	type BoxSizeValue,
+	getDisplayModeAttributes,
+	getDisplayModeOfView,
+	INLINE_BOX_SIZES,
+	toDisplayMode
+} from './content_embed.js';
 
 export const INSERT_INLINE_EMBED_COMMAND = 'insertInlineEmbed';
 
@@ -147,7 +153,7 @@ export default class ContentEmbedInlineSource extends Plugin {
 		const embed = api.writer.createElement( 'contentEmbed', {
 			language,
 			source,
-			boxSize: pre.getAttribute( 'data-box-size' ) ?? 'medium',
+			boxSize: getBoxSizeOfView( pre ),
 			hideTitle: true,
 			...getModeOfSavedView( pre, code ),
 			...getFlagsOfView( pre ),
@@ -249,6 +255,12 @@ function getModeOfSavedView( pre: ViewElement, code: ViewElement ) {
 
 	const mode = toDisplayMode( code.getAttribute( 'data-trilium-display-mode' ) );
 	return { displayMode: mode ?? 'split', editable: true };
+}
+
+/** The box size of a saved embed, Medium when it has none or one that needs a title. */
+function getBoxSizeOfView( pre: ViewElement ): BoxSizeValue {
+	const boxSize = INLINE_BOX_SIZES.find( size => size === pre.getAttribute( 'data-box-size' ) );
+	return boxSize ?? 'medium';
 }
 
 function getFlagsOfView( pre: ViewElement ) {

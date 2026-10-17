@@ -48,6 +48,12 @@ export const BOX_SIZES = [ 'tiny', 'small', 'medium', 'full', 'expandable' ] as 
 
 export type BoxSizeValue = typeof BOX_SIZES[number];
 
+/**
+ * The box sizes of an embed that keeps its source in the note, which has no title for Tiny and
+ * Expandable to show.
+ */
+export const INLINE_BOX_SIZES: readonly BoxSizeValue[] = [ 'small', 'medium', 'full' ];
+
 /** What content with display modes shows: its source, its rendering, or both side by side. */
 export const DISPLAY_MODES = [ 'source', 'split', 'preview' ] as const;
 
@@ -214,9 +220,14 @@ export default class ContentEmbed extends Plugin {
 		return !!getLinkToEmbed( this.editor, domElement );
 	}
 
-	/** The box sizes, with the labels the toolbar gives them. */
-	getBoxSizes(): { value: BoxSizeValue; label: string }[] {
-		return BOX_SIZES.map( value => ( { value, label: getBoxSizeLabel( this.editor.t, value ) } ) );
+	/**
+	 * The box sizes, with the labels the toolbar gives them: those of the embed that `domElement`
+	 * is part of, or all of them.
+	 */
+	getBoxSizes( domElement?: Element ): { value: BoxSizeValue; label: string }[] {
+		const embed = domElement ? getContentEmbedAt( this.editor, domElement ) : null;
+		return getEmbedBoxSizes( embed )
+			.map( value => ( { value, label: getBoxSizeLabel( this.editor.t, value ) } ) );
 	}
 }
 
@@ -771,7 +782,7 @@ class ContentEmbedBoxSizeCommand extends Command {
 		const editor = this.editor;
 		const embedElement = getSelectedContentEmbed( editor );
 
-		if ( embedElement ) {
+		if ( embedElement && getEmbedBoxSizes( embedElement ).includes( options.value ) ) {
 			editor.model.change( writer => {
 				const wasTiny = embedElement.getAttribute( 'boxSize' ) === 'tiny';
 				writer.setAttribute( 'boxSize', options.value, embedElement );
@@ -1080,6 +1091,11 @@ function isEmbedTitleToggleable( embed: ModelElement ) {
 /** Whether the content of `embed` has an editable mode, which its content type opts in to. */
 function isEmbedEditableToggleable( editor: Editor, embed: ModelElement ) {
 	return !!getEmbedTools( editor, embed )?.hasEditableFlag;
+}
+
+/** The box sizes that `embed` can take, or all of them without an embed. */
+export function getEmbedBoxSizes( embed: ModelElement | null ): readonly BoxSizeValue[] {
+	return embed && isInlineSourceEmbed( embed ) ? INLINE_BOX_SIZES : BOX_SIZES;
 }
 
 /** Whether the content of `embed` has display modes, which its content type opts in to. */

@@ -3,7 +3,9 @@ import {
     _setModelData as setModelData,
     ButtonView,
     ClassicEditor,
+    DropdownView,
     Essentials,
+    type ListItemView,
     type ModelElement,
     Paragraph,
     Undo,
@@ -14,7 +16,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestEditor } from "../../../test/editor-kit.js";
 import { installGlobMock } from "../../../test/globals-test-kit.js";
 import { SIZE_ATTRIBUTES } from "../resizable_widgets/resizable_widgets.js";
+import ContentEmbedBoxSizeDropdown, {
+    CONTENT_EMBED_BOX_SIZE_DROPDOWN
+} from "./content_embed_box_size_dropdown.js";
 import ContentEmbed, {
+    BOX_SIZE_COMMAND_NAME,
+    BOX_SIZES,
     CONTENT_EMBED_MENU,
     CONVERT_EMBED_TO_LINK_COMMAND,
     TOGGLE_CAPTION_COMMAND_NAME,
@@ -34,7 +41,9 @@ describe("ContentEmbedInlineSource", () => {
             })
         });
 
-        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
+        editor = await createTestEditor([
+            Essentials, Paragraph, Undo, Widget, ContentEmbed, ContentEmbedBoxSizeDropdown
+        ], {
             contentEmbed: { inlineLanguages: [ "mermaid" ] }
         });
     });
@@ -168,6 +177,37 @@ describe("ContentEmbedInlineSource", () => {
         expect(embed?.getAttribute("hideTitle")).toBe(true);
         expect(embed?.getAttribute("editable")).toBe(true);
         expect(loadInlineEmbed.mock.calls[0][3]).toEqual({ isFocused: true });
+    });
+
+    it("offers only the box sizes that need no title, and loads the others as Medium", () => {
+        for (const boxSize of [ "tiny", "expandable" ]) {
+            editor.setData(
+                `<pre data-box-size="${boxSize}"><code class="language-mermaid">a</code></pre>`);
+            expect(getEmbed().getAttribute("boxSize")).toBe("medium");
+        }
+
+        editor.model.change((writer) => writer.setSelection(getEmbed(), "on"));
+        const plugin = editor.plugins.get(ContentEmbed);
+        const wrapper = editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper");
+        if (!wrapper) throw new Error("Expected a rendered embed.");
+        expect(plugin.getBoxSizes(wrapper).map(({ value }) => value))
+            .toEqual([ "small", "medium", "full" ]);
+        expect(plugin.getBoxSizes().map(({ value }) => value)).toEqual(BOX_SIZES);
+
+        editor.execute(BOX_SIZE_COMMAND_NAME, { value: "tiny" });
+        expect(getEmbed().getAttribute("boxSize")).toBe("medium");
+        editor.execute(BOX_SIZE_COMMAND_NAME, { value: "full" });
+        expect(getEmbed().getAttribute("boxSize")).toBe("full");
+
+        const dropdown = editor.ui.componentFactory.create(CONTENT_EMBED_BOX_SIZE_DROPDOWN);
+        if (!(dropdown instanceof DropdownView)) throw new Error("Expected a dropdown.");
+        dropdown.render();
+        dropdown.isOpen = true;
+        const shown = Array.from(dropdown.listView?.items ?? [])
+            .map((item) => (item as ListItemView).children.first)
+            .filter((button) => button instanceof ButtonView && button.isVisible)
+            .map((button) => (button as ButtonView).label);
+        expect(shown).toEqual([ "Small", "Medium", "Full" ]);
     });
 
     it("offers the menu button in the toolbar, and no caption button", () => {
