@@ -10,9 +10,9 @@ import { t } from "../../../services/i18n.js";
 import ActionButton from "../../react/ActionButton.js";
 import Button, { SplitButton } from "../../react/Button.js";
 import { FormListItem } from "../../react/FormList.js";
-import MaskedIcon from "../../react/MaskedIcon.js";
+import Icon from "../../react/Icon.js";
 import { NewNoteLink } from "../../react/NoteLink.js";
-import { providerIconUrl } from "../options/llm/provider_icons.js";
+import { providerIcon } from "../options/llm/provider_icons.js";
 import { EditNoteContentDiff, isSmallEdit, parseNoteContentEdits } from "./EditNoteContentDiff.js";
 import { ExpandableSection } from "./ExpandableCard.js";
 import { isFailedToolCall, type ToolCall } from "./llm_chat_types.js";
@@ -166,7 +166,7 @@ function readSearchProvider(toolCall: ToolCall): { type: string; name: string } 
 function SearchProviderIcon({ type, name }: { type: string; name: string }) {
     return (
         <span className="llm-chat-tool-call-provider" title={t("llm_chat.searched_with", { name })}>
-            <MaskedIcon url={providerIconUrl(type)} />
+            <Icon icon={providerIcon(type)} />
         </span>
     );
 }

@@ -118,16 +118,16 @@ describe("Menu with declared rows", () => {
         expect(calls).toEqual([]);
     });
 
-    it("draws a submenu row's own icon element and a description under its title", () => {
+    it("draws a submenu row's icon and a description under its title", () => {
         render((
             <Menu anchor={{ x: 10, y: 10 }} onClose={vi.fn()}>
-                <FormDropdownSubmenu title="Search" description="Tavily" iconElement={<span className="tn-icon mark" />}>
+                <FormDropdownSubmenu title="Search" description="Tavily" icon="tn-brand tn-brand-tavily">
                     <FormListItem>Tavily</FormListItem>
                 </FormDropdownSubmenu>
             </Menu>
         ), host);
         const toggle = document.querySelector(".dropdown-submenu > .dropdown-toggle");
-        expect(toggle?.firstElementChild?.className).toBe("tn-icon mark");
+        expect(toggle?.firstElementChild?.className).toBe("tn-brand tn-brand-tavily tn-icon");
         expect(toggle?.querySelector(".description")?.textContent).toBe("Tavily");
         expect(toggle?.querySelector(".description")?.previousElementSibling?.textContent).toBe("Search");
     });

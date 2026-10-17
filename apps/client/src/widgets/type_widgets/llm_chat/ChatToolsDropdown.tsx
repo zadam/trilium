@@ -11,8 +11,7 @@ import Dropdown from "../../react/Dropdown.js";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem, FormListToggleableItem } from "../../react/FormList.js";
 import { useTriliumOption } from "../../react/hooks.js";
 import Icon from "../../react/Icon.js";
-import MaskedIcon from "../../react/MaskedIcon.js";
-import { providerIconUrl } from "../options/llm/provider_icons.js";
+import { providerIcon } from "../options/llm/provider_icons.js";
 import type { UseLlmChatReturn } from "./useLlmChat.js";
 
 /**
@@ -61,7 +60,7 @@ export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, 
             />
 
             <FormDropdownSubmenu
-                iconElement={<WebSearchSourceIcon source={chosen} className="tn-icon" />}
+                icon={chosen.icon}
                 title={t("llm_chat.web_search")}
                 description={chosen.label}
             >
@@ -75,7 +74,7 @@ export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, 
                         closeOnSelect={false}
                         onClick={() => onWebSearchChoose(source.choice)}
                     >
-                        <WebSearchSourceIcon source={source} className="llm-chat-tools-choice-icon" />
+                        <Icon icon={source.icon} className="llm-chat-tools-choice-icon" />
                         {source.label}
                     </FormListItem>
                 ))}
@@ -169,8 +168,8 @@ interface WebSearchSource {
     /** `"disabled"`, `"builtin"` or the config id of a search provider. */
     choice: string;
     label: string;
-    /** A boxicons class, or the URL of a mark drawn as a `MaskedIcon`. */
-    icon: { className: string } | { url: string };
+    /** The icon class, such as `bx bx-block` or a provider's mark. */
+    icon: string;
     /** Why the current model can't use the source. A source it can't use stays listed, disabled. */
     unavailableReason?: string;
 }
@@ -183,25 +182,19 @@ function getWebSearchSources(
     const searchProviderUnavailable = webSearch.searchProviderUnavailableKey
         && t(webSearch.searchProviderUnavailableKey);
     return [
-        { choice: "disabled", label: t("llm_chat.web_search_disabled"), icon: { className: "bx bx-block" } },
+        { choice: "disabled", label: t("llm_chat.web_search_disabled"), icon: "bx bx-block" },
         {
             choice: "builtin",
             label: t("llm_chat.web_search_builtin"),
             // The model's own mark stands for its built-in search.
-            icon: modelProvider ? { url: providerIconUrl(modelProvider) } : { className: "bx bx-globe" },
+            icon: modelProvider ? providerIcon(modelProvider) : "bx bx-globe",
             unavailableReason: webSearch.builtInUnavailableKey && t(webSearch.builtInUnavailableKey)
         },
         ...searchProviders.map((provider) => ({
             choice: provider.id,
             label: provider.name,
-            icon: { url: providerIconUrl(provider.provider) },
+            icon: providerIcon(provider.provider),
             unavailableReason: searchProviderUnavailable
         }))
     ];
-}
-
-function WebSearchSourceIcon({ source, className }: { source: WebSearchSource; className: string }) {
-    return "url" in source.icon
-        ? <MaskedIcon url={source.icon.url} className={className} />
-        : <Icon icon={source.icon.className} className={className} />;
 }

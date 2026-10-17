@@ -100,7 +100,8 @@ Display and layout:
 - `Card` — a titled group of sections (filter-aware under `FilterProvider`). **Anything that scrolls inside a card** (a list, a set of chips, a log, a table with a `max-height`) goes in a `CardSection noPadding`, with the card's padding moved onto the scrolling element itself: `padding: var(--card-padding-block) var(--card-padding-inline)`. In a padded section the scroller stops short of the card's border, so scrolled content is cut off along an inset edge with an empty strip of padding between the cut and the border. `NoteChips` (`.tn-card-section.tn-no-padding > .note-chips`) is the worked example. `Collapsible` — animated, theme-styled expandable section with self-managed `initiallyExpanded`; `ExternallyControlledCollapsible` is the controlled variant (caller owns `expanded`/`setExpanded`).
 - `TabStrip` — a row of icon-only tabs named by tooltips, heading a panel divided into groups.
 - `Modal`, `WizardModal` — dialogs; `Popover` — a card anchored beside something, with an arrow pointing at it, as the calendar's event card (portaled to the body and placed by `placeFloating()`, so no scroll container clips it).
-- `LoadingSpinner`, `LazyComponent`, `Icon`, `MaskedIcon`, `NoteList`, `SiblingNavigator`, `ImageViewer`, `CodeBlock`, `charts/DonutChart`, `charts/Treemap`.
+- `LoadingSpinner`, `LazyComponent`, `Icon`, `NoteList`, `SiblingNavigator`, `ImageViewer`, `CodeBlock`, `charts/DonutChart`, `charts/Treemap`.
+- A third-party mark (an AI provider, an import source) is an `Icon` from the built-in `tn-brand` pack (`"tn-brand tn-brand-notion"`), not an imported SVG. A new mark is an SVG in `apps/icon-pack-builder/brand-icons/`, built with `pnpm --filter @triliumnext/icon-pack-builder start tn-brand`.
 
 Data grids and calendars (outside `widgets/react/`, but equally generic):
 

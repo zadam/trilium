@@ -38,11 +38,11 @@ vi.mock("../../react/Dropdown.js", () => ({
 // Renders a submenu as its row followed by its rows, as the menu draws them once it is open.
 vi.mock("../../react/FormList.js", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../react/FormList.js")>()),
-    FormDropdownSubmenu: ({ title, description, iconElement, children }: {
-        title: ComponentChildren; description?: string; iconElement?: ComponentChildren; children: ComponentChildren;
+    FormDropdownSubmenu: ({ title, description, icon, children }: {
+        title: ComponentChildren; description?: string; icon?: string; children: ComponentChildren;
     }) => (
         <>
-            <div className="submenu-row">{iconElement}{title}<span className="description">{description}</span></div>
+            <div className="submenu-row"><span className={icon} />{title}<span className="description">{description}</span></div>
             {children}
         </>
     )
@@ -187,11 +187,10 @@ describe("ChatToolsDropdown", () => {
         expect(off.description).toBe("llm_chat.web_search_disabled");
 
         const tavily = submenuRow({ choice: "s1", enableWebSearch: true, webSearchProviderId: "s1" });
-        expect(tavily.icon?.classList.contains("masked-icon")).toBe(true);
+        expect(tavily.icon?.className).toBe("tn-brand tn-brand-tavily");
         const tavilyRowIcon = [ ...(host?.querySelectorAll(".menu .dropdown-item") ?? []) ]
             .find((row) => row.textContent === "Tavily")?.querySelector(".llm-chat-tools-choice-icon");
-        expect(tavily.icon?.getAttribute("style")).toBe(tavilyRowIcon?.getAttribute("style"));
-        expect(tavilyRowIcon).toBeDefined();
+        expect(tavilyRowIcon?.classList.contains("tn-brand-tavily")).toBe(true);
         expect(tavily.description).toBe("Tavily");
     });
 
@@ -201,8 +200,8 @@ describe("ChatToolsDropdown", () => {
 
         const [ disabled, builtIn, tavily ] = icons(renderMenu({ modelProvider: "anthropic" }));
         expect(disabled?.classList.contains("bx-block")).toBe(true);
-        expect(builtIn?.classList.contains("masked-icon")).toBe(true);
-        expect(tavily?.classList.contains("masked-icon")).toBe(true);
+        expect(builtIn?.classList.contains("tn-brand-anthropic")).toBe(true);
+        expect(tavily?.classList.contains("tn-brand-tavily")).toBe(true);
 
         // No model picked yet: nobody's mark to show.
         expect(icons(renderMenu())[1]?.classList.contains("bx-globe")).toBe(true);

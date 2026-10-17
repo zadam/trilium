@@ -14,10 +14,10 @@ import CKEditor, { type CKEditorApi } from "../../react/CKEditor.js";
 import Dropdown from "../../react/Dropdown.js";
 import { FormListHeader, FormListItem } from "../../react/FormList.js";
 import { useLegacyImperativeHandlers, useTriliumOption } from "../../react/hooks.js";
+import Icon from "../../react/Icon.js";
 import LightboxLink from "../../react/LightboxLink.js";
-import MaskedIcon from "../../react/MaskedIcon.js";
 import AddProviderModal, { type LlmProviderConfig, type ProviderStep } from "../options/llm/AddProviderModal.js";
-import { providerIconUrl } from "../options/llm/provider_icons.js";
+import { providerIcon } from "../options/llm/provider_icons.js";
 import { createNoteMentionList } from "../text/mention_list_view.js";
 import { computeContextUsage } from "./chat_context_usage.js";
 import { insertNewBlock as insertNewBlockCommand, isSelectionInCodeBlock, outdentListItemAtStart } from "./chat_input_editing.js";
@@ -415,7 +415,7 @@ export default function ChatInputBar({
                             // of a word's, and the only provider signal the collapsed button has.
                             text={currentModel
                                 ? <>
-                                    <MaskedIcon url={providerIconUrl(currentModel.provider)} className="llm-chat-model-icon" />
+                                    <Icon icon={providerIcon(currentModel.provider)} className="llm-chat-model-icon" />
                                     <span className="llm-chat-model-select-name">{shortModelName(currentModel.name, currentModel.provider)}</span>
                                 </>
                                 : <span className="llm-chat-model-select-name llm-chat-model-placeholder">{t("llm_chat.no_model_selected")}</span>}
@@ -445,7 +445,7 @@ export default function ChatInputBar({
                                             onClick={() => handleModelSelect(model)}
                                             checked={isSelectedModel(model)}
                                         >
-                                            <MaskedIcon url={providerIconUrl(model.provider)} className="llm-chat-model-icon" />
+                                            <Icon icon={providerIcon(model.provider)} className="llm-chat-model-icon" />
                                             {shortModelName(model.name, model.provider)}{model.costDescription && <> <small>({model.costDescription})</small></>}
                                         </FormListItem>
                                     )) : (

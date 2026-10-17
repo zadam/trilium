@@ -128,8 +128,8 @@
     height: 1.4rem;
     align-items: center;
 
-    .masked-icon {
-        --masked-icon-size: 0.9rem;
+    .tn-icon {
+        font-size: 0.9rem;
     }
 }
 

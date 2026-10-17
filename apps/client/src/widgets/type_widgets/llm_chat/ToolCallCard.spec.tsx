@@ -774,7 +774,7 @@ describe("ToolCallCard", () => {
 
         const single = icon(renderCard([ viaTavily("1") ]).querySelector(".llm-chat-tool-call"));
         expect(single?.getAttribute("title")).toBe("llm_chat.searched_with{\"name\":\"Tavily\"}");
-        expect(single?.querySelector(".masked-icon")).not.toBeNull();
+        expect(single?.querySelector(".tn-brand-tavily")).not.toBeNull();
 
         // A search that found nothing is a line with nothing to expand, marked the same way.
         const nothingFound: ToolCall = { ...viaTavily("0"), result: JSON.stringify({ query: "trilium", searchProvider: { type: "tavily", name: "Tavily" }, sources: [] }) };
