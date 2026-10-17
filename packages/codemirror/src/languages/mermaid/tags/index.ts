@@ -35,6 +35,7 @@ export const flowchartTags = {
     keyword: Tag.define(t.keyword),
     lineComment: Tag.define(t.lineComment),
     link: Tag.define(t.contentSeparator),
+    metadata: Tag.define(t.meta),
     nodeEdge: Tag.define(t.contentSeparator),
     nodeEdgeText: Tag.define(t.string),
     nodeId: Tag.define(t.variableName),

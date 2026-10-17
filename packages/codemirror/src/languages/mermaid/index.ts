@@ -4,7 +4,7 @@
 // `pnpm --filter @triliumnext/codemirror build:mermaid-grammars`.
 import { yamlLanguage } from "@codemirror/lang-yaml";
 import { languageDataProp, LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parseMixed, type SyntaxNode } from "@lezer/common";
+import { type Input, parseMixed, type SyntaxNode, type SyntaxNodeRef } from "@lezer/common";
 import type { LRParser } from "@lezer/lr";
 
 import { parser as architectureParser } from "./parsers/architecture/parser.js";
@@ -107,12 +107,28 @@ export const mermaidLanguage = LRLanguage.define({
 const nestedParsers = Object.fromEntries(Object.entries(DIAGRAM_PARSERS).map(([ name, parser ]) => [
     name,
     parser.configure({
-        props: [ languageDataProp.add((type) => type.isTop ? mermaidLanguage.data : undefined) ]
+        props: [ languageDataProp.add((type) => type.isTop ? mermaidLanguage.data : undefined) ],
+        wrap: parseMixed(metadataYaml)
     })
 ]));
 
 export function mermaid() {
     return new LanguageSupport(mermaidLanguage);
+}
+
+/**
+ * Mounts YAML on the text of a `@{ … }` shape metadata node, split as Mermaid's `addVertex()`
+ * reads it: text on one line is a flow mapping, so the braces join it, and text over several lines
+ * is a block mapping without them.
+ */
+function metadataYaml(node: SyntaxNodeRef, input: Input) {
+    if (node.name !== "Metadata") return null;
+    const end = input.read(node.to - 1, node.to) === "}" ? node.to - 1 : node.to;
+    const multiline = input.read(node.from + 2, end).includes("\n");
+    const overlay = multiline || end === node.to
+        ? [ { from: node.from + 2, to: end } ]
+        : [ { from: node.from + 1, to: node.to } ];
+    return overlay[0].from < overlay[0].to ? { parser: yamlLanguage.parser, overlay } : null;
 }
 
 /**

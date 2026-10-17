@@ -45,7 +45,9 @@ the preamble is `Directive`s (`%%{…}%%`, which can span lines), `LineComment`s
 `diagramMap` and emits one node for the rest of the document, such as `FlowchartDiagram`.
 `parseMixed()` looks that node's name up in `DIAGRAM_PARSERS` and mounts the diagram's own parser
 over it. A diagram with no entry there, or a keyword missing from `diagramMap`, gets no highlighting
-at all.
+at all. Every diagram parser is in turn wrapped by `metadataYaml()`, which mounts YAML on a
+`Metadata` node (`@{ shape: tool }` in flowchart and kanban), split as Mermaid's `addVertex()`
+reads it: on one line with its braces, as a flow mapping; over several lines without them.
 
 Accessibility lines (`accTitle:`, `accDescr:`, `accDescr { … }`) are handled once, here, not in
 each grammar. In the 15 diagrams whose Mermaid parser stores them (`accessibleDiagrams` in

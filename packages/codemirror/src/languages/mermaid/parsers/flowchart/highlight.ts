@@ -12,6 +12,7 @@ export const flowchartHighlighting = styleTags({
     "Keyword": flowchartTags.keyword,
     "LineComment": flowchartTags.lineComment,
     "Link": flowchartTags.link,
+    "Metadata": flowchartTags.metadata,
     "NodeEdge": flowchartTags.nodeEdge,
     "NodeEdgeText": flowchartTags.nodeEdgeText,
     "NodeId": flowchartTags.nodeId,

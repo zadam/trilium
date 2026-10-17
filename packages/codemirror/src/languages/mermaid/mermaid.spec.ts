@@ -159,6 +159,34 @@ describe("accessibility lines", () => {
     });
 });
 
+describe("shape metadata", () => {
+    const key = "tok-propertyName tok-definition";
+    const metadata = "A@{ shape: rect, label: \"Start\" }\n  B@{\n    shape: tool\n  }";
+
+    it.each([
+        `flowchart TB\n  ${metadata}`, `agentflow-beta TB\n  ${metadata}`,
+        `kanban\n  todo\n    ${metadata.replaceAll("@", "[Task]@")}`
+    ])("highlights the YAML inside @{ } in %j", (doc) => {
+        expect(styles(doc).filter((style) => /^(@\{?|shape|label|"Start") /.test(style))).toEqual([
+            "@ tok-meta", `shape ${key}`, `label ${key}`, "\"Start\" tok-string", "@{ tok-meta",
+            `shape ${key}`
+        ]);
+    });
+
+    it("reads unclosed kanban metadata to the end as a block mapping", () => {
+        expect(styles("kanban\n  todo\n    A[Task]@{ priority: high")).toContain(`priority ${key}`);
+        expect(styles("kanban\n  todo\n    A[Task]@{").at(-1)).toBe("@{ tok-meta");
+    });
+
+    function styles(doc: string) {
+        const result: string[] = [];
+        highlightTree(mermaidLanguage.parser.parse(doc), classHighlighter, (from, to, style) => {
+            result.push(`${doc.slice(from, to)} ${style}`);
+        });
+        return result;
+    }
+});
+
 describe("kanban grammar", () => {
     it("ends a card id before the spaces that separate it from its text", () => {
         const doc = "kanban\n  todo\n    my-card  [Task]";
