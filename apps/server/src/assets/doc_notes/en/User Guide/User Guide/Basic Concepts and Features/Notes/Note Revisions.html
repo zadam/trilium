@@ -5,8 +5,7 @@
 <p>Trilium supports seamless versioning of notes by storing snapshots ("revisions")
   of notes at regular intervals.</p>
 <p>To display the revisions, press the&nbsp;<a class="reference-link" href="#root/_help_8YBEPzcpUgxw">Note menu</a>&nbsp;and
-  select <em>Note revisions…</em>
-</p>
+  select <em>Note revisions…</em> (<span class="tn-icon bx bx-history"></span>).</p>
 <h2>Interaction</h2>
 <aside class="admonition note">
   <p>This documentation matches the redesign of the note revisions dialog on
@@ -24,12 +23,13 @@
   <li>The icon of a revision indicates the <em>source</em> of that revision (e.g.
     a&nbsp;<span class="tn-icon bx bx-save"></span> icon for a manually saved
     revision).</li>
-  <li>Pressing the […] on the top-right of the dialog displays multiple options,
-    including:
+  <li>Pressing the <span class="tn-icon bx bx-dots-horizontal-rounded"></span> button
+    on the top-right of the dialog displays multiple options, including:
     <ul>
-      <li>Saving a new revision now.</li>
+      <li><span class="tn-icon bx bx-save"></span> Saving a new revision now.</li>
       <li>Checking the interval and limit for this note (see below).</li>
-      <li>Deleting all the revisions of this note.</li>
+      <li><span class="tn-icon bx bx-trash"></span> Deleting all the revisions of
+        this note.</li>
     </ul>
   </li>
   <li>For supported notes (text, code), changes are highlighted. This behavior
@@ -42,11 +42,11 @@
   <li>For any given revision, the buttons on the top-right allow operating on
     it:
     <ul>
-      <li>Deleting the revision.</li>
-      <li>Downloading the revision locally.</li>
-      <li>Restoring the revision, which replaces the current content of the note
-        with the one from the revision. Another revision is saved containing the
-        current content of the note.</li>
+      <li><span class="tn-icon bx bx-trash"></span> Deleting the revision.</li>
+      <li><span class="tn-icon bx bx-download"></span> Downloading the revision locally.</li>
+      <li><span class="tn-icon bx bx-history"></span> Restoring the revision, which
+        replaces the current content of the note with the one from the revision.
+        Another revision is saved containing the current content of the note.</li>
     </ul>
   </li>
 </ul>
@@ -58,13 +58,14 @@
   <li>The name of the revision is displayed underneath the time of the revision
     in the sidebar, as well as at the top of the dialog where it is displayed
     in full.</li>
-  <li>Clicking on the edit button near the name of the revision allows it to
-    be changed.</li>
+  <li>Clicking on the <span class="tn-icon bx bx-edit-alt"></span> edit button
+    near the name of the revision allows it to be changed.</li>
 </ul>
 <p>To create a named revision, either:</p>
 <ul>
   <li>Go to the&nbsp;<a class="reference-link" href="#root/_help_8YBEPzcpUgxw">Note menu</a>,
-    select <em>Save named revision…</em>, enter the name of revision and confirm.</li>
+    select <em>Save named revision…</em> (<span class="tn-icon bx bx-purchase-tag"></span>),
+    enter the name of revision and confirm.</li>
   <li>Use the corresponding <a href="#root/_help_A9Oc6YKKc65v">keyboard shortcut</a> or
     the&nbsp;<a class="reference-link" href="#root/_help_F1r9QtzQLZqm">Jump to &amp; command palette</a>&nbsp;command
     with the same name.</li>
@@ -78,22 +79,24 @@
     below).</li>
   <li>Manually, by:
     <ul>
-      <li>Going to the press the <a href="#root/_help_8YBEPzcpUgxw">note context menu</a> and
-        select <em>Save revision.</em>
-      </li>
+      <li>Going to the <a class="reference-link" href="#root/_help_8YBEPzcpUgxw">Note menu</a> and
+        selecting <em>Save revision</em> (<span class="tn-icon bx bx-save"></span>).</li>
       <li>Using the <em>Force Save Revision</em>  <a href="#root/_help_A9Oc6YKKc65v">keyboard shortcut</a>.</li>
-      <li>In the <em>Revisions</em> dialog, pressing the […] button in the top-right
-        and selecting <em>Save a revision now</em>.</li>
+      <li>In the <em>Note Revisions</em> dialog, pressing the <span class="tn-icon bx bx-dots-horizontal-rounded"></span> button
+        in the top-right and selecting <em>Save a revision now</em>.</li>
     </ul>
   </li>
 </ul>
 <p>Additionally, revisions can also come from somewhere else, and this is
   indicated via the icon of the revision:</p>
 <ul>
-  <li>Generated externally, by&nbsp;<a class="reference-link" href="#root/_help_pgxEVkzLl1OP">ETAPI (REST API)</a>.</li>
-  <li>A modification created by&nbsp;<a class="reference-link" href="#root/_help_GBBMSlVSOIGP">AI</a>.</li>
-  <li>A revision is restored, causing the existing note content to be saved
-    as a revision to prevent potential data loss.</li>
+  <li><span class="tn-icon bx bx-code-alt"></span> Generated externally, by&nbsp;<a
+    class="reference-link" href="#root/_help_pgxEVkzLl1OP">ETAPI (REST API)</a>.</li>
+  <li><span class="tn-icon bx bx-bot"></span> A modification created by&nbsp;<a
+    class="reference-link" href="#root/_help_GBBMSlVSOIGP">AI</a>.</li>
+  <li><span class="tn-icon bx bx-history"></span> A revision is restored, causing
+    the existing note content to be saved as a revision to prevent potential
+    data loss.</li>
 </ul>
 <h4>Snapshot interval</h4>
 <p>Time interval of taking note snapshot is configurable in the Options →
@@ -109,5 +112,5 @@
   for a single note through the <code>versioningLimit=X</code> label.</p>
 <p>The note limit will not take effect immediately; it will only apply when
   the note is modified.</p>
-<p>You can click the <em>Erase excess revision snapshots now</em> button to
+<p>You can click the <em>Erase now</em> button under <em>Erase excess revision snapshots</em> to
   apply the changes immediately.</p>

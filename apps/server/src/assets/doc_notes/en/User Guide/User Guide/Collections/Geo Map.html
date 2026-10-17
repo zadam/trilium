@@ -32,20 +32,23 @@
   <li>At the top-left there is the search bar. It searches the notes already
     on the map, and it can also search for places online when you ask it to.
     While you move through the results of a search, a counter with previous
-    and next buttons appears under it.</li>
+    (<span class="tn-icon bx bx-chevron-left"></span>) and next (<span class="tn-icon bx bx-chevron-right"></span>)
+    buttons appears under it.</li>
   <li>At the bottom-center there is a central toolbar which provides editing
-    features: adding new markers on the map and importing GPX tracks.</li>
+    features: adding new markers on the map (<span class="tn-icon bx bx-pin"></span>)
+    and importing GPX tracks (<span class="tn-icon bx bx-trip"></span>).</li>
   <li>At the bottom-right there are the viewport items:
     <ul>
-      <li>Zoom in/out
+      <li>Zoom in/out (<span class="tn-icon bx bx-plus-circle"></span> / <span class="tn-icon bx bx-minus-circle"></span>)
         <ul>
           <li>On mobile these are hidden, use pinch to zoom instead.</li>
           <li>On desktop, alternatively use the scroll wheel to adjust the zoom.</li>
         </ul>
       </li>
-      <li>A button that shows your location on the map and follows it (see <em>Going to your location</em> below).</li>
-      <li>Full screen button which focuses the entire map onto the screen, while
-        still allowing for edits.</li>
+      <li>A <span class="tn-icon bx bx-current-location"></span> button that shows
+        your location on the map and follows it (see <em>Going to your location</em> below).</li>
+      <li><span class="tn-icon bx bx-fullscreen"></span> Full screen button which
+        focuses the entire map onto the screen, while still allowing for edits.</li>
     </ul>
   </li>
   <li>At the top-center (on desktop, or left-center on mobile and in split views)
@@ -75,10 +78,11 @@
   When you add markers yourself you have already moved the map to reach the
   place you are marking, and that movement saves a position.</p>
 <h2>Going to your location</h2>
-<p>Press the <em>Show your location</em> button at the bottom-right of the
-  map, beside the zoom buttons. The first time, the browser or the operating
-  system asks whether Trilium may know where the device is. In the desktop
-  application the operating system's location settings decide.</p>
+<p>Press the <em>Show your location</em> (<span class="tn-icon bx bx-current-location"></span>)
+  button at the bottom-right of the map, beside the zoom buttons. The first
+  time, the browser or the operating system asks whether Trilium may know
+  where the device is. In the desktop application the operating system's
+  location settings decide.</p>
 <p>The map then moves to where the device is and marks it with a blue dot.
   A lighter circle around the dot shows how accurate the position is: a phone
   with GPS gives a dot on the street, while a computer located through its
@@ -192,11 +196,12 @@
   without keeping it. The pin goes with it.</p>
 <h3>Stepping through the results</h3>
 <p>Once you select a result, a counter appears under the search bar, with
-  a previous and a next button. These buttons move through everything the
-  search offered, in the order it was listed. You can therefore compare several
-  results without opening the list again. Pressing the counter itself moves
-  the map back to the current result, which is useful after you have moved
-  the map away from it.</p>
+  a previous (<span class="tn-icon bx bx-chevron-left"></span>) and a next
+  (<span class="tn-icon bx bx-chevron-right"></span>) button. These buttons
+  move through everything the search offered, in the order it was listed.
+  You can therefore compare several results without opening the list again.
+  Pressing the counter itself moves the map back to the current result, which
+  is useful after you have moved the map away from it.</p>
 <h3>The keyboard</h3>
 <ul>
   <li><kbd>Enter</kbd> runs the online search when its row is the one selected,
@@ -204,15 +209,16 @@
     been taken, it brings the list back.</li>
   <li><kbd>Escape</kbd> closes the result list, and closes the place panel.</li>
   <li>Returning to the search bar reopens the list it was showing.</li>
-  <li>The <strong>X</strong> at the end of the bar empties it, which also takes
-    a searched place, its pin and its panel off the map.</li>
+  <li>The <span class="tn-icon bx bx-x"></span> button at the end of the bar empties
+    it, which also takes a searched place, its pin and its panel off the map.</li>
 </ul>
 <h2>Adding a marker using the map</h2>
-<h3>Adding a new note using the plus button</h3>
+<h3>Adding a new note using the <em>Add marker</em> button</h3>
 <ol>
   <li>
     <p>To create a marker, first navigate to the desired point on the map. Then
-      press the <em>Add marker</em> button at the center-bottom of the map.</p>
+      press the <em>Add marker</em> (<span class="tn-icon bx bx-pin"></span>) button
+      at the center-bottom of the map.</p>
   </li>
   <li>
     <p>Once pressed, the map will enter in the insert mode, as illustrated by
@@ -230,7 +236,7 @@
 <ol>
   <li>Right click anywhere on the map, where to place the newly created marker
     (and corresponding note).</li>
-  <li>Select <em>Add a marker at this location</em>.</li>
+  <li>Select <em>Add a marker at this location</em> (<span class="tn-icon bx bx-pin"></span>).</li>
   <li>Once clicked on a position on the map, the marker will show up on the
     map and a popup will show to the right with the title already selected
     to be changed.</li>
@@ -297,9 +303,10 @@
 <h2>Repositioning markers</h2>
 <p>Once a marker is set, it can be repositioned using one of the two ways:</p>
 <ul>
-  <li>By right clicking the marker and selecting <em>Move to another location</em>.</li>
-  <li>By clicking the marker to open the popup and selecting the <em>Move to another location</em> button
-    underneath the title bar.</li>
+  <li>By right clicking the marker and selecting <em>Move to another location</em> (<span
+    class="tn-icon bx bx-move"></span>).</li>
+  <li>By clicking the marker to open the popup and selecting the <em>Move to another location</em> (<span
+    class="tn-icon bx bx-move"></span>) button underneath the title bar.</li>
 </ul>
 <p>After clicking the button to move the marker, click at the desired position
   on the map to replace it. To cancel the operation, press Escape.</p>
@@ -328,18 +335,23 @@ class="admonition note">
   information:</p>
 <ul>
   <li>The title and icon of the marker, both editable.</li>
-  <li>An indicator for the coordinates; clicking it will copy the coordinates
-    to clipboard.</li>
-  <li>A button to maximize the popup.</li>
+  <li>An indicator for the coordinates (<span class="tn-icon bx bx-crosshair"></span>);
+    clicking it will copy the coordinates to clipboard.</li>
+  <li>A <span class="tn-icon bx bx-expand-alt"></span> button to maximize the
+    popup.</li>
   <li>Buttons to interact with the current item:
     <ul>
-      <li>Open the marker in the same pane, new tab, etc.</li>
-      <li>A button to open the location in a dedicated application (e.g. Google
-        Maps on mobile).</li>
-      <li>Color picker to change the color of the marker.</li>
-      <li>Markers can also be moved, unlike tracks or shapes (which need to be redrawn).</li>
-      <li>Button to remove the marker from the map, which can optionally delete
-        its corresponding note.
+      <li><span class="tn-icon bx bx-log-in"></span> Open the marker in the same
+        pane, or use <span class="tn-icon bx bx-dots-horizontal-rounded"></span> to
+        open it in a new tab, split, etc.</li>
+      <li>A <span class="tn-icon bx bx-map-alt"></span> button to open the location
+        in a dedicated application (e.g. Google Maps on mobile).</li>
+      <li><span class="tn-icon bx bx-palette"></span> Color picker to change the
+        color of the marker.</li>
+      <li><span class="tn-icon bx bx-move"></span> Markers can also be moved, unlike
+        tracks or shapes (which need to be redrawn).</li>
+      <li><span class="tn-icon bx bx-trash"></span> Button to remove the marker from
+        the map, which can optionally delete its corresponding note.
         <ul>
           <li>Removing a marker without deleting the note will only remove its <code>#geolocation</code> attribute
             (case in which the coordinates have to be manually added back in in order
@@ -374,25 +386,26 @@ class="admonition note">
   <li>If right-clicking an empty section of the map (not on a marker), it allows
     to:
     <ol>
-      <li>Displays the latitude and longitude. Clicking this option will copy them
-        to the clipboard.</li>
-      <li>Open the location using an external application (if the operating system
-        supports it).</li>
-      <li>Adding a new marker at that location.</li>
+      <li><span class="tn-icon bx bx-crosshair"></span> Displays the latitude and
+        longitude. Clicking this option will copy them to the clipboard.</li>
+      <li><span class="tn-icon bx bx-map-alt"></span> Open the location using an
+        external application (if the operating system supports it).</li>
+      <li><span class="tn-icon bx bx-pin"></span> Adding a new marker at that location.</li>
     </ol>
   </li>
   <li>If right-clicking on a marker, it allows to:
     <ol>
-      <li>Displays the latitude and longitude. Clicking this option will copy them
-        to the clipboard.</li>
-      <li>Open the location using an external application (if the operating system
-        supports it).</li>
+      <li><span class="tn-icon bx bx-crosshair"></span> Displays the latitude and
+        longitude. Clicking this option will copy them to the clipboard.</li>
+      <li><span class="tn-icon bx bx-map-alt"></span> Open the location using an
+        external application (if the operating system supports it).</li>
       <li>Open the note in a new tab, split or window.</li>
-      <li>Button to remove the marker from the map, which can optionally delete
-        its corresponding note. Removing a marker without deleting the note will
-        only remove its <code>#geolocation</code> attribute (case in which the coordinates
-        have to be manually added back in in order to get the note to show on the
-        map again).</li>
+      <li><span class="tn-icon bx bx-move"></span> Move the marker to another location.</li>
+      <li><span class="tn-icon bx bx-trash"></span> Button to remove the marker from
+        the map, which can optionally delete its corresponding note. Removing a
+        marker without deleting the note will only remove its <code>#geolocation</code> attribute
+        (case in which the coordinates have to be manually added back in in order
+        to get the note to show on the map again).</li>
     </ol>
   </li>
   <li>Shapes can also be right-clicked and the menu is similar to markers except
@@ -465,8 +478,9 @@ class="admonition note">
         up as <code>application/gpx+xml</code> in the <em>File type</em> field.</li>
     </ol>
   </li>
-  <li>Press the <em>Add a GPS track from a GPX file</em> which will directly prompt
-    for a GPX file and import it as a subnote of the collection.</li>
+  <li>Press the <em>Add a GPS track from a GPX file</em> (<span class="tn-icon bx bx-trip"></span>)
+    button which will directly prompt for a GPX file and import it as a subnote
+    of the collection.</li>
 </ol>
 <p>When going back to the map, the track should now be visible.</p>
 <p>The starting point of the track will be displayed as a marker, with the
@@ -489,7 +503,8 @@ class="admonition note">
 <p>When a map is <a href="#root/_help_CoFPLs3dRlXc">read-only</a> all editing
   features will be disabled such as:</p>
 <ul>
-  <li>The add button at the bottom of the map.</li>
+  <li>The <em>Add marker</em> (<span class="tn-icon bx bx-pin"></span>) button
+    at the bottom of the map.</li>
   <li>Repositioning markers.</li>
   <li>Editing from the contextual menu (removing locations or adding new items).</li>
   <li>Keeping a place as a marker, whether you found it by searching or clicked
@@ -536,8 +551,8 @@ class="admonition note">
   height="1642">
 </figure>
 <p>Trilium v0.105.0 introduces a 3D view, courtesy of MapLibre GL. To enter
-  3D mode, simply press the corresponding button at the bottom-right of the
-  map or press Ctrl and drag across the map.</p>
+  3D mode, simply press the <em>3D</em> button at the bottom-right of the map
+  or press Ctrl and drag across the map.</p>
 <p>The buildings will only appear from zoom 14 onwards to avoid lag.</p>
 <aside
 class="admonition note">
@@ -584,9 +599,9 @@ class="admonition note">
 <h3>Other options</h3>
 <p>The following options can be configured either via the&nbsp;<a class="reference-link"
   href="#root/_help_CssoWBu8I7jF">Collection Properties</a>, by clicking
-  on the settings (Gear icon). Alternatively, each of these options also
-  have a corresponding <a href="#root/_help_HI6GBBIduIgv">label</a> that can
-  be set manually.</p>
+  on the settings (<span class="tn-icon bx bx-cog"></span>) button. Alternatively,
+  each of these options also have a corresponding <a href="#root/_help_HI6GBBIduIgv">label</a> that
+  can be set manually.</p>
 <ul>
   <li>Scale, which illustrates the scale of the map in either kilometers or
     miles in the bottom-left of the map.

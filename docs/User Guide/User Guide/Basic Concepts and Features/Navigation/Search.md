@@ -21,13 +21,13 @@ There are multiple types of searches, all using the same search mechanism and qu
 
 ## Accessing the search
 
-*   From the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a>, look for the dedicated search button.
-*   To limit the search to a note and its children, select _Search from subtree_ from the <a class="reference-link" href="../UI%20Elements/Note%20Tree/Note%20tree%20contextual%20menu.md">Note tree contextual menu</a> or press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>.
+*   From the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a>, look for the dedicated <span class="tn-icon bx bx-search"></span> search button.
+*   To limit the search to a note and its children, select _Search in subtree_ (<span class="tn-icon bx bx-search"></span>) from the <a class="reference-link" href="../UI%20Elements/Note%20Tree/Note%20tree%20contextual%20menu.md">Note tree contextual menu</a> or press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>.
 *   Go to <a class="reference-link" href="Jump%20to%20%26%20command%20palette.md">Jump to &amp; command palette</a>, look for something then press _Show in full search_ below the results (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>).
 
 ## Interaction
 
-To search for notes, click on the magnifying glass icon on the toolbar or press the keyboard [shortcut](../Keyboard%20Shortcuts.md).
+To search for notes, click on the <span class="tn-icon bx bx-search"></span> icon in the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a> or press the keyboard [shortcut](../Keyboard%20Shortcuts.md).
 
 1.  Set the text to search for in the _Search string_ field.
     1.  Apart from searching for words literally, there is also the possibility to search for attributes or properties of notes.
@@ -36,10 +36,10 @@ To search for notes, click on the magnifying glass icon on the toolbar or press 
     1.  This value is also pre-filled if the search is triggered from a [hoisted note](Note%20Hoisting.md) or a [workspace](Workspaces.md).
     2.  To search the entire database, keep the value empty.
 3.  To limit the search to only a few levels of hierarchy (e.g. look in sub-children but not in sub-sub-children of a note), set the _depth_ field to one of the provided values.
-4.  In addition to that, the search can be configured via the _Add search options_ buttons, as described in the follow-up section.
-5.  Press _Search_ to trigger the search. The results are displayed below the search configuration pane.
-6.  The _Search & Execute actions_ button is only relevant if at least one action has been added (as described in the section below).
-7.  The _Save to note_ will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
+4.  In addition to that, the search can be configured via the _Add search option_ buttons, as described in the follow-up section.
+5.  Press _Search_ (<span class="tn-icon bx bx-search"></span>) to trigger the search. The results are displayed below the search configuration pane.
+6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) button is only relevant if at least one action has been added (as described in the section below).
+7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) button will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
 
 ## Features
 
@@ -88,30 +88,30 @@ To add a new line, press <kbd>Shift</kbd>+<kbd>Enter</kbd>.
 
 ## Search options
 
-Click on which search option to apply from the Add search option section.
+Click on which search option to apply from the _Add search option_ section.
 
 *   For each search option selected, the search configuration will update to reveal the entry. Each search option will have its own configuration.
-*   To remove a search option, simply press the X button to the right of it.
+*   To remove a search option, simply press the <span class="tn-icon bx bx-x"></span> button to the right of it.
 
 The options available are:
 
-1.  Search script
+1.  <span class="tn-icon bx bx-code"></span> Search script
     1.  This feature allows writing a <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> note that will handle the search on its own.
-2.  Fast search
+2.  <span class="tn-icon bx bx-run"></span> Fast search
     1.  The search will not look into the content of the notes, but it will still look into note titles and attributes, relations (based on the search query).
     2.  This method can speed up the search considerably for large [databases](../../Advanced%20Usage/Database.md).
-3.  Include archived
+3.  <span class="tn-icon bx bx-archive"></span> Include archived
     1.  <a class="reference-link" href="../Notes/Archived%20Notes.md">Archived Notes</a> will also be included in the results, whereas otherwise they would be ignored.
-4.  Order by
+4.  <span class="tn-icon bx bx-arrow-from-top"></span> Order by
     1.  Allows changing the criteria for ordering the results, for example to order by creation date or alphabetically instead of by relevancy (default).
     2.  It's also possible to change the order (ascending or descending) of the results.
-5.  Limit
+5.  <span class="tn-icon bx bx-stop"></span> Limit
     1.  Limits the results to a given maximum.
     2.  This can help if the number of results would otherwise be high, at the cost of not being able to view all the results.
-6.  Debug
+6.  <span class="tn-icon bx bx-bug"></span> Debug
     1.  This will print additional information in the server log (see <a class="reference-link" href="../../Troubleshooting/Error%20logs.md">Error logs</a>), regarding how the search expression was parsed.
     2.  This function is especially useful after understanding the search functionality in detail, in order to determine why a complex search query is not working as expected.
-7.  Action
+7.  <span class="tn-icon bx bxs-zap"></span> Action
     1.  Apart from just searching, it is also possible to apply actions such as to add a label or a relation to the notes that have been matched by the search.
     2.  Unlike other search configurations, here it's possible to apply the same action multiple times (i.e. in order to be able to apply multiple labels to notes).
     3.  The actions given are the same as the ones in <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a>, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>.
@@ -131,7 +131,7 @@ In addition: 
 *   The **total number of results** is always shown, so you can immediately tell how broad a query is.
 *   A **page-size selector** lets you choose how many results to display per page. Your choice is remembered and synced across your devices (stored in the `searchResultsPageSize` option), so you do not have to reset it on every device.
 *   **Clicking a result** opens the note and jumps straight to the first match. The in-note find bar opens pre-filled with the first word of your search, so you can step through its matches with the find controls. To have the find bar look for a whole phrase instead, put the phrase in quotes in the search, e.g. `"The Lord of the Rings"`. In read-only notes, the other words of the search are highlighted as well.
-*   _Open all results in new tabs_ (the button above the results) opens every result in a tab of its own, up to 50. Each tab opens on its first match with the find bar pre-filled, as when clicking a result.
+*   _Open all results in new tabs_ (<span class="tn-icon bx bx-window-open"></span>, the button above the results) opens every result in a tab of its own, up to 50. Each tab opens on its first match with the find bar pre-filled, as when clicking a result.
 *   If a match is inside a **collapsed section** (for example a folded heading), that section is expanded automatically so the match is visible.
 
 ## Simple Note Search Examples

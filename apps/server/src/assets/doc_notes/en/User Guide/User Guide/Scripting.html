@@ -28,12 +28,12 @@
   and maybe some attributes.</p>
 <h2>Script execution</h2>
 <p>So we have a script which will add the button to the toolbar. But how
-  can we execute it? One possibility is to click on "play" icon (marked by
-  red circle). The problem with this is that this UI change is time bound
-  by Trilium runtime so when we restart Trilium, button won't be there.</p>
+  can we execute it? One possibility is to click on the <span class="tn-icon bx bx-play"></span>  <em>Execute script</em> button.
+  The problem with this is that this UI change is time bound by Trilium runtime
+  so when we restart Trilium, button won't be there.</p>
 <p>We need to execute it every time Trilium starts up, but we probably don't
   want to have to manually click on play button on every start up.</p>
-<p>The solution is marked by red circle at the bottom - this note has <a href="#root/_help_zEY4DaJG4YT5">label</a>  <code>#run=frontendStartup</code> -
+<p>The solution is to give the note the <a href="#root/_help_zEY4DaJG4YT5">label</a>  <code>#run=frontendStartup</code> -
   this is one of the "system" labels which Trilium understands. As you might
   guess, this will cause all such labeled script notes to be executed once
   Trilium frontend starts up.</p>
@@ -41,7 +41,8 @@
   if you want to have scripts running there, give the script <code>#run=mobileStartup</code> label).</p>
 <h3>Execute button</h3>
 <p>Runnable code notes (frontend or backend) and saved SQL consoles can optionally
-  have a dedicated execute button alongside a description.</p>
+  have a dedicated <span class="tn-icon bx bx-play"></span> execute button
+  alongside a description.</p>
 <p>To do so, apply the following <a href="#root/_help_HI6GBBIduIgv">labels</a>:</p>
 <ul>
   <li>A <code>#executeButton</code> with the value of the label being displayed
