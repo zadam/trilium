@@ -25,6 +25,8 @@ interface MutatingToolDefinition {
     inputSchema: z.ZodType;
     /** Marks this tool as modifying data (needs CLS + transaction wrapping). */
     mutates: true;
+    /** Marks a tool that only adds to the notes (a note, a clone, text at the end), never overwriting or removing. */
+    additive?: true;
     /**
      * Execute the tool synchronously. Must NOT be async because better-sqlite3
      * transactions are synchronous and would commit before awaits complete.
