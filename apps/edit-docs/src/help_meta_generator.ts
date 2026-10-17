@@ -75,6 +75,31 @@ export function stripAppVersion(meta: NoteMetaFile): Omit<NoteMetaFile, "appVers
     return rest;
 }
 
+/**
+ * Serializes the help tree with one note per line, its children indented below it, so a docs
+ * change shows up in a diff as the notes it touched.
+ */
+export function serializeHelpMeta(items: HelpMetaItem[], depth = 0): string {
+    if (!items.length) {
+        return "[]";
+    }
+
+    const indent = "    ".repeat(depth + 1);
+    const lines: string[] = [];
+    for (const item of items) {
+        const { children, ...fields } = item;
+        if (!children?.length) {
+            lines.push(indent + JSON.stringify(item));
+            continue;
+        }
+
+        const ownFields = JSON.stringify(fields).slice(0, -1);
+        lines.push(`${indent}${ownFields},"children":${serializeHelpMeta(children, depth + 1)}}`);
+    }
+
+    return `[\n${lines.join(",\n")}\n${"    ".repeat(depth)}]`;
+}
+
 interface CanonicalOccurrence {
     iconClass: string;
     source?: string;

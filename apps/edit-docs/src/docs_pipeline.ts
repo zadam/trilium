@@ -17,7 +17,7 @@ import path from "path";
 
 import { deferred } from "../../../packages/commons/src/index.js";
 import { buildHelpBundle } from "./help_bundle_generator.js";
-import { buildHelpMeta, stripAppVersion } from "./help_meta_generator.js";
+import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 
 export interface NoteMapping {
     rootNoteId: string;
@@ -200,7 +200,7 @@ async function cleanUpMeta(outputPath: string, mapping: NoteMapping, baseUrl: st
     const { meta: helpMeta, sources } = buildHelpMeta(meta, baseUrl);
 
     if (mapping.helpMeta) {
-        await writeJson(mapping.helpMeta, helpMeta);
+        await writeArtifact(mapping.helpMeta, serializeHelpMeta(helpMeta));
     }
 
     if (mapping.helpContent) {
@@ -218,14 +218,15 @@ async function cleanUpMeta(outputPath: string, mapping: NoteMapping, baseUrl: st
             (markdown, title) => markdownImportService.renderToHtml(markdown, title)
         );
 
-        await writeJson(mapping.helpContent, bundle);
+        // One page per line: the bundle is a flat map from note ID to HTML.
+        await writeArtifact(mapping.helpContent, JSON.stringify(bundle, null, 4));
     }
 }
 
-/** Writes JSON with one entry per line, so a docs change shows up as the pages it touched. */
-async function writeJson(filePath: string, value: unknown) {
+/** Writes a generated help artifact, creating its directory if needed. */
+async function writeArtifact(filePath: string, content: string) {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(value, null, 4));
+    await fs.writeFile(filePath, content);
 }
 
 async function createImportZip(path: string) {

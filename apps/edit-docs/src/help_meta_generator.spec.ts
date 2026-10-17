@@ -2,7 +2,7 @@ import type { HelpMetaItem } from "@triliumnext/commons";
 import type { NoteMeta, NoteMetaFile } from "@triliumnext/core";
 import { describe, expect, it } from "vitest";
 
-import { buildHelpMeta, stripAppVersion } from "./help_meta_generator.js";
+import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 
 const BASE_URL = "https://docs.triliumnotes.org";
 
@@ -162,5 +162,38 @@ describe("stripAppVersion", () => {
         expect(stripped).toStrictEqual({ formatVersion: 2, files: meta.files });
         // The input is left alone: the help tree is derived from the same object afterwards.
         expect(meta.appVersion).toBe("0.105.0");
+    });
+});
+
+describe("serializeHelpMeta", () => {
+    it("writes each note on a line of its own and parses back to the same tree", () => {
+        const tree: HelpMetaItem[] = [
+            {
+                id: "_help_a",
+                title: "Folder",
+                type: "book",
+                attributes: [ { type: "label", name: "iconClass", value: "bx" } ],
+                children: [
+                    { id: "_help_b", title: "Page", type: "text" },
+                    { id: "_help_c", title: "Script", type: "code", mime: "text/x", children: [] }
+                ]
+            },
+            { id: "_help_d", title: "Web view", type: "webView" }
+        ];
+
+        const json = serializeHelpMeta(tree);
+
+        expect(JSON.parse(json)).toStrictEqual(tree);
+        expect(json.split("\n")).toStrictEqual([
+            "[",
+            `    {"id":"_help_a","title":"Folder","type":"book",` +
+                `"attributes":[{"type":"label","name":"iconClass","value":"bx"}],"children":[`,
+            `        {"id":"_help_b","title":"Page","type":"text"},`,
+            `        {"id":"_help_c","title":"Script","type":"code","mime":"text/x","children":[]}`,
+            "    ]},",
+            `    {"id":"_help_d","title":"Web view","type":"webView"}`,
+            "]"
+        ]);
+        expect(serializeHelpMeta([])).toBe("[]");
     });
 });
