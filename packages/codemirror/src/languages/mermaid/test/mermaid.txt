@@ -386,3 +386,12 @@ treemap
 ==>
 
 MermaidDiagram(TreemapDiagram(DiagramName,Leaf(String,":",Number)))
+
+# Tree view
+
+treeView-beta
+  src
+
+==>
+
+MermaidDiagram(TreeViewDiagram(DiagramName,Node(Name)))

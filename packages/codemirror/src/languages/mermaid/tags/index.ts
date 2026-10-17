@@ -241,3 +241,14 @@ export const treemapTags = {
     styles: Tag.define(t.attributeValue),
     titleText: Tag.define(t.string)
 };
+
+export const treeViewTags = {
+    className: Tag.define(t.className),
+    description: Tag.define(t.docComment),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    icon: Tag.define(t.atom),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};

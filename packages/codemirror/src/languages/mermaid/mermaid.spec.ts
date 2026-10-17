@@ -115,7 +115,8 @@ describe("accessibility lines", () => {
         "requirementDiagram\n  requirement r {\n    id: 1\n  }", "C4Context\n  Person(a, \"A\")",
         "quadrantChart\n  x-axis A --> B", "xychart-beta\n  bar [1, 2]",
         "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]",
-        "radar-beta\n  axis a", "treemap-beta\n  \"A\": 1"
+        "radar-beta\n  axis a", "treemap-beta\n  \"A\": 1",
+        "treeView-beta\n  src"
     ];
     const lines = [
         "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"
