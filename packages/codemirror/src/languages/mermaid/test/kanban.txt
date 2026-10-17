@@ -78,3 +78,33 @@ kanban
 ==>
 
 KanbanDiagram(DiagramName,LineComment,Column(ColumnTitle))
+
+# Card id with a hyphen
+
+kanban
+  todo
+    my-card[Task]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(NodeId,Node("[",CardText,"]")))
+
+# Space between a card id and its text
+
+kanban
+  todo
+    id1 [Task]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(NodeId,Node("[",CardText,"]")))
+
+# Card id with a parenthesis
+
+kanban
+  todo
+    a(b)[Task]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(Node(⚠,CardText,"]")))

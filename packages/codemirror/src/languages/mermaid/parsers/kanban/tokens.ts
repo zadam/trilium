@@ -15,7 +15,11 @@ const newline = 10,
     at = 64,
     braceL = 123,
     braceR = 125,
+    parenL = 40,
+    parenR = 41,
     underscore = 95;
+
+const ID_TERMINATORS = [ newline, -1, bracketL, braceL, braceR, parenL, parenR ];
 
 const isWordChar = (c: number) =>
     (c >= 48 && c <= 57) ||
@@ -50,19 +54,23 @@ export const columnTitleTokens = new ExternalTokenizer((input) => {
     }
 });
 
-// A card id that is immediately followed by "[", e.g. docs[...] or id6[...].
+// A card id followed by "[", e.g. docs[...], my-card[...] or id6 [...]. Like Mermaid, an id
+// runs up to the first bracket, brace or parenthesis; trailing spaces are not part of it.
 export const nodeIdTokens = new ExternalTokenizer((input) => {
     if (!isWordChar(input.next)) return;
 
     let length = 0;
-
-    while (isWordChar(input.next)) {
+    let idLength = 0;
+    while (!ID_TERMINATORS.includes(input.next)) {
         input.advance();
         length++;
+        if (input.peek(-1) !== space) {
+            idLength = length;
+        }
     }
 
-    if (length > 0 && (input.next as number) === bracketL) {
-        input.acceptToken(nodeIdTerm);
+    if (input.next === bracketL) {
+        input.acceptToken(nodeIdTerm, idLength - length);
     }
 });
 

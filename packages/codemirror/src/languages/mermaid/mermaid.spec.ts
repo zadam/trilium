@@ -61,3 +61,11 @@ describe("mermaid", () => {
             .toBe("MermaidDiagram(⚠)");
     });
 });
+
+describe("kanban grammar", () => {
+    it("ends a card id before the spaces that separate it from its text", () => {
+        const doc = "kanban\n  todo\n    my-card  [Task]";
+        const id = parserOf("kanban").parse(doc).topNode.getChild("Card")?.getChild("NodeId");
+        expect(id && doc.slice(id.from, id.to)).toBe("my-card");
+    });
+});
