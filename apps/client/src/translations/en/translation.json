@@ -3960,7 +3960,8 @@
     "template_scope_global": "Available everywhere",
     "template_scope_workspace": "Only inside its workspace",
     "template_scope_workspace_unavailable": "The template is not inside a workspace.",
-    "workspace_template": "Workspace template"
+    "workspace_template": "Workspace template",
+    "template_properties": "Template properties..."
   },
   "status_bar": {
     "language_title": "Change content language",
@@ -4776,5 +4777,12 @@
     "unknown_description": "Not downloaded by Trilium.",
     "delete_foreign_confirmation": "Delete {{name}}? No feature of this app uses it.",
     "unverified": "Not checked yet"
+  },
+  "template_properties": {
+    "title": "Template properties",
+    "title_template": "Default title of created notes",
+    "title_template_description": "Can read the time of creation (now) and the note it is created under (parentNote).",
+    "title_template_placeholder": "Meeting ${now.format('YYYY-MM-DD')}",
+    "new_notes": "New notes"
   }
 }

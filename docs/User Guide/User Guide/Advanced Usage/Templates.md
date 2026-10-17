@@ -61,7 +61,7 @@ Selecting a specific template from the creation menu always takes precedence ove
 
 ## Default title for new notes
 
-A template can also give its instances a default title, using the `#template:titleTemplate` label. See <a class="reference-link" href="Default%20Note%20Title.md">Default Note Title</a> for details.
+A template can also give its instances a default title, using the `#template:titleTemplate` label. To set it without editing the label by hand, click the template badge next to the note title and select _Template properties..._, which checks the expressions as you type and previews the resulting title. See <a class="reference-link" href="Default%20Note%20Title.md">Default Note Title</a> for details.
 
 ## Additional Notes
 

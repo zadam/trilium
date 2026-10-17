@@ -248,7 +248,7 @@ export function ExecuteBadge() {
  * between `#template` and `#workspaceTemplate`; the latter only for a template inside a workspace.
  */
 export function TemplateBadge() {
-    const { note } = useNoteContext();
+    const { note, parentComponent } = useNoteContext();
     const [ isTemplate ] = useNoteLabelBoolean(note, "template");
     const [ isWorkspaceTemplate ] = useNoteLabelBoolean(note, "workspaceTemplate");
     if (!note || (!isTemplate && !isWorkspaceTemplate)) return;
@@ -283,6 +283,11 @@ export function TemplateBadge() {
                 disabledTooltip={t("breadcrumb_badges.template_scope_workspace_unavailable")}
                 onClick={() => isTemplate && switchScope(true)}
             >{t("breadcrumb_badges.template_scope_workspace")}</FormListItem>
+            <FormDropdownDivider />
+            <FormListItem
+                icon="bx bx-cog"
+                onClick={() => parentComponent?.triggerEvent("showTemplateProperties", { noteId: note.noteId })}
+            >{t("breadcrumb_badges.template_properties")}</FormListItem>
         </BadgeWithDropdown>
     );
 }

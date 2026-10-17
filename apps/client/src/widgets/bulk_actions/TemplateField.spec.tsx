@@ -43,6 +43,21 @@ describe("TemplateField", () => {
         expect(refused.querySelector(".template-field-preview")).toBeNull();
     });
 
+    it("shows the preview its caller gives, over the note's", async () => {
+        const note = buildNote({ title: "Meeting" });
+        vi.spyOn(note, "getMetadata").mockResolvedValue(METADATA);
+
+        let container: HTMLElement | undefined;
+        await act(async () => {
+            container = renderInto(
+                <TemplatePreviewNoteContext.Provider value={note.noteId}>
+                    <TemplateField currentValue="${note.title}" preview="Given" onChange={() => {}} variables={{ note: "note" }} />
+                </TemplatePreviewNoteContext.Provider>
+            );
+        });
+        expect(container?.querySelector(".template-field-preview")?.textContent).toBe("template_field.preview:Given");
+    });
+
     it("shows no preview without a note to preview against", async () => {
         const container = await mount("NEW: ${note.title}", undefined);
         expect(container.querySelector(".cm-editor")).not.toBeNull();

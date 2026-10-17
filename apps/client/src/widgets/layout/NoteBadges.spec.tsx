@@ -8,12 +8,17 @@ import { ViewScope } from "../../services/link";
 
 // The badge reads the note being shown and the view it is shown in, neither of which a rendered
 // widget brings with it.
-const shownNote = vi.hoisted(() => ({ current: null as FNote | null, viewScope: undefined as ViewScope | undefined }));
+const shownNote = vi.hoisted(() => ({
+    current: null as FNote | null,
+    viewScope: undefined as ViewScope | undefined,
+    parentComponent: { triggerEvent: vi.fn() }
+}));
 vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useNoteContext: () => ({
         note: shownNote.current,
-        viewScope: shownNote.viewScope
+        viewScope: shownNote.viewScope,
+        parentComponent: shownNote.parentComponent
     })
 }));
 
@@ -129,6 +134,19 @@ describe("TemplateBadge", () => {
         }
     });
 
+    it("opens the template's properties dialog", async () => {
+        shownNote.current = buildNote({ title: "Meeting", "#template": "" });
+        await openScopes();
+
+        const properties = [ ...document.querySelectorAll<HTMLElement>(".tn-popup .dropdown-item") ]
+            .find((row) => row.textContent?.includes("breadcrumb_badges.template_properties"));
+        expect(properties).toBeDefined();
+        act(() => properties?.click());
+        expect(shownNote.parentComponent.triggerEvent)
+            .toHaveBeenCalledWith("showTemplateProperties", { noteId: shownNote.current.noteId });
+        document.body.replaceChildren();
+    });
+
     function renderBadge(labels: Record<`#${string}`, string>) {
         shownNote.current = buildNote({ title: "Meeting", ...labels });
         return renderInto(<TemplateBadge />).querySelector(".template-badge");
@@ -148,7 +166,7 @@ describe("TemplateBadge", () => {
             toggle?.click();
         });
         return await vi.waitFor(() => {
-            const rows = [ ...document.querySelectorAll<HTMLElement>(".tn-popup .dropdown-item") ];
+            const rows = [ ...document.querySelectorAll<HTMLElement>(".tn-popup .dropdown-item[aria-checked]") ];
             if (rows.length !== 2) throw new Error("expected the two scopes to be listed");
             return rows;
         });
