@@ -133,8 +133,7 @@
     }
 }
 
-/* The card recipe of the chat input island (ChatInputBar.css), so a call that waits for the user
-   stands out the same way. */
+/* Matches the card of the chat input island in ChatInputBar.css. */
 .llm-chat-tool-call-pending {
     --pending-inset: 0.5rem;
 
