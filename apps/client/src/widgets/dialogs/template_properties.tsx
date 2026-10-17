@@ -32,6 +32,8 @@ export default function TemplatePropertiesDialog() {
     const preview = useTitlePreview(titleTemplate, note);
 
     useTriliumEvent("showTemplateProperties", async ({ noteId }) => {
+        // The writes of the template shown before go first, so that what is read below includes them.
+        await titleWrites.current.catch(() => {});
         const templateNote = await froca.getNote(noteId);
         if (!templateNote) return;
         const ownTitleTemplate = templateNote.getOwnedLabelValue("template:titleTemplate") ?? "";

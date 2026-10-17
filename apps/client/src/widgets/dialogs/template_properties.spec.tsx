@@ -108,6 +108,40 @@ describe("TemplatePropertiesDialog", () => {
         remove.mockRestore();
     });
 
+    it("does not let a write still under way for one template skip the next template's", async () => {
+        let finishWrite: () => void = () => {};
+        const setLabel = vi.spyOn(attributes, "setLabel")
+            .mockImplementationOnce(() => new Promise<void>((resolve) => { finishWrite = resolve; }))
+            .mockResolvedValue();
+        const first = buildNote({ title: "Meeting", "#template": "" });
+        const second = buildNote({ title: "Call", "#template": "" });
+
+        const { host, container, field } = await open(first.noteId);
+        type(field, "Same");
+        await act(async () => {
+            field.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+            container.querySelector(".template-properties-dialog")
+                ?.dispatchEvent(new Event("hidden.bs.modal", { bubbles: true }));
+        });
+
+        await act(async () => {
+            const opened = host.handleEventInChildren("showTemplateProperties", { noteId: second.noteId });
+            finishWrite();
+            await opened;
+        });
+        const secondField = await vi.waitFor(() => {
+            const input = container.querySelector<HTMLInputElement>(".template-properties-dialog .title-template-stub");
+            if (!input) throw new Error("expected the second template's field");
+            return input;
+        });
+        type(secondField, "Same");
+        await act(async () => {
+            secondField.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        });
+        await vi.waitFor(() => expect(setLabel).toHaveBeenCalledWith(second.noteId, "template:titleTemplate", "Same"));
+        setLabel.mockRestore();
+    });
+
     it("previews the title below the field, filled in against the template's parent", async () => {
         buildNote({
             title: "Projects", children: [ { id: "tplPreview", title: "Meeting", "#template": "" } ]
@@ -177,7 +211,7 @@ async function open(noteId: string) {
         if (!input) throw new Error("expected the title template field in a card");
         return input;
     });
-    return { container, field };
+    return { host, container, field };
 }
 
 function type(field: HTMLInputElement, value: string) {
