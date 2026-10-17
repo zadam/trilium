@@ -1,10 +1,12 @@
 import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
+import { toggleComment } from "@codemirror/commands";
 import { foldable, LanguageSupport } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
-import type { Parser } from "@lezer/common";
+import { EditorView } from "@codemirror/view";
 import { fileTests } from "@lezer/generator/test";
+import type { LRParser } from "@lezer/lr";
 import { describe, expect, it } from "vitest";
 
 import { buildGrammar, listGrammars } from "../../../scripts/build_mermaid_grammars.mjs";
@@ -12,7 +14,7 @@ import { DIAGRAM_PARSERS, foldByIndent, mermaid, mermaidLanguage } from "./index
 
 const grammars = listGrammars();
 const diagrams = grammars.map((grammarPath) => basename(dirname(grammarPath)));
-const parsers = import.meta.glob<Parser>("./parsers/*/parser.ts", {
+const parsers = import.meta.glob<LRParser>("./parsers/*/parser.ts", {
     eager: true,
     import: "parser"
 });
@@ -60,6 +62,21 @@ describe("mermaid", () => {
         expect(tree.toString()).toBe("MermaidDiagram(PieDiagram(DiagramName,String,Number))");
         expect(mermaidLanguage.parser.parse("not a diagram\n").toString())
             .toBe("MermaidDiagram(⚠)");
+    });
+
+    it("toggles %% line comments in the preamble and in the diagram", () => {
+        const doc = "---\ntitle: x\n---\nflowchart\n    A --> B";
+        const state = EditorState.create({ doc, extensions: [ mermaid() ] });
+        const view = new EditorView({ state });
+        const cases = [ [ 2, "%% title: x" ], [ 5, "    %% A --> B" ] ] as const;
+        for (const [ lineNumber, commented ] of cases) {
+            view.dispatch({ selection: { anchor: view.state.doc.line(lineNumber).from } });
+            expect(toggleComment(view), commented).toBe(true);
+            expect(view.state.doc.line(lineNumber).text).toBe(commented);
+            toggleComment(view);
+            expect(view.state.doc.toString()).toBe(doc);
+        }
+        view.destroy();
     });
 
     it("parses Windows line endings like Unix ones", () => {

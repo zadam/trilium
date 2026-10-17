@@ -2,9 +2,9 @@
 // (itself a fork of https://github.com/inspirnathan/codemirror-lang-mermaid); MIT, see LICENSE.
 // After editing a `.grammar` file, regenerate its parser with
 // `pnpm --filter @triliumnext/codemirror build:mermaid-grammars`.
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import type { Parser } from "@lezer/common";
+import { languageDataProp, LanguageSupport, LRLanguage } from "@codemirror/language";
 import { parseMixed } from "@lezer/common";
+import type { LRParser } from "@lezer/lr";
 
 import { parser as architectureParser } from "./parsers/architecture/parser.js";
 import { parser as blockParser } from "./parsers/block/parser.js";
@@ -35,7 +35,7 @@ export { foldByIndent } from "./extensions/index.js";
  * grammar only detects the diagram type; `parseMixed()` hands the rest of the document to the
  * parser of that type.
  */
-export const DIAGRAM_PARSERS: Record<string, Parser> = {
+export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     ArchitectureDiagram: architectureParser,
     BlockDiagram: blockParser,
     C4Diagram: c4Parser,
@@ -62,11 +62,23 @@ export const mermaidLanguage = LRLanguage.define({
     name: "mermaid",
     parser: mermaidParser.configure({
         wrap: parseMixed((node) => {
-            const parser = DIAGRAM_PARSERS[node.name];
+            const parser = nestedParsers[node.name];
             return parser ? { parser } : null;
         })
-    })
+    }),
+    languageData: {
+        commentTokens: { line: "%%" }
+    }
 });
+
+// CodeMirror reads language data from the innermost top node at a position, which is the
+// diagram's own top node, so each diagram parser carries the data of `mermaidLanguage` too.
+const nestedParsers = Object.fromEntries(Object.entries(DIAGRAM_PARSERS).map(([ name, parser ]) => [
+    name,
+    parser.configure({
+        props: [ languageDataProp.add((type) => type.isTop ? mermaidLanguage.data : undefined) ]
+    })
+]));
 
 export function mermaid() {
     return new LanguageSupport(mermaidLanguage);

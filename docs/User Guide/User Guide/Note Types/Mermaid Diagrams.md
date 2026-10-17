@@ -28,6 +28,7 @@ It's possible to switch between the two layouts at any time by pressing the <sp
 
 *   The source code of the diagram (in Mermaid format) is displayed on the left or bottom side of the note (depending on the layout).
     *   Changing the diagram code will refresh automatically the diagram.
+    *   <kbd>Ctrl</kbd>+<kbd>/</kbd> (Mac: <kbd>⌘</kbd>+<kbd>/</kbd>) comments out the current or selected lines with `%%`. Pressing it again on commented lines removes the `%%`.
 *   The preview of the diagram is displayed at the right or top side of the note (depending on the layout):
     *   There are dedicated buttons at the bottom-right of the preview to control the zoom in, zoom out or fit the diagram.
     *   The preview can be moved around by holding the left mouse button and dragging.

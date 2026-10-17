@@ -97,6 +97,12 @@ grammar for radar; the rest have none anywhere, so write them from Mermaid's syn
 - **Line endings.** CodeMirror normalizes `\r\n` and `\r` to `\n` before parsing, but the grammars
   still meet CRLF in specs and anywhere else they run. Git normalizes CRLF in `.txt` fixtures, so a
   CRLF case belongs in `mermaid.spec.ts` (`parses Windows line endings like Unix ones`).
+- **Language data lives on top nodes.** `state.languageDataAt()` reads it from the innermost top
+  node at a position, which inside a diagram is that diagram's own top node, not `MermaidDiagram`.
+  `languageData` on `mermaidLanguage` alone reaches only the preamble, so `index.ts` configures every
+  diagram parser with `languageDataProp` pointing at `mermaidLanguage.data` (that is how `%%`
+  comment toggling, `commentTokens`, reaches the diagram body). Add new data (autocompletion
+  sources, indentation hints) to `languageData`, never to one diagram parser.
 - **Error recovery is behaviour too.** A fixture whose tree has `⚠` pins how the grammar recovers.
   That is fine for input Mermaid rejects; for input Mermaid accepts it records a limitation, and the
   fixture name must say so (`… (unsupported, parses as empty lines)`).
