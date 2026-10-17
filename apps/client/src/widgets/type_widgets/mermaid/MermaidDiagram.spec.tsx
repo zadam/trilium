@@ -3,6 +3,7 @@ import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ContentEditor } from "../../../services/content_renderer";
+import { renderMermaidSvg } from "../../../services/mermaid";
 import options from "../../../services/options";
 import { getContentEmbedTools } from "../text/content_embed_tools";
 import MermaidDiagram from "./MermaidDiagram";
@@ -101,6 +102,22 @@ describe("MermaidDiagram", () => {
         ]);
     });
 
+    it("shows a render error in the card of the Mermaid note", async () => {
+        vi.mocked(renderMermaidSvg).mockRejectedValueOnce(
+            new Error("Parse error on line 2:\n...A--\n---^"));
+        const failed = await mount({ editor: buildEditor() });
+        const card = await vi.waitFor(() => {
+            const found = failed.figure.querySelector(".note-detail-split .note-detail-error-card");
+            expect(found).not.toBeNull();
+            return found;
+        });
+        expect(card?.querySelector(".note-detail-error-message")?.textContent)
+            .toBe("Parse error on line 2:");
+        expect(card?.querySelector("pre")?.textContent).toBe("...A--\n---^");
+        expect(failed.figure.querySelector(".note-detail-error-stale-badge")).toBeNull();
+        expect(failed.figure.querySelector(".svg-preview-root")).not.toBeNull();
+    });
+
     it("makes the source editable once Editable turns on", async () => {
         const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
         expect(await isSourceEditable(figure)).toBe(false);
@@ -134,10 +151,15 @@ async function mount({ editor, isEditable, displayMode }: MountOptions) {
     return { figure };
 }
 
+/** The panes the layout shows, out of those mounted. */
 function getPanes(figure: HTMLElement) {
+    const split = figure.querySelector(".note-detail-split");
+    expect(split).not.toBeNull();
     return {
-        source: !!figure.querySelector(".mermaid-diagram-source"),
-        preview: !!figure.querySelector(".mermaid-diagram-preview")
+        source: !!split?.querySelector(".note-detail-split-editor-col")
+            && !split.classList.contains("split-read-only"),
+        preview: !!split?.querySelector(".note-detail-split-preview-col")
+            && !split.classList.contains("split-source-only")
     };
 }
 
@@ -146,7 +168,7 @@ async function isSourceEditable(figure: HTMLElement) {
     const { EditorView } = await import("@codemirror/view");
     let view: InstanceType<typeof EditorView> | null = null;
     await vi.waitFor(() => {
-        const dom = figure.querySelector(".mermaid-diagram-source .cm-editor");
+        const dom = figure.querySelector(".note-detail-split-editor .cm-editor");
         view = dom instanceof HTMLElement ? EditorView.findFromDOM(dom) : null;
         expect(view).not.toBeNull();
     }, { timeout: 5000 });

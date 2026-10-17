@@ -6,21 +6,21 @@ import fullscreenIcon from "boxicons/svg/regular/bx-fullscreen.svg?raw";
 import helpIcon from "boxicons/svg/regular/bx-help-circle.svg?raw";
 import zoomInIcon from "boxicons/svg/regular/bx-zoom-in.svg?raw";
 import zoomOutIcon from "boxicons/svg/regular/bx-zoom-out.svg?raw";
-import clsx from "clsx";
 import type { RefObject } from "preact";
 import { lazy, Suspense } from "preact/compat";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
-import { openInAppHelpFromUrl } from "../../../services/utils";
-import OverlayControlGroup, { ZoomControls } from "../../react/OverlayControlGroup";
-import { RawHtmlBlock } from "../../react/RawHtml";
-import { useZoomPanPinch, useZoomPanWheel } from "../../react/zoom_pan";
-import { useZoomPanKeyboard, ZOOM_PAN_VIEWPORT_CLASS } from "../../react/zoom_pan_keyboard";
+import { isMobile, openInAppHelpFromUrl } from "../../../services/utils";
+import { useZoomPanWheel } from "../../react/zoom_pan";
+import { useZoomPanKeyboard } from "../../react/zoom_pan_keyboard";
+import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
 import { type DisplayMode, resolveDisplayMode } from "../helpers/split_editor_mode";
+import {
+    SvgPreview, type SvgZoom, SvgZoomControls, useSvgRender, useSvgZoom
+} from "../helpers/SvgSplitEditor";
 import mermaidLinter from "../linters/mermaid";
 import {
     type ContentEmbedTool,
@@ -34,8 +34,9 @@ import { useEditableEmbed } from "../text/editable_embed";
 const CodeEmbedEditor = lazy(() => import("../code/CodeEmbedEditor"));
 
 /**
- * A Mermaid diagram in an embed: its source in CodeMirror, the diagram in a zoom/pan viewer, or
- * both side by side, as the display mode of its embed picks. The source can be edited while the
+ * A Mermaid diagram in an embed, laid out by the `SplitLayout` and shown in the `SvgPreview` of
+ * the Mermaid note type: its source in CodeMirror, the diagram, or both side by side, as the
+ * display mode of its embed picks. The source can be edited while the
  * Editable toggle of the embed is on. The zoom and fullscreen are buttons of
  * the toolbar of the embed. The source is kept inline or in an attachment, see
  * `SOURCE_EMBED_TYPES`.
@@ -46,7 +47,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     const [ source, setSource ] = useState(content);
     const { svg, error } = useMermaidRender(source);
 
-    const zoom = useZoomPanPinch({ minScale: MIN_ZOOM, maxScale: MAX_ZOOM });
+    const zoom = useSvgZoom();
     const [ tools ] = useState(() => new MermaidDiagramTools(rootRef));
     const { canEdit, isEditing } = useEditableEmbed(rootRef, {
         editor,
@@ -55,6 +56,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
         focusTarget: ".cm-content"
     });
     const mode = resolveDisplayMode(useContentEmbedDisplayMode(rootRef), !isEditing);
+    const { editorMounted, previewMounted } = useMountedPanes(mode);
     tools.setState(zoom, mode);
 
     // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
@@ -70,66 +72,35 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
         view.setNamedExtension("mermaid-lint", mermaidLinter());
     }, []);
 
-    const preview = (
-        <div
-            ref={setPreviewEl}
-            tabIndex={0}
-            role="group"
-            aria-label={t("svg.preview")}
-            className={clsx("mermaid-diagram-preview", ZOOM_PAN_VIEWPORT_CLASS, error && "on-error")}
-        >
-            <TransformWrapper
-                ref={zoom.ref}
-                minScale={MIN_ZOOM}
-                maxScale={MAX_ZOOM}
-                centerOnInit
-                centerZoomedOut
-                wheel={zoom.wheel}
-                doubleClick={{ mode: "reset" }}
-                onTransform={zoom.onTransform}
-            >
-                <TransformComponent
-                    wrapperClass="mermaid-diagram-viewport"
-                    contentClass="mermaid-diagram-content"
-                >
-                    <RawHtmlBlock className="render-container" html={svg} />
-                </TransformComponent>
-            </TransformWrapper>
-            {error && <div className="mermaid-diagram-error">{error}</div>}
-            {!canEdit && (
-                <OverlayControlGroup className="mermaid-diagram-controls" placement="bottom-end">
-                    <ZoomControls
-                        percent={zoom.scale * 100}
-                        canZoomIn={zoom.canZoomIn}
-                        canZoomOut={zoom.canZoomOut}
-                        onZoomIn={zoom.zoomIn}
-                        onZoomOut={zoom.zoomOut}
-                        onReset={zoom.reset}
-                    />
-                </OverlayControlGroup>
-            )}
-        </div>
-    );
-
     return (
-        <div ref={rootRef} className={`mermaid-diagram display-mode-${mode}`}>
-            {mode !== "preview" && (
-                <div className="mermaid-diagram-source">
-                    <Suspense fallback={null}>
-                        <CodeEmbedEditor
-                            key={isEditing ? "editing" : "read-only"}
-                            note={null}
-                            editor={isEditing ? editor : undefined}
-                            content={source}
-                            mime={MERMAID_ATTACHMENT_MIME}
-                            onClose={setSource}
-                            onChange={setSource}
-                            onReady={setupEditor}
-                        />
-                    </Suspense>
-                </div>
-            )}
-            {mode !== "source" && preview}
+        <div ref={rootRef} className="mermaid-diagram">
+            <SplitLayout
+                className="svg-editor"
+                mode={mode}
+                orientation={isMobile() ? "vertical" : "horizontal"}
+                editor={(
+                    <div className="note-detail-split-editor">
+                        <Suspense fallback={null}>
+                            <CodeEmbedEditor
+                                key={isEditing ? "editing" : "read-only"}
+                                note={null}
+                                editor={isEditing ? editor : undefined}
+                                content={source}
+                                mime={MERMAID_ATTACHMENT_MIME}
+                                onClose={setSource}
+                                onChange={setSource}
+                                onReady={setupEditor}
+                            />
+                        </Suspense>
+                    </div>
+                )}
+                isEditorMounted={editorMounted.current}
+                isPreviewMounted={previewMounted.current}
+                error={error}
+                previewStale={!!svg}
+                previewContent={<SvgPreview svg={svg} zoom={zoom} viewportRef={setPreviewEl} />}
+                previewButtons={!canEdit && !!svg && <SvgZoomControls zoom={zoom} />}
+            />
         </div>
     );
 }
@@ -139,37 +110,18 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
  * fails to render, `error` holds why and `svg` keeps the last diagram that rendered.
  */
 function useMermaidRender(source: string) {
-    const [ svg, setSvg ] = useState("");
-    const [ error, setError ] = useState<string | null>(null);
+    const { svg, error, render } = useSvgRender(renderMermaidSvg);
     const isFirstRender = useRef(true);
 
     useEffect(() => {
-        let isCurrent = true;
         const delay = isFirstRender.current ? 0 : RENDER_DELAY;
         isFirstRender.current = false;
-
-        const timeout = setTimeout(async () => {
-            try {
-                const rendered = await renderMermaidSvg(source);
-                if (!isCurrent) return;
-                setSvg(rendered);
-                setError(null);
-            } catch (e) {
-                if (!isCurrent) return;
-                setError((e as Error)?.message ?? String(e));
-            }
-        }, delay);
-
-        return () => {
-            isCurrent = false;
-            clearTimeout(timeout);
-        };
+        const timeout = setTimeout(() => render(source), delay);
+        return () => clearTimeout(timeout);
     }, [ source ]);
 
     return { svg, error };
 }
-
-type ZoomState = ReturnType<typeof useZoomPanPinch>;
 
 /** The zoom and fullscreen of a Mermaid diagram, as buttons of the toolbar of its embed. */
 class MermaidDiagramTools implements ContentEmbedToolProvider {
@@ -178,7 +130,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     ];
     readonly hasEditableFlag = true;
     readonly hasDisplayModes = true;
-    private zoom: ZoomState | null = null;
+    private zoom: SvgZoom | null = null;
     private isDiagramShown = true;
     private isSourceShown = false;
     private listeners = new Set<() => void>();
@@ -187,7 +139,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
 
     /** Follows the zoom state and the display mode of the latest render. */
-    setState(zoom: ZoomState, mode: DisplayMode) {
+    setState(zoom: SvgZoom, mode: DisplayMode) {
         this.zoom = zoom;
         this.isDiagramShown = mode !== "source";
         this.isSourceShown = mode !== "preview";
@@ -283,8 +235,5 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
 
 /** The in-app help page on Mermaid diagrams. */
 const MERMAID_HELP_PAGE = "s1aBHPd79XYj";
-/** Zoom bounds, as a multiple of the diagram fitted to the viewer. */
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 10;
 /** How long the source has to stay unchanged before the diagram renders again, in milliseconds. */
 const RENDER_DELAY = 300;
