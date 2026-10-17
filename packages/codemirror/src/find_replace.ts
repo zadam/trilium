@@ -138,17 +138,11 @@ export class SearchHighlighter {
         this.totalFound = this.parsedMatches.length;
     }
 
+    /** Activates the first match at or after the cursor, wrapping around to the first match. */
     #scrollToMatchNearestSelection() {
         const cursorPos = this.view.state.selection.main.head;
-        let index = 0;
-        for (const match of this.parsedMatches) {
-            if (match.from >= cursorPos) {
-                this.scrollToMatch(index);
-                return;
-            }
-
-            index++;
-        }
+        const index = this.parsedMatches.findIndex((match) => match.from >= cursorPos);
+        this.scrollToMatch(Math.max(index, 0));
     }
 
     static deco = (v: SearchHighlighter) => v.matches;
