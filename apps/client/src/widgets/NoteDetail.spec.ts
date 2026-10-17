@@ -13,9 +13,13 @@ import froca from "../services/froca";
 // global the test env doesn't provide. The pure function under test never touches the tree, so stub it.
 vi.mock("./note_tree", () => ({ default: class {} }));
 
-import { getExtendedWidgetType, NoteDetailWrapper, useDeferredDetailFocus } from "./NoteDetail";
+import {
+    getExtendedWidgetType, NoteDetailWrapper, useDeferredDetailFocus, useNoteInfo
+} from "./NoteDetail";
 import { isContextInActiveTab, useLegacyImperativeHandlers, useTriliumEvent } from "./react/hooks";
-import { ContainerVisibilityContext, ParentComponent } from "./react/react_utils";
+import {
+    ContainerVisibilityContext, NoteContextContext, ParentComponent
+} from "./react/react_utils";
 import type { TypeWidgetProps } from "./type_widgets/type_widget";
 
 const FAKE_NOTE_ID = "blob-stub-note";
@@ -146,6 +150,62 @@ describe("useDeferredDetailFocus", () => {
         renderHarness(false);
         renderHarness(true);
         expect(replay).not.toHaveBeenCalled();
+    });
+});
+
+describe("useNoteInfo", () => {
+    const host = document.createElement("div");
+
+    function Harness() {
+        useNoteInfo();
+        return null;
+    }
+
+    afterEach(() => {
+        render(null, host);
+    });
+
+    it("reloads on a type or MIME change of its own note only", async () => {
+        const note = {
+            noteId: "shown-note",
+            type: "text",
+            isProtected: false,
+            isTriliumSqlite: () => false,
+            isMarkdown: () => false,
+            isIconPack: () => false
+        } as unknown as FNote;
+        const setContextData = vi.fn();
+        const noteContext = {
+            note,
+            notePath: "root/shown-note",
+            hoistedNoteId: "root",
+            viewScope: {},
+            isReadOnly: async () => false,
+            setContextData
+        } as unknown as NoteContext;
+        const parentComponent = new Component();
+        await act(async () => render(
+            h(ParentComponent.Provider, { value: parentComponent },
+                h(NoteContextContext.Provider, { value: noteContext }, h(Harness, {}))),
+            host
+        ));
+        const loadStates = () => setContextData.mock.calls
+            .map(([ key, { state } ]) => `${key}:${state}`);
+        await vi.waitFor(() => expect(loadStates()).toEqual(
+            [ "contentLoad:loading", "contentLoad:loaded" ]));
+        setContextData.mockClear();
+
+        const changeNoteType = (noteId: string) => act(async () => {
+            await parentComponent.handleEventInChildren("noteTypeMimeChanged", { noteId });
+        });
+
+        // A `NoteDetail` that shows the changed note triggers the event for the whole app.
+        await changeNoteType("other-note");
+        expect(setContextData).not.toHaveBeenCalled();
+
+        await changeNoteType("shown-note");
+        await vi.waitFor(() => expect(loadStates()).toEqual(
+            [ "contentLoad:loading", "contentLoad:loaded" ]));
     });
 });
 
