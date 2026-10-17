@@ -24,6 +24,7 @@ import { getLog } from "@triliumnext/core";
 import { attachmentPlaceholder, resolveAttachmentPart } from "@triliumnext/core/src/services/llm/attachment_content.js";
 import { buildNoteHint } from "@triliumnext/core/src/services/llm/note_hint.js";
 import { buildSystemPrompt } from "@triliumnext/core/src/services/llm/system_prompt.js";
+import type { ToolApprovals } from "@triliumnext/core/src/services/llm/tool_approval.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "@triliumnext/core/src/services/llm/types.js";
 import { encodeBase64 } from "@triliumnext/core/src/services/utils/binary.js";
 import fs from "fs";
@@ -863,6 +864,39 @@ export abstract class AcpAgentProvider implements LlmProvider {
 }
 
 /**
+ * Answer a permission request for a call to Trilium's note tools, which the caller has already
+ * recognized as one, with the user's decision through the turn's `toolApprovals`. A declined call
+ * is rejected once, so the agent asks again about the tool's next call. Without approvals (outside
+ * a chat turn) the call is allowed, as the API providers run tools unasked there.
+ */
+export async function askNoteToolPermission(
+    request: AcpPermissionRequest,
+    logLabel: string,
+    toolApprovals: ToolApprovals | undefined
+): Promise<AcpPermissionOutcome> {
+    const toolCall = request.toolCall;
+    const toolName = toolCall ? mcpToolCall(toolCall)?.tool : undefined;
+    const allowOnce = request.options?.find(o => o.kind === "allow_once");
+    if (!allowOnce || !toolCall?.toolCallId || !toolName) {
+        return denyPermission(request, logLabel);
+    }
+
+    const approved = !toolApprovals || await toolApprovals.request({
+        toolCallId: toolCall.toolCallId,
+        toolName,
+        toolInput: unwrapMcpArguments(toolCall.rawInput) as Record<string, unknown>
+    });
+    if (approved) {
+        return { outcome: { outcome: "selected", optionId: allowOnce.optionId } };
+    }
+    getLog().info(`${logLabel}: the user declined the call to "${toolName}".`);
+    const rejectOnce = request.options?.find(o => o.kind === "reject_once");
+    return rejectOnce
+        ? { outcome: { outcome: "selected", optionId: rejectOnce.optionId } }
+        : { outcome: { outcome: "cancelled" } };
+}
+
+/**
  * Deny a permission request, preferring a persistent "reject always" so a
  * retrying agent stops re-asking, then a one-shot reject, then cancelling the
  * turn. Never allows.
@@ -1122,7 +1156,7 @@ function wrapSystemInstructions(systemPrompt: string): string | null {
  * (`<server>_<tool>`, `mcp.<server>.<tool>`) matches none of the tool labels the
  * chat has.
  */
-function mcpToolCall(update: AcpToolCallUpdate): { server?: string; tool?: string } | undefined {
+function mcpToolCall(update: { _meta?: unknown; rawInput?: unknown }): { server?: string; tool?: string } | undefined {
     const meta = update._meta as { is_mcp_tool_call?: unknown; mcp?: { server?: unknown; tool?: unknown } } | undefined;
     if (meta?.is_mcp_tool_call !== true) {
         return undefined;
