@@ -1197,11 +1197,12 @@ export interface AnnouncedMcpCall {
 }
 
 /**
- * The MCP tool calls an agent announced and has not finished, by call id. `codex-acp` asks
+ * The tool calls an agent announced and has not finished, by call id. `codex-acp` asks
  * permission for an MCP call with only its id, so the permission policy looks the call up here.
  */
 export class AnnouncedMcpCalls {
     private readonly byToolCallId = new Map<string, AnnouncedMcpCall>();
+    private readonly updatesByToolCallId = new Map<string, AcpToolCallUpdate>();
 
     observe(method: string, params: unknown): void {
         const update = method === "session/update" ? (params as AcpSessionUpdate | undefined)?.update : undefined;
@@ -1209,13 +1210,20 @@ export class AnnouncedMcpCalls {
             return;
         }
         if (update.sessionUpdate === "tool_call") {
+            this.updatesByToolCallId.set(update.toolCallId, update);
             const { server, tool } = mcpToolCall(update) ?? {};
             if (server && tool) {
                 this.byToolCallId.set(update.toolCallId, { toolCallId: update.toolCallId, server, tool, input: mcpArguments(update.rawInput) });
             }
         } else if (update.sessionUpdate === "tool_call_update" && (update.status === "completed" || update.status === "failed")) {
             this.byToolCallId.delete(update.toolCallId);
+            this.updatesByToolCallId.delete(update.toolCallId);
         }
+    }
+
+    /** The announcement of any unfinished tool call, including one with no MCP marking. */
+    announcementOf(toolCallId: string | undefined): AcpToolCallUpdate | undefined {
+        return toolCallId ? this.updatesByToolCallId.get(toolCallId) : undefined;
     }
 
     callOf(toolCallId: string | undefined): AnnouncedMcpCall | undefined {
@@ -1228,9 +1236,11 @@ export class AnnouncedMcpCalls {
     }
 }
 
-/** An MCP call's arguments, which `agy_acp_server` and `codex-acp` report wrapped as `{ arguments: … }`. */
-/** The arguments of an MCP tool call, as an object. */
-function mcpArguments(rawInput: unknown): Record<string, unknown> {
+/**
+ * The arguments of an MCP tool call, as an object. `agy_acp_server` and `codex-acp` report them
+ * wrapped as `{ arguments: … }`.
+ */
+export function mcpArguments(rawInput: unknown): Record<string, unknown> {
     const args = unwrapMcpArguments(rawInput);
     return typeof args === "object" && args !== null ? args as Record<string, unknown> : {};
 }

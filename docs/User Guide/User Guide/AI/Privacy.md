@@ -28,7 +28,7 @@ This is the reason the provider list is grouped this way, and why Trilium pre-se
     *   Notes above a size threshold send a size hint instead of the text, and the model must call a tool to read further.
 *   **Any note the model asks for, when note access is enabled.**
     *   Tools let the model search your tree and read notes, attributes and attachments beyond the current one.
-    *   It decides what to fetch, and each call waits for you to allow it, unless the chat's permission mode lets reads or every call run on their own, or you allowed that tool for the chat (and except with GitHub Copilot, among the <a class="reference-link" href="Providers/Subscription-based%20providers.md">Subscription-based providers</a>). There is no per-note permission system, so the reachable scope is your whole tree.
+    *   It decides what to fetch, and each call waits for you to allow it, unless the chat's permission mode lets reads or every call run on their own, or you allowed that tool for the chat. There is no per-note permission system, so the reachable scope is your whole tree.
 *   **Attachments and mentions**, when you add them: images, PDFs and text files are sent to the provider, and an `@` mention makes that note fetchable.
 *   **Your search query**, when web search is enabled, the model's search terms reach the provider's own search infrastructure, or the search provider chosen in the _Tools_ menu (Brave Search, Tavily, Exa, Serper, Perplexity or your SearXNG instance).
 *   **The pages the model reads**, when web search goes through a search provider: Trilium fetches each page the model asks for from the site itself, so the site sees a request from the machine running Trilium. The page's text is then sent to the model's provider.
